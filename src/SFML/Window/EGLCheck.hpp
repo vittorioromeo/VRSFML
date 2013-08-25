@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2014 Laurent Gomila (laurent.gom@gmail.com)
+// Copyright (C) 2013 Jonathan De Wachter (dewachter.jonathan@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,53 +22,47 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_WINDOWHANDLE_HPP
-#define SFML_WINDOWHANDLE_HPP
+#ifndef SFML_EGLCHECK_HPP
+#define SFML_EGLCHECK_HPP
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Config.hpp>
+#include <EGL/egl.h>
+#include <string>
 
-// Windows' HWND is a typedef on struct HWND__*
-#if defined(SFML_SYSTEM_WINDOWS)
-    struct HWND__;
-#endif
 
 namespace sf
 {
+namespace priv
+{
 ////////////////////////////////////////////////////////////
-/// Define a low-level window handle type, specific to
-/// each platform
+/// Let's define a macro to quickly check every EGL API call
 ////////////////////////////////////////////////////////////
-#if defined(SFML_SYSTEM_WINDOWS)
+#ifdef SFML_DEBUG
 
-    // Window handle is HWND (HWND__*) on Windows
-    typedef HWND__* WindowHandle;
+    //// In debug mode, perform a test on every EGL call
+    #define eglCheck(x) x; sf::priv::eglCheckError(__FILE__, __LINE__);
 
-#elif defined(SFML_SYSTEM_LINUX) || defined(SFML_SYSTEM_FREEBSD)
+#else
 
-    // Window handle is Window (unsigned long) on Unix - X11
-    typedef unsigned long WindowHandle;
-
-#elif defined(SFML_SYSTEM_MACOS)
-
-    // Window handle is NSWindow (void*) on Mac OS X - Cocoa
-    typedef void* WindowHandle;
-
-#elif defined(SFML_SYSTEM_IOS)
-
-    // Window handle is UIWindow (void*) on iOS - UIKit
-    typedef void* WindowHandle;
-
-#elif defined(SFML_SYSTEM_ANDROID)
-
-    // Window handle doesn't exist on Android
-    typedef void* WindowHandle;
+    // Else, we don't add any overhead
+    #define eglCheck(x) (x)
 
 #endif
 
+////////////////////////////////////////////////////////////
+/// \brief Check the last EGL error
+///
+/// \param file Source file where the call is located
+/// \param line Line number of the source file where the call is located
+///
+////////////////////////////////////////////////////////////
+void eglCheckError(const char* file, unsigned int line);
+
+} // namespace priv
 } // namespace sf
 
 
-#endif // SFML_WINDOWHANDLE_HPP
+#endif // SFML_EGLCHECK_HPP

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2014 Laurent Gomila (laurent.gom@gmail.com)
+// Copyright (C) 2013 Jonathan De Wachter (dewachter.jonathan@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,53 +22,56 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_WINDOWHANDLE_HPP
-#define SFML_WINDOWHANDLE_HPP
-
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Config.hpp>
+#include <SFML/Window/VideoModeImpl.hpp>
+#include <SFML/System/Vector2.hpp>
+#include <SFML/System/Sleep.hpp>
+#include <SFML/System/Lock.hpp>
+#include <SFML/Main/activity.hpp>
 
-// Windows' HWND is a typedef on struct HWND__*
-#if defined(SFML_SYSTEM_WINDOWS)
-    struct HWND__;
-#endif
 
 namespace sf
 {
+namespace priv
+{
 ////////////////////////////////////////////////////////////
-/// Define a low-level window handle type, specific to
-/// each platform
+std::vector<VideoMode> VideoModeImpl::getFullscreenModes()
+{
+    VideoMode desktop = getDesktopMode();
+
+    // Return both protrait and landscape resolutions
+    std::vector<VideoMode> modes;
+    modes.push_back(desktop);
+    modes.push_back(VideoMode(desktop.height, desktop.width, desktop.bitsPerPixel));
+    return modes;
+}
+
+
 ////////////////////////////////////////////////////////////
-#if defined(SFML_SYSTEM_WINDOWS)
+VideoMode VideoModeImpl::getDesktopMode()
+{
+    // Get the activity states
+    priv::ActivityStates* states = priv::getActivityStates(NULL);
+    Lock lock(states->mutex);
 
-    // Window handle is HWND (HWND__*) on Windows
-    typedef HWND__* WindowHandle;
+    // Wait for a window if there's none
+    while (!states->window)
+    {
+        states->mutex.unlock();
+        sleep(milliseconds(10));
+        states->mutex.lock();
+    }
 
-#elif defined(SFML_SYSTEM_LINUX) || defined(SFML_SYSTEM_FREEBSD)
+    // Get size from the window
+    sf::Vector2i size;
+    size.x = ANativeWindow_getWidth(states->window);
+    size.y = ANativeWindow_getHeight(states->window);
 
-    // Window handle is Window (unsigned long) on Unix - X11
-    typedef unsigned long WindowHandle;
+    return VideoMode(size.x, size.y);
+}
 
-#elif defined(SFML_SYSTEM_MACOS)
-
-    // Window handle is NSWindow (void*) on Mac OS X - Cocoa
-    typedef void* WindowHandle;
-
-#elif defined(SFML_SYSTEM_IOS)
-
-    // Window handle is UIWindow (void*) on iOS - UIKit
-    typedef void* WindowHandle;
-
-#elif defined(SFML_SYSTEM_ANDROID)
-
-    // Window handle doesn't exist on Android
-    typedef void* WindowHandle;
-
-#endif
+} // namespace priv
 
 } // namespace sf
-
-
-#endif // SFML_WINDOWHANDLE_HPP

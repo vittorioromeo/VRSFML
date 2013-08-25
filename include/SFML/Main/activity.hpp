@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2014 Laurent Gomila (laurent.gom@gmail.com)
+// Copyright (C) 2013 Jonathan De Wachter (dewachter.jonathan@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,53 +22,58 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_WINDOWHANDLE_HPP
-#define SFML_WINDOWHANDLE_HPP
+#ifndef SFML_ACTIVITY_HPP
+#define SFML_ACTIVITY_HPP
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Config.hpp>
+#include <android/native_activity.h>
+#include <android/configuration.h>
+#include <android/sensor.h>
+#include <SFML/Window/EGLCheck.hpp>
+#include <SFML/Window/Event.hpp>
+#include <SFML/System/Mutex.hpp>
+#include <vector>
 
-// Windows' HWND is a typedef on struct HWND__*
-#if defined(SFML_SYSTEM_WINDOWS)
-    struct HWND__;
-#endif
 
 namespace sf
 {
-////////////////////////////////////////////////////////////
-/// Define a low-level window handle type, specific to
-/// each platform
-////////////////////////////////////////////////////////////
-#if defined(SFML_SYSTEM_WINDOWS)
+namespace priv
+{
+struct ActivityStates
+{
+    ANativeActivity* activity;
+    ANativeWindow* window;
 
-    // Window handle is HWND (HWND__*) on Windows
-    typedef HWND__* WindowHandle;
+    ALooper*        looper;
+    AInputQueue*    inputQueue;
+    AConfiguration* config;
 
-#elif defined(SFML_SYSTEM_LINUX) || defined(SFML_SYSTEM_FREEBSD)
+    ASensorManager* sensorManager;
+    const ASensor* accelerometerSensor;
+    ASensorEventQueue* sensorEventQueue;
 
-    // Window handle is Window (unsigned long) on Unix - X11
-    typedef unsigned long WindowHandle;
+    EGLDisplay display;
 
-#elif defined(SFML_SYSTEM_MACOS)
+    void* savedState;
+    size_t savedStateSize;
 
-    // Window handle is NSWindow (void*) on Mac OS X - Cocoa
-    typedef void* WindowHandle;
+    sf::Mutex mutex;
 
-#elif defined(SFML_SYSTEM_IOS)
+    std::vector<sf::Event> pendingEvents;
 
-    // Window handle is UIWindow (void*) on iOS - UIKit
-    typedef void* WindowHandle;
+    bool mainOver;
 
-#elif defined(SFML_SYSTEM_ANDROID)
+    bool initialized;
+    bool terminated;
 
-    // Window handle doesn't exist on Android
-    typedef void* WindowHandle;
+    bool updated;
+};
 
-#endif
-
+ActivityStates* getActivityStates(ActivityStates* initializedStates=NULL);
+} // namespace priv
 } // namespace sf
 
 
-#endif // SFML_WINDOWHANDLE_HPP
+#endif // SFML_ACTIVITY_HPP
