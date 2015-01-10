@@ -22,36 +22,24 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_SYSTEM_HPP
-#define SFML_SYSTEM_HPP
-
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-
-#include <SFML/Config.hpp>
-#include <SFML/System/Clock.hpp>
-#include <SFML/System/Err.hpp>
-#include <SFML/System/InputStream.hpp>
-#include <SFML/System/Lock.hpp>
-#include <SFML/System/Mutex.hpp>
 #include <SFML/System/Power.hpp>
-#include <SFML/System/Sleep.hpp>
-#include <SFML/System/String.hpp>
-#include <SFML/System/Thread.hpp>
-#include <SFML/System/ThreadLocal.hpp>
-#include <SFML/System/ThreadLocalPtr.hpp>
-#include <SFML/System/Utf.hpp>
-#include <SFML/System/Vector2.hpp>
-#include <SFML/System/Vector3.hpp>
 
-#endif // SFML_SYSTEM_HPP
+#if defined(SFML_SYSTEM_WINDOWS)
+    #include <SFML/System/Win32/PowerImpl.hpp>
+#else
+    #include <SFML/System/Unix/PowerImpl.hpp>
+#endif
 
+
+namespace sf
+{
 ////////////////////////////////////////////////////////////
-/// \defgroup system System module
-///
-/// Base module of SFML, defining various utilities. It provides
-/// vector classes, Unicode strings and conversion functions,
-/// threads and mutexes, timing classes.
-/// 
-////////////////////////////////////////////////////////////
+bool setPowersavingEnabled(bool enable)
+{
+    return priv::setPowersavingEnabledImpl(enable);
+}
+
+} // namespace sf

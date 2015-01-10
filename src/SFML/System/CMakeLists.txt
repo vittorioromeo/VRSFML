@@ -15,6 +15,8 @@ set(SRC
     ${SRCROOT}/Mutex.cpp
     ${INCROOT}/Mutex.hpp
     ${INCROOT}/NonCopyable.hpp
+    ${SRCROOT}/Power.cpp
+    ${INCROOT}/Power.hpp
     ${SRCROOT}/Sleep.cpp
     ${INCROOT}/Sleep.hpp
     ${SRCROOT}/String.cpp
@@ -45,6 +47,8 @@ if(SFML_OS_WINDOWS)
         ${SRCROOT}/Win32/ClockImpl.hpp
         ${SRCROOT}/Win32/MutexImpl.cpp
         ${SRCROOT}/Win32/MutexImpl.hpp
+        ${SRCROOT}/Win32/PowerImpl.cpp
+        ${SRCROOT}/Win32/PowerImpl.hpp
         ${SRCROOT}/Win32/SleepImpl.cpp
         ${SRCROOT}/Win32/SleepImpl.hpp
         ${SRCROOT}/Win32/ThreadImpl.cpp
@@ -53,7 +57,7 @@ if(SFML_OS_WINDOWS)
         ${SRCROOT}/Win32/ThreadLocalImpl.hpp
     )
     source_group("windows" FILES ${PLATFORM_SRC})
-else()
+else(SFML_OS_ANDROID)
     set(PLATFORM_SRC
         ${SRCROOT}/Unix/ClockImpl.cpp
         ${SRCROOT}/Unix/ClockImpl.hpp
@@ -65,17 +69,29 @@ else()
         ${SRCROOT}/Unix/ThreadImpl.hpp
         ${SRCROOT}/Unix/ThreadLocalImpl.cpp
         ${SRCROOT}/Unix/ThreadLocalImpl.hpp
+		${SRCROOT}/Android/Activity.cpp
+        ${SRCROOT}/Android/Activity.hpp
+        ${SRCROOT}/Android/PowerImpl.cpp
+        ${SRCROOT}/Android/PowerImpl.hpp
+		${SRCROOT}/Android/ResourceStream.cpp
+		${SRCROOT}/Android/ResourceStream.hpp
     )
-
-    if(SFML_OS_ANDROID)
-        set(PLATFORM_SRC ${PLATFORM_SRC}
-            ${SRCROOT}/Android/Activity.hpp
-            ${SRCROOT}/Android/Activity.cpp
-            ${SRCROOT}/Android/ResourceStream.cpp
-            ${SRCROOT}/Android/ResourceStream.cpp
-        )
-    endif()
-
+    source_group("android" FILES ${PLATFORM_SRC})
+else()
+    set(PLATFORM_SRC
+        ${SRCROOT}/Unix/ClockImpl.cpp
+        ${SRCROOT}/Unix/ClockImpl.hpp
+        ${SRCROOT}/Unix/MutexImpl.cpp
+        ${SRCROOT}/Unix/MutexImpl.hpp
+        ${SRCROOT}/Unix/PowerImpl.cpp
+        ${SRCROOT}/Unix/PowerImpl.hpp
+        ${SRCROOT}/Unix/SleepImpl.cpp
+        ${SRCROOT}/Unix/SleepImpl.hpp
+        ${SRCROOT}/Unix/ThreadImpl.cpp
+        ${SRCROOT}/Unix/ThreadImpl.hpp
+        ${SRCROOT}/Unix/ThreadLocalImpl.cpp
+        ${SRCROOT}/Unix/ThreadLocalImpl.hpp
+    )
     source_group("unix" FILES ${PLATFORM_SRC})
 endif()
 

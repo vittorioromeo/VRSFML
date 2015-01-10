@@ -22,36 +22,37 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_SYSTEM_HPP
-#define SFML_SYSTEM_HPP
+#ifndef SFML_POWER_HPP
+#define SFML_POWER_HPP
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-
-#include <SFML/Config.hpp>
-#include <SFML/System/Clock.hpp>
-#include <SFML/System/Err.hpp>
-#include <SFML/System/InputStream.hpp>
-#include <SFML/System/Lock.hpp>
-#include <SFML/System/Mutex.hpp>
+#include <SFML/System/Export.hpp>
 #include <SFML/System/Power.hpp>
-#include <SFML/System/Sleep.hpp>
-#include <SFML/System/String.hpp>
-#include <SFML/System/Thread.hpp>
-#include <SFML/System/ThreadLocal.hpp>
-#include <SFML/System/ThreadLocalPtr.hpp>
-#include <SFML/System/Utf.hpp>
-#include <SFML/System/Vector2.hpp>
-#include <SFML/System/Vector3.hpp>
 
-#endif // SFML_SYSTEM_HPP
 
+namespace sf
+{
 ////////////////////////////////////////////////////////////
-/// \defgroup system System module
+/// \ingroup system
+/// \brief Allows or disallows the system to assume being idle
 ///
-/// Base module of SFML, defining various utilities. It provides
-/// vector classes, Unicode strings and conversion functions,
-/// threads and mutexes, timing classes.
-/// 
+/// Depending on the local machine's settings, the system
+/// might disable the screen or go into sleep if no input is
+/// registered for an extended period of time.
+///
+/// This functions allows suspending these features while
+/// the current application is still active.
+///
+/// \param duration Time to sleep
+///
+/// \return Whether the request has been successful
+///
 ////////////////////////////////////////////////////////////
+bool SFML_SYSTEM_API setPowersavingEnabled(bool enable);
+
+} // namespace sf
+
+
+#endif // SFML_POWER_HPP
