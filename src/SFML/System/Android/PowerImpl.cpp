@@ -25,8 +25,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/Android/SleepImpl.hpp>
+#include <SFML/System/Android/PowerImpl.hpp>
 #include <SFML/System/Android/Activity.hpp>
+#include <SFML/System/Lock.hpp>
+#include <android/native_activity.h>
+#include <android/window.h>
 
 namespace sf
 {
@@ -35,6 +38,16 @@ namespace priv
 ////////////////////////////////////////////////////////////
 bool setPowersavingEnabledImpl(bool enabled)
 {
+    ActivityStates* states = getActivity(NULL);
+    Lock(states->mutex);
+	if (enabled)
+	{
+		ANativeActivity_setWindowFlags(states->activity, 0, AWINDOW_FLAG_KEEP_SCREEN_ON);
+	}
+	else
+	{
+		ANativeActivity_setWindowFlags(states->activity, AWINDOW_FLAG_KEEP_SCREEN_ON, 0);
+	}
 	return false;
 }
 
