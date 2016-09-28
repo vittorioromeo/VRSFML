@@ -240,7 +240,8 @@ EGLConfig EglContext::getBestConfig(EGLDisplay display, unsigned int bitsPerPixe
         EGL_BUFFER_SIZE, bitsPerPixel,
         EGL_DEPTH_SIZE, settings.depthBits,
         EGL_STENCIL_SIZE, settings.stencilBits,
-        EGL_SAMPLE_BUFFERS, settings.antialiasingLevel,
+        EGL_SAMPLE_BUFFERS, settings.antialiasingLevel ? 1 : 0,
+        EGL_SAMPLES, settings.antialiasingLevel,
         EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_PBUFFER_BIT,
         EGL_RENDERABLE_TYPE, EGL_OPENGL_ES_BIT,
         EGL_NONE
@@ -262,17 +263,17 @@ EGLConfig EglContext::getBestConfig(EGLDisplay display, unsigned int bitsPerPixe
 void EglContext::updateSettings()
 {
     EGLint tmp;
-    
+
     // Update the internal context settings with the current config
     eglCheck(eglGetConfigAttrib(m_display, m_config, EGL_DEPTH_SIZE, &tmp));
     m_settings.depthBits = tmp;
-    
+
     eglCheck(eglGetConfigAttrib(m_display, m_config, EGL_STENCIL_SIZE, &tmp));
     m_settings.stencilBits = tmp;
-    
-    eglCheck(eglGetConfigAttrib(m_display, m_config, EGL_SAMPLES, &tmp));
+
+    eglCheck(eglGetConfigAttrib(m_display, m_config, EGL_SAMPLE_BUFFERS, &tmp));
     m_settings.antialiasingLevel = tmp;
-    
+
     m_settings.majorVersion = 1;
     m_settings.minorVersion = 1;
     m_settings.attributeFlags = ContextSettings::Default;
