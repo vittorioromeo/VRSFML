@@ -237,25 +237,55 @@ EGLConfig EglContext::getBestConfig(EGLDisplay display, unsigned int bitsPerPixe
 {
     // Set our video settings constraint
     const EGLint attributes[] = {
-        EGL_BUFFER_SIZE, bitsPerPixel,
-        EGL_DEPTH_SIZE, settings.depthBits,
-        EGL_STENCIL_SIZE, settings.stencilBits,
-        EGL_SAMPLE_BUFFERS, settings.antialiasingLevel ? 1 : 0,
-        EGL_SAMPLES, settings.antialiasingLevel,
         EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_PBUFFER_BIT,
         EGL_RENDERABLE_TYPE, EGL_OPENGL_ES_BIT,
         EGL_NONE
     };
 
-    EGLint configCount;
-    EGLConfig configs[1];
+    // Detect the number of available configuration
+    EGLint configsCount;
+    eglCheck(eglChooseConfig(display, attributes, NULL, 0, &configsCount));
 
-    // Ask EGL for the best config matching our video settings
-    eglCheck(eglChooseConfig(display, attributes, configs, 1, &configCount));
+    // Retrieve the list of available configuration
+    EGLConfig* configs = new EGLConfig[configsCount];
+    eglCheck(eglChooseConfig(display, attributes, configs, configsCount, &configsCount));
 
-    // TODO: This should check EGL_CONFORMANT and pick the first conformant configuration.
+    int bestScore = 0x7FFFFFFF;
+    EGLConfig bestConfig;
 
-    return configs[0];
+    for(GLint i = 0; i < configsCount ; i++)
+    {
+        EGLint red, green, blue, alpha, depth, stencil, multiSampling, samples, sRgb;
+
+        eglCheck(eglGetConfigAttrib(display, configs[i], EGL_RED_SIZE, &red));
+        eglCheck(eglGetConfigAttrib(display, configs[i], EGL_GREEN_SIZE, &green));
+        eglCheck(eglGetConfigAttrib(display, configs[i], EGL_BLUE_SIZE, &blue));
+        eglCheck(eglGetConfigAttrib(display, configs[i], EGL_ALPHA_SIZE, &alpha));
+        eglCheck(eglGetConfigAttrib(display, configs[i], EGL_DEPTH_SIZE, &depth));
+        eglCheck(eglGetConfigAttrib(display, configs[i], EGL_STENCIL_SIZE, &stencil));
+        eglCheck(eglGetConfigAttrib(display, configs[i], EGL_SAMPLE_BUFFERS, &multiSampling));
+        eglCheck(eglGetConfigAttrib(display, configs[i], EGL_SAMPLES, &samples));
+        sRgb = 0;
+
+        // TODO: Replace this with proper acceleration detection
+        bool accelerated = true;
+
+        // TODO: Detect sRGB capable
+
+        // Evaluate the visual
+        int color = red + green + blue + alpha;
+        int score = evaluateFormat(bitsPerPixel, settings, color, depth, stencil, multiSampling ? samples : 0, accelerated, false);
+
+        // If it's better than the current best, make it the new best
+        if (score < bestScore)
+        {
+            bestScore = score;
+            bestConfig = configs[i];
+        }
+    }
+
+    delete configs;
+    return bestConfig;
 }
 
 
