@@ -223,6 +223,8 @@ private:
     ///
     /// \see initializeKeyboard
     ///
+    /// \see initializeKeyboard
+    ///
     ////////////////////////////////////////////////////////////
     void freeUp();
 
