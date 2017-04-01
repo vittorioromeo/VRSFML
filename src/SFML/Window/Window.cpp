@@ -42,8 +42,6 @@ namespace sf
 {
 ////////////////////////////////////////////////////////////
 Window::Window() :
-m_impl          (NULL),
-m_context       (NULL),
 m_frameTimeLimit(Time::Zero),
 m_size          (0, 0)
 {
@@ -53,8 +51,6 @@ m_size          (0, 0)
 
 ////////////////////////////////////////////////////////////
 Window::Window(VideoMode mode, const String& title, Uint32 style, const ContextSettings& settings) :
-m_impl          (NULL),
-m_context       (NULL),
 m_frameTimeLimit(Time::Zero),
 m_size          (0, 0)
 {
@@ -64,8 +60,6 @@ m_size          (0, 0)
 
 ////////////////////////////////////////////////////////////
 Window::Window(WindowHandle handle, const ContextSettings& settings) :
-m_impl          (NULL),
-m_context       (NULL),
 m_frameTimeLimit(Time::Zero),
 m_size          (0, 0)
 {
@@ -124,7 +118,7 @@ void Window::create(VideoMode mode, const String& title, Uint32 style, const Con
     m_impl = priv::WindowImpl::create(mode, title, style, settings);
 
     // Recreate the context
-    m_context = priv::GlContext::create(settings, m_impl, mode.bitsPerPixel);
+    m_context = priv::GlContext::create(settings, m_impl.get(), mode.bitsPerPixel);
 
     // Perform common initializations
     initialize();
@@ -141,7 +135,7 @@ void Window::create(WindowHandle handle, const ContextSettings& settings)
     m_impl = priv::WindowImpl::create(handle);
 
     // Recreate the context
-    m_context = priv::GlContext::create(settings, m_impl, VideoMode::getDesktopMode().bitsPerPixel);
+    m_context = priv::GlContext::create(settings, m_impl.get(), VideoMode::getDesktopMode().bitsPerPixel);
 
     // Perform common initializations
     initialize();
@@ -151,13 +145,11 @@ void Window::create(WindowHandle handle, const ContextSettings& settings)
 ////////////////////////////////////////////////////////////
 void Window::close()
 {
-    // Delete the context
-    delete m_context;
-    m_context = NULL;
+    // Reset the context
+    m_context.reset();
 
-    // Delete the window implementation
-    delete m_impl;
-    m_impl = NULL;
+    // Reset the window implementation
+    m_impl.reset();
 
     // Update the fullscreen window
     if (this == fullscreenWindow)

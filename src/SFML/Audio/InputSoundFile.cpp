@@ -38,10 +38,8 @@ namespace sf
 {
 ////////////////////////////////////////////////////////////
 InputSoundFile::InputSoundFile() :
-m_reader      (NULL),
-m_stream      (NULL),
-m_streamOwned (false),
-m_sampleOffset   (0),
+m_stream      (nullptr),
+m_sampleOffset(0),
 m_sampleCount (0),
 m_channelCount(0),
 m_sampleRate  (0)
@@ -69,9 +67,7 @@ bool InputSoundFile::openFromFile(const std::string& filename)
         return false;
 
     // Wrap the file into a stream
-    FileInputStream* file = new FileInputStream;
-    m_stream = file;
-    m_streamOwned = true;
+    auto file = std::make_unique<FileInputStream>();
 
     // Open it
     if (!file->open(filename))
@@ -93,6 +89,9 @@ bool InputSoundFile::openFromFile(const std::string& filename)
     m_channelCount = info.channelCount;
     m_sampleRate = info.sampleRate;
 
+    m_ownedStream = std::move(file);
+    m_stream = m_ownedStream.get();
+
     return true;
 }
 
@@ -109,9 +108,7 @@ bool InputSoundFile::openFromMemory(const void* data, std::size_t sizeInBytes)
         return false;
 
     // Wrap the memory file into a stream
-    MemoryInputStream* memory = new MemoryInputStream;
-    m_stream = memory;
-    m_streamOwned = true;
+    auto memory = std::make_unique<MemoryInputStream>();
 
     // Open it
     memory->open(data, sizeInBytes);
@@ -128,6 +125,9 @@ bool InputSoundFile::openFromMemory(const void* data, std::size_t sizeInBytes)
     m_sampleCount = info.sampleCount;
     m_channelCount = info.channelCount;
     m_sampleRate = info.sampleRate;
+
+    m_ownedStream = std::move(memory);
+    m_stream = m_ownedStream.get();
 
     return true;
 }
@@ -146,7 +146,6 @@ bool InputSoundFile::openFromStream(InputStream& stream)
 
     // store the stream
     m_stream = &stream;
-    m_streamOwned = false;
 
     // Don't forget to reset the stream to its beginning before re-opening it
     if (stream.seek(0) != 0)
@@ -257,16 +256,11 @@ Uint64 InputSoundFile::read(Int16* samples, Uint64 maxCount)
 void InputSoundFile::close()
 {
     // Destroy the reader
-    delete m_reader;
-    m_reader = NULL;
+    m_reader.reset();
 
-    // Destroy the stream if we own it
-    if (m_streamOwned)
-    {
-        delete m_stream;
-        m_streamOwned = false;
-    }
-    m_stream = NULL;
+    m_ownedStream.reset();
+
+    m_stream = nullptr;
     m_sampleOffset = 0;
 
     // Reset the sound file attributes

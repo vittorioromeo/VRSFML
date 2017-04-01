@@ -66,8 +66,7 @@ struct ThreadMemberFunc : ThreadFunc
 ////////////////////////////////////////////////////////////
 template <typename F>
 Thread::Thread(F functor) :
-m_impl      (NULL),
-m_entryPoint(new priv::ThreadFunctor<F>(functor))
+m_entryPoint(std::make_shared<priv::ThreadFunctor<F>>(functor))
 {
 }
 
@@ -75,8 +74,7 @@ m_entryPoint(new priv::ThreadFunctor<F>(functor))
 ////////////////////////////////////////////////////////////
 template <typename F, typename A>
 Thread::Thread(F function, A argument) :
-m_impl      (NULL),
-m_entryPoint(new priv::ThreadFunctorWithArg<F, A>(function, argument))
+m_entryPoint(std::make_shared<priv::ThreadFunctorWithArg<F, A>>(function, argument))
 {
 }
 
@@ -84,7 +82,6 @@ m_entryPoint(new priv::ThreadFunctorWithArg<F, A>(function, argument))
 ////////////////////////////////////////////////////////////
 template <typename C>
 Thread::Thread(void(C::*function)(), C* object) :
-m_impl      (NULL),
-m_entryPoint(new priv::ThreadMemberFunc<C>(function, object))
+m_entryPoint(std::make_shared<priv::ThreadMemberFunc<C>>(function, object))
 {
 }
