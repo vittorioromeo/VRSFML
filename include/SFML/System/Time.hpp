@@ -29,6 +29,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Export.hpp>
+#include <chrono>
 
 
 namespace sf
@@ -54,7 +55,7 @@ public:
     ///
     /// \return Time in seconds
     ///
-    /// \see asMilliseconds, asMicroseconds
+    /// \see asMilliseconds, asMicroseconds, asNanoseconds
     ///
     ////////////////////////////////////////////////////////////
     float asSeconds() const;
@@ -64,7 +65,7 @@ public:
     ///
     /// \return Time in milliseconds
     ///
-    /// \see asSeconds, asMicroseconds
+    /// \see asSeconds, asMicroseconds, asNanoseconds
     ///
     ////////////////////////////////////////////////////////////
     Int32 asMilliseconds() const;
@@ -74,10 +75,20 @@ public:
     ///
     /// \return Time in microseconds
     ///
-    /// \see asSeconds, asMilliseconds
+    /// \see asSeconds, asMilliseconds, asNanoseconds
     ///
     ////////////////////////////////////////////////////////////
     Int64 asMicroseconds() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Return the time value as a number of nanoseconds
+    ///
+    /// \return Time in nanoseconds
+    ///
+    /// \see asSeconds, asMilliseconds, asMicroseconds
+    ///
+    ////////////////////////////////////////////////////////////
+    Int64 asNanoseconds() const;
 
     ////////////////////////////////////////////////////////////
     // Static member data
@@ -89,24 +100,26 @@ private:
     friend SFML_SYSTEM_API Time seconds(float);
     friend SFML_SYSTEM_API Time milliseconds(Int32);
     friend SFML_SYSTEM_API Time microseconds(Int64);
+    friend SFML_SYSTEM_API Time nanoseconds(Int64);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct from a number of microseconds
+    /// \brief Construct from a number of nanoseconds
     ///
     /// This function is internal. To construct time values,
-    /// use sf::seconds, sf::milliseconds or sf::microseconds instead.
+    /// use sf::seconds, sf::milliseconds, sf::microseconds
+    /// or sf::nanoseconds instead.
     ///
-    /// \param microseconds Number of microseconds
+    /// \param nanoseconds Number of nanoseconds
     ///
     ////////////////////////////////////////////////////////////
-    explicit Time(Int64 microseconds);
+    explicit Time(Int64 nanoseconds);
 
 private:
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Int64 m_microseconds; ///< Time value stored as microseconds
+    std::chrono::nanoseconds m_nanoseconds; ///< Time value stored as nanoseconds
 };
 
 ////////////////////////////////////////////////////////////
@@ -117,7 +130,7 @@ private:
 ///
 /// \return Time value constructed from the amount of seconds
 ///
-/// \see milliseconds, microseconds
+/// \see milliseconds, microseconds, nanoseconds
 ///
 ////////////////////////////////////////////////////////////
 SFML_SYSTEM_API Time seconds(float amount);
@@ -130,7 +143,7 @@ SFML_SYSTEM_API Time seconds(float amount);
 ///
 /// \return Time value constructed from the amount of milliseconds
 ///
-/// \see seconds, microseconds
+/// \see seconds, microseconds, nanoseconds
 ///
 ////////////////////////////////////////////////////////////
 SFML_SYSTEM_API Time milliseconds(Int32 amount);
@@ -143,10 +156,23 @@ SFML_SYSTEM_API Time milliseconds(Int32 amount);
 ///
 /// \return Time value constructed from the amount of microseconds
 ///
-/// \see seconds, milliseconds
+/// \see seconds, milliseconds, nanoseconds
 ///
 ////////////////////////////////////////////////////////////
 SFML_SYSTEM_API Time microseconds(Int64 amount);
+
+////////////////////////////////////////////////////////////
+/// \relates Time
+/// \brief Construct a time value from a number of nanoseconds
+///
+/// \param amount Number of nanoseconds
+///
+/// \return Time value constructed from the amount of nanoseconds
+///
+/// \see seconds, milliseconds, microseconds
+///
+////////////////////////////////////////////////////////////
+SFML_SYSTEM_API Time nanoseconds(Int64 amount);
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
