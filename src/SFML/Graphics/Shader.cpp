@@ -66,7 +66,7 @@ namespace
             {
                 file.seekg(0, std::ios_base::beg);
                 buffer.resize(static_cast<std::size_t>(size));
-                file.read(&buffer[0], size);
+                file.read(buffer.data(), size);
             }
             buffer.push_back('\0');
             return true;
@@ -86,7 +86,7 @@ namespace
         {
             buffer.resize(static_cast<std::size_t>(size));
             stream.seek(0);
-            sf::Int64 read = stream.read(&buffer[0], size);
+            sf::Int64 read = stream.read(buffer.data(), size);
             success = (read == size);
         }
         buffer.push_back('\0');
@@ -228,11 +228,11 @@ bool Shader::loadFromFile(const std::string& filename, Type type)
 
     // Compile the shader program
     if (type == Vertex)
-        return compile(&shader[0], NULL, NULL);
+        return compile(shader.data(), NULL, NULL);
     else if (type == Geometry)
-        return compile(NULL, &shader[0], NULL);
+        return compile(NULL, shader.data(), NULL);
     else
-        return compile(NULL, NULL, &shader[0]);
+        return compile(NULL, NULL, shader.data());
 }
 
 
@@ -256,7 +256,7 @@ bool Shader::loadFromFile(const std::string& vertexShaderFilename, const std::st
     }
 
     // Compile the shader program
-    return compile(&vertexShader[0], NULL, &fragmentShader[0]);
+    return compile(vertexShader.data(), NULL, fragmentShader.data());
 }
 
 
@@ -288,7 +288,7 @@ bool Shader::loadFromFile(const std::string& vertexShaderFilename, const std::st
     }
 
     // Compile the shader program
-    return compile(&vertexShader[0], &geometryShader[0], &fragmentShader[0]);
+    return compile(vertexShader.data(), geometryShader.data(), fragmentShader.data());
 }
 
 
@@ -334,11 +334,11 @@ bool Shader::loadFromStream(InputStream& stream, Type type)
 
     // Compile the shader program
     if (type == Vertex)
-        return compile(&shader[0], NULL, NULL);
+        return compile(shader.data(), NULL, NULL);
     else if (type == Geometry)
-        return compile(NULL, &shader[0], NULL);
+        return compile(NULL, shader.data(), NULL);
     else
-        return compile(NULL, NULL, &shader[0]);
+        return compile(NULL, NULL, shader.data());
 }
 
 
@@ -362,7 +362,7 @@ bool Shader::loadFromStream(InputStream& vertexShaderStream, InputStream& fragme
     }
 
     // Compile the shader program
-    return compile(&vertexShader[0], NULL, &fragmentShader[0]);
+    return compile(vertexShader.data(), NULL, fragmentShader.data());
 }
 
 
@@ -394,7 +394,7 @@ bool Shader::loadFromStream(InputStream& vertexShaderStream, InputStream& geomet
     }
 
     // Compile the shader program
-    return compile(&vertexShader[0], &geometryShader[0], &fragmentShader[0]);
+    return compile(vertexShader.data(), geometryShader.data(), fragmentShader.data());
 }
 
 
@@ -588,7 +588,7 @@ void Shader::setUniformArray(const std::string& name, const Glsl::Vec2* vectorAr
 
     UniformBinder binder(*this, name);
     if (binder.location != -1)
-        glCheck(GLEXT_glUniform2fv(binder.location, length, &contiguous[0]));
+        glCheck(GLEXT_glUniform2fv(binder.location, length, contiguous.data()));
 }
 
 
@@ -599,7 +599,7 @@ void Shader::setUniformArray(const std::string& name, const Glsl::Vec3* vectorAr
 
     UniformBinder binder(*this, name);
     if (binder.location != -1)
-        glCheck(GLEXT_glUniform3fv(binder.location, length, &contiguous[0]));
+        glCheck(GLEXT_glUniform3fv(binder.location, length, contiguous.data()));
 }
 
 
@@ -610,7 +610,7 @@ void Shader::setUniformArray(const std::string& name, const Glsl::Vec4* vectorAr
 
     UniformBinder binder(*this, name);
     if (binder.location != -1)
-        glCheck(GLEXT_glUniform4fv(binder.location, length, &contiguous[0]));
+        glCheck(GLEXT_glUniform4fv(binder.location, length, contiguous.data()));
 }
 
 
@@ -625,7 +625,7 @@ void Shader::setUniformArray(const std::string& name, const Glsl::Mat3* matrixAr
 
     UniformBinder binder(*this, name);
     if (binder.location != -1)
-        glCheck(GLEXT_glUniformMatrix3fv(binder.location, length, GL_FALSE, &contiguous[0]));
+        glCheck(GLEXT_glUniformMatrix3fv(binder.location, length, GL_FALSE, contiguous.data()));
 }
 
 
@@ -640,7 +640,7 @@ void Shader::setUniformArray(const std::string& name, const Glsl::Mat4* matrixAr
 
     UniformBinder binder(*this, name);
     if (binder.location != -1)
-        glCheck(GLEXT_glUniformMatrix4fv(binder.location, length, GL_FALSE, &contiguous[0]));
+        glCheck(GLEXT_glUniformMatrix4fv(binder.location, length, GL_FALSE, contiguous.data()));
 }
 
 
