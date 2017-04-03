@@ -40,7 +40,7 @@
 
 namespace
 {
-    ALCdevice* captureDevice = NULL;
+    ALCdevice* captureDevice = nullptr;
 }
 
 namespace sf
@@ -152,7 +152,7 @@ std::vector<std::string> SoundRecorder::getAvailableDevices()
 {
     std::vector<std::string> deviceNameList;
 
-    const ALchar* deviceList = alcGetString(NULL, ALC_CAPTURE_DEVICE_SPECIFIER);
+    const ALchar* deviceList = alcGetString(nullptr, ALC_CAPTURE_DEVICE_SPECIFIER);
     if (deviceList)
     {
         while (*deviceList)
@@ -169,7 +169,7 @@ std::vector<std::string> SoundRecorder::getAvailableDevices()
 ////////////////////////////////////////////////////////////
 std::string SoundRecorder::getDefaultDevice()
 {
-    return alcGetString(NULL, ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER);
+    return alcGetString(nullptr, ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER);
 }
 
 
@@ -333,7 +333,7 @@ void SoundRecorder::cleanup()
 
     // Close the device
     alcCaptureCloseDevice(captureDevice);
-    captureDevice = NULL;
+    captureDevice = nullptr;
 }
 
 } // namespace sf

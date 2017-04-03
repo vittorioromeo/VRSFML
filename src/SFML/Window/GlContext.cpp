@@ -246,7 +246,7 @@ void GlContext::initResource()
         else
         {
             // Try to load the >= 3.0 way
-            glGetStringiFuncType glGetStringiFunc = NULL;
+            glGetStringiFuncType glGetStringiFunc = nullptr;
             glGetStringiFunc = reinterpret_cast<glGetStringiFuncType>(getFunction("glGetStringi"));
 
             if (glGetStringiFunc)
@@ -332,7 +332,7 @@ void GlContext::releaseTransientContext()
 std::unique_ptr<GlContext> GlContext::create()
 {
     // Make sure that there's an active context (context creation may need extensions, and thus a valid context)
-    assert(sharedContext != NULL);
+    assert(sharedContext != nullptr);
 
     std::lock_guard<std::recursive_mutex> lock(mutex);
 
@@ -360,7 +360,7 @@ std::unique_ptr<GlContext> GlContext::create()
 std::unique_ptr<GlContext> GlContext::create(const ContextSettings& settings, const WindowImpl* owner, unsigned int bitsPerPixel)
 {
     // Make sure that there's an active context (context creation may need extensions, and thus a valid context)
-    assert(sharedContext != NULL);
+    assert(sharedContext != nullptr);
 
     std::lock_guard<std::recursive_mutex> lock(mutex);
 
@@ -389,7 +389,7 @@ std::unique_ptr<GlContext> GlContext::create(const ContextSettings& settings, co
 std::unique_ptr<GlContext> GlContext::create(const ContextSettings& settings, unsigned int width, unsigned int height)
 {
     // Make sure that there's an active context (context creation may need extensions, and thus a valid context)
-    assert(sharedContext != NULL);
+    assert(sharedContext != nullptr);
 
     std::lock_guard<std::recursive_mutex> lock(mutex);
 
@@ -445,7 +445,7 @@ GlContext::~GlContext()
     if (sharedContext)
     {
         if (this == currentContext)
-            currentContext = NULL;
+            currentContext = nullptr;
     }
 }
 
@@ -493,7 +493,7 @@ bool GlContext::setActive(bool active)
             // Deactivate the context
             if (makeCurrent(false))
             {
-                currentContext = NULL;
+                currentContext = nullptr;
                 return true;
             }
             else
