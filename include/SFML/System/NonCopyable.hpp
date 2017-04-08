@@ -47,10 +47,10 @@ protected:
     ///
     /// Because this class has a copy constructor, the compiler
     /// will not automatically generate the default constructor.
-    /// That's why we must define it explicitly.
+    /// That's why we must mark it as defaulted explicitly.
     ///
     ////////////////////////////////////////////////////////////
-    NonCopyable() {}
+    NonCopyable() = default;
     
     ////////////////////////////////////////////////////////////
     /// \brief Default destructor
@@ -60,33 +60,49 @@ protected:
     /// preventing possible resource leaks.
     ///
     ////////////////////////////////////////////////////////////
-    ~NonCopyable() {}
-
-private:
+    ~NonCopyable() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Disabled copy constructor
     ///
-    /// By making the copy constructor private, the compiler will
-    /// trigger an error if anyone outside tries to use it.
-    /// To prevent NonCopyable or friend classes from using it,
-    /// we also give no definition, so that the linker will
-    /// produce an error if the first protection was inefficient.
+    /// By marking the copy constructor as deleted, the compiler
+    /// will trigger an error if anyone outside tries to use it.
     ///
     ////////////////////////////////////////////////////////////
-    NonCopyable(const NonCopyable&);
+    NonCopyable(const NonCopyable&) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Disabled assignment operator
+    /// \brief Disabled copy assignment operator
     ///
-    /// By making the assignment operator private, the compiler will
-    /// trigger an error if anyone outside tries to use it.
-    /// To prevent NonCopyable or friend classes from using it,
-    /// we also give no definition, so that the linker will
-    /// produce an error if the first protection was inefficient.
+    /// By marking the copy assignment operator as deleted, the
+    /// compiler will trigger an error if anyone outside tries
+    /// to use it.
     ///
     ////////////////////////////////////////////////////////////
-    NonCopyable& operator =(const NonCopyable&);
+    NonCopyable& operator =(const NonCopyable&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Default move constructor
+    ///
+    /// Because this class has all other special member
+    /// functions user-defined, the compiler will not
+    /// automatically generate the default move constructor.
+    /// That's why we must mark it as defaulted explicitly.
+    ///
+    ////////////////////////////////////////////////////////////
+    NonCopyable(NonCopyable&&) = default;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Default move assignment operator
+    ///
+    /// Because this class has all other special member
+    /// functions user-defined, the compiler will not
+    /// automatically generate the default move assignment
+    /// operator. That's why we must mark it as defaulted
+    /// explicitly.
+    ///
+    ////////////////////////////////////////////////////////////
+    NonCopyable& operator =(NonCopyable&&) = default;
 };
 
 } // namespace sf
@@ -99,17 +115,18 @@ private:
 /// \class sf::NonCopyable
 /// \ingroup system
 ///
-/// This class makes its instances non-copyable, by explicitly
-/// disabling its copy constructor and its assignment operator.
+/// This class makes its instances non-copyable, by
+/// explicitly deleting its copy constructor and its
+/// assignment operator.
 ///
 /// To create a non-copyable class, simply inherit from
 /// sf::NonCopyable.
 ///
-/// The type of inheritance (public or private) doesn't matter,
-/// the copy constructor and assignment operator are declared private
-/// in sf::NonCopyable so they will end up being inaccessible in both
-/// cases. Thus you can use a shorter syntax for inheriting from it
-/// (see below).
+/// The type of inheritance (public or private) doesn't
+/// matter, the copy constructor and assignment operator
+/// are deleted in sf::NonCopyable so they will end up being
+/// inaccessible in both cases. Thus you can use a shorter
+/// syntax for inheriting from it (see below).
 ///
 /// Usage example:
 /// \code
@@ -120,10 +137,11 @@ private:
 /// \endcode
 ///
 /// Deciding whether the instances of a class can be copied
-/// or not is a very important design choice. You are strongly
-/// encouraged to think about it before writing a class,
-/// and to use sf::NonCopyable when necessary to prevent
-/// many potential future errors when using it. This is also
-/// a very important indication to users of your class.
+/// or not is a very important design choice. You are
+/// strongly encouraged to think about it before writing a
+/// class, and to use sf::NonCopyable when necessary to
+/// prevent many potential future errors when using it. This
+/// is alsoa very important indication to users of your
+/// class.
 ///
 ////////////////////////////////////////////////////////////
