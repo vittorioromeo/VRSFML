@@ -164,6 +164,8 @@ elseif(SFML_OS_MACOSX)
     source_group("mac" FILES ${PLATFORM_SRC})
 elseif(SFML_OS_IOS)
     set(PLATFORM_SRC
+        ${SRCROOT}/iOS/ClipboardImpl.mm
+        ${SRCROOT}/iOS/ClipboardImpl.hpp
         ${SRCROOT}/iOS/EaglContext.mm
         ${SRCROOT}/iOS/EaglContext.hpp
         ${SRCROOT}/iOS/InputImpl.mm
