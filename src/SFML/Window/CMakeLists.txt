@@ -190,6 +190,8 @@ elseif(SFML_OS_IOS)
     source_group("ios" FILES ${PLATFORM_SRC})
 elseif(SFML_OS_ANDROID)
     set(PLATFORM_SRC
+        ${SRCROOT}/Android/ClipboardImpl.hpp
+        ${SRCROOT}/Android/ClipboardImpl.cpp
         ${SRCROOT}/Android/WindowImplAndroid.hpp
         ${SRCROOT}/Android/WindowImplAndroid.cpp
         ${SRCROOT}/Android/VideoModeImpl.cpp
