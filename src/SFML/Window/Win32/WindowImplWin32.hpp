@@ -254,7 +254,17 @@ private:
     /// \return SFML key code corresponding to the key
     ///
     ////////////////////////////////////////////////////////////
-    static Keyboard::Key virtualKeyCodeToSF(WPARAM key, LPARAM flags);
+    static Keyboard::Key virtualKeyCodeToSF(WPARAM key, LPARAM flags, Keyboard::Scancode code);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Convert win32 message flags to scancode
+    ///
+    /// \param lParam The message flags
+    ///
+    /// \return The scancode corresponding to the key
+    ///
+    ////////////////////////////////////////////////////////////
+    static Keyboard::Scancode convertToScancode(LPARAM flags);
 
     ////////////////////////////////////////////////////////////
     /// \brief Function called whenever one of our windows receives a message
@@ -268,6 +278,16 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     static LRESULT CALLBACK globalOnEvent(HWND handle, UINT message, WPARAM wParam, LPARAM lParam);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Convert a Win32 scancode to an sfml scancode
+    ///
+    /// \param flags input flags
+    ///
+    /// \return SFML scancode corresponding to the key
+    ///
+    ////////////////////////////////////////////////////////////
+    static Keyboard::Scancode toScancode(LPARAM flags);
 
     ////////////////////////////////////////////////////////////
     // Member data

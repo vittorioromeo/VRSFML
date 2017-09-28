@@ -31,6 +31,7 @@
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/Mouse.hpp>
 
+#include <windows.h>
 
 namespace sf
 {
@@ -69,7 +70,7 @@ public:
     static Keyboard::Scancode unlocalize(Keyboard::Key key);
 
     ////////////////////////////////////////////////////////////
-    /// \copydoc sf::Keyboard::localizedRepresentation
+    /// \copydoc sf::Keyboard::getDescription
     ///
     ////////////////////////////////////////////////////////////
     static String getDescription(Keyboard::Scancode code);
@@ -176,6 +177,10 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     static Vector2i getTouchPosition(unsigned int finger, const WindowBase& relativeTo);
+
+    private:
+
+    static LONG sfScanToWin(Keyboard::Scancode code);
 };
 
 } // namespace priv
