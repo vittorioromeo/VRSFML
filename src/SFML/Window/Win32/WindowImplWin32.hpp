@@ -257,16 +257,6 @@ private:
     static Keyboard::Key virtualKeyCodeToSF(WPARAM key, LPARAM flags);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert win32 message flags to scancode
-    ///
-    /// \param lParam The message flags
-    ///
-    /// \return The scancode corresponding to the key
-    ///
-    ////////////////////////////////////////////////////////////
-    static Keyboard::Scancode convertToScancode(LPARAM flags);
-
-    ////////////////////////////////////////////////////////////
     /// \brief Function called whenever one of our windows receives a message
     ///
     /// \param handle  Win32 handle of the window
