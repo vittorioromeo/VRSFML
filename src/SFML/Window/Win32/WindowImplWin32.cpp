@@ -620,7 +620,7 @@ Keyboard::Scancode WindowImplWin32::toScancode(LPARAM flags)
     case 52: return Keyboard::ScanPeriod;
     case 53: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanDivide : Keyboard::ScanForwardSlash;
     case 54: return Keyboard::ScanRShift;
-    case 55: return Keyboard::ScanPrintScreen;
+    case 55: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanPrintScreen : Keyboard::ScanMultiply;
     case 56: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanRAlt : Keyboard::ScanLAlt;
     case 57: return Keyboard::ScanSpace;
     case 58: return Keyboard::ScanCapsLock;
@@ -636,7 +636,7 @@ Keyboard::Scancode WindowImplWin32::toScancode(LPARAM flags)
     case 68: return Keyboard::ScanF10;
     case 87: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanUnknown : Keyboard::ScanF11;
     case 88: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanUnknown : Keyboard::ScanF12;
-    case 69: return Keyboard::ScanNumLock;
+    case 69: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanNumLock : Keyboard::ScanPause;
     case 70: return Keyboard::ScanScrollLock;
     case 71: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanHome : Keyboard::ScanNumpad7;
     case 72: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanUp : Keyboard::ScanNumpad8;
@@ -650,7 +650,10 @@ Keyboard::Scancode WindowImplWin32::toScancode(LPARAM flags)
     case 80: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanDown : Keyboard::ScanNumpad2;
     case 81: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanPageDown : Keyboard::ScanNumpad3;
     case 82: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanInsert : Keyboard::ScanNumpad0;
-    case 83: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanDecimal : Keyboard::ScanNumpad4;
+    case 83: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanDelete : Keyboard::ScanDecimal;
+
+    case 91: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanLSystem : Keyboard::ScanUnknown;
+    case 93: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanMenu : Keyboard::ScanUnknown;
 
     default: return Keyboard::ScanUnknown;
     }
@@ -830,7 +833,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
                 event.key.shift    = HIWORD(GetKeyState(VK_SHIFT))   != 0;
                 event.key.system   = HIWORD(GetKeyState(VK_LWIN)) || HIWORD(GetKeyState(VK_RWIN));
                 event.key.scancode = toScancode(lParam);
-                event.key.code     = virtualKeyCodeToSF(wParam, lParam, event.key.scancode);
+                event.key.code     = virtualKeyCodeToSF(wParam, lParam);
                 pushEvent(event);
             }
             break;
@@ -847,7 +850,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
             event.key.shift    = HIWORD(GetKeyState(VK_SHIFT))   != 0;
             event.key.system   = HIWORD(GetKeyState(VK_LWIN)) || HIWORD(GetKeyState(VK_RWIN));
             event.key.scancode = toScancode(lParam);
-            event.key.code     = virtualKeyCodeToSF(wParam, lParam, event.key.scancode);
+            event.key.code     = virtualKeyCodeToSF(wParam, lParam);
             pushEvent(event);
             break;
         }
@@ -1098,7 +1101,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
 
 
 ////////////////////////////////////////////////////////////
-Keyboard::Key WindowImplWin32::virtualKeyCodeToSF(WPARAM key, LPARAM flags, Keyboard::Scancode code)
+Keyboard::Key WindowImplWin32::virtualKeyCodeToSF(WPARAM key, LPARAM flags)
 {
     switch (key)
     {
@@ -1106,7 +1109,8 @@ Keyboard::Key WindowImplWin32::virtualKeyCodeToSF(WPARAM key, LPARAM flags, Keyb
         case VK_SHIFT:
         {
             static UINT lShift = MapVirtualKeyW(VK_LSHIFT, MAPVK_VK_TO_VSC);
-            return code == lShift ? Keyboard::LShift : Keyboard::RShift;
+            UINT scancode = static_cast<UINT>((flags & (0xFF << 16)) >> 16);
+            return scancode == lShift ? Keyboard::LShift : Keyboard::RShift;
         }
 
         // Check the "extended" flag to distinguish between left and right alt

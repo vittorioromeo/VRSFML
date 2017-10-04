@@ -180,7 +180,7 @@ public:
 
     private:
 
-    static LONG sfScanToWin(Keyboard::Scancode code);
+    static WORD sfScanToWin(Keyboard::Scancode code);
 };
 
 } // namespace priv

@@ -254,7 +254,7 @@ private:
     /// \return SFML key code corresponding to the key
     ///
     ////////////////////////////////////////////////////////////
-    static Keyboard::Key virtualKeyCodeToSF(WPARAM key, LPARAM flags, Keyboard::Scancode code);
+    static Keyboard::Key virtualKeyCodeToSF(WPARAM key, LPARAM flags);
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert win32 message flags to scancode
