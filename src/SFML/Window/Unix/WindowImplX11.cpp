@@ -2199,5 +2199,4 @@ Vector2i WindowImplX11::getPrimaryMonitorPosition()
 }
 
 } // namespace priv
-
 } // namespace sf
