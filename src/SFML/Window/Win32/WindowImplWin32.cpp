@@ -593,7 +593,7 @@ Keyboard::Scancode WindowImplWin32::toScancode(LPARAM flags)
     case 25: return Keyboard::ScanP;
     case 26: return Keyboard::ScanLBracket;
     case 27: return Keyboard::ScanRBracket;
-    case 28: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanEnter : Keyboard::ScanReturn;
+    case 28: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanEnter : Keyboard::ScanNumpadEnter;
     case 29: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanRControl : Keyboard::ScanLControl;
     case 30: return Keyboard::ScanA;
     case 31: return Keyboard::ScanS;
@@ -618,7 +618,7 @@ Keyboard::Scancode WindowImplWin32::toScancode(LPARAM flags)
     case 50: return Keyboard::ScanM;
     case 51: return Keyboard::ScanComma;
     case 52: return Keyboard::ScanPeriod;
-    case 53: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanDivide : Keyboard::ScanForwardSlash;
+    case 53: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanDivide : Keyboard::ScanSlash;
     case 54: return Keyboard::ScanRShift;
     case 55: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanPrintScreen : Keyboard::ScanMultiply;
     case 56: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanRAlt : Keyboard::ScanLAlt;
