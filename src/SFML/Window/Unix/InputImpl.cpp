@@ -43,14 +43,13 @@ bool InputImpl::isKeyPressed(Keyboard::Key key)
     return KeyboardImpl::isKeyPressed(key);
 }
 
+
 ////////////////////////////////////////////////////////////
 bool InputImpl::isKeyPressed(Keyboard::Scancode code)
 {
     return KeyboardImpl::isKeyPressed(code);
 }
 
-    // Open a connection with the X server
-    Display* display = OpenDisplay();
 
 ////////////////////////////////////////////////////////////
 Keyboard::Key InputImpl::localize(Keyboard::Scancode code)
@@ -58,8 +57,6 @@ Keyboard::Key InputImpl::localize(Keyboard::Scancode code)
     return KeyboardImpl::localize(code);
 }
 
-        // Close the connection with the X server
-        CloseDisplay(display);
 
 ////////////////////////////////////////////////////////////
 Keyboard::Scancode InputImpl::unlocalize(Keyboard::Key key)
