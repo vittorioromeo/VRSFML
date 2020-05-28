@@ -172,14 +172,14 @@ String HIDInputManager::localizedRepresentation(Keyboard::Scancode code)
         case sf::Keyboard::ScanDown:  return "Down Arrow";
         case sf::Keyboard::ScanUp:    return "Up Arrow";
 
-        case sf::Keyboard::ScanNumLock:      return "NumLock";
-        case sf::Keyboard::ScanDivide:       return "Divide (Numpad)";
-        case sf::Keyboard::ScanMultiply:     return "Multiply (Numpad)";
-        case sf::Keyboard::ScanMinus:        return "Minux (Numpad)";
-        case sf::Keyboard::ScanPlus:         return "Plus (Numpad)";
-        case sf::Keyboard::ScanNumpadEquals: return "Equals (Numpad)";
-        case sf::Keyboard::ScanNumpadEnter:  return "Enter (Numpad)";
-        case sf::Keyboard::ScanDecimal:      return "Decimal (Numpad)";
+        case sf::Keyboard::ScanNumLock:        return "NumLock";
+        case sf::Keyboard::ScanNumpadDivide:   return "Divide (Numpad)";
+        case sf::Keyboard::ScanNumpadMultiply: return "Multiply (Numpad)";
+        case sf::Keyboard::ScanNumpadMinus:    return "Minux (Numpad)";
+        case sf::Keyboard::ScanNumpadPlus:     return "Plus (Numpad)";
+        case sf::Keyboard::ScanNumpadEqual:    return "Equal (Numpad)";
+        case sf::Keyboard::ScanNumpadEnter:    return "Enter (Numpad)";
+        case sf::Keyboard::ScanNumpadDecimal:  return "Decimal (Numpad)";
 
         case sf::Keyboard::ScanNumpad0: return "0 (Numpad)";
         case sf::Keyboard::ScanNumpad1: return "1 (Numpad)";
@@ -513,14 +513,14 @@ sf::Keyboard::Scancode HIDInputManager::usageToScancode(UInt32 usage)
         case kHIDUsage_KeyboardTab:                 return sf::Keyboard::ScanTab;
         case kHIDUsage_KeyboardSpacebar:            return sf::Keyboard::ScanSpace;
         case kHIDUsage_KeyboardHyphen:              return sf::Keyboard::ScanHyphen;
-        case kHIDUsage_KeyboardEqualSign:           return sf::Keyboard::ScanEquals;
+        case kHIDUsage_KeyboardEqualSign:           return sf::Keyboard::ScanEqual;
         case kHIDUsage_KeyboardOpenBracket:         return sf::Keyboard::ScanLBracket;
         case kHIDUsage_KeyboardCloseBracket:        return sf::Keyboard::ScanRBracket;
         case kHIDUsage_KeyboardBackslash:           return sf::Keyboard::ScanBackslash;
-        case kHIDUsage_KeyboardNonUSPound:          return sf::Keyboard::ScanDash;
+        case kHIDUsage_KeyboardNonUSPound:          return sf::Keyboard::ScanHyphen;
         case kHIDUsage_KeyboardSemicolon:           return sf::Keyboard::ScanSemicolon;
-        case kHIDUsage_KeyboardQuote:               return sf::Keyboard::ScanQuote;
-        case kHIDUsage_KeyboardGraveAccentAndTilde: return sf::Keyboard::ScanGraveAccent;
+        case kHIDUsage_KeyboardQuote:               return sf::Keyboard::ScanApostrophe;
+        case kHIDUsage_KeyboardGraveAccentAndTilde: return sf::Keyboard::ScanGrave;
         case kHIDUsage_KeyboardComma:               return sf::Keyboard::ScanComma;
         case kHIDUsage_KeyboardPeriod:              return sf::Keyboard::ScanPeriod;
         case kHIDUsage_KeyboardSlash:               return sf::Keyboard::ScanSlash;
@@ -554,12 +554,14 @@ sf::Keyboard::Scancode HIDInputManager::usageToScancode(UInt32 usage)
         case kHIDUsage_KeyboardDownArrow:  return sf::Keyboard::ScanDown;
         case kHIDUsage_KeyboardUpArrow:    return sf::Keyboard::ScanUp;
 
-        case kHIDUsage_KeypadNumLock:  return sf::Keyboard::ScanNumLock;
-        case kHIDUsage_KeypadSlash:    return sf::Keyboard::ScanDivide;
-        case kHIDUsage_KeypadAsterisk: return sf::Keyboard::ScanMultiply;
-        case kHIDUsage_KeypadHyphen:   return sf::Keyboard::ScanMinus;
-        case kHIDUsage_KeypadPlus:     return sf::Keyboard::ScanPlus;
-        case kHIDUsage_KeypadEnter:    return sf::Keyboard::ScanEnter;
+        case kHIDUsage_KeypadNumLock:   return sf::Keyboard::ScanNumLock;
+        case kHIDUsage_KeypadSlash:     return sf::Keyboard::ScanNumpadDivide;
+        case kHIDUsage_KeypadAsterisk:  return sf::Keyboard::ScanNumpadMultiply;
+        case kHIDUsage_KeypadHyphen:    return sf::Keyboard::ScanNumpadMinus;
+        case kHIDUsage_KeypadPlus:      return sf::Keyboard::ScanNumpadPlus;
+        case kHIDUsage_KeypadEqualSign: return sf::Keyboard::ScanNumpadEqual;
+        case kHIDUsage_KeypadEnter:     return sf::Keyboard::ScanNumpadEnter;
+        case kHIDUsage_KeypadPeriod:    return sf::Keyboard::ScanNumpadDecimal;
 
         case kHIDUsage_Keypad1: return sf::Keyboard::ScanNumpad1;
         case kHIDUsage_Keypad2: return sf::Keyboard::ScanNumpad2;
@@ -572,24 +574,22 @@ sf::Keyboard::Scancode HIDInputManager::usageToScancode(UInt32 usage)
         case kHIDUsage_Keypad9: return sf::Keyboard::ScanNumpad9;
         case kHIDUsage_Keypad0: return sf::Keyboard::ScanNumpad0;
 
-        case kHIDUsage_KeypadPeriod:           return sf::Keyboard::ScanDecimal;
-        case kHIDUsage_KeyboardNonUSBackslash: return sf::Keyboard::ScanReverseSolidus;
+        case kHIDUsage_KeyboardNonUSBackslash: return sf::Keyboard::ScanNonUsBackslash;
         case kHIDUsage_KeyboardApplication:    return sf::Keyboard::ScanApplication;
         case kHIDUsage_KeyboardPower:          return sf::Keyboard::ScanUnknown;
-        case kHIDUsage_KeypadEqualSign:        return sf::Keyboard::ScanNumpadEquals;
 
         case kHIDUsage_KeyboardF13: return sf::Keyboard::ScanF13;
         case kHIDUsage_KeyboardF14: return sf::Keyboard::ScanF14;
         case kHIDUsage_KeyboardF15: return sf::Keyboard::ScanF15;
-        case kHIDUsage_KeyboardF16: return sf::Keyboard::ScanUnknown;
-        case kHIDUsage_KeyboardF17: return sf::Keyboard::ScanUnknown;
-        case kHIDUsage_KeyboardF18: return sf::Keyboard::ScanUnknown;
-        case kHIDUsage_KeyboardF19: return sf::Keyboard::ScanUnknown;
-        case kHIDUsage_KeyboardF20: return sf::Keyboard::ScanUnknown;
-        case kHIDUsage_KeyboardF21: return sf::Keyboard::ScanUnknown;
-        case kHIDUsage_KeyboardF22: return sf::Keyboard::ScanUnknown;
-        case kHIDUsage_KeyboardF23: return sf::Keyboard::ScanUnknown;
-        case kHIDUsage_KeyboardF24: return sf::Keyboard::ScanUnknown;
+        case kHIDUsage_KeyboardF16: return sf::Keyboard::ScanF16;
+        case kHIDUsage_KeyboardF17: return sf::Keyboard::ScanF17;
+        case kHIDUsage_KeyboardF18: return sf::Keyboard::ScanF18;
+        case kHIDUsage_KeyboardF19: return sf::Keyboard::ScanF19;
+        case kHIDUsage_KeyboardF20: return sf::Keyboard::ScanF20;
+        case kHIDUsage_KeyboardF21: return sf::Keyboard::ScanF21;
+        case kHIDUsage_KeyboardF22: return sf::Keyboard::ScanF22;
+        case kHIDUsage_KeyboardF23: return sf::Keyboard::ScanF23;
+        case kHIDUsage_KeyboardF24: return sf::Keyboard::ScanF24;
 
         case kHIDUsage_KeyboardExecute: return sf::Keyboard::ScanExecute;
         case kHIDUsage_KeyboardHelp:    return sf::Keyboard::ScanHelp;
@@ -1001,14 +1001,14 @@ Keyboard::Scancode HIDInputManager::nonLocalizedKey(UniChar virtualKeycode)
         case 0x30: return sf::Keyboard::ScanTab;
         case 0x31: return sf::Keyboard::ScanSpace;
         // case 0x27: return sf::Keyboard::ScanHyphen; // TODO 0x27 is for Quote
-        case 0x18: return sf::Keyboard::ScanEquals;
+        case 0x18: return sf::Keyboard::ScanEqual;
         case 0x21: return sf::Keyboard::ScanLBracket;
         case 0x1e: return sf::Keyboard::ScanRBracket;
         case 0x2a: return sf::Keyboard::ScanBackslash;
-        case 0x1b: return sf::Keyboard::ScanDash;
+        case 0x1b: return sf::Keyboard::ScanHyphen;
         case 0x29: return sf::Keyboard::ScanSemicolon;
-        case 0x27: return sf::Keyboard::ScanQuote;
-        case 0x32: return sf::Keyboard::ScanGraveAccent;
+        case 0x27: return sf::Keyboard::ScanApostrophe;
+        case 0x32: return sf::Keyboard::ScanGrave;
         case 0x2b: return sf::Keyboard::ScanComma;
         case 0x2f: return sf::Keyboard::ScanPeriod;
         case 0x2c: return sf::Keyboard::ScanSlash;
@@ -1050,13 +1050,13 @@ Keyboard::Scancode HIDInputManager::nonLocalizedKey(UniChar virtualKeycode)
         case 0x7e: return sf::Keyboard::ScanUp;
 
         case 0x47: return sf::Keyboard::ScanNumLock;
-        case 0x4b: return sf::Keyboard::ScanDivide;
-        case 0x43: return sf::Keyboard::ScanMultiply;
-        case 0x4e: return sf::Keyboard::ScanMinus;
-        case 0x45: return sf::Keyboard::ScanPlus;
-        case 0x51: return sf::Keyboard::ScanNumpadEquals;
+        case 0x4b: return sf::Keyboard::ScanNumpadDivide;
+        case 0x43: return sf::Keyboard::ScanNumpadMultiply;
+        case 0x4e: return sf::Keyboard::ScanNumpadMinus;
+        case 0x45: return sf::Keyboard::ScanNumpadPlus;
+        case 0x51: return sf::Keyboard::ScanNumpadEqual;
         case 0x4c: return sf::Keyboard::ScanNumpadEnter;
-        case 0x41: return sf::Keyboard::ScanDecimal;
+        case 0x41: return sf::Keyboard::ScanNumpadDecimal;
 
         case 0x53: return sf::Keyboard::ScanNumpad1;
         case 0x54: return sf::Keyboard::ScanNumpad2;
@@ -1070,7 +1070,7 @@ Keyboard::Scancode HIDInputManager::nonLocalizedKey(UniChar virtualKeycode)
         case 0x52: return sf::Keyboard::ScanNumpad0;
 
         /* TODO Those are missing:
-         * case 0x: return sf::Keyboard::ScanReverseSolidus;
+         * case 0x: return sf::Keyboard::ScanNonUsBackslash;
          * case 0x: return sf::Keyboard::ScanApplication;
          * case 0x: return sf::Keyboard::ScanExecute;
          * case 0x72: return sf::Keyboard::ScanHelp; // 0x72 is for Insert
@@ -1157,14 +1157,14 @@ UInt8 HIDInputManager::scanToVirtualCode(Keyboard::Scancode code)
 
         // case sf::Keyboard::ScanHyphen:       return 0; // 0x27 is for Quote
 
-        case sf::Keyboard::ScanEquals:      return 0x18;
+        case sf::Keyboard::ScanEqual:       return 0x18;
         case sf::Keyboard::ScanLBracket:    return 0x21;
         case sf::Keyboard::ScanRBracket:    return 0x1e;
         case sf::Keyboard::ScanBackslash:   return 0x2a;
-        case sf::Keyboard::ScanDash:        return 0x1b;
+        case sf::Keyboard::ScanHyphen:      return 0x1b;
         case sf::Keyboard::ScanSemicolon:   return 0x29;
-        case sf::Keyboard::ScanQuote:       return 0x27;
-        case sf::Keyboard::ScanGraveAccent: return 0x32;
+        case sf::Keyboard::ScanApostrophe:  return 0x27;
+        case sf::Keyboard::ScanGrave:       return 0x32;
         case sf::Keyboard::ScanComma:       return 0x2b;
         case sf::Keyboard::ScanPeriod:      return 0x2f;
         case sf::Keyboard::ScanSlash:       return 0x2c;
@@ -1204,14 +1204,14 @@ UInt8 HIDInputManager::scanToVirtualCode(Keyboard::Scancode code)
         case sf::Keyboard::ScanDown:  return 0x7d;
         case sf::Keyboard::ScanUp:    return 0x7e;
 
-        case sf::Keyboard::ScanNumLock:      return 0x47;
-        case sf::Keyboard::ScanDivide:       return 0x4b;
-        case sf::Keyboard::ScanMultiply:     return 0x43;
-        case sf::Keyboard::ScanMinus:        return 0x4e;
-        case sf::Keyboard::ScanPlus:         return 0x45;
-        case sf::Keyboard::ScanNumpadEquals: return 0x51;
-        case sf::Keyboard::ScanNumpadEnter:  return 0x4c;
-        case sf::Keyboard::ScanDecimal:      return 0x41;
+        case sf::Keyboard::ScanNumLock:        return 0x47;
+        case sf::Keyboard::ScanNumpadDivide:   return 0x4b;
+        case sf::Keyboard::ScanNumpadMultiply: return 0x43;
+        case sf::Keyboard::ScanNumpadMinus:    return 0x4e;
+        case sf::Keyboard::ScanNumpadPlus:     return 0x45;
+        case sf::Keyboard::ScanNumpadEqual:    return 0x51;
+        case sf::Keyboard::ScanNumpadEnter:    return 0x4c;
+        case sf::Keyboard::ScanNumpadDecimal:  return 0x41;
 
         case sf::Keyboard::ScanNumpad1: return 0x53;
         case sf::Keyboard::ScanNumpad2: return 0x54;
@@ -1225,7 +1225,7 @@ UInt8 HIDInputManager::scanToVirtualCode(Keyboard::Scancode code)
         case sf::Keyboard::ScanNumpad0: return 0x52;
 
         /* TODO Those are missing:
-         * case sf::Keyboard::ScanReverseSolidus: return 0;
+         * case sf::Keyboard::ScanNonUsBackslash: return 0;
          * case sf::Keyboard::ScanApplication: return 0;
          * case sf::Keyboard::ScanExecute:     return 0;
          * case sf::Keyboard::ScanHelp:        return 0;
@@ -1298,10 +1298,10 @@ Keyboard::Key HIDInputManager::localizedKeyFallback(Keyboard::Scancode code)
         case sf::Keyboard::ScanDown:   return sf::Keyboard::Down;
         case sf::Keyboard::ScanUp:     return sf::Keyboard::Up;
 
-        case sf::Keyboard::ScanDivide:   return sf::Keyboard::Divide;
-        case sf::Keyboard::ScanMultiply: return sf::Keyboard::Multiply;
-        case sf::Keyboard::ScanMinus:    return sf::Keyboard::Subtract;
-        case sf::Keyboard::ScanPlus:     return sf::Keyboard::Add;
+        case sf::Keyboard::ScanNumpadDivide:   return sf::Keyboard::Divide;
+        case sf::Keyboard::ScanNumpadMultiply: return sf::Keyboard::Multiply;
+        case sf::Keyboard::ScanNumpadMinus:    return sf::Keyboard::Subtract;
+        case sf::Keyboard::ScanNumpadPlus:     return sf::Keyboard::Add;
 
         case sf::Keyboard::ScanNumpad0:  return sf::Keyboard::Numpad1;
         case sf::Keyboard::ScanNumpad1:  return sf::Keyboard::Numpad2;
