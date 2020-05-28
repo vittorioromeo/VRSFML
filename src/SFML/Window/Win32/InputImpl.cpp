@@ -314,39 +314,47 @@ WORD sfScanToWin(Keyboard::Scancode code)
         case Keyboard::ScanNum9: return 10;
         case Keyboard::ScanNum0: return 11;
     
-        case Keyboard::ScanEnter:           return 28;
-        case Keyboard::ScanEscape:          return 1;
-        case Keyboard::ScanBackspace:       return 14;
-        case Keyboard::ScanTab:             return 15;
-        case Keyboard::ScanSpace:           return 57;
-        case Keyboard::ScanHyphen:          return 12;
-        case Keyboard::ScanEquals:          return 13;
-        case Keyboard::ScanLBracket:        return 26;
-        case Keyboard::ScanRBracket:        return 27;
-        case Keyboard::ScanBackslash:       return 43;
-        case Keyboard::ScanDash:            return 41;
-        case Keyboard::ScanSemicolon:       return 39;
-        case Keyboard::ScanQuote:           return 40;
-        //case Keyboard::ScanGraveAccent:   return ? ? ? 
-        case Keyboard::ScanComma:           return 51;
-        case Keyboard::ScanPeriod:          return 52;
-        case Keyboard::ScanSlash:           return 53;
+        case Keyboard::ScanEnter:     return 28;
+        case Keyboard::ScanEscape:    return 1;
+        case Keyboard::ScanBackspace: return 14;
+        case Keyboard::ScanTab:       return 15;
+        case Keyboard::ScanSpace:     return 57;
+        case Keyboard::ScanHyphen:    return 12;
+        case Keyboard::ScanEqual:    return 13;
+        case Keyboard::ScanLBracket:  return 26;
+        case Keyboard::ScanRBracket:  return 27;
+        case Keyboard::ScanBackslash: return 43;
+        case Keyboard::ScanGrave:     return 42;
+        case Keyboard::ScanApostrophe:     return 40;
+        case Keyboard::ScanSemicolon: return 39;
+        case Keyboard::ScanComma:     return 51;
+        case Keyboard::ScanPeriod:    return 52;
+        case Keyboard::ScanSlash:     return 53;
     
-        case Keyboard::ScanF1:      return 59;
-        case Keyboard::ScanF2:      return 60;
-        case Keyboard::ScanF3:      return 61;
-        case Keyboard::ScanF4:      return 62;
-        case Keyboard::ScanF5:      return 63;
-        case Keyboard::ScanF6:      return 64;
-        case Keyboard::ScanF7:      return 65;
-        case Keyboard::ScanF8:      return 66;
-        case Keyboard::ScanF9:      return 67;
-        case Keyboard::ScanF10:     return 68;
-        case Keyboard::ScanF11:     return KF_EXTENDED | 87;
-        case Keyboard::ScanF12:     return KF_EXTENDED | 88;
-        //case Keyboard::ScanF13:   return ???
-        //case Keyboard::ScanF14:   return ???
-        //case Keyboard::ScanF15:   return ???
+        case Keyboard::ScanF1:  return 59;
+        case Keyboard::ScanF2:  return 60;
+        case Keyboard::ScanF3:  return 61;
+        case Keyboard::ScanF4:  return 62;
+        case Keyboard::ScanF5:  return 63;
+        case Keyboard::ScanF6:  return 64;
+        case Keyboard::ScanF7:  return 65;
+        case Keyboard::ScanF8:  return 66;
+        case Keyboard::ScanF9:  return 67;
+        case Keyboard::ScanF10: return 68;
+        case Keyboard::ScanF11: return 87;
+        case Keyboard::ScanF12: return 88;
+        case Keyboard::ScanF13: return 100;
+        case Keyboard::ScanF14: return 101;
+        case Keyboard::ScanF15: return 102;
+        case Keyboard::ScanF16: return 103;
+        case Keyboard::ScanF17: return 104;
+        case Keyboard::ScanF18: return 105;
+        case Keyboard::ScanF19: return 106;
+        case Keyboard::ScanF20: return 107;
+        case Keyboard::ScanF21: return 108;
+        case Keyboard::ScanF22: return 109;
+        case Keyboard::ScanF23: return 110;
+        case Keyboard::ScanF24: return 118;
     
         case Keyboard::ScanCapsLock:    return 58;
         case Keyboard::ScanPrintScreen: return 55 | KF_EXTENDED;
@@ -363,26 +371,25 @@ WORD sfScanToWin(Keyboard::Scancode code)
         case Keyboard::ScanDown:        return 80 | KF_EXTENDED;
         case Keyboard::ScanUp:          return 72 | KF_EXTENDED;
         case Keyboard::ScanNumLock:     return 69 | KF_EXTENDED;
-        case Keyboard::ScanDivide:      return 53;
-        case Keyboard::ScanMultiply:    return 55;
-        case Keyboard::ScanMinus:       return 74;
-        case Keyboard::ScanPlus:        return 78;
-        //case Keyboard::ScanPadEquals: return ???;
-        case Keyboard::ScanNumpadEnter: return  KF_EXTENDED | 28;
-        case Keyboard::ScanDecimal:     return 83;
+        
+        case Keyboard::ScanNumpad1:        return 79;
+        case Keyboard::ScanNumpad2:        return 80;
+        case Keyboard::ScanNumpad3:        return 81;
+        case Keyboard::ScanNumpad4:        return 75;
+        case Keyboard::ScanNumpad5:        return 76;
+        case Keyboard::ScanNumpad6:        return 77;
+        case Keyboard::ScanNumpad7:        return 71;
+        case Keyboard::ScanNumpad8:        return 72;
+        case Keyboard::ScanNumpad9:        return 73;
+        case Keyboard::ScanNumpad0:        return 82;
+        case Keyboard::ScanNumpadDivide:   return 53;
+        case Keyboard::ScanNumpadMultiply: return 55;
+        case Keyboard::ScanNumpadMinus:    return 74;
+        case Keyboard::ScanNumpadPlus:     return 78;
+        case Keyboard::ScanNumpadEnter:    return 28 | KF_EXTENDED;
+        case Keyboard::ScanNumpadDecimal:  return 83;
     
-        case Keyboard::ScanNumpad1: return 79;
-        case Keyboard::ScanNumpad2: return 80;
-        case Keyboard::ScanNumpad3: return 81 ;
-        case Keyboard::ScanNumpad4: return 75 ;
-        case Keyboard::ScanNumpad5: return 76;
-        case Keyboard::ScanNumpad6: return 77 ;
-        case Keyboard::ScanNumpad7: return 71 ;
-        case Keyboard::ScanNumpad8: return 72 ;
-        case Keyboard::ScanNumpad9: return 73 ;
-        case Keyboard::ScanNumpad0: return 82 ;
-    
-        //case Keyboard::ScanReverseSolidus:    return ? ? ? ;
+        case Keyboard::ScanNonUsBackslash:    return 86;
         //case Keyboard::ScanApplication:       return ? ? ? ;
         //case Keyboard::ScanExecute:           return ? ? ? ;
         //case Keyboard::ScanHelp:              return ? ? ? ;
@@ -401,10 +408,10 @@ WORD sfScanToWin(Keyboard::Scancode code)
         case Keyboard::ScanLControl:            return 29;
         case Keyboard::ScanLShift:              return 42;
         case Keyboard::ScanLAlt:                return 56;
-        case Keyboard::ScanLSystem:             return 91 | KF_EXTENDED ;
-        case Keyboard::ScanRControl:            return KF_EXTENDED | 29;
+        case Keyboard::ScanLSystem:             return 91 | KF_EXTENDED;
+        case Keyboard::ScanRControl:            return 29 | KF_EXTENDED;
         case Keyboard::ScanRShift:              return 54;
-        case Keyboard::ScanRAlt:                return 56;
+        case Keyboard::ScanRAlt:                return 56 | KF_EXTENDED;
         //case Keyboard::ScanRSystem:           return ? ? ? ;
     
         default: return 0; // Not sure what to return here?

@@ -76,9 +76,9 @@ sf::Keyboard::Scancode translateKeyCode(Display* display, KeyCode keycode)
         case XK_KP_7:             return sf::Keyboard::ScanNumpad7;
         case XK_KP_8:             return sf::Keyboard::ScanNumpad8;
         case XK_KP_9:             return sf::Keyboard::ScanNumpad9;
-        case XK_KP_Separator:     return sf::Keyboard::ScanDecimal;
-        case XK_KP_Decimal:       return sf::Keyboard::ScanDecimal;
-        case XK_KP_Equal:         return sf::Keyboard::ScanNumpadEquals;
+        case XK_KP_Separator:     return sf::Keyboard::ScanNumpadDecimal;
+        case XK_KP_Decimal:       return sf::Keyboard::ScanNumpadDecimal;
+        case XK_KP_Equal:         return sf::Keyboard::ScanNumpadEqual;
         case XK_KP_Enter:         return sf::Keyboard::ScanNumpadEnter;
         default:                  break;
     }
@@ -136,13 +136,21 @@ sf::Keyboard::Scancode translateKeyCode(Display* display, KeyCode keycode)
         case XK_F13:              return sf::Keyboard::ScanF13;
         case XK_F14:              return sf::Keyboard::ScanF14;
         case XK_F15:              return sf::Keyboard::ScanF15;
-        // TODO: add scancodes for F16-F25 when they're added in Scancode enum
-
+        case XK_F16:              return sf::Keyboard::ScanF16;
+        case XK_F17:              return sf::Keyboard::ScanF17;
+        case XK_F18:              return sf::Keyboard::ScanF18;
+        case XK_F19:              return sf::Keyboard::ScanF19;
+        case XK_F20:              return sf::Keyboard::ScanF20;
+        case XK_F21:              return sf::Keyboard::ScanF21;
+        case XK_F22:              return sf::Keyboard::ScanF22;
+        case XK_F23:              return sf::Keyboard::ScanF23;
+        case XK_F24:              return sf::Keyboard::ScanF24;
+        
         // Numeric keypad
-        case XK_KP_Divide:        return sf::Keyboard::ScanDivide;
-        case XK_KP_Multiply:      return sf::Keyboard::ScanMultiply;
-        case XK_KP_Subtract:      return sf::Keyboard::ScanMinus;
-        case XK_KP_Add:           return sf::Keyboard::ScanPlus;
+        case XK_KP_Divide:        return sf::Keyboard::ScanNumpadDivide;
+        case XK_KP_Multiply:      return sf::Keyboard::ScanNumpadMultiply;
+        case XK_KP_Subtract:      return sf::Keyboard::ScanNumpadMinus;
+        case XK_KP_Add:           return sf::Keyboard::ScanNumpadPlus;
 
         // These should have been detected in secondary keysym test above!
         case XK_KP_Insert:        return sf::Keyboard::ScanNumpad0;
@@ -154,8 +162,8 @@ sf::Keyboard::Scancode translateKeyCode(Display* display, KeyCode keycode)
         case XK_KP_Home:          return sf::Keyboard::ScanNumpad7;
         case XK_KP_Up:            return sf::Keyboard::ScanNumpad8;
         case XK_KP_Page_Up:       return sf::Keyboard::ScanNumpad9;
-        case XK_KP_Delete:        return sf::Keyboard::ScanDecimal;
-        case XK_KP_Equal:         return sf::Keyboard::ScanNumpadEquals;
+        case XK_KP_Delete:        return sf::Keyboard::ScanNumpadDecimal;
+        case XK_KP_Equal:         return sf::Keyboard::ScanNumpadEqual;
         case XK_KP_Enter:         return sf::Keyboard::ScanNumpadEnter;
 
         // Last resort: Check for printable keys (should not happen if the XKB
@@ -200,17 +208,17 @@ sf::Keyboard::Scancode translateKeyCode(Display* display, KeyCode keycode)
         case XK_0:                return sf::Keyboard::ScanNum0;
         case XK_space:            return sf::Keyboard::ScanSpace;
         case XK_minus:            return sf::Keyboard::ScanHyphen;
-        case XK_equal:            return sf::Keyboard::ScanEquals;
+        case XK_equal:            return sf::Keyboard::ScanEqual;
         case XK_bracketleft:      return sf::Keyboard::ScanLBracket;
         case XK_bracketright:     return sf::Keyboard::ScanRBracket;
         case XK_backslash:        return sf::Keyboard::ScanBackslash;
         case XK_semicolon:        return sf::Keyboard::ScanSemicolon;
-        case XK_apostrophe:       return sf::Keyboard::ScanQuote;
-        case XK_grave:            return sf::Keyboard::ScanGraveAccent;
+        case XK_apostrophe:       return sf::Keyboard::ScanApostrophe;
+        case XK_grave:            return sf::Keyboard::ScanGrave;
         case XK_comma:            return sf::Keyboard::ScanComma;
         case XK_period:           return sf::Keyboard::ScanPeriod;
         case XK_slash:            return sf::Keyboard::ScanSlash;
-        case XK_less:             return sf::Keyboard::ScanReverseSolidus;
+        case XK_less:             return sf::Keyboard::ScanNonUsBackslash;
         default:                  return sf::Keyboard::ScanUnknown;
     }
 }
@@ -241,7 +249,7 @@ void initMapping()
         std::memcpy(name, desc->names->keys[keycode].name, XkbKeyNameLength);
         name[XkbKeyNameLength] = '\0';
 
-        if      (strcmp(name, "TLDE") == 0) sc = sf::Keyboard::ScanGraveAccent;
+        if      (strcmp(name, "TLDE") == 0) sc = sf::Keyboard::ScanGrave;
         else if (strcmp(name, "AE01") == 0) sc = sf::Keyboard::ScanNum1;
         else if (strcmp(name, "AE02") == 0) sc = sf::Keyboard::ScanNum2;
         else if (strcmp(name, "AE03") == 0) sc = sf::Keyboard::ScanNum3;
@@ -252,8 +260,8 @@ void initMapping()
         else if (strcmp(name, "AE08") == 0) sc = sf::Keyboard::ScanNum8;
         else if (strcmp(name, "AE09") == 0) sc = sf::Keyboard::ScanNum9;
         else if (strcmp(name, "AE10") == 0) sc = sf::Keyboard::ScanNum0;
-        else if (strcmp(name, "AE11") == 0) sc = sf::Keyboard::ScanDash;
-        else if (strcmp(name, "AE12") == 0) sc = sf::Keyboard::ScanEquals;
+        else if (strcmp(name, "AE11") == 0) sc = sf::Keyboard::ScanBackslash;
+        else if (strcmp(name, "AE12") == 0) sc = sf::Keyboard::ScanEqual;
         else if (strcmp(name, "TAB" ) == 0) sc = sf::Keyboard::ScanTab;
         else if (strcmp(name, "AD01") == 0) sc = sf::Keyboard::ScanQ;
         else if (strcmp(name, "AD02") == 0) sc = sf::Keyboard::ScanW;
@@ -278,7 +286,7 @@ void initMapping()
         else if (strcmp(name, "AC08") == 0) sc = sf::Keyboard::ScanK;
         else if (strcmp(name, "AC09") == 0) sc = sf::Keyboard::ScanL;
         else if (strcmp(name, "AC10") == 0) sc = sf::Keyboard::ScanSemicolon;
-        else if (strcmp(name, "AC11") == 0) sc = sf::Keyboard::ScanQuote;
+        else if (strcmp(name, "AC11") == 0) sc = sf::Keyboard::ScanApostrophe;
         else if (strcmp(name, "AB01") == 0) sc = sf::Keyboard::ScanZ;
         else if (strcmp(name, "AB02") == 0) sc = sf::Keyboard::ScanX;
         else if (strcmp(name, "AB03") == 0) sc = sf::Keyboard::ScanC;
@@ -289,7 +297,7 @@ void initMapping()
         else if (strcmp(name, "AB08") == 0) sc = sf::Keyboard::ScanComma;
         else if (strcmp(name, "AB09") == 0) sc = sf::Keyboard::ScanPeriod;
         else if (strcmp(name, "AB10") == 0) sc = sf::Keyboard::ScanSlash;
-        else if (strcmp(name, "LSGT") == 0) sc = sf::Keyboard::ScanReverseSolidus;
+        else if (strcmp(name, "LSGT") == 0) sc = sf::Keyboard::ScanNonUsBackslash;
         else                                sc = sf::Keyboard::ScanUnknown;
 
         if (isValidKeycode(keycode))
@@ -466,91 +474,99 @@ String KeyboardImpl::getDescription(Keyboard::Scancode code)
     // Fallback to our best guess for the keys that are known to be independent of the layout.
     switch (code)
     {
-        case Keyboard::ScanEnter:        return "Enter";
-        case Keyboard::ScanEscape:       return "Escape";
-        case Keyboard::ScanBackspace:    return "Backspace";
-        case Keyboard::ScanTab:          return "Tab";
-        case Keyboard::ScanSpace:        return "Space";
+        case Keyboard::ScanEnter:         return "Enter";
+        case Keyboard::ScanEscape:        return "Escape";
+        case Keyboard::ScanBackspace:     return "Backspace";
+        case Keyboard::ScanTab:           return "Tab";
+        case Keyboard::ScanSpace:         return "Space";
 
-        case Keyboard::ScanF1:           return "F1";
-        case Keyboard::ScanF2:           return "F2";
-        case Keyboard::ScanF3:           return "F3";
-        case Keyboard::ScanF4:           return "F4";
-        case Keyboard::ScanF5:           return "F5";
-        case Keyboard::ScanF6:           return "F6";
-        case Keyboard::ScanF7:           return "F7";
-        case Keyboard::ScanF8:           return "F8";
-        case Keyboard::ScanF9:           return "F9";
-        case Keyboard::ScanF10:          return "F10";
-        case Keyboard::ScanF11:          return "F11";
-        case Keyboard::ScanF12:          return "F12";
-        case Keyboard::ScanF13:          return "F13";
-        case Keyboard::ScanF14:          return "F14";
-        case Keyboard::ScanF15:          return "F15";
-        // TODO: add F16-F25 once they're added in Scancode enum
+        case Keyboard::ScanF1:            return "F1";
+        case Keyboard::ScanF2:            return "F2";
+        case Keyboard::ScanF3:            return "F3";
+        case Keyboard::ScanF4:            return "F4";
+        case Keyboard::ScanF5:            return "F5";
+        case Keyboard::ScanF6:            return "F6";
+        case Keyboard::ScanF7:            return "F7";
+        case Keyboard::ScanF8:            return "F8";
+        case Keyboard::ScanF9:            return "F9";
+        case Keyboard::ScanF10:           return "F10";
+        case Keyboard::ScanF11:           return "F11";
+        case Keyboard::ScanF12:           return "F12";
+        case Keyboard::ScanF13:           return "F13";
+        case Keyboard::ScanF14:           return "F14";
+        case Keyboard::ScanF15:           return "F15";
+        case Keyboard::ScanF16:           return "F16";
+        case Keyboard::ScanF17:           return "F17";
+        case Keyboard::ScanF18:           return "F18";
+        case Keyboard::ScanF19:           return "F19";
+        case Keyboard::ScanF20:           return "F20";
+        case Keyboard::ScanF21:           return "F21";
+        case Keyboard::ScanF22:           return "F22";
+        case Keyboard::ScanF23:           return "F23";
+        case Keyboard::ScanF24:           return "F24";
 
-        case Keyboard::ScanCapsLock:     return "CapsLock";
-        case Keyboard::ScanPrintScreen:  return "PrintScreen";
-        case Keyboard::ScanScrollLock:   return "ScrollLock";
+        case Keyboard::ScanCapsLock:      return "CapsLock";
+        case Keyboard::ScanPrintScreen:   return "PrintScreen";
+        case Keyboard::ScanScrollLock:    return "ScrollLock";
 
-        case Keyboard::ScanPause:        return "Pause";
-        case Keyboard::ScanInsert:       return "Insert";
-        case Keyboard::ScanHome:         return "Home";
-        case Keyboard::ScanPageUp:       return "PageUp";
-        case Keyboard::ScanDelete:       return "Delete";
-        case Keyboard::ScanEnd:          return "End";
-        case Keyboard::ScanPageDown:     return "PageDown";
+        case Keyboard::ScanPause:         return "Pause";
+        case Keyboard::ScanInsert:        return "Insert";
+        case Keyboard::ScanHome:          return "Home";
+        case Keyboard::ScanPageUp:        return "PageUp";
+        case Keyboard::ScanDelete:        return "Delete";
+        case Keyboard::ScanEnd:           return "End";
+        case Keyboard::ScanPageDown:      return "PageDown";
 
-        case Keyboard::ScanLeft:         return "Left Arrow";
-        case Keyboard::ScanRight:        return "Right Arrow";
-        case Keyboard::ScanDown:         return "Down Arrow";
-        case Keyboard::ScanUp:           return "Up Arrow";
+        case Keyboard::ScanLeft:          return "Left Arrow";
+        case Keyboard::ScanRight:         return "Right Arrow";
+        case Keyboard::ScanDown:          return "Down Arrow";
+        case Keyboard::ScanUp:            return "Up Arrow";
 
-        case Keyboard::ScanNumLock:      return "NumLock";
-        case Keyboard::ScanDivide:       return "Divide (Numpad)";
-        case Keyboard::ScanMultiply:     return "Multiply (Numpad)";
-        case Keyboard::ScanMinus:        return "Minux (Numpad)";
-        case Keyboard::ScanPlus:         return "Plus (Numpad)";
-        case Keyboard::ScanNumpadEquals: return "Equals (Numpad)";
-        case Keyboard::ScanNumpadEnter:  return "Enter (Numpad)";
-        case Keyboard::ScanDecimal:      return "Decimal (Numpad)";
+        case Keyboard::ScanNumLock:        return "NumLock";
+        case Keyboard::ScanNumpadDivide:   return "Divide (Numpad)";
+        case Keyboard::ScanNumpadMultiply: return "Multiply (Numpad)";
+        case Keyboard::ScanNumpadMinus:    return "Minus (Numpad)";
+        case Keyboard::ScanNumpadPlus:     return "Plus (Numpad)";
+        case Keyboard::ScanNumpadEqual:    return "Equal (Numpad)";
+        case Keyboard::ScanNumpadEnter:    return "Enter (Numpad)";
+        case Keyboard::ScanNumpadDecimal:  return "Decimal (Numpad)";
 
-        case Keyboard::ScanNumpad0:      return "0 (Numpad)";
-        case Keyboard::ScanNumpad1:      return "1 (Numpad)";
-        case Keyboard::ScanNumpad2:      return "2 (Numpad)";
-        case Keyboard::ScanNumpad3:      return "3 (Numpad)";
-        case Keyboard::ScanNumpad4:      return "4 (Numpad)";
-        case Keyboard::ScanNumpad5:      return "5 (Numpad)";
-        case Keyboard::ScanNumpad6:      return "6 (Numpad)";
-        case Keyboard::ScanNumpad7:      return "7 (Numpad)";
-        case Keyboard::ScanNumpad8:      return "8 (Numpad)";
-        case Keyboard::ScanNumpad9:      return "9 (Numpad)";
+        case Keyboard::ScanNumpad0:       return "0 (Numpad)";
+        case Keyboard::ScanNumpad1:       return "1 (Numpad)";
+        case Keyboard::ScanNumpad2:       return "2 (Numpad)";
+        case Keyboard::ScanNumpad3:       return "3 (Numpad)";
+        case Keyboard::ScanNumpad4:       return "4 (Numpad)";
+        case Keyboard::ScanNumpad5:       return "5 (Numpad)";
+        case Keyboard::ScanNumpad6:       return "6 (Numpad)";
+        case Keyboard::ScanNumpad7:       return "7 (Numpad)";
+        case Keyboard::ScanNumpad8:       return "8 (Numpad)";
+        case Keyboard::ScanNumpad9:       return "9 (Numpad)";
 
-        case Keyboard::ScanApplication:  return "Application";
-        case Keyboard::ScanExecute:      return "Execute";
-        case Keyboard::ScanHelp:         return "Help";
-        case Keyboard::ScanMenu:         return "Menu";
-        case Keyboard::ScanSelect:       return "Select";
-        case Keyboard::ScanStop:         return "Stop";
-        case Keyboard::ScanAgain:        return "Again";
-        case Keyboard::ScanUndo:         return "Undo";
-        case Keyboard::ScanCut:          return "Cut";
-        case Keyboard::ScanCopy:         return "Copy";
-        case Keyboard::ScanPaste:        return "Paste";
-        case Keyboard::ScanFind:         return "Find";
-        case Keyboard::ScanMute:         return "Mute";
-        case Keyboard::ScanVolumeUp:     return "Volume Up";
-        case Keyboard::ScanVolumeDown:   return "Volume Down";
+        case Keyboard::ScanApplication:   return "Application";
+        case Keyboard::ScanExecute:       return "Execute";
+        case Keyboard::ScanHelp:          return "Help";
+        case Keyboard::ScanMenu:          return "Menu";
+        case Keyboard::ScanSelect:        return "Select";
+        case Keyboard::ScanStop:          return "Stop";
+        case Keyboard::ScanAgain:         return "Again";
+        case Keyboard::ScanUndo:          return "Undo";
+        case Keyboard::ScanCut:           return "Cut";
+        case Keyboard::ScanCopy:          return "Copy";
+        case Keyboard::ScanPaste:         return "Paste";
+        case Keyboard::ScanFind:          return "Find";
+        case Keyboard::ScanMute:          return "Mute";
+        case Keyboard::ScanVolumeUp:      return "Volume Up";
+        case Keyboard::ScanVolumeDown:    return "Volume Down";
 
-        case Keyboard::ScanLControl:     return "Left Control";
-        case Keyboard::ScanLShift:       return "Left Shift";
-        case Keyboard::ScanLAlt:         return "Left Meta";
-        case Keyboard::ScanLSystem:      return "Left Super";
-        case Keyboard::ScanRControl:     return "Right Control";
-        case Keyboard::ScanRShift:       return "Right Shift";
-        case Keyboard::ScanRAlt:         return "Right Meta";
-        case Keyboard::ScanRSystem:      return "Right Super";
-        default:                         return "Unknown Scancode"; // no guess good enough possible.
+        case Keyboard::ScanLControl:      return "Left Control";
+        case Keyboard::ScanLShift:        return "Left Shift";
+        case Keyboard::ScanLAlt:          return "Left Meta";
+        case Keyboard::ScanLSystem:       return "Left Super";
+        case Keyboard::ScanRControl:      return "Right Control";
+        case Keyboard::ScanRShift:        return "Right Shift";
+        case Keyboard::ScanRAlt:          return "Right Meta";
+        case Keyboard::ScanRSystem:       return "Right Super";
+        default:                          return "Unknown Scancode"; // no guess good enough possible.
     }
 }
 

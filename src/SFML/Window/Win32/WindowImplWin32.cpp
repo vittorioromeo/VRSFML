@@ -44,6 +44,8 @@
 #include <dbt.h>
 #include <vector>
 #include <cstring>
+#include <iostream>
+#include <string>
 
 // MinGW lacks the definition of some Win32 constants
 #ifndef XBUTTON1
@@ -563,6 +565,11 @@ Keyboard::Scancode WindowImplWin32::toScancode(LPARAM flags)
 {
     int code = ((flags & (0xFF << 16)) >> 16);
 
+    // TODO remove debug code
+    std::cout << "LPARAM: " << std::to_string(flags) << '\n';
+    std::cout << "code: " << std::to_string(code) << '\n';
+    std::cout << "KF_EXTENDED: " << std::to_string((HIWORD(flags) & KF_EXTENDED)) << '\n';
+
     // Windows scan codes
     // Reference: https://msdn.microsoft.com/en-us/library/aa299374(v=vs.60).aspx
     switch (code)
@@ -579,7 +586,7 @@ Keyboard::Scancode WindowImplWin32::toScancode(LPARAM flags)
         case 10: return Keyboard::ScanNum9;
         case 11: return Keyboard::ScanNum0;
         case 12: return Keyboard::ScanHyphen;
-        case 13: return Keyboard::ScanEquals;
+        case 13: return Keyboard::ScanEqual;
         case 14: return Keyboard::ScanBackspace;
         case 15: return Keyboard::ScanTab;
         case 16: return Keyboard::ScanQ;
@@ -606,10 +613,10 @@ Keyboard::Scancode WindowImplWin32::toScancode(LPARAM flags)
         case 37: return Keyboard::ScanK;
         case 38: return Keyboard::ScanL;
         case 39: return Keyboard::ScanSemicolon;
-        case 40: return Keyboard::ScanQuote;
-        case 41: return Keyboard::ScanBackslash;
+        case 40: return Keyboard::ScanApostrophe;
+        case 41: return Keyboard::ScanGrave;
         case 42: return Keyboard::ScanLShift;
-        case 43: return Keyboard::ScanDash;
+        case 43: return Keyboard::ScanBackslash;
         case 44: return Keyboard::ScanZ;
         case 45: return Keyboard::ScanX;
         case 46: return Keyboard::ScanC;
@@ -619,9 +626,9 @@ Keyboard::Scancode WindowImplWin32::toScancode(LPARAM flags)
         case 50: return Keyboard::ScanM;
         case 51: return Keyboard::ScanComma;
         case 52: return Keyboard::ScanPeriod;
-        case 53: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanDivide : Keyboard::ScanSlash;
+        case 53: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanNumpadDivide : Keyboard::ScanSlash;
         case 54: return Keyboard::ScanRShift;
-        case 55: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanPrintScreen : Keyboard::ScanMultiply;
+        case 55: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanPrintScreen : Keyboard::ScanNumpadMultiply;
         case 56: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanRAlt : Keyboard::ScanLAlt;
         case 57: return Keyboard::ScanSpace;
         case 58: return Keyboard::ScanCapsLock;
@@ -635,27 +642,44 @@ Keyboard::Scancode WindowImplWin32::toScancode(LPARAM flags)
         case 66: return Keyboard::ScanF8;
         case 67: return Keyboard::ScanF9;
         case 68: return Keyboard::ScanF10;
-        case 87: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanUnknown : Keyboard::ScanF11;
-        case 88: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanUnknown : Keyboard::ScanF12;
         case 69: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanNumLock : Keyboard::ScanPause;
         case 70: return Keyboard::ScanScrollLock;
         case 71: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanHome : Keyboard::ScanNumpad7;
         case 72: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanUp : Keyboard::ScanNumpad8;
         case 73: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanPageUp : Keyboard::ScanNumpad9;
-        case 74: return Keyboard::ScanMinus;
+        case 74: return Keyboard::ScanNumpadMinus;
         case 75: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanLeft : Keyboard::ScanNumpad4;
         case 76: return Keyboard::ScanNumpad5;
         case 77: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanRight : Keyboard::ScanNumpad6;
-        case 78: return Keyboard::ScanPlus;
+        case 78: return Keyboard::ScanNumpadPlus;
         case 79: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanEnd : Keyboard::ScanNumpad1;
         case 80: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanDown : Keyboard::ScanNumpad2;
         case 81: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanPageDown : Keyboard::ScanNumpad3;
         case 82: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanInsert : Keyboard::ScanNumpad0;
-        case 83: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanDelete : Keyboard::ScanDecimal;
+        case 83: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanDelete : Keyboard::ScanNumpadDecimal;
+
+        case 86: return Keyboard::ScanNonUsBackslash;
+        case 87: return Keyboard::ScanF11;
+        case 88: return Keyboard::ScanF12;
     
         case 91: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanLSystem : Keyboard::ScanUnknown;
+        case 92: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanRSystem : Keyboard::ScanUnknown;
         case 93: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanMenu : Keyboard::ScanUnknown;
-    
+
+        case 100: return Keyboard::ScanF13;
+        case 101: return Keyboard::ScanF14;
+        case 102: return Keyboard::ScanF15;
+        case 103: return Keyboard::ScanF16;
+        case 104: return Keyboard::ScanF17;
+        case 105: return Keyboard::ScanF18;
+        case 106: return Keyboard::ScanF19;
+        case 107: return Keyboard::ScanF20;
+        case 108: return Keyboard::ScanF21;
+        case 109: return Keyboard::ScanF22;
+        case 110: return Keyboard::ScanF23;
+
+        case 118: return Keyboard::ScanF24;
+
         default: return Keyboard::ScanUnknown;
     }
 }
@@ -828,12 +852,13 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
             if (m_keyRepeatEnabled || ((HIWORD(lParam) & KF_REPEAT) == 0))
             {
                 Event event;
-                event.type        = Event::KeyPressed;
-                event.key.alt     = HIWORD(GetKeyState(VK_MENU))    != 0;
-                event.key.control = HIWORD(GetKeyState(VK_CONTROL)) != 0;
-                event.key.shift   = HIWORD(GetKeyState(VK_SHIFT))   != 0;
-                event.key.system  = HIWORD(GetKeyState(VK_LWIN)) || HIWORD(GetKeyState(VK_RWIN));
-                event.key.code    = virtualKeyCodeToSF(wParam, lParam);
+                event.type         = Event::KeyPressed;
+                event.key.alt      = HIWORD(GetKeyState(VK_MENU))    != 0;
+                event.key.control  = HIWORD(GetKeyState(VK_CONTROL)) != 0;
+                event.key.shift    = HIWORD(GetKeyState(VK_SHIFT))   != 0;
+                event.key.system   = HIWORD(GetKeyState(VK_LWIN)) || HIWORD(GetKeyState(VK_RWIN));
+                event.key.code     = virtualKeyCodeToSF(wParam, lParam);
+                event.key.scancode = toScancode(lParam);
                 pushEvent(event);
             }
             break;
@@ -844,12 +869,13 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
         case WM_SYSKEYUP:
         {
             Event event;
-            event.type        = Event::KeyReleased;
-            event.key.alt     = HIWORD(GetKeyState(VK_MENU))    != 0;
-            event.key.control = HIWORD(GetKeyState(VK_CONTROL)) != 0;
-            event.key.shift   = HIWORD(GetKeyState(VK_SHIFT))   != 0;
-            event.key.system  = HIWORD(GetKeyState(VK_LWIN)) || HIWORD(GetKeyState(VK_RWIN));
-            event.key.code    = virtualKeyCodeToSF(wParam, lParam);
+            event.type         = Event::KeyReleased;
+            event.key.alt      = HIWORD(GetKeyState(VK_MENU))    != 0;
+            event.key.control  = HIWORD(GetKeyState(VK_CONTROL)) != 0;
+            event.key.shift    = HIWORD(GetKeyState(VK_SHIFT))   != 0;
+            event.key.system   = HIWORD(GetKeyState(VK_LWIN)) || HIWORD(GetKeyState(VK_RWIN));
+            event.key.code     = virtualKeyCodeToSF(wParam, lParam);
+            event.key.scancode = toScancode(lParam);
             pushEvent(event);
             break;
         }
