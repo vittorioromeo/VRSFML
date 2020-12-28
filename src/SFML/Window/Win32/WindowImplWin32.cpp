@@ -561,14 +561,15 @@ void WindowImplWin32::grabCursor(bool grabbed)
 }
 
 ////////////////////////////////////////////////////////////
-Keyboard::Scancode WindowImplWin32::toScancode(LPARAM flags)
+Keyboard::Scancode WindowImplWin32::toScancode(WPARAM wParam, LPARAM lParam)
 {
-    int code = ((flags & (0xFF << 16)) >> 16);
+    int code = (lParam & (0xFF << 16)) >> 16;
 
-    // TODO remove debug code
-    std::cout << "LPARAM: " << std::to_string(flags) << '\n';
-    std::cout << "code: " << std::to_string(code) << '\n';
-    std::cout << "KF_EXTENDED: " << std::to_string((HIWORD(flags) & KF_EXTENDED)) << '\n';
+    // Retrieve the scancode from the VirtualKey for synthetic key messages
+    if (code == 0)
+    {
+        code = MapVirtualKey(static_cast<UINT>(wParam), MAPVK_VK_TO_VSC);
+    }
 
     // Windows scan codes
     // Reference: https://msdn.microsoft.com/en-us/library/aa299374(v=vs.60).aspx
@@ -589,7 +590,7 @@ Keyboard::Scancode WindowImplWin32::toScancode(LPARAM flags)
         case 13: return Keyboard::ScanEqual;
         case 14: return Keyboard::ScanBackspace;
         case 15: return Keyboard::ScanTab;
-        case 16: return Keyboard::ScanQ;
+        case 16: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanMediaPreviousTrack : Keyboard::ScanQ;
         case 17: return Keyboard::ScanW;
         case 18: return Keyboard::ScanE;
         case 19: return Keyboard::ScanR;
@@ -598,18 +599,18 @@ Keyboard::Scancode WindowImplWin32::toScancode(LPARAM flags)
         case 22: return Keyboard::ScanU;
         case 23: return Keyboard::ScanI;
         case 24: return Keyboard::ScanO;
-        case 25: return Keyboard::ScanP;
+        case 25: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanMediaNextTrack     : Keyboard::ScanP;
         case 26: return Keyboard::ScanLBracket;
         case 27: return Keyboard::ScanRBracket;
-        case 28: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanEnter : Keyboard::ScanNumpadEnter;
-        case 29: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanRControl : Keyboard::ScanLControl;
-        case 30: return Keyboard::ScanA;
+        case 28: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanEnter              : Keyboard::ScanNumpadEnter;
+        case 29: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanRControl           : Keyboard::ScanLControl;
+        case 30: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanSelect             : Keyboard::ScanA;
         case 31: return Keyboard::ScanS;
-        case 32: return Keyboard::ScanD;
-        case 33: return Keyboard::ScanF;
-        case 34: return Keyboard::ScanG;
+        case 32: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanVolumeMute         : Keyboard::ScanD;
+        case 33: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanLaunchApplication1 : Keyboard::ScanF;
+        case 34: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanMediaPlayPause     : Keyboard::ScanG;
         case 35: return Keyboard::ScanH;
-        case 36: return Keyboard::ScanJ;
+        case 36: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanMediaStop          : Keyboard::ScanJ;
         case 37: return Keyboard::ScanK;
         case 38: return Keyboard::ScanL;
         case 39: return Keyboard::ScanSemicolon;
@@ -619,17 +620,17 @@ Keyboard::Scancode WindowImplWin32::toScancode(LPARAM flags)
         case 43: return Keyboard::ScanBackslash;
         case 44: return Keyboard::ScanZ;
         case 45: return Keyboard::ScanX;
-        case 46: return Keyboard::ScanC;
+        case 46: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanVolumeDown   : Keyboard::ScanC;
         case 47: return Keyboard::ScanV;
-        case 48: return Keyboard::ScanB;
+        case 48: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanVolumeUp     : Keyboard::ScanB;
         case 49: return Keyboard::ScanN;
-        case 50: return Keyboard::ScanM;
+        case 50: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanHomePage     : Keyboard::ScanM;
         case 51: return Keyboard::ScanComma;
         case 52: return Keyboard::ScanPeriod;
-        case 53: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanNumpadDivide : Keyboard::ScanSlash;
+        case 53: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanNumpadDivide : Keyboard::ScanSlash;
         case 54: return Keyboard::ScanRShift;
-        case 55: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanPrintScreen : Keyboard::ScanNumpadMultiply;
-        case 56: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanRAlt : Keyboard::ScanLAlt;
+        case 55: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanPrintScreen  : Keyboard::ScanNumpadMultiply;
+        case 56: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanRAlt         : Keyboard::ScanLAlt;
         case 57: return Keyboard::ScanSpace;
         case 58: return Keyboard::ScanCapsLock;
         case 59: return Keyboard::ScanF1;
@@ -642,40 +643,41 @@ Keyboard::Scancode WindowImplWin32::toScancode(LPARAM flags)
         case 66: return Keyboard::ScanF8;
         case 67: return Keyboard::ScanF9;
         case 68: return Keyboard::ScanF10;
-        case 69: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanNumLock : Keyboard::ScanPause;
+        case 69: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanNumLock  : Keyboard::ScanPause;
         case 70: return Keyboard::ScanScrollLock;
-        case 71: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanHome : Keyboard::ScanNumpad7;
-        case 72: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanUp : Keyboard::ScanNumpad8;
-        case 73: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanPageUp : Keyboard::ScanNumpad9;
+        case 71: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanHome     : Keyboard::ScanNumpad7;
+        case 72: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanUp       : Keyboard::ScanNumpad8;
+        case 73: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanPageUp   : Keyboard::ScanNumpad9;
         case 74: return Keyboard::ScanNumpadMinus;
-        case 75: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanLeft : Keyboard::ScanNumpad4;
+        case 75: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanLeft     : Keyboard::ScanNumpad4;
         case 76: return Keyboard::ScanNumpad5;
-        case 77: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanRight : Keyboard::ScanNumpad6;
+        case 77: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanRight    : Keyboard::ScanNumpad6;
         case 78: return Keyboard::ScanNumpadPlus;
-        case 79: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanEnd : Keyboard::ScanNumpad1;
-        case 80: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanDown : Keyboard::ScanNumpad2;
-        case 81: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanPageDown : Keyboard::ScanNumpad3;
-        case 82: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanInsert : Keyboard::ScanNumpad0;
-        case 83: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanDelete : Keyboard::ScanNumpadDecimal;
+        case 79: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanEnd      : Keyboard::ScanNumpad1;
+        case 80: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanDown     : Keyboard::ScanNumpad2;
+        case 81: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanPageDown : Keyboard::ScanNumpad3;
+        case 82: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanInsert   : Keyboard::ScanNumpad0;
+        case 83: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanDelete   : Keyboard::ScanNumpadDecimal;
 
         case 86: return Keyboard::ScanNonUsBackslash;
         case 87: return Keyboard::ScanF11;
         case 88: return Keyboard::ScanF12;
     
-        case 91: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanLSystem : Keyboard::ScanUnknown;
-        case 92: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanRSystem : Keyboard::ScanUnknown;
-        case 93: return (HIWORD(flags) & KF_EXTENDED) ? Keyboard::ScanMenu : Keyboard::ScanUnknown;
+        case 91: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanLSystem : Keyboard::ScanUnknown;
+        case 92: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanRSystem : Keyboard::ScanUnknown;
+        case 93: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanMenu    : Keyboard::ScanUnknown;
 
+        case 99: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanHelp    : Keyboard::ScanUnknown;
         case 100: return Keyboard::ScanF13;
-        case 101: return Keyboard::ScanF14;
-        case 102: return Keyboard::ScanF15;
-        case 103: return Keyboard::ScanF16;
-        case 104: return Keyboard::ScanF17;
-        case 105: return Keyboard::ScanF18;
-        case 106: return Keyboard::ScanF19;
-        case 107: return Keyboard::ScanF20;
-        case 108: return Keyboard::ScanF21;
-        case 109: return Keyboard::ScanF22;
+        case 101: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanSearch             : Keyboard::ScanF14;
+        case 102: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanFavorites          : Keyboard::ScanF15;
+        case 103: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanRefresh            : Keyboard::ScanF16;
+        case 104: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanStop               : Keyboard::ScanF17;
+        case 105: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanForward            : Keyboard::ScanF18;
+        case 106: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanBack               : Keyboard::ScanF19;
+        case 107: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanLaunchApplication1 : Keyboard::ScanF20;
+        case 108: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanLaunchMail         : Keyboard::ScanF21;
+        case 109: return (HIWORD(lParam) & KF_EXTENDED) ? Keyboard::ScanLaunchMediaSelect  : Keyboard::ScanF22;
         case 110: return Keyboard::ScanF23;
 
         case 118: return Keyboard::ScanF24;
@@ -858,7 +860,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
                 event.key.shift    = HIWORD(GetKeyState(VK_SHIFT))   != 0;
                 event.key.system   = HIWORD(GetKeyState(VK_LWIN)) || HIWORD(GetKeyState(VK_RWIN));
                 event.key.code     = virtualKeyCodeToSF(wParam, lParam);
-                event.key.scancode = toScancode(lParam);
+                event.key.scancode = toScancode(wParam, lParam);
                 pushEvent(event);
             }
             break;
@@ -875,7 +877,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
             event.key.shift    = HIWORD(GetKeyState(VK_SHIFT))   != 0;
             event.key.system   = HIWORD(GetKeyState(VK_LWIN)) || HIWORD(GetKeyState(VK_RWIN));
             event.key.code     = virtualKeyCodeToSF(wParam, lParam);
-            event.key.scancode = toScancode(lParam);
+            event.key.scancode = toScancode(wParam, lParam);
             pushEvent(event);
             break;
         }
@@ -1156,7 +1158,7 @@ Keyboard::Key WindowImplWin32::virtualKeyCodeToSF(WPARAM key, LPARAM flags)
         case VK_OEM_6:      return Keyboard::RBracket;
         case VK_OEM_COMMA:  return Keyboard::Comma;
         case VK_OEM_PERIOD: return Keyboard::Period;
-        case VK_OEM_7:      return Keyboard::Quote;
+        case VK_OEM_7:      return Keyboard::Apostrophe;
         case VK_OEM_5:      return Keyboard::Backslash;
         case VK_OEM_3:      return Keyboard::Tilde;
         case VK_ESCAPE:     return Keyboard::Escape;

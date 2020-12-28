@@ -154,6 +154,15 @@ String HIDInputManager::localizedRepresentation(Keyboard::Scancode code)
         case sf::Keyboard::ScanF13: return "F13";
         case sf::Keyboard::ScanF14: return "F14";
         case sf::Keyboard::ScanF15: return "F15";
+        case sf::Keyboard::ScanF16: return "F16";
+        case sf::Keyboard::ScanF17: return "F17";
+        case sf::Keyboard::ScanF18: return "F18";
+        case sf::Keyboard::ScanF19: return "F19";
+        case sf::Keyboard::ScanF20: return "F20";
+        case sf::Keyboard::ScanF21: return "F21";
+        case sf::Keyboard::ScanF22: return "F22";
+        case sf::Keyboard::ScanF23: return "F23";
+        case sf::Keyboard::ScanF24: return "F24";
 
         case sf::Keyboard::ScanCapsLock:    return "CapsLock";
         case sf::Keyboard::ScanPrintScreen: return "PrintScreen";
@@ -175,7 +184,7 @@ String HIDInputManager::localizedRepresentation(Keyboard::Scancode code)
         case sf::Keyboard::ScanNumLock:        return "NumLock";
         case sf::Keyboard::ScanNumpadDivide:   return "Divide (Numpad)";
         case sf::Keyboard::ScanNumpadMultiply: return "Multiply (Numpad)";
-        case sf::Keyboard::ScanNumpadMinus:    return "Minux (Numpad)";
+        case sf::Keyboard::ScanNumpadMinus:    return "Minus (Numpad)";
         case sf::Keyboard::ScanNumpadPlus:     return "Plus (Numpad)";
         case sf::Keyboard::ScanNumpadEqual:    return "Equal (Numpad)";
         case sf::Keyboard::ScanNumpadEnter:    return "Enter (Numpad)";
@@ -198,24 +207,24 @@ String HIDInputManager::localizedRepresentation(Keyboard::Scancode code)
         case sf::Keyboard::ScanMenu:        return "Menu";
         case sf::Keyboard::ScanSelect:      return "Select";
         case sf::Keyboard::ScanStop:        return "Stop";
-        case sf::Keyboard::ScanAgain:       return "Again";
+        case sf::Keyboard::ScanRedo:        return "Redo";
         case sf::Keyboard::ScanUndo:        return "Undo";
         case sf::Keyboard::ScanCut:         return "Cut";
         case sf::Keyboard::ScanCopy:        return "Copy";
         case sf::Keyboard::ScanPaste:       return "Paste";
-        case sf::Keyboard::ScanFind:        return "Find";
-        case sf::Keyboard::ScanMute:        return "Mute";
+        case sf::Keyboard::ScanSearch:      return "Search";
+        case sf::Keyboard::ScanVolumeMute:  return "Volume Mute";
         case sf::Keyboard::ScanVolumeUp:    return "Volume Up";
         case sf::Keyboard::ScanVolumeDown:  return "Volume Down";
 
-        case sf::Keyboard::ScanLControl: return "Control (Left)";
-        case sf::Keyboard::ScanLShift:   return "Shift (Left)";
-        case sf::Keyboard::ScanLAlt:     return "Alt (Left)";
-        case sf::Keyboard::ScanLSystem:  return "Command (Left)";
-        case sf::Keyboard::ScanRControl: return "Control (Right)";
-        case sf::Keyboard::ScanRShift:   return "Shift (Right)";
-        case sf::Keyboard::ScanRAlt:     return "Alt (Right)";
-        case sf::Keyboard::ScanRSystem:  return "Command (Right)";
+        case sf::Keyboard::ScanLControl: return "Left Control";
+        case sf::Keyboard::ScanLShift:   return "Left Shift";
+        case sf::Keyboard::ScanLAlt:     return "Left Alt";
+        case sf::Keyboard::ScanLSystem:  return "Left Command";
+        case sf::Keyboard::ScanRControl: return "Right Control";
+        case sf::Keyboard::ScanRShift:   return "Right Shift";
+        case sf::Keyboard::ScanRAlt:     return "Right Alt";
+        case sf::Keyboard::ScanRSystem:  return "Right Command";
 
         default: return "Unknown Scancode"; // no guess good enough possible.
     }
@@ -517,7 +526,7 @@ sf::Keyboard::Scancode HIDInputManager::usageToScancode(UInt32 usage)
         case kHIDUsage_KeyboardOpenBracket:         return sf::Keyboard::ScanLBracket;
         case kHIDUsage_KeyboardCloseBracket:        return sf::Keyboard::ScanRBracket;
         case kHIDUsage_KeyboardBackslash:           return sf::Keyboard::ScanBackslash;
-        case kHIDUsage_KeyboardNonUSPound:          return sf::Keyboard::ScanHyphen;
+        case kHIDUsage_KeyboardNonUSPound:          return sf::Keyboard::ScanBackslash;
         case kHIDUsage_KeyboardSemicolon:           return sf::Keyboard::ScanSemicolon;
         case kHIDUsage_KeyboardQuote:               return sf::Keyboard::ScanApostrophe;
         case kHIDUsage_KeyboardGraveAccentAndTilde: return sf::Keyboard::ScanGrave;
@@ -596,14 +605,14 @@ sf::Keyboard::Scancode HIDInputManager::usageToScancode(UInt32 usage)
         case kHIDUsage_KeyboardMenu:    return sf::Keyboard::ScanMenu;
         case kHIDUsage_KeyboardSelect:  return sf::Keyboard::ScanSelect;
         case kHIDUsage_KeyboardStop:    return sf::Keyboard::ScanStop;
-        case kHIDUsage_KeyboardAgain:   return sf::Keyboard::ScanAgain;
+        case kHIDUsage_KeyboardAgain:   return sf::Keyboard::ScanRedo;
         case kHIDUsage_KeyboardUndo:    return sf::Keyboard::ScanUndo;
         case kHIDUsage_KeyboardCut:     return sf::Keyboard::ScanCut;
         case kHIDUsage_KeyboardCopy:    return sf::Keyboard::ScanCopy;
         case kHIDUsage_KeyboardPaste:   return sf::Keyboard::ScanPaste;
-        case kHIDUsage_KeyboardFind:    return sf::Keyboard::ScanFind;
+        case kHIDUsage_KeyboardFind:    return sf::Keyboard::ScanSearch;
 
-        case kHIDUsage_KeyboardMute:       return sf::Keyboard::ScanMute;
+        case kHIDUsage_KeyboardMute:       return sf::Keyboard::ScanVolumeMute;
         case kHIDUsage_KeyboardVolumeUp:   return sf::Keyboard::ScanVolumeUp;
         case kHIDUsage_KeyboardVolumeDown: return sf::Keyboard::ScanVolumeDown;
 
@@ -1000,7 +1009,7 @@ Keyboard::Scancode HIDInputManager::nonLocalizedKey(UniChar virtualKeycode)
         case 0x33: return sf::Keyboard::ScanBackspace;
         case 0x30: return sf::Keyboard::ScanTab;
         case 0x31: return sf::Keyboard::ScanSpace;
-        // case 0x27: return sf::Keyboard::ScanHyphen; // TODO 0x27 is for Quote
+
         case 0x18: return sf::Keyboard::ScanEqual;
         case 0x21: return sf::Keyboard::ScanLBracket;
         case 0x1e: return sf::Keyboard::ScanRBracket;
@@ -1077,17 +1086,17 @@ Keyboard::Scancode HIDInputManager::nonLocalizedKey(UniChar virtualKeycode)
          * case 0x: return sf::Keyboard::ScanMenu;
          * case 0x: return sf::Keyboard::ScanSelect;
          * case 0x: return sf::Keyboard::ScanStop;
-         * case 0x: return sf::Keyboard::ScanAgain;
+         * case 0x: return sf::Keyboard::ScanRedo;
          * case 0x: return sf::Keyboard::ScanUndo;
          * case 0x: return sf::Keyboard::ScanCut;
          * case 0x: return sf::Keyboard::ScanCopy;
          * case 0x: return sf::Keyboard::ScanPaste;
-         * case 0x: return sf::Keyboard::ScanFind;
+         * case 0x: return sf::Keyboard::ScanSearch;
          */
 
-        case 0x4a:  return sf::Keyboard::ScanMute;
-        case 0x48:  return sf::Keyboard::ScanVolumeUp;
-        case 0x49:  return sf::Keyboard::ScanVolumeDown;
+        case 0x4a: return sf::Keyboard::ScanVolumeMute;
+        case 0x48: return sf::Keyboard::ScanVolumeUp;
+        case 0x49: return sf::Keyboard::ScanVolumeDown;
 
         /* NOTE Those are symmetric so we leave them out.
          *      Thankfully handled through modifiers and not virtual codes.
@@ -1101,7 +1110,7 @@ Keyboard::Scancode HIDInputManager::nonLocalizedKey(UniChar virtualKeycode)
          * case 0x37: return sf::Keyboard::ScanRSystem;
          */
 
-        default:  return sf::Keyboard::ScanUnknown;
+        default: return sf::Keyboard::ScanUnknown;
     }
 }
 
@@ -1154,8 +1163,6 @@ UInt8 HIDInputManager::scanToVirtualCode(Keyboard::Scancode code)
         case sf::Keyboard::ScanBackspace: return 0x33;
         case sf::Keyboard::ScanTab:       return 0x30;
         case sf::Keyboard::ScanSpace:     return 0x31;
-
-        // case sf::Keyboard::ScanHyphen:       return 0; // 0x27 is for Quote
 
         case sf::Keyboard::ScanEqual:       return 0x18;
         case sf::Keyboard::ScanLBracket:    return 0x21;
@@ -1232,15 +1239,15 @@ UInt8 HIDInputManager::scanToVirtualCode(Keyboard::Scancode code)
          * case sf::Keyboard::ScanMenu:        return 0;
          * case sf::Keyboard::ScanSelect:      return 0;
          * case sf::Keyboard::ScanStop:        return 0;
-         * case sf::Keyboard::ScanAgain:       return 0;
+         * case sf::Keyboard::ScanRedo:        return 0;
          * case sf::Keyboard::ScanUndo:        return 0;
          * case sf::Keyboard::ScanCut:         return 0;
          * case sf::Keyboard::ScanCopy:        return 0;
          * case sf::Keyboard::ScanPaste:       return 0;
-         * case sf::Keyboard::ScanFind:        return 0;
+         * case sf::Keyboard::ScanSearch:      return 0;
          */
 
-        case sf::Keyboard::ScanMute:       return 0x4a;
+        case sf::Keyboard::ScanVolumeMute: return 0x4a;
         case sf::Keyboard::ScanVolumeUp:   return 0x48;
         case sf::Keyboard::ScanVolumeDown: return 0x49;
 

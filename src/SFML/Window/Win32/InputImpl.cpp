@@ -314,22 +314,22 @@ WORD sfScanToWin(Keyboard::Scancode code)
         case Keyboard::ScanNum9: return 10;
         case Keyboard::ScanNum0: return 11;
     
-        case Keyboard::ScanEnter:     return 28;
-        case Keyboard::ScanEscape:    return 1;
-        case Keyboard::ScanBackspace: return 14;
-        case Keyboard::ScanTab:       return 15;
-        case Keyboard::ScanSpace:     return 57;
-        case Keyboard::ScanHyphen:    return 12;
-        case Keyboard::ScanEqual:    return 13;
-        case Keyboard::ScanLBracket:  return 26;
-        case Keyboard::ScanRBracket:  return 27;
-        case Keyboard::ScanBackslash: return 43;
-        case Keyboard::ScanGrave:     return 42;
-        case Keyboard::ScanApostrophe:     return 40;
-        case Keyboard::ScanSemicolon: return 39;
-        case Keyboard::ScanComma:     return 51;
-        case Keyboard::ScanPeriod:    return 52;
-        case Keyboard::ScanSlash:     return 53;
+        case Keyboard::ScanEnter:      return 28;
+        case Keyboard::ScanEscape:     return 1;
+        case Keyboard::ScanBackspace:  return 14;
+        case Keyboard::ScanTab:        return 15;
+        case Keyboard::ScanSpace:      return 57;
+        case Keyboard::ScanHyphen:     return 12;
+        case Keyboard::ScanEqual:      return 13;
+        case Keyboard::ScanLBracket:   return 26;
+        case Keyboard::ScanRBracket:   return 27;
+        case Keyboard::ScanBackslash:  return 43;
+        case Keyboard::ScanGrave:      return 42;
+        case Keyboard::ScanApostrophe: return 40;
+        case Keyboard::ScanSemicolon:  return 39;
+        case Keyboard::ScanComma:      return 51;
+        case Keyboard::ScanPeriod:     return 52;
+        case Keyboard::ScanSlash:      return 53;
     
         case Keyboard::ScanF1:  return 59;
         case Keyboard::ScanF2:  return 60;
@@ -386,35 +386,53 @@ WORD sfScanToWin(Keyboard::Scancode code)
         case Keyboard::ScanNumpadMultiply: return 55;
         case Keyboard::ScanNumpadMinus:    return 74;
         case Keyboard::ScanNumpadPlus:     return 78;
+        // No known scancode for Keyboard::ScanEqual
         case Keyboard::ScanNumpadEnter:    return 28 | KF_EXTENDED;
         case Keyboard::ScanNumpadDecimal:  return 83;
     
-        case Keyboard::ScanNonUsBackslash:    return 86;
-        //case Keyboard::ScanApplication:       return ? ? ? ;
-        //case Keyboard::ScanExecute:           return ? ? ? ;
-        //case Keyboard::ScanHelp:              return ? ? ? ;
-        case Keyboard::ScanMenu:                return 93 | KF_EXTENDED;
-        //case Keyboard::ScanSelect:            return ? ? ? ;
-        //case Keyboard::ScanStop:              return ? ? ? ;
-        //case Keyboard::ScanAgain:             return ? ? ? ;
-        //case Keyboard::ScanUndo:              return ? ? ? ;
-        //case Keyboard::ScanCut:               return ? ? ? ;
-        //case Keyboard::ScanCopy:              return ? ? ? ;
-        //case Keyboard::ScanPaste:             return ? ? ? ;
-        //case Keyboard::ScanFind:              return ? ? ? ;
-        //case Keyboard::ScanMute:              return ? ? ? ;
-        //case Keyboard::ScanVolumeUp:          return ? ? ? ;
-        //case Keyboard::ScanVolumeDown:        return ? ? ? ;
-        case Keyboard::ScanLControl:            return 29;
-        case Keyboard::ScanLShift:              return 42;
-        case Keyboard::ScanLAlt:                return 56;
-        case Keyboard::ScanLSystem:             return 91 | KF_EXTENDED;
-        case Keyboard::ScanRControl:            return 29 | KF_EXTENDED;
-        case Keyboard::ScanRShift:              return 54;
-        case Keyboard::ScanRAlt:                return 56 | KF_EXTENDED;
-        //case Keyboard::ScanRSystem:           return ? ? ? ;
-    
-        default: return 0; // Not sure what to return here?
+        case Keyboard::ScanNonUsBackslash: return 86;
+        // No known scancode for Keyboard::ScanApplication
+        // No known scancode for Keyboard::ScanExecute
+        case Keyboard::ScanHelp:           return 97 | KF_EXTENDED;
+        case Keyboard::ScanMenu:           return 93 | KF_EXTENDED;
+        case Keyboard::ScanSelect:         return 30 | KF_EXTENDED ;
+        // No known scancode for Keyboard::ScanRedo
+        // No known scancode for Keyboard::ScanUndo
+        // No known scancode for Keyboard::ScanCut
+        // No known scancode for Keyboard::ScanCopy
+        // No known scancode for Keyboard::ScanPaste
+
+        case Keyboard::ScanVolumeMute:         return 32 | KF_EXTENDED;
+        case Keyboard::ScanVolumeUp:           return 46 | KF_EXTENDED;
+        case Keyboard::ScanVolumeDown:         return 44 | KF_EXTENDED;
+        case Keyboard::ScanMediaStop:          return 36 | KF_EXTENDED;
+        case Keyboard::ScanMediaNextTrack:     return 25 | KF_EXTENDED;
+        case Keyboard::ScanMediaPreviousTrack: return 16 | KF_EXTENDED;
+
+        case Keyboard::ScanLControl: return 29;
+        case Keyboard::ScanLShift:   return 42;
+        case Keyboard::ScanLAlt:     return 56;
+        case Keyboard::ScanLSystem:  return 91 | KF_EXTENDED;
+        case Keyboard::ScanRControl: return 29 | KF_EXTENDED;
+        case Keyboard::ScanRShift:   return 54;
+        case Keyboard::ScanRAlt:     return 56 | KF_EXTENDED;
+        case Keyboard::ScanRSystem:  return 92 | KF_EXTENDED;
+
+        case Keyboard::ScanBack:      return 106 | KF_EXTENDED;
+        case Keyboard::ScanForward:   return 105 | KF_EXTENDED;
+        case Keyboard::ScanRefresh:   return 103 | KF_EXTENDED;
+        case Keyboard::ScanStop:      return 104 | KF_EXTENDED;
+        case Keyboard::ScanSearch:    return 101 | KF_EXTENDED;
+        case Keyboard::ScanFavorites: return 102 | KF_EXTENDED;
+        case Keyboard::ScanHomePage:  return 48 | KF_EXTENDED;
+
+        case Keyboard::ScanLaunchApplication1: return 107 | KF_EXTENDED;
+        case Keyboard::ScanLaunchApplication2: return 33 | KF_EXTENDED;
+        case Keyboard::ScanLaunchMail:         return 108 | KF_EXTENDED;
+        case Keyboard::ScanLaunchMediaSelect:  return 109 | KF_EXTENDED;
+
+        // Unable to map to a scancode
+        default: return 0;
     }
 }
 
