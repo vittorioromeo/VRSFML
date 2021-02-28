@@ -103,8 +103,8 @@ Keyboard::Key winKeyToSfKey(int vkey)
         case VK_OEM_6:          key = Keyboard::RBracket; break;
         case VK_OEM_1:          key = Keyboard::Semicolon; break;
         case VK_OEM_COMMA:      key = Keyboard::Comma; break;
-        case VK_OEM_PERIOD:     key = Keyboard::Period; ;
-        case VK_OEM_7:          key = Keyboard::Quote; break;
+        case VK_OEM_PERIOD:     key = Keyboard::Period; break;
+        case VK_OEM_7:          key = Keyboard::Apostrophe; break;
         case VK_OEM_2:          key = Keyboard::Slash; break;
         case VK_OEM_5:          key = Keyboard::Backslash; break;
         case VK_OEM_3:          key = Keyboard::Tilde; break;
@@ -215,7 +215,7 @@ int sfKeyToWin(Keyboard::Key key)
         case Keyboard::Semicolon:  vkey = VK_OEM_1;      break;
         case Keyboard::Comma:      vkey = VK_OEM_COMMA;  break;
         case Keyboard::Period:     vkey = VK_OEM_PERIOD; break;
-        case Keyboard::Quote:      vkey = VK_OEM_7;      break;
+        case Keyboard::Apostrophe: vkey = VK_OEM_7;      break;
         case Keyboard::Slash:      vkey = VK_OEM_2;      break;
         case Keyboard::Backslash:  vkey = VK_OEM_5;      break;
         case Keyboard::Tilde:      vkey = VK_OEM_3;      break;
@@ -272,7 +272,7 @@ int sfKeyToWin(Keyboard::Key key)
 ////////////////////////////////////////////////////////////
 WORD sfScanToWin(Keyboard::Scancode code)
 {
-    // Convert an SFML scancode to a windows scancode
+    // Convert an SFML scancode to a Windows scancode
     // Reference: https://msdn.microsoft.com/en-us/library/aa299374(v=vs.60).aspx
     switch (code)
     {
@@ -325,8 +325,8 @@ WORD sfScanToWin(Keyboard::Scancode code)
         case Keyboard::ScanRBracket:   return 27;
         case Keyboard::ScanBackslash:  return 43;
         case Keyboard::ScanGrave:      return 42;
-        case Keyboard::ScanApostrophe: return 40;
         case Keyboard::ScanSemicolon:  return 39;
+        case Keyboard::ScanApostrophe: return 40;
         case Keyboard::ScanComma:      return 51;
         case Keyboard::ScanPeriod:     return 52;
         case Keyboard::ScanSlash:      return 53;
@@ -371,6 +371,14 @@ WORD sfScanToWin(Keyboard::Scancode code)
         case Keyboard::ScanDown:        return 80 | KF_EXTENDED;
         case Keyboard::ScanUp:          return 72 | KF_EXTENDED;
         case Keyboard::ScanNumLock:     return 69 | KF_EXTENDED;
+
+        case Keyboard::ScanNumpadDivide:   return 53;
+        case Keyboard::ScanNumpadMultiply: return 55;
+        case Keyboard::ScanNumpadMinus:    return 74;
+        case Keyboard::ScanNumpadPlus:     return 78;
+        // No known scancode for Keyboard::ScanEqual
+        case Keyboard::ScanNumpadEnter:    return 28 | KF_EXTENDED;
+        case Keyboard::ScanNumpadDecimal:  return 83;
         
         case Keyboard::ScanNumpad1:        return 79;
         case Keyboard::ScanNumpad2:        return 80;
@@ -382,17 +390,11 @@ WORD sfScanToWin(Keyboard::Scancode code)
         case Keyboard::ScanNumpad8:        return 72;
         case Keyboard::ScanNumpad9:        return 73;
         case Keyboard::ScanNumpad0:        return 82;
-        case Keyboard::ScanNumpadDivide:   return 53;
-        case Keyboard::ScanNumpadMultiply: return 55;
-        case Keyboard::ScanNumpadMinus:    return 74;
-        case Keyboard::ScanNumpadPlus:     return 78;
-        // No known scancode for Keyboard::ScanEqual
-        case Keyboard::ScanNumpadEnter:    return 28 | KF_EXTENDED;
-        case Keyboard::ScanNumpadDecimal:  return 83;
     
         case Keyboard::ScanNonUsBackslash: return 86;
         // No known scancode for Keyboard::ScanApplication
         // No known scancode for Keyboard::ScanExecute
+        // No known scancode for Keyboard::ScanModeChange
         case Keyboard::ScanHelp:           return 97 | KF_EXTENDED;
         case Keyboard::ScanMenu:           return 93 | KF_EXTENDED;
         case Keyboard::ScanSelect:         return 30 | KF_EXTENDED ;
@@ -405,6 +407,7 @@ WORD sfScanToWin(Keyboard::Scancode code)
         case Keyboard::ScanVolumeMute:         return 32 | KF_EXTENDED;
         case Keyboard::ScanVolumeUp:           return 46 | KF_EXTENDED;
         case Keyboard::ScanVolumeDown:         return 44 | KF_EXTENDED;
+        case Keyboard::ScanMediaPlayPause:     return 34 | KF_EXTENDED;
         case Keyboard::ScanMediaStop:          return 36 | KF_EXTENDED;
         case Keyboard::ScanMediaNextTrack:     return 25 | KF_EXTENDED;
         case Keyboard::ScanMediaPreviousTrack: return 16 | KF_EXTENDED;
