@@ -94,11 +94,11 @@ public:
         LControl,     //!< The left Control key
         LShift,       //!< The left Shift key
         LAlt,         //!< The left Alt key
-        LSystem,      //!< The left OS specific key: window (Windows and Linux), apple (MacOS X), ...
+        LSystem,      //!< The left OS specific key: window (Windows and Linux), apple (macOS), ...
         RControl,     //!< The right Control key
         RShift,       //!< The right Shift key
         RAlt,         //!< The right Alt key
-        RSystem,      //!< The right OS specific key: window (Windows and Linux), apple (MacOS X), ...
+        RSystem,      //!< The right OS specific key: window (Windows and Linux), apple (macOS), ...
         Menu,         //!< The Menu key
         LBracket,     //!< The [ key
         RBracket,     //!< The ] key
@@ -174,12 +174,6 @@ public:
     /// The enumerators are bound to a physical key and do not depend on
     /// the keyboard layout used by the operating system. Usually, the AT-101
     /// keyboard can be used as reference for the physical position of the keys.
-    ///
-    /// The scancodes are based on a subset of Table 12: Keyboard/Keypad Page
-    /// of Universal Serial Bus (USB): HID Usage Tables, v1.12.
-    ///
-    /// \todo When porting this for SFML 3, remove the `Scan` prefix and use
-    ///       enum class.
     ///
     ////////////////////////////////////////////////////////////
     enum Scancode
@@ -264,9 +258,9 @@ public:
         ScanF22,                //!< Keyboard F22 key
         ScanF23,                //!< Keyboard F23 key
         ScanF24,                //!< Keyboard F24 key
-        ScanCapsLock,           //!< Keyboard Caps Lock key
+        ScanCapsLock,           //!< Keyboard Caps %Lock key
         ScanPrintScreen,        //!< Keyboard Print Screen key
-        ScanScrollLock,         //!< Keyboard Scroll Lock key
+        ScanScrollLock,         //!< Keyboard Scroll %Lock key
         ScanPause,              //!< Keyboard Pause key
         ScanInsert,             //!< Keyboard Insert key
         ScanHome,               //!< Keyboard Home key
@@ -278,7 +272,7 @@ public:
         ScanLeft,               //!< Keyboard Left Arrow key
         ScanDown,               //!< Keyboard Down Arrow key
         ScanUp,                 //!< Keyboard Up Arrow key
-        ScanNumLock,            //!< Keypad Num Lock and Clear key
+        ScanNumLock,            //!< Keypad Num %Lock and Clear key
         ScanNumpadDivide,       //!< Keypad / key
         ScanNumpadMultiply,     //!< Keypad * key
         ScanNumpadMinus,        //!< Keypad - key
@@ -465,6 +459,10 @@ public:
 /// else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
 /// {
 ///     // quit...
+/// }
+/// else if (sf::Keyboard::isKeyPressed(sf::Keyboard::ScanGrave))
+/// {
+///     // open in-game command line
 /// }
 /// \endcode
 ///

@@ -313,7 +313,7 @@ void initMapping()
         else if (strcmp(name, "AE11") == 0) scancode = sf::Keyboard::ScanHyphen;
         else if (strcmp(name, "AE12") == 0) scancode = sf::Keyboard::ScanEqual;
         else if (strcmp(name, "BKSP") == 0) scancode = sf::Keyboard::ScanBackspace;
-
+        
         else if (strcmp(name, "TAB")  == 0) scancode = sf::Keyboard::ScanTab;
         else if (strcmp(name, "AD01") == 0) scancode = sf::Keyboard::ScanQ;
         else if (strcmp(name, "AD02") == 0) scancode = sf::Keyboard::ScanW;
