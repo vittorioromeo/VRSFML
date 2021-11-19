@@ -46,6 +46,7 @@
 #include <android/window.h>
 #include <android/native_activity.h>
 #include <cstring>
+#include <cassert>
 
 #define SF_GLAD_EGL_IMPLEMENTATION
 #include <glad/egl.h>
@@ -70,73 +71,76 @@ int getAndroidApiLevel(ANativeActivity* activity)
     jfieldID sdkIntFieldID = lJNIEnv->GetStaticFieldID(versionClass, "SDK_INT", "I");
     if (sdkIntFieldID == NULL)
         return 0;
-    
+
     jint sdkInt = 0;
     sdkInt = lJNIEnv->GetStaticIntField(versionClass, sdkIntFieldID);
-    
+
     return sdkInt;
 }
 
 
 ////////////////////////////////////////////////////////////
-ActivityStates* retrieveStates(ANativeActivity* activity)
+ActivityStates& retrieveStates(ANativeActivity* activity)
 {
+    assert(activity != NULL);
+
     // Hide the ugly cast we find in each callback function
-    return (ActivityStates*)activity->instance;
+    return *((ActivityStates*)activity->instance);
 }
 
 
 ////////////////////////////////////////////////////////////
-static void initializeMain(ActivityStates* states)
+static void initializeMain(ActivityStates& states)
 {
     // Protect from concurrent access
-    Lock lock(states->mutex);
+    Lock lock(states.mutex);
 
     // Prepare and share the looper to be read later
     ALooper* looper = ALooper_prepare(ALOOPER_PREPARE_ALLOW_NON_CALLBACKS);
-    states->looper = looper;
+    states.looper = looper;
 
     /**
-     * Acquire increments a reference counter on the looper. This keeps android 
-     * from collecting it before the activity thread has a chance to detach its 
+     * Acquire increments a reference counter on the looper. This keeps android
+     * from collecting it before the activity thread has a chance to detach its
      * input queue.
      */
-    ALooper_acquire(states->looper);
-    ALooper_wake(states->looper);
+    ALooper_acquire(states.looper);
+    ALooper_wake(states.looper);
 
     // Get the default configuration
-    states->config = AConfiguration_new();
-    AConfiguration_fromAssetManager(states->config, states->activity->assetManager);
+    states.config = AConfiguration_new();
+    AConfiguration_fromAssetManager(states.config, states.activity->assetManager);
 }
 
 
 ////////////////////////////////////////////////////////////
-static void terminateMain(ActivityStates* states)
+static void terminateMain(ActivityStates& states)
 {
     // Protect from concurrent access
-    Lock lock(states->mutex);
+    Lock lock(states.mutex);
 
     // The main thread has finished, we must explicitly ask the activity to finish
-    states->mainOver = true;
-    ANativeActivity_finish(states->activity);
+    states.mainOver = true;
+    ANativeActivity_finish(states.activity);
 }
 
 
 ////////////////////////////////////////////////////////////
 void* main(ActivityStates* states)
 {
+    assert(states != NULL);
+
     // Initialize the thread before giving the hand
-    initializeMain(states);
+    initializeMain(*states);
 
     sleep(seconds(0.5));
     ::main(0, NULL);
 
     // Terminate properly the main thread and wait until it's done
-    terminateMain(states);
+    terminateMain(*states);
 
     {
         Lock lock(states->mutex);
-
         states->terminated = true;
     }
 
@@ -175,7 +179,7 @@ void goToFullscreenMode(ANativeActivity* activity)
 
     // Default flags
     jint flags = 0;
-    
+
     // API Level 14
     if (apiLevel >= 14)
     {
@@ -252,17 +256,17 @@ static void onStart(ANativeActivity* activity)
 static void onResume(ANativeActivity* activity)
 {
     // Retrieve our activity states from the activity instance
-    sf::priv::ActivityStates* states = sf::priv::retrieveStates(activity);
-    sf::Lock lock(states->mutex);
+    sf::priv::ActivityStates& states = sf::priv::retrieveStates(activity);
+    sf::Lock lock(states.mutex);
 
-    if (states->fullscreen)
+    if (states.fullscreen)
         goToFullscreenMode(activity);
 
     // Send an event to warn people the activity has been resumed
     sf::Event event;
     event.type = sf::Event::MouseEntered;
 
-    states->forwardEvent(event);
+    states.forwardEvent(event);
 }
 
 
@@ -270,14 +274,14 @@ static void onResume(ANativeActivity* activity)
 static void onPause(ANativeActivity* activity)
 {
     // Retrieve our activity states from the activity instance
-    sf::priv::ActivityStates* states = sf::priv::retrieveStates(activity);
-    sf::Lock lock(states->mutex);
+    sf::priv::ActivityStates& states = sf::priv::retrieveStates(activity);
+    sf::Lock lock(states.mutex);
 
     // Send an event to warn people the activity has been paused
     sf::Event event;
     event.type = sf::Event::MouseLeft;
 
-    states->forwardEvent(event);
+    states.forwardEvent(event);
 }
 
 
@@ -291,43 +295,43 @@ static void onStop(ANativeActivity* activity)
 static void onDestroy(ANativeActivity* activity)
 {
     // Retrieve our activity states from the activity instance
-    sf::priv::ActivityStates* states = sf::priv::retrieveStates(activity);
+    sf::priv::ActivityStates& states = sf::priv::retrieveStates(activity);
 
     // Send an event to warn people the activity is being destroyed
     {
-        sf::Lock lock(states->mutex);
+        sf::Lock lock(states.mutex);
 
         // If the main thread hasn't yet finished, send the event and wait for
         // it to finish.
-        if (!states->mainOver)
+        if (!states.mainOver)
         {
             sf::Event event;
             event.type = sf::Event::Closed;
 
-            states->forwardEvent(event);
+            states.forwardEvent(event);
         }
     }
 
     // Wait for the main thread to be terminated
-    states->mutex.lock();
+    states.mutex.lock();
 
-    while (!states->terminated)
+    while (!states.terminated)
     {
-        states->mutex.unlock();
+        states.mutex.unlock();
         sf::sleep(sf::milliseconds(20));
-        states->mutex.lock();
+        states.mutex.lock();
     }
 
-    states->mutex.unlock();
+    states.mutex.unlock();
 
     // Terminate EGL display
-    eglTerminate(states->display);
+    eglTerminate(states.display);
 
     // Delete our allocated states
-    delete states;
+    delete &states;
 
     // Reset the activity pointer for all modules
-    sf::priv::getActivity(NULL, true);
+    sf::priv::resetActivity(NULL);
 
     // The application should now terminate
 }
@@ -336,24 +340,24 @@ static void onDestroy(ANativeActivity* activity)
 ////////////////////////////////////////////////////////////
 static void onNativeWindowCreated(ANativeActivity* activity, ANativeWindow* window)
 {
-    sf::priv::ActivityStates* states = sf::priv::retrieveStates(activity);
-    sf::Lock lock(states->mutex);
+    sf::priv::ActivityStates& states = sf::priv::retrieveStates(activity);
+    sf::Lock lock(states.mutex);
 
     // Update the activity states
-    states->window = window;
+    states.window = window;
 
     // Notify SFML mechanism
     sf::Event event;
     event.type = sf::Event::GainedFocus;
-    states->forwardEvent(event);
+    states.forwardEvent(event);
 
     // Wait for the event to be taken into account by SFML
-    states->updated = false;
-    while(!(states->updated | states->terminated))
+    states.updated = false;
+    while(!(states.updated | states.terminated))
     {
-        states->mutex.unlock();
+        states.mutex.unlock();
         sf::sleep(sf::milliseconds(10));
-        states->mutex.lock();
+        states.mutex.lock();
     }
 }
 
@@ -361,24 +365,24 @@ static void onNativeWindowCreated(ANativeActivity* activity, ANativeWindow* wind
 ////////////////////////////////////////////////////////////
 static void onNativeWindowDestroyed(ANativeActivity* activity, ANativeWindow* window)
 {
-    sf::priv::ActivityStates* states = sf::priv::retrieveStates(activity);
-    sf::Lock lock(states->mutex);
+    sf::priv::ActivityStates& states = sf::priv::retrieveStates(activity);
+    sf::Lock lock(states.mutex);
 
     // Update the activity states
-    states->window = NULL;
+    states.window = NULL;
 
     // Notify SFML mechanism
     sf::Event event;
     event.type = sf::Event::LostFocus;
-    states->forwardEvent(event);
+    states.forwardEvent(event);
 
     // Wait for the event to be taken into account by SFML
-    states->updated = false;
-    while(!(states->updated | states->terminated))
+    states.updated = false;
+    while(!(states.updated | states.terminated))
     {
-        states->mutex.unlock();
+        states.mutex.unlock();
         sf::sleep(sf::milliseconds(10));
-        states->mutex.lock();
+        states.mutex.lock();
     }
 }
 
@@ -399,14 +403,14 @@ static void onNativeWindowResized(ANativeActivity* activity, ANativeWindow* wind
 static void onInputQueueCreated(ANativeActivity* activity, AInputQueue* queue)
 {
     // Retrieve our activity states from the activity instance
-    sf::priv::ActivityStates* states = sf::priv::retrieveStates(activity);
+    sf::priv::ActivityStates& states = sf::priv::retrieveStates(activity);
 
     // Attach the input queue
     {
-        sf::Lock lock(states->mutex);
+        sf::Lock lock(states.mutex);
 
-        AInputQueue_attachLooper(queue, states->looper, 1, states->processEvent, NULL);
-        states->inputQueue = queue;
+        AInputQueue_attachLooper(queue, states.looper, 1, states.processEvent, NULL);
+        states.inputQueue = queue;
     }
 }
 
@@ -415,16 +419,16 @@ static void onInputQueueCreated(ANativeActivity* activity, AInputQueue* queue)
 static void onInputQueueDestroyed(ANativeActivity* activity, AInputQueue* queue)
 {
     // Retrieve our activity states from the activity instance
-    sf::priv::ActivityStates* states = sf::priv::retrieveStates(activity);
+    sf::priv::ActivityStates& states = sf::priv::retrieveStates(activity);
 
     // Detach the input queue
     {
-        sf::Lock lock(states->mutex);
+        sf::Lock lock(states.mutex);
 
         AInputQueue_detachLooper(queue);
-        states->inputQueue = NULL;
+        states.inputQueue = NULL;
 
-        ALooper_release(states->looper);
+        ALooper_release(states.looper);
     }
 }
 
@@ -439,18 +443,18 @@ static void onWindowFocusChanged(ANativeActivity* activity, int focused)
 static void onContentRectChanged(ANativeActivity* activity, const ARect* rect)
 {
     // Retrieve our activity states from the activity instance
-    sf::priv::ActivityStates* states = sf::priv::retrieveStates(activity);
-    sf::Lock lock(states->mutex);
+    sf::priv::ActivityStates& states = sf::priv::retrieveStates(activity);
+    sf::Lock lock(states.mutex);
 
     // Make sure the window still exists before we access the dimensions on it
-    if (states->window != NULL) {
+    if (states.window != NULL) {
         // Send an event to warn people about the window move/resize
         sf::Event event;
         event.type = sf::Event::Resized;
-        event.size.width = ANativeWindow_getWidth(states->window);
-        event.size.height = ANativeWindow_getHeight(states->window);
+        event.size.width = ANativeWindow_getWidth(states.window);
+        event.size.height = ANativeWindow_getHeight(states.window);
 
-        states->forwardEvent(event);
+        states.forwardEvent(event);
     }
 }
 
@@ -480,8 +484,7 @@ static void onLowMemory(ANativeActivity* activity)
 JNIEXPORT void ANativeActivity_onCreate(ANativeActivity* activity, void* savedState, size_t savedStateSize)
 {
     // Create an activity states (will keep us in the know, about events we care)
-    sf::priv::ActivityStates* states = NULL;
-    states = new sf::priv::ActivityStates;
+    sf::priv::ActivityStates* states = new sf::priv::ActivityStates;
 
     // Initialize the states value
     states->activity   = NULL;
@@ -509,7 +512,7 @@ JNIEXPORT void ANativeActivity_onCreate(ANativeActivity* activity, void* savedSt
     states->terminated = false;
 
     // Share it across the SFML modules
-    sf::priv::getActivity(states, true);
+    sf::priv::resetActivity(states);
 
     // These functions will update the activity states and therefore, will allow
     // SFML to be kept in the know
