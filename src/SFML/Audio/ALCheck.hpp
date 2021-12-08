@@ -33,9 +33,7 @@
 #include <al.h>
 #include <alc.h>
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// Let's define a macro to quickly check every OpenAL API call
@@ -63,8 +61,6 @@ namespace priv
 ///
 ////////////////////////////////////////////////////////////
 void alCheckError(const char* file, unsigned int line, const char* expression);
-
-} // namespace priv
 
 } // namespace sf
 

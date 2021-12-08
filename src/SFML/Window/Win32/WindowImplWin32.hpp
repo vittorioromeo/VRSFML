@@ -34,9 +34,7 @@
 #include <windows.h>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// \brief Windows implementation of WindowImpl
@@ -285,8 +283,6 @@ private:
     bool     m_fullscreen;       //!< Is the window fullscreen?
     bool     m_cursorGrabbed;    //!< Is the mouse cursor trapped?
 };
-
-} // namespace priv
 
 } // namespace sf
 

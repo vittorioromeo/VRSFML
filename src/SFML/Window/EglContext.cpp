@@ -96,9 +96,7 @@ namespace
 }
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 EglContext::EglContext(EglContext* shared) :
@@ -408,7 +406,5 @@ XVisualInfo EglContext::selectBestVisual(::Display* XDisplay, unsigned int bitsP
     return bestVisual;
 }
 #endif
-
-} // namespace priv
 
 } // namespace sf

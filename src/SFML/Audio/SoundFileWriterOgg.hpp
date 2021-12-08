@@ -33,9 +33,7 @@
 #include <fstream>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// \brief Implementation of sound file writer that handles OGG/Vorbis files
@@ -113,8 +111,6 @@ private:
     vorbis_info      m_vorbis;       // vorbis handle
     vorbis_dsp_state m_state;        // current encoding state
 };
-
-} // namespace priv
 
 } // namespace sf
 

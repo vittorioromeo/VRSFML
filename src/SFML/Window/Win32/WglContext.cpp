@@ -81,9 +81,7 @@ namespace
 }
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 String getErrorString(DWORD errorCode)
@@ -746,7 +744,5 @@ void WglContext::createContext(WglContext* shared)
         makeCurrent(false);
     }
 }
-
-} // namespace priv
 
 } // namespace sf

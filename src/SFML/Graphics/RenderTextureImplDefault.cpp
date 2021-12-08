@@ -31,9 +31,7 @@
 #include <SFML/Window/Context.hpp>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 RenderTextureImplDefault::RenderTextureImplDefault() :
@@ -101,7 +99,5 @@ void RenderTextureImplDefault::updateTexture(unsigned int textureId)
     glCheck(glBindTexture(GL_TEXTURE_2D, textureId));
     glCheck(glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, static_cast<GLsizei>(m_width), static_cast<GLsizei>(m_height)));
 }
-
-} // namespace priv
 
 } // namespace sf

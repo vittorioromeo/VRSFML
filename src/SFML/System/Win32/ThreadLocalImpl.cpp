@@ -28,9 +28,7 @@
 #include <SFML/System/Win32/ThreadLocalImpl.hpp>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 ThreadLocalImpl::ThreadLocalImpl()
@@ -58,7 +56,5 @@ void* ThreadLocalImpl::getValue() const
 {
     return TlsGetValue(m_index);
 }
-
-} // namespace priv
 
 } // namespace sf

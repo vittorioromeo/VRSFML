@@ -29,9 +29,7 @@
 #include <windows.h>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 void sleepImpl(Time time)
@@ -49,7 +47,5 @@ void sleepImpl(Time time)
     // Reset the timer resolution back to the system default
     timeEndPeriod(tc.wPeriodMin);
 }
-
-} // namespace priv
 
 } // namespace sf

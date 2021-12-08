@@ -30,9 +30,7 @@
 #include <string>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 void alCheckError(const char* file, unsigned int line, const char* expression)
@@ -93,7 +91,5 @@ void alCheckError(const char* file, unsigned int line, const char* expression)
               << std::endl;
     }
 }
-
-} // namespace priv
 
 } // namespace sf

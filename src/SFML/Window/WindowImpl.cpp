@@ -73,9 +73,7 @@
 #endif
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 WindowImpl* WindowImpl::create(VideoMode mode, const String& title, Uint32 style, const ContextSettings& settings)
@@ -288,7 +286,5 @@ bool WindowImpl::createVulkanSurface(const VkInstance& instance, VkSurfaceKHR& s
 
 #endif
 }
-
-} // namespace priv
 
 } // namespace sf

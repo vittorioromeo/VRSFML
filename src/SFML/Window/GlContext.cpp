@@ -309,9 +309,7 @@ namespace
 }
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 void GlContext::initResource()
@@ -954,7 +952,5 @@ void GlContext::checkSettings(const ContextSettings& requestedSettings)
               << std::noboolalpha << std::endl;
     }
 }
-
-} // namespace priv
 
 } // namespace sf

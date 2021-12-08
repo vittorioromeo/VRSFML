@@ -31,9 +31,7 @@
 #include <SFML/Window/VideoMode.hpp>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// \brief OS-specific implementation of video modes functions
@@ -59,8 +57,6 @@ public:
     ////////////////////////////////////////////////////////////
     static VideoMode getDesktopMode();
 };
-
-} // namespace priv
 
 } // namespace sf
 

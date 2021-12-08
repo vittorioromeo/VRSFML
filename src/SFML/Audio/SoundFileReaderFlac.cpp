@@ -175,9 +175,7 @@ namespace
     }
 }
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 bool SoundFileReaderFlac::check(InputStream& stream)
@@ -334,7 +332,5 @@ void SoundFileReaderFlac::close()
         m_decoder = nullptr;
     }
 }
-
-} // namespace priv
 
 } // namespace sf

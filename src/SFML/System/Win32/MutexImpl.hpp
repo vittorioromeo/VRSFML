@@ -32,9 +32,7 @@
 #include <windows.h>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// \brief Windows implementation of mutexes
@@ -74,8 +72,6 @@ private:
     ////////////////////////////////////////////////////////////
     CRITICAL_SECTION m_mutex; //!< Win32 handle of the mutex
 };
-
-} // namespace priv
 
 } // namespace sf
 

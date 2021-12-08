@@ -34,9 +34,7 @@
 #include <unordered_map>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// \brief Specialization of RenderTextureImpl using the
@@ -148,8 +146,6 @@ private:
     bool                                     m_stencil;                 //!< Whether we have stencil attachment
     bool                                     m_sRgb;                    //!< Whether we need to encode drawn pixels into sRGB color space
 };
-
-} // namespace priv
 
 } // namespace sf
 

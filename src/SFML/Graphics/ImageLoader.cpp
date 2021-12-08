@@ -74,9 +74,7 @@ namespace
 }
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 ImageLoader& ImageLoader::getInstance()
@@ -323,7 +321,5 @@ bool ImageLoader::saveImageToMemory(const std::string& format, std::vector<sf::U
     err() << "Failed to save image with format \"" << format << "\"" << std::endl;
     return false;
 }
-
-} // namespace priv
 
 } // namespace sf

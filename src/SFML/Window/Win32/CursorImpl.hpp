@@ -34,10 +34,7 @@
 
 #include <windows.h>
 
-namespace sf
-{
-
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// \brief Win32 implementation of Cursor
@@ -95,8 +92,6 @@ private:
     HCURSOR m_cursor;
     bool m_systemCursor;
 };
-
-} // namespace priv
 
 } // namespace sf
 

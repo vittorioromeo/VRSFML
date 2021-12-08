@@ -32,9 +32,7 @@
 #include <SFML/Window/Joystick.hpp>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// \brief Structure holding a joystick's information
@@ -57,8 +55,6 @@ struct JoystickState
     float axes[Joystick::AxisCount]{};      //!< Position of each axis, in range [-100, 100]
     bool  buttons[Joystick::ButtonCount]{}; //!< Status of each button (true = pressed)
 };
-
-} // namespace priv
 
 } // namespace sf
 

@@ -30,9 +30,7 @@
 #include <algorithm>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 
     ////////////////////////////////////////////////////////////
@@ -82,5 +80,4 @@ namespace priv
         dest.w = static_cast<int>(source.a);
     }
 
-} // namespace priv
 } // namespace sf

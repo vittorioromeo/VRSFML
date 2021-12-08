@@ -29,9 +29,7 @@
 #include <SFML/System/Err.hpp>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 SensorManager& SensorManager::getInstance()
@@ -123,7 +121,5 @@ SensorManager::~SensorManager()
     // Global sensor cleanup
     SensorImpl::cleanup();
 }
-
-} // namespace priv
 
 } // namespace sf

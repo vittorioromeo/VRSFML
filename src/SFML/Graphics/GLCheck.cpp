@@ -30,9 +30,7 @@
 #include <string>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 void glCheckError(const char* file, unsigned int line, const char* expression)
@@ -108,7 +106,5 @@ void glCheckError(const char* file, unsigned int line, const char* expression)
     }
 }
 
-
-} // namespace priv
 
 } // namespace sf

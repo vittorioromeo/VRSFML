@@ -32,9 +32,7 @@
 #include <SFML/System/Time.hpp>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// \brief Windows implementation of sf::Sleep
@@ -43,8 +41,6 @@ namespace priv
 ///
 ////////////////////////////////////////////////////////////
 void sleepImpl(Time time);
-
-} // namespace priv
 
 } // namespace sf
 

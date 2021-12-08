@@ -206,9 +206,7 @@ namespace
     }
 }
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 void JoystickImpl::initialize()
@@ -1143,7 +1141,5 @@ BOOL CALLBACK JoystickImpl::deviceObjectEnumerationCallback(const DIDEVICEOBJECT
 
     return DIENUM_CONTINUE;
 }
-
-} // namespace priv
 
 } // namespace sf

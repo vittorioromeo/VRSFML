@@ -66,9 +66,7 @@ namespace
     static ov_callbacks callbacks = {&read, &seek, nullptr, &tell};
 }
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 bool SoundFileReaderOgg::check(InputStream& stream)
@@ -173,7 +171,5 @@ void SoundFileReaderOgg::close()
         m_channelCount = 0;
     }
 }
-
-} // namespace priv
 
 } // namespace sf

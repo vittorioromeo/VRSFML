@@ -40,9 +40,7 @@ namespace
     }
 }
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 bool SoundFileWriterFlac::check(const std::string& filename)
@@ -135,7 +133,5 @@ void SoundFileWriterFlac::close()
         m_encoder = nullptr;
     }
 }
-
-} // namespace priv
 
 } // namespace sf

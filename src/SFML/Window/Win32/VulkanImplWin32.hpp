@@ -33,9 +33,7 @@
 #include <vector>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// \brief Windows implementation of Vulkan
@@ -94,8 +92,6 @@ public:
     ////////////////////////////////////////////////////////////
     static bool createVulkanSurface(const VkInstance& instance, WindowHandle windowHandle, VkSurfaceKHR& surface, const VkAllocationCallbacks* allocator);
 };
-
-} // namespace priv
 
 } // namespace sf
 

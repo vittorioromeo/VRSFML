@@ -31,9 +31,7 @@
 #include <glad/egl.h>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 void eglCheckError(const char* file, unsigned int line, const char* expression)
@@ -159,5 +157,4 @@ void eglCheckError(const char* file, unsigned int line, const char* expression)
     }
 }
 
-} // namespace priv
 } // namespace sf
