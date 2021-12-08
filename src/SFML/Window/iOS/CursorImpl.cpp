@@ -27,9 +27,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/iOS/CursorImpl.hpp>
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 
 ////////////////////////////////////////////////////////////
@@ -61,8 +59,6 @@ bool CursorImpl::loadFromSystem(Cursor::Type type)
     return false;
 }
 
-
-} // namespace priv
 
 } // namespace sf
 

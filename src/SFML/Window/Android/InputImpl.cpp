@@ -32,9 +32,7 @@
 #include <jni.h>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 bool InputImpl::isKeyPressed(Keyboard::Key key)
@@ -207,7 +205,5 @@ Vector2i InputImpl::getTouchPosition(unsigned int finger, const WindowBase& rela
 {
     return getTouchPosition(finger);
 }
-
-} // namespace priv
 
 } // namespace sf

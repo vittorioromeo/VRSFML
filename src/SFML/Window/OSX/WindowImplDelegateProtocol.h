@@ -31,11 +31,9 @@
 
 #import <AppKit/AppKit.h>
 
-namespace sf {
-    namespace priv {
+namespace sf::priv {
         class WindowImplCocoa;
     }
-}
 
 ////////////////////////////////////////////////////////////
 /// \brief Interface of the delegate of the window implementation

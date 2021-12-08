@@ -33,10 +33,7 @@
 #include <SFML/System/Vector2.hpp>
 
 
-namespace sf
-{
-
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// \brief Android implementation of Cursor
@@ -80,8 +77,6 @@ public:
     ////////////////////////////////////////////////////////////
     bool loadFromSystem(Cursor::Type type);
 };
-
-} // namespace priv
 
 } // namespace sf
 

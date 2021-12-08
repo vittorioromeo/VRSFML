@@ -26,9 +26,7 @@
 #define SFML_JOYSTICKIMPLOPENBSD_HPP
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// \brief OpenBSD implementation of joysticks
@@ -82,7 +80,7 @@ public:
     /// \return Joystick capabilities
     ///
     ////////////////////////////////////////////////////////////
-    JoystickCaps getCapabilities() const;
+    JoystickImpl getCapabilities() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the joystick identification
@@ -108,8 +106,6 @@ private:
     int m_index;                               ///< Index of the joystick
     Joystick::Identification m_identification; ///< Joystick identification
 };
-
-} // namespace priv
 
 } // namespace sf
 

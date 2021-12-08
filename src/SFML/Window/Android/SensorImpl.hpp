@@ -32,9 +32,7 @@
 #include <android/sensor.h>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// \brief Android implementation of sensors
@@ -128,8 +126,6 @@ private:
     const ASensor* m_sensor; ///< Android sensor structure
     unsigned int   m_index;  ///< Index of the sensor
 };
-
-} // namespace priv
 
 } // namespace sf
 

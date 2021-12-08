@@ -31,9 +31,7 @@
 #include <SFML/System/Err.hpp>
 #include <algorithm>
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 
 ////////////////////////////////////////////////////////////
@@ -94,6 +92,5 @@ VideoMode VideoModeImpl::getDesktopMode()
     return mode;
 }
 
-} // namespace priv
 } // namespace sf
 

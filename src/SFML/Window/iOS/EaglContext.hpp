@@ -38,9 +38,7 @@
 SFML_DECLARE_OBJC_CLASS(EAGLContext);
 SFML_DECLARE_OBJC_CLASS(SFView);
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 class WindowImplUIKit;
 
@@ -169,8 +167,6 @@ private:
     bool m_vsyncEnabled;    ///< Vertical sync activation flag
     Clock m_clock;          ///< Measures the elapsed time for the fake v-sync implementation
 };
-
-} // namespace priv
 
 } // namespace sf
 

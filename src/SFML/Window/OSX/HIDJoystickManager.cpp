@@ -40,9 +40,7 @@ namespace
 }
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 HIDJoystickManager& HIDJoystickManager::getInstance()
@@ -145,8 +143,6 @@ void HIDJoystickManager::pluggedOut(void* context, IOReturn, void*, IOHIDDeviceR
     manager->m_joystickCount--;
 }
 
-
-} // namespace priv
 
 } // namespace sf
 

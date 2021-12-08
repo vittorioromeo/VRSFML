@@ -29,9 +29,7 @@
 #include <SFML/System/Err.hpp>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 String ClipboardImpl::getString()
@@ -46,7 +44,5 @@ void ClipboardImpl::setString(const String& text)
 {
     sf::err() << "Clipboard API not implemented for Android.\n";
 }
-
-} // namespace priv
 
 } // namespace sf

@@ -30,9 +30,7 @@
 
 #import <AppKit/AppKit.h>
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 
 ////////////////////////////////////////////////////////////
@@ -98,6 +96,5 @@ void scaleOutXY(T& out, id<WindowImplDelegateProtocol> delegate)
     scaleOut(out.y, delegate);
 }
 
-} // namespace priv
 } // namespace sf
 

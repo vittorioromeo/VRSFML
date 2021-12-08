@@ -31,9 +31,7 @@
 #include <SFML/System/String.hpp>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 
 ////////////////////////////////////////////////////////////
@@ -68,8 +66,6 @@ public:
     ////////////////////////////////////////////////////////////
     static void setString(const String& text);
 };
-
-} // namespace priv
 
 } // namespace sf
 

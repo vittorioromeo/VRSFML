@@ -53,9 +53,7 @@ using NSOpenGLContextRef = void*;
 
 #endif
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// \brief Mac OS X (Cocoa) implementation of WindowImpl
@@ -368,8 +366,6 @@ private:
     WindowImplDelegateRef m_delegate;   ///< Implementation in Obj-C.
     bool                  m_showCursor; ///< Is the cursor displayed or hidden?
 };
-
-} // namespace priv
 
 } // namespace sf
 

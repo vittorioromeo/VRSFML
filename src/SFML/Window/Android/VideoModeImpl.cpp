@@ -31,9 +31,7 @@
 #include <SFML/System/Sleep.hpp>
 #include <SFML/System/Lock.hpp>
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 std::vector<VideoMode> VideoModeImpl::getFullscreenModes()
@@ -57,7 +55,5 @@ VideoMode VideoModeImpl::getDesktopMode()
 
     return VideoMode(states.screenSize.x, states.screenSize.y);
 }
-
-} // namespace priv
 
 } // namespace sf

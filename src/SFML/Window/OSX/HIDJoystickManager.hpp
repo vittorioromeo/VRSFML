@@ -33,9 +33,7 @@
 #include <IOKit/hid/IOHIDDevice.h>
 #include <IOKit/hid/IOHIDManager.h>
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// \brief sf::priv::InputImpl helper
@@ -121,8 +119,6 @@ private:
     unsigned int    m_joystickCount;///< Number of joysticks currently connected
 };
 
-
-} // namespace priv
 
 } // namespace sf
 

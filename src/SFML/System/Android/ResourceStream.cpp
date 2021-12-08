@@ -31,9 +31,7 @@
 #include <SFML/System/Lock.hpp>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 
 ////////////////////////////////////////////////////////////
@@ -112,5 +110,4 @@ Int64 ResourceStream::getSize()
 }
 
 
-} // namespace priv
 } // namespace sf

@@ -43,9 +43,7 @@ namespace
 }
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 void SensorImpl::initialize()
@@ -208,7 +206,5 @@ int SensorImpl::processSensorEvents(int fd, int events, void* data)
 
     return 1;
 }
-
-} // namespace priv
 
 } // namespace sf
