@@ -32,9 +32,7 @@
 #include <linux/input.h>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// \brief Linux implementation of joysticks
@@ -122,8 +120,6 @@ private:
     JoystickState                m_state;                ///< Current state of the joystick
     sf::Joystick::Identification m_identification;       ///< Identification of the joystick
 };
-
-} // namespace priv
 
 } // namespace sf
 

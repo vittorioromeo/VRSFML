@@ -33,9 +33,7 @@
 #include <deque>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 
 ////////////////////////////////////////////////////////////
@@ -146,8 +144,6 @@ private:
     std::deque<XEvent> m_events;            ///< Queue we use to store pending events for this window
     bool               m_requestResponded;  ///< Holds whether our selection request has been responded to or not
 };
-
-} // namespace priv
 
 } // namespace sf
 

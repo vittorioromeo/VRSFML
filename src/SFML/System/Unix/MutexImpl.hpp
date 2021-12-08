@@ -32,9 +32,7 @@
 #include <pthread.h>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// \brief Unix implementation of mutexes
@@ -74,8 +72,6 @@ private:
     ////////////////////////////////////////////////////////////
     pthread_mutex_t m_mutex; ///< pthread handle of the mutex
 };
-
-} // namespace priv
 
 } // namespace sf
 

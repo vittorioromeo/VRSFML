@@ -46,9 +46,7 @@ namespace
     AtomMap atoms;
 }
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 Display* OpenDisplay()
@@ -102,7 +100,5 @@ Atom getAtom(const std::string& name, bool onlyIfExists)
 
     return atom;
 }
-
-} // namespace priv
 
 } // namespace sf

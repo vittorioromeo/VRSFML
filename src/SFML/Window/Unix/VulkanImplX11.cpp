@@ -105,9 +105,7 @@ namespace
 }
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 bool VulkanImplX11::isAvailable(bool requireGraphics)
@@ -219,7 +217,5 @@ bool VulkanImplX11::createVulkanSurface(const VkInstance& instance, WindowHandle
 
     return result;
 }
-
-} // namespace priv
 
 } // namespace sf

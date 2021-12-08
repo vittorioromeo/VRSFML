@@ -32,9 +32,7 @@
 #include <cstring>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 sockaddr_in SocketImpl::createAddress(Uint32 address, unsigned short port)
@@ -106,7 +104,5 @@ Socket::Status SocketImpl::getErrorStatus()
         default:           return Socket::Error;
     }
 }
-
-} // namespace priv
 
 } // namespace sf

@@ -37,9 +37,7 @@
 #include <X11/extensions/Xrandr.h>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// \brief Linux (X11) implementation of WindowImpl
@@ -321,8 +319,6 @@ private:
     Pixmap             m_iconMaskPixmap; ///< The current icon mask pixmap if in use
     ::Time             m_lastInputTime;  ///< Last time we received user input
 };
-
-} // namespace priv
 
 } // namespace sf
 

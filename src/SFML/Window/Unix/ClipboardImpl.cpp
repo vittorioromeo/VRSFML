@@ -43,9 +43,7 @@ namespace
     }
 }
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 
 ////////////////////////////////////////////////////////////
@@ -378,7 +376,5 @@ void ClipboardImpl::processEvent(XEvent& windowEvent)
             break;
     }
 }
-
-} // namespace priv
 
 } // namespace sf

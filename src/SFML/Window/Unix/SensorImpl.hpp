@@ -26,9 +26,7 @@
 #define SFML_SENSORIMPLUNIX_HPP
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// \brief Unix implementation of sensors
@@ -92,8 +90,6 @@ public:
     ////////////////////////////////////////////////////////////
     void setEnabled(bool enabled);
 };
-
-} // namespace priv
 
 } // namespace sf
 

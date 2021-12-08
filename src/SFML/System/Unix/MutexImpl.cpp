@@ -28,9 +28,7 @@
 #include <SFML/System/Unix/MutexImpl.hpp>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 MutexImpl::MutexImpl()
@@ -63,7 +61,5 @@ void MutexImpl::unlock()
 {
     pthread_mutex_unlock(&m_mutex);
 }
-
-} // namespace priv
 
 } // namespace sf

@@ -489,9 +489,7 @@ namespace
 }
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 WindowImplX11::WindowImplX11(WindowHandle handle) :
@@ -2239,7 +2237,5 @@ Vector2i WindowImplX11::getPrimaryMonitorPosition()
 
     return monitorPosition;
 }
-
-} // namespace priv
 
 } // namespace sf

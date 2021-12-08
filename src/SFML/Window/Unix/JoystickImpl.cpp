@@ -435,9 +435,7 @@ namespace
 }
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 JoystickImpl::JoystickImpl() :
@@ -702,7 +700,5 @@ JoystickState JoystickImpl::JoystickImpl::update()
 
     return m_state;
 }
-
-} // namespace priv
 
 } // namespace sf
