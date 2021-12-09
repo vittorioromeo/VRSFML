@@ -69,6 +69,13 @@ macro(sfml_add_library target)
     # enable C++17 support
     target_compile_features(${target} PUBLIC cxx_std_17)
 
+    # enable precompiled headers
+    if (${target} MATCHES "sfml-system")
+        target_precompile_headers(${target} PRIVATE "${CMAKE_SOURCE_DIR}/include/SFML/PCH.hpp")
+    else()
+        target_precompile_headers(${target} REUSE_FROM sfml-system)
+    endif()
+
     set_file_warnings(${THIS_SOURCES})
 
     # define the export symbol of the module
@@ -271,6 +278,9 @@ macro(sfml_add_example target)
     # enable C++17 support
     target_compile_features(${target} PUBLIC cxx_std_17)
 
+    # enable precompiled headers
+    target_precompile_headers(${target} REUSE_FROM sfml-system)
+
     set_file_warnings(${target_input})
 
     # set the debug suffix
@@ -310,6 +320,9 @@ function(sfml_add_test target SOURCES DEPENDS)
 
     # enable C++17 support
     target_compile_features(${target} PUBLIC cxx_std_17)
+
+    # enable precompiled headers
+    target_precompile_headers(${target} REUSE_FROM sfml-system)
 
     # set the target's folder (for IDEs that support it, e.g. Visual Studio)
     set_target_properties(${target} PROPERTIES FOLDER "Tests")

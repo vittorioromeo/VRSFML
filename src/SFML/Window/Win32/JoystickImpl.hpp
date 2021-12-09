@@ -211,7 +211,7 @@ private:
     /// \return DIENUM_CONTINUE to continue enumerating devices or DIENUM_STOP to stop
     ///
     ////////////////////////////////////////////////////////////
-    static BOOL CALLBACK deviceEnumerationCallback(const DIDEVICEINSTANCE* deviceInstance, void* userData);
+    static BOOL CALLBACK deviceEnumerationCallback(const DIDEVICEINSTANCEW* deviceInstance, void* userData);
 
     ////////////////////////////////////////////////////////////
     /// \brief Device object enumeration callback function passed to EnumObjects in open
@@ -222,7 +222,7 @@ private:
     /// \return DIENUM_CONTINUE to continue enumerating objects or DIENUM_STOP to stop
     ///
     ////////////////////////////////////////////////////////////
-    static BOOL CALLBACK deviceObjectEnumerationCallback(const DIDEVICEOBJECTINSTANCE* deviceObjectInstance, void* userData);
+    static BOOL CALLBACK deviceObjectEnumerationCallback(const DIDEVICEOBJECTINSTANCEW* deviceObjectInstance, void* userData);
 
     ////////////////////////////////////////////////////////////
     // Member data
