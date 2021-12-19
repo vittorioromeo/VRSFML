@@ -70,11 +70,7 @@ macro(sfml_add_library target)
     target_compile_features(${target} PUBLIC cxx_std_17)
 
     # enable precompiled headers
-    if (${target} MATCHES "sfml-system")
-        target_precompile_headers(${target} PRIVATE "${CMAKE_SOURCE_DIR}/include/SFML/PCH.hpp")
-    else()
-        target_precompile_headers(${target} REUSE_FROM sfml-system)
-    endif()
+    target_precompile_headers(${target} PRIVATE "${CMAKE_SOURCE_DIR}/src/SFML/PCH.hpp")
 
     set_file_warnings(${THIS_SOURCES})
 
