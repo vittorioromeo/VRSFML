@@ -3,6 +3,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics.hpp>
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
 #include <windows.h>
 #include <cmath>
 
@@ -113,7 +116,7 @@ int main()
             SFMLView1.draw(sprite1);
 
             // Draw sprite 2 on view 2
-            sprite2.setPosition(std::cos(time) * 100.f, 0.f);
+            sprite2.setPosition({std::cos(time) * 100.f, 0.f});
             SFMLView2.draw(sprite2);
 
             // Display each view on screen
