@@ -31,6 +31,7 @@
 
 #include <SFML/Config.hpp>
 
+/*
 #ifdef SFML_SYSTEM_WINDOWS
 
 #include <SFML/System/Win32/WindowsHeader.hpp>
@@ -43,6 +44,7 @@
 #include <dinput.h>
 
 #endif // SFML_SYSTEM_WINDOWS
+*/
 
 #include <SFML/System/Err.hpp>
 #include <SFML/System/String.hpp>
