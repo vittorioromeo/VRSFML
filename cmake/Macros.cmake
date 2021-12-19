@@ -72,6 +72,7 @@ macro(sfml_add_library target)
     # enable precompiled headers
     target_precompile_headers(${target} PRIVATE "${CMAKE_SOURCE_DIR}/src/SFML/PCH.hpp")
 
+    set_file_warnings("${CMAKE_SOURCE_DIR}/src/SFML/PCH.hpp")
     set_file_warnings(${THIS_SOURCES})
 
     # define the export symbol of the module
