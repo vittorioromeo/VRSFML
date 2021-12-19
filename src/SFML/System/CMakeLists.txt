@@ -49,6 +49,7 @@ source_group("unix" FILES ${PLATFORM_SRC})
 sfml_add_library(sfml-system
                  SOURCES ${SRC} ${PLATFORM_SRC})
 
+set_file_warnings("${CMAKE_SOURCE_DIR}/src/SFML/PCH.hpp")
 target_precompile_headers(sfml-system PRIVATE "${CMAKE_SOURCE_DIR}/src/SFML/PCH.hpp")
 
 if(SFML_OS_ANDROID)
