@@ -25,53 +25,21 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Vertex.hpp>
-
+#include <SFML/System/SuspendAwareClock.hpp>
+#include <ctime>
 
 namespace sf
 {
-////////////////////////////////////////////////////////////
-Vertex::Vertex() :
-position (0, 0),
-color    (255, 255, 255),
-texCoords(0, 0)
+
+SuspendAwareClock::time_point SuspendAwareClock::now() noexcept
 {
-}
-
-
-////////////////////////////////////////////////////////////
-Vertex::Vertex(const Vector2f& thePosition) :
-position (thePosition),
-color    (255, 255, 255),
-texCoords(0, 0)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-Vertex::Vertex(const Vector2f& thePosition, const Color& theColor) :
-position (thePosition),
-color    (theColor),
-texCoords(0, 0)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-Vertex::Vertex(const Vector2f& thePosition, const Vector2f& theTexCoords) :
-position (thePosition),
-color    (255, 255, 255),
-texCoords(theTexCoords)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-Vertex::Vertex(const Vector2f& thePosition, const Color& theColor, const Vector2f& theTexCoords) :
-position (thePosition),
-color    (theColor),
-texCoords(theTexCoords)
-{
+    ::timespec ts;
+#ifdef CLOCK_BOOTTIME
+    clock_gettime(CLOCK_BOOTTIME, &ts);
+#else
+    #error "CLOCK_BOOTTIME is essential for SuspendAwareClock to work"
+#endif // CLOCK_BOOTTIME
+    return time_point(std::chrono::seconds(ts.tv_sec) + std::chrono::nanoseconds(ts.tv_nsec));
 }
 
 } // namespace sf

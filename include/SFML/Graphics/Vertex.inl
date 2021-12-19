@@ -22,34 +22,47 @@
 //
 ////////////////////////////////////////////////////////////
 
+
 ////////////////////////////////////////////////////////////
-// Headers
-////////////////////////////////////////////////////////////
-#include <SFML/System/Win32/SleepImpl.hpp>
-#include <windows.h>
-
-
-namespace sf
+constexpr Vertex::Vertex() :
+position (0, 0),
+color    (255, 255, 255),
+texCoords(0, 0)
 {
-namespace priv
-{
-////////////////////////////////////////////////////////////
-void sleepImpl(Time time)
-{
-    // Get the supported timer resolutions on this system
-    TIMECAPS tc;
-    timeGetDevCaps(&tc, sizeof(TIMECAPS));
-
-    // Set the timer resolution to the minimum for the Sleep call
-    timeBeginPeriod(tc.wPeriodMin);
-
-    // Wait...
-    ::Sleep(static_cast<DWORD>(time.asMilliseconds()));
-
-    // Reset the timer resolution back to the system default
-    timeEndPeriod(tc.wPeriodMin);
 }
 
-} // namespace priv
 
-} // namespace sf
+////////////////////////////////////////////////////////////
+constexpr Vertex::Vertex(const Vector2f& thePosition) :
+position (thePosition),
+color    (255, 255, 255),
+texCoords(0, 0)
+{
+}
+
+
+////////////////////////////////////////////////////////////
+constexpr Vertex::Vertex(const Vector2f& thePosition, const Color& theColor) :
+position (thePosition),
+color    (theColor),
+texCoords(0, 0)
+{
+}
+
+
+////////////////////////////////////////////////////////////
+constexpr Vertex::Vertex(const Vector2f& thePosition, const Vector2f& theTexCoords) :
+position (thePosition),
+color    (255, 255, 255),
+texCoords(theTexCoords)
+{
+}
+
+
+////////////////////////////////////////////////////////////
+constexpr Vertex::Vertex(const Vector2f& thePosition, const Color& theColor, const Vector2f& theTexCoords) :
+position (thePosition),
+color    (theColor),
+texCoords(theTexCoords)
+{
+}
