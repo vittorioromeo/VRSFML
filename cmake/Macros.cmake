@@ -319,7 +319,7 @@ function(sfml_add_test target SOURCES DEPENDS)
     target_compile_features(${target} PUBLIC cxx_std_17)
 
     # enable precompiled headers
-    target_precompile_headers(${target} REUSE_FROM sfml-system)
+    # target_precompile_headers(${target} REUSE_FROM sfml-system)
 
     # set the target's folder (for IDEs that support it, e.g. Visual Studio)
     set_target_properties(${target} PROPERTIES FOLDER "Tests")
