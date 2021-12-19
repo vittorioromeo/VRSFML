@@ -29,13 +29,11 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Config.hpp>
-#include <SFML/System/NonCopyable.hpp>
 #include <SFML/System/String.hpp>
 #include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/CursorImpl.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Joystick.hpp>
-#include <SFML/Window/JoystickImpl.hpp>
 #include <SFML/Window/Sensor.hpp>
 #include <SFML/Window/SensorImpl.hpp>
 #include <SFML/Window/VideoMode.hpp>
@@ -54,7 +52,7 @@ namespace priv
 /// \brief Abstract base class for OS-specific window implementation
 ///
 ////////////////////////////////////////////////////////////
-class WindowImpl : NonCopyable
+class WindowImpl
 {
 public:
 
@@ -88,6 +86,18 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     virtual ~WindowImpl();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    WindowImpl(const WindowImpl&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    WindowImpl& operator=(const WindowImpl&) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the joystick threshold, i.e. the value below which
@@ -266,6 +276,7 @@ protected:
     virtual void processEvents() = 0;
 
 private:
+    struct JoystickStatesImpl;
 
     ////////////////////////////////////////////////////////////
     /// \brief Read the joysticks state and generate the appropriate events
@@ -282,11 +293,11 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::queue<Event> m_events;                                              //!< Queue of available events
-    JoystickState     m_joystickStates[Joystick::Count];                     //!< Previous state of the joysticks
-    Vector3f          m_sensorValue[Sensor::Count];                          //!< Previous value of the sensors
-    float             m_joystickThreshold;                                   //!< Joystick threshold (minimum motion for "move" event to be generated)
-    float             m_previousAxes[Joystick::Count][Joystick::AxisCount];  //!< Position of each axis last time a move event triggered, in range [-100, 100]
+    std::queue<Event>   m_events;                                              //!< Queue of available events
+    JoystickStatesImpl* m_joystickStatesImpl;                                  //!< Previous state of the joysticks (PImpl)
+    Vector3f            m_sensorValue[Sensor::Count];                          //!< Previous value of the sensors
+    float               m_joystickThreshold;                                   //!< Joystick threshold (minimum motion for "move" event to be generated)
+    float               m_previousAxes[Joystick::Count][Joystick::AxisCount];  //!< Position of each axis last time a move event triggered, in range [-100, 100]
 };
 
 } // namespace priv

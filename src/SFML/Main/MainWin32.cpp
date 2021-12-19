@@ -39,7 +39,8 @@
 
 #ifdef SFML_SYSTEM_WINDOWS
 
-#include <windows.h>
+#include <SFML/System/Win32/WindowsHeader.hpp>
+#include <cstdlib> // for `__argc` and `__argv`
 
 extern int main(int argc, char* argv[]);
 

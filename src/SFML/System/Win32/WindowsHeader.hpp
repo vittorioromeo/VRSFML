@@ -22,48 +22,29 @@
 //
 ////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
-// Headers
-////////////////////////////////////////////////////////////
-#include <SFML/System/Unix/MutexImpl.hpp>
+#ifndef SFML_WINDOWSHEADER_HPP
+#define SFML_WINDOWSHEADER_HPP
 
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
 
-namespace sf
-{
-namespace priv
-{
-////////////////////////////////////////////////////////////
-MutexImpl::MutexImpl()
-{
-    // Make it recursive to follow the expected behavior
-    pthread_mutexattr_t attributes;
-    pthread_mutexattr_init(&attributes);
-    pthread_mutexattr_settype(&attributes, PTHREAD_MUTEX_RECURSIVE);
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
 
-    pthread_mutex_init(&m_mutex, &attributes);
-}
+#ifndef _WIN32_WINDOWS
+#define _WIN32_WINDOWS 0x0501
+#endif
 
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0501
+#endif
 
-////////////////////////////////////////////////////////////
-MutexImpl::~MutexImpl()
-{
-    pthread_mutex_destroy(&m_mutex);
-}
+#ifndef WINVER
+#define WINVER 0x0501
+#endif
 
+#include <windows.h>
 
-////////////////////////////////////////////////////////////
-void MutexImpl::lock()
-{
-    pthread_mutex_lock(&m_mutex);
-}
-
-
-////////////////////////////////////////////////////////////
-void MutexImpl::unlock()
-{
-    pthread_mutex_unlock(&m_mutex);
-}
-
-} // namespace priv
-
-} // namespace sf
+#endif // SFML_WINDOWSHEADER_HPP

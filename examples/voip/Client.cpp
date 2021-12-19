@@ -87,7 +87,11 @@ private:
         // Send a "end-of-stream" packet
         sf::Packet packet;
         packet << clientEndOfStream;
-        m_socket.send(packet);
+
+        if (!m_socket.send(packet))
+        {
+            std::cerr << "Failed to send end-of-stream packet" << std::endl;
+        }
 
         // Close the socket
         m_socket.disconnect();
@@ -134,7 +138,12 @@ void doClient(unsigned short port)
     std::cin.ignore(10000, '\n');
 
     // Start capturing audio data
-    recorder.start(44100);
+    if (!recorder.start(44100))
+    {
+        std::cerr << "Failed to start recorder" << std::endl;
+        return;
+    }
+
     std::cout << "Recording... press enter to stop";
     std::cin.ignore(10000, '\n');
     recorder.stop();

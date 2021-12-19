@@ -31,7 +31,6 @@
 #include <SFML/Graphics/Export.hpp>
 #include <SFML/Graphics/Glsl.hpp>
 #include <SFML/Window/GlResource.hpp>
-#include <SFML/System/NonCopyable.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <SFML/System/Vector3.hpp>
 #include <string>
@@ -49,7 +48,7 @@ class Transform;
 /// \brief Shader class (vertex, geometry and fragment)
 ///
 ////////////////////////////////////////////////////////////
-class SFML_GRAPHICS_API Shader : GlResource, NonCopyable
+class SFML_GRAPHICS_API Shader : GlResource
 {
 public:
 
@@ -98,6 +97,18 @@ public:
     ~Shader();
 
     ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    Shader(const Shader&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    Shader& operator=(const Shader&) = delete;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Load the vertex, geometry or fragment shader from a file
     ///
     /// This function loads a single shader, vertex, geometry or
@@ -116,7 +127,7 @@ public:
     /// \see loadFromMemory, loadFromStream
     ///
     ////////////////////////////////////////////////////////////
-    bool loadFromFile(const std::string& filename, Type type);
+    [[nodiscard]] bool loadFromFile(const std::string& filename, Type type);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load both the vertex and fragment shaders from files
@@ -137,7 +148,7 @@ public:
     /// \see loadFromMemory, loadFromStream
     ///
     ////////////////////////////////////////////////////////////
-    bool loadFromFile(const std::string& vertexShaderFilename, const std::string& fragmentShaderFilename);
+    [[nodiscard]] bool loadFromFile(const std::string& vertexShaderFilename, const std::string& fragmentShaderFilename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the vertex, geometry and fragment shaders from files
@@ -159,7 +170,7 @@ public:
     /// \see loadFromMemory, loadFromStream
     ///
     ////////////////////////////////////////////////////////////
-    bool loadFromFile(const std::string& vertexShaderFilename, const std::string& geometryShaderFilename, const std::string& fragmentShaderFilename);
+    [[nodiscard]] bool loadFromFile(const std::string& vertexShaderFilename, const std::string& geometryShaderFilename, const std::string& fragmentShaderFilename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the vertex, geometry or fragment shader from a source code in memory
@@ -179,7 +190,7 @@ public:
     /// \see loadFromFile, loadFromStream
     ///
     ////////////////////////////////////////////////////////////
-    bool loadFromMemory(const std::string& shader, Type type);
+    [[nodiscard]] bool loadFromMemory(const std::string& shader, Type type);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load both the vertex and fragment shaders from source codes in memory
@@ -200,7 +211,7 @@ public:
     /// \see loadFromFile, loadFromStream
     ///
     ////////////////////////////////////////////////////////////
-    bool loadFromMemory(const std::string& vertexShader, const std::string& fragmentShader);
+    [[nodiscard]] bool loadFromMemory(const std::string& vertexShader, const std::string& fragmentShader);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the vertex, geometry and fragment shaders from source codes in memory
@@ -222,7 +233,7 @@ public:
     /// \see loadFromFile, loadFromStream
     ///
     ////////////////////////////////////////////////////////////
-    bool loadFromMemory(const std::string& vertexShader, const std::string& geometryShader, const std::string& fragmentShader);
+    [[nodiscard]] bool loadFromMemory(const std::string& vertexShader, const std::string& geometryShader, const std::string& fragmentShader);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the vertex, geometry or fragment shader from a custom stream
@@ -242,7 +253,7 @@ public:
     /// \see loadFromFile, loadFromMemory
     ///
     ////////////////////////////////////////////////////////////
-    bool loadFromStream(InputStream& stream, Type type);
+    [[nodiscard]] bool loadFromStream(InputStream& stream, Type type);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load both the vertex and fragment shaders from custom streams
@@ -263,7 +274,7 @@ public:
     /// \see loadFromFile, loadFromMemory
     ///
     ////////////////////////////////////////////////////////////
-    bool loadFromStream(InputStream& vertexShaderStream, InputStream& fragmentShaderStream);
+    [[nodiscard]] bool loadFromStream(InputStream& vertexShaderStream, InputStream& fragmentShaderStream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the vertex, geometry and fragment shaders from custom streams
@@ -285,7 +296,7 @@ public:
     /// \see loadFromFile, loadFromMemory
     ///
     ////////////////////////////////////////////////////////////
-    bool loadFromStream(InputStream& vertexShaderStream, InputStream& geometryShaderStream, InputStream& fragmentShaderStream);
+    [[nodiscard]] bool loadFromStream(InputStream& vertexShaderStream, InputStream& geometryShaderStream, InputStream& fragmentShaderStream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p float uniform
@@ -626,7 +637,7 @@ private:
     /// \return True on success, false if any error happened
     ///
     ////////////////////////////////////////////////////////////
-    bool compile(const char* vertexShaderCode, const char* geometryShaderCode, const char* fragmentShaderCode);
+    [[nodiscard]] bool compile(const char* vertexShaderCode, const char* geometryShaderCode, const char* fragmentShaderCode);
 
     ////////////////////////////////////////////////////////////
     /// \brief Bind all the textures used by the shader

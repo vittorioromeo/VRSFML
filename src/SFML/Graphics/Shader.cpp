@@ -33,11 +33,10 @@
 #include <SFML/Graphics/GLCheck.hpp>
 #include <SFML/Window/Context.hpp>
 #include <SFML/System/InputStream.hpp>
-#include <SFML/System/Mutex.hpp>
-#include <SFML/System/Lock.hpp>
 #include <SFML/System/Err.hpp>
 #include <fstream>
 #include <vector>
+#include <mutex>
 
 
 #ifndef SFML_OPENGL_ES
@@ -56,7 +55,7 @@
 
 namespace
 {
-    sf::Mutex isAvailableMutex;
+    std::recursive_mutex isAvailableMutex;
 
     GLint checkMaxTextureUnits()
     {
@@ -104,7 +103,13 @@ namespace
         if (size > 0)
         {
             buffer.resize(static_cast<std::size_t>(size));
-            stream.seek(0);
+
+            if (stream.seek(0) == -1)
+            {
+                sf::err() << "Failed to seek shader stream" << std::endl;
+                return false;
+            }
+
             sf::Int64 read = stream.read(buffer.data(), size);
             success = (read == size);
         }
@@ -172,7 +177,7 @@ Shader::CurrentTextureType Shader::CurrentTexture;
 
 
 ////////////////////////////////////////////////////////////
-struct Shader::UniformBinder : private NonCopyable
+struct Shader::UniformBinder
 {
     ////////////////////////////////////////////////////////////
     /// \brief Constructor: set up state before uniform is set
@@ -205,6 +210,18 @@ struct Shader::UniformBinder : private NonCopyable
         if (currentProgram && (currentProgram != savedProgram))
             glCheck(GLEXT_glUseProgramObject(savedProgram));
     }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    UniformBinder(const UniformBinder&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    UniformBinder& operator=(const UniformBinder&) = delete;
 
     TransientContextLock lock;           //!< Lock to keep context active while uniform is bound
     GLEXT_GLhandle       savedProgram;   //!< Handle to the previously active program object
@@ -697,7 +714,7 @@ void Shader::bind(const Shader* shader)
 ////////////////////////////////////////////////////////////
 bool Shader::isAvailable()
 {
-    Lock lock(isAvailableMutex);
+    std::scoped_lock lock(isAvailableMutex);
 
     static bool checked = false;
     static bool available = false;
@@ -725,7 +742,7 @@ bool Shader::isAvailable()
 ////////////////////////////////////////////////////////////
 bool Shader::isGeometryAvailable()
 {
-    Lock lock(isAvailableMutex);
+    std::scoped_lock lock(isAvailableMutex);
 
     static bool checked = false;
     static bool available = false;

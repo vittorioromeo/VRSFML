@@ -28,9 +28,6 @@
 #include <SFML/Window/GlContext.hpp>
 #include <SFML/Window/Context.hpp>
 #include <SFML/Window/EglContext.hpp>
-#include <SFML/System/ThreadLocalPtr.hpp>
-#include <SFML/System/Mutex.hpp>
-#include <SFML/System/Lock.hpp>
 #include <SFML/System/Err.hpp>
 #include <glad/gl.h>
 #include <algorithm>
@@ -42,6 +39,8 @@
 #include <cstring>
 #include <cctype>
 #include <cassert>
+#include <mutex>
+#include <optional>
 
 
 #if defined(SFML_SYSTEM_WINDOWS)
@@ -158,13 +157,13 @@ namespace
         // This mutex is also used to protect the shared context
         // from being locked on multiple threads and for managing
         // the resource count
-        sf::Mutex mutex;
+        std::recursive_mutex mutex;
 
         // OpenGL resources counter
         unsigned int resourceCount = 0;
 
         // This per-thread variable holds the current context for each thread
-        sf::ThreadLocalPtr<sf::priv::GlContext> currentContext(nullptr);
+        thread_local sf::priv::GlContext* currentContext(nullptr);
 
         // The hidden, inactive context that will be shared with all other contexts
         ContextType* sharedContext = nullptr;
@@ -181,7 +180,7 @@ namespace
 
         // This structure contains all the state necessary to
         // track TransientContext usage
-        struct TransientContext : private sf::NonCopyable
+        struct TransientContext
         {
             ////////////////////////////////////////////////////////////
             /// \brief Constructor
@@ -190,7 +189,7 @@ namespace
             TransientContext() :
             referenceCount   (0),
             context          (nullptr),
-            sharedContextLock(nullptr),
+            sharedContextLock(),
             useSharedContext (false)
             {
                 if (resourceCount == 0)
@@ -199,7 +198,7 @@ namespace
                 }
                 else if (!currentContext)
                 {
-                    sharedContextLock = new sf::Lock(mutex);
+                    sharedContextLock.emplace(mutex);
                     useSharedContext = true;
                     sharedContext->setActive(true);
                 }
@@ -214,22 +213,34 @@ namespace
                 if (useSharedContext)
                     sharedContext->setActive(false);
 
-                delete sharedContextLock;
+                sharedContextLock.reset();
                 delete context;
             }
+
+            ////////////////////////////////////////////////////////////
+            /// \brief Deleted copy constructor
+            ///
+            ////////////////////////////////////////////////////////////
+            TransientContext(const TransientContext&) = delete;
+
+            ////////////////////////////////////////////////////////////
+            /// \brief Deleted copy assignment
+            ///
+            ////////////////////////////////////////////////////////////
+            TransientContext& operator=(const TransientContext&) = delete;
 
             ///////////////////////////////////////////////////////////
             // Member data
             ////////////////////////////////////////////////////////////
-            unsigned int referenceCount;
-            sf::Context* context;
-            sf::Lock*    sharedContextLock;
-            bool         useSharedContext;
+            unsigned int                                          referenceCount;
+            sf::Context*                                          context;
+            std::optional<std::scoped_lock<std::recursive_mutex>> sharedContextLock;
+            bool                                                  useSharedContext;
         };
 
         // This per-thread variable tracks if and how a transient
         // context is currently being used on the current thread
-        sf::ThreadLocalPtr<TransientContext> transientContext(nullptr);
+        thread_local TransientContext* transientContext(nullptr);
 
         // Supported OpenGL extensions
         std::vector<std::string> extensions;
@@ -322,7 +333,7 @@ void GlContext::initResource()
     using GlContextImpl::loadExtensions;
 
     // Protect from concurrent access
-    Lock lock(mutex);
+    std::scoped_lock lock(mutex);
 
     // If this is the very first resource, trigger the global context initialization
     if (resourceCount == 0)
@@ -359,7 +370,7 @@ void GlContext::cleanupResource()
     using GlContextImpl::sharedContext;
 
     // Protect from concurrent access
-    Lock lock(mutex);
+    std::scoped_lock lock(mutex);
 
     // Decrement the resources counter
     resourceCount--;
@@ -392,7 +403,7 @@ void GlContext::acquireTransientContext()
     using GlContextImpl::transientContext;
 
     // Protect from concurrent access
-    Lock lock(mutex);
+    std::scoped_lock lock(mutex);
 
     // If this is the first TransientContextLock on this thread
     // construct the state object
@@ -411,7 +422,7 @@ void GlContext::releaseTransientContext()
     using GlContextImpl::transientContext;
 
     // Protect from concurrent access
-    Lock lock(mutex);
+    std::scoped_lock lock(mutex);
 
     // Make sure a matching acquireTransientContext() was called
     assert(transientContext);
@@ -438,7 +449,7 @@ GlContext* GlContext::create()
     // Make sure that there's an active context (context creation may need extensions, and thus a valid context)
     assert(sharedContext != nullptr);
 
-    Lock lock(mutex);
+    std::scoped_lock lock(mutex);
 
     GlContext* context = nullptr;
 
@@ -471,7 +482,7 @@ GlContext* GlContext::create(const ContextSettings& settings, const WindowImpl* 
     // Make sure that there's an active context (context creation may need extensions, and thus a valid context)
     assert(sharedContext != nullptr);
 
-    Lock lock(mutex);
+    std::scoped_lock lock(mutex);
 
     // If resourceCount is 1 we know that we are inside sf::Context or sf::Window
     // Only in this situation we allow the user to indirectly re-create the shared context as a core context
@@ -524,7 +535,7 @@ GlContext* GlContext::create(const ContextSettings& settings, unsigned int width
     // Make sure that there's an active context (context creation may need extensions, and thus a valid context)
     assert(sharedContext != nullptr);
 
-    Lock lock(mutex);
+    std::scoped_lock lock(mutex);
 
     // If resourceCount is 1 we know that we are inside sf::Context or sf::Window
     // Only in this situation we allow the user to indirectly re-create the shared context as a core context
@@ -577,7 +588,7 @@ bool GlContext::isExtensionAvailable(const char* name)
 ////////////////////////////////////////////////////////////
 GlFunctionPointer GlContext::getFunction(const char* name)
 {
-    Lock lock(GlContextImpl::mutex);
+    std::scoped_lock lock(GlContextImpl::mutex);
 
     return ContextType::getFunction(name);
 }
@@ -632,7 +643,7 @@ bool GlContext::setActive(bool active)
     {
         if (this != currentContext)
         {
-            Lock lock(mutex);
+            std::scoped_lock lock(mutex);
 
             // Activate the context
             if (makeCurrent(true))
@@ -656,7 +667,7 @@ bool GlContext::setActive(bool active)
     {
         if (this == currentContext)
         {
-            Lock lock(mutex);
+            std::scoped_lock lock(mutex);
 
             // Deactivate the context
             if (makeCurrent(false))

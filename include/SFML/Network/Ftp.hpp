@@ -30,7 +30,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Network/Export.hpp>
 #include <SFML/Network/TcpSocket.hpp>
-#include <SFML/System/NonCopyable.hpp>
+
 #include <SFML/System/Time.hpp>
 #include <string>
 #include <vector>
@@ -44,7 +44,7 @@ class IpAddress;
 /// \brief A FTP client
 ///
 ////////////////////////////////////////////////////////////
-class SFML_NETWORK_API Ftp : NonCopyable
+class SFML_NETWORK_API Ftp
 {
 public:
 
@@ -247,6 +247,11 @@ public:
         std::vector<std::string> m_listing; //!< Directory/file names extracted from the data
     };
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Default constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    Ftp() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -256,6 +261,18 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     ~Ftp();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    Ftp(const Ftp&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    Ftp& operator=(const Ftp&) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Connect to the specified FTP server
@@ -278,7 +295,7 @@ public:
     /// \see disconnect
     ///
     ////////////////////////////////////////////////////////////
-    Response connect(const IpAddress& server, unsigned short port = 21, Time timeout = Time::Zero);
+    [[nodiscard]] Response connect(const IpAddress& server, unsigned short port = 21, Time timeout = Time::Zero);
 
     ////////////////////////////////////////////////////////////
     /// \brief Close the connection with the server
@@ -288,7 +305,7 @@ public:
     /// \see connect
     ///
     ////////////////////////////////////////////////////////////
-    Response disconnect();
+    [[nodiscard]] Response disconnect();
 
     ////////////////////////////////////////////////////////////
     /// \brief Log in using an anonymous account
@@ -299,7 +316,7 @@ public:
     /// \return Server response to the request
     ///
     ////////////////////////////////////////////////////////////
-    Response login();
+    [[nodiscard]] Response login();
 
     ////////////////////////////////////////////////////////////
     /// \brief Log in using a username and a password
@@ -313,7 +330,7 @@ public:
     /// \return Server response to the request
     ///
     ////////////////////////////////////////////////////////////
-    Response login(const std::string& name, const std::string& password);
+    [[nodiscard]] Response login(const std::string& name, const std::string& password);
 
     ////////////////////////////////////////////////////////////
     /// \brief Send a null command to keep the connection alive
@@ -324,7 +341,7 @@ public:
     /// \return Server response to the request
     ///
     ////////////////////////////////////////////////////////////
-    Response keepAlive();
+    [[nodiscard]] Response keepAlive();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current working directory
@@ -337,7 +354,7 @@ public:
     /// \see getDirectoryListing, changeDirectory, parentDirectory
     ///
     ////////////////////////////////////////////////////////////
-    DirectoryResponse getWorkingDirectory();
+    [[nodiscard]] DirectoryResponse getWorkingDirectory();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the contents of the given directory
@@ -354,7 +371,7 @@ public:
     /// \see getWorkingDirectory, changeDirectory, parentDirectory
     ///
     ////////////////////////////////////////////////////////////
-    ListingResponse getDirectoryListing(const std::string& directory = "");
+    [[nodiscard]] ListingResponse getDirectoryListing(const std::string& directory = "");
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current working directory
@@ -368,7 +385,7 @@ public:
     /// \see getWorkingDirectory, getDirectoryListing, parentDirectory
     ///
     ////////////////////////////////////////////////////////////
-    Response changeDirectory(const std::string& directory);
+    [[nodiscard]] Response changeDirectory(const std::string& directory);
 
     ////////////////////////////////////////////////////////////
     /// \brief Go to the parent directory of the current one
@@ -378,7 +395,7 @@ public:
     /// \see getWorkingDirectory, getDirectoryListing, changeDirectory
     ///
     ////////////////////////////////////////////////////////////
-    Response parentDirectory();
+    [[nodiscard]] Response parentDirectory();
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new directory
@@ -393,7 +410,7 @@ public:
     /// \see deleteDirectory
     ///
     ////////////////////////////////////////////////////////////
-    Response createDirectory(const std::string& name);
+    [[nodiscard]] Response createDirectory(const std::string& name);
 
     ////////////////////////////////////////////////////////////
     /// \brief Remove an existing directory
@@ -410,7 +427,7 @@ public:
     /// \see createDirectory
     ///
     ////////////////////////////////////////////////////////////
-    Response deleteDirectory(const std::string& name);
+    [[nodiscard]] Response deleteDirectory(const std::string& name);
 
     ////////////////////////////////////////////////////////////
     /// \brief Rename an existing file
@@ -426,7 +443,7 @@ public:
     /// \see deleteFile
     ///
     ////////////////////////////////////////////////////////////
-    Response renameFile(const std::string& file, const std::string& newName);
+    [[nodiscard]] Response renameFile(const std::string& file, const std::string& newName);
 
     ////////////////////////////////////////////////////////////
     /// \brief Remove an existing file
@@ -443,7 +460,7 @@ public:
     /// \see renameFile
     ///
     ////////////////////////////////////////////////////////////
-    Response deleteFile(const std::string& name);
+    [[nodiscard]] Response deleteFile(const std::string& name);
 
     ////////////////////////////////////////////////////////////
     /// \brief Download a file from the server
@@ -465,7 +482,7 @@ public:
     /// \see upload
     ///
     ////////////////////////////////////////////////////////////
-    Response download(const std::string& remoteFile, const std::string& localPath, TransferMode mode = Binary);
+    [[nodiscard]] Response download(const std::string& remoteFile, const std::string& localPath, TransferMode mode = Binary);
 
     ////////////////////////////////////////////////////////////
     /// \brief Upload a file to the server
@@ -488,7 +505,7 @@ public:
     /// \see download
     ///
     ////////////////////////////////////////////////////////////
-    Response upload(const std::string& localFile, const std::string& remotePath, TransferMode mode = Binary, bool append = false);
+    [[nodiscard]] Response upload(const std::string& localFile, const std::string& remotePath, TransferMode mode = Binary, bool append = false);
 
     ////////////////////////////////////////////////////////////
     /// \brief Send a command to the FTP server
@@ -506,7 +523,7 @@ public:
     /// \return Server response to the request
     ///
     ////////////////////////////////////////////////////////////
-    Response sendCommand(const std::string& command, const std::string& parameter = "");
+    [[nodiscard]] Response sendCommand(const std::string& command, const std::string& parameter = "");
 
 private:
 

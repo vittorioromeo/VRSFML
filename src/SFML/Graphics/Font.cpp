@@ -278,7 +278,11 @@ bool Font::loadFromStream(InputStream& stream)
     m_library = library;
 
     // Make sure that the stream's reading position is at the beginning
-    stream.seek(0);
+    if (stream.seek(0) == -1)
+    {
+        err() << "Failed to seek font stream" << std::endl;
+        return false;
+    }
 
     // Prepare a wrapper for our stream, that we'll pass to FreeType callbacks
     auto* rec = new FT_StreamRec;
@@ -770,7 +774,12 @@ IntRect Font::findGlyphRect(Page& page, unsigned int width, unsigned int height)
             {
                 // Make the texture 2 times bigger
                 Texture newTexture;
-                newTexture.create(textureWidth * 2, textureHeight * 2);
+                if (!newTexture.create(textureWidth * 2, textureHeight * 2))
+                {
+                    err() << "Failed to create new page texture" << std::endl;
+                    return IntRect(0, 0, 2, 2);
+                }
+
                 newTexture.setSmooth(m_isSmooth);
                 newTexture.update(page.texture);
                 page.texture.swap(newTexture);
@@ -854,7 +863,11 @@ nextRow(3)
             image.setPixel(x, y, Color(255, 255, 255, 255));
 
     // Create the texture
-    texture.loadFromImage(image);
+    if (!texture.loadFromImage(image))
+    {
+        err() << "Failed to load font page texture" << std::endl;
+    }
+
     texture.setSmooth(true);
 }
 

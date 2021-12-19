@@ -4,13 +4,20 @@
 ////////////////////////////////////////////////////////////
 #define STB_PERLIN_IMPLEMENTATION
 #include <stb_perlin.h>
+
 #include <SFML/Graphics.hpp>
-#include <vector>
-#include <deque>
-#include <sstream>
+
 #include <algorithm>
-#include <cstring>
+#include <deque>
+#include <iostream>
+#include <mutex>
+#include <sstream>
+#include <thread>
+#include <vector>
+
 #include <cmath>
+#include <cstdlib>
+#include <cstring>
 
 
 namespace
@@ -34,11 +41,11 @@ namespace
     };
 
     std::deque<WorkItem> workQueue;
-    std::vector<sf::Thread*> threads;
+    std::vector<std::thread> threads;
     int pendingWorkCount = 0;
     bool workPending = true;
     bool bufferUploadPending = false;
-    sf::Mutex workQueueMutex;
+    std::recursive_mutex workQueueMutex;
 
     struct Setting
     {
@@ -107,7 +114,7 @@ int main()
     hudText.setFillColor(sf::Color::White);
     hudText.setOutlineColor(sf::Color::Black);
     hudText.setOutlineThickness(2.0f);
-    hudText.setPosition(5.0f, 5.0f);
+    hudText.setPosition({5.0f, 5.0f});
 
     // Staging buffer for our terrain data that we will upload to our VertexBuffer
     std::vector<sf::Vertex> terrainStagingBuffer;
@@ -131,12 +138,15 @@ int main()
         // Start up our thread pool
         for (unsigned int i = 0; i < threadCount; i++)
         {
-            threads.push_back(new sf::Thread(threadFunction));
-            threads.back()->launch();
+            threads.emplace_back(threadFunction);
         }
 
         // Create our VertexBuffer with enough space to hold all the terrain geometry
-        terrain.create(resolutionX * resolutionY * 6);
+        if (!terrain.create(resolutionX * resolutionY * 6))
+        {
+            std::cerr << "Failed to create vertex buffer" << std::endl;
+            return EXIT_FAILURE;
+        }
 
         // Resize the staging buffer to be able to hold all the terrain geometry
         terrainStagingBuffer.resize(resolutionX * resolutionY * 6);
@@ -148,7 +158,7 @@ int main()
     }
 
     // Center the status text
-    statusText.setPosition((windowWidth - statusText.getLocalBounds().width) / 2.f, (windowHeight - statusText.getLocalBounds().height) / 2.f);
+    statusText.setPosition({(windowWidth - statusText.getLocalBounds().width) / 2.f, (windowHeight - statusText.getLocalBounds().height) / 2.f});
 
     // Set up an array of pointers to our settings for arrow navigation
     Setting settings[] =
@@ -207,7 +217,7 @@ int main()
         if (prerequisitesSupported)
         {
             {
-                sf::Lock lock(workQueueMutex);
+                std::scoped_lock lock(workQueueMutex);
 
                 // Don't bother updating/drawing the VertexBuffer while terrain is being regenerated
                 if (!pendingWorkCount)
@@ -215,7 +225,12 @@ int main()
                     // If there is new data pending to be uploaded to the VertexBuffer, do it now
                     if (bufferUploadPending)
                     {
-                        terrain.update(terrainStagingBuffer.data());
+                        if (!terrain.update(terrainStagingBuffer.data()))
+                        {
+                            std::cerr << "Failed to update vertex buffer" << std::endl;
+                            return EXIT_FAILURE;
+                        }
+
                         bufferUploadPending = false;
                     }
 
@@ -244,14 +259,13 @@ int main()
 
     // Shut down our thread pool
     {
-        sf::Lock lock(workQueueMutex);
+        std::scoped_lock lock(workQueueMutex);
         workPending = false;
     }
 
     while (!threads.empty())
     {
-        threads.back()->wait();
-        delete threads.back();
+        threads.back().join();
         threads.pop_back();
     }
 
@@ -538,7 +552,7 @@ void threadFunction()
 
         // Check if there are new work items in the queue
         {
-            sf::Lock lock(workQueueMutex);
+            std::scoped_lock lock(workQueueMutex);
 
             if (!workPending)
                 return;
@@ -561,7 +575,7 @@ void threadFunction()
         processWorkItem(vertices, workItem);
 
         {
-            sf::Lock lock(workQueueMutex);
+            std::scoped_lock lock(workQueueMutex);
 
             --pendingWorkCount;
         }
@@ -583,7 +597,7 @@ void generateTerrain(sf::Vertex* buffer)
     for (;;)
     {
         {
-            sf::Lock lock(workQueueMutex);
+            std::scoped_lock lock(workQueueMutex);
 
             if (workQueue.empty())
                 break;
@@ -594,7 +608,7 @@ void generateTerrain(sf::Vertex* buffer)
 
     // Queue all the new work items
     {
-        sf::Lock lock(workQueueMutex);
+        std::scoped_lock lock(workQueueMutex);
 
         for (unsigned int i = 0; i < blockCount; i++)
         {
