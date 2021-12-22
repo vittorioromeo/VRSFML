@@ -31,8 +31,9 @@
 #include <SFML/Config.hpp>
 #include <SFML/System/Export.hpp>
 #include <SFML/System/InputStream.hpp>
-#include <cstdio>
+#include <memory>
 #include <string>
+#include <cstdio>
 
 #ifdef SFML_SYSTEM_ANDROID
 namespace sf
@@ -134,9 +135,18 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
 #ifdef SFML_SYSTEM_ANDROID
-    priv::ResourceStream* m_file;
+    std::unique_ptr<priv::ResourceStream> m_file;
 #else
-    std::FILE* m_file; //!< stdio file stream
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleter for stdio file stream that closes the file stream
+    ///
+    ////////////////////////////////////////////////////////////
+    struct FileCloser
+    {
+        void operator()(std::FILE* file);
+    };
+
+    std::unique_ptr<std::FILE, FileCloser> m_file; //!< stdio file stream
 #endif
 };
 
