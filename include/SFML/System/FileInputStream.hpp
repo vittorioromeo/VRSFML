@@ -31,17 +31,14 @@
 #include <SFML/Config.hpp>
 #include <SFML/System/Export.hpp>
 #include <SFML/System/InputStream.hpp>
-#include <SFML/System/NonCopyable.hpp>
-#include <cstdio>
+#include <memory>
 #include <string>
+#include <cstdio>
 
 #ifdef SFML_SYSTEM_ANDROID
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 class SFML_SYSTEM_API ResourceStream;
-}
 }
 #endif
 
@@ -52,7 +49,7 @@ namespace sf
 /// \brief Implementation of input stream based on a file
 ///
 ////////////////////////////////////////////////////////////
-class SFML_SYSTEM_API FileInputStream : public InputStream, NonCopyable
+class SFML_SYSTEM_API FileInputStream : public InputStream
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -68,6 +65,30 @@ public:
     ~FileInputStream() override;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    FileInputStream(const FileInputStream&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    FileInputStream& operator=(const FileInputStream&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    FileInputStream(FileInputStream&&);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    FileInputStream& operator=(FileInputStream&&);
+
+    ////////////////////////////////////////////////////////////
     /// \brief Open the stream from a file path
     ///
     /// \param filename Name of the file to open
@@ -75,7 +96,7 @@ public:
     /// \return True on success, false on error
     ///
     ////////////////////////////////////////////////////////////
-    bool open(const std::string& filename);
+    [[nodiscard]] bool open(const std::string& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Read data from the stream
@@ -89,7 +110,7 @@ public:
     /// \return The number of bytes actually read, or -1 on error
     ///
     ////////////////////////////////////////////////////////////
-    Int64 read(void* data, Int64 size) override;
+    [[nodiscard]] Int64 read(void* data, Int64 size) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current reading position
@@ -99,7 +120,7 @@ public:
     /// \return The position actually sought to, or -1 on error
     ///
     ////////////////////////////////////////////////////////////
-    Int64 seek(Int64 position) override;
+    [[nodiscard]] Int64 seek(Int64 position) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current reading position in the stream
@@ -107,7 +128,7 @@ public:
     /// \return The current position, or -1 on error.
     ///
     ////////////////////////////////////////////////////////////
-    Int64 tell() override;
+    [[nodiscard]] Int64 tell() override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the stream
@@ -123,9 +144,18 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
 #ifdef SFML_SYSTEM_ANDROID
-    priv::ResourceStream* m_file;
+    std::unique_ptr<priv::ResourceStream> m_file;
 #else
-    std::FILE* m_file; //!< stdio file stream
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleter for stdio file stream that closes the file stream
+    ///
+    ////////////////////////////////////////////////////////////
+    struct FileCloser
+    {
+        void operator()(std::FILE* file);
+    };
+
+    std::unique_ptr<std::FILE, FileCloser> m_file; //!< stdio file stream
 #endif
 };
 

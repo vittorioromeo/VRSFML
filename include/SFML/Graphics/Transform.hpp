@@ -102,23 +102,6 @@ public:
     ///
     /// These two statements are equivalent:
     /// \code
-    /// sf::Vector2f transformedPoint = matrix.transformPoint(x, y);
-    /// sf::Vector2f transformedPoint = matrix * sf::Vector2f(x, y);
-    /// \endcode
-    ///
-    /// \param x X coordinate of the point to transform
-    /// \param y Y coordinate of the point to transform
-    ///
-    /// \return Transformed point
-    ///
-    ////////////////////////////////////////////////////////////
-    Vector2f transformPoint(float x, float y) const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Transform a 2D point
-    ///
-    /// These two statements are equivalent:
-    /// \code
     /// sf::Vector2f transformedPoint = matrix.transformPoint(point);
     /// sf::Vector2f transformedPoint = matrix * point;
     /// \endcode
@@ -173,26 +156,6 @@ public:
     /// can be chained.
     /// \code
     /// sf::Transform transform;
-    /// transform.translate(100, 200).rotate(45);
-    /// \endcode
-    ///
-    /// \param x Offset to apply on X axis
-    /// \param y Offset to apply on Y axis
-    ///
-    /// \return Reference to *this
-    ///
-    /// \see rotate, scale
-    ///
-    ////////////////////////////////////////////////////////////
-    Transform& translate(float x, float y);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Combine the current transform with a translation
-    ///
-    /// This function returns a reference to *this, so that calls
-    /// can be chained.
-    /// \code
-    /// sf::Transform transform;
     /// transform.translate(sf::Vector2f(100, 200)).rotate(45);
     /// \endcode
     ///
@@ -236,32 +199,6 @@ public:
     /// can be chained.
     /// \code
     /// sf::Transform transform;
-    /// transform.rotate(90, 8, 3).translate(50, 20);
-    /// \endcode
-    ///
-    /// \param angle Rotation angle, in degrees
-    /// \param centerX X coordinate of the center of rotation
-    /// \param centerY Y coordinate of the center of rotation
-    ///
-    /// \return Reference to *this
-    ///
-    /// \see translate, scale
-    ///
-    ////////////////////////////////////////////////////////////
-    Transform& rotate(float angle, float centerX, float centerY);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Combine the current transform with a rotation
-    ///
-    /// The center of rotation is provided for convenience as a second
-    /// argument, so that you can build rotations around arbitrary points
-    /// more easily (and efficiently) than the usual
-    /// translate(-center).rotate(angle).translate(center).
-    ///
-    /// This function returns a reference to *this, so that calls
-    /// can be chained.
-    /// \code
-    /// sf::Transform transform;
     /// transform.rotate(90, sf::Vector2f(8, 3)).translate(sf::Vector2f(50, 20));
     /// \endcode
     ///
@@ -274,53 +211,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     Transform& rotate(float angle, const Vector2f& center);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Combine the current transform with a scaling
-    ///
-    /// This function returns a reference to *this, so that calls
-    /// can be chained.
-    /// \code
-    /// sf::Transform transform;
-    /// transform.scale(2, 1).rotate(45);
-    /// \endcode
-    ///
-    /// \param scaleX Scaling factor on the X axis
-    /// \param scaleY Scaling factor on the Y axis
-    ///
-    /// \return Reference to *this
-    ///
-    /// \see translate, rotate
-    ///
-    ////////////////////////////////////////////////////////////
-    Transform& scale(float scaleX, float scaleY);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Combine the current transform with a scaling
-    ///
-    /// The center of scaling is provided for convenience as a second
-    /// argument, so that you can build scaling around arbitrary points
-    /// more easily (and efficiently) than the usual
-    /// translate(-center).scale(factors).translate(center).
-    ///
-    /// This function returns a reference to *this, so that calls
-    /// can be chained.
-    /// \code
-    /// sf::Transform transform;
-    /// transform.scale(2, 1, 8, 3).rotate(45);
-    /// \endcode
-    ///
-    /// \param scaleX Scaling factor on X axis
-    /// \param scaleY Scaling factor on Y axis
-    /// \param centerX X coordinate of the center of scaling
-    /// \param centerY Y coordinate of the center of scaling
-    ///
-    /// \return Reference to *this
-    ///
-    /// \see translate, rotate
-    ///
-    ////////////////////////////////////////////////////////////
-    Transform& scale(float scaleX, float scaleY, float centerX, float centerY);
 
     ////////////////////////////////////////////////////////////
     /// \brief Combine the current transform with a scaling

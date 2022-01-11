@@ -66,9 +66,9 @@ int main()
         text.setFillColor(sf::Color(255, 255, 255, 170));
         sRgbInstructions.setFillColor(sf::Color(255, 255, 255, 170));
         mipmapInstructions.setFillColor(sf::Color(255, 255, 255, 170));
-        text.setPosition(280.f, 450.f);
-        sRgbInstructions.setPosition(175.f, 500.f);
-        mipmapInstructions.setPosition(200.f, 550.f);
+        text.setPosition({280.f, 450.f});
+        sRgbInstructions.setPosition({175.f, 500.f});
+        mipmapInstructions.setPosition({200.f, 550.f});
 
         // Load a texture to apply to our 3D cube
         sf::Texture texture;
@@ -282,8 +282,9 @@ int main()
             // Make the window the active window for OpenGL calls
             if (!window.setActive(true))
             {
-                std::cerr << "Failed to set window to active" << std::endl;
-                return EXIT_FAILURE;
+                // On failure, try re-creating the window, as it is intentionally 
+                // closed when changing color space.
+                continue;
             }
 
             // Clear the depth buffer

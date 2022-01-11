@@ -5,7 +5,6 @@
 #include <SFML/Graphics.hpp>
 #include <algorithm>
 #include <sstream>
-#include <iomanip>
 #include <string>
 #include <unordered_map>
 
@@ -101,8 +100,8 @@ int main()
     sstr.setf(std::ios::fixed | std::ios::boolalpha);
 
     // Set up our joystick identification sf::Text objects
-    texts["ID"].label.setPosition(5.f, 5.f);
-    texts["ID"].value.setPosition(80.f, 5.f);
+    texts["ID"].label.setPosition({5.f, 5.f});
+    texts["ID"].value.setPosition({80.f, 5.f});
 
     texts["ID"].label.setString("<Not Connected>");
     texts["ID"].value.setString("");
@@ -111,8 +110,8 @@ int main()
     sstr.str("");
     sstr << threshold << "  (Change with up/down arrow keys)";
 
-    texts["Threshold"].label.setPosition(5.f, 5.f + 2 * font.getLineSpacing(14));
-    texts["Threshold"].value.setPosition(80.f, 5.f + 2 * font.getLineSpacing(14));
+    texts["Threshold"].label.setPosition({5.f, 5.f + 2 * font.getLineSpacing(14)});
+    texts["Threshold"].value.setPosition({80.f, 5.f + 2 * font.getLineSpacing(14)});
 
     texts["Threshold"].label.setString("Threshold:");
     texts["Threshold"].value.setString(sstr.str());
@@ -122,10 +121,10 @@ int main()
     {
         JoystickObject& object = texts[axislabels[i]];
 
-        object.label.setPosition(5.f, 5.f + (static_cast<float>(i + 4) * font.getLineSpacing(14)));
+        object.label.setPosition({5.f, 5.f + (static_cast<float>(i + 4) * font.getLineSpacing(14))});
         object.label.setString(std::string(axislabels[i]) + ":");
 
-        object.value.setPosition(80.f, 5.f + (static_cast<float>(i + 4) * font.getLineSpacing(14)));
+        object.value.setPosition({80.f, 5.f + (static_cast<float>(i + 4) * font.getLineSpacing(14))});
         object.value.setString("N/A");
     }
 
@@ -135,10 +134,10 @@ int main()
         sstr << "Button " << i;
         JoystickObject& object = texts[sstr.str()];
 
-        object.label.setPosition(5.f, 5.f + (static_cast<float>(sf::Joystick::AxisCount + i + 4) * font.getLineSpacing(14)));
+        object.label.setPosition({5.f, 5.f + (static_cast<float>(sf::Joystick::AxisCount + i + 4) * font.getLineSpacing(14))});
         object.label.setString(sstr.str() + ":");
 
-        object.value.setPosition(80.f, 5.f + (static_cast<float>(sf::Joystick::AxisCount + i + 4) * font.getLineSpacing(14)));
+        object.value.setPosition({80.f, 5.f + (static_cast<float>(sf::Joystick::AxisCount + i + 4) * font.getLineSpacing(14))});
         object.value.setString("N/A");
     }
 

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -28,13 +28,13 @@
 #include <SFML/Graphics/RenderTextureImplFBO.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/GLCheck.hpp>
-#include <SFML/System/Mutex.hpp>
-#include <SFML/System/Lock.hpp>
+#include <SFML/Window/Context.hpp>
 #include <SFML/System/Err.hpp>
-#include <utility>
+#include <mutex>
+#include <set>
 #include <unordered_map>
 #include <unordered_set>
-#include <set>
+#include <utility>
 
 
 namespace
@@ -53,7 +53,7 @@ namespace
     std::set<std::pair<sf::Uint64, unsigned int> > staleFrameBuffers;
 
     // Mutex to protect both active and stale frame buffer sets
-    sf::Mutex mutex;
+    std::recursive_mutex mutex;
 
     // This function is called either when a RenderTextureImplFBO is
     // destroyed or via contextDestroyCallback when context destruction
@@ -81,7 +81,7 @@ namespace
     // Callback that is called every time a context is destroyed
     void contextDestroyCallback(void* /*arg*/)
     {
-        sf::Lock lock(mutex);
+        std::scoped_lock lock(mutex);
 
         sf::Uint64 contextId = sf::Context::getActiveContextId();
 
@@ -119,13 +119,13 @@ m_depthStencilBuffer(0),
 m_colorBuffer       (0),
 m_width             (0),
 m_height            (0),
-m_context           (nullptr),
+m_context           (),
 m_textureId         (0),
 m_multisample       (false),
 m_stencil           (false),
 m_sRgb              (false)
 {
-    Lock lock(mutex);
+    std::scoped_lock lock(mutex);
 
     // Register the context destruction callback
     registerContextDestroyCallback(contextDestroyCallback, nullptr);
@@ -141,7 +141,7 @@ RenderTextureImplFBO::~RenderTextureImplFBO()
 {
     TransientContextLock contextLock;
 
-    Lock lock(mutex);
+    std::scoped_lock lock(mutex);
 
     // Remove the frame buffer mapping from the set of all active mappings
     frameBuffers.erase(&m_frameBuffers);
@@ -170,9 +170,6 @@ RenderTextureImplFBO::~RenderTextureImplFBO()
 
     // Clean up FBOs
     destroyStaleFBOs();
-
-    // Delete the backup context if we had to create one
-    delete m_context;
 }
 
 
@@ -445,7 +442,7 @@ bool RenderTextureImplFBO::createFrameBuffer()
     }
 
     {
-        Lock lock(mutex);
+        std::scoped_lock lock(mutex);
 
         // Insert the FBO into our map
         m_frameBuffers.emplace(Context::getActiveContextId(), frameBuffer);
@@ -492,7 +489,7 @@ bool RenderTextureImplFBO::createFrameBuffer()
         }
 
         {
-            Lock lock(mutex);
+            std::scoped_lock lock(mutex);
 
             // Insert the FBO into our map
             m_multisampleFrameBuffers.emplace(Context::getActiveContextId(), multisampleFrameBuffer);
@@ -522,7 +519,7 @@ bool RenderTextureImplFBO::activate(bool active)
     if (!contextId)
     {
         if (!m_context)
-            m_context = new Context;
+            m_context = std::make_unique<Context>();
 
         if (!m_context->setActive(true))
         {
@@ -543,7 +540,7 @@ bool RenderTextureImplFBO::activate(bool active)
     // If none is found, there is no FBO corresponding to the
     // currently active context so we will have to create a new FBO
     {
-        Lock lock(mutex);
+        std::scoped_lock lock(mutex);
 
         std::unordered_map<Uint64, unsigned int>::iterator it;
 
@@ -597,7 +594,7 @@ void RenderTextureImplFBO::updateTexture(unsigned int)
     {
         Uint64 contextId = Context::getActiveContextId();
 
-        Lock lock(mutex);
+        std::scoped_lock lock(mutex);
 
         auto frameBufferIt = m_frameBuffers.find(contextId);
         auto multisampleIt = m_multisampleFrameBuffers.find(contextId);

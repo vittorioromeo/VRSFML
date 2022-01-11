@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -29,9 +29,10 @@
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Vertex.hpp>
 #include <SFML/Graphics/GLCheck.hpp>
-#include <SFML/System/Mutex.hpp>
-#include <SFML/System/Lock.hpp>
 #include <SFML/System/Err.hpp>
+#include <mutex>
+#include <utility>
+#include <cstddef>
 #include <cstring>
 
 namespace
@@ -39,7 +40,7 @@ namespace
     // A nested named namespace is used here to allow unity builds of SFML.
     namespace VertexBufferImpl
     {
-        sf::Mutex isAvailableMutex;
+        std::recursive_mutex isAvailableMutex;
 
         GLenum usageToGlEnum(sf::VertexBuffer::Usage usage)
         {
@@ -208,6 +209,7 @@ bool VertexBuffer::update(const VertexBuffer& vertexBuffer)
 {
 #ifdef SFML_OPENGL_ES
 
+    (void) vertexBuffer;
     return false;
 
 #else
@@ -336,7 +338,7 @@ VertexBuffer::Usage VertexBuffer::getUsage() const
 ////////////////////////////////////////////////////////////
 bool VertexBuffer::isAvailable()
 {
-    Lock lock(VertexBufferImpl::isAvailableMutex);
+    std::scoped_lock lock(VertexBufferImpl::isAvailableMutex);
 
     static bool checked = false;
     static bool available = false;

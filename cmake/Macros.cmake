@@ -11,8 +11,8 @@ endmacro ()
 # set the appropriate standard library on each platform for the given target
 # example: sfml_set_stdlib(sfml-system)
 function(sfml_set_stdlib target)
-    # for gcc >= 4.0 on Windows, apply the SFML_USE_STATIC_STD_LIBS option if it is enabled
-    if(SFML_OS_WINDOWS AND SFML_COMPILER_GCC AND NOT SFML_GCC_VERSION VERSION_LESS "4")
+    # for gcc on Windows, apply the SFML_USE_STATIC_STD_LIBS option if it is enabled
+    if(SFML_OS_WINDOWS AND SFML_COMPILER_GCC)
         if(SFML_USE_STATIC_STD_LIBS AND NOT SFML_COMPILER_GCC_TDM)
             target_link_libraries(${target} PRIVATE "-static-libgcc" "-static-libstdc++")
         elseif(NOT SFML_USE_STATIC_STD_LIBS AND SFML_COMPILER_GCC_TDM)
@@ -23,9 +23,11 @@ function(sfml_set_stdlib target)
     if (SFML_OS_MACOSX)
         if (${CMAKE_GENERATOR} MATCHES "Xcode")
             sfml_set_xcode_property(${target} CLANG_CXX_LIBRARY "libc++")
-        else()
+        elseif(SFML_COMPILER_CLANG)
             target_compile_options(${target} PRIVATE "-stdlib=libc++")
             target_link_libraries(${target} PRIVATE "-stdlib=libc++")
+        else()
+            message(FATAL_ERROR "Clang is the only supported compiler on macOS")
         endif()
     endif()
 endfunction()
@@ -105,8 +107,8 @@ macro(sfml_add_library target)
         else()
             set_target_properties(${target} PROPERTIES DEBUG_POSTFIX -d)
         endif()
-        if (SFML_OS_WINDOWS AND SFML_COMPILER_GCC)
-            # on Windows/gcc get rid of "lib" prefix for shared libraries,
+        if (SFML_OS_WINDOWS AND (SFML_COMPILER_GCC OR SFML_COMPILER_CLANG))
+            # on Windows + gcc/clang get rid of "lib" prefix for shared libraries,
             # and transform the ".dll.a" suffix into ".a" for import libraries
             set_target_properties(${target} PROPERTIES PREFIX "")
             set_target_properties(${target} PROPERTIES IMPORT_SUFFIX ".a")
@@ -153,9 +155,9 @@ macro(sfml_add_library target)
         endif()
     endif()
 
-    # if using gcc >= 4.0 or clang >= 3.0 on a non-Windows platform, we must hide public symbols by default
+    # if using gcc or clang on a non-Windows platform, we must hide public symbols by default
     # (exported ones are explicitly marked)
-    if(NOT SFML_OS_WINDOWS AND ((SFML_COMPILER_GCC AND NOT SFML_GCC_VERSION VERSION_LESS "4") OR (SFML_COMPILER_CLANG AND NOT SFML_CLANG_VERSION VERSION_LESS "3")))
+    if(NOT SFML_OS_WINDOWS AND (SFML_COMPILER_GCC OR SFML_COMPILER_CLANG))
         set_target_properties(${target} PROPERTIES COMPILE_FLAGS -fvisibility=hidden)
     endif()
 
@@ -268,9 +270,6 @@ macro(sfml_add_example target)
         add_executable(${target} ${target_input})
     endif()
 
-    # enable C++17 support
-    target_compile_features(${target} PUBLIC cxx_std_17)
-
     set_file_warnings(${target_input})
 
     # set the debug suffix
@@ -308,16 +307,11 @@ function(sfml_add_test target SOURCES DEPENDS)
     # create the target
     add_executable(${target} ${SOURCES})
 
-    # enable C++17 support
-    target_compile_features(${target} PUBLIC cxx_std_17)
-
     # set the target's folder (for IDEs that support it, e.g. Visual Studio)
     set_target_properties(${target} PROPERTIES FOLDER "Tests")
 
     # link the target to its SFML dependencies
-    if(DEPENDS)
-        target_link_libraries(${target} PRIVATE ${DEPENDS})
-    endif()
+    target_link_libraries(${target} PRIVATE ${DEPENDS})
 
     # Add the test
     add_test(${target} ${target})

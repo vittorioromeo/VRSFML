@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -36,11 +36,11 @@ View::View() :
 m_center             (),
 m_size               (),
 m_rotation           (0),
-m_viewport           (0, 0, 1, 1),
+m_viewport           ({0, 0}, {1, 1}),
 m_transformUpdated   (false),
 m_invTransformUpdated(false)
 {
-    reset(FloatRect(0, 0, 1000, 1000));
+    reset(FloatRect({0, 0}, {1000, 1000}));
 }
 
 
@@ -49,7 +49,7 @@ View::View(const FloatRect& rectangle) :
 m_center             (),
 m_size               (),
 m_rotation           (0),
-m_viewport           (0, 0, 1, 1),
+m_viewport           ({0, 0}, {1, 1}),
 m_transformUpdated   (false),
 m_invTransformUpdated(false)
 {
@@ -62,28 +62,20 @@ View::View(const Vector2f& center, const Vector2f& size) :
 m_center             (center),
 m_size               (size),
 m_rotation           (0),
-m_viewport           (0, 0, 1, 1),
+m_viewport           ({0, 0}, {1, 1}),
 m_transformUpdated   (false),
 m_invTransformUpdated(false)
 {
 
 }
 
-////////////////////////////////////////////////////////////
-void View::setCenter(float x, float y)
-{
-    m_center.x = x;
-    m_center.y = y;
-
-    m_transformUpdated    = false;
-    m_invTransformUpdated = false;
-}
-
 
 ////////////////////////////////////////////////////////////
 void View::setCenter(const Vector2f& center)
 {
-    setCenter(center.x, center.y);
+    m_center = center;
+    m_transformUpdated    = false;
+    m_invTransformUpdated = false;
 }
 
 
@@ -163,13 +155,6 @@ float View::getRotation() const
 const FloatRect& View::getViewport() const
 {
     return m_viewport;
-}
-
-
-////////////////////////////////////////////////////////////
-void View::move(float offsetX, float offsetY)
-{
-    setCenter(m_center.x + offsetX, m_center.y + offsetY);
 }
 
 

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Marco Antognini (antognini.marco@gmail.com),
+// Copyright (C) 2007-2022 Marco Antognini (antognini.marco@gmail.com),
 //                         Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -31,7 +31,16 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/WindowImpl.hpp>
-#include <SFML/System/String.hpp>
+
+#if defined(__APPLE__)
+    #if defined(__clang__)
+        #pragma clang diagnostic push
+        #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    #elif defined(__GNUC__)
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    #endif
+#endif
 
 ////////////////////////////////////////////////////////////
 /// Predefine OBJ-C classes
@@ -55,6 +64,8 @@ using NSOpenGLContextRef = void*;
 
 namespace sf
 {
+class String;
+
 namespace priv
 {
 ////////////////////////////////////////////////////////////
@@ -373,5 +384,12 @@ private:
 
 } // namespace sf
 
+#if defined(__APPLE__)
+    #if defined(__clang__)
+        #pragma clang diagnostic pop
+    #elif defined(__GNUC__)
+        #pragma GCC diagnostic pop
+    #endif
+#endif
 
 #endif // SFML_WINDOWIMPLCOCOA_HPP

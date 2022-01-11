@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Marco Antognini (antognini.marco@gmail.com),
+// Copyright (C) 2007-2022 Marco Antognini (antognini.marco@gmail.com),
 //                         Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -33,6 +33,14 @@
 #include <dlfcn.h>
 #include <stdint.h>
 
+#if defined(__APPLE__)
+    #if defined(__clang__)
+        #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    #elif defined(__GNUC__)
+        #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    #endif
+#endif
+
 namespace sf
 {
 namespace priv
@@ -55,7 +63,7 @@ m_window(0)
 
 ////////////////////////////////////////////////////////////
 SFContext::SFContext(SFContext* shared, const ContextSettings& settings,
-                     const WindowImpl* owner, unsigned int bitsPerPixel) :
+                     const WindowImpl& owner, unsigned int bitsPerPixel) :
 m_context(0),
 m_view(0),
 m_window(0)
@@ -65,8 +73,8 @@ m_window(0)
     createContext(shared, bitsPerPixel, settings);
 
     // Apply context.
-    const WindowImplCocoa* ownerCocoa = static_cast<const WindowImplCocoa*>(owner);
-    ownerCocoa->applyContext(m_context);
+    const auto& ownerCocoa = static_cast<const WindowImplCocoa&>(owner);
+    ownerCocoa.applyContext(m_context);
 }
 
 
@@ -184,14 +192,14 @@ void SFContext::createContext(SFContext* shared,
     if (bitsPerPixel > 24)
     {
         attrs.push_back(NSOpenGLPFAAlphaSize);
-        attrs.push_back((NSOpenGLPixelFormatAttribute)8);
+        attrs.push_back(static_cast<NSOpenGLPixelFormatAttribute>(8));
     }
 
     attrs.push_back(NSOpenGLPFADepthSize);
-    attrs.push_back((NSOpenGLPixelFormatAttribute)m_settings.depthBits);
+    attrs.push_back(static_cast<NSOpenGLPixelFormatAttribute>(m_settings.depthBits));
 
     attrs.push_back(NSOpenGLPFAStencilSize);
-    attrs.push_back((NSOpenGLPixelFormatAttribute)m_settings.stencilBits);
+    attrs.push_back(static_cast<NSOpenGLPixelFormatAttribute>(m_settings.stencilBits));
 
     if (m_settings.antialiasingLevel > 0)
     {
@@ -211,11 +219,11 @@ void SFContext::createContext(SFContext* shared,
 
         // Only one buffer is currently available
         attrs.push_back(NSOpenGLPFASampleBuffers);
-        attrs.push_back((NSOpenGLPixelFormatAttribute)1);
+        attrs.push_back(static_cast<NSOpenGLPixelFormatAttribute>(1));
 
         // Antialiasing level
         attrs.push_back(NSOpenGLPFASamples);
-        attrs.push_back((NSOpenGLPixelFormatAttribute)m_settings.antialiasingLevel);
+        attrs.push_back(static_cast<NSOpenGLPixelFormatAttribute>(m_settings.antialiasingLevel));
 
         // No software renderer - only hardware renderer
         attrs.push_back(NSOpenGLPFAAccelerated);
@@ -232,7 +240,7 @@ void SFContext::createContext(SFContext* shared,
 
     if (legacy)
     {
-        m_settings.attributeFlags &= ~ContextSettings::Core;
+        m_settings.attributeFlags &= ~static_cast<unsigned int>(ContextSettings::Core);
         m_settings.majorVersion = 2;
         m_settings.minorVersion = 1;
         attrs.push_back(NSOpenGLPFAOpenGLProfile);
@@ -254,10 +262,10 @@ void SFContext::createContext(SFContext* shared,
     if (m_settings.attributeFlags & ContextSettings::Debug)
     {
         sf::err() << "Warning. OpenGL debugging not supported on this platform." << std::endl;
-        m_settings.attributeFlags &= ~ContextSettings::Debug;
+        m_settings.attributeFlags &= ~static_cast<unsigned int>(ContextSettings::Debug);
     }
 
-    attrs.push_back((NSOpenGLPixelFormatAttribute)0); // end of array
+    attrs.push_back(static_cast<NSOpenGLPixelFormatAttribute>(0)); // end of array
 
     // All OS X pixel formats are sRGB capable
     m_settings.sRgbCapable = true;

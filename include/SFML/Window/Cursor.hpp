@@ -29,8 +29,8 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/Export.hpp>
-#include <SFML/System/NonCopyable.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <memory>
 
 namespace sf
 {
@@ -43,7 +43,7 @@ namespace priv
 /// \brief Cursor defines the appearance of a system cursor
 ///
 ////////////////////////////////////////////////////////////
-class SFML_WINDOW_API Cursor : NonCopyable
+class SFML_WINDOW_API Cursor
 {
 public:
 
@@ -131,6 +131,18 @@ public:
     ~Cursor();
 
     ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    Cursor(const Cursor&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    Cursor& operator=(const Cursor&) = delete;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Create a cursor with the provided image
     ///
     /// \a pixels must be an array of \a width by \a height pixels
@@ -198,7 +210,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    priv::CursorImpl* m_impl; //!< Platform-specific implementation of the cursor
+    std::unique_ptr<priv::CursorImpl> m_impl; //!< Platform-specific implementation of the cursor
 };
 
 } // namespace sf

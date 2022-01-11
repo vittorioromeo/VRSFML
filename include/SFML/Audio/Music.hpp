@@ -31,7 +31,6 @@
 #include <SFML/Audio/Export.hpp>
 #include <SFML/Audio/SoundStream.hpp>
 #include <SFML/Audio/InputSoundFile.hpp>
-#include <SFML/System/Mutex.hpp>
 #include <SFML/System/Time.hpp>
 #include <string>
 #include <vector>
@@ -117,7 +116,7 @@ public:
     /// \see openFromMemory, openFromStream
     ///
     ////////////////////////////////////////////////////////////
-    bool openFromFile(const std::string& filename);
+    [[nodiscard]] bool openFromFile(const std::string& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a music from an audio file in memory
@@ -140,7 +139,7 @@ public:
     /// \see openFromFile, openFromStream
     ///
     ////////////////////////////////////////////////////////////
-    bool openFromMemory(const void* data, std::size_t sizeInBytes);
+    [[nodiscard]] bool openFromMemory(const void* data, std::size_t sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a music from an audio file in a custom stream
@@ -161,7 +160,7 @@ public:
     /// \see openFromFile, openFromMemory
     ///
     ////////////////////////////////////////////////////////////
-    bool openFromStream(InputStream& stream);
+    [[nodiscard]] bool openFromStream(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the total duration of the music
@@ -223,7 +222,7 @@ protected:
     /// \return True to continue playback, false to stop
     ///
     ////////////////////////////////////////////////////////////
-    bool onGetData(Chunk& data) override;
+    [[nodiscard]] bool onGetData(Chunk& data) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current playing position in the stream source
@@ -276,10 +275,10 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    InputSoundFile     m_file;     //!< The streamed music file
-    std::vector<Int16> m_samples;  //!< Temporary buffer of samples
-    Mutex              m_mutex;    //!< Mutex protecting the data
-    Span<Uint64>       m_loopSpan; //!< Loop Range Specifier
+    InputSoundFile       m_file;     //!< The streamed music file
+    std::vector<Int16>   m_samples;  //!< Temporary buffer of samples
+    std::recursive_mutex m_mutex;    //!< Mutex protecting the data
+    Span<Uint64>         m_loopSpan; //!< Loop Range Specifier
 };
 
 } // namespace sf
