@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -65,7 +65,7 @@ SoundFileFactory::WriterFactoryArray SoundFileFactory::s_writers;
 
 
 ////////////////////////////////////////////////////////////
-SoundFileReader* SoundFileFactory::createReaderFromFilename(const std::string& filename)
+std::unique_ptr<SoundFileReader> SoundFileFactory::createReaderFromFilename(const std::string& filename)
 {
     // Register the built-in readers/writers on first call
     ensureDefaultReadersWritersRegistered();
@@ -80,7 +80,12 @@ SoundFileReader* SoundFileFactory::createReaderFromFilename(const std::string& f
     // Test the filename in all the registered factories
     for (const ReaderFactory& readerFactory : s_readers)
     {
-        stream.seek(0);
+        if (stream.seek(0) == -1)
+        {
+            err() << "Failed to seek sound stream" << std::endl;
+            return nullptr;
+        }
+
         if (readerFactory.check(stream))
             return readerFactory.create();
     }
@@ -92,7 +97,7 @@ SoundFileReader* SoundFileFactory::createReaderFromFilename(const std::string& f
 
 
 ////////////////////////////////////////////////////////////
-SoundFileReader* SoundFileFactory::createReaderFromMemory(const void* data, std::size_t sizeInBytes)
+std::unique_ptr<SoundFileReader> SoundFileFactory::createReaderFromMemory(const void* data, std::size_t sizeInBytes)
 {
     // Register the built-in readers/writers on first call
     ensureDefaultReadersWritersRegistered();
@@ -104,7 +109,12 @@ SoundFileReader* SoundFileFactory::createReaderFromMemory(const void* data, std:
     // Test the stream for all the registered factories
     for (const ReaderFactory& readerFactory : s_readers)
     {
-        stream.seek(0);
+        if (stream.seek(0) == -1)
+        {
+            err() << "Failed to seek sound stream" << std::endl;
+            return nullptr;
+        }
+
         if (readerFactory.check(stream))
             return readerFactory.create();
     }
@@ -116,7 +126,7 @@ SoundFileReader* SoundFileFactory::createReaderFromMemory(const void* data, std:
 
 
 ////////////////////////////////////////////////////////////
-SoundFileReader* SoundFileFactory::createReaderFromStream(InputStream& stream)
+std::unique_ptr<SoundFileReader> SoundFileFactory::createReaderFromStream(InputStream& stream)
 {
     // Register the built-in readers/writers on first call
     ensureDefaultReadersWritersRegistered();
@@ -124,7 +134,12 @@ SoundFileReader* SoundFileFactory::createReaderFromStream(InputStream& stream)
     // Test the stream for all the registered factories
     for (const ReaderFactory& readerFactory : s_readers)
     {
-        stream.seek(0);
+        if (stream.seek(0) == -1)
+        {
+            err() << "Failed to seek sound stream" << std::endl;
+            return nullptr;
+        }
+
         if (readerFactory.check(stream))
             return readerFactory.create();
     }
@@ -136,7 +151,7 @@ SoundFileReader* SoundFileFactory::createReaderFromStream(InputStream& stream)
 
 
 ////////////////////////////////////////////////////////////
-SoundFileWriter* SoundFileFactory::createWriterFromFilename(const std::string& filename)
+std::unique_ptr<SoundFileWriter> SoundFileFactory::createWriterFromFilename(const std::string& filename)
 {
     // Register the built-in readers/writers on first call
     ensureDefaultReadersWritersRegistered();

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -34,6 +34,13 @@
 #include <SFML/System/Err.hpp>
 #include <memory>
 
+#if defined(__APPLE__)
+    #if defined(__clang__)
+        #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    #elif defined(__GNUC__)
+        #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    #endif
+#endif
 
 namespace sf
 {
@@ -58,7 +65,8 @@ m_sounds  () // don't copy the attached sounds
     alCheck(alGenBuffers(1, &m_buffer));
 
     // Update the internal buffer with the new samples
-    update(copy.getChannelCount(), copy.getSampleRate());
+    if (!update(copy.getChannelCount(), copy.getSampleRate()))
+        err() << "Failed to update copy-constructed sound buffer" << std::endl;
 }
 
 

@@ -35,13 +35,14 @@
 #include <SFML/Window/WindowHandle.hpp>
 #include <SFML/Window/WindowStyle.hpp>
 #include <SFML/System/Clock.hpp>
-#include <SFML/System/NonCopyable.hpp>
-#include <SFML/System/String.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <memory>
 
 
 namespace sf
 {
+class String;
+
 namespace priv
 {
     class WindowImpl;
@@ -53,7 +54,7 @@ class Event;
 /// \brief Window that serves as a base for other windows
 ///
 ////////////////////////////////////////////////////////////
-class SFML_WINDOW_API WindowBase : NonCopyable
+class SFML_WINDOW_API WindowBase
 {
 public:
 
@@ -97,6 +98,18 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     virtual ~WindowBase();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    WindowBase(const WindowBase&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    WindowBase& operator=(const WindowBase&) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Create (or recreate) the window
@@ -470,8 +483,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    priv::WindowImpl* m_impl;           //!< Platform-specific implementation of the window
-    Vector2u          m_size;           //!< Current size of the window
+    std::unique_ptr<priv::WindowImpl> m_impl; //!< Platform-specific implementation of the window
+    Vector2u                          m_size; //!< Current size of the window
 };
 
 } // namespace sf

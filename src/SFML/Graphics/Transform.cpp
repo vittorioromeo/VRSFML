@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -95,17 +95,10 @@ Transform Transform::getInverse() const
 
 
 ////////////////////////////////////////////////////////////
-Vector2f Transform::transformPoint(float x, float y) const
-{
-    return Vector2f(m_matrix[0] * x + m_matrix[4] * y + m_matrix[12],
-                    m_matrix[1] * x + m_matrix[5] * y + m_matrix[13]);
-}
-
-
-////////////////////////////////////////////////////////////
 Vector2f Transform::transformPoint(const Vector2f& point) const
 {
-    return transformPoint(point.x, point.y);
+    return Vector2f(m_matrix[0] * point.x + m_matrix[4] * point.y + m_matrix[12],
+                    m_matrix[1] * point.x + m_matrix[5] * point.y + m_matrix[13]);
 }
 
 
@@ -115,10 +108,10 @@ FloatRect Transform::transformRect(const FloatRect& rectangle) const
     // Transform the 4 corners of the rectangle
     const Vector2f points[] =
     {
-        transformPoint(rectangle.left, rectangle.top),
-        transformPoint(rectangle.left, rectangle.top + rectangle.height),
-        transformPoint(rectangle.left + rectangle.width, rectangle.top),
-        transformPoint(rectangle.left + rectangle.width, rectangle.top + rectangle.height)
+        transformPoint({rectangle.left, rectangle.top}),
+        transformPoint({rectangle.left, rectangle.top + rectangle.height}),
+        transformPoint({rectangle.left + rectangle.width, rectangle.top}),
+        transformPoint({rectangle.left + rectangle.width, rectangle.top + rectangle.height})
     };
 
     // Compute the bounding rectangle of the transformed points
@@ -134,7 +127,7 @@ FloatRect Transform::transformRect(const FloatRect& rectangle) const
         else if (points[i].y > bottom) bottom = points[i].y;
     }
 
-    return FloatRect(left, top, right - left, bottom - top);
+    return FloatRect({left, top}, {right - left, bottom - top});
 }
 
 
@@ -159,20 +152,13 @@ Transform& Transform::combine(const Transform& transform)
 
 
 ////////////////////////////////////////////////////////////
-Transform& Transform::translate(float x, float y)
+Transform& Transform::translate(const Vector2f& offset)
 {
-    Transform translation(1, 0, x,
-                          0, 1, y,
+    Transform translation(1, 0, offset.x,
+                          0, 1, offset.y,
                           0, 0, 1);
 
     return combine(translation);
-}
-
-
-////////////////////////////////////////////////////////////
-Transform& Transform::translate(const Vector2f& offset)
-{
-    return translate(offset.x, offset.y);
 }
 
 
@@ -192,14 +178,14 @@ Transform& Transform::rotate(float angle)
 
 
 ////////////////////////////////////////////////////////////
-Transform& Transform::rotate(float angle, float centerX, float centerY)
+Transform& Transform::rotate(float angle, const Vector2f& center)
 {
     float rad = angle * 3.141592654f / 180.f;
     float cos = std::cos(rad);
     float sin = std::sin(rad);
 
-    Transform rotation(cos, -sin, centerX * (1 - cos) + centerY * sin,
-                       sin,  cos, centerY * (1 - cos) - centerX * sin,
+    Transform rotation(cos, -sin, center.x * (1 - cos) + center.y * sin,
+                       sin,  cos, center.y * (1 - cos) - center.x * sin,
                        0,    0,   1);
 
     return combine(rotation);
@@ -207,45 +193,24 @@ Transform& Transform::rotate(float angle, float centerX, float centerY)
 
 
 ////////////////////////////////////////////////////////////
-Transform& Transform::rotate(float angle, const Vector2f& center)
-{
-    return rotate(angle, center.x, center.y);
-}
-
-
-////////////////////////////////////////////////////////////
-Transform& Transform::scale(float scaleX, float scaleY)
-{
-    Transform scaling(scaleX, 0,      0,
-                      0,      scaleY, 0,
-                      0,      0,      1);
-
-    return combine(scaling);
-}
-
-
-////////////////////////////////////////////////////////////
-Transform& Transform::scale(float scaleX, float scaleY, float centerX, float centerY)
-{
-    Transform scaling(scaleX, 0,      centerX * (1 - scaleX),
-                      0,      scaleY, centerY * (1 - scaleY),
-                      0,      0,      1);
-
-    return combine(scaling);
-}
-
-
-////////////////////////////////////////////////////////////
 Transform& Transform::scale(const Vector2f& factors)
 {
-    return scale(factors.x, factors.y);
+    Transform scaling(factors.x, 0,         0,
+                      0,         factors.y, 0,
+                      0,         0,         1);
+
+    return combine(scaling);
 }
 
 
 ////////////////////////////////////////////////////////////
 Transform& Transform::scale(const Vector2f& factors, const Vector2f& center)
 {
-    return scale(factors.x, factors.y, center.x, center.y);
+    Transform scaling(factors.x, 0,         center.x * (1 - factors.x),
+                      0,         factors.y, center.y * (1 - factors.y),
+                      0,         0,         1);
+
+    return combine(scaling);
 }
 
 

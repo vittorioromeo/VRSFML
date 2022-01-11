@@ -30,10 +30,10 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 #include <SFML/Audio/AlResource.hpp>
-#include <SFML/System/Thread.hpp>
 #include <SFML/System/Time.hpp>
 #include <vector>
 #include <string>
+#include <thread>
 
 
 namespace sf
@@ -74,7 +74,7 @@ public:
     /// \see stop, getAvailableDevices
     ///
     ////////////////////////////////////////////////////////////
-    bool start(unsigned int sampleRate = 44100);
+    [[nodiscard]] bool start(unsigned int sampleRate = 44100);
 
     ////////////////////////////////////////////////////////////
     /// \brief Stop the capture
@@ -134,7 +134,7 @@ public:
     /// \see getAvailableDevices, getDefaultDevice
     ///
     ////////////////////////////////////////////////////////////
-    bool setDevice(const std::string& name);
+    [[nodiscard]] bool setDevice(const std::string& name);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the name of the current audio capture device
@@ -240,7 +240,7 @@ protected:
     /// \return True to continue the capture, or false to stop it
     ///
     ////////////////////////////////////////////////////////////
-    virtual bool onProcessSamples(const Int16* samples, std::size_t sampleCount) = 0;
+    [[nodiscard]] virtual bool onProcessSamples(const Int16* samples, std::size_t sampleCount) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Stop capturing audio data
@@ -283,15 +283,33 @@ private:
     void cleanup();
 
     ////////////////////////////////////////////////////////////
+    /// \brief Launch a new capture thread running 'record'
+    ///
+    /// This function is called when the capture is started or
+    /// when the device is changed.
+    ///
+    ////////////////////////////////////////////////////////////
+    void launchCapturingThread();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Stop capturing and wait for 'm_thread' to join
+    ///
+    /// This function is called when the capture is stopped or
+    /// when the device is changed.
+    ///
+    ////////////////////////////////////////////////////////////
+    void awaitCapturingThread();
+
+    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Thread             m_thread;             //!< Thread running the background recording task
-    std::vector<Int16> m_samples;            //!< Buffer to store captured samples
-    unsigned int       m_sampleRate;         //!< Sample rate
-    Time               m_processingInterval; //!< Time period between calls to onProcessSamples
-    bool               m_isCapturing;        //!< Capturing state
-    std::string        m_deviceName;         //!< Name of the audio capture device
-    unsigned int       m_channelCount;       //!< Number of recording channels
+    std::thread                m_thread;             //!< Thread running the background recording task
+    std::vector<Int16>         m_samples;            //!< Buffer to store captured samples
+    unsigned int               m_sampleRate;         //!< Sample rate
+    Time                       m_processingInterval; //!< Time period between calls to onProcessSamples
+    bool                       m_isCapturing;        //!< Capturing state
+    std::string                m_deviceName;         //!< Name of the audio capture device
+    unsigned int               m_channelCount;       //!< Number of recording channels
 };
 
 } // namespace sf
@@ -374,7 +392,7 @@ private:
 ///         return true;
 ///     }
 ///
-///     bool onProcessSamples(const Int16* samples, std::size_t sampleCount) override
+///     [[nodiscard]] bool onProcessSamples(const Int16* samples, std::size_t sampleCount) override
 ///     {
 ///         // Do something with the new chunk of samples (store them, send them, ...)
 ///         ...

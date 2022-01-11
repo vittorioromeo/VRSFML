@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -30,7 +30,6 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/Joystick.hpp>
 #include <SFML/Window/JoystickImpl.hpp>
-#include <SFML/System/NonCopyable.hpp>
 
 
 namespace sf
@@ -41,7 +40,7 @@ namespace priv
 /// \brief Global joystick manager
 ///
 ////////////////////////////////////////////////////////////
-class JoystickManager : NonCopyable
+class JoystickManager
 {
 public:
 
@@ -102,6 +101,18 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     ~JoystickManager();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    JoystickManager(const JoystickManager&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    JoystickManager& operator=(const JoystickManager&) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Joystick information and state

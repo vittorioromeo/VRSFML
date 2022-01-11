@@ -29,8 +29,8 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
-#include <SFML/System/NonCopyable.hpp>
 #include <SFML/System/Time.hpp>
+#include <memory>
 #include <string>
 #include <cstddef>
 
@@ -44,7 +44,7 @@ class SoundFileReader;
 /// \brief Provide read access to sound files
 ///
 ////////////////////////////////////////////////////////////
-class SFML_AUDIO_API InputSoundFile : NonCopyable
+class SFML_AUDIO_API InputSoundFile
 {
 public:
 
@@ -59,6 +59,18 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     ~InputSoundFile();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    InputSoundFile(const InputSoundFile&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    InputSoundFile& operator=(const InputSoundFile&) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a sound file from the disk for reading
@@ -76,7 +88,7 @@ public:
     /// \return True if the file was successfully opened
     ///
     ////////////////////////////////////////////////////////////
-    bool openFromFile(const std::string& filename);
+    [[nodiscard]] bool openFromFile(const std::string& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a sound file in memory for reading
@@ -90,7 +102,7 @@ public:
     /// \return True if the file was successfully opened
     ///
     ////////////////////////////////////////////////////////////
-    bool openFromMemory(const void* data, std::size_t sizeInBytes);
+    [[nodiscard]] bool openFromMemory(const void* data, std::size_t sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a sound file from a custom stream for reading
@@ -103,7 +115,7 @@ public:
     /// \return True if the file was successfully opened
     ///
     ////////////////////////////////////////////////////////////
-    bool openFromStream(InputStream& stream);
+    [[nodiscard]] bool openFromStream(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the total number of audio samples in the file
@@ -198,7 +210,7 @@ public:
     /// \return Number of samples actually read (may be less than \a maxCount)
     ///
     ////////////////////////////////////////////////////////////
-    Uint64 read(Int16* samples, Uint64 maxCount);
+    [[nodiscard]] Uint64 read(Int16* samples, Uint64 maxCount);
 
     ////////////////////////////////////////////////////////////
     /// \brief Close the current file
@@ -207,17 +219,32 @@ public:
     void close();
 
 private:
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleter for input streams that only conditionally deletes
+    ///
+    ////////////////////////////////////////////////////////////
+    struct StreamDeleter
+    {
+        StreamDeleter(bool theOwned);
+
+        // To accept ownership transfer from usual std::unique_ptr<T>
+        template <typename T>
+        StreamDeleter(const std::default_delete<T>&);
+
+        void operator()(InputStream* ptr) const;
+
+        bool owned;
+    };
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    SoundFileReader* m_reader;       //!< Reader that handles I/O on the file's format
-    InputStream*     m_stream;       //!< Input stream used to access the file's data
-    bool             m_streamOwned;  //!< Is the stream internal or external?
-    Uint64           m_sampleOffset; //!< Sample Read Position
-    Uint64           m_sampleCount;  //!< Total number of samples in the file
-    unsigned int     m_channelCount; //!< Number of channels of the sound
-    unsigned int     m_sampleRate;   //!< Number of samples per second
+    std::unique_ptr<SoundFileReader>            m_reader;       //!< Reader that handles I/O on the file's format
+    std::unique_ptr<InputStream, StreamDeleter> m_stream;       //!< Input stream used to access the file's data
+    Uint64                                      m_sampleOffset; //!< Sample Read Position
+    Uint64                                      m_sampleCount;  //!< Total number of samples in the file
+    unsigned int                                m_channelCount; //!< Number of channels of the sound
+    unsigned int                                m_sampleRate;   //!< Number of samples per second
 };
 
 } // namespace sf

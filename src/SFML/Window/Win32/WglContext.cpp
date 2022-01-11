@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -27,10 +27,8 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/WindowImpl.hpp> // included first to avoid a warning about macro redefinition
 #include <SFML/Window/Win32/WglContext.hpp>
-#include <SFML/System/ThreadLocalPtr.hpp>
-#include <SFML/System/Lock.hpp>
-#include <SFML/System/Mutex.hpp>
 #include <SFML/System/Err.hpp>
+#include <mutex>
 #include <sstream>
 #include <vector>
 
@@ -48,7 +46,7 @@ namespace
     {
         // Some drivers are bugged and don't track the current HDC/HGLRC properly
         // In order to deactivate successfully, we need to track it ourselves as well
-        sf::ThreadLocalPtr<sf::priv::WglContext> currentContext(nullptr);
+        thread_local sf::priv::WglContext* currentContext(nullptr);
 
 
         ////////////////////////////////////////////////////////////
@@ -110,7 +108,7 @@ WglContext(shared, ContextSettings(), 1u, 1u)
 
 
 ////////////////////////////////////////////////////////////
-WglContext::WglContext(WglContext* shared, const ContextSettings& settings, const WindowImpl* owner, unsigned int bitsPerPixel) :
+WglContext::WglContext(WglContext* shared, const ContextSettings& settings, const WindowImpl& owner, unsigned int bitsPerPixel) :
 m_window       (nullptr),
 m_pbuffer      (nullptr),
 m_deviceContext(nullptr),
@@ -123,7 +121,7 @@ m_ownsWindow   (false)
     m_settings = settings;
 
     // Create the rendering surface from the owner window
-    createSurface(owner->getSystemHandle(), bitsPerPixel);
+    createSurface(owner.getSystemHandle(), bitsPerPixel);
 
     // Create the context
     createContext(shared);
@@ -648,8 +646,8 @@ void WglContext::createContext(WglContext* shared)
 
             if (sharedContext)
             {
-                static Mutex mutex;
-                Lock lock(mutex);
+                static std::recursive_mutex mutex;
+                std::scoped_lock lock(mutex);
 
                 if (WglContextImpl::currentContext == shared)
                 {
@@ -718,8 +716,8 @@ void WglContext::createContext(WglContext* shared)
         if (sharedContext)
         {
             // wglShareLists doesn't seem to be thread-safe
-            static Mutex mutex;
-            Lock lock(mutex);
+            static std::recursive_mutex mutex;
+            std::scoped_lock lock(mutex);
 
             if (WglContextImpl::currentContext == shared)
             {

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -29,12 +29,15 @@
 #include <SFML/Window/Unix/ClipboardImpl.hpp>
 #include <SFML/Window/Unix/Display.hpp>
 #include <SFML/Window/Unix/InputImpl.hpp>
+#include <SFML/System/String.hpp>
 #include <SFML/System/Utf.hpp>
 #include <SFML/System/Err.hpp>
-#include <SFML/System/Mutex.hpp>
-#include <SFML/System/Lock.hpp>
 #include <SFML/System/Sleep.hpp>
+
 #include <X11/Xlibint.h>
+#undef min // Defined by `Xlibint.h`, conflicts with standard headers
+#undef max // Defined by `Xlibint.h`, conflicts with standard headers
+
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 #include <X11/keysym.h>
@@ -49,6 +52,7 @@
 #include <string>
 #include <cstring>
 #include <cassert>
+#include <mutex>
 
 #ifdef SFML_OPENGL_ES
     #include <SFML/Window/EglContext.hpp>
@@ -68,7 +72,7 @@ namespace
     {
         sf::priv::WindowImplX11*              fullscreenWindow = nullptr;
         std::vector<sf::priv::WindowImplX11*> allWindows;
-        sf::Mutex                             allWindowsMutex;
+        std::recursive_mutex                  allWindowsMutex;
         sf::String                            windowManagerName;
 
         sf::String                            wmAbsPosGood[] = { "Enlightenment", "FVWM", "i3" };
@@ -586,7 +590,7 @@ m_lastInputTime  (0)
     else
     {
         windowPosition.x = (DisplayWidth(m_display, m_screen) - static_cast<int>(mode.width))  / 2;
-        windowPosition.y = (DisplayWidth(m_display, m_screen) - static_cast<int>(mode.height)) / 2;
+        windowPosition.y = (DisplayHeight(m_display, m_screen) - static_cast<int>(mode.height)) / 2;
     }
 
     unsigned int width  = mode.width;
@@ -811,7 +815,7 @@ WindowImplX11::~WindowImplX11()
     CloseDisplay(m_display);
 
     // Remove this window from the global list of windows (required for focus request)
-    Lock lock(allWindowsMutex);
+    std::scoped_lock lock(allWindowsMutex);
     allWindows.erase(std::find(allWindows.begin(), allWindows.end(), this));
 }
 
@@ -1201,7 +1205,7 @@ void WindowImplX11::requestFocus()
     bool sfmlWindowFocused = false;
 
     {
-        Lock lock(allWindowsMutex);
+        std::scoped_lock lock(allWindowsMutex);
         for (sf::priv::WindowImplX11* windowPtr : allWindows)
         {
             if (windowPtr->hasFocus())
@@ -1658,7 +1662,7 @@ void WindowImplX11::initialize()
     XFlush(m_display);
 
     // Add this window to the global list of windows (required for focus request)
-    Lock lock(allWindowsMutex);
+    std::scoped_lock lock(allWindowsMutex);
     allWindows.push_back(this);
 }
 

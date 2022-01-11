@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -28,9 +28,8 @@
 #include <SFML/Window/Unix/WindowImplX11.hpp> // important to be included first (conflict with None)
 #include <SFML/Window/Unix/GlxContext.hpp>
 #include <SFML/Window/Unix/Display.hpp>
-#include <SFML/System/Mutex.hpp>
-#include <SFML/System/Lock.hpp>
 #include <SFML/System/Err.hpp>
+#include <mutex>
 #include <vector>
 
 // We check for this definition in order to avoid multiple definitions of GLAD
@@ -48,7 +47,7 @@
 
 namespace
 {
-    sf::Mutex glxErrorMutex;
+    std::recursive_mutex glxErrorMutex;
     bool glxErrorOccurred = false;
 
 
@@ -95,9 +94,9 @@ namespace
         }
 
     private:
-        sf::Lock   m_lock;
-        ::Display* m_display;
-        int      (*m_previousHandler)(::Display*, XErrorEvent*);
+        std::scoped_lock<std::recursive_mutex> m_lock;
+        ::Display*                             m_display;
+        int                                    (*m_previousHandler)(::Display*, XErrorEvent*);
     };
 }
 
@@ -132,7 +131,7 @@ m_ownsWindow(false)
 
 
 ////////////////////////////////////////////////////////////
-GlxContext::GlxContext(GlxContext* shared, const ContextSettings& settings, const WindowImpl* owner, unsigned int /*bitsPerPixel*/) :
+GlxContext::GlxContext(GlxContext* shared, const ContextSettings& settings, const WindowImpl& owner, unsigned int /*bitsPerPixel*/) :
 m_display   (nullptr),
 m_window    (0),
 m_context   (nullptr),
@@ -149,7 +148,7 @@ m_ownsWindow(false)
     ensureExtensionsInit(m_display, DefaultScreen(m_display));
 
     // Create the rendering surface from the owner window
-    createSurface(owner->getSystemHandle());
+    createSurface(owner.getSystemHandle());
 
     // Create the context
     createContext(shared);

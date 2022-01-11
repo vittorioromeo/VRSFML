@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Marco Antognini (antognini.marco@gmail.com),
+// Copyright (C) 2007-2022 Marco Antognini (antognini.marco@gmail.com),
 //                         Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -31,7 +31,6 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/JoystickImpl.hpp>
 #include <SFML/Window/Keyboard.hpp>
-#include <SFML/System/NonCopyable.hpp>
 #include <Carbon/Carbon.h>
 #include <IOKit/hid/IOHIDDevice.h>
 #include <IOKit/hid/IOHIDManager.h>
@@ -51,7 +50,7 @@ using IOHIDElements = std::vector<IOHIDElementRef>;
 /// Its purpose is to help sf::priv::InputImpl class.
 ///
 ////////////////////////////////////////////////////////////
-class HIDInputManager : NonCopyable
+class HIDInputManager
 {
 public:
 
@@ -132,6 +131,18 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     ~HIDInputManager();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    HIDInputManager(const HIDInputManager&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    HIDInputManager& operator=(const HIDInputManager&) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Initialize the keyboard part of this class

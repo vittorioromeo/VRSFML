@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -30,18 +30,26 @@
 #include <SFML/Audio/ALCheck.hpp>
 #include <SFML/System/Sleep.hpp>
 #include <SFML/System/Err.hpp>
-#include <SFML/System/Lock.hpp>
+#include <cassert>
+#include <mutex>
 
 #ifdef _MSC_VER
     #pragma warning(disable: 4355) // 'this' used in base member initializer list
 #endif
 
+#if defined(__APPLE__)
+    #if defined(__clang__)
+        #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    #elif defined(__GNUC__)
+        #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    #endif
+#endif
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
 SoundStream::SoundStream() :
-m_thread          (&SoundStream::streamData, this),
+m_thread          (),
 m_threadMutex     (),
 m_threadStartState(Stopped),
 m_isStreaming     (false),
@@ -63,14 +71,8 @@ SoundStream::~SoundStream()
 {
     // Stop the sound if it was playing
 
-    // Request the thread to terminate
-    {
-        Lock lock(m_threadMutex);
-        m_isStreaming = false;
-    }
-
-    // Wait for the thread to terminate
-    m_thread.wait();
+    // Wait for the thread to join
+    awaitStreamingThread();
 }
 
 
@@ -109,7 +111,7 @@ void SoundStream::play()
     Status threadStartState = Stopped;
 
     {
-        Lock lock(m_threadMutex);
+        std::scoped_lock lock(m_threadMutex);
 
         isStreaming = m_isStreaming;
         threadStartState = m_threadStartState;
@@ -119,7 +121,7 @@ void SoundStream::play()
     if (isStreaming && (threadStartState == Paused))
     {
         // If the sound is paused, resume it
-        Lock lock(m_threadMutex);
+        std::scoped_lock lock(m_threadMutex);
         m_threadStartState = Playing;
         alCheck(alSourcePlay(m_source));
         return;
@@ -131,9 +133,7 @@ void SoundStream::play()
     }
 
     // Start updating the stream in a separate thread to avoid blocking the application
-    m_isStreaming = true;
-    m_threadStartState = Playing;
-    m_thread.launch();
+    launchStreamingThread(Playing);
 }
 
 
@@ -142,7 +142,7 @@ void SoundStream::pause()
 {
     // Handle pause() being called before the thread has started
     {
-        Lock lock(m_threadMutex);
+        std::scoped_lock lock(m_threadMutex);
 
         if (!m_isStreaming)
             return;
@@ -157,14 +157,8 @@ void SoundStream::pause()
 ////////////////////////////////////////////////////////////
 void SoundStream::stop()
 {
-    // Request the thread to terminate
-    {
-        Lock lock(m_threadMutex);
-        m_isStreaming = false;
-    }
-
-    // Wait for the thread to terminate
-    m_thread.wait();
+    // Wait for the thread to join
+    awaitStreamingThread();
 
     // Move to the beginning
     onSeek(Time::Zero);
@@ -193,7 +187,7 @@ SoundStream::Status SoundStream::getStatus() const
     // To compensate for the lag between play() and alSourceplay()
     if (status == Stopped)
     {
-        Lock lock(m_threadMutex);
+        std::scoped_lock lock(m_threadMutex);
 
         if (m_isStreaming)
             status = m_threadStartState;
@@ -221,9 +215,7 @@ void SoundStream::setPlayingOffset(Time timeOffset)
     if (oldStatus == Stopped)
         return;
 
-    m_isStreaming = true;
-    m_threadStartState = oldStatus;
-    m_thread.launch();
+    launchStreamingThread(oldStatus);
 }
 
 
@@ -277,7 +269,7 @@ void SoundStream::streamData()
     bool requestStop = false;
 
     {
-        Lock lock(m_threadMutex);
+        std::scoped_lock lock(m_threadMutex);
 
         // Check if the thread was launched Stopped
         if (m_threadStartState == Stopped)
@@ -299,7 +291,7 @@ void SoundStream::streamData()
     alCheck(alSourcePlay(m_source));
 
     {
-        Lock lock(m_threadMutex);
+        std::scoped_lock lock(m_threadMutex);
 
         // Check if the thread was launched Paused
         if (m_threadStartState == Paused)
@@ -309,7 +301,7 @@ void SoundStream::streamData()
     for (;;)
     {
         {
-            Lock lock(m_threadMutex);
+            std::scoped_lock lock(m_threadMutex);
             if (!m_isStreaming)
                 break;
         }
@@ -325,7 +317,7 @@ void SoundStream::streamData()
             else
             {
                 // End streaming
-                Lock lock(m_threadMutex);
+                std::scoped_lock lock(m_threadMutex);
                 m_isStreaming = false;
             }
         }
@@ -369,7 +361,7 @@ void SoundStream::streamData()
                           << "and initialize() has been called correctly" << std::endl;
 
                     // Abort streaming (exit main loop)
-                    Lock lock(m_threadMutex);
+                    std::scoped_lock lock(m_threadMutex);
                     m_isStreaming = false;
                     requestStop = true;
                     break;
@@ -496,6 +488,31 @@ void SoundStream::clearQueue()
     ALuint buffer;
     for (ALint i = 0; i < nbQueued; ++i)
         alCheck(alSourceUnqueueBuffers(m_source, 1, &buffer));
+}
+
+
+////////////////////////////////////////////////////////////
+void SoundStream::launchStreamingThread(Status threadStartState)
+{
+    m_isStreaming = true;
+    m_threadStartState = threadStartState;
+
+    assert(!m_thread.joinable());
+    m_thread = std::thread(&SoundStream::streamData, this);
+}
+
+
+////////////////////////////////////////////////////////////
+void SoundStream::awaitStreamingThread()
+{
+    // Request the thread to join
+    {
+        std::scoped_lock lock(m_threadMutex);
+        m_isStreaming = false;
+    }
+
+    if (m_thread.joinable())
+        m_thread.join();
 }
 
 } // namespace sf

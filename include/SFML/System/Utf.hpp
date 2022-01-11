@@ -29,7 +29,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Config.hpp>
-#include <algorithm>
+#include <iterator>
 #include <locale>
 #include <string>
 #include <cstdlib>
@@ -37,6 +37,12 @@
 
 namespace sf
 {
+namespace priv
+{
+    template<class InputIt, class OutputIt>
+    OutputIt copy(InputIt first, InputIt last, OutputIt d_first);
+}
+
 template <unsigned int N>
 class Utf;
 

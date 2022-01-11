@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -28,25 +28,16 @@
 #include <SFML/Graphics/ImageLoader.hpp>
 #include <SFML/System/InputStream.hpp>
 #include <SFML/System/Err.hpp>
+#include <SFML/System/Utils.hpp>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
-#include <cctype>
 #include <iterator>
 
 
 namespace
 {
-    // Convert a string to lower case
-    std::string toLower(std::string str)
-    {
-        for (char& c : str)
-            c = static_cast<char>(std::tolower(c));
-
-        return str;
-    }
-
     // stb_image callbacks that operate on a sf::InputStream
     int read(void* user, char* data, int size)
     {
@@ -56,7 +47,9 @@ namespace
     void skip(void* user, int size)
     {
         auto* stream = static_cast<sf::InputStream*>(user);
-        stream->seek(stream->tell() + size);
+
+        if (stream->seek(stream->tell() + size) == -1)
+            sf::err() << "Failed to seek image loader input stream" << std::endl;
     }
     int eof(void* user)
     {
@@ -198,7 +191,11 @@ bool ImageLoader::loadImageFromStream(InputStream& stream, std::vector<Uint8>& p
     pixels.clear();
 
     // Make sure that the stream's reading position is at the beginning
-    stream.seek(0);
+    if (stream.seek(0) == -1)
+    {
+        err() << "Failed to seek image stream" << std::endl;
+        return false;
+    }
 
     // Setup the stb_image callbacks
     stbi_io_callbacks callbacks;

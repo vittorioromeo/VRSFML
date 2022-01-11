@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -45,8 +45,8 @@ namespace sf
 {
 ////////////////////////////////////////////////////////////
 WindowBase::WindowBase() :
-m_impl          (nullptr),
-m_size          (0, 0)
+m_impl(),
+m_size(0, 0)
 {
 
 }
@@ -54,8 +54,8 @@ m_size          (0, 0)
 
 ////////////////////////////////////////////////////////////
 WindowBase::WindowBase(VideoMode mode, const String& title, Uint32 style) :
-m_impl          (nullptr),
-m_size          (0, 0)
+m_impl(),
+m_size(0, 0)
 {
     WindowBase::create(mode, title, style);
 }
@@ -63,8 +63,8 @@ m_size          (0, 0)
 
 ////////////////////////////////////////////////////////////
 WindowBase::WindowBase(WindowHandle handle) :
-m_impl          (nullptr),
-m_size          (0, 0)
+m_impl(),
+m_size(0, 0)
 {
     WindowBase::create(handle);
 }
@@ -143,8 +143,7 @@ void WindowBase::create(WindowHandle handle)
 void WindowBase::close()
 {
     // Delete the window implementation
-    delete m_impl;
-    m_impl = nullptr;
+    m_impl.reset();
 
     // Update the fullscreen window
     if (this == getFullscreenWindow())

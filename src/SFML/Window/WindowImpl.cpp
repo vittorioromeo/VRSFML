@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -27,10 +27,12 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/WindowImpl.hpp>
 #include <SFML/Window/Event.hpp>
+#include <SFML/Window/JoystickImpl.hpp>
 #include <SFML/Window/JoystickManager.hpp>
 #include <SFML/Window/SensorManager.hpp>
 #include <SFML/System/Sleep.hpp>
 #include <algorithm>
+#include <memory>
 #include <cmath>
 
 #if defined(SFML_SYSTEM_WINDOWS)
@@ -78,28 +80,35 @@ namespace sf
 namespace priv
 {
 ////////////////////////////////////////////////////////////
-WindowImpl* WindowImpl::create(VideoMode mode, const String& title, Uint32 style, const ContextSettings& settings)
+struct WindowImpl::JoystickStatesImpl
 {
-    return new WindowImplType(mode, title, style, settings);
+    JoystickState m_states[Joystick::Count]; //!< Previous state of the joysticks
+};
+
+////////////////////////////////////////////////////////////
+std::unique_ptr<WindowImpl> WindowImpl::create(VideoMode mode, const String& title, Uint32 style, const ContextSettings& settings)
+{
+    return std::make_unique<WindowImplType>(mode, title, style, settings);
 }
 
 
 ////////////////////////////////////////////////////////////
-WindowImpl* WindowImpl::create(WindowHandle handle)
+std::unique_ptr<WindowImpl> WindowImpl::create(WindowHandle handle)
 {
-    return new WindowImplType(handle);
+    return std::make_unique<WindowImplType>(handle);
 }
 
 
 ////////////////////////////////////////////////////////////
 WindowImpl::WindowImpl() :
+m_joystickStatesImpl(std::make_unique<JoystickStatesImpl>()),
 m_joystickThreshold(0.1f)
 {
     // Get the initial joystick states
     JoystickManager::getInstance().update();
     for (unsigned int i = 0; i < Joystick::Count; ++i)
     {
-        m_joystickStates[i] = JoystickManager::getInstance().getState(i);
+        m_joystickStatesImpl->m_states[i] = JoystickManager::getInstance().getState(i);
         std::fill_n(m_previousAxes[i], static_cast<std::size_t>(Joystick::AxisCount), 0.f);
     }
 
@@ -110,10 +119,7 @@ m_joystickThreshold(0.1f)
 
 
 ////////////////////////////////////////////////////////////
-WindowImpl::~WindowImpl()
-{
-    // Nothing to do
-}
+WindowImpl::~WindowImpl() = default;
 
 
 ////////////////////////////////////////////////////////////
@@ -179,11 +185,11 @@ void WindowImpl::processJoystickEvents()
     for (unsigned int i = 0; i < Joystick::Count; ++i)
     {
         // Copy the previous state of the joystick and get the new one
-        JoystickState previousState = m_joystickStates[i];
-        m_joystickStates[i] = JoystickManager::getInstance().getState(i);
+        JoystickState previousState = m_joystickStatesImpl->m_states[i];
+        m_joystickStatesImpl->m_states[i] = JoystickManager::getInstance().getState(i);
 
         // Connection state
-        bool connected = m_joystickStates[i].connected;
+        bool connected = m_joystickStatesImpl->m_states[i].connected;
         if (previousState.connected ^ connected)
         {
             Event event;
@@ -207,7 +213,7 @@ void WindowImpl::processJoystickEvents()
                 {
                     auto axis = static_cast<Joystick::Axis>(j);
                     float prevPos = m_previousAxes[i][axis];
-                    float currPos = m_joystickStates[i].axes[axis];
+                    float currPos = m_joystickStatesImpl->m_states[i].axes[axis];
                     if (std::abs(currPos - prevPos) >= m_joystickThreshold)
                     {
                         Event event;
@@ -226,7 +232,7 @@ void WindowImpl::processJoystickEvents()
             for (unsigned int j = 0; j < caps.buttonCount; ++j)
             {
                 bool prevPressed = previousState.buttons[j];
-                bool currPressed = m_joystickStates[i].buttons[j];
+                bool currPressed = m_joystickStatesImpl->m_states[i].buttons[j];
 
                 if (prevPressed ^ currPressed)
                 {
@@ -280,6 +286,9 @@ bool WindowImpl::createVulkanSurface(const VkInstance& instance, VkSurfaceKHR& s
 {
 #if defined(SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE)
 
+    (void) instance;
+    (void) surface;
+    (void) allocator;
     return false;
 
 #else
