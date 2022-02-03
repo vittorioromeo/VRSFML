@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.14)
-
 set(SRCROOT "${PROJECT_SOURCE_DIR}/test")
 
 add_library(sfml-test-main STATIC "${SRCROOT}/DoctestMain.cpp")
@@ -21,6 +19,7 @@ target_link_libraries(test-sfml-system PRIVATE sfml-test-main)
 
 if(SFML_BUILD_WINDOW)
     SET(WINDOW_SRC
+        "${SRCROOT}/Window/ContextSettings.cpp"
         "${SRCROOT}/Window/VideoMode.cpp"
         "${SRCROOT}/TestUtilities/WindowUtil.hpp"
         "${SRCROOT}/TestUtilities/WindowUtil.cpp"
@@ -31,6 +30,7 @@ endif()
 
 if(SFML_BUILD_GRAPHICS)
     SET(GRAPHICS_SRC
+        "${SRCROOT}/Graphics/BlendMode.cpp"
         "${SRCROOT}/Graphics/Color.cpp"
         "${SRCROOT}/Graphics/Rect.cpp"
         "${SRCROOT}/Graphics/Transform.cpp"
@@ -57,5 +57,5 @@ add_custom_target(runtests ALL
 
 add_custom_command(TARGET runtests
                    COMMENT "Run tests"
-                   POST_BUILD COMMAND ctest ARGS --output-on-failure
+                   POST_BUILD COMMAND "${CMAKE_CTEST_COMMAND}" --output-on-failure -C $<CONFIG>
 )
