@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -35,12 +35,12 @@ namespace sf
 View::View() :
 m_center             (),
 m_size               (),
-m_rotation           (0),
-m_viewport           (0, 0, 1, 1),
+m_rotation           (),
+m_viewport           ({0, 0}, {1, 1}),
 m_transformUpdated   (false),
 m_invTransformUpdated(false)
 {
-    reset(FloatRect(0, 0, 1000, 1000));
+    reset(FloatRect({0, 0}, {1000, 1000}));
 }
 
 
@@ -48,8 +48,8 @@ m_invTransformUpdated(false)
 View::View(const FloatRect& rectangle) :
 m_center             (),
 m_size               (),
-m_rotation           (0),
-m_viewport           (0, 0, 1, 1),
+m_rotation           (),
+m_viewport           ({0, 0}, {1, 1}),
 m_transformUpdated   (false),
 m_invTransformUpdated(false)
 {
@@ -61,8 +61,8 @@ m_invTransformUpdated(false)
 View::View(const Vector2f& center, const Vector2f& size) :
 m_center             (center),
 m_size               (size),
-m_rotation           (0),
-m_viewport           (0, 0, 1, 1),
+m_rotation           (),
+m_viewport           ({0, 0}, {1, 1}),
 m_transformUpdated   (false),
 m_invTransformUpdated(false)
 {
@@ -98,11 +98,9 @@ void View::setSize(const Vector2f& size)
 
 
 ////////////////////////////////////////////////////////////
-void View::setRotation(float angle)
+void View::setRotation(Angle angle)
 {
-    m_rotation = std::fmod(angle, 360.f);
-    if (m_rotation < 0)
-        m_rotation += 360.f;
+    m_rotation = angle.wrapUnsigned();
 
     m_transformUpdated    = false;
     m_invTransformUpdated = false;
@@ -123,7 +121,7 @@ void View::reset(const FloatRect& rectangle)
     m_center.y = rectangle.top + rectangle.height / 2.f;
     m_size.x   = rectangle.width;
     m_size.y   = rectangle.height;
-    m_rotation = 0;
+    m_rotation = Angle::Zero;
 
     m_transformUpdated    = false;
     m_invTransformUpdated = false;
@@ -145,7 +143,7 @@ const Vector2f& View::getSize() const
 
 
 ////////////////////////////////////////////////////////////
-float View::getRotation() const
+Angle View::getRotation() const
 {
     return m_rotation;
 }
@@ -166,7 +164,7 @@ void View::move(const Vector2f& offset)
 
 
 ////////////////////////////////////////////////////////////
-void View::rotate(float angle)
+void View::rotate(Angle angle)
 {
     setRotation(m_rotation + angle);
 }
@@ -186,7 +184,7 @@ const Transform& View::getTransform() const
     if (!m_transformUpdated)
     {
         // Rotation components
-        float angle  = m_rotation * 3.141592654f / 180.f;
+        float angle  = m_rotation.asRadians();
         float cosine = std::cos(angle);
         float sine   = std::sin(angle);
         float tx     = -m_center.x * cosine - m_center.y * sine + m_center.x;

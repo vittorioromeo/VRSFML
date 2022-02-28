@@ -29,7 +29,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Config.hpp>
-#include <string>
+#include <filesystem>
 
 
 namespace sf
@@ -60,7 +60,7 @@ namespace priv
 /// \param expression The evaluated expression as a string
 ///
 ////////////////////////////////////////////////////////////
-void eglCheckError(const char* file, unsigned int line, const char* expression);
+void eglCheckError(const std::filesystem::path& file, unsigned int line, const char* expression);
 
 } // namespace priv
 } // namespace sf

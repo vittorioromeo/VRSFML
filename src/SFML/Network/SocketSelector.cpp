@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -30,6 +30,8 @@
 #include <SFML/Network/SocketImpl.hpp>
 #include <SFML/System/Err.hpp>
 #include <algorithm>
+#include <memory>
+#include <ostream>
 #include <utility>
 
 #ifdef _MSC_VER
@@ -51,7 +53,7 @@ struct SocketSelector::SocketSelectorImpl
 
 ////////////////////////////////////////////////////////////
 SocketSelector::SocketSelector() :
-m_impl(new SocketSelectorImpl)
+m_impl(std::make_unique<SocketSelectorImpl>())
 {
     clear();
 }
@@ -59,17 +61,14 @@ m_impl(new SocketSelectorImpl)
 
 ////////////////////////////////////////////////////////////
 SocketSelector::SocketSelector(const SocketSelector& copy) :
-m_impl(new SocketSelectorImpl(*copy.m_impl))
+m_impl(std::make_unique<SocketSelectorImpl>(*copy.m_impl))
 {
 
 }
 
 
 ////////////////////////////////////////////////////////////
-SocketSelector::~SocketSelector()
-{
-    delete m_impl;
-}
+SocketSelector::~SocketSelector() = default;
 
 
 ////////////////////////////////////////////////////////////
@@ -92,7 +91,7 @@ void SocketSelector::add(Socket& socket)
         if (FD_ISSET(handle, &m_impl->allSockets))
             return;
 
-        m_impl->socketCount++;
+        ++m_impl->socketCount;
 
 #else
 
@@ -126,7 +125,7 @@ void SocketSelector::remove(Socket& socket)
         if (!FD_ISSET(handle, &m_impl->allSockets))
             return;
 
-        m_impl->socketCount--;
+        --m_impl->socketCount;
 
 #else
 
@@ -158,7 +157,7 @@ bool SocketSelector::wait(Time timeout)
     // Setup the timeout
     timeval time;
     time.tv_sec  = static_cast<long>(timeout.asMicroseconds() / 1000000);
-    time.tv_usec = static_cast<long>(timeout.asMicroseconds() % 1000000);
+    time.tv_usec = static_cast<int>(timeout.asMicroseconds() % 1000000);
 
     // Initialize the set that will contain the sockets that are ready
     m_impl->socketsReady = m_impl->allSockets;

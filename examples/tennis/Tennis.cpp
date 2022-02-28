@@ -12,7 +12,7 @@
 #include <SFML/Main.hpp>
 #endif
 
-std::string resourcesDir()
+std::filesystem::path resourcesDir()
 {
 #ifdef SFML_SYSTEM_IOS
     return "";
@@ -32,7 +32,6 @@ int main()
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
     // Define some constants
-    const float pi = 3.14159f;
     const float gameWidth = 800;
     const float gameHeight = 600;
     sf::Vector2f paddleSize(25, 100);
@@ -45,13 +44,13 @@ int main()
 
     // Load the sounds used in the game
     sf::SoundBuffer ballSoundBuffer;
-    if (!ballSoundBuffer.loadFromFile(resourcesDir() + "ball.wav"))
+    if (!ballSoundBuffer.loadFromFile(resourcesDir() / "ball.wav"))
         return EXIT_FAILURE;
     sf::Sound ballSound(ballSoundBuffer);
 
     // Create the SFML logo texture:
     sf::Texture sfmlLogoTexture;
-    if(!sfmlLogoTexture.loadFromFile(resourcesDir() + "sfml_logo.png"))
+    if(!sfmlLogoTexture.loadFromFile(resourcesDir() / "sfml_logo.png"))
         return EXIT_FAILURE;
     sf::Sprite sfmlLogo;
     sfmlLogo.setTexture(sfmlLogoTexture);
@@ -83,7 +82,7 @@ int main()
 
     // Load the text font
     sf::Font font;
-    if (!font.loadFromFile(resourcesDir() + "tuffy.ttf"))
+    if (!font.loadFromFile(resourcesDir() / "tuffy.ttf"))
         return EXIT_FAILURE;
 
     // Initialize the pause message
@@ -105,7 +104,7 @@ int main()
     const float paddleSpeed = 400.f;
     float rightPaddleSpeed  = 0.f;
     const float ballSpeed   = 400.f;
-    float ballAngle         = 0.f; // to be changed later
+    sf::Angle ballAngle     = sf::degrees(0); // to be changed later
 
     sf::Clock clock;
     bool isPlaying = false;
@@ -142,9 +141,9 @@ int main()
                     do
                     {
                         // Make sure the ball initial angle is not too much vertical
-                        ballAngle = static_cast<float>(std::rand() % 360) * 2.f * pi / 360.f;
+                        ballAngle = sf::degrees(static_cast<float>(std::rand() % 360));
                     }
-                    while (std::abs(std::cos(ballAngle)) < 0.7f);
+                    while (std::abs(std::cos(ballAngle.asRadians())) < 0.7f);
                 }
             }
 
@@ -202,7 +201,7 @@ int main()
 
             // Move the ball
             float factor = ballSpeed * deltaTime;
-            ball.move({std::cos(ballAngle) * factor, std::sin(ballAngle) * factor});
+            ball.move({std::cos(ballAngle.asRadians()) * factor, std::sin(ballAngle.asRadians()) * factor});
 
             #ifdef SFML_SYSTEM_IOS
             const std::string inputString = "Touch the screen to restart.";
@@ -242,9 +241,9 @@ int main()
                 ball.getPosition().y - ballRadius <= leftPaddle.getPosition().y + paddleSize.y / 2)
             {
                 if (ball.getPosition().y > leftPaddle.getPosition().y)
-                    ballAngle = pi - ballAngle + static_cast<float>(std::rand() % 20) * pi / 180;
+                    ballAngle = sf::degrees(180) - ballAngle + sf::degrees(static_cast<float>(std::rand() % 20));
                 else
-                    ballAngle = pi - ballAngle - static_cast<float>(std::rand() % 20) * pi / 180;
+                    ballAngle = sf::degrees(180) - ballAngle - sf::degrees(static_cast<float>(std::rand() % 20));
 
                 ballSound.play();
                 ball.setPosition({leftPaddle.getPosition().x + ballRadius + paddleSize.x / 2 + 0.1f, ball.getPosition().y});
@@ -257,9 +256,9 @@ int main()
                 ball.getPosition().y - ballRadius <= rightPaddle.getPosition().y + paddleSize.y / 2)
             {
                 if (ball.getPosition().y > rightPaddle.getPosition().y)
-                    ballAngle = pi - ballAngle + static_cast<float>(std::rand() % 20) * pi / 180;
+                    ballAngle = sf::degrees(180) - ballAngle + sf::degrees(static_cast<float>(std::rand() % 20));
                 else
-                    ballAngle = pi - ballAngle - static_cast<float>(std::rand() % 20) * pi / 180;
+                    ballAngle = sf::degrees(180) - ballAngle - sf::degrees(static_cast<float>(std::rand() % 20));
 
                 ballSound.play();
                 ball.setPosition({rightPaddle.getPosition().x - ballRadius - paddleSize.x / 2 - 0.1f, ball.getPosition().y});

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -29,9 +29,11 @@
 #include <SFML/Window/Unix/ClipboardImpl.hpp>
 #include <SFML/Window/Unix/Display.hpp>
 #include <SFML/Window/Unix/InputImpl.hpp>
+#include <SFML/System/String.hpp>
 #include <SFML/System/Utf.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Sleep.hpp>
+#include <SFML/System/Time.hpp>
 
 #include <X11/Xlibint.h>
 #undef min // Defined by `Xlibint.h`, conflicts with standard headers
@@ -47,11 +49,13 @@
 #include <libgen.h>
 #include <fcntl.h>
 #include <algorithm>
-#include <vector>
-#include <string>
-#include <cstring>
-#include <cassert>
 #include <mutex>
+#include <ostream>
+#include <string>
+#include <vector>
+#include <cassert>
+#include <cstring>
+#include <filesystem>
 
 #ifdef SFML_OPENGL_ES
     #include <SFML/Window/EglContext.hpp>
@@ -76,14 +80,14 @@ namespace
 
         sf::String                            wmAbsPosGood[] = { "Enlightenment", "FVWM", "i3" };
 
-        static const unsigned long            eventMask = FocusChangeMask      | ButtonPressMask     |
-                                                        ButtonReleaseMask    | ButtonMotionMask    |
-                                                        PointerMotionMask    | KeyPressMask        |
-                                                        KeyReleaseMask       | StructureNotifyMask |
-                                                        EnterWindowMask      | LeaveWindowMask     |
-                                                        VisibilityChangeMask | PropertyChangeMask;
+        constexpr unsigned long        eventMask = FocusChangeMask      | ButtonPressMask     |
+                                                   ButtonReleaseMask    | ButtonMotionMask    |
+                                                   PointerMotionMask    | KeyPressMask        |
+                                                   KeyReleaseMask       | StructureNotifyMask |
+                                                   EnterWindowMask      | LeaveWindowMask     |
+                                                   VisibilityChangeMask | PropertyChangeMask;
 
-        static const unsigned int             maxTrialsCount = 5;
+        constexpr unsigned int         maxTrialsCount = 5;
 
         // Predicate we use to find key repeat events in processEvent
         struct KeyRepeatFinder
@@ -110,7 +114,7 @@ namespace
         }
 
         // Find the name of the current executable
-        std::string findExecutableName()
+        std::filesystem::path findExecutableName()
         {
             // We use /proc/self/cmdline to get the command line
             // the user used to invoke this instance of the application
@@ -589,7 +593,7 @@ m_lastInputTime  (0)
     else
     {
         windowPosition.x = (DisplayWidth(m_display, m_screen) - static_cast<int>(mode.width))  / 2;
-        windowPosition.y = (DisplayWidth(m_display, m_screen) - static_cast<int>(mode.height)) / 2;
+        windowPosition.y = (DisplayHeight(m_display, m_screen) - static_cast<int>(mode.height)) / 2;
     }
 
     unsigned int width  = mode.width;
@@ -654,23 +658,23 @@ m_lastInputTime  (0)
         Atom WMHintsAtom = getAtom("_MOTIF_WM_HINTS", false);
         if (WMHintsAtom)
         {
-            static const unsigned long MWM_HINTS_FUNCTIONS   = 1 << 0;
-            static const unsigned long MWM_HINTS_DECORATIONS = 1 << 1;
+            constexpr unsigned long MWM_HINTS_FUNCTIONS   = 1 << 0;
+            constexpr unsigned long MWM_HINTS_DECORATIONS = 1 << 1;
 
-            //static const unsigned long MWM_DECOR_ALL         = 1 << 0;
-            static const unsigned long MWM_DECOR_BORDER      = 1 << 1;
-            static const unsigned long MWM_DECOR_RESIZEH     = 1 << 2;
-            static const unsigned long MWM_DECOR_TITLE       = 1 << 3;
-            static const unsigned long MWM_DECOR_MENU        = 1 << 4;
-            static const unsigned long MWM_DECOR_MINIMIZE    = 1 << 5;
-            static const unsigned long MWM_DECOR_MAXIMIZE    = 1 << 6;
+            //constexpr unsigned long MWM_DECOR_ALL         = 1 << 0;
+            constexpr unsigned long MWM_DECOR_BORDER      = 1 << 1;
+            constexpr unsigned long MWM_DECOR_RESIZEH     = 1 << 2;
+            constexpr unsigned long MWM_DECOR_TITLE       = 1 << 3;
+            constexpr unsigned long MWM_DECOR_MENU        = 1 << 4;
+            constexpr unsigned long MWM_DECOR_MINIMIZE    = 1 << 5;
+            constexpr unsigned long MWM_DECOR_MAXIMIZE    = 1 << 6;
 
-            //static const unsigned long MWM_FUNC_ALL          = 1 << 0;
-            static const unsigned long MWM_FUNC_RESIZE       = 1 << 1;
-            static const unsigned long MWM_FUNC_MOVE         = 1 << 2;
-            static const unsigned long MWM_FUNC_MINIMIZE     = 1 << 3;
-            static const unsigned long MWM_FUNC_MAXIMIZE     = 1 << 4;
-            static const unsigned long MWM_FUNC_CLOSE        = 1 << 5;
+            //constexpr unsigned long MWM_FUNC_ALL          = 1 << 0;
+            constexpr unsigned long MWM_FUNC_RESIZE       = 1 << 1;
+            constexpr unsigned long MWM_FUNC_MOVE         = 1 << 2;
+            constexpr unsigned long MWM_FUNC_MINIMIZE     = 1 << 3;
+            constexpr unsigned long MWM_FUNC_MAXIMIZE     = 1 << 4;
+            constexpr unsigned long MWM_FUNC_CLOSE        = 1 << 5;
 
             struct WMHints
             {
@@ -734,7 +738,7 @@ m_lastInputTime  (0)
     // The instance name should be something unique to this invocation
     // of the application but is rarely if ever used these days.
     // For simplicity, we retrieve it via the base executable name.
-    std::string executableName = findExecutableName();
+    std::string executableName = findExecutableName().string();
     std::vector<char> windowInstance(executableName.size() + 1, 0);
     std::copy(executableName.begin(), executableName.end(), windowInstance.begin());
     hint->res_name = windowInstance.data();
@@ -1007,8 +1011,8 @@ void WindowImplX11::setIcon(unsigned int width, unsigned int height, const Uint8
 {
     // X11 wants BGRA pixels: swap red and blue channels
     // Note: this memory will be freed by XDestroyImage
-    auto* iconPixels = static_cast<Uint8*>(std::malloc(width * height * 4));
-    for (std::size_t i = 0; i < width * height; ++i)
+    auto* iconPixels = static_cast<Uint8*>(std::malloc(static_cast<std::size_t>(width) * static_cast<std::size_t>(height) * 4));
+    for (std::size_t i = 0; i < static_cast<std::size_t>(width) * static_cast<std::size_t>(height); ++i)
     {
         iconPixels[i * 4 + 0] = pixels[i * 4 + 2];
         iconPixels[i * 4 + 1] = pixels[i * 4 + 1];
@@ -1077,7 +1081,7 @@ void WindowImplX11::setIcon(unsigned int width, unsigned int height, const Uint8
     *ptr++ = height;
     #pragma GCC diagnostic pop
 
-    for (std::size_t i = 0; i < width * height; ++i)
+    for (std::size_t i = 0; i < static_cast<std::size_t>(width) * static_cast<std::size_t>(height); ++i)
     {
         *ptr++ = static_cast<unsigned long>((pixels[i * 4 + 2] << 0 ) |
                                             (pixels[i * 4 + 1] << 8 ) |
@@ -1369,7 +1373,7 @@ void WindowImplX11::setVideoMode(const VideoMode& mode)
     bool modeFound = false;
     RRMode xRandMode;
 
-    for (int i = 0; (i < res->nmode) && !modeFound; i++)
+    for (int i = 0; (i < res->nmode) && !modeFound; ++i)
     {
         if (crtcInfo->rotation == RR_Rotate_90 || crtcInfo->rotation == RR_Rotate_270)
             std::swap(res->modes[i].height, res->modes[i].width);
@@ -1493,7 +1497,7 @@ void WindowImplX11::switchToFullscreen()
 
         if (netWmBypassCompositor)
         {
-            static const unsigned long bypassCompositor = 1;
+            constexpr unsigned long bypassCompositor = 1;
 
             XChangeProperty(m_display,
                             m_window,

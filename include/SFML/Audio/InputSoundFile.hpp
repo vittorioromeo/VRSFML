@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -29,13 +29,15 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
-#include <SFML/System/Time.hpp>
+#include <filesystem>
+#include <memory>
 #include <string>
 #include <cstddef>
 
 
 namespace sf
 {
+class Time;
 class InputStream;
 class SoundFileReader;
 
@@ -87,7 +89,7 @@ public:
     /// \return True if the file was successfully opened
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool openFromFile(const std::string& filename);
+    [[nodiscard]] bool openFromFile(const std::filesystem::path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a sound file in memory for reading
@@ -218,17 +220,32 @@ public:
     void close();
 
 private:
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleter for input streams that only conditionally deletes
+    ///
+    ////////////////////////////////////////////////////////////
+    struct StreamDeleter
+    {
+        StreamDeleter(bool theOwned);
+
+        // To accept ownership transfer from usual std::unique_ptr<T>
+        template <typename T>
+        StreamDeleter(const std::default_delete<T>&);
+
+        void operator()(InputStream* ptr) const;
+
+        bool owned;
+    };
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    SoundFileReader* m_reader;       //!< Reader that handles I/O on the file's format
-    InputStream*     m_stream;       //!< Input stream used to access the file's data
-    bool             m_streamOwned;  //!< Is the stream internal or external?
-    Uint64           m_sampleOffset; //!< Sample Read Position
-    Uint64           m_sampleCount;  //!< Total number of samples in the file
-    unsigned int     m_channelCount; //!< Number of channels of the sound
-    unsigned int     m_sampleRate;   //!< Number of samples per second
+    std::unique_ptr<SoundFileReader>            m_reader;       //!< Reader that handles I/O on the file's format
+    std::unique_ptr<InputStream, StreamDeleter> m_stream;       //!< Input stream used to access the file's data
+    Uint64                                      m_sampleOffset; //!< Sample Read Position
+    Uint64                                      m_sampleCount;  //!< Total number of samples in the file
+    unsigned int                                m_channelCount; //!< Number of channels of the sound
+    unsigned int                                m_sampleRate;   //!< Number of samples per second
 };
 
 } // namespace sf
@@ -256,10 +273,10 @@ private:
 ///     /* error */;
 ///
 /// // Print the sound attributes
-/// std::cout << "duration: " << file.getDuration().asSeconds() << std::endl;
-/// std::cout << "channels: " << file.getChannelCount() << std::endl;
-/// std::cout << "sample rate: " << file.getSampleRate() << std::endl;
-/// std::cout << "sample count: " << file.getSampleCount() << std::endl;
+/// std::cout << "duration: " << file.getDuration().asSeconds() << '\n'
+///           << "channels: " << file.getChannelCount() << '\n'
+///           << "sample rate: " << file.getSampleRate() << '\n'
+///           << "sample count: " << file.getSampleCount() << std::endl;
 ///
 /// // Read and process batches of samples until the end of file is reached
 /// sf::Int16 samples[1024];

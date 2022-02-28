@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -36,6 +36,8 @@
 #define SF_GLAD_GL_IMPLEMENTATION
 #include <glad/gl.h>
 #endif
+
+#include <ostream>
 
 #if !defined(GL_MAJOR_VERSION)
     #define GL_MAJOR_VERSION 0x821B
@@ -92,8 +94,8 @@ void ensureExtensionsInit()
 
         if ((majorVersion < 1) || ((majorVersion == 1) && (minorVersion < 1)))
         {
-            err() << "sfml-graphics requires support for OpenGL 1.1 or greater" << std::endl;
-            err() << "Ensure that hardware acceleration is enabled if available" << std::endl;
+            err() << "sfml-graphics requires support for OpenGL 1.1 or greater" << '\n'
+                  << "Ensure that hardware acceleration is enabled if available" << std::endl;
         }
     }
 }

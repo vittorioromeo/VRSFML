@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -27,8 +27,8 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/SoundFileWriterWav.hpp>
 #include <SFML/System/Err.hpp>
-#include <algorithm>
-#include <cctype>
+#include <SFML/System/Utils.hpp>
+#include <ostream>
 #include <cassert>
 
 
@@ -68,11 +68,6 @@ namespace
         };
         stream.write(reinterpret_cast<const char*>(bytes), sizeof(bytes));
     }
-
-    unsigned char toLower(unsigned char character)
-    {
-        return static_cast<unsigned char>(std::tolower(character));
-    }
 }
 
 namespace sf
@@ -80,12 +75,9 @@ namespace sf
 namespace priv
 {
 ////////////////////////////////////////////////////////////
-bool SoundFileWriterWav::check(const std::string& filename)
+bool SoundFileWriterWav::check(const std::filesystem::path& filename)
 {
-    std::string extension = filename.substr(filename.find_last_of('.') + 1);
-    std::transform(extension.begin(), extension.end(), extension.begin(), toLower);
-
-    return extension == "wav";
+    return toLower(filename.extension().string()) == ".wav";
 }
 
 
@@ -104,7 +96,7 @@ SoundFileWriterWav::~SoundFileWriterWav()
 
 
 ////////////////////////////////////////////////////////////
-bool SoundFileWriterWav::open(const std::string& filename, unsigned int sampleRate, unsigned int channelCount)
+bool SoundFileWriterWav::open(const std::filesystem::path& filename, unsigned int sampleRate, unsigned int channelCount)
 {
     // Open the file
     m_file.open(filename.c_str(), std::ios::binary);
@@ -117,7 +109,7 @@ bool SoundFileWriterWav::open(const std::string& filename, unsigned int sampleRa
     // Write the header
     if (!writeHeader(sampleRate, channelCount))
     {
-        err() << "Failed to write header of WAV sound file \"" << filename << "\"" << std::endl;
+        err() << "Failed to write header of WAV sound file \"" << filename << '"' << std::endl;
         return false;
     }
 

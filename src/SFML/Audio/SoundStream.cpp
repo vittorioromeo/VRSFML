@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -30,13 +30,21 @@
 #include <SFML/Audio/ALCheck.hpp>
 #include <SFML/System/Sleep.hpp>
 #include <SFML/System/Err.hpp>
-#include <cassert>
 #include <mutex>
+#include <ostream>
+#include <cassert>
 
 #ifdef _MSC_VER
     #pragma warning(disable: 4355) // 'this' used in base member initializer list
 #endif
 
+#if defined(__APPLE__)
+    #if defined(__clang__)
+        #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    #elif defined(__GNUC__)
+        #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    #endif
+#endif
 
 namespace sf
 {
@@ -75,7 +83,11 @@ void SoundStream::initialize(unsigned int channelCount, unsigned int sampleRate)
     m_channelCount = channelCount;
     m_sampleRate = sampleRate;
     m_samplesProcessed = 0;
-    m_isStreaming = false;
+
+    {
+        std::scoped_lock lock(m_threadMutex);
+        m_isStreaming = false;
+    }
 
     // Deduce the format from the number of channels
     m_format = priv::AudioDevice::getFormatFromChannelCount(channelCount);
@@ -487,8 +499,11 @@ void SoundStream::clearQueue()
 ////////////////////////////////////////////////////////////
 void SoundStream::launchStreamingThread(Status threadStartState)
 {
-    m_isStreaming = true;
-    m_threadStartState = threadStartState;
+    {
+        std::scoped_lock lock(m_threadMutex);
+        m_isStreaming = true;
+        m_threadStartState = threadStartState;
+    }
 
     assert(!m_thread.joinable());
     m_thread = std::thread(&SoundStream::streamData, this);

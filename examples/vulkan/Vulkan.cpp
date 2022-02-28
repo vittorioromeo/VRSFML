@@ -9,10 +9,11 @@
 #include <SFML/Graphics.hpp>
 
 #include <SFML/Window.hpp>
-#include <vector>
+#include <iostream>
 #include <limits>
-#include <cstring>
+#include <vector>
 #include <cmath>
+#include <cstring>
 
 
 ////////////////////////////////////////////////////////////
@@ -28,9 +29,9 @@ namespace
     {
         Matrix temp;
 
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < 4; ++i)
         {
-            for (int j = 0; j < 4; j++)
+            for (int j = 0; j < 4; ++j)
                 temp[i][j] = left[0][j] * right[i][0] + left[1][j] * right[i][1] + left[2][j] * right[i][2] + left[3][j] * right[i][3];
         }
 
@@ -38,39 +39,42 @@ namespace
     }
 
     // Rotate a matrix around the x-axis
-    void matrixRotateX(Matrix& result, float angle)
+    void matrixRotateX(Matrix& result, sf::Angle angle)
     {
+        float rad = angle.asRadians();
         Matrix matrix = {
-            {1.f,   0.f,             0.f,             0.f},
-            {0.f,   std::cos(angle), std::sin(angle), 0.f},
-            {0.f,  -std::sin(angle), std::cos(angle), 0.f},
-            {0.f,   0.f,             0.f,             1.f}
+            {1.f,   0.f,           0.f,           0.f},
+            {0.f,   std::cos(rad), std::sin(rad), 0.f},
+            {0.f,  -std::sin(rad), std::cos(rad), 0.f},
+            {0.f,   0.f,           0.f,           1.f}
         };
 
         matrixMultiply(result, result, matrix);
     }
 
     // Rotate a matrix around the y-axis
-    void matrixRotateY(Matrix& result, float angle)
+    void matrixRotateY(Matrix& result, sf::Angle angle)
     {
+        float rad = angle.asRadians();
         Matrix matrix = {
-            { std::cos(angle), 0.f, std::sin(angle), 0.f},
-            { 0.f,             1.f, 0.f,             0.f},
-            {-std::sin(angle), 0.f, std::cos(angle), 0.f},
-            { 0.f,             0.f, 0.f,             1.f}
+            { std::cos(rad), 0.f, std::sin(rad), 0.f},
+            { 0.f,           1.f, 0.f,           0.f},
+            {-std::sin(rad), 0.f, std::cos(rad), 0.f},
+            { 0.f,           0.f, 0.f,           1.f}
         };
 
         matrixMultiply(result, result, matrix);
     }
 
     // Rotate a matrix around the z-axis
-    void matrixRotateZ(Matrix& result, float angle)
+    void matrixRotateZ(Matrix& result, sf::Angle angle)
     {
+        float rad = angle.asRadians();
         Matrix matrix = {
-            { std::cos(angle), std::sin(angle), 0.f, 0.f},
-            {-std::sin(angle), std::cos(angle), 0.f, 0.f},
-            { 0.f,             0.f,             1.f, 0.f},
-            { 0.f,             0.f,             0.f, 1.f}
+            { std::cos(rad), std::sin(rad), 0.f, 0.f},
+            {-std::sin(rad), std::cos(rad), 0.f, 0.f},
+            { 0.f,           0.f,           1.f, 0.f},
+            { 0.f,           0.f,           0.f, 1.f}
         };
 
         matrixMultiply(result, result, matrix);
@@ -127,9 +131,9 @@ namespace
     }
 
     // Construct a perspective projection matrix
-    void matrixPerspective(Matrix& result, float fov, float aspect, float nearPlane, float farPlane)
+    void matrixPerspective(Matrix& result, sf::Angle fov, float aspect, float nearPlane, float farPlane)
     {
-        const float a = 1.f / std::tan(fov / 2.f);
+        const float a = 1.f / std::tan(fov.asRadians() / 2.f);
 
         result[0][0] = a / aspect;
         result[0][1] = 0.f;
@@ -168,7 +172,7 @@ namespace
     // Debug we pass to Vulkan to call when it detects warnings or errors
     VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugReportFlagsEXT, VkDebugReportObjectTypeEXT, uint64_t, size_t, int32_t, const char*, const char* pMessage, void*)
     {
-        sf::err() << pMessage << std::endl;
+        std::cerr << pMessage << std::endl;
 
         return VK_FALSE;
     }
@@ -661,7 +665,7 @@ public:
 
         vkGetPhysicalDeviceQueueFamilyProperties(gpu, &objectCount, queueFamilyProperties.data());
 
-        for (std::size_t i = 0; i < queueFamilyProperties.size(); i++)
+        for (std::size_t i = 0; i < queueFamilyProperties.size(); ++i)
         {
             VkBool32 surfaceSupported = VK_FALSE;
 
@@ -866,7 +870,7 @@ public:
         imageViewCreateInfo.subresourceRange.layerCount = 1;
 
         // Create an image view for each swapchain image
-        for (std::size_t i = 0; i < swapchainImages.size(); i++)
+        for (std::size_t i = 0; i < swapchainImages.size(); ++i)
         {
             imageViewCreateInfo.image = swapchainImages[i];
 
@@ -1216,7 +1220,7 @@ public:
         framebufferCreateInfo.height = swapchainExtent.height;
         framebufferCreateInfo.layers = 1;
 
-        for (std::size_t i = 0; i < swapchainFramebuffers.size(); i++)
+        for (std::size_t i = 0; i < swapchainFramebuffers.size(); ++i)
         {
             // Each framebuffer consists of a corresponding swapchain image and the shared depth image
             VkImageView attachments[] = {swapchainImageViews[i], depthImageView};
@@ -1273,7 +1277,7 @@ public:
 
         uint32_t memoryType = 0;
 
-        for (; memoryType < memoryProperties.memoryTypeCount; memoryType++)
+        for (; memoryType < memoryProperties.memoryTypeCount; ++memoryType)
         {
             if ((memoryRequirements.memoryTypeBits & static_cast<unsigned int>(1 << memoryType)) &&
                 ((memoryProperties.memoryTypes[memoryType].propertyFlags & properties) == properties))
@@ -1542,7 +1546,7 @@ public:
     void setupUniformBuffers()
     {
         // Create a uniform buffer for every frame that might be in flight to prevent clobbering
-        for (size_t i = 0; i < swapchainImages.size(); i++)
+        for (size_t i = 0; i < swapchainImages.size(); ++i)
         {
             uniformBuffers.push_back(0);
             uniformBuffersMemory.push_back(0);
@@ -1595,7 +1599,7 @@ public:
 
         uint32_t memoryType = 0;
 
-        for (; memoryType < memoryProperties.memoryTypeCount; memoryType++)
+        for (; memoryType < memoryProperties.memoryTypeCount; ++memoryType)
         {
             if ((memoryRequirements.memoryTypeBits & static_cast<unsigned int>(1 << memoryType)) &&
                 ((memoryProperties.memoryTypes[memoryType].propertyFlags & properties) == properties))
@@ -2120,7 +2124,7 @@ public:
         }
 
         // For every descriptor set, set up the bindings to our uniform buffer and texture sampler
-        for (std::size_t i = 0; i < descriptorSets.size(); i++)
+        for (std::size_t i = 0; i < descriptorSets.size(); ++i)
         {
             VkWriteDescriptorSet writeDescriptorSets[2];
 
@@ -2214,7 +2218,7 @@ public:
         commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
 
         // Set up the command buffers for each frame in flight
-        for (std::size_t i = 0; i < commandBuffers.size(); i++)
+        for (std::size_t i = 0; i < commandBuffers.size(); ++i)
         {
             // Begin the command buffer
             if (vkBeginCommandBuffer(commandBuffers[i], &commandBufferBeginInfo) != VK_SUCCESS)
@@ -2264,7 +2268,7 @@ public:
         semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
         // Create a semaphore to track when an swapchain image is available for each frame in flight
-        for (std::size_t i = 0; i < maxFramesInFlight; i++)
+        for (std::size_t i = 0; i < maxFramesInFlight; ++i)
         {
             imageAvailableSemaphores.push_back(0);
 
@@ -2277,7 +2281,7 @@ public:
         }
 
         // Create a semaphore to track when rendering is complete for each frame in flight
-        for (std::size_t i = 0; i < maxFramesInFlight; i++)
+        for (std::size_t i = 0; i < maxFramesInFlight; ++i)
         {
             renderFinishedSemaphores.push_back(0);
 
@@ -2299,7 +2303,7 @@ public:
         fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
         // Create a fence to track when queue submission is complete for each frame in flight
-        for (std::size_t i = 0; i < maxFramesInFlight; i++)
+        for (std::size_t i = 0; i < maxFramesInFlight; ++i)
         {
             fences.push_back(0);
 
@@ -2315,8 +2319,6 @@ public:
     // Update the matrices in our uniform buffer every frame
     void updateUniformBuffer(float elapsed)
     {
-        const float pi = 3.14159265359f;
-
         // Construct the model matrix
         Matrix model = {
             { 1.0f, 0.0f, 0.0f, 0.0f },
@@ -2325,9 +2327,9 @@ public:
             { 0.0f, 0.0f, 0.0f, 1.0f }
         };
 
-        matrixRotateX(model, elapsed * 59.0f  * pi / 180.f);
-        matrixRotateY(model, elapsed * 83.0f  * pi / 180.f);
-        matrixRotateZ(model, elapsed * 109.0f * pi / 180.f);
+        matrixRotateX(model, sf::degrees(elapsed * 59.0f));
+        matrixRotateY(model, sf::degrees(elapsed * 83.0f));
+        matrixRotateZ(model, sf::degrees(elapsed * 109.0f));
 
         // Translate the model based on the mouse position
         sf::Vector2f mousePosition = sf::Vector2f(sf::Mouse::getPosition(window));
@@ -2348,14 +2350,14 @@ public:
         matrixLookAt(view, eye, center, up);
 
         // Construct the projection matrix
-        const float fov = 45.0f;
+        const sf::Angle fov = sf::degrees(45);
         const float aspect = static_cast<float>(swapchainExtent.width) / static_cast<float>(swapchainExtent.height);
         const float nearPlane = 0.1f;
         const float farPlane = 10.0f;
 
         Matrix projection;
 
-        matrixPerspective(projection, fov * pi / 180.f, aspect, nearPlane, farPlane);
+        matrixPerspective(projection, fov, aspect, nearPlane, farPlane);
 
         char* ptr;
 

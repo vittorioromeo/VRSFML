@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -32,6 +32,7 @@
 #include <SFML/System/Err.hpp>
 #include <mutex>
 #include <utility>
+#include <ostream>
 #include <cstddef>
 #include <cstring>
 
@@ -209,6 +210,7 @@ bool VertexBuffer::update(const VertexBuffer& vertexBuffer)
 {
 #ifdef SFML_OPENGL_ES
 
+    (void) vertexBuffer;
     return false;
 
 #else
@@ -359,7 +361,7 @@ bool VertexBuffer::isAvailable()
 
 
 ////////////////////////////////////////////////////////////
-void VertexBuffer::draw(RenderTarget& target, RenderStates states) const
+void VertexBuffer::draw(RenderTarget& target, const RenderStates& states) const
 {
     if (m_buffer && m_size)
         target.draw(*this, 0, m_size, states);

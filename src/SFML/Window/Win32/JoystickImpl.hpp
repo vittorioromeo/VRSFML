@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -91,7 +91,7 @@ public:
     /// \return True on success, false on failure
     ///
     ////////////////////////////////////////////////////////////
-    bool open(unsigned int index);
+    [[nodiscard]] bool open(unsigned int index);
 
     ////////////////////////////////////////////////////////////
     /// \brief Close the joystick
@@ -121,7 +121,7 @@ public:
     /// \return Joystick state
     ///
     ////////////////////////////////////////////////////////////
-    JoystickState update();
+    [[nodiscard]] JoystickState update();
 
     ////////////////////////////////////////////////////////////
     /// \brief Perform the global initialization of the joystick module (DInput)
@@ -159,7 +159,7 @@ public:
     /// \return True on success, false on failure
     ///
     ////////////////////////////////////////////////////////////
-    bool openDInput(unsigned int index);
+    [[nodiscard]] bool openDInput(unsigned int index);
 
     ////////////////////////////////////////////////////////////
     /// \brief Close the joystick (DInput)
@@ -181,7 +181,7 @@ public:
     /// \return Joystick state
     ///
     ////////////////////////////////////////////////////////////
-    JoystickState updateDInputBuffered();
+    [[nodiscard]] JoystickState updateDInputBuffered();
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the joystick and get its new state (DInput, Polled)
@@ -189,7 +189,7 @@ public:
     /// \return Joystick state
     ///
     ////////////////////////////////////////////////////////////
-    JoystickState updateDInputPolled();
+    [[nodiscard]] JoystickState updateDInputPolled();
 
 private:
 

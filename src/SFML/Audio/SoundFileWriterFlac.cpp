@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -27,30 +27,21 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/SoundFileWriterFlac.hpp>
 #include <SFML/System/Err.hpp>
+#include <SFML/System/Utils.hpp>
 #include <algorithm>
 #include <cctype>
 #include <cassert>
+#include <ostream>
 
-
-namespace
-{
-    unsigned char toLower(unsigned char character)
-    {
-        return static_cast<unsigned char>(std::tolower(character));
-    }
-}
 
 namespace sf
 {
 namespace priv
 {
 ////////////////////////////////////////////////////////////
-bool SoundFileWriterFlac::check(const std::string& filename)
+bool SoundFileWriterFlac::check(const std::filesystem::path& filename)
 {
-    std::string extension = filename.substr(filename.find_last_of('.') + 1);
-    std::transform(extension.begin(), extension.end(), extension.begin(), toLower);
-
-    return extension == "flac";
+    return toLower(filename.extension().string()) == ".flac";
 }
 
 
@@ -71,7 +62,7 @@ SoundFileWriterFlac::~SoundFileWriterFlac()
 
 
 ////////////////////////////////////////////////////////////
-bool SoundFileWriterFlac::open(const std::string& filename, unsigned int sampleRate, unsigned int channelCount)
+bool SoundFileWriterFlac::open(const std::filesystem::path& filename, unsigned int sampleRate, unsigned int channelCount)
 {
     // Create the encoder
     m_encoder = FLAC__stream_encoder_new();
@@ -87,7 +78,7 @@ bool SoundFileWriterFlac::open(const std::string& filename, unsigned int sampleR
     FLAC__stream_encoder_set_sample_rate(m_encoder, sampleRate);
 
     // Initialize the output stream
-    if (FLAC__stream_encoder_init_file(m_encoder, filename.c_str(), nullptr, nullptr) != FLAC__STREAM_ENCODER_INIT_STATUS_OK)
+    if (FLAC__stream_encoder_init_file(m_encoder, filename.string().c_str(), nullptr, nullptr) != FLAC__STREAM_ENCODER_INIT_STATUS_OK)
     {
         err() << "Failed to write flac file \"" << filename << "\" (failed to open the file)" << std::endl;
         close();

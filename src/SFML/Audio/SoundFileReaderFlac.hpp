@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -30,7 +30,6 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/SoundFileReader.hpp>
 #include <FLAC/stream_decoder.h>
-#include <string>
 #include <vector>
 
 
@@ -54,7 +53,7 @@ public:
     /// \return True if the file is supported by this reader
     ///
     ////////////////////////////////////////////////////////////
-    static bool check(InputStream& stream);
+    [[nodiscard]] static bool check(InputStream& stream);
 
 public:
 
@@ -77,7 +76,7 @@ public:
     /// \param info   Structure to fill with the attributes of the loaded sound
     ///
     ////////////////////////////////////////////////////////////
-    bool open(sf::InputStream& stream, Info& info) override;
+    [[nodiscard]] bool open(sf::InputStream& stream, Info& info) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current read position to the given sample offset
@@ -103,7 +102,7 @@ public:
     /// \return Number of samples actually read (may be less than \a maxCount)
     ///
     ////////////////////////////////////////////////////////////
-    Uint64 read(Int16* samples, Uint64 maxCount) override;
+    [[nodiscard]] Uint64 read(Int16* samples, Uint64 maxCount) override;
 
 public:
 

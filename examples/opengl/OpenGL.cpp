@@ -17,7 +17,7 @@
 #define GL_SRGB8_ALPHA8 0x8C43
 #endif
 
-std::string resourcesDir()
+std::filesystem::path resourcesDir()
 {
 #ifdef SFML_SYSTEM_IOS
     return "";
@@ -51,13 +51,13 @@ int main()
         // Create a sprite for the background
         sf::Texture backgroundTexture;
         backgroundTexture.setSrgb(sRgb);
-        if (!backgroundTexture.loadFromFile(resourcesDir() + "background.jpg"))
+        if (!backgroundTexture.loadFromFile(resourcesDir() / "background.jpg"))
             return EXIT_FAILURE;
         sf::Sprite background(backgroundTexture);
 
         // Create some text to draw on top of our OpenGL object
         sf::Font font;
-        if (!font.loadFromFile(resourcesDir() + "tuffy.ttf"))
+        if (!font.loadFromFile(resourcesDir() / "tuffy.ttf"))
             return EXIT_FAILURE;
 
         sf::Text text("SFML / OpenGL demo", font);
@@ -72,7 +72,7 @@ int main()
 
         // Load a texture to apply to our 3D cube
         sf::Texture texture;
-        if (!texture.loadFromFile(resourcesDir() + "logo.png"))
+        if (!texture.loadFromFile(resourcesDir() / "logo.png"))
             return EXIT_FAILURE;
 
         // Attempt to generate a mipmap for our cube texture
@@ -220,7 +220,7 @@ int main()
                     if (mipmapEnabled)
                     {
                         // We simply reload the texture to disable mipmapping
-                        if (!texture.loadFromFile(resourcesDir() + "logo.png"))
+                        if (!texture.loadFromFile(resourcesDir() / "logo.png"))
                             return EXIT_FAILURE;
 
                         mipmapEnabled = false;
@@ -282,8 +282,9 @@ int main()
             // Make the window the active window for OpenGL calls
             if (!window.setActive(true))
             {
-                std::cerr << "Failed to set window to active" << std::endl;
-                return EXIT_FAILURE;
+                // On failure, try re-creating the window, as it is intentionally 
+                // closed when changing color space.
+                continue;
             }
 
             // Clear the depth buffer

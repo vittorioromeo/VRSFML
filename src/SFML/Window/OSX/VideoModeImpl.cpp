@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Marco Antognini (antognini.marco@gmail.com),
+// Copyright (C) 2007-2022 Marco Antognini (antognini.marco@gmail.com),
 //                         Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -30,6 +30,7 @@
 #include <SFML/Window/OSX/cg_sf_conversion.hpp>
 #include <SFML/System/Err.hpp>
 #include <algorithm>
+#include <ostream>
 
 namespace sf
 {
@@ -54,9 +55,9 @@ std::vector<VideoMode> VideoModeImpl::getFullscreenModes()
 
     // Loop on each mode and convert it into a sf::VideoMode object.
     const CFIndex modesCount = CFArrayGetCount(cgmodes);
-    for (CFIndex i = 0; i < modesCount; i++)
+    for (CFIndex i = 0; i < modesCount; ++i)
     {
-        CGDisplayModeRef cgmode = (CGDisplayModeRef)CFArrayGetValueAtIndex(cgmodes, i);
+        CGDisplayModeRef cgmode = static_cast<CGDisplayModeRef>(const_cast<void*>(CFArrayGetValueAtIndex(cgmodes, i)));
 
         VideoMode mode = convertCGModeToSFMode(cgmode);
 

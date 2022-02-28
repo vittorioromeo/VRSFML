@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -36,6 +36,7 @@
 #include <SFML/System/FileInputStream.hpp>
 #include <SFML/System/MemoryInputStream.hpp>
 #include <SFML/System/Err.hpp>
+#include <ostream>
 
 
 namespace
@@ -65,7 +66,7 @@ SoundFileFactory::WriterFactoryArray SoundFileFactory::s_writers;
 
 
 ////////////////////////////////////////////////////////////
-SoundFileReader* SoundFileFactory::createReaderFromFilename(const std::string& filename)
+std::unique_ptr<SoundFileReader> SoundFileFactory::createReaderFromFilename(const std::filesystem::path& filename)
 {
     // Register the built-in readers/writers on first call
     ensureDefaultReadersWritersRegistered();
@@ -97,7 +98,7 @@ SoundFileReader* SoundFileFactory::createReaderFromFilename(const std::string& f
 
 
 ////////////////////////////////////////////////////////////
-SoundFileReader* SoundFileFactory::createReaderFromMemory(const void* data, std::size_t sizeInBytes)
+std::unique_ptr<SoundFileReader> SoundFileFactory::createReaderFromMemory(const void* data, std::size_t sizeInBytes)
 {
     // Register the built-in readers/writers on first call
     ensureDefaultReadersWritersRegistered();
@@ -126,7 +127,7 @@ SoundFileReader* SoundFileFactory::createReaderFromMemory(const void* data, std:
 
 
 ////////////////////////////////////////////////////////////
-SoundFileReader* SoundFileFactory::createReaderFromStream(InputStream& stream)
+std::unique_ptr<SoundFileReader> SoundFileFactory::createReaderFromStream(InputStream& stream)
 {
     // Register the built-in readers/writers on first call
     ensureDefaultReadersWritersRegistered();
@@ -151,7 +152,7 @@ SoundFileReader* SoundFileFactory::createReaderFromStream(InputStream& stream)
 
 
 ////////////////////////////////////////////////////////////
-SoundFileWriter* SoundFileFactory::createWriterFromFilename(const std::string& filename)
+std::unique_ptr<SoundFileWriter> SoundFileFactory::createWriterFromFilename(const std::filesystem::path& filename)
 {
     // Register the built-in readers/writers on first call
     ensureDefaultReadersWritersRegistered();

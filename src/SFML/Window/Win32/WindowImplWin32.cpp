@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -29,12 +29,15 @@
 #include <SFML/Window/WindowStyle.hpp>
 #include <SFML/Window/JoystickImpl.hpp>
 #include <SFML/System/Err.hpp>
+#include <SFML/System/String.hpp>
 #include <SFML/System/Utf.hpp>
 // dbt.h is lowercase here, as a cross-compile on linux with mingw-w64
 // expects lowercase, and a native compile on windows, whether via msvc
 // or mingw-w64 addresses files in a case insensitive manner.
 #include <dbt.h>
+#include <ostream>
 #include <vector>
+
 #include <cstring>
 
 // MinGW lacks the definition of some Win32 constants
@@ -230,7 +233,7 @@ m_cursorGrabbed   (m_fullscreen)
         switchToFullscreen(mode);
 
     // Increment window count
-    windowCount++;
+    ++windowCount;
 }
 
 
@@ -259,7 +262,7 @@ WindowImplWin32::~WindowImplWin32()
             DestroyWindow(m_handle);
 
         // Decrement the window count
-        windowCount--;
+        --windowCount;
 
         // Unregister window class if we were the last window
         if (windowCount == 0)

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -29,7 +29,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Config.hpp>
-#include <algorithm>
+#include <iterator>
 #include <locale>
 #include <string>
 #include <cstdlib>
@@ -37,6 +37,12 @@
 
 namespace sf
 {
+namespace priv
+{
+    template<class InputIt, class OutputIt>
+    OutputIt copy(InputIt first, InputIt last, OutputIt d_first);
+}
+
 template <unsigned int N>
 class Utf;
 

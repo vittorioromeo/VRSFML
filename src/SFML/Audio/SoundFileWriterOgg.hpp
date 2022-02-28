@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -30,6 +30,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/SoundFileWriter.hpp>
 #include <vorbis/vorbisenc.h>
+#include <filesystem>
 #include <fstream>
 
 
@@ -53,7 +54,7 @@ public:
     /// \return True if the file can be written by this writer
     ///
     ////////////////////////////////////////////////////////////
-    static bool check(const std::string& filename);
+    [[nodiscard]] static bool check(const std::filesystem::path& filename);
 
 public:
 
@@ -79,7 +80,7 @@ public:
     /// \return True if the file was successfully opened
     ///
     ////////////////////////////////////////////////////////////
-    bool open(const std::string& filename, unsigned int sampleRate, unsigned int channelCount) override;
+    [[nodiscard]] bool open(const std::filesystem::path& filename, unsigned int sampleRate, unsigned int channelCount) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Write audio samples to the open file

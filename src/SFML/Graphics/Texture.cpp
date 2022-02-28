@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -36,6 +36,7 @@
 #include <cstring>
 #include <climits>
 #include <mutex>
+#include <ostream>
 
 
 namespace
@@ -174,9 +175,9 @@ bool Texture::create(unsigned int width, unsigned int height)
 
         if (!warned)
         {
-            err() << "OpenGL extension SGIS_texture_edge_clamp unavailable" << std::endl;
-            err() << "Artifacts may occur along texture edges" << std::endl;
-            err() << "Ensure that hardware acceleration is enabled if available" << std::endl;
+            err() << "OpenGL extension SGIS_texture_edge_clamp unavailable" << '\n'
+                  << "Artifacts may occur along texture edges" << '\n'
+                  << "Ensure that hardware acceleration is enabled if available" << std::endl;
 
             warned = true;
         }
@@ -191,9 +192,9 @@ bool Texture::create(unsigned int width, unsigned int height)
         if (!warned)
         {
 #ifndef SFML_OPENGL_ES
-            err() << "OpenGL extension EXT_texture_sRGB unavailable" << std::endl;
+            err() << "OpenGL extension EXT_texture_sRGB unavailable" << '\n';
 #else
-            err() << "OpenGL ES extension EXT_sRGB unavailable" << std::endl;
+            err() << "OpenGL ES extension EXT_sRGB unavailable" << '\n';
 #endif
             err() << "Automatic sRGB to linear conversion disabled" << std::endl;
 
@@ -219,7 +220,7 @@ bool Texture::create(unsigned int width, unsigned int height)
 
 
 ////////////////////////////////////////////////////////////
-bool Texture::loadFromFile(const std::string& filename, const IntRect& area)
+bool Texture::loadFromFile(const std::filesystem::path& filename, const IntRect& area)
 {
     Image image;
     return image.loadFromFile(filename) && loadFromImage(image, area);
@@ -330,7 +331,7 @@ Image Texture::copyToImage() const
     priv::TextureSaver save;
 
     // Create an array of pixels
-    std::vector<Uint8> pixels(m_size.x * m_size.y * 4);
+    std::vector<Uint8> pixels(static_cast<std::size_t>(m_size.x) * static_cast<std::size_t>(m_size.y) * 4);
 
 #ifdef SFML_OPENGL_ES
 
@@ -364,7 +365,7 @@ Image Texture::copyToImage() const
         // Texture is either padded or flipped, we have to use a slower algorithm
 
         // All the pixels will first be copied to a temporary array
-        std::vector<Uint8> allPixels(m_actualSize.x * m_actualSize.y * 4);
+        std::vector<Uint8> allPixels(static_cast<std::size_t>(m_actualSize.x) * static_cast<std::size_t>(m_actualSize.y) * 4);
         glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
         glCheck(glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, allPixels.data()));
 
@@ -667,9 +668,9 @@ void Texture::setRepeated(bool repeated)
 
                 if (!warned)
                 {
-                    err() << "OpenGL extension SGIS_texture_edge_clamp unavailable" << std::endl;
-                    err() << "Artifacts may occur along texture edges" << std::endl;
-                    err() << "Ensure that hardware acceleration is enabled if available" << std::endl;
+                    err() << "OpenGL extension SGIS_texture_edge_clamp unavailable" << '\n'
+                          << "Artifacts may occur along texture edges" << '\n'
+                          << "Ensure that hardware acceleration is enabled if available" << std::endl;
 
                     warned = true;
                 }

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -29,23 +29,18 @@
 #include <SFML/Graphics/RenderTextureImplFBO.hpp>
 #include <SFML/Graphics/RenderTextureImplDefault.hpp>
 #include <SFML/System/Err.hpp>
+#include <memory>
+#include <ostream>
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-RenderTexture::RenderTexture() :
-m_impl(nullptr)
-{
-
-}
+RenderTexture::RenderTexture() = default;
 
 
 ////////////////////////////////////////////////////////////
-RenderTexture::~RenderTexture()
-{
-    delete m_impl;
-}
+RenderTexture::~RenderTexture() = default;
 
 
 ////////////////////////////////////////////////////////////
@@ -65,11 +60,10 @@ bool RenderTexture::create(unsigned int width, unsigned int height, const Contex
     setSmooth(false);
 
     // Create the implementation
-    delete m_impl;
     if (priv::RenderTextureImplFBO::isAvailable())
     {
         // Use frame-buffer object (FBO)
-        m_impl = new priv::RenderTextureImplFBO;
+        m_impl = std::make_unique<priv::RenderTextureImplFBO>();
 
         // Mark the texture as being a framebuffer object attachment
         m_texture.m_fboAttachment = true;
@@ -77,7 +71,7 @@ bool RenderTexture::create(unsigned int width, unsigned int height, const Contex
     else
     {
         // Use default implementation
-        m_impl = new priv::RenderTextureImplDefault;
+        m_impl = std::make_unique<priv::RenderTextureImplDefault>();
     }
 
     // Initialize the render texture

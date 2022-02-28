@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -29,7 +29,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
-#include <string>
 
 
 namespace sf
@@ -129,13 +128,13 @@ public:
 /// {
 /// public:
 ///
-///     static bool check(sf::InputStream& stream)
+///     [[nodiscard]] static bool check(sf::InputStream& stream)
 ///     {
 ///         // typically, read the first few header bytes and check fields that identify the format
 ///         // return true if the reader can handle the format
 ///     }
 ///
-///     bool open(sf::InputStream& stream, Info& info) override
+///     [[nodiscard]] bool open(sf::InputStream& stream, Info& info) override
 ///     {
 ///         // read the sound file header and fill the sound attributes
 ///         // (channel count, sample count and sample rate)

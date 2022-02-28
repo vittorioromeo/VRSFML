@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -30,10 +30,21 @@
 #include <SFML/Window/iOS/SFView.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Sleep.hpp>
+#include <SFML/System/Time.hpp>
 #include <OpenGLES/EAGL.h>
 #include <OpenGLES/EAGLDrawable.h>
 #include <QuartzCore/CAEAGLLayer.h>
 #include <dlfcn.h>
+#include <ostream>
+
+
+#if defined(__APPLE__)
+    #if defined(__clang__)
+        #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    #elif defined(__GNUC__)
+        #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    #endif
+#endif
 
 
 namespace
@@ -97,7 +108,7 @@ m_clock       ()
 
 ////////////////////////////////////////////////////////////
 EaglContext::EaglContext(EaglContext* shared, const ContextSettings& settings,
-                         const WindowImpl* owner, unsigned int bitsPerPixel) :
+                         const WindowImpl& owner, unsigned int bitsPerPixel) :
 m_context     (nil),
 m_framebuffer (0),
 m_colorbuffer (0),
@@ -107,15 +118,15 @@ m_clock       ()
 {
     ensureInit();
 
-    const WindowImplUIKit* window = static_cast<const WindowImplUIKit*>(owner);
+    const auto& window = static_cast<const WindowImplUIKit&>(owner);
 
     createContext(shared, window, bitsPerPixel, settings);
 }
 
 
 ////////////////////////////////////////////////////////////
-EaglContext::EaglContext(EaglContext* shared, const ContextSettings& settings,
-                         unsigned int width, unsigned int height) :
+EaglContext::EaglContext(EaglContext* /* shared */, const ContextSettings& /* settings */,
+                         unsigned int /* width */, unsigned int /* height */) :
 m_context     (nil),
 m_framebuffer (0),
 m_colorbuffer (0),
@@ -171,7 +182,7 @@ GlFunctionPointer EaglContext::getFunction(const char* name)
         "/System/Library/Frameworks/OpenGLES.framework/OpenGLES",
         "OpenGLES.framework/OpenGLES"
     };
-    
+
     for (int i = 0; i < libCount; ++i)
     {
         if (!module)
@@ -179,7 +190,8 @@ GlFunctionPointer EaglContext::getFunction(const char* name)
     }
 
     if (module)
-        return reinterpret_cast<GlFunctionPointer>(dlsym(module, name));
+        return reinterpret_cast<GlFunctionPointer>(
+            reinterpret_cast<uintptr_t>(dlsym(module, name)));
 
     return 0;
 }
@@ -205,7 +217,7 @@ void EaglContext::recreateRenderBuffers(SFView* glView)
     glGenRenderbuffersOESFunc(1, &m_colorbuffer);
     glBindRenderbufferOESFunc(GL_RENDERBUFFER_OES, m_colorbuffer);
     if (glView)
-        [m_context renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:(CAEAGLLayer*)glView.layer];
+        [m_context renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:(static_cast<CAEAGLLayer*>(glView.layer))];
     glFramebufferRenderbufferOESFunc(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, m_colorbuffer);
 
     // Create a depth buffer if requested
@@ -261,7 +273,7 @@ void EaglContext::display()
     // therefore we fake it with a manual framerate limit
     if (m_vsyncEnabled)
     {
-        static const Time frameDuration = seconds(1.f / 60.f);
+        constexpr Time frameDuration = seconds(1.f / 60.f);
         sleep(frameDuration - m_clock.getElapsedTime());
         m_clock.restart();
     }
@@ -277,8 +289,8 @@ void EaglContext::setVerticalSyncEnabled(bool enabled)
 
 ////////////////////////////////////////////////////////////
 void EaglContext::createContext(EaglContext* shared,
-                                const WindowImplUIKit* window,
-                                unsigned int bitsPerPixel,
+                                const WindowImplUIKit& window,
+                                unsigned int /* bitsPerPixel */,
                                 const ContextSettings& settings)
 {
     // Save the settings
@@ -309,10 +321,10 @@ void EaglContext::createContext(EaglContext* shared,
     glGenFramebuffersOESFunc(1, &m_framebuffer);
 
     // Create the render buffers
-    recreateRenderBuffers(window->getGlView());
+    recreateRenderBuffers(window.getGlView());
 
     // Attach the context to the GL view for future updates
-    window->getGlView().context = this;
+    window.getGlView().context = this;
 
     // Deactivate it
     makeCurrent(false);

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -27,6 +27,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/SensorManager.hpp>
 #include <SFML/System/Err.hpp>
+#include <ostream>
 
 
 namespace sf
@@ -104,8 +105,15 @@ SensorManager::SensorManager()
         // Open the available sensors
         if (m_sensors[i].available)
         {
-            m_sensors[i].sensor.open(static_cast<Sensor::Type>(i));
-            m_sensors[i].sensor.setEnabled(false);
+            if (m_sensors[i].sensor.open(static_cast<Sensor::Type>(i)))
+            {
+                m_sensors[i].sensor.setEnabled(false);
+            }
+            else
+            {
+                m_sensors[i].available = false;
+                err() << "Warning: sensor " << i << " failed to open, will not be available" << std::endl;
+            }
         }
     }
 }

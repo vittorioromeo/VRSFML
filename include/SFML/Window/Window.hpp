@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -31,6 +31,9 @@
 #include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/GlResource.hpp>
 #include <SFML/Window/WindowBase.hpp>
+#include <SFML/System/Clock.hpp>
+#include <SFML/System/Time.hpp>
+#include <memory>
 
 
 namespace sf
@@ -276,9 +279,9 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    priv::GlContext*  m_context;        //!< Platform-specific implementation of the OpenGL context
-    Clock             m_clock;          //!< Clock for measuring the elapsed time between frames
-    Time              m_frameTimeLimit; //!< Current framerate limit
+    std::unique_ptr<priv::GlContext> m_context;        //!< Platform-specific implementation of the OpenGL context
+    Clock                            m_clock;          //!< Clock for measuring the elapsed time between frames
+    Time                             m_frameTimeLimit; //!< Current framerate limit
 };
 
 } // namespace sf

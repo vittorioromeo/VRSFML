@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -31,6 +31,7 @@
 #include <SFML/System/Err.hpp>
 #include <mutex>
 #include <vector>
+#include <ostream>
 
 // We check for this definition in order to avoid multiple definitions of GLAD
 // entities during unity builds of SFML.
@@ -131,7 +132,7 @@ m_ownsWindow(false)
 
 
 ////////////////////////////////////////////////////////////
-GlxContext::GlxContext(GlxContext* shared, const ContextSettings& settings, const WindowImpl* owner, unsigned int /*bitsPerPixel*/) :
+GlxContext::GlxContext(GlxContext* shared, const ContextSettings& settings, const WindowImpl& owner, unsigned int /*bitsPerPixel*/) :
 m_display   (nullptr),
 m_window    (0),
 m_context   (nullptr),
@@ -148,7 +149,7 @@ m_ownsWindow(false)
     ensureExtensionsInit(m_display, DefaultScreen(m_display));
 
     // Create the rendering surface from the owner window
-    createSurface(owner->getSystemHandle());
+    createSurface(owner.getSystemHandle());
 
     // Create the context
     createContext(shared);
@@ -739,14 +740,14 @@ void GlxContext::createContext(GlxContext* shared)
                 else if (m_settings.minorVersion > 0)
                 {
                     // If the minor version is not 0, we decrease it and try again
-                    m_settings.minorVersion--;
+                    --m_settings.minorVersion;
 
                     m_settings.attributeFlags = settings.attributeFlags;
                 }
                 else
                 {
                     // If the minor version is 0, we decrease the major version
-                    m_settings.majorVersion--;
+                    --m_settings.majorVersion;
                     m_settings.minorVersion = 9;
 
                     m_settings.attributeFlags = settings.attributeFlags;

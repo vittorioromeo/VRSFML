@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -35,11 +35,13 @@
 
 namespace sf
 {
+class Angle;
+
 ////////////////////////////////////////////////////////////
 /// \brief Define a 3x3 transform matrix
 ///
 ////////////////////////////////////////////////////////////
-class SFML_GRAPHICS_API Transform
+class Transform
 {
 public:
 
@@ -49,7 +51,7 @@ public:
     /// Creates an identity transform (a transform that does nothing).
     ///
     ////////////////////////////////////////////////////////////
-    Transform();
+    constexpr Transform();
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a transform from a 3x3 matrix
@@ -65,9 +67,9 @@ public:
     /// \param a22 Element (2, 2) of the matrix
     ///
     ////////////////////////////////////////////////////////////
-    Transform(float a00, float a01, float a02,
-              float a10, float a11, float a12,
-              float a20, float a21, float a22);
+    constexpr Transform(float a00, float a01, float a02,
+                        float a10, float a11, float a12,
+                        float a20, float a21, float a22);
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the transform as a 4x4 matrix
@@ -84,7 +86,7 @@ public:
     /// \return Pointer to a 4x4 matrix
     ///
     ////////////////////////////////////////////////////////////
-    const float* getMatrix() const;
+    constexpr const float* getMatrix() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the inverse of the transform
@@ -95,7 +97,7 @@ public:
     /// \return A new transform which is the inverse of self
     ///
     ////////////////////////////////////////////////////////////
-    Transform getInverse() const;
+    constexpr Transform getInverse() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Transform a 2D point
@@ -111,7 +113,7 @@ public:
     /// \return Transformed point
     ///
     ////////////////////////////////////////////////////////////
-    Vector2f transformPoint(const Vector2f& point) const;
+    constexpr Vector2f transformPoint(const Vector2f& point) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Transform a rectangle
@@ -127,7 +129,7 @@ public:
     /// \return Transformed rectangle
     ///
     ////////////////////////////////////////////////////////////
-    FloatRect transformRect(const FloatRect& rectangle) const;
+    constexpr FloatRect transformRect(const FloatRect& rectangle) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Combine the current transform with another one
@@ -147,7 +149,7 @@ public:
     /// \return Reference to *this
     ///
     ////////////////////////////////////////////////////////////
-    Transform& combine(const Transform& transform);
+    constexpr Transform& combine(const Transform& transform);
 
     ////////////////////////////////////////////////////////////
     /// \brief Combine the current transform with a translation
@@ -156,7 +158,7 @@ public:
     /// can be chained.
     /// \code
     /// sf::Transform transform;
-    /// transform.translate(sf::Vector2f(100, 200)).rotate(45);
+    /// transform.translate(sf::Vector2f(100, 200)).rotate(sf::degrees(45));
     /// \endcode
     ///
     /// \param offset Translation offset to apply
@@ -166,7 +168,7 @@ public:
     /// \see rotate, scale
     ///
     ////////////////////////////////////////////////////////////
-    Transform& translate(const Vector2f& offset);
+    constexpr Transform& translate(const Vector2f& offset);
 
     ////////////////////////////////////////////////////////////
     /// \brief Combine the current transform with a rotation
@@ -175,17 +177,17 @@ public:
     /// can be chained.
     /// \code
     /// sf::Transform transform;
-    /// transform.rotate(90).translate(50, 20);
+    /// transform.rotate(sf::degrees(90)).translate(50, 20);
     /// \endcode
     ///
-    /// \param angle Rotation angle, in degrees
+    /// \param angle Rotation angle
     ///
     /// \return Reference to *this
     ///
     /// \see translate, scale
     ///
     ////////////////////////////////////////////////////////////
-    Transform& rotate(float angle);
+    SFML_GRAPHICS_API Transform& rotate(Angle angle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Combine the current transform with a rotation
@@ -199,36 +201,10 @@ public:
     /// can be chained.
     /// \code
     /// sf::Transform transform;
-    /// transform.rotate(90, 8, 3).translate(50, 20);
+    /// transform.rotate(sf::degrees(90), sf::Vector2f(8, 3)).translate(sf::Vector2f(50, 20));
     /// \endcode
     ///
-    /// \param angle Rotation angle, in degrees
-    /// \param centerX X coordinate of the center of rotation
-    /// \param centerY Y coordinate of the center of rotation
-    ///
-    /// \return Reference to *this
-    ///
-    /// \see translate, scale
-    ///
-    ////////////////////////////////////////////////////////////
-    Transform& rotate(float angle, float centerX, float centerY);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Combine the current transform with a rotation
-    ///
-    /// The center of rotation is provided for convenience as a second
-    /// argument, so that you can build rotations around arbitrary points
-    /// more easily (and efficiently) than the usual
-    /// translate(-center).rotate(angle).translate(center).
-    ///
-    /// This function returns a reference to *this, so that calls
-    /// can be chained.
-    /// \code
-    /// sf::Transform transform;
-    /// transform.rotate(90, sf::Vector2f(8, 3)).translate(sf::Vector2f(50, 20));
-    /// \endcode
-    ///
-    /// \param angle Rotation angle, in degrees
+    /// \param angle Rotation angle
     /// \param center Center of rotation
     ///
     /// \return Reference to *this
@@ -236,7 +212,7 @@ public:
     /// \see translate, scale
     ///
     ////////////////////////////////////////////////////////////
-    Transform& rotate(float angle, const Vector2f& center);
+    SFML_GRAPHICS_API Transform& rotate(Angle angle, const Vector2f& center);
 
     ////////////////////////////////////////////////////////////
     /// \brief Combine the current transform with a scaling
@@ -245,54 +221,7 @@ public:
     /// can be chained.
     /// \code
     /// sf::Transform transform;
-    /// transform.scale(2, 1).rotate(45);
-    /// \endcode
-    ///
-    /// \param scaleX Scaling factor on the X axis
-    /// \param scaleY Scaling factor on the Y axis
-    ///
-    /// \return Reference to *this
-    ///
-    /// \see translate, rotate
-    ///
-    ////////////////////////////////////////////////////////////
-    Transform& scale(float scaleX, float scaleY);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Combine the current transform with a scaling
-    ///
-    /// The center of scaling is provided for convenience as a second
-    /// argument, so that you can build scaling around arbitrary points
-    /// more easily (and efficiently) than the usual
-    /// translate(-center).scale(factors).translate(center).
-    ///
-    /// This function returns a reference to *this, so that calls
-    /// can be chained.
-    /// \code
-    /// sf::Transform transform;
-    /// transform.scale(2, 1, 8, 3).rotate(45);
-    /// \endcode
-    ///
-    /// \param scaleX Scaling factor on X axis
-    /// \param scaleY Scaling factor on Y axis
-    /// \param centerX X coordinate of the center of scaling
-    /// \param centerY Y coordinate of the center of scaling
-    ///
-    /// \return Reference to *this
-    ///
-    /// \see translate, rotate
-    ///
-    ////////////////////////////////////////////////////////////
-    Transform& scale(float scaleX, float scaleY, float centerX, float centerY);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Combine the current transform with a scaling
-    ///
-    /// This function returns a reference to *this, so that calls
-    /// can be chained.
-    /// \code
-    /// sf::Transform transform;
-    /// transform.scale(sf::Vector2f(2, 1)).rotate(45);
+    /// transform.scale(sf::Vector2f(2, 1)).rotate(sf::degrees(45));
     /// \endcode
     ///
     /// \param factors Scaling factors
@@ -302,7 +231,7 @@ public:
     /// \see translate, rotate
     ///
     ////////////////////////////////////////////////////////////
-    Transform& scale(const Vector2f& factors);
+    constexpr Transform& scale(const Vector2f& factors);
 
     ////////////////////////////////////////////////////////////
     /// \brief Combine the current transform with a scaling
@@ -327,7 +256,7 @@ public:
     /// \see translate, rotate
     ///
     ////////////////////////////////////////////////////////////
-    Transform& scale(const Vector2f& factors, const Vector2f& center);
+    constexpr Transform& scale(const Vector2f& factors, const Vector2f& center);
 
     ////////////////////////////////////////////////////////////
     // Static member data
@@ -354,7 +283,7 @@ private:
 /// \return New combined transform
 ///
 ////////////////////////////////////////////////////////////
-SFML_GRAPHICS_API Transform operator *(const Transform& left, const Transform& right);
+constexpr Transform operator *(const Transform& left, const Transform& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates sf::Transform
@@ -368,7 +297,7 @@ SFML_GRAPHICS_API Transform operator *(const Transform& left, const Transform& r
 /// \return The combined transform
 ///
 ////////////////////////////////////////////////////////////
-SFML_GRAPHICS_API Transform& operator *=(Transform& left, const Transform& right);
+constexpr Transform& operator *=(Transform& left, const Transform& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates sf::Transform
@@ -382,7 +311,7 @@ SFML_GRAPHICS_API Transform& operator *=(Transform& left, const Transform& right
 /// \return New transformed point
 ///
 ////////////////////////////////////////////////////////////
-SFML_GRAPHICS_API Vector2f operator *(const Transform& left, const Vector2f& right);
+constexpr Vector2f operator *(const Transform& left, const Vector2f& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates sf::Transform
@@ -397,7 +326,7 @@ SFML_GRAPHICS_API Vector2f operator *(const Transform& left, const Vector2f& rig
 /// \return true if the transforms are equal, false otherwise
 ///
 ////////////////////////////////////////////////////////////
-SFML_GRAPHICS_API bool operator ==(const Transform& left, const Transform& right);
+[[nodiscard]] constexpr bool operator ==(const Transform& left, const Transform& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates sf::Transform
@@ -411,7 +340,9 @@ SFML_GRAPHICS_API bool operator ==(const Transform& left, const Transform& right
 /// \return true if the transforms are not equal, false otherwise
 ///
 ////////////////////////////////////////////////////////////
-SFML_GRAPHICS_API bool operator !=(const Transform& left, const Transform& right);
+[[nodiscard]] constexpr bool operator !=(const Transform& left, const Transform& right);
+
+#include <SFML/Graphics/Transform.inl>
 
 } // namespace sf
 

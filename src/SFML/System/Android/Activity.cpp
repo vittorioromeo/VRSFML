@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 // Copyright (C) 2013 Jonathan De Wachter (dewachter.jonathan@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -41,14 +41,14 @@ std::streambuf()
 
 std::streambuf::int_type LogcatStream::overflow (std::streambuf::int_type c)
 {
-    if (c == "\n"[0])
+    if (c == '\n')
     {
-        m_message.push_back(c);
+        m_message.push_back(static_cast<char>(c));
         LOGE("%s", m_message.c_str());
         m_message.clear();
     }
 
-    m_message.push_back(c);
+    m_message.push_back(static_cast<char>(c));
 
     return traits_type::not_eof(c);
 }

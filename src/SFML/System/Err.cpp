@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -26,6 +26,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Err.hpp>
+#include <iostream>
 #include <streambuf>
 #include <cstdio>
 
@@ -41,7 +42,7 @@ public:
     DefaultErrStreamBuf()
     {
         // Allocate the write buffer
-        static const int size = 64;
+        constexpr int size = 64;
         char* buffer = new char[size];
         setp(buffer, buffer + size);
     }

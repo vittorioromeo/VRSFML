@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -77,7 +77,7 @@ bool CursorImpl::loadFromPixelsARGB(const Uint8* pixels, Vector2u size, Vector2u
     cursorImage->xhot = hotspot.x;
     cursorImage->yhot = hotspot.y;
 
-    const std::size_t numPixels = size.x * size.y;
+    const std::size_t numPixels = static_cast<std::size_t>(size.x) * static_cast<std::size_t>(size.y);
     for (std::size_t pixelIndex = 0; pixelIndex < numPixels; ++pixelIndex)
     {
         cursorImage->pixels[pixelIndex] = static_cast<Uint8>(pixels[pixelIndex * 4 + 2] +

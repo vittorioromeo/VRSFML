@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -29,8 +29,10 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Export.hpp>
-#include <SFML/Graphics/Image.hpp>
 #include <SFML/Window/GlResource.hpp>
+#include <SFML/Graphics/Rect.hpp>
+#include <filesystem>
+#include <string>
 
 
 namespace sf
@@ -40,6 +42,7 @@ class RenderTarget;
 class RenderTexture;
 class Text;
 class Window;
+class Image;
 
 ////////////////////////////////////////////////////////////
 /// \brief Image living on the graphics card that can be used for drawing
@@ -125,7 +128,7 @@ public:
     /// \see loadFromMemory, loadFromStream, loadFromImage
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool loadFromFile(const std::string& filename, const IntRect& area = IntRect());
+    [[nodiscard]] bool loadFromFile(const std::filesystem::path& filename, const IntRect& area = IntRect());
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the texture from a file in memory

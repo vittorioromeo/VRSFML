@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Marco Antognini (antognini.marco@gmail.com),
+// Copyright (C) 2007-2022 Marco Antognini (antognini.marco@gmail.com),
 //                         Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -85,7 +85,7 @@ m_joystickCount(0)
     maskArray[0] = mask0;
     maskArray[1] = mask1;
 
-    CFArrayRef mask = CFArrayCreate(nullptr, (const void**)maskArray, 2, nullptr);
+    CFArrayRef mask = CFArrayCreate(nullptr, reinterpret_cast<const void**>(maskArray), 2, nullptr);
 
     IOHIDManagerSetDeviceMatchingMultiple(m_manager, mask);
     CFRelease(mask);
@@ -134,7 +134,7 @@ void HIDJoystickManager::update()
 void HIDJoystickManager::pluggedIn(void* context, IOReturn, void*, IOHIDDeviceRef)
 {
     HIDJoystickManager* manager = static_cast<HIDJoystickManager*>(context);
-    manager->m_joystickCount++;
+    ++manager->m_joystickCount;
 }
 
 
@@ -142,7 +142,7 @@ void HIDJoystickManager::pluggedIn(void* context, IOReturn, void*, IOHIDDeviceRe
 void HIDJoystickManager::pluggedOut(void* context, IOReturn, void*, IOHIDDeviceRef)
 {
     HIDJoystickManager* manager = static_cast<HIDJoystickManager*>(context);
-    manager->m_joystickCount--;
+    --manager->m_joystickCount;
 }
 
 

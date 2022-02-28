@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -66,7 +66,7 @@ void Shape::setTexture(const Texture* texture, bool resetRect)
     {
         // Recompute the texture area if requested, or if there was no texture & rect before
         if (resetRect || (!m_texture && (m_textureRect == IntRect())))
-            setTextureRect(IntRect(0, 0, static_cast<int>(texture->getSize().x), static_cast<int>(texture->getSize().y)));
+            setTextureRect(IntRect({0, 0}, Vector2i(texture->getSize())));
     }
 
     // Assign the new texture
@@ -209,19 +209,21 @@ void Shape::update()
 
 
 ////////////////////////////////////////////////////////////
-void Shape::draw(RenderTarget& target, RenderStates states) const
+void Shape::draw(RenderTarget& target, const RenderStates& states) const
 {
-    states.transform *= getTransform();
+    RenderStates statesCopy(states);
+
+    statesCopy.transform *= getTransform();
 
     // Render the inside
-    states.texture = m_texture;
-    target.draw(m_vertices, states);
+    statesCopy.texture = m_texture;
+    target.draw(m_vertices, statesCopy);
 
     // Render the outline
     if (m_outlineThickness != 0)
     {
-        states.texture = nullptr;
-        target.draw(m_outlineVertices, states);
+        statesCopy.texture = nullptr;
+        target.draw(m_outlineVertices, statesCopy);
     }
 }
 

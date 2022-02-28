@@ -29,6 +29,7 @@
 #include <SFML/System/Android/Activity.hpp>
 #include <SFML/System/Err.hpp>
 #include <mutex>
+#include <ostream>
 #include <jni.h>
 
 
@@ -37,7 +38,7 @@ namespace sf
 namespace priv
 {
 ////////////////////////////////////////////////////////////
-bool InputImpl::isKeyPressed(Keyboard::Key key)
+bool InputImpl::isKeyPressed(Keyboard::Key /* key */)
 {
     // Not applicable
     return false;
@@ -52,7 +53,6 @@ void InputImpl::setVirtualKeyboardVisible(bool visible)
     std::scoped_lock lock(states.mutex);
 
     // Initializes JNI
-    jint lResult;
     jint lFlags = 0;
 
     JavaVM* lJavaVM = states.activity->vm;
@@ -63,7 +63,7 @@ void InputImpl::setVirtualKeyboardVisible(bool visible)
     lJavaVMAttachArgs.name = "NativeThread";
     lJavaVMAttachArgs.group = nullptr;
 
-    lResult=lJavaVM->AttachCurrentThread(&lJNIEnv, &lJavaVMAttachArgs);
+    jint lResult = lJavaVM->AttachCurrentThread(&lJNIEnv, &lJavaVMAttachArgs);
 
     if (lResult == JNI_ERR)
         err() << "Failed to initialize JNI, couldn't switch the keyboard visibility" << std::endl;
@@ -105,7 +105,7 @@ void InputImpl::setVirtualKeyboardVisible(bool visible)
         // Runs lInputMethodManager.showSoftInput(...)
         jmethodID MethodShowSoftInput = lJNIEnv->GetMethodID(ClassInputMethodManager,
             "showSoftInput", "(Landroid/view/View;I)Z");
-        jboolean lResult = lJNIEnv->CallBooleanMethod(lInputMethodManager,
+        lJNIEnv->CallBooleanMethod(lInputMethodManager,
             MethodShowSoftInput, lDecorView, lFlags);
     }
     else
@@ -121,7 +121,7 @@ void InputImpl::setVirtualKeyboardVisible(bool visible)
         // lInputMethodManager.hideSoftInput(...)
         jmethodID MethodHideSoftInput = lJNIEnv->GetMethodID(ClassInputMethodManager,
             "hideSoftInputFromWindow", "(Landroid/os/IBinder;I)Z");
-        jboolean lRes = lJNIEnv->CallBooleanMethod(lInputMethodManager,
+        lJNIEnv->CallBooleanMethod(lInputMethodManager,
             MethodHideSoftInput, lBinder, lFlags);
         lJNIEnv->DeleteLocalRef(lBinder);
     }
@@ -158,21 +158,21 @@ Vector2i InputImpl::getMousePosition()
 
 
 ////////////////////////////////////////////////////////////
-Vector2i InputImpl::getMousePosition(const WindowBase& relativeTo)
+Vector2i InputImpl::getMousePosition(const WindowBase& /* relativeTo */)
 {
     return getMousePosition();
 }
 
 
 ////////////////////////////////////////////////////////////
-void InputImpl::setMousePosition(const Vector2i& position)
+void InputImpl::setMousePosition(const Vector2i& /* position */)
 {
     // Injecting events is impossible on Android
 }
 
 
 ////////////////////////////////////////////////////////////
-void InputImpl::setMousePosition(const Vector2i& position, const WindowBase& relativeTo)
+void InputImpl::setMousePosition(const Vector2i& position, const WindowBase& /* relativeTo */)
 {
     setMousePosition(position);
 }
@@ -186,7 +186,7 @@ bool InputImpl::isTouchDown(unsigned int finger)
     ActivityStates& states = getActivity();
     std::scoped_lock lock(states.mutex);
 
-    return states.touchEvents.find(finger) != states.touchEvents.end();
+    return states.touchEvents.find(static_cast<int>(finger)) != states.touchEvents.end();
 }
 
 
@@ -198,12 +198,12 @@ Vector2i InputImpl::getTouchPosition(unsigned int finger)
     ActivityStates& states = getActivity();
     std::scoped_lock lock(states.mutex);
 
-    return states.touchEvents.find(finger)->second;
+    return states.touchEvents.find(static_cast<int>(finger))->second;
 }
 
 
 ////////////////////////////////////////////////////////////
-Vector2i InputImpl::getTouchPosition(unsigned int finger, const WindowBase& relativeTo)
+Vector2i InputImpl::getTouchPosition(unsigned int finger, const WindowBase& /* relativeTo */)
 {
     return getTouchPosition(finger);
 }

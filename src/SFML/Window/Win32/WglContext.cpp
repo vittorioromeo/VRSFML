@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -29,6 +29,7 @@
 #include <SFML/Window/Win32/WglContext.hpp>
 #include <SFML/System/Err.hpp>
 #include <mutex>
+#include <ostream>
 #include <sstream>
 #include <vector>
 
@@ -108,7 +109,7 @@ WglContext(shared, ContextSettings(), 1u, 1u)
 
 
 ////////////////////////////////////////////////////////////
-WglContext::WglContext(WglContext* shared, const ContextSettings& settings, const WindowImpl* owner, unsigned int bitsPerPixel) :
+WglContext::WglContext(WglContext* shared, const ContextSettings& settings, const WindowImpl& owner, unsigned int bitsPerPixel) :
 m_window       (nullptr),
 m_pbuffer      (nullptr),
 m_deviceContext(nullptr),
@@ -121,7 +122,7 @@ m_ownsWindow   (false)
     m_settings = settings;
 
     // Create the rendering surface from the owner window
-    createSurface(owner->getSystemHandle(), bitsPerPixel);
+    createSurface(owner.getSystemHandle(), bitsPerPixel);
 
     // Create the context
     createContext(shared);
@@ -413,7 +414,7 @@ void WglContext::setDevicePixelFormat(unsigned int bitsPerPixel)
 
     if (bestFormat == 0)
     {
-        err() << "Failed to find a suitable pixel format for device context: " << getErrorString(GetLastError()).toAnsiString() << std::endl
+        err() << "Failed to find a suitable pixel format for device context: " << getErrorString(GetLastError()).toAnsiString() << '\n'
               << "Cannot create OpenGL context" << std::endl;
         return;
     }
@@ -427,7 +428,7 @@ void WglContext::setDevicePixelFormat(unsigned int bitsPerPixel)
     // Set the chosen pixel format
     if (SetPixelFormat(m_deviceContext, bestFormat, &actualFormat) == FALSE)
     {
-        err() << "Failed to set pixel format for device context: " << getErrorString(GetLastError()).toAnsiString() << std::endl
+        err() << "Failed to set pixel format for device context: " << getErrorString(GetLastError()).toAnsiString() << '\n'
               << "Cannot create OpenGL context" << std::endl;
         return;
     }
@@ -682,14 +683,14 @@ void WglContext::createContext(WglContext* shared)
             else if (m_settings.minorVersion > 0)
             {
                 // If the minor version is not 0, we decrease it and try again
-                m_settings.minorVersion--;
+                --m_settings.minorVersion;
 
                 m_settings.attributeFlags = settings.attributeFlags;
             }
             else
             {
                 // If the minor version is 0, we decrease the major version
-                m_settings.majorVersion--;
+                --m_settings.majorVersion;
                 m_settings.minorVersion = 9;
 
                 m_settings.attributeFlags = settings.attributeFlags;

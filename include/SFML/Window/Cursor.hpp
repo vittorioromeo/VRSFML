@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -30,6 +30,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/Export.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <memory>
 
 namespace sf
 {
@@ -209,7 +210,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    priv::CursorImpl* m_impl; //!< Platform-specific implementation of the cursor
+    std::unique_ptr<priv::CursorImpl> m_impl; //!< Platform-specific implementation of the cursor
 };
 
 } // namespace sf

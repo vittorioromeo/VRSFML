@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -28,6 +28,7 @@
 #include <SFML/Window/Context.hpp>
 #include <SFML/Window/GlContext.hpp>
 #include <SFML/System/Err.hpp>
+#include <ostream>
 
 
 namespace
@@ -60,8 +61,6 @@ Context::~Context()
     {
         err() << "Failed to set context as inactive during destruction" << std::endl;
     }
-
-    delete m_context;
 }
 
 
@@ -90,7 +89,7 @@ const Context* Context::getActiveContext()
     using ContextImpl::currentContext;
 
     // We have to check that the last activated sf::Context is still active (a RenderTarget activation may have deactivated it)
-    if (currentContext && currentContext->m_context == priv::GlContext::getActiveContext())
+    if (currentContext && currentContext->m_context.get() == priv::GlContext::getActiveContext())
         return currentContext;
     else
         return nullptr;

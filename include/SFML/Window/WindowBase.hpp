@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -28,19 +28,20 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Cursor.hpp>
 #include <SFML/Window/Export.hpp>
-#include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/Vulkan.hpp>
 #include <SFML/Window/WindowHandle.hpp>
 #include <SFML/Window/WindowStyle.hpp>
-#include <SFML/System/Clock.hpp>
-#include <SFML/System/String.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <memory>
 
 
 namespace sf
 {
+class Cursor;
+class String;
+class VideoMode;
+
 namespace priv
 {
     class WindowImpl;
@@ -481,8 +482,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    priv::WindowImpl* m_impl;           //!< Platform-specific implementation of the window
-    Vector2u          m_size;           //!< Current size of the window
+    std::unique_ptr<priv::WindowImpl> m_impl; //!< Platform-specific implementation of the window
+    Vector2u                          m_size; //!< Current size of the window
 };
 
 } // namespace sf

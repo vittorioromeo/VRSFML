@@ -31,6 +31,7 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Sleep.hpp>
 #include <mutex>
+#include <ostream>
 #ifdef SFML_SYSTEM_ANDROID
     #include <SFML/System/Android/Activity.hpp>
 #endif
@@ -131,7 +132,7 @@ m_config  (nullptr)
 
 
 ////////////////////////////////////////////////////////////
-EglContext::EglContext(EglContext* shared, const ContextSettings& settings, const WindowImpl* owner, unsigned int bitsPerPixel) :
+EglContext::EglContext(EglContext* shared, const ContextSettings& settings, const WindowImpl& owner, unsigned int bitsPerPixel) :
 m_display (EGL_NO_DISPLAY),
 m_context (EGL_NO_CONTEXT),
 m_surface (EGL_NO_SURFACE),
@@ -162,7 +163,9 @@ m_config  (nullptr)
 #if !defined(SFML_SYSTEM_ANDROID)
     // Create EGL surface (except on Android because the window is created
     // asynchronously, its activity manager will call it for us)
-    createSurface(owner->getSystemHandle());
+    createSurface(owner.getSystemHandle());
+#else
+    (void) owner;
 #endif
 }
 

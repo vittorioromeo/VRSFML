@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Marco Antognini (antognini.marco@gmail.com),
+// Copyright (C) 2007-2022 Marco Antognini (antognini.marco@gmail.com),
 //                         Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -29,6 +29,7 @@
 #include <SFML/Window/OSX/HIDInputManager.hpp>
 #include <SFML/System/Err.hpp>
 #include <AppKit/AppKit.h>
+#include <ostream>
 
 namespace sf
 {
@@ -60,7 +61,7 @@ long HIDInputManager::getLocationID(IOHIDDeviceRef device)
     if (!typeRef || (CFGetTypeID(typeRef) != CFNumberGetTypeID()))
         return 0;
 
-    CFNumberRef locRef = (CFNumberRef)typeRef;
+    CFNumberRef locRef = static_cast<CFNumberRef>(typeRef);
 
     if (!CFNumberGetValue(locRef, kCFNumberLongType, &loc))
         return 0;
@@ -100,8 +101,7 @@ m_manager(0)
 {
     // Get the current keyboard layout
     TISInputSourceRef tis = TISCopyCurrentKeyboardLayoutInputSource();
-    m_layoutData = (CFDataRef)TISGetInputSourceProperty(tis,
-                                                        kTISPropertyUnicodeKeyLayoutData);
+    m_layoutData = static_cast<CFDataRef>(TISGetInputSourceProperty(tis, kTISPropertyUnicodeKeyLayoutData));
 
     if (m_layoutData == 0)
     {
@@ -112,7 +112,7 @@ m_manager(0)
 
     // Keep a reference for ourself
     CFRetain(m_layoutData);
-    m_layout = (UCKeyboardLayout *)CFDataGetBytePtr(m_layoutData);
+    m_layout = reinterpret_cast<UCKeyboardLayout*>(const_cast<UInt8*>(CFDataGetBytePtr(m_layoutData)));
 
     // The TIS is no more needed
     CFRelease(tis);
@@ -160,12 +160,12 @@ void HIDInputManager::initializeKeyboard()
     CFIndex keyboardCount = CFSetGetCount(keyboards); // >= 1 (asserted by copyDevices)
 
     // Get an iterable array
-    CFTypeRef devicesArray[keyboardCount];
-    CFSetGetValues(keyboards, devicesArray);
+    std::vector<CFTypeRef> devicesArray(static_cast<std::size_t>(keyboardCount));
+    CFSetGetValues(keyboards, &devicesArray[0]);
 
     for (CFIndex i = 0; i < keyboardCount; ++i)
     {
-        IOHIDDeviceRef keyboard = (IOHIDDeviceRef)devicesArray[i];
+        IOHIDDeviceRef keyboard = static_cast<IOHIDDeviceRef>(const_cast<void*>(devicesArray[static_cast<std::size_t>(i)]));
         loadKeyboard(keyboard);
     }
 
@@ -202,7 +202,7 @@ void HIDInputManager::loadKeyboard(IOHIDDeviceRef keyboard)
     // Go through all connected elements.
     for (CFIndex i = 0; i < keysCount; ++i)
     {
-        IOHIDElementRef aKey = (IOHIDElementRef) CFArrayGetValueAtIndex(keys, i);
+        IOHIDElementRef aKey = static_cast<IOHIDElementRef>(const_cast<void*>(CFArrayGetValueAtIndex(keys, i)));
 
         // Skip non-matching keys elements
         if (IOHIDElementGetUsagePage(aKey) != kHIDPage_KeyboardOrKeypad)
@@ -233,7 +233,7 @@ void HIDInputManager::loadKey(IOHIDElementRef key)
     // Unicode string length is usually less or equal to 4
     UniCharCount maxStringLength = 4;
     UniCharCount actualStringLength = 0;
-    UniChar      unicodeString[maxStringLength];
+    std::vector<UniChar> unicodeString(maxStringLength);
 
     OSStatus     error;
 
@@ -246,7 +246,7 @@ void HIDInputManager::loadKey(IOHIDElementRef key)
                            &deadKeyState,               // unused stuff
                            maxStringLength,             // our memory limit
                            &actualStringLength,         // length of what we get
-                           unicodeString);              // what we get
+                           unicodeString.data());       // what we get
 
     if (error == noErr)
     {

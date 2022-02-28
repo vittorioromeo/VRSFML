@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -28,12 +28,15 @@
 #include <SFML/Graphics/RenderTextureImplFBO.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/GLCheck.hpp>
+#include <SFML/Window/Context.hpp>
+#include <SFML/Window/ContextSettings.hpp>
 #include <SFML/System/Err.hpp>
-#include <utility>
+#include <mutex>
+#include <set>
 #include <unordered_map>
 #include <unordered_set>
-#include <set>
-#include <mutex>
+#include <utility>
+#include <ostream>
 
 
 namespace
@@ -118,7 +121,7 @@ m_depthStencilBuffer(0),
 m_colorBuffer       (0),
 m_width             (0),
 m_height            (0),
-m_context           (nullptr),
+m_context           (),
 m_textureId         (0),
 m_multisample       (false),
 m_stencil           (false),
@@ -169,9 +172,6 @@ RenderTextureImplFBO::~RenderTextureImplFBO()
 
     // Clean up FBOs
     destroyStaleFBOs();
-
-    // Delete the backup context if we had to create one
-    delete m_context;
 }
 
 
@@ -242,8 +242,8 @@ bool RenderTextureImplFBO::create(unsigned int width, unsigned int height, unsig
 
             if (settings.antialiasingLevel > static_cast<unsigned int>(samples))
             {
-                err() << "Impossible to create render texture (unsupported anti-aliasing level)";
-                err() << " Requested: " << settings.antialiasingLevel << " Maximum supported: " << samples << std::endl;
+                err() << "Impossible to create render texture (unsupported anti-aliasing level)"
+                      << " Requested: " << settings.antialiasingLevel << " Maximum supported: " << samples << std::endl;
                 return false;
             }
         }
@@ -521,7 +521,7 @@ bool RenderTextureImplFBO::activate(bool active)
     if (!contextId)
     {
         if (!m_context)
-            m_context = new Context;
+            m_context = std::make_unique<Context>();
 
         if (!m_context->setActive(true))
         {

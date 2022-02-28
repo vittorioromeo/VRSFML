@@ -3,7 +3,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Effect.hpp"
-#include <vector>
+#include <array>
 #include <cmath>
 
 
@@ -41,10 +41,11 @@ public:
         m_shader.setUniform("pixel_threshold", (x + y) / 30);
     }
 
-    void onDraw(sf::RenderTarget& target, sf::RenderStates states) const override
+    void onDraw(sf::RenderTarget& target, const sf::RenderStates& states) const override
     {
-        states.shader = &m_shader;
-        target.draw(m_sprite, states);
+        sf::RenderStates statesCopy(states);
+        statesCopy.shader = &m_shader;
+        target.draw(m_sprite, statesCopy);
     }
 
 private:
@@ -106,10 +107,11 @@ public:
         m_shader.setUniform("blur_radius", (x + y) * 0.008f);
     }
 
-    void onDraw(sf::RenderTarget& target, sf::RenderStates states) const override
+    void onDraw(sf::RenderTarget& target, const sf::RenderStates& states) const override
     {
-        states.shader = &m_shader;
-        target.draw(m_text, states);
+        sf::RenderStates statesCopy(states);
+        statesCopy.shader = &m_shader;
+        target.draw(m_text, statesCopy);
     }
 
 private:
@@ -161,10 +163,11 @@ public:
         m_shader.setUniform("blink_alpha", 0.5f + std::cos(time * 3) * 0.25f);
     }
 
-    void onDraw(sf::RenderTarget& target, sf::RenderStates states) const override
+    void onDraw(sf::RenderTarget& target, const sf::RenderStates& states) const override
     {
-        states.shader = &m_shader;
-        target.draw(m_points, states);
+        sf::RenderStates statesCopy(states);
+        statesCopy.shader = &m_shader;
+        target.draw(m_points, statesCopy);
     }
 
 private:
@@ -208,7 +211,7 @@ public:
         // Load the moving entities
         for (int i = 0; i < 6; ++i)
         {
-            sf::Sprite entity(m_entityTexture, sf::IntRect(96 * i, 0, 96, 96));
+            sf::Sprite entity(m_entityTexture, sf::IntRect({96 * i, 0}, {96, 96}));
             m_entities.push_back(entity);
         }
 
@@ -228,8 +231,8 @@ public:
         for (std::size_t i = 0; i < m_entities.size(); ++i)
         {
             sf::Vector2f position;
-            position.x = std::cos(0.25f * (time * static_cast<float>(i + (m_entities.size() - i)))) * 300 + 350;
-            position.y = std::sin(0.25f * (time * static_cast<float>((m_entities.size() - i) + i))) * 200 + 250;
+            position.x = std::cos(0.25f * (time * static_cast<float>(i) + static_cast<float>(m_entities.size() - i))) * 300 + 350;
+            position.y = std::sin(0.25f * (time * static_cast<float>(m_entities.size() - i) + static_cast<float>(i))) * 200 + 250;
             m_entities[i].setPosition(position);
         }
 
@@ -241,10 +244,11 @@ public:
         m_surface.display();
     }
 
-    void onDraw(sf::RenderTarget& target, sf::RenderStates states) const override
+    void onDraw(sf::RenderTarget& target, const sf::RenderStates& states) const override
     {
-        states.shader = &m_shader;
-        target.draw(sf::Sprite(m_surface.getTexture()), states);
+        sf::RenderStates statesCopy(states);
+        statesCopy.shader = &m_shader;
+        target.draw(sf::Sprite(m_surface.getTexture()), statesCopy);
     }
 
 private:
@@ -278,7 +282,7 @@ public:
             return false;
 
         // Move the points in the point cloud to random positions
-        for (std::size_t i = 0; i < 10000; i++)
+        for (std::size_t i = 0; i < 10000; ++i)
         {
             // Spread the coordinates from -480 to +480
             // So they'll always fill the viewport at 800x600
@@ -308,7 +312,7 @@ public:
         // Move to the center of the window
         m_transform.translate({400.f, 300.f});
         // Rotate everything based on cursor position
-        m_transform.rotate(x * 360.f);
+        m_transform.rotate(sf::degrees(x * 360.f));
 
         // Adjust billboard size to scale between 25 and 75
         float size = 25 + std::abs(y) * 50;
@@ -317,15 +321,17 @@ public:
         m_shader.setUniform("size", sf::Vector2f(size, size));
     }
 
-    void onDraw(sf::RenderTarget& target, sf::RenderStates states) const override
+    void onDraw(sf::RenderTarget& target, const sf::RenderStates& states) const override
     {
+        sf::RenderStates statesCopy(states);
+
         // Prepare the render state
-        states.shader = &m_shader;
-        states.texture = &m_logoTexture;
-        states.transform = m_transform;
+        statesCopy.shader = &m_shader;
+        statesCopy.texture = &m_logoTexture;
+        statesCopy.transform = m_transform;
 
         // Draw the point cloud
-        target.draw(m_pointCloud, states);
+        target.draw(m_pointCloud, statesCopy);
     }
 
 private:
@@ -357,12 +363,20 @@ int main()
     Effect::setFont(font);
 
     // Create the effects
-    std::vector<Effect*> effects;
-    effects.push_back(new Pixelate);
-    effects.push_back(new WaveBlur);
-    effects.push_back(new StormBlink);
-    effects.push_back(new Edge);
-    effects.push_back(new Geometry);
+    Pixelate pixelateEffect;
+    WaveBlur waveBlurEffect;
+    StormBlink stormBlinkEffect;
+    Edge edgeEffect;
+    Geometry geometryEffect;
+
+    const std::array<Effect*, 5> effects{
+        &pixelateEffect,
+        &waveBlurEffect,
+        &stormBlinkEffect,
+        &edgeEffect,
+        &geometryEffect
+    };
+
     std::size_t current = 0;
 
     // Initialize them
@@ -413,7 +427,7 @@ int main()
                         if (current == 0)
                             current = effects.size() - 1;
                         else
-                            current--;
+                            --current;
                         description.setString("Current effect: " + effects[current]->getName());
                         break;
 
@@ -422,7 +436,7 @@ int main()
                         if (current == effects.size() - 1)
                             current = 0;
                         else
-                            current++;
+                            ++current;
                         description.setString("Current effect: " + effects[current]->getName());
                         break;
 
@@ -455,10 +469,6 @@ int main()
         // Finally, display the rendered frame on screen
         window.display();
     }
-
-    // delete the effects
-    for (Effect* effect : effects)
-        delete effect;
 
     return EXIT_SUCCESS;
 }

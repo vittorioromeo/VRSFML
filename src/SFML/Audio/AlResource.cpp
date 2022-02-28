@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -27,6 +27,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/AlResource.hpp>
 #include <SFML/Audio/AudioDevice.hpp>
+#include <memory>
 #include <mutex>
 
 
@@ -39,7 +40,7 @@ namespace
     // The audio device is instantiated on demand rather than at global startup,
     // which solves a lot of weird crashes and errors.
     // It is destroyed when it is no longer needed.
-    sf::priv::AudioDevice* globalDevice;
+    std::unique_ptr<sf::priv::AudioDevice> globalDevice;
 }
 
 
@@ -53,10 +54,10 @@ AlResource::AlResource()
 
     // If this is the very first resource, trigger the global device initialization
     if (count == 0)
-        globalDevice = new priv::AudioDevice;
+        globalDevice = std::make_unique<priv::AudioDevice>();
 
     // Increment the resources counter
-    count++;
+    ++count;
 }
 
 
@@ -67,11 +68,11 @@ AlResource::~AlResource()
     std::scoped_lock lock(mutex);
 
     // Decrement the resources counter
-    count--;
+    --count;
 
     // If there's no more resource alive, we can destroy the device
     if (count == 0)
-        delete globalDevice;
+        globalDevice.reset();
 }
 
 } // namespace sf

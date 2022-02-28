@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -38,6 +38,7 @@
 #include <iostream>
 #include <mutex>
 #include <unordered_map>
+#include <ostream>
 #include <cassert>
 
 
@@ -127,9 +128,9 @@ namespace
             static bool warned = false;
             if (!warned)
             {
-                sf::err() << "OpenGL extension EXT_blend_minmax or EXT_blend_subtract unavailable" << std::endl;
-                sf::err() << "Some blending equations will fallback to sf::BlendMode::Add" << std::endl;
-                sf::err() << "Ensure that hardware acceleration is enabled if available" << std::endl;
+                sf::err() << "OpenGL extension EXT_blend_minmax or EXT_blend_subtract unavailable" << '\n'
+                          << "Some blending equations will fallback to sf::BlendMode::Add" << '\n'
+                          << "Ensure that hardware acceleration is enabled if available" << std::endl;
 
                 warned = true;
             }
@@ -202,10 +203,10 @@ IntRect RenderTarget::getViewport(const View& view) const
     float height = static_cast<float>(getSize().y);
     const FloatRect& viewport = view.getViewport();
 
-    return IntRect(static_cast<int>(0.5f + width  * viewport.left),
-                   static_cast<int>(0.5f + height * viewport.top),
-                   static_cast<int>(0.5f + width  * viewport.width),
-                   static_cast<int>(0.5f + height * viewport.height));
+    return IntRect({static_cast<int>(0.5f + width  * viewport.left),
+                    static_cast<int>(0.5f + height * viewport.top)},
+                   {static_cast<int>(0.5f + width  * viewport.width),
+                    static_cast<int>(0.5f + height * viewport.height)});
 }
 
 
@@ -498,7 +499,10 @@ void RenderTarget::resetGLStates()
     // Workaround for states not being properly reset on
     // macOS unless a context switch really takes place
     #if defined(SFML_SYSTEM_MACOS)
-        setActive(false);
+        if (!setActive(false))
+        {
+            err() << "Failed to set render target inactive" << std::endl;
+        }
     #endif
 
     if (RenderTargetImpl::isActive(m_id) || setActive(true))
@@ -552,7 +556,7 @@ void RenderTarget::resetGLStates()
 void RenderTarget::initialize()
 {
     // Setup the default and current views
-    m_defaultView.reset(FloatRect(0, 0, static_cast<float>(getSize().x), static_cast<float>(getSize().y)));
+    m_defaultView.reset(FloatRect({0, 0}, Vector2f(getSize())));
     m_view = m_defaultView;
 
     // Set GL states only on first draw, so that we don't pollute user's states
@@ -627,8 +631,8 @@ void RenderTarget::applyBlendMode(const BlendMode& mode)
 #else
             err() << "OpenGL extension EXT_blend_minmax and EXT_blend_subtract unavailable" << std::endl;
 #endif
-            err() << "Selecting a blend equation not possible" << std::endl;
-            err() << "Ensure that hardware acceleration is enabled if available" << std::endl;
+            err() << "Selecting a blend equation not possible" << '\n'
+                  << "Ensure that hardware acceleration is enabled if available" << std::endl;
 
             warned = true;
         }
@@ -730,8 +734,8 @@ void RenderTarget::setupDraw(bool useVertexCache, const RenderStates& states)
 void RenderTarget::drawPrimitives(PrimitiveType type, std::size_t firstVertex, std::size_t vertexCount)
 {
     // Find the OpenGL primitive type
-    static const GLenum modes[] = {GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES,
-                                   GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN};
+    static constexpr GLenum modes[] = {GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES,
+                                       GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN};
     GLenum mode = modes[type];
 
     // Draw the primitives

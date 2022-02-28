@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -28,25 +28,18 @@
 #include <SFML/Graphics/ImageLoader.hpp>
 #include <SFML/System/InputStream.hpp>
 #include <SFML/System/Err.hpp>
+#include <SFML/System/Utils.hpp>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
-#include <cctype>
+#include <filesystem>
 #include <iterator>
+#include <ostream>
 
 
 namespace
 {
-    // Convert a string to lower case
-    std::string toLower(std::string str)
-    {
-        for (char& c : str)
-            c = static_cast<char>(std::tolower(c));
-
-        return str;
-    }
-
     // stb_image callbacks that operate on a sf::InputStream
     int read(void* user, char* data, int size)
     {
@@ -104,7 +97,7 @@ ImageLoader::~ImageLoader()
 
 
 ////////////////////////////////////////////////////////////
-bool ImageLoader::loadImageFromFile(const std::string& filename, std::vector<Uint8>& pixels, Vector2u& size)
+bool ImageLoader::loadImageFromFile(const std::filesystem::path& filename, std::vector<Uint8>& pixels, Vector2u& size)
 {
     // Clear the array (just in case)
     pixels.clear();
@@ -113,7 +106,7 @@ bool ImageLoader::loadImageFromFile(const std::string& filename, std::vector<Uin
     int width = 0;
     int height = 0;
     int channels = 0;
-    unsigned char* ptr = stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+    unsigned char* ptr = stbi_load(filename.string().c_str(), &width, &height, &channels, STBI_rgb_alpha);
 
     if (ptr)
     {
@@ -247,7 +240,7 @@ bool ImageLoader::loadImageFromStream(InputStream& stream, std::vector<Uint8>& p
 
 
 ////////////////////////////////////////////////////////////
-bool ImageLoader::saveImageToFile(const std::string& filename, const std::vector<Uint8>& pixels, const Vector2u& size)
+bool ImageLoader::saveImageToFile(const std::filesystem::path& filename, const std::vector<Uint8>& pixels, const Vector2u& size)
 {
     // Make sure the image is not empty
     if (!pixels.empty() && (size.x > 0) && (size.y > 0))
@@ -255,37 +248,36 @@ bool ImageLoader::saveImageToFile(const std::string& filename, const std::vector
         // Deduce the image type from its extension
 
         // Extract the extension
-        const std::size_t dot = filename.find_last_of('.');
-        const std::string extension = dot != std::string::npos ? toLower(filename.substr(dot + 1)) : "";
+        const std::filesystem::path extension = filename.extension();
         const Vector2i convertedSize = Vector2i(size);
 
-        if (extension == "bmp")
+        if (extension == ".bmp")
         {
             // BMP format
-            if (stbi_write_bmp(filename.c_str(), convertedSize.x, convertedSize.y, 4, pixels.data()))
+            if (stbi_write_bmp(filename.string().c_str(), convertedSize.x, convertedSize.y, 4, pixels.data()))
                 return true;
         }
-        else if (extension == "tga")
+        else if (extension == ".tga")
         {
             // TGA format
-            if (stbi_write_tga(filename.c_str(), convertedSize.x, convertedSize.y, 4, pixels.data()))
+            if (stbi_write_tga(filename.string().c_str(), convertedSize.x, convertedSize.y, 4, pixels.data()))
                 return true;
         }
-        else if (extension == "png")
+        else if (extension == ".png")
         {
             // PNG format
-            if (stbi_write_png(filename.c_str(), convertedSize.x, convertedSize.y, 4, pixels.data(), 0))
+            if (stbi_write_png(filename.string().c_str(), convertedSize.x, convertedSize.y, 4, pixels.data(), 0))
                 return true;
         }
-        else if (extension == "jpg" || extension == "jpeg")
+        else if (extension == ".jpg" || extension == ".jpeg")
         {
             // JPG format
-            if (stbi_write_jpg(filename.c_str(), convertedSize.x, convertedSize.y, 4, pixels.data(), 90))
+            if (stbi_write_jpg(filename.string().c_str(), convertedSize.x, convertedSize.y, 4, pixels.data(), 90))
                 return true;
         }
     }
 
-    err() << "Failed to save image \"" << filename << "\"" << std::endl;
+    err() << "Failed to save image \"" << filename << '"' << std::endl;
     return false;
 }
 
@@ -326,7 +318,7 @@ bool ImageLoader::saveImageToMemory(const std::string& format, std::vector<sf::U
         }
     }
 
-    err() << "Failed to save image with format \"" << format << "\"" << std::endl;
+    err() << "Failed to save image with format \"" << format << '"' << std::endl;
     return false;
 }
 

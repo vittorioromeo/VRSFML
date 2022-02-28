@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -31,6 +31,7 @@
 #include <SFML/Graphics/Export.hpp>
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/Rect.hpp>
+#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -60,6 +61,30 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     ~Image();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Copy constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    Image(const Image&);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Copy assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    Image& operator=(const Image&);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    Image(Image&&) noexcept;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    Image& operator=(Image&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the image and fill it with a unique color
@@ -101,7 +126,7 @@ public:
     /// \see loadFromMemory, loadFromStream, saveToFile
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool loadFromFile(const std::string& filename);
+    [[nodiscard]] bool loadFromFile(const std::filesystem::path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the image from a file in memory
@@ -153,7 +178,7 @@ public:
     /// \see create, loadFromFile, loadFromMemory
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool saveToFile(const std::string& filename) const;
+    [[nodiscard]] bool saveToFile(const std::filesystem::path& filename) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Save the image to a buffer in memory
@@ -214,7 +239,7 @@ public:
     /// \param applyAlpha Should the copy take into account the source transparency?
     ///
     ////////////////////////////////////////////////////////////
-    void copy(const Image& source, unsigned int destX, unsigned int destY, const IntRect& sourceRect = IntRect(0, 0, 0, 0), bool applyAlpha = false);
+    void copy(const Image& source, unsigned int destX, unsigned int destY, const IntRect& sourceRect = IntRect({0, 0}, {0, 0}), bool applyAlpha = false);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the color of a pixel

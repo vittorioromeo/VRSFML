@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -31,16 +31,15 @@
 #include <SFML/Config.hpp>
 #include <SFML/System/Export.hpp>
 #include <SFML/System/InputStream.hpp>
-#include <cstdio>
+#include <memory>
 #include <string>
+#include <cstdio>
+#include <filesystem>
 
 #ifdef SFML_SYSTEM_ANDROID
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 class SFML_SYSTEM_API ResourceStream;
-}
 }
 #endif
 
@@ -79,6 +78,18 @@ public:
     FileInputStream& operator=(const FileInputStream&) = delete;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    FileInputStream(FileInputStream&&);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    FileInputStream& operator=(FileInputStream&&);
+
+    ////////////////////////////////////////////////////////////
     /// \brief Open the stream from a file path
     ///
     /// \param filename Name of the file to open
@@ -86,7 +97,7 @@ public:
     /// \return True on success, false on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool open(const std::string& filename);
+    [[nodiscard]] bool open(const std::filesystem::path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Read data from the stream
@@ -134,9 +145,18 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
 #ifdef SFML_SYSTEM_ANDROID
-    priv::ResourceStream* m_file;
+    std::unique_ptr<priv::ResourceStream> m_file;
 #else
-    std::FILE* m_file; //!< stdio file stream
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleter for stdio file stream that closes the file stream
+    ///
+    ////////////////////////////////////////////////////////////
+    struct FileCloser
+    {
+        void operator()(std::FILE* file);
+    };
+
+    std::unique_ptr<std::FILE, FileCloser> m_file; //!< stdio file stream
 #endif
 };
 

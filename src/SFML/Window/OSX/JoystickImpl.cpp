@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Marco Antognini (antognini.marco@gmail.com),
+// Copyright (C) 2007-2022 Marco Antognini (antognini.marco@gmail.com),
 //                         Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -31,6 +31,7 @@
 #include <SFML/Window/OSX/HIDInputManager.hpp>
 #include <SFML/Window/OSX/HIDJoystickManager.hpp>
 #include <SFML/System/Err.hpp>
+#include <ostream>
 
 
 namespace
@@ -44,7 +45,7 @@ namespace
     std::string stringFromCFString(CFStringRef cfString)
     {
         CFIndex length = CFStringGetLength(cfString);
-        std::vector<char> str(length);
+        std::vector<char> str(static_cast<std::size_t>(length));
         CFIndex maxSize = CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8);
         CFStringGetCString(cfString, str.data(), maxSize, kCFStringEncodingUTF8);
         return str.data();
@@ -72,8 +73,8 @@ namespace
         if (typeRef && (CFGetTypeID(typeRef) == CFNumberGetTypeID()))
         {
             SInt32 value;
-            CFNumberGetValue((CFNumberRef)typeRef, kCFNumberSInt32Type, &value);
-            return value;
+            CFNumberGetValue(static_cast<CFNumberRef>(typeRef), kCFNumberSInt32Type, &value);
+            return static_cast<unsigned int>(value);
         }
 
         sf::err() << "Unable to read uint value for property '" << stringFromCFString(prop) << "' for joystick at index " << index << std::endl;
@@ -127,7 +128,7 @@ bool JoystickImpl::isConnected(unsigned int index)
         for (unsigned int i(0); i < sf::Joystick::Count; ++i)
         {
             if (m_locationIDs[i] != 0)
-                openedCount++;
+                ++openedCount;
         }
 
 
@@ -143,15 +144,15 @@ bool JoystickImpl::isConnected(unsigned int index)
                 CFIndex size = CFSetGetCount(devices);
                 if (size > 0)
                 {
-                    CFTypeRef array[size]; // array of IOHIDDeviceRef
-                    CFSetGetValues(devices, array);
+                    std::vector<CFTypeRef> array(static_cast<std::size_t>(size)); // array of IOHIDDeviceRef
+                    CFSetGetValues(devices, array.data());
 
                     // If there exists a device d s.t. there is no j s.t.
                     // m_locationIDs[j] == d's location then we have a new device.
 
                     for (CFIndex didx(0); !state && didx < size; ++didx)
                     {
-                        IOHIDDeviceRef d = (IOHIDDeviceRef)array[didx];
+                        IOHIDDeviceRef d = static_cast<IOHIDDeviceRef>(const_cast<void*>(array[static_cast<std::size_t>(didx)]));
                         Location dloc = HIDInputManager::getLocationID(d);
 
                         bool foundJ = false;
@@ -194,14 +195,14 @@ bool JoystickImpl::open(unsigned int index)
 
     // Get a usable copy of the joysticks devices.
     CFIndex joysticksCount = CFSetGetCount(devices);
-    CFTypeRef devicesArray[joysticksCount];
-    CFSetGetValues(devices, devicesArray);
+    std::vector<CFTypeRef> devicesArray(static_cast<std::size_t>(joysticksCount));
+    CFSetGetValues(devices, devicesArray.data());
 
     // Get the desired joystick.
     IOHIDDeviceRef self = 0;
     for (CFIndex i(0); self == 0 && i < joysticksCount; ++i)
     {
-        IOHIDDeviceRef d = (IOHIDDeviceRef)devicesArray[i];
+        IOHIDDeviceRef d = static_cast<IOHIDDeviceRef>(const_cast<void*>(devicesArray[static_cast<std::size_t>(i)]));
         if (deviceLoc == HIDInputManager::getLocationID(d))
             self = d;
     }
@@ -229,7 +230,7 @@ bool JoystickImpl::open(unsigned int index)
     CFIndex elementsCount = CFArrayGetCount(elements);
     for (int i = 0; i < elementsCount; ++i)
     {
-        IOHIDElementRef element = (IOHIDElementRef) CFArrayGetValueAtIndex(elements, i);
+        IOHIDElementRef element = static_cast<IOHIDElementRef>(const_cast<void*>(CFArrayGetValueAtIndex(elements, i)));
         switch (IOHIDElementGetUsagePage(element))
         {
             case kHIDPage_GenericDesktop:
@@ -359,7 +360,7 @@ JoystickCaps JoystickImpl::getCapabilities() const
     JoystickCaps caps;
 
     // Buttons:
-    caps.buttonCount = m_buttons.size();
+    caps.buttonCount = static_cast<unsigned int>(m_buttons.size());
 
     // Axis:
     for (const auto& [axis, iohidElementRef] : m_axis)
@@ -384,7 +385,7 @@ Joystick::Identification JoystickImpl::getIdentification() const
 JoystickState JoystickImpl::update()
 {
     AutoreleasePool pool;
-    static const JoystickState disconnectedState; // return this if joystick was disconnected
+    static constexpr JoystickState disconnectedState; // return this if joystick was disconnected
     JoystickState state; // otherwise return that
     state.connected = true;
 
@@ -401,14 +402,14 @@ JoystickState JoystickImpl::update()
 
     // Get a usable copy of the joysticks devices.
     CFIndex joysticksCount = CFSetGetCount(devices);
-    CFTypeRef devicesArray[joysticksCount];
-    CFSetGetValues(devices, devicesArray);
+    std::vector<CFTypeRef> devicesArray(static_cast<std::size_t>(joysticksCount));
+    CFSetGetValues(devices, devicesArray.data());
 
     // Search for it
     bool found = false;
     for (CFIndex i(0); !found && i < joysticksCount; ++i)
     {
-        IOHIDDeviceRef d = (IOHIDDeviceRef)devicesArray[i];
+        IOHIDDeviceRef d = static_cast<IOHIDDeviceRef>(const_cast<void*>(devicesArray[static_cast<std::size_t>(i)]));
         if (selfLoc == HIDInputManager::getLocationID(d))
             found = true;
     }
@@ -459,12 +460,12 @@ JoystickState JoystickImpl::update()
         // This method might not be very accurate (the "0 position" can be
         // slightly shift with some device) but we don't care because most
         // of devices are so sensitive that this is not relevant.
-        double  physicalMax   = IOHIDElementGetPhysicalMax(iohidElementRef);
-        double  physicalMin   = IOHIDElementGetPhysicalMin(iohidElementRef);
+        double  physicalMax   = static_cast<double>(IOHIDElementGetPhysicalMax(iohidElementRef));
+        double  physicalMin   = static_cast<double>(IOHIDElementGetPhysicalMin(iohidElementRef));
         double  scaledMin     = -100;
         double  scaledMax     =  100;
         double  physicalValue = IOHIDValueGetScaledValue(value, kIOHIDValueScaleTypePhysical);
-        float   scaledValue   = (((physicalValue - physicalMin) * (scaledMax - scaledMin)) / (physicalMax - physicalMin)) + scaledMin;
+        float   scaledValue   = static_cast<float>((((physicalValue - physicalMin) * (scaledMax - scaledMin)) / (physicalMax - physicalMin)) + scaledMin);
         state.axes[axis] = scaledValue;
     }
 

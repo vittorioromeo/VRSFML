@@ -4,6 +4,8 @@ set(SRCROOT ${PROJECT_SOURCE_DIR}/src/SFML/System)
 
 # all source files
 set(SRC
+    ${INCROOT}/Angle.hpp
+    ${INCROOT}/Angle.inl
     ${SRCROOT}/Clock.cpp
     ${INCROOT}/Clock.hpp
     ${SRCROOT}/Err.cpp
@@ -16,8 +18,8 @@ set(SRC
     ${SRCROOT}/String.cpp
     ${INCROOT}/String.hpp
     ${INCROOT}/String.inl
-    ${SRCROOT}/Time.cpp
     ${INCROOT}/Time.hpp
+    ${INCROOT}/Time.inl
     ${INCROOT}/Utf.hpp
     ${INCROOT}/Utf.inl
     ${INCROOT}/Vector2.hpp
@@ -33,20 +35,34 @@ set(SRC
 source_group("" FILES ${SRC})
 
 # add platform specific sources
-if(SFML_OS_ANDROID)
-    set(PLATFORM_SRC ${PLATFORM_SRC}
-        ${SRCROOT}/Android/Activity.hpp
-        ${SRCROOT}/Android/Activity.cpp
-        ${SRCROOT}/Android/NativeActivity.cpp
-        ${SRCROOT}/Android/ResourceStream.cpp
-        ${SRCROOT}/Android/ResourceStream.cpp
-        ${SRCROOT}/Android/SuspendAwareClock.cpp
+if(SFML_OS_WINDOWS)
+    set(PLATFORM_SRC
+        ${SRCROOT}/Win32/SleepImpl.cpp
+        ${SRCROOT}/Win32/SleepImpl.hpp
     )
+    source_group("windows" FILES ${PLATFORM_SRC})
+else()
+    set(PLATFORM_SRC
+        ${SRCROOT}/Unix/SleepImpl.cpp
+        ${SRCROOT}/Unix/SleepImpl.hpp
+    )
+
+    if(SFML_OS_ANDROID)
+        set(PLATFORM_SRC ${PLATFORM_SRC}
+            ${SRCROOT}/Android/Activity.hpp
+            ${SRCROOT}/Android/Activity.cpp
+            ${SRCROOT}/Android/NativeActivity.cpp
+            ${SRCROOT}/Android/ResourceStream.cpp
+            ${SRCROOT}/Android/ResourceStream.cpp
+            ${SRCROOT}/Android/SuspendAwareClock.cpp
+        )
+    endif()
+
+    source_group("unix" FILES ${PLATFORM_SRC})
 endif()
-source_group("unix" FILES ${PLATFORM_SRC})
 
 # define the sfml-system target
-sfml_add_library(sfml-system
+sfml_add_library(System
                  SOURCES ${SRC} ${PLATFORM_SRC})
 
 set_file_warnings("${CMAKE_SOURCE_DIR}/src/SFML/PCH.hpp")

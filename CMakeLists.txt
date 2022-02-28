@@ -16,9 +16,6 @@ endmacro()
 # determine whether to create a debug or release build
 sfml_set_option(CMAKE_BUILD_TYPE Release STRING "Choose the type of build (Debug or Release)")
 
-# Suppress Cygwin legacy warning
-set(CMAKE_LEGACY_CYGWIN_WIN32 0)
-
 # Suppress Mac OS X RPATH warnings and adopt new related behaviors
 cmake_policy(SET CMP0042 NEW)
 if (NOT CMAKE_VERSION VERSION_LESS 3.9)
@@ -35,7 +32,9 @@ if(NOT CMAKE_OSX_SYSROOT)
 endif()
 
 # project name
-project(SFML)
+project(SFML VERSION 3.0.0)
+
+set(VERSION_IS_RELEASE OFF)
 
 # include the configuration file
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.cmake)
@@ -44,12 +43,6 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.cmake)
 # you can override these if you like
 # https://cmake.org/cmake/help/v3.0/module/GNUInstallDirs.html
 include(GNUInstallDirs)
-
-# setup version numbers
-set(VERSION_MAJOR 3)
-set(VERSION_MINOR 0)
-set(VERSION_PATCH 0)
-set(VERSION_IS_RELEASE OFF)
 
 # add an option for choosing the build type (shared or static)
 if(NOT (SFML_OS_IOS OR SFML_OS_ANDROID))
@@ -86,6 +79,9 @@ endif()
 # add an option for building the test suite
 sfml_set_option(SFML_BUILD_TEST_SUITE FALSE BOOL "TRUE to build the SFML test suite, FALSE to ignore it")
 
+# add an option for enabling coverage reporting
+sfml_set_option(SFML_ENABLE_COVERAGE FALSE BOOL "TRUE to enable coverage reporting, FALSE to ignore it")
+
 # macOS specific options
 if(SFML_OS_MACOSX)
     # add an option to build frameworks instead of dylibs (release only)
@@ -98,7 +94,7 @@ endif()
 # iOS specific options
 if(SFML_OS_IOS)
     # At the moment the minimal deployement target version is 10.2 only because the externals for iOS were built with that requirement.
-    sfml_set_option(SFML_IOS_DEPLOYMENT_TARGET "10.2" STRING "The minimal iOS version that will be able to run the built binaries. Cannot be lower than 10.2.")
+    sfml_set_option(SFML_IOS_DEPLOYMENT_TARGET "13.0" STRING "The minimal iOS version that will be able to run the built binaries. Cannot be lower than 10.2.")
 
     sfml_set_option(SFML_CODE_SIGN_IDENTITY "iPhone Developer" STRING "The code signing identity to use when building for a real device")
 endif()
@@ -114,8 +110,8 @@ if(SFML_OS_ANDROID)
     set(CMAKE_FIND_ROOT_PATH "${PROJECT_SOURCE_DIR};${CMAKE_FIND_ROOT_PATH}")
 
     # make sure there's the android library available
-    if (CMAKE_ANDROID_API LESS 14)
-        message(FATAL_ERROR "Android API level (${CMAKE_ANDROID_API}) must be equal or greater than 14.")
+    if (CMAKE_ANDROID_API LESS 26)
+        message(FATAL_ERROR "Android API level (${CMAKE_ANDROID_API}) must be equal or greater than 26.")
     endif()
 
     # CMake doesn't support defining the STL to be used with Nsight Tegra, so warn the user
@@ -201,14 +197,7 @@ endif()
 # Visual C++: remove warnings regarding SL security and algorithms on pointers
 if(SFML_COMPILER_MSVC)
     # add an option to choose whether PDB debug symbols should be generated (defaults to true when possible)
-    if(CMAKE_VERSION VERSION_LESS 3.1)
-        sfml_set_option(SFML_GENERATE_PDB FALSE BOOL "True to generate PDB debug symbols, FALSE otherwise. Requires CMake 3.1.")
-        if(SFML_GENERATE_PDB)
-            message(FATAL_ERROR "Generation of PDB files (SFML_GENERATE_PDB) requires at least CMake 3.1.0")
-        endif()
-    else()
-        sfml_set_option(SFML_GENERATE_PDB TRUE BOOL "True to generate PDB debug symbols, FALSE otherwise. Requires CMake 3.1.")
-    endif()
+    sfml_set_option(SFML_GENERATE_PDB TRUE BOOL "True to generate PDB debug symbols, FALSE otherwise. Requires CMake 3.1.")
 
     add_definitions(-D_CRT_SECURE_NO_DEPRECATE -D_SCL_SECURE_NO_WARNINGS)
 endif()
@@ -354,10 +343,10 @@ else()
     # edit target properties
     set_target_properties(SFML PROPERTIES
                           FRAMEWORK TRUE
-                          FRAMEWORK_VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}
+                          FRAMEWORK_VERSION ${PROJECT_VERSION}
                           MACOSX_FRAMEWORK_IDENTIFIER org.sfml-dev.SFML
-                          MACOSX_FRAMEWORK_SHORT_VERSION_STRING ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}
-                          MACOSX_FRAMEWORK_BUNDLE_VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}
+                          MACOSX_FRAMEWORK_SHORT_VERSION_STRING ${PROJECT_VERSION}
+                          MACOSX_FRAMEWORK_BUNDLE_VERSION ${PROJECT_VERSION}
                           PUBLIC_HEADER "${SFML_HEADERS}")
 
     # add the non-optional SFML headers
@@ -429,18 +418,14 @@ if(SFML_OS_WINDOWS)
         # install the binaries of SFML dependencies
         if(ARCH_32BITS)
             install(DIRECTORY extlibs/bin/x86/ DESTINATION ${CMAKE_INSTALL_BINDIR})
-            if(SFML_COMPILER_MSVC AND SFML_MSVC_VERSION LESS 14)
-                install(DIRECTORY extlibs/libs-msvc/x86/ DESTINATION ${CMAKE_INSTALL_LIBDIR})
-            elseif(SFML_COMPILER_MSVC OR (SFML_COMPILER_CLANG AND NOT MINGW))
+            if(SFML_COMPILER_MSVC OR (SFML_COMPILER_CLANG AND NOT MINGW))
                 install(DIRECTORY extlibs/libs-msvc-universal/x86/ DESTINATION ${CMAKE_INSTALL_LIBDIR})
             else()
                 install(DIRECTORY extlibs/libs-mingw/x86/ DESTINATION ${CMAKE_INSTALL_LIBDIR})
             endif()
         elseif(ARCH_64BITS)
             install(DIRECTORY extlibs/bin/x64/ DESTINATION ${CMAKE_INSTALL_BINDIR})
-            if(SFML_COMPILER_MSVC AND SFML_MSVC_VERSION LESS 14)
-                install(DIRECTORY extlibs/libs-msvc/x64/ DESTINATION ${CMAKE_INSTALL_LIBDIR})
-            elseif(SFML_COMPILER_MSVC OR (SFML_COMPILER_CLANG AND NOT MINGW))
+            if(SFML_COMPILER_MSVC OR (SFML_COMPILER_CLANG AND NOT MINGW))
                 install(DIRECTORY extlibs/libs-msvc-universal/x64/ DESTINATION ${CMAKE_INSTALL_LIBDIR})
             else()
                 install(DIRECTORY extlibs/libs-mingw/x64/ DESTINATION ${CMAKE_INSTALL_LIBDIR})
@@ -534,17 +519,17 @@ sfml_export_targets()
 
 set(CPACK_PACKAGE_NAME_SUMMARY "Simple and Fast Multimedia Library")
 set(CPACK_PACKAGE_VENDOR "SFML Team")
-set(CPACK_PACKAGE_FILE_NAME "SFML-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}-${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}-${CMAKE_BUILD_TYPE}")
+set(CPACK_PACKAGE_FILE_NAME "SFML-${PROJECT_VERSION}-${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}-${CMAKE_BUILD_TYPE}")
 set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/readme.md")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/license.md")
-set(CPACK_PACKAGE_VERSION_MAJOR "${VERSION_MAJOR}")
-set(CPACK_PACKAGE_VERSION_MINOR "${VERSION_MINOR}")
-set(CPACK_PACKAGE_VERSION_PATCH "${VERSION_PATCH}")
-set(CPACK_PACKAGE_INSTALL_DIRECTORY "SFML ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
+set(CPACK_PACKAGE_VERSION_MAJOR "${PROJECT_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${PROJECT_VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${PROJECT_VERSION_PATCH}")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "SFML ${PROJECT_VERSION}")
 set(CPACK_MONOLITHIC_INSTALL ON)
 
 # NSIS configurations
-set(CPACK_NSIS_DISPLAY_NAME "SFML ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH} (${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION})")
+set(CPACK_NSIS_DISPLAY_NAME "SFML ${PROJECT_VERSION} (${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION})")
 set(CPACK_NSIS_CONTACT "team@sfml-dev.org")
 set(NSIS_IMAGE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/tools/nsis/")
 string(REGEX REPLACE "/" "\\\\\\\\" NSIS_IMAGE_PATH ${NSIS_IMAGE_PATH})

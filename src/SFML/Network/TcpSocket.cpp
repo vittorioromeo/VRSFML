@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -31,6 +31,7 @@
 #include <SFML/Network/SocketImpl.hpp>
 #include <SFML/System/Err.hpp>
 #include <algorithm>
+#include <ostream>
 #include <cstring>
 
 #ifdef _MSC_VER
@@ -175,7 +176,7 @@ Socket::Status TcpSocket::connect(const IpAddress& remoteAddress, unsigned short
             // Setup the timeout
             timeval time;
             time.tv_sec  = static_cast<long>(timeout.asMicroseconds() / 1000000);
-            time.tv_usec = static_cast<long>(timeout.asMicroseconds() % 1000000);
+            time.tv_usec = static_cast<int>(timeout.asMicroseconds() % 1000000);
 
             // Wait for something to write on our socket (which means that the connection request has returned)
             if (select(static_cast<int>(getHandle() + 1), nullptr, &selector, nullptr, &time) > 0)

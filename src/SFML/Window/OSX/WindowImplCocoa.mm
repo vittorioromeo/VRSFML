@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Marco Antognini (antognini.marco@gmail.com),
+// Copyright (C) 2007-2022 Marco Antognini (antognini.marco@gmail.com),
 //                         Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -29,6 +29,8 @@
 #include <SFML/Window/OSX/AutoreleasePoolWrapper.hpp>
 #include <SFML/Window/OSX/WindowImplCocoa.hpp>
 #include <SFML/System/Err.hpp>
+#include <SFML/System/String.hpp>
+#include <ostream>
 
 #import <SFML/Window/OSX/cpp_objc_conversion.h>
 #import <SFML/Window/OSX/Scaling.h>
@@ -88,7 +90,7 @@ m_showCursor(true)
 {
     AutoreleasePool pool;
     // Treat the handle as it real type
-    id nsHandle = (id)handle;
+    id nsHandle = static_cast<id>(handle);
     if ([nsHandle isKindOfClass:[NSWindow class]])
     {
         // We have a window.
@@ -408,7 +410,7 @@ Vector2i WindowImplCocoa::getPosition() const
 {
     AutoreleasePool pool;
     NSPoint pos = [m_delegate position];
-    sf::Vector2i ret(pos.x, pos.y);
+    sf::Vector2i ret(static_cast<int>(pos.x), static_cast<int>(pos.y));
     scaleOutXY(ret, m_delegate);
     return ret;
 }
@@ -429,7 +431,7 @@ Vector2u WindowImplCocoa::getSize() const
 {
     AutoreleasePool pool;
     NSSize size = [m_delegate size];
-    Vector2u ret(size.width, size.height);
+    Vector2u ret(static_cast<unsigned int>(size.width), static_cast<unsigned int>(size.height));
     scaleOutXY(ret, m_delegate);
     return ret;
 }
