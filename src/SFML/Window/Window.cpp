@@ -31,6 +31,7 @@
 #include <SFML/Window/WindowImpl.hpp>
 #include <SFML/System/Sleep.hpp>
 #include <SFML/System/Err.hpp>
+#include <ostream>
 
 
 namespace sf
@@ -165,7 +166,7 @@ void Window::close()
 ////////////////////////////////////////////////////////////
 const ContextSettings& Window::getSettings() const
 {
-    static const ContextSettings empty(0, 0, 0);
+    static constexpr ContextSettings empty(0, 0, 0);
 
     return m_context ? m_context->getSettings() : empty;
 }

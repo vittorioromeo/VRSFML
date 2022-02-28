@@ -29,6 +29,7 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Utils.hpp>
 #include <algorithm>
+#include <ostream>
 #include <cctype>
 #include <cstdlib>
 #include <cassert>
@@ -39,11 +40,9 @@ namespace sf
 namespace priv
 {
 ////////////////////////////////////////////////////////////
-bool SoundFileWriterOgg::check(const std::string& filename)
+bool SoundFileWriterOgg::check(const std::filesystem::path& filename)
 {
-    const std::string extension = toLower(filename.substr(filename.find_last_of('.') + 1));
-
-    return extension == "ogg";
+    return toLower(filename.extension().string()) == ".ogg";
 }
 
 
@@ -66,7 +65,7 @@ SoundFileWriterOgg::~SoundFileWriterOgg()
 
 
 ////////////////////////////////////////////////////////////
-bool SoundFileWriterOgg::open(const std::string& filename, unsigned int sampleRate, unsigned int channelCount)
+bool SoundFileWriterOgg::open(const std::filesystem::path& filename, unsigned int sampleRate, unsigned int channelCount)
 {
     // Save the channel count
     m_channelCount = channelCount;
@@ -131,7 +130,7 @@ bool SoundFileWriterOgg::open(const std::string& filename, unsigned int sampleRa
 void SoundFileWriterOgg::write(const Int16* samples, Uint64 count)
 {
     // Vorbis has issues with buffers that are too large, so we ask for 64K
-    static const int bufferSize = 65536;
+    constexpr int bufferSize = 65536;
 
     // A frame contains a sample from each channel
     int frameCount = static_cast<int>(count / m_channelCount);

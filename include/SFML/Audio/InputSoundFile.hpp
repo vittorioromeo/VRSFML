@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -29,7 +29,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
-#include <SFML/System/Time.hpp>
+#include <filesystem>
 #include <memory>
 #include <string>
 #include <cstddef>
@@ -37,6 +37,7 @@
 
 namespace sf
 {
+class Time;
 class InputStream;
 class SoundFileReader;
 
@@ -88,7 +89,7 @@ public:
     /// \return True if the file was successfully opened
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool openFromFile(const std::string& filename);
+    [[nodiscard]] bool openFromFile(const std::filesystem::path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a sound file in memory for reading
@@ -275,7 +276,7 @@ private:
 /// std::cout << "duration: " << file.getDuration().asSeconds() << '\n'
 ///           << "channels: " << file.getChannelCount() << '\n'
 ///           << "sample rate: " << file.getSampleRate() << '\n'
-///           << "sample count: " << file.getSampleCount() << '\n';
+///           << "sample count: " << file.getSampleCount() << std::endl;
 ///
 /// // Read and process batches of samples until the end of file is reached
 /// sf::Int16 samples[1024];

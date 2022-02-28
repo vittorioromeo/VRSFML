@@ -31,6 +31,7 @@
 #include <SFML/Network/SocketImpl.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Priv/MinMax.hpp>
+#include <ostream>
 #include <cstring>
 
 #ifdef _MSC_VER

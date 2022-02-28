@@ -29,6 +29,7 @@
 #include <SFML/Window/Win32/WglContext.hpp>
 #include <SFML/System/Err.hpp>
 #include <mutex>
+#include <ostream>
 #include <sstream>
 #include <vector>
 
@@ -413,7 +414,7 @@ void WglContext::setDevicePixelFormat(unsigned int bitsPerPixel)
 
     if (bestFormat == 0)
     {
-        err() << "Failed to find a suitable pixel format for device context: " << getErrorString(GetLastError()).toAnsiString() << errEndl
+        err() << "Failed to find a suitable pixel format for device context: " << getErrorString(GetLastError()).toAnsiString() << '\n'
               << "Cannot create OpenGL context" << errEndl;
         return;
     }
@@ -427,7 +428,7 @@ void WglContext::setDevicePixelFormat(unsigned int bitsPerPixel)
     // Set the chosen pixel format
     if (SetPixelFormat(m_deviceContext, bestFormat, &actualFormat) == FALSE)
     {
-        err() << "Failed to set pixel format for device context: " << getErrorString(GetLastError()).toAnsiString() << errEndl
+        err() << "Failed to set pixel format for device context: " << getErrorString(GetLastError()).toAnsiString() << '\n'
               << "Cannot create OpenGL context" << errEndl;
         return;
     }
@@ -682,14 +683,14 @@ void WglContext::createContext(WglContext* shared)
             else if (m_settings.minorVersion > 0)
             {
                 // If the minor version is not 0, we decrease it and try again
-                m_settings.minorVersion--;
+                --m_settings.minorVersion;
 
                 m_settings.attributeFlags = settings.attributeFlags;
             }
             else
             {
                 // If the minor version is 0, we decrease the major version
-                m_settings.majorVersion--;
+                --m_settings.majorVersion;
                 m_settings.minorVersion = 9;
 
                 m_settings.attributeFlags = settings.attributeFlags;

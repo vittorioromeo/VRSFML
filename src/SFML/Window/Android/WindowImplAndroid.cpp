@@ -31,6 +31,7 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/System/Err.hpp>
 #include <mutex>
+#include <ostream>
 #include <android/looper.h>
 
 // Define missing constants for older API levels
@@ -464,7 +465,7 @@ int WindowImplAndroid::processMotionEvent(AInputEvent* _event, ActivityStates& s
 
     size_t pointerCount = AMotionEvent_getPointerCount(_event);
 
-    for (size_t p = 0; p < pointerCount; p++)
+    for (size_t p = 0; p < pointerCount; ++p)
     {
         int32_t id = AMotionEvent_getPointerId(_event, p);
 

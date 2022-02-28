@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -29,7 +29,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Export.hpp>
-#include <SFML/System/Time.hpp>
 #include <chrono>
 #include <ratio>
 #include <type_traits>
@@ -79,6 +78,8 @@ namespace priv
 #endif
 
 } // namespace priv
+
+class Time;
 
 ////////////////////////////////////////////////////////////
 /// \brief Utility class that measures the elapsed time

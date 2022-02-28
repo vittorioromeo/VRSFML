@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -30,6 +30,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Export.hpp>
 #include <SFML/Graphics/Transform.hpp>
+#include <SFML/System/Angle.hpp>
 
 
 namespace sf
@@ -291,10 +292,11 @@ private:
 /// \code
 /// class MyEntity : public sf::Transformable, public sf::Drawable
 /// {
-///     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
+///     void draw(sf::RenderTarget& target, const sf::RenderStates& states) const override
 ///     {
-///         states.transform *= getTransform();
-///         target.draw(..., states);
+///         sf::RenderStates statesCopy(states);
+///         statesCopy.transform *= getTransform();
+///         target.draw(..., statesCopy);
 ///     }
 /// };
 ///

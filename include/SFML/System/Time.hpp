@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -82,7 +82,7 @@ public:
     ////////////////////////////////////////////////////////////
     // Static member data
     ////////////////////////////////////////////////////////////
-    SFML_SYSTEM_API static const Time Zero; //!< Predefined "zero" time value
+    static const Time Zero; //!< Predefined "zero" time value
 
 private:
 
