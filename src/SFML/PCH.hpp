@@ -22,16 +22,16 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_SFML_PCH_HPP
-#define SFML_SFML_PCH_HPP
+#ifndef SFML_PCH_HPP
+#define SFML_PCH_HPP
 
 ////////////////////////////////////////////////////////////
 // Precompiled Headers
 ////////////////////////////////////////////////////////////
 
+/*
 #include <SFML/Config.hpp>
 
-/*
 #ifdef SFML_SYSTEM_WINDOWS
 
 #include <SFML/System/Win32/WindowsHeader.hpp>
@@ -44,7 +44,6 @@
 #include <dinput.h>
 
 #endif // SFML_SYSTEM_WINDOWS
-*/
 
 #include <SFML/System/Err.hpp>
 #include <SFML/System/String.hpp>
@@ -52,5 +51,6 @@
 #include <algorithm>
 #include <iostream>
 #include <string>
+*/
 
-#endif // SFML_SFML_PCH_HPP
+#endif // SFML_PCH_HPP
