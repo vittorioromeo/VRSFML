@@ -94,7 +94,7 @@ bool SensorImpl::open(Sensor::Type sensor)
     m_enabled = false;
 
     // Set the refresh rate (use the maximum allowed)
-    static const NSTimeInterval updateInterval = 1. / 60.;
+    constexpr NSTimeInterval updateInterval = 1. / 60.;
     switch (sensor)
     {
         case Sensor::Accelerometer:
@@ -220,11 +220,11 @@ void SensorImpl::setEnabled(bool enabled)
             {
                 if (deviceMotionEnabledCount == 0)
                     [[SFAppDelegate getInstance].motionManager startDeviceMotionUpdates];
-                deviceMotionEnabledCount++;
+                ++deviceMotionEnabledCount;
             }
             else
             {
-                deviceMotionEnabledCount--;
+                --deviceMotionEnabledCount;
                 if (deviceMotionEnabledCount == 0)
                     [[SFAppDelegate getInstance].motionManager stopDeviceMotionUpdates];
             }

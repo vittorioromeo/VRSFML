@@ -4,12 +4,9 @@
 #include <SFML/System/String.hpp>
 #include <SFML/System/Time.hpp>
 
-// Work around GCC 8.x bug with `<filesystem>`.
-#if !defined(__GNUC__) || (__GNUC__ >= 9)
-#include <filesystem>
-#endif // !defined(__GNUC__) || (__GNUC__ >= 9)
-
+#include <doctest.h> // for Approx
 #include <cassert>
+#include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <limits>
@@ -38,8 +35,28 @@ namespace sf
     }
 }
 
-// Work around GCC 8.x bug with `<filesystem>`.
-#if !defined(__GNUC__) || (__GNUC__ >= 9)
+bool operator==(const sf::Vector2f& lhs, const ApproxVec& rhs)
+{
+    return (lhs - rhs.vector).length() == doctest::Approx(0.0);
+}
+
+bool operator==(const sf::Angle& lhs, const ApproxDeg& rhs)
+{
+    return lhs.asDegrees() == doctest::Approx(rhs.degrees);
+}
+
+std::ostream& operator <<(std::ostream& os, const ApproxVec& approx)
+{
+    os << approx.vector;
+    return os;
+}
+
+std::ostream& operator <<(std::ostream& os, const ApproxDeg& approx)
+{
+    os << sf::degrees(approx.degrees);
+    return os;
+}
+
 namespace sf::Testing
 {
     static std::string getTemporaryFilePath()
@@ -78,4 +95,3 @@ namespace sf::Testing
         return m_path;
     }
 }
-#endif // !defined(__GNUC__) || (__GNUC__ >= 9)

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -245,3 +245,12 @@ constexpr Time& operator %=(Time& left, Time right)
 {
     return left = left % right;
 }
+
+
+////////////////////////////////////////////////////////////
+// Static member data
+////////////////////////////////////////////////////////////
+
+// Note: the 'inline' keyword here is technically not required, but VS2019 fails
+// to compile with a bogus "multiple definition" error if not explicitly used.
+inline constexpr Time Time::Zero;

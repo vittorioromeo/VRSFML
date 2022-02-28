@@ -29,6 +29,7 @@
 #include <SFML/System/Priv/Copy.hpp>
 #include <SFML/System/Err.hpp>
 #include <iterator>
+#include <ostream>
 
 
 namespace sf

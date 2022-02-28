@@ -29,6 +29,7 @@
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/System/Priv/MinMax.hpp>
+#include <SFML/Graphics/Font.hpp>
 #include <cmath>
 
 
@@ -115,6 +116,22 @@ m_fontTextureId      (0)
 {
 
 }
+
+
+////////////////////////////////////////////////////////////
+Text::Text(const Text&) = default;
+
+
+////////////////////////////////////////////////////////////
+Text& Text::operator=(const Text&) = default;
+
+
+////////////////////////////////////////////////////////////
+Text::Text(Text&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
+Text& Text::operator=(Text&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
@@ -358,20 +375,22 @@ FloatRect Text::getGlobalBounds() const
 
 
 ////////////////////////////////////////////////////////////
-void Text::draw(RenderTarget& target, RenderStates states) const
+void Text::draw(RenderTarget& target, const RenderStates& states) const
 {
     if (m_font)
     {
         ensureGeometryUpdate();
 
-        states.transform *= getTransform();
-        states.texture = &m_font->getTexture(m_characterSize);
+        RenderStates statesCopy(states);
+
+        statesCopy.transform *= getTransform();
+        statesCopy.texture = &m_font->getTexture(m_characterSize);
 
         // Only draw the outline if there is something to draw
         if (m_outlineThickness != 0)
-            target.draw(m_outlineVertices, states);
+            target.draw(m_outlineVertices, statesCopy);
 
-        target.draw(m_vertices, states);
+        target.draw(m_vertices, statesCopy);
     }
 }
 

@@ -41,6 +41,7 @@
 #include <SFML/System/Android/Activity.hpp>
 #include <SFML/System/Sleep.hpp>
 #include <SFML/System/Err.hpp>
+#include <SFML/System/Time.hpp>
 #include <android/window.h>
 #include <android/native_activity.h>
 #include <cstring>
@@ -509,7 +510,7 @@ JNIEXPORT void ANativeActivity_onCreate(ANativeActivity* activity, void* savedSt
     states->inputQueue = nullptr;
     states->config     = nullptr;
 
-    for (unsigned int i = 0; i < sf::Mouse::ButtonCount; i++)
+    for (unsigned int i = 0; i < sf::Mouse::ButtonCount; ++i)
         states->isButtonPressed[i] = false;
 
     gladLoaderLoadEGL(EGL_DEFAULT_DISPLAY);

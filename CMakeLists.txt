@@ -16,9 +16,6 @@ endmacro()
 # determine whether to create a debug or release build
 sfml_set_option(CMAKE_BUILD_TYPE Release STRING "Choose the type of build (Debug or Release)")
 
-# Suppress Cygwin legacy warning
-set(CMAKE_LEGACY_CYGWIN_WIN32 0)
-
 # Suppress Mac OS X RPATH warnings and adopt new related behaviors
 cmake_policy(SET CMP0042 NEW)
 if (NOT CMAKE_VERSION VERSION_LESS 3.9)
@@ -82,6 +79,9 @@ endif()
 # add an option for building the test suite
 sfml_set_option(SFML_BUILD_TEST_SUITE FALSE BOOL "TRUE to build the SFML test suite, FALSE to ignore it")
 
+# add an option for enabling coverage reporting
+sfml_set_option(SFML_ENABLE_COVERAGE FALSE BOOL "TRUE to enable coverage reporting, FALSE to ignore it")
+
 # macOS specific options
 if(SFML_OS_MACOSX)
     # add an option to build frameworks instead of dylibs (release only)
@@ -94,7 +94,7 @@ endif()
 # iOS specific options
 if(SFML_OS_IOS)
     # At the moment the minimal deployement target version is 10.2 only because the externals for iOS were built with that requirement.
-    sfml_set_option(SFML_IOS_DEPLOYMENT_TARGET "10.2" STRING "The minimal iOS version that will be able to run the built binaries. Cannot be lower than 10.2.")
+    sfml_set_option(SFML_IOS_DEPLOYMENT_TARGET "13.0" STRING "The minimal iOS version that will be able to run the built binaries. Cannot be lower than 10.2.")
 
     sfml_set_option(SFML_CODE_SIGN_IDENTITY "iPhone Developer" STRING "The code signing identity to use when building for a real device")
 endif()
@@ -110,8 +110,8 @@ if(SFML_OS_ANDROID)
     set(CMAKE_FIND_ROOT_PATH "${PROJECT_SOURCE_DIR};${CMAKE_FIND_ROOT_PATH}")
 
     # make sure there's the android library available
-    if (CMAKE_ANDROID_API LESS 14)
-        message(FATAL_ERROR "Android API level (${CMAKE_ANDROID_API}) must be equal or greater than 14.")
+    if (CMAKE_ANDROID_API LESS 26)
+        message(FATAL_ERROR "Android API level (${CMAKE_ANDROID_API}) must be equal or greater than 26.")
     endif()
 
     # CMake doesn't support defining the STL to be used with Nsight Tegra, so warn the user

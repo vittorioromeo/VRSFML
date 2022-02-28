@@ -27,6 +27,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/SensorManager.hpp>
 #include <SFML/System/Err.hpp>
+#include <ostream>
 
 
 namespace sf
@@ -104,8 +105,15 @@ SensorManager::SensorManager()
         // Open the available sensors
         if (m_sensors[i].available)
         {
-            m_sensors[i].sensor.open(static_cast<Sensor::Type>(i));
-            m_sensors[i].sensor.setEnabled(false);
+            if (m_sensors[i].sensor.open(static_cast<Sensor::Type>(i)))
+            {
+                m_sensors[i].sensor.setEnabled(false);
+            }
+            else
+            {
+                m_sensors[i].available = false;
+                err() << "Warning: sensor " << i << " failed to open, will not be available" << errEndl;
+            }
         }
     }
 }

@@ -36,6 +36,7 @@
 #include <SFML/System/FileInputStream.hpp>
 #include <SFML/System/MemoryInputStream.hpp>
 #include <SFML/System/Err.hpp>
+#include <ostream>
 
 
 namespace
@@ -65,7 +66,7 @@ SoundFileFactory::WriterFactoryArray SoundFileFactory::s_writers;
 
 
 ////////////////////////////////////////////////////////////
-std::unique_ptr<SoundFileReader> SoundFileFactory::createReaderFromFilename(const std::string& filename)
+std::unique_ptr<SoundFileReader> SoundFileFactory::createReaderFromFilename(const std::filesystem::path& filename)
 {
     // Register the built-in readers/writers on first call
     ensureDefaultReadersWritersRegistered();
@@ -151,7 +152,7 @@ std::unique_ptr<SoundFileReader> SoundFileFactory::createReaderFromStream(InputS
 
 
 ////////////////////////////////////////////////////////////
-std::unique_ptr<SoundFileWriter> SoundFileFactory::createWriterFromFilename(const std::string& filename)
+std::unique_ptr<SoundFileWriter> SoundFileFactory::createWriterFromFilename(const std::filesystem::path& filename)
 {
     // Register the built-in readers/writers on first call
     ensureDefaultReadersWritersRegistered();

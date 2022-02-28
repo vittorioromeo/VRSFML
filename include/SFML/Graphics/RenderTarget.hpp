@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -32,7 +32,6 @@
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/View.hpp>
-#include <SFML/Graphics/Transform.hpp>
 #include <SFML/Graphics/BlendMode.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/PrimitiveType.hpp>
@@ -44,6 +43,7 @@ namespace sf
 {
 class Drawable;
 class VertexBuffer;
+class Transform;
 
 ////////////////////////////////////////////////////////////
 /// \brief Base class for all render targets (window, texture, ...)

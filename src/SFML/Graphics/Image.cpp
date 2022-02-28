@@ -32,6 +32,7 @@
     #include <SFML/System/Android/ResourceStream.hpp>
 #endif
 #include <algorithm>
+#include <ostream>
 #include <cstring>
 
 
@@ -53,12 +54,28 @@ Image::~Image()
 
 
 ////////////////////////////////////////////////////////////
+Image::Image(const Image&) = default;
+
+
+////////////////////////////////////////////////////////////
+Image& Image::operator=(const Image&) = default;
+
+
+////////////////////////////////////////////////////////////
+Image::Image(Image&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
+Image& Image::operator=(Image&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
 void Image::create(unsigned int width, unsigned int height, const Color& color)
 {
     if (width && height)
     {
         // Create a new pixel buffer first for exception safety's sake
-        std::vector<Uint8> newPixels(width * height * 4);
+        std::vector<Uint8> newPixels(static_cast<std::size_t>(width) * static_cast<std::size_t>(height) * 4);
 
         // Fill it with the specified color
         Uint8* ptr = newPixels.data();
@@ -118,7 +135,7 @@ void Image::create(unsigned int width, unsigned int height, const Uint8* pixels)
 
 
 ////////////////////////////////////////////////////////////
-bool Image::loadFromFile(const std::string& filename)
+bool Image::loadFromFile(const std::filesystem::path& filename)
 {
     #ifndef SFML_SYSTEM_ANDROID
 
@@ -148,7 +165,7 @@ bool Image::loadFromStream(InputStream& stream)
 
 
 ////////////////////////////////////////////////////////////
-bool Image::saveToFile(const std::string& filename) const
+bool Image::saveToFile(const std::filesystem::path& filename) const
 {
     return priv::ImageLoader::getInstance().saveImageToFile(filename, m_pixels, m_size);
 }

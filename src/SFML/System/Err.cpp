@@ -31,6 +31,7 @@
 #include <cstdio>
 #include <ostream>
 #include <string>
+#include <filesystem>
 
 
 namespace
@@ -44,7 +45,7 @@ public:
     DefaultErrStreamBuf()
     {
         // Allocate the write buffer
-        static const int size = 64;
+        constexpr int size = 64;
         char* buffer = new char[size];
         setp(buffer, buffer + size);
     }
@@ -124,6 +125,7 @@ ErrorOStream& operator<<(ErrorOStream& e, double x)                            {
 ErrorOStream& operator<<(ErrorOStream& e, long double x)                       { (*e.os) << x; return e; }
 ErrorOStream& operator<<(ErrorOStream& e, const std::string& x)                { (*e.os) << x; return e; }
 ErrorOStream& operator<<(ErrorOStream& e, std::ios_base& (*x)(std::ios_base&)) { (*e.os) << x; return e; }
+ErrorOStream& operator<<(ErrorOStream& e, const std::filesystem::path& x)      { (*e.os) << x; return e; }
 
 }
 

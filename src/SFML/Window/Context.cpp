@@ -29,6 +29,7 @@
 #include <SFML/Window/GlContext.hpp>
 #include <SFML/System/Err.hpp>
 #include <cstddef>
+#include <ostream>
 
 
 namespace

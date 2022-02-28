@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -93,15 +93,15 @@ public:
     ////////////////////////////////////////////////////////////
     // Static member data
     ////////////////////////////////////////////////////////////
-    inline static constexpr ColorInit Black{0, 0, 0, 255};       //!< Black predefined color
-    inline static constexpr ColorInit White{255, 255, 255, 255}; //!< White predefined color
-    inline static constexpr ColorInit Red{255, 0, 0, 255};       //!< Red predefined color
-    inline static constexpr ColorInit Green{0, 255, 0, 255};     //!< Green predefined color
-    inline static constexpr ColorInit Blue{0, 0, 255, 255};      //!< Blue predefined color
-    inline static constexpr ColorInit Yellow{255, 255, 0, 255};  //!< Yellow predefined color
-    inline static constexpr ColorInit Magenta{255, 0, 255, 255}; //!< Magenta predefined color
-    inline static constexpr ColorInit Cyan{0, 255, 255, 255};    //!< Cyan predefined color
-    inline static constexpr ColorInit Transparent{0, 0, 0, 0};   //!< Transparent (black) predefined color
+    static const Color Black;       //!< Black predefined color
+    static const Color White;       //!< White predefined color
+    static const Color Red;         //!< Red predefined color
+    static const Color Green;       //!< Green predefined color
+    static const Color Blue;        //!< Blue predefined color
+    static const Color Yellow;      //!< Yellow predefined color
+    static const Color Magenta;     //!< Magenta predefined color
+    static const Color Cyan;        //!< Cyan predefined color
+    static const Color Transparent; //!< Transparent (black) predefined color
 
     ////////////////////////////////////////////////////////////
     // Member data

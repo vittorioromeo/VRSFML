@@ -29,7 +29,10 @@
 #include <SFML/Audio/ALCheck.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Priv/MinMax.hpp>
+#include <SFML/System/Time.hpp>
+#include <fstream>
 #include <mutex>
+#include <ostream>
 
 #if defined(__APPLE__)
     #if defined(__clang__)
@@ -59,7 +62,7 @@ Music::~Music()
 
 
 ////////////////////////////////////////////////////////////
-bool Music::openFromFile(const std::string& filename)
+bool Music::openFromFile(const std::filesystem::path& filename)
 {
     // First stop the music if it was already running
     stop();
@@ -246,7 +249,7 @@ void Music::initialize()
     m_loopSpan.length = m_file.getSampleCount();
 
     // Resize the internal buffer so that it can contain 1 second of audio samples
-    m_samples.resize(m_file.getSampleRate() * m_file.getChannelCount());
+    m_samples.resize(static_cast<std::size_t>(m_file.getSampleRate()) * static_cast<std::size_t>(m_file.getChannelCount()));
 
     // Initialize the stream
     SoundStream::initialize(m_file.getChannelCount(), m_file.getSampleRate());

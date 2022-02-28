@@ -33,6 +33,8 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Priv/MinMax.hpp>
 #include <ApplicationServices/ApplicationServices.h>
+#include <algorithm>
+#include <ostream>
 
 #import <SFML/Window/OSX/NSImage+raw.h>
 #import <SFML/Window/OSX/Scaling.h>

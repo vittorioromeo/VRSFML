@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -48,7 +48,7 @@ template <typename In>
 In Utf<8>::decode(In begin, In end, Uint32& output, Uint32 replacement)
 {
     // Some useful precomputed data
-    static const int trailing[256] =
+    static constexpr int trailing[256] =
     {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -59,7 +59,7 @@ In Utf<8>::decode(In begin, In end, Uint32& output, Uint32 replacement)
         1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
         2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5
     };
-    static const Uint32 offsets[6] =
+    static constexpr Uint32 offsets[6] =
     {
         0x00000000, 0x00003080, 0x000E2080, 0x03C82080, 0xFA082080, 0x82082080
     };
@@ -96,7 +96,7 @@ template <typename Out>
 Out Utf<8>::encode(Uint32 input, Out output, Uint8 replacement)
 {
     // Some useful precomputed data
-    static const Uint8 firstBytes[7] =
+    static constexpr Uint8 firstBytes[7] =
     {
         0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC
     };
@@ -465,7 +465,7 @@ Out Utf<16>::toLatin1(In begin, In end, Out output, char replacement)
     while (begin < end)
     {
         *output++ = *begin < 256 ? static_cast<char>(*begin) : replacement;
-        begin++;
+        ++begin;
     }
 
     return output;
@@ -607,7 +607,7 @@ Out Utf<32>::toLatin1(In begin, In end, Out output, char replacement)
     while (begin < end)
     {
         *output++ = *begin < 256 ? static_cast<char>(*begin) : replacement;
-        begin++;
+        ++begin;
     }
 
     return output;

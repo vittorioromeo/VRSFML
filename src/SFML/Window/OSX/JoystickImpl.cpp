@@ -31,6 +31,7 @@
 #include <SFML/Window/OSX/HIDInputManager.hpp>
 #include <SFML/Window/OSX/HIDJoystickManager.hpp>
 #include <SFML/System/Err.hpp>
+#include <ostream>
 
 
 namespace
@@ -127,7 +128,7 @@ bool JoystickImpl::isConnected(unsigned int index)
         for (unsigned int i(0); i < sf::Joystick::Count; ++i)
         {
             if (m_locationIDs[i] != 0)
-                openedCount++;
+                ++openedCount;
         }
 
 
@@ -384,7 +385,7 @@ Joystick::Identification JoystickImpl::getIdentification() const
 JoystickState JoystickImpl::update()
 {
     AutoreleasePool pool;
-    static const JoystickState disconnectedState; // return this if joystick was disconnected
+    static constexpr JoystickState disconnectedState; // return this if joystick was disconnected
     JoystickState state; // otherwise return that
     state.connected = true;
 

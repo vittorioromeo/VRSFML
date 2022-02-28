@@ -29,6 +29,7 @@
 #include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/WindowImpl.hpp>
 #include <SFML/System/Err.hpp>
+#include <ostream>
 
 
 namespace
@@ -73,7 +74,7 @@ m_size(0, 0)
 ////////////////////////////////////////////////////////////
 WindowBase::~WindowBase()
 {
-    close();
+    WindowBase::close();
 }
 
 
