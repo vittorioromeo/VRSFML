@@ -369,7 +369,7 @@ function(sfml_add_test target SOURCES DEPENDS)
     endif()
 
     # Add the test
-    doctest_discover_tests(${target})
+    catch_discover_tests(${target})
 endfunction()
 
 # Create an interface library for an external dependency. This virtual target can provide

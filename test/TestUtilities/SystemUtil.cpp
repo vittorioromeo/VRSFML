@@ -2,7 +2,8 @@
 #include <SFML/System/String.hpp>
 #include <SFML/System/Time.hpp>
 
-#include <doctest/doctest.h>
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include <SystemUtil.hpp>
 
@@ -27,7 +28,7 @@ std::ostream& operator<<(std::ostream& os, Time time)
 
 bool operator==(const float& lhs, const Approx<float>& rhs)
 {
-    return static_cast<double>(lhs) == doctest::Approx(static_cast<double>(rhs.value));
+    return static_cast<double>(lhs) == Catch::Approx(static_cast<double>(rhs.value)).margin(1e-5);
 }
 
 bool operator==(const sf::Vector2f& lhs, const Approx<sf::Vector2f>& rhs)

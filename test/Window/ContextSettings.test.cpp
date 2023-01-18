@@ -1,6 +1,6 @@
 #include <SFML/Window/ContextSettings.hpp>
 
-#include <doctest/doctest.h>
+#include <catch2/catch_test_macros.hpp>
 
 #include <type_traits>
 
@@ -11,9 +11,9 @@ static_assert(std::is_nothrow_move_assignable_v<sf::ContextSettings>);
 
 TEST_CASE("[Window] sf::ContextSettings")
 {
-    SUBCASE("Construction")
+    SECTION("Construction")
     {
-        SUBCASE("Default constructor")
+        SECTION("Default constructor")
         {
             const sf::ContextSettings contextSettings;
             CHECK(contextSettings.depthBits == 0);
@@ -25,7 +25,7 @@ TEST_CASE("[Window] sf::ContextSettings")
             CHECK(contextSettings.sRgbCapable == false);
         }
 
-        SUBCASE("Verbose constructor")
+        SECTION("Verbose constructor")
         {
             const sf::ContextSettings contextSettings(1, 1, 2, 3, 5, sf::ContextSettings::Core, true);
             CHECK(contextSettings.depthBits == 1);
