@@ -1,10 +1,11 @@
 #include <SFML/Graphics/Transform.hpp>
 #include <SFML/System/Angle.hpp>
 
-#include <doctest/doctest.h>
+#include <catch2/catch_test_macros.hpp>
 
 #include <GraphicsUtil.hpp>
 #include <cassert>
+#include <sstream>
 #include <type_traits>
 #include <vector>
 
@@ -13,34 +14,16 @@ static_assert(std::is_copy_assignable_v<sf::Transform>);
 static_assert(std::is_nothrow_move_constructible_v<sf::Transform>);
 static_assert(std::is_nothrow_move_assignable_v<sf::Transform>);
 
-// Use StringMaker to avoid opening namespace std
-namespace doctest
-{
-template <>
-struct StringMaker<std::vector<float>>
-{
-    static String convert(const std::vector<float>& vector)
-    {
-        assert(!vector.empty());
-        doctest::String out = "{ ";
-        for (std::size_t i = 0; i + 1 < vector.size(); ++i)
-            out += toString(vector[i]) + ", ";
-        out += toString(vector.back()) + " }";
-        return out;
-    }
-};
-} // namespace doctest
-
 TEST_CASE("[Graphics] sf::Transform")
 {
-    SUBCASE("Construction")
+    SECTION("Construction")
     {
-        SUBCASE("Default constructor")
+        SECTION("Default constructor")
         {
             CHECK(sf::Transform() == sf::Transform::Identity);
         }
 
-        SUBCASE("3x3 matrix constructor")
+        SECTION("3x3 matrix constructor")
         {
             const sf::Transform      transform(10.0f, 11.0f, 12.0f, 13.0f, 14.0f, 15.0f, 16.0f, 17.0f, 18.0f);
             const std::vector<float> matrix(transform.getMatrix(), transform.getMatrix() + 16);
@@ -50,14 +33,14 @@ TEST_CASE("[Graphics] sf::Transform")
         }
     }
 
-    SUBCASE("Identity matrix")
+    SECTION("Identity matrix")
     {
         const std::vector<float> matrix(sf::Transform::Identity.getMatrix(), sf::Transform::Identity.getMatrix() + 16);
         CHECK(matrix ==
               std::vector<float>{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f});
     }
 
-    SUBCASE("getInverse()")
+    SECTION("getInverse()")
     {
         CHECK(sf::Transform::Identity.getInverse() == sf::Transform::Identity);
         CHECK(sf::Transform(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f).getInverse() == sf::Transform::Identity);
@@ -65,7 +48,7 @@ TEST_CASE("[Graphics] sf::Transform")
               sf::Transform(0.375f, -0.5f, 0.875f, -1.0f, 1.0f, -1.0f, 0.875f, -0.5f, 0.375f));
     }
 
-    SUBCASE("transformPoint()")
+    SECTION("transformPoint()")
     {
         CHECK(sf::Transform::Identity.transformPoint({-10.0f, -10.0f}) == sf::Vector2f(-10.0f, -10.0f));
         CHECK(sf::Transform::Identity.transformPoint({-1.0f, -1.0f}) == sf::Vector2f(-1.0f, -1.0f));
@@ -81,7 +64,7 @@ TEST_CASE("[Graphics] sf::Transform")
         CHECK(transform.transformPoint({1.0f, 1.0f}) == sf::Vector2f(6.0f, 13.0f));
     }
 
-    SUBCASE("transformRect()")
+    SECTION("transformRect()")
     {
         CHECK(sf::Transform::Identity.transformRect({{-200.0f, -200.0f}, {-100.0f, -100.0f}}) ==
               sf::FloatRect({-300.0f, -300.0f}, {100.0f, 100.0f}));
@@ -98,7 +81,7 @@ TEST_CASE("[Graphics] sf::Transform")
               sf::FloatRect({303.0f, 904.0f}, {600.0f, 1800.0f}));
     }
 
-    SUBCASE("combine()")
+    SECTION("combine()")
     {
         auto identity = sf::Transform::Identity;
         CHECK(identity.combine(sf::Transform::Identity) == sf::Transform::Identity);
@@ -112,23 +95,23 @@ TEST_CASE("[Graphics] sf::Transform")
               sf::Transform(672.0f, 1216.0f, 914.0f, 1604.0f, 2842.0f, 2108.0f, 752.0f, 1288.0f, 942.0f));
     }
 
-    SUBCASE("translate()")
+    SECTION("translate()")
     {
         sf::Transform transform(9, 8, 7, 6, 5, 4, 3, 2, 1);
         CHECK(transform.translate({10.0f, 20.0f}) == sf::Transform(9, 8, 257, 6, 5, 164, 3, 2, 71));
         CHECK(transform.translate({10.0f, 20.0f}) == sf::Transform(9, 8, 507, 6, 5, 324, 3, 2, 141));
     }
 
-    SUBCASE("rotate()")
+    SECTION("rotate()")
     {
-        SUBCASE("Around origin")
+        SECTION("Around origin")
         {
             sf::Transform transform;
             transform.rotate(sf::degrees(90));
             CHECK(transform == Approx(sf::Transform(0, -1, 0, 1, 0, 0, 0, 0, 1)));
         }
 
-        SUBCASE("Around custom point")
+        SECTION("Around custom point")
         {
             sf::Transform transform;
             transform.rotate(sf::degrees(90), {1.0f, 0.0f});
@@ -136,9 +119,9 @@ TEST_CASE("[Graphics] sf::Transform")
         }
     }
 
-    SUBCASE("scale()")
+    SECTION("scale()")
     {
-        SUBCASE("About origin")
+        SECTION("About origin")
         {
             sf::Transform transform(1, 2, 3, 4, 5, 4, 3, 2, 1);
             CHECK(transform.scale({2.0f, 4.0f}) == sf::Transform(2, 8, 3, 8, 20, 4, 6, 8, 1));
@@ -146,7 +129,7 @@ TEST_CASE("[Graphics] sf::Transform")
             CHECK(transform.scale({10.0f, 10.0f}) == sf::Transform(0, 0, 3, 0, 0, 4, 0, 0, 1));
         }
 
-        SUBCASE("About custom point")
+        SECTION("About custom point")
         {
             sf::Transform transform(1, 2, 3, 4, 5, 4, 3, 2, 1);
             CHECK(transform.scale({1.0f, 2.0f}, {1.0f, 0.0f}) == sf::Transform(1, 4, 3, 4, 10, 4, 3, 4, 1));
@@ -154,9 +137,9 @@ TEST_CASE("[Graphics] sf::Transform")
         }
     }
 
-    SUBCASE("Operators")
+    SECTION("Operators")
     {
-        SUBCASE("operator*")
+        SECTION("operator*")
         {
             CHECK(sf::Transform::Identity * sf::Transform::Identity == sf::Transform::Identity);
             CHECK(sf::Transform::Identity * sf::Transform::Identity * sf::Transform::Identity == sf::Transform::Identity);
@@ -169,7 +152,7 @@ TEST_CASE("[Graphics] sf::Transform")
                   sf::Transform(108.0f, 162.0f, 113.0f, 180.0f, 338.0f, 252.0f, 68.0f, 126.0f, 99.0f));
         }
 
-        SUBCASE("operator*=")
+        SECTION("operator*=")
         {
             sf::Transform transform(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 4.0f, 3.0f, 2.0f, 1.0f);
             transform *= sf::Transform::Identity;
@@ -180,7 +163,7 @@ TEST_CASE("[Graphics] sf::Transform")
             CHECK(transform == sf::Transform(672.0f, 1216.0f, 914.0f, 1604.0f, 2842.0f, 2108.0f, 752.0f, 1288.0f, 942.0f));
         }
 
-        SUBCASE("operator* with vector")
+        SECTION("operator* with vector")
         {
             CHECK(sf::Transform::Identity * sf::Vector2f(-10.0f, -10.0f) == sf::Vector2f(-10.0f, -10.0f));
             CHECK(sf::Transform::Identity * sf::Vector2f(-1.0f, -1.0f) == sf::Vector2f(-1.0f, -1.0f));
@@ -196,7 +179,7 @@ TEST_CASE("[Graphics] sf::Transform")
             CHECK(transform * sf::Vector2f(1.0f, 1.0f) == sf::Vector2f(6.0f, 13.0f));
         }
 
-        SUBCASE("operator==")
+        SECTION("operator==")
         {
             CHECK(sf::Transform::Identity == sf::Transform::Identity);
             CHECK(sf::Transform() == sf::Transform());
@@ -207,7 +190,7 @@ TEST_CASE("[Graphics] sf::Transform")
                   sf::Transform(1000.0f, 1000.0f, 1000.0f, 1000.0f, 1000.0f, 1000.0f, 1000.0f, 1000.0f, 1000.0f));
         }
 
-        SUBCASE("operator!=")
+        SECTION("operator!=")
         {
             CHECK_FALSE(sf::Transform::Identity != sf::Transform::Identity);
             CHECK_FALSE(sf::Transform() != sf::Transform());

@@ -1,6 +1,6 @@
 #include <SFML/Window/Cursor.hpp>
 
-#include <doctest/doctest.h>
+#include <catch2/catch_test_macros.hpp>
 
 #include <WindowUtil.hpp>
 #include <array>
@@ -12,14 +12,14 @@ static_assert(!std::is_nothrow_move_constructible_v<sf::Cursor>);
 static_assert(!std::is_nothrow_move_assignable_v<sf::Cursor>);
 
 // Skip these tests because they fail when using DRM which hasn't implemented sf::Cursor
-TEST_CASE("[Window] sf::Cursor" * doctest::skip(true))
+TEST_CASE("[Window] sf::Cursor", "[.]")
 {
-    SUBCASE("Construction")
+    SECTION("Construction")
     {
         const sf::Cursor cursor;
     }
 
-    SUBCASE("loadFromPixels()")
+    SECTION("loadFromPixels()")
     {
         sf::Cursor                  cursor;
         std::array<std::uint8_t, 4> pixels{};
@@ -30,7 +30,7 @@ TEST_CASE("[Window] sf::Cursor" * doctest::skip(true))
         CHECK(cursor.loadFromPixels(pixels.data(), {1, 1}, {}));
     }
 
-    SUBCASE("loadFromSystem()")
+    SECTION("loadFromSystem()")
     {
         sf::Cursor cursor;
         CHECK(cursor.loadFromSystem(sf::Cursor::Hand));

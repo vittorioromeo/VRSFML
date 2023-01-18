@@ -1,6 +1,6 @@
 #include <SFML/System/Vector2.hpp>
 
-#include <doctest/doctest.h>
+#include <catch2/catch_test_macros.hpp>
 
 #include <SystemUtil.hpp>
 #include <cmath>
@@ -18,23 +18,23 @@ static_assert(std::is_nothrow_move_assignable_v<sf::Vector2i>);
 
 TEST_CASE("[System] sf::Vector2")
 {
-    SUBCASE("Construction")
+    SECTION("Construction")
     {
-        SUBCASE("Default constructor")
+        SECTION("Default constructor")
         {
             const sf::Vector2i vector;
             CHECK(vector.x == 0);
             CHECK(vector.y == 0);
         }
 
-        SUBCASE("(x, y) coordinate constructor")
+        SECTION("(x, y) coordinate constructor")
         {
             const sf::Vector2i vector(1, 2);
             CHECK(vector.x == 1);
             CHECK(vector.y == 2);
         }
 
-        SUBCASE("Conversion constructor")
+        SECTION("Conversion constructor")
         {
             const sf::Vector2f sourceVector(1.0f, 2.0f);
             const sf::Vector2i vector(sourceVector);
@@ -43,7 +43,7 @@ TEST_CASE("[System] sf::Vector2")
             CHECK(vector.y == static_cast<int>(sourceVector.y));
         }
 
-        SUBCASE("Length and angle constructor")
+        SECTION("Length and angle constructor")
         {
             CHECK(sf::Vector2f(0, 0_deg) == sf::Vector2f(0, 0));
             CHECK(sf::Vector2f(0, 45_deg) == sf::Vector2f(0, 0));
@@ -97,9 +97,9 @@ TEST_CASE("[System] sf::Vector2")
         }
     }
 
-    SUBCASE("Unary operations")
+    SECTION("Unary operations")
     {
-        SUBCASE("-vector")
+        SECTION("-vector")
         {
             const sf::Vector2i vector(1, 2);
             const sf::Vector2i negatedVector = -vector;
@@ -109,12 +109,12 @@ TEST_CASE("[System] sf::Vector2")
         }
     }
 
-    SUBCASE("Arithmetic operations between two vectors")
+    SECTION("Arithmetic operations between two vectors")
     {
         sf::Vector2i       firstVector(2, 5);
         const sf::Vector2i secondVector(8, 3);
 
-        SUBCASE("vector += vector")
+        SECTION("vector += vector")
         {
             firstVector += secondVector;
 
@@ -122,7 +122,7 @@ TEST_CASE("[System] sf::Vector2")
             CHECK(firstVector.y == 8);
         }
 
-        SUBCASE("vector -= vector")
+        SECTION("vector -= vector")
         {
             firstVector -= secondVector;
 
@@ -130,7 +130,7 @@ TEST_CASE("[System] sf::Vector2")
             CHECK(firstVector.y == 2);
         }
 
-        SUBCASE("vector + vector")
+        SECTION("vector + vector")
         {
             const sf::Vector2i result = firstVector + secondVector;
 
@@ -138,7 +138,7 @@ TEST_CASE("[System] sf::Vector2")
             CHECK(result.y == 8);
         }
 
-        SUBCASE("vector - vector")
+        SECTION("vector - vector")
         {
             const sf::Vector2i result = firstVector - secondVector;
 
@@ -147,12 +147,12 @@ TEST_CASE("[System] sf::Vector2")
         }
     }
 
-    SUBCASE("Arithmetic operations between vector and scalar value")
+    SECTION("Arithmetic operations between vector and scalar value")
     {
         sf::Vector2i vector(26, 12);
         const int    scalar = 2;
 
-        SUBCASE("vector * scalar")
+        SECTION("vector * scalar")
         {
             const sf::Vector2i result = vector * scalar;
 
@@ -160,7 +160,7 @@ TEST_CASE("[System] sf::Vector2")
             CHECK(result.y == 24);
         }
 
-        SUBCASE("scalar * vector")
+        SECTION("scalar * vector")
         {
             const sf::Vector2i result = scalar * vector;
 
@@ -168,7 +168,7 @@ TEST_CASE("[System] sf::Vector2")
             CHECK(result.y == 24);
         }
 
-        SUBCASE("vector *= scalar")
+        SECTION("vector *= scalar")
         {
             vector *= scalar;
 
@@ -176,7 +176,7 @@ TEST_CASE("[System] sf::Vector2")
             CHECK(vector.y == 24);
         }
 
-        SUBCASE("vector / scalar")
+        SECTION("vector / scalar")
         {
             const sf::Vector2i result = vector / scalar;
 
@@ -184,7 +184,7 @@ TEST_CASE("[System] sf::Vector2")
             CHECK(result.y == 6);
         }
 
-        SUBCASE("vector /= scalar")
+        SECTION("vector /= scalar")
         {
             vector /= scalar;
 
@@ -193,30 +193,30 @@ TEST_CASE("[System] sf::Vector2")
         }
     }
 
-    SUBCASE("Comparison operations (two equal and one different vector)")
+    SECTION("Comparison operations (two equal and one different vector)")
     {
         const sf::Vector2i firstEqualVector(1, 5);
         const sf::Vector2i secondEqualVector(1, 5);
         const sf::Vector2i differentVector(6, 9);
 
-        SUBCASE("vector == vector")
+        SECTION("vector == vector")
         {
             CHECK(firstEqualVector == secondEqualVector);
             CHECK_FALSE(firstEqualVector == differentVector);
         }
 
-        SUBCASE("vector != vector")
+        SECTION("vector != vector")
         {
             CHECK(firstEqualVector != differentVector);
             CHECK_FALSE(firstEqualVector != secondEqualVector);
         }
     }
 
-    SUBCASE("Structured bindings")
+    SECTION("Structured bindings")
     {
         sf::Vector2i vector(1, 2);
 
-        SUBCASE("destructure by value")
+        SECTION("destructure by value")
         {
             auto [x, y] = vector;
 
@@ -231,7 +231,7 @@ TEST_CASE("[System] sf::Vector2")
             CHECK(vector.x == 1);
         }
 
-        SUBCASE("destructure by ref")
+        SECTION("destructure by ref")
         {
             auto& [x, y] = vector;
 
@@ -247,7 +247,7 @@ TEST_CASE("[System] sf::Vector2")
         }
     }
 
-    SUBCASE("Length and normalization")
+    SECTION("Length and normalization")
     {
         const sf::Vector2f v(2.4f, 3.0f);
 
@@ -262,7 +262,7 @@ TEST_CASE("[System] sf::Vector2")
         CHECK(w.normalized() == Approx(sf::Vector2f(-0.303204f, -0.952926f)));
     }
 
-    SUBCASE("Rotations and angles")
+    SECTION("Rotations and angles")
     {
         const sf::Vector2f v(2.4f, 3.0f);
 
@@ -291,7 +291,7 @@ TEST_CASE("[System] sf::Vector2")
         CHECK(v.rotatedBy(-36.11_deg) == Approx(sf::Vector2f(3.70694f, 1.00925f)));
     }
 
-    SUBCASE("Products and quotients")
+    SECTION("Products and quotients")
     {
         const sf::Vector2f v(2.4f, 3.0f);
         const sf::Vector2f w(-0.7f, -2.2f);
@@ -308,7 +308,7 @@ TEST_CASE("[System] sf::Vector2")
         CHECK(w.cwiseDiv(v) == Approx(sf::Vector2f(-0.291666f, -0.733333f)));
     }
 
-    SUBCASE("Projection")
+    SECTION("Projection")
     {
         const sf::Vector2f v(2.4f, 3.0f);
         const sf::Vector2f w(-0.7f, -2.2f);
@@ -323,7 +323,7 @@ TEST_CASE("[System] sf::Vector2")
         CHECK(v.projectedOnto(sf::Vector2f::UnitY) == Approx(sf::Vector2f(0.0f, 3.0f)));
     }
 
-    SUBCASE("Constexpr support")
+    SECTION("Constexpr support")
     {
         constexpr sf::Vector2i v(1, 2);
         constexpr sf::Vector2i w(2, -3);

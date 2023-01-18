@@ -1,10 +1,10 @@
 #include <SFML/Config.hpp>
 
-#include <doctest/doctest.h>
+#include <catch2/catch_test_macros.hpp>
 
 TEST_CASE("[System] SFML/Config.hpp")
 {
-    SUBCASE("Version macros")
+    SECTION("Version macros")
     {
         CHECK(SFML_VERSION_MAJOR == EXPECTED_SFML_VERSION_MAJOR);
         CHECK(SFML_VERSION_MINOR == EXPECTED_SFML_VERSION_MINOR);

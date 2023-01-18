@@ -1,6 +1,6 @@
 #include <SFML/Graphics/Transformable.hpp>
 
-#include <doctest/doctest.h>
+#include <catch2/catch_test_macros.hpp>
 
 #include <GraphicsUtil.hpp>
 #include <type_traits>
@@ -12,7 +12,7 @@ static_assert(std::is_nothrow_move_assignable_v<sf::Transformable>);
 
 TEST_CASE("[Graphics] sf::Transformable")
 {
-    SUBCASE("Construction")
+    SECTION("Construction")
     {
         const sf::Transformable transformable;
         CHECK(transformable.getPosition() == sf::Vector2f(0, 0));
@@ -23,7 +23,7 @@ TEST_CASE("[Graphics] sf::Transformable")
         CHECK(transformable.getInverseTransform() == sf::Transform());
     }
 
-    SUBCASE("Setters and getters")
+    SECTION("Setters and getters")
     {
         sf::Transformable transformable;
 
@@ -84,7 +84,7 @@ TEST_CASE("[Graphics] sf::Transformable")
         CHECK(transformable.getInverseTransform().getMatrix()[15] == Approx(inverseTransform.getMatrix()[15]));
     }
 
-    SUBCASE("move()")
+    SECTION("move()")
     {
         sf::Transformable transformable;
         CHECK(transformable.getPosition() == sf::Vector2f(0, 0));
@@ -94,7 +94,7 @@ TEST_CASE("[Graphics] sf::Transformable")
         CHECK(transformable.getPosition() == sf::Vector2f(-6, 12));
     }
 
-    SUBCASE("rotate()")
+    SECTION("rotate()")
     {
         sf::Transformable transformable;
         CHECK(transformable.getRotation() == sf::Angle::Zero);
@@ -110,7 +110,7 @@ TEST_CASE("[Graphics] sf::Transformable")
         CHECK(transformable.getRotation() == sf::degrees(340));
     }
 
-    SUBCASE("scale()")
+    SECTION("scale()")
     {
         sf::Transformable transformable;
         CHECK(transformable.getScale() == sf::Vector2f(1, 1));

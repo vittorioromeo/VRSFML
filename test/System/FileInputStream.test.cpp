@@ -1,6 +1,6 @@
 #include <SFML/System/FileInputStream.hpp>
 
-#include <doctest/doctest.h>
+#include <catch2/catch_test_macros.hpp>
 
 #include <cassert>
 #include <fstream>
@@ -66,7 +66,7 @@ public:
 
 TEST_CASE("[System] sf::FileInputStream")
 {
-    SUBCASE("Empty stream")
+    SECTION("Empty stream")
     {
         sf::FileInputStream fis;
 
@@ -75,7 +75,7 @@ TEST_CASE("[System] sf::FileInputStream")
         CHECK(fis.tell() == -1);
     }
 
-    SUBCASE("Temporary file stream")
+    SECTION("Temporary file stream")
     {
         const std::string fileContents = "hello world";
 
@@ -89,7 +89,7 @@ TEST_CASE("[System] sf::FileInputStream")
         CHECK(fis.read(buffer, 5) == 5);
         CHECK(std::string_view(buffer, 5) == std::string_view(fileContents.c_str(), 5));
 
-        SUBCASE("Move semantics")
+        SECTION("Move semantics")
         {
             sf::FileInputStream fis2 = std::move(fis);
 
