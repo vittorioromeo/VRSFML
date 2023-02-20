@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,15 +22,15 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_SFAPPDELEGATE_HPP
-#define SFML_SFAPPDELEGATE_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/iOS/WindowImplUIKit.hpp>
-#include <UIKit/UIKit.h>
+
 #include <CoreMotion/CoreMotion.h>
+#include <UIKit/UIKit.h>
 
 
 ////////////////////////////////////////////////////////////
@@ -39,13 +39,13 @@
 /// This class handles global application events.
 ///
 ////////////////////////////////////////////////////////////
-@interface SFAppDelegate : NSObject<UIApplicationDelegate>
+@interface SFAppDelegate : NSObject <UIApplicationDelegate>
 
 ////////////////////////////////////////////////////////////
 /// \brief Return the instance of the application delegate
 ///
 ////////////////////////////////////////////////////////////
-+(SFAppDelegate*)getInstance;
++ (SFAppDelegate*)getInstance;
 
 ////////////////////////////////////////////////////////////
 /// \brief Show or hide the virtual keyboard
@@ -98,7 +98,7 @@
 /// \param character The typed character
 ///
 ////////////////////////////////////////////////////////////
-- (void)notifyCharacter:(sf::Uint32)character;
+- (void)notifyCharacter:(std::uint32_t)character;
 
 ////////////////////////////////////////////////////////////
 /// \brief Tells if the dimensions of the current window must be flipped when switching to a given orientation
@@ -125,11 +125,8 @@
 ////////////////////////////////////////////////////////////
 // Member data
 ////////////////////////////////////////////////////////////
-@property (nonatomic) sf::priv::WindowImplUIKit* sfWindow; ///< Main window of the application
-@property (readonly, nonatomic) CMMotionManager* motionManager; ///< Instance of the motion manager
-@property (nonatomic) CGFloat backingScaleFactor;
+@property(nonatomic) sf::priv::WindowImplUIKit* sfWindow;      ///< Main window of the application
+@property(readonly, nonatomic) CMMotionManager* motionManager; ///< Instance of the motion manager
+@property(nonatomic) CGFloat                    backingScaleFactor;
 
 @end
-
-#endif // SFML_SFAPPDELEGATE_HPP
-

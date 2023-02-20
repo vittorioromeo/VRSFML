@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -27,34 +27,35 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Err.hpp>
 #include <SFML/Window/Unix/Display.hpp>
+
 #include <X11/keysym.h>
-#include <mutex>
-#include <unordered_map>
+
 #include <cassert>
 #include <cstdlib>
+#include <mutex>
+#include <ostream>
+#include <unordered_map>
 
 
 namespace
 {
-    // The shared display and its reference counter
-    Display* sharedDisplay = nullptr;
-    unsigned int referenceCount = 0;
-    XIM sharedXIM = NULL;
-    unsigned int referenceCountXIM = 0;
-    std::recursive_mutex mutex;
+// The shared display and its reference counter
+Display*             sharedDisplay     = nullptr;
+unsigned int         referenceCount    = 0;
+XIM                  sharedXIM         = nullptr;
+unsigned int         referenceCountXIM = 0;
+std::recursive_mutex mutex;
 
-    using AtomMap = std::unordered_map<std::string, Atom>;
-    AtomMap atoms;
-}
+using AtomMap = std::unordered_map<std::string, Atom>;
+AtomMap atoms;
+} // namespace
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-Display* OpenDisplay()
+Display* openDisplay()
 {
-    std::scoped_lock lock(mutex);
+    std::lock_guard lock(mutex);
 
     if (referenceCount == 0)
     {
@@ -69,27 +70,27 @@ Display* OpenDisplay()
         }
     }
 
-    referenceCount++;
+    ++referenceCount;
     return sharedDisplay;
 }
 
 
 ////////////////////////////////////////////////////////////
-void CloseDisplay(Display* display)
+void closeDisplay(Display* display)
 {
-    std::scoped_lock lock(mutex);
+    std::lock_guard lock(mutex);
 
     assert(display == sharedDisplay);
 
-    referenceCount--;
+    --referenceCount;
     if (referenceCount == 0)
         XCloseDisplay(display);
 }
 
 ////////////////////////////////////////////////////////////
-XIM OpenXIM()
+XIM openXim()
 {
-    std::scoped_lock lock(mutex);
+    std::lock_guard lock(mutex);
 
     assert(sharedDisplay != nullptr);
 
@@ -119,19 +120,19 @@ XIM OpenXIM()
             XSetLocaleModifiers(prevXLoc.c_str());
     }
 
-    referenceCountXIM++;
+    ++referenceCountXIM;
 
     return sharedXIM;
 }
 
 ////////////////////////////////////////////////////////////
-void CloseXIM(XIM xim)
+void closeXim(XIM xim)
 {
-    std::scoped_lock lock(mutex);
+    std::lock_guard lock(mutex);
 
     assert(xim == sharedXIM);
 
-    referenceCountXIM--;
+    --referenceCountXIM;
 
     if ((referenceCountXIM == 0) && (xim != nullptr))
         XCloseIM(xim);
@@ -143,17 +144,15 @@ Atom getAtom(const std::string& name, bool onlyIfExists)
     if (auto it = atoms.find(name); it != atoms.end())
         return it->second;
 
-    Display* display = OpenDisplay();
+    Display* display = openDisplay();
 
     Atom atom = XInternAtom(display, name.c_str(), onlyIfExists ? True : False);
 
-    CloseDisplay(display);
+    closeDisplay(display);
 
     atoms[name] = atom;
 
     return atom;
 }
 
-} // namespace priv
-
-} // namespace sf
+} // namespace sf::priv

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,13 +22,13 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_SFVIEW_HPP
-#define SFML_SFVIEW_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/iOS/EaglContext.hpp>
+
 #include <UIKit/UIKit.h>
 
 
@@ -37,7 +37,7 @@
 ///        (supports OpenGL and reports events)
 ///
 ////////////////////////////////////////////////////////////
-@interface SFView : UIView<UIKeyInput>
+@interface SFView : UIView <UIKeyInput>
 
 ////////////////////////////////////////////////////////////
 /// \brief Construct the view with its initial size
@@ -52,8 +52,6 @@
 ////////////////////////////////////////////////////////////
 // Member data
 ////////////////////////////////////////////////////////////
-@property (nonatomic) sf::priv::EaglContext* context; ///< The attached EAGL context
+@property(nonatomic) sf::priv::EaglContext* context; ///< The attached EAGL context
 
 @end
-
-#endif // SFML_SFVIEW_HPP

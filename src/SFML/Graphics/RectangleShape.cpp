@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -26,6 +26,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/RectangleShape.hpp>
+
 #include <cmath>
 
 
@@ -66,10 +67,14 @@ Vector2f RectangleShape::getPoint(std::size_t index) const
     switch (index)
     {
         default:
-        case 0: return Vector2f(0, 0);
-        case 1: return Vector2f(m_size.x, 0);
-        case 2: return Vector2f(m_size.x, m_size.y);
-        case 3: return Vector2f(0, m_size.y);
+        case 0:
+            return Vector2f(0, 0);
+        case 1:
+            return Vector2f(m_size.x, 0);
+        case 2:
+            return Vector2f(m_size.x, m_size.y);
+        case 3:
+            return Vector2f(0, m_size.y);
     }
 }
 

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,8 +22,7 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_DRAWABLE_HPP
-#define SFML_DRAWABLE_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -44,15 +43,13 @@ class RenderStates;
 class SFML_GRAPHICS_API Drawable
 {
 public:
-
     ////////////////////////////////////////////////////////////
     /// \brief Virtual destructor
     ///
     ////////////////////////////////////////////////////////////
-    virtual ~Drawable() {}
+    virtual ~Drawable() = default;
 
 protected:
-
     friend class RenderTarget;
 
     ////////////////////////////////////////////////////////////
@@ -66,13 +63,10 @@ protected:
     /// \param states Current render states
     ///
     ////////////////////////////////////////////////////////////
-    virtual void draw(RenderTarget& target, RenderStates states) const = 0;
+    virtual void draw(RenderTarget& target, const RenderStates& states) const = 0;
 };
 
 } // namespace sf
-
-
-#endif // SFML_DRAWABLE_HPP
 
 
 ////////////////////////////////////////////////////////////
@@ -100,14 +94,15 @@ protected:
 ///
 /// private:
 ///
-///     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
+///     void draw(sf::RenderTarget& target, const sf::RenderStates& states) const override
 ///     {
 ///         // You can draw other high-level objects
 ///         target.draw(m_sprite, states);
 ///
 ///         // ... or use the low-level API
-///         states.texture = &m_texture;
-///         target.draw(m_vertices, states);
+///         sf::RenderStates statesCopy(states);
+///         statesCopy.texture = &m_texture;
+///         target.draw(m_vertices, statesCopy);
 ///
 ///         // ... or draw with OpenGL directly
 ///         glBegin(GL_TRIANGLES);

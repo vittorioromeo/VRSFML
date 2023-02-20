@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,15 +22,15 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_TCPLISTENER_HPP
-#define SFML_TCPLISTENER_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Network/Export.hpp>
-#include <SFML/Network/Socket.hpp>
+
 #include <SFML/Network/IpAddress.hpp>
+#include <SFML/Network/Socket.hpp>
 
 
 namespace sf
@@ -44,7 +44,6 @@ class TcpSocket;
 class SFML_NETWORK_API TcpListener : public Socket
 {
 public:
-
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
@@ -119,9 +118,6 @@ public:
 } // namespace sf
 
 
-#endif // SFML_TCPLISTENER_HPP
-
-
 ////////////////////////////////////////////////////////////
 /// \class sf::TcpListener
 /// \ingroup network
@@ -159,7 +155,7 @@ public:
 ///     if (listener.accept(client) == sf::Socket::Done)
 ///     {
 ///         // A new client just connected!
-///         std::cout << "New connection received from " << client.getRemoteAddress() << std::endl;
+///         std::cout << "New connection received from " << client.getRemoteAddress().value() << std::endl;
 ///         doSomethingWith(client);
 ///     }
 /// }

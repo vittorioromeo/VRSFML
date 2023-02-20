@@ -1,10 +1,10 @@
-#ifndef EFFECT_HPP
-#define EFFECT_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics.hpp>
+
 #include <cassert>
 #include <string>
 
@@ -15,10 +15,7 @@
 class Effect : public sf::Drawable
 {
 public:
-
-    ~Effect() override
-    {
-    }
+    ~Effect() override = default;
 
     static void setFont(const sf::Font& font)
     {
@@ -41,7 +38,7 @@ public:
             onUpdate(time, x, y);
     }
 
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override
+    void draw(sf::RenderTarget& target, const sf::RenderStates& states) const override
     {
         if (m_isLoaded)
         {
@@ -57,10 +54,7 @@ public:
     }
 
 protected:
-
-    Effect(const std::string& name) :
-    m_name(name),
-    m_isLoaded(false)
+    Effect(const std::string& name) : m_name(name)
     {
     }
 
@@ -71,18 +65,14 @@ protected:
     }
 
 private:
-
     // Virtual functions to be implemented in derived effects
-    virtual bool onLoad() = 0;
-    virtual void onUpdate(float time, float x, float y) = 0;
-    virtual void onDraw(sf::RenderTarget& target, sf::RenderStates states) const = 0;
-
-private:
+    virtual bool onLoad()                                                               = 0;
+    virtual void onUpdate(float time, float x, float y)                                 = 0;
+    virtual void onDraw(sf::RenderTarget& target, const sf::RenderStates& states) const = 0;
 
     std::string m_name;
-    bool m_isLoaded;
+    bool        m_isLoaded{};
 
+    // NOLINTNEXTLINE(readability-identifier-naming)
     static const sf::Font* s_font;
 };
-
-#endif // EFFECT_HPP

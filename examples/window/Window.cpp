@@ -2,6 +2,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Window.hpp>
+
 #include <cstdlib>
 
 #define GLAD_GL_IMPLEMENTATION
@@ -11,8 +12,9 @@
 #include <SFML/Main.hpp>
 #endif
 
-#include <iostream>
+#include <array>
 #include <cstdlib>
+#include <iostream>
 
 ////////////////////////////////////////////////////////////
 /// Entry point of application
@@ -27,7 +29,7 @@ int main()
     contextSettings.depthBits = 24;
 
     // Create the main window
-    sf::Window window(sf::VideoMode(640, 480), "SFML window with OpenGL", sf::Style::Default, contextSettings);
+    sf::Window window(sf::VideoMode({640, 480}), "SFML window with OpenGL", sf::Style::Default, contextSettings);
 
     // Make it the active window for OpenGL calls
     if (!window.setActive())
@@ -73,7 +75,8 @@ int main()
 #endif
 
     // Define a 3D cube (6 faces made of 2 triangles composed by 3 vertices)
-    GLfloat cube[] =
+    // clang-format off
+    constexpr std::array<GLfloat, 252> cube =
     {
         // positions    // colors (r, g, b, a)
         -50, -50, -50,  0, 0, 1, 1,
@@ -118,12 +121,13 @@ int main()
          50, -50,  50,  1, 1, 0, 1,
          50,  50,  50,  1, 1, 0, 1,
     };
+    // clang-format on
 
     // Enable position and color vertex components
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);
-    glVertexPointer(3, GL_FLOAT, 7 * sizeof(GLfloat), cube);
-    glColorPointer(4, GL_FLOAT, 7 * sizeof(GLfloat), cube + 3);
+    glVertexPointer(3, GL_FLOAT, 7 * sizeof(GLfloat), cube.data());
+    glColorPointer(4, GL_FLOAT, 7 * sizeof(GLfloat), cube.data() + 3);
 
     // Disable normal and texture coordinates vertex components
     glDisableClientState(GL_NORMAL_ARRAY);
@@ -136,8 +140,7 @@ int main()
     while (window.isOpen())
     {
         // Process events
-        sf::Event event;
-        while (window.pollEvent(event))
+        for (sf::Event event; window.pollEvent(event);)
         {
             // Close window: exit
             if (event.type == sf::Event::Closed)

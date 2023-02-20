@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -25,42 +25,48 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Unix/WindowImplX11.hpp>
+
+#include <SFML/System/Err.hpp>
+#include <SFML/System/Sleep.hpp>
+#include <SFML/System/String.hpp>
+#include <SFML/System/Time.hpp>
+#include <SFML/System/Utf.hpp>
 #include <SFML/Window/Unix/ClipboardImpl.hpp>
 #include <SFML/Window/Unix/Display.hpp>
 #include <SFML/Window/Unix/InputImpl.hpp>
-#include <SFML/System/String.hpp>
-#include <SFML/System/Utf.hpp>
-#include <SFML/System/Err.hpp>
-#include <SFML/System/Sleep.hpp>
-#include <SFML/System/Time.hpp>
+#include <SFML/Window/Unix/KeyboardImpl.hpp>
+#include <SFML/Window/Unix/WindowImplX11.hpp>
 
 #include <X11/Xlibint.h>
 #undef min // Defined by `Xlibint.h`, conflicts with standard headers
 #undef max // Defined by `Xlibint.h`, conflicts with standard headers
 
-#include <X11/Xutil.h>
 #include <X11/Xatom.h>
-#include <X11/keysym.h>
+#include <X11/Xutil.h>
 #include <X11/extensions/Xrandr.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <libgen.h>
-#include <fcntl.h>
+#include <X11/keysym.h>
+
 #include <algorithm>
-#include <vector>
-#include <string>
-#include <cstring>
+#include <bitset>
 #include <cassert>
+#include <cstring>
+#include <fcntl.h>
+#include <filesystem>
+#include <libgen.h>
 #include <mutex>
+#include <ostream>
+#include <string>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <vector>
 
 #ifdef SFML_OPENGL_ES
-    #include <SFML/Window/EglContext.hpp>
-    using ContextType = sf::priv::EglContext;
+#include <SFML/Window/EglContext.hpp>
+using ContextType = sf::priv::EglContext;
 #else
-    #include <SFML/Window/Unix/GlxContext.hpp>
-    using ContextType = sf::priv::GlxContext;
+#include <SFML/Window/Unix/GlxContext.hpp>
+using ContextType = sf::priv::GlxContext;
 #endif
 
 ////////////////////////////////////////////////////////////
@@ -68,463 +74,300 @@
 ////////////////////////////////////////////////////////////
 namespace
 {
-    // A nested named namespace is used here to allow unity builds of SFML.
-    namespace WindowsImplX11Impl
-    {
-        sf::priv::WindowImplX11*              fullscreenWindow = nullptr;
-        std::vector<sf::priv::WindowImplX11*> allWindows;
-        std::recursive_mutex                  allWindowsMutex;
-        sf::String                            windowManagerName;
-
-        sf::String                            wmAbsPosGood[] = { "Enlightenment", "FVWM", "i3" };
-
-        constexpr unsigned long        eventMask = FocusChangeMask      | ButtonPressMask     |
-                                                   ButtonReleaseMask    | ButtonMotionMask    |
-                                                   PointerMotionMask    | KeyPressMask        |
-                                                   KeyReleaseMask       | StructureNotifyMask |
-                                                   EnterWindowMask      | LeaveWindowMask     |
-                                                   VisibilityChangeMask | PropertyChangeMask;
-
-        constexpr unsigned int         maxTrialsCount = 5;
-
-        // Predicate we use to find key repeat events in processEvent
-        struct KeyRepeatFinder
-        {
-            KeyRepeatFinder(unsigned int initalKeycode, Time initialTime) : keycode(initalKeycode), time(initialTime) {}
-
-            // Predicate operator that checks event type, keycode and timestamp
-            bool operator()(const XEvent& event)
-            {
-                return ((event.type == KeyPress) && (event.xkey.keycode == keycode) && (event.xkey.time - time < 2));
-            }
-
-            unsigned int keycode;
-            Time time;
-        };
-
-        // Filter the events received by windows (only allow those matching a specific window)
-        Bool checkEvent(::Display*, XEvent* event, XPointer userData)
-        {
-            // Just check if the event matches the window
-            // The input method sometimes sends ClientMessages with a different window ID,
-            // our event loop has to process them for the IM to work
-            return (event->xany.window == reinterpret_cast< ::Window >(userData)) || (event->type == ClientMessage);
-        }
-
-        // Find the name of the current executable
-        std::string findExecutableName()
-        {
-            // We use /proc/self/cmdline to get the command line
-            // the user used to invoke this instance of the application
-            int file = ::open("/proc/self/cmdline", O_RDONLY | O_NONBLOCK);
-
-            if (file < 0)
-                return "sfml";
-
-            std::vector<char> buffer(256, 0);
-            std::size_t offset = 0;
-            ssize_t result = 0;
-
-            while ((result = read(file, &buffer[offset], 256)) > 0)
-            {
-                buffer.resize(buffer.size() + static_cast<std::size_t>(result), 0);
-                offset += static_cast<std::size_t>(result);
-            }
-
-            ::close(file);
-
-            if (offset)
-            {
-                buffer[offset] = 0;
-
-                // Remove the path to keep the executable name only
-                return basename(buffer.data());
-            }
-
-            // Default fallback name
-            return "sfml";
-        }
-
-        // Check if Extended Window Manager Hints are supported
-        bool ewmhSupported()
-        {
-            static bool checked = false;
-            static bool ewmhSupported = false;
-
-            if (checked)
-                return ewmhSupported;
-
-            checked = true;
-
-            Atom netSupportingWmCheck = sf::priv::getAtom("_NET_SUPPORTING_WM_CHECK", true);
-            Atom netSupported = sf::priv::getAtom("_NET_SUPPORTED", true);
-
-            if (!netSupportingWmCheck || !netSupported)
-                return false;
-
-            ::Display* display = sf::priv::OpenDisplay();
-
-            Atom actualType;
-            int actualFormat;
-            unsigned long numItems;
-            unsigned long numBytes;
-            unsigned char* data;
-
-            int result = XGetWindowProperty(display,
-                                            DefaultRootWindow(display),
-                                            netSupportingWmCheck,
-                                            0,
-                                            1,
-                                            False,
-                                            XA_WINDOW,
-                                            &actualType,
-                                            &actualFormat,
-                                            &numItems,
-                                            &numBytes,
-                                            &data);
-
-            if (result != Success || actualType != XA_WINDOW || numItems != 1)
-            {
-                if (result == Success)
-                    XFree(data);
-
-                sf::priv::CloseDisplay(display);
-                return false;
-            }
-
-            #pragma GCC diagnostic push
-            #pragma GCC diagnostic ignored "-Wcast-align"
-            ::Window rootWindow = *reinterpret_cast< ::Window* >(data);
-            #pragma GCC diagnostic pop
-
-            XFree(data);
-
-            if (!rootWindow)
-            {
-                sf::priv::CloseDisplay(display);
-                return false;
-            }
-
-            result = XGetWindowProperty(display,
-                                        rootWindow,
-                                        netSupportingWmCheck,
-                                        0,
-                                        1,
-                                        False,
-                                        XA_WINDOW,
-                                        &actualType,
-                                        &actualFormat,
-                                        &numItems,
-                                        &numBytes,
-                                        &data);
-
-            if (result != Success || actualType != XA_WINDOW || numItems != 1)
-            {
-                if (result == Success)
-                    XFree(data);
-
-                sf::priv::CloseDisplay(display);
-                return false;
-            }
-
-            #pragma GCC diagnostic push
-            #pragma GCC diagnostic ignored "-Wcast-align"
-            ::Window childWindow = *reinterpret_cast< ::Window* >(data);
-            #pragma GCC diagnostic pop
-
-            XFree(data);
-
-            if (!childWindow)
-            {
-                sf::priv::CloseDisplay(display);
-                return false;
-            }
-
-            // Conforming window managers should return the same window for both queries
-            if (rootWindow != childWindow)
-            {
-                sf::priv::CloseDisplay(display);
-                return false;
-            }
-
-            ewmhSupported = true;
-
-            // We try to get the name of the window manager
-            // for window manager specific workarounds
-            Atom netWmName = sf::priv::getAtom("_NET_WM_NAME", true);
-
-            if (!netWmName)
-            {
-                sf::priv::CloseDisplay(display);
-                return true;
-            }
-
-            Atom utf8StringType = sf::priv::getAtom("UTF8_STRING");
-
-            if (!utf8StringType)
-                utf8StringType = XA_STRING;
-
-            result = XGetWindowProperty(display,
-                                        rootWindow,
-                                        netWmName,
-                                        0,
-                                        0x7fffffff,
-                                        False,
-                                        utf8StringType,
-                                        &actualType,
-                                        &actualFormat,
-                                        &numItems,
-                                        &numBytes,
-                                        &data);
-
-            if (actualType && numItems)
-            {
-                // It seems the wm name string reply is not necessarily
-                // null-terminated. The work around is to get its actual
-                // length to build a proper string
-                const char* begin = reinterpret_cast<const char*>(data);
-                const char* end = begin + numItems;
-                windowManagerName = sf::String::fromUtf8(begin, end);
-            }
-
-            if (result == Success)
-                XFree(data);
-
-            sf::priv::CloseDisplay(display);
-
-            return true;
-        }
-
-        // Get the parent window.
-        ::Window getParentWindow(::Display* disp, ::Window win)
-        {
-            ::Window root, parent;
-            ::Window* children = nullptr;
-            unsigned int numChildren;
-
-            XQueryTree(disp, win, &root, &parent, &children, &numChildren);
-
-            // Children information is not used, so must be freed.
-            if (children != nullptr)
-                XFree(children);
-
-            return parent;
-        }
-
-        // Get the Frame Extents from EWMH WMs that support it.
-        bool getEWMHFrameExtents(::Display* disp, ::Window win,
-            long& xFrameExtent, long& yFrameExtent)
-        {
-            if (!ewmhSupported())
-                return false;
-
-            Atom frameExtents = sf::priv::getAtom("_NET_FRAME_EXTENTS", true);
-
-            if (frameExtents == None)
-                return false;
-
-            bool gotFrameExtents = false;
-            Atom actualType;
-            int actualFormat;
-            unsigned long numItems;
-            unsigned long numBytesLeft;
-            unsigned char* data = nullptr;
-
-            int result = XGetWindowProperty(disp,
-                                            win,
-                                            frameExtents,
-                                            0,
-                                            4,
-                                            False,
-                                            XA_CARDINAL,
-                                            &actualType,
-                                            &actualFormat,
-                                            &numItems,
-                                            &numBytesLeft,
-                                            &data);
-
-            if ((result == Success) && (actualType == XA_CARDINAL) &&
-                (actualFormat == 32) && (numItems == 4) && (numBytesLeft == 0) &&
-                (data != nullptr))
-            {
-                gotFrameExtents = true;
-
-                #pragma GCC diagnostic push
-                #pragma GCC diagnostic ignored "-Wcast-align"
-                long* extents = reinterpret_cast<long*>(data);
-                #pragma GCC diagnostic pop
-
-                xFrameExtent = extents[0]; // Left.
-                yFrameExtent = extents[2]; // Top.
-            }
-
-            // Always free data.
-            if (data != nullptr)
-                XFree(data);
-
-            return gotFrameExtents;
-        }
-
-        // Check if the current WM is in the list of good WMs that provide
-        // a correct absolute position for the window when queried.
-        bool isWMAbsolutePositionGood()
-        {
-            // This can only work with EWMH, to get the name.
-            if (!ewmhSupported())
-                return false;
-
-            for (const sf::String& name : wmAbsPosGood)
-            {
-                if (name == windowManagerName)
-                    return true;
-            }
-
-            return false;
-        }
-
-        sf::Keyboard::Key keysymToSF(KeySym symbol)
-        {
-            switch (symbol)
-            {
-                case XK_Shift_L:      return sf::Keyboard::LShift;
-                case XK_Shift_R:      return sf::Keyboard::RShift;
-                case XK_Control_L:    return sf::Keyboard::LControl;
-                case XK_Control_R:    return sf::Keyboard::RControl;
-                case XK_Alt_L:        return sf::Keyboard::LAlt;
-                case XK_Alt_R:        return sf::Keyboard::RAlt;
-                case XK_Super_L:      return sf::Keyboard::LSystem;
-                case XK_Super_R:      return sf::Keyboard::RSystem;
-                case XK_Menu:         return sf::Keyboard::Menu;
-                case XK_Escape:       return sf::Keyboard::Escape;
-                case XK_semicolon:    return sf::Keyboard::Semicolon;
-                case XK_slash:        return sf::Keyboard::Slash;
-                case XK_equal:        return sf::Keyboard::Equal;
-                case XK_minus:        return sf::Keyboard::Hyphen;
-                case XK_bracketleft:  return sf::Keyboard::LBracket;
-                case XK_bracketright: return sf::Keyboard::RBracket;
-                case XK_comma:        return sf::Keyboard::Comma;
-                case XK_period:       return sf::Keyboard::Period;
-                case XK_apostrophe:   return sf::Keyboard::Quote;
-                case XK_backslash:    return sf::Keyboard::Backslash;
-                case XK_grave:        return sf::Keyboard::Tilde;
-                case XK_space:        return sf::Keyboard::Space;
-                case XK_Return:       return sf::Keyboard::Enter;
-                case XK_KP_Enter:     return sf::Keyboard::Enter;
-                case XK_BackSpace:    return sf::Keyboard::Backspace;
-                case XK_Tab:          return sf::Keyboard::Tab;
-                case XK_Prior:        return sf::Keyboard::PageUp;
-                case XK_Next:         return sf::Keyboard::PageDown;
-                case XK_End:          return sf::Keyboard::End;
-                case XK_Home:         return sf::Keyboard::Home;
-                case XK_Insert:       return sf::Keyboard::Insert;
-                case XK_Delete:       return sf::Keyboard::Delete;
-                case XK_KP_Add:       return sf::Keyboard::Add;
-                case XK_KP_Subtract:  return sf::Keyboard::Subtract;
-                case XK_KP_Multiply:  return sf::Keyboard::Multiply;
-                case XK_KP_Divide:    return sf::Keyboard::Divide;
-                case XK_Pause:        return sf::Keyboard::Pause;
-                case XK_F1:           return sf::Keyboard::F1;
-                case XK_F2:           return sf::Keyboard::F2;
-                case XK_F3:           return sf::Keyboard::F3;
-                case XK_F4:           return sf::Keyboard::F4;
-                case XK_F5:           return sf::Keyboard::F5;
-                case XK_F6:           return sf::Keyboard::F6;
-                case XK_F7:           return sf::Keyboard::F7;
-                case XK_F8:           return sf::Keyboard::F8;
-                case XK_F9:           return sf::Keyboard::F9;
-                case XK_F10:          return sf::Keyboard::F10;
-                case XK_F11:          return sf::Keyboard::F11;
-                case XK_F12:          return sf::Keyboard::F12;
-                case XK_F13:          return sf::Keyboard::F13;
-                case XK_F14:          return sf::Keyboard::F14;
-                case XK_F15:          return sf::Keyboard::F15;
-                case XK_Left:         return sf::Keyboard::Left;
-                case XK_Right:        return sf::Keyboard::Right;
-                case XK_Up:           return sf::Keyboard::Up;
-                case XK_Down:         return sf::Keyboard::Down;
-                case XK_KP_Insert:    return sf::Keyboard::Numpad0;
-                case XK_KP_End:       return sf::Keyboard::Numpad1;
-                case XK_KP_Down:      return sf::Keyboard::Numpad2;
-                case XK_KP_Page_Down: return sf::Keyboard::Numpad3;
-                case XK_KP_Left:      return sf::Keyboard::Numpad4;
-                case XK_KP_Begin:     return sf::Keyboard::Numpad5;
-                case XK_KP_Right:     return sf::Keyboard::Numpad6;
-                case XK_KP_Home:      return sf::Keyboard::Numpad7;
-                case XK_KP_Up:        return sf::Keyboard::Numpad8;
-                case XK_KP_Page_Up:   return sf::Keyboard::Numpad9;
-                case XK_a:            return sf::Keyboard::A;
-                case XK_b:            return sf::Keyboard::B;
-                case XK_c:            return sf::Keyboard::C;
-                case XK_d:            return sf::Keyboard::D;
-                case XK_e:            return sf::Keyboard::E;
-                case XK_f:            return sf::Keyboard::F;
-                case XK_g:            return sf::Keyboard::G;
-                case XK_h:            return sf::Keyboard::H;
-                case XK_i:            return sf::Keyboard::I;
-                case XK_j:            return sf::Keyboard::J;
-                case XK_k:            return sf::Keyboard::K;
-                case XK_l:            return sf::Keyboard::L;
-                case XK_m:            return sf::Keyboard::M;
-                case XK_n:            return sf::Keyboard::N;
-                case XK_o:            return sf::Keyboard::O;
-                case XK_p:            return sf::Keyboard::P;
-                case XK_q:            return sf::Keyboard::Q;
-                case XK_r:            return sf::Keyboard::R;
-                case XK_s:            return sf::Keyboard::S;
-                case XK_t:            return sf::Keyboard::T;
-                case XK_u:            return sf::Keyboard::U;
-                case XK_v:            return sf::Keyboard::V;
-                case XK_w:            return sf::Keyboard::W;
-                case XK_x:            return sf::Keyboard::X;
-                case XK_y:            return sf::Keyboard::Y;
-                case XK_z:            return sf::Keyboard::Z;
-                case XK_0:            return sf::Keyboard::Num0;
-                case XK_1:            return sf::Keyboard::Num1;
-                case XK_2:            return sf::Keyboard::Num2;
-                case XK_3:            return sf::Keyboard::Num3;
-                case XK_4:            return sf::Keyboard::Num4;
-                case XK_5:            return sf::Keyboard::Num5;
-                case XK_6:            return sf::Keyboard::Num6;
-                case XK_7:            return sf::Keyboard::Num7;
-                case XK_8:            return sf::Keyboard::Num8;
-                case XK_9:            return sf::Keyboard::Num9;
-            }
-
-            return sf::Keyboard::Unknown;
-        }
-    }
+// A nested named namespace is used here to allow unity builds of SFML.
+namespace WindowsImplX11Impl
+{
+sf::priv::WindowImplX11*              fullscreenWindow = nullptr;
+std::vector<sf::priv::WindowImplX11*> allWindows;
+std::bitset<256>                      isKeyFiltered;
+std::recursive_mutex                  allWindowsMutex;
+sf::String                            windowManagerName;
+
+sf::String wmAbsPosGood[] = {"Enlightenment", "FVWM", "i3"};
+
+constexpr unsigned long eventMask = FocusChangeMask | ButtonPressMask | ButtonReleaseMask | ButtonMotionMask |
+                                    PointerMotionMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask |
+                                    EnterWindowMask | LeaveWindowMask | VisibilityChangeMask | PropertyChangeMask;
+
+constexpr unsigned int maxTrialsCount = 5;
+
+// Filter the events received by windows (only allow those matching a specific window)
+// NOLINTNEXTLINE(readability-non-const-parameter)
+Bool checkEvent(::Display*, XEvent* event, XPointer userData)
+{
+    // Just check if the event matches the window
+    // The input method sometimes sends ClientMessages with a different window ID,
+    // our event loop has to process them for the IM to work
+    return (event->xany.window == reinterpret_cast<::Window>(userData)) || (event->type == ClientMessage);
 }
 
-
-namespace sf
+// Find the name of the current executable
+std::filesystem::path findExecutableName()
 {
-namespace priv
+    // We use /proc/self/cmdline to get the command line
+    // the user used to invoke this instance of the application
+    int file = ::open("/proc/self/cmdline", O_RDONLY | O_NONBLOCK);
+
+    if (file < 0)
+        return "sfml";
+
+    std::vector<char> buffer(256, 0);
+    std::size_t       offset = 0;
+    ssize_t           result = 0;
+
+    while ((result = read(file, &buffer[offset], 256)) > 0)
+    {
+        buffer.resize(buffer.size() + static_cast<std::size_t>(result), 0);
+        offset += static_cast<std::size_t>(result);
+    }
+
+    ::close(file);
+
+    if (offset)
+    {
+        buffer[offset] = 0;
+
+        // Remove the path to keep the executable name only
+        return basename(buffer.data());
+    }
+
+    // Default fallback name
+    return "sfml";
+}
+
+// Check if Extended Window Manager Hints are supported
+bool ewmhSupported()
+{
+    static bool checked       = false;
+    static bool ewmhSupported = false;
+
+    if (checked)
+        return ewmhSupported;
+
+    checked = true;
+
+    Atom netSupportingWmCheck = sf::priv::getAtom("_NET_SUPPORTING_WM_CHECK", true);
+    Atom netSupported         = sf::priv::getAtom("_NET_SUPPORTED", true);
+
+    if (!netSupportingWmCheck || !netSupported)
+        return false;
+
+    ::Display* display = sf::priv::openDisplay();
+
+    Atom           actualType;
+    int            actualFormat;
+    unsigned long  numItems;
+    unsigned long  numBytes;
+    unsigned char* data;
+
+    int result = XGetWindowProperty(display,
+                                    DefaultRootWindow(display),
+                                    netSupportingWmCheck,
+                                    0,
+                                    1,
+                                    False,
+                                    XA_WINDOW,
+                                    &actualType,
+                                    &actualFormat,
+                                    &numItems,
+                                    &numBytes,
+                                    &data);
+
+    if (result != Success || actualType != XA_WINDOW || numItems != 1)
+    {
+        if (result == Success)
+            XFree(data);
+
+        sf::priv::closeDisplay(display);
+        return false;
+    }
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-align"
+    ::Window rootWindow = *reinterpret_cast<::Window*>(data);
+#pragma GCC diagnostic pop
+
+    XFree(data);
+
+    if (!rootWindow)
+    {
+        sf::priv::closeDisplay(display);
+        return false;
+    }
+
+    result = XGetWindowProperty(display,
+                                rootWindow,
+                                netSupportingWmCheck,
+                                0,
+                                1,
+                                False,
+                                XA_WINDOW,
+                                &actualType,
+                                &actualFormat,
+                                &numItems,
+                                &numBytes,
+                                &data);
+
+    if (result != Success || actualType != XA_WINDOW || numItems != 1)
+    {
+        if (result == Success)
+            XFree(data);
+
+        sf::priv::closeDisplay(display);
+        return false;
+    }
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-align"
+    ::Window childWindow = *reinterpret_cast<::Window*>(data);
+#pragma GCC diagnostic pop
+
+    XFree(data);
+
+    if (!childWindow)
+    {
+        sf::priv::closeDisplay(display);
+        return false;
+    }
+
+    // Conforming window managers should return the same window for both queries
+    if (rootWindow != childWindow)
+    {
+        sf::priv::closeDisplay(display);
+        return false;
+    }
+
+    ewmhSupported = true;
+
+    // We try to get the name of the window manager
+    // for window manager specific workarounds
+    Atom netWmName = sf::priv::getAtom("_NET_WM_NAME", true);
+
+    if (!netWmName)
+    {
+        sf::priv::closeDisplay(display);
+        return true;
+    }
+
+    Atom utf8StringType = sf::priv::getAtom("UTF8_STRING");
+
+    if (!utf8StringType)
+        utf8StringType = XA_STRING;
+
+    result = XGetWindowProperty(display,
+                                rootWindow,
+                                netWmName,
+                                0,
+                                0x7fffffff,
+                                False,
+                                utf8StringType,
+                                &actualType,
+                                &actualFormat,
+                                &numItems,
+                                &numBytes,
+                                &data);
+
+    if (actualType && numItems)
+    {
+        // It seems the wm name string reply is not necessarily
+        // null-terminated. The work around is to get its actual
+        // length to build a proper string
+        const char* begin = reinterpret_cast<const char*>(data);
+        const char* end   = begin + numItems;
+        windowManagerName = sf::String::fromUtf8(begin, end);
+    }
+
+    if (result == Success)
+        XFree(data);
+
+    sf::priv::closeDisplay(display);
+
+    return true;
+}
+
+// Get the parent window.
+::Window getParentWindow(::Display* disp, ::Window win)
+{
+    ::Window     root;
+    ::Window     parent;
+    ::Window*    children = nullptr;
+    unsigned int numChildren;
+
+    XQueryTree(disp, win, &root, &parent, &children, &numChildren);
+
+    // Children information is not used, so must be freed.
+    if (children != nullptr)
+        XFree(children);
+
+    return parent;
+}
+
+// Get the Frame Extents from EWMH WMs that support it.
+bool getEWMHFrameExtents(::Display* disp, ::Window win, long& xFrameExtent, long& yFrameExtent)
+{
+    if (!ewmhSupported())
+        return false;
+
+    Atom frameExtents = sf::priv::getAtom("_NET_FRAME_EXTENTS", true);
+
+    if (frameExtents == None)
+        return false;
+
+    bool           gotFrameExtents = false;
+    Atom           actualType;
+    int            actualFormat;
+    unsigned long  numItems;
+    unsigned long  numBytesLeft;
+    unsigned char* data = nullptr;
+
+    int result = XGetWindowProperty(disp, win, frameExtents, 0, 4, False, XA_CARDINAL, &actualType, &actualFormat, &numItems, &numBytesLeft, &data);
+
+    if ((result == Success) && (actualType == XA_CARDINAL) && (actualFormat == 32) && (numItems == 4) &&
+        (numBytesLeft == 0) && (data != nullptr))
+    {
+        gotFrameExtents = true;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-align"
+        long* extents = reinterpret_cast<long*>(data);
+#pragma GCC diagnostic pop
+
+        xFrameExtent = extents[0]; // Left.
+        yFrameExtent = extents[2]; // Top.
+    }
+
+    // Always free data.
+    if (data != nullptr)
+        XFree(data);
+
+    return gotFrameExtents;
+}
+
+// Check if the current WM is in the list of good WMs that provide
+// a correct absolute position for the window when queried.
+bool isWMAbsolutePositionGood()
+{
+    // This can only work with EWMH, to get the name.
+    if (!ewmhSupported())
+        return false;
+
+    return std::any_of(std::begin(wmAbsPosGood),
+                       std::end(wmAbsPosGood),
+                       [&](const sf::String& name) { return name == windowManagerName; });
+}
+} // namespace WindowsImplX11Impl
+} // namespace
+
+
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-WindowImplX11::WindowImplX11(WindowHandle handle) :
-m_window         (0),
-m_screen         (0),
-m_inputMethod    (nullptr),
-m_inputContext   (nullptr),
-m_isExternal     (true),
-m_oldVideoMode   (0),
-m_oldRRCrtc      (0),
-m_hiddenCursor   (0),
-m_lastCursor     (None),
-m_keyRepeat      (true),
-m_previousSize   (-1, -1),
-m_useSizeHints   (false),
-m_fullscreen     (false),
-m_cursorGrabbed  (false),
-m_windowMapped   (false),
-m_iconPixmap     (0),
-m_iconMaskPixmap (0),
-m_lastInputTime  (0)
+WindowImplX11::WindowImplX11(WindowHandle handle) : m_isExternal(true)
 {
     using namespace WindowsImplX11Impl;
 
     // Open a connection with the X server
-    m_display = OpenDisplay();
+    m_display = openDisplay();
 
     // Make sure to check for EWMH support before we do anything
     ewmhSupported();
@@ -553,29 +396,14 @@ m_lastInputTime  (0)
 
 ////////////////////////////////////////////////////////////
 WindowImplX11::WindowImplX11(VideoMode mode, const String& title, unsigned long style, const ContextSettings& settings) :
-m_window         (0),
-m_screen         (0),
-m_inputMethod    (nullptr),
-m_inputContext   (nullptr),
-m_isExternal     (false),
-m_oldVideoMode   (0),
-m_oldRRCrtc      (0),
-m_hiddenCursor   (0),
-m_lastCursor     (None),
-m_keyRepeat      (true),
-m_previousSize   (-1, -1),
-m_useSizeHints   (false),
-m_fullscreen     ((style & Style::Fullscreen) != 0),
-m_cursorGrabbed  (m_fullscreen),
-m_windowMapped   (false),
-m_iconPixmap     (0),
-m_iconMaskPixmap (0),
-m_lastInputTime  (0)
+m_isExternal(false),
+m_fullscreen((style & Style::Fullscreen) != 0),
+m_cursorGrabbed(m_fullscreen)
 {
     using namespace WindowsImplX11Impl;
 
     // Open a connection with the X server
-    m_display = OpenDisplay();
+    m_display = openDisplay();
 
     // Make sure to check for EWMH support before we do anything
     ewmhSupported();
@@ -584,28 +412,28 @@ m_lastInputTime  (0)
 
     // Compute position and size
     Vector2i windowPosition;
-    if(m_fullscreen)
+    if (m_fullscreen)
     {
         windowPosition = getPrimaryMonitorPosition();
     }
     else
     {
-        windowPosition.x = (DisplayWidth(m_display, m_screen) - static_cast<int>(mode.width))  / 2;
-        windowPosition.y = (DisplayHeight(m_display, m_screen) - static_cast<int>(mode.height)) / 2;
+        const Vector2i displaySize(DisplayWidth(m_display, m_screen), DisplayHeight(m_display, m_screen));
+        windowPosition = displaySize - Vector2i(mode.size) / 2;
     }
 
-    unsigned int width  = mode.width;
-    unsigned int height = mode.height;
+    unsigned int width  = mode.size.x;
+    unsigned int height = mode.size.y;
 
     Visual* visual = nullptr;
-    int depth = 0;
+    int     depth  = 0;
 
     // Check if the user chose to not create an OpenGL context (settings.attributeFlags will be 0xFFFFFFFF)
     if (settings.attributeFlags == 0xFFFFFFFF)
     {
         // Choose default visual since the user is going to use their own rendering API
         visual = DefaultVisual(m_display, m_screen);
-        depth = DefaultDepth(m_display, m_screen);
+        depth  = DefaultDepth(m_display, m_screen);
     }
     else
     {
@@ -613,19 +441,21 @@ m_lastInputTime  (0)
         XVisualInfo visualInfo = ContextType::selectBestVisual(m_display, mode.bitsPerPixel, settings);
 
         visual = visualInfo.visual;
-        depth = visualInfo.depth;
+        depth  = visualInfo.depth;
     }
 
     // Define the window attributes
     XSetWindowAttributes attributes;
-    attributes.colormap = XCreateColormap(m_display, DefaultRootWindow(m_display), visual, AllocNone);
-    attributes.event_mask = eventMask;
+    attributes.colormap          = XCreateColormap(m_display, DefaultRootWindow(m_display), visual, AllocNone);
+    attributes.event_mask        = eventMask;
     attributes.override_redirect = (m_fullscreen && !ewmhSupported()) ? True : False;
 
     m_window = XCreateWindow(m_display,
                              DefaultRootWindow(m_display),
-                             windowPosition.x, windowPosition.y,
-                             width, height,
+                             windowPosition.x,
+                             windowPosition.y,
+                             width,
+                             height,
                              0,
                              depth,
                              InputOutput,
@@ -643,7 +473,7 @@ m_lastInputTime  (0)
     setProtocols();
 
     // Set the WM initial state to the normal state
-    XWMHints* xHints = XAllocWMHints();
+    XWMHints* xHints      = XAllocWMHints();
     xHints->flags         = StateHint;
     xHints->initial_state = NormalState;
     XSetWMHints(m_display, m_window, xHints);
@@ -653,26 +483,30 @@ m_lastInputTime  (0)
     // change our window's decorations and functions according to the requested style)
     if (!m_fullscreen)
     {
-        Atom WMHintsAtom = getAtom("_MOTIF_WM_HINTS", false);
-        if (WMHintsAtom)
+        Atom wmHintsAtom = getAtom("_MOTIF_WM_HINTS", false);
+        if (wmHintsAtom)
         {
+            // NOLINTBEGIN(readability-identifier-naming)
+            // Disable naming check so these better match the contents of the Motif library
+            // https://sourceforge.net/p/motif/code/ci/master/tree/lib/Xm/MwmUtil.h
             constexpr unsigned long MWM_HINTS_FUNCTIONS   = 1 << 0;
             constexpr unsigned long MWM_HINTS_DECORATIONS = 1 << 1;
 
             //constexpr unsigned long MWM_DECOR_ALL         = 1 << 0;
-            constexpr unsigned long MWM_DECOR_BORDER      = 1 << 1;
-            constexpr unsigned long MWM_DECOR_RESIZEH     = 1 << 2;
-            constexpr unsigned long MWM_DECOR_TITLE       = 1 << 3;
-            constexpr unsigned long MWM_DECOR_MENU        = 1 << 4;
-            constexpr unsigned long MWM_DECOR_MINIMIZE    = 1 << 5;
-            constexpr unsigned long MWM_DECOR_MAXIMIZE    = 1 << 6;
+            constexpr unsigned long MWM_DECOR_BORDER   = 1 << 1;
+            constexpr unsigned long MWM_DECOR_RESIZEH  = 1 << 2;
+            constexpr unsigned long MWM_DECOR_TITLE    = 1 << 3;
+            constexpr unsigned long MWM_DECOR_MENU     = 1 << 4;
+            constexpr unsigned long MWM_DECOR_MINIMIZE = 1 << 5;
+            constexpr unsigned long MWM_DECOR_MAXIMIZE = 1 << 6;
 
             //constexpr unsigned long MWM_FUNC_ALL          = 1 << 0;
-            constexpr unsigned long MWM_FUNC_RESIZE       = 1 << 1;
-            constexpr unsigned long MWM_FUNC_MOVE         = 1 << 2;
-            constexpr unsigned long MWM_FUNC_MINIMIZE     = 1 << 3;
-            constexpr unsigned long MWM_FUNC_MAXIMIZE     = 1 << 4;
-            constexpr unsigned long MWM_FUNC_CLOSE        = 1 << 5;
+            constexpr unsigned long MWM_FUNC_RESIZE   = 1 << 1;
+            constexpr unsigned long MWM_FUNC_MOVE     = 1 << 2;
+            constexpr unsigned long MWM_FUNC_MINIMIZE = 1 << 3;
+            constexpr unsigned long MWM_FUNC_MAXIMIZE = 1 << 4;
+            constexpr unsigned long MWM_FUNC_CLOSE    = 1 << 5;
+            // NOLINTEND(readability-identifier-naming)
 
             struct WMHints
             {
@@ -683,8 +517,7 @@ m_lastInputTime  (0)
                 unsigned long state;
             };
 
-            WMHints hints;
-            std::memset(&hints, 0, sizeof(hints));
+            auto hints        = WMHints();
             hints.flags       = MWM_HINTS_FUNCTIONS | MWM_HINTS_DECORATIONS;
             hints.decorations = 0;
             hints.functions   = 0;
@@ -692,23 +525,23 @@ m_lastInputTime  (0)
             if (style & Style::Titlebar)
             {
                 hints.decorations |= MWM_DECOR_BORDER | MWM_DECOR_TITLE | MWM_DECOR_MINIMIZE | MWM_DECOR_MENU;
-                hints.functions   |= MWM_FUNC_MOVE | MWM_FUNC_MINIMIZE;
+                hints.functions |= MWM_FUNC_MOVE | MWM_FUNC_MINIMIZE;
             }
             if (style & Style::Resize)
             {
                 hints.decorations |= MWM_DECOR_MAXIMIZE | MWM_DECOR_RESIZEH;
-                hints.functions   |= MWM_FUNC_MAXIMIZE | MWM_FUNC_RESIZE;
+                hints.functions |= MWM_FUNC_MAXIMIZE | MWM_FUNC_RESIZE;
             }
             if (style & Style::Close)
             {
                 hints.decorations |= 0;
-                hints.functions   |= MWM_FUNC_CLOSE;
+                hints.functions |= MWM_FUNC_CLOSE;
             }
 
             XChangeProperty(m_display,
                             m_window,
-                            WMHintsAtom,
-                            WMHintsAtom,
+                            wmHintsAtom,
+                            wmHintsAtom,
                             32,
                             PropModeReplace,
                             reinterpret_cast<const unsigned char*>(&hints),
@@ -719,13 +552,13 @@ m_lastInputTime  (0)
     // This is a hack to force some windows managers to disable resizing
     if (!(style & Style::Resize))
     {
-        m_useSizeHints = true;
+        m_useSizeHints        = true;
         XSizeHints* sizeHints = XAllocSizeHints();
-        sizeHints->flags = PMinSize | PMaxSize | USPosition;
-        sizeHints->min_width  = sizeHints->max_width  = static_cast<int>(width);
+        sizeHints->flags      = PMinSize | PMaxSize | USPosition;
+        sizeHints->min_width = sizeHints->max_width = static_cast<int>(width);
         sizeHints->min_height = sizeHints->max_height = static_cast<int>(height);
-        sizeHints->x = windowPosition.x;
-        sizeHints->y = windowPosition.y;
+        sizeHints->x                                  = windowPosition.x;
+        sizeHints->y                                  = windowPosition.y;
         XSetWMNormalHints(m_display, m_window, sizeHints);
         XFree(sizeHints);
     }
@@ -736,7 +569,7 @@ m_lastInputTime  (0)
     // The instance name should be something unique to this invocation
     // of the application but is rarely if ever used these days.
     // For simplicity, we retrieve it via the base executable name.
-    std::string executableName = findExecutableName();
+    std::string       executableName = findExecutableName().string();
     std::vector<char> windowInstance(executableName.size() + 1, 0);
     std::copy(executableName.begin(), executableName.end(), windowInstance.begin());
     hint->res_name = windowInstance.data();
@@ -744,7 +577,7 @@ m_lastInputTime  (0)
     // The class name identifies a class of windows that
     // "are of the same type". We simply use the initial window name as
     // the class name.
-    std::string ansiTitle = title.toAnsiString();
+    std::string       ansiTitle = title.toAnsiString();
     std::vector<char> windowClass(ansiTitle.size() + 1, 0);
     std::copy(ansiTitle.begin(), ansiTitle.end(), windowClass.begin());
     hint->res_class = windowClass.data();
@@ -764,8 +597,8 @@ m_lastInputTime  (0)
     {
         // Disable hint for min and max size,
         // otherwise some windows managers will not remove window decorations
-        XSizeHints *sizeHints = XAllocSizeHints();
-        long flags = 0;
+        XSizeHints* sizeHints = XAllocSizeHints();
+        long        flags     = 0;
         XGetWMNormalHints(m_display, m_window, sizeHints, &flags);
         sizeHints->flags &= ~(PMinSize | PMaxSize);
         XSetWMNormalHints(m_display, m_window, sizeHints);
@@ -810,13 +643,13 @@ WindowImplX11::~WindowImplX11()
 
     // Close the input method
     if (m_inputMethod)
-        CloseXIM(m_inputMethod);
+        closeXim(m_inputMethod);
 
     // Close the connection with the X server
-    CloseDisplay(m_display);
+    closeDisplay(m_display);
 
     // Remove this window from the global list of windows (required for focus request)
-    std::scoped_lock lock(allWindowsMutex);
+    std::lock_guard lock(allWindowsMutex);
     allWindows.erase(std::find(allWindows.begin(), allWindows.end(), this));
 }
 
@@ -837,14 +670,61 @@ void WindowImplX11::processEvents()
 
     // Pick out the events that are interesting for this window
     while (XCheckIfEvent(m_display, &event, &checkEvent, reinterpret_cast<XPointer>(m_window)))
-        m_events.push_back(event);
-
-    // Handle the events for this window that we just picked out
-    while (!m_events.empty())
     {
-        event = m_events.front();
-        m_events.pop_front();
-        processEvent(event);
+        // This function implements a workaround to properly discard
+        // repeated key events when necessary. The problem is that the
+        // system's key events policy doesn't match SFML's one: X server will generate
+        // both repeated KeyPress and KeyRelease events when maintaining a key down, while
+        // SFML only wants repeated KeyPress events. Thus, we have to:
+        // - Discard duplicated KeyRelease events when m_keyRepeat is true
+        // - Discard both duplicated KeyPress and KeyRelease events when m_keyRepeat is false
+
+        bool processThisEvent = true;
+
+        // Detect repeated key events
+        while (event.type == KeyRelease)
+        {
+            XEvent nextEvent;
+            if (XCheckIfEvent(m_display, &nextEvent, checkEvent, reinterpret_cast<XPointer>(m_window)))
+            {
+                if ((nextEvent.type == KeyPress) && (nextEvent.xkey.keycode == event.xkey.keycode) &&
+                    (event.xkey.time <= nextEvent.xkey.time) && (nextEvent.xkey.time <= event.xkey.time + 1))
+                {
+                    // This sequence of events comes from maintaining a key down
+                    if (m_keyRepeat)
+                    {
+                        // Ignore the KeyRelease event and process the KeyPress event
+                        event = nextEvent;
+                        break;
+                    }
+                    else
+                    {
+                        // Ignore both events
+                        processThisEvent = false;
+                        break;
+                    }
+                }
+                else
+                {
+                    // This sequence of events does not come from maintaining a key down,
+                    // so process the KeyRelease event normally,
+                    processEvent(event);
+                    // but loop because the next event can be the first half
+                    // of a sequence coming from maintaining a key down.
+                    event = nextEvent;
+                }
+            }
+            else
+            {
+                // No event after this KeyRelease event so assume it can be processed.
+                break;
+            }
+        }
+
+        if (processThisEvent)
+        {
+            processEvent(event);
+        }
     }
 
     // Process clipboard window events
@@ -864,10 +744,10 @@ Vector2i WindowImplX11::getPosition() const
     // go using setPosition() and XMoveWindow(). To have the two match
     // as expected, we may have to subtract decorations and borders.
     ::Window child;
-    int xAbsRelToRoot, yAbsRelToRoot;
+    int      xAbsRelToRoot;
+    int      yAbsRelToRoot;
 
-    XTranslateCoordinates(m_display, m_window, DefaultRootWindow(m_display),
-        0, 0, &xAbsRelToRoot, &yAbsRelToRoot, &child);
+    XTranslateCoordinates(m_display, m_window, DefaultRootWindow(m_display), 0, 0, &xAbsRelToRoot, &yAbsRelToRoot, &child);
 
     // CASE 1: some rare WMs actually put the window exactly where we tell
     // it to, even with decorations and such, which get shifted back.
@@ -878,7 +758,8 @@ Vector2i WindowImplX11::getPosition() const
     // CASE 2: most modern WMs support EWMH and can define _NET_FRAME_EXTENTS
     // with the exact frame size to subtract, so if present, we prefer it and
     // query it first. According to spec, this already includes any borders.
-    long xFrameExtent, yFrameExtent;
+    long xFrameExtent;
+    long yFrameExtent;
 
     if (getEWMHFrameExtents(m_display, m_window, xFrameExtent, yFrameExtent))
     {
@@ -901,7 +782,7 @@ Vector2i WindowImplX11::getPosition() const
     // our window is part of decorations/borders in some way. This
     // seems to hold true for most reasonable WM implementations.
     ::Window ancestor = m_window;
-    ::Window root = DefaultRootWindow(m_display);
+    ::Window root     = DefaultRootWindow(m_display);
 
     while (getParentWindow(m_display, ancestor) != root)
     {
@@ -911,11 +792,14 @@ Vector2i WindowImplX11::getPosition() const
 
     // Get final X/Y coordinates: take the relative position to
     // the root of the furthest ancestor window.
-    int xRelToRoot, yRelToRoot;
-    unsigned int width, height, borderWidth, depth;
+    int          xRelToRoot;
+    int          yRelToRoot;
+    unsigned int width;
+    unsigned int height;
+    unsigned int borderWidth;
+    unsigned int depth;
 
-    XGetGeometry(m_display, ancestor, &root, &xRelToRoot, &yRelToRoot,
-        &width, &height, &borderWidth, &depth);
+    XGetGeometry(m_display, ancestor, &root, &xRelToRoot, &yRelToRoot, &width, &height, &borderWidth, &depth);
 
     return Vector2i(xRelToRoot, yRelToRoot);
 }
@@ -945,8 +829,8 @@ void WindowImplX11::setSize(const Vector2u& size)
     if (m_useSizeHints)
     {
         XSizeHints* sizeHints = XAllocSizeHints();
-        sizeHints->flags = PMinSize | PMaxSize;
-        sizeHints->min_width  = sizeHints->max_width  = static_cast<int>(size.x);
+        sizeHints->flags      = PMinSize | PMaxSize;
+        sizeHints->min_width = sizeHints->max_width = static_cast<int>(size.x);
         sizeHints->min_height = sizeHints->max_height = static_cast<int>(size.y);
         XSetWMNormalHints(m_display, m_window, sizeHints);
         XFree(sizeHints);
@@ -964,23 +848,35 @@ void WindowImplX11::setTitle(const String& title)
     // There is however an option to tell the window manager your Unicode title via hints.
 
     // Convert to UTF-8 encoding.
-    std::basic_string<Uint8> utf8Title;
+    std::basic_string<std::uint8_t> utf8Title;
     Utf32::toUtf8(title.begin(), title.end(), std::back_inserter(utf8Title));
 
     Atom useUtf8 = getAtom("UTF8_STRING", false);
 
     // Set the _NET_WM_NAME atom, which specifies a UTF-8 encoded window title.
     Atom wmName = getAtom("_NET_WM_NAME", false);
-    XChangeProperty(m_display, m_window, wmName, useUtf8, 8,
-                    PropModeReplace, utf8Title.c_str(), static_cast<int>(utf8Title.size()));
+    XChangeProperty(m_display,
+                    m_window,
+                    wmName,
+                    useUtf8,
+                    8,
+                    PropModeReplace,
+                    utf8Title.c_str(),
+                    static_cast<int>(utf8Title.size()));
 
     // Set the _NET_WM_ICON_NAME atom, which specifies a UTF-8 encoded window title.
     Atom wmIconName = getAtom("_NET_WM_ICON_NAME", false);
-    XChangeProperty(m_display, m_window, wmIconName, useUtf8, 8,
-                    PropModeReplace, utf8Title.c_str(), static_cast<int>(utf8Title.size()));
+    XChangeProperty(m_display,
+                    m_window,
+                    wmIconName,
+                    useUtf8,
+                    8,
+                    PropModeReplace,
+                    utf8Title.c_str(),
+                    static_cast<int>(utf8Title.size()));
 
-    // Set the non-Unicode title as a fallback for window managers who don't support _NET_WM_NAME.
-    #ifdef X_HAVE_UTF8_STRING
+// Set the non-Unicode title as a fallback for window managers who don't support _NET_WM_NAME.
+#ifdef X_HAVE_UTF8_STRING
     Xutf8SetWMProperties(m_display,
                          m_window,
                          title.toAnsiString().c_str(),
@@ -990,27 +886,20 @@ void WindowImplX11::setTitle(const String& title)
                          nullptr,
                          nullptr,
                          nullptr);
-    #else
-    XmbSetWMProperties(m_display,
-                       m_window,
-                       title.toAnsiString().c_str(),
-                       title.toAnsiString().c_str(),
-                       nullptr,
-                       0,
-                       nullptr,
-                       nullptr,
-                       nullptr);
-    #endif
+#else
+    XmbSetWMProperties(m_display, m_window, title.toAnsiString().c_str(), title.toAnsiString().c_str(), nullptr, 0, nullptr, nullptr, nullptr);
+#endif
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplX11::setIcon(unsigned int width, unsigned int height, const Uint8* pixels)
+void WindowImplX11::setIcon(const Vector2u& size, const std::uint8_t* pixels)
 {
     // X11 wants BGRA pixels: swap red and blue channels
     // Note: this memory will be freed by XDestroyImage
-    auto* iconPixels = static_cast<Uint8*>(std::malloc(width * height * 4));
-    for (std::size_t i = 0; i < width * height; ++i)
+    auto* iconPixels = static_cast<std::uint8_t*>(
+        std::malloc(static_cast<std::size_t>(size.x) * static_cast<std::size_t>(size.y) * 4));
+    for (std::size_t i = 0; i < static_cast<std::size_t>(size.x) * static_cast<std::size_t>(size.y); ++i)
     {
         iconPixels[i * 4 + 0] = pixels[i * 4 + 2];
         iconPixels[i * 4 + 1] = pixels[i * 4 + 1];
@@ -1019,9 +908,18 @@ void WindowImplX11::setIcon(unsigned int width, unsigned int height, const Uint8
     }
 
     // Create the icon pixmap
-    Visual*      defVisual = DefaultVisual(m_display, m_screen);
-    auto defDepth  = static_cast<unsigned int>(DefaultDepth(m_display, m_screen));
-    XImage* iconImage = XCreateImage(m_display, defVisual, defDepth, ZPixmap, 0, reinterpret_cast<char*>(iconPixels), width, height, 32, 0);
+    Visual* defVisual = DefaultVisual(m_display, m_screen);
+    auto    defDepth  = static_cast<unsigned int>(DefaultDepth(m_display, m_screen));
+    XImage* iconImage = XCreateImage(m_display,
+                                     defVisual,
+                                     defDepth,
+                                     ZPixmap,
+                                     0,
+                                     reinterpret_cast<char*>(iconPixels),
+                                     size.x,
+                                     size.y,
+                                     32,
+                                     0);
     if (!iconImage)
     {
         err() << "Failed to set the window's icon" << std::endl;
@@ -1034,34 +932,41 @@ void WindowImplX11::setIcon(unsigned int width, unsigned int height, const Uint8
     if (m_iconMaskPixmap)
         XFreePixmap(m_display, m_iconMaskPixmap);
 
-    m_iconPixmap = XCreatePixmap(m_display, RootWindow(m_display, m_screen), width, height, defDepth);
+    m_iconPixmap = XCreatePixmap(m_display, RootWindow(m_display, m_screen), size.x, size.y, defDepth);
     XGCValues values;
-    GC iconGC = XCreateGC(m_display, m_iconPixmap, 0, &values);
-    XPutImage(m_display, m_iconPixmap, iconGC, iconImage, 0, 0, 0, 0, width, height);
+    GC        iconGC = XCreateGC(m_display, m_iconPixmap, 0, &values);
+    XPutImage(m_display, m_iconPixmap, iconGC, iconImage, 0, 0, 0, 0, size.x, size.y);
     XFreeGC(m_display, iconGC);
     XDestroyImage(iconImage);
 
     // Create the mask pixmap (must have 1 bit depth)
-    std::size_t pitch = (width + 7) / 8;
-    std::vector<Uint8> maskPixels(pitch * height, 0);
-    for (std::size_t j = 0; j < height; ++j)
+    std::size_t               pitch = (size.x + 7) / 8;
+    std::vector<std::uint8_t> maskPixels(pitch * size.y, 0);
+    for (std::size_t j = 0; j < size.y; ++j)
     {
         for (std::size_t i = 0; i < pitch; ++i)
         {
             for (std::size_t k = 0; k < 8; ++k)
             {
-                if (i * 8 + k < width)
+                if (i * 8 + k < size.x)
                 {
-                    Uint8 opacity = (pixels[(i * 8 + k + j * width) * 4 + 3] > 0) ? 1 : 0;
-                    maskPixels[i + j * pitch] |= static_cast<Uint8>(opacity << k);
+                    std::uint8_t opacity = (pixels[(i * 8 + k + j * size.x) * 4 + 3] > 0) ? 1 : 0;
+                    maskPixels[i + j * pitch] |= static_cast<std::uint8_t>(opacity << k);
                 }
             }
         }
     }
-    m_iconMaskPixmap = XCreatePixmapFromBitmapData(m_display, m_window, reinterpret_cast<char*>(maskPixels.data()), width, height, 1, 0, 1);
+    m_iconMaskPixmap = XCreatePixmapFromBitmapData(m_display,
+                                                   m_window,
+                                                   reinterpret_cast<char*>(maskPixels.data()),
+                                                   size.x,
+                                                   size.y,
+                                                   1,
+                                                   0,
+                                                   1);
 
     // Send our new icon to the window through the WMHints
-    XWMHints* hints = XAllocWMHints();
+    XWMHints* hints    = XAllocWMHints();
     hints->flags       = IconPixmapHint | IconMaskHint;
     hints->icon_pixmap = m_iconPixmap;
     hints->icon_mask   = m_iconMaskPixmap;
@@ -1070,21 +975,19 @@ void WindowImplX11::setIcon(unsigned int width, unsigned int height, const Uint8
 
     // ICCCM wants BGRA pixels: swap red and blue channels
     // ICCCM also wants the first 2 unsigned 32-bit values to be width and height
-    std::vector<unsigned long> icccmIconPixels(2 + width * height, 0);
-    unsigned long* ptr = icccmIconPixels.data();
+    std::vector<unsigned long> icccmIconPixels(2 + size.x * size.y, 0);
+    unsigned long*             ptr = icccmIconPixels.data();
 
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wnull-dereference" // False positive.
-    *ptr++ = width;
-    *ptr++ = height;
-    #pragma GCC diagnostic pop
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnull-dereference" // False positive.
+    *ptr++ = size.x;
+    *ptr++ = size.y;
+#pragma GCC diagnostic pop
 
-    for (std::size_t i = 0; i < width * height; ++i)
+    for (std::size_t i = 0; i < static_cast<std::size_t>(size.x) * static_cast<std::size_t>(size.y); ++i)
     {
-        *ptr++ = static_cast<unsigned long>((pixels[i * 4 + 2] << 0 ) |
-                                            (pixels[i * 4 + 1] << 8 ) |
-                                            (pixels[i * 4 + 0] << 16) |
-                                            (pixels[i * 4 + 3] << 24));
+        *ptr++ = static_cast<unsigned long>(
+            (pixels[i * 4 + 2] << 0) | (pixels[i * 4 + 1] << 8) | (pixels[i * 4 + 0] << 16) | (pixels[i * 4 + 3] << 24));
     }
 
     Atom netWmIcon = getAtom("_NET_WM_ICON");
@@ -1096,7 +999,7 @@ void WindowImplX11::setIcon(unsigned int width, unsigned int height, const Uint8
                     32,
                     PropModeReplace,
                     reinterpret_cast<const unsigned char*>(icccmIconPixels.data()),
-                    static_cast<int>(2 + width * height));
+                    static_cast<int>(2 + size.x * size.y));
 
     XFlush(m_display);
 }
@@ -1109,7 +1012,7 @@ void WindowImplX11::setVisible(bool visible)
     {
         XMapWindow(m_display, m_window);
 
-        if(m_fullscreen)
+        if (m_fullscreen)
             switchToFullscreen();
 
         XFlush(m_display);
@@ -1206,7 +1109,7 @@ void WindowImplX11::requestFocus()
     bool sfmlWindowFocused = false;
 
     {
-        std::scoped_lock lock(allWindowsMutex);
+        std::lock_guard lock(allWindowsMutex);
         for (sf::priv::WindowImplX11* windowPtr : allWindows)
         {
             if (windowPtr->hasFocus())
@@ -1253,8 +1156,8 @@ void WindowImplX11::requestFocus()
 ////////////////////////////////////////////////////////////
 bool WindowImplX11::hasFocus() const
 {
-    ::Window focusedWindow = 0;
-    int revertToReturn = 0;
+    ::Window focusedWindow  = 0;
+    int      revertToReturn = 0;
     XGetInputFocus(m_display, &focusedWindow, &revertToReturn);
 
     return (m_window == focusedWindow);
@@ -1281,16 +1184,14 @@ void WindowImplX11::grabFocus()
 
     if (netActiveWindow)
     {
-        XEvent event;
-        std::memset(&event, 0, sizeof(event));
-
-        event.type = ClientMessage;
-        event.xclient.window = m_window;
-        event.xclient.format = 32;
+        auto event                 = XEvent();
+        event.type                 = ClientMessage;
+        event.xclient.window       = m_window;
+        event.xclient.format       = 32;
         event.xclient.message_type = netActiveWindow;
-        event.xclient.data.l[0] = 1; // Normal application
-        event.xclient.data.l[1] = static_cast<long>(m_lastInputTime);
-        event.xclient.data.l[2] = 0; // We don't know the currently active window
+        event.xclient.data.l[0]    = 1; // Normal application
+        event.xclient.data.l[1]    = static_cast<long>(m_lastInputTime);
+        event.xclient.data.l[2]    = 0; // We don't know the currently active window
 
         int result = XSendEvent(m_display,
                                 DefaultRootWindow(m_display),
@@ -1322,7 +1223,8 @@ void WindowImplX11::setVideoMode(const VideoMode& mode)
         return;
 
     // Check if the XRandR extension is present
-    int xRandRMajor, xRandRMinor;
+    int xRandRMajor;
+    int xRandRMinor;
     if (!checkXRandR(xRandRMajor, xRandRMinor))
     {
         // XRandR extension is not supported: we cannot use fullscreen mode
@@ -1368,17 +1270,16 @@ void WindowImplX11::setVideoMode(const VideoMode& mode)
     }
 
     // Find RRMode to set
-    bool modeFound = false;
+    bool   modeFound = false;
     RRMode xRandMode;
 
-    for (int i = 0; (i < res->nmode) && !modeFound; i++)
+    for (int i = 0; (i < res->nmode) && !modeFound; ++i)
     {
         if (crtcInfo->rotation == RR_Rotate_90 || crtcInfo->rotation == RR_Rotate_270)
             std::swap(res->modes[i].height, res->modes[i].width);
 
         // Check if screen size match
-        if ((res->modes[i].width == mode.width) &&
-            (res->modes[i].height == mode.height))
+        if ((res->modes[i].width == mode.size.x) && (res->modes[i].height == mode.size.y))
         {
             xRandMode = res->modes[i].id;
             modeFound = true;
@@ -1395,19 +1296,10 @@ void WindowImplX11::setVideoMode(const VideoMode& mode)
 
     // Save the current video mode before we switch to fullscreen
     m_oldVideoMode = crtcInfo->mode;
-    m_oldRRCrtc = outputInfo->crtc;
+    m_oldRRCrtc    = outputInfo->crtc;
 
     // Switch to fullscreen mode
-    XRRSetCrtcConfig(m_display,
-                     res,
-                     outputInfo->crtc,
-                     CurrentTime,
-                     crtcInfo->x,
-                     crtcInfo->y,
-                     xRandMode,
-                     crtcInfo->rotation,
-                     &output,
-                     1);
+    XRRSetCrtcConfig(m_display, res, outputInfo->crtc, CurrentTime, crtcInfo->x, crtcInfo->y, xRandMode, crtcInfo->rotation, &output, 1);
 
     // Set "this" as the current fullscreen window
     fullscreenWindow = this;
@@ -1427,7 +1319,8 @@ void WindowImplX11::resetVideoMode()
     {
         // Try to set old configuration
         // Check if the XRandR extension
-        int xRandRMajor, xRandRMinor;
+        int xRandRMajor;
+        int xRandRMinor;
         if (checkXRandR(xRandRMajor, xRandRMinor))
         {
             XRRScreenResources* res = XRRGetScreenResources(m_display, DefaultRootWindow(m_display));
@@ -1457,7 +1350,8 @@ void WindowImplX11::resetVideoMode()
                 if (output == None)
                     output = res->outputs[0];
             }
-            else{
+            else
+            {
                 output = res->outputs[0];
             }
 
@@ -1507,7 +1401,7 @@ void WindowImplX11::switchToFullscreen()
                             1);
         }
 
-        Atom netWmState = getAtom("_NET_WM_STATE", true);
+        Atom netWmState           = getAtom("_NET_WM_STATE", true);
         Atom netWmStateFullscreen = getAtom("_NET_WM_STATE_FULLSCREEN", true);
 
         if (!netWmState || !netWmStateFullscreen)
@@ -1516,17 +1410,15 @@ void WindowImplX11::switchToFullscreen()
             return;
         }
 
-        XEvent event;
-        std::memset(&event, 0, sizeof(event));
-
-        event.type = ClientMessage;
-        event.xclient.window = m_window;
-        event.xclient.format = 32;
+        auto event                 = XEvent();
+        event.type                 = ClientMessage;
+        event.xclient.window       = m_window;
+        event.xclient.format       = 32;
         event.xclient.message_type = netWmState;
-        event.xclient.data.l[0] = 1; // _NET_WM_STATE_ADD
-        event.xclient.data.l[1] = static_cast<long>(netWmStateFullscreen);
-        event.xclient.data.l[2] = 0; // No second property
-        event.xclient.data.l[3] = 1; // Normal window
+        event.xclient.data.l[0]    = 1; // _NET_WM_STATE_ADD
+        event.xclient.data.l[1]    = static_cast<long>(netWmStateFullscreen);
+        event.xclient.data.l[2]    = 0; // No second property
+        event.xclient.data.l[3]    = 1; // Normal window
 
         int result = XSendEvent(m_display,
                                 DefaultRootWindow(m_display),
@@ -1545,7 +1437,7 @@ void WindowImplX11::setProtocols()
 {
     using namespace WindowsImplX11Impl;
 
-    Atom wmProtocols = getAtom("WM_PROTOCOLS");
+    Atom wmProtocols    = getAtom("WM_PROTOCOLS");
     Atom wmDeleteWindow = getAtom("WM_DELETE_WINDOW");
 
     if (!wmProtocols)
@@ -1566,12 +1458,12 @@ void WindowImplX11::setProtocols()
     }
 
     Atom netWmPing = None;
-    Atom netWmPid = None;
+    Atom netWmPid  = None;
 
     if (ewmhSupported())
     {
         netWmPing = getAtom("_NET_WM_PING", true);
-        netWmPid = getAtom("_NET_WM_PID", true);
+        netWmPid  = getAtom("_NET_WM_PID", true);
     }
 
     if (netWmPing && netWmPid)
@@ -1614,7 +1506,7 @@ void WindowImplX11::initialize()
     using namespace WindowsImplX11Impl;
 
     // Create the input context
-    m_inputMethod = OpenXIM();
+    m_inputMethod = openXim();
 
     if (m_inputMethod)
     {
@@ -1633,9 +1525,10 @@ void WindowImplX11::initialize()
     }
 
     if (!m_inputContext)
-        err() << "Failed to create input context for window -- TextEntered event won't be able to return unicode" << std::endl;
+        err() << "Failed to create input context for window -- TextEntered event won't be able to return unicode"
+              << std::endl;
 
-    Atom wmWindowType = getAtom("_NET_WM_WINDOW_TYPE", false);
+    Atom wmWindowType       = getAtom("_NET_WM_WINDOW_TYPE", false);
     Atom wmWindowTypeNormal = getAtom("_NET_WM_WINDOW_TYPE_NORMAL", false);
 
     if (wmWindowType && wmWindowTypeNormal)
@@ -1663,7 +1556,7 @@ void WindowImplX11::initialize()
     XFlush(m_display);
 
     // Add this window to the global list of windows (required for focus request)
-    std::scoped_lock lock(allWindowsMutex);
+    std::lock_guard lock(allWindowsMutex);
     allWindows.push_back(this);
 }
 
@@ -1696,8 +1589,8 @@ void WindowImplX11::updateLastInputTime(::Time time)
 void WindowImplX11::createHiddenCursor()
 {
     // Create the cursor's pixmap (1x1 pixels)
-    Pixmap cursorPixmap = XCreatePixmap(m_display, m_window, 1, 1, 1);
-    GC graphicsContext = XCreateGC(m_display, cursorPixmap, 0, nullptr);
+    Pixmap cursorPixmap    = XCreatePixmap(m_display, m_window, 1, 1, 1);
+    GC     graphicsContext = XCreateGC(m_display, cursorPixmap, 0, nullptr);
     XDrawPoint(m_display, cursorPixmap, graphicsContext, 0, 0);
     XFreeGC(m_display, graphicsContext);
 
@@ -1727,35 +1620,6 @@ void WindowImplX11::cleanup()
 bool WindowImplX11::processEvent(XEvent& windowEvent)
 {
     using namespace WindowsImplX11Impl;
-
-    // This function implements a workaround to properly discard
-    // repeated key events when necessary. The problem is that the
-    // system's key events policy doesn't match SFML's one: X server will generate
-    // both repeated KeyPress and KeyRelease events when maintaining a key down, while
-    // SFML only wants repeated KeyPress events. Thus, we have to:
-    // - Discard duplicated KeyRelease events when KeyRepeatEnabled is true
-    // - Discard both duplicated KeyPress and KeyRelease events when KeyRepeatEnabled is false
-
-    // Detect repeated key events
-    if (windowEvent.type == KeyRelease)
-    {
-        // Find the next KeyPress event with matching keycode and time
-        auto it = std::find_if(
-            m_events.begin(),
-            m_events.end(),
-            KeyRepeatFinder(windowEvent.xkey.keycode, windowEvent.xkey.time)
-        );
-
-        if (it != m_events.end())
-        {
-            // If we don't want repeated events, remove the next KeyPress from the queue
-            if (!m_keyRepeat)
-                m_events.erase(it);
-
-            // This KeyRelease is a repeated event and we don't want it
-            return false;
-        }
-    }
 
     // Convert the X11 event to a sf::Event
     switch (windowEvent.type)
@@ -1861,21 +1725,27 @@ bool WindowImplX11::processEvent(XEvent& windowEvent)
                 if (windowEvent.xclient.message_type == wmProtocols)
                 {
                     static Atom wmDeleteWindow = getAtom("WM_DELETE_WINDOW");
-                    static Atom netWmPing = ewmhSupported() ? getAtom("_NET_WM_PING", true) : None;
+                    static Atom netWmPing      = ewmhSupported() ? getAtom("_NET_WM_PING", true) : None;
 
-                    if ((windowEvent.xclient.format == 32) && (windowEvent.xclient.data.l[0]) == static_cast<long>(wmDeleteWindow))
+                    if ((windowEvent.xclient.format == 32) &&
+                        (windowEvent.xclient.data.l[0]) == static_cast<long>(wmDeleteWindow))
                     {
                         // Handle the WM_DELETE_WINDOW message
                         Event event;
                         event.type = Event::Closed;
                         pushEvent(event);
                     }
-                    else if (netWmPing && (windowEvent.xclient.format == 32) && (windowEvent.xclient.data.l[0]) == static_cast<long>(netWmPing))
+                    else if (netWmPing && (windowEvent.xclient.format == 32) &&
+                             (windowEvent.xclient.data.l[0]) == static_cast<long>(netWmPing))
                     {
                         // Handle the _NET_WM_PING message, send pong back to WM to show that we are responsive
                         windowEvent.xclient.window = DefaultRootWindow(m_display);
 
-                        XSendEvent(m_display, DefaultRootWindow(m_display), False, SubstructureNotifyMask | SubstructureRedirectMask, &windowEvent);
+                        XSendEvent(m_display,
+                                   DefaultRootWindow(m_display),
+                                   False,
+                                   SubstructureNotifyMask | SubstructureRedirectMask,
+                                   &windowEvent);
                     }
                 }
             }
@@ -1885,57 +1755,65 @@ bool WindowImplX11::processEvent(XEvent& windowEvent)
         // Key down event
         case KeyPress:
         {
-            Keyboard::Key key = Keyboard::Unknown;
-
-            // Try each KeySym index (modifier group) until we get a match
-            for (int i = 0; i < 4; ++i)
-            {
-                // Get the SFML keyboard code from the keysym of the key that has been pressed
-                key = keysymToSF(XLookupKeysym(&windowEvent.xkey, i));
-
-                if (key != Keyboard::Unknown)
-                    break;
-            }
-
             // Fill the event parameters
             // TODO: if modifiers are wrong, use XGetModifierMapping to retrieve the actual modifiers mapping
             Event event;
-            event.type        = Event::KeyPressed;
-            event.key.code    = key;
-            event.key.alt     = windowEvent.xkey.state & Mod1Mask;
-            event.key.control = windowEvent.xkey.state & ControlMask;
-            event.key.shift   = windowEvent.xkey.state & ShiftMask;
-            event.key.system  = windowEvent.xkey.state & Mod4Mask;
-            pushEvent(event);
+            event.type         = Event::KeyPressed;
+            event.key.code     = KeyboardImpl::getKeyFromEvent(windowEvent.xkey);
+            event.key.scancode = KeyboardImpl::getScancodeFromEvent(windowEvent.xkey);
+            event.key.alt      = windowEvent.xkey.state & Mod1Mask;
+            event.key.control  = windowEvent.xkey.state & ControlMask;
+            event.key.shift    = windowEvent.xkey.state & ShiftMask;
+            event.key.system   = windowEvent.xkey.state & Mod4Mask;
 
-            // Generate a TextEntered event
-            if (!XFilterEvent(&windowEvent, None))
+            const bool filtered = XFilterEvent(&windowEvent, None);
+
+            // Generate a KeyPressed event if needed
+            if (filtered)
             {
-                #ifdef X_HAVE_UTF8_STRING
+                pushEvent(event);
+                isKeyFiltered.set(windowEvent.xkey.keycode);
+            }
+            else
+            {
+                // Push a KeyPressed event if the key has never been filtered before
+                // (a KeyPressed event would have already been pushed if it had been filtered).
+                //
+                // Some dummy IMs (like the built-in one you get by setting XMODIFIERS=@im=none)
+                // never filter events away, and we have to take care of that.
+                //
+                // In addition, ignore text-only KeyPress events generated by IMs (with keycode set to 0).
+                if (!isKeyFiltered.test(windowEvent.xkey.keycode) && windowEvent.xkey.keycode != 0)
+                    pushEvent(event);
+            }
+
+            // Generate TextEntered events if needed
+            if (!filtered)
+            {
+#ifdef X_HAVE_UTF8_STRING
                 if (m_inputContext)
                 {
-                    Status status;
-                    Uint8  keyBuffer[64];
+                    Status       status;
+                    std::uint8_t keyBuffer[64];
 
-                    int length = Xutf8LookupString(
-                        m_inputContext,
-                        &windowEvent.xkey,
-                        reinterpret_cast<char*>(keyBuffer),
-                        sizeof(keyBuffer),
-                        nullptr,
-                        &status
-                    );
+                    int length = Xutf8LookupString(m_inputContext,
+                                                   &windowEvent.xkey,
+                                                   reinterpret_cast<char*>(keyBuffer),
+                                                   sizeof(keyBuffer),
+                                                   nullptr,
+                                                   &status);
 
                     if (status == XBufferOverflow)
                         err() << "A TextEntered event has more than 64 bytes of UTF-8 input, and "
                                  "has been discarded\nThis means either you have typed a very long string "
-                                 "(more than 20 chars), or your input method is broken in obscure ways." << std::endl;
+                                 "(more than 20 chars), or your input method is broken in obscure ways."
+                              << std::endl;
                     else if (status == XLookupChars)
                     {
                         // There might be more than 1 characters in this event,
                         // so we must iterate it
-                        Uint32 unicode = 0;
-                        Uint8* iter = keyBuffer;
+                        std::uint32_t unicode = 0;
+                        std::uint8_t* iter    = keyBuffer;
                         while (iter < keyBuffer + length)
                         {
                             iter = Utf8::decode(iter, keyBuffer + length, unicode, 0);
@@ -1950,15 +1828,15 @@ bool WindowImplX11::processEvent(XEvent& windowEvent)
                     }
                 }
                 else
-                #endif
+#endif
                 {
                     static XComposeStatus status;
-                    char keyBuffer[16];
+                    char                  keyBuffer[16];
                     if (XLookupString(&windowEvent.xkey, keyBuffer, sizeof(keyBuffer), nullptr, &status))
                     {
                         Event textEvent;
                         textEvent.type         = Event::TextEntered;
-                        textEvent.text.unicode = static_cast<Uint32>(keyBuffer[0]);
+                        textEvent.text.unicode = static_cast<std::uint32_t>(keyBuffer[0]);
                         pushEvent(textEvent);
                     }
                 }
@@ -1972,26 +1850,15 @@ bool WindowImplX11::processEvent(XEvent& windowEvent)
         // Key up event
         case KeyRelease:
         {
-            Keyboard::Key key = Keyboard::Unknown;
-
-            // Try each KeySym index (modifier group) until we get a match
-            for (int i = 0; i < 4; ++i)
-            {
-                // Get the SFML keyboard code from the keysym of the key that has been released
-                key = keysymToSF(XLookupKeysym(&windowEvent.xkey, i));
-
-                if (key != Keyboard::Unknown)
-                    break;
-            }
-
             // Fill the event parameters
             Event event;
-            event.type        = Event::KeyReleased;
-            event.key.code    = key;
-            event.key.alt     = windowEvent.xkey.state & Mod1Mask;
-            event.key.control = windowEvent.xkey.state & ControlMask;
-            event.key.shift   = windowEvent.xkey.state & ShiftMask;
-            event.key.system  = windowEvent.xkey.state & Mod4Mask;
+            event.type         = Event::KeyReleased;
+            event.key.code     = KeyboardImpl::getKeyFromEvent(windowEvent.xkey);
+            event.key.scancode = KeyboardImpl::getScancodeFromEvent(windowEvent.xkey);
+            event.key.alt      = windowEvent.xkey.state & Mod1Mask;
+            event.key.control  = windowEvent.xkey.state & ControlMask;
+            event.key.shift    = windowEvent.xkey.state & ShiftMask;
+            event.key.system   = windowEvent.xkey.state & Mod4Mask;
             pushEvent(event);
 
             break;
@@ -2000,19 +1867,16 @@ bool WindowImplX11::processEvent(XEvent& windowEvent)
         // Mouse button pressed
         case ButtonPress:
         {
-            // XXX: Why button 8 and 9?
-            // Because 4 and 5 are the vertical wheel and 6 and 7 are horizontal wheel ;)
+            // Buttons 4 and 5 are the vertical wheel and 6 and 7 the horizontal wheel.
             unsigned int button = windowEvent.xbutton.button;
-            if ((button == Button1) ||
-                (button == Button2) ||
-                (button == Button3) ||
-                (button == 8) ||
-                (button == 9))
+            if ((button == Button1) || (button == Button2) || (button == Button3) || (button == 8) || (button == 9))
             {
                 Event event;
                 event.type          = Event::MouseButtonPressed;
                 event.mouseButton.x = windowEvent.xbutton.x;
                 event.mouseButton.y = windowEvent.xbutton.y;
+
+                // clang-format off
                 switch(button)
                 {
                     case Button1: event.mouseButton.button = Mouse::Left;     break;
@@ -2021,6 +1885,8 @@ bool WindowImplX11::processEvent(XEvent& windowEvent)
                     case 8:       event.mouseButton.button = Mouse::XButton1; break;
                     case 9:       event.mouseButton.button = Mouse::XButton2; break;
                 }
+                // clang-format on
+
                 pushEvent(event);
             }
 
@@ -2033,23 +1899,29 @@ bool WindowImplX11::processEvent(XEvent& windowEvent)
         case ButtonRelease:
         {
             unsigned int button = windowEvent.xbutton.button;
-            if ((button == Button1) ||
-                (button == Button2) ||
-                (button == Button3) ||
-                (button == 8) ||
-                (button == 9))
+            if ((button == Button1) || (button == Button2) || (button == Button3) || (button == 8) || (button == 9))
             {
                 Event event;
                 event.type          = Event::MouseButtonReleased;
                 event.mouseButton.x = windowEvent.xbutton.x;
                 event.mouseButton.y = windowEvent.xbutton.y;
-                switch(button)
+                switch (button)
                 {
-                    case Button1: event.mouseButton.button = Mouse::Left;     break;
-                    case Button2: event.mouseButton.button = Mouse::Middle;   break;
-                    case Button3: event.mouseButton.button = Mouse::Right;    break;
-                    case 8:       event.mouseButton.button = Mouse::XButton1; break;
-                    case 9:       event.mouseButton.button = Mouse::XButton2; break;
+                    case Button1:
+                        event.mouseButton.button = Mouse::Left;
+                        break;
+                    case Button2:
+                        event.mouseButton.button = Mouse::Middle;
+                        break;
+                    case Button3:
+                        event.mouseButton.button = Mouse::Right;
+                        break;
+                    case 8:
+                        event.mouseButton.button = Mouse::XButton1;
+                        break;
+                    case 9:
+                        event.mouseButton.button = Mouse::XButton2;
+                        break;
                 }
                 pushEvent(event);
             }
@@ -2112,6 +1984,15 @@ bool WindowImplX11::processEvent(XEvent& windowEvent)
             break;
         }
 
+        // Keyboard mapping changed
+        case MappingNotify:
+        {
+            if (windowEvent.xmapping.request == MappingKeyboard)
+                XRefreshKeyboardMapping(&windowEvent.xmapping);
+
+            break;
+        }
+
         // Window unmapped
         case UnmapNotify:
         {
@@ -2168,7 +2049,7 @@ bool WindowImplX11::checkXRandR(int& xRandRMajor, int& xRandRMinor)
     }
 
     // Check XRandR version, 1.2 required
-    if (!XRRQueryVersion(m_display, &xRandRMajor, &xRandRMinor) || xRandRMajor < 1 || (xRandRMajor == 1 && xRandRMinor < 2 ))
+    if (!XRRQueryVersion(m_display, &xRandRMajor, &xRandRMinor) || xRandRMajor < 1 || (xRandRMajor == 1 && xRandRMinor < 2))
     {
         err() << "XRandR is too old" << std::endl;
         return false;
@@ -2210,12 +2091,13 @@ Vector2i WindowImplX11::getPrimaryMonitorPosition()
     XRRScreenResources* res = XRRGetScreenResources(m_display, rootWindow);
     if (!res)
     {
-        err() << "Failed to get the current screen resources for.primary monitor position" << std::endl;
+        err() << "Failed to get the current screen resources for primary monitor position" << std::endl;
         return monitorPosition;
     }
 
     // Get xRandr version
-    int xRandRMajor, xRandRMinor;
+    int xRandRMajor;
+    int xRandRMinor;
     if (!checkXRandR(xRandRMajor, xRandRMinor))
         xRandRMajor = xRandRMinor = 0;
 
@@ -2231,7 +2113,7 @@ Vector2i WindowImplX11::getPrimaryMonitorPosition()
         if (outputInfo)
             XRRFreeOutputInfo(outputInfo);
 
-        err() << "Failed to get output info for.primary monitor position" << std::endl;
+        err() << "Failed to get output info for primary monitor position" << std::endl;
         return monitorPosition;
     }
 
@@ -2241,7 +2123,7 @@ Vector2i WindowImplX11::getPrimaryMonitorPosition()
     {
         XRRFreeScreenResources(res);
         XRRFreeOutputInfo(outputInfo);
-        err() << "Failed to get crtc info for.primary monitor position" << std::endl;
+        err() << "Failed to get crtc info for primary monitor position" << std::endl;
         return monitorPosition;
     }
 
@@ -2255,6 +2137,4 @@ Vector2i WindowImplX11::getPrimaryMonitorPosition()
     return monitorPosition;
 }
 
-} // namespace priv
-
-} // namespace sf
+} // namespace sf::priv

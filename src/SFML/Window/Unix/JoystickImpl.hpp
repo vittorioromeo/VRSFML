@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,19 +22,17 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_JOYSTICKIMPLLINUX_HPP
-#define SFML_JOYSTICKIMPLLINUX_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/JoystickImpl.hpp>
+
 #include <linux/input.h>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// \brief Linux implementation of joysticks
@@ -43,13 +41,6 @@ namespace priv
 class JoystickImpl
 {
 public:
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Constructor
-    ///
-    ////////////////////////////////////////////////////////////
-    JoystickImpl();
-
     ////////////////////////////////////////////////////////////
     /// \brief Perform the global initialization of the joystick module
     ///
@@ -80,7 +71,7 @@ public:
     /// \return True on success, false on failure
     ///
     ////////////////////////////////////////////////////////////
-    bool open(unsigned int index);
+    [[nodiscard]] bool open(unsigned int index);
 
     ////////////////////////////////////////////////////////////
     /// \brief Close the joystick
@@ -110,22 +101,16 @@ public:
     /// \return Joystick state
     ///
     ////////////////////////////////////////////////////////////
-    JoystickState update();
+    [[nodiscard]] JoystickState update();
 
 private:
-
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    int                          m_file;                 ///< File descriptor of the joystick
-    char                         m_mapping[ABS_MAX + 1]; ///< Axes mapping (index to axis id)
-    JoystickState                m_state;                ///< Current state of the joystick
-    sf::Joystick::Identification m_identification;       ///< Identification of the joystick
+    int                          m_file{-1};                ///< File descriptor of the joystick
+    char                         m_mapping[ABS_MAX + 1]{0}; ///< Axes mapping (index to axis id)
+    JoystickState                m_state;                   ///< Current state of the joystick
+    sf::Joystick::Identification m_identification;          ///< Identification of the joystick
 };
 
-} // namespace priv
-
-} // namespace sf
-
-
-#endif // SFML_JOYSTICKIMPLLINUX_HPP
+} // namespace sf::priv

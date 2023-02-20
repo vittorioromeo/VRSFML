@@ -4,13 +4,14 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window.hpp>
 
+#include <X11/Xlib.h>
 #define GLAD_GL_IMPLEMENTATION
 #include <gl.h>
 
-#include <X11/Xlib.h>
-#include <iostream>
+#include <array>
 #include <cmath>
 #include <cstdlib>
+#include <iostream>
 
 ////////////////////////////////////////////////////////////
 /// Initialize OpenGL states into the specified view
@@ -93,7 +94,8 @@
     glRotatef(elapsedTime * 18.f, 0.f, 0.f, 1.f);
 
     // Define a 3D cube (6 faces made of 2 triangles composed by 3 vertices)
-    static const GLfloat cube[] =
+    // clang-format off
+    constexpr std::array<GLfloat, 216> cube =
     {
         // positions    // colors
         -50, -50, -50,  1, 1, 0,
@@ -138,10 +140,11 @@
          50, -50,  50,  0, 1, 1,
          50,  50,  50,  0, 1, 1
     };
+    // clang-format on
 
     // Draw the cube
-    glVertexPointer(3, GL_FLOAT, 6 * sizeof(GLfloat), cube);
-    glColorPointer(3, GL_FLOAT, 6 * sizeof(GLfloat), cube + 3);
+    glVertexPointer(3, GL_FLOAT, 6 * sizeof(GLfloat), cube.data());
+    glColorPointer(3, GL_FLOAT, 6 * sizeof(GLfloat), cube.data() + 3);
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
     return true;
@@ -168,31 +171,49 @@ int main()
     XSetWindowAttributes attributes;
     attributes.background_pixel = BlackPixel(display, screen);
     attributes.event_mask       = KeyPressMask;
-    Window window = XCreateWindow(display, RootWindow(display, screen),
-                                  0, 0, 650, 330, 0,
+    Window window               = XCreateWindow(display,
+                                  RootWindow(display, screen),
+                                  0,
+                                  0,
+                                  650,
+                                  330,
+                                  0,
                                   DefaultDepth(display, screen),
                                   InputOutput,
                                   DefaultVisual(display, screen),
-                                  CWBackPixel | CWEventMask, &attributes);
+                                  CWBackPixel | CWEventMask,
+                                  &attributes);
     if (!window)
         return EXIT_FAILURE;
 
     // Set the window's name
-    XStoreName(display, window , "SFML Window");
+    XStoreName(display, window, "SFML Window");
 
     // Let's create the windows which will serve as containers for our SFML views
-    Window view1 = XCreateWindow(display, window,
-                                 10, 10, 310, 310, 0,
+    Window view1 = XCreateWindow(display,
+                                 window,
+                                 10,
+                                 10,
+                                 310,
+                                 310,
+                                 0,
                                  DefaultDepth(display, screen),
                                  InputOutput,
                                  DefaultVisual(display, screen),
-                                 0, nullptr);
-    Window view2 = XCreateWindow(display, window,
-                                 330, 10, 310, 310, 0,
+                                 0,
+                                 nullptr);
+    Window view2 = XCreateWindow(display,
+                                 window,
+                                 330,
+                                 10,
+                                 310,
+                                 310,
+                                 0,
                                  DefaultDepth(display, screen),
                                  InputOutput,
                                  DefaultVisual(display, screen),
-                                 0, nullptr);
+                                 0,
+                                 nullptr);
 
     // Show our windows
     XMapWindow(display, window);
@@ -278,6 +299,4 @@ int main()
 
     // Close the display
     XCloseDisplay(display);
-
-    return EXIT_SUCCESS;
 }

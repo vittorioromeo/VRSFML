@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,13 +22,13 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_RENDERSTATES_HPP
-#define SFML_RENDERSTATES_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Export.hpp>
+
 #include <SFML/Graphics/BlendMode.hpp>
 #include <SFML/Graphics/Transform.hpp>
 
@@ -45,7 +45,6 @@ class Texture;
 class SFML_GRAPHICS_API RenderStates
 {
 public:
-
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
@@ -101,27 +100,24 @@ public:
     /// \param theShader    Shader to use
     ///
     ////////////////////////////////////////////////////////////
-    RenderStates(const BlendMode& theBlendMode, const Transform& theTransform,
-                 const Texture* theTexture, const Shader* theShader);
+    RenderStates(const BlendMode& theBlendMode, const Transform& theTransform, const Texture* theTexture, const Shader* theShader);
 
     ////////////////////////////////////////////////////////////
     // Static member data
     ////////////////////////////////////////////////////////////
+    // NOLINTNEXTLINE(readability-identifier-naming)
     static const RenderStates Default; //!< Special instance holding the default render states
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    BlendMode      blendMode; //!< Blending mode
-    Transform      transform; //!< Transform
-    const Texture* texture;   //!< Texture
-    const Shader*  shader;    //!< Shader
+    BlendMode      blendMode{BlendAlpha}; //!< Blending mode
+    Transform      transform;             //!< Transform
+    const Texture* texture{};             //!< Texture
+    const Shader*  shader{};              //!< Shader
 };
 
 } // namespace sf
-
-
-#endif // SFML_RENDERSTATES_HPP
 
 
 ////////////////////////////////////////////////////////////

@@ -22,8 +22,10 @@ set(SRC
     ${INCROOT}/Time.inl
     ${INCROOT}/Utf.hpp
     ${INCROOT}/Utf.inl
+    ${SRCROOT}/Vector2.cpp
     ${INCROOT}/Vector2.hpp
     ${INCROOT}/Vector2.inl
+    ${SRCROOT}/Vector3.cpp
     ${INCROOT}/Vector3.hpp
     ${INCROOT}/Vector3.inl
     ${SRCROOT}/FileInputStream.cpp
@@ -48,7 +50,7 @@ else()
     )
 
     if(SFML_OS_ANDROID)
-        set(PLATFORM_SRC ${PLATFORM_SRC}
+        list(APPEND PLATFORM_SRC
             ${SRCROOT}/Android/Activity.hpp
             ${SRCROOT}/Android/Activity.cpp
             ${SRCROOT}/Android/NativeActivity.cpp
@@ -64,6 +66,12 @@ endif()
 # define the sfml-system target
 sfml_add_library(System
                  SOURCES ${SRC} ${PLATFORM_SRC})
+
+# enable precompiled headers
+if (SFML_ENABLE_PCH)
+    message(VERBOSE "enabling PCH for SFML library 'sfml-system' (reused as the PCH for other SFML libraries)")
+    target_precompile_headers(sfml-system PRIVATE ${PROJECT_SOURCE_DIR}/src/SFML/PCH.hpp)
+endif()
 
 if(SFML_OS_ANDROID)
     # glad sources

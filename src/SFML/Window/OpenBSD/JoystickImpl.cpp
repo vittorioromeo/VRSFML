@@ -28,16 +28,13 @@
 #include <SFML/Window/JoystickImpl.hpp>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 void JoystickImpl::initialize()
 {
     // To implement
 }
-
 
 
 ////////////////////////////////////////////////////////////
@@ -92,6 +89,4 @@ JoystickState JoystickImpl::update()
     return JoystickState();
 }
 
-} // namespace priv
-
-} // namespace sf
+} // namespace sf::priv

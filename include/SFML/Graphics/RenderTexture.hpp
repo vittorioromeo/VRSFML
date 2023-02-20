@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,16 +22,17 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_RENDERTEXTURE_HPP
-#define SFML_RENDERTEXTURE_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Export.hpp>
-#include <SFML/Graphics/Texture.hpp>
+
 #include <SFML/Graphics/RenderTarget.hpp>
+#include <SFML/Graphics/Texture.hpp>
 #include <SFML/Window/ContextSettings.hpp>
+
 #include <memory>
 
 
@@ -39,7 +40,7 @@ namespace sf
 {
 namespace priv
 {
-    class RenderTextureImpl;
+class RenderTextureImpl;
 }
 
 ////////////////////////////////////////////////////////////
@@ -49,7 +50,6 @@ namespace priv
 class SFML_GRAPHICS_API RenderTexture : public RenderTarget
 {
 public:
-
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
@@ -78,14 +78,13 @@ public:
     /// requires a depth or stencil buffer. Otherwise it is unnecessary, and
     /// you should leave this parameter at its default value.
     ///
-    /// \param width    Width of the render-texture
-    /// \param height   Height of the render-texture
+    /// \param size     Width and height of the render-texture
     /// \param settings Additional settings for the underlying OpenGL texture and context
     ///
     /// \return True if creation has been successful
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool create(unsigned int width, unsigned int height, const ContextSettings& settings = ContextSettings());
+    [[nodiscard]] bool create(const Vector2u& size, const ContextSettings& settings = ContextSettings());
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the maximum anti-aliasing level supported by the system
@@ -225,7 +224,6 @@ public:
     const Texture& getTexture() const;
 
 private:
-
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
@@ -234,9 +232,6 @@ private:
 };
 
 } // namespace sf
-
-
-#endif // SFML_RENDERTEXTURE_HPP
 
 
 ////////////////////////////////////////////////////////////
@@ -259,7 +254,7 @@ private:
 ///
 /// \code
 /// // Create a new render-window
-/// sf::RenderWindow window(sf::VideoMode(800, 600), "SFML window");
+/// sf::RenderWindow window(sf::VideoMode({800, 600}), "SFML window");
 ///
 /// // Create a new render-texture
 /// sf::RenderTexture texture;

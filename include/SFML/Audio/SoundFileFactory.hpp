@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,13 +22,14 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_SOUNDFILEFACTORY_HPP
-#define SFML_SOUNDFILEFACTORY_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
+
+#include <filesystem>
 #include <memory>
 #include <string>
 #include <vector>
@@ -47,7 +48,6 @@ class SoundFileWriter;
 class SFML_AUDIO_API SoundFileFactory
 {
 public:
-
     ////////////////////////////////////////////////////////////
     /// \brief Register a new reader
     ///
@@ -94,7 +94,7 @@ public:
     /// \see createReaderFromMemory, createReaderFromStream
     ///
     ////////////////////////////////////////////////////////////
-    static std::unique_ptr<SoundFileReader> createReaderFromFilename(const std::string& filename);
+    static std::unique_ptr<SoundFileReader> createReaderFromFilename(const std::filesystem::path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Instantiate the right codec for the given file in memory
@@ -129,10 +129,9 @@ public:
     /// \return A new sound file writer that can write given file, or null if no writer can handle it
     ///
     ////////////////////////////////////////////////////////////
-    static std::unique_ptr<SoundFileWriter> createWriterFromFilename(const std::string& filename);
+    static std::unique_ptr<SoundFileWriter> createWriterFromFilename(const std::filesystem::path& filename);
 
 private:
-
     ////////////////////////////////////////////////////////////
     // Types
     ////////////////////////////////////////////////////////////
@@ -145,7 +144,7 @@ private:
 
     struct WriterFactory
     {
-        bool (*check)(const std::string&);
+        bool (*check)(const std::filesystem::path&);
         std::unique_ptr<SoundFileWriter> (*create)();
     };
     using WriterFactoryArray = std::vector<WriterFactory>;
@@ -153,15 +152,15 @@ private:
     ////////////////////////////////////////////////////////////
     // Static member data
     ////////////////////////////////////////////////////////////
+    // NOLINTBEGIN(readability-identifier-naming)
     static ReaderFactoryArray s_readers; //!< List of all registered readers
     static WriterFactoryArray s_writers; //!< List of all registered writers
+    // NOLINTEND(readability-identifier-naming)
 };
 
 } // namespace sf
 
 #include <SFML/Audio/SoundFileFactory.inl>
-
-#endif // SFML_SOUNDFILEFACTORY_HPP
 
 
 ////////////////////////////////////////////////////////////

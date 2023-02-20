@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,17 +22,18 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_VERTEXARRAY_HPP
-#define SFML_VERTEXARRAY_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Export.hpp>
-#include <SFML/Graphics/Vertex.hpp>
+
+#include <SFML/Graphics/Drawable.hpp>
 #include <SFML/Graphics/PrimitiveType.hpp>
 #include <SFML/Graphics/Rect.hpp>
-#include <SFML/Graphics/Drawable.hpp>
+#include <SFML/Graphics/Vertex.hpp>
+
 #include <vector>
 
 
@@ -45,7 +46,6 @@ namespace sf
 class SFML_GRAPHICS_API VertexArray : public Drawable
 {
 public:
-
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
@@ -85,7 +85,7 @@ public:
     /// \see getVertexCount
     ///
     ////////////////////////////////////////////////////////////
-    Vertex& operator [](std::size_t index);
+    Vertex& operator[](std::size_t index);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a read-only access to a vertex by its index
@@ -101,7 +101,7 @@ public:
     /// \see getVertexCount
     ///
     ////////////////////////////////////////////////////////////
-    const Vertex& operator [](std::size_t index) const;
+    const Vertex& operator[](std::size_t index) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Clear the vertex array
@@ -171,7 +171,6 @@ public:
     FloatRect getBounds() const;
 
 private:
-
     ////////////////////////////////////////////////////////////
     /// \brief Draw the vertex array to a render target
     ///
@@ -179,21 +178,16 @@ private:
     /// \param states Current render states
     ///
     ////////////////////////////////////////////////////////////
-    void draw(RenderTarget& target, RenderStates states) const override;
-
-private:
+    void draw(RenderTarget& target, const RenderStates& states) const override;
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::vector<Vertex> m_vertices;      //!< Vertices contained in the array
-    PrimitiveType       m_primitiveType; //!< Type of primitives to draw
+    std::vector<Vertex> m_vertices;                             //!< Vertices contained in the array
+    PrimitiveType       m_primitiveType{PrimitiveType::Points}; //!< Type of primitives to draw
 };
 
 } // namespace sf
-
-
-#endif // SFML_VERTEXARRAY_HPP
 
 
 ////////////////////////////////////////////////////////////

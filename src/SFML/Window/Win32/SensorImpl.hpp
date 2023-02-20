@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,13 +22,15 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_SENSORIMPLWIN32_HPP
-#define SFML_SENSORIMPLWIN32_HPP
+#pragma once
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include <SFML/Window/Sensor.hpp>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// \brief Windows implementation of sensors
@@ -37,7 +39,6 @@ namespace priv
 class SensorImpl
 {
 public:
-
     ////////////////////////////////////////////////////////////
     /// \brief Perform the global initialization of the sensor module
     ///
@@ -68,7 +69,7 @@ public:
     /// \return True on success, false on failure
     ///
     ////////////////////////////////////////////////////////////
-    bool open(Sensor::Type sensor);
+    [[nodiscard]] bool open(Sensor::Type sensor);
 
     ////////////////////////////////////////////////////////////
     /// \brief Close the sensor
@@ -82,7 +83,7 @@ public:
     /// \return Sensor value
     ///
     ////////////////////////////////////////////////////////////
-    Vector3f update();
+    [[nodiscard]] Vector3f update();
 
     ////////////////////////////////////////////////////////////
     /// \brief Enable or disable the sensor
@@ -93,9 +94,4 @@ public:
     void setEnabled(bool enabled);
 };
 
-} // namespace priv
-
-} // namespace sf
-
-
-#endif // SFML_SENSORIMPLWIN32_HPP
+} // namespace sf::priv

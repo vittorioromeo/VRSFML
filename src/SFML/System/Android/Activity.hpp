@@ -22,51 +22,50 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_ACTIVITY_HPP
-#define SFML_ACTIVITY_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Event.hpp>
 #include <SFML/Window/EglContext.hpp>
-#include <android/native_activity.h>
+#include <SFML/Window/Event.hpp>
+
 #include <android/configuration.h>
-#include <vector>
-#include <unordered_map>
-#include <string>
+#include <android/native_activity.h>
+
 #include <fstream>
 #include <mutex>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 class SFML_SYSTEM_API LogcatStream : public std::streambuf
 {
 public:
     LogcatStream();
 
-    std::streambuf::int_type overflow (std::streambuf::int_type c);
+    std::streambuf::int_type overflow(std::streambuf::int_type c) override;
 
 private:
     std::string m_message;
 };
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 struct ActivityStates
 {
     ANativeActivity* activity;
-    ANativeWindow* window;
+    ANativeWindow*   window;
 
     ALooper*        looper;
     AInputQueue*    inputQueue;
     AConfiguration* config;
 
-    EGLDisplay display;
+    EGLDisplay  display;
     EglContext* context;
 
-    void* savedState;
-    size_t savedStateSize;
+    void*       savedState;
+    std::size_t savedStateSize;
 
     std::recursive_mutex mutex;
 
@@ -74,8 +73,8 @@ struct ActivityStates
     int (*processEvent)(int fd, int events, void* data);
 
     std::unordered_map<int, Vector2i> touchEvents;
-    Vector2i mousePosition;
-    bool isButtonPressed[Mouse::ButtonCount];
+    Vector2i                          mousePosition;
+    bool                              isButtonPressed[Mouse::ButtonCount];
 
     bool mainOver;
 
@@ -92,11 +91,9 @@ struct ActivityStates
 };
 
 SFML_SYSTEM_API ActivityStates*& getActivityStatesPtr();
+
 SFML_SYSTEM_API void resetActivity(ActivityStates* initializedStates);
+
 SFML_SYSTEM_API ActivityStates& getActivity();
 
-} // namespace priv
-} // namespace sf
-
-
-#endif // SFML_ACTIVITY_HPP
+} // namespace sf::priv

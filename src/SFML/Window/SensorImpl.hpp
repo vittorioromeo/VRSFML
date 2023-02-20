@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,36 +22,34 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_SENSORIMPL_HPP
-#define SFML_SENSORIMPL_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Config.hpp>
+
 #include <SFML/Window/Sensor.hpp>
 
 #if defined(SFML_SYSTEM_WINDOWS)
 
-    #include <SFML/Window/Win32/SensorImpl.hpp>
+#include <SFML/Window/Win32/SensorImpl.hpp>
 
-#elif defined(SFML_SYSTEM_LINUX) || defined(SFML_SYSTEM_FREEBSD) || defined(SFML_SYSTEM_OPENBSD) || defined(SFML_SYSTEM_NETBSD)
+#elif defined(SFML_SYSTEM_LINUX) || defined(SFML_SYSTEM_FREEBSD) || defined(SFML_SYSTEM_OPENBSD) || \
+    defined(SFML_SYSTEM_NETBSD)
 
-    #include <SFML/Window/Unix/SensorImpl.hpp>
+#include <SFML/Window/Unix/SensorImpl.hpp>
 
 #elif defined(SFML_SYSTEM_MACOS)
 
-    #include <SFML/Window/OSX/SensorImpl.hpp>
+#include <SFML/Window/OSX/SensorImpl.hpp>
 
 #elif defined(SFML_SYSTEM_IOS)
 
-    #include <SFML/Window/iOS/SensorImpl.hpp>
+#include <SFML/Window/iOS/SensorImpl.hpp>
 
 #elif defined(SFML_SYSTEM_ANDROID)
 
-    #include <SFML/Window/Android/SensorImpl.hpp>
+#include <SFML/Window/Android/SensorImpl.hpp>
 
 #endif
-
-
-#endif // SFML_SENSORIMPL_HPP

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,13 +22,13 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_RENDERWINDOW_HPP
-#define SFML_RENDERWINDOW_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Export.hpp>
+
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Window/Window.hpp>
 
@@ -42,7 +42,6 @@ namespace sf
 class SFML_GRAPHICS_API RenderWindow : public Window, public RenderTarget
 {
 public:
-
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
@@ -71,7 +70,10 @@ public:
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    RenderWindow(VideoMode mode, const String& title, Uint32 style = Style::Default, const ContextSettings& settings = ContextSettings());
+    RenderWindow(VideoMode              mode,
+                 const String&          title,
+                 std::uint32_t          style    = Style::Default,
+                 const ContextSettings& settings = ContextSettings());
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control
@@ -140,7 +142,6 @@ public:
     [[nodiscard]] bool setActive(bool active = true) override;
 
 protected:
-
     ////////////////////////////////////////////////////////////
     /// \brief Function called after the window has been created
     ///
@@ -161,17 +162,13 @@ protected:
     void onResize() override;
 
 private:
-
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    unsigned int m_defaultFrameBuffer; //!< Framebuffer to bind when targeting this window
+    unsigned int m_defaultFrameBuffer{}; //!< Framebuffer to bind when targeting this window
 };
 
 } // namespace sf
-
-
-#endif // SFML_RENDERWINDOW_HPP
 
 
 ////////////////////////////////////////////////////////////
@@ -194,7 +191,7 @@ private:
 ///
 /// \code
 /// // Declare and create a new render-window
-/// sf::RenderWindow window(sf::VideoMode(800, 600), "SFML window");
+/// sf::RenderWindow window(sf::VideoMode({800, 600}), "SFML window");
 ///
 /// // Limit the framerate to 60 frames per second (this step is optional)
 /// window.setFramerateLimit(60);
@@ -203,8 +200,7 @@ private:
 /// while (window.isOpen())
 /// {
 ///    // Event processing
-///    sf::Event event;
-///    while (window.pollEvent(event))
+///    for (sf::Event event; window.pollEvent(event);)
 ///    {
 ///        // Request for closing the window
 ///        if (event.type == sf::Event::Closed)
@@ -230,7 +226,7 @@ private:
 ///
 /// \code
 /// // Create the render window
-/// sf::RenderWindow window(sf::VideoMode(800, 600), "SFML OpenGL");
+/// sf::RenderWindow window(sf::VideoMode({800, 600}), "SFML OpenGL");
 ///
 /// // Create a sprite and a text to display
 /// sf::Sprite sprite;

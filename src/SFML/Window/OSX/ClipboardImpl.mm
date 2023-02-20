@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -25,26 +25,24 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/System/String.hpp>
 #include <SFML/Window/OSX/AutoreleasePoolWrapper.hpp>
 #include <SFML/Window/OSX/ClipboardImpl.hpp>
-#include <SFML/System/String.hpp>
 
 #import <AppKit/AppKit.h>
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 
 ////////////////////////////////////////////////////////////
 String ClipboardImpl::getString()
 {
     AutoreleasePool pool;
-    NSPasteboard* pboard = [NSPasteboard generalPasteboard];
-    NSString* data = [pboard stringForType:NSPasteboardTypeString];
+    NSPasteboard*   pboard = [NSPasteboard generalPasteboard];
+    NSString*       data   = [pboard stringForType:NSPasteboardTypeString];
 
-    char const* utf8 = [data cStringUsingEncoding:NSUTF8StringEncoding];
-    NSUInteger length = [data lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+    char const* utf8   = [data cStringUsingEncoding:NSUTF8StringEncoding];
+    NSUInteger  length = [data lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
 
     return String::fromUtf8(utf8, utf8 + length);
 }
@@ -53,11 +51,9 @@ String ClipboardImpl::getString()
 ////////////////////////////////////////////////////////////
 void ClipboardImpl::setString(const String& text)
 {
-    AutoreleasePool pool;
-    std::basic_string<Uint8> utf8 = text.toUtf8();
-    NSString* data = [[NSString alloc] initWithBytes:utf8.data()
-                                              length:utf8.length()
-                                            encoding:NSUTF8StringEncoding];
+    AutoreleasePool                 pool;
+    std::basic_string<std::uint8_t> utf8 = text.toUtf8();
+    NSString* data = [[NSString alloc] initWithBytes:utf8.data() length:utf8.length() encoding:NSUTF8StringEncoding];
 
     NSPasteboard* pboard = [NSPasteboard generalPasteboard];
     [pboard declareTypes:@[NSPasteboardTypeString] owner:nil];
@@ -66,7 +62,4 @@ void ClipboardImpl::setString(const String& text)
     [data release];
 }
 
-} // namespace priv
-
-} // namespace sf
-
+} // namespace sf::priv

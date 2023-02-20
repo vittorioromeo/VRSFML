@@ -1,8 +1,8 @@
+#include <SFML/Audio.hpp>
+#include <SFML/Graphics.hpp>
+#include <SFML/Network.hpp>
 #include <SFML/System.hpp>
 #include <SFML/Window.hpp>
-#include <SFML/Graphics.hpp>
-#include <SFML/Audio.hpp>
-#include <SFML/Network.hpp>
 
 // Do we want to showcase direct JNI/NDK interaction?
 // Undefine this to get real cross-platform code.
@@ -11,8 +11,8 @@
 
 #if defined(USE_JNI)
 // These headers are only needed for direct NDK/JDK interaction
-#include <jni.h>
 #include <android/native_activity.h>
+#include <jni.h>
 
 // Since we want to get the native activity from SFML, we'll have to use an
 // extra header here:
@@ -22,36 +22,36 @@
 int vibrate(sf::Time duration)
 {
     // First we'll need the native activity handle
-    ANativeActivity *activity = sf::getNativeActivity();
+    ANativeActivity* activity = sf::getNativeActivity();
 
     // Retrieve the JVM and JNI environment
-    JavaVM* vm = activity->vm;
+    JavaVM* vm  = activity->vm;
     JNIEnv* env = activity->env;
 
     // First, attach this thread to the main thread
     JavaVMAttachArgs attachargs;
     attachargs.version = JNI_VERSION_1_6;
-    attachargs.name = "NativeThread";
-    attachargs.group = nullptr;
-    jint res = vm->AttachCurrentThread(&env, &attachargs);
+    attachargs.name    = "NativeThread";
+    attachargs.group   = nullptr;
+    jint res           = vm->AttachCurrentThread(&env, &attachargs);
 
     if (res == JNI_ERR)
         return EXIT_FAILURE;
 
     // Retrieve class information
-    jclass natact = env->FindClass("android/app/NativeActivity");
+    jclass natact  = env->FindClass("android/app/NativeActivity");
     jclass context = env->FindClass("android/content/Context");
 
     // Get the value of a constant
-    jfieldID fid = env->GetStaticFieldID(context, "VIBRATOR_SERVICE", "Ljava/lang/String;");
-    jobject svcstr = env->GetStaticObjectField(context, fid);
+    jfieldID fid    = env->GetStaticFieldID(context, "VIBRATOR_SERVICE", "Ljava/lang/String;");
+    jobject  svcstr = env->GetStaticObjectField(context, fid);
 
     // Get the method 'getSystemService' and call it
-    jmethodID getss = env->GetMethodID(natact, "getSystemService", "(Ljava/lang/String;)Ljava/lang/Object;");
-    jobject vib_obj = env->CallObjectMethod(activity->clazz, getss, svcstr);
+    jmethodID getss   = env->GetMethodID(natact, "getSystemService", "(Ljava/lang/String;)Ljava/lang/Object;");
+    jobject   vib_obj = env->CallObjectMethod(activity->clazz, getss, svcstr);
 
     // Get the object's class and retrieve the member name
-    jclass vib_cls = env->GetObjectClass(vib_obj);
+    jclass    vib_cls = env->GetObjectClass(vib_obj);
     jmethodID vibrate = env->GetMethodID(vib_cls, "vibrate", "(J)V");
 
     // Determine the timeframe
@@ -75,7 +75,7 @@ int vibrate(sf::Time duration)
 // This is the actual Android example. You don't have to write any platform
 // specific code, unless you want to use things not directly exposed.
 // ('vibrate()' in this example; undefine 'USE_JNI' above to disable it)
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     sf::VideoMode screen(sf::VideoMode::getDesktopMode());
 
@@ -83,12 +83,12 @@ int main(int argc, char *argv[])
     window.setFramerateLimit(30);
 
     sf::Texture texture;
-    if(!texture.loadFromFile("image.png"))
+    if (!texture.loadFromFile("image.png"))
         return EXIT_FAILURE;
 
     sf::Sprite image(texture);
-    image.setPosition({screen.width / 2.f, screen.height / 2.f});
-    image.setOrigin({texture.getSize().x / 2.f, texture.getSize().y / 2.f});
+    image.setPosition(sf::Vector2f(screen.size) / 2.f);
+    image.setOrigin(sf::Vector2f(texture.getSize()) / 2.f);
 
     sf::Font font;
     if (!font.loadFromFile("tuffy.ttf"))
@@ -109,9 +109,7 @@ int main(int argc, char *argv[])
 
     while (window.isOpen())
     {
-        sf::Event event;
-
-        while (active ? window.pollEvent(event) : window.waitEvent(event))
+        for (sf::Event event; active ? window.pollEvent(event) : window.waitEvent(event);)
         {
             switch (event.type)
             {
@@ -123,8 +121,8 @@ int main(int argc, char *argv[])
                         window.close();
                     break;
                 case sf::Event::Resized:
-                    view.setSize(event.size.width, event.size.height);
-                    view.setCenter({event.size.width / 2.f, event.size.height / 2.f});
+                    view.setSize(sf::Vector2f(event.size.width, event.size.height));
+                    view.setCenter(sf::Vector2f(event.size.width, event.size.height) / 2.f);
                     window.setView(view);
                     break;
                 case sf::Event::LostFocus:
@@ -161,7 +159,8 @@ int main(int argc, char *argv[])
             window.draw(text);
             window.display();
         }
-        else {
+        else
+        {
             sf::sleep(sf::milliseconds(100));
         }
     }

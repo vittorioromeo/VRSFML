@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -27,9 +27,9 @@
 ////////////////////////////////////////////////////////////
 #define MINIMP3_IMPLEMENTATION // Minimp3 control define, places implementation in this file.
 #ifndef NOMINMAX
-#define NOMINMAX               // To avoid windows.h and std::min issue
+#define NOMINMAX // To avoid windows.h and std::min issue
 #endif
-#define MINIMP3_NO_STDIO       // Minimp3 control define, eliminate file manipulation code which is useless here
+#define MINIMP3_NO_STDIO // Minimp3 control define, eliminate file manipulation code which is useless here
 
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -46,8 +46,8 @@
 #undef MINIMP3_NO_STDIO
 
 #include <SFML/Audio/SoundFileReaderMp3.hpp>
-#include <SFML/System/MemoryInputStream.hpp>
-#include <SFML/System/Err.hpp>
+#include <SFML/System/InputStream.hpp>
+
 #include <algorithm>
 #include <cstring>
 
@@ -56,33 +56,32 @@ namespace
 {
 std::size_t readCallback(void* ptr, std::size_t size, void* data)
 {
-    sf::InputStream* stream = static_cast<sf::InputStream*>(data);
-    return static_cast<std::size_t>(stream->read(ptr, static_cast<sf::Int64>(size)));
+    auto* stream = static_cast<sf::InputStream*>(data);
+    return static_cast<std::size_t>(stream->read(ptr, static_cast<std::int64_t>(size)));
 }
 
 int seekCallback(std::uint64_t offset, void* data)
 {
-    sf::InputStream* stream = static_cast<sf::InputStream*>(data);
-    sf::Int64 position = stream->seek(static_cast<sf::Int64>(offset));
+    auto*        stream   = static_cast<sf::InputStream*>(data);
+    std::int64_t position = stream->seek(static_cast<std::int64_t>(offset));
     return position < 0 ? -1 : 0;
 }
 
-bool hasValidId3Tag(const sf::Uint8* header)
+bool hasValidId3Tag(const std::uint8_t* header)
 {
-    return std::memcmp(header, "ID3", 3) == 0 && !((header[5] & 15) || (header[6] & 0x80) || (header[7] & 0x80) || (header[8] & 0x80) || (header[9] & 0x80));
+    return std::memcmp(header, "ID3", 3) == 0 &&
+           !((header[5] & 15) || (header[6] & 0x80) || (header[7] & 0x80) || (header[8] & 0x80) || (header[9] & 0x80));
 }
-}
+} // namespace
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 bool SoundFileReaderMp3::check(InputStream& stream)
 {
-    Uint8 header[10];
+    std::uint8_t header[10];
 
-    if (static_cast<std::size_t>(stream.read(header, static_cast<Int64>(sizeof(header)))) < sizeof(header))
+    if (static_cast<std::size_t>(stream.read(header, static_cast<std::int64_t>(sizeof(header)))) < sizeof(header))
         return false;
 
     if (hasValidId3Tag(header))
@@ -96,12 +95,8 @@ bool SoundFileReaderMp3::check(InputStream& stream)
 
 
 ////////////////////////////////////////////////////////////
-SoundFileReaderMp3::SoundFileReaderMp3() :
-m_numSamples(0),
-m_position(0)
+SoundFileReaderMp3::SoundFileReaderMp3()
 {
-    std::memset(&m_io, 0, sizeof(m_io));
-    std::memset(&m_decoder, 0, sizeof(m_decoder));
     m_io.read = readCallback;
     m_io.seek = seekCallback;
 }
@@ -131,13 +126,13 @@ bool SoundFileReaderMp3::open(InputStream& stream, Info& info)
     info.sampleRate   = static_cast<unsigned int>(m_decoder.info.hz);
     info.sampleCount  = m_decoder.samples;
 
-    m_numSamples      = info.sampleCount;
+    m_numSamples = info.sampleCount;
     return true;
 }
 
 
 ////////////////////////////////////////////////////////////
-void SoundFileReaderMp3::seek(Uint64 sampleOffset)
+void SoundFileReaderMp3::seek(std::uint64_t sampleOffset)
 {
     m_position = std::min(sampleOffset, m_numSamples);
     mp3dec_ex_seek(&m_decoder, m_position);
@@ -145,14 +140,12 @@ void SoundFileReaderMp3::seek(Uint64 sampleOffset)
 
 
 ////////////////////////////////////////////////////////////
-Uint64 SoundFileReaderMp3::read(Int16* samples, Uint64 maxCount)
+std::uint64_t SoundFileReaderMp3::read(std::int16_t* samples, std::uint64_t maxCount)
 {
-    Uint64 toRead = std::min(maxCount, m_numSamples - m_position);
-    toRead = static_cast<Uint64>(mp3dec_ex_read(&m_decoder, samples, static_cast<std::size_t>(toRead)));
+    std::uint64_t toRead = std::min(maxCount, m_numSamples - m_position);
+    toRead = static_cast<std::uint64_t>(mp3dec_ex_read(&m_decoder, samples, static_cast<std::size_t>(toRead)));
     m_position += toRead;
     return toRead;
 }
 
-} // namespace priv
-
-} // namespace sf
+} // namespace sf::priv

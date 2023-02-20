@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -24,25 +24,22 @@
 
 namespace priv
 {
-    constexpr float pi = 3.141592654f;
+constexpr float pi = 3.141592654f;
 
-    constexpr float positiveRemainder(float a, float b)
-    {
-        assert(b > 0.0f);
-        const float val = a - static_cast<float>(static_cast<int>(a / b)) * b;
-        if (val >= 0.f)
-            return val;
-        else
-            return val + b;
-    }
+constexpr float positiveRemainder(float a, float b)
+{
+    assert(b > 0.0f);
+    const float val = a - static_cast<float>(static_cast<int>(a / b)) * b;
+    if (val >= 0.f)
+        return val;
+    else
+        return val + b;
 }
+} // namespace priv
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle::Angle() :
-m_degrees(0.0f)
-{
-}
+constexpr Angle::Angle() = default;
 
 
 ////////////////////////////////////////////////////////////
@@ -74,8 +71,7 @@ constexpr Angle Angle::wrapUnsigned() const
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle::Angle(float degrees) :
-m_degrees(degrees)
+constexpr Angle::Angle(float degrees) : m_degrees(degrees)
 {
 }
 
@@ -95,133 +91,133 @@ constexpr Angle radians(float angle)
 
 
 ////////////////////////////////////////////////////////////
-constexpr bool operator ==(Angle left, Angle right)
+constexpr bool operator==(Angle left, Angle right)
 {
     return left.asDegrees() == right.asDegrees();
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr bool operator !=(Angle left, Angle right)
+constexpr bool operator!=(Angle left, Angle right)
 {
     return left.asDegrees() != right.asDegrees();
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr bool operator <(Angle left, Angle right)
+constexpr bool operator<(Angle left, Angle right)
 {
     return left.asDegrees() < right.asDegrees();
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr bool operator >(Angle left, Angle right)
+constexpr bool operator>(Angle left, Angle right)
 {
     return left.asDegrees() > right.asDegrees();
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr bool operator <=(Angle left, Angle right)
+constexpr bool operator<=(Angle left, Angle right)
 {
     return left.asDegrees() <= right.asDegrees();
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr bool operator >=(Angle left, Angle right)
+constexpr bool operator>=(Angle left, Angle right)
 {
     return left.asDegrees() >= right.asDegrees();
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle operator -(Angle right)
+constexpr Angle operator-(Angle right)
 {
     return degrees(-right.asDegrees());
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle operator +(Angle left, Angle right)
+constexpr Angle operator+(Angle left, Angle right)
 {
     return degrees(left.asDegrees() + right.asDegrees());
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle& operator +=(Angle& left, Angle right)
+constexpr Angle& operator+=(Angle& left, Angle right)
 {
     return left = left + right;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle operator -(Angle left, Angle right)
+constexpr Angle operator-(Angle left, Angle right)
 {
     return degrees(left.asDegrees() - right.asDegrees());
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle& operator -=(Angle& left, Angle right)
+constexpr Angle& operator-=(Angle& left, Angle right)
 {
     return left = left - right;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle operator *(Angle left, float right)
+constexpr Angle operator*(Angle left, float right)
 {
     return degrees(left.asDegrees() * right);
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle operator *(float left, Angle right)
+constexpr Angle operator*(float left, Angle right)
 {
     return right * left;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle& operator *=(Angle& left, float right)
+constexpr Angle& operator*=(Angle& left, float right)
 {
     return left = left * right;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle operator /(Angle left, float right)
+constexpr Angle operator/(Angle left, float right)
 {
     return degrees(left.asDegrees() / right);
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle& operator /=(Angle& left, float right)
+constexpr Angle& operator/=(Angle& left, float right)
 {
     return left = left / right;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr float operator /(Angle left, Angle right)
+constexpr float operator/(Angle left, Angle right)
 {
     return left.asDegrees() / right.asDegrees();
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle operator %(Angle left, Angle right)
+constexpr Angle operator%(Angle left, Angle right)
 {
     return degrees(priv::positiveRemainder(left.asDegrees(), right.asDegrees()));
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle& operator %=(Angle& left, Angle right)
+constexpr Angle& operator%=(Angle& left, Angle right)
 {
     return left = left % right;
 }
@@ -230,28 +226,28 @@ namespace Literals
 {
 
 ////////////////////////////////////////////////////////////
-constexpr Angle operator "" _deg(long double angle)
+constexpr Angle operator"" _deg(long double angle)
 {
     return degrees(static_cast<float>(angle));
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle operator "" _deg(unsigned long long angle)
+constexpr Angle operator"" _deg(unsigned long long angle)
 {
     return degrees(static_cast<float>(angle));
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle operator "" _rad(long double angle)
+constexpr Angle operator"" _rad(long double angle)
 {
     return radians(static_cast<float>(angle));
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle operator "" _rad(unsigned long long angle)
+constexpr Angle operator"" _rad(unsigned long long angle)
 {
     return radians(static_cast<float>(angle));
 }

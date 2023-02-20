@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Marco Antognini (antognini.marco@gmail.com),
+// Copyright (C) 2007-2023 Marco Antognini (antognini.marco@gmail.com),
 //                         Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -26,25 +26,19 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Config.hpp> // for sf::Uint8
+#include <SFML/Config.hpp>
+
 #include <SFML/Window/WindowHandle.hpp>
 
 #import <AppKit/AppKit.h>
+#include <cstdint>
 
-#if defined(__APPLE__)
-    #if defined(__clang__)
-        #pragma clang diagnostic push
-        #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    #elif defined(__GNUC__)
-        #pragma GCC diagnostic push
-        #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-    #endif
-#endif
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
-namespace sf {
-    namespace priv {
-        class WindowImplCocoa;
-    }
+namespace sf::priv
+{
+class WindowImplCocoa;
 }
 
 ////////////////////////////////////////////////////////////
@@ -82,13 +76,13 @@ namespace sf {
 /// \return e.g. 1.0 for classic display, 2.0 for retina display
 ///
 ////////////////////////////////////////////////////////////
--(CGFloat)displayScaleFactor;
+- (CGFloat)displayScaleFactor;
 
 ////////////////////////////////////////////////////////////
 /// \brief Set the WindowImpl who requested this delegate
 ///
 ////////////////////////////////////////////////////////////
--(void)setRequesterTo:(sf::priv::WindowImplCocoa*)requester;
+- (void)setRequesterTo:(sf::priv::WindowImplCocoa*)requester;
 
 ////////////////////////////////////////////////////////////
 /// \brief Get the underlying OS specific handle
@@ -96,7 +90,7 @@ namespace sf {
 /// \return Return the main view or window.
 ///
 ////////////////////////////////////////////////////////////
--(sf::WindowHandle)getSystemHandle;
+- (sf::WindowHandle)getSystemHandle;
 
 ////////////////////////////////////////////////////////////
 /// \brief Determine where the mouse is
@@ -104,7 +98,7 @@ namespace sf {
 /// \return true when the mouse is inside the OpenGL view, false otherwise
 ///
 ////////////////////////////////////////////////////////////
--(BOOL)isMouseInside;
+- (BOOL)isMouseInside;
 
 ////////////////////////////////////////////////////////////
 /// \brief Grab or release the mouse cursor
@@ -112,13 +106,13 @@ namespace sf {
 /// \param grabbed YES to grab, NO to release
 ///
 ////////////////////////////////////////////////////////////
--(void)setCursorGrabbed:(BOOL)grabbed;
+- (void)setCursorGrabbed:(BOOL)grabbed;
 
 ////////////////////////////////////////////////////////////
 /// \brief Set the system cursor for the window area
 ///
 ////////////////////////////////////////////////////////////
--(void)setCursor:(NSCursor*)cursor;
+- (void)setCursor:(NSCursor*)cursor;
 
 ////////////////////////////////////////////////////////////
 /// \brief Get window position
@@ -126,7 +120,7 @@ namespace sf {
 /// \return Top left corner of the window or view
 ///
 ////////////////////////////////////////////////////////////
--(NSPoint)position;
+- (NSPoint)position;
 
 ////////////////////////////////////////////////////////////
 /// \brief Move the window
@@ -137,7 +131,7 @@ namespace sf {
 /// \param y y position in SFML coordinates
 ///
 ////////////////////////////////////////////////////////////
--(void)setWindowPositionToX:(int)x Y:(int)y;
+- (void)setWindowPositionToX:(int)x Y:(int)y;
 
 ////////////////////////////////////////////////////////////
 /// \brief Get window/view's size
@@ -145,7 +139,7 @@ namespace sf {
 /// \return the size of the rendering area
 ///
 ////////////////////////////////////////////////////////////
--(NSSize)size;
+- (NSSize)size;
 
 ////////////////////////////////////////////////////////////
 /// \brief Resize the window/view
@@ -154,7 +148,7 @@ namespace sf {
 /// \param height new height
 ///
 ////////////////////////////////////////////////////////////
--(void)resizeTo:(unsigned int)width by:(unsigned int)height;
+- (void)resizeTo:(unsigned int)width by:(unsigned int)height;
 
 ////////////////////////////////////////////////////////////
 /// \brief Set the window's title
@@ -164,7 +158,7 @@ namespace sf {
 /// \param title new title
 ///
 ////////////////////////////////////////////////////////////
--(void)changeTitle:(NSString*)title;
+- (void)changeTitle:(NSString*)title;
 
 ////////////////////////////////////////////////////////////
 /// \brief Hide the window
@@ -172,7 +166,7 @@ namespace sf {
 /// Doesn't apply if the implementation is 'only' a view.
 ///
 ////////////////////////////////////////////////////////////
--(void)hideWindow;
+- (void)hideWindow;
 
 ////////////////////////////////////////////////////////////
 /// \brief Show the window
@@ -180,7 +174,7 @@ namespace sf {
 /// Doesn't apply if the implementation is 'only' a view.
 ///
 ////////////////////////////////////////////////////////////
--(void)showWindow;
+- (void)showWindow;
 
 ////////////////////////////////////////////////////////////
 /// \brief Close the window
@@ -188,14 +182,14 @@ namespace sf {
 /// Doesn't apply if the implementation is 'only' a view.
 ///
 ////////////////////////////////////////////////////////////
--(void)closeWindow;
+- (void)closeWindow;
 
 ////////////////////////////////////////////////////////////
 /// \brief Request the current window to be made the active
 ///        foreground window
 ///
 ////////////////////////////////////////////////////////////
--(void)requestFocus;
+- (void)requestFocus;
 
 ////////////////////////////////////////////////////////////
 /// \brief Check whether the window has the input focus
@@ -203,19 +197,19 @@ namespace sf {
 /// \return True if window has focus, false otherwise
 ///
 ////////////////////////////////////////////////////////////
--(BOOL)hasFocus;
+- (BOOL)hasFocus;
 
 ////////////////////////////////////////////////////////////
 /// \brief Enable key repeat
 ///
 ////////////////////////////////////////////////////////////
--(void)enableKeyRepeat;
+- (void)enableKeyRepeat;
 
 ////////////////////////////////////////////////////////////
 /// \brief Disable key repeat
 ///
 ////////////////////////////////////////////////////////////
--(void)disableKeyRepeat;
+- (void)disableKeyRepeat;
 
 ////////////////////////////////////////////////////////////
 /// \brief Set an icon to the application
@@ -225,13 +219,13 @@ namespace sf {
 /// \param pixels icon's data
 ///
 ////////////////////////////////////////////////////////////
--(void)setIconTo:(unsigned int)width by:(unsigned int)height with:(const sf::Uint8*)pixels;
+- (void)setIconTo:(unsigned int)width by:(unsigned int)height with:(const std::uint8_t*)pixels;
 
 ////////////////////////////////////////////////////////////
 /// \brief Fetch new event
 ///
 ////////////////////////////////////////////////////////////
--(void)processEvent;
+- (void)processEvent;
 
 ////////////////////////////////////////////////////////////
 /// \brief Apply a given context to an OpenGL view
@@ -239,14 +233,8 @@ namespace sf {
 /// \param context OpenGL context to attach to the OpenGL view
 ///
 ////////////////////////////////////////////////////////////
--(void)applyContext:(NSOpenGLContext*)context;
+- (void)applyContext:(NSOpenGLContext*)context;
 
 @end
 
-#if defined(__APPLE__)
-    #if defined(__clang__)
-        #pragma clang diagnostic pop
-    #elif defined(__GNUC__)
-        #pragma GCC diagnostic pop
-    #endif
-#endif
+#pragma GCC diagnostic pop

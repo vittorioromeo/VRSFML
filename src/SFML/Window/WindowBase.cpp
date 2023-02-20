@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -25,46 +25,39 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/WindowBase.hpp>
-#include <SFML/Window/ContextSettings.hpp>
-#include <SFML/Window/WindowImpl.hpp>
 #include <SFML/System/Err.hpp>
+#include <SFML/Window/ContextSettings.hpp>
+#include <SFML/Window/WindowBase.hpp>
+#include <SFML/Window/WindowImpl.hpp>
+
+#include <ostream>
 
 
 namespace
 {
-    // A nested named namespace is used here to allow unity builds of SFML.
-    namespace WindowsBaseImpl
-    {
-        const sf::WindowBase* fullscreenWindow = nullptr;
-    }
+// A nested named namespace is used here to allow unity builds of SFML.
+namespace WindowsBaseImpl
+{
+const sf::WindowBase* fullscreenWindow = nullptr;
 }
+} // namespace
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-WindowBase::WindowBase() :
-m_impl(),
-m_size(0, 0)
-{
-
-}
+WindowBase::WindowBase() = default;
 
 
 ////////////////////////////////////////////////////////////
-WindowBase::WindowBase(VideoMode mode, const String& title, Uint32 style) :
-m_impl(),
-m_size(0, 0)
+WindowBase::WindowBase(VideoMode mode, const String& title, std::uint32_t style)
 {
     WindowBase::create(mode, title, style);
 }
 
 
 ////////////////////////////////////////////////////////////
-WindowBase::WindowBase(WindowHandle handle) :
-m_impl(),
-m_size(0, 0)
+WindowBase::WindowBase(WindowHandle handle)
 {
     WindowBase::create(handle);
 }
@@ -73,12 +66,12 @@ m_size(0, 0)
 ////////////////////////////////////////////////////////////
 WindowBase::~WindowBase()
 {
-    close();
+    WindowBase::close();
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::create(VideoMode mode, const String& title, Uint32 style)
+void WindowBase::create(VideoMode mode, const String& title, std::uint32_t style)
 {
     // Destroy the previous window implementation
     close();
@@ -90,7 +83,7 @@ void WindowBase::create(VideoMode mode, const String& title, Uint32 style)
         if (getFullscreenWindow())
         {
             err() << "Creating two fullscreen windows is not allowed, switching to windowed mode" << std::endl;
-            style &= ~static_cast<Uint32>(Style::Fullscreen);
+            style &= ~static_cast<std::uint32_t>(Style::Fullscreen);
         }
         else
         {
@@ -106,16 +99,16 @@ void WindowBase::create(VideoMode mode, const String& title, Uint32 style)
         }
     }
 
-    // Check validity of style according to the underlying platform
-    #if defined(SFML_SYSTEM_IOS) || defined(SFML_SYSTEM_ANDROID)
-        if (style & Style::Fullscreen)
-            style &= ~static_cast<Uint32>(Style::Titlebar);
-        else
-            style |= Style::Titlebar;
-    #else
-        if ((style & Style::Close) || (style & Style::Resize))
-            style |= Style::Titlebar;
-    #endif
+// Check validity of style according to the underlying platform
+#if defined(SFML_SYSTEM_IOS) || defined(SFML_SYSTEM_ANDROID)
+    if (style & Style::Fullscreen)
+        style &= ~static_cast<std::uint32_t>(Style::Titlebar);
+    else
+        style |= Style::Titlebar;
+#else
+    if ((style & Style::Close) || (style & Style::Resize))
+        style |= Style::Titlebar;
+#endif
 
     // Recreate the window implementation
     m_impl = priv::WindowImpl::create(mode, title, style, ContextSettings(0, 0, 0, 0, 0, 0xFFFFFFFF, false));
@@ -234,10 +227,10 @@ void WindowBase::setTitle(const String& title)
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::setIcon(unsigned int width, unsigned int height, const Uint8* pixels)
+void WindowBase::setIcon(const Vector2u& size, const std::uint8_t* pixels)
 {
     if (m_impl)
-        m_impl->setIcon(width, height, pixels);
+        m_impl->setIcon(size, pixels);
 }
 
 

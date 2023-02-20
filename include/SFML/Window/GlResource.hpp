@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,8 +22,7 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_GLRESOURCE_HPP
-#define SFML_GLRESOURCE_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -36,7 +35,7 @@ namespace sf
 
 class Context;
 
-using ContextDestroyCallback = void (*)(void *);
+using ContextDestroyCallback = void (*)(void*);
 
 ////////////////////////////////////////////////////////////
 /// \brief Base class for classes that require an OpenGL context
@@ -45,7 +44,6 @@ using ContextDestroyCallback = void (*)(void *);
 class SFML_WINDOW_API GlResource
 {
 protected:
-
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
@@ -106,8 +104,6 @@ protected:
 
 } // namespace sf
 
-
-#endif // SFML_GLRESOURCE_HPP
 
 ////////////////////////////////////////////////////////////
 /// \class sf::GlResource

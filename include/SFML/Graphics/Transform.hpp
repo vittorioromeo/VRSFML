@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,13 +22,13 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_TRANSFORM_HPP
-#define SFML_TRANSFORM_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Export.hpp>
+
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/System/Vector2.hpp>
 
@@ -44,7 +44,6 @@ class Angle;
 class Transform
 {
 public:
-
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
@@ -67,9 +66,7 @@ public:
     /// \param a22 Element (2, 2) of the matrix
     ///
     ////////////////////////////////////////////////////////////
-    constexpr Transform(float a00, float a01, float a02,
-                        float a10, float a11, float a12,
-                        float a20, float a21, float a22);
+    constexpr Transform(float a00, float a01, float a02, float a10, float a11, float a12, float a20, float a21, float a22);
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the transform as a 4x4 matrix
@@ -261,14 +258,19 @@ public:
     ////////////////////////////////////////////////////////////
     // Static member data
     ////////////////////////////////////////////////////////////
+    // NOLINTNEXTLINE(readability-identifier-naming)
     static const Transform Identity; //!< The identity transform (does nothing)
 
 private:
-
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    float m_matrix[16]; //!< 4x4 matrix defining the transformation
+    // clang-format off
+    float m_matrix[16]{1.f, 0.f, 0.f, 0.f,
+                       0.f, 1.f, 0.f, 0.f,
+                       0.f, 0.f, 1.f, 0.f,
+                       0.f, 0.f, 0.f, 1.f}; //!< 4x4 matrix defining the transformation
+    // clang-format off
 };
 
 ////////////////////////////////////////////////////////////
@@ -283,7 +285,7 @@ private:
 /// \return New combined transform
 ///
 ////////////////////////////////////////////////////////////
-constexpr Transform operator *(const Transform& left, const Transform& right);
+constexpr Transform operator*(const Transform& left, const Transform& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates sf::Transform
@@ -297,7 +299,7 @@ constexpr Transform operator *(const Transform& left, const Transform& right);
 /// \return The combined transform
 ///
 ////////////////////////////////////////////////////////////
-constexpr Transform& operator *=(Transform& left, const Transform& right);
+constexpr Transform& operator*=(Transform& left, const Transform& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates sf::Transform
@@ -311,7 +313,7 @@ constexpr Transform& operator *=(Transform& left, const Transform& right);
 /// \return New transformed point
 ///
 ////////////////////////////////////////////////////////////
-constexpr Vector2f operator *(const Transform& left, const Vector2f& right);
+constexpr Vector2f operator*(const Transform& left, const Vector2f& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates sf::Transform
@@ -326,7 +328,7 @@ constexpr Vector2f operator *(const Transform& left, const Vector2f& right);
 /// \return true if the transforms are equal, false otherwise
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] constexpr bool operator ==(const Transform& left, const Transform& right);
+[[nodiscard]] constexpr bool operator==(const Transform& left, const Transform& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates sf::Transform
@@ -340,14 +342,11 @@ constexpr Vector2f operator *(const Transform& left, const Vector2f& right);
 /// \return true if the transforms are not equal, false otherwise
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] constexpr bool operator !=(const Transform& left, const Transform& right);
+[[nodiscard]] constexpr bool operator!=(const Transform& left, const Transform& right);
 
 #include <SFML/Graphics/Transform.inl>
 
 } // namespace sf
-
-
-#endif // SFML_TRANSFORM_HPP
 
 
 ////////////////////////////////////////////////////////////
@@ -383,7 +382,7 @@ constexpr Vector2f operator *(const Transform& left, const Vector2f& right);
 ///
 /// // use the result to transform stuff...
 /// sf::Vector2f point = transform.transformPoint(10, 20);
-/// sf::FloatRect rect = transform.transformRect(sf::FloatRect(0, 0, 10, 100));
+/// sf::FloatRect rect = transform.transformRect(sf::FloatRect({0, 0}, {10, 100}));
 /// \endcode
 ///
 /// \see sf::Transformable, sf::RenderStates

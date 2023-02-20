@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -26,29 +26,18 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/OutputSoundFile.hpp>
-#include <SFML/Audio/SoundFileWriter.hpp>
 #include <SFML/Audio/SoundFileFactory.hpp>
+#include <SFML/Audio/SoundFileWriter.hpp>
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-OutputSoundFile::OutputSoundFile() :
-m_writer(nullptr)
-{
-}
+OutputSoundFile::OutputSoundFile() = default;
 
 
 ////////////////////////////////////////////////////////////
-OutputSoundFile::~OutputSoundFile()
-{
-    // Close the file in case it was open
-    close();
-}
-
-
-////////////////////////////////////////////////////////////
-bool OutputSoundFile::openFromFile(const std::string& filename, unsigned int sampleRate, unsigned int channelCount)
+bool OutputSoundFile::openFromFile(const std::filesystem::path& filename, unsigned int sampleRate, unsigned int channelCount)
 {
     // If the file is already open, first close it
     close();
@@ -70,7 +59,7 @@ bool OutputSoundFile::openFromFile(const std::string& filename, unsigned int sam
 
 
 ////////////////////////////////////////////////////////////
-void OutputSoundFile::write(const Int16* samples, Uint64 count)
+void OutputSoundFile::write(const std::int16_t* samples, std::uint64_t count)
 {
     if (m_writer && samples && count)
         m_writer->write(samples, count);

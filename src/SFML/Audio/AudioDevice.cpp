@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -25,34 +25,30 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/AudioDevice.hpp>
 #include <SFML/Audio/ALCheck.hpp>
+#include <SFML/Audio/AudioDevice.hpp>
 #include <SFML/Audio/Listener.hpp>
 #include <SFML/System/Err.hpp>
+
 #include <optional>
+#include <ostream>
 
 #if defined(__APPLE__)
-    #if defined(__clang__)
-        #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    #elif defined(__GNUC__)
-        #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-    #endif
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
 namespace
 {
-    ALCdevice*  audioDevice  = nullptr;
-    ALCcontext* audioContext = nullptr;
+ALCdevice*  audioDevice  = nullptr;
+ALCcontext* audioContext = nullptr;
 
-    float        listenerVolume = 100.f;
-    sf::Vector3f listenerPosition (0.f, 0.f, 0.f);
-    sf::Vector3f listenerDirection(0.f, 0.f, -1.f);
-    sf::Vector3f listenerUpVector (0.f, 1.f, 0.f);
-}
+float        listenerVolume = 100.f;
+sf::Vector3f listenerPosition(0.f, 0.f, 0.f);
+sf::Vector3f listenerDirection(0.f, 0.f, -1.f);
+sf::Vector3f listenerUpVector(0.f, 1.f, 0.f);
+} // namespace
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 AudioDevice::AudioDevice()
@@ -138,6 +134,8 @@ int AudioDevice::getFormatFromChannelCount(unsigned int channelCount)
 
     // Find the good format according to the number of channels
     int format = 0;
+
+    // clang-format off
     switch (channelCount)
     {
         case 1:  format = AL_FORMAT_MONO16;                    break;
@@ -148,6 +146,7 @@ int AudioDevice::getFormatFromChannelCount(unsigned int channelCount)
         case 8:  format = alGetEnumValue("AL_FORMAT_71CHN16"); break;
         default: format = 0;                                   break;
     }
+    // clang-format on
 
     // Fixes a bug on OS X
     if (format == -1)
@@ -196,7 +195,8 @@ void AudioDevice::setDirection(const Vector3f& direction)
 {
     if (audioContext)
     {
-        float orientation[] = {direction.x, direction.y, direction.z, listenerUpVector.x, listenerUpVector.y, listenerUpVector.z};
+        float orientation[] =
+            {direction.x, direction.y, direction.z, listenerUpVector.x, listenerUpVector.y, listenerUpVector.z};
         alCheck(alListenerfv(AL_ORIENTATION, orientation));
     }
 
@@ -216,7 +216,8 @@ void AudioDevice::setUpVector(const Vector3f& upVector)
 {
     if (audioContext)
     {
-        float orientation[] = {listenerDirection.x, listenerDirection.y, listenerDirection.z, upVector.x, upVector.y, upVector.z};
+        float orientation[] =
+            {listenerDirection.x, listenerDirection.y, listenerDirection.z, upVector.x, upVector.y, upVector.z};
         alCheck(alListenerfv(AL_ORIENTATION, orientation));
     }
 
@@ -230,6 +231,4 @@ Vector3f AudioDevice::getUpVector()
     return listenerUpVector;
 }
 
-} // namespace priv
-
-} // namespace sf
+} // namespace sf::priv

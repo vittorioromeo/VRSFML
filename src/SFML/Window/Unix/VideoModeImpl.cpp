@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -25,17 +25,18 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/VideoModeImpl.hpp>
-#include <SFML/Window/Unix/Display.hpp>
 #include <SFML/System/Err.hpp>
+#include <SFML/Window/Unix/Display.hpp>
+#include <SFML/Window/VideoModeImpl.hpp>
+
 #include <X11/Xlib.h>
 #include <X11/extensions/Xrandr.h>
+
 #include <algorithm>
+#include <ostream>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 std::vector<VideoMode> VideoModeImpl::getFullscreenModes()
@@ -43,7 +44,7 @@ std::vector<VideoMode> VideoModeImpl::getFullscreenModes()
     std::vector<VideoMode> modes;
 
     // Open a connection with the X server
-    Display* display = OpenDisplay();
+    Display* display = openDisplay();
     if (display)
     {
         // Retrieve the default screen number
@@ -58,13 +59,13 @@ std::vector<VideoMode> VideoModeImpl::getFullscreenModes()
             if (config)
             {
                 // Get the available screen sizes
-                int nbSizes;
+                int            nbSizes;
                 XRRScreenSize* sizes = XRRConfigSizes(config, &nbSizes);
                 if (sizes && (nbSizes > 0))
                 {
                     // Get the list of supported depths
-                    int nbDepths = 0;
-                    int* depths = XListDepths(display, screen, &nbDepths);
+                    int  nbDepths = 0;
+                    int* depths   = XListDepths(display, screen, &nbDepths);
                     if (depths && (nbDepths > 0))
                     {
                         // Combine depths and sizes to fill the array of supported modes
@@ -73,15 +74,15 @@ std::vector<VideoMode> VideoModeImpl::getFullscreenModes()
                             for (int j = 0; j < nbSizes; ++j)
                             {
                                 // Convert to VideoMode
-                                VideoMode mode(static_cast<unsigned int>(sizes[j].width),
-                                               static_cast<unsigned int>(sizes[j].height),
+                                VideoMode mode({static_cast<unsigned int>(sizes[j].width),
+                                                static_cast<unsigned int>(sizes[j].height)},
                                                static_cast<unsigned int>(depths[i]));
 
                                 Rotation currentRotation;
                                 XRRConfigRotations(config, &currentRotation);
 
                                 if (currentRotation == RR_Rotate_90 || currentRotation == RR_Rotate_270)
-                                    std::swap(mode.width, mode.height);
+                                    std::swap(mode.size.x, mode.size.y);
 
                                 // Add it only if it is not already in the array
                                 if (std::find(modes.begin(), modes.end(), mode) == modes.end())
@@ -100,7 +101,8 @@ std::vector<VideoMode> VideoModeImpl::getFullscreenModes()
             else
             {
                 // Failed to get the screen configuration
-                err() << "Failed to retrieve the screen configuration while trying to get the supported video modes" << std::endl;
+                err() << "Failed to retrieve the screen configuration while trying to get the supported video modes"
+                      << std::endl;
             }
         }
         else
@@ -110,7 +112,7 @@ std::vector<VideoMode> VideoModeImpl::getFullscreenModes()
         }
 
         // Close the connection with the X server
-        CloseDisplay(display);
+        closeDisplay(display);
     }
     else
     {
@@ -128,7 +130,7 @@ VideoMode VideoModeImpl::getDesktopMode()
     VideoMode desktopMode;
 
     // Open a connection with the X server
-    Display* display = OpenDisplay();
+    Display* display = openDisplay();
     if (display)
     {
         // Retrieve the default screen number
@@ -144,22 +146,22 @@ VideoMode VideoModeImpl::getDesktopMode()
             {
                 // Get the current video mode
                 Rotation currentRotation;
-                int currentMode = XRRConfigCurrentConfiguration(config, &currentRotation);
+                int      currentMode = XRRConfigCurrentConfiguration(config, &currentRotation);
 
                 // Get the available screen sizes
-                int nbSizes;
+                int            nbSizes;
                 XRRScreenSize* sizes = XRRConfigSizes(config, &nbSizes);
                 if (sizes && (nbSizes > 0))
                 {
-                    desktopMode = VideoMode(static_cast<unsigned int>(sizes[currentMode].width),
-                                            static_cast<unsigned int>(sizes[currentMode].height),
+                    desktopMode = VideoMode({static_cast<unsigned int>(sizes[currentMode].width),
+                                             static_cast<unsigned int>(sizes[currentMode].height)},
                                             static_cast<unsigned int>(DefaultDepth(display, screen)));
 
                     Rotation modeRotation;
                     XRRConfigRotations(config, &modeRotation);
 
                     if (modeRotation == RR_Rotate_90 || modeRotation == RR_Rotate_270)
-                        std::swap(desktopMode.width, desktopMode.height);
+                        std::swap(desktopMode.size.x, desktopMode.size.y);
                 }
 
                 // Free the configuration instance
@@ -168,7 +170,8 @@ VideoMode VideoModeImpl::getDesktopMode()
             else
             {
                 // Failed to get the screen configuration
-                err() << "Failed to retrieve the screen configuration while trying to get the desktop video modes" << std::endl;
+                err() << "Failed to retrieve the screen configuration while trying to get the desktop video modes"
+                      << std::endl;
             }
         }
         else
@@ -178,7 +181,7 @@ VideoMode VideoModeImpl::getDesktopMode()
         }
 
         // Close the connection with the X server
-        CloseDisplay(display);
+        closeDisplay(display);
     }
     else
     {
@@ -189,6 +192,4 @@ VideoMode VideoModeImpl::getDesktopMode()
     return desktopMode;
 }
 
-} // namespace priv
-
-} // namespace sf
+} // namespace sf::priv

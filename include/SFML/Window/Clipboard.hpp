@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,8 +22,7 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_CLIPBOARD_HPP
-#define SFML_CLIPBOARD_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -39,48 +38,43 @@ class String;
 /// \brief Give access to the system clipboard
 ///
 ////////////////////////////////////////////////////////////
-class SFML_WINDOW_API Clipboard
+namespace Clipboard
 {
-public:
+////////////////////////////////////////////////////////////
+/// \brief Get the content of the clipboard as string data
+///
+/// This function returns the content of the clipboard
+/// as a string. If the clipboard does not contain string
+/// it returns an empty sf::String object.
+///
+/// \return Clipboard contents as sf::String object
+///
+////////////////////////////////////////////////////////////
+SFML_WINDOW_API String getString();
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the content of the clipboard as string data
-    ///
-    /// This function returns the content of the clipboard
-    /// as a string. If the clipboard does not contain string
-    /// it returns an empty sf::String object.
-    ///
-    /// \return Clipboard contents as sf::String object
-    ///
-    ////////////////////////////////////////////////////////////
-    static String getString();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Set the content of the clipboard as string data
-    ///
-    /// This function sets the content of the clipboard as a
-    /// string.
-    ///
-    /// \warning Due to limitations on some operating systems,
-    ///          setting the clipboard contents is only
-    ///          guaranteed to work if there is currently an
-    ///          open window for which events are being handled.
-    ///
-    /// \param text sf::String containing the data to be sent
-    /// to the clipboard
-    ///
-    ////////////////////////////////////////////////////////////
-    static void setString(const String& text);
-};
+////////////////////////////////////////////////////////////
+/// \brief Set the content of the clipboard as string data
+///
+/// This function sets the content of the clipboard as a
+/// string.
+///
+/// \warning Due to limitations on some operating systems,
+///          setting the clipboard contents is only
+///          guaranteed to work if there is currently an
+///          open window for which events are being handled.
+///
+/// \param text sf::String containing the data to be sent
+/// to the clipboard
+///
+////////////////////////////////////////////////////////////
+SFML_WINDOW_API void setString(const String& text);
+} // namespace Clipboard
 
 } // namespace sf
 
 
-#endif // SFML_CLIPBOARD_HPP
-
-
 ////////////////////////////////////////////////////////////
-/// \class sf::Clipboard
+/// \namespace sf::Clipboard
 /// \ingroup window
 ///
 /// sf::Clipboard provides an interface for getting and
@@ -97,8 +91,7 @@ public:
 /// sf::String string = sf::Clipboard::getString();
 ///
 /// // or use it in the event loop
-/// sf::Event event;
-/// while(window.pollEvent(event))
+/// for (sf::Event event; window.pollEvent(event);)
 /// {
 ///     if(event.type == sf::Event::Closed)
 ///         window.close();

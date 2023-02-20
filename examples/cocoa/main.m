@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Marco Antognini (antognini.marco@gmail.com),
+// Copyright (C) 2007-2023 Marco Antognini (antognini.marco@gmail.com),
 //                         Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -25,7 +25,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
-    return NSApplicationMain(argc, (const char **)argv);
+    return NSApplicationMain(argc, (const char**)argv);
 }

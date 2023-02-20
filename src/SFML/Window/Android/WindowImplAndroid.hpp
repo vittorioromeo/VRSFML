@@ -22,22 +22,20 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_WINDOWIMPLANDROID_HPP
-#define SFML_WINDOWIMPLANDROID_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/System/Android/Activity.hpp>
+#include <SFML/Window/EglContext.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/WindowImpl.hpp>
-#include <SFML/Window/EglContext.hpp>
-#include <SFML/System/Android/Activity.hpp>
+
 #include <android/input.h>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// \brief Android implementation of WindowImpl
@@ -46,7 +44,6 @@ namespace priv
 class WindowImplAndroid : public WindowImpl
 {
 public:
-
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window implementation from an existing control
     ///
@@ -123,12 +120,11 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Change the window's icon
     ///
-    /// \param width  Icon's width, in pixels
-    /// \param height Icon's height, in pixels
+    /// \param size   Icon's width and height, in pixels
     /// \param pixels Pointer to the pixels in memory, format must be RGBA 32 bits
     ///
     ////////////////////////////////////////////////////////////
-    void setIcon(unsigned int width, unsigned int height, const Uint8* pixels) override;
+    void setIcon(const Vector2u& size, const std::uint8_t* pixels) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window
@@ -185,11 +181,10 @@ public:
     ////////////////////////////////////////////////////////////
     bool hasFocus() const override;
 
-    static void forwardEvent(const Event& event);
+    static void               forwardEvent(const Event& event);
     static WindowImplAndroid* singleInstance;
 
 protected:
-
     ////////////////////////////////////////////////////////////
     /// \brief Process incoming events from the operating system
     ///
@@ -197,7 +192,6 @@ protected:
     void processEvents() override;
 
 private:
-
     ////////////////////////////////////////////////////////////
     /// \brief Process messages from the looper associated with the main thread
     ///
@@ -223,7 +217,7 @@ private:
     /// \return Corresponding SFML key code
     ///
     ////////////////////////////////////////////////////////////
-    static Keyboard::Key androidKeyToSF(int32_t key);
+    static Keyboard::Key androidKeyToSF(std::int32_t key);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get Unicode decoded from the input event
@@ -236,14 +230,9 @@ private:
     static int getUnicode(AInputEvent* event);
 
     Vector2u m_size;
-    bool m_windowBeingCreated;
-    bool m_windowBeingDestroyed;
-    bool m_hasFocus;
+    bool     m_windowBeingCreated{};
+    bool     m_windowBeingDestroyed{};
+    bool     m_hasFocus{};
 };
 
-} // namespace priv
-
-} // namespace sf
-
-
-#endif // SFML_WINDOWIMPLANDROID_HPP
+} // namespace sf::priv

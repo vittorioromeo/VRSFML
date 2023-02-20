@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,20 +22,18 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_SOUNDFILEWRITERWAV_HPP
-#define SFML_SOUNDFILEWRITERWAV_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/SoundFileWriter.hpp>
+
 #include <fstream>
 #include <string>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// \brief Implementation of sound file writer that handles wav files
@@ -44,7 +42,6 @@ namespace priv
 class SoundFileWriterWav : public SoundFileWriter
 {
 public:
-
     ////////////////////////////////////////////////////////////
     /// \brief Check if this writer can handle a file on disk
     ///
@@ -53,9 +50,7 @@ public:
     /// \return True if the file can be written by this writer
     ///
     ////////////////////////////////////////////////////////////
-    static bool check(const std::string& filename);
-
-public:
+    [[nodiscard]] static bool check(const std::filesystem::path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
@@ -79,7 +74,7 @@ public:
     /// \return True if the file was successfully opened
     ///
     ////////////////////////////////////////////////////////////
-    bool open(const std::string& filename, unsigned int sampleRate, unsigned int channelCount) override;
+    [[nodiscard]] bool open(const std::filesystem::path& filename, unsigned int sampleRate, unsigned int channelCount) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Write audio samples to the open file
@@ -88,10 +83,9 @@ public:
     /// \param count   Number of samples to write
     ///
     ////////////////////////////////////////////////////////////
-    void write(const Int16* samples, Uint64 count) override;
+    void write(const std::int16_t* samples, std::uint64_t count) override;
 
 private:
-
     ////////////////////////////////////////////////////////////
     /// \brief Write the header of the open file
     ///
@@ -101,7 +95,7 @@ private:
     /// \return True on success, false on error
     ///
     ////////////////////////////////////////////////////////////
-    bool writeHeader(unsigned int sampleRate, unsigned int channelCount);
+    [[nodiscard]] bool writeHeader(unsigned int sampleRate, unsigned int channelCount);
 
     ////////////////////////////////////////////////////////////
     /// \brief Close the file
@@ -112,12 +106,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::ofstream m_file;         //!< File stream to write to
+    std::ofstream m_file; //!< File stream to write to
 };
 
-} // namespace priv
-
-} // namespace sf
-
-
-#endif // SFML_SOUNDFILEWRITERWAV_HPP
+} // namespace sf::priv

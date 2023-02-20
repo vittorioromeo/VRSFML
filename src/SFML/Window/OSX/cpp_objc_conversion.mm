@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Marco Antognini (antognini.marco@gmail.com),
+// Copyright (C) 2007-2023 Marco Antognini (antognini.marco@gmail.com),
 //                         Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -27,14 +27,15 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Utf.hpp>
-
 #import <SFML/Window/OSX/cpp_objc_conversion.h>
+
 #import <Foundation/Foundation.h>
 
 ////////////////////////////////////////////////////////////
 NSString* stringToNSString(const std::string& string)
 {
-    std::string utf8; utf8.reserve(string.size() + 1);
+    std::string utf8;
+    utf8.reserve(string.size() + 1);
     sf::Utf8::fromAnsi(string.begin(), string.end(), std::back_inserter(utf8));
     NSString* str = [NSString stringWithCString:utf8.c_str() encoding:NSUTF8StringEncoding];
 
@@ -44,8 +45,8 @@ NSString* stringToNSString(const std::string& string)
 ////////////////////////////////////////////////////////////
 NSString* sfStringToNSString(const sf::String& string)
 {
-    sf::Uint32 length = static_cast<sf::Uint32>(string.getSize() * sizeof(sf::Uint32));
-    const void* data = reinterpret_cast<const void*>(string.getData());
+    auto        length = static_cast<std::uint32_t>(string.getSize() * sizeof(std::uint32_t));
+    const void* data   = reinterpret_cast<const void*>(string.getData());
 
     NSStringEncoding encoding;
     if (NSHostByteOrder() == NS_LittleEndian)

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,20 +22,19 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_GLXCONTEXT_HPP
-#define SFML_GLXCONTEXT_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/GlContext.hpp>
-#include <glad/glx.h>
+#include <SFML/Window/WindowStyle.hpp> // Prevent conflict with macro None from Xlib
+
 #include <X11/Xlib.h>
+#include <glad/glx.h>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// \brief Linux (GLX) implementation of OpenGL contexts
@@ -44,7 +43,6 @@ namespace priv
 class GlxContext : public GlContext
 {
 public:
-
     ////////////////////////////////////////////////////////////
     /// \brief Create a new default context
     ///
@@ -69,17 +67,16 @@ public:
     ///
     /// \param shared   Context to share the new one with
     /// \param settings Creation parameters
-    /// \param width    Back buffer width, in pixels
-    /// \param height   Back buffer height, in pixels
+    /// \param size     Back buffer width and height, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    GlxContext(GlxContext* shared, const ContextSettings& settings, unsigned int width, unsigned int height);
+    GlxContext(GlxContext* shared, const ContextSettings& settings, const Vector2u& size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    ~GlxContext();
+    ~GlxContext() override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the address of an OpenGL function
@@ -133,7 +130,6 @@ public:
     static XVisualInfo selectBestVisual(::Display* display, unsigned int bitsPerPixel, const ContextSettings& settings);
 
 private:
-
     ////////////////////////////////////////////////////////////
     /// \brief Update the context visual settings from XVisualInfo
     ///
@@ -152,12 +148,11 @@ private:
     /// \brief Create the context's drawing surface
     ///
     /// \param shared       Context to share the new one with (can be a null pointer)
-    /// \param width        Back buffer width, in pixels
-    /// \param height       Back buffer height, in pixels
+    /// \param size         Back buffer width and height, in pixels
     /// \param bitsPerPixel Pixel depth, in bits per pixel
     ///
     ////////////////////////////////////////////////////////////
-    void createSurface(GlxContext* shared, unsigned int width, unsigned int height, unsigned int bitsPerPixel);
+    void createSurface(GlxContext* shared, const Vector2u& size, unsigned int bitsPerPixel);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the context's drawing surface from an existing window
@@ -178,15 +173,11 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    ::Display*        m_display;    ///< Connection to the X server
-    ::Window          m_window;     ///< Window to which the context is attached
-    GLXContext        m_context;    ///< OpenGL context
-    GLXPbuffer        m_pbuffer;    ///< GLX pbuffer ID if one was created
-    bool              m_ownsWindow; ///< Do we own the window associated to the context?
+    ::Display* m_display{};    ///< Connection to the X server
+    ::Window   m_window{};     ///< Window to which the context is attached
+    GLXContext m_context{};    ///< OpenGL context
+    GLXPbuffer m_pbuffer{};    ///< GLX pbuffer ID if one was created
+    bool       m_ownsWindow{}; ///< Do we own the window associated to the context?
 };
 
-} // namespace priv
-
-} // namespace sf
-
-#endif // SFML_GLXCONTEXT_HPP
+} // namespace sf::priv

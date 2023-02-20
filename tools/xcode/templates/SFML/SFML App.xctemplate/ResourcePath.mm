@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Marco Antognini (antognini.marco@gmail.com),
+// Copyright (C) 2007-2023 Marco Antognini (antognini.marco@gmail.com),
 //                         Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -27,23 +27,28 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "ResourcePath.hpp"
+
 #import <Foundation/Foundation.h>
+#include <filesystem>
 
 ////////////////////////////////////////////////////////////
-std::string resourcePath(void)
+std::filesystem::path resourcePath()
 {
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
-    std::string rpath;
-    NSBundle* bundle = [NSBundle mainBundle];
+    std::filesystem::path rpath;
+    NSBundle*             bundle = [NSBundle mainBundle];
 
-    if (bundle == nil) {
+    if (bundle == nil)
+    {
 #ifdef DEBUG
         NSLog(@"bundle is nil... thus no resources path can be found.");
 #endif
-    } else {
+    }
+    else
+    {
         NSString* path = [bundle resourcePath];
-        rpath = [path UTF8String] + std::string("/");
+        rpath          = [path UTF8String] + std::string("/");
     }
 
     [pool drain];

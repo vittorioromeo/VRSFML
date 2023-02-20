@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,22 +22,20 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_JOYSTICKIMPLWIN32_HPP
-#define SFML_JOYSTICKIMPLWIN32_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/System/Win32/WindowsHeader.hpp>
 #include <SFML/Window/Joystick.hpp>
 #include <SFML/Window/JoystickImpl.hpp>
-#include <SFML/System/Win32/WindowsHeader.hpp>
-#include <mmsystem.h>
+
 #include <dinput.h>
+#include <mmsystem.h>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// \brief Windows implementation of joysticks
@@ -46,7 +44,6 @@ namespace priv
 class JoystickImpl
 {
 public:
-
     ////////////////////////////////////////////////////////////
     /// \brief Perform the global initialization of the joystick module
     ///
@@ -91,7 +88,7 @@ public:
     /// \return True on success, false on failure
     ///
     ////////////////////////////////////////////////////////////
-    bool open(unsigned int index);
+    [[nodiscard]] bool open(unsigned int index);
 
     ////////////////////////////////////////////////////////////
     /// \brief Close the joystick
@@ -121,7 +118,7 @@ public:
     /// \return Joystick state
     ///
     ////////////////////////////////////////////////////////////
-    JoystickState update();
+    [[nodiscard]] JoystickState update();
 
     ////////////////////////////////////////////////////////////
     /// \brief Perform the global initialization of the joystick module (DInput)
@@ -159,7 +156,7 @@ public:
     /// \return True on success, false on failure
     ///
     ////////////////////////////////////////////////////////////
-    bool openDInput(unsigned int index);
+    [[nodiscard]] bool openDInput(unsigned int index);
 
     ////////////////////////////////////////////////////////////
     /// \brief Close the joystick (DInput)
@@ -181,7 +178,7 @@ public:
     /// \return Joystick state
     ///
     ////////////////////////////////////////////////////////////
-    JoystickState updateDInputBuffered();
+    [[nodiscard]] JoystickState updateDInputBuffered();
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the joystick and get its new state (DInput, Polled)
@@ -189,10 +186,9 @@ public:
     /// \return Joystick state
     ///
     ////////////////////////////////////////////////////////////
-    JoystickState updateDInputPolled();
+    [[nodiscard]] JoystickState updateDInputPolled();
 
 private:
-
     ////////////////////////////////////////////////////////////
     /// \brief Device enumeration callback function passed to EnumDevices in updateConnections
     ///
@@ -218,20 +214,15 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    unsigned int             m_index;                          //!< Index of the joystick
-    JOYCAPS                  m_caps;                           //!< Joystick capabilities
-    IDirectInputDevice8W*    m_device;                         //!< DirectInput 8.x device
-    DIDEVCAPS                m_deviceCaps;                     //!< DirectInput device capabilities
-    int                      m_axes[Joystick::AxisCount];      //!< Offsets to the bytes containing the axes states, -1 if not available
-    int                      m_buttons[Joystick::ButtonCount]; //!< Offsets to the bytes containing the button states, -1 if not available
-    Joystick::Identification m_identification;                 //!< Joystick identification
-    JoystickState            m_state;                          //!< Buffered joystick state
-    bool                     m_buffered;                       //!< true if the device uses buffering, false if the device uses polling
+    unsigned int          m_index;        //!< Index of the joystick
+    JOYCAPS               m_caps;         //!< Joystick capabilities
+    IDirectInputDevice8W* m_device;       //!< DirectInput 8.x device
+    DIDEVCAPS             m_deviceCaps;   //!< DirectInput device capabilities
+    int m_axes[Joystick::AxisCount];      //!< Offsets to the bytes containing the axes states, -1 if not available
+    int m_buttons[Joystick::ButtonCount]; //!< Offsets to the bytes containing the button states, -1 if not available
+    Joystick::Identification m_identification; //!< Joystick identification
+    JoystickState            m_state;          //!< Buffered joystick state
+    bool                     m_buffered;       //!< true if the device uses buffering, false if the device uses polling
 };
 
-} // namespace priv
-
-} // namespace sf
-
-
-#endif // SFML_JOYSTICKIMPLWIN32_HPP
+} // namespace sf::priv

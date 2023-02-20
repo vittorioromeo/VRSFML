@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,14 +22,14 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_RENDERTEXTUREIMPLDEFAULT_HPP
-#define SFML_RENDERTEXTUREIMPLDEFAULT_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/RenderTextureImpl.hpp>
 #include <SFML/Window/GlResource.hpp>
+
 #include <memory>
 
 
@@ -48,7 +48,6 @@ namespace priv
 class RenderTextureImplDefault : public RenderTextureImpl, GlResource
 {
 public:
-
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
@@ -70,19 +69,17 @@ public:
     static unsigned int getMaximumAntialiasingLevel();
 
 private:
-
     ////////////////////////////////////////////////////////////
     /// \brief Create the render texture implementation
     ///
-    /// \param width      Width of the texture to render to
-    /// \param height     Height of the texture to render to
+    /// \param size       Width and height of the texture to render to
     /// \param textureId  OpenGL identifier of the target texture
     /// \param settings   Context settings to create render-texture with
     ///
     /// \return True if creation has been successful
     ///
     ////////////////////////////////////////////////////////////
-    bool create(unsigned int width, unsigned int height, unsigned int textureId, const ContextSettings& settings) override;
+    bool create(const Vector2u& size, unsigned int textureId, const ContextSettings& settings) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Activate or deactivate the render texture for rendering
@@ -117,13 +114,9 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     std::unique_ptr<Context> m_context; //!< P-Buffer based context
-    unsigned int m_width;               //!< Width of the P-Buffer
-    unsigned int m_height;              //!< Height of the P-Buffer
+    Vector2u                 m_size;    //!< Width and height of the P-Buffer
 };
 
 } // namespace priv
 
 } // namespace sf
-
-
-#endif // SFML_RENDERTEXTUREIMPLDEFAULT_HPP

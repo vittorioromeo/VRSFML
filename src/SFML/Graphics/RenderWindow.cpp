@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -25,25 +25,21 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/GLCheck.hpp>
 #include <SFML/Graphics/RenderTextureImplFBO.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/Texture.hpp>
+#include <SFML/Window/VideoMode.hpp>
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-RenderWindow::RenderWindow() :
-m_defaultFrameBuffer(0)
-{
-    // Nothing to do
-}
+RenderWindow::RenderWindow() = default;
 
 
 ////////////////////////////////////////////////////////////
-RenderWindow::RenderWindow(VideoMode mode, const String& title, Uint32 style, const ContextSettings& settings) :
-m_defaultFrameBuffer(0)
+RenderWindow::RenderWindow(VideoMode mode, const String& title, std::uint32_t style, const ContextSettings& settings)
 {
     // Don't call the base class constructor because it contains virtual function calls
     Window::create(mode, title, style, settings);
@@ -51,8 +47,7 @@ m_defaultFrameBuffer(0)
 
 
 ////////////////////////////////////////////////////////////
-RenderWindow::RenderWindow(WindowHandle handle, const ContextSettings& settings) :
-m_defaultFrameBuffer(0)
+RenderWindow::RenderWindow(WindowHandle handle, const ContextSettings& settings)
 {
     // Don't call the base class constructor because it contains virtual function calls
     Window::create(handle, settings);
@@ -60,10 +55,7 @@ m_defaultFrameBuffer(0)
 
 
 ////////////////////////////////////////////////////////////
-RenderWindow::~RenderWindow()
-{
-    // Nothing to do
-}
+RenderWindow::~RenderWindow() = default;
 
 
 ////////////////////////////////////////////////////////////
