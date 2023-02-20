@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Marco Antognini (antognini.marco@gmail.com),
+// Copyright (C) 2007-2023 Marco Antognini (antognini.marco@gmail.com),
 //                         Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -26,12 +26,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Window/Event.hpp>
+
 #import <AppKit/AppKit.h>
 
-namespace sf {
-    namespace priv {
-        class WindowImplCocoa;
-    }
+namespace sf::priv
+{
+class WindowImplCocoa;
 }
 
 ////////////////////////////////////////////////////////////
@@ -49,14 +50,14 @@ namespace sf {
 /// It needs to be called before any event, e.g. in the window constructor.
 ///
 ////////////////////////////////////////////////////////////
-void initialiseKeyboardHelper(void);
+void initialiseKeyboardHelper();
 
 
 ////////////////////////////////////////////////////////////
 /// \brief Set up a SFML key event based on the given modifiers flags and key code
 ///
 ////////////////////////////////////////////////////////////
-sf::Event::KeyEvent keyEventWithModifiers(NSUInteger modifiers, sf::Keyboard::Key key);
+sf::Event::KeyEvent keyEventWithModifiers(NSUInteger modifiers, sf::Keyboard::Key key, sf::Keyboard::Scancode code);
 
 
 ////////////////////////////////////////////////////////////
@@ -66,5 +67,3 @@ sf::Event::KeyEvent keyEventWithModifiers(NSUInteger modifiers, sf::Keyboard::Ke
 ///
 ////////////////////////////////////////////////////////////
 void handleModifiersChanged(NSUInteger modifiers, sf::priv::WindowImplCocoa& requester);
-
-

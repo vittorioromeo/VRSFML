@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,10 +22,11 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_CONTEXTSETTINGS_HPP
-#define SFML_CONTEXTSETTINGS_HPP
+#pragma once
 
 #include <SFML/Config.hpp>
+
+#include <cstdint>
 
 namespace sf
 {
@@ -59,33 +60,37 @@ struct ContextSettings
     /// \param sRgb         sRGB capable framebuffer
     ///
     ////////////////////////////////////////////////////////////
-    constexpr explicit ContextSettings(unsigned int depth = 0, unsigned int stencil = 0, unsigned int antialiasing = 0, unsigned int major = 1, unsigned int minor = 1, unsigned int attributes = Default, bool sRgb = false) :
-    depthBits        (depth),
-    stencilBits      (stencil),
+    constexpr explicit ContextSettings(
+        unsigned int depth        = 0,
+        unsigned int stencil      = 0,
+        unsigned int antialiasing = 0,
+        unsigned int major        = 1,
+        unsigned int minor        = 1,
+        unsigned int attributes   = Default,
+        bool         sRgb         = false) :
+    depthBits(depth),
+    stencilBits(stencil),
     antialiasingLevel(antialiasing),
-    majorVersion     (major),
-    minorVersion     (minor),
-    attributeFlags   (attributes),
-    sRgbCapable      (sRgb)
+    majorVersion(major),
+    minorVersion(minor),
+    attributeFlags(attributes),
+    sRgbCapable(sRgb)
     {
     }
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    unsigned int depthBits;         //!< Bits of the depth buffer
-    unsigned int stencilBits;       //!< Bits of the stencil buffer
-    unsigned int antialiasingLevel; //!< Level of antialiasing
-    unsigned int majorVersion;      //!< Major number of the context version to create
-    unsigned int minorVersion;      //!< Minor number of the context version to create
-    Uint32       attributeFlags;    //!< The attribute flags to create the context with
-    bool         sRgbCapable;       //!< Whether the context framebuffer is sRGB capable
+    unsigned int  depthBits;         //!< Bits of the depth buffer
+    unsigned int  stencilBits;       //!< Bits of the stencil buffer
+    unsigned int  antialiasingLevel; //!< Level of antialiasing
+    unsigned int  majorVersion;      //!< Major number of the context version to create
+    unsigned int  minorVersion;      //!< Minor number of the context version to create
+    std::uint32_t attributeFlags;    //!< The attribute flags to create the context with
+    bool          sRgbCapable;       //!< Whether the context framebuffer is sRGB capable
 };
 
 } // namespace sf
-
-
-#endif // SFML_CONTEXTSETTINGS_HPP
 
 
 ////////////////////////////////////////////////////////////

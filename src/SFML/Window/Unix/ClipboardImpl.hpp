@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,20 +22,20 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_CLIPBOARDIMPLX11_HPP
-#define SFML_CLIPBOARDIMPLX11_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/System/String.hpp>
+#include <SFML/Window/WindowStyle.hpp> // Prevent conflict with macro None from Xlib
+
 #include <X11/Xlib.h>
+
 #include <deque>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 
 ////////////////////////////////////////////////////////////
@@ -45,7 +45,6 @@ namespace priv
 class ClipboardImpl
 {
 public:
-
     ////////////////////////////////////////////////////////////
     /// \brief Get the content of the clipboard as string data
     ///
@@ -81,7 +80,6 @@ public:
     static void processEvents();
 
 private:
-
     ////////////////////////////////////////////////////////////
     /// \brief Constructor
     ///
@@ -135,21 +133,16 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    ::Window           m_window;            ///< X identifier defining our window
-    ::Display*         m_display;           ///< Pointer to the display
-    Atom               m_clipboard;         ///< X Atom identifying the CLIPBOARD selection
-    Atom               m_targets;           ///< X Atom identifying TARGETS
-    Atom               m_text;              ///< X Atom identifying TEXT
-    Atom               m_utf8String;        ///< X Atom identifying UTF8_STRING
-    Atom               m_targetProperty;    ///< X Atom identifying our destination window property
-    String             m_clipboardContents; ///< Our clipboard contents
-    std::deque<XEvent> m_events;            ///< Queue we use to store pending events for this window
-    bool               m_requestResponded;  ///< Holds whether our selection request has been responded to or not
+    ::Window           m_window{};           ///< X identifier defining our window
+    ::Display*         m_display;            ///< Pointer to the display
+    Atom               m_clipboard;          ///< X Atom identifying the CLIPBOARD selection
+    Atom               m_targets;            ///< X Atom identifying TARGETS
+    Atom               m_text;               ///< X Atom identifying TEXT
+    Atom               m_utf8String;         ///< X Atom identifying UTF8_STRING
+    Atom               m_targetProperty;     ///< X Atom identifying our destination window property
+    String             m_clipboardContents;  ///< Our clipboard contents
+    std::deque<XEvent> m_events;             ///< Queue we use to store pending events for this window
+    bool               m_requestResponded{}; ///< Holds whether our selection request has been responded to or not
 };
 
-} // namespace priv
-
-} // namespace sf
-
-
-#endif // SFML_CLIPBOARDIMPLX11_HPP
+} // namespace sf::priv

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,8 +22,7 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_VERTEX_HPP
-#define SFML_VERTEX_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -41,7 +40,6 @@ namespace sf
 class Vertex
 {
 public:
-
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
@@ -93,17 +91,14 @@ public:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2f  position;  //!< 2D position of the vertex
-    Color     color;     //!< Color of the vertex
-    Vector2f  texCoords; //!< Coordinates of the texture's pixel to map to the vertex
+    Vector2f position;            //!< 2D position of the vertex
+    Color    color{Color::White}; //!< Color of the vertex
+    Vector2f texCoords;           //!< Coordinates of the texture's pixel to map to the vertex
 };
 
 #include <SFML/Graphics/Vertex.inl>
 
 } // namespace sf
-
-
-#endif // SFML_VERTEX_HPP
 
 
 ////////////////////////////////////////////////////////////

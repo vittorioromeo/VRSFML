@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -24,69 +24,57 @@
 
 
 ////////////////////////////////////////////////////////////
-constexpr Color::Color() :
-r(0),
-g(0),
-b(0),
-a(255)
-{
-
-}
+constexpr Color::Color() = default;
 
 
 ////////////////////////////////////////////////////////////
-constexpr Color::Color(Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha) :
+constexpr Color::Color(std::uint8_t red, std::uint8_t green, std::uint8_t blue, std::uint8_t alpha) :
 r(red),
 g(green),
 b(blue),
 a(alpha)
 {
-
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Color::Color(Uint32 color) :
-r(static_cast<Uint8>((color & 0xff000000) >> 24)),
-g(static_cast<Uint8>((color & 0x00ff0000) >> 16)),
-b(static_cast<Uint8>((color & 0x0000ff00) >> 8)),
-a(static_cast<Uint8>(color & 0x000000ff))
+constexpr Color::Color(std::uint32_t color) :
+r(static_cast<std::uint8_t>((color & 0xff000000) >> 24)),
+g(static_cast<std::uint8_t>((color & 0x00ff0000) >> 16)),
+b(static_cast<std::uint8_t>((color & 0x0000ff00) >> 8)),
+a(static_cast<std::uint8_t>(color & 0x000000ff))
 {
-
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Uint32 Color::toInteger() const
+constexpr std::uint32_t Color::toInteger() const
 {
-    return static_cast<Uint32>((r << 24) | (g << 16) | (b << 8) | a);
+    return static_cast<std::uint32_t>((r << 24) | (g << 16) | (b << 8) | a);
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr bool operator ==(const Color& left, const Color& right)
+constexpr bool operator==(const Color& left, const Color& right)
 {
-    return (left.r == right.r) &&
-           (left.g == right.g) &&
-           (left.b == right.b) &&
-           (left.a == right.a);
+    return (left.r == right.r) && (left.g == right.g) && (left.b == right.b) && (left.a == right.a);
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr bool operator !=(const Color& left, const Color& right)
+constexpr bool operator!=(const Color& left, const Color& right)
 {
     return !(left == right);
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Color operator +(const Color& left, const Color& right)
+constexpr Color operator+(const Color& left, const Color& right)
 {
-    const auto clampedAdd = [](Uint8 lhs, Uint8 rhs) -> Uint8
+    const auto clampedAdd = [](std::uint8_t lhs, std::uint8_t rhs) -> std::uint8_t
     {
-        const int intResult = static_cast<int>(lhs) + static_cast<int>(rhs);
-        return static_cast<Uint8>(intResult < 255 ? intResult : 255);
+        const int intResult = int{lhs} + int{rhs};
+        return static_cast<std::uint8_t>(intResult < 255 ? intResult : 255);
     };
 
     return Color(clampedAdd(left.r, right.r),
@@ -97,12 +85,12 @@ constexpr Color operator +(const Color& left, const Color& right)
 
 
 ////////////////////////////////////////////////////////////
-constexpr Color operator -(const Color& left, const Color& right)
+constexpr Color operator-(const Color& left, const Color& right)
 {
-    const auto clampedSub = [](Uint8 lhs, Uint8 rhs) -> Uint8
+    const auto clampedSub = [](std::uint8_t lhs, std::uint8_t rhs) -> std::uint8_t
     {
-        const int intResult = static_cast<int>(lhs) - static_cast<int>(rhs);
-        return static_cast<Uint8>(intResult > 0 ? intResult : 0);
+        const int intResult = int{lhs} - int{rhs};
+        return static_cast<std::uint8_t>(intResult > 0 ? intResult : 0);
     };
 
     return Color(clampedSub(left.r, right.r),
@@ -113,12 +101,12 @@ constexpr Color operator -(const Color& left, const Color& right)
 
 
 ////////////////////////////////////////////////////////////
-constexpr Color operator *(const Color& left, const Color& right)
+constexpr Color operator*(const Color& left, const Color& right)
 {
-    const auto scaledMul = [](Uint8 lhs, Uint8 rhs) -> Uint8
+    const auto scaledMul = [](std::uint8_t lhs, std::uint8_t rhs) -> std::uint8_t
     {
-        const auto uint16Result = static_cast<Uint16>(static_cast<Uint16>(lhs) * static_cast<Uint16>(rhs));
-        return static_cast<Uint8>(uint16Result / 255u);
+        const auto uint16Result = static_cast<std::uint16_t>(std::uint16_t{lhs} * std::uint16_t{rhs});
+        return static_cast<std::uint8_t>(uint16Result / 255u);
     };
 
     return Color(scaledMul(left.r, right.r),
@@ -129,21 +117,21 @@ constexpr Color operator *(const Color& left, const Color& right)
 
 
 ////////////////////////////////////////////////////////////
-constexpr Color& operator +=(Color& left, const Color& right)
+constexpr Color& operator+=(Color& left, const Color& right)
 {
     return left = left + right;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Color& operator -=(Color& left, const Color& right)
+constexpr Color& operator-=(Color& left, const Color& right)
 {
     return left = left - right;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Color& operator *=(Color& left, const Color& right)
+constexpr Color& operator*=(Color& left, const Color& right)
 {
     return left = left * right;
 }

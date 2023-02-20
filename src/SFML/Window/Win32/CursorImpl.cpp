@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -25,26 +25,16 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Win32/CursorImpl.hpp>
-#include <SFML/System/Win32/WindowsHeader.hpp>
 #include <SFML/System/Err.hpp>
+#include <SFML/System/Win32/WindowsHeader.hpp>
+#include <SFML/Window/Win32/CursorImpl.hpp>
+
 #include <cstring>
+#include <ostream>
 
 
-namespace sf
+namespace sf::priv
 {
-namespace priv
-{
-
-////////////////////////////////////////////////////////////
-CursorImpl::CursorImpl() :
-m_cursor(nullptr),
-m_systemCursor(false)
-{
-    // That's it.
-}
-
-
 ////////////////////////////////////////////////////////////
 CursorImpl::~CursorImpl()
 {
@@ -53,14 +43,12 @@ CursorImpl::~CursorImpl()
 
 
 ////////////////////////////////////////////////////////////
-bool CursorImpl::loadFromPixels(const Uint8* pixels, Vector2u size, Vector2u hotspot)
+bool CursorImpl::loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vector2u hotspot)
 {
     release();
 
     // Create the bitmap that will hold our color data
-    BITMAPV5HEADER bitmapHeader;
-    std::memset(&bitmapHeader, 0, sizeof(BITMAPV5HEADER));
-
+    auto bitmapHeader           = BITMAPV5HEADER();
     bitmapHeader.bV5Size        = sizeof(BITMAPV5HEADER);
     bitmapHeader.bV5Width       = static_cast<LONG>(size.x);
     bitmapHeader.bV5Height      = -static_cast<LONG>(size.y); // Negative indicates origin is in upper-left corner
@@ -72,17 +60,15 @@ bool CursorImpl::loadFromPixels(const Uint8* pixels, Vector2u size, Vector2u hot
     bitmapHeader.bV5BlueMask    = 0x000000ff;
     bitmapHeader.bV5AlphaMask   = 0xff000000;
 
-    Uint32* bitmapData = nullptr;
+    std::uint32_t* bitmapData = nullptr;
 
-    HDC screenDC = GetDC(nullptr);
-    HBITMAP color = CreateDIBSection(
-        screenDC,
-        reinterpret_cast<const BITMAPINFO*>(&bitmapHeader),
-        DIB_RGB_COLORS,
-        reinterpret_cast<void**>(&bitmapData),
-        nullptr,
-        0
-    );
+    HDC     screenDC = GetDC(nullptr);
+    HBITMAP color    = CreateDIBSection(screenDC,
+                                     reinterpret_cast<const BITMAPINFO*>(&bitmapHeader),
+                                     DIB_RGB_COLORS,
+                                     reinterpret_cast<void**>(&bitmapData),
+                                     nullptr,
+                                     0);
     ReleaseDC(nullptr, screenDC);
 
     if (!color)
@@ -93,10 +79,10 @@ bool CursorImpl::loadFromPixels(const Uint8* pixels, Vector2u size, Vector2u hot
 
     // Fill our bitmap with the cursor color data
     // We'll have to swap the red and blue channels here
-    Uint32* bitmapOffset = bitmapData;
+    std::uint32_t* bitmapOffset = bitmapData;
     for (std::size_t remaining = size.x * size.y; remaining > 0; --remaining, pixels += 4)
     {
-        *bitmapOffset++ = static_cast<Uint32>((pixels[3] << 24) | (pixels[0] << 16) | (pixels[1] << 8) | pixels[2]);
+        *bitmapOffset++ = static_cast<std::uint32_t>((pixels[3] << 24) | (pixels[0] << 16) | (pixels[1] << 8) | pixels[2]);
     }
 
     // Create a dummy mask bitmap (it won't be used)
@@ -110,9 +96,7 @@ bool CursorImpl::loadFromPixels(const Uint8* pixels, Vector2u size, Vector2u hot
     }
 
     // Create the structure that describes our cursor
-    ICONINFO cursorInfo;
-    std::memset(&cursorInfo, 0, sizeof(ICONINFO));
-
+    auto cursorInfo     = ICONINFO();
     cursorInfo.fIcon    = FALSE; // This is a cursor and not an icon
     cursorInfo.xHotspot = hotspot.x;
     cursorInfo.yHotspot = hotspot.y;
@@ -120,7 +104,7 @@ bool CursorImpl::loadFromPixels(const Uint8* pixels, Vector2u size, Vector2u hot
     cursorInfo.hbmMask  = mask;
 
     // Create the cursor
-    m_cursor = reinterpret_cast<HCURSOR>(CreateIconIndirect(&cursorInfo));
+    m_cursor       = reinterpret_cast<HCURSOR>(CreateIconIndirect(&cursorInfo));
     m_systemCursor = false;
 
     // The data has been copied into the cursor, so get rid of these
@@ -145,6 +129,8 @@ bool CursorImpl::loadFromSystem(Cursor::Type type)
     release();
 
     LPCTSTR shape = nullptr;
+
+    // clang-format off
     switch (type)
     {
         case Cursor::Arrow:                  shape = IDC_ARROW;       break;
@@ -169,9 +155,10 @@ bool CursorImpl::loadFromSystem(Cursor::Type type)
         case Cursor::Help:                   shape = IDC_HELP;        break;
         case Cursor::NotAllowed:             shape = IDC_NO;          break;
     }
+    // clang-format on
 
     // Get the shared system cursor and make sure not to destroy it
-    m_cursor = LoadCursor(nullptr, shape);
+    m_cursor       = LoadCursor(nullptr, shape);
     m_systemCursor = true;
 
     if (m_cursor)
@@ -189,13 +176,11 @@ bool CursorImpl::loadFromSystem(Cursor::Type type)
 ////////////////////////////////////////////////////////////
 void CursorImpl::release()
 {
-    if (m_cursor && !m_systemCursor) {
+    if (m_cursor && !m_systemCursor)
+    {
         DestroyCursor(static_cast<HCURSOR>(m_cursor));
         m_cursor = nullptr;
     }
 }
 
-} // namespace priv
-
-} // namespace sf
-
+} // namespace sf::priv

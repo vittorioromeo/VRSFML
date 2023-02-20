@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Marco Antognini (antognini.marco@gmail.com),
+// Copyright (C) 2007-2023 Marco Antognini (antognini.marco@gmail.com),
 //                         Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -23,8 +23,9 @@
 //
 ////////////////////////////////////////////////////////////
 
-#import <Cocoa/Cocoa.h>
 #import <SFML/Graphics.hpp>
+
+#import <Cocoa/Cocoa.h>
 
 /*
  * NB: We need pointers for C++ objects fields in Obj-C interface !
@@ -36,7 +37,7 @@
 
 struct SFMLmainWindow;
 
-@interface CocoaAppDelegate : NSObject <NSApplicationDelegate>
+@interface CocoaAppDelegate : NSObject<NSApplicationDelegate>
 {
 @private
     NSWindow*       m_window;
@@ -48,15 +49,17 @@ struct SFMLmainWindow;
     BOOL            m_initialized;
 }
 
-@property (retain) IBOutlet NSWindow*       window;
-@property (assign) IBOutlet NSView*         sfmlView;
-@property (assign) IBOutlet NSTextField*    textField;
+@property (retain) IBOutlet NSWindow* window;
 
--(IBAction)colorChanged:(NSPopUpButton*)sender;
--(IBAction)rotationChanged:(NSSlider*)sender;
--(IBAction)visibleChanged:(NSButton*)sender;
--(IBAction)textChanged:(NSTextField*)sender;
--(IBAction)updateText:(NSButton*)sender;
+@property (assign) IBOutlet NSView* sfmlView;
+
+@property (assign) IBOutlet NSTextField* textField;
+
+- (IBAction)colorChanged:(NSPopUpButton*)sender;
+- (IBAction)rotationChanged:(NSSlider*)sender;
+- (IBAction)visibleChanged:(NSButton*)sender;
+- (IBAction)textChanged:(NSTextField*)sender;
+- (IBAction)updateText:(NSButton*)sender;
 
 @end
 
@@ -66,6 +69,6 @@ struct SFMLmainWindow;
  */
 @interface SilentWindow : NSWindow
 
--(void)keyDown:(NSEvent*)theEvent;
+- (void)keyDown:(NSEvent*)theEvent;
 
 @end

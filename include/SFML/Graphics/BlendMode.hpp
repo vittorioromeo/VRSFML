@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,8 +22,7 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_BLENDMODE_HPP
-#define SFML_BLENDMODE_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -107,19 +106,22 @@ struct SFML_GRAPHICS_API BlendMode
     /// \param alphaBlendEquation     Specifies how to combine the source and destination alphas.
     ///
     ////////////////////////////////////////////////////////////
-    BlendMode(Factor colorSourceFactor, Factor colorDestinationFactor,
-              Equation colorBlendEquation, Factor alphaSourceFactor,
-              Factor alphaDestinationFactor, Equation alphaBlendEquation);
+    BlendMode(Factor   colorSourceFactor,
+              Factor   colorDestinationFactor,
+              Equation colorBlendEquation,
+              Factor   alphaSourceFactor,
+              Factor   alphaDestinationFactor,
+              Equation alphaBlendEquation);
 
     ////////////////////////////////////////////////////////////
     // Member Data
     ////////////////////////////////////////////////////////////
-    Factor   colorSrcFactor; //!< Source blending factor for the color channels
-    Factor   colorDstFactor; //!< Destination blending factor for the color channels
-    Equation colorEquation;  //!< Blending equation for the color channels
-    Factor   alphaSrcFactor; //!< Source blending factor for the alpha channel
-    Factor   alphaDstFactor; //!< Destination blending factor for the alpha channel
-    Equation alphaEquation;  //!< Blending equation for the alpha channel
+    Factor   colorSrcFactor{BlendMode::SrcAlpha};         //!< Source blending factor for the color channels
+    Factor   colorDstFactor{BlendMode::OneMinusSrcAlpha}; //!< Destination blending factor for the color channels
+    Equation colorEquation{BlendMode::Add};               //!< Blending equation for the color channels
+    Factor   alphaSrcFactor{BlendMode::One};              //!< Source blending factor for the alpha channel
+    Factor   alphaDstFactor{BlendMode::OneMinusSrcAlpha}; //!< Destination blending factor for the alpha channel
+    Equation alphaEquation{BlendMode::Add};               //!< Blending equation for the alpha channel
 };
 
 ////////////////////////////////////////////////////////////
@@ -132,7 +134,7 @@ struct SFML_GRAPHICS_API BlendMode
 /// \return True if blending modes are equal, false if they are different
 ///
 ////////////////////////////////////////////////////////////
-SFML_GRAPHICS_API bool operator ==(const BlendMode& left, const BlendMode& right);
+SFML_GRAPHICS_API bool operator==(const BlendMode& left, const BlendMode& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates BlendMode
@@ -144,22 +146,21 @@ SFML_GRAPHICS_API bool operator ==(const BlendMode& left, const BlendMode& right
 /// \return True if blending modes are different, false if they are equal
 ///
 ////////////////////////////////////////////////////////////
-SFML_GRAPHICS_API bool operator !=(const BlendMode& left, const BlendMode& right);
+SFML_GRAPHICS_API bool operator!=(const BlendMode& left, const BlendMode& right);
 
 ////////////////////////////////////////////////////////////
 // Commonly used blending modes
 ////////////////////////////////////////////////////////////
+// NOLINTBEGIN(readability-identifier-naming)
 SFML_GRAPHICS_API extern const BlendMode BlendAlpha;    //!< Blend source and dest according to dest alpha
 SFML_GRAPHICS_API extern const BlendMode BlendAdd;      //!< Add source to dest
 SFML_GRAPHICS_API extern const BlendMode BlendMultiply; //!< Multiply source and dest
 SFML_GRAPHICS_API extern const BlendMode BlendMin;      //!< Take minimum between source and dest
 SFML_GRAPHICS_API extern const BlendMode BlendMax;      //!< Take maximum between source and dest
 SFML_GRAPHICS_API extern const BlendMode BlendNone;     //!< Overwrite dest with source
+// NOLINTEND(readability-identifier-naming)
 
 } // namespace sf
-
-
-#endif // SFML_BLENDMODE_HPP
 
 
 ////////////////////////////////////////////////////////////

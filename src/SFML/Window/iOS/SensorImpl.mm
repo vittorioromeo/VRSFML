@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -32,18 +32,16 @@
 
 namespace
 {
-    unsigned int deviceMotionEnabledCount = 0;
+unsigned int deviceMotionEnabledCount = 0;
 
-    float toDegrees(float radians)
-    {
-        return sf::radians(radians).asDegrees();
-    }
+float toDegrees(float radians)
+{
+    return sf::radians(radians).asDegrees();
+}
 }
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 void SensorImpl::initialize()
@@ -133,7 +131,7 @@ void SensorImpl::close()
 ////////////////////////////////////////////////////////////
 Vector3f SensorImpl::update()
 {
-    Vector3f value;
+    Vector3f         value;
     CMMotionManager* manager = [SFAppDelegate getInstance].motionManager;
 
     switch (m_sensor)
@@ -220,11 +218,11 @@ void SensorImpl::setEnabled(bool enabled)
             {
                 if (deviceMotionEnabledCount == 0)
                     [[SFAppDelegate getInstance].motionManager startDeviceMotionUpdates];
-                deviceMotionEnabledCount++;
+                ++deviceMotionEnabledCount;
             }
             else
             {
-                deviceMotionEnabledCount--;
+                --deviceMotionEnabledCount;
                 if (deviceMotionEnabledCount == 0)
                     [[SFAppDelegate getInstance].motionManager stopDeviceMotionUpdates];
             }
@@ -238,6 +236,4 @@ void SensorImpl::setEnabled(bool enabled)
     m_enabled = enabled;
 }
 
-} // namespace priv
-
-} // namespace sf
+} // namespace sf::priv

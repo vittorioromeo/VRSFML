@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -27,30 +27,37 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/ALCheck.hpp>
 #include <SFML/System/Err.hpp>
+
+#include <ostream>
 #include <string>
+#include <utility>
 
 #if defined(__APPLE__)
-    #if defined(__clang__)
-        #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    #elif defined(__GNUC__)
-        #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-    #endif
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
-namespace sf
+namespace
 {
-namespace priv
+// A nested named namespace is used here to allow unity builds of SFML.
+namespace AlCheckImpl
+{
+thread_local ALenum lastError(AL_NO_ERROR);
+}
+} // namespace
+
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-void alCheckError(const char* file, unsigned int line, const char* expression)
+void alCheckError(const std::filesystem::path& file, unsigned int line, std::string_view expression)
 {
     // Get the last error
     ALenum errorCode = alGetError();
 
     if (errorCode != AL_NO_ERROR)
     {
-        std::string fileString = file;
-        std::string error = "Unknown error";
+        AlCheckImpl::lastError = errorCode;
+
+        std::string error       = "Unknown error";
         std::string description = "No description";
 
         // Decode the error code
@@ -58,49 +65,52 @@ void alCheckError(const char* file, unsigned int line, const char* expression)
         {
             case AL_INVALID_NAME:
             {
-                error = "AL_INVALID_NAME";
+                error       = "AL_INVALID_NAME";
                 description = "A bad name (ID) has been specified.";
                 break;
             }
 
             case AL_INVALID_ENUM:
             {
-                error = "AL_INVALID_ENUM";
+                error       = "AL_INVALID_ENUM";
                 description = "An unacceptable value has been specified for an enumerated argument.";
                 break;
             }
 
             case AL_INVALID_VALUE:
             {
-                error = "AL_INVALID_VALUE";
+                error       = "AL_INVALID_VALUE";
                 description = "A numeric argument is out of range.";
                 break;
             }
 
             case AL_INVALID_OPERATION:
             {
-                error = "AL_INVALID_OPERATION";
+                error       = "AL_INVALID_OPERATION";
                 description = "The specified operation is not allowed in the current state.";
                 break;
             }
 
             case AL_OUT_OF_MEMORY:
             {
-                error = "AL_OUT_OF_MEMORY";
+                error       = "AL_OUT_OF_MEMORY";
                 description = "There is not enough memory left to execute the command.";
                 break;
             }
         }
 
         // Log the error
-        err() << "An internal OpenAL call failed in "
-              << fileString.substr(fileString.find_last_of("\\/") + 1) << "(" << line << ")."
-              << "\nExpression:\n   " << expression
-              << "\nError description:\n   " << error << "\n   " << description << "\n"
+        err() << "An internal OpenAL call failed in " << file.filename() << "(" << line << ")."
+              << "\nExpression:\n   " << expression << "\nError description:\n   " << error << "\n   " << description << '\n'
               << std::endl;
     }
 }
 
-} // namespace priv
 
-} // namespace sf
+////////////////////////////////////////////////////////////
+ALenum alGetLastErrorImpl()
+{
+    return std::exchange(AlCheckImpl::lastError, AL_NO_ERROR);
+}
+
+} // namespace sf::priv

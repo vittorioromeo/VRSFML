@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -26,148 +26,152 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/GLCheck.hpp>
 #include <SFML/Graphics/Shader.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/Transform.hpp>
-#include <SFML/Graphics/Color.hpp>
-#include <SFML/Graphics/GLCheck.hpp>
-#include <SFML/Window/Context.hpp>
-#include <SFML/System/InputStream.hpp>
 #include <SFML/System/Err.hpp>
-#include <fstream>
-#include <vector>
-#include <mutex>
+#include <SFML/System/InputStream.hpp>
+#include <SFML/System/Utils.hpp>
+#include <SFML/Window/Context.hpp>
 
+#include <fstream>
+#include <iomanip>
+#include <mutex>
+#include <ostream>
+#include <utility>
+#include <vector>
 
 #ifndef SFML_OPENGL_ES
 
 #if defined(SFML_SYSTEM_MACOS) || defined(SFML_SYSTEM_IOS)
 
-    #define castToGlHandle(x) reinterpret_cast<GLEXT_GLhandle>(static_cast<ptrdiff_t>(x))
-    #define castFromGlHandle(x) static_cast<unsigned int>(reinterpret_cast<ptrdiff_t>(x))
+#define castToGlHandle(x)   reinterpret_cast<GLEXT_GLhandle>(static_cast<ptrdiff_t>(x))
+#define castFromGlHandle(x) static_cast<unsigned int>(reinterpret_cast<ptrdiff_t>(x))
 
 #else
 
-    #define castToGlHandle(x) (x)
-    #define castFromGlHandle(x) (x)
+#define castToGlHandle(x)   (x)
+#define castFromGlHandle(x) (x)
 
 #endif
 
 namespace
 {
-    std::recursive_mutex isAvailableMutex;
+std::recursive_mutex isAvailableMutex;
 
-    GLint checkMaxTextureUnits()
+GLint checkMaxTextureUnits()
+{
+    GLint maxUnits = 0;
+    glCheck(glGetIntegerv(GLEXT_GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxUnits));
+
+    return maxUnits;
+}
+
+// Retrieve the maximum number of texture units available
+std::size_t getMaxTextureUnits()
+{
+    static GLint maxUnits = checkMaxTextureUnits();
+    return static_cast<std::size_t>(maxUnits);
+}
+
+// Read the contents of a file into an array of char
+bool getFileContents(const std::filesystem::path& filename, std::vector<char>& buffer)
+{
+    std::ifstream file(filename.c_str(), std::ios_base::binary);
+    if (file)
     {
-        GLint maxUnits = 0;
-        glCheck(glGetIntegerv(GLEXT_GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxUnits));
-
-        return maxUnits;
-    }
-
-    // Retrieve the maximum number of texture units available
-    std::size_t getMaxTextureUnits()
-    {
-        static GLint maxUnits = checkMaxTextureUnits();
-        return static_cast<std::size_t>(maxUnits);
-    }
-
-    // Read the contents of a file into an array of char
-    bool getFileContents(const std::string& filename, std::vector<char>& buffer)
-    {
-        std::ifstream file(filename.c_str(), std::ios_base::binary);
-        if (file)
-        {
-            file.seekg(0, std::ios_base::end);
-            std::ifstream::pos_type size = file.tellg();
-            if (size > 0)
-            {
-                file.seekg(0, std::ios_base::beg);
-                buffer.resize(static_cast<std::size_t>(size));
-                file.read(buffer.data(), static_cast<std::streamsize>(size));
-            }
-            buffer.push_back('\0');
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    // Read the contents of a stream into an array of char
-    bool getStreamContents(sf::InputStream& stream, std::vector<char>& buffer)
-    {
-        bool success = true;
-        sf::Int64 size = stream.getSize();
+        file.seekg(0, std::ios_base::end);
+        std::ifstream::pos_type size = file.tellg();
         if (size > 0)
         {
+            file.seekg(0, std::ios_base::beg);
             buffer.resize(static_cast<std::size_t>(size));
-
-            if (stream.seek(0) == -1)
-            {
-                sf::err() << "Failed to seek shader stream" << std::endl;
-                return false;
-            }
-
-            sf::Int64 read = stream.read(buffer.data(), size);
-            success = (read == size);
+            file.read(buffer.data(), static_cast<std::streamsize>(size));
         }
         buffer.push_back('\0');
-        return success;
+        return true;
     }
-
-    // Transforms an array of 2D vectors into a contiguous array of scalars
-    template <typename T>
-    std::vector<T> flatten(const sf::Vector2<T>* vectorArray, std::size_t length)
+    else
     {
-        const std::size_t vectorSize = 2;
-
-        std::vector<T> contiguous(vectorSize * length);
-        for (std::size_t i = 0; i < length; ++i)
-        {
-            contiguous[vectorSize * i]     = vectorArray[i].x;
-            contiguous[vectorSize * i + 1] = vectorArray[i].y;
-        }
-
-        return contiguous;
-    }
-
-    // Transforms an array of 3D vectors into a contiguous array of scalars
-    template <typename T>
-    std::vector<T> flatten(const sf::Vector3<T>* vectorArray, std::size_t length)
-    {
-        const std::size_t vectorSize = 3;
-
-        std::vector<T> contiguous(vectorSize * length);
-        for (std::size_t i = 0; i < length; ++i)
-        {
-            contiguous[vectorSize * i]     = vectorArray[i].x;
-            contiguous[vectorSize * i + 1] = vectorArray[i].y;
-            contiguous[vectorSize * i + 2] = vectorArray[i].z;
-        }
-
-        return contiguous;
-    }
-
-    // Transforms an array of 4D vectors into a contiguous array of scalars
-    template <typename T>
-    std::vector<T> flatten(const sf::priv::Vector4<T>* vectorArray, std::size_t length)
-    {
-        const std::size_t vectorSize = 4;
-
-        std::vector<T> contiguous(vectorSize * length);
-        for (std::size_t i = 0; i < length; ++i)
-        {
-            contiguous[vectorSize * i]     = vectorArray[i].x;
-            contiguous[vectorSize * i + 1] = vectorArray[i].y;
-            contiguous[vectorSize * i + 2] = vectorArray[i].z;
-            contiguous[vectorSize * i + 3] = vectorArray[i].w;
-        }
-
-        return contiguous;
+        return false;
     }
 }
+
+// Read the contents of a stream into an array of char
+bool getStreamContents(sf::InputStream& stream, std::vector<char>& buffer)
+{
+    bool         success = true;
+    std::int64_t size    = stream.getSize();
+    if (size > 0)
+    {
+        buffer.resize(static_cast<std::size_t>(size));
+
+        if (stream.seek(0) == -1)
+        {
+            sf::err() << "Failed to seek shader stream" << std::endl;
+            return false;
+        }
+
+        std::int64_t read = stream.read(buffer.data(), size);
+        success           = (read == size);
+    }
+    buffer.push_back('\0');
+    return success;
+}
+
+// Transforms an array of 2D vectors into a contiguous array of scalars
+template <typename T>
+std::vector<T> flatten(const sf::Vector2<T>* vectorArray, std::size_t length)
+{
+    const std::size_t vectorSize = 2;
+
+    std::vector<T> contiguous(vectorSize * length);
+    for (std::size_t i = 0; i < length; ++i)
+    {
+        contiguous[vectorSize * i]     = vectorArray[i].x;
+        contiguous[vectorSize * i + 1] = vectorArray[i].y;
+    }
+
+    return contiguous;
+}
+
+// Transforms an array of 3D vectors into a contiguous array of scalars
+template <typename T>
+std::vector<T> flatten(const sf::Vector3<T>* vectorArray, std::size_t length)
+{
+    const std::size_t vectorSize = 3;
+
+    std::vector<T> contiguous(vectorSize * length);
+    for (std::size_t i = 0; i < length; ++i)
+    {
+        contiguous[vectorSize * i]     = vectorArray[i].x;
+        contiguous[vectorSize * i + 1] = vectorArray[i].y;
+        contiguous[vectorSize * i + 2] = vectorArray[i].z;
+    }
+
+    return contiguous;
+}
+
+// Transforms an array of 4D vectors into a contiguous array of scalars
+template <typename T>
+std::vector<T> flatten(const sf::priv::Vector4<T>* vectorArray, std::size_t length)
+{
+    const std::size_t vectorSize = 4;
+
+    std::vector<T> contiguous(vectorSize * length);
+    for (std::size_t i = 0; i < length; ++i)
+    {
+        contiguous[vectorSize * i]     = vectorArray[i].x;
+        contiguous[vectorSize * i + 1] = vectorArray[i].y;
+        contiguous[vectorSize * i + 2] = vectorArray[i].z;
+        contiguous[vectorSize * i + 3] = vectorArray[i].w;
+    }
+
+    return contiguous;
+}
+} // namespace
 
 
 namespace sf
@@ -183,10 +187,7 @@ struct Shader::UniformBinder
     /// \brief Constructor: set up state before uniform is set
     ///
     ////////////////////////////////////////////////////////////
-    UniformBinder(Shader& shader, const std::string& name) :
-    savedProgram(0),
-    currentProgram(castToGlHandle(shader.m_shaderProgram)),
-    location(-1)
+    UniformBinder(Shader& shader, const std::string& name) : currentProgram(castToGlHandle(shader.m_shaderProgram))
     {
         if (currentProgram)
         {
@@ -224,20 +225,14 @@ struct Shader::UniformBinder
     UniformBinder& operator=(const UniformBinder&) = delete;
 
     TransientContextLock lock;           //!< Lock to keep context active while uniform is bound
-    GLEXT_GLhandle       savedProgram;   //!< Handle to the previously active program object
+    GLEXT_GLhandle       savedProgram{}; //!< Handle to the previously active program object
     GLEXT_GLhandle       currentProgram; //!< Handle to the program object of the modified sf::Shader instance
-    GLint                location;       //!< Uniform location, used by the surrounding sf::Shader code
+    GLint                location{-1};   //!< Uniform location, used by the surrounding sf::Shader code
 };
 
 
 ////////////////////////////////////////////////////////////
-Shader::Shader() :
-m_shaderProgram (0),
-m_currentTexture(-1),
-m_textures      (),
-m_uniforms      ()
-{
-}
+Shader::Shader() = default;
 
 
 ////////////////////////////////////////////////////////////
@@ -250,15 +245,47 @@ Shader::~Shader()
         glCheck(GLEXT_glDeleteObject(castToGlHandle(m_shaderProgram)));
 }
 
+////////////////////////////////////////////////////////////
+Shader::Shader(Shader&& source) noexcept :
+m_shaderProgram(std::exchange(source.m_shaderProgram, 0U)),
+m_currentTexture(std::exchange(source.m_currentTexture, -1)),
+m_textures(std::move(source.m_textures)),
+m_uniforms(std::move(source.m_uniforms))
+{
+}
 
 ////////////////////////////////////////////////////////////
-bool Shader::loadFromFile(const std::string& filename, Type type)
+Shader& Shader::operator=(Shader&& right) noexcept
+{
+    // Make sure we aren't moving ourselves.
+    if (&right == this)
+    {
+        return *this;
+    }
+    // Explicit scope for RAII
+    {
+        // Destroy effect program
+        TransientContextLock lock;
+        if (m_shaderProgram)
+            glCheck(GLEXT_glDeleteObject(castToGlHandle(m_shaderProgram)));
+    }
+
+    // Move the contents of right.
+    m_shaderProgram  = std::exchange(right.m_shaderProgram, 0U);
+    m_currentTexture = std::exchange(right.m_currentTexture, -1);
+    m_textures       = std::move(right.m_textures);
+    m_uniforms       = std::move(right.m_uniforms);
+    return *this;
+}
+
+////////////////////////////////////////////////////////////
+bool Shader::loadFromFile(const std::filesystem::path& filename, Type type)
 {
     // Read the file
     std::vector<char> shader;
     if (!getFileContents(filename, shader))
     {
-        err() << "Failed to open shader file \"" << filename << "\"" << std::endl;
+        err() << "Failed to open shader file\n" << formatDebugPathInfo(filename) << std::endl;
         return false;
     }
 
@@ -273,13 +300,14 @@ bool Shader::loadFromFile(const std::string& filename, Type type)
 
 
 ////////////////////////////////////////////////////////////
-bool Shader::loadFromFile(const std::string& vertexShaderFilename, const std::string& fragmentShaderFilename)
+bool Shader::loadFromFile(const std::filesystem::path& vertexShaderFilename,
+                          const std::filesystem::path& fragmentShaderFilename)
 {
     // Read the vertex shader file
     std::vector<char> vertexShader;
     if (!getFileContents(vertexShaderFilename, vertexShader))
     {
-        err() << "Failed to open vertex shader file \"" << vertexShaderFilename << "\"" << std::endl;
+        err() << "Failed to open vertex shader file " << vertexShaderFilename << std::endl;
         return false;
     }
 
@@ -287,7 +315,7 @@ bool Shader::loadFromFile(const std::string& vertexShaderFilename, const std::st
     std::vector<char> fragmentShader;
     if (!getFileContents(fragmentShaderFilename, fragmentShader))
     {
-        err() << "Failed to open fragment shader file \"" << fragmentShaderFilename << "\"" << std::endl;
+        err() << "Failed to open fragment shader file " << fragmentShaderFilename << std::endl;
         return false;
     }
 
@@ -297,13 +325,15 @@ bool Shader::loadFromFile(const std::string& vertexShaderFilename, const std::st
 
 
 ////////////////////////////////////////////////////////////
-bool Shader::loadFromFile(const std::string& vertexShaderFilename, const std::string& geometryShaderFilename, const std::string& fragmentShaderFilename)
+bool Shader::loadFromFile(const std::filesystem::path& vertexShaderFilename,
+                          const std::filesystem::path& geometryShaderFilename,
+                          const std::filesystem::path& fragmentShaderFilename)
 {
     // Read the vertex shader file
     std::vector<char> vertexShader;
     if (!getFileContents(vertexShaderFilename, vertexShader))
     {
-        err() << "Failed to open vertex shader file \"" << vertexShaderFilename << "\"" << std::endl;
+        err() << "Failed to open vertex shader file " << vertexShaderFilename << std::endl;
         return false;
     }
 
@@ -311,7 +341,7 @@ bool Shader::loadFromFile(const std::string& vertexShaderFilename, const std::st
     std::vector<char> geometryShader;
     if (!getFileContents(geometryShaderFilename, geometryShader))
     {
-        err() << "Failed to open geometry shader file \"" << geometryShaderFilename << "\"" << std::endl;
+        err() << "Failed to open geometry shader file " << geometryShaderFilename << std::endl;
         return false;
     }
 
@@ -319,7 +349,7 @@ bool Shader::loadFromFile(const std::string& vertexShaderFilename, const std::st
     std::vector<char> fragmentShader;
     if (!getFileContents(fragmentShaderFilename, fragmentShader))
     {
-        err() << "Failed to open fragment shader file \"" << fragmentShaderFilename << "\"" << std::endl;
+        err() << "Failed to open fragment shader file " << fragmentShaderFilename << std::endl;
         return false;
     }
 
@@ -570,7 +600,8 @@ void Shader::setUniform(const std::string& name, const Texture& texture)
                 // New entry, make sure there are enough texture units
                 if (m_textures.size() + 1 >= getMaxTextureUnits())
                 {
-                    err() << "Impossible to use texture \"" << name << "\" for shader: all available texture units are used" << std::endl;
+                    err() << "Impossible to use texture " << std::quoted(name)
+                          << " for shader: all available texture units are used" << std::endl;
                     return;
                 }
 
@@ -706,7 +737,7 @@ void Shader::bind(const Shader* shader)
     else
     {
         // Bind no shader
-        glCheck(GLEXT_glUseProgramObject(0));
+        glCheck(GLEXT_glUseProgramObject({}));
     }
 }
 
@@ -714,9 +745,9 @@ void Shader::bind(const Shader* shader)
 ////////////////////////////////////////////////////////////
 bool Shader::isAvailable()
 {
-    std::scoped_lock lock(isAvailableMutex);
+    std::lock_guard lock(isAvailableMutex);
 
-    static bool checked = false;
+    static bool checked   = false;
     static bool available = false;
 
     if (!checked)
@@ -728,10 +759,7 @@ bool Shader::isAvailable()
         // Make sure that extensions are initialized
         sf::priv::ensureExtensionsInit();
 
-        available = GLEXT_multitexture         &&
-                    GLEXT_shading_language_100 &&
-                    GLEXT_shader_objects       &&
-                    GLEXT_vertex_shader        &&
+        available = GLEXT_multitexture && GLEXT_shading_language_100 && GLEXT_shader_objects && GLEXT_vertex_shader &&
                     GLEXT_fragment_shader;
     }
 
@@ -742,9 +770,9 @@ bool Shader::isAvailable()
 ////////////////////////////////////////////////////////////
 bool Shader::isGeometryAvailable()
 {
-    std::scoped_lock lock(isAvailableMutex);
+    std::lock_guard lock(isAvailableMutex);
 
-    static bool checked = false;
+    static bool checked   = false;
     static bool available = false;
 
     if (!checked)
@@ -816,8 +844,7 @@ bool Shader::compile(const char* vertexShaderCode, const char* geometryShaderCod
         {
             char log[1024];
             glCheck(GLEXT_glGetInfoLog(vertexShader, sizeof(log), nullptr, log));
-            err() << "Failed to compile vertex shader:" << std::endl
-                  << log << std::endl;
+            err() << "Failed to compile vertex shader:" << '\n' << log << std::endl;
             glCheck(GLEXT_glDeleteObject(vertexShader));
             glCheck(GLEXT_glDeleteObject(shaderProgram));
             return false;
@@ -843,8 +870,7 @@ bool Shader::compile(const char* vertexShaderCode, const char* geometryShaderCod
         {
             char log[1024];
             glCheck(GLEXT_glGetInfoLog(geometryShader, sizeof(log), nullptr, log));
-            err() << "Failed to compile geometry shader:" << std::endl
-                  << log << std::endl;
+            err() << "Failed to compile geometry shader:" << '\n' << log << std::endl;
             glCheck(GLEXT_glDeleteObject(geometryShader));
             glCheck(GLEXT_glDeleteObject(shaderProgram));
             return false;
@@ -871,8 +897,7 @@ bool Shader::compile(const char* vertexShaderCode, const char* geometryShaderCod
         {
             char log[1024];
             glCheck(GLEXT_glGetInfoLog(fragmentShader, sizeof(log), nullptr, log));
-            err() << "Failed to compile fragment shader:" << std::endl
-                  << log << std::endl;
+            err() << "Failed to compile fragment shader:" << '\n' << log << std::endl;
             glCheck(GLEXT_glDeleteObject(fragmentShader));
             glCheck(GLEXT_glDeleteObject(shaderProgram));
             return false;
@@ -893,8 +918,7 @@ bool Shader::compile(const char* vertexShaderCode, const char* geometryShaderCod
     {
         char log[1024];
         glCheck(GLEXT_glGetInfoLog(shaderProgram, sizeof(log), nullptr, log));
-        err() << "Failed to link shader:" << std::endl
-              << log << std::endl;
+        err() << "Failed to link shader:" << '\n' << log << std::endl;
         glCheck(GLEXT_glDeleteObject(shaderProgram));
         return false;
     }
@@ -943,7 +967,7 @@ int Shader::getUniformLocation(const std::string& name)
         m_uniforms.emplace(name, location);
 
         if (location == -1)
-            err() << "Uniform \"" << name << "\" not found in shader" << std::endl;
+            err() << "Uniform " << std::quoted(name) << " not found in shader" << std::endl;
 
         return location;
     }
@@ -962,11 +986,7 @@ Shader::CurrentTextureType Shader::CurrentTexture;
 
 
 ////////////////////////////////////////////////////////////
-Shader::Shader() :
-m_shaderProgram (0),
-m_currentTexture(-1)
-{
-}
+Shader::Shader() = default;
 
 
 ////////////////////////////////////////////////////////////
@@ -976,21 +996,24 @@ Shader::~Shader()
 
 
 ////////////////////////////////////////////////////////////
-bool Shader::loadFromFile(const std::string& /* filename */, Type /* type */)
+bool Shader::loadFromFile(const std::filesystem::path& /* filename */, Type /* type */)
 {
     return false;
 }
 
 
 ////////////////////////////////////////////////////////////
-bool Shader::loadFromFile(const std::string& /* vertexShaderFilename */, const std::string& /* fragmentShaderFilename */)
+bool Shader::loadFromFile(const std::filesystem::path& /* vertexShaderFilename */,
+                          const std::filesystem::path& /* fragmentShaderFilename */)
 {
     return false;
 }
 
 
 ////////////////////////////////////////////////////////////
-bool Shader::loadFromFile(const std::string& /* vertexShaderFilename */, const std::string& /* geometryShaderFilename */, const std::string& /* fragmentShaderFilename */)
+bool Shader::loadFromFile(const std::filesystem::path& /* vertexShaderFilename */,
+                          const std::filesystem::path& /* geometryShaderFilename */,
+                          const std::filesystem::path& /* fragmentShaderFilename */)
 {
     return false;
 }
@@ -1011,7 +1034,9 @@ bool Shader::loadFromMemory(const std::string& /* vertexShader */, const std::st
 
 
 ////////////////////////////////////////////////////////////
-bool Shader::loadFromMemory(const std::string& /* vertexShader */, const std::string& /* geometryShader */, const std::string& /* fragmentShader */)
+bool Shader::loadFromMemory(const std::string& /* vertexShader */,
+                            const std::string& /* geometryShader */,
+                            const std::string& /* fragmentShader */)
 {
     return false;
 }
@@ -1032,7 +1057,9 @@ bool Shader::loadFromStream(InputStream& /* vertexShaderStream */, InputStream& 
 
 
 ////////////////////////////////////////////////////////////
-bool Shader::loadFromStream(InputStream& /* vertexShaderStream */, InputStream& /* geometryShaderStream */, InputStream& /* fragmentShaderStream */)
+bool Shader::loadFromStream(InputStream& /* vertexShaderStream */,
+                            InputStream& /* geometryShaderStream */,
+                            InputStream& /* fragmentShaderStream */)
 {
     return false;
 }

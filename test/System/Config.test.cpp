@@ -1,0 +1,14 @@
+#include <SFML/Config.hpp>
+
+#include <doctest/doctest.h>
+
+TEST_CASE("[System] SFML/Config.hpp")
+{
+    SUBCASE("Version macros")
+    {
+        CHECK(SFML_VERSION_MAJOR == EXPECTED_SFML_VERSION_MAJOR);
+        CHECK(SFML_VERSION_MINOR == EXPECTED_SFML_VERSION_MINOR);
+        CHECK(SFML_VERSION_PATCH == EXPECTED_SFML_VERSION_PATCH);
+        CHECK(SFML_VERSION_IS_RELEASE == EXPECTED_SFML_VERSION_IS_RELEASE);
+    }
+}

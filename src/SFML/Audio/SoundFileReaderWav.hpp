@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,8 +22,7 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_SOUNDFILEREADERWAV_HPP
-#define SFML_SOUNDFILEREADERWAV_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -31,9 +30,7 @@
 #include <SFML/Audio/SoundFileReader.hpp>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// \brief Implementation of sound file reader that handles wav files
@@ -42,7 +39,6 @@ namespace priv
 class SoundFileReaderWav : public SoundFileReader
 {
 public:
-
     ////////////////////////////////////////////////////////////
     /// \brief Check if this reader can handle a file given by an input stream
     ///
@@ -51,9 +47,7 @@ public:
     /// \return True if the file is supported by this reader
     ///
     ////////////////////////////////////////////////////////////
-    static bool check(InputStream& stream);
-
-public:
+    [[nodiscard]] static bool check(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
@@ -68,7 +62,7 @@ public:
     /// \param info   Structure to fill with the attributes of the loaded sound
     ///
     ////////////////////////////////////////////////////////////
-    bool open(sf::InputStream& stream, Info& info) override;
+    [[nodiscard]] bool open(sf::InputStream& stream, Info& info) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current read position to the given sample offset
@@ -83,7 +77,7 @@ public:
     /// \param sampleOffset Index of the sample to jump to, relative to the beginning
     ///
     ////////////////////////////////////////////////////////////
-    void seek(Uint64 sampleOffset) override;
+    void seek(std::uint64_t sampleOffset) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Read audio samples from the open file
@@ -94,10 +88,9 @@ public:
     /// \return Number of samples actually read (may be less than \a maxCount)
     ///
     ////////////////////////////////////////////////////////////
-    Uint64 read(Int16* samples, Uint64 maxCount) override;
+    [[nodiscard]] std::uint64_t read(std::int16_t* samples, std::uint64_t maxCount) override;
 
 private:
-
     ////////////////////////////////////////////////////////////
     /// \brief Read the header of the open file
     ///
@@ -111,15 +104,10 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    InputStream* m_stream;         //!< Source stream to read from
-    unsigned int m_bytesPerSample; //!< Size of a sample, in bytes
-    Uint64       m_dataStart;      //!< Starting position of the audio data in the open file
-    Uint64       m_dataEnd;        //!< Position one byte past the end of the audio data in the open file
+    InputStream*  m_stream{};         //!< Source stream to read from
+    unsigned int  m_bytesPerSample{}; //!< Size of a sample, in bytes
+    std::uint64_t m_dataStart{};      //!< Starting position of the audio data in the open file
+    std::uint64_t m_dataEnd{};        //!< Position one byte past the end of the audio data in the open file
 };
 
-} // namespace priv
-
-} // namespace sf
-
-
-#endif // SFML_SOUNDFILEREADERWAV_HPP
+} // namespace sf::priv

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Marco Antognini (antognini.marco@gmail.com),
+// Copyright (C) 2007-2023 Marco Antognini (antognini.marco@gmail.com),
 //                         Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -23,18 +23,16 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_CG_SF_CONVERSION_HPP
-#define SFML_CG_SF_CONVERSION_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/VideoMode.hpp>
+
 #include <ApplicationServices/ApplicationServices.h>
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// \brief Get bpp of a video mode for OS 10.6 or later
@@ -43,7 +41,7 @@ namespace priv
 /// to represent video mode. Instead it uses a CGDisplayMode opaque type.
 ///
 ////////////////////////////////////////////////////////////
-size_t modeBitsPerPixel(CGDisplayModeRef mode);
+std::size_t modeBitsPerPixel(CGDisplayModeRef mode);
 
 ////////////////////////////////////////////////////////////
 /// \brief Get bpp for all OS X version
@@ -52,7 +50,7 @@ size_t modeBitsPerPixel(CGDisplayModeRef mode);
 /// display bits per pixel information for a given display id.
 ///
 ////////////////////////////////////////////////////////////
-size_t displayBitsPerPixel(CGDirectDisplayID displayId);
+std::size_t displayBitsPerPixel(CGDirectDisplayID displayId);
 
 ////////////////////////////////////////////////////////////
 /// \brief Convert a Quartz video mode into a sf::VideoMode object
@@ -66,7 +64,4 @@ VideoMode convertCGModeToSFMode(CGDisplayModeRef cgmode);
 ////////////////////////////////////////////////////////////
 CGDisplayModeRef convertSFModeToCGMode(VideoMode sfmode);
 
-} // namespace priv
-} // namespace sf
-
-#endif
+} // namespace sf::priv

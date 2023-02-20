@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Marco Antognini (antognini.marco@gmail.com),
+// Copyright (C) 2007-2023 Marco Antognini (antognini.marco@gmail.com),
 //                         Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -30,9 +30,7 @@
 
 #import <AppKit/AppKit.h>
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 
 ////////////////////////////////////////////////////////////
@@ -60,8 +58,8 @@ void scaleIn(T& in, id<WindowImplDelegateProtocol> delegate)
 template <class T>
 void scaleInWidthHeight(T& in, id<WindowImplDelegateProtocol> delegate)
 {
-    scaleIn(in.width, delegate);
-    scaleIn(in.height, delegate);
+    scaleIn(in.size.x, delegate);
+    scaleIn(in.size.y, delegate);
 }
 
 template <class T>
@@ -85,10 +83,10 @@ void scaleOut(T& out, id<WindowImplDelegateProtocol> delegate)
 }
 
 template <class T>
-void scaleOutWidthHeight(T& out, id<WindowImplDelegateProtocol> delegate)
+void scaleOutWidthHeight(T& width, T& height, id<WindowImplDelegateProtocol> delegate)
 {
-    scaleOut(out.width, delegate);
-    scaleOut(out.height, delegate);
+    scaleOut(width, delegate);
+    scaleOut(height, delegate);
 }
 
 template <class T>
@@ -98,6 +96,4 @@ void scaleOutXY(T& out, id<WindowImplDelegateProtocol> delegate)
     scaleOut(out.y, delegate);
 }
 
-} // namespace priv
-} // namespace sf
-
+} // namespace sf::priv

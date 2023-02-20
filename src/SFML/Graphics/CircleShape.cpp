@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -26,15 +26,14 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/CircleShape.hpp>
+
 #include <cmath>
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-CircleShape::CircleShape(float radius, std::size_t pointCount) :
-m_radius    (radius),
-m_pointCount(pointCount)
+CircleShape::CircleShape(float radius, std::size_t pointCount) : m_radius(radius), m_pointCount(pointCount)
 {
     update();
 }
@@ -73,11 +72,7 @@ std::size_t CircleShape::getPointCount() const
 Vector2f CircleShape::getPoint(std::size_t index) const
 {
     Angle angle = static_cast<float>(index) / static_cast<float>(m_pointCount) * sf::degrees(360) - sf::degrees(90);
-    float rad = angle.asRadians();
-    float x = std::cos(rad) * m_radius;
-    float y = std::sin(rad) * m_radius;
-
-    return Vector2f(m_radius + x, m_radius + y);
+    return Vector2f(m_radius, m_radius) + Vector2f(m_radius, angle);
 }
 
 } // namespace sf

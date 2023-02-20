@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,20 +22,18 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_VULKANIMPLX11_HPP
-#define SFML_VULKANIMPLX11_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/Vulkan.hpp>
 #include <SFML/Window/WindowHandle.hpp>
+
 #include <vector>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// \brief Linux (X11) implementation of Vulkan
@@ -44,7 +42,6 @@ namespace priv
 class VulkanImplX11
 {
 public:
-
     ////////////////////////////////////////////////////////////
     /// \brief Tell whether or not the system supports Vulkan
     ///
@@ -92,12 +89,10 @@ public:
     /// \return True if surface creation was successful, false otherwise
     ///
     ////////////////////////////////////////////////////////////
-    static bool createVulkanSurface(const VkInstance& instance, WindowHandle windowHandle, VkSurfaceKHR& surface, const VkAllocationCallbacks* allocator);
+    static bool createVulkanSurface(const VkInstance&            instance,
+                                    WindowHandle                 windowHandle,
+                                    VkSurfaceKHR&                surface,
+                                    const VkAllocationCallbacks* allocator);
 };
 
-} // namespace priv
-
-} // namespace sf
-
-
-#endif // SFML_VULKANIMPLX11_HPP
+} // namespace sf::priv

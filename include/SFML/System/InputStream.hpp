@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,14 +22,16 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_INPUTSTREAM_HPP
-#define SFML_INPUTSTREAM_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Config.hpp>
+
 #include <SFML/System/Export.hpp>
+
+#include <cstdint>
 
 
 namespace sf
@@ -41,12 +43,11 @@ namespace sf
 class SFML_SYSTEM_API InputStream
 {
 public:
-
     ////////////////////////////////////////////////////////////
     /// \brief Virtual destructor
     ///
     ////////////////////////////////////////////////////////////
-    virtual ~InputStream() {}
+    virtual ~InputStream() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Read data from the stream
@@ -60,7 +61,7 @@ public:
     /// \return The number of bytes actually read, or -1 on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual Int64 read(void* data, Int64 size) = 0;
+    [[nodiscard]] virtual std::int64_t read(void* data, std::int64_t size) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current reading position
@@ -70,7 +71,7 @@ public:
     /// \return The position actually sought to, or -1 on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual Int64 seek(Int64 position) = 0;
+    [[nodiscard]] virtual std::int64_t seek(std::int64_t position) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current reading position in the stream
@@ -78,7 +79,7 @@ public:
     /// \return The current position, or -1 on error.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual Int64 tell() = 0;
+    [[nodiscard]] virtual std::int64_t tell() = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the stream
@@ -86,13 +87,10 @@ public:
     /// \return The total number of bytes available in the stream, or -1 on error
     ///
     ////////////////////////////////////////////////////////////
-    virtual Int64 getSize() = 0;
+    virtual std::int64_t getSize() = 0;
 };
 
 } // namespace sf
-
-
-#endif // SFML_INPUTSTREAM_HPP
 
 
 ////////////////////////////////////////////////////////////
@@ -119,15 +117,15 @@ public:
 ///
 ///     ZipStream(const std::string& archive);
 ///
-///     [[nodiscard]] bool open(const std::string& filename);
+///     [[nodiscard]] bool open(const std::filesystem::path& filename);
 ///
-///     [[nodiscard]] Int64 read(void* data, Int64 size);
+///     [[nodiscard]] std::int64_t read(void* data, std::int64_t size);
 ///
-///     [[nodiscard]] Int64 seek(Int64 position);
+///     [[nodiscard]] std::int64_t seek(std::int64_t position);
 ///
-///     [[nodiscard]] Int64 tell();
+///     [[nodiscard]] std::int64_t tell();
 ///
-///     Int64 getSize();
+///     std::int64_t getSize();
 ///
 /// private:
 ///

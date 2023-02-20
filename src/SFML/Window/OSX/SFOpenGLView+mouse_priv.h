@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Marco Antognini (antognini.marco@gmail.com),
+// Copyright (C) 2007-2023 Marco Antognini (antognini.marco@gmail.com),
 //                         Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -27,6 +27,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/Mouse.hpp>
+#import <SFML/Window/OSX/SFOpenGLView.h>
 
 #import <AppKit/AppKit.h>
 
@@ -46,25 +47,25 @@
 /// Fire an event if its state has changed.
 ///
 ////////////////////////////////////////////////////////////
--(void)updateMouseState;
+- (void)updateMouseState;
 
 ////////////////////////////////////////////////////////////
 /// \brief handle mouse down event
 ///
 ////////////////////////////////////////////////////////////
--(void)handleMouseDown:(NSEvent*)theEvent;
+- (void)handleMouseDown:(NSEvent*)theEvent;
 
 ////////////////////////////////////////////////////////////
 /// \brief handle mouse up event
 ///
 ////////////////////////////////////////////////////////////
--(void)handleMouseUp:(NSEvent*)theEvent;
+- (void)handleMouseUp:(NSEvent*)theEvent;
 
 ////////////////////////////////////////////////////////////
 /// \brief handle mouse move event
 ///
 ////////////////////////////////////////////////////////////
--(void)handleMouseMove:(NSEvent*)theEvent;
+- (void)handleMouseMove:(NSEvent*)theEvent;
 
 ////////////////////////////////////////////////////////////
 /// \brief Check whether the cursor is grabbed or not
@@ -73,14 +74,14 @@
 /// the user wants to grab it.
 ///
 ////////////////////////////////////////////////////////////
--(BOOL)isCursorCurrentlyGrabbed;
+- (BOOL)isCursorCurrentlyGrabbed;
 
 ////////////////////////////////////////////////////////////
 /// \brief (Dis)connect the cursor's movements from/to the system
 ///        and project the cursor into the view
 ///
 ////////////////////////////////////////////////////////////
--(void)updateCursorGrabbed;
+- (void)updateCursorGrabbed;
 
 ////////////////////////////////////////////////////////////
 /// \brief Move the cursor to the given location
@@ -88,13 +89,13 @@
 /// \param loc location expressed in SFML coordinate system
 ///
 ////////////////////////////////////////////////////////////
--(void)moveCursorTo:(NSPoint)loc;
+- (void)moveCursorTo:(NSPoint)loc;
 
 ////////////////////////////////////////////////////////////
 /// \brief Get the display identifier on which the view is
 ///
 ////////////////////////////////////////////////////////////
--(CGDirectDisplayID)displayId;
+- (CGDirectDisplayID)displayId;
 
 ////////////////////////////////////////////////////////////
 /// \brief Convert the NSEvent mouse button type to SFML type
@@ -104,6 +105,6 @@
 /// \return Left, Right, ..., or ButtonCount if the button is unknown
 ///
 ////////////////////////////////////////////////////////////
-+(sf::Mouse::Button)mouseButtonFromEvent:(NSEvent*)event;
++ (sf::Mouse::Button)mouseButtonFromEvent:(NSEvent*)event;
 
 @end

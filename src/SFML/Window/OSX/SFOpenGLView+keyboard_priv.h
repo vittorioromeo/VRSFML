@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Marco Antognini (antognini.marco@gmail.com),
+// Copyright (C) 2007-2023 Marco Antognini (antognini.marco@gmail.com),
 //                         Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -27,6 +27,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/Mouse.hpp>
+#import <SFML/Window/OSX/SFOpenGLView.h>
 
 #import <AppKit/AppKit.h>
 
@@ -50,7 +51,7 @@
 /// \return sf::Keyboard::Unknown as Code if the key is unknown
 ///
 ////////////////////////////////////////////////////////////
-+(sf::Event::KeyEvent)convertNSKeyEventToSFMLEvent:(NSEvent*)event;
++ (sf::Event::KeyEvent)convertNSKeyEventToSFMLEvent:(NSEvent*)event;
 
 ////////////////////////////////////////////////////////////
 /// \brief Check if the event represent some Unicode text
@@ -63,6 +64,6 @@
 /// \return true if event represents a Unicode character, false otherwise
 ///
 ////////////////////////////////////////////////////////////
-+(BOOL)isValidTextUnicode:(NSEvent*)event;
++ (BOOL)isValidTextUnicode:(NSEvent*)event;
 
 @end

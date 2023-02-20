@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,16 +22,17 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_VERTEXBUFFER_HPP
-#define SFML_VERTEXBUFFER_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Export.hpp>
-#include <SFML/Graphics/PrimitiveType.hpp>
+
 #include <SFML/Graphics/Drawable.hpp>
+#include <SFML/Graphics/PrimitiveType.hpp>
 #include <SFML/Window/GlResource.hpp>
+
 #include <cstddef>
 
 
@@ -47,7 +48,6 @@ class Vertex;
 class SFML_GRAPHICS_API VertexBuffer : public Drawable, private GlResource
 {
 public:
-
     ////////////////////////////////////////////////////////////
     /// \brief Usage specifiers
     ///
@@ -216,7 +216,7 @@ public:
     /// \return Reference to self
     ///
     ////////////////////////////////////////////////////////////
-    VertexBuffer& operator =(const VertexBuffer& right);
+    VertexBuffer& operator=(const VertexBuffer& right);
 
     ////////////////////////////////////////////////////////////
     /// \brief Swap the contents of this vertex buffer with those of another
@@ -320,7 +320,6 @@ public:
     static bool isAvailable();
 
 private:
-
     ////////////////////////////////////////////////////////////
     /// \brief Draw the vertex buffer to a render target
     ///
@@ -328,23 +327,18 @@ private:
     /// \param states Current render states
     ///
     ////////////////////////////////////////////////////////////
-    void draw(RenderTarget& target, RenderStates states) const override;
-
-private:
+    void draw(RenderTarget& target, const RenderStates& states) const override;
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    unsigned int  m_buffer;        //!< Internal buffer identifier
-    std::size_t   m_size;          //!< Size in Vertexes of the currently allocated buffer
-    PrimitiveType m_primitiveType; //!< Type of primitives to draw
-    Usage         m_usage;         //!< How this vertex buffer is to be used
+    unsigned int  m_buffer{};                             //!< Internal buffer identifier
+    std::size_t   m_size{};                               //!< Size in Vertexes of the currently allocated buffer
+    PrimitiveType m_primitiveType{PrimitiveType::Points}; //!< Type of primitives to draw
+    Usage         m_usage{Stream};                        //!< How this vertex buffer is to be used
 };
 
 } // namespace sf
-
-
-#endif // SFML_VERTEXBUFFER_HPP
 
 
 ////////////////////////////////////////////////////////////

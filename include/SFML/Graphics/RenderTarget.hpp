@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,20 +22,21 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_RENDERTARGET_HPP
-#define SFML_RENDERTARGET_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Export.hpp>
-#include <SFML/Graphics/Color.hpp>
-#include <SFML/Graphics/Rect.hpp>
-#include <SFML/Graphics/View.hpp>
+
 #include <SFML/Graphics/BlendMode.hpp>
-#include <SFML/Graphics/RenderStates.hpp>
+#include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/PrimitiveType.hpp>
+#include <SFML/Graphics/Rect.hpp>
+#include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/Vertex.hpp>
+#include <SFML/Graphics/View.hpp>
+
 #include <cstddef>
 
 
@@ -52,7 +53,6 @@ class Transform;
 class SFML_GRAPHICS_API RenderTarget
 {
 public:
-
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
@@ -257,8 +257,10 @@ public:
     /// \param states      Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Vertex* vertices, std::size_t vertexCount,
-              PrimitiveType type, const RenderStates& states = RenderStates::Default);
+    void draw(const Vertex*       vertices,
+              std::size_t         vertexCount,
+              PrimitiveType       type,
+              const RenderStates& states = RenderStates::Default);
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by a vertex buffer
@@ -278,7 +280,10 @@ public:
     /// \param states       Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const VertexBuffer& vertexBuffer, std::size_t firstVertex, std::size_t vertexCount, const RenderStates& states = RenderStates::Default);
+    void draw(const VertexBuffer& vertexBuffer,
+              std::size_t         firstVertex,
+              std::size_t         vertexCount,
+              const RenderStates& states = RenderStates::Default);
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the rendering region of the target
@@ -387,7 +392,6 @@ public:
     void resetGLStates();
 
 protected:
-
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
@@ -404,7 +408,6 @@ protected:
     void initialize();
 
 private:
-
     ////////////////////////////////////////////////////////////
     /// \brief Apply the current view
     ///
@@ -476,31 +479,28 @@ private:
     ////////////////////////////////////////////////////////////
     struct StatesCache
     {
-        enum {VertexCacheSize = 4};
+        static constexpr std::size_t VertexCacheSize{4}; // NOLINT(readability-identifier-naming)
 
-        bool      enable;         //!< Is the cache enabled?
-        bool      glStatesSet;    //!< Are our internal GL states set yet?
-        bool      viewChanged;    //!< Has the current view changed since last draw?
-        BlendMode lastBlendMode;  //!< Cached blending mode
-        Uint64    lastTextureId;  //!< Cached texture
-        bool      texCoordsArrayEnabled; //!< Is GL_TEXTURE_COORD_ARRAY client state enabled?
-        bool      useVertexCache; //!< Did we previously use the vertex cache?
-        Vertex    vertexCache[VertexCacheSize]; //!< Pre-transformed vertices cache
+        bool          enable;                       //!< Is the cache enabled?
+        bool          glStatesSet{};                //!< Are our internal GL states set yet?
+        bool          viewChanged;                  //!< Has the current view changed since last draw?
+        BlendMode     lastBlendMode;                //!< Cached blending mode
+        std::uint64_t lastTextureId;                //!< Cached texture
+        bool          texCoordsArrayEnabled;        //!< Is GL_TEXTURE_COORD_ARRAY client state enabled?
+        bool          useVertexCache;               //!< Did we previously use the vertex cache?
+        Vertex        vertexCache[VertexCacheSize]; //!< Pre-transformed vertices cache
     };
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    View        m_defaultView; //!< Default view
-    View        m_view;        //!< Current view
-    StatesCache m_cache;       //!< Render states cache
-    Uint64      m_id;          //!< Unique number that identifies the RenderTarget
+    View          m_defaultView; //!< Default view
+    View          m_view;        //!< Current view
+    StatesCache   m_cache;       //!< Render states cache
+    std::uint64_t m_id{};        //!< Unique number that identifies the RenderTarget
 };
 
 } // namespace sf
-
-
-#endif // SFML_RENDERTARGET_HPP
 
 
 ////////////////////////////////////////////////////////////

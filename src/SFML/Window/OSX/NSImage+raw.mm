@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Marco Antognini (antognini.marco@gmail.com),
+// Copyright (C) 2007-2023 Marco Antognini (antognini.marco@gmail.com),
 //                         Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -30,28 +30,27 @@
 
 @implementation NSImage (raw)
 
-+(NSImage*)imageWithRawData:(const sf::Uint8*)pixels andSize:(NSSize)size
++ (NSImage*)imageWithRawData:(const std::uint8_t*)pixels andSize:(NSSize)size
 {
     // Create an empty image representation.
-    NSBitmapImageRep* bitmap =
-    [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:0 // if 0: only allocate memory
-                                            pixelsWide:(static_cast<NSInteger>(size.width))
-                                            pixelsHigh:(static_cast<NSInteger>(size.height))
-                                         bitsPerSample:8 // The number of bits used to specify
-                                                         // one pixel in a single component of the data.
-                                       samplesPerPixel:4 // 3 if no alpha, 4 with it
-                                              hasAlpha:YES
-                                              isPlanar:NO   // I don't know what it is but it works
-                                        colorSpaceName:NSCalibratedRGBColorSpace
-                                           bytesPerRow:0    // 0 == determine automatically
-                                          bitsPerPixel:0];  // 0 == determine automatically
+    NSBitmapImageRep* bitmap = [[NSBitmapImageRep alloc]
+        initWithBitmapDataPlanes:nil // if nil: only allocate memory
+                      pixelsWide:(static_cast<NSInteger>(size.width))pixelsHigh
+                                :(static_cast<NSInteger>(size.height))bitsPerSample:8 // The number of bits used to specify
+                 // one pixel in a single component of the data.
+                 samplesPerPixel:4 // 3 if no alpha, 4 with it
+                        hasAlpha:YES
+                        isPlanar:NO // I don't know what it is but it works
+                  colorSpaceName:NSCalibratedRGBColorSpace
+                     bytesPerRow:0   // 0 == determine automatically
+                    bitsPerPixel:0]; // 0 == determine automatically
 
     // Load data pixels.
     for (unsigned int y = 0; y < size.height; ++y)
     {
         for (unsigned int x = 0; x < size.width; ++x, pixels += 4)
         {
-            NSUInteger pixel[4] = { pixels[0], pixels[1], pixels[2], pixels[3] };
+            NSUInteger pixel[4] = {pixels[0], pixels[1], pixels[2], pixels[3]};
             [bitmap setPixel:pixel atX:x y:y];
         }
     }

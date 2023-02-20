@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Marco Antognini (antognini.marco@gmail.com),
+// Copyright (C) 2007-2023 Marco Antognini (antognini.marco@gmail.com),
 //                         Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -23,8 +23,7 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_WINDOWIMPLCOCOA_HPP
-#define SFML_WINDOWIMPLCOCOA_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -32,15 +31,8 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/WindowImpl.hpp>
 
-#if defined(__APPLE__)
-    #if defined(__clang__)
-        #pragma clang diagnostic push
-        #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    #elif defined(__GNUC__)
-        #pragma GCC diagnostic push
-        #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-    #endif
-#endif
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
 ////////////////////////////////////////////////////////////
 /// Predefine OBJ-C classes
@@ -48,7 +40,7 @@
 #ifdef __OBJC__
 
 #import <SFML/Window/OSX/WindowImplDelegateProtocol.h>
-using WindowImplDelegateRef = id<WindowImplDelegateProtocol,NSObject>;
+using WindowImplDelegateRef = id<WindowImplDelegateProtocol, NSObject>;
 
 @class NSOpenGLContext;
 using NSOpenGLContextRef = NSOpenGLContext*;
@@ -58,7 +50,7 @@ using NSOpenGLContextRef = NSOpenGLContext*;
 using unichar = unsigned short; // See NSString.h
 
 using WindowImplDelegateRef = void*;
-using NSOpenGLContextRef = void*;
+using NSOpenGLContextRef    = void*;
 
 #endif
 
@@ -98,7 +90,7 @@ public:
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    ~WindowImplCocoa();
+    ~WindowImplCocoa() override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Window Closed Event - called by the cocoa window object
@@ -106,18 +98,17 @@ public:
     /// Send the event to SFML WindowImpl class.
     ///
     ////////////////////////////////////////////////////////////
-    void windowClosed(void);
+    void windowClosed();
 
     ////////////////////////////////////////////////////////////
     /// \brief Window Resized Event - called by the cocoa window object
     ///
     /// Send the event to SFML WindowImpl class.
     ///
-    /// \param width new width
-    /// \param height new height
+    /// \param size new width and height
     ///
     ////////////////////////////////////////////////////////////
-    void windowResized(unsigned int width, unsigned int height);
+    void windowResized(const Vector2u& size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Window Lost Focus Event - called by the cocoa window object
@@ -125,7 +116,7 @@ public:
     /// Send the event to SFML WindowImpl class.
     ///
     ////////////////////////////////////////////////////////////
-    void windowLostFocus(void);
+    void windowLostFocus();
 
     ////////////////////////////////////////////////////////////
     /// \brief Window Get Focus Event - called by the cocoa window object
@@ -133,7 +124,7 @@ public:
     /// Send the event to SFML WindowImpl class.
     ///
     ////////////////////////////////////////////////////////////
-    void windowGainedFocus(void);
+    void windowGainedFocus();
 
     ////////////////////////////////////////////////////////////
     /// \brief Mouse Down Event - called by the cocoa view object
@@ -189,7 +180,7 @@ public:
     /// Send the event to SFML WindowImpl class.
     ///
     ////////////////////////////////////////////////////////////
-    void mouseMovedIn(void);
+    void mouseMovedIn();
 
     ////////////////////////////////////////////////////////////
     /// \brief Mouse Out Event - called by the cocoa view object
@@ -197,7 +188,7 @@ public:
     /// Send the event to SFML WindowImpl class.
     ///
     ////////////////////////////////////////////////////////////
-    void mouseMovedOut(void);
+    void mouseMovedOut();
 
     ////////////////////////////////////////////////////////////
     /// \brief Key Down Event - called by the cocoa view object
@@ -246,9 +237,7 @@ public:
     /// Also ensure NSApp is constructed.
     ///
     ////////////////////////////////////////////////////////////
-    static void setUpProcess(void);
-
-public:
+    static void setUpProcess();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the OS-specific handle of the window
@@ -301,12 +290,11 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Change the window's icon
     ///
-    /// \param width  Icon's width, in pixels
-    /// \param height Icon's height, in pixels
+    /// \param size   Icon's width and height, in pixels
     /// \param pixels Pointer to the pixels in memory, format must be RGBA 32 bits
     ///
     ////////////////////////////////////////////////////////////
-    void setIcon(unsigned int width, unsigned int height, const Uint8* pixels) override;
+    void setIcon(const Vector2u& size, const std::uint8_t* pixels) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window
@@ -364,7 +352,6 @@ public:
     bool hasFocus() const override;
 
 protected:
-
     ////////////////////////////////////////////////////////////
     /// \brief Process incoming events from the operating system
     ///
@@ -372,24 +359,15 @@ protected:
     void processEvents() override;
 
 private:
-
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    WindowImplDelegateRef m_delegate;   ///< Implementation in Obj-C.
-    bool                  m_showCursor; ///< Is the cursor displayed or hidden?
+    WindowImplDelegateRef m_delegate;         ///< Implementation in Obj-C.
+    bool                  m_showCursor{true}; ///< Is the cursor displayed or hidden?
 };
 
 } // namespace priv
 
 } // namespace sf
 
-#if defined(__APPLE__)
-    #if defined(__clang__)
-        #pragma clang diagnostic pop
-    #elif defined(__GNUC__)
-        #pragma GCC diagnostic pop
-    #endif
-#endif
-
-#endif // SFML_WINDOWIMPLCOCOA_HPP
+#pragma GCC diagnostic pop

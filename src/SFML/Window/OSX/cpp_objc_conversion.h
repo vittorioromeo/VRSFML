@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Marco Antognini (antognini.marco@gmail.com),
+// Copyright (C) 2007-2023 Marco Antognini (antognini.marco@gmail.com),
 //                         Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -27,9 +27,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/System/String.hpp>
-#include <string>
 
 #import <Foundation/Foundation.h>
+#include <string>
 
 ////////////////////////////////////////////////////////////
 /// \brief Returns a NSString construct with +stringWithCString:encoding:

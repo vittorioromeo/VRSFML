@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -25,28 +25,30 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Unix/ClipboardImpl.hpp>
-#include <SFML/Window/Unix/Display.hpp>
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Time.hpp>
+#include <SFML/Window/Unix/ClipboardImpl.hpp>
+#include <SFML/Window/Unix/Display.hpp>
+
 #include <X11/Xatom.h>
+
+#include <ostream>
 #include <vector>
 
 
 namespace
 {
-    // Filter the events received by windows (only allow those matching a specific window)
-    Bool checkEvent(::Display*, XEvent* event, XPointer userData)
-    {
-        // Just check if the event matches the window
-        return event->xany.window == reinterpret_cast< ::Window >(userData);
-    }
-}
-
-namespace sf
+// Filter the events received by windows (only allow those matching a specific window)
+// NOLINTNEXTLINE(readability-non-const-parameter)
+Bool checkEvent(::Display*, XEvent* event, XPointer userData)
 {
-namespace priv
+    // Just check if the event matches the window
+    return event->xany.window == reinterpret_cast<::Window>(userData);
+}
+} // namespace
+
+namespace sf::priv
 {
 
 ////////////////////////////////////////////////////////////
@@ -71,18 +73,16 @@ void ClipboardImpl::processEvents()
 
 
 ////////////////////////////////////////////////////////////
-ClipboardImpl::ClipboardImpl() :
-m_window (0),
-m_requestResponded(false)
+ClipboardImpl::ClipboardImpl()
 {
     // Open a connection with the X server
-    m_display = OpenDisplay();
+    m_display = openDisplay();
 
     // Get the atoms we need to make use of the clipboard
-    m_clipboard      = getAtom("CLIPBOARD",                      false);
-    m_targets        = getAtom("TARGETS",                        false);
-    m_text           = getAtom("TEXT",                           false);
-    m_utf8String     = getAtom("UTF8_STRING",                    true );
+    m_clipboard      = getAtom("CLIPBOARD", false);
+    m_targets        = getAtom("TARGETS", false);
+    m_text           = getAtom("TEXT", false);
+    m_utf8String     = getAtom("UTF8_STRING", true);
     m_targetProperty = getAtom("SFML_CLIPBOARD_TARGET_PROPERTY", false);
 
     // Create a hidden window that will broker our clipboard interactions with X
@@ -104,7 +104,7 @@ ClipboardImpl::~ClipboardImpl()
     }
 
     // Close the connection with the X server
-    CloseDisplay(m_display);
+    closeDisplay(m_display);
 }
 
 
@@ -135,14 +135,7 @@ String ClipboardImpl::getStringImpl()
 
     // Request the current selection to be converted to UTF-8 (or STRING
     // if UTF-8 is not available) and written to our window property
-    XConvertSelection(
-        m_display,
-        m_clipboard,
-        (m_utf8String != None) ? m_utf8String : XA_STRING,
-        m_targetProperty,
-        m_window,
-        CurrentTime
-    );
+    XConvertSelection(m_display, m_clipboard, (m_utf8String != None) ? m_utf8String : XA_STRING, m_targetProperty, m_window, CurrentTime);
 
     Clock clock;
 
@@ -220,28 +213,26 @@ void ClipboardImpl::processEvent(XEvent& windowEvent)
             if ((selectionEvent.property == None) || (selectionEvent.selection != m_clipboard))
                 break;
 
-            Atom type;
-            int format;
-            unsigned long items;
-            unsigned long remainingBytes;
-            unsigned char* data = 0;
+            Atom           type;
+            int            format;
+            unsigned long  items;
+            unsigned long  remainingBytes;
+            unsigned char* data = nullptr;
 
             // The selection owner should have wrote the selection
             // data to the specified window property
-            int result = XGetWindowProperty(
-                m_display,
-                m_window,
-                m_targetProperty,
-                0,
-                0x7fffffff,
-                False,
-                AnyPropertyType,
-                &type,
-                &format,
-                &items,
-                &remainingBytes,
-                &data
-            );
+            int result = XGetWindowProperty(m_display,
+                                            m_window,
+                                            m_targetProperty,
+                                            0,
+                                            0x7fffffff,
+                                            False,
+                                            AnyPropertyType,
+                                            &type,
+                                            &format,
+                                            &items,
+                                            &remainingBytes,
+                                            &data);
 
             if (result == Success)
             {
@@ -300,75 +291,83 @@ void ClipboardImpl::processEvent(XEvent& windowEvent)
                     if (m_utf8String != None)
                         targets.push_back(m_utf8String);
 
-                    XChangeProperty(
-                        m_display,
-                        selectionRequestEvent.requestor,
-                        selectionRequestEvent.property,
-                        XA_ATOM,
-                        32,
-                        PropModeReplace,
-                        reinterpret_cast<unsigned char*>(targets.data()),
-                        static_cast<int>(targets.size())
-                    );
+                    XChangeProperty(m_display,
+                                    selectionRequestEvent.requestor,
+                                    selectionRequestEvent.property,
+                                    XA_ATOM,
+                                    32,
+                                    PropModeReplace,
+                                    reinterpret_cast<unsigned char*>(targets.data()),
+                                    static_cast<int>(targets.size()));
 
                     // Notify the requestor that they can read the targets from their window property
                     selectionEvent.target = m_targets;
 
-                    XSendEvent(m_display, selectionRequestEvent.requestor, True, NoEventMask, reinterpret_cast<XEvent*>(&selectionEvent));
+                    XSendEvent(m_display,
+                               selectionRequestEvent.requestor,
+                               True,
+                               NoEventMask,
+                               reinterpret_cast<XEvent*>(&selectionEvent));
 
                     break;
                 }
-                else if ((selectionRequestEvent.target == XA_STRING) || ((m_utf8String == None) && (selectionRequestEvent.target == m_text)))
+                else if ((selectionRequestEvent.target == XA_STRING) ||
+                         ((m_utf8String == None) && (selectionRequestEvent.target == m_text)))
                 {
                     // Respond to a request for conversion to a Latin-1 string
                     std::string data = m_clipboardContents.toAnsiString();
 
-                    XChangeProperty(
-                        m_display,
-                        selectionRequestEvent.requestor,
-                        selectionRequestEvent.property,
-                        XA_STRING,
-                        8,
-                        PropModeReplace,
-                        reinterpret_cast<const unsigned char*>(data.c_str()),
-                        static_cast<int>(data.size())
-                    );
+                    XChangeProperty(m_display,
+                                    selectionRequestEvent.requestor,
+                                    selectionRequestEvent.property,
+                                    XA_STRING,
+                                    8,
+                                    PropModeReplace,
+                                    reinterpret_cast<const unsigned char*>(data.c_str()),
+                                    static_cast<int>(data.size()));
 
                     // Notify the requestor that they can read the data from their window property
                     selectionEvent.target = XA_STRING;
 
-                    XSendEvent(m_display, selectionRequestEvent.requestor, True, NoEventMask, reinterpret_cast<XEvent*>(&selectionEvent));
+                    XSendEvent(m_display,
+                               selectionRequestEvent.requestor,
+                               True,
+                               NoEventMask,
+                               reinterpret_cast<XEvent*>(&selectionEvent));
 
                     break;
                 }
-                else if ((m_utf8String != None) && ((selectionRequestEvent.target == m_utf8String) || (selectionRequestEvent.target == m_text)))
+                else if ((m_utf8String != None) &&
+                         ((selectionRequestEvent.target == m_utf8String) || (selectionRequestEvent.target == m_text)))
                 {
                     // Respond to a request for conversion to a UTF-8 string
                     // or an encoding of our choosing (we always choose UTF-8)
-                    std::basic_string<Uint8> data = m_clipboardContents.toUtf8();
+                    std::basic_string<std::uint8_t> data = m_clipboardContents.toUtf8();
 
-                    XChangeProperty(
-                        m_display,
-                        selectionRequestEvent.requestor,
-                        selectionRequestEvent.property,
-                        m_utf8String,
-                        8,
-                        PropModeReplace,
-                        data.c_str(),
-                        static_cast<int>(data.size())
-                    );
+                    XChangeProperty(m_display,
+                                    selectionRequestEvent.requestor,
+                                    selectionRequestEvent.property,
+                                    m_utf8String,
+                                    8,
+                                    PropModeReplace,
+                                    data.c_str(),
+                                    static_cast<int>(data.size()));
 
                     // Notify the requestor that they can read the data from their window property
                     selectionEvent.target = m_utf8String;
 
-                    XSendEvent(m_display, selectionRequestEvent.requestor, True, NoEventMask, reinterpret_cast<XEvent*>(&selectionEvent));
+                    XSendEvent(m_display,
+                               selectionRequestEvent.requestor,
+                               True,
+                               NoEventMask,
+                               reinterpret_cast<XEvent*>(&selectionEvent));
 
                     break;
                 }
             }
 
             // Notify the requestor that we could not respond to their request
-            selectionEvent.target = selectionRequestEvent.target;
+            selectionEvent.target   = selectionRequestEvent.target;
             selectionEvent.property = None;
 
             XSendEvent(m_display, selectionRequestEvent.requestor, True, NoEventMask, reinterpret_cast<XEvent*>(&selectionEvent));
@@ -380,6 +379,4 @@ void ClipboardImpl::processEvent(XEvent& windowEvent)
     }
 }
 
-} // namespace priv
-
-} // namespace sf
+} // namespace sf::priv

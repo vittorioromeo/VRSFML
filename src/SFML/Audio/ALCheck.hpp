@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,44 +22,46 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_ALCHECK_HPP
-#define SFML_ALCHECK_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Config.hpp>
 
+#include <filesystem>
+#include <string_view>
+
 #if defined(__APPLE__)
-    #if defined(__clang__)
-        #pragma clang diagnostic push
-        #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    #elif defined(__GNUC__)
-        #pragma GCC diagnostic push
-        #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-    #endif
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
 #include <al.h>
 #include <alc.h>
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// Let's define a macro to quickly check every OpenAL API call
 ////////////////////////////////////////////////////////////
 #ifdef SFML_DEBUG
 
-    // If in debug mode, perform a test on every call
-    // The do-while loop is needed so that alCheck can be used as a single statement in if/else branches
-    #define alCheck(expr) do { expr; sf::priv::alCheckError(__FILE__, __LINE__, #expr); } while (false)
+// If in debug mode, perform a test on every call
+// The do-while loop is needed so that alCheck can be used as a single statement in if/else branches
+#define alCheck(expr)                                      \
+    do                                                     \
+    {                                                      \
+        expr;                                              \
+        sf::priv::alCheckError(__FILE__, __LINE__, #expr); \
+    } while (false)
+#define alGetLastError sf::priv::alGetLastErrorImpl
 
 #else
 
-    // Else, we don't add any overhead
-    #define alCheck(expr) (expr)
+// Else, we don't add any overhead
+#define alCheck(expr)  (expr)
+#define alGetLastError alGetError
 
 #endif
 
@@ -72,19 +74,20 @@ namespace priv
 /// \param expression The evaluated expression as a string
 ///
 ////////////////////////////////////////////////////////////
-void alCheckError(const char* file, unsigned int line, const char* expression);
-
-} // namespace priv
-
-} // namespace sf
+void alCheckError(const std::filesystem::path& file, unsigned int line, std::string_view expression);
 
 
-#endif // SFML_ALCHECK_HPP
+////////////////////////////////////////////////////////////
+/// Get the last OpenAL error on this thread
+///
+/// \return The last OpenAL error on this thread
+///
+////////////////////////////////////////////////////////////
+ALenum alGetLastErrorImpl();
+
+} // namespace sf::priv
+
 
 #if defined(__APPLE__)
-    #if defined(__clang__)
-        #pragma clang diagnostic pop
-    #elif defined(__GNUC__)
-        #pragma GCC diagnostic pop
-    #endif
+#pragma GCC diagnostic pop
 #endif

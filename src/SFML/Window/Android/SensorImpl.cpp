@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -25,14 +25,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/SensorImpl.hpp>
 #include <SFML/System/Time.hpp>
+#include <SFML/Window/SensorImpl.hpp>
+
 #include <android/looper.h>
 
-#if defined(__clang__)
-    #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#elif defined(__GNUC__)
-    #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#if defined(__clang__) || defined(__GNUC__)
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
 // Define missing constants
@@ -42,16 +41,14 @@
 
 namespace
 {
-    ALooper* looper;
-    ASensorManager*    sensorManager;
-    ASensorEventQueue* sensorEventQueue;
-    sf::Vector3f       sensorData[sf::Sensor::Count];
-}
+ALooper*           looper;
+ASensorManager*    sensorManager;
+ASensorEventQueue* sensorEventQueue;
+sf::Vector3f       sensorData[sf::Sensor::Count];
+} // namespace
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 void SensorImpl::initialize()
@@ -59,16 +56,15 @@ void SensorImpl::initialize()
     // Get the looper associated with this thread
     looper = ALooper_forThread();
 
-    // Get the unique sensor manager
-    #if ANDROID_API >= 26 || __ANDROID_API__ >= 26
-        sensorManager = ASensorManager_getInstanceForPackage(nullptr);
-    #else
-        sensorManager = ASensorManager_getInstance();
-    #endif
+// Get the unique sensor manager
+#if ANDROID_API >= 26 || __ANDROID_API__ >= 26
+    sensorManager = ASensorManager_getInstanceForPackage(nullptr);
+#else
+    sensorManager = ASensorManager_getInstance();
+#endif
 
     // Create the sensor events queue and attach it to the looper
-    sensorEventQueue = ASensorManager_createEventQueue(sensorManager, looper,
-        1, &processSensorEvents, nullptr);
+    sensorEventQueue = ASensorManager_createEventQueue(sensorManager, looper, 1, &processSensorEvents, nullptr);
 }
 
 
@@ -85,7 +81,7 @@ bool SensorImpl::isAvailable(Sensor::Type sensor)
 {
     const ASensor* available = getDefaultSensor(sensor);
 
-    return available? true : false;
+    return available ? true : false;
 }
 
 
@@ -103,7 +99,7 @@ bool SensorImpl::open(Sensor::Type sensor)
     Time minimumDelay = microseconds(ASensor_getMinDelay(m_sensor));
 
     // Set the event rate (not to consume too much battery)
-    ASensorEventQueue_setEventRate(sensorEventQueue, m_sensor, static_cast<Int32>(minimumDelay.asMicroseconds()));
+    ASensorEventQueue_setEventRate(sensorEventQueue, m_sensor, static_cast<std::int32_t>(minimumDelay.asMicroseconds()));
 
     // Save the index of the sensor
     m_index = static_cast<unsigned int>(sensor);
@@ -143,9 +139,12 @@ void SensorImpl::setEnabled(bool enabled)
 ASensor const* SensorImpl::getDefaultSensor(Sensor::Type sensor)
 {
     // Find the Android sensor type
-    static int types[] = {ASENSOR_TYPE_ACCELEROMETER, ASENSOR_TYPE_GYROSCOPE,
-        ASENSOR_TYPE_MAGNETIC_FIELD, ASENSOR_TYPE_GRAVITY, ASENSOR_TYPE_LINEAR_ACCELERATION,
-        ASENSOR_TYPE_ORIENTATION};
+    static int types[] = {ASENSOR_TYPE_ACCELEROMETER,
+                          ASENSOR_TYPE_GYROSCOPE,
+                          ASENSOR_TYPE_MAGNETIC_FIELD,
+                          ASENSOR_TYPE_GRAVITY,
+                          ASENSOR_TYPE_LINEAR_ACCELERATION,
+                          ASENSOR_TYPE_ORIENTATION};
 
     int type = types[sensor];
 
@@ -162,47 +161,47 @@ int SensorImpl::processSensorEvents(int /* fd */, int /* events */, void* /* sen
     while (ASensorEventQueue_getEvents(sensorEventQueue, &event, 1) > 0)
     {
         unsigned int type = Sensor::Count;
-        Vector3f data;
+        Vector3f     data;
 
         switch (event.type)
         {
             case ASENSOR_TYPE_ACCELEROMETER:
-                type = Sensor::Accelerometer;
+                type   = Sensor::Accelerometer;
                 data.x = event.acceleration.x;
                 data.y = event.acceleration.y;
                 data.z = event.acceleration.z;
                 break;
 
             case ASENSOR_TYPE_GYROSCOPE:
-                type = Sensor::Gyroscope;
+                type   = Sensor::Gyroscope;
                 data.x = event.vector.x;
                 data.y = event.vector.y;
                 data.z = event.vector.z;
                 break;
 
             case ASENSOR_TYPE_MAGNETIC_FIELD:
-                type = Sensor::Magnetometer;
+                type   = Sensor::Magnetometer;
                 data.x = event.magnetic.x;
                 data.y = event.magnetic.y;
                 data.z = event.magnetic.z;
                 break;
 
             case ASENSOR_TYPE_GRAVITY:
-                type = Sensor::Gravity;
+                type   = Sensor::Gravity;
                 data.x = event.vector.x;
                 data.y = event.vector.y;
                 data.z = event.vector.z;
                 break;
 
             case ASENSOR_TYPE_LINEAR_ACCELERATION:
-                type = Sensor::UserAcceleration;
+                type   = Sensor::UserAcceleration;
                 data.x = event.acceleration.x;
                 data.y = event.acceleration.y;
                 data.z = event.acceleration.z;
                 break;
 
             case ASENSOR_TYPE_ORIENTATION:
-                type = Sensor::Orientation;
+                type   = Sensor::Orientation;
                 data.x = event.vector.x;
                 data.y = event.vector.y;
                 data.z = event.vector.z;
@@ -219,6 +218,4 @@ int SensorImpl::processSensorEvents(int /* fd */, int /* events */, void* /* sen
     return 1;
 }
 
-} // namespace priv
-
-} // namespace sf
+} // namespace sf::priv

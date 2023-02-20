@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,15 +22,14 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_WINDOWIMPLWIN32_HPP
-#define SFML_WINDOWIMPLWIN32_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/System/Win32/WindowsHeader.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/WindowImpl.hpp>
-#include <SFML/System/Win32/WindowsHeader.hpp>
 
 
 namespace sf
@@ -46,7 +45,6 @@ namespace priv
 class WindowImplWin32 : public WindowImpl
 {
 public:
-
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window implementation from an existing control
     ///
@@ -64,7 +62,7 @@ public:
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    WindowImplWin32(VideoMode mode, const String& title, Uint32 style, const ContextSettings& settings);
+    WindowImplWin32(VideoMode mode, const String& title, std::uint32_t style, const ContextSettings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -123,12 +121,11 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Change the window's icon
     ///
-    /// \param width  Icon's width, in pixels
-    /// \param height Icon's height, in pixels
+    /// \param size   Icon's width and height, in pixels
     /// \param pixels Pointer to the pixels in memory, format must be RGBA 32 bits
     ///
     ////////////////////////////////////////////////////////////
-    void setIcon(unsigned int width, unsigned int height, const Uint8* pixels) override;
+    void setIcon(const Vector2u& size, const std::uint8_t* pixels) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window
@@ -186,7 +183,6 @@ public:
     bool hasFocus() const override;
 
 protected:
-
     ////////////////////////////////////////////////////////////
     /// \brief Process incoming events from the operating system
     ///
@@ -194,7 +190,6 @@ protected:
     void processEvents() override;
 
 private:
-
     ////////////////////////////////////////////////////////////
     /// Register the window class
     ///
@@ -271,24 +266,33 @@ private:
     static LRESULT CALLBACK globalOnEvent(HWND handle, UINT message, WPARAM wParam, LPARAM lParam);
 
     ////////////////////////////////////////////////////////////
+    /// \brief Convert a Win32 scancode to an sfml scancode
+    ///
+    /// \param flags input flags
+    ///
+    /// \return SFML scancode corresponding to the key
+    ///
+    ////////////////////////////////////////////////////////////
+    static Keyboard::Scancode toScancode(WPARAM wParam, LPARAM lParam);
+
+    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    HWND     m_handle;           //!< Win32 handle of the window
-    LONG_PTR m_callback;         //!< Stores the original event callback function of the control
-    bool     m_cursorVisible;    //!< Is the cursor visible or hidden?
-    HCURSOR  m_lastCursor;       //!< Last cursor used -- this data is not owned by the window and is required to be always valid
-    HICON    m_icon;             //!< Custom icon assigned to the window
-    bool     m_keyRepeatEnabled; //!< Automatic key-repeat state for keydown events
-    Vector2u m_lastSize;         //!< The last handled size of the window
-    bool     m_resizing;         //!< Is the window being resized?
-    Uint16   m_surrogate;        //!< First half of the surrogate pair, in case we're receiving a Unicode character in two events
-    bool     m_mouseInside;      //!< Mouse is inside the window?
-    bool     m_fullscreen;       //!< Is the window fullscreen?
-    bool     m_cursorGrabbed;    //!< Is the mouse cursor trapped?
+    HWND     m_handle{};            //!< Win32 handle of the window
+    LONG_PTR m_callback{};          //!< Stores the original event callback function of the control
+    bool     m_cursorVisible{true}; //!< Is the cursor visible or hidden?
+    HCURSOR  m_lastCursor{
+        LoadCursor(nullptr, IDC_ARROW)}; //!< Last cursor used -- this data is not owned by the window and is required to be always valid
+    HICON    m_icon{};                    //!< Custom icon assigned to the window
+    bool     m_keyRepeatEnabled{true}; //!< Automatic key-repeat state for keydown events
+    Vector2u m_lastSize;               //!< The last handled size of the window
+    bool     m_resizing{};             //!< Is the window being resized?
+    std::uint16_t m_surrogate{}; //!< First half of the surrogate pair, in case we're receiving a Unicode character in two events
+    bool          m_mouseInside{};   //!< Mouse is inside the window?
+    bool          m_fullscreen{};    //!< Is the window fullscreen?
+    bool          m_cursorGrabbed{}; //!< Is the mouse cursor trapped?
 };
 
 } // namespace priv
 
 } // namespace sf
-
-#endif // SFML_WINDOWIMPLWIN32_HPP

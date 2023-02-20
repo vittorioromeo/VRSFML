@@ -4,14 +4,15 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio.hpp>
 #include <SFML/Network.hpp>
+
 #include <cstring>
 #include <iostream>
 #include <iterator>
 #include <mutex>
 
 
-const sf::Uint8 serverAudioData   = 1;
-const sf::Uint8 serverEndOfStream = 2;
+const std::uint8_t serverAudioData   = 1;
+const std::uint8_t serverEndOfStream = 2;
 
 
 ////////////////////////////////////////////////////////////
@@ -21,14 +22,11 @@ const sf::Uint8 serverEndOfStream = 2;
 class NetworkAudioStream : public sf::SoundStream
 {
 public:
-
     ////////////////////////////////////////////////////////////
     /// Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    NetworkAudioStream() :
-    m_offset     (0),
-    m_hasFinished(false)
+    NetworkAudioStream()
     {
         // Set the sound parameters
         initialize(1, 44100);
@@ -43,14 +41,14 @@ public:
         if (!m_hasFinished)
         {
             // Listen to the given port for incoming connections
-            if (m_listener.listen(port) != sf::Socket::Done)
+            if (m_listener.listen(port) != sf::Socket::Status::Done)
                 return;
             std::cout << "Server is listening to port " << port << ", waiting for connections... " << std::endl;
 
             // Wait for a connection
-            if (m_listener.accept(m_client) != sf::Socket::Done)
+            if (m_listener.accept(m_client) != sf::Socket::Status::Done)
                 return;
-            std::cout << "Client connected: " << m_client.getRemoteAddress() << std::endl;
+            std::cout << "Client connected: " << m_client.getRemoteAddress().value() << std::endl;
 
             // Start playback
             play();
@@ -66,7 +64,6 @@ public:
     }
 
 private:
-
     ////////////////////////////////////////////////////////////
     /// /see SoundStream::OnGetData
     ///
@@ -84,8 +81,9 @@ private:
         // Copy samples into a local buffer to avoid synchronization problems
         // (don't forget that we run in two separate threads)
         {
-            std::scoped_lock lock(m_mutex);
-            m_tempBuffer.assign(m_samples.begin() + static_cast<std::vector<sf::Int64>::difference_type>(m_offset), m_samples.end());
+            std::lock_guard lock(m_mutex);
+            m_tempBuffer.assign(m_samples.begin() + static_cast<std::vector<std::int16_t>::difference_type>(m_offset),
+                                m_samples.end());
         }
 
         // Fill audio data to pass to the stream
@@ -117,25 +115,27 @@ private:
         {
             // Get waiting audio data from the network
             sf::Packet packet;
-            if (m_client.receive(packet) != sf::Socket::Done)
+            if (m_client.receive(packet) != sf::Socket::Status::Done)
                 break;
 
             // Extract the message ID
-            sf::Uint8 id;
+            std::uint8_t id;
             packet >> id;
 
             if (id == serverAudioData)
             {
                 // Extract audio samples from the packet, and append it to our samples buffer
-                std::size_t sampleCount = (packet.getDataSize() - 1) / sizeof(sf::Int16);
+                std::size_t sampleCount = (packet.getDataSize() - 1) / sizeof(std::int16_t);
 
                 // Don't forget that the other thread can access the sample array at any time
                 // (so we protect any operation on it with the mutex)
                 {
-                    std::scoped_lock lock(m_mutex);
-                    std::size_t oldSize = m_samples.size();
+                    std::lock_guard lock(m_mutex);
+                    std::size_t     oldSize = m_samples.size();
                     m_samples.resize(oldSize + sampleCount);
-                    std::memcpy(&(m_samples[oldSize]), static_cast<const char*>(packet.getData()) + 1, sampleCount * sizeof(sf::Int16));
+                    std::memcpy(&(m_samples[oldSize]),
+                                static_cast<const char*>(packet.getData()) + 1,
+                                sampleCount * sizeof(std::int16_t));
                 }
             }
             else if (id == serverEndOfStream)
@@ -156,13 +156,13 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    sf::TcpListener        m_listener;
-    sf::TcpSocket          m_client;
-    std::recursive_mutex   m_mutex;
-    std::vector<sf::Int16> m_samples;
-    std::vector<sf::Int16> m_tempBuffer;
-    std::size_t            m_offset;
-    bool                   m_hasFinished;
+    sf::TcpListener           m_listener;
+    sf::TcpSocket             m_client;
+    std::recursive_mutex      m_mutex;
+    std::vector<std::int16_t> m_samples;
+    std::vector<std::int16_t> m_tempBuffer;
+    std::size_t               m_offset{};
+    bool                      m_hasFinished{};
 };
 
 

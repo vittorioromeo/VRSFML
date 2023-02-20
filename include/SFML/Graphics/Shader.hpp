@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,17 +22,19 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_SHADER_HPP
-#define SFML_SHADER_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Export.hpp>
+
 #include <SFML/Graphics/Glsl.hpp>
-#include <SFML/Window/GlResource.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <SFML/System/Vector3.hpp>
+#include <SFML/Window/GlResource.hpp>
+
+#include <filesystem>
 #include <string>
 #include <unordered_map>
 
@@ -51,7 +53,6 @@ class Transform;
 class SFML_GRAPHICS_API Shader : GlResource
 {
 public:
-
     ////////////////////////////////////////////////////////////
     /// \brief Types of shaders
     ///
@@ -70,7 +71,9 @@ public:
     /// \see setUniform(const std::string&, CurrentTextureType)
     ///
     ////////////////////////////////////////////////////////////
-    struct CurrentTextureType {};
+    struct CurrentTextureType
+    {
+    };
 
     ////////////////////////////////////////////////////////////
     /// \brief Represents the texture of the object being drawn
@@ -78,9 +81,8 @@ public:
     /// \see setUniform(const std::string&, CurrentTextureType)
     ///
     ////////////////////////////////////////////////////////////
+    // NOLINTNEXTLINE(readability-identifier-naming)
     static CurrentTextureType CurrentTexture;
-
-public:
 
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
@@ -109,6 +111,19 @@ public:
     Shader& operator=(const Shader&) = delete;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    Shader(Shader&& source) noexcept;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    Shader& operator=(Shader&& right) noexcept;
+
+
+    ////////////////////////////////////////////////////////////
     /// \brief Load the vertex, geometry or fragment shader from a file
     ///
     /// This function loads a single shader, vertex, geometry or
@@ -127,7 +142,7 @@ public:
     /// \see loadFromMemory, loadFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool loadFromFile(const std::string& filename, Type type);
+    [[nodiscard]] bool loadFromFile(const std::filesystem::path& filename, Type type);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load both the vertex and fragment shaders from files
@@ -148,7 +163,8 @@ public:
     /// \see loadFromMemory, loadFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool loadFromFile(const std::string& vertexShaderFilename, const std::string& fragmentShaderFilename);
+    [[nodiscard]] bool loadFromFile(const std::filesystem::path& vertexShaderFilename,
+                                    const std::filesystem::path& fragmentShaderFilename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the vertex, geometry and fragment shaders from files
@@ -170,7 +186,9 @@ public:
     /// \see loadFromMemory, loadFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool loadFromFile(const std::string& vertexShaderFilename, const std::string& geometryShaderFilename, const std::string& fragmentShaderFilename);
+    [[nodiscard]] bool loadFromFile(const std::filesystem::path& vertexShaderFilename,
+                                    const std::filesystem::path& geometryShaderFilename,
+                                    const std::filesystem::path& fragmentShaderFilename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the vertex, geometry or fragment shader from a source code in memory
@@ -233,7 +251,9 @@ public:
     /// \see loadFromFile, loadFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool loadFromMemory(const std::string& vertexShader, const std::string& geometryShader, const std::string& fragmentShader);
+    [[nodiscard]] bool loadFromMemory(const std::string& vertexShader,
+                                      const std::string& geometryShader,
+                                      const std::string& fragmentShader);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the vertex, geometry or fragment shader from a custom stream
@@ -296,7 +316,9 @@ public:
     /// \see loadFromFile, loadFromMemory
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool loadFromStream(InputStream& vertexShaderStream, InputStream& geometryShaderStream, InputStream& fragmentShaderStream);
+    [[nodiscard]] bool loadFromStream(InputStream& vertexShaderStream,
+                                      InputStream& geometryShaderStream,
+                                      InputStream& fragmentShaderStream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p float uniform
@@ -474,6 +496,12 @@ public:
     void setUniform(const std::string& name, const Texture& texture);
 
     ////////////////////////////////////////////////////////////
+    /// \brief Disallow setting from a temporary texture
+    ///
+    ////////////////////////////////////////////////////////////
+    void setUniform(const std::string& name, Texture&& texture) = delete;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Specify current texture as \p sampler2D uniform
     ///
     /// This overload maps a shader texture variable to the
@@ -623,7 +651,6 @@ public:
     static bool isGeometryAvailable();
 
 private:
-
     ////////////////////////////////////////////////////////////
     /// \brief Compile the shader(s) and create the program
     ///
@@ -670,22 +697,19 @@ private:
     ////////////////////////////////////////////////////////////
     // Types
     ////////////////////////////////////////////////////////////
-    using TextureTable = std::unordered_map<int, const Texture *>;
+    using TextureTable = std::unordered_map<int, const Texture*>;
     using UniformTable = std::unordered_map<std::string, int>;
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    unsigned int m_shaderProgram;  //!< OpenGL identifier for the program
-    int          m_currentTexture; //!< Location of the current texture in the shader
-    TextureTable m_textures;       //!< Texture variables in the shader, mapped to their location
-    UniformTable m_uniforms;       //!< Parameters location cache
+    unsigned int m_shaderProgram{};    //!< OpenGL identifier for the program
+    int          m_currentTexture{-1}; //!< Location of the current texture in the shader
+    TextureTable m_textures;           //!< Texture variables in the shader, mapped to their location
+    UniformTable m_uniforms;           //!< Parameters location cache
 };
 
 } // namespace sf
-
-
-#endif // SFML_SHADER_HPP
 
 
 ////////////////////////////////////////////////////////////

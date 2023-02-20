@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -26,9 +26,10 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Err.hpp>
+
+#include <cstdio>
 #include <iostream>
 #include <streambuf>
-#include <cstdio>
 
 
 namespace
@@ -38,12 +39,11 @@ namespace
 class DefaultErrStreamBuf : public std::streambuf
 {
 public:
-
     DefaultErrStreamBuf()
     {
         // Allocate the write buffer
-        constexpr int size = 64;
-        char* buffer = new char[size];
+        constexpr int size   = 64;
+        char*         buffer = new char[size];
         setp(buffer, buffer + size);
     }
 
@@ -57,7 +57,6 @@ public:
     }
 
 private:
-
     int overflow(int character) override
     {
         if ((character != EOF) && (pptr() != epptr()))
@@ -94,7 +93,7 @@ private:
         return 0;
     }
 };
-}
+} // namespace
 
 namespace sf
 {
@@ -102,7 +101,7 @@ namespace sf
 std::ostream& err()
 {
     static DefaultErrStreamBuf buffer;
-    static std::ostream stream(&buffer);
+    static std::ostream        stream(&buffer);
 
     return stream;
 }

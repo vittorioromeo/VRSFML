@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,18 +22,19 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_SOUNDRECORDER_HPP
-#define SFML_SOUNDRECORDER_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
+
 #include <SFML/Audio/AlResource.hpp>
 #include <SFML/System/Time.hpp>
-#include <vector>
+
 #include <string>
 #include <thread>
+#include <vector>
 
 
 namespace sf
@@ -45,7 +46,6 @@ namespace sf
 class SFML_AUDIO_API SoundRecorder : AlResource
 {
 public:
-
     ////////////////////////////////////////////////////////////
     /// \brief destructor
     ///
@@ -186,7 +186,6 @@ public:
     static bool isAvailable();
 
 protected:
-
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
@@ -240,7 +239,7 @@ protected:
     /// \return True to continue the capture, or false to stop it
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual bool onProcessSamples(const Int16* samples, std::size_t sampleCount) = 0;
+    [[nodiscard]] virtual bool onProcessSamples(const std::int16_t* samples, std::size_t sampleCount) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Stop capturing audio data
@@ -254,7 +253,6 @@ protected:
     virtual void onStop();
 
 private:
-
     ////////////////////////////////////////////////////////////
     /// \brief Function called as the entry point of the thread
     ///
@@ -303,19 +301,16 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::thread                m_thread;             //!< Thread running the background recording task
-    std::vector<Int16>         m_samples;            //!< Buffer to store captured samples
-    unsigned int               m_sampleRate;         //!< Sample rate
-    Time                       m_processingInterval; //!< Time period between calls to onProcessSamples
-    bool                       m_isCapturing;        //!< Capturing state
-    std::string                m_deviceName;         //!< Name of the audio capture device
-    unsigned int               m_channelCount;       //!< Number of recording channels
+    std::thread               m_thread;                   //!< Thread running the background recording task
+    std::vector<std::int16_t> m_samples;                  //!< Buffer to store captured samples
+    unsigned int              m_sampleRate{};             //!< Sample rate
+    Time         m_processingInterval{milliseconds(100)}; //!< Time period between calls to onProcessSamples
+    bool         m_isCapturing{};                         //!< Capturing state
+    std::string  m_deviceName{getDefaultDevice()};        //!< Name of the audio capture device
+    unsigned int m_channelCount{1};                       //!< Number of recording channels
 };
 
 } // namespace sf
-
-
-#endif // SFML_SOUNDRECORDER_HPP
 
 
 ////////////////////////////////////////////////////////////
@@ -377,12 +372,14 @@ private:
 /// \code
 /// class CustomRecorder : public sf::SoundRecorder
 /// {
+/// public:
 ///     ~CustomRecorder()
 ///     {
 ///         // Make sure to stop the recording thread
 ///         stop();
 ///     }
 ///
+/// private:
 ///     bool onStart() override // optional
 ///     {
 ///         // Initialize whatever has to be done before the capture starts
@@ -392,7 +389,7 @@ private:
 ///         return true;
 ///     }
 ///
-///     [[nodiscard]] bool onProcessSamples(const Int16* samples, std::size_t sampleCount) override
+///     [[nodiscard]] bool onProcessSamples(const std::int16_t* samples, std::size_t sampleCount) override
 ///     {
 ///         // Do something with the new chunk of samples (store them, send them, ...)
 ///         ...
@@ -406,7 +403,7 @@ private:
 ///         // Clean up whatever has to be done after the capture ends
 ///         ...
 ///     }
-/// }
+/// };
 ///
 /// // Usage
 /// if (CustomRecorder::isAvailable())

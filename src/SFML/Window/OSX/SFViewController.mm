@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Marco Antognini (antognini.marco@gmail.com),
+// Copyright (C) 2007-2023 Marco Antognini (antognini.marco@gmail.com),
 //                         Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -27,29 +27,24 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Err.hpp>
-#include <SFML/Window/OSX/WindowImplCocoa.hpp>
-
 #import <SFML/Window/OSX/SFApplication.h>
 #import <SFML/Window/OSX/SFOpenGLView.h>
 #import <SFML/Window/OSX/SFViewController.h>
+#include <SFML/Window/OSX/WindowImplCocoa.hpp>
 
-#if defined(__APPLE__)
-    #if defined(__clang__)
-        #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    #elif defined(__GNUC__)
-        #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-    #endif
-#endif
+#include <ostream>
+
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
 @implementation SFViewController
 
 
 ////////////////////////////////////////////////////////
--(id)initWithView:(NSView *)view
+- (id)initWithView:(NSView*)view
 {
     if ((self = [super init]))
     {
-        m_requester = 0;
+        m_requester = nullptr;
 
         // Retain the view for our own use.
         m_view = [view retain];
@@ -61,16 +56,15 @@
         }
 
         // Create the view.
-        NSRect frame = [m_view frame];
+        NSRect frame   = [m_view frame];
         frame.origin.x = 0;
         frame.origin.y = 0;
-        m_oglView = [[SFOpenGLView alloc] initWithFrame:frame];
+        m_oglView      = [[SFOpenGLView alloc] initWithFrame:frame];
 
         if (m_oglView == nil)
         {
             sf::err() << "Could not create an instance of NSOpenGLView "
-                     << "in (SFViewController -initWithView:)."
-                     << std::endl;
+                      << "in (SFViewController -initWithView:)." << std::endl;
 
             return self;
         }
@@ -88,7 +82,7 @@
 
 
 ////////////////////////////////////////////////////////
--(void)dealloc
+- (void)dealloc
 {
     [self closeWindow];
 
@@ -100,14 +94,14 @@
 
 
 ////////////////////////////////////////////////////////
--(CGFloat)displayScaleFactor
+- (CGFloat)displayScaleFactor
 {
     return [m_oglView displayScaleFactor];
 }
 
 
 ////////////////////////////////////////////////////////
--(void)setRequesterTo:(sf::priv::WindowImplCocoa*)requester
+- (void)setRequesterTo:(sf::priv::WindowImplCocoa*)requester
 {
     // Forward to the view.
     [m_oglView setRequesterTo:requester];
@@ -116,35 +110,35 @@
 
 
 ////////////////////////////////////////////////////////
--(sf::WindowHandle)getSystemHandle
+- (sf::WindowHandle)getSystemHandle
 {
     return m_view;
 }
 
 
 ////////////////////////////////////////////////////////
--(BOOL)isMouseInside
+- (BOOL)isMouseInside
 {
     return [m_oglView isMouseInside];
 }
 
 
 ////////////////////////////////////////////////////////
--(void)setCursorGrabbed:(BOOL)grabbed
+- (void)setCursorGrabbed:(BOOL)grabbed
 {
     [m_oglView setCursorGrabbed:grabbed];
 }
 
 
 ////////////////////////////////////////////////////////
--(void)setCursor:(NSCursor*)cursor
+- (void)setCursor:(NSCursor*)cursor
 {
     return [m_oglView setCursor:cursor];
 }
 
 
 ////////////////////////////////////////////////////////////
--(NSPoint)position
+- (NSPoint)position
 {
     // Origin is bottom-left corner of the window
     return [m_view convertPoint:NSMakePoint(0, 0) toView:nil]; // nil means window
@@ -152,28 +146,26 @@
 
 
 ////////////////////////////////////////////////////////.
--(void)setWindowPositionToX:(int)x Y:(int)y
+- (void)setWindowPositionToX:(int)x Y:(int)y
 {
     (void)x;
     (void)y;
-    sf::err() << "Cannot move SFML area when SFML is integrated in a NSView. Use the view handler directly instead." << std::endl;
+    sf::err() << "Cannot move SFML area when SFML is integrated in a NSView. Use the view handler directly instead."
+              << std::endl;
 }
 
 
 ////////////////////////////////////////////////////////////
--(NSSize)size
+- (NSSize)size
 {
     return [m_oglView frame].size;
 }
 
 
 ////////////////////////////////////////////////////////
--(void)resizeTo:(unsigned int)width by:(unsigned int)height
+- (void)resizeTo:(unsigned int)width by:(unsigned int)height
 {
-    NSRect frame = NSMakeRect([m_view frame].origin.x,
-                              [m_view frame].origin.y,
-                              width,
-                              height);
+    NSRect frame = NSMakeRect([m_view frame].origin.x, [m_view frame].origin.y, width, height);
 
     [m_view setFrame:frame];
     [m_oglView setFrame:frame];
@@ -181,7 +173,7 @@
 
 
 ////////////////////////////////////////////////////////
--(void)changeTitle:(NSString*)title
+- (void)changeTitle:(NSString*)title
 {
     (void)title;
     sf::err() << "Cannot change the title of the SFML area when SFML is integrated in a NSView." << std::endl;
@@ -189,28 +181,28 @@
 
 
 ////////////////////////////////////////////////////////
--(void)hideWindow
+- (void)hideWindow
 {
     [m_view setHidden:YES];
 }
 
 
 ////////////////////////////////////////////////////////
--(void)showWindow
+- (void)showWindow
 {
     [m_view setHidden:NO];
 }
 
 
 ////////////////////////////////////////////////////////
--(void)closeWindow
+- (void)closeWindow
 {
     // If the "window" is really a view, this is a no-op.
 }
 
 
 ////////////////////////////////////////////////////////
--(void)requestFocus
+- (void)requestFocus
 {
     // Note: this doesn't imply that the view will get any event.
     // The user has to make sure events are forwarded to the view
@@ -223,30 +215,28 @@
 
 
 ////////////////////////////////////////////////////////////
--(BOOL)hasFocus
+- (BOOL)hasFocus
 {
     return [NSApp keyWindow] == [m_view window];
 }
 
 
 ////////////////////////////////////////////////////////
--(void)enableKeyRepeat
+- (void)enableKeyRepeat
 {
     [m_oglView enableKeyRepeat];
 }
 
 
 ////////////////////////////////////////////////////////
--(void)disableKeyRepeat
+- (void)disableKeyRepeat
 {
     [m_oglView disableKeyRepeat];
 }
 
 
 ////////////////////////////////////////////////////////
--(void)setIconTo:(unsigned int)width
-              by:(unsigned int)height
-            with:(const sf::Uint8*)pixels
+- (void)setIconTo:(unsigned int)width by:(unsigned int)height with:(const std::uint8_t*)pixels
 {
     (void)width;
     (void)height;
@@ -256,7 +246,7 @@
 
 
 ////////////////////////////////////////////////////////
--(void)processEvent
+- (void)processEvent
 {
     // If we are not on the main thread we stop here and advice the user.
     if ([NSThread currentThread] != [NSThread mainThread])
@@ -271,13 +261,13 @@
     }
 
     // If we don't have a requester we don't fetch event.
-    if (m_requester != 0)
+    if (m_requester != nullptr)
         [SFApplication processEvent];
 }
 
 
 ////////////////////////////////////////////////////////
--(void)applyContext:(NSOpenGLContext*)context
+- (void)applyContext:(NSOpenGLContext*)context
 {
     [m_oglView setOpenGLContext:context];
     [context setView:m_oglView];

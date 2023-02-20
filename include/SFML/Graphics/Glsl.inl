@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -95,30 +95,27 @@ struct Vector4
     /// \brief Default constructor, creates a zero vector
     ///
     ////////////////////////////////////////////////////////////
-    Vector4() :
-    x(0),
-    y(0),
-    z(0),
-    w(0)
-    {
-    }
+    Vector4() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from 4 vector components
     ///
-    /// \param X Component of the 4D vector
-    /// \param Y Component of the 4D vector
-    /// \param Z Component of the 4D vector
-    /// \param W Component of the 4D vector
+    /// \param x Component of the 4D vector
+    /// \param y Component of the 4D vector
+    /// \param z Component of the 4D vector
+    /// \param w Component of the 4D vector
     ///
     ////////////////////////////////////////////////////////////
-    Vector4(T X, T Y, T Z, T W) :
-    x(X),
-    y(Y),
-    z(Z),
-    w(W)
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#endif
+    Vector4(T x, T y, T z, T w) : x(x), y(y), z(z), w(w)
     {
     }
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 
     ////////////////////////////////////////////////////////////
     /// \brief Conversion constructor
@@ -143,13 +140,12 @@ struct Vector4
     ///
     ////////////////////////////////////////////////////////////
     Vector4(const Color& color)
-    // uninitialized
     {
         copyVector(color, *this);
     }
 
-    T x; //!< 1st component (X) of the 4D vector
-    T y; //!< 2nd component (Y) of the 4D vector
-    T z; //!< 3rd component (Z) of the 4D vector
-    T w; //!< 4th component (W) of the 4D vector
+    T x{}; //!< 1st component (X) of the 4D vector
+    T y{}; //!< 2nd component (Y) of the 4D vector
+    T z{}; //!< 3rd component (Z) of the 4D vector
+    T w{}; //!< 4th component (W) of the 4D vector
 };

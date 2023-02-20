@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -26,74 +26,47 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/View.hpp>
+
 #include <cmath>
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-View::View() :
-m_center             (),
-m_size               (),
-m_rotation           (),
-m_viewport           ({0, 0}, {1, 1}),
-m_transformUpdated   (false),
-m_invTransformUpdated(false)
+View::View()
 {
     reset(FloatRect({0, 0}, {1000, 1000}));
 }
 
 
 ////////////////////////////////////////////////////////////
-View::View(const FloatRect& rectangle) :
-m_center             (),
-m_size               (),
-m_rotation           (),
-m_viewport           ({0, 0}, {1, 1}),
-m_transformUpdated   (false),
-m_invTransformUpdated(false)
+View::View(const FloatRect& rectangle)
 {
     reset(rectangle);
 }
 
 
 ////////////////////////////////////////////////////////////
-View::View(const Vector2f& center, const Vector2f& size) :
-m_center             (center),
-m_size               (size),
-m_rotation           (),
-m_viewport           ({0, 0}, {1, 1}),
-m_transformUpdated   (false),
-m_invTransformUpdated(false)
+View::View(const Vector2f& center, const Vector2f& size) : m_center(center), m_size(size)
 {
-
 }
 
 
 ////////////////////////////////////////////////////////////
 void View::setCenter(const Vector2f& center)
 {
-    m_center = center;
+    m_center              = center;
     m_transformUpdated    = false;
     m_invTransformUpdated = false;
 }
-
-
-////////////////////////////////////////////////////////////
-void View::setSize(float width, float height)
-{
-    m_size.x = width;
-    m_size.y = height;
-
-    m_transformUpdated    = false;
-    m_invTransformUpdated = false;
-}
-
 
 ////////////////////////////////////////////////////////////
 void View::setSize(const Vector2f& size)
 {
-    setSize(size.x, size.y);
+    m_size = size;
+
+    m_transformUpdated    = false;
+    m_invTransformUpdated = false;
 }
 
 
@@ -173,7 +146,7 @@ void View::rotate(Angle angle)
 ////////////////////////////////////////////////////////////
 void View::zoom(float factor)
 {
-    setSize(m_size.x * factor, m_size.y * factor);
+    setSize(m_size * factor);
 }
 
 
@@ -188,18 +161,20 @@ const Transform& View::getTransform() const
         float cosine = std::cos(angle);
         float sine   = std::sin(angle);
         float tx     = -m_center.x * cosine - m_center.y * sine + m_center.x;
-        float ty     =  m_center.x * sine - m_center.y * cosine + m_center.y;
+        float ty     = m_center.x * sine - m_center.y * cosine + m_center.y;
 
         // Projection components
-        float a =  2.f / m_size.x;
+        float a = 2.f / m_size.x;
         float b = -2.f / m_size.y;
         float c = -a * m_center.x;
         float d = -b * m_center.y;
 
         // Rebuild the projection matrix
+        // clang-format off
         m_transform = Transform( a * cosine, a * sine,   a * tx + c,
                                 -b * sine,   b * cosine, b * ty + d,
                                  0.f,        0.f,        1.f);
+        // clang-format on
         m_transformUpdated = true;
     }
 
@@ -213,7 +188,7 @@ const Transform& View::getInverseTransform() const
     // Recompute the matrix if needed
     if (!m_invTransformUpdated)
     {
-        m_inverseTransform = getTransform().getInverse();
+        m_inverseTransform    = getTransform().getInverse();
         m_invTransformUpdated = true;
     }
 

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,19 +22,17 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_JOYSTICKIMPL_HPP
-#define SFML_JOYSTICKIMPL_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Config.hpp>
+
 #include <SFML/Window/Joystick.hpp>
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// \brief Structure holding a joystick's information
@@ -42,7 +40,7 @@ namespace priv
 ////////////////////////////////////////////////////////////
 struct JoystickCaps
 {
-    unsigned int buttonCount{0};              //!< Number of buttons supported by the joystick
+    unsigned int buttonCount{};               //!< Number of buttons supported by the joystick
     bool         axes[Joystick::AxisCount]{}; //!< Support for each axis
 };
 
@@ -53,49 +51,44 @@ struct JoystickCaps
 ////////////////////////////////////////////////////////////
 struct JoystickState
 {
-    bool  connected{false};                 //!< Is the joystick currently connected?
+    bool  connected{};                      //!< Is the joystick currently connected?
     float axes[Joystick::AxisCount]{};      //!< Position of each axis, in range [-100, 100]
     bool  buttons[Joystick::ButtonCount]{}; //!< Status of each button (true = pressed)
 };
 
-} // namespace priv
-
-} // namespace sf
+} // namespace sf::priv
 
 
 #if defined(SFML_SYSTEM_WINDOWS)
 
-    #include <SFML/Window/Win32/JoystickImpl.hpp>
+#include <SFML/Window/Win32/JoystickImpl.hpp>
 
 #elif defined(SFML_SYSTEM_LINUX)
 
-    #include <SFML/Window/Unix/JoystickImpl.hpp>
+#include <SFML/Window/Unix/JoystickImpl.hpp>
 
 #elif defined(SFML_SYSTEM_FREEBSD)
 
-    #include <SFML/Window/FreeBSD/JoystickImpl.hpp>
+#include <SFML/Window/FreeBSD/JoystickImpl.hpp>
 
 #elif defined(SFML_SYSTEM_OPENBSD)
 
-    #include <SFML/Window/OpenBSD/JoystickImpl.hpp>
+#include <SFML/Window/OpenBSD/JoystickImpl.hpp>
 
 #elif defined(SFML_SYSTEM_NETBSD)
 
-    #include <SFML/Window/NetBSD/JoystickImpl.hpp>
+#include <SFML/Window/NetBSD/JoystickImpl.hpp>
 
 #elif defined(SFML_SYSTEM_MACOS)
 
-    #include <SFML/Window/OSX/JoystickImpl.hpp>
+#include <SFML/Window/OSX/JoystickImpl.hpp>
 
 #elif defined(SFML_SYSTEM_IOS)
 
-    #include <SFML/Window/iOS/JoystickImpl.hpp>
+#include <SFML/Window/iOS/JoystickImpl.hpp>
 
 #elif defined(SFML_SYSTEM_ANDROID)
 
-    #include <SFML/Window/Android/JoystickImpl.hpp>
+#include <SFML/Window/Android/JoystickImpl.hpp>
 
 #endif
-
-
-#endif // SFML_JOYSTICKIMPL_HPP

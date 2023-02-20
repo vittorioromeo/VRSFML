@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,24 +22,32 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_UTILS_HPP
-#define SFML_UTILS_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <cctype>
+#include <filesystem>
+#include <sstream>
 #include <string>
 
 
 namespace sf
 {
-    [[nodiscard]] inline std::string toLower(std::string str)
-    {
-        for (char& c : str)
-            c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
-        return str;
-    }
-} // namespace sf
+[[nodiscard]] inline std::string toLower(std::string str)
+{
+    for (char& c : str)
+        c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    return str;
+}
 
-#endif // SFML_UTILS_HPP
+[[nodiscard]] inline std::string formatDebugPathInfo(const std::filesystem::path& path)
+{
+    std::ostringstream stream;
+    stream << "    Provided path: " << path << '\n';
+    stream << "    Absolute path: " << std::filesystem::absolute(path);
+    return stream.str();
+}
+
+} // namespace sf

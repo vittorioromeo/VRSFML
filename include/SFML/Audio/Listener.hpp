@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,136 +22,127 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_LISTENER_HPP
-#define SFML_LISTENER_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
+
 #include <SFML/System/Vector3.hpp>
 
 
-namespace sf
-{
 ////////////////////////////////////////////////////////////
 /// \brief The audio listener is the point in the scene
 ///        from where all the sounds are heard
 ///
 ////////////////////////////////////////////////////////////
-class SFML_AUDIO_API Listener
+namespace sf::Listener
 {
-public:
+////////////////////////////////////////////////////////////
+/// \brief Change the global volume of all the sounds and musics
+///
+/// The volume is a number between 0 and 100; it is combined with
+/// the individual volume of each sound / music.
+/// The default value for the volume is 100 (maximum).
+///
+/// \param volume New global volume, in the range [0, 100]
+///
+/// \see getGlobalVolume
+///
+////////////////////////////////////////////////////////////
+SFML_AUDIO_API void setGlobalVolume(float volume);
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Change the global volume of all the sounds and musics
-    ///
-    /// The volume is a number between 0 and 100; it is combined with
-    /// the individual volume of each sound / music.
-    /// The default value for the volume is 100 (maximum).
-    ///
-    /// \param volume New global volume, in the range [0, 100]
-    ///
-    /// \see getGlobalVolume
-    ///
-    ////////////////////////////////////////////////////////////
-    static void setGlobalVolume(float volume);
+////////////////////////////////////////////////////////////
+/// \brief Get the current value of the global volume
+///
+/// \return Current global volume, in the range [0, 100]
+///
+/// \see setGlobalVolume
+///
+////////////////////////////////////////////////////////////
+SFML_AUDIO_API float getGlobalVolume();
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the current value of the global volume
-    ///
-    /// \return Current global volume, in the range [0, 100]
-    ///
-    /// \see setGlobalVolume
-    ///
-    ////////////////////////////////////////////////////////////
-    static float getGlobalVolume();
+////////////////////////////////////////////////////////////
+/// \brief Set the position of the listener in the scene
+///
+/// The default listener's position is (0, 0, 0).
+///
+/// \param position New listener's position
+///
+/// \see getPosition, setDirection
+///
+////////////////////////////////////////////////////////////
+SFML_AUDIO_API void setPosition(const Vector3f& position);
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Set the position of the listener in the scene
-    ///
-    /// The default listener's position is (0, 0, 0).
-    ///
-    /// \param position New listener's position
-    ///
-    /// \see getPosition, setDirection
-    ///
-    ////////////////////////////////////////////////////////////
-    static void setPosition(const Vector3f& position);
+////////////////////////////////////////////////////////////
+/// \brief Get the current position of the listener in the scene
+///
+/// \return Listener's position
+///
+/// \see setPosition
+///
+////////////////////////////////////////////////////////////
+SFML_AUDIO_API Vector3f getPosition();
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the current position of the listener in the scene
-    ///
-    /// \return Listener's position
-    ///
-    /// \see setPosition
-    ///
-    ////////////////////////////////////////////////////////////
-    static Vector3f getPosition();
+////////////////////////////////////////////////////////////
+/// \brief Set the forward vector of the listener in the scene
+///
+/// The direction (also called "at vector") is the vector
+/// pointing forward from the listener's perspective. Together
+/// with the up vector, it defines the 3D orientation of the
+/// listener in the scene. The direction vector doesn't
+/// have to be normalized.
+/// The default listener's direction is (0, 0, -1).
+///
+/// \param direction New listener's direction
+///
+/// \see getDirection, setUpVector, setPosition
+///
+////////////////////////////////////////////////////////////
+SFML_AUDIO_API void setDirection(const Vector3f& direction);
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Set the forward vector of the listener in the scene
-    ///
-    /// The direction (also called "at vector") is the vector
-    /// pointing forward from the listener's perspective. Together
-    /// with the up vector, it defines the 3D orientation of the
-    /// listener in the scene. The direction vector doesn't
-    /// have to be normalized.
-    /// The default listener's direction is (0, 0, -1).
-    ///
-    /// \param direction New listener's direction
-    ///
-    /// \see getDirection, setUpVector, setPosition
-    ///
-    ////////////////////////////////////////////////////////////
-    static void setDirection(const Vector3f& direction);
+////////////////////////////////////////////////////////////
+/// \brief Get the current forward vector of the listener in the scene
+///
+/// \return Listener's forward vector (not normalized)
+///
+/// \see setDirection
+///
+////////////////////////////////////////////////////////////
+SFML_AUDIO_API Vector3f getDirection();
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the current forward vector of the listener in the scene
-    ///
-    /// \return Listener's forward vector (not normalized)
-    ///
-    /// \see setDirection
-    ///
-    ////////////////////////////////////////////////////////////
-    static Vector3f getDirection();
+////////////////////////////////////////////////////////////
+/// \brief Set the upward vector of the listener in the scene
+///
+/// The up vector is the vector that points upward from the
+/// listener's perspective. Together with the direction, it
+/// defines the 3D orientation of the listener in the scene.
+/// The up vector doesn't have to be normalized.
+/// The default listener's up vector is (0, 1, 0). It is usually
+/// not necessary to change it, especially in 2D scenarios.
+///
+/// \param upVector New listener's up vector
+///
+/// \see getUpVector, setDirection, setPosition
+///
+////////////////////////////////////////////////////////////
+SFML_AUDIO_API void setUpVector(const Vector3f& upVector);
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Set the upward vector of the listener in the scene
-    ///
-    /// The up vector is the vector that points upward from the
-    /// listener's perspective. Together with the direction, it
-    /// defines the 3D orientation of the listener in the scene.
-    /// The up vector doesn't have to be normalized.
-    /// The default listener's up vector is (0, 1, 0). It is usually
-    /// not necessary to change it, especially in 2D scenarios.
-    ///
-    /// \param upVector New listener's up vector
-    ///
-    /// \see getUpVector, setDirection, setPosition
-    ///
-    ////////////////////////////////////////////////////////////
-    static void setUpVector(const Vector3f& upVector);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the current upward vector of the listener in the scene
-    ///
-    /// \return Listener's upward vector (not normalized)
-    ///
-    /// \see setUpVector
-    ///
-    ////////////////////////////////////////////////////////////
-    static Vector3f getUpVector();
-};
-
-} // namespace sf
-
-
-#endif // SFML_LISTENER_HPP
+////////////////////////////////////////////////////////////
+/// \brief Get the current upward vector of the listener in the scene
+///
+/// \return Listener's upward vector (not normalized)
+///
+/// \see setUpVector
+///
+////////////////////////////////////////////////////////////
+SFML_AUDIO_API Vector3f getUpVector();
+} // namespace sf::Listener
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::Listener
+/// \namespace sf::Listener
 /// \ingroup audio
 ///
 /// The audio listener defines the global properties of the
@@ -163,9 +154,6 @@ public:
 /// sf::Listener is a simple interface, which allows to setup the
 /// listener in the 3D audio environment (position, direction and
 /// up vector), and to adjust the global volume.
-///
-/// Because the listener is unique in the scene, sf::Listener only
-/// contains static functions and doesn't have to be instantiated.
 ///
 /// Usage example:
 /// \code

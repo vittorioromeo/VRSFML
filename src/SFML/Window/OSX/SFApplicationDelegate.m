@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Marco Antognini (antognini.marco@gmail.com),
+// Copyright (C) 2007-2023 Marco Antognini (antognini.marco@gmail.com),
 //                         Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -28,20 +28,14 @@
 ////////////////////////////////////////////////////////////
 #import <SFML/Window/OSX/SFApplicationDelegate.h>
 
-#if defined(__APPLE__)
-    #if defined(__clang__)
-        #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    #elif defined(__GNUC__)
-        #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-    #endif
-#endif
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
 ////////////////////////////////////////////////////////////
 @implementation SFApplicationDelegate
 
 
 ////////////////////////////////////////////////////////////
--(NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication*)sender
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication*)sender
 {
     (void)sender;
     // Generate close event for each SFML window
@@ -51,7 +45,7 @@
 
 
 ////////////////////////////////////////////////////////////
--(BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication*)theApplication
+- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication*)theApplication
 {
     (void)theApplication;
     return YES;
@@ -59,4 +53,3 @@
 
 
 @end
-

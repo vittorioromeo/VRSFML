@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,15 +22,16 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_SOUNDSTREAM_HPP
-#define SFML_SOUNDSTREAM_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
+
 #include <SFML/Audio/SoundSource.hpp>
 #include <SFML/System/Time.hpp>
+
 #include <cstdlib>
 #include <mutex>
 #include <thread>
@@ -45,15 +46,14 @@ namespace sf
 class SFML_AUDIO_API SoundStream : public SoundSource
 {
 public:
-
     ////////////////////////////////////////////////////////////
     /// \brief Structure defining a chunk of audio data to stream
     ///
     ////////////////////////////////////////////////////////////
     struct Chunk
     {
-        const Int16* samples;     //!< Pointer to the audio samples
-        std::size_t  sampleCount; //!< Number of samples pointed by Samples
+        const std::int16_t* samples;     //!< Pointer to the audio samples
+        std::size_t         sampleCount; //!< Number of samples pointed by Samples
     };
 
     ////////////////////////////////////////////////////////////
@@ -179,7 +179,6 @@ public:
     bool getLoop() const;
 
 protected:
-
     enum
     {
         NoLoop = -1 //!< "Invalid" endSeeks value, telling us to continue uninterrupted
@@ -249,7 +248,7 @@ protected:
     /// \return The seek position after looping (or -1 if there's no loop)
     ///
     ////////////////////////////////////////////////////////////
-    virtual Int64 onLoop();
+    virtual std::int64_t onLoop();
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the processing interval
@@ -266,7 +265,6 @@ protected:
     void setProcessingInterval(Time interval);
 
 private:
-
     ////////////////////////////////////////////////////////////
     /// \brief Function called as the entry point of the thread
     ///
@@ -329,33 +327,29 @@ private:
     ////////////////////////////////////////////////////////////
     void awaitStreamingThread();
 
-    enum
-    {
-        BufferCount = 3,    //!< Number of audio buffers used by the streaming loop
-        BufferRetries = 2   //!< Number of retries (excluding initial try) for onGetData()
-    };
+    // NOLINTBEGIN(readability-identifier-naming)
+    static constexpr unsigned int BufferCount{3};   //!< Number of audio buffers used by the streaming loop
+    static constexpr unsigned int BufferRetries{2}; //!< Number of retries (excluding initial try) for onGetData()
+    // NOLINTEND(readability-identifier-naming)
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::thread                  m_thread;                   //!< Thread running the background tasks
-    mutable std::recursive_mutex m_threadMutex;              //!< Thread mutex
-    Status                       m_threadStartState;         //!< State the thread starts in (Playing, Paused, Stopped)
-    bool                         m_isStreaming;              //!< Streaming state (true = playing, false = stopped)
-    unsigned int                 m_buffers[BufferCount];     //!< Sound buffers used to store temporary audio data
-    unsigned int                 m_channelCount;             //!< Number of channels (1 = mono, 2 = stereo, ...)
-    unsigned int                 m_sampleRate;               //!< Frequency (samples / second)
-    Int32                        m_format;                   //!< Format of the internal sound buffers
-    bool                         m_loop;                     //!< Loop flag (true to loop, false to play once)
-    Uint64                       m_samplesProcessed;         //!< Number of samples processed since beginning of the stream
-    Int64                        m_bufferSeeks[BufferCount]; //!< If buffer is an "end buffer", holds next seek position, else NoLoop. For play offset calculation.
-    Time                         m_processingInterval;       //!< Interval for checking and filling the internal sound buffers.
+    std::thread                  m_thread;                    //!< Thread running the background tasks
+    mutable std::recursive_mutex m_threadMutex;               //!< Thread mutex
+    Status                       m_threadStartState{Stopped}; //!< State the thread starts in (Playing, Paused, Stopped)
+    bool                         m_isStreaming{};             //!< Streaming state (true = playing, false = stopped)
+    unsigned int                 m_buffers[BufferCount]{};    //!< Sound buffers used to store temporary audio data
+    unsigned int                 m_channelCount{};            //!< Number of channels (1 = mono, 2 = stereo, ...)
+    unsigned int                 m_sampleRate{};              //!< Frequency (samples / second)
+    std::int32_t                 m_format{};                  //!< Format of the internal sound buffers
+    bool                         m_loop{};                    //!< Loop flag (true to loop, false to play once)
+    std::uint64_t                m_samplesProcessed{}; //!< Number of samples processed since beginning of the stream
+    std::int64_t                 m_bufferSeeks[BufferCount]{}; //!< If buffer is an "end buffer", holds next seek position, else NoLoop. For play offset calculation.
+    Time m_processingInterval{milliseconds(10)}; //!< Interval for checking and filling the internal sound buffers.
 };
 
 } // namespace sf
-
-
-#endif // SFML_SOUNDSTREAM_HPP
 
 
 ////////////////////////////////////////////////////////////
@@ -396,7 +390,7 @@ private:
 /// {
 /// public:
 ///
-///     bool open(const std::string& location)
+///     [[nodiscard]] bool open(const std::string& location)
 ///     {
 ///         // Open the source and get audio settings
 ///         ...
@@ -405,6 +399,7 @@ private:
 ///
 ///         // Initialize the stream -- important!
 ///         initialize(channelCount, sampleRate);
+///         return true;
 ///     }
 ///
 /// private:
@@ -414,9 +409,9 @@ private:
 ///         // Fill the chunk with audio data from the stream source
 ///         // (note: must not be empty if you want to continue playing)
 ///         data.samples = ...;
-///         data.sampleCount = ...;
 ///
 ///         // Return true to continue playing
+///         data.sampleCount = ...;
 ///         return true;
 ///     }
 ///

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -26,32 +26,30 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/InputSoundFile.hpp>
-#include <SFML/Audio/SoundFileReader.hpp>
 #include <SFML/Audio/SoundFileFactory.hpp>
-#include <SFML/System/InputStream.hpp>
-#include <SFML/System/FileInputStream.hpp>
-#include <SFML/System/MemoryInputStream.hpp>
+#include <SFML/Audio/SoundFileReader.hpp>
 #include <SFML/System/Err.hpp>
+#include <SFML/System/FileInputStream.hpp>
+#include <SFML/System/InputStream.hpp>
+#include <SFML/System/MemoryInputStream.hpp>
 #include <SFML/System/Time.hpp>
-#include <iostream>
+
 #include <algorithm>
+#include <ostream>
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-InputSoundFile::StreamDeleter::StreamDeleter(bool theOwned) : owned{theOwned}
+InputSoundFile::StreamDeleter::StreamDeleter(bool theOwned) : owned(theOwned)
 {
-
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
 InputSoundFile::StreamDeleter::StreamDeleter(const std::default_delete<T>&)
-: owned{true}
 {
-
 }
 
 
@@ -64,27 +62,11 @@ void InputSoundFile::StreamDeleter::operator()(InputStream* ptr) const
 
 
 ////////////////////////////////////////////////////////////
-InputSoundFile::InputSoundFile() :
-m_reader      (),
-m_stream      (nullptr, false),
-m_sampleOffset(0),
-m_sampleCount (0),
-m_channelCount(0),
-m_sampleRate  (0)
-{
-}
+InputSoundFile::InputSoundFile() = default;
 
 
 ////////////////////////////////////////////////////////////
-InputSoundFile::~InputSoundFile()
-{
-    // Close the file in case it was open
-    close();
-}
-
-
-////////////////////////////////////////////////////////////
-bool InputSoundFile::openFromFile(const std::string& filename)
+bool InputSoundFile::openFromFile(const std::filesystem::path& filename)
 {
     // If the file is already open, first close it
     close();
@@ -111,9 +93,9 @@ bool InputSoundFile::openFromFile(const std::string& filename)
     m_stream = std::move(file);
 
     // Retrieve the attributes of the open sound file
-    m_sampleCount = info.sampleCount;
+    m_sampleCount  = info.sampleCount;
     m_channelCount = info.channelCount;
-    m_sampleRate = info.sampleRate;
+    m_sampleRate   = info.sampleRate;
 
     return true;
 }
@@ -146,9 +128,9 @@ bool InputSoundFile::openFromMemory(const void* data, std::size_t sizeInBytes)
     m_stream = std::move(memory);
 
     // Retrieve the attributes of the open sound file
-    m_sampleCount = info.sampleCount;
+    m_sampleCount  = info.sampleCount;
     m_channelCount = info.channelCount;
-    m_sampleRate = info.sampleRate;
+    m_sampleRate   = info.sampleRate;
 
     return true;
 }
@@ -182,16 +164,16 @@ bool InputSoundFile::openFromStream(InputStream& stream)
     m_stream = {&stream, false};
 
     // Retrieve the attributes of the open sound file
-    m_sampleCount = info.sampleCount;
+    m_sampleCount  = info.sampleCount;
     m_channelCount = info.channelCount;
-    m_sampleRate = info.sampleRate;
+    m_sampleRate   = info.sampleRate;
 
     return true;
 }
 
 
 ////////////////////////////////////////////////////////////
-Uint64 InputSoundFile::getSampleCount() const
+std::uint64_t InputSoundFile::getSampleCount() const
 {
     return m_sampleCount;
 }
@@ -218,7 +200,8 @@ Time InputSoundFile::getDuration() const
     if (m_channelCount == 0 || m_sampleRate == 0)
         return Time::Zero;
 
-    return seconds(static_cast<float>(m_sampleCount) / static_cast<float>(m_channelCount) / static_cast<float>(m_sampleRate));
+    return seconds(
+        static_cast<float>(m_sampleCount) / static_cast<float>(m_channelCount) / static_cast<float>(m_sampleRate));
 }
 
 
@@ -229,19 +212,20 @@ Time InputSoundFile::getTimeOffset() const
     if (m_channelCount == 0 || m_sampleRate == 0)
         return Time::Zero;
 
-    return seconds(static_cast<float>(m_sampleOffset) / static_cast<float>(m_channelCount) / static_cast<float>(m_sampleRate));
+    return seconds(
+        static_cast<float>(m_sampleOffset) / static_cast<float>(m_channelCount) / static_cast<float>(m_sampleRate));
 }
 
 
 ////////////////////////////////////////////////////////////
-Uint64 InputSoundFile::getSampleOffset() const
+std::uint64_t InputSoundFile::getSampleOffset() const
 {
     return m_sampleOffset;
 }
 
 
 ////////////////////////////////////////////////////////////
-void InputSoundFile::seek(Uint64 sampleOffset)
+void InputSoundFile::seek(std::uint64_t sampleOffset)
 {
     if (m_reader && m_channelCount != 0)
     {
@@ -256,14 +240,14 @@ void InputSoundFile::seek(Uint64 sampleOffset)
 ////////////////////////////////////////////////////////////
 void InputSoundFile::seek(Time timeOffset)
 {
-    seek(static_cast<Uint64>(timeOffset.asSeconds() * static_cast<float>(m_sampleRate)) * m_channelCount);
+    seek(static_cast<std::uint64_t>(timeOffset.asSeconds() * static_cast<float>(m_sampleRate)) * m_channelCount);
 }
 
 
 ////////////////////////////////////////////////////////////
-Uint64 InputSoundFile::read(Int16* samples, Uint64 maxCount)
+std::uint64_t InputSoundFile::read(std::int16_t* samples, std::uint64_t maxCount)
 {
-    Uint64 readSamples = 0;
+    std::uint64_t readSamples = 0;
     if (m_reader && samples && maxCount)
         readSamples = m_reader->read(samples, maxCount);
     m_sampleOffset += readSamples;
@@ -282,9 +266,9 @@ void InputSoundFile::close()
 
     // Reset the sound file attributes
     m_sampleOffset = 0;
-    m_sampleCount = 0;
+    m_sampleCount  = 0;
     m_channelCount = 0;
-    m_sampleRate = 0;
+    m_sampleRate   = 0;
 }
 
 } // namespace sf

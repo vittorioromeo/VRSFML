@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Marco Antognini (antognini.marco@gmail.com),
+// Copyright (C) 2007-2023 Marco Antognini (antognini.marco@gmail.com),
 //                         Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -29,6 +29,7 @@
 #include <SFML/Config.hpp>
 
 #import <AppKit/AppKit.h>
+#include <cstdint>
 
 ////////////////////////////////////////////////////////////
 /// Extends NSImage with a convenience method to load images
@@ -47,6 +48,6 @@
 /// \return an instance of NSImage that needs to be released by the caller
 ///
 ////////////////////////////////////////////////////////////
-+(NSImage*)imageWithRawData:(const sf::Uint8*)pixels andSize:(NSSize)size;
++ (NSImage*)imageWithRawData:(const std::uint8_t*)pixels andSize:(NSSize)size;
 
 @end

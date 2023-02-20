@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,13 +22,13 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_SHAPE_HPP
-#define SFML_SHAPE_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Export.hpp>
+
 #include <SFML/Graphics/Drawable.hpp>
 #include <SFML/Graphics/Transformable.hpp>
 #include <SFML/Graphics/VertexArray.hpp>
@@ -46,7 +46,6 @@ class Texture;
 class SFML_GRAPHICS_API Shape : public Drawable, public Transformable
 {
 public:
-
     ////////////////////////////////////////////////////////////
     /// \brief Virtual destructor
     ///
@@ -250,7 +249,6 @@ public:
     FloatRect getGlobalBounds() const;
 
 protected:
-
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
@@ -268,7 +266,6 @@ protected:
     void update();
 
 private:
-
     ////////////////////////////////////////////////////////////
     /// \brief Draw the shape to a render target
     ///
@@ -276,7 +273,7 @@ private:
     /// \param states Current render states
     ///
     ////////////////////////////////////////////////////////////
-    void draw(RenderTarget& target, RenderStates states) const override;
+    void draw(RenderTarget& target, const RenderStates& states) const override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the fill vertices' color
@@ -302,26 +299,21 @@ private:
     ////////////////////////////////////////////////////////////
     void updateOutlineColors();
 
-private:
-
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    const Texture* m_texture;          //!< Texture of the shape
-    IntRect        m_textureRect;      //!< Rectangle defining the area of the source texture to display
-    Color          m_fillColor;        //!< Fill color
-    Color          m_outlineColor;     //!< Outline color
-    float          m_outlineThickness; //!< Thickness of the shape's outline
-    VertexArray    m_vertices;         //!< Vertex array containing the fill geometry
-    VertexArray    m_outlineVertices;  //!< Vertex array containing the outline geometry
-    FloatRect      m_insideBounds;     //!< Bounding rectangle of the inside (fill)
-    FloatRect      m_bounds;           //!< Bounding rectangle of the whole shape (outline + fill)
+    const Texture* m_texture{};                  //!< Texture of the shape
+    IntRect        m_textureRect;                //!< Rectangle defining the area of the source texture to display
+    Color          m_fillColor{Color::White};    //!< Fill color
+    Color          m_outlineColor{Color::White}; //!< Outline color
+    float          m_outlineThickness{};         //!< Thickness of the shape's outline
+    VertexArray    m_vertices{PrimitiveType::TriangleFan};          //!< Vertex array containing the fill geometry
+    VertexArray    m_outlineVertices{PrimitiveType::TriangleStrip}; //!< Vertex array containing the outline geometry
+    FloatRect      m_insideBounds;                                  //!< Bounding rectangle of the inside (fill)
+    FloatRect      m_bounds; //!< Bounding rectangle of the whole shape (outline + fill)
 };
 
 } // namespace sf
-
-
-#endif // SFML_SHAPE_HPP
 
 
 ////////////////////////////////////////////////////////////

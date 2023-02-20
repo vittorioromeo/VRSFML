@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -27,6 +27,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/VideoModeImpl.hpp>
+
 #include <algorithm>
 #include <functional>
 
@@ -34,22 +35,14 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-VideoMode::VideoMode() :
-width       (0),
-height      (0),
-bitsPerPixel(0)
-{
-
-}
+VideoMode::VideoMode() = default;
 
 
 ////////////////////////////////////////////////////////////
-VideoMode::VideoMode(unsigned int modeWidth, unsigned int modeHeight, unsigned int modeBitsPerPixel) :
-width       (modeWidth),
-height      (modeHeight),
+VideoMode::VideoMode(const Vector2u& modeSize, unsigned int modeBitsPerPixel) :
+size(modeSize),
 bitsPerPixel(modeBitsPerPixel)
 {
-
 }
 
 
@@ -64,14 +57,12 @@ VideoMode VideoMode::getDesktopMode()
 ////////////////////////////////////////////////////////////
 const std::vector<VideoMode>& VideoMode::getFullscreenModes()
 {
-    static std::vector<VideoMode> modes;
-
-    // Populate the array on first call
-    if (modes.empty())
+    static const auto modes = []
     {
-        modes = priv::VideoModeImpl::getFullscreenModes();
-        std::sort(modes.begin(), modes.end(), std::greater<VideoMode>());
-    }
+        std::vector<VideoMode> result = priv::VideoModeImpl::getFullscreenModes();
+        std::sort(result.begin(), result.end(), std::greater<>());
+        return result;
+    }();
 
     return modes;
 }
@@ -87,33 +78,31 @@ bool VideoMode::isValid() const
 
 
 ////////////////////////////////////////////////////////////
-bool operator ==(const VideoMode& left, const VideoMode& right)
+bool operator==(const VideoMode& left, const VideoMode& right)
 {
-    return (left.width        == right.width)        &&
-           (left.height       == right.height)       &&
-           (left.bitsPerPixel == right.bitsPerPixel);
+    return (left.size == right.size) && (left.bitsPerPixel == right.bitsPerPixel);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool operator !=(const VideoMode& left, const VideoMode& right)
+bool operator!=(const VideoMode& left, const VideoMode& right)
 {
     return !(left == right);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool operator <(const VideoMode& left, const VideoMode& right)
+bool operator<(const VideoMode& left, const VideoMode& right)
 {
     if (left.bitsPerPixel == right.bitsPerPixel)
     {
-        if (left.width == right.width)
+        if (left.size.x == right.size.x)
         {
-            return left.height < right.height;
+            return left.size.y < right.size.y;
         }
         else
         {
-            return left.width < right.width;
+            return left.size.x < right.size.x;
         }
     }
     else
@@ -124,21 +113,21 @@ bool operator <(const VideoMode& left, const VideoMode& right)
 
 
 ////////////////////////////////////////////////////////////
-bool operator >(const VideoMode& left, const VideoMode& right)
+bool operator>(const VideoMode& left, const VideoMode& right)
 {
     return right < left;
 }
 
 
 ////////////////////////////////////////////////////////////
-bool operator <=(const VideoMode& left, const VideoMode& right)
+bool operator<=(const VideoMode& left, const VideoMode& right)
 {
     return !(right < left);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool operator >=(const VideoMode& left, const VideoMode& right)
+bool operator>=(const VideoMode& left, const VideoMode& right)
 {
     return !(left < right);
 }
