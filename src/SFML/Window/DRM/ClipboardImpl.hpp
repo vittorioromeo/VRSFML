@@ -27,9 +27,8 @@
 namespace sf
 {
 class String;
-}
 
-namespace sf::priv
+namespace priv
 {
 ////////////////////////////////////////////////////////////
 /// \brief Give access to the system clipboard
@@ -63,4 +62,5 @@ public:
     static void setString(const String& text);
 };
 
-} // namespace sf::priv
+} // namespace priv
+} // namespace sf
