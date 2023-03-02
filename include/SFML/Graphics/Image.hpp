@@ -156,7 +156,7 @@ public:
     /// \see create, loadFromFile, loadFromMemory, saveToFile
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool saveToMemory(std::vector<std::uint8_t>& output, const std::string_view& format) const;
+    [[nodiscard]] bool saveToMemory(std::vector<std::uint8_t>& output, std::string_view format) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size (width and height) of the image

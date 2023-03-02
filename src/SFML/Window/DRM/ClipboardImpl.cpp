@@ -25,9 +25,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/DRM/ClipboardImpl.hpp>
-
 #include <SFML/System/String.hpp>
+#include <SFML/Window/DRM/ClipboardImpl.hpp>
 
 namespace sf::priv
 {
