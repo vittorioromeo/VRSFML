@@ -238,14 +238,14 @@ struct Shader::UnsafeUniformBinder
     /// \brief Constructor: set up state before uniform is set
     ///
     ////////////////////////////////////////////////////////////
-    UnsafeUniformBinder(Shader& shader, const std::string& name) : currentProgram(castToGlHandle(shader.m_shaderProgram))
+    UnsafeUniformBinder(Shader& shader, const std::string& name) : currentProgram(static_cast<int>(shader.m_shaderProgram))
     {
         if (currentProgram)
         {
             // Enable program object
-            glCheck(savedProgram = GLEXT_glGetHandle(GLEXT_GL_PROGRAM_OBJECT));
+            glCheck(glGetIntegerv(GL_CURRENT_PROGRAM, &savedProgram));
             if (currentProgram != savedProgram)
-                glCheck(GLEXT_glUseProgramObject(currentProgram));
+                glCheck(glUseProgram(currentProgram));
 
             // Store uniform location for further use outside constructor
             location = shader.getUniformLocation(name);
@@ -275,9 +275,9 @@ struct Shader::UnsafeUniformBinder
     ////////////////////////////////////////////////////////////
     UnsafeUniformBinder& operator=(const UnsafeUniformBinder&) = delete;
 
-    GLEXT_GLhandle       savedProgram{}; //!< Handle to the previously active program object
-    GLEXT_GLhandle       currentProgram; //!< Handle to the program object of the modified sf::Shader instance
-    GLint                location{-1};   //!< Uniform location, used by the surrounding sf::Shader code
+    GLint savedProgram{}; //!< Handle to the previously active program object
+    GLint currentProgram; //!< Handle to the program object of the modified sf::Shader instance
+    GLint location{-1};   //!< Uniform location, used by the surrounding sf::Shader code
 };
 
 
