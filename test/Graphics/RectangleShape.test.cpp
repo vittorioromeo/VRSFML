@@ -1,6 +1,6 @@
 #include <SFML/Graphics/RectangleShape.hpp>
 
-#include <doctest/doctest.h>
+#include <catch2/catch_test_macros.hpp>
 
 #include <SystemUtil.hpp>
 #include <type_traits>
@@ -12,7 +12,7 @@ static_assert(std::is_nothrow_move_assignable_v<sf::RectangleShape>);
 
 TEST_CASE("[Graphics] sf::RectangleShape")
 {
-    SUBCASE("Default constructor")
+    SECTION("Default constructor")
     {
         const sf::RectangleShape rectangle;
         CHECK(rectangle.getSize() == sf::Vector2f(0, 0));
@@ -23,7 +23,7 @@ TEST_CASE("[Graphics] sf::RectangleShape")
         CHECK(rectangle.getPoint(3) == sf::Vector2f(0, 0));
     }
 
-    SUBCASE("Size constructor")
+    SECTION("Size constructor")
     {
         const sf::RectangleShape rectangle({9, 8});
         CHECK(rectangle.getSize() == sf::Vector2f(9, 8));
@@ -34,7 +34,7 @@ TEST_CASE("[Graphics] sf::RectangleShape")
         CHECK(rectangle.getPoint(3) == sf::Vector2f(0, 8));
     }
 
-    SUBCASE("Set size")
+    SECTION("Set size")
     {
         sf::RectangleShape rectangle({7, 6});
         rectangle.setSize({5, 4});

@@ -1,6 +1,6 @@
 #include <SFML/System/Time.hpp>
 
-#include <doctest/doctest.h>
+#include <catch2/catch_test_macros.hpp>
 
 #include <SystemUtil.hpp>
 #include <type_traits>
@@ -12,24 +12,11 @@ static_assert(std::is_nothrow_move_assignable_v<sf::Time>);
 
 using namespace std::chrono_literals;
 
-// Use StringMaker to avoid opening namespace std
-namespace doctest
-{
-template <typename Rep, typename Period>
-struct StringMaker<std::chrono::duration<Rep, Period>>
-{
-    static String convert(const std::chrono::duration<Rep, Period>& duration)
-    {
-        return toString(std::chrono::microseconds(duration).count()) + "us";
-    }
-};
-} // namespace doctest
-
 TEST_CASE("[System] sf::Time")
 {
-    SUBCASE("Construction")
+    SECTION("Construction")
     {
-        SUBCASE("Default constructor")
+        SECTION("Default constructor")
         {
             const sf::Time time;
             CHECK(time.asSeconds() == 0.0f);
@@ -37,7 +24,7 @@ TEST_CASE("[System] sf::Time")
             CHECK(time.asMicroseconds() == 0);
         }
 
-        SUBCASE("Construct from seconds")
+        SECTION("Construct from seconds")
         {
             const sf::Time time = sf::seconds(123);
             CHECK(time.asSeconds() == 123.0f);
@@ -56,7 +43,7 @@ TEST_CASE("[System] sf::Time")
             CHECK(sf::seconds(-1'000.0f).asMicroseconds() == -1'000'000'000);
         }
 
-        SUBCASE("Construct from milliseconds")
+        SECTION("Construct from milliseconds")
         {
             const sf::Time time = sf::milliseconds(42);
             CHECK(time.asSeconds() == 0.042f);
@@ -64,7 +51,7 @@ TEST_CASE("[System] sf::Time")
             CHECK(time.asMicroseconds() == 42'000);
         }
 
-        SUBCASE("Construct from microseconds")
+        SECTION("Construct from microseconds")
         {
             const sf::Time time = sf::microseconds(987654);
             CHECK(time.asSeconds() == 0.987654f);
@@ -72,7 +59,7 @@ TEST_CASE("[System] sf::Time")
             CHECK(time.asMicroseconds() == 987'654);
         }
 
-        SUBCASE("Convert from chrono duration")
+        SECTION("Convert from chrono duration")
         {
             {
                 const sf::Time time = 3min;
@@ -101,7 +88,7 @@ TEST_CASE("[System] sf::Time")
         }
     }
 
-    SUBCASE("toDuration()")
+    SECTION("toDuration()")
     {
         CHECK(sf::seconds(0).toDuration() == 0s);
         CHECK(sf::milliseconds(0).toDuration() == 0ms);
@@ -128,7 +115,7 @@ TEST_CASE("[System] sf::Time")
         CHECK(sf::Time(1us).toDuration() == 1us);
     }
 
-    SUBCASE("Implicit conversion to duration")
+    SECTION("Implicit conversion to duration")
     {
         const auto toDuration = [](const std::chrono::microseconds& duration) { return duration; };
         CHECK(toDuration(sf::seconds(0)) == 0s);
@@ -156,16 +143,16 @@ TEST_CASE("[System] sf::Time")
         CHECK(toDuration(sf::Time(1us)) == 1us);
     }
 
-    SUBCASE("Zero time")
+    SECTION("Zero time")
     {
         CHECK(sf::Time::Zero.asSeconds() == 0.0f);
         CHECK(sf::Time::Zero.asMilliseconds() == 0);
         CHECK(sf::Time::Zero.asMicroseconds() == 0);
     }
 
-    SUBCASE("Operators")
+    SECTION("Operators")
     {
-        SUBCASE("operator==")
+        SECTION("operator==")
         {
             CHECK(sf::Time() == sf::Time());
             CHECK(sf::seconds(1) == sf::seconds(1));
@@ -174,71 +161,71 @@ TEST_CASE("[System] sf::Time")
             CHECK(sf::seconds(0.5f) == sf::microseconds(500'000));
         }
 
-        SUBCASE("operator!=")
+        SECTION("operator!=")
         {
             CHECK(sf::seconds(10.12f) != sf::milliseconds(10'121));
             CHECK(sf::microseconds(123'456) != sf::milliseconds(123));
         }
 
-        SUBCASE("operator<")
+        SECTION("operator<")
         {
             CHECK(sf::seconds(54.999f) < sf::seconds(55));
             CHECK(sf::microseconds(10) < sf::milliseconds(10));
             CHECK(sf::milliseconds(1'000) < sf::microseconds(1'000'001));
         }
 
-        SUBCASE("operator>")
+        SECTION("operator>")
         {
             CHECK(sf::seconds(55.001f) > sf::seconds(55));
             CHECK(sf::microseconds(1) > sf::seconds(0.0000001f));
             CHECK(sf::microseconds(1'000'001) > sf::milliseconds(1'000));
         }
 
-        SUBCASE("operator<=")
+        SECTION("operator<=")
         {
             CHECK(sf::milliseconds(100) <= sf::milliseconds(100));
             CHECK(sf::seconds(0.0012f) <= sf::microseconds(1'201));
         }
 
-        SUBCASE("operator>=")
+        SECTION("operator>=")
         {
             CHECK(sf::milliseconds(100) >= sf::milliseconds(-100));
             CHECK(sf::microseconds(1'201) >= sf::seconds(0.0012f));
         }
 
-        SUBCASE("operator-")
+        SECTION("operator-")
         {
             CHECK(sf::seconds(-1) == -sf::seconds(1));
             CHECK(sf::microseconds(1'234) == -sf::microseconds(-1'234));
         }
 
-        SUBCASE("operator+")
+        SECTION("operator+")
         {
             CHECK(sf::seconds(1) + sf::seconds(1) == sf::seconds(2));
             CHECK(sf::milliseconds(400) + sf::microseconds(400) == sf::microseconds(400400));
         }
 
-        SUBCASE("operator+=")
+        SECTION("operator+=")
         {
             sf::Time time = sf::seconds(1.5f);
             time += sf::seconds(1);
             CHECK(time == sf::seconds(2.5f));
         }
 
-        SUBCASE("operator-")
+        SECTION("operator-")
         {
             CHECK(sf::seconds(1) - sf::seconds(1) == sf::seconds(0));
             CHECK(sf::milliseconds(400) - sf::microseconds(400) == sf::microseconds(399600));
         }
 
-        SUBCASE("operator-=")
+        SECTION("operator-=")
         {
             sf::Time time = sf::seconds(1.5f);
             time -= sf::seconds(10);
             CHECK(time == sf::seconds(-8.5f));
         }
 
-        SUBCASE("operator*")
+        SECTION("operator*")
         {
             CHECK(sf::seconds(1) * 2.0f == sf::seconds(2));
             CHECK(sf::seconds(12) * 0.5f == sf::seconds(6));
@@ -250,7 +237,7 @@ TEST_CASE("[System] sf::Time")
             CHECK(static_cast<std::int64_t>(2) * sf::seconds(42) == sf::seconds(84));
         }
 
-        SUBCASE("operator*=")
+        SECTION("operator*=")
         {
             sf::Time time = sf::milliseconds(1'000);
             time *= static_cast<std::int64_t>(10);
@@ -259,7 +246,7 @@ TEST_CASE("[System] sf::Time")
             CHECK(time.asMilliseconds() == 1'000);
         }
 
-        SUBCASE("operator/")
+        SECTION("operator/")
         {
             CHECK(sf::seconds(1) / 2.0f == sf::seconds(0.5f));
             CHECK(sf::seconds(12) / 0.5f == sf::seconds(24));
@@ -269,7 +256,7 @@ TEST_CASE("[System] sf::Time")
             CHECK(sf::milliseconds(10) / sf::microseconds(1) == Approx(10'000.f));
         }
 
-        SUBCASE("operator/=")
+        SECTION("operator/=")
         {
             sf::Time time = sf::milliseconds(1'000);
             time /= static_cast<std::int64_t>(2);
@@ -278,13 +265,13 @@ TEST_CASE("[System] sf::Time")
             CHECK(time.asMilliseconds() == 1'000);
         }
 
-        SUBCASE("operator%")
+        SECTION("operator%")
         {
             CHECK(sf::seconds(10) % sf::seconds(3) == sf::seconds(1));
             CHECK(sf::milliseconds(100) % sf::microseconds(10) == sf::seconds(0));
         }
 
-        SUBCASE("operator%=")
+        SECTION("operator%=")
         {
             sf::Time time = sf::milliseconds(100);
             time %= sf::milliseconds(99);
@@ -292,7 +279,7 @@ TEST_CASE("[System] sf::Time")
         }
     }
 
-    SUBCASE("Constexpr support")
+    SECTION("Constexpr support")
     {
         constexpr auto result = []
         {

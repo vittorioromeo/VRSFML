@@ -102,7 +102,7 @@ IncludeCategories:
   - Priority: 3
     Regex: '^<SFML\/'
   - Priority: 4
-    Regex: '^<(glad|gl|X11|jni|android|stb_|GLES2|vorbis|doctest)'
+    Regex: '^<(glad|gl|X11|jni|android|stb_|GLES2|vorbis|catch2)'
   - Priority: 5
     Regex: '^<(.+)>$'
 SortIncludes: true

@@ -1,17 +1,19 @@
 include(FetchContent)
 
-set(DOCTEST_NO_INSTALL ON)
-FetchContent_Declare(doctest
-    GIT_REPOSITORY https://github.com/doctest/doctest.git
-    GIT_TAG v2.4.9
-)
-FetchContent_MakeAvailable(doctest)
-include(${doctest_SOURCE_DIR}/scripts/cmake/doctest.cmake)
+FetchContent_Declare(Catch2
+    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+    GIT_TAG v3.3.2)
+FetchContent_MakeAvailable(Catch2)
+include(Catch)
 
-# Ensure that doctest sources and headers are not analyzed by any tools
-set_target_properties(doctest_with_main PROPERTIES COMPILE_OPTIONS "" EXPORT_COMPILE_COMMANDS OFF)
-get_target_property(DOCTEST_INCLUDE_DIRS doctest INTERFACE_INCLUDE_DIRECTORIES)
-target_include_directories(doctest SYSTEM INTERFACE ${DOCTEST_INCLUDE_DIRS})
+# Build Catch2 in C++17 mode to enable C++17 features
+target_compile_features(Catch2 PRIVATE cxx_std_17)
+
+# Ensure that Catch2 sources and headers are not analyzed by any tools
+set_target_properties(Catch2 PROPERTIES COMPILE_OPTIONS "" EXPORT_COMPILE_COMMANDS OFF)
+set_target_properties(Catch2WithMain PROPERTIES EXPORT_COMPILE_COMMANDS OFF)
+get_target_property(CATCH2_INCLUDE_DIRS Catch2 INTERFACE_INCLUDE_DIRECTORIES)
+target_include_directories(Catch2 SYSTEM INTERFACE ${CATCH2_INCLUDE_DIRS})
 
 add_subdirectory(install)
 set_target_warnings(test-sfml-install)
@@ -25,9 +27,20 @@ add_library(sfml-test-main STATIC
     TestUtilities/GraphicsUtil.cpp
 )
 target_include_directories(sfml-test-main PUBLIC TestUtilities)
-target_compile_definitions(sfml-test-main PUBLIC DOCTEST_CONFIG_REQUIRE_STRINGIFICATION_FOR_ALL_USED_TYPES)
-target_link_libraries(sfml-test-main PUBLIC SFML::System doctest::doctest_with_main)
+target_link_libraries(sfml-test-main PUBLIC SFML::System Catch2::Catch2WithMain)
 set_target_warnings(sfml-test-main)
+
+# FIXME Remove this once the Buildbot supports handling display tests on Linux platforms
+if(SFML_OS_WINDOWS OR SFML_OS_MACOSX)
+    set(SFML_RUN_DISPLAY_TESTS_DEFAULT ON)
+else()
+    set(SFML_RUN_DISPLAY_TESTS_DEFAULT OFF)
+endif()
+sfml_set_option(SFML_RUN_DISPLAY_TESTS ${SFML_RUN_DISPLAY_TESTS_DEFAULT} BOOL "TRUE to run tests that require a display, FALSE to ignore it")
+
+if(SFML_RUN_DISPLAY_TESTS)
+    target_compile_definitions(sfml-test-main PRIVATE SFML_RUN_DISPLAY_TESTS)
+endif()
 
 set(SYSTEM_SRC
     System/Angle.test.cpp
@@ -49,14 +62,6 @@ target_compile_definitions(test-sfml-system PRIVATE
     EXPECTED_SFML_VERSION_IS_RELEASE=$<IF:$<BOOL:${VERSION_IS_RELEASE}>,true,false>
 )
 
-# FIXME Remove this once the Buildbot supports handling display tests on Linux platforms
-if(SFML_OS_WINDOWS OR SFML_OS_MACOSX)
-    set(SFML_RUN_DISPLAY_TESTS_DEFAULT ON)
-else()
-    set(SFML_RUN_DISPLAY_TESTS_DEFAULT OFF)
-endif()
-sfml_set_option(SFML_RUN_DISPLAY_TESTS ${SFML_RUN_DISPLAY_TESTS_DEFAULT} BOOL "TRUE to run tests that require a display, FALSE to ignore it")
-
 set(WINDOW_SRC
     Window/Context.test.cpp
     Window/ContextSettings.test.cpp
@@ -67,9 +72,6 @@ set(WINDOW_SRC
     Window/WindowBase.test.cpp
 )
 sfml_add_test(test-sfml-window "${WINDOW_SRC}" SFML::Window)
-if(SFML_RUN_DISPLAY_TESTS)
-    target_compile_definitions(test-sfml-window PRIVATE SFML_RUN_DISPLAY_TESTS)
-endif()
 
 set(GRAPHICS_SRC
     Graphics/BlendMode.test.cpp
