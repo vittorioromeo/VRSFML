@@ -1,6 +1,6 @@
 #include <SFML/Graphics/Vertex.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <doctest/doctest.h>
 
 #include <GraphicsUtil.hpp>
 #include <type_traits>
@@ -12,9 +12,9 @@ static_assert(std::is_nothrow_move_assignable_v<sf::Vertex>);
 
 TEST_CASE("[Graphics] sf::Vertex")
 {
-    SECTION("Construction")
+    SUBCASE("Construction")
     {
-        SECTION("Default constructor")
+        SUBCASE("Default constructor")
         {
             const sf::Vertex vertex;
             CHECK(vertex.position == sf::Vector2f(0.0f, 0.0f));
@@ -22,7 +22,7 @@ TEST_CASE("[Graphics] sf::Vertex")
             CHECK(vertex.texCoords == sf::Vector2f(0.0f, 0.0f));
         }
 
-        SECTION("Position constructor")
+        SUBCASE("Position constructor")
         {
             const sf::Vertex vertex({1, 2});
             CHECK(vertex.position == sf::Vector2f(1.0f, 2.0f));
@@ -30,7 +30,7 @@ TEST_CASE("[Graphics] sf::Vertex")
             CHECK(vertex.texCoords == sf::Vector2f(0.0f, 0.0f));
         }
 
-        SECTION("Position and color constructor")
+        SUBCASE("Position and color constructor")
         {
             const sf::Vertex vertex({1, 2}, {3, 4, 5, 6});
             CHECK(vertex.position == sf::Vector2f(1.0f, 2.0f));
@@ -38,7 +38,7 @@ TEST_CASE("[Graphics] sf::Vertex")
             CHECK(vertex.texCoords == sf::Vector2f(0.0f, 0.0f));
         }
 
-        SECTION("Position and coords constructor")
+        SUBCASE("Position and coords constructor")
         {
             const sf::Vertex vertex({1, 2}, {3, 4});
             CHECK(vertex.position == sf::Vector2f(1.0f, 2.0f));
@@ -46,7 +46,7 @@ TEST_CASE("[Graphics] sf::Vertex")
             CHECK(vertex.texCoords == sf::Vector2f(3.0f, 4.0f));
         }
 
-        SECTION("Position, color, and coords constructor")
+        SUBCASE("Position, color, and coords constructor")
         {
             const sf::Vertex vertex({1, 2}, {3, 4, 5, 6}, {7, 8});
             CHECK(vertex.position == sf::Vector2f(1.0f, 2.0f));
@@ -55,7 +55,7 @@ TEST_CASE("[Graphics] sf::Vertex")
         }
     }
 
-    SECTION("Constexpr support")
+    SUBCASE("Constexpr support")
     {
         constexpr sf::Vertex vertex({1, 2}, {3, 4, 5, 6}, {7, 8});
         static_assert(vertex.position == sf::Vector2f(1.0f, 2.0f));

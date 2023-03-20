@@ -1,13 +1,13 @@
 // Header for SFML unit tests.
 //
 // For a new system module test case, include this header.
-// This ensures that string conversions are visible and can be used by Catch2 for debug output.
+// This ensures that string conversions are visible and can be used by doctest for debug output.
 
 #pragma once
 
 #include <iosfwd>
 
-// String conversions for Catch2
+// String conversions for doctest framework
 namespace sf
 {
 class Angle;

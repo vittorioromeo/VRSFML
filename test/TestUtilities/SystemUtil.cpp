@@ -6,8 +6,7 @@
 #include <SFML/System/Vector2.hpp>
 #include <SFML/System/Vector3.hpp>
 
-#include <catch2/catch_approx.hpp>
-#include <catch2/catch_test_macros.hpp>
+#include <doctest/doctest.h>
 
 #include <iomanip>
 #include <limits>
@@ -60,7 +59,7 @@ template std::ostream& operator<<(std::ostream&, const Vector3<float>&);
 
 bool operator==(const float& lhs, const Approx<float>& rhs)
 {
-    return static_cast<double>(lhs) == Catch::Approx(static_cast<double>(rhs.value)).margin(1e-5);
+    return static_cast<double>(lhs) == doctest::Approx(static_cast<double>(rhs.value));
 }
 
 bool operator==(const sf::Vector2f& lhs, const Approx<sf::Vector2f>& rhs)

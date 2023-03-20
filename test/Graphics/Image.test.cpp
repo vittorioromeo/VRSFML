@@ -1,6 +1,6 @@
 #include <SFML/Graphics/Image.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <doctest/doctest.h>
 
 #include <GraphicsUtil.hpp>
 #include <array>
@@ -13,16 +13,16 @@ static_assert(std::is_nothrow_move_assignable_v<sf::Image>);
 
 TEST_CASE("[Graphics] sf::Image")
 {
-    SECTION("Default constructor")
+    SUBCASE("Default constructor")
     {
         const sf::Image image;
         CHECK(image.getSize() == sf::Vector2u());
         CHECK(image.getPixelsPtr() == nullptr);
     }
 
-    SECTION("Create")
+    SUBCASE("Create")
     {
-        SECTION("create(Vector2)")
+        SUBCASE("create(Vector2)")
         {
             sf::Image image;
             image.create(sf::Vector2u(10, 10));
@@ -38,7 +38,7 @@ TEST_CASE("[Graphics] sf::Image")
             }
         }
 
-        SECTION("create(Vector2, Color)")
+        SUBCASE("create(Vector2, Color)")
         {
             sf::Image image;
             image.create(sf::Vector2u(10, 10), sf::Color::Red);
@@ -55,7 +55,7 @@ TEST_CASE("[Graphics] sf::Image")
             }
         }
 
-        SECTION("create(Vector2, std::uint8_t*)")
+        SUBCASE("create(Vector2, std::uint8_t*)")
         {
             // 10 x 10, with 4 colour channels array
             std::array<std::uint8_t, 400> pixels;
@@ -83,7 +83,7 @@ TEST_CASE("[Graphics] sf::Image")
         }
     }
 
-    SECTION("Set/get pixel")
+    SUBCASE("Set/get pixel")
     {
         sf::Image image;
 
@@ -94,9 +94,9 @@ TEST_CASE("[Graphics] sf::Image")
         CHECK(image.getPixel(sf::Vector2u(2, 2)) == sf::Color::Blue);
     }
 
-    SECTION("Copy from Image")
+    SUBCASE("Copy from Image")
     {
-        SECTION("Copy (Image, Vector2u)")
+        SUBCASE("Copy (Image, Vector2u)")
         {
             sf::Image image1;
             image1.create(sf::Vector2u(10, 10), sf::Color::Blue);
@@ -114,7 +114,7 @@ TEST_CASE("[Graphics] sf::Image")
             }
         }
 
-        SECTION("Copy (Image, Vector2u, IntRect)")
+        SUBCASE("Copy (Image, Vector2u, IntRect)")
         {
             sf::Image image1;
             image1.create(sf::Vector2u(5, 5), sf::Color::Blue);
@@ -135,7 +135,7 @@ TEST_CASE("[Graphics] sf::Image")
             }
         }
 
-        SECTION("Copy (Image, Vector2u, IntRect, bool)")
+        SUBCASE("Copy (Image, Vector2u, IntRect, bool)")
         {
             const sf::Color dest(255, 0, 0, 255);
             const sf::Color source(5, 255, 78, 232);
@@ -166,7 +166,7 @@ TEST_CASE("[Graphics] sf::Image")
             }
         }
 
-        SECTION("Copy (Empty image)")
+        SUBCASE("Copy (Empty image)")
         {
             sf::Image image1;
             sf::Image image2;
@@ -183,7 +183,7 @@ TEST_CASE("[Graphics] sf::Image")
             }
         }
 
-        SECTION("Copy (Out of bounds sourceRect)")
+        SUBCASE("Copy (Out of bounds sourceRect)")
         {
             sf::Image image1;
             image1.create(sf::Vector2u(5, 5), sf::Color::Blue);
@@ -203,9 +203,9 @@ TEST_CASE("[Graphics] sf::Image")
         }
     }
 
-    SECTION("Create mask from color")
+    SUBCASE("Create mask from color")
     {
-        SECTION("createMaskFromColor(Color)")
+        SUBCASE("createMaskFromColor(Color)")
         {
             sf::Image image;
             image.create(sf::Vector2u(10, 10), sf::Color::Blue);
@@ -220,7 +220,7 @@ TEST_CASE("[Graphics] sf::Image")
             }
         }
 
-        SECTION("createMaskFromColor(Color, std::uint8_t)")
+        SUBCASE("createMaskFromColor(Color, std::uint8_t)")
         {
             sf::Image image;
             image.create(sf::Vector2u(10, 10), sf::Color::Blue);
@@ -236,7 +236,7 @@ TEST_CASE("[Graphics] sf::Image")
         }
     }
 
-    SECTION("Flip horizontally")
+    SUBCASE("Flip horizontally")
     {
         sf::Image image;
         image.create(sf::Vector2u(10, 10), sf::Color::Red);
@@ -246,7 +246,7 @@ TEST_CASE("[Graphics] sf::Image")
         CHECK(image.getPixel(sf::Vector2u(9, 0)) == sf::Color::Green);
     }
 
-    SECTION("Flip vertically")
+    SUBCASE("Flip vertically")
     {
         sf::Image image;
         image.create(sf::Vector2u(10, 10), sf::Color::Red);
