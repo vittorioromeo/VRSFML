@@ -1,6 +1,6 @@
 #include <SFML/System/Angle.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <doctest/doctest.h>
 
 #include <SystemUtil.hpp>
 #include <type_traits>
@@ -12,16 +12,16 @@ static_assert(std::is_nothrow_move_assignable_v<sf::Angle>);
 
 TEST_CASE("[System] sf::Angle")
 {
-    SECTION("Construction")
+    SUBCASE("Construction")
     {
-        SECTION("Default constructor")
+        SUBCASE("Default constructor")
         {
             const sf::Angle angle;
             CHECK(angle.asDegrees() == 0.f);
             CHECK(angle.asRadians() == 0.f);
         }
 
-        SECTION("wrapSigned()")
+        SUBCASE("wrapSigned()")
         {
             CHECK(sf::Angle::Zero.wrapSigned() == sf::Angle::Zero);
             CHECK(sf::degrees(0).wrapSigned() == sf::degrees(0));
@@ -37,7 +37,7 @@ TEST_CASE("[System] sf::Angle")
             CHECK(sf::degrees(-720).wrapSigned() == sf::degrees(0));
         }
 
-        SECTION("wrapUnsigned()")
+        SUBCASE("wrapUnsigned()")
         {
             CHECK(sf::Angle::Zero.wrapUnsigned() == sf::Angle::Zero);
             CHECK(sf::degrees(0).wrapUnsigned() == sf::degrees(0));
@@ -53,7 +53,7 @@ TEST_CASE("[System] sf::Angle")
             CHECK(sf::degrees(-720).wrapUnsigned() == sf::degrees(0));
         }
 
-        SECTION("degrees()")
+        SUBCASE("degrees()")
         {
             const sf::Angle angle = sf::degrees(15);
             CHECK(angle == sf::degrees(15));
@@ -68,7 +68,7 @@ TEST_CASE("[System] sf::Angle")
             CHECK(bigNegativeAngle.asRadians() == Approx(-75.415677f));
         }
 
-        SECTION("radians()")
+        SUBCASE("radians()")
         {
             const sf::Angle angle = sf::radians(1);
             CHECK(angle.asDegrees() == Approx(57.2957795f));
@@ -84,15 +84,15 @@ TEST_CASE("[System] sf::Angle")
         }
     }
 
-    SECTION("Constants")
+    SUBCASE("Constants")
     {
         CHECK(sf::Angle::Zero.asDegrees() == 0.f);
         CHECK(sf::Angle::Zero.asRadians() == 0.f);
     }
 
-    SECTION("Operators")
+    SUBCASE("Operators")
     {
-        SECTION("operator==")
+        SUBCASE("operator==")
         {
             CHECK(sf::Angle() == sf::Angle());
             CHECK(sf::Angle() == sf::Angle::Zero);
@@ -105,14 +105,14 @@ TEST_CASE("[System] sf::Angle")
             CHECK(sf::degrees(720) == sf::degrees(720));
         }
 
-        SECTION("operator!=")
+        SUBCASE("operator!=")
         {
             CHECK(sf::Angle() != sf::radians(2));
             CHECK(sf::degrees(1) != sf::radians(1));
             CHECK(sf::radians(0) != sf::radians(0.1f));
         }
 
-        SECTION("operator<")
+        SUBCASE("operator<")
         {
             CHECK(sf::radians(0) < sf::degrees(0.1f));
             CHECK(sf::degrees(0) < sf::radians(0.1f));
@@ -120,7 +120,7 @@ TEST_CASE("[System] sf::Angle")
             CHECK(sf::degrees(-0.1f) < sf::degrees(0));
         }
 
-        SECTION("operator>")
+        SUBCASE("operator>")
         {
             CHECK(sf::radians(0.1f) > sf::degrees(0));
             CHECK(sf::degrees(0.1f) > sf::radians(0));
@@ -128,7 +128,7 @@ TEST_CASE("[System] sf::Angle")
             CHECK(sf::degrees(0) > sf::degrees(-0.1f));
         }
 
-        SECTION("operator<=")
+        SUBCASE("operator<=")
         {
             CHECK(sf::radians(0) <= sf::degrees(0.1f));
             CHECK(sf::degrees(0) <= sf::radians(0.1f));
@@ -146,7 +146,7 @@ TEST_CASE("[System] sf::Angle")
             CHECK(sf::degrees(720) <= sf::degrees(720));
         }
 
-        SECTION("operator>=")
+        SUBCASE("operator>=")
         {
             CHECK(sf::radians(0.1f) >= sf::degrees(0));
             CHECK(sf::degrees(0.1f) >= sf::radians(0));
@@ -164,7 +164,7 @@ TEST_CASE("[System] sf::Angle")
             CHECK(sf::degrees(720) >= sf::degrees(720));
         }
 
-        SECTION("Unary operator-")
+        SUBCASE("Unary operator-")
         {
             CHECK(-sf::Angle() == sf::Angle());
             CHECK(-sf::radians(-1) == sf::radians(1));
@@ -172,7 +172,7 @@ TEST_CASE("[System] sf::Angle")
             CHECK(-sf::radians(1) == sf::radians(-1));
         }
 
-        SECTION("operator+")
+        SUBCASE("operator+")
         {
             CHECK(sf::Angle() + sf::Angle() == sf::Angle());
             CHECK(sf::Angle::Zero + sf::radians(0.5f) == sf::radians(0.5f));
@@ -181,7 +181,7 @@ TEST_CASE("[System] sf::Angle")
             CHECK(sf::degrees(360) + sf::degrees(360) == sf::degrees(720));
         }
 
-        SECTION("operator+=")
+        SUBCASE("operator+=")
         {
             sf::Angle angle = sf::degrees(-15);
             angle += sf::degrees(15);
@@ -190,7 +190,7 @@ TEST_CASE("[System] sf::Angle")
             CHECK(angle == sf::radians(10));
         }
 
-        SECTION("operator-")
+        SUBCASE("operator-")
         {
             CHECK(sf::Angle() - sf::Angle() == sf::Angle());
             CHECK(sf::radians(1) - sf::radians(0.5f) == sf::radians(0.5f));
@@ -198,7 +198,7 @@ TEST_CASE("[System] sf::Angle")
             CHECK(sf::degrees(900) - sf::degrees(1) == sf::degrees(899));
         }
 
-        SECTION("operator-=")
+        SUBCASE("operator-=")
         {
             sf::Angle angle = sf::degrees(15);
             angle -= sf::degrees(15);
@@ -207,7 +207,7 @@ TEST_CASE("[System] sf::Angle")
             CHECK(angle == sf::radians(-10));
         }
 
-        SECTION("operator*")
+        SUBCASE("operator*")
         {
             CHECK(sf::radians(0) * 10 == sf::Angle::Zero);
             CHECK(sf::degrees(10) * 2.5f == sf::degrees(25));
@@ -218,14 +218,14 @@ TEST_CASE("[System] sf::Angle")
             CHECK(10.0f * sf::degrees(100) == sf::degrees(1000));
         }
 
-        SECTION("operator*=")
+        SUBCASE("operator*=")
         {
             sf::Angle angle = sf::degrees(1);
             angle *= 10;
             CHECK(angle == sf::degrees(10));
         }
 
-        SECTION("operator/")
+        SUBCASE("operator/")
         {
             CHECK(sf::Angle::Zero / 10 == sf::Angle::Zero);
             CHECK(sf::degrees(10) / 2.5f == sf::degrees(4));
@@ -236,14 +236,14 @@ TEST_CASE("[System] sf::Angle")
             CHECK(sf::radians(10) / sf::radians(2) == Approx(5.f));
         }
 
-        SECTION("operator/=")
+        SUBCASE("operator/=")
         {
             sf::Angle angle = sf::degrees(60);
             angle /= 5;
             CHECK(angle == sf::degrees(12));
         }
 
-        SECTION("operator%")
+        SUBCASE("operator%")
         {
             CHECK(sf::Angle::Zero % sf::radians(0.5f) == sf::Angle::Zero);
             CHECK(sf::radians(10) % sf::radians(1) == sf::radians(0));
@@ -253,14 +253,14 @@ TEST_CASE("[System] sf::Angle")
             CHECK(sf::degrees(-90) % sf::degrees(40) == sf::degrees(30));
         }
 
-        SECTION("operator%=")
+        SUBCASE("operator%=")
         {
             sf::Angle angle = sf::degrees(59);
             angle %= sf::degrees(10);
             CHECK(angle == sf::degrees(9));
         }
 
-        SECTION("operator _deg")
+        SUBCASE("operator _deg")
         {
             using namespace sf::Literals;
             CHECK(0.0_deg == sf::Angle::Zero);
@@ -276,7 +276,7 @@ TEST_CASE("[System] sf::Angle")
             CHECK(-100_deg == sf::degrees(-100));
         }
 
-        SECTION("operator _rad")
+        SUBCASE("operator _rad")
         {
             using namespace sf::Literals;
             CHECK(0.0_rad == sf::Angle::Zero);
@@ -293,7 +293,7 @@ TEST_CASE("[System] sf::Angle")
         }
     }
 
-    SECTION("Constexpr support")
+    SUBCASE("Constexpr support")
     {
         constexpr auto result = []
         {

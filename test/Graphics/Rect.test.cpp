@@ -1,7 +1,7 @@
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/System/Vector2.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <doctest/doctest.h>
 
 #include <GraphicsUtil.hpp>
 #include <type_traits>
@@ -13,9 +13,9 @@ static_assert(std::is_nothrow_move_assignable_v<sf::IntRect>);
 
 TEST_CASE("[Graphics] sf::Rect")
 {
-    SECTION("Construction")
+    SUBCASE("Construction")
     {
-        SECTION("Default constructor")
+        SUBCASE("Default constructor")
         {
             sf::IntRect rectangle;
             CHECK(rectangle.left == 0);
@@ -24,7 +24,7 @@ TEST_CASE("[Graphics] sf::Rect")
             CHECK(rectangle.height == 0);
         }
 
-        SECTION("(left, top, width, height) constructor")
+        SUBCASE("(left, top, width, height) constructor")
         {
             sf::IntRect rectangle({1, 2}, {3, 4});
             CHECK(rectangle.left == 1);
@@ -33,7 +33,7 @@ TEST_CASE("[Graphics] sf::Rect")
             CHECK(rectangle.height == 4);
         }
 
-        SECTION("(Vector2, Vector2) constructor")
+        SUBCASE("(Vector2, Vector2) constructor")
         {
             sf::Vector2i position(1, 2);
             sf::Vector2i dimension(3, 4);
@@ -45,7 +45,7 @@ TEST_CASE("[Graphics] sf::Rect")
             CHECK(rectangle.height == 4);
         }
 
-        SECTION("Conversion constructor")
+        SUBCASE("Conversion constructor")
         {
             sf::FloatRect sourceRectangle({1.0f, 2.0f}, {3.0f, 4.0f});
             sf::IntRect   rectangle(sourceRectangle);
@@ -57,7 +57,7 @@ TEST_CASE("[Graphics] sf::Rect")
         }
     }
 
-    SECTION("contains(Vector2)")
+    SUBCASE("contains(Vector2)")
     {
         sf::IntRect rectangle({0, 0}, {10, 10});
 
@@ -71,7 +71,7 @@ TEST_CASE("[Graphics] sf::Rect")
         CHECK(rectangle.contains(sf::Vector2i(15, 15)) == false);
     }
 
-    SECTION("findIntersection()")
+    SUBCASE("findIntersection()")
     {
         const sf::IntRect rectangle({0, 0}, {10, 10});
         const sf::IntRect intersectingRectangle({5, 5}, {10, 10});
@@ -87,21 +87,21 @@ TEST_CASE("[Graphics] sf::Rect")
         CHECK_FALSE(rectangle.findIntersection(nonIntersectingRectangle).has_value());
     }
 
-    SECTION("getPosition()")
+    SUBCASE("getPosition()")
     {
         CHECK(sf::IntRect({}, {}).getPosition() == sf::Vector2i());
         CHECK(sf::IntRect({1, 2}, {3, 4}).getPosition() == sf::Vector2i(1, 2));
     }
 
-    SECTION("getSize()")
+    SUBCASE("getSize()")
     {
         CHECK(sf::IntRect({}, {}).getSize() == sf::Vector2i());
         CHECK(sf::IntRect({1, 2}, {3, 4}).getSize() == sf::Vector2i(3, 4));
     }
 
-    SECTION("Operators")
+    SUBCASE("Operators")
     {
-        SECTION("operator==")
+        SUBCASE("operator==")
         {
             CHECK(sf::IntRect() == sf::IntRect());
             CHECK(sf::IntRect({1, 3}, {2, 5}) == sf::IntRect({1, 3}, {2, 5}));
@@ -112,7 +112,7 @@ TEST_CASE("[Graphics] sf::Rect")
             CHECK_FALSE(sf::IntRect({0, 0}, {0, 1}) == sf::IntRect({0, 0}, {0, 0}));
         }
 
-        SECTION("operator!=")
+        SUBCASE("operator!=")
         {
             CHECK(sf::IntRect({1, 0}, {0, 0}) != sf::IntRect({0, 0}, {0, 0}));
             CHECK(sf::IntRect({0, 1}, {0, 0}) != sf::IntRect({0, 0}, {0, 0}));

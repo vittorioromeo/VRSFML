@@ -1,13 +1,13 @@
 #include <SFML/System/MemoryInputStream.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <doctest/doctest.h>
 
 #include <ostream>
 #include <string_view>
 
 TEST_CASE("[System] sf::MemoryInputStream")
 {
-    SECTION("Empty stream")
+    SUBCASE("Empty stream")
     {
         sf::MemoryInputStream mis;
 
@@ -17,7 +17,7 @@ TEST_CASE("[System] sf::MemoryInputStream")
         CHECK(mis.getSize() == -1);
     }
 
-    SECTION("Open memory stream")
+    SUBCASE("Open memory stream")
     {
         using namespace std::literals::string_view_literals;
         constexpr auto        memoryContents = "hello world"sv;

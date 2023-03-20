@@ -1,7 +1,7 @@
 #include <SFML/Graphics/Drawable.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <doctest/doctest.h>
 
 #include <GraphicsUtil.hpp>
 #include <type_traits>
@@ -31,15 +31,15 @@ private:
     mutable int m_callCount{};
 };
 
-TEST_CASE("[Graphics] sf::Drawable", runDisplayTests())
+TEST_CASE("[Graphics] sf::Drawable" * doctest::skip(skipDisplayTests))
 {
-    SECTION("Construction")
+    SUBCASE("Construction")
     {
         const DrawableTest drawableTest;
         CHECK(drawableTest.callCount() == 0);
     }
 
-    SECTION("draw()")
+    SUBCASE("draw()")
     {
         const DrawableTest drawableTest;
         sf::RenderTexture  renderTexture;

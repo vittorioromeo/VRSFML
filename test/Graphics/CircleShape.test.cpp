@@ -1,6 +1,6 @@
 #include <SFML/Graphics/CircleShape.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <doctest/doctest.h>
 
 #include <SystemUtil.hpp>
 #include <type_traits>
@@ -12,7 +12,7 @@ static_assert(std::is_nothrow_move_assignable_v<sf::CircleShape>);
 
 TEST_CASE("[Graphics] sf::CircleShape")
 {
-    SECTION("Default constructor")
+    SUBCASE("Default constructor")
     {
         const sf::CircleShape circle;
         CHECK(circle.getRadius() == 0.f);
@@ -21,7 +21,7 @@ TEST_CASE("[Graphics] sf::CircleShape")
             CHECK(circle.getPoint(i) == sf::Vector2f(0, 0));
     }
 
-    SECTION("Radius constructor")
+    SUBCASE("Radius constructor")
     {
         const sf::CircleShape circle(15.f);
         CHECK(circle.getRadius() == 15.f);
@@ -58,7 +58,7 @@ TEST_CASE("[Graphics] sf::CircleShape")
         CHECK(circle.getPoint(29) == Approx(sf::Vector2f(11.881320953f, 0.327786446f)));
     }
 
-    SECTION("Radius and point count constructor")
+    SUBCASE("Radius and point count constructor")
     {
         const sf::CircleShape circle(5.f, 8);
         CHECK(circle.getRadius() == 5.f);
@@ -73,7 +73,7 @@ TEST_CASE("[Graphics] sf::CircleShape")
         CHECK(circle.getPoint(7) == Approx(sf::Vector2f(1.464465857f, 1.464466572f)));
     }
 
-    SECTION("Set radius")
+    SUBCASE("Set radius")
     {
         sf::CircleShape circle(1.f, 6);
         circle.setRadius(10.f);
@@ -87,7 +87,7 @@ TEST_CASE("[Graphics] sf::CircleShape")
         CHECK(circle.getPoint(5) == Approx(sf::Vector2f(1.339745522f, 5.000000000f)));
     }
 
-    SECTION("Set point count")
+    SUBCASE("Set point count")
     {
         sf::CircleShape circle(4.f, 10);
         circle.setPointCount(4);
@@ -99,7 +99,7 @@ TEST_CASE("[Graphics] sf::CircleShape")
         CHECK(circle.getPoint(3) == Approx(sf::Vector2f(0.000000000f, 3.999999762f)));
     }
 
-    SECTION("Equilateral triangle")
+    SUBCASE("Equilateral triangle")
     {
         const sf::CircleShape triangle(2.f, 3);
         CHECK(triangle.getRadius() == 2.f);

@@ -1,6 +1,6 @@
 #include <SFML/Graphics/Color.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <doctest/doctest.h>
 
 #include <GraphicsUtil.hpp>
 #include <type_traits>
@@ -13,9 +13,9 @@ static_assert(std::is_nothrow_move_assignable_v<sf::Color>);
 
 TEST_CASE("[Graphics] sf::Color")
 {
-    SECTION("Construction")
+    SUBCASE("Construction")
     {
-        SECTION("Default constructor")
+        SUBCASE("Default constructor")
         {
             const sf::Color color;
             CHECK(color.r == 0);
@@ -24,7 +24,7 @@ TEST_CASE("[Graphics] sf::Color")
             CHECK(color.a == 255);
         }
 
-        SECTION("(r, g, b) constructor")
+        SUBCASE("(r, g, b) constructor")
         {
             const sf::Color color(1, 2, 3);
             CHECK(color.r == 1);
@@ -33,7 +33,7 @@ TEST_CASE("[Graphics] sf::Color")
             CHECK(color.a == 255);
         }
 
-        SECTION("(r, g, b, a) constructor")
+        SUBCASE("(r, g, b, a) constructor")
         {
             const sf::Color color(1, 2, 3, 4);
             CHECK(color.r == 1);
@@ -42,7 +42,7 @@ TEST_CASE("[Graphics] sf::Color")
             CHECK(color.a == 4);
         }
 
-        SECTION("std::int32_t constructor")
+        SUBCASE("std::int32_t constructor")
         {
             CHECK(sf::Color(0x00000000) == sf::Color(0, 0, 0, 0));
             CHECK(sf::Color(0x01020304) == sf::Color(1, 2, 3, 4));
@@ -50,16 +50,16 @@ TEST_CASE("[Graphics] sf::Color")
         }
     }
 
-    SECTION("toInteger()")
+    SUBCASE("toInteger()")
     {
         CHECK(sf::Color(0, 0, 0, 0).toInteger() == 0x00000000);
         CHECK(sf::Color(1, 2, 3, 4).toInteger() == 0x01020304);
         CHECK(sf::Color(255, 255, 255, 255).toInteger() == 0xFFFFFFFF);
     }
 
-    SECTION("Operations")
+    SUBCASE("Operations")
     {
-        SECTION("operator==")
+        SUBCASE("operator==")
         {
             CHECK(sf::Color() == sf::Color());
             CHECK(sf::Color(1, 2, 3, 4) == sf::Color(1, 2, 3, 4));
@@ -70,7 +70,7 @@ TEST_CASE("[Graphics] sf::Color")
             CHECK_FALSE(sf::Color(0, 0, 0, 1) == sf::Color(0, 0, 0, 0));
         }
 
-        SECTION("operator!=")
+        SUBCASE("operator!=")
         {
             CHECK(sf::Color(1, 0, 0, 0) != sf::Color(0, 0, 0, 0));
             CHECK(sf::Color(0, 1, 0, 0) != sf::Color(0, 0, 0, 0));
@@ -81,7 +81,7 @@ TEST_CASE("[Graphics] sf::Color")
             CHECK_FALSE(sf::Color(1, 2, 3, 4) != sf::Color(1, 2, 3, 4));
         }
 
-        SECTION("operator+")
+        SUBCASE("operator+")
         {
             CHECK(sf::Color(0, 0, 0, 0) + sf::Color(0, 0, 0, 0) == sf::Color(0, 0, 0, 0));
             CHECK(sf::Color(50, 50, 50, 50) + sf::Color(50, 50, 50, 50) == sf::Color(100, 100, 100, 100));
@@ -90,7 +90,7 @@ TEST_CASE("[Graphics] sf::Color")
             CHECK(sf::Color(255, 255, 255, 255) + sf::Color(255, 255, 255, 255) == sf::Color(255, 255, 255, 255));
         }
 
-        SECTION("operator-")
+        SUBCASE("operator-")
         {
             const sf::Color c(50, 50, 50, 50);
             const sf::Color c2(150, 150, 150, 150);
@@ -98,7 +98,7 @@ TEST_CASE("[Graphics] sf::Color")
             CHECK(c - c2 == sf::Color(0, 0, 0, 0));
         }
 
-        SECTION("operator*")
+        SUBCASE("operator*")
         {
             const sf::Color c(255, 255, 255, 255);
             const sf::Color c2(2, 2, 2, 2);
@@ -106,7 +106,7 @@ TEST_CASE("[Graphics] sf::Color")
             CHECK(c2 * c == sf::Color(2, 2, 2, 2));
         }
 
-        SECTION("operator+=")
+        SUBCASE("operator+=")
         {
             sf::Color color(42, 42, 42, 42);
             color += sf::Color(1, 1, 1, 1);
@@ -115,7 +115,7 @@ TEST_CASE("[Graphics] sf::Color")
             CHECK(color == sf::Color(255, 255, 255, 255));
         }
 
-        SECTION("operator-=")
+        SUBCASE("operator-=")
         {
             sf::Color color(248, 248, 248, 248);
             color -= sf::Color(1, 1, 1, 1);
@@ -124,7 +124,7 @@ TEST_CASE("[Graphics] sf::Color")
             CHECK(color == sf::Color(0, 0, 0, 0));
         }
 
-        SECTION("operator*=")
+        SUBCASE("operator*=")
         {
             sf::Color color(50, 50, 50, 50);
             color *= sf::Color(20, 20, 20, 20);
@@ -134,7 +134,7 @@ TEST_CASE("[Graphics] sf::Color")
         }
     }
 
-    SECTION("Constants")
+    SUBCASE("Constants")
     {
         CHECK(sf::Color::Black == sf::Color(0, 0, 0));
         CHECK(sf::Color::White == sf::Color(255, 255, 255));
@@ -147,7 +147,7 @@ TEST_CASE("[Graphics] sf::Color")
         CHECK(sf::Color::Transparent == sf::Color(0, 0, 0, 0));
     }
 
-    SECTION("Constexpr support")
+    SUBCASE("Constexpr support")
     {
         constexpr sf::Color color(1, 2, 3, 4);
         static_assert(color.r == 1);
@@ -160,7 +160,7 @@ TEST_CASE("[Graphics] sf::Color")
         static_assert(sf::Color::Black == sf::Color(0, 0, 0, 255));
     }
 
-    SECTION("Reinterpret as std::uint8_t*")
+    SUBCASE("Reinterpret as std::uint8_t*")
     {
         static_assert(sizeof(sf::Color) == 4);
         static_assert(alignof(sf::Color) == 1);
