@@ -49,13 +49,7 @@ target_compile_definitions(test-sfml-system PRIVATE
     EXPECTED_SFML_VERSION_IS_RELEASE=$<IF:$<BOOL:${VERSION_IS_RELEASE}>,true,false>
 )
 
-# FIXME Remove this once the Buildbot supports handling display tests on Linux platforms
-if(SFML_OS_WINDOWS OR SFML_OS_MACOSX)
-    set(SFML_RUN_DISPLAY_TESTS_DEFAULT ON)
-else()
-    set(SFML_RUN_DISPLAY_TESTS_DEFAULT OFF)
-endif()
-sfml_set_option(SFML_RUN_DISPLAY_TESTS ${SFML_RUN_DISPLAY_TESTS_DEFAULT} BOOL "TRUE to run tests that require a display, FALSE to ignore it")
+sfml_set_option(SFML_RUN_DISPLAY_TESTS ON BOOL "TRUE to run tests that require a display, FALSE to ignore it")
 
 set(WINDOW_SRC
     Window/Context.test.cpp
@@ -138,11 +132,6 @@ if(SFML_OS_WINDOWS AND NOT SFML_USE_SYSTEM_DEPS)
         VERBATIM)
 endif()
 
-# Automatically run the tests at the end of the build
-add_custom_target(runtests ALL
-                  DEPENDS test-sfml-system test-sfml-window test-sfml-graphics test-sfml-network test-sfml-audio
-)
-
 if(SFML_ENABLE_COVERAGE AND SFML_OS_WINDOWS)
     # Try to find and use OpenCppCoverage for coverage reporting when building with MSVC
     find_program(OpenCppCoverage_BINARY "OpenCppCoverage.exe")
@@ -174,6 +163,8 @@ if(SFML_ENABLE_COVERAGE AND OpenCppCoverage_FOUND)
     set(COVERAGE_PREFIX ${OpenCppCoverage_BINARY} ARGS --quiet --export_type cobertura:${PROJECT_BINARY_DIR}/coverage.out --cover_children --excluded_modules "${COVERAGE_EXCLUDE}" --sources "${COVERAGE_SRC}" --sources "${COVERAGE_INCLUDE}" --)
 endif()
 
+# Convenience for building and running tests in a single command
+add_custom_target(runtests DEPENDS test-sfml-system test-sfml-window test-sfml-graphics test-sfml-network test-sfml-audio)
 add_custom_command(TARGET runtests
                    COMMENT "Run tests"
                    POST_BUILD COMMAND ${COVERAGE_PREFIX} ${CMAKE_CTEST_COMMAND} --output-on-failure -C $<CONFIG>
