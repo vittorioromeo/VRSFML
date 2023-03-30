@@ -232,6 +232,59 @@ struct Shader::UniformBinder
 
 
 ////////////////////////////////////////////////////////////
+struct Shader::UnsafeUniformBinder
+{
+    ////////////////////////////////////////////////////////////
+    /// \brief Constructor: set up state before uniform is set
+    ///
+    ////////////////////////////////////////////////////////////
+    UnsafeUniformBinder(Shader& shader, const std::string& name) : currentProgram(shader.m_shaderProgram)
+    {
+        if (currentProgram)
+        {
+            // Enable program object
+            GLint temp;
+            glCheck(glGetIntegerv(GL_CURRENT_PROGRAM, &temp));
+            savedProgram = static_cast<GLuint>(temp);
+
+            if (currentProgram != savedProgram)
+                glCheck(glUseProgram(currentProgram));
+
+            // Store uniform location for further use outside constructor
+            location = shader.getUniformLocation(name);
+        }
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Destructor: restore state after uniform is set
+    ///
+    ////////////////////////////////////////////////////////////
+    ~UnsafeUniformBinder()
+    {
+        // Disable program object
+        if (currentProgram && (currentProgram != savedProgram))
+            glCheck(glUseProgram(savedProgram));
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    UnsafeUniformBinder(const UnsafeUniformBinder&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    UnsafeUniformBinder& operator=(const UnsafeUniformBinder&) = delete;
+
+    GLuint savedProgram{}; //!< Handle to the previously active program object
+    GLuint currentProgram; //!< Handle to the program object of the modified sf::Shader instance
+    GLint location{-1};   //!< Uniform location, used by the surrounding sf::Shader code
+};
+
+
+////////////////////////////////////////////////////////////
 Shader::Shader() = default;
 
 
@@ -699,6 +752,78 @@ void Shader::setUniformArray(const std::string& name, const Glsl::Mat4* matrixAr
     UniformBinder binder(*this, name);
     if (binder.location != -1)
         glCheck(GLEXT_glUniformMatrix4fv(binder.location, static_cast<GLsizei>(length), GL_FALSE, contiguous.data()));
+}
+
+
+////////////////////////////////////////////////////////////
+void Shader::setUniformUnsafe(const std::string& name, float x)
+{
+    UnsafeUniformBinder binder(*this, name);
+    if (binder.location != -1)
+        glCheck(GLEXT_glUniform1f(binder.location, x));
+}
+
+
+////////////////////////////////////////////////////////////
+void Shader::setUniformUnsafe(const std::string& name, const Glsl::Vec2& v)
+{
+    UnsafeUniformBinder binder(*this, name);
+    if (binder.location != -1)
+        glCheck(GLEXT_glUniform2f(binder.location, v.x, v.y));
+}
+
+
+////////////////////////////////////////////////////////////
+void Shader::setUniformUnsafe(const std::string& name, const Glsl::Vec3& v)
+{
+    UnsafeUniformBinder binder(*this, name);
+    if (binder.location != -1)
+        glCheck(GLEXT_glUniform3f(binder.location, v.x, v.y, v.z));
+}
+
+
+////////////////////////////////////////////////////////////
+void Shader::setUniformUnsafe(const std::string& name, const Glsl::Vec4& v)
+{
+    UnsafeUniformBinder binder(*this, name);
+    if (binder.location != -1)
+        glCheck(GLEXT_glUniform4f(binder.location, v.x, v.y, v.z, v.w));
+}
+
+
+////////////////////////////////////////////////////////////
+void Shader::setUniformUnsafe(const std::string& name, int x)
+{
+    UnsafeUniformBinder binder(*this, name);
+    if (binder.location != -1)
+        glCheck(GLEXT_glUniform1i(binder.location, x));
+}
+
+
+////////////////////////////////////////////////////////////
+void Shader::setUniformUnsafe(const std::string& name, const Glsl::Ivec2& v)
+{
+    UnsafeUniformBinder binder(*this, name);
+    if (binder.location != -1)
+        glCheck(GLEXT_glUniform2i(binder.location, v.x, v.y));
+}
+
+
+////////////////////////////////////////////////////////////
+void Shader::setUniformUnsafe(const std::string& name, const Glsl::Ivec3& v)
+{
+    UnsafeUniformBinder binder(*this, name);
+    if (binder.location != -1)
+        glCheck(GLEXT_glUniform3i(binder.location, v.x, v.y, v.z));
+}
+
+
+////////////////////////////////////////////////////////////
+void Shader::setUniformUnsafe(const std::string& name, const Glsl::Ivec4& v)
+{
+    UnsafeUniformBinder binder(*this, name);
+    if (binder.location != -1)
+        glCheck(GLEXT_glUniform4i(binder.location, v.x, v.y, v.z, v.w));
 }
 
 
