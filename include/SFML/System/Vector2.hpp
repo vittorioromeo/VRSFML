@@ -398,8 +398,6 @@ template <typename T>
 template <typename T>
 [[nodiscard]] constexpr bool operator!=(const Vector2<T>& left, const Vector2<T>& right);
 
-#include <SFML/System/Vector2.inl>
-
 } // namespace sf
 
 
@@ -413,6 +411,12 @@ extern template class sf::Vector2<long double>;
 extern template class sf::Vector2<bool>;
 extern template class sf::Vector2<int>;
 extern template class sf::Vector2<unsigned int>;
+
+
+namespace sf
+{
+#include <SFML/System/Vector2.inl>
+} // namespace sf
 
 
 ////////////////////////////////////////////////////////////

@@ -310,8 +310,6 @@ template <typename T>
 template <typename T>
 [[nodiscard]] constexpr bool operator!=(const Vector3<T>& left, const Vector3<T>& right);
 
-#include <SFML/System/Vector3.inl>
-
 // Define the most common types
 using Vector3i = Vector3<int>;
 using Vector3f = Vector3<float>;
@@ -329,6 +327,12 @@ extern template class sf::Vector3<long double>;
 extern template class sf::Vector3<bool>;
 extern template class sf::Vector3<int>;
 extern template class sf::Vector3<unsigned int>;
+
+
+namespace sf
+{
+#include <SFML/System/Vector3.inl>
+} // namesapce sf
 
 
 ////////////////////////////////////////////////////////////
