@@ -85,7 +85,10 @@ macro(sfml_add_library module)
     endif()
 
     set_target_warnings(${target})
-    set_public_symbols_hidden(${target})
+    if (NOT MINGW)
+        # this breaks explicit template instantiations, see GCC bug #109387
+        set_public_symbols_hidden(${target})
+    endif()
 
     # enable precompiled headers
     if (SFML_ENABLE_PCH AND (NOT ${target} STREQUAL "sfml-system"))
