@@ -217,8 +217,8 @@ public:
     // Static member data
     ////////////////////////////////////////////////////////////
     // NOLINTBEGIN(readability-identifier-naming)
-    SFML_SYSTEM_API static const Vector2 UnitX; //!< The X unit vector (1, 0), usually facing right
-    SFML_SYSTEM_API static const Vector2 UnitY; //!< The Y unit vector (0, 1), usually facing down
+    static const Vector2 UnitX; //!< The X unit vector (1, 0), usually facing right
+    static const Vector2 UnitY; //!< The Y unit vector (0, 1), usually facing down
     // NOLINTEND(readability-identifier-naming)
 };
 
