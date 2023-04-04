@@ -7,6 +7,7 @@
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/System/Angle.hpp>
 #include <SFML/System/Clock.hpp>
+#include <SFML/System/Time.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #ifndef WIN32_LEAN_AND_MEAN
