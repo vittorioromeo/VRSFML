@@ -2,7 +2,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/Texture.hpp>
+#include <SFML/Window/ContextSettings.hpp>
 
 #include <array>
 #include <cstdlib>
