@@ -14,28 +14,34 @@
 // function `resourcePath()` from ResourcePath.hpp
 //
 
-#include <SFML/Audio.hpp>
-#include <SFML/Graphics.hpp>
+#include <SFML/Audio/Music.hpp>
+#include <SFML/Graphics/Font.hpp>
+#include <SFML/Graphics/Image.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/Text.hpp>
+#include <SFML/Window/Event.hpp>
+#include <SFML/Window/VideoMode.hpp>
 
 // Here is a small helper for you! Have a look.
 #include "ResourcePath.hpp"
 
-int main(int, char const**)
+int main()
 {
     // Create the main window
     sf::RenderWindow window(sf::VideoMode({800, 600}), "SFML window");
 
     // Set the Icon
     sf::Image icon;
-    if (!icon.loadFromFile(resourcePath() + "icon.png"))
+    if (!icon.loadFromFile(resourcePath() / "icon.png"))
     {
         return EXIT_FAILURE;
     }
-    window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
+    window.setIcon(icon);
 
     // Load a sprite to display
     sf::Texture texture;
-    if (!texture.loadFromFile(resourcePath() + "background.jpg"))
+    if (!texture.loadFromFile(resourcePath() / "background.jpg"))
     {
         return EXIT_FAILURE;
     }
@@ -43,7 +49,7 @@ int main(int, char const**)
 
     // Create a graphical text to display
     sf::Font font;
-    if (!font.loadFromFile(resourcePath() + "tuffy.ttf"))
+    if (!font.loadFromFile(resourcePath() / "tuffy.ttf"))
     {
         return EXIT_FAILURE;
     }
@@ -52,7 +58,7 @@ int main(int, char const**)
 
     // Load a music to play
     sf::Music music;
-    if (!music.openFromFile(resourcePath() + "doodle_pop.ogg"))
+    if (!music.openFromFile(resourcePath() / "doodle_pop.ogg"))
     {
         return EXIT_FAILURE;
     }
