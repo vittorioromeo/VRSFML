@@ -13,6 +13,7 @@
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/System/Angle.hpp>
 #include <SFML/System/Clock.hpp>
+#include <SFML/System/Time.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Touch.hpp>
