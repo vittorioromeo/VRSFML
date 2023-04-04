@@ -13,6 +13,7 @@
 #include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Mouse.hpp>
+#include <SFML/Window/Touch.hpp>
 #include <SFML/Window/VideoMode.hpp>
 
 #include <array>
