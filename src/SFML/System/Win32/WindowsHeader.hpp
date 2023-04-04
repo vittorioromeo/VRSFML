@@ -45,7 +45,7 @@
 #endif
 
 #ifndef UNICODE
-#define UNICODE  1
+#define UNICODE 1
 #endif
 
 #ifndef _UNICODE
