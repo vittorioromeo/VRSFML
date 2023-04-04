@@ -32,8 +32,6 @@
 
 #ifdef SFML_SYSTEM_WINDOWS
 
-#define UNICODE  1
-#define _UNICODE 1
 #include <SFML/System/Win32/WindowsHeader.hpp>
 
 #include <dinput.h>
