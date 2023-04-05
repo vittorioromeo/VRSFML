@@ -91,7 +91,7 @@ sfml_add_library(Graphics
                  SOURCES ${SRC} ${DRAWABLES_SRC} ${RENDER_TEXTURE_SRC} ${STB_SRC})
 
 # setup dependencies
-target_link_libraries(sfml-graphics PUBLIC SFML::System SFML::Window)
+target_link_libraries(sfml-graphics PUBLIC SFML::Window)
 
 # stb_image sources
 target_include_directories(sfml-graphics SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/extlibs/headers/stb_image")
