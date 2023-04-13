@@ -1,7 +1,3 @@
-#include <GraphicsUtil.hpp>
-
-#include <SystemUtil.hpp>
-
 #include <SFML/Graphics/BlendMode.hpp>
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/Rect.hpp>
