@@ -3,6 +3,7 @@ name: CI
 on: [push, pull_request, workflow_dispatch]
 
 env:
+  DISPLAY: ":99" # Display number to use for the X server
   GALLIUM_DRIVER: llvmpipe # Use Mesa 3D software OpenGL renderer
 
 jobs:
@@ -45,6 +46,12 @@ jobs:
           type: { name: Release }
         - platform: { name: Windows VS2022, os: windows-2022 }
           config: { name: Unity, flags: -DSFML_USE_MESA3D=TRUE -DBUILD_SHARED_LIBS=TRUE -DCMAKE_UNITY_BUILD=ON }
+          type: { name: Debug, flags: -DCMAKE_BUILD_TYPE=Debug -DSFML_ENABLE_COVERAGE=TRUE }
+        - platform: { name: Windows VS2022, os: windows-2022 }
+          config: { name: OpenGL ES, flags: -DSFML_USE_MESA3D=TRUE -DBUILD_SHARED_LIBS=TRUE -DSFML_OPENGL_ES=ON }
+          type: { name: Release }
+        - platform: { name: Windows VS2022, os: windows-2022 }
+          config: { name: OpenGL ES, flags: -DSFML_USE_MESA3D=TRUE -DBUILD_SHARED_LIBS=TRUE -DSFML_OPENGL_ES=ON }
           type: { name: Debug, flags: -DCMAKE_BUILD_TYPE=Debug -DSFML_ENABLE_COVERAGE=TRUE }
         - platform: { name: MacOS, os: macos-11 }
           config: { name: Frameworks, flags: -GNinja -DSFML_BUILD_FRAMEWORKS=TRUE -DBUILD_SHARED_LIBS=TRUE }
@@ -104,6 +111,20 @@ jobs:
     - name: Build
       shell: bash
       run: cmake --build $GITHUB_WORKSPACE/build --config ${{ matrix.type.name == 'Debug' && 'Debug' || 'Release' }} --target install
+      
+    - name: Prepare Test
+      shell: bash
+      run: |
+        set -e
+        # Start up Xvfb and fluxbox to host display tests
+        if [ "${{ runner.os }}" == "Linux" ]; then
+          Xvfb $DISPLAY -screen 0 1920x1080x24 &
+          sleep 5
+          fluxbox > /dev/null 2>&1 &
+          sleep 5
+        fi
+        # Make sure the build/bin directory exists so that the find command does not fail if no executables are built
+        mkdir -p $GITHUB_WORKSPACE/build/bin
 
     - name: Test
       uses: nick-fields/retry@v2
@@ -114,25 +135,18 @@ jobs:
         warning_on_retry: false
         shell: bash
         command: |
+          set -e
           if [ "${{ runner.os }}" == "Windows" ]; then
             # Make use of a test to print OpenGL vendor/renderer/version info to the console
-            find $GITHUB_WORKSPACE/build/bin -name test-sfml-window.exe -exec {} --test-case="[Window] sf::Context" --subcase="Version String" \; | grep OpenGL
+            find $GITHUB_WORKSPACE/build/bin -name test-sfml-window.exe -exec sh -c "{} --test-case=\"[Window] sf::Context\" --subcase=\"Version String\" | grep OpenGL" \;
             # Run the tests
             cmake --build $GITHUB_WORKSPACE/build --target runtests --config ${{ matrix.type.name == 'Debug' && 'Debug' || 'Release' }}
             # Coverage is already generated on Windows when running tests.
           else
-            # Start up Xvfb and fluxbox to host display tests on DISPLAY :99
-            if [ "${{ runner.os }}" == "Linux" ]; then
-              export DISPLAY=":99"
-              Xvfb $DISPLAY -screen 0 1920x1080x24 &
-              sleep 5
-              fluxbox > /dev/null 2>&1 &
-              sleep 5
-            fi
             # Make use of a test to print OpenGL vendor/renderer/version info to the console
-            find $GITHUB_WORKSPACE/build/bin -name test-sfml-window -exec {} --test-case="[Window] sf::Context" --subcase="Version String" \; | grep OpenGL
+            find $GITHUB_WORKSPACE/build/bin -name test-sfml-window -exec sh -c "{} --test-case=\"[Window] sf::Context\" --subcase=\"Version String\" | grep OpenGL" \;
             # Run the tests
-            ctest --test-dir $GITHUB_WORKSPACE/build --output-on-failure --config ${{ matrix.type.name == 'Debug' && 'Debug' || 'Release' }}
+            ctest --test-dir $GITHUB_WORKSPACE/build --output-on-failure -C ${{ matrix.type.name == 'Debug' && 'Debug' || 'Release' }}
             # Run gcovr to extract coverage information from the test run
             if [ "${{ matrix.type.name }}" == "Debug" ]; then
               gcovr -r $GITHUB_WORKSPACE -x $GITHUB_WORKSPACE/build/coverage.out -s -f 'src/SFML/.*' -f 'include/SFML/.*' ${{ matrix.platform.gcovr_options }} $GITHUB_WORKSPACE
