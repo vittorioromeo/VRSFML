@@ -27,8 +27,8 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/AlResource.hpp>
 #include <SFML/Audio/AudioDevice.hpp>
+#include <SFML/System/UniquePtr.hpp>
 
-#include <memory>
 #include <mutex>
 
 
@@ -41,7 +41,7 @@ std::recursive_mutex mutex;
 // The audio device is instantiated on demand rather than at global startup,
 // which solves a lot of weird crashes and errors.
 // It is destroyed when it is no longer needed.
-std::unique_ptr<sf::priv::AudioDevice> globalDevice;
+sf::priv::UniquePtr<sf::priv::AudioDevice> globalDevice;
 } // namespace
 
 
@@ -55,7 +55,7 @@ AlResource::AlResource()
 
     // If this is the very first resource, trigger the global device initialization
     if (count == 0)
-        globalDevice = std::make_unique<priv::AudioDevice>();
+        globalDevice = sf::priv::makeUnique<priv::AudioDevice>();
 
     // Increment the resources counter
     ++count;

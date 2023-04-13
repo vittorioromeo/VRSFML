@@ -30,9 +30,9 @@
 #include <SFML/Window/Export.hpp>
 
 #include <SFML/System/Vector2.hpp>
+#include <SFML/System/UniquePtr.hpp>
 
 #include <cstdint>
-#include <memory>
 
 namespace sf
 {
@@ -218,7 +218,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::unique_ptr<priv::CursorImpl> m_impl; //!< Platform-specific implementation of the cursor
+    sf::priv::UniquePtr<priv::CursorImpl> m_impl; //!< Platform-specific implementation of the cursor
 };
 
 } // namespace sf
