@@ -1,5 +1,3 @@
-#include <SystemUtil.hpp>
-
 #include <SFML/System/Angle.hpp>
 #include <SFML/System/String.hpp>
 #include <SFML/System/Time.hpp>
