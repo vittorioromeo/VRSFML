@@ -4,9 +4,12 @@
 
 #include <SFML/Graphics/BlendMode.hpp>
 #include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/Transform.hpp>
 #include <SFML/Graphics/Rect.hpp>
 
+#include <GraphicsUtil.hpp>
+#include <SystemUtil.hpp>
 #include <ostream>
 
 namespace sf

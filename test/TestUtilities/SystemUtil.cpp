@@ -8,6 +8,7 @@
 
 #include <doctest/doctest.h>
 
+#include <SystemUtil.hpp>
 #include <iomanip>
 #include <limits>
 

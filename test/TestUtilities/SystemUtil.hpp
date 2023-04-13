@@ -14,10 +14,10 @@ class Angle;
 class String;
 class Time;
 
-template <typename T>
+template <typename>
 class Vector2;
 
-template <typename T>
+template <typename>
 class Vector3;
 
 void setStreamPrecision(std::ostream& os, int maxDigits10);
