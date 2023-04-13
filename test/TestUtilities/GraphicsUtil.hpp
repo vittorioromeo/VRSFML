@@ -6,7 +6,6 @@
 #pragma once
 
 #include <WindowUtil.hpp>
-
 #include <iosfwd>
 #include <limits>
 
@@ -16,7 +15,11 @@ struct BlendMode;
 class Color;
 class Transform;
 
+<<<<<<< HEAD
 template <typename T>
+=======
+template <typename>
+>>>>>>> c6226258dbb29ca24af923b3160b97c68fc783ae
 class Rect;
 
 std::ostream& operator<<(std::ostream& os, const BlendMode& blendMode);
