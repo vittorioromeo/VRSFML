@@ -30,10 +30,10 @@
 #include <SFML/Window/Export.hpp>
 
 #include <SFML/System/Vector2.hpp>
+#include <SFML/System/UniquePtr.hpp>
 #include <SFML/Window/GlResource.hpp>
 
 #include <cstdint>
-#include <memory>
 
 
 namespace sf
@@ -164,7 +164,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::unique_ptr<priv::GlContext> m_context; //!< Internal OpenGL context
+    sf::priv::UniquePtr<priv::GlContext> m_context; //!< Internal OpenGL context
 };
 
 } // namespace sf
