@@ -32,8 +32,8 @@
 #include <SFML/Graphics/Glyph.hpp>
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/Texture.hpp>
+#include <SFML/System/UniquePtr.hpp>
 
-#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -415,7 +415,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Types
     ////////////////////////////////////////////////////////////
-    class FontHandles;
+    struct FontHandles;
     using PageTable = std::unordered_map<unsigned int, Page>; //!< Table mapping a character size to its page (texture)
 
     ////////////////////////////////////////////////////////////
@@ -427,7 +427,7 @@ private:
     mutable PageTable            m_pages;          //!< Table containing the glyphs pages by character size
     mutable std::vector<std::uint8_t> m_pixelBuffer; //!< Pixel buffer holding a glyph's pixels before being written to the texture
 #ifdef SFML_SYSTEM_ANDROID
-    std::unique_ptr<priv::ResourceStream> m_stream; //!< Asset file streamer (if loaded from file)
+    sf::priv::UniquePtr<priv::ResourceStream> m_stream; //!< Asset file streamer (if loaded from file)
 #endif
 };
 

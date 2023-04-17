@@ -29,6 +29,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Config.hpp>
 
+#include <SFML/System/UniquePtr.hpp>
 #include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/CursorImpl.hpp>
 #include <SFML/Window/Event.hpp>
@@ -39,7 +40,6 @@
 #include <SFML/Window/Vulkan.hpp>
 #include <SFML/Window/WindowHandle.hpp>
 
-#include <memory>
 #include <queue>
 #include <set>
 
@@ -68,7 +68,7 @@ public:
     /// \return Pointer to the created window
     ///
     ////////////////////////////////////////////////////////////
-    static std::unique_ptr<WindowImpl> create(VideoMode              mode,
+    static sf::priv::UniquePtr<WindowImpl> create(VideoMode              mode,
                                               const String&          title,
                                               std::uint32_t          style,
                                               const ContextSettings& settings);
@@ -81,7 +81,7 @@ public:
     /// \return Pointer to the created window
     ///
     ////////////////////////////////////////////////////////////
-    static std::unique_ptr<WindowImpl> create(WindowHandle handle);
+    static sf::priv::UniquePtr<WindowImpl> create(WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -294,7 +294,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     std::queue<Event>                   m_events;                     //!< Queue of available events
-    std::unique_ptr<JoystickStatesImpl> m_joystickStatesImpl;         //!< Previous state of the joysticks (PImpl)
+    sf::priv::UniquePtr<JoystickStatesImpl> m_joystickStatesImpl;         //!< Previous state of the joysticks (PImpl)
     Vector3f                            m_sensorValue[Sensor::Count]; //!< Previous value of the sensors
     float m_joystickThreshold{0.1f}; //!< Joystick threshold (minimum motion for "move" event to be generated)
     float m_previousAxes[Joystick::Count][Joystick::AxisCount]; //!< Position of each axis last time a move event triggered, in range [-100, 100]

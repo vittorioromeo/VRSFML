@@ -30,8 +30,7 @@
 #include <SFML/Network/Export.hpp>
 
 #include <SFML/System/Time.hpp>
-
-#include <memory>
+#include <SFML/System/UniquePtr.hpp>
 
 
 namespace sf
@@ -158,7 +157,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::unique_ptr<SocketSelectorImpl> m_impl; //!< Opaque pointer to the implementation (which requires OS-specific types)
+    sf::priv::UniquePtr<SocketSelectorImpl> m_impl; //!< Opaque pointer to the implementation (which requires OS-specific types)
 };
 
 } // namespace sf

@@ -43,6 +43,7 @@
 #include <SFML/System/String.hpp>
 #include <SFML/System/Time.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <SFML/System/UniquePtr.hpp>
 
 #include <algorithm>
 #include <cassert>

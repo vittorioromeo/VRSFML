@@ -22,49 +22,15 @@
 //
 ////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
-// Headers
-////////////////////////////////////////////////////////////
-#include <SFML/System/Vector2.hpp>
-#include <SFML/System/UniquePtr.hpp>
-#include <SFML/Window/Cursor.hpp>
-#include <SFML/Window/CursorImpl.hpp>
-
-
-namespace sf
-{
-
-////////////////////////////////////////////////////////////
-Cursor::Cursor() : m_impl(sf::priv::makeUnique<priv::CursorImpl>())
-{
-}
+#include <SFML/Graphics/Rect.hpp>
 
 
 ////////////////////////////////////////////////////////////
-Cursor::~Cursor() = default;
-
-
+// Explicit instantiation definitions
 ////////////////////////////////////////////////////////////
-bool Cursor::loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vector2u hotspot)
-{
-    if ((pixels == nullptr) || (size.x == 0) || (size.y == 0))
-        return false;
-    else
-        return m_impl->loadFromPixels(pixels, size, hotspot);
-}
 
-
-////////////////////////////////////////////////////////////
-bool Cursor::loadFromSystem(Type type)
-{
-    return m_impl->loadFromSystem(type);
-}
-
-
-////////////////////////////////////////////////////////////
-const priv::CursorImpl& Cursor::getImpl() const
-{
-    return *m_impl;
-}
-
-} // namespace sf
+template class sf::Rect<float>;
+template class sf::Rect<double>;
+template class sf::Rect<long double>;
+template class sf::Rect<int>;
+template class sf::Rect<unsigned int>;
