@@ -27,6 +27,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Drawable.hpp>
 #include <SFML/Graphics/GLCheck.hpp>
+#include <SFML/Graphics/GLExtensions.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Shader.hpp>
 #include <SFML/Graphics/Texture.hpp>
@@ -719,7 +720,7 @@ void RenderTarget::drawPrimitives(PrimitiveType type, std::size_t firstVertex, s
 {
     // Find the OpenGL primitive type
     static constexpr GLenum modes[] = {GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN};
-    GLenum                  mode = modes[static_cast<std::size_t>(type)];
+    GLenum mode = modes[static_cast<std::size_t>(type)];
 
     // Draw the primitives
     glCheck(glDrawArrays(mode, static_cast<GLint>(firstVertex), static_cast<GLsizei>(vertexCount)));

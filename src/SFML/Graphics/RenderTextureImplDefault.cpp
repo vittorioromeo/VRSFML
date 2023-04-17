@@ -26,11 +26,12 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/GLCheck.hpp>
+#include <SFML/Graphics/GLExtensions.hpp>
 #include <SFML/Graphics/RenderTextureImplDefault.hpp>
 #include <SFML/Graphics/TextureSaver.hpp>
+#include <SFML/System/UniquePtr.hpp>
 #include <SFML/Window/Context.hpp>
 #include <SFML/Window/ContextSettings.hpp>
-#include <SFML/System/UniquePtr.hpp>
 
 
 namespace sf::priv
