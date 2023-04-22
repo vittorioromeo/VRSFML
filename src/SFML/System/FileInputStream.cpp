@@ -30,7 +30,6 @@
 #include <SFML/System/Android/ResourceStream.hpp>
 #endif
 #include <cstddef>
-#include <memory>
 
 namespace sf
 {

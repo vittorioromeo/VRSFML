@@ -32,10 +32,10 @@
 #include <SFML/System/Export.hpp>
 
 #include <SFML/System/InputStream.hpp>
+#include <SFML/System/UniquePtr.hpp>
 
 #include <cstdio>
 #include <filesystem>
-#include <memory>
 
 #ifdef SFML_SYSTEM_ANDROID
 namespace sf::priv
@@ -145,7 +145,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
 #ifdef SFML_SYSTEM_ANDROID
-    std::unique_ptr<priv::ResourceStream> m_file;
+    sf::priv::UniquePtr<priv::ResourceStream> m_file;
 #else
     ////////////////////////////////////////////////////////////
     /// \brief Deleter for stdio file stream that closes the file stream
@@ -156,7 +156,7 @@ private:
         void operator()(std::FILE* file);
     };
 
-    std::unique_ptr<std::FILE, FileCloser> m_file; //!< stdio file stream
+    sf::priv::UniquePtr<std::FILE, FileCloser> m_file; //!< stdio file stream
 #endif
 };
 
