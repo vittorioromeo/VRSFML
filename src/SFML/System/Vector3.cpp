@@ -26,7 +26,21 @@
 
 #include <cassert>
 #include <cmath>
-#include <type_traits>
+
+
+namespace
+{
+
+// Named differently from the one in 'Vector2.cpp' to support unity builds.
+
+// clang-format off
+template <typename> constexpr bool isVec3FloatingPoint              = false;
+template <>         constexpr bool isVec3FloatingPoint<float>       = true;
+template <>         constexpr bool isVec3FloatingPoint<double>      = true;
+template <>         constexpr bool isVec3FloatingPoint<long double> = true;
+// clang-format on
+
+} // namespace
 
 
 namespace sf
@@ -35,7 +49,7 @@ namespace sf
 template <typename T>
 Vector3<T> Vector3<T>::normalized() const
 {
-    static_assert(std::is_floating_point_v<T>, "Vector3::normalized() is only supported for floating point types");
+    static_assert(isVec3FloatingPoint<T>, "Vector3::normalized() is only supported for floating point types");
 
     assert(*this != Vector3<T>());
     return (*this) / length();
@@ -46,7 +60,7 @@ Vector3<T> Vector3<T>::normalized() const
 template <typename T>
 T Vector3<T>::length() const
 {
-    static_assert(std::is_floating_point_v<T>, "Vector3::length() is only supported for floating point types");
+    static_assert(isVec3FloatingPoint<T>, "Vector3::length() is only supported for floating point types");
 
     // don't use std::hypot because of slow performance
     return std::sqrt(x * x + y * y + z * z);

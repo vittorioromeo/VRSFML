@@ -9,35 +9,61 @@
 #if __has_builtin(__is_base_of)
 namespace sf::priv
 {
-    template<typename B, typename D> struct IsBaseOf { enum { value = __is_base_of(B, D) }; };
-}
+
+template <typename B, typename D>
+struct IsBaseOf
+{
+    enum
+    {
+        value = __is_base_of(B, D)
+    };
+};
+
+} // namespace sf::priv
+
 #else
 #include <type_traits>
 
 namespace sf::priv
 {
-    template<typename B, typename D>
-    using IsBaseOf = std::is_base_of<B, D>;
+template <typename B, typename D>
+using IsBaseOf = std::is_base_of<B, D>;
 }
 #endif
 
 namespace sf::priv
 {
 
+// clang-format off
 template<bool, typename = void> struct EnableIfImpl          { };
 template<typename T>            struct EnableIfImpl<true, T> { using type = T; };
+// clang-format on
 
-template<bool B, typename T = void>
+template <bool B, typename T = void>
 using EnableIf = typename EnableIfImpl<B, T>::type;
 
-template <typename T>
+struct UniquePtrDefaultDeleter
+{
+    template <typename T>
+    [[gnu::always_inline]] void operator()(T* const ptr) const noexcept
+    {
+        delete ptr;
+    }
+};
+
+template <typename T, typename TDeleter = UniquePtrDefaultDeleter>
 class UniquePtr
 {
-    template <typename>
+    template <typename, typename>
     friend class UniquePtr;
 
 private:
     T* _ptr;
+
+    [[gnu::always_inline]] void deleteImpl() noexcept
+    {
+        TDeleter{}(_ptr);
+    }
 
 public:
     [[nodiscard, gnu::always_inline]] explicit UniquePtr() noexcept : _ptr{nullptr}
@@ -50,7 +76,7 @@ public:
 
     [[gnu::always_inline]] ~UniquePtr() noexcept
     {
-        delete _ptr;
+        deleteImpl();
     }
 
     UniquePtr(const UniquePtr&)            = delete;
@@ -69,7 +95,7 @@ public:
 
     [[gnu::always_inline]] UniquePtr& operator=(UniquePtr&& rhs) noexcept
     {
-        delete _ptr;
+        deleteImpl();
 
         _ptr     = rhs._ptr;
         rhs._ptr = nullptr;
@@ -80,7 +106,7 @@ public:
     template <typename U, typename = EnableIf<IsBaseOf<T, U>::value>>
     [[gnu::always_inline]] UniquePtr& operator=(UniquePtr<U>&& rhs) noexcept
     {
-        delete _ptr;
+        deleteImpl();
 
         _ptr     = rhs._ptr;
         rhs._ptr = nullptr;
@@ -130,10 +156,10 @@ public:
         return _ptr != nullptr;
     }
 
-    [[gnu::always_inline]] void reset() noexcept
+    [[gnu::always_inline]] void reset(T* const ptr = nullptr) noexcept
     {
-        delete _ptr;
-        _ptr = nullptr;
+        deleteImpl();
+        _ptr = ptr;
     }
 };
 
