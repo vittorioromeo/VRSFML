@@ -35,6 +35,7 @@
 #include <SFML/System/Time.hpp>
 
 #include <algorithm>
+#include <memory>
 #include <ostream>
 
 
@@ -57,7 +58,7 @@ InputSoundFile::StreamDeleter::StreamDeleter(const std::default_delete<T>&)
 void InputSoundFile::StreamDeleter::operator()(InputStream* ptr) const
 {
     if (owned)
-        std::default_delete<InputStream>{}(ptr);
+        delete ptr;
 }
 
 
@@ -77,7 +78,7 @@ bool InputSoundFile::openFromFile(const std::filesystem::path& filename)
         return false;
 
     // Wrap the file into a stream
-    auto file = std::make_unique<FileInputStream>();
+    auto file = sf::priv::makeUnique<FileInputStream>();
 
     // Open it
     if (!file->open(filename))
@@ -89,7 +90,7 @@ bool InputSoundFile::openFromFile(const std::filesystem::path& filename)
         return false;
 
     // Take ownership of successfully opened reader and stream
-    m_reader = std::move(reader);
+    m_reader.reset(reader.release());
     m_stream = std::move(file);
 
     // Retrieve the attributes of the open sound file
@@ -113,7 +114,7 @@ bool InputSoundFile::openFromMemory(const void* data, std::size_t sizeInBytes)
         return false;
 
     // Wrap the memory file into a stream
-    auto memory = std::make_unique<MemoryInputStream>();
+    auto memory = sf::priv::makeUnique<MemoryInputStream>();
 
     // Open it
     memory->open(data, sizeInBytes);
@@ -124,7 +125,7 @@ bool InputSoundFile::openFromMemory(const void* data, std::size_t sizeInBytes)
         return false;
 
     // Take ownership of successfully opened reader and stream
-    m_reader = std::move(reader);
+    m_reader.reset(reader.release());
     m_stream = std::move(memory);
 
     // Retrieve the attributes of the open sound file
@@ -160,8 +161,8 @@ bool InputSoundFile::openFromStream(InputStream& stream)
         return false;
 
     // Take ownership of reader and store a reference to the stream without taking ownership
-    m_reader = std::move(reader);
-    m_stream = {&stream, false};
+    m_reader.reset(reader.release());
+    m_stream = sf::priv::UniquePtr<InputStream, StreamDeleter>{&stream, false};
 
     // Retrieve the attributes of the open sound file
     m_sampleCount  = info.sampleCount;
