@@ -29,6 +29,20 @@
 #include <cassert>
 #include <cmath>
 
+namespace
+{
+
+// Named differently from the one in 'Vector3.cpp' to support unity builds.
+
+// clang-format off
+template <typename> constexpr bool isVec2FloatingPoint              = false;
+template <>         constexpr bool isVec2FloatingPoint<float>       = true;
+template <>         constexpr bool isVec2FloatingPoint<double>      = true;
+template <>         constexpr bool isVec2FloatingPoint<long double> = true;
+// clang-format on
+
+} // namespace
+
 
 namespace sf
 {
@@ -36,7 +50,7 @@ namespace sf
 template <typename T>
 Vector2<T> Vector2<T>::normalized() const
 {
-    static_assert(std::is_floating_point_v<T>, "Vector2::normalized() is only supported for floating point types");
+    static_assert(isVec2FloatingPoint<T>, "Vector2::normalized() is only supported for floating point types");
 
     assert(*this != Vector2<T>());
     return (*this) / length();
@@ -47,7 +61,7 @@ Vector2<T> Vector2<T>::normalized() const
 template <typename T>
 Angle Vector2<T>::angleTo(const Vector2<T>& rhs) const
 {
-    static_assert(std::is_floating_point_v<T>, "Vector2::angleTo() is only supported for floating point types");
+    static_assert(isVec2FloatingPoint<T>, "Vector2::angleTo() is only supported for floating point types");
 
     assert(*this != Vector2<T>());
     assert(rhs != Vector2<T>());
@@ -59,7 +73,7 @@ Angle Vector2<T>::angleTo(const Vector2<T>& rhs) const
 template <typename T>
 Angle Vector2<T>::angle() const
 {
-    static_assert(std::is_floating_point_v<T>, "Vector2::angle() is only supported for floating point types");
+    static_assert(isVec2FloatingPoint<T>, "Vector2::angle() is only supported for floating point types");
 
     assert(*this != Vector2<T>());
     return radians(static_cast<float>(std::atan2(y, x)));
@@ -70,7 +84,7 @@ Angle Vector2<T>::angle() const
 template <typename T>
 Vector2<T> Vector2<T>::rotatedBy(Angle phi) const
 {
-    static_assert(std::is_floating_point_v<T>, "Vector2::rotatedBy() is only supported for floating point types");
+    static_assert(isVec2FloatingPoint<T>, "Vector2::rotatedBy() is only supported for floating point types");
 
     // No zero vector assert, because rotating a zero vector is well-defined (yields always itself)
     T cos = std::cos(static_cast<T>(phi.asRadians()));
@@ -85,7 +99,7 @@ Vector2<T> Vector2<T>::rotatedBy(Angle phi) const
 template <typename T>
 Vector2<T> Vector2<T>::projectedOnto(const Vector2<T>& axis) const
 {
-    static_assert(std::is_floating_point_v<T>, "Vector2::projectedOnto() is only supported for floating point types");
+    static_assert(isVec2FloatingPoint<T>, "Vector2::projectedOnto() is only supported for floating point types");
 
     assert(axis != Vector2<T>());
     return dot(axis) / axis.lengthSq() * axis;
@@ -98,7 +112,7 @@ Vector2<T>::Vector2(T r, Angle phi) :
 x(r * static_cast<T>(std::cos(phi.asRadians()))),
 y(r * static_cast<T>(std::sin(phi.asRadians())))
 {
-    static_assert(std::is_floating_point_v<T>, "Vector2::Vector2(T, Angle) is only supported for floating point types");
+    static_assert(isVec2FloatingPoint<T>, "Vector2::Vector2(T, Angle) is only supported for floating point types");
 }
 
 
@@ -106,7 +120,7 @@ y(r * static_cast<T>(std::sin(phi.asRadians())))
 template <typename T>
 T Vector2<T>::length() const
 {
-    static_assert(std::is_floating_point_v<T>, "Vector2::length() is only supported for floating point types");
+    static_assert(isVec2FloatingPoint<T>, "Vector2::length() is only supported for floating point types");
 
     // don't use std::hypot because of slow performance
     return std::sqrt(x * x + y * y);
@@ -116,9 +130,30 @@ T Vector2<T>::length() const
 
 
 ////////////////////////////////////////////////////////////
-// Explicit template instantiations
+// Explicit instantiation definitions
 ////////////////////////////////////////////////////////////
 
 template class sf::Vector2<float>;
 template class sf::Vector2<double>;
 template class sf::Vector2<long double>;
+
+#define SFML_INSTANTIATE_VECTOR2_BASIC_MEMBER_FUNCTIONS(type)                \
+    template /*                   */ sf::Vector2<type>::Vector2();           \
+    template /*                   */ sf::Vector2<type>::Vector2(type, type); \
+    template const sf::Vector2<type> sf::Vector2<type>::UnitX;               \
+    template const sf::Vector2<type> sf::Vector2<type>::UnitY;
+
+#define SFML_INSTANTIATE_VECTOR2_INTEGRAL_MEMBER_FUNCTIONS(type)                      \
+    template type              sf::Vector2<type>::lengthSq() const;                   \
+    template sf::Vector2<type> sf::Vector2<type>::perpendicular() const;              \
+    template type              sf::Vector2<type>::dot(const Vector2& rhs) const;      \
+    template type              sf::Vector2<type>::cross(const Vector2& rhs) const;    \
+    template sf::Vector2<type> sf::Vector2<type>::cwiseMul(const Vector2& rhs) const; \
+    template sf::Vector2<type> sf::Vector2<type>::cwiseDiv(const Vector2& rhs) const;
+
+SFML_INSTANTIATE_VECTOR2_BASIC_MEMBER_FUNCTIONS(bool)
+SFML_INSTANTIATE_VECTOR2_BASIC_MEMBER_FUNCTIONS(int)
+SFML_INSTANTIATE_VECTOR2_BASIC_MEMBER_FUNCTIONS(unsigned int)
+
+SFML_INSTANTIATE_VECTOR2_INTEGRAL_MEMBER_FUNCTIONS(int)
+SFML_INSTANTIATE_VECTOR2_INTEGRAL_MEMBER_FUNCTIONS(unsigned int)

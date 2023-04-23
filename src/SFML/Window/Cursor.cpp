@@ -28,15 +28,15 @@
 #include <SFML/Window/Cursor.hpp>
 #include <SFML/Window/CursorImpl.hpp>
 
+#include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
 
-#include <memory>
 
 namespace sf
 {
 
 ////////////////////////////////////////////////////////////
-Cursor::Cursor() : m_impl(std::make_unique<priv::CursorImpl>())
+Cursor::Cursor() : m_impl(sf::priv::makeUnique<priv::CursorImpl>())
 {
 }
 

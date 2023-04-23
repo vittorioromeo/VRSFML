@@ -26,6 +26,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/GLCheck.hpp>
+#include <SFML/Graphics/GLExtensions.hpp>
 #include <SFML/Graphics/RenderTextureImplFBO.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
@@ -33,6 +34,7 @@
 #include <SFML/Window/ContextSettings.hpp>
 
 #include <SFML/System/Err.hpp>
+#include <SFML/System/UniquePtr.hpp>
 
 #include <mutex>
 #include <ostream>
@@ -555,7 +557,7 @@ bool RenderTextureImplFBO::activate(bool active)
     if (!contextId)
     {
         if (!m_context)
-            m_context = std::make_unique<Context>();
+            m_context = sf::priv::makeUnique<Context>();
 
         if (!m_context->setActive(true))
         {

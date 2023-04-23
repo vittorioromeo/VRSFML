@@ -33,8 +33,7 @@
 #include <SFML/Graphics/Texture.hpp>
 
 #include <SFML/Window/ContextSettings.hpp>
-
-#include <memory>
+#include <SFML/System/UniquePtr.hpp>
 
 
 namespace sf
@@ -228,7 +227,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::unique_ptr<priv::RenderTextureImpl> m_impl;    //!< Platform/hardware specific implementation
+    sf::priv::UniquePtr<priv::RenderTextureImpl> m_impl;    //!< Platform/hardware specific implementation
     Texture                                  m_texture; //!< Target texture to draw on
 };
 

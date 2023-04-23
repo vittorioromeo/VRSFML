@@ -33,7 +33,7 @@
 #include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/GlResource.hpp>
 
-#include <memory>
+#include <SFML/System/UniquePtr.hpp>
 
 #include <cstdint>
 
@@ -104,7 +104,7 @@ public:
     /// \return Pointer to the created context
     ///
     ////////////////////////////////////////////////////////////
-    static std::unique_ptr<GlContext> create();
+    static sf::priv::UniquePtr<GlContext> create();
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context attached to a window
@@ -119,7 +119,9 @@ public:
     /// \return Pointer to the created context
     ///
     ////////////////////////////////////////////////////////////
-    static std::unique_ptr<GlContext> create(const ContextSettings& settings, const WindowImpl& owner, unsigned int bitsPerPixel);
+    static sf::priv::UniquePtr<GlContext> create(const ContextSettings& settings,
+                                                 const WindowImpl&      owner,
+                                                 unsigned int           bitsPerPixel);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context that embeds its own rendering target
@@ -133,7 +135,7 @@ public:
     /// \return Pointer to the created context
     ///
     ////////////////////////////////////////////////////////////
-    static std::unique_ptr<GlContext> create(const ContextSettings& settings, const Vector2u& size);
+    static sf::priv::UniquePtr<GlContext> create(const ContextSettings& settings, const Vector2u& size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Check whether a given OpenGL extension is available

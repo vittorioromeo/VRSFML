@@ -204,7 +204,7 @@ bool Font::loadFromFile(const std::filesystem::path& filename)
 
 #else
 
-    m_stream = std::make_unique<priv::ResourceStream>(filename);
+    m_stream = sf::priv::makeUnique<priv::ResourceStream>(filename);
     return loadFromStream(*m_stream);
 
 #endif

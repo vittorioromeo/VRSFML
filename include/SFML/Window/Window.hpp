@@ -33,8 +33,7 @@
 
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Time.hpp>
-
-#include <memory>
+#include <SFML/System/UniquePtr.hpp>
 
 
 namespace sf
@@ -281,9 +280,9 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::unique_ptr<priv::GlContext> m_context;        //!< Platform-specific implementation of the OpenGL context
-    Clock                            m_clock;          //!< Clock for measuring the elapsed time between frames
-    Time                             m_frameTimeLimit; //!< Current framerate limit
+    sf::priv::UniquePtr<priv::GlContext> m_context;        //!< Platform-specific implementation of the OpenGL context
+    Clock                                m_clock;          //!< Clock for measuring the elapsed time between frames
+    Time                                 m_frameTimeLimit; //!< Current framerate limit
 };
 
 } // namespace sf
