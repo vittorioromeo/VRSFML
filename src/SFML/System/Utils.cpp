@@ -22,19 +22,35 @@
 //
 ////////////////////////////////////////////////////////////
 
-#pragma once
-
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/Export.hpp>
+#include <SFML/System/Utils.hpp>
 
+#include <cctype>
 #include <filesystem>
+#include <sstream>
 #include <string>
 
 
 namespace sf
 {
-[[nodiscard]] SFML_SYSTEM_API std::string toLower(std::string str);
-[[nodiscard]] SFML_SYSTEM_API std::string formatDebugPathInfo(const std::filesystem::path& path);
+std::string toLower(std::string str)
+{
+    for (char& c : str)
+        c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+
+    return str;
+}
+
+std::string formatDebugPathInfo(const std::filesystem::path& path)
+{
+    std::ostringstream oss;
+
+    oss << "    Provided path: " << path << '\n' //
+        << "    Absolute path: " << std::filesystem::absolute(path);
+
+    return oss.str();
+}
+
 } // namespace sf
