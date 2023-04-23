@@ -2,11 +2,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Window/Context.hpp>
+#include <SFML/Window/Window.hpp>
+
 #include <SFML/System/Angle.hpp>
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Time.hpp>
-#include <SFML/Window/Context.hpp>
-#include <SFML/Window/Window.hpp>
 
 #include <X11/Xlib.h>
 #define GLAD_GL_IMPLEMENTATION

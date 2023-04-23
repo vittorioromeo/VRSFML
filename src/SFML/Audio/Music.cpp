@@ -37,6 +37,7 @@
 #include <mutex>
 #include <ostream>
 #include <vector>
+
 #include <cassert>
 
 #if defined(__APPLE__)

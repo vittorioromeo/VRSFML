@@ -5,6 +5,7 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
+
 #include <SFML/System/Angle.hpp>
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Time.hpp>

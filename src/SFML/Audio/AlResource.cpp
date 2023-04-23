@@ -27,6 +27,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/AlResource.hpp>
 #include <SFML/Audio/AudioDevice.hpp>
+
 #include <SFML/System/UniquePtr.hpp>
 
 #include <mutex>

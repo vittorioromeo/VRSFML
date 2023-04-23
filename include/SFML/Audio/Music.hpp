@@ -31,10 +31,12 @@
 
 #include <SFML/Audio/InputSoundFile.hpp>
 #include <SFML/Audio/SoundStream.hpp>
+
 #include <SFML/System/UniquePtr.hpp>
 
-#include <cstdint>
 #include <filesystem>
+
+#include <cstdint>
 
 
 namespace sf
