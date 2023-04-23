@@ -32,16 +32,19 @@
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/VertexArray.hpp>
 #include <SFML/Graphics/VertexBuffer.hpp>
-#include <SFML/System/Err.hpp>
+
 #include <SFML/Window/Context.hpp>
 
+#include <SFML/System/Err.hpp>
+
 #include <algorithm>
-#include <cassert>
-#include <cmath>
 #include <iostream>
 #include <mutex>
 #include <ostream>
 #include <unordered_map>
+
+#include <cassert>
+#include <cmath>
 
 
 namespace
@@ -719,7 +722,7 @@ void RenderTarget::drawPrimitives(PrimitiveType type, std::size_t firstVertex, s
 {
     // Find the OpenGL primitive type
     static constexpr GLenum modes[] = {GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN};
-    GLenum                  mode = modes[static_cast<std::size_t>(type)];
+    GLenum mode = modes[static_cast<std::size_t>(type)];
 
     // Draw the primitives
     glCheck(glDrawArrays(mode, static_cast<GLint>(firstVertex), static_cast<GLsizei>(vertexCount)));

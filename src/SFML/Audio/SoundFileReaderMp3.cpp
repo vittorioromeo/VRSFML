@@ -27,9 +27,9 @@
 ////////////////////////////////////////////////////////////
 #define MINIMP3_IMPLEMENTATION // Minimp3 control define, places implementation in this file.
 #ifndef NOMINMAX
-#define NOMINMAX // To avoid windows.h and std::min issue
+#define NOMINMAX               // To avoid windows.h and std::min issue
 #endif
-#define MINIMP3_NO_STDIO // Minimp3 control define, eliminate file manipulation code which is useless here
+#define MINIMP3_NO_STDIO       // Minimp3 control define, eliminate file manipulation code which is useless here
 
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -51,9 +51,11 @@
 #undef MINIMP3_NO_STDIO
 
 #include <SFML/Audio/SoundFileReaderMp3.hpp>
+
 #include <SFML/System/InputStream.hpp>
 
 #include <algorithm>
+
 #include <cstring>
 
 

@@ -29,6 +29,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/Transform.hpp>
+
 #include <SFML/System/Vector2.hpp>
 #include <SFML/System/Vector3.hpp>
 
@@ -181,7 +182,7 @@ using Mat3 = ImplementationDefined;
 ////////////////////////////////////////////////////////////
 using Mat4 = ImplementationDefined;
 
-#else // SFML_DOXYGEN
+#else  // SFML_DOXYGEN
 
 using Vec4  = priv::Vector4<float>;
 using Ivec4 = priv::Vector4<int>;

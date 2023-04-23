@@ -27,15 +27,17 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Network/Ftp.hpp>
 #include <SFML/Network/IpAddress.hpp>
+
 #include <SFML/System/Err.hpp>
 
 #include <algorithm>
-#include <cctype>
-#include <cstdio>
 #include <fstream>
 #include <iterator>
 #include <ostream>
 #include <sstream>
+
+#include <cctype>
+#include <cstdio>
 
 
 namespace sf

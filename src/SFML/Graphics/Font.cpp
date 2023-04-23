@@ -41,11 +41,12 @@
 #include FT_OUTLINE_H
 #include FT_BITMAP_H
 #include FT_STROKER_H
+#include <ostream>
+#include <type_traits>
+
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
-#include <ostream>
-#include <type_traits>
 
 
 namespace
@@ -675,7 +676,7 @@ Glyph Font::loadGlyph(std::uint32_t codePoint, unsigned int characterSize, bool 
                 for (unsigned int x = padding; x < width - padding; ++x)
                 {
                     // The color channels remain white, just fill the alpha channel
-                    std::size_t index            = x + y * width;
+                    std::size_t index = x + y * width;
                     m_pixelBuffer[index * 4 + 3] = ((pixels[(x - padding) / 8]) & (1 << (7 - ((x - padding) % 8)))) ? 255 : 0;
                 }
                 pixels += bitmap.pitch;
