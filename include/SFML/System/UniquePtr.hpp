@@ -52,7 +52,7 @@ struct UniquePtrDefaultDeleter
 };
 
 template <typename T, typename TDeleter = UniquePtrDefaultDeleter>
-class UniquePtr
+class UniquePtr : private TDeleter
 {
     template <typename, typename>
     friend class UniquePtr;
@@ -62,7 +62,7 @@ private:
 
     [[gnu::always_inline]] void deleteImpl() noexcept
     {
-        TDeleter{}(_ptr);
+        static_cast<TDeleter*>(this)->operator()(_ptr);
     }
 
 public:
@@ -71,6 +71,12 @@ public:
     }
 
     [[nodiscard, gnu::always_inline]] explicit UniquePtr(T* ptr) noexcept : _ptr{ptr}
+    {
+    }
+
+    [[nodiscard, gnu::always_inline]] explicit UniquePtr(T* ptr, const TDeleter& deleter) noexcept :
+    TDeleter(deleter),
+    _ptr{ptr}
     {
     }
 
