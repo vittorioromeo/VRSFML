@@ -31,6 +31,7 @@
 #include <SFML/Graphics/Texture.hpp>
 
 #include <algorithm>
+
 #include <cmath>
 
 

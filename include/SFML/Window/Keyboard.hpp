@@ -153,7 +153,7 @@ enum Key
     F15,          //!< The F15 key
     Pause,        //!< The Pause key
 
-    KeyCount, //!< Keep last -- the total number of keyboard keys
+    KeyCount,     //!< Keep last -- the total number of keyboard keys
 };
 
 ////////////////////////////////////////////////////////////
@@ -320,7 +320,7 @@ enum class Scan
     LaunchMail,         //!< Keyboard Launch Mail key
     LaunchMediaSelect,  //!< Keyboard Launch Media Select key
 
-    ScancodeCount //!< Keep last -- the total number of scancodes
+    ScancodeCount       //!< Keep last -- the total number of scancodes
 };
 
 using Scancode = Scan;
