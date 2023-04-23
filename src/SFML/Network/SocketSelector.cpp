@@ -61,7 +61,8 @@ SocketSelector::SocketSelector() : m_impl(sf::priv::makeUnique<SocketSelectorImp
 
 
 ////////////////////////////////////////////////////////////
-SocketSelector::SocketSelector(const SocketSelector& copy) : m_impl(sf::priv::makeUnique<SocketSelectorImpl>(*copy.m_impl))
+SocketSelector::SocketSelector(const SocketSelector& copy) :
+m_impl(sf::priv::makeUnique<SocketSelectorImpl>(*copy.m_impl))
 {
 }
 

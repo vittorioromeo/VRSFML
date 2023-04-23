@@ -27,7 +27,6 @@
 #include <SFML/System/Export.hpp>
 
 #include <cassert>
-#include "SFML/Config.hpp"
 
 namespace sf
 {
@@ -332,7 +331,7 @@ extern template class sf::Vector3<unsigned int>;
 namespace sf
 {
 #include <SFML/System/Vector3.inl>
-} // namesapce sf
+} // namespace sf
 
 
 ////////////////////////////////////////////////////////////

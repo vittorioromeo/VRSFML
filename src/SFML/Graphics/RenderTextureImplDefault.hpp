@@ -30,6 +30,7 @@
 #include <SFML/Graphics/RenderTextureImpl.hpp>
 
 #include <SFML/Window/GlResource.hpp>
+
 #include <SFML/System/UniquePtr.hpp>
 
 
@@ -114,7 +115,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     sf::priv::UniquePtr<Context> m_context; //!< P-Buffer based context
-    Vector2u                 m_size;    //!< Width and height of the P-Buffer
+    Vector2u                     m_size;    //!< Width and height of the P-Buffer
 };
 
 } // namespace priv
