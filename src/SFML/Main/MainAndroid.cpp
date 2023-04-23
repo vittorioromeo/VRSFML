@@ -46,10 +46,11 @@
 #include <android/native_activity.h>
 #include <android/window.h>
 
-#include <cassert>
-#include <cstring>
 #include <mutex>
 #include <thread>
+
+#include <cassert>
+#include <cstring>
 
 #define SF_GLAD_EGL_IMPLEMENTATION
 #include <glad/egl.h>
@@ -191,7 +192,7 @@ void goToFullscreenMode(ANativeActivity* activity)
     if (apiLevel >= 16)
     {
         jfieldID FieldSYSTEM_UI_FLAG_FULLSCREEN = lJNIEnv->GetStaticFieldID(classView, "SYSTEM_UI_FLAG_FULLSCREEN", "I");
-        jint     SYSTEM_UI_FLAG_FULLSCREEN      = lJNIEnv->GetStaticIntField(classView, FieldSYSTEM_UI_FLAG_FULLSCREEN);
+        jint SYSTEM_UI_FLAG_FULLSCREEN = lJNIEnv->GetStaticIntField(classView, FieldSYSTEM_UI_FLAG_FULLSCREEN);
         flags |= SYSTEM_UI_FLAG_FULLSCREEN;
     }
 

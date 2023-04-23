@@ -30,11 +30,13 @@
 #include <SFML/Audio/Export.hpp>
 
 #include <SFML/Audio/SoundSource.hpp>
+
 #include <SFML/System/Time.hpp>
 
-#include <cstdlib>
 #include <mutex>
 #include <thread>
+
+#include <cstdlib>
 
 
 namespace sf
@@ -345,7 +347,7 @@ private:
     std::int32_t                 m_format{};                  //!< Format of the internal sound buffers
     bool                         m_loop{};                    //!< Loop flag (true to loop, false to play once)
     std::uint64_t                m_samplesProcessed{}; //!< Number of samples processed since beginning of the stream
-    std::int64_t                 m_bufferSeeks[BufferCount]{}; //!< If buffer is an "end buffer", holds next seek position, else NoLoop. For play offset calculation.
+    std::int64_t m_bufferSeeks[BufferCount]{}; //!< If buffer is an "end buffer", holds next seek position, else NoLoop. For play offset calculation.
     Time m_processingInterval{milliseconds(10)}; //!< Interval for checking and filling the internal sound buffers.
 };
 

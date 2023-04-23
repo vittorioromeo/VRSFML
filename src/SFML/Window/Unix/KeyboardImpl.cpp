@@ -25,28 +25,30 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/String.hpp>
-#include <SFML/System/Utf.hpp>
 #include <SFML/Window/Unix/Display.hpp>
 #include <SFML/Window/Unix/KeySymToKeyMapping.hpp>
 #include <SFML/Window/Unix/KeySymToUnicodeMapping.hpp>
 #include <SFML/Window/Unix/KeyboardImpl.hpp>
 
+#include <SFML/System/String.hpp>
+#include <SFML/System/Utf.hpp>
+
 #include <X11/XKBlib.h>
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
 
-#include <cstring>
 #include <string>
 #include <unordered_map>
 #include <utility>
 
+#include <cstring>
+
 namespace
 {
 
-const KeyCode          nullKeyCode = 0;
-const int              maxKeyCode  = 256;
-KeyCode                scancodeToKeycode[static_cast<std::size_t>(sf::Keyboard::Scan::ScancodeCount)]; ///< Mapping of SFML scancode to X11 KeyCode
+const KeyCode nullKeyCode = 0;
+const int     maxKeyCode  = 256;
+KeyCode scancodeToKeycode[static_cast<std::size_t>(sf::Keyboard::Scan::ScancodeCount)]; ///< Mapping of SFML scancode to X11 KeyCode
 sf::Keyboard::Scancode keycodeToScancode[maxKeyCode]; ///< Mapping of X11 KeyCode to SFML scancode
 
 ////////////////////////////////////////////////////////////

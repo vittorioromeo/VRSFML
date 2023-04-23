@@ -25,14 +25,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/Err.hpp>
 #include <SFML/Window/DRM/InputImplUDev.hpp>
 
+#include <SFML/System/Err.hpp>
+
 #include <algorithm>
-#include <cerrno>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
 #include <fcntl.h>
 #include <linux/input.h>
 #include <mutex>
@@ -42,6 +39,11 @@
 #include <termios.h>
 #include <unistd.h>
 #include <vector>
+
+#include <cerrno>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 
 namespace
@@ -53,21 +55,21 @@ struct TouchSlot
     sf::Vector2i pos;
 };
 
-std::recursive_mutex inputMutex; // threadsafe? maybe...
-sf::Vector2i         mousePos;   // current mouse position
+std::recursive_mutex inputMutex;                           // threadsafe? maybe...
+sf::Vector2i         mousePos;                             // current mouse position
 
 std::vector<int>  fileDescriptors;                         // list of open file descriptors for /dev/input
 std::vector<bool> mouseMap(sf::Mouse::ButtonCount, false); // track whether keys are down
 std::vector<bool> keyMap(sf::Keyboard::KeyCount, false);   // track whether mouse buttons are down
 
-int                    touchFd = -1;    // file descriptor we have seen MT events on; assumes only 1
-std::vector<TouchSlot> touchSlots;      // track the state of each touch "slot"
-int                    currentSlot = 0; // which slot are we currently updating?
+int                    touchFd = -1;                       // file descriptor we have seen MT events on; assumes only 1
+std::vector<TouchSlot> touchSlots;                         // track the state of each touch "slot"
+int                    currentSlot = 0;                    // which slot are we currently updating?
 
-std::queue<sf::Event> eventQueue;    // events received and waiting to be consumed
-const int             maxQueue = 64; // The maximum size we let eventQueue grow to
+std::queue<sf::Event> eventQueue;                          // events received and waiting to be consumed
+const int             maxQueue = 64;                       // The maximum size we let eventQueue grow to
 
-termios newTerminalConfig, oldTerminalConfig; // Terminal configurations
+termios newTerminalConfig, oldTerminalConfig;              // Terminal configurations
 
 bool altDown()
 {
@@ -522,7 +524,7 @@ bool eventProcess(sf::Event& event)
 
     if ((code == 127) || (code == 8)) // Suppress 127 (DEL) to 8 (BACKSPACE)
         code = 0;
-    else if (code == 27) // ESC
+    else if (code == 27)              // ESC
     {
         // Suppress ANSI escape sequences
         FD_ZERO(&readFDSet);
