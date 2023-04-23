@@ -27,10 +27,11 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Utils.hpp>
 
-#include <cctype>
 #include <filesystem>
 #include <sstream>
 #include <string>
+
+#include <cctype>
 
 
 namespace sf
