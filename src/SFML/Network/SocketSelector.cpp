@@ -30,9 +30,9 @@
 #include <SFML/Network/SocketSelector.hpp>
 
 #include <SFML/System/Err.hpp>
+#include <SFML/System/UniquePtr.hpp>
 
 #include <algorithm>
-#include <memory>
 #include <ostream>
 #include <utility>
 
@@ -54,14 +54,14 @@ struct SocketSelector::SocketSelectorImpl
 
 
 ////////////////////////////////////////////////////////////
-SocketSelector::SocketSelector() : m_impl(std::make_unique<SocketSelectorImpl>())
+SocketSelector::SocketSelector() : m_impl(sf::priv::makeUnique<SocketSelectorImpl>())
 {
     clear();
 }
 
 
 ////////////////////////////////////////////////////////////
-SocketSelector::SocketSelector(const SocketSelector& copy) : m_impl(std::make_unique<SocketSelectorImpl>(*copy.m_impl))
+SocketSelector::SocketSelector(const SocketSelector& copy) : m_impl(sf::priv::makeUnique<SocketSelectorImpl>(*copy.m_impl))
 {
 }
 

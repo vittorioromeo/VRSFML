@@ -29,8 +29,6 @@
 #ifdef SFML_SYSTEM_ANDROID
 #include <SFML/System/Android/ResourceStream.hpp>
 #endif
-#include <memory>
-
 #include <cstddef>
 
 namespace sf

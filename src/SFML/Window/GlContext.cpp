@@ -29,13 +29,13 @@
 #include <SFML/Window/GlContext.hpp>
 
 #include <SFML/System/Err.hpp>
+#include <SFML/System/UniquePtr.hpp>
 
 #include <glad/gl.h>
 
 #include <algorithm>
 #include <atomic>
 #include <iomanip>
-#include <memory>
 #include <mutex>
 #include <optional>
 #include <ostream>
@@ -191,7 +191,7 @@ struct CurrentContext
 thread_local CurrentContext currentContext;
 
 // The hidden, inactive context that will be shared with all other contexts
-std::unique_ptr<ContextType> sharedContext;
+sf::priv::UniquePtr<ContextType> sharedContext;
 
 // Unique identifier, used for identifying contexts when managing unshareable OpenGL resources
 std::atomic<std::uint64_t> nextContextId(1); // start at 1, zero is "no context"
@@ -377,7 +377,7 @@ void GlContext::initResource()
         }
 
         // Create the shared context
-        sharedContext = std::make_unique<ContextType>(nullptr);
+        sharedContext = sf::priv::makeUnique<ContextType>(nullptr);
         sharedContext->initialize(ContextSettings());
 
         // Load our extensions vector
@@ -473,7 +473,7 @@ void GlContext::releaseTransientContext()
 
 
 ////////////////////////////////////////////////////////////
-std::unique_ptr<GlContext> GlContext::create()
+sf::priv::UniquePtr<GlContext> GlContext::create()
 {
     using GlContextImpl::mutex;
     using GlContextImpl::sharedContext;
@@ -483,7 +483,7 @@ std::unique_ptr<GlContext> GlContext::create()
 
     std::lock_guard lock(mutex);
 
-    std::unique_ptr<GlContext> context;
+    sf::priv::UniquePtr<GlContext> context;
 
     // We don't use acquireTransientContext here since we have
     // to ensure we have exclusive access to the shared context
@@ -492,7 +492,7 @@ std::unique_ptr<GlContext> GlContext::create()
         sharedContext->setActive(true);
 
         // Create the context
-        context = std::make_unique<ContextType>(sharedContext.get());
+        context = sf::priv::makeUnique<ContextType>(sharedContext.get());
 
         sharedContext->setActive(false);
     }
@@ -504,7 +504,7 @@ std::unique_ptr<GlContext> GlContext::create()
 
 
 ////////////////////////////////////////////////////////////
-std::unique_ptr<GlContext> GlContext::create(const ContextSettings& settings, const WindowImpl& owner, unsigned int bitsPerPixel)
+sf::priv::UniquePtr<GlContext> GlContext::create(const ContextSettings& settings, const WindowImpl& owner, unsigned int bitsPerPixel)
 {
     using GlContextImpl::loadExtensions;
     using GlContextImpl::mutex;
@@ -526,14 +526,14 @@ std::unique_ptr<GlContext> GlContext::create(const ContextSettings& settings, co
         // Re-create our shared context as a core context
         ContextSettings sharedSettings(0, 0, 0, settings.majorVersion, settings.minorVersion, settings.attributeFlags);
 
-        sharedContext = std::make_unique<ContextType>(nullptr, sharedSettings, Vector2u(1, 1));
+        sharedContext = sf::priv::makeUnique<ContextType>(nullptr, sharedSettings, Vector2u(1, 1));
         sharedContext->initialize(sharedSettings);
 
         // Reload our extensions vector
         loadExtensions();
     }
 
-    std::unique_ptr<GlContext> context;
+    sf::priv::UniquePtr<GlContext> context;
 
     // We don't use acquireTransientContext here since we have
     // to ensure we have exclusive access to the shared context
@@ -542,7 +542,7 @@ std::unique_ptr<GlContext> GlContext::create(const ContextSettings& settings, co
         sharedContext->setActive(true);
 
         // Create the context
-        context = std::make_unique<ContextType>(sharedContext.get(), settings, owner, bitsPerPixel);
+        context = sf::priv::makeUnique<ContextType>(sharedContext.get(), settings, owner, bitsPerPixel);
 
         sharedContext->setActive(false);
     }
@@ -555,7 +555,7 @@ std::unique_ptr<GlContext> GlContext::create(const ContextSettings& settings, co
 
 
 ////////////////////////////////////////////////////////////
-std::unique_ptr<GlContext> GlContext::create(const ContextSettings& settings, const Vector2u& size)
+sf::priv::UniquePtr<GlContext> GlContext::create(const ContextSettings& settings, const Vector2u& size)
 {
     using GlContextImpl::loadExtensions;
     using GlContextImpl::mutex;
@@ -577,14 +577,14 @@ std::unique_ptr<GlContext> GlContext::create(const ContextSettings& settings, co
         // Re-create our shared context as a core context
         ContextSettings sharedSettings(0, 0, 0, settings.majorVersion, settings.minorVersion, settings.attributeFlags);
 
-        sharedContext = std::make_unique<ContextType>(nullptr, sharedSettings, Vector2u(1, 1));
+        sharedContext = sf::priv::makeUnique<ContextType>(nullptr, sharedSettings, Vector2u(1, 1));
         sharedContext->initialize(sharedSettings);
 
         // Reload our extensions vector
         loadExtensions();
     }
 
-    std::unique_ptr<GlContext> context;
+    sf::priv::UniquePtr<GlContext> context;
 
     // We don't use acquireTransientContext here since we have
     // to ensure we have exclusive access to the shared context
@@ -593,7 +593,7 @@ std::unique_ptr<GlContext> GlContext::create(const ContextSettings& settings, co
         sharedContext->setActive(true);
 
         // Create the context
-        context = std::make_unique<ContextType>(sharedContext.get(), settings, size);
+        context = sf::priv::makeUnique<ContextType>(sharedContext.get(), settings, size);
 
         sharedContext->setActive(false);
     }
