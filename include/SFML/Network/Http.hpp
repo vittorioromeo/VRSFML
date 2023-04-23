@@ -31,6 +31,7 @@
 
 #include <SFML/Network/IpAddress.hpp>
 #include <SFML/Network/TcpSocket.hpp>
+
 #include <SFML/System/Time.hpp>
 
 #include <map>
@@ -212,10 +213,10 @@ public:
             NotModified = 304, //!< For conditional requests, means the requested page hasn't changed and doesn't need to be refreshed
 
             // 4xx: client error
-            BadRequest          = 400, //!< The server couldn't understand the request (syntax error)
-            Unauthorized        = 401, //!< The requested page needs an authentication to be accessed
-            Forbidden           = 403, //!< The requested page cannot be accessed at all, even with authentication
-            NotFound            = 404, //!< The requested page doesn't exist
+            BadRequest   = 400,        //!< The server couldn't understand the request (syntax error)
+            Unauthorized = 401,        //!< The requested page needs an authentication to be accessed
+            Forbidden    = 403,        //!< The requested page cannot be accessed at all, even with authentication
+            NotFound     = 404,        //!< The requested page doesn't exist
             RangeNotSatisfiable = 407, //!< The server can't satisfy the partial GET request (with a "Range" header field)
 
             // 5xx: server error

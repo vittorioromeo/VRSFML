@@ -59,7 +59,7 @@ const char* getLibraryName(JNIEnv* lJNIEnv, jobject& objectActivityInfo)
     jobject objectName = lJNIEnv->NewStringUTF("sfml.app.lib_name");
 
     // Get the value of meta-data named "sfml.app.lib_name"
-    jclass    classBundle     = lJNIEnv->FindClass("android/os/Bundle");
+    jclass classBundle = lJNIEnv->FindClass("android/os/Bundle");
     jmethodID methodGetString = lJNIEnv->GetMethodID(classBundle, "getString", "(Ljava/lang/String;)Ljava/lang/String;");
     jstring valueString = static_cast<jstring>(lJNIEnv->CallObjectMethod(objectMetaData, methodGetString, objectName));
 
@@ -96,7 +96,7 @@ void* loadLibrary(const char* libraryName, JNIEnv* lJNIEnv, jobject& ObjectActiv
                                                         "Landroid/content/pm/ApplicationInfo;");
     jobject  ObjectApplicationInfo = lJNIEnv->GetObjectField(ObjectActivityInfo, FieldApplicationInfo);
 
-    jclass   ClassApplicationInfo  = lJNIEnv->FindClass("android/content/pm/ApplicationInfo");
+    jclass ClassApplicationInfo = lJNIEnv->FindClass("android/content/pm/ApplicationInfo");
     jfieldID FieldNativeLibraryDir = lJNIEnv->GetFieldID(ClassApplicationInfo, "nativeLibraryDir", "Ljava/lang/String;");
 
     jobject ObjectDirPath = lJNIEnv->GetObjectField(ObjectApplicationInfo, FieldNativeLibraryDir);
