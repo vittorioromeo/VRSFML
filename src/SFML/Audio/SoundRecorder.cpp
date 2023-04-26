@@ -38,6 +38,8 @@
 #include <thread>
 #include <vector>
 
+#include <ostream>
+
 #include <cassert>
 #include <cstring>
 

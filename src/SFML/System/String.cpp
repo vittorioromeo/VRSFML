@@ -29,6 +29,9 @@
 #include <SFML/System/Utf.hpp>
 
 #include <iterator>
+#include <utility>
+
+#include <cstring>
 
 #include <cstring>
 
@@ -119,7 +122,7 @@ String::String(const char32_t* utf32String)
 
 
 ////////////////////////////////////////////////////////////
-String::String(const std::u32string& utf32String) : m_string(utf32String)
+String::String(std::u32string utf32String) : m_string(std::move(utf32String))
 {
 }
 

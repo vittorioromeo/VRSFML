@@ -31,6 +31,7 @@
 #include <SFML/Graphics/Texture.hpp>
 
 #include <algorithm>
+#include <utility>
 
 #include <cmath>
 
@@ -95,8 +96,8 @@ void addGlyphQuad(sf::VertexArray& vertices, sf::Vector2f position, const sf::Co
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-Text::Text(const Font& font, const String& string, unsigned int characterSize) :
-m_string(string),
+Text::Text(const Font& font, String string, unsigned int characterSize) :
+m_string(std::move(string)),
 m_font(&font),
 m_characterSize(characterSize)
 {
