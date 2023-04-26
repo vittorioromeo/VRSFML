@@ -24,8 +24,6 @@
 
 #include <SFML/System/Vector2.hpp>
 
-#include <type_traits>
-
 #include <cassert>
 #include <cmath>
 

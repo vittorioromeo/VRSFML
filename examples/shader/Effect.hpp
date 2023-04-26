@@ -60,7 +60,7 @@ public:
     }
 
 protected:
-    Effect(const std::string& name) : m_name(name)
+    Effect(std::string name) : m_name(std::move(name))
     {
     }
 

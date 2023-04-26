@@ -35,6 +35,10 @@
 #include <iterator>
 #include <ostream>
 #include <sstream>
+#include <utility>
+
+#include <cctype>
+#include <cstdio>
 
 #include <cctype>
 #include <cstdio>
@@ -80,7 +84,7 @@ private:
 
 
 ////////////////////////////////////////////////////////////
-Ftp::Response::Response(Status code, const std::string& message) : m_status(code), m_message(message)
+Ftp::Response::Response(Status code, std::string message) : m_status(code), m_message(std::move(message))
 {
 }
 
