@@ -48,6 +48,9 @@
 #include <cstdlib>
 #include <cstring>
 
+#ifdef SFML_DEBUG
+#include <cassert>
+#endif
 
 namespace
 {
@@ -121,6 +124,20 @@ struct Font::FontHandles
     FT_Face      face{};      //< Pointer to the internal font face
     FT_Stroker   stroker{};   //< Pointer to the stroker
 };
+
+
+////////////////////////////////////////////////////////////
+Font::~Font()
+{
+#ifdef SFML_DEBUG
+    assert(m_dependantTextCount == 0 &&
+        "FATAL ERROR: font object was destroyed before its dependants."
+        "Please ensure that all text objects using this font are destroyed prior to this font to avoid lifetime issues."
+        "In practice, this can happen if a font object is created as a local variable and its address is given to a text."
+        "If the text object is returned from that same scope, the given address will now point to an invalid memory location."
+    );
+#endif
+}
 
 
 ////////////////////////////////////////////////////////////

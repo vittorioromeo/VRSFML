@@ -35,6 +35,9 @@
 
 #include <cmath>
 
+#ifdef SFML_DEBUG
+#include <cassert>
+#endif
 
 namespace
 {
@@ -101,6 +104,22 @@ m_string(std::move(string)),
 m_font(&font),
 m_characterSize(characterSize)
 {
+#ifdef SFML_DEBUG
+    ++(font.m_dependantTextCount);
+#endif
+}
+
+
+////////////////////////////////////////////////////////////
+Text::~Text()
+{
+#ifdef SFML_DEBUG
+    if (m_font != nullptr)
+    {
+        --(m_font->m_dependantTextCount);
+        assert(m_font->m_dependantTextCount >= 0);
+    }
+#endif
 }
 
 
@@ -118,11 +137,15 @@ void Text::setString(const String& string)
 ////////////////////////////////////////////////////////////
 void Text::setFont(const Font& font)
 {
-    if (m_font != &font)
-    {
-        m_font               = &font;
-        m_geometryNeedUpdate = true;
-    }
+    if (m_font == &font)
+        return;
+
+    m_font               = &font;
+    m_geometryNeedUpdate = true;
+
+#ifdef SFML_DEBUG
+    ++(font.m_dependantTextCount);
+#endif
 }
 
 
