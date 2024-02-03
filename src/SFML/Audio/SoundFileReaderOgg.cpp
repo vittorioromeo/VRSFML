@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -88,13 +88,6 @@ bool SoundFileReaderOgg::check(InputStream& stream)
 
 
 ////////////////////////////////////////////////////////////
-SoundFileReaderOgg::SoundFileReaderOgg()
-{
-    m_vorbis.datasource = nullptr;
-}
-
-
-////////////////////////////////////////////////////////////
 SoundFileReaderOgg::~SoundFileReaderOgg()
 {
     close();
@@ -102,33 +95,34 @@ SoundFileReaderOgg::~SoundFileReaderOgg()
 
 
 ////////////////////////////////////////////////////////////
-bool SoundFileReaderOgg::open(InputStream& stream, Info& info)
+std::optional<SoundFileReader::Info> SoundFileReaderOgg::open(InputStream& stream)
 {
     // Open the Vorbis stream
-    int status = ov_open_callbacks(&stream, &m_vorbis, nullptr, 0, callbacks);
+    const int status = ov_open_callbacks(&stream, &m_vorbis, nullptr, 0, callbacks);
     if (status < 0)
     {
         err() << "Failed to open Vorbis file for reading" << std::endl;
-        return false;
+        return std::nullopt;
     }
 
     // Retrieve the music attributes
     vorbis_info* vorbisInfo = ov_info(&m_vorbis, -1);
-    info.channelCount       = static_cast<unsigned int>(vorbisInfo->channels);
-    info.sampleRate         = static_cast<unsigned int>(vorbisInfo->rate);
-    info.sampleCount        = static_cast<std::size_t>(ov_pcm_total(&m_vorbis, -1) * vorbisInfo->channels);
+    Info         info;
+    info.channelCount = static_cast<unsigned int>(vorbisInfo->channels);
+    info.sampleRate   = static_cast<unsigned int>(vorbisInfo->rate);
+    info.sampleCount  = static_cast<std::size_t>(ov_pcm_total(&m_vorbis, -1) * vorbisInfo->channels);
 
     // We must keep the channel count for the seek function
     m_channelCount = info.channelCount;
 
-    return true;
+    return info;
 }
 
 
 ////////////////////////////////////////////////////////////
 void SoundFileReaderOgg::seek(std::uint64_t sampleOffset)
 {
-    assert(m_vorbis.datasource);
+    assert(m_vorbis.datasource && "Vorbis datasource is missing. Call SoundFileReaderOgg::open() to initialize it.");
 
     ov_pcm_seek(&m_vorbis, static_cast<ogg_int64_t>(sampleOffset / m_channelCount));
 }
@@ -137,17 +131,17 @@ void SoundFileReaderOgg::seek(std::uint64_t sampleOffset)
 ////////////////////////////////////////////////////////////
 std::uint64_t SoundFileReaderOgg::read(std::int16_t* samples, std::uint64_t maxCount)
 {
-    assert(m_vorbis.datasource);
+    assert(m_vorbis.datasource && "Vorbis datasource is missing. Call SoundFileReaderOgg::open() to initialize it.");
 
     // Try to read the requested number of samples, stop only on error or end of file
     std::uint64_t count = 0;
     while (count < maxCount)
     {
-        int  bytesToRead = static_cast<int>(maxCount - count) * static_cast<int>(sizeof(std::int16_t));
-        long bytesRead   = ov_read(&m_vorbis, reinterpret_cast<char*>(samples), bytesToRead, 0, 2, 1, nullptr);
+        const int  bytesToRead = static_cast<int>(maxCount - count) * static_cast<int>(sizeof(std::int16_t));
+        const long bytesRead   = ov_read(&m_vorbis, reinterpret_cast<char*>(samples), bytesToRead, 0, 2, 1, nullptr);
         if (bytesRead > 0)
         {
-            long samplesRead = bytesRead / static_cast<long>(sizeof(std::int16_t));
+            const long samplesRead = bytesRead / static_cast<long>(sizeof(std::int16_t));
             count += static_cast<std::uint64_t>(samplesRead);
             samples += samplesRead;
         }

@@ -4,7 +4,8 @@
 #include <SFML/System/Vector2.hpp>
 #include <SFML/System/Vector3.hpp>
 
-#include <doctest/doctest.h>
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include <SystemUtil.hpp>
 #include <iomanip>
@@ -58,7 +59,7 @@ template std::ostream& operator<<(std::ostream&, const Vector3<float>&);
 
 bool operator==(const float& lhs, const Approx<float>& rhs)
 {
-    return static_cast<double>(lhs) == doctest::Approx(static_cast<double>(rhs.value));
+    return static_cast<double>(lhs) == Catch::Approx(static_cast<double>(rhs.value)).margin(1e-5);
 }
 
 bool operator==(const sf::Vector2f& lhs, const Approx<sf::Vector2f>& rhs)
@@ -75,15 +76,3 @@ bool operator==(const sf::Angle& lhs, const Approx<sf::Angle>& rhs)
 {
     return lhs.asDegrees() == Approx(rhs.value.asDegrees());
 }
-
-template <typename T>
-std::ostream& operator<<(std::ostream& os, const Approx<T>& approx)
-{
-    return os << approx.value;
-}
-
-template std::ostream& operator<<(std::ostream&, const Approx<int>&);
-template std::ostream& operator<<(std::ostream&, const Approx<float>&);
-template std::ostream& operator<<(std::ostream&, const Approx<sf::Vector2<float>>&);
-template std::ostream& operator<<(std::ostream&, const Approx<sf::Vector3<float>>&);
-template std::ostream& operator<<(std::ostream&, const Approx<sf::Angle>&);

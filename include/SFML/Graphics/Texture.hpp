@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -29,6 +29,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Export.hpp>
 
+#include <SFML/Graphics/CoordinateType.hpp>
 #include <SFML/Graphics/Rect.hpp>
 
 #include <SFML/Window/GlResource.hpp>
@@ -52,16 +53,6 @@ class Image;
 class SFML_GRAPHICS_API Texture : GlResource
 {
 public:
-    ////////////////////////////////////////////////////////////
-    /// \brief Types of texture coordinates that can be used for rendering
-    ///
-    ////////////////////////////////////////////////////////////
-    enum CoordinateType
-    {
-        Normalized, //!< Texture coordinates in range [0 .. 1]
-        Pixels      //!< Texture coordinates in range [0 .. size]
-    };
-
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
@@ -120,8 +111,10 @@ public:
     /// This function is a shortcut for the following code:
     /// \code
     /// sf::Image image;
-    /// image.loadFromFile(filename);
-    /// texture.loadFromImage(image, area);
+    /// if (!image.loadFromFile(filename))
+    ///     return false;
+    /// if (!texture.loadFromImage(image, area))
+    ///     return false;
     /// \endcode
     ///
     /// The \a area argument can be used to load only a sub-rectangle
@@ -151,8 +144,10 @@ public:
     /// This function is a shortcut for the following code:
     /// \code
     /// sf::Image image;
-    /// image.loadFromMemory(data, size);
-    /// texture.loadFromImage(image, area);
+    /// if (!image.loadFromMemory(data, size))
+    ///     return false;
+    /// if (!texture.loadFromImage(image, area))
+    ///     return false;
     /// \endcode
     ///
     /// The \a area argument can be used to load only a sub-rectangle
@@ -183,8 +178,10 @@ public:
     /// This function is a shortcut for the following code:
     /// \code
     /// sf::Image image;
-    /// image.loadFromStream(stream);
-    /// texture.loadFromImage(image, area);
+    /// if (!image.loadFromStream(stream))
+    ///     return false;
+    /// if (!texture.loadFromImage(image, area))
+    ///     return false;
     /// \endcode
     ///
     /// The \a area argument can be used to load only a sub-rectangle
@@ -572,7 +569,7 @@ public:
     /// \param coordinateType Type of texture coordinates to use
     ///
     ////////////////////////////////////////////////////////////
-    static void bind(const Texture* texture, CoordinateType coordinateType = Normalized);
+    static void bind(const Texture* texture, CoordinateType coordinateType = CoordinateType::Normalized);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the maximum texture size allowed
@@ -637,7 +634,7 @@ private:
 /// \param right Second instance to swap
 ///
 ////////////////////////////////////////////////////////////
-void swap(Texture& left, Texture& right) noexcept;
+SFML_GRAPHICS_API void swap(Texture& left, Texture& right) noexcept;
 
 } // namespace sf
 
@@ -693,8 +690,7 @@ void swap(Texture& left, Texture& right) noexcept;
 ///     return -1;
 ///
 /// // Assign it to a sprite
-/// sf::Sprite sprite;
-/// sprite.setTexture(texture);
+/// sf::Sprite sprite(texture);
 ///
 /// // Draw the textured sprite
 /// window.draw(sprite);
@@ -706,7 +702,7 @@ void swap(Texture& left, Texture& right) noexcept;
 ///
 /// // Create an empty texture
 /// sf::Texture texture;
-/// if (!texture.create(640, 480))
+/// if (!texture.create({640, 480}))
 ///     return -1;
 ///
 /// // Create a sprite that will display the texture

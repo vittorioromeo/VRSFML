@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -30,11 +30,13 @@
 #include <SFML/Window/Export.hpp>
 
 #include <SFML/Window/Vulkan.hpp>
+#include <SFML/Window/WindowEnums.hpp>
 #include <SFML/Window/WindowHandle.hpp>
-#include <SFML/Window/WindowStyle.hpp>
 
 #include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
+
+#include <optional>
 
 
 namespace sf
@@ -48,7 +50,7 @@ namespace priv
 class WindowImpl;
 }
 
-class Event;
+struct Event;
 
 ////////////////////////////////////////////////////////////
 /// \brief Window that serves as a base for other windows
@@ -72,15 +74,30 @@ public:
     /// This constructor creates the window with the size and pixel
     /// depth defined in \a mode. An optional style can be passed to
     /// customize the look and behavior of the window (borders,
-    /// title bar, resizable, closable, ...). If \a style contains
-    /// Style::Fullscreen, then \a mode must be a valid video mode.
+    /// title bar, resizable, closable, ...). An optional state can
+    /// be provided. If \a state is State::Fullscreen, then \a mode
+    /// must be a valid video mode.
     ///
     /// \param mode  Video mode to use (defines the width, height and depth of the rendering area of the window)
     /// \param title Title of the window
     /// \param style %Window style, a bitwise OR combination of sf::Style enumerators
+    /// \param state %Window state
     ///
     ////////////////////////////////////////////////////////////
-    WindowBase(VideoMode mode, const String& title, std::uint32_t style = Style::Default);
+    WindowBase(VideoMode mode, const String& title, std::uint32_t style = Style::Default, State state = State::Windowed);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Construct a new window
+    ///
+    /// This constructor creates the window with the size and pixel
+    /// depth defined in \a mode.
+    ///
+    /// \param mode  Video mode to use (defines the width, height and depth of the rendering area of the window)
+    /// \param title Title of the window
+    /// \param state %Window state
+    ///
+    ////////////////////////////////////////////////////////////
+    WindowBase(VideoMode mode, const String& title, State state);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control
@@ -114,15 +131,16 @@ public:
     /// \brief Create (or recreate) the window
     ///
     /// If the window was already created, it closes it first.
-    /// If \a style contains Style::Fullscreen, then \a mode
-    /// must be a valid video mode.
+    /// If \a state is State::Fullscreen, then \a mode must be
+    /// a valid video mode.
     ///
     /// \param mode  Video mode to use (defines the width, height and depth of the rendering area of the window)
     /// \param title Title of the window
     /// \param style %Window style, a bitwise OR combination of sf::Style enumerators
+    /// \param state %Window state
     ///
     ////////////////////////////////////////////////////////////
-    virtual void create(VideoMode mode, const String& title, std::uint32_t style = Style::Default);
+    virtual void create(VideoMode mode, const String& title, std::uint32_t style = Style::Default, State state = State::Windowed);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create (or recreate) the window from an existing control
@@ -253,6 +271,26 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void setSize(const Vector2u& size);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Set the minimum window rendering region size
+    ///
+    /// Pass std::nullopt to unset the minimum size
+    ///
+    /// \param minimumSize New minimum size, in pixels
+    ///
+    ////////////////////////////////////////////////////////////
+    void setMinimumSize(const std::optional<Vector2u>& minimumSize);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Set the maximum window rendering region size
+    ///
+    /// Pass std::nullopt to unset the maximum size
+    ///
+    /// \param maximumSize New maximum size, in pixels
+    ///
+    ////////////////////////////////////////////////////////////
+    void setMaximumSize(const std::optional<Vector2u>& maximumSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the title of the window
@@ -402,7 +440,7 @@ public:
     /// \return System handle of the window
     ///
     ////////////////////////////////////////////////////////////
-    WindowHandle getSystemHandle() const;
+    WindowHandle getNativeHandle() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a Vulkan rendering surface
@@ -442,6 +480,19 @@ private:
     friend class Window;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Create (or recreate) the window
+    ///
+    /// Implementation detail for sharing underlying implementation
+    /// with sf::Window
+    ///
+    /// \param mode  Video mode to use (defines the width, height and depth of the rendering area of the window)
+    /// \param style %Window style, a bitwise OR combination of sf::Style enumerators
+    /// \param state %Window state
+    ///
+    ////////////////////////////////////////////////////////////
+    void create(VideoMode mode, std::uint32_t& style, State& state);
+
+    ////////////////////////////////////////////////////////////
     /// \brief Processes an event before it is sent to the user
     ///
     /// This function is called every time an event is received
@@ -453,7 +504,7 @@ private:
     /// \param event Event to filter
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool filterEvent(const Event& event);
+    void filterEvent(const Event& event);
 
     ////////////////////////////////////////////////////////////
     /// \brief Perform some common internal initializations

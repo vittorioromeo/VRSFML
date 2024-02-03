@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -56,6 +56,7 @@
 
 #include <algorithm>
 
+#include <cstdint>
 #include <cstring>
 
 
@@ -69,8 +70,8 @@ std::size_t readCallback(void* ptr, std::size_t size, void* data)
 
 int seekCallback(std::uint64_t offset, void* data)
 {
-    auto*        stream   = static_cast<sf::InputStream*>(data);
-    std::int64_t position = stream->seek(static_cast<std::int64_t>(offset));
+    auto*              stream   = static_cast<sf::InputStream*>(data);
+    const std::int64_t position = stream->seek(static_cast<std::int64_t>(offset));
     return position < 0 ? -1 : 0;
 }
 
@@ -117,7 +118,7 @@ SoundFileReaderMp3::~SoundFileReaderMp3()
 
 
 ////////////////////////////////////////////////////////////
-bool SoundFileReaderMp3::open(InputStream& stream, Info& info)
+std::optional<SoundFileReader::Info> SoundFileReaderMp3::open(InputStream& stream)
 {
     // Init IO callbacks
     m_io.read_data = &stream;
@@ -126,15 +127,16 @@ bool SoundFileReaderMp3::open(InputStream& stream, Info& info)
     // Init mp3 decoder
     mp3dec_ex_open_cb(&m_decoder, &m_io, MP3D_SEEK_TO_SAMPLE);
     if (!m_decoder.samples)
-        return false;
+        return std::nullopt;
 
     // Retrieve the music attributes
+    Info info;
     info.channelCount = static_cast<unsigned int>(m_decoder.info.channels);
     info.sampleRate   = static_cast<unsigned int>(m_decoder.info.hz);
     info.sampleCount  = m_decoder.samples;
 
     m_numSamples = info.sampleCount;
-    return true;
+    return info;
 }
 
 

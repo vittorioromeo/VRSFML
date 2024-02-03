@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -45,10 +45,6 @@ bool SoundFileWriterOgg::check(const std::filesystem::path& filename)
 {
     return toLower(filename.extension().string()) == ".ogg";
 }
-
-
-////////////////////////////////////////////////////////////
-SoundFileWriterOgg::SoundFileWriterOgg() = default;
 
 
 ////////////////////////////////////////////////////////////
@@ -138,7 +134,7 @@ void SoundFileWriterOgg::write(const std::int16_t* samples, std::uint64_t count)
     {
         // Prepare a buffer to hold our samples
         float** buffer = vorbis_analysis_buffer(&m_state, bufferSize);
-        assert(buffer);
+        assert(buffer && "Vorbis buffer failed to allocate");
 
         // Write the samples to the buffer, converted to float
         for (int i = 0; i < std::min(frameCount, bufferSize); ++i)

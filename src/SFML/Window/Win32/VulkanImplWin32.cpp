@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -86,7 +86,7 @@ struct VulkanLibraryWrapper
     {
         entryPoint = reinterpret_cast<T>(reinterpret_cast<void*>(GetProcAddress(library, name)));
 
-        return (entryPoint != nullptr);
+        return entryPoint != nullptr;
     }
 
     HMODULE library{};
@@ -201,7 +201,7 @@ bool VulkanImplWin32::createVulkanSurface(const VkInstance&            instance,
     surfaceCreateInfo.hinstance                   = GetModuleHandleA(nullptr);
     surfaceCreateInfo.hwnd                        = windowHandle;
 
-    return (vkCreateWin32SurfaceKHR(instance, &surfaceCreateInfo, allocator, &surface) == VK_SUCCESS);
+    return vkCreateWin32SurfaceKHR(instance, &surfaceCreateInfo, allocator, &surface) == VK_SUCCESS;
 }
 
 } // namespace sf::priv

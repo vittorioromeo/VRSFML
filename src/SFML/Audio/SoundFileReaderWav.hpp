@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -50,19 +50,14 @@ public:
     [[nodiscard]] static bool check(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    ////////////////////////////////////////////////////////////
-    SoundFileReaderWav();
-
-    ////////////////////////////////////////////////////////////
     /// \brief Open a sound file for reading
     ///
     /// \param stream Stream to open
-    /// \param info   Structure to fill with the attributes of the loaded sound
+    ///
+    /// \return Properties of the loaded sound if the file was successfully opened
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool open(sf::InputStream& stream, Info& info) override;
+    [[nodiscard]] std::optional<Info> open(sf::InputStream& stream) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current read position to the given sample offset
@@ -99,7 +94,7 @@ private:
     /// \return True on success, false on error
     ///
     ////////////////////////////////////////////////////////////
-    bool parseHeader(Info& info);
+    std::optional<Info> parseHeader();
 
     ////////////////////////////////////////////////////////////
     // Member data

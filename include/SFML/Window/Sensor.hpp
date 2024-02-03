@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -41,17 +41,18 @@ namespace sf::Sensor
 /// \brief Sensor type
 ///
 ////////////////////////////////////////////////////////////
-enum Type
+enum class Type
 {
     Accelerometer,    //!< Measures the raw acceleration (m/s^2)
     Gyroscope,        //!< Measures the raw rotation rates (degrees/s)
     Magnetometer,     //!< Measures the ambient magnetic field (micro-teslas)
     Gravity,          //!< Measures the direction and intensity of gravity, independent of device acceleration (m/s^2)
     UserAcceleration, //!< Measures the direction and intensity of device acceleration, independent of the gravity (m/s^2)
-    Orientation,      //!< Measures the absolute 3D orientation (degrees)
-
-    Count             //!< Keep last -- the total number of sensor types
+    Orientation       //!< Measures the absolute 3D orientation (degrees)
 };
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+static constexpr unsigned int Count{6}; //!< The total number of sensor types
 
 ////////////////////////////////////////////////////////////
 /// \brief Check if a sensor is available on the underlying platform
@@ -123,16 +124,16 @@ SFML_WINDOW_API Vector3f getValue(Type sensor);
 ///
 /// Usage example:
 /// \code
-/// if (sf::Sensor::isAvailable(sf::Sensor::Gravity))
+/// if (sf::Sensor::isAvailable(sf::Sensor::Type::Gravity))
 /// {
 ///     // gravity sensor is available
 /// }
 ///
 /// // enable the gravity sensor
-/// sf::Sensor::setEnabled(sf::Sensor::Gravity, true);
+/// sf::Sensor::setEnabled(sf::Sensor::Type::Gravity, true);
 ///
 /// // get the current value of gravity
-/// sf::Vector3f gravity = sf::Sensor::getValue(sf::Sensor::Gravity);
+/// sf::Vector3f gravity = sf::Sensor::getValue(sf::Sensor::Type::Gravity);
 /// \endcode
 ///
 ////////////////////////////////////////////////////////////

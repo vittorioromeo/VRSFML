@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -50,7 +50,7 @@ Vector2<T> Vector2<T>::normalized() const
 {
     static_assert(isVec2FloatingPoint<T>, "Vector2::normalized() is only supported for floating point types");
 
-    assert(*this != Vector2<T>());
+    assert(*this != Vector2<T>() && "Vector2::normalized() cannot normalize a zero vector");
     return (*this) / length();
 }
 
@@ -61,8 +61,8 @@ Angle Vector2<T>::angleTo(const Vector2<T>& rhs) const
 {
     static_assert(isVec2FloatingPoint<T>, "Vector2::angleTo() is only supported for floating point types");
 
-    assert(*this != Vector2<T>());
-    assert(rhs != Vector2<T>());
+    assert(*this != Vector2<T>() && "Vector2::angleTo() cannot calculate angle from a zero vector");
+    assert(rhs != Vector2<T>() && "Vector2::angleTo() cannot calculate angle to a zero vector");
     return radians(static_cast<float>(std::atan2(cross(rhs), dot(rhs))));
 }
 
@@ -73,7 +73,7 @@ Angle Vector2<T>::angle() const
 {
     static_assert(isVec2FloatingPoint<T>, "Vector2::angle() is only supported for floating point types");
 
-    assert(*this != Vector2<T>());
+    assert(*this != Vector2<T>() && "Vector2::angle() cannot calculate angle from a zero vector");
     return radians(static_cast<float>(std::atan2(y, x)));
 }
 
@@ -99,7 +99,7 @@ Vector2<T> Vector2<T>::projectedOnto(const Vector2<T>& axis) const
 {
     static_assert(isVec2FloatingPoint<T>, "Vector2::projectedOnto() is only supported for floating point types");
 
-    assert(axis != Vector2<T>());
+    assert(axis != Vector2<T>() && "Vector2::projectedOnto() cannot project onto a zero vector");
     return dot(axis) / axis.lengthSq() * axis;
 }
 

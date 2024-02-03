@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -37,17 +37,22 @@
 #include <SFML/Window/SensorImpl.hpp>
 #include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/Vulkan.hpp>
+#include <SFML/Window/WindowEnums.hpp>
 #include <SFML/Window/WindowHandle.hpp>
 
 #include <SFML/System/UniquePtr.hpp>
 
+#include <SFML/System/EnumArray.hpp>
+
+#include <array>
+#include <memory>
+#include <optional>
 #include <queue>
 #include <set>
 
 namespace sf
 {
 class String;
-class WindowListener;
 
 namespace priv
 {
@@ -64,6 +69,7 @@ public:
     /// \param mode  Video mode to use
     /// \param title Title of the window
     /// \param style Window style
+    /// \param state Window state
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     /// \return Pointer to the created window
@@ -72,6 +78,7 @@ public:
     static sf::priv::UniquePtr<WindowImpl> create(VideoMode              mode,
                                                   const String&          title,
                                                   std::uint32_t          style,
+                                                  State                  state,
                                                   const ContextSettings& settings);
 
     ////////////////////////////////////////////////////////////
@@ -133,7 +140,7 @@ public:
     /// \return Handle of the window
     ///
     ////////////////////////////////////////////////////////////
-    virtual WindowHandle getSystemHandle() const = 0;
+    virtual WindowHandle getNativeHandle() const = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the position of the window
@@ -142,6 +149,22 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     virtual Vector2i getPosition() const = 0;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the minimum window rendering region size
+    ///
+    /// \return Minimum size
+    ///
+    ////////////////////////////////////////////////////////////
+    std::optional<Vector2u> getMinimumSize() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the maximum window rendering region size
+    ///
+    /// \return Maximum size
+    ///
+    ////////////////////////////////////////////////////////////
+    std::optional<Vector2u> getMaximumSize() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the position of the window on screen
@@ -166,6 +189,26 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     virtual void setSize(const Vector2u& size) = 0;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Set the minimum window rendering region size
+    ///
+    /// Pass std::nullopt to unset the minimum size
+    ///
+    /// \param minimumSize New minimum size, in pixels
+    ///
+    ////////////////////////////////////////////////////////////
+    virtual void setMinimumSize(const std::optional<Vector2u>& minimumSize);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Set the maximum window rendering region size
+    ///
+    /// Pass std::nullopt to unset the maximum size
+    ///
+    /// \param maximumSize New maximum size, in pixels
+    ///
+    ////////////////////////////////////////////////////////////
+    virtual void setMaximumSize(const std::optional<Vector2u>& maximumSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the title of the window
@@ -294,11 +337,14 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::queue<Event>                       m_events;                     //!< Queue of available events
-    sf::priv::UniquePtr<JoystickStatesImpl> m_joystickStatesImpl;         //!< Previous state of the joysticks (PImpl)
-    Vector3f                                m_sensorValue[Sensor::Count]; //!< Previous value of the sensors
+    std::queue<Event>                                m_events;             //!< Queue of available events
+    sf::priv::UniquePtr<JoystickStatesImpl>          m_joystickStatesImpl; //!< Previous state of the joysticks (PImpl)
+    EnumArray<Sensor::Type, Vector3f, Sensor::Count> m_sensorValue;        //!< Previous value of the sensors
     float m_joystickThreshold{0.1f}; //!< Joystick threshold (minimum motion for "move" event to be generated)
-    float m_previousAxes[Joystick::Count][Joystick::AxisCount]; //!< Position of each axis last time a move event triggered, in range [-100, 100]
+    std::array<EnumArray<Joystick::Axis, float, Joystick::AxisCount>, Joystick::Count>
+        m_previousAxes{}; //!< Position of each axis last time a move event triggered, in range [-100, 100]
+    std::optional<Vector2u> m_minimumSize; //!< Minimum window size
+    std::optional<Vector2u> m_maximumSize; //!< Maximum window size
 };
 
 } // namespace priv

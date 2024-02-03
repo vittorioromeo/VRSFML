@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -84,6 +84,18 @@ public:
     Socket& operator=(const Socket&) = delete;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    Socket(Socket&& socket) noexcept;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    Socket& operator=(Socket&& socket) noexcept;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Set the blocking state of the socket
     ///
     /// In blocking mode, calls will not return until they have
@@ -143,7 +155,7 @@ protected:
     /// \return The internal (OS-specific) handle of the socket
     ///
     ////////////////////////////////////////////////////////////
-    SocketHandle getHandle() const;
+    SocketHandle getNativeHandle() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the internal representation of the socket

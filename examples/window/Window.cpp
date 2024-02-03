@@ -39,7 +39,7 @@ int main()
     contextSettings.depthBits = 24;
 
     // Create the main window
-    sf::Window window(sf::VideoMode({640, 480}), "SFML window with OpenGL", sf::Style::Default, contextSettings);
+    sf::Window window(sf::VideoMode({640, 480}), "SFML window with OpenGL", sf::Style::Default, sf::State::Windowed, contextSettings);
 
     // Make it the active window for OpenGL calls
     if (!window.setActive())
@@ -50,9 +50,9 @@ int main()
 
     // Load OpenGL or OpenGL ES entry points using glad
 #ifdef SFML_OPENGL_ES
-    gladLoadGLES1(reinterpret_cast<GLADloadfunc>(sf::Context::getFunction));
+    gladLoadGLES1(sf::Context::getFunction);
 #else
-    gladLoadGL(reinterpret_cast<GLADloadfunc>(sf::Context::getFunction));
+    gladLoadGL(sf::Context::getFunction);
 #endif
 
     // Set the color and depth clear values
@@ -77,7 +77,7 @@ int main()
     // Setup a perspective projection
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    GLfloat ratio = static_cast<float>(window.getSize().x) / static_cast<float>(window.getSize().y);
+    const GLfloat ratio = static_cast<float>(window.getSize().x) / static_cast<float>(window.getSize().y);
 #ifdef SFML_OPENGL_ES
     glFrustumf(-ratio, ratio, -1.f, 1.f, 1.f, 500.f);
 #else
@@ -144,7 +144,7 @@ int main()
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 
     // Create a clock for measuring the time elapsed
-    sf::Clock clock;
+    const sf::Clock clock;
 
     // Start the game loop
     while (window.isOpen())
@@ -157,7 +157,7 @@ int main()
                 window.close();
 
             // Escape key: exit
-            if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape))
+            if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Key::Escape))
                 window.close();
 
             // Resize event: adjust the viewport
@@ -166,7 +166,7 @@ int main()
                 glViewport(0, 0, static_cast<GLsizei>(event.size.width), static_cast<GLsizei>(event.size.height));
                 glMatrixMode(GL_PROJECTION);
                 glLoadIdentity();
-                GLfloat newRatio = static_cast<float>(event.size.width) / static_cast<float>(event.size.height);
+                const GLfloat newRatio = static_cast<float>(event.size.width) / static_cast<float>(event.size.height);
 #ifdef SFML_OPENGL_ES
                 glFrustumf(-newRatio, newRatio, -1.f, 1.f, 1.f, 500.f);
 #else

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -60,10 +60,11 @@ public:
     /// \param mode  Video mode to use
     /// \param title Title of the window
     /// \param style Window style
+    /// \param state Window state
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    WindowImplWin32(VideoMode mode, const String& title, std::uint32_t style, const ContextSettings& settings);
+    WindowImplWin32(VideoMode mode, const String& title, std::uint32_t style, State state, const ContextSettings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -77,7 +78,7 @@ public:
     /// \return Handle of the window
     ///
     ////////////////////////////////////////////////////////////
-    WindowHandle getSystemHandle() const override;
+    WindowHandle getNativeHandle() const override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the position of the window
@@ -241,6 +242,16 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     void grabCursor(bool grabbed);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Convert content size to window size including window chrome
+    ///
+    /// \param size Size to convert
+    ///
+    /// \return Converted size including window chrome
+    ///
+    ////////////////////////////////////////////////////////////
+    Vector2i contentSizeToWindowSize(const Vector2u& size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert a Win32 virtual key code to a SFML key code

@@ -21,8 +21,6 @@
 class Effect : public sf::Drawable
 {
 public:
-    ~Effect() override = default;
-
     static void setFont(const sf::Font& font)
     {
         s_font = &font;
@@ -66,7 +64,7 @@ protected:
 
     static const sf::Font& getFont()
     {
-        assert(s_font != nullptr);
+        assert(s_font != nullptr && "Cannot get font until setFont() is called");
         return *s_font;
     }
 

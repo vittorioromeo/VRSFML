@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -98,11 +98,11 @@ SFML_WINDOW_API void setString(const String& text);
 ///     if(event.type == sf::Event::KeyPressed)
 ///     {
 ///         // Using Ctrl + V to paste a string into SFML
-///         if(event.key.control && event.key.code == sf::Keyboard::V)
+///         if(event.key.control && event.key.code == sf::Keyboard::Key::V)
 ///             string = sf::Clipboard::getString();
 ///
 ///         // Using Ctrl + C to copy a string out of SFML
-///         if(event.key.control && event.key.code == sf::Keyboard::C)
+///         if(event.key.control && event.key.code == sf::Keyboard::Key::C)
 ///             sf::Clipboard::setString("Hello World!");
 ///     }
 /// }

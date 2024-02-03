@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -85,7 +85,7 @@ public:
     /// \return Sensor value
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector3f update();
+    [[nodiscard]] Vector3f update() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Enable or disable the sensor
@@ -104,7 +104,7 @@ private:
     /// \return The default Android sensor, a null pointer otherwise
     ///
     ////////////////////////////////////////////////////////////
-    static ASensor const* getDefaultSensor(Sensor::Type sensor);
+    static const ASensor* getDefaultSensor(Sensor::Type sensor);
 
     ////////////////////////////////////////////////////////////
     /// \brief Process the pending sensor data available and add them to our lists
@@ -122,7 +122,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     const ASensor* m_sensor; ///< Android sensor structure
-    unsigned int   m_index;  ///< Index of the sensor
+    Sensor::Type   m_type;   ///< Type of the sensor
 };
 
 } // namespace sf::priv

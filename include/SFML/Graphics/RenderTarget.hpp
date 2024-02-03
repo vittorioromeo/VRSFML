@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -31,11 +31,15 @@
 
 #include <SFML/Graphics/BlendMode.hpp>
 #include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/CoordinateType.hpp>
 #include <SFML/Graphics/PrimitiveType.hpp>
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
+#include <SFML/Graphics/StencilMode.hpp>
 #include <SFML/Graphics/Vertex.hpp>
 #include <SFML/Graphics/View.hpp>
+
+#include <array>
 
 #include <cstddef>
 
@@ -57,7 +61,7 @@ public:
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    virtual ~RenderTarget();
+    virtual ~RenderTarget() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy constructor
@@ -72,6 +76,18 @@ public:
     RenderTarget& operator=(const RenderTarget&) = delete;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    RenderTarget(RenderTarget&&) noexcept = default;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    RenderTarget& operator=(RenderTarget&&) noexcept = default;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Clear the entire target with a single color
     ///
     /// This function is usually called once every frame,
@@ -80,7 +96,30 @@ public:
     /// \param color Fill color to use to clear the render target
     ///
     ////////////////////////////////////////////////////////////
-    void clear(const Color& color = Color(0, 0, 0, 255));
+    void clear(const Color& color = Color::Black);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Clear the stencil buffer to a specific value
+    ///
+    /// The specified value is truncated to the bit width of
+    /// the current stencil buffer.
+    ///
+    /// \param value Stencil value to clear to
+    ///
+    ////////////////////////////////////////////////////////////
+    void clearStencil(StencilValue stencilValue);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Clear the entire target with a single color and stencil value
+    ///
+    /// The specified stencil value is truncated to the bit
+    /// width of the current stencil buffer.
+    ///
+    /// \param color Fill color to use to clear the render target
+    /// \param value Stencil value to clear to
+    ///
+    ////////////////////////////////////////////////////////////
+    void clear(const Color& color, StencilValue stencilValue);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current active view
@@ -140,6 +179,21 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     IntRect getViewport(const View& view) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the scissor rectangle of a view, applied to this render target
+    ///
+    /// The scissor rectangle is defined in the view as a ratio. This
+    /// function simply applies this ratio to the current dimensions
+    /// of the render target to calculate the pixels rectangle
+    /// that the scissor rectangle actually covers in the target.
+    ///
+    /// \param view The view for which we want to compute the scissor rectangle
+    ///
+    /// \return Scissor rectangle, expressed in pixels
+    ///
+    ////////////////////////////////////////////////////////////
+    IntRect getScissor(const View& view) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert a point from target coordinates to world
@@ -396,7 +450,7 @@ protected:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    RenderTarget();
+    RenderTarget() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Performs the common initialization step after creation
@@ -423,6 +477,14 @@ private:
     void applyBlendMode(const BlendMode& mode);
 
     ////////////////////////////////////////////////////////////
+    /// \brief Apply a new stencil mode
+    ///
+    /// \param mode Stencil mode to apply
+    ///
+    ////////////////////////////////////////////////////////////
+    void applyStencilMode(const StencilMode& mode);
+
+    ////////////////////////////////////////////////////////////
     /// \brief Apply a new transform
     ///
     /// \param transform Transform to apply
@@ -433,10 +495,11 @@ private:
     ////////////////////////////////////////////////////////////
     /// \brief Apply a new texture
     ///
-    /// \param texture Texture to apply
+    /// \param texture        Texture to apply
+    /// \param coordinateType The texture coordinate type to use
     ///
     ////////////////////////////////////////////////////////////
-    void applyTexture(const Texture* texture);
+    void applyTexture(const Texture* texture, CoordinateType coordinateType = CoordinateType::Pixels);
 
     ////////////////////////////////////////////////////////////
     /// \brief Apply a new shader
@@ -479,16 +542,18 @@ private:
     ////////////////////////////////////////////////////////////
     struct StatesCache
     {
-        static constexpr std::size_t VertexCacheSize{4}; // NOLINT(readability-identifier-naming)
-
-        bool          enable;                            //!< Is the cache enabled?
-        bool          glStatesSet{};                     //!< Are our internal GL states set yet?
-        bool          viewChanged;                       //!< Has the current view changed since last draw?
-        BlendMode     lastBlendMode;                     //!< Cached blending mode
-        std::uint64_t lastTextureId;                     //!< Cached texture
-        bool          texCoordsArrayEnabled;             //!< Is GL_TEXTURE_COORD_ARRAY client state enabled?
-        bool          useVertexCache;                    //!< Did we previously use the vertex cache?
-        Vertex        vertexCache[VertexCacheSize];      //!< Pre-transformed vertices cache
+        bool                  enable;                //!< Is the cache enabled?
+        bool                  glStatesSet{};         //!< Are our internal GL states set yet?
+        bool                  viewChanged;           //!< Has the current view changed since last draw?
+        bool                  scissorEnabled;        //!< Is scissor testing enabled?
+        bool                  stencilEnabled;        //!< Is stencil testing enabled?
+        BlendMode             lastBlendMode;         //!< Cached blending mode
+        StencilMode           lastStencilMode;       //!< Cached stencil
+        std::uint64_t         lastTextureId;         //!< Cached texture
+        CoordinateType        lastCoordinateType;    //!< Texture coordinate type
+        bool                  texCoordsArrayEnabled; //!< Is GL_TEXTURE_COORD_ARRAY client state enabled?
+        bool                  useVertexCache;        //!< Did we previously use the vertex cache?
+        std::array<Vertex, 4> vertexCache;           //!< Pre-transformed vertices cache
     };
 
     ////////////////////////////////////////////////////////////
@@ -496,7 +561,7 @@ private:
     ////////////////////////////////////////////////////////////
     View          m_defaultView; //!< Default view
     View          m_view;        //!< Current view
-    StatesCache   m_cache;       //!< Render states cache
+    StatesCache   m_cache{};     //!< Render states cache
     std::uint64_t m_id{};        //!< Unique number that identifies the RenderTarget
 };
 
@@ -524,6 +589,12 @@ private:
 /// and regular SFML drawing commands. When doing so, make sure that
 /// OpenGL states are not messed up by calling the
 /// pushGLStates/popGLStates functions.
+///
+/// While render targets are moveable, it is not valid to move them
+/// between threads. This will cause your program to crash. The
+/// problem boils down to OpenGL being limited with regard to how it
+/// works in multithreaded environments. Please ensure you only move
+/// render targets within the same thread.
 ///
 /// \see sf::RenderWindow, sf::RenderTexture, sf::View
 ///

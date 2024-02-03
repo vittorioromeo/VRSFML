@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -116,7 +116,7 @@ String getErrorString(DWORD errorCode)
 
     std::ostringstream ss;
     ss << "Error " << errorCode;
-    return String(ss.str());
+    return {ss.str()};
 }
 
 
@@ -135,7 +135,7 @@ WglContext::WglContext(WglContext* shared, const ContextSettings& settings, cons
     m_settings = settings;
 
     // Create the rendering surface from the owner window
-    createSurface(owner.getSystemHandle(), bitsPerPixel);
+    createSurface(owner.getNativeHandle(), bitsPerPixel);
 
     // Create the context
     createContext(shared);
@@ -199,7 +199,8 @@ WglContext::~WglContext()
 ////////////////////////////////////////////////////////////
 GlFunctionPointer WglContext::getFunction(const char* name)
 {
-    assert(WglContextImpl::currentContext != nullptr);
+    assert(WglContextImpl::currentContext != nullptr &&
+           "Current WGL context cannot be null. Call WglContext::makeCurrent() to initialize it.");
 
     // If we are using the generic GDI implementation, skip to loading directly from OpenGL32.dll since it doesn't support extensions
     if (!WglContextImpl::currentContext->m_isGeneric)
@@ -276,6 +277,36 @@ void WglContext::setVerticalSyncEnabled(bool enabled)
 ////////////////////////////////////////////////////////////
 int WglContext::selectBestPixelFormat(HDC deviceContext, unsigned int bitsPerPixel, const ContextSettings& settings, bool pbuffer)
 {
+    // Selecting a pixel format can be an expensive process on some implementations
+    // Since the same pixel format should always be selected for a specific combination of inputs
+    // we can cache the result of the lookup instead of having to perform it multiple times for the same inputs
+    struct PixelFormatCacheEntry
+    {
+        unsigned int bitsPerPixel;
+        unsigned int depthBits;
+        unsigned int stencilBits;
+        unsigned int antialiasingLevel;
+        bool         pbuffer;
+        int          bestFormat;
+    };
+
+    static std::mutex                         cacheMutex;
+    static std::vector<PixelFormatCacheEntry> pixelFormatCache;
+
+    // Check if we have already previously found a pixel format for
+    // the current inputs and return it if one has been previously found
+    {
+        const std::lock_guard lock(cacheMutex);
+
+        for (const auto& entry : pixelFormatCache)
+        {
+            if (bitsPerPixel == entry.bitsPerPixel && settings.depthBits == entry.depthBits &&
+                settings.stencilBits == entry.stencilBits && settings.antialiasingLevel == entry.antialiasingLevel &&
+                pbuffer == entry.pbuffer)
+                return entry.bestFormat;
+        }
+    }
+
     WglContextImpl::ensureInit();
 
     // Let's find a suitable pixel format -- first try with wglChoosePixelFormatARB
@@ -297,7 +328,7 @@ int WglContext::selectBestPixelFormat(HDC deviceContext, unsigned int bitsPerPix
         // Let's check how many formats are supporting our requirements
         int formats[512];
         UINT nbFormats = 0; // We must initialize to 0 otherwise broken drivers might fill with garbage in the following call
-        bool isValid = wglChoosePixelFormatARB(deviceContext, intAttributes, nullptr, 512, formats, &nbFormats) != FALSE;
+        const bool isValid = wglChoosePixelFormatARB(deviceContext, intAttributes, nullptr, 512, formats, &nbFormats) != FALSE;
 
         if (!isValid)
             err() << "Failed to enumerate pixel formats: " << getErrorString(GetLastError()).toAnsiString() << std::endl;
@@ -372,15 +403,15 @@ int WglContext::selectBestPixelFormat(HDC deviceContext, unsigned int bitsPerPix
                 }
 
                 // Evaluate the current configuration
-                int color = values[0] + values[1] + values[2] + values[3];
-                int score = evaluateFormat(bitsPerPixel,
-                                           settings,
-                                           color,
-                                           values[4],
-                                           values[5],
-                                           sampleValues[0] ? sampleValues[1] : 0,
-                                           values[6] == WGL_FULL_ACCELERATION_ARB,
-                                           sRgbCapableValue == TRUE);
+                const int color = values[0] + values[1] + values[2] + values[3];
+                const int score = evaluateFormat(bitsPerPixel,
+                                                 settings,
+                                                 color,
+                                                 values[4],
+                                                 values[5],
+                                                 sampleValues[0] ? sampleValues[1] : 0,
+                                                 values[6] == WGL_FULL_ACCELERATION_ARB,
+                                                 sRgbCapableValue == TRUE);
 
                 // Keep it if it's better than the current best
                 if (score < bestScore)
@@ -392,12 +423,9 @@ int WglContext::selectBestPixelFormat(HDC deviceContext, unsigned int bitsPerPix
         }
     }
 
-    // ChoosePixelFormat doesn't support pbuffers
-    if (pbuffer)
-        return bestFormat;
-
     // Find a pixel format with ChoosePixelFormat, if wglChoosePixelFormatARB is not supported
-    if (bestFormat == 0)
+    // ChoosePixelFormat doesn't support pbuffers
+    if ((bestFormat == 0) && !pbuffer)
     {
         // Setup a pixel format descriptor from the rendering settings
         PIXELFORMATDESCRIPTOR descriptor;
@@ -416,6 +444,14 @@ int WglContext::selectBestPixelFormat(HDC deviceContext, unsigned int bitsPerPix
         bestFormat = ChoosePixelFormat(deviceContext, &descriptor);
     }
 
+    // If we get this far, the format wasn't found in the cache so add it here
+    {
+        const std::lock_guard lock(cacheMutex);
+
+        pixelFormatCache.emplace_back(
+            PixelFormatCacheEntry{bitsPerPixel, settings.depthBits, settings.stencilBits, settings.antialiasingLevel, pbuffer, bestFormat});
+    }
+
     return bestFormat;
 }
 
@@ -423,7 +459,7 @@ int WglContext::selectBestPixelFormat(HDC deviceContext, unsigned int bitsPerPix
 ////////////////////////////////////////////////////////////
 void WglContext::setDevicePixelFormat(unsigned int bitsPerPixel)
 {
-    int bestFormat = selectBestPixelFormat(m_deviceContext, bitsPerPixel, m_settings);
+    const int bestFormat = selectBestPixelFormat(m_deviceContext, bitsPerPixel, m_settings);
 
     if (bestFormat == 0)
     {
@@ -452,7 +488,7 @@ void WglContext::setDevicePixelFormat(unsigned int bitsPerPixel)
 ////////////////////////////////////////////////////////////
 void WglContext::updateSettingsFromPixelFormat()
 {
-    int format = GetPixelFormat(m_deviceContext);
+    const int format = GetPixelFormat(m_deviceContext);
 
     if (format == 0)
     {
@@ -562,7 +598,7 @@ void WglContext::createSurface(WglContext* shared, const Vector2u& size, unsigne
     // Check if the shared context already exists and pbuffers are supported
     if (shared && shared->m_deviceContext && SF_GLAD_WGL_ARB_pbuffer)
     {
-        int bestFormat = selectBestPixelFormat(shared->m_deviceContext, bitsPerPixel, m_settings, true);
+        const int bestFormat = selectBestPixelFormat(shared->m_deviceContext, bitsPerPixel, m_settings, true);
 
         if (bestFormat > 0)
         {
@@ -649,7 +685,7 @@ void WglContext::createContext(WglContext* shared)
         return;
 
     // Get a working copy of the context settings
-    ContextSettings settings = m_settings;
+    const ContextSettings settings = m_settings;
 
     // Get the context to share display lists with
     HGLRC sharedContext = shared ? shared->m_context : nullptr;
@@ -673,10 +709,10 @@ void WglContext::createContext(WglContext* shared)
             // Check if setting the profile is supported
             if (SF_GLAD_WGL_ARB_create_context_profile)
             {
-                int profile = (m_settings.attributeFlags & ContextSettings::Core)
-                                  ? WGL_CONTEXT_CORE_PROFILE_BIT_ARB
-                                  : WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
-                int debug   = (m_settings.attributeFlags & ContextSettings::Debug) ? WGL_CONTEXT_DEBUG_BIT_ARB : 0;
+                const int profile = (m_settings.attributeFlags & ContextSettings::Core)
+                                        ? WGL_CONTEXT_CORE_PROFILE_BIT_ARB
+                                        : WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
+                const int debug = (m_settings.attributeFlags & ContextSettings::Debug) ? WGL_CONTEXT_DEBUG_BIT_ARB : 0;
 
                 attributes.push_back(WGL_CONTEXT_PROFILE_MASK_ARB);
                 attributes.push_back(profile);
@@ -688,7 +724,7 @@ void WglContext::createContext(WglContext* shared)
                 if ((m_settings.attributeFlags & ContextSettings::Core) ||
                     (m_settings.attributeFlags & ContextSettings::Debug))
                     err() << "Selecting a profile during context creation is not supported,"
-                          << "disabling comptibility and debug" << std::endl;
+                          << "disabling compatibility and debug" << std::endl;
 
                 m_settings.attributeFlags = ContextSettings::Default;
             }
@@ -700,7 +736,7 @@ void WglContext::createContext(WglContext* shared)
             if (sharedContext)
             {
                 static std::recursive_mutex mutex;
-                std::lock_guard             lock(mutex);
+                const std::lock_guard       lock(mutex);
 
                 if (WglContextImpl::currentContext == shared)
                 {
@@ -772,7 +808,7 @@ void WglContext::createContext(WglContext* shared)
         {
             // wglShareLists doesn't seem to be thread-safe
             static std::recursive_mutex mutex;
-            std::lock_guard             lock(mutex);
+            const std::lock_guard       lock(mutex);
 
             if (WglContextImpl::currentContext == shared)
             {

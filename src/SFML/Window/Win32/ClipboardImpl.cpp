@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -32,6 +32,8 @@
 #include <SFML/System/Win32/WindowsHeader.hpp>
 
 #include <ostream>
+
+#include <cstring>
 
 
 namespace sf::priv
@@ -86,12 +88,12 @@ void ClipboardImpl::setString(const String& text)
     }
 
     // Create a Win32-compatible string
-    std::size_t stringSize   = (text.getSize() + 1) * sizeof(WCHAR);
-    HANDLE      stringHandle = GlobalAlloc(GMEM_MOVEABLE, stringSize);
+    const std::size_t stringSize   = (text.getSize() + 1) * sizeof(WCHAR);
+    HANDLE            stringHandle = GlobalAlloc(GMEM_MOVEABLE, stringSize);
 
     if (stringHandle)
     {
-        memcpy(GlobalLock(stringHandle), text.toWideString().data(), stringSize);
+        std::memcpy(GlobalLock(stringHandle), text.toWideString().data(), stringSize);
         GlobalUnlock(stringHandle);
         SetClipboardData(CF_UNICODETEXT, stringHandle);
     }

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -59,7 +59,7 @@ public:
     /// good compromise.
     ///
     ////////////////////////////////////////////////////////////
-    enum Usage
+    enum class Usage
     {
         Stream,  //!< Constantly changing data
         Dynamic, //!< Occasionally changing data
@@ -72,7 +72,7 @@ public:
     /// Creates an empty vertex buffer.
     ///
     ////////////////////////////////////////////////////////////
-    VertexBuffer();
+    VertexBuffer() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a VertexBuffer with a specific PrimitiveType
@@ -245,7 +245,7 @@ public:
     /// This function defines how the vertices must be interpreted
     /// when it's time to draw them.
     ///
-    /// The default primitive type is sf::Points.
+    /// The default primitive type is sf::PrimitiveType::Points.
     ///
     /// \param type Type of primitive
     ///
@@ -270,7 +270,7 @@ public:
     /// to be updated with new data for the usage specifier to
     /// take effect.
     ///
-    /// The default primitive type is sf::VertexBuffer::Stream.
+    /// The default usage type is sf::VertexBuffer::Usage::Stream.
     ///
     /// \param usage Usage specifier
     ///
@@ -334,9 +334,9 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     unsigned int  m_buffer{};                             //!< Internal buffer identifier
-    std::size_t   m_size{};                               //!< Size in Vertexes of the currently allocated buffer
+    std::size_t   m_size{};                               //!< Size in Vertices of the currently allocated buffer
     PrimitiveType m_primitiveType{PrimitiveType::Points}; //!< Type of primitives to draw
-    Usage         m_usage{Stream};                        //!< How this vertex buffer is to be used
+    Usage         m_usage{Usage::Stream};                 //!< How this vertex buffer is to be used
 };
 
 ////////////////////////////////////////////////////////////
@@ -346,7 +346,7 @@ private:
 /// \param right Second instance to swap
 ///
 ////////////////////////////////////////////////////////////
-void swap(VertexBuffer& left, VertexBuffer& right) noexcept;
+SFML_GRAPHICS_API void swap(VertexBuffer& left, VertexBuffer& right) noexcept;
 
 } // namespace sf
 
@@ -401,7 +401,7 @@ void swap(VertexBuffer& left, VertexBuffer& right) noexcept;
 /// \code
 /// sf::Vertex vertices[15];
 /// ...
-/// sf::VertexBuffer triangles(sf::Triangles);
+/// sf::VertexBuffer triangles(sf::PrimitiveType::Triangles);
 /// triangles.create(15);
 /// triangles.update(vertices);
 /// ...

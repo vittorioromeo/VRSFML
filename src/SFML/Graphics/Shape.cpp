@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -29,8 +29,7 @@
 #include <SFML/Graphics/Shape.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
-#include <cmath>
-
+#include <algorithm>
 
 namespace
 {
@@ -38,7 +37,7 @@ namespace
 sf::Vector2f computeNormal(const sf::Vector2f& p1, const sf::Vector2f& p2)
 {
     sf::Vector2f normal = (p2 - p1).perpendicular();
-    float        length = normal.length();
+    const float  length = normal.length();
     if (length != 0.f)
         normal /= length;
     return normal;
@@ -131,6 +130,56 @@ float Shape::getOutlineThickness() const
 
 
 ////////////////////////////////////////////////////////////
+Vector2f Shape::getGeometricCenter() const
+{
+    const auto count = getPointCount();
+
+    switch (count)
+    {
+        case 0:
+            assert(false && "Cannot calculate geometric center of shape with no points");
+            return Vector2f{};
+        case 1:
+            return getPoint(0);
+        case 2:
+            return (getPoint(0) + getPoint(1)) / 2.f;
+        default: // more than two points
+            Vector2f centroid;
+            float    twiceArea = 0;
+
+            auto previousPoint = getPoint(count - 1);
+            for (std::size_t i = 0; i < count; ++i)
+            {
+                const auto  currentPoint = getPoint(i);
+                const float product      = previousPoint.cross(currentPoint);
+                twiceArea += product;
+                centroid += (currentPoint + previousPoint) * product;
+
+                previousPoint = currentPoint;
+            }
+
+            if (twiceArea != 0.f)
+            {
+                return centroid / 3.f / twiceArea;
+            }
+
+            // Fallback for no area - find the center of the bounding box
+            auto minPoint = getPoint(0);
+            auto maxPoint = minPoint;
+            for (std::size_t i = 1; i < count; ++i)
+            {
+                const auto currentPoint = getPoint(i);
+                minPoint.x              = std::min(minPoint.x, currentPoint.x);
+                maxPoint.x              = std::max(maxPoint.x, currentPoint.x);
+                minPoint.y              = std::min(minPoint.y, currentPoint.y);
+                maxPoint.y              = std::max(maxPoint.y, currentPoint.y);
+            }
+            return (maxPoint + minPoint) / 2.f;
+    }
+}
+
+
+////////////////////////////////////////////////////////////
 FloatRect Shape::getLocalBounds() const
 {
     return m_bounds;
@@ -145,14 +194,10 @@ FloatRect Shape::getGlobalBounds() const
 
 
 ////////////////////////////////////////////////////////////
-Shape::Shape() = default;
-
-
-////////////////////////////////////////////////////////////
 void Shape::update()
 {
     // Get the total number of points of the shape
-    std::size_t count = getPointCount();
+    const std::size_t count = getPointCount();
     if (count < 3)
     {
         m_vertices.resize(0);
@@ -172,8 +217,7 @@ void Shape::update()
     m_insideBounds = m_vertices.getBounds();
 
     // Compute the center and make it the first vertex
-    m_vertices[0].position.x = m_insideBounds.left + m_insideBounds.width / 2;
-    m_vertices[0].position.y = m_insideBounds.top + m_insideBounds.height / 2;
+    m_vertices[0].position = m_insideBounds.getCenter();
 
     // Color
     updateFillColors();
@@ -192,6 +236,7 @@ void Shape::draw(RenderTarget& target, const RenderStates& states) const
     RenderStates statesCopy(states);
 
     statesCopy.transform *= getTransform();
+    statesCopy.coordinateType = CoordinateType::Pixels;
 
     // Render the inside
     statesCopy.texture = m_texture;
@@ -217,15 +262,18 @@ void Shape::updateFillColors()
 ////////////////////////////////////////////////////////////
 void Shape::updateTexCoords()
 {
-    FloatRect convertedTextureRect(m_textureRect);
+    const FloatRect convertedTextureRect(m_textureRect);
 
     for (std::size_t i = 0; i < m_vertices.getVertexCount(); ++i)
     {
-        float xratio = m_insideBounds.width > 0 ? (m_vertices[i].position.x - m_insideBounds.left) / m_insideBounds.width : 0;
-        float yratio = m_insideBounds.height > 0 ? (m_vertices[i].position.y - m_insideBounds.top) / m_insideBounds.height
-                                                 : 0;
-        m_vertices[i].texCoords.x = convertedTextureRect.left + convertedTextureRect.width * xratio;
-        m_vertices[i].texCoords.y = convertedTextureRect.top + convertedTextureRect.height * yratio;
+        const float xratio      = m_insideBounds.width > 0
+                                      ? (m_vertices[i].position.x - m_insideBounds.left) / m_insideBounds.width
+                                      : 0;
+        const float yratio      = m_insideBounds.height > 0
+                                      ? (m_vertices[i].position.y - m_insideBounds.top) / m_insideBounds.height
+                                      : 0;
+        m_vertices[i].texCoords = convertedTextureRect.getPosition() +
+                                  convertedTextureRect.getSize().cwiseMul({xratio, yratio});
     }
 }
 
@@ -241,17 +289,17 @@ void Shape::updateOutline()
         return;
     }
 
-    std::size_t count = m_vertices.getVertexCount() - 2;
+    const std::size_t count = m_vertices.getVertexCount() - 2;
     m_outlineVertices.resize((count + 1) * 2);
 
     for (std::size_t i = 0; i < count; ++i)
     {
-        std::size_t index = i + 1;
+        const std::size_t index = i + 1;
 
         // Get the two segments shared by the current point
-        Vector2f p0 = (i == 0) ? m_vertices[count].position : m_vertices[index - 1].position;
-        Vector2f p1 = m_vertices[index].position;
-        Vector2f p2 = m_vertices[index + 1].position;
+        const Vector2f p0 = (i == 0) ? m_vertices[count].position : m_vertices[index - 1].position;
+        const Vector2f p1 = m_vertices[index].position;
+        const Vector2f p2 = m_vertices[index + 1].position;
 
         // Compute their normal
         Vector2f n1 = computeNormal(p0, p1);
@@ -265,8 +313,8 @@ void Shape::updateOutline()
             n2 = -n2;
 
         // Combine them to get the extrusion direction
-        float    factor = 1.f + (n1.x * n2.x + n1.y * n2.y);
-        Vector2f normal = (n1 + n2) / factor;
+        const float    factor = 1.f + (n1.x * n2.x + n1.y * n2.y);
+        const Vector2f normal = (n1 + n2) / factor;
 
         // Update the outline points
         m_outlineVertices[i * 2 + 0].position = p1;

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -111,7 +111,7 @@ public:
     ///
     /// \return Position of rectangle
     ///
-    /// \see getSize
+    /// \see getSize, getCenter
     ///
     ////////////////////////////////////////////////////////////
     SFML_GRAPHICS_API constexpr Vector2<T> getPosition() const;
@@ -121,10 +121,20 @@ public:
     ///
     /// \return Size of rectangle
     ///
-    /// \see getPosition
+    /// \see getPosition, getCenter
     ///
     ////////////////////////////////////////////////////////////
     SFML_GRAPHICS_API constexpr Vector2<T> getSize() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the position of the center of the rectangle
+    ///
+    /// \return Center of rectangle
+    ///
+    /// \see getSize, getPosition
+    ///
+    ////////////////////////////////////////////////////////////
+    constexpr Vector2<T> getCenter() const;
 
     ////////////////////////////////////////////////////////////
     // Member data
@@ -217,7 +227,7 @@ extern template class sf::Rect<unsigned int>;
 /// Usage example:
 /// \code
 /// // Define a rectangle, located at (0, 0) with a size of 20x5
-/// sf::IntRect r1(0, 0, 20, 5);
+/// sf::IntRect r1({0, 0}, {20, 5});
 ///
 /// // Define another rectangle, located at (4, 2) with a size of 18x10
 /// sf::Vector2i position(4, 2);
@@ -225,8 +235,8 @@ extern template class sf::Rect<unsigned int>;
 /// sf::IntRect r2(position, size);
 ///
 /// // Test intersections with the point (3, 1)
-/// bool b1 = r1.contains(3, 1); // true
-/// bool b2 = r2.contains(3, 1); // false
+/// bool b1 = r1.contains({3, 1}); // true
+/// bool b2 = r2.contains({3, 1}); // false
 ///
 /// // Test the intersection between r1 and r2
 /// std::optional<sf::IntRect> result = r1.findIntersection(r2);

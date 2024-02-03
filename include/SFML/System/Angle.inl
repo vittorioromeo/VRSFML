@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -28,7 +28,7 @@ constexpr float pi = 3.141592654f;
 
 constexpr float positiveRemainder(float a, float b)
 {
-    assert(b > 0.0f);
+    assert(b > 0.0f && "Cannot calculate remainder with non-positive divisor");
     const float val = a - static_cast<float>(static_cast<int>(a / b)) * b;
     if (val >= 0.f)
         return val;
@@ -191,6 +191,7 @@ constexpr Angle& operator*=(Angle& left, float right)
 ////////////////////////////////////////////////////////////
 constexpr Angle operator/(Angle left, float right)
 {
+    assert(right != 0 && "Angle::operator/ cannot divide by 0");
     return degrees(left.asDegrees() / right);
 }
 
@@ -198,6 +199,7 @@ constexpr Angle operator/(Angle left, float right)
 ////////////////////////////////////////////////////////////
 constexpr Angle& operator/=(Angle& left, float right)
 {
+    assert(right != 0 && "Angle::operator/= cannot divide by 0");
     return left = left / right;
 }
 
@@ -205,6 +207,7 @@ constexpr Angle& operator/=(Angle& left, float right)
 ////////////////////////////////////////////////////////////
 constexpr float operator/(Angle left, Angle right)
 {
+    assert(right.asDegrees() != 0 && "Angle::operator/ cannot divide by 0");
     return left.asDegrees() / right.asDegrees();
 }
 
@@ -212,6 +215,7 @@ constexpr float operator/(Angle left, Angle right)
 ////////////////////////////////////////////////////////////
 constexpr Angle operator%(Angle left, Angle right)
 {
+    assert(right.asDegrees() != 0 && "Angle::operator% cannot modulus by 0");
     return degrees(priv::positiveRemainder(left.asDegrees(), right.asDegrees()));
 }
 
@@ -219,6 +223,7 @@ constexpr Angle operator%(Angle left, Angle right)
 ////////////////////////////////////////////////////////////
 constexpr Angle& operator%=(Angle& left, Angle right)
 {
+    assert(right.asDegrees() != 0 && "Angle::operator%= cannot modulus by 0");
     return left = left % right;
 }
 
@@ -226,28 +231,28 @@ namespace Literals
 {
 
 ////////////////////////////////////////////////////////////
-constexpr Angle operator"" _deg(long double angle)
+constexpr Angle operator""_deg(long double angle)
 {
     return degrees(static_cast<float>(angle));
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle operator"" _deg(unsigned long long angle)
+constexpr Angle operator""_deg(unsigned long long angle)
 {
     return degrees(static_cast<float>(angle));
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle operator"" _rad(long double angle)
+constexpr Angle operator""_rad(long double angle)
 {
     return radians(static_cast<float>(angle));
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle operator"" _rad(unsigned long long angle)
+constexpr Angle operator""_rad(unsigned long long angle)
 {
     return radians(static_cast<float>(angle));
 }

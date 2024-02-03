@@ -39,6 +39,8 @@
 #include <SFML/System/Android/Activity.hpp>
 #endif
 #if defined(SFML_SYSTEM_LINUX) && !defined(SFML_USE_DRM)
+#include <SFML/Window/Unix/Utils.hpp>
+
 #include <X11/Xlib.h>
 #endif
 
@@ -61,7 +63,7 @@ EGLDisplay getInitializedDisplay()
 
     // On Android, its native activity handles this for us
     sf::priv::ActivityStates& states = sf::priv::getActivity();
-    std::lock_guard           lock(states.mutex);
+    const std::lock_guard     lock(states.mutex);
 
     return states.display;
 
@@ -122,11 +124,11 @@ EglContext::EglContext(EglContext* shared)
     m_config = getBestConfig(m_display, VideoMode::getDesktopMode().bitsPerPixel, ContextSettings());
     updateSettings();
 
-    // Note: The EGL specs say that attrib_list can be a null pointer when passed to eglCreatePbufferSurface,
+    // Note: The EGL specs say that attribList can be a null pointer when passed to eglCreatePbufferSurface,
     // but this is resulting in a segfault. Bug in Android?
-    EGLint attrib_list[] = {EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE};
+    EGLint attribList[] = {EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE};
 
-    eglCheck(m_surface = eglCreatePbufferSurface(m_display, m_config, attrib_list));
+    eglCheck(m_surface = eglCreatePbufferSurface(m_display, m_config, attribList));
 
     // Create EGL context
     createContext(shared);
@@ -144,8 +146,8 @@ EglContext::EglContext(EglContext*                        shared,
 #ifdef SFML_SYSTEM_ANDROID
 
     // On Android, we must save the created context
-    ActivityStates& states = getActivity();
-    std::lock_guard lock(states.mutex);
+    ActivityStates&       states = getActivity();
+    const std::lock_guard lock(states.mutex);
 
     states.context = this;
 
@@ -164,7 +166,7 @@ EglContext::EglContext(EglContext*                        shared,
 #if !defined(SFML_SYSTEM_ANDROID)
     // Create EGL surface (except on Android because the window is created
     // asynchronously, its activity manager will call it for us)
-    createSurface(owner.getSystemHandle());
+    createSurface(owner.getNativeHandle());
 
 #endif
 }
@@ -236,7 +238,7 @@ bool EglContext::makeCurrent(bool current)
         eglCheck(result = eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT));
     }
 
-    return (result != EGL_FALSE);
+    return result != EGL_FALSE;
 }
 
 
@@ -353,7 +355,7 @@ EGLConfig EglContext::getBestConfig(EGLDisplay display, unsigned int bitsPerPixe
         }
     }
 
-    assert(bestScore < 0x7FFFFFFF);
+    assert(bestScore < 0x7FFFFFFF && "Failed to calculate best config");
 
     return bestConfig;
 }
@@ -397,7 +399,7 @@ void EglContext::updateSettings()
 
 #if defined(SFML_SYSTEM_LINUX) && !defined(SFML_USE_DRM)
 ////////////////////////////////////////////////////////////
-XVisualInfo EglContext::selectBestVisual(::Display* XDisplay, unsigned int bitsPerPixel, const ContextSettings& settings)
+XVisualInfo EglContext::selectBestVisual(::Display* xDisplay, unsigned int bitsPerPixel, const ContextSettings& settings)
 {
     EglContextImpl::ensureInit();
 
@@ -417,31 +419,26 @@ XVisualInfo EglContext::selectBestVisual(::Display* XDisplay, unsigned int bitsP
         // Should never happen...
         err() << "No EGL visual found. You should check your graphics driver" << std::endl;
 
-        return XVisualInfo();
+        return {};
     }
 
     XVisualInfo vTemplate;
     vTemplate.visualid = static_cast<VisualID>(nativeVisualId);
 
     // Get X11 visuals compatible with this EGL config
-    XVisualInfo *availableVisuals, bestVisual;
-    int          visualCount = 0;
-
-    availableVisuals = XGetVisualInfo(XDisplay, VisualIDMask, &vTemplate, &visualCount);
+    int  visualCount      = 0;
+    auto availableVisuals = X11Ptr<XVisualInfo[]>(XGetVisualInfo(xDisplay, VisualIDMask, &vTemplate, &visualCount));
 
     if (visualCount == 0)
     {
         // Can't happen...
         err() << "No X11 visual found. Bug in your EGL implementation ?" << std::endl;
 
-        return XVisualInfo();
+        return {};
     }
 
     // Pick up the best one
-    bestVisual = availableVisuals[0];
-    XFree(availableVisuals);
-
-    return bestVisual;
+    return availableVisuals[0];
 }
 #endif
 

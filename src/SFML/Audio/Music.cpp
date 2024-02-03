@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -228,8 +228,8 @@ void Music::Impl::setLoopPoints(Music::TimeSpan timePoints)
     // When we apply this change, we need to "reset" this instance and its buffer
 
     // Get old playing status and position
-    Status oldStatus = m_parent->getStatus();
-    Time   oldPos    = m_parent->getPlayingOffset();
+    const Status oldStatus = m_parent->getStatus();
+    const Time   oldPos    = m_parent->getPlayingOffset();
 
     // Unload
     m_parent->stop();
@@ -250,11 +250,11 @@ void Music::Impl::setLoopPoints(Music::TimeSpan timePoints)
 ////////////////////////////////////////////////////////////
 bool Music::Impl::onGetData(SoundStream::Chunk& data)
 {
-    std::lock_guard lock(m_mutex);
+    const std::lock_guard lock(m_mutex);
 
-    std::size_t   toFill        = m_samples.size();
-    std::uint64_t currentOffset = m_file.getSampleOffset();
-    std::uint64_t loopEnd       = m_loopSpan.offset + m_loopSpan.length;
+    std::size_t         toFill        = m_samples.size();
+    std::uint64_t       currentOffset = m_file.getSampleOffset();
+    const std::uint64_t loopEnd       = m_loopSpan.offset + m_loopSpan.length;
 
     // If the loop end is enabled and imminent, request less data.
     // This will trip an "onLoop()" call from the underlying SoundStream,
@@ -276,7 +276,7 @@ bool Music::Impl::onGetData(SoundStream::Chunk& data)
 ////////////////////////////////////////////////////////////
 void Music::Impl::onSeek(Time timeOffset)
 {
-    std::lock_guard lock(m_mutex);
+    const std::lock_guard lock(m_mutex);
     m_file.seek(timeOffset);
 }
 
@@ -285,8 +285,8 @@ void Music::Impl::onSeek(Time timeOffset)
 std::int64_t Music::Impl::onLoop()
 {
     // Called by underlying SoundStream so we can determine where to loop.
-    std::lock_guard lock(m_mutex);
-    std::uint64_t   currentOffset = m_file.getSampleOffset();
+    const std::lock_guard lock(m_mutex);
+    const std::uint64_t   currentOffset = m_file.getSampleOffset();
     if (m_parent->getLoop() && (m_loopSpan.length != 0) && (currentOffset == m_loopSpan.offset + m_loopSpan.length))
     {
         // Looping is enabled, and either we're at the loop end, or we're at the EOF

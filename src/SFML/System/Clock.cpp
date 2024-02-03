@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -34,17 +34,54 @@ namespace sf
 ////////////////////////////////////////////////////////////
 Time Clock::getElapsedTime() const
 {
-    return std::chrono::duration_cast<std::chrono::microseconds>(priv::ClockImpl::now() - m_startTime);
+    if (isRunning())
+        return std::chrono::duration_cast<std::chrono::microseconds>(priv::ClockImpl::now() - m_refPoint);
+    return std::chrono::duration_cast<std::chrono::microseconds>(m_stopPoint - m_refPoint);
+}
+
+
+////////////////////////////////////////////////////////////
+bool Clock::isRunning() const
+{
+    return m_stopPoint == priv::ClockImpl::time_point();
+}
+
+
+////////////////////////////////////////////////////////////
+void Clock::start()
+{
+    if (!isRunning())
+    {
+        m_refPoint += priv::ClockImpl::now() - m_stopPoint;
+        m_stopPoint = {};
+    }
+}
+
+
+////////////////////////////////////////////////////////////
+void Clock::stop()
+{
+    if (isRunning())
+        m_stopPoint = priv::ClockImpl::now();
 }
 
 
 ////////////////////////////////////////////////////////////
 Time Clock::restart()
 {
-    const auto now     = priv::ClockImpl::now();
-    const auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(now - m_startTime);
-    m_startTime        = now;
+    const Time elapsed = getElapsedTime();
+    m_refPoint         = priv::ClockImpl::now();
+    m_stopPoint        = {};
+    return elapsed;
+}
 
+
+////////////////////////////////////////////////////////////
+Time Clock::reset()
+{
+    const Time elapsed = getElapsedTime();
+    m_refPoint         = priv::ClockImpl::now();
+    m_stopPoint        = m_refPoint;
     return elapsed;
 }
 

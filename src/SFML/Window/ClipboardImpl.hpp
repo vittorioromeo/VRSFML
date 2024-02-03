@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -39,7 +39,7 @@
 #include <SFML/Window/Unix/ClipboardImpl.hpp>
 #endif
 #elif defined(SFML_SYSTEM_MACOS)
-#include <SFML/Window/OSX/ClipboardImpl.hpp>
+#include <SFML/Window/macOS/ClipboardImpl.hpp>
 #elif defined(SFML_SYSTEM_IOS)
 #include <SFML/Window/iOS/ClipboardImpl.hpp>
 #elif defined(SFML_SYSTEM_ANDROID)

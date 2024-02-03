@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -28,13 +28,14 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/Event.hpp>
+#include <SFML/Window/WindowEnums.hpp> // Prevent conflict with macro None from Xlib
 #include <SFML/Window/WindowImpl.hpp>
-#include <SFML/Window/WindowStyle.hpp> // Prevent conflict with macro None from Xlib
 
 #include <X11/Xlib.h>
 #include <X11/extensions/Xrandr.h>
 
 #include <deque>
+#include <memory>
 
 
 namespace sf::priv
@@ -59,11 +60,12 @@ public:
     ///
     /// \param mode  Video mode to use
     /// \param title Title of the window
-    /// \param style Window style (resizable, fixed, or fullscren)
+    /// \param style Window style
+    /// \param state Window state
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    WindowImplX11(VideoMode mode, const String& title, unsigned long style, const ContextSettings& settings);
+    WindowImplX11(VideoMode mode, const String& title, std::uint32_t style, State state, const ContextSettings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -77,7 +79,7 @@ public:
     /// \return Handle of the window
     ///
     ////////////////////////////////////////////////////////////
-    WindowHandle getSystemHandle() const override;
+    WindowHandle getNativeHandle() const override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the position of the window
@@ -110,6 +112,26 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void setSize(const Vector2u& size) override;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Set the minimum window rendering region size
+    ///
+    /// Pass std::nullopt to unset the minimum size
+    ///
+    /// \param minimumSize New minimum size, in pixels
+    ///
+    ////////////////////////////////////////////////////////////
+    void setMinimumSize(const std::optional<Vector2u>& minimumSize) override;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Set the maximum window rendering region size
+    ///
+    /// Pass std::nullopt to unset the maximum size
+    ///
+    /// \param maximumSize New maximum size, in pixels
+    ///
+    ////////////////////////////////////////////////////////////
+    void setMaximumSize(const std::optional<Vector2u>& maximumSize) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the title of the window
@@ -292,17 +314,23 @@ private:
     Vector2i getPrimaryMonitorPosition();
 
     ////////////////////////////////////////////////////////////
+    /// \brief Set min/max window size
+    ///
+    ////////////////////////////////////////////////////////////
+    void setWindowSizeConstraints() const;
+
+    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    ::Window   m_window{};       ///< X identifier defining our window
-    ::Display* m_display;        ///< Pointer to the display
-    int        m_screen;         ///< Screen identifier
-    XIM        m_inputMethod{};  ///< Input method linked to the X display
-    XIC        m_inputContext{}; ///< Input context used to get unicode input in our window
-    bool       m_isExternal;     ///< Tell whether the window has been created externally or by SFML
-    RRMode     m_oldVideoMode{}; ///< Video mode in use before we switch to fullscreen
-    RRCrtc     m_oldRRCrtc{};    ///< RRCrtc in use before we switch to fullscreen
-    ::Cursor   m_hiddenCursor{}; ///< As X11 doesn't provide cursor hiding, we must create a transparent one
+    ::Window                 m_window{};       ///< X identifier defining our window
+    std::shared_ptr<Display> m_display;        ///< Pointer to the display
+    int                      m_screen;         ///< Screen identifier
+    std::shared_ptr<_XIM>    m_inputMethod;    ///< Input method linked to the X display
+    XIC                      m_inputContext{}; ///< Input context used to get unicode input in our window
+    bool                     m_isExternal{};   ///< Tell whether the window has been created externally or by SFML
+    RRMode                   m_oldVideoMode{}; ///< Video mode in use before we switch to fullscreen
+    RRCrtc                   m_oldRRCrtc{};    ///< RRCrtc in use before we switch to fullscreen
+    ::Cursor m_hiddenCursor{}; ///< As X11 doesn't provide cursor hiding, we must create a transparent one
     ::Cursor m_lastCursor{None}; ///< Last cursor used -- this data is not owned by the window and is required to be always valid
     bool m_keyRepeat{true}; ///< Is the KeyRepeat feature enabled?
     Vector2i m_previousSize{-1, -1}; ///< Previous size of the window, to find if a ConfigureNotify event is a resize event (could be a move event only)

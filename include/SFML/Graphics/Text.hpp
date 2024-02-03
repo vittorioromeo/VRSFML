@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -85,30 +85,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     Text(Font&& font, String string = "", unsigned int characterSize = 30) = delete;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Copy constructor
-    ///
-    ////////////////////////////////////////////////////////////
-    Text(const Text&);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Copy assignment
-    ///
-    ////////////////////////////////////////////////////////////
-    Text& operator=(const Text&);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Move constructor
-    ///
-    ////////////////////////////////////////////////////////////
-    Text(Text&&) noexcept;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Move assignment
-    ///
-    ////////////////////////////////////////////////////////////
-    Text& operator=(Text&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the text's string
@@ -283,16 +259,15 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Get the text's font
     ///
-    /// If the text has no font attached, a null pointer is returned.
-    /// The returned pointer is const, which means that you
+    /// The returned reference is const, which means that you
     /// cannot modify the font when you get it from this function.
     ///
-    /// \return Pointer to the text's font
+    /// \return Reference to the text's font
     ///
     /// \see setFont
     ///
     ////////////////////////////////////////////////////////////
-    const Font* getFont() const;
+    const Font& getFont() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the character size
@@ -489,7 +464,10 @@ private:
 /// \code
 /// // Declare and load a font
 /// sf::Font font;
-/// font.loadFromFile("arial.ttf");
+/// if (!font.loadFromFile("arial.ttf"))
+/// {
+///     // Handle error...
+/// }
 ///
 /// // Create a text
 /// sf::Text text(font, "hello");

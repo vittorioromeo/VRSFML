@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -25,7 +25,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Network/Unix/SocketImpl.hpp>
+#include <SFML/Network/SocketImpl.hpp>
 
 #include <SFML/System/Err.hpp>
 
@@ -71,7 +71,7 @@ void SocketImpl::close(SocketHandle sock)
 ////////////////////////////////////////////////////////////
 void SocketImpl::setBlocking(SocketHandle sock, bool block)
 {
-    int status = fcntl(sock, F_GETFL);
+    const int status = fcntl(sock, F_GETFL);
     if (block)
     {
         if (fcntl(sock, F_SETFL, status & ~O_NONBLOCK) == -1)
@@ -88,7 +88,7 @@ void SocketImpl::setBlocking(SocketHandle sock, bool block)
 ////////////////////////////////////////////////////////////
 Socket::Status SocketImpl::getErrorStatus()
 {
-    // The followings are sometimes equal to EWOULDBLOCK,
+    // The following are sometimes equal to EWOULDBLOCK,
     // so we have to make a special case for them in order
     // to avoid having double values in the switch case
     if ((errno == EAGAIN) || (errno == EINPROGRESS))

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -27,6 +27,8 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/JoystickManager.hpp>
 
+#include <cassert>
+
 
 namespace sf::priv
 {
@@ -41,6 +43,7 @@ JoystickManager& JoystickManager::getInstance()
 ////////////////////////////////////////////////////////////
 const JoystickCaps& JoystickManager::getCapabilities(unsigned int joystick) const
 {
+    assert(joystick < Joystick::Count && "Joystick index must be less than Joystick::Count");
     return m_joysticks[joystick].capabilities;
 }
 
@@ -48,6 +51,7 @@ const JoystickCaps& JoystickManager::getCapabilities(unsigned int joystick) cons
 ////////////////////////////////////////////////////////////
 const JoystickState& JoystickManager::getState(unsigned int joystick) const
 {
+    assert(joystick < Joystick::Count && "Joystick index must be less than Joystick::Count");
     return m_joysticks[joystick].state;
 }
 
@@ -55,6 +59,7 @@ const JoystickState& JoystickManager::getState(unsigned int joystick) const
 ////////////////////////////////////////////////////////////
 const Joystick::Identification& JoystickManager::getIdentification(unsigned int joystick) const
 {
+    assert(joystick < Joystick::Count && "Joystick index must be less than Joystick::Count");
     return m_joysticks[joystick].identification;
 }
 

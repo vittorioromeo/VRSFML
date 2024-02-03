@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -94,8 +94,8 @@ constexpr Vector2<T> Vector2<T>::cwiseMul(const Vector2<T>& rhs) const
 template <typename T>
 constexpr Vector2<T> Vector2<T>::cwiseDiv(const Vector2<T>& rhs) const
 {
-    assert(rhs.x != 0);
-    assert(rhs.y != 0);
+    assert(rhs.x != 0 && "Vector2::cwiseDiv() cannot divide by 0");
+    assert(rhs.y != 0 && "Vector2::cwiseDiv() cannot divide by 0");
     return Vector2<T>(x / rhs.x, y / rhs.y);
 }
 
@@ -177,6 +177,7 @@ constexpr Vector2<T>& operator*=(Vector2<T>& left, T right)
 template <typename T>
 constexpr Vector2<T> operator/(const Vector2<T>& left, T right)
 {
+    assert(right != 0 && "Vector2::operator/ cannot divide by 0");
     return Vector2<T>(left.x / right, left.y / right);
 }
 
@@ -185,6 +186,7 @@ constexpr Vector2<T> operator/(const Vector2<T>& left, T right)
 template <typename T>
 constexpr Vector2<T>& operator/=(Vector2<T>& left, T right)
 {
+    assert(right != 0 && "Vector2::operator/= cannot divide by 0");
     left.x /= right;
     left.y /= right;
 

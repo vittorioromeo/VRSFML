@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -25,8 +25,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Window/InputImpl.hpp>
 #include <SFML/Window/Unix/Display.hpp>
-#include <SFML/Window/Unix/InputImpl.hpp>
 #include <SFML/Window/Unix/KeyboardImpl.hpp>
 #include <SFML/Window/WindowBase.hpp>
 #include <SFML/Window/WindowHandle.hpp>
@@ -37,55 +37,55 @@
 #include <X11/keysym.h>
 
 
-namespace sf::priv
+namespace sf::priv::InputImpl
 {
 ////////////////////////////////////////////////////////////
-bool InputImpl::isKeyPressed(Keyboard::Key key)
+bool isKeyPressed(Keyboard::Key key)
 {
     return KeyboardImpl::isKeyPressed(key);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool InputImpl::isKeyPressed(Keyboard::Scancode code)
+bool isKeyPressed(Keyboard::Scancode code)
 {
     return KeyboardImpl::isKeyPressed(code);
 }
 
 
 ////////////////////////////////////////////////////////////
-Keyboard::Key InputImpl::localize(Keyboard::Scancode code)
+Keyboard::Key localize(Keyboard::Scancode code)
 {
     return KeyboardImpl::localize(code);
 }
 
 
 ////////////////////////////////////////////////////////////
-Keyboard::Scancode InputImpl::delocalize(Keyboard::Key key)
+Keyboard::Scancode delocalize(Keyboard::Key key)
 {
     return KeyboardImpl::delocalize(key);
 }
 
 
 ////////////////////////////////////////////////////////////
-String InputImpl::getDescription(Keyboard::Scancode code)
+String getDescription(Keyboard::Scancode code)
 {
     return KeyboardImpl::getDescription(code);
 }
 
 
 ////////////////////////////////////////////////////////////
-void InputImpl::setVirtualKeyboardVisible(bool /*visible*/)
+void setVirtualKeyboardVisible(bool /*visible*/)
 {
     // Not applicable
 }
 
 
 ////////////////////////////////////////////////////////////
-bool InputImpl::isMouseButtonPressed(Mouse::Button button)
+bool isMouseButtonPressed(Mouse::Button button)
 {
     // Open a connection with the X server
-    Display* display = openDisplay();
+    const auto display = openDisplay();
 
     // we don't care about these but they are required
     ::Window root;
@@ -96,33 +96,30 @@ bool InputImpl::isMouseButtonPressed(Mouse::Button button)
     int      gy;
 
     unsigned int buttons = 0;
-    XQueryPointer(display, DefaultRootWindow(display), &root, &child, &gx, &gy, &wx, &wy, &buttons);
-
-    // Close the connection with the X server
-    closeDisplay(display);
+    XQueryPointer(display.get(), DefaultRootWindow(display.get()), &root, &child, &gx, &gy, &wx, &wy, &buttons);
 
     // Buttons 4 and 5 are the vertical wheel and 6 and 7 the horizontal wheel.
     // There is no mask for buttons 8 and 9, so checking the state of buttons
-    // Mouse::XButton1 and Mouse::XButton2 is not supported.
+    // Mouse::Button::Extra1 and Mouse::Button::Extra2 is not supported.
     // clang-format off
     switch (button)
     {
-        case Mouse::Left:     return buttons & Button1Mask;
-        case Mouse::Right:    return buttons & Button3Mask;
-        case Mouse::Middle:   return buttons & Button2Mask;
-        case Mouse::XButton1: return false; // not supported by X
-        case Mouse::XButton2: return false; // not supported by X
-        default:              return false;
+        case Mouse::Button::Left:   return buttons & Button1Mask;
+        case Mouse::Button::Right:  return buttons & Button3Mask;
+        case Mouse::Button::Middle: return buttons & Button2Mask;
+        case Mouse::Button::Extra1: return false; // not supported by X
+        case Mouse::Button::Extra2: return false; // not supported by X
+        default:                    return false;
     }
     // clang-format on
 }
 
 
 ////////////////////////////////////////////////////////////
-Vector2i InputImpl::getMousePosition()
+Vector2i getMousePosition()
 {
     // Open a connection with the X server
-    Display* display = openDisplay();
+    const auto display = openDisplay();
 
     // we don't care about these but they are required
     ::Window     root;
@@ -133,23 +130,20 @@ Vector2i InputImpl::getMousePosition()
 
     int gx = 0;
     int gy = 0;
-    XQueryPointer(display, DefaultRootWindow(display), &root, &child, &gx, &gy, &x, &y, &buttons);
+    XQueryPointer(display.get(), DefaultRootWindow(display.get()), &root, &child, &gx, &gy, &x, &y, &buttons);
 
-    // Close the connection with the X server
-    closeDisplay(display);
-
-    return Vector2i(gx, gy);
+    return {gx, gy};
 }
 
 
 ////////////////////////////////////////////////////////////
-Vector2i InputImpl::getMousePosition(const WindowBase& relativeTo)
+Vector2i getMousePosition(const WindowBase& relativeTo)
 {
-    WindowHandle handle = relativeTo.getSystemHandle();
+    const WindowHandle handle = relativeTo.getNativeHandle();
     if (handle)
     {
         // Open a connection with the X server
-        Display* display = openDisplay();
+        const auto display = openDisplay();
 
         // we don't care about these but they are required
         ::Window     root;
@@ -160,54 +154,45 @@ Vector2i InputImpl::getMousePosition(const WindowBase& relativeTo)
 
         int x = 0;
         int y = 0;
-        XQueryPointer(display, handle, &root, &child, &gx, &gy, &x, &y, &buttons);
+        XQueryPointer(display.get(), handle, &root, &child, &gx, &gy, &x, &y, &buttons);
 
-        // Close the connection with the X server
-        closeDisplay(display);
-
-        return Vector2i(x, y);
+        return {x, y};
     }
     else
     {
-        return Vector2i();
+        return {};
     }
 }
 
 
 ////////////////////////////////////////////////////////////
-void InputImpl::setMousePosition(const Vector2i& position)
+void setMousePosition(const Vector2i& position)
 {
     // Open a connection with the X server
-    Display* display = openDisplay();
+    const auto display = openDisplay();
 
-    XWarpPointer(display, None, DefaultRootWindow(display), 0, 0, 0, 0, position.x, position.y);
-    XFlush(display);
-
-    // Close the connection with the X server
-    closeDisplay(display);
+    XWarpPointer(display.get(), None, DefaultRootWindow(display.get()), 0, 0, 0, 0, position.x, position.y);
+    XFlush(display.get());
 }
 
 
 ////////////////////////////////////////////////////////////
-void InputImpl::setMousePosition(const Vector2i& position, const WindowBase& relativeTo)
+void setMousePosition(const Vector2i& position, const WindowBase& relativeTo)
 {
     // Open a connection with the X server
-    Display* display = openDisplay();
+    const auto display = openDisplay();
 
-    WindowHandle handle = relativeTo.getSystemHandle();
+    const WindowHandle handle = relativeTo.getNativeHandle();
     if (handle)
     {
-        XWarpPointer(display, None, handle, 0, 0, 0, 0, position.x, position.y);
-        XFlush(display);
+        XWarpPointer(display.get(), None, handle, 0, 0, 0, 0, position.x, position.y);
+        XFlush(display.get());
     }
-
-    // Close the connection with the X server
-    closeDisplay(display);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool InputImpl::isTouchDown(unsigned int /*finger*/)
+bool isTouchDown(unsigned int /*finger*/)
 {
     // Not applicable
     return false;
@@ -215,18 +200,18 @@ bool InputImpl::isTouchDown(unsigned int /*finger*/)
 
 
 ////////////////////////////////////////////////////////////
-Vector2i InputImpl::getTouchPosition(unsigned int /*finger*/)
+Vector2i getTouchPosition(unsigned int /*finger*/)
 {
     // Not applicable
-    return Vector2i();
+    return {};
 }
 
 
 ////////////////////////////////////////////////////////////
-Vector2i InputImpl::getTouchPosition(unsigned int /*finger*/, const WindowBase& /*relativeTo*/)
+Vector2i getTouchPosition(unsigned int /*finger*/, const WindowBase& /*relativeTo*/)
 {
     // Not applicable
-    return Vector2i();
+    return {};
 }
 
-} // namespace sf::priv
+} // namespace sf::priv::InputImpl

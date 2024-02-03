@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -68,14 +68,21 @@ Vector2f RectangleShape::getPoint(std::size_t index) const
     {
         default:
         case 0:
-            return Vector2f(0, 0);
+            return {0, 0};
         case 1:
-            return Vector2f(m_size.x, 0);
+            return {m_size.x, 0};
         case 2:
-            return Vector2f(m_size.x, m_size.y);
+            return {m_size.x, m_size.y};
         case 3:
-            return Vector2f(0, m_size.y);
+            return {0, m_size.y};
     }
+}
+
+
+////////////////////////////////////////////////////////////
+Vector2f RectangleShape::getGeometricCenter() const
+{
+    return m_size / 2.f;
 }
 
 } // namespace sf

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -27,6 +27,8 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/Joystick.hpp>
 #include <SFML/Window/JoystickManager.hpp>
+
+#include <cassert>
 
 
 namespace sf
@@ -55,6 +57,7 @@ bool Joystick::hasAxis(unsigned int joystick, Axis axis)
 ////////////////////////////////////////////////////////////
 bool Joystick::isButtonPressed(unsigned int joystick, unsigned int button)
 {
+    assert(button < Joystick::ButtonCount && "Button must be less than Joystick::ButtonCount");
     return priv::JoystickManager::getInstance().getState(joystick).buttons[button];
 }
 
@@ -76,7 +79,7 @@ Joystick::Identification Joystick::getIdentification(unsigned int joystick)
 ////////////////////////////////////////////////////////////
 void Joystick::update()
 {
-    return priv::JoystickManager::getInstance().update();
+    priv::JoystickManager::getInstance().update();
 }
 
 } // namespace sf

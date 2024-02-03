@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2023 Andrew Mickelson
+// Copyright (C) 2024 Andrew Mickelson
 //               2013 Jonathan De Wachter (dewachter.jonathan@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -136,8 +136,8 @@ void cleanup()
 
 void drmFbDestroyCallback(gbm_bo* bo, void* data)
 {
-    int   drmFd = gbm_device_get_fd(gbm_bo_get_device(bo));
-    auto* fb    = static_cast<DrmFb*>(data);
+    const int drmFd = gbm_device_get_fd(gbm_bo_get_device(bo));
+    auto*     fb    = static_cast<DrmFb*>(data);
 
     if (fb->fbId)
         drmModeRmFB(drmFd, fb->fbId);
@@ -147,8 +147,8 @@ void drmFbDestroyCallback(gbm_bo* bo, void* data)
 
 DrmFb* drmFbGetFromBo(gbm_bo& bo)
 {
-    int   drmFd = gbm_device_get_fd(gbm_bo_get_device(&bo));
-    auto* fb    = static_cast<DrmFb*>(gbm_bo_get_user_data(&bo));
+    const int drmFd = gbm_device_get_fd(gbm_bo_get_device(&bo));
+    auto*     fb    = static_cast<DrmFb*>(gbm_bo_get_user_data(&bo));
     if (fb)
         return fb;
 
@@ -549,7 +549,7 @@ DRMContext::DRMContext(DRMContext* shared, const ContextSettings& settings, cons
     // Create EGL context
     createContext(shared);
 
-    Vector2u size = owner.getSize();
+    const Vector2u size = owner.getSize();
     createSurface(size, bitsPerPixel, true);
 }
 
@@ -650,7 +650,7 @@ void DRMContext::display()
 
     m_currentBO = m_nextBO;
 
-    // This call must be preceeded by a single call to eglSwapBuffers()
+    // This call must be preceded by a single call to eglSwapBuffers()
     m_nextBO = gbm_surface_lock_front_buffer(m_gbmSurface);
 
     if (!m_nextBO)

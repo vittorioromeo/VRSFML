@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -31,6 +31,7 @@
 #include <iterator>
 #include <utility>
 
+#include <cassert>
 #include <cstring>
 
 #include <cstring>
@@ -39,11 +40,105 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-const std::size_t String::InvalidPos;
+void U8StringCharTraits::assign(char_type& c1, char_type c2) noexcept
+{
+    c1 = c2;
+}
 
 
 ////////////////////////////////////////////////////////////
-String::String() = default;
+U8StringCharTraits::char_type* U8StringCharTraits::assign(char_type* s, std::size_t n, char_type c)
+{
+    return reinterpret_cast<U8StringCharTraits::char_type*>(
+        std::char_traits<char>::assign(reinterpret_cast<char*>(s), n, static_cast<char>(c)));
+}
+
+
+////////////////////////////////////////////////////////////
+bool U8StringCharTraits::eq(char_type c1, char_type c2) noexcept
+{
+    return c1 == c2;
+}
+
+
+////////////////////////////////////////////////////////////
+bool U8StringCharTraits::lt(char_type c1, char_type c2) noexcept
+{
+    return c1 < c2;
+}
+
+
+////////////////////////////////////////////////////////////
+U8StringCharTraits::char_type* U8StringCharTraits::move(char_type* s1, const char_type* s2, std::size_t n)
+{
+    std::memmove(s1, s2, n);
+    return s1;
+}
+
+
+////////////////////////////////////////////////////////////
+U8StringCharTraits::char_type* U8StringCharTraits::copy(char_type* s1, const char_type* s2, std::size_t n)
+{
+    std::memcpy(s1, s2, n);
+    return s1;
+}
+
+
+////////////////////////////////////////////////////////////
+int U8StringCharTraits::compare(const char_type* s1, const char_type* s2, std::size_t n)
+{
+    return std::memcmp(s1, s2, n);
+}
+
+
+////////////////////////////////////////////////////////////
+std::size_t U8StringCharTraits::length(const char_type* s)
+{
+    return std::strlen(reinterpret_cast<const char*>(s));
+}
+
+
+////////////////////////////////////////////////////////////
+const U8StringCharTraits::char_type* U8StringCharTraits::find(const char_type* s, std::size_t n, const char_type& c)
+{
+    return reinterpret_cast<const U8StringCharTraits::char_type*>(
+        std::char_traits<char>::find(reinterpret_cast<const char*>(s), n, static_cast<char>(c)));
+}
+
+
+////////////////////////////////////////////////////////////
+U8StringCharTraits::char_type U8StringCharTraits::to_char_type(int_type i) noexcept
+{
+    return static_cast<U8StringCharTraits::char_type>(std::char_traits<char>::to_char_type(i));
+}
+
+
+////////////////////////////////////////////////////////////
+U8StringCharTraits::int_type U8StringCharTraits::to_int_type(char_type c) noexcept
+{
+    return std::char_traits<char>::to_int_type(static_cast<char>(c));
+}
+
+
+////////////////////////////////////////////////////////////
+bool U8StringCharTraits::eq_int_type(int_type i1, int_type i2) noexcept
+{
+    return i1 == i2;
+}
+
+
+////////////////////////////////////////////////////////////
+U8StringCharTraits::int_type U8StringCharTraits::eof() noexcept
+{
+    return std::char_traits<char>::eof();
+}
+
+
+////////////////////////////////////////////////////////////
+U8StringCharTraits::int_type U8StringCharTraits::not_eof(int_type i) noexcept
+{
+    return std::char_traits<char>::not_eof(i);
+}
 
 
 ////////////////////////////////////////////////////////////
@@ -72,7 +167,7 @@ String::String(const char* ansiString, const std::locale& locale)
 {
     if (ansiString)
     {
-        std::size_t length = strlen(ansiString);
+        const std::size_t length = strlen(ansiString);
         if (length > 0)
         {
             m_string.reserve(length + 1);
@@ -95,7 +190,7 @@ String::String(const wchar_t* wideString)
 {
     if (wideString)
     {
-        std::size_t length = std::wcslen(wideString);
+        const std::size_t length = std::wcslen(wideString);
         if (length > 0)
         {
             m_string.reserve(length + 1);
@@ -170,10 +265,10 @@ std::wstring String::toWideString() const
 
 
 ////////////////////////////////////////////////////////////
-std::basic_string<std::uint8_t> String::toUtf8() const
+sf::U8String String::toUtf8() const
 {
     // Prepare the output string
-    std::basic_string<std::uint8_t> output;
+    sf::U8String output;
     output.reserve(m_string.length());
 
     // Convert
@@ -215,6 +310,7 @@ String& String::operator+=(const String& right)
 ////////////////////////////////////////////////////////////
 char32_t String::operator[](std::size_t index) const
 {
+    assert(index < m_string.size() && "Index is out of bounds");
     return m_string[index];
 }
 
@@ -222,6 +318,7 @@ char32_t String::operator[](std::size_t index) const
 ////////////////////////////////////////////////////////////
 char32_t& String::operator[](std::size_t index)
 {
+    assert(index < m_string.size() && "Index is out of bounds");
     return m_string[index];
 }
 
@@ -278,9 +375,9 @@ void String::replace(std::size_t position, std::size_t length, const String& rep
 ////////////////////////////////////////////////////////////
 void String::replace(const String& searchFor, const String& replaceWith)
 {
-    std::size_t step = replaceWith.getSize();
-    std::size_t len  = searchFor.getSize();
-    std::size_t pos  = find(searchFor);
+    const std::size_t step = replaceWith.getSize();
+    const std::size_t len  = searchFor.getSize();
+    std::size_t       pos  = find(searchFor);
 
     // Replace each occurrence of search
     while (pos != InvalidPos)

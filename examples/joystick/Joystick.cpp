@@ -1,4 +1,3 @@
-
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -170,7 +169,7 @@ int main()
         {
             // Window closed or escape key pressed: exit
             if ((event.type == sf::Event::Closed) ||
-                ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape)))
+                ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Key::Escape)))
             {
                 window.close();
                 break;
@@ -201,10 +200,10 @@ int main()
         // Update threshold if the user wants to change it
         float newThreshold = threshold;
 
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up))
             newThreshold += 0.1f;
 
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down))
             newThreshold -= 0.1f;
 
         newThreshold = std::clamp(newThreshold, 0.1f, 100.0f);

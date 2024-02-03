@@ -1,4 +1,3 @@
-
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -89,7 +88,7 @@ private:
         // Copy samples into a local buffer to avoid synchronization problems
         // (don't forget that we run in two separate threads)
         {
-            std::lock_guard lock(m_mutex);
+            const std::lock_guard lock(m_mutex);
             m_tempBuffer.assign(m_samples.begin() + static_cast<std::vector<std::int16_t>::difference_type>(m_offset),
                                 m_samples.end());
         }
@@ -133,17 +132,15 @@ private:
             if (id == serverAudioData)
             {
                 // Extract audio samples from the packet, and append it to our samples buffer
-                std::size_t sampleCount = (packet.getDataSize() - 1) / sizeof(std::int16_t);
+                const std::size_t sampleCount = (packet.getDataSize() - 1) / sizeof(std::int16_t);
 
                 // Don't forget that the other thread can access the sample array at any time
                 // (so we protect any operation on it with the mutex)
                 {
-                    std::lock_guard lock(m_mutex);
-                    std::size_t     oldSize = m_samples.size();
-                    m_samples.resize(oldSize + sampleCount);
-                    std::memcpy(&(m_samples[oldSize]),
-                                static_cast<const char*>(packet.getData()) + 1,
-                                sampleCount * sizeof(std::int16_t));
+                    const std::lock_guard lock(m_mutex);
+                    const auto*           begin = static_cast<const char*>(packet.getData()) + 1;
+                    const auto*           end   = begin + sampleCount * sizeof(std::int16_t);
+                    m_samples.insert(m_samples.end(), begin, end);
                 }
             }
             else if (id == serverEndOfStream)

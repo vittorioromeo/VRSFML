@@ -1,4 +1,3 @@
-
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -23,7 +22,7 @@ void playSound()
     if (!buffer.loadFromFile("resources/killdeer.wav"))
         return;
 
-    // Display sound informations
+    // Display sound information
     std::cout << "killdeer.wav:" << '\n'
               << " " << buffer.getDuration().asSeconds() << " seconds" << '\n'
               << " " << buffer.getSampleRate() << " samples / sec" << '\n'
@@ -58,7 +57,7 @@ void playMusic(const std::filesystem::path& filename)
     if (!music.openFromFile("resources" / filename))
         return;
 
-    // Display music informations
+    // Display music information
     std::cout << filename << ":" << '\n'
               << " " << music.getDuration().asSeconds() << " seconds" << '\n'
               << " " << music.getSampleRate() << " samples / sec" << '\n'

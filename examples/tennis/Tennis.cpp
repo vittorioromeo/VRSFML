@@ -1,4 +1,3 @@
-
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -51,10 +50,10 @@ int main()
     std::mt19937       rng(rd());
 
     // Define some constants
-    const float  gameWidth  = 800;
-    const float  gameHeight = 600;
-    sf::Vector2f paddleSize(25, 100);
-    float        ballRadius = 10.f;
+    const float        gameWidth  = 800;
+    const float        gameHeight = 600;
+    const sf::Vector2f paddleSize(25, 100);
+    const float        ballRadius = 10.f;
 
     // Create the window of the application
     sf::RenderWindow window(sf::VideoMode({static_cast<unsigned int>(gameWidth), static_cast<unsigned int>(gameHeight)}, 32),
@@ -72,8 +71,7 @@ int main()
     sf::Texture sfmlLogoTexture;
     if (!sfmlLogoTexture.loadFromFile(resourcesDir() / "sfml_logo.png"))
         return EXIT_FAILURE;
-    sf::Sprite sfmlLogo;
-    sfmlLogo.setTexture(sfmlLogoTexture);
+    sf::Sprite sfmlLogo(sfmlLogoTexture);
     sfmlLogo.setPosition({170.f, 50.f});
 
     // Create the left paddle
@@ -134,14 +132,14 @@ int main()
         {
             // Window closed or escape key pressed: exit
             if ((event.type == sf::Event::Closed) ||
-                ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape)))
+                ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Key::Escape)))
             {
                 window.close();
                 break;
             }
 
             // Space key pressed: play
-            if (((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Space)) ||
+            if (((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Key::Space)) ||
                 (event.type == sf::Event::TouchBegan))
             {
                 if (!isPlaying)
@@ -176,14 +174,14 @@ int main()
 
         if (isPlaying)
         {
-            float deltaTime = clock.restart().asSeconds();
+            const float deltaTime = clock.restart().asSeconds();
 
             // Move the player's paddle
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && (leftPaddle.getPosition().y - paddleSize.y / 2 > 5.f))
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up) && (leftPaddle.getPosition().y - paddleSize.y / 2 > 5.f))
             {
                 leftPaddle.move({0.f, -paddleSpeed * deltaTime});
             }
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) &&
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down) &&
                 (leftPaddle.getPosition().y + paddleSize.y / 2 < gameHeight - 5.f))
             {
                 leftPaddle.move({0.f, paddleSpeed * deltaTime});
@@ -191,8 +189,8 @@ int main()
 
             if (sf::Touch::isDown(0))
             {
-                sf::Vector2i pos       = sf::Touch::getPosition(0);
-                sf::Vector2f mappedPos = window.mapPixelToCoords(pos);
+                const sf::Vector2i pos       = sf::Touch::getPosition(0);
+                const sf::Vector2f mappedPos = window.mapPixelToCoords(pos);
                 leftPaddle.setPosition({leftPaddle.getPosition().x, mappedPos.y});
             }
 

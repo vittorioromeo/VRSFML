@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -41,7 +41,7 @@ bool Sensor::isAvailable(Type sensor)
 ////////////////////////////////////////////////////////////
 void Sensor::setEnabled(Type sensor, bool enabled)
 {
-    return priv::SensorManager::getInstance().setEnabled(sensor, enabled);
+    priv::SensorManager::getInstance().setEnabled(sensor, enabled);
 }
 
 ////////////////////////////////////////////////////////////
