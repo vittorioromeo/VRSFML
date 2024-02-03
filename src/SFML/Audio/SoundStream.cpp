@@ -31,6 +31,7 @@
 
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Sleep.hpp>
+#include <SFML/System/Time.hpp>
 
 #include <mutex>
 #include <ostream>

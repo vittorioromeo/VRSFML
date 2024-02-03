@@ -566,8 +566,8 @@ sf::priv::UniquePtr<GlContext> GlContext::create()
     // in order to make sure it is not active during context creation
     sharedContext->context->setActive(true);
 
-        // Create the context
-        context = sf::priv::makeUnique<ContextType>(sharedContext.get());
+    // Create the context
+    context = sf::priv::makeUnique<ContextType>(&sharedContext->context.value());
 
     sharedContext->context->setActive(false);
 
@@ -796,7 +796,7 @@ bool GlContext::setActive(bool active)
 
 
 ////////////////////////////////////////////////////////////
-GlContext::GlContext() : m_impl(std::make_unique<Impl>())
+GlContext::GlContext() : m_impl(sf::priv::makeUnique<Impl>())
 {
     // Nothing to do
 }

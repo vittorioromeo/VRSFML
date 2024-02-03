@@ -317,7 +317,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    const std::unique_ptr<Impl> m_impl; //!< Implementation details
+    const sf::priv::UniquePtr<Impl> m_impl; //!< Implementation details
 };
 
 } // namespace sf::priv

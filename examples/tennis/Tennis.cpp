@@ -16,7 +16,7 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Touch.hpp>
 #include <SFML/Window/VideoMode.hpp>
-#include <SFML/Window/WindowStyle.hpp>
+#include <SFML/Window/WindowEnums.hpp>
 
 #include <SFML/System/Angle.hpp>
 #include <SFML/System/Clock.hpp>
