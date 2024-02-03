@@ -44,6 +44,9 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
+SocketSelector::~SocketSelector() = default;
+
+////////////////////////////////////////////////////////////
 struct SocketSelector::SocketSelectorImpl
 {
     fd_set allSockets;   //!< Set containing all the sockets handles
