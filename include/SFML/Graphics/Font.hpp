@@ -58,6 +58,12 @@ class SFML_GRAPHICS_API Font
 {
 public:
     ////////////////////////////////////////////////////////////
+    /// \brief Destructor
+    ///
+    ////////////////////////////////////////////////////////////
+    ~Font();
+
+    ////////////////////////////////////////////////////////////
     /// \brief Holds various information about a font
     ///
     ////////////////////////////////////////////////////////////
@@ -382,6 +388,11 @@ private:
     mutable std::vector<std::uint8_t> m_pixelBuffer; //!< Pixel buffer holding a glyph's pixels before being written to the texture
 #ifdef SFML_SYSTEM_ANDROID
     std::shared_ptr<priv::ResourceStream> m_stream; //!< Asset file streamer (if loaded from file)
+#endif
+
+#ifdef SFML_DEBUG
+    friend class Text;
+    mutable int m_dependantTextCount{0}; //!< Number of text objects depending on this font.
 #endif
 };
 

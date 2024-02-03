@@ -19,6 +19,7 @@ if(SFML_BUILD_WINDOW)
 endif()
 
 if(SFML_BUILD_GRAPHICS)
+    add_subdirectory(font_lifetime)
     add_subdirectory(opengl)
     add_subdirectory(stencil)
 
