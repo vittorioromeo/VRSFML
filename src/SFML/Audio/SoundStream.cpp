@@ -40,8 +40,6 @@
 #include <cassert>
 #include <cstdlib>
 
-#include <cassert>
-
 #ifdef _MSC_VER
 #pragma warning(disable : 4355) // 'this' used in base member initializer list
 #endif
