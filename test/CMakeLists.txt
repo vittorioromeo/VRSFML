@@ -21,6 +21,13 @@ set_target_properties(Catch2WithMain PROPERTIES EXPORT_COMPILE_COMMANDS OFF)
 get_target_property(CATCH2_INCLUDE_DIRS Catch2 INTERFACE_INCLUDE_DIRECTORIES)
 target_include_directories(Catch2 SYSTEM INTERFACE ${CATCH2_INCLUDE_DIRS})
 
+# enable precompiled headers
+if (SFML_ENABLE_PCH)
+    message(VERBOSE "enabling PCH for Catch2")
+    target_include_directories(Catch2 PRIVATE ${PROJECT_SOURCE_DIR}/src) # necessary to find `WindowsHeader.hpp` on Windows
+    target_precompile_headers(Catch2 PRIVATE ${PROJECT_SOURCE_DIR}/src/SFML/PCH.hpp)
+endif()
+
 add_library(sfml-test-main STATIC
     TestUtilities/SystemUtil.hpp
     TestUtilities/SystemUtil.cpp
