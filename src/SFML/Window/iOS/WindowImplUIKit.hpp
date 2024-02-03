@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -59,11 +59,12 @@ public:
     ///
     /// \param mode     Video mode to use
     /// \param title    Title of the window
-    /// \param style    Window style (resizable, fixed, or fullscren)
+    /// \param style    Window style
+    /// \param state    Window state
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    WindowImplUIKit(VideoMode mode, const String& title, unsigned long style, const ContextSettings& settings);
+    WindowImplUIKit(VideoMode mode, const String& title, std::uint32_t style, State state, const ContextSettings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the OS-specific handle of the window
@@ -71,7 +72,7 @@ public:
     /// \return Handle of the window
     ///
     ////////////////////////////////////////////////////////////
-    WindowHandle getSystemHandle() const override;
+    WindowHandle getNativeHandle() const override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the position of the window
@@ -104,6 +105,26 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void setSize(const Vector2u& size) override;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Set the minimum window rendering region size
+    ///
+    /// Pass std::nullopt to unset the minimum size
+    ///
+    /// \param minimumSize New minimum size, in pixels
+    ///
+    ////////////////////////////////////////////////////////////
+    void setMinimumSize(const std::optional<Vector2u>& minimumSize) override;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Set the maximum window rendering region size
+    ///
+    /// Pass std::nullopt to unset the maximum size
+    ///
+    /// \param maximumSize New maximum size, in pixels
+    ///
+    ////////////////////////////////////////////////////////////
+    void setMaximumSize(const std::optional<Vector2u>& maximumSize) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the title of the window
@@ -177,7 +198,6 @@ public:
     ////////////////////////////////////////////////////////////
     bool hasFocus() const override;
 
-public:
     ////////////////////////////////////////////////////////////
     /// \brief Notify an event
     ///
@@ -213,11 +233,11 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    UIWindow*         m_window;         ///< Pointer to the internal UIKit window
-    SFView*           m_view;           ///< OpenGL view of the window
-    SFViewController* m_viewController; ///< Controller attached to the view
-    bool              m_hasFocus;       ///< Current focus state of the window
-    float             m_backingScale;   ///< Converts from points to pixels and vice versa
+    UIWindow*         m_window{};         ///< Pointer to the internal UIKit window
+    SFView*           m_view{};           ///< OpenGL view of the window
+    SFViewController* m_viewController{}; ///< Controller attached to the view
+    bool              m_hasFocus{};       ///< Current focus state of the window
+    float             m_backingScale{};   ///< Converts from points to pixels and vice versa
 };
 
 } // namespace sf::priv

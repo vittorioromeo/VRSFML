@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -30,6 +30,8 @@
 #include <SFML/Graphics/Export.hpp>
 
 #include <SFML/Graphics/BlendMode.hpp>
+#include <SFML/Graphics/CoordinateType.hpp>
+#include <SFML/Graphics/StencilMode.hpp>
 #include <SFML/Graphics/Transform.hpp>
 
 
@@ -42,9 +44,8 @@ class Texture;
 /// \brief Define the states used for drawing to a RenderTarget
 ///
 ////////////////////////////////////////////////////////////
-class SFML_GRAPHICS_API RenderStates
+struct SFML_GRAPHICS_API RenderStates
 {
-public:
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
@@ -52,12 +53,13 @@ public:
     /// to using sf::RenderStates::Default.
     /// The default set defines:
     /// \li the BlendAlpha blend mode
+    /// \li the default StencilMode (no stencil)
     /// \li the identity transform
     /// \li a null texture
     /// \li a null shader
     ///
     ////////////////////////////////////////////////////////////
-    RenderStates();
+    RenderStates() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a default set of render states with a custom blend mode
@@ -66,6 +68,14 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     RenderStates(const BlendMode& theBlendMode);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Construct a default set of render states with a custom stencil mode
+    ///
+    /// \param theStencilMode Stencil mode to use
+    ///
+    ////////////////////////////////////////////////////////////
+    RenderStates(const StencilMode& theStencilMode);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a default set of render states with a custom transform
@@ -94,13 +104,20 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Construct a set of render states with all its attributes
     ///
-    /// \param theBlendMode Blend mode to use
-    /// \param theTransform Transform to use
-    /// \param theTexture   Texture to use
-    /// \param theShader    Shader to use
+    /// \param theBlendMode      Blend mode to use
+    /// \param theStencilMode    Stencil mode to use
+    /// \param theTransform      Transform to use
+    /// \param theCoordinateType Texture coordinate type to use
+    /// \param theTexture        Texture to use
+    /// \param theShader         Shader to use
     ///
     ////////////////////////////////////////////////////////////
-    RenderStates(const BlendMode& theBlendMode, const Transform& theTransform, const Texture* theTexture, const Shader* theShader);
+    RenderStates(const BlendMode&   theBlendMode,
+                 const StencilMode& theStencilMode,
+                 const Transform&   theTransform,
+                 CoordinateType     theCoordinateType,
+                 const Texture*     theTexture,
+                 const Shader*      theShader);
 
     ////////////////////////////////////////////////////////////
     // Static member data
@@ -111,10 +128,12 @@ public:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    BlendMode      blendMode{BlendAlpha}; //!< Blending mode
-    Transform      transform;             //!< Transform
-    const Texture* texture{};             //!< Texture
-    const Shader*  shader{};              //!< Shader
+    BlendMode      blendMode{BlendAlpha};                  //!< Blending mode
+    StencilMode    stencilMode;                            //!< Stencil mode
+    Transform      transform;                              //!< Transform
+    CoordinateType coordinateType{CoordinateType::Pixels}; //!< Texture coordinate type
+    const Texture* texture{};                              //!< Texture
+    const Shader*  shader{};                               //!< Shader
 };
 
 } // namespace sf
@@ -124,10 +143,12 @@ public:
 /// \class sf::RenderStates
 /// \ingroup graphics
 ///
-/// There are four global states that can be applied to
+/// There are six global states that can be applied to
 /// the drawn objects:
 /// \li the blend mode: how pixels of the object are blended with the background
+/// \li the stencil mode: how pixels of the object interact with the stencil buffer
 /// \li the transform: how the object is positioned/rotated/scaled
+/// \li the texture coordinate type: how texture coordinates are interpreted
 /// \li the texture: what image is mapped to the object
 /// \li the shader: what custom effect is applied to the object
 ///

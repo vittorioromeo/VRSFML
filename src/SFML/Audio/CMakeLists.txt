@@ -1,4 +1,3 @@
-
 set(INCROOT ${PROJECT_SOURCE_DIR}/include/SFML/Audio)
 set(SRCROOT ${PROJECT_SOURCE_DIR}/src/SFML/Audio)
 
@@ -57,33 +56,35 @@ set(CODECS_SRC
 )
 source_group("codecs" FILES ${CODECS_SRC})
 
-# let CMake know about our additional audio libraries paths (on Windows and OSX)
+# let CMake know about our additional audio libraries paths (on Windows and macOS)
 if(SFML_OS_WINDOWS)
     list(APPEND CMAKE_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/extlibs/headers/AL")
-elseif(SFML_OS_MACOSX)
-    list(APPEND CMAKE_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/extlibs/libs-osx/Frameworks")
+elseif(SFML_OS_MACOS)
+    list(APPEND CMAKE_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/extlibs/libs-macos/Frameworks")
 elseif(SFML_OS_ANDROID)
     list(APPEND CMAKE_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/extlibs/headers/AL")
     list(APPEND CMAKE_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/extlibs/android")
 endif()
 
 # find external libraries
-sfml_find_package(OpenAL INCLUDE "OPENAL_INCLUDE_DIR" LINK "OPENAL_LIBRARY")
-sfml_find_package(VORBIS INCLUDE "VORBIS_INCLUDE_DIRS" LINK "VORBIS_LIBRARIES")
-sfml_find_package(FLAC INCLUDE "FLAC_INCLUDE_DIR" LINK "FLAC_LIBRARY")
-
-# avoids warnings in vorbisfile.h
-target_compile_definitions(VORBIS INTERFACE "OV_EXCLUDE_STATIC_CALLBACKS")
-target_compile_definitions(FLAC INTERFACE "FLAC__NO_DLL")
+find_package(OpenAL REQUIRED)
+find_package(Vorbis REQUIRED)
+find_package(FLAC REQUIRED)
 
 # define the sfml-audio target
 sfml_add_library(Audio
                  SOURCES ${SRC} ${CODECS_SRC})
 
+# avoids warnings in vorbisfile.h
+target_compile_definitions(sfml-audio PRIVATE OV_EXCLUDE_STATIC_CALLBACKS FLAC__NO_DLL)
+
 # setup dependencies
 target_link_libraries(sfml-audio
                       PUBLIC SFML::System
-                      PRIVATE OpenAL VORBIS FLAC)
+                      PRIVATE OpenAL::OpenAL Vorbis::vorbis FLAC::FLAC)
+if(NOT SFML_OS_IOS)
+    target_link_libraries(sfml-audio PRIVATE Vorbis::vorbisfile Vorbis::vorbisenc)
+endif()
 
 # minimp3 sources
 target_include_directories(sfml-audio SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/extlibs/headers/minimp3")

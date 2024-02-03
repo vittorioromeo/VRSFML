@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -68,13 +68,26 @@ m_impl(sf::priv::makeUnique<SocketSelectorImpl>(*copy.m_impl))
 
 
 ////////////////////////////////////////////////////////////
-SocketSelector::~SocketSelector() = default;
+SocketSelector& SocketSelector::operator=(const SocketSelector& right)
+{
+    SocketSelector temp(right);
+    std::swap(m_impl, temp.m_impl);
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+SocketSelector::SocketSelector(SocketSelector&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////]
+SocketSelector& SocketSelector::operator=(SocketSelector&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
 void SocketSelector::add(Socket& socket)
 {
-    SocketHandle handle = socket.getHandle();
+    const SocketHandle handle = socket.getNativeHandle();
     if (handle != priv::SocketImpl::invalidSocket())
     {
 
@@ -116,7 +129,7 @@ void SocketSelector::add(Socket& socket)
 ////////////////////////////////////////////////////////////
 void SocketSelector::remove(Socket& socket)
 {
-    SocketHandle handle = socket.getHandle();
+    const SocketHandle handle = socket.getNativeHandle();
     if (handle != priv::SocketImpl::invalidSocket())
     {
 
@@ -155,7 +168,7 @@ void SocketSelector::clear()
 bool SocketSelector::wait(Time timeout)
 {
     // Setup the timeout
-    timeval time;
+    timeval time{};
     time.tv_sec  = static_cast<long>(timeout.asMicroseconds() / 1000000);
     time.tv_usec = static_cast<int>(timeout.asMicroseconds() % 1000000);
 
@@ -164,7 +177,7 @@ bool SocketSelector::wait(Time timeout)
 
     // Wait until one of the sockets is ready for reading, or timeout is reached
     // The first parameter is ignored on Windows
-    int count = select(m_impl->maxSocket + 1, &m_impl->socketsReady, nullptr, nullptr, timeout != Time::Zero ? &time : nullptr);
+    const int count = select(m_impl->maxSocket + 1, &m_impl->socketsReady, nullptr, nullptr, timeout != Time::Zero ? &time : nullptr);
 
     return count > 0;
 }
@@ -173,7 +186,7 @@ bool SocketSelector::wait(Time timeout)
 ////////////////////////////////////////////////////////////
 bool SocketSelector::isReady(Socket& socket) const
 {
-    SocketHandle handle = socket.getHandle();
+    const SocketHandle handle = socket.getNativeHandle();
     if (handle != priv::SocketImpl::invalidSocket())
     {
 
@@ -188,17 +201,6 @@ bool SocketSelector::isReady(Socket& socket) const
     }
 
     return false;
-}
-
-
-////////////////////////////////////////////////////////////
-SocketSelector& SocketSelector::operator=(const SocketSelector& right)
-{
-    SocketSelector temp(right);
-
-    std::swap(m_impl, temp.m_impl);
-
-    return *this;
 }
 
 } // namespace sf

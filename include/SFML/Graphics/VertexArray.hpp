@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -52,7 +52,7 @@ public:
     /// Creates an empty vertex array.
     ///
     ////////////////////////////////////////////////////////////
-    VertexArray();
+    VertexArray() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the vertex array with a type and an initial number of vertices
@@ -144,7 +144,7 @@ public:
     /// \li As points
     /// \li As lines
     /// \li As triangles
-    /// The default primitive type is sf::Points.
+    /// The default primitive type is sf::PrimitiveType::Points.
     ///
     /// \param type Type of primitive
     ///
@@ -202,7 +202,7 @@ private:
 ///
 /// Example:
 /// \code
-/// sf::VertexArray lines(sf::LineStrip, 4);
+/// sf::VertexArray lines(sf::PrimitiveType::LineStrip, 4);
 /// lines[0].position = sf::Vector2f(10, 0);
 /// lines[1].position = sf::Vector2f(20, 0);
 /// lines[2].position = sf::Vector2f(30, 5);

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -73,7 +73,7 @@ std::optional<IpAddress> IpAddress::resolve(std::string_view address)
     addrinfo* result = nullptr;
     if (getaddrinfo(address.data(), nullptr, &hints, &result) == 0 && result != nullptr)
     {
-        sockaddr_in sin;
+        sockaddr_in sin{};
         std::memcpy(&sin, result->ai_addr, sizeof(*result->ai_addr));
 
         const std::uint32_t ip = sin.sin_addr.s_addr;
@@ -102,7 +102,7 @@ IpAddress::IpAddress(std::uint32_t address) : m_address(htonl(address))
 ////////////////////////////////////////////////////////////
 std::string IpAddress::toString() const
 {
-    in_addr address;
+    in_addr address{};
     address.s_addr = m_address;
 
     return inet_ntoa(address);
@@ -124,7 +124,7 @@ std::optional<IpAddress> IpAddress::getLocalAddress()
     // UDP connection will not send anything to the network, so this function won't cause any overhead.
 
     // Create the socket
-    SocketHandle sock = socket(PF_INET, SOCK_DGRAM, 0);
+    const SocketHandle sock = socket(PF_INET, SOCK_DGRAM, 0);
     if (sock == priv::SocketImpl::invalidSocket())
         return std::nullopt;
 
@@ -161,9 +161,9 @@ std::optional<IpAddress> IpAddress::getPublicAddress(Time timeout)
     // and parse the result to extract our IP address
     // (not very hard: the web page contains only our IP address).
 
-    Http           server("www.sfml-dev.org");
-    Http::Request  request("/ip-provider.php", Http::Request::Method::Get);
-    Http::Response page = server.sendRequest(request, timeout);
+    Http                 server("www.sfml-dev.org");
+    const Http::Request  request("/ip-provider.php", Http::Request::Method::Get);
+    const Http::Response page = server.sendRequest(request, timeout);
     if (page.getStatus() == Http::Response::Status::Ok)
         return IpAddress::resolve(page.getBody());
 

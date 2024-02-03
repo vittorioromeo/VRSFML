@@ -1,4 +1,3 @@
-
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -62,15 +61,21 @@ int main()
         contextSettings.sRgbCapable = sRgb;
 
         // Create the main window
-        sf::RenderWindow window(sf::VideoMode({800, 600}), "SFML graphics with OpenGL", sf::Style::Default, contextSettings);
+        sf::RenderWindow window(sf::VideoMode({800, 600}),
+                                "SFML graphics with OpenGL",
+                                sf::Style::Default,
+                                sf::State::Windowed,
+                                contextSettings);
         window.setVerticalSyncEnabled(true);
+        window.setMinimumSize(sf::Vector2u(400, 300));
+        window.setMaximumSize(sf::Vector2u(1200, 900));
 
         // Create a sprite for the background
         sf::Texture backgroundTexture;
         backgroundTexture.setSrgb(sRgb);
         if (!backgroundTexture.loadFromFile(resourcesDir() / "background.jpg"))
             return EXIT_FAILURE;
-        sf::Sprite background(backgroundTexture);
+        const sf::Sprite background(backgroundTexture);
 
         // Create some text to draw on top of our OpenGL object
         sf::Font font;
@@ -106,9 +111,9 @@ int main()
 
         // Load OpenGL or OpenGL ES entry points using glad
 #ifdef SFML_OPENGL_ES
-        gladLoadGLES1(reinterpret_cast<GLADloadfunc>(sf::Context::getFunction));
+        gladLoadGLES1(sf::Context::getFunction);
 #else
-        gladLoadGL(reinterpret_cast<GLADloadfunc>(sf::Context::getFunction));
+        gladLoadGL(sf::Context::getFunction);
 #endif
 
         // Enable Z-buffer read and write
@@ -129,7 +134,7 @@ int main()
         // Setup a perspective projection
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
-        GLfloat ratio = static_cast<float>(window.getSize().x) / static_cast<float>(window.getSize().y);
+        const GLfloat ratio = static_cast<float>(window.getSize().x) / static_cast<float>(window.getSize().y);
 #ifdef SFML_OPENGL_ES
         glFrustumf(-ratio, ratio, -1.f, 1.f, 1.f, 500.f);
 #else
@@ -207,7 +212,7 @@ int main()
         }
 
         // Create a clock for measuring the time elapsed
-        sf::Clock clock;
+        const sf::Clock clock;
 
         // Flag to track whether mipmapping is currently enabled
         bool mipmapEnabled = true;
@@ -226,14 +231,14 @@ int main()
                 }
 
                 // Escape key: exit
-                if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape))
+                if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Key::Escape))
                 {
                     exit = true;
                     window.close();
                 }
 
                 // Return key: toggle mipmapping
-                if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Enter))
+                if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Key::Enter))
                 {
                     if (mipmapEnabled)
                     {
@@ -250,7 +255,7 @@ int main()
                 }
 
                 // Space key: toggle sRGB conversion
-                if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Space))
+                if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Key::Space))
                 {
                     sRgb = !sRgb;
                     window.close();
@@ -259,7 +264,7 @@ int main()
                 // Adjust the viewport when the window is resized
                 if (event.type == sf::Event::Resized)
                 {
-                    sf::Vector2u textureSize = backgroundTexture.getSize();
+                    const sf::Vector2u textureSize = backgroundTexture.getSize();
 
                     // Make the window the active window for OpenGL calls
                     if (!window.setActive(true))
@@ -271,7 +276,7 @@ int main()
                     glViewport(0, 0, static_cast<GLsizei>(event.size.width), static_cast<GLsizei>(event.size.height));
                     glMatrixMode(GL_PROJECTION);
                     glLoadIdentity();
-                    GLfloat newRatio = static_cast<float>(event.size.width) / static_cast<float>(event.size.height);
+                    const GLfloat newRatio = static_cast<float>(event.size.width) / static_cast<float>(event.size.height);
 #ifdef SFML_OPENGL_ES
                     glFrustumf(-newRatio, newRatio, -1.f, 1.f, 1.f, 500.f);
 #else
@@ -317,8 +322,8 @@ int main()
             pos = sf::Mouse::getPosition(window);
 #endif
 
-            float x = static_cast<float>(pos.x) * 200.f / static_cast<float>(window.getSize().x) - 100.f;
-            float y = -static_cast<float>(pos.y) * 200.f / static_cast<float>(window.getSize().y) + 100.f;
+            const float x = static_cast<float>(pos.x) * 200.f / static_cast<float>(window.getSize().x) - 100.f;
+            const float y = -static_cast<float>(pos.y) * 200.f / static_cast<float>(window.getSize().y) + 100.f;
 
             // Apply some transformations
             glMatrixMode(GL_MODELVIEW);

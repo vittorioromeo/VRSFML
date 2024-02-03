@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -43,7 +43,7 @@ namespace priv
 class GlContext;
 }
 
-class Event;
+struct Event;
 
 ////////////////////////////////////////////////////////////
 /// \brief Window that serves as a target for OpenGL rendering
@@ -67,23 +67,45 @@ public:
     /// This constructor creates the window with the size and pixel
     /// depth defined in \a mode. An optional style can be passed to
     /// customize the look and behavior of the window (borders,
-    /// title bar, resizable, closable, ...). If \a style contains
-    /// Style::Fullscreen, then \a mode must be a valid video mode.
+    /// title bar, resizable, closable, ...). An optional state can
+    /// be provided. If \a state is State::Fullscreen, then \a mode
+    /// must be a valid video mode.
     ///
-    /// The fourth parameter is an optional structure specifying
+    /// The last parameter is an optional structure specifying
     /// advanced OpenGL context settings such as antialiasing,
     /// depth-buffer bits, etc.
     ///
     /// \param mode     Video mode to use (defines the width, height and depth of the rendering area of the window)
     /// \param title    Title of the window
     /// \param style    %Window style, a bitwise OR combination of sf::Style enumerators
+    /// \param state    %Window state
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
     Window(VideoMode              mode,
            const String&          title,
            std::uint32_t          style    = Style::Default,
+           State                  state    = State::Windowed,
            const ContextSettings& settings = ContextSettings());
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Construct a new window
+    ///
+    /// This constructor creates the window with the size and pixel
+    /// depth defined in \a mode. If \a state is State::Fullscreen,
+    /// then \a mode must be a valid video mode.
+    ///
+    /// The last parameter is an optional structure specifying
+    /// advanced OpenGL context settings such as antialiasing,
+    /// depth-buffer bits, etc.
+    ///
+    /// \param mode     Video mode to use (defines the width, height and depth of the rendering area of the window)
+    /// \param title    Title of the window
+    /// \param state    %Window state
+    /// \param settings Additional settings for the underlying OpenGL context
+    ///
+    ////////////////////////////////////////////////////////////
+    Window(VideoMode mode, const String& title, State state, const ContextSettings& settings = ContextSettings());
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control
@@ -113,34 +135,36 @@ public:
     /// \brief Create (or recreate) the window
     ///
     /// If the window was already created, it closes it first.
-    /// If \a style contains Style::Fullscreen, then \a mode
-    /// must be a valid video mode.
+    /// If \a state is State::Fullscreen, then \a mode must be
+    /// a valid video mode.
     ///
     /// \param mode     Video mode to use (defines the width, height and depth of the rendering area of the window)
     /// \param title    Title of the window
     /// \param style    %Window style, a bitwise OR combination of sf::Style enumerators
+    /// \param state    %Window state
     ///
     ////////////////////////////////////////////////////////////
-    void create(VideoMode mode, const String& title, std::uint32_t style = Style::Default) override;
+    void create(VideoMode mode, const String& title, std::uint32_t style = Style::Default, State state = State::Windowed) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Create (or recreate) the window
     ///
     /// If the window was already created, it closes it first.
-    /// If \a style contains Style::Fullscreen, then \a mode
-    /// must be a valid video mode.
+    /// If \a state is State::Fullscreen, then \a mode must be
+    /// a valid video mode.
     ///
-    /// The fourth parameter is an optional structure specifying
+    /// The last parameter is an optional structure specifying
     /// advanced OpenGL context settings such as antialiasing,
     /// depth-buffer bits, etc.
     ///
     /// \param mode     Video mode to use (defines the width, height and depth of the rendering area of the window)
     /// \param title    Title of the window
     /// \param style    %Window style, a bitwise OR combination of sf::Style enumerators
+    /// \param state    %Window state
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    virtual void create(VideoMode mode, const String& title, std::uint32_t style, const ContextSettings& settings);
+    virtual void create(VideoMode mode, const String& title, std::uint32_t style, State state, const ContextSettings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create (or recreate) the window from an existing control
@@ -220,7 +244,7 @@ public:
     /// SFML will try to match the given limit as much as it can,
     /// but since it internally uses sf::sleep, whose precision
     /// depends on the underlying OS, the results may be a little
-    /// unprecise as well (for example, you can get 65 FPS when
+    /// imprecise as well (for example, you can get 65 FPS when
     /// requesting 60).
     ///
     /// \param limit Framerate limit, in frames per seconds (use 0 to disable limit)
@@ -257,20 +281,6 @@ public:
     void display();
 
 private:
-    ////////////////////////////////////////////////////////////
-    /// \brief Processes an event before it is sent to the user
-    ///
-    /// This function is called every time an event is received
-    /// from the internal window (through pollEvent or waitEvent).
-    /// It filters out unwanted events, and performs whatever internal
-    /// stuff the window needs before the event is returned to the
-    /// user.
-    ///
-    /// \param event Event to filter
-    ///
-    ////////////////////////////////////////////////////////////
-    bool filterEvent(const Event& event);
-
     ////////////////////////////////////////////////////////////
     /// \brief Perform some common internal initializations
     ///

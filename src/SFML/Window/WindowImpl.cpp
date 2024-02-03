@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -35,7 +35,7 @@
 #include <SFML/System/Time.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
-#include <algorithm>
+#include <memory>
 
 #include <cmath>
 
@@ -69,7 +69,7 @@ using VulkanImplType = sf::priv::VulkanImplX11;
 
 #elif defined(SFML_SYSTEM_MACOS)
 
-#include <SFML/Window/OSX/WindowImplCocoa.hpp>
+#include <SFML/Window/macOS/WindowImplCocoa.hpp>
 using WindowImplType = sf::priv::WindowImplCocoa;
 
 #define SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
@@ -97,16 +97,18 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 struct WindowImpl::JoystickStatesImpl
 {
-    JoystickState m_states[Joystick::Count]; //!< Previous state of the joysticks
+    JoystickState states[Joystick::Count]; //!< Previous state of the joysticks
 };
 
 ////////////////////////////////////////////////////////////
-sf::priv::UniquePtr<WindowImpl> WindowImpl::create(VideoMode              mode,
-                                                   const String&          title,
-                                                   std::uint32_t          style,
-                                                   const ContextSettings& settings)
+sf::priv::UniquePtr<WindowImpl> WindowImpl::create(
+    VideoMode              mode,
+    const String&          title,
+    std::uint32_t          style,
+    State                  state,
+    const ContextSettings& settings)
 {
-    return sf::priv::makeUnique<WindowImplType>(mode, title, style, settings);
+    return sf::priv::makeUnique<WindowImplType>(mode, title, style, state, settings);
 }
 
 
@@ -124,8 +126,8 @@ WindowImpl::WindowImpl() : m_joystickStatesImpl(sf::priv::makeUnique<JoystickSta
     JoystickManager::getInstance().update();
     for (unsigned int i = 0; i < Joystick::Count; ++i)
     {
-        m_joystickStatesImpl->m_states[i] = JoystickManager::getInstance().getState(i);
-        std::fill_n(m_previousAxes[i], static_cast<std::size_t>(Joystick::AxisCount), 0.f);
+        m_joystickStatesImpl->states[i] = JoystickManager::getInstance().getState(i);
+        m_previousAxes[i].fill(0.f);
     }
 
     // Get the initial sensor states
@@ -139,9 +141,37 @@ WindowImpl::~WindowImpl() = default;
 
 
 ////////////////////////////////////////////////////////////
+std::optional<Vector2u> WindowImpl::getMinimumSize() const
+{
+    return m_minimumSize;
+}
+
+
+////////////////////////////////////////////////////////////
+std::optional<Vector2u> WindowImpl::getMaximumSize() const
+{
+    return m_maximumSize;
+}
+
+
+////////////////////////////////////////////////////////////
 void WindowImpl::setJoystickThreshold(float threshold)
 {
     m_joystickThreshold = threshold;
+}
+
+
+////////////////////////////////////////////////////////////
+void WindowImpl::setMinimumSize(const std::optional<Vector2u>& minimumSize)
+{
+    m_minimumSize = minimumSize;
+}
+
+
+////////////////////////////////////////////////////////////
+void WindowImpl::setMaximumSize(const std::optional<Vector2u>& maximumSize)
+{
+    m_maximumSize = maximumSize;
 }
 
 
@@ -201,11 +231,11 @@ void WindowImpl::processJoystickEvents()
     for (unsigned int i = 0; i < Joystick::Count; ++i)
     {
         // Copy the previous state of the joystick and get the new one
-        JoystickState previousState       = m_joystickStatesImpl->m_states[i];
-        m_joystickStatesImpl->m_states[i] = JoystickManager::getInstance().getState(i);
+        const JoystickState previousState = m_joystickStatesImpl->states[i];
+        m_joystickStatesImpl->states[i]   = JoystickManager::getInstance().getState(i);
 
         // Connection state
-        bool connected = m_joystickStatesImpl->m_states[i].connected;
+        const bool connected = m_joystickStatesImpl->states[i].connected;
         if (previousState.connected ^ connected)
         {
             Event event;
@@ -215,21 +245,21 @@ void WindowImpl::processJoystickEvents()
 
             // Clear previous axes positions
             if (connected)
-                std::fill_n(m_previousAxes[i], static_cast<std::size_t>(Joystick::AxisCount), 0.f);
+                m_previousAxes[i].fill(0.f);
         }
 
         if (connected)
         {
-            JoystickCaps caps = JoystickManager::getInstance().getCapabilities(i);
+            const JoystickCaps caps = JoystickManager::getInstance().getCapabilities(i);
 
             // Axes
             for (unsigned int j = 0; j < Joystick::AxisCount; ++j)
             {
-                if (caps.axes[j])
+                const auto axis = static_cast<Joystick::Axis>(j);
+                if (caps.axes[axis])
                 {
-                    auto  axis    = static_cast<Joystick::Axis>(j);
-                    float prevPos = m_previousAxes[i][axis];
-                    float currPos = m_joystickStatesImpl->m_states[i].axes[axis];
+                    const float prevPos = m_previousAxes[i][axis];
+                    const float currPos = m_joystickStatesImpl->states[i].axes[axis];
                     if (std::abs(currPos - prevPos) >= m_joystickThreshold)
                     {
                         Event event;
@@ -247,8 +277,8 @@ void WindowImpl::processJoystickEvents()
             // Buttons
             for (unsigned int j = 0; j < caps.buttonCount; ++j)
             {
-                bool prevPressed = previousState.buttons[j];
-                bool currPressed = m_joystickStatesImpl->m_states[i].buttons[j];
+                const bool prevPressed = previousState.buttons[j];
+                const bool currPressed = m_joystickStatesImpl->states[i].buttons[j];
 
                 if (prevPressed ^ currPressed)
                 {
@@ -272,24 +302,24 @@ void WindowImpl::processSensorEvents()
 
     for (unsigned int i = 0; i < Sensor::Count; ++i)
     {
-        auto sensor = static_cast<Sensor::Type>(i);
+        const auto sensor = static_cast<Sensor::Type>(i);
 
         // Only process enabled sensors
         if (SensorManager::getInstance().isEnabled(sensor))
         {
             // Copy the previous value of the sensor and get the new one
-            Vector3f previousValue = m_sensorValue[i];
-            m_sensorValue[i]       = SensorManager::getInstance().getValue(sensor);
+            const Vector3f previousValue = m_sensorValue[sensor];
+            m_sensorValue[sensor]        = SensorManager::getInstance().getValue(sensor);
 
             // If the value has changed, trigger an event
-            if (m_sensorValue[i] != previousValue) // @todo use a threshold?
+            if (m_sensorValue[sensor] != previousValue) // TODO use a threshold?
             {
                 Event event;
                 event.type        = Event::SensorChanged;
                 event.sensor.type = sensor;
-                event.sensor.x    = m_sensorValue[i].x;
-                event.sensor.y    = m_sensorValue[i].y;
-                event.sensor.z    = m_sensorValue[i].z;
+                event.sensor.x    = m_sensorValue[sensor].x;
+                event.sensor.y    = m_sensorValue[sensor].y;
+                event.sensor.z    = m_sensorValue[sensor].z;
                 pushEvent(event);
             }
         }
@@ -308,7 +338,7 @@ bool WindowImpl::createVulkanSurface([[maybe_unused]] const VkInstance&         
 
 #else
 
-    return VulkanImplType::createVulkanSurface(instance, getSystemHandle(), surface, allocator);
+    return VulkanImplType::createVulkanSurface(instance, getNativeHandle(), surface, allocator);
 
 #endif
 }

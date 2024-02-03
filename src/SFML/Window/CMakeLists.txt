@@ -1,4 +1,3 @@
-
 set(INCROOT ${PROJECT_SOURCE_DIR}/include/SFML/Window)
 set(SRCROOT ${PROJECT_SOURCE_DIR}/src/SFML/Window)
 
@@ -45,10 +44,10 @@ set(SRC
     ${INCROOT}/Window.hpp
     ${SRCROOT}/WindowBase.cpp
     ${INCROOT}/WindowBase.hpp
+    ${INCROOT}/WindowEnums.hpp
     ${INCROOT}/WindowHandle.hpp
     ${SRCROOT}/WindowImpl.cpp
     ${SRCROOT}/WindowImpl.hpp
-    ${INCROOT}/WindowStyle.hpp
 )
 source_group("" FILES ${SRC})
 
@@ -60,7 +59,6 @@ if(SFML_OS_WINDOWS)
         ${SRCROOT}/Win32/ClipboardImpl.hpp
         ${SRCROOT}/Win32/ClipboardImpl.cpp
         ${SRCROOT}/Win32/InputImpl.cpp
-        ${SRCROOT}/Win32/InputImpl.hpp
         ${SRCROOT}/Win32/JoystickImpl.cpp
         ${SRCROOT}/Win32/JoystickImpl.hpp
         ${SRCROOT}/Win32/SensorImpl.hpp
@@ -97,8 +95,7 @@ elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
             ${SRCROOT}/DRM/ClipboardImpl.cpp
             ${SRCROOT}/Unix/SensorImpl.cpp
             ${SRCROOT}/Unix/SensorImpl.hpp
-            ${SRCROOT}/DRM/InputImplUDev.cpp
-            ${SRCROOT}/DRM/InputImplUDev.hpp
+            ${SRCROOT}/DRM/InputImpl.cpp
             ${SRCROOT}/DRM/VideoModeImpl.cpp
             ${SRCROOT}/DRM/DRMContext.cpp
             ${SRCROOT}/DRM/DRMContext.hpp
@@ -112,7 +109,6 @@ elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
             ${SRCROOT}/Unix/ClipboardImpl.hpp
             ${SRCROOT}/Unix/ClipboardImpl.cpp
             ${SRCROOT}/Unix/InputImpl.cpp
-            ${SRCROOT}/Unix/InputImpl.hpp
             ${SRCROOT}/Unix/KeyboardImpl.hpp
             ${SRCROOT}/Unix/KeyboardImpl.cpp
             ${SRCROOT}/Unix/KeySymToKeyMapping.hpp
@@ -123,6 +119,7 @@ elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
             ${SRCROOT}/Unix/SensorImpl.hpp
             ${SRCROOT}/Unix/Display.cpp
             ${SRCROOT}/Unix/Display.hpp
+            ${SRCROOT}/Unix/Utils.hpp
             ${SRCROOT}/Unix/VideoModeImpl.cpp
             ${SRCROOT}/Unix/VulkanImplX11.cpp
             ${SRCROOT}/Unix/VulkanImplX11.hpp
@@ -165,58 +162,55 @@ elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
         )
     endif()
     source_group("unix" FILES ${PLATFORM_SRC})
-elseif(SFML_OS_MACOSX)
+elseif(SFML_OS_MACOS)
     enable_language(OBJC OBJCXX)
     set(PLATFORM_SRC
-        ${SRCROOT}/OSX/cpp_objc_conversion.h
-        ${SRCROOT}/OSX/cpp_objc_conversion.mm
-        ${SRCROOT}/OSX/cg_sf_conversion.hpp
-        ${SRCROOT}/OSX/cg_sf_conversion.mm
-        ${SRCROOT}/OSX/CursorImpl.hpp
-        ${SRCROOT}/OSX/CursorImpl.mm
-        ${SRCROOT}/OSX/ClipboardImpl.hpp
-        ${SRCROOT}/OSX/ClipboardImpl.mm
-        ${SRCROOT}/OSX/InputImpl.mm
-        ${SRCROOT}/OSX/InputImpl.hpp
-        ${SRCROOT}/OSX/HIDInputManager.hpp
-        ${SRCROOT}/OSX/HIDInputManager.mm
-        ${SRCROOT}/OSX/HIDJoystickManager.hpp
-        ${SRCROOT}/OSX/HIDJoystickManager.cpp
-        ${SRCROOT}/OSX/JoystickImpl.cpp
-        ${SRCROOT}/OSX/JoystickImpl.hpp
-        ${SRCROOT}/OSX/NSImage+raw.h
-        ${SRCROOT}/OSX/NSImage+raw.mm
-        ${SRCROOT}/OSX/Scaling.h
-        ${SRCROOT}/OSX/SensorImpl.cpp
-        ${SRCROOT}/OSX/SensorImpl.hpp
-        ${SRCROOT}/OSX/SFApplication.h
-        ${SRCROOT}/OSX/SFApplication.m
-        ${SRCROOT}/OSX/SFApplicationDelegate.h
-        ${SRCROOT}/OSX/SFApplicationDelegate.m
-        ${SRCROOT}/OSX/SFContext.hpp
-        ${SRCROOT}/OSX/SFContext.mm
-        ${SRCROOT}/OSX/SFKeyboardModifiersHelper.h
-        ${SRCROOT}/OSX/SFKeyboardModifiersHelper.mm
-        ${SRCROOT}/OSX/SFOpenGLView.h
-        ${SRCROOT}/OSX/SFOpenGLView.mm
-        ${SRCROOT}/OSX/SFOpenGLView+keyboard.mm
-        ${SRCROOT}/OSX/SFOpenGLView+keyboard_priv.h
-        ${SRCROOT}/OSX/SFOpenGLView+mouse.mm
-        ${SRCROOT}/OSX/SFOpenGLView+mouse_priv.h
-        ${SRCROOT}/OSX/SFSilentResponder.h
-        ${SRCROOT}/OSX/SFSilentResponder.m
-        ${SRCROOT}/OSX/SFWindow.h
-        ${SRCROOT}/OSX/SFWindow.m
-        ${SRCROOT}/OSX/SFWindowController.h
-        ${SRCROOT}/OSX/SFWindowController.mm
-        ${SRCROOT}/OSX/SFViewController.h
-        ${SRCROOT}/OSX/SFViewController.mm
-        ${SRCROOT}/OSX/VideoModeImpl.cpp
-        ${SRCROOT}/OSX/WindowImplCocoa.hpp
-        ${SRCROOT}/OSX/WindowImplCocoa.mm
-        ${SRCROOT}/OSX/WindowImplDelegateProtocol.h
-        ${SRCROOT}/OSX/AutoreleasePoolWrapper.hpp
-        ${SRCROOT}/OSX/AutoreleasePoolWrapper.mm
+        ${SRCROOT}/macOS/cg_sf_conversion.hpp
+        ${SRCROOT}/macOS/cg_sf_conversion.mm
+        ${SRCROOT}/macOS/CursorImpl.hpp
+        ${SRCROOT}/macOS/CursorImpl.mm
+        ${SRCROOT}/macOS/ClipboardImpl.hpp
+        ${SRCROOT}/macOS/ClipboardImpl.mm
+        ${SRCROOT}/macOS/InputImpl.mm
+        ${SRCROOT}/macOS/HIDInputManager.hpp
+        ${SRCROOT}/macOS/HIDInputManager.mm
+        ${SRCROOT}/macOS/HIDJoystickManager.hpp
+        ${SRCROOT}/macOS/HIDJoystickManager.cpp
+        ${SRCROOT}/macOS/JoystickImpl.cpp
+        ${SRCROOT}/macOS/JoystickImpl.hpp
+        ${SRCROOT}/macOS/NSImage+raw.h
+        ${SRCROOT}/macOS/NSImage+raw.mm
+        ${SRCROOT}/macOS/Scaling.h
+        ${SRCROOT}/macOS/SensorImpl.cpp
+        ${SRCROOT}/macOS/SensorImpl.hpp
+        ${SRCROOT}/macOS/SFApplication.h
+        ${SRCROOT}/macOS/SFApplication.m
+        ${SRCROOT}/macOS/SFApplicationDelegate.h
+        ${SRCROOT}/macOS/SFApplicationDelegate.m
+        ${SRCROOT}/macOS/SFContext.hpp
+        ${SRCROOT}/macOS/SFContext.mm
+        ${SRCROOT}/macOS/SFKeyboardModifiersHelper.h
+        ${SRCROOT}/macOS/SFKeyboardModifiersHelper.mm
+        ${SRCROOT}/macOS/SFOpenGLView.h
+        ${SRCROOT}/macOS/SFOpenGLView.mm
+        ${SRCROOT}/macOS/SFOpenGLView+keyboard.mm
+        ${SRCROOT}/macOS/SFOpenGLView+keyboard_priv.h
+        ${SRCROOT}/macOS/SFOpenGLView+mouse.mm
+        ${SRCROOT}/macOS/SFOpenGLView+mouse_priv.h
+        ${SRCROOT}/macOS/SFSilentResponder.h
+        ${SRCROOT}/macOS/SFSilentResponder.m
+        ${SRCROOT}/macOS/SFWindow.h
+        ${SRCROOT}/macOS/SFWindow.m
+        ${SRCROOT}/macOS/SFWindowController.h
+        ${SRCROOT}/macOS/SFWindowController.mm
+        ${SRCROOT}/macOS/SFViewController.h
+        ${SRCROOT}/macOS/SFViewController.mm
+        ${SRCROOT}/macOS/VideoModeImpl.cpp
+        ${SRCROOT}/macOS/WindowImplCocoa.hpp
+        ${SRCROOT}/macOS/WindowImplCocoa.mm
+        ${SRCROOT}/macOS/WindowImplDelegateProtocol.h
+        ${SRCROOT}/macOS/AutoreleasePoolWrapper.hpp
+        ${SRCROOT}/macOS/AutoreleasePoolWrapper.mm
     )
     source_group("mac" FILES ${PLATFORM_SRC})
 elseif(SFML_OS_IOS)
@@ -229,7 +223,6 @@ elseif(SFML_OS_IOS)
         ${SRCROOT}/iOS/EaglContext.mm
         ${SRCROOT}/iOS/EaglContext.hpp
         ${SRCROOT}/iOS/InputImpl.mm
-        ${SRCROOT}/iOS/InputImpl.hpp
         ${SRCROOT}/iOS/JoystickImpl.mm
         ${SRCROOT}/iOS/JoystickImpl.hpp
         ${SRCROOT}/iOS/SensorImpl.mm
@@ -261,7 +254,6 @@ elseif(SFML_OS_ANDROID)
         ${SRCROOT}/Android/WindowImplAndroid.hpp
         ${SRCROOT}/Android/WindowImplAndroid.cpp
         ${SRCROOT}/Android/VideoModeImpl.cpp
-        ${SRCROOT}/Android/InputImpl.hpp
         ${SRCROOT}/Android/InputImpl.cpp
         ${SRCROOT}/Android/JoystickImpl.hpp
         ${SRCROOT}/Android/JoystickImpl.cpp
@@ -277,10 +269,9 @@ sfml_add_library(Window
 # DRM libraries
 if(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
     if(SFML_USE_DRM)
-        sfml_find_package(DRM INCLUDE "DRM_INCLUDE_DIR" LINK "DRM_LIBRARY")
-        target_include_directories(sfml-window PRIVATE ${DRM_INCLUDE_DIR}/libdrm)
-        sfml_find_package(GBM INCLUDE "GBM_INCLUDE_DIR" LINK "GBM_LIBRARY")
-        target_link_libraries(sfml-window PRIVATE drm gbm EGL)
+        find_package(DRM REQUIRED)
+        find_package(GBM REQUIRED)
+        target_link_libraries(sfml-window PRIVATE DRM::DRM GBM::GBM)
     else()
         find_package(X11 REQUIRED COMPONENTS Xrandr Xcursor)
         target_link_libraries(sfml-window PRIVATE X11::X11 X11::Xrandr X11::Xcursor)
@@ -293,14 +284,14 @@ target_include_directories(sfml-window SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/ext
 
 # When static linking on macOS, we need to add this flag for objective C to work
 # https://developer.apple.com/library/archive/qa/qa1490/_index.html
-if ((NOT BUILD_SHARED_LIBS) AND SFML_OS_MACOSX)
+if((NOT BUILD_SHARED_LIBS) AND SFML_OS_MACOS)
     target_link_libraries(sfml-window PRIVATE -ObjC)
 endif()
 
 # Vulkan headers
 target_include_directories(sfml-window SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/extlibs/headers/vulkan")
 
-# CMake 3.11 and later prefer to choose GLVND, but we choose legacy OpenGL for backward compability
+# CMake 3.11 and later prefer to choose GLVND, but we choose legacy OpenGL for backward compatibility
 # (unless the OpenGL_GL_PREFERENCE was explicitly set)
 # See CMP0072 for more details (cmake --help-policy CMP0072)
 if(NOT OpenGL_GL_PREFERENCE)
@@ -310,31 +301,30 @@ endif()
 if(SFML_OS_IOS)
     target_link_libraries(sfml-window PRIVATE "-framework OpenGLES")
 elseif(SFML_OS_ANDROID)
-    sfml_find_package(GLES INCLUDE "GLES_INCLUDE_DIR" LINK "GLES_LIBRARY")
-    sfml_find_package(EGL INCLUDE "EGL_INCLUDE_DIR" LINK "EGL_LIBRARY")
-    target_link_libraries(sfml-window PRIVATE EGL)
-    target_link_libraries(sfml-window PRIVATE GLES)
+    find_package(EGL REQUIRED)
+    find_package(GLES REQUIRED)
+    target_link_libraries(sfml-window PRIVATE EGL::EGL GLES::GLES)
 else()
-    sfml_find_package(OpenGL INCLUDE "OPENGL_INCLUDE_DIR" LINK "OPENGL_gl_LIBRARY")
-    target_link_libraries(sfml-window PRIVATE OpenGL)
+    find_package(OpenGL REQUIRED COMPONENTS OpenGL)
+    target_link_libraries(sfml-window PRIVATE OpenGL::GL)
 endif()
 
 if(SFML_OS_WINDOWS AND NOT SFML_COMPILER_MSVC)
-    include(CheckIncludeFile)
-    check_include_file(dinput.h DINPUT_H_FOUND)
+    include(CheckIncludeFileCXX)
+    check_include_file_cxx(dinput.h DINPUT_H_FOUND)
     if(NOT DINPUT_H_FOUND)
         target_include_directories(sfml-window SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/extlibs/headers/mingw")
     endif()
 endif()
 
 if(SFML_OS_LINUX)
-    sfml_find_package(UDev INCLUDE "UDEV_INCLUDE_DIR" LINK "UDEV_LIBRARIES")
-    target_link_libraries(sfml-window PRIVATE UDev dl)
+    find_package(UDev REQUIRED)
+    target_link_libraries(sfml-window PRIVATE UDev::UDev dl)
 elseif(SFML_OS_WINDOWS)
     target_link_libraries(sfml-window PRIVATE winmm gdi32)
 elseif(SFML_OS_FREEBSD)
     target_link_libraries(sfml-window PRIVATE usbhid)
-elseif(SFML_OS_MACOSX)
+elseif(SFML_OS_MACOS)
     target_link_libraries(sfml-window PRIVATE "-framework Foundation" "-framework AppKit" "-framework IOKit" "-framework Carbon")
 elseif(SFML_OS_IOS)
     target_link_libraries(sfml-window PUBLIC "-framework Foundation" "-framework UIKit" "-framework CoreGraphics" "-framework QuartzCore" "-framework CoreMotion")

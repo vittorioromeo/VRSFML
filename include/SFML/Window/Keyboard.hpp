@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -48,7 +48,7 @@ namespace Keyboard
 /// to `Y` or `Z`.
 ///
 ////////////////////////////////////////////////////////////
-enum Key
+enum class Key
 {
     Unknown = -1, //!< Unhandled key
     A       = 0,  //!< The A key
@@ -152,9 +152,14 @@ enum Key
     F14,          //!< The F14 key
     F15,          //!< The F15 key
     Pause,        //!< The Pause key
-
-    KeyCount,     //!< Keep last -- the total number of keyboard keys
 };
+
+////////////////////////////////////////////////////////////
+/// \brief The total number of keyboard keys, ignoring Key::Unknown
+///
+////////////////////////////////////////////////////////////
+// NOLINTNEXTLINE(readability-identifier-naming)
+static constexpr unsigned int KeyCount{static_cast<unsigned int>(Key::Pause) + 1};
 
 ////////////////////////////////////////////////////////////
 /// \brief Scancodes
@@ -319,11 +324,16 @@ enum class Scan
     LaunchApplication2, //!< Keyboard Launch Application 2 key
     LaunchMail,         //!< Keyboard Launch Mail key
     LaunchMediaSelect,  //!< Keyboard Launch Media Select key
-
-    ScancodeCount       //!< Keep last -- the total number of scancodes
 };
 
 using Scancode = Scan;
+
+////////////////////////////////////////////////////////////
+/// \brief The total number of scancodes, ignoring Scan::Unknown
+///
+////////////////////////////////////////////////////////////
+// NOLINTNEXTLINE(readability-identifier-naming)
+static constexpr unsigned int ScancodeCount{static_cast<unsigned int>(Scan::LaunchMediaSelect) + 1};
 
 ////////////////////////////////////////////////////////////
 /// \brief Check if a key is pressed
@@ -352,7 +362,7 @@ SFML_WINDOW_API bool isKeyPressed(Scancode code);
 ///
 /// \return The key corresponding to the scancode under the current
 ///         keyboard layout used by the operating system, or
-///         sf::Keyboard::Unknown when the scancode cannot be mapped
+///         sf::Keyboard::Key::Unknown when the scancode cannot be mapped
 ///         to a Key.
 ///
 /// \see delocalize
@@ -388,7 +398,7 @@ SFML_WINDOW_API Scancode delocalize(Key key);
 ///          "Left Command" on macOS.
 ///
 /// The current keyboard layout set by the operating system is used to
-/// interpret the scancode: for example, sf::Keyboard::Semicolon is
+/// interpret the scancode: for example, sf::Keyboard::Key::Semicolon is
 /// mapped to ";" for layout and to "é" for others.
 ///
 /// \return The localized description of the code
@@ -434,15 +444,15 @@ SFML_WINDOW_API void setVirtualKeyboardVisible(bool visible);
 ///
 /// Usage example:
 /// \code
-/// if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+/// if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))
 /// {
 ///     // move left...
 /// }
-/// else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+/// else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right))
 /// {
 ///     // move right...
 /// }
-/// else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
+/// else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape))
 /// {
 ///     // quit...
 /// }

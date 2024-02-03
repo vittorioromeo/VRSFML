@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -31,6 +31,7 @@
 
 #include <FLAC/stream_encoder.h>
 #include <filesystem>
+#include <memory>
 #include <vector>
 
 
@@ -52,18 +53,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static bool check(const std::filesystem::path& filename);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    ////////////////////////////////////////////////////////////
-    SoundFileWriterFlac();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Destructor
-    ///
-    ////////////////////////////////////////////////////////////
-    ~SoundFileWriterFlac() override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a sound file for writing
@@ -88,17 +77,15 @@ public:
 
 private:
     ////////////////////////////////////////////////////////////
-    /// \brief Close the file
-    ///
-    ////////////////////////////////////////////////////////////
-    void close();
-
-    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    FLAC__StreamEncoder*      m_encoder{};      //!< FLAC stream encoder
-    unsigned int              m_channelCount{}; //!< Number of channels
-    std::vector<std::int32_t> m_samples32;      //!< Conversion buffer
+    struct FlacStreamEncoderDeleter
+    {
+        void operator()(FLAC__StreamEncoder* encoder) const;
+    };
+    std::unique_ptr<FLAC__StreamEncoder, FlacStreamEncoderDeleter> m_encoder;        //!< FLAC stream encoder
+    unsigned int                                                   m_channelCount{}; //!< Number of channels
+    std::vector<std::int32_t>                                      m_samples32;      //!< Conversion buffer
 };
 
 } // namespace sf::priv

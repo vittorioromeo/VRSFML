@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2023 Andrew Mickelson
+// Copyright (C) 2024 Andrew Mickelson
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -38,7 +38,7 @@ std::vector<VideoMode> VideoModeImpl::getFullscreenModes()
 {
     std::vector<VideoMode> modes;
 
-    Drm&                drm  = sf::priv::DRMContext::getDRM();
+    const Drm&          drm  = DRMContext::getDRM();
     drmModeConnectorPtr conn = drm.savedConnector;
 
     if (conn)
@@ -56,7 +56,7 @@ std::vector<VideoMode> VideoModeImpl::getFullscreenModes()
 ////////////////////////////////////////////////////////////
 VideoMode VideoModeImpl::getDesktopMode()
 {
-    Drm&               drm = sf::priv::DRMContext::getDRM();
+    const Drm&         drm = DRMContext::getDRM();
     drmModeModeInfoPtr ptr = drm.mode;
     if (ptr)
         return VideoMode({ptr->hdisplay, ptr->vdisplay});

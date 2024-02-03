@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -188,7 +188,7 @@ bool SoundRecorder::Impl::start(unsigned int sampleRate)
     }
 
     // Determine the recording format
-    ALCenum format = (m_channelCount == 1) ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16;
+    const ALCenum format = (m_channelCount == 1) ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16;
 
     // Open the capture device for capturing 16 bits samples
     captureDevice = alcCaptureOpenDevice(m_deviceName.c_str(), sampleRate, format, static_cast<ALCsizei>(sampleRate));
@@ -282,7 +282,7 @@ bool SoundRecorder::Impl::setDevice(const std::string& name)
         awaitCapturingThread();
 
         // Determine the recording format
-        ALCenum format = (m_channelCount == 1) ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16;
+        const ALCenum format = (m_channelCount == 1) ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16;
 
         // Open the requested capture device for capturing 16 bits samples
         captureDevice = alcCaptureOpenDevice(m_deviceName.c_str(), m_sampleRate, format, static_cast<ALCsizei>(m_sampleRate));
@@ -344,7 +344,7 @@ unsigned int SoundRecorder::Impl::getChannelCount() const
 bool SoundRecorder::Impl::isAvailable()
 {
     return (priv::AudioDevice::isExtensionSupported("ALC_EXT_CAPTURE") != AL_FALSE) ||
-           (priv::AudioDevice::isExtensionSupported("ALC_EXT_capture") != AL_FALSE); // "bug" in Mac OS X 10.5 and 10.6
+           (priv::AudioDevice::isExtensionSupported("ALC_EXT_capture") != AL_FALSE); // "bug" in macOS 10.5 and 10.6
 }
 
 
@@ -415,7 +415,7 @@ void SoundRecorder::Impl::launchCapturingThread()
 {
     m_isCapturing = true;
 
-    assert(!m_thread.joinable());
+    assert(!m_thread.joinable() && "Capture thread is already running");
     m_thread = std::thread(&SoundRecorder::Impl::record, this);
 }
 

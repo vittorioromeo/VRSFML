@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -54,29 +54,29 @@ public:
     /// Refer to the following table to determine which cursor
     /// is available on which platform.
     ///
-    ///  Type                               | Linux | Mac OS X | Windows  |
-    /// ------------------------------------|:-----:|:--------:|:--------:|
-    ///  sf::Cursor::Arrow                  |  yes  |    yes   |   yes    |
-    ///  sf::Cursor::ArrowWait              |  no   |    no    |   yes    |
-    ///  sf::Cursor::Wait                   |  yes  |    no    |   yes    |
-    ///  sf::Cursor::Text                   |  yes  |    yes   |   yes    |
-    ///  sf::Cursor::Hand                   |  yes  |    yes   |   yes    |
-    ///  sf::Cursor::SizeHorizontal         |  yes  |    yes   |   yes    |
-    ///  sf::Cursor::SizeVertical           |  yes  |    yes   |   yes    |
-    ///  sf::Cursor::SizeTopLeftBottomRight |  no   |    yes*  |   yes    |
-    ///  sf::Cursor::SizeBottomLeftTopRight |  no   |    yes*  |   yes    |
-    ///  sf::Cursor::SizeLeft               |  yes  |    yes** |   yes**  |
-    ///  sf::Cursor::SizeRight              |  yes  |    yes** |   yes**  |
-    ///  sf::Cursor::SizeTop                |  yes  |    yes** |   yes**  |
-    ///  sf::Cursor::SizeBottom             |  yes  |    yes** |   yes**  |
-    ///  sf::Cursor::SizeTopLeft            |  yes  |    yes** |   yes**  |
-    ///  sf::Cursor::SizeTopRight           |  yes  |    yes** |   yes**  |
-    ///  sf::Cursor::SizeBottomLeft         |  yes  |    yes** |   yes**  |
-    ///  sf::Cursor::SizeBottomRight        |  yes  |    yes** |   yes**  |
-    ///  sf::Cursor::SizeAll                |  yes  |    no    |   yes    |
-    ///  sf::Cursor::Cross                  |  yes  |    yes   |   yes    |
-    ///  sf::Cursor::Help                   |  yes  |    yes*  |   yes    |
-    ///  sf::Cursor::NotAllowed             |  yes  |    yes   |   yes    |
+    ///  Type                                     | Linux | macOS | Windows  |
+    /// ------------------------------------------|:-----:|:-----:|:--------:|
+    ///  sf::Cursor::Type::Arrow                  |  yes  | yes   |   yes    |
+    ///  sf::Cursor::Type::ArrowWait              |  no   | no    |   yes    |
+    ///  sf::Cursor::Type::Wait                   |  yes  | no    |   yes    |
+    ///  sf::Cursor::Type::Text                   |  yes  | yes   |   yes    |
+    ///  sf::Cursor::Type::Hand                   |  yes  | yes   |   yes    |
+    ///  sf::Cursor::Type::SizeHorizontal         |  yes  | yes   |   yes    |
+    ///  sf::Cursor::Type::SizeVertical           |  yes  | yes   |   yes    |
+    ///  sf::Cursor::Type::SizeTopLeftBottomRight |  no   | yes*  |   yes    |
+    ///  sf::Cursor::Type::SizeBottomLeftTopRight |  no   | yes*  |   yes    |
+    ///  sf::Cursor::Type::SizeLeft               |  yes  | yes** |   yes**  |
+    ///  sf::Cursor::Type::SizeRight              |  yes  | yes** |   yes**  |
+    ///  sf::Cursor::Type::SizeTop                |  yes  | yes** |   yes**  |
+    ///  sf::Cursor::Type::SizeBottom             |  yes  | yes** |   yes**  |
+    ///  sf::Cursor::Type::SizeTopLeft            |  yes  | yes** |   yes**  |
+    ///  sf::Cursor::Type::SizeTopRight           |  yes  | yes** |   yes**  |
+    ///  sf::Cursor::Type::SizeBottomLeft         |  yes  | yes** |   yes**  |
+    ///  sf::Cursor::Type::SizeBottomRight        |  yes  | yes** |   yes**  |
+    ///  sf::Cursor::Type::SizeAll                |  yes  | no    |   yes    |
+    ///  sf::Cursor::Type::Cross                  |  yes  | yes   |   yes    |
+    ///  sf::Cursor::Type::Help                   |  yes  | yes*  |   yes    |
+    ///  sf::Cursor::Type::NotAllowed             |  yes  | yes   |   yes    |
     ///
     ///  * These cursor types are undocumented so may not
     ///    be available on all versions, but have been tested on 10.13
@@ -84,7 +84,7 @@ public:
     ///  ** On Windows and macOS, double-headed arrows are used
     ///
     ////////////////////////////////////////////////////////////
-    enum Type
+    enum class Type
     {
         Arrow,                  //!< Arrow cursor (default)
         ArrowWait,              //!< Busy arrow cursor
@@ -207,7 +207,7 @@ private:
     ////////////////////////////////////////////////////////////
     /// \brief Get access to the underlying implementation
     ///
-    /// This is primarily designed for sf::Window::setMouseCursor,
+    /// This is primarily designed for sf::WindowBase::setMouseCursor,
     /// hence the friendship.
     ///
     /// \return a reference to the OS-specific implementation
@@ -237,7 +237,7 @@ private:
 ///
 /// After loading the cursor the graphical appearance
 /// with either loadFromPixels() or loadFromSystem(), the
-/// cursor can be changed with sf::Window::setMouseCursor().
+/// cursor can be changed with sf::WindowBase::setMouseCursor().
 ///
 /// The behaviour is undefined if the cursor is destroyed while
 /// in use by the window.
@@ -249,10 +249,10 @@ private:
 /// // ... create window as usual ...
 ///
 /// sf::Cursor cursor;
-/// if (cursor.loadFromSystem(sf::Cursor::Hand))
+/// if (cursor.loadFromSystem(sf::Cursor::Type::Hand))
 ///     window.setMouseCursor(cursor);
 /// \endcode
 ///
-/// \see sf::Window::setMouseCursor
+/// \see sf::WindowBase::setMouseCursor
 ///
 ////////////////////////////////////////////////////////////

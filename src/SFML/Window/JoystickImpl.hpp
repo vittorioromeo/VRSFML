@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -31,6 +31,8 @@
 
 #include <SFML/Window/Joystick.hpp>
 
+#include <SFML/System/EnumArray.hpp>
+
 
 namespace sf::priv
 {
@@ -40,8 +42,8 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 struct JoystickCaps
 {
-    unsigned int buttonCount{};               //!< Number of buttons supported by the joystick
-    bool         axes[Joystick::AxisCount]{}; //!< Support for each axis
+    unsigned int                                         buttonCount{}; //!< Number of buttons supported by the joystick
+    EnumArray<Joystick::Axis, bool, Joystick::AxisCount> axes{};        //!< Support for each axis
 };
 
 
@@ -51,9 +53,9 @@ struct JoystickCaps
 ////////////////////////////////////////////////////////////
 struct JoystickState
 {
-    bool  connected{};                      //!< Is the joystick currently connected?
-    float axes[Joystick::AxisCount]{};      //!< Position of each axis, in range [-100, 100]
-    bool  buttons[Joystick::ButtonCount]{}; //!< Status of each button (true = pressed)
+    bool                                                  connected{}; //!< Is the joystick currently connected?
+    EnumArray<Joystick::Axis, float, Joystick::AxisCount> axes{};      //!< Position of each axis, in range [-100, 100]
+    bool buttons[Joystick::ButtonCount]{};                             //!< Status of each button (true = pressed)
 };
 
 } // namespace sf::priv
@@ -81,7 +83,7 @@ struct JoystickState
 
 #elif defined(SFML_SYSTEM_MACOS)
 
-#include <SFML/Window/OSX/JoystickImpl.hpp>
+#include <SFML/Window/macOS/JoystickImpl.hpp>
 
 #elif defined(SFML_SYSTEM_IOS)
 

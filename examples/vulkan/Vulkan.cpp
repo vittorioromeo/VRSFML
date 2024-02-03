@@ -1,4 +1,3 @@
-
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -56,10 +55,10 @@ void matrixMultiply(Matrix& result, const Matrix& left, const Matrix& right)
 // Rotate a matrix around the x-axis
 void matrixRotateX(Matrix& result, sf::Angle angle)
 {
-    float rad = angle.asRadians();
+    const float rad = angle.asRadians();
 
     // clang-format off
-    Matrix matrix = {
+    const Matrix matrix = {
         {1.f,   0.f,           0.f,           0.f},
         {0.f,   std::cos(rad), std::sin(rad), 0.f},
         {0.f,  -std::sin(rad), std::cos(rad), 0.f},
@@ -73,10 +72,10 @@ void matrixRotateX(Matrix& result, sf::Angle angle)
 // Rotate a matrix around the y-axis
 void matrixRotateY(Matrix& result, sf::Angle angle)
 {
-    float rad = angle.asRadians();
+    const float rad = angle.asRadians();
 
     // clang-format off
-    Matrix matrix = {
+    const Matrix matrix = {
         { std::cos(rad), 0.f, std::sin(rad), 0.f},
         { 0.f,           1.f, 0.f,           0.f},
         {-std::sin(rad), 0.f, std::cos(rad), 0.f},
@@ -90,10 +89,10 @@ void matrixRotateY(Matrix& result, sf::Angle angle)
 // Rotate a matrix around the z-axis
 void matrixRotateZ(Matrix& result, sf::Angle angle)
 {
-    float rad = angle.asRadians();
+    const float rad = angle.asRadians();
 
     // clang-format off
-    Matrix matrix = {
+    const Matrix matrix = {
         { std::cos(rad), std::sin(rad), 0.f, 0.f},
         {-std::sin(rad), std::cos(rad), 0.f, 0.f},
         { 0.f,           0.f,           1.f, 0.f},
@@ -493,8 +492,8 @@ public:
         }
 
         // Retrieve the extensions we need to enable in order to use Vulkan with SFML
-        std::vector<const char*> requiredExtentions = sf::Vulkan::getGraphicsRequiredInstanceExtensions();
-        requiredExtentions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+        std::vector<const char*> requiredExtensions = sf::Vulkan::getGraphicsRequiredInstanceExtensions();
+        requiredExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 
         // Register our application information
         VkApplicationInfo applicationInfo  = VkApplicationInfo();
@@ -510,8 +509,8 @@ public:
         instanceCreateInfo.pApplicationInfo        = &applicationInfo;
         instanceCreateInfo.enabledLayerCount       = static_cast<std::uint32_t>(validationLayers.size());
         instanceCreateInfo.ppEnabledLayerNames     = validationLayers.data();
-        instanceCreateInfo.enabledExtensionCount   = static_cast<std::uint32_t>(requiredExtentions.size());
-        instanceCreateInfo.ppEnabledExtensionNames = requiredExtentions.data();
+        instanceCreateInfo.enabledExtensionCount   = static_cast<std::uint32_t>(requiredExtensions.size());
+        instanceCreateInfo.ppEnabledExtensionNames = requiredExtensions.data();
 
         // Try to create a Vulkan instance with debug report enabled
         VkResult result = vkCreateInstance(&instanceCreateInfo, nullptr, &instance);
@@ -519,10 +518,10 @@ public:
         // If an extension is missing, try disabling debug report
         if (result == VK_ERROR_EXTENSION_NOT_PRESENT)
         {
-            requiredExtentions.pop_back();
+            requiredExtensions.pop_back();
 
-            instanceCreateInfo.enabledExtensionCount   = static_cast<std::uint32_t>(requiredExtentions.size());
-            instanceCreateInfo.ppEnabledExtensionNames = requiredExtentions.data();
+            instanceCreateInfo.enabledExtensionCount   = static_cast<std::uint32_t>(requiredExtensions.size());
+            instanceCreateInfo.ppEnabledExtensionNames = requiredExtensions.data();
 
             result = vkCreateInstance(&instanceCreateInfo, nullptr, &instance);
         }
@@ -721,7 +720,7 @@ public:
             return;
         }
 
-        float queuePriority = 1.0f;
+        const float queuePriority = 1.0f;
 
         VkDeviceQueueCreateInfo deviceQueueCreateInfo = VkDeviceQueueCreateInfo();
         deviceQueueCreateInfo.sType                   = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -730,7 +729,7 @@ public:
         deviceQueueCreateInfo.pQueuePriorities        = &queuePriority;
 
         // Enable the swapchain extension
-        const char* extentions[1] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+        const char* extensions[1] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
         // Enable anisotropic filtering
         VkPhysicalDeviceFeatures physicalDeviceFeatures = VkPhysicalDeviceFeatures();
@@ -739,7 +738,7 @@ public:
         VkDeviceCreateInfo deviceCreateInfo      = VkDeviceCreateInfo();
         deviceCreateInfo.sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
         deviceCreateInfo.enabledExtensionCount   = 1;
-        deviceCreateInfo.ppEnabledExtensionNames = extentions;
+        deviceCreateInfo.ppEnabledExtensionNames = extensions;
         deviceCreateInfo.queueCreateInfoCount    = 1;
         deviceCreateInfo.pQueueCreateInfos       = &deviceQueueCreateInfo;
         deviceCreateInfo.pEnabledFeatures        = &physicalDeviceFeatures;
@@ -784,7 +783,7 @@ public:
         }
         else if (!surfaceFormats.empty())
         {
-            for (VkSurfaceFormatKHR& surfaceFormat : surfaceFormats)
+            for (const VkSurfaceFormatKHR& surfaceFormat : surfaceFormats)
             {
                 if ((surfaceFormat.format == VK_FORMAT_B8G8R8A8_UNORM) &&
                     (surfaceFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR))
@@ -825,7 +824,7 @@ public:
         // Prefer mailbox over FIFO if it is available
         VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
 
-        for (VkPresentModeKHR& i : presentModes)
+        for (const VkPresentModeKHR& i : presentModes)
         {
             if (i == VK_PRESENT_MODE_MAILBOX_KHR)
             {
@@ -850,7 +849,7 @@ public:
                                             surfaceCapabilities.minImageExtent.height,
                                             surfaceCapabilities.maxImageExtent.height);
 
-        auto imageCount = std::clamp(2u, surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
+        const auto imageCount = std::clamp(2u, surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
 
         VkSwapchainCreateInfoKHR swapchainCreateInfo = VkSwapchainCreateInfoKHR();
         swapchainCreateInfo.sType                    = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -1819,7 +1818,7 @@ public:
         }
 
         // Create a staging buffer to transfer the data with
-        VkDeviceSize imageSize = imageData.getSize().x * imageData.getSize().y * 4;
+        const VkDeviceSize imageSize = imageData.getSize().x * imageData.getSize().y * 4;
 
         VkBuffer       stagingBuffer       = {};
         VkDeviceMemory stagingBufferMemory = {};
@@ -1903,7 +1902,7 @@ public:
             return;
         }
 
-        // Submit a barrier to transition the image layout to transfer destionation optimal
+        // Submit a barrier to transition the image layout to transfer destination optimal
         VkImageMemoryBarrier barrier            = VkImageMemoryBarrier();
         barrier.sType                           = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
         barrier.oldLayout                       = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -2041,7 +2040,7 @@ public:
             return;
         }
 
-        // Submit a barrier to transition the image layout from transfer destionation optimal to shader read-only optimal
+        // Submit a barrier to transition the image layout from transfer destination optimal to shader read-only optimal
         barrier.oldLayout     = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
         barrier.newLayout     = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -2237,7 +2236,7 @@ public:
             writeDescriptorSets[1].descriptorCount = 1;
             writeDescriptorSets[1].pImageInfo      = &descriptorImageInfo;
 
-            // Update the desciptor set
+            // Update the descriptor set
             vkUpdateDescriptorSets(device, 2, writeDescriptorSets, 0, nullptr);
         }
     }
@@ -2315,7 +2314,7 @@ public:
             vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
             // Bind our vertex buffer
-            VkDeviceSize offset = 0;
+            const VkDeviceSize offset = 0;
 
             vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, &vertexBuffer, &offset);
 
@@ -2413,10 +2412,10 @@ public:
         matrixRotateZ(model, sf::degrees(elapsed * 109.0f));
 
         // Translate the model based on the mouse position
-        sf::Vector2f mousePosition = sf::Vector2f(sf::Mouse::getPosition(window));
-        sf::Vector2f windowSize    = sf::Vector2f(window.getSize());
-        float        x             = std::clamp(mousePosition.x * 2.f / windowSize.x - 1.f, -1.0f, 1.0f) * 2.0f;
-        float        y             = std::clamp(-mousePosition.y * 2.f / windowSize.y + 1.f, -1.0f, 1.0f) * 1.5f;
+        const sf::Vector2f mousePosition = sf::Vector2f(sf::Mouse::getPosition(window));
+        const sf::Vector2f windowSize    = sf::Vector2f(window.getSize());
+        const float        x             = std::clamp(mousePosition.x * 2.f / windowSize.x - 1.f, -1.0f, 1.0f) * 2.0f;
+        const float        y             = std::clamp(-mousePosition.y * 2.f / windowSize.y + 1.f, -1.0f, 1.0f) * 1.5f;
 
         model[3][0] -= x;
         model[3][2] += y;
@@ -2468,12 +2467,12 @@ public:
 
         {
             // Get the next image in the swapchain
-            VkResult result = vkAcquireNextImageKHR(device,
-                                                    swapchain,
-                                                    std::numeric_limits<std::uint64_t>::max(),
-                                                    imageAvailableSemaphores[currentFrame],
-                                                    VK_NULL_HANDLE,
-                                                    &imageIndex);
+            const VkResult result = vkAcquireNextImageKHR(device,
+                                                          swapchain,
+                                                          std::numeric_limits<std::uint64_t>::max(),
+                                                          imageAvailableSemaphores[currentFrame],
+                                                          VK_NULL_HANDLE,
+                                                          &imageIndex);
 
             // Check if we need to re-create the swapchain (e.g. if the window was resized)
             if (result == VK_ERROR_OUT_OF_DATE_KHR)
@@ -2492,7 +2491,7 @@ public:
         }
 
         // Wait for the swapchain image to be available in the color attachment stage before submitting the queue
-        VkPipelineStageFlags waitStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        const VkPipelineStageFlags waitStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
         // Signal the render finished semaphore once the queue has been processed
         VkSubmitInfo submitInfo         = VkSubmitInfo();
@@ -2524,7 +2523,7 @@ public:
 
         {
             // Queue presentation
-            VkResult result = vkQueuePresentKHR(queue, &presentInfo);
+            const VkResult result = vkQueuePresentKHR(queue, &presentInfo);
 
             // Check if we need to re-create the swapchain (e.g. if the window was resized)
             if ((result == VK_ERROR_OUT_OF_DATE_KHR) || (result == VK_SUBOPTIMAL_KHR) || swapchainOutOfDate)
@@ -2545,7 +2544,7 @@ public:
 
     void run()
     {
-        sf::Clock clock;
+        const sf::Clock clock;
 
         // Start game loop
         while (window.isOpen())
@@ -2558,7 +2557,7 @@ public:
                     window.close();
 
                 // Escape key: exit
-                if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape))
+                if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Key::Escape))
                     window.close();
 
                 // Re-create the swapchain when the window is resized
@@ -2579,6 +2578,7 @@ public:
     }
 
 private:
+    // NOLINTBEGIN(readability-identifier-naming)
     sf::WindowBase window{sf::VideoMode({800, 600}), "SFML window with Vulkan", sf::Style::Default};
 
     bool vulkanAvailable{sf::Vulkan::isAvailable()};
@@ -2605,7 +2605,7 @@ private:
     VkImageView                     depthImageView{};
     VkShaderModule                  vertexShaderModule{};
     VkShaderModule                  fragmentShaderModule{};
-    VkPipelineShaderStageCreateInfo shaderStages[2];
+    VkPipelineShaderStageCreateInfo shaderStages[2]{};
     VkDescriptorSetLayout           descriptorSetLayout{};
     VkPipelineLayout                pipelineLayout{};
     VkRenderPass                    renderPass{};
@@ -2628,6 +2628,7 @@ private:
     std::vector<VkSemaphore>        imageAvailableSemaphores;
     std::vector<VkSemaphore>        renderFinishedSemaphores;
     std::vector<VkFence>            fences;
+    // NOLINTEND(readability-identifier-naming)
 };
 
 

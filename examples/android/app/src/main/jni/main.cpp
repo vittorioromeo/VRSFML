@@ -121,7 +121,7 @@ int main(int argc, char* argv[])
                     window.close();
                     break;
                 case sf::Event::KeyPressed:
-                    if (event.key.code == sf::Keyboard::Escape)
+                    if (event.key.code == sf::Keyboard::Key::Escape)
                         window.close();
                     break;
                 case sf::Event::Resized:
@@ -152,6 +152,8 @@ int main(int argc, char* argv[])
                         vibrate(sf::milliseconds(10));
 #endif
                     }
+                    break;
+                default:
                     break;
             }
         }

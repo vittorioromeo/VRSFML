@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -78,13 +78,12 @@ bool FileInputStream::open(const std::filesystem::path& filename)
 ////////////////////////////////////////////////////////////
 std::int64_t FileInputStream::read(void* data, std::int64_t size)
 {
+    if (!m_file)
+        return -1;
 #ifdef SFML_SYSTEM_ANDROID
     return m_file->read(data, size);
 #else
-    if (m_file)
-        return static_cast<std::int64_t>(std::fread(data, 1, static_cast<std::size_t>(size), m_file.get()));
-    else
-        return -1;
+    return static_cast<std::int64_t>(std::fread(data, 1, static_cast<std::size_t>(size), m_file.get()));
 #endif
 }
 
@@ -92,20 +91,15 @@ std::int64_t FileInputStream::read(void* data, std::int64_t size)
 ////////////////////////////////////////////////////////////
 std::int64_t FileInputStream::seek(std::int64_t position)
 {
+    if (!m_file)
+        return -1;
 #ifdef SFML_SYSTEM_ANDROID
     return m_file->seek(position);
 #else
-    if (m_file)
-    {
-        if (std::fseek(m_file.get(), static_cast<long>(position), SEEK_SET))
-            return -1;
-
-        return tell();
-    }
-    else
-    {
+    if (std::fseek(m_file.get(), static_cast<long>(position), SEEK_SET))
         return -1;
-    }
+
+    return tell();
 #endif
 }
 
@@ -113,13 +107,12 @@ std::int64_t FileInputStream::seek(std::int64_t position)
 ////////////////////////////////////////////////////////////
 std::int64_t FileInputStream::tell()
 {
+    if (!m_file)
+        return -1;
 #ifdef SFML_SYSTEM_ANDROID
     return m_file->tell();
 #else
-    if (m_file)
-        return std::ftell(m_file.get());
-    else
-        return -1;
+    return std::ftell(m_file.get());
 #endif
 }
 
@@ -127,24 +120,19 @@ std::int64_t FileInputStream::tell()
 ////////////////////////////////////////////////////////////
 std::int64_t FileInputStream::getSize()
 {
+    if (!m_file)
+        return -1;
 #ifdef SFML_SYSTEM_ANDROID
     return m_file->getSize();
 #else
-    if (m_file)
-    {
-        std::int64_t position = tell();
-        std::fseek(m_file.get(), 0, SEEK_END);
-        std::int64_t size = tell();
+    const std::int64_t position = tell();
+    std::fseek(m_file.get(), 0, SEEK_END);
+    const std::int64_t size = tell();
 
-        if (seek(position) == -1)
-            return -1;
-
-        return size;
-    }
-    else
-    {
+    if (seek(position) == -1)
         return -1;
-    }
+
+    return size;
 #endif
 }
 

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -50,7 +50,7 @@ struct JoystickRecord
 {
     std::string deviceNode;
     std::string systemPath;
-    bool        plugged;
+    bool        plugged{};
 };
 
 using JoystickList = std::vector<JoystickRecord>;
@@ -253,7 +253,7 @@ void updatePluggedList(udev_device* udevDevice = nullptr)
 bool hasMonitorEvent()
 {
     // This will not fail since we make sure udevMonitor is valid
-    int monitorFd = udev_monitor_get_fd(udevMonitor);
+    const int monitorFd = udev_monitor_get_fd(udevMonitor);
 
     pollfd fds{monitorFd, POLLIN, 0};
 
@@ -392,22 +392,22 @@ unsigned int getJoystickProductId(unsigned int index)
 // Get the joystick name
 std::string getJoystickName(unsigned int index)
 {
-    std::string devnode = joystickList[index].deviceNode;
+    const std::string devnode = joystickList[index].deviceNode;
 
     // First try using ioctl with JSIOCGNAME
-    int fd = ::open(devnode.c_str(), O_RDONLY | O_NONBLOCK);
+    const int fd = ::open(devnode.c_str(), O_RDONLY | O_NONBLOCK);
 
     if (fd >= 0)
     {
         // Get the name
         char name[128] = {};
 
-        int result = ioctl(fd, JSIOCGNAME(sizeof(name)), name);
+        const int result = ioctl(fd, JSIOCGNAME(sizeof(name)), name);
 
         ::close(fd);
 
         if (result >= 0)
-            return std::string(name);
+            return name;
     }
 
     // Fall back to manual USB chain walk via udev
@@ -421,13 +421,13 @@ std::string getJoystickName(unsigned int index)
             udev_device_unref(udevDevice);
 
             if (product)
-                return std::string(product);
+                return {product};
         }
     }
 
     sf::err() << "Unable to get name for joystick " << devnode << std::endl;
 
-    return std::string("Unknown Joystick");
+    return "Unknown Joystick";
 }
 } // namespace
 
@@ -539,7 +539,7 @@ bool JoystickImpl::open(unsigned int index)
 
     if (joystickList[index].plugged)
     {
-        std::string devnode = joystickList[index].deviceNode;
+        const std::string devnode = joystickList[index].deviceNode;
 
         // Open the joystick's file descriptor (read-only and non-blocking)
         m_file = ::open(devnode.c_str(), O_RDONLY | O_NONBLOCK);
@@ -603,17 +603,17 @@ JoystickCaps JoystickImpl::getCapabilities() const
         switch (m_mapping[i])
         {
             // clang-format off
-            case ABS_X:        caps.axes[Joystick::X]    = true; break;
-            case ABS_Y:        caps.axes[Joystick::Y]    = true; break;
+            case ABS_X:        caps.axes[Joystick::Axis::X]    = true; break;
+            case ABS_Y:        caps.axes[Joystick::Axis::Y]    = true; break;
             case ABS_Z:
-            case ABS_THROTTLE: caps.axes[Joystick::Z]    = true; break;
+            case ABS_THROTTLE: caps.axes[Joystick::Axis::Z]    = true; break;
             case ABS_RZ:
-            case ABS_RUDDER:   caps.axes[Joystick::R]    = true; break;
-            case ABS_RX:       caps.axes[Joystick::U]    = true; break;
-            case ABS_RY:       caps.axes[Joystick::V]    = true; break;
-            case ABS_HAT0X:    caps.axes[Joystick::PovX] = true; break;
-            case ABS_HAT0Y:    caps.axes[Joystick::PovY] = true; break;
-            default:                                             break;
+            case ABS_RUDDER:   caps.axes[Joystick::Axis::R]    = true; break;
+            case ABS_RX:       caps.axes[Joystick::Axis::U]    = true; break;
+            case ABS_RY:       caps.axes[Joystick::Axis::V]    = true; break;
+            case ABS_HAT0X:    caps.axes[Joystick::Axis::PovX] = true; break;
+            case ABS_HAT0Y:    caps.axes[Joystick::Axis::PovY] = true; break;
+            default:                                                   break;
                 // clang-format on
         }
     }
@@ -639,7 +639,7 @@ JoystickState JoystickImpl::JoystickImpl::update()
     }
 
     // pop events from the joystick file
-    js_event joyState;
+    js_event joyState{};
     ssize_t  result = read(m_file, &joyState, sizeof(joyState));
     while (result > 0)
     {
@@ -648,37 +648,37 @@ JoystickState JoystickImpl::JoystickImpl::update()
             // An axis was moved
             case JS_EVENT_AXIS:
             {
-                float value = joyState.value * 100.f / 32767.f;
+                const float value = joyState.value * 100.f / 32767.f;
 
                 if (joyState.number < ABS_MAX + 1)
                 {
                     switch (m_mapping[joyState.number])
                     {
                         case ABS_X:
-                            m_state.axes[Joystick::X] = value;
+                            m_state.axes[Joystick::Axis::X] = value;
                             break;
                         case ABS_Y:
-                            m_state.axes[Joystick::Y] = value;
+                            m_state.axes[Joystick::Axis::Y] = value;
                             break;
                         case ABS_Z:
                         case ABS_THROTTLE:
-                            m_state.axes[Joystick::Z] = value;
+                            m_state.axes[Joystick::Axis::Z] = value;
                             break;
                         case ABS_RZ:
                         case ABS_RUDDER:
-                            m_state.axes[Joystick::R] = value;
+                            m_state.axes[Joystick::Axis::R] = value;
                             break;
                         case ABS_RX:
-                            m_state.axes[Joystick::U] = value;
+                            m_state.axes[Joystick::Axis::U] = value;
                             break;
                         case ABS_RY:
-                            m_state.axes[Joystick::V] = value;
+                            m_state.axes[Joystick::Axis::V] = value;
                             break;
                         case ABS_HAT0X:
-                            m_state.axes[Joystick::PovX] = value;
+                            m_state.axes[Joystick::Axis::PovX] = value;
                             break;
                         case ABS_HAT0Y:
-                            m_state.axes[Joystick::PovY] = value;
+                            m_state.axes[Joystick::Axis::PovY] = value;
                             break;
                         default:
                             break;

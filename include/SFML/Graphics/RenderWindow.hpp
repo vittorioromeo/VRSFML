@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -52,7 +52,7 @@ public:
     /// use the other constructors or call create() to do so.
     ///
     ////////////////////////////////////////////////////////////
-    RenderWindow();
+    RenderWindow() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a new window
@@ -62,7 +62,7 @@ public:
     /// customize the look and behavior of the window (borders,
     /// title bar, resizable, closable, ...).
     ///
-    /// The fourth parameter is an optional structure specifying
+    /// The last parameter is an optional structure specifying
     /// advanced OpenGL context settings such as antialiasing,
     /// depth-buffer bits, etc. You shouldn't care about these
     /// parameters for a regular usage of the graphics module.
@@ -70,13 +70,34 @@ public:
     /// \param mode     Video mode to use (defines the width, height and depth of the rendering area of the window)
     /// \param title    Title of the window
     /// \param style    %Window style, a bitwise OR combination of sf::Style enumerators
+    /// \param state    %Window state
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
     RenderWindow(VideoMode              mode,
                  const String&          title,
                  std::uint32_t          style    = Style::Default,
+                 State                  state    = State::Windowed,
                  const ContextSettings& settings = ContextSettings());
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Construct a new window
+    ///
+    /// This constructor creates the window with the size and pixel
+    /// depth defined in \a mode. If \a state is State::Fullscreen,
+    /// then \a mode must be a valid video mode.
+    ///
+    /// The last parameter is an optional structure specifying
+    /// advanced OpenGL context settings such as antialiasing,
+    /// depth-buffer bits, etc.
+    ///
+    /// \param mode     Video mode to use (defines the width, height and depth of the rendering area of the window)
+    /// \param title    Title of the window
+    /// \param state    %Window state
+    /// \param settings Additional settings for the underlying OpenGL context
+    ///
+    ////////////////////////////////////////////////////////////
+    RenderWindow(VideoMode mode, const String& title, State state, const ContextSettings& settings = ContextSettings());
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control
@@ -95,14 +116,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     explicit RenderWindow(WindowHandle handle, const ContextSettings& settings = ContextSettings());
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Destructor
-    ///
-    /// Closes the window and frees all the resources attached to it.
-    ///
-    ////////////////////////////////////////////////////////////
-    ~RenderWindow() override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the size of the rendering region of the window
@@ -244,7 +257,12 @@ private:
 /// sf::RenderWindow window(sf::VideoMode({800, 600}), "SFML OpenGL");
 ///
 /// // Create a sprite and a text to display
-/// sf::Sprite sprite;
+/// sf::Texture texture;
+/// if (!texture.loadFromFile("circle.png"))
+/// {
+///     // error...
+/// }
+/// sf::Sprite sprite(texture);
 /// sf::Font font;
 /// if (!font.loadFromFile("arial.ttf"))
 /// {

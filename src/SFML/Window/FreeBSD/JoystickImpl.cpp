@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //               2013-2013 David Demelier (demelier.david@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -30,6 +30,7 @@
 
 #include <dirent.h>
 #include <fcntl.h>
+#include <optional>
 #include <string>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -135,31 +136,31 @@ void updatePluggedList()
     }
 }
 
-int usageToAxis(int usage)
+std::optional<sf::Joystick::Axis> usageToAxis(int usage)
 {
     switch (usage)
     {
         case HUG_X:
-            return sf::Joystick::X;
+            return sf::Joystick::Axis::X;
         case HUG_Y:
-            return sf::Joystick::Y;
+            return sf::Joystick::Axis::Y;
         case HUG_Z:
-            return sf::Joystick::Z;
+            return sf::Joystick::Axis::Z;
         case HUG_RZ:
-            return sf::Joystick::R;
+            return sf::Joystick::Axis::R;
         case HUG_RX:
-            return sf::Joystick::U;
+            return sf::Joystick::Axis::U;
         case HUG_RY:
-            return sf::Joystick::V;
+            return sf::Joystick::Axis::V;
         default:
-            return -1;
+            return std::nullopt;
     }
 }
 
 void hatValueToSfml(int value, sf::priv::JoystickState& state)
 {
-    state.axes[sf::Joystick::PovX] = static_cast<float>(hatValueMap[value].first);
-    state.axes[sf::Joystick::PovY] = static_cast<float>(hatValueMap[value].second);
+    state.axes[sf::Joystick::Axis::PovX] = static_cast<float>(hatValueMap[value].first);
+    state.axes[sf::Joystick::Axis::PovY] = static_cast<float>(hatValueMap[value].second);
 }
 } // namespace
 
@@ -268,16 +269,14 @@ JoystickCaps JoystickImpl::getCapabilities() const
             }
             else if (usage == HUP_GENERIC_DESKTOP)
             {
-                int axis = usageToAxis(usage);
-
                 if (usage == HUG_HAT_SWITCH)
                 {
-                    caps.axes[Joystick::PovX] = true;
-                    caps.axes[Joystick::PovY] = true;
+                    caps.axes[Joystick::Axis::PovX] = true;
+                    caps.axes[Joystick::Axis::PovY] = true;
                 }
-                else if (axis != -1)
+                else if (const std::optional<Joystick::Axis> axis = usageToAxis(usage))
                 {
-                    caps.axes[axis] = true;
+                    caps.axes[*axis] = true;
                 }
             }
         }
@@ -323,19 +322,18 @@ JoystickState JoystickImpl::JoystickImpl::update()
                 else if (usage == HUP_GENERIC_DESKTOP)
                 {
                     int value = hid_get_data(m_buffer.data(), &item);
-                    int axis  = usageToAxis(usage);
 
                     if (usage == HUG_HAT_SWITCH)
                     {
                         hatValueToSfml(value, m_state);
                     }
-                    else if (axis != -1)
+                    else if (const std::optional<Joystick::Axis> axis = usageToAxis(usage))
                     {
                         int minimum = item.logical_minimum;
                         int maximum = item.logical_maximum;
 
-                        value              = (value - minimum) * 200 / (maximum - minimum) - 100;
-                        m_state.axes[axis] = static_cast<float>(value);
+                        value               = (value - minimum) * 200 / (maximum - minimum) - 100;
+                        m_state.axes[*axis] = static_cast<float>(value);
                     }
                 }
             }

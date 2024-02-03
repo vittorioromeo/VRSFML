@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -41,7 +41,7 @@ FLAC__StreamDecoderReadStatus streamRead(const FLAC__StreamDecoder*, FLAC__byte 
 {
     auto* data = static_cast<sf::priv::SoundFileReaderFlac::ClientData*>(clientData);
 
-    std::int64_t count = data->stream->read(buffer, static_cast<std::int64_t>(*bytes));
+    const std::int64_t count = data->stream->read(buffer, static_cast<std::int64_t>(*bytes));
     if (count > 0)
     {
         *bytes = static_cast<std::size_t>(count);
@@ -61,7 +61,7 @@ FLAC__StreamDecoderSeekStatus streamSeek(const FLAC__StreamDecoder*, FLAC__uint6
 {
     auto* data = static_cast<sf::priv::SoundFileReaderFlac::ClientData*>(clientData);
 
-    std::int64_t position = data->stream->seek(static_cast<std::int64_t>(absoluteByteOffset));
+    const std::int64_t position = data->stream->seek(static_cast<std::int64_t>(absoluteByteOffset));
     if (position >= 0)
         return FLAC__STREAM_DECODER_SEEK_STATUS_OK;
     else
@@ -72,7 +72,7 @@ FLAC__StreamDecoderTellStatus streamTell(const FLAC__StreamDecoder*, FLAC__uint6
 {
     auto* data = static_cast<sf::priv::SoundFileReaderFlac::ClientData*>(clientData);
 
-    std::int64_t position = data->stream->tell();
+    const std::int64_t position = data->stream->tell();
     if (position >= 0)
     {
         *absoluteByteOffset = static_cast<FLAC__uint64>(position);
@@ -88,7 +88,7 @@ FLAC__StreamDecoderLengthStatus streamLength(const FLAC__StreamDecoder*, FLAC__u
 {
     auto* data = static_cast<sf::priv::SoundFileReaderFlac::ClientData*>(clientData);
 
-    std::int64_t count = data->stream->getSize();
+    const std::int64_t count = data->stream->getSize();
     if (count >= 0)
     {
         *streamLength = static_cast<FLAC__uint64>(count);
@@ -115,7 +115,7 @@ FLAC__StreamDecoderWriteStatus streamWrite(const FLAC__StreamDecoder*,
     auto* data = static_cast<sf::priv::SoundFileReaderFlac::ClientData*>(clientData);
 
     // Reserve memory if we're going to use the leftovers buffer
-    unsigned int frameSamples = frame->header.blocksize * frame->header.channels;
+    const unsigned int frameSamples = frame->header.blocksize * frame->header.channels;
     if (data->remaining < frameSamples)
         data->leftovers.reserve(static_cast<std::size_t>(frameSamples - data->remaining));
 
@@ -141,7 +141,7 @@ FLAC__StreamDecoderWriteStatus streamWrite(const FLAC__StreamDecoder*,
                     sample = static_cast<std::int16_t>(buffer[j][i] >> 16);
                     break;
                 default:
-                    assert(false);
+                    assert(false && "Invalid bits per sample. Must be 8, 16, 24, or 32.");
                     break;
             }
 
@@ -185,6 +185,14 @@ void streamError(const FLAC__StreamDecoder*, FLAC__StreamDecoderErrorStatus, voi
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
+void SoundFileReaderFlac::FlacStreamDecoderDeleter::operator()(FLAC__StreamDecoder* decoder) const
+{
+    FLAC__stream_decoder_finish(decoder);
+    FLAC__stream_decoder_delete(decoder);
+}
+
+
+////////////////////////////////////////////////////////////
 bool SoundFileReaderFlac::check(InputStream& stream)
 {
     // Create a decoder
@@ -208,7 +216,7 @@ bool SoundFileReaderFlac::check(InputStream& stream)
                                      &data);
 
     // Read the header
-    bool valid = FLAC__stream_decoder_process_until_end_of_metadata(decoder) != 0;
+    const bool valid = FLAC__stream_decoder_process_until_end_of_metadata(decoder) != 0;
 
     // Destroy the decoder
     FLAC__stream_decoder_finish(decoder);
@@ -219,30 +227,19 @@ bool SoundFileReaderFlac::check(InputStream& stream)
 
 
 ////////////////////////////////////////////////////////////
-SoundFileReaderFlac::SoundFileReaderFlac() = default;
-
-
-////////////////////////////////////////////////////////////
-SoundFileReaderFlac::~SoundFileReaderFlac()
-{
-    close();
-}
-
-
-////////////////////////////////////////////////////////////
-bool SoundFileReaderFlac::open(InputStream& stream, Info& info)
+std::optional<SoundFileReader::Info> SoundFileReaderFlac::open(InputStream& stream)
 {
     // Create the decoder
-    m_decoder = FLAC__stream_decoder_new();
+    m_decoder.reset(FLAC__stream_decoder_new());
     if (!m_decoder)
     {
         err() << "Failed to open FLAC file (failed to allocate the decoder)" << std::endl;
-        return false;
+        return std::nullopt;
     }
 
     // Initialize the decoder with our callbacks
     m_clientData.stream = &stream;
-    FLAC__stream_decoder_init_stream(m_decoder,
+    FLAC__stream_decoder_init_stream(m_decoder.get(),
                                      &streamRead,
                                      &streamSeek,
                                      &streamTell,
@@ -254,24 +251,22 @@ bool SoundFileReaderFlac::open(InputStream& stream, Info& info)
                                      &m_clientData);
 
     // Read the header
-    if (!FLAC__stream_decoder_process_until_end_of_metadata(m_decoder))
+    if (!FLAC__stream_decoder_process_until_end_of_metadata(m_decoder.get()))
     {
-        close();
+        m_decoder.reset();
         err() << "Failed to open FLAC file (failed to read metadata)" << std::endl;
-        return false;
+        return std::nullopt;
     }
 
     // Retrieve the sound properties
-    info = m_clientData.info; // was filled in the "metadata" callback
-
-    return true;
+    return m_clientData.info; // was filled in the "metadata" callback
 }
 
 
 ////////////////////////////////////////////////////////////
 void SoundFileReaderFlac::seek(std::uint64_t sampleOffset)
 {
-    assert(m_decoder);
+    assert(m_decoder && "No decoder available. Call SoundFileReaderFlac::open() to create a new one.");
 
     // Reset the callback data (the "write" callback will be called)
     m_clientData.buffer    = nullptr;
@@ -283,13 +278,14 @@ void SoundFileReaderFlac::seek(std::uint64_t sampleOffset)
     {
         // The "write" callback will populate the leftovers buffer with the first batch of samples from the
         // seek destination, and since we want that data in this typical case, we don't re-clear it afterward
-        FLAC__stream_decoder_seek_absolute(m_decoder, sampleOffset / m_clientData.info.channelCount);
+        FLAC__stream_decoder_seek_absolute(m_decoder.get(), sampleOffset / m_clientData.info.channelCount);
     }
     else
     {
         // FLAC decoder can't skip straight to EOF, so we short-seek by one sample and skip the rest
-        FLAC__stream_decoder_seek_absolute(m_decoder, (m_clientData.info.sampleCount / m_clientData.info.channelCount) - 1);
-        FLAC__stream_decoder_skip_single_frame(m_decoder);
+        FLAC__stream_decoder_seek_absolute(m_decoder.get(),
+                                           (m_clientData.info.sampleCount / m_clientData.info.channelCount) - 1);
+        FLAC__stream_decoder_skip_single_frame(m_decoder.get());
 
         // This was re-populated during the seek, but we're skipping everything in this, so we need it emptied
         m_clientData.leftovers.clear();
@@ -300,10 +296,10 @@ void SoundFileReaderFlac::seek(std::uint64_t sampleOffset)
 ////////////////////////////////////////////////////////////
 std::uint64_t SoundFileReaderFlac::read(std::int16_t* samples, std::uint64_t maxCount)
 {
-    assert(m_decoder);
+    assert(m_decoder && "No decoder available. Call SoundFileReaderFlac::open() to create a new one.");
 
     // If there are leftovers from previous call, use it first
-    std::size_t left = m_clientData.leftovers.size();
+    const std::size_t left = m_clientData.leftovers.size();
     if (left > 0)
     {
         if (left > maxCount)
@@ -335,27 +331,15 @@ std::uint64_t SoundFileReaderFlac::read(std::int16_t* samples, std::uint64_t max
     {
         // Everything happens in the "write" callback
         // This will break on any fatal error (does not include EOF)
-        if (!FLAC__stream_decoder_process_single(m_decoder))
+        if (!FLAC__stream_decoder_process_single(m_decoder.get()))
             break;
 
         // Break on EOF
-        if (FLAC__stream_decoder_get_state(m_decoder) == FLAC__STREAM_DECODER_END_OF_STREAM)
+        if (FLAC__stream_decoder_get_state(m_decoder.get()) == FLAC__STREAM_DECODER_END_OF_STREAM)
             break;
     }
 
     return maxCount - m_clientData.remaining;
-}
-
-
-////////////////////////////////////////////////////////////
-void SoundFileReaderFlac::close()
-{
-    if (m_decoder)
-    {
-        FLAC__stream_decoder_finish(m_decoder);
-        FLAC__stream_decoder_delete(m_decoder);
-        m_decoder = nullptr;
-    }
 }
 
 } // namespace sf::priv

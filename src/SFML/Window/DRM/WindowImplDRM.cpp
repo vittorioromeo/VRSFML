@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2023 Andrew Mickelson
+// Copyright (C) 2024 Andrew Mickelson
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -26,49 +26,79 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/DRM/DRMContext.hpp>
-#include <SFML/Window/DRM/InputImplUDev.hpp>
 #include <SFML/Window/DRM/WindowImplDRM.hpp>
 #include <SFML/Window/Event.hpp>
-#include <SFML/Window/WindowStyle.hpp>
+#include <SFML/Window/InputImpl.hpp>
+#include <SFML/Window/WindowEnums.hpp>
 
 #include <SFML/System/Err.hpp>
 
 
 namespace sf::priv
 {
+
+// Defined in DRM/InputImpl.cpp because they require access to that file's global state
+namespace InputImpl
+{
+////////////////////////////////////////////////////////////
+/// \brief Fetch input event from event queue
+///
+/// \return False if event queue is empty
+///
+////////////////////////////////////////////////////////////
+bool checkEvent(Event& event);
+
+////////////////////////////////////////////////////////////
+/// \brief Backup terminal configuration and disable console feedback
+///
+////////////////////////////////////////////////////////////
+void setTerminalConfig();
+
+////////////////////////////////////////////////////////////
+/// \brief Restore terminal configuration from backup
+///
+////////////////////////////////////////////////////////////
+void restoreTerminalConfig();
+} // namespace InputImpl
+
+
 ////////////////////////////////////////////////////////////
 WindowImplDRM::WindowImplDRM(WindowHandle /*handle*/)
 {
-    sf::priv::InputImpl::setTerminalConfig();
+    InputImpl::setTerminalConfig();
 }
 
 
 ////////////////////////////////////////////////////////////
-WindowImplDRM::WindowImplDRM(VideoMode mode, const String& /*title*/, unsigned long /*style*/, const ContextSettings& /*settings*/) :
+WindowImplDRM::WindowImplDRM(VideoMode mode,
+                             const String& /*title*/,
+                             std::uint32_t /*style*/,
+                             State /*state*/,
+                             const ContextSettings& /*settings*/) :
 m_size(mode.size)
 {
-    sf::priv::InputImpl::setTerminalConfig();
+    InputImpl::setTerminalConfig();
 }
 
 
 ////////////////////////////////////////////////////////////
 WindowImplDRM::~WindowImplDRM()
 {
-    sf::priv::InputImpl::restoreTerminalConfig();
+    InputImpl::restoreTerminalConfig();
 }
 
 
 ////////////////////////////////////////////////////////////
-WindowHandle WindowImplDRM::getSystemHandle() const
+WindowHandle WindowImplDRM::getNativeHandle() const
 {
-    Drm& drm = sf::priv::DRMContext::getDRM();
+    const Drm& drm = DRMContext::getDRM();
     return static_cast<WindowHandle>(drm.fileDescriptor);
 }
 
 ////////////////////////////////////////////////////////////
 Vector2i WindowImplDRM::getPosition() const
 {
-    return Vector2i(0, 0);
+    return {0, 0};
 }
 
 
@@ -87,6 +117,18 @@ Vector2u WindowImplDRM::getSize() const
 
 ////////////////////////////////////////////////////////////
 void WindowImplDRM::setSize(const Vector2u& /*size*/)
+{
+}
+
+
+////////////////////////////////////////////////////////////
+void WindowImplDRM::setMinimumSize(const std::optional<Vector2u>& /* minimumSize */)
+{
+}
+
+
+////////////////////////////////////////////////////////////
+void WindowImplDRM::setMaximumSize(const std::optional<Vector2u>& /* maximumSize */)
 {
 }
 
@@ -117,7 +159,7 @@ void WindowImplDRM::setMouseCursorVisible(bool /*visible*/)
 ////////////////////////////////////////////////////////////
 void WindowImplDRM::setMouseCursorGrabbed(bool /*grabbed*/)
 {
-    //TODO: not implemented
+    // TODO: not implemented
 }
 
 ////////////////////////////////////////////////////////////
@@ -148,9 +190,9 @@ bool WindowImplDRM::hasFocus() const
 
 void WindowImplDRM::processEvents()
 {
-    sf::Event ev;
-    while (sf::priv::InputImpl::checkEvent(ev))
-        pushEvent(ev);
+    Event event;
+    while (InputImpl::checkEvent(event))
+        pushEvent(event);
 }
 
 } // namespace sf::priv

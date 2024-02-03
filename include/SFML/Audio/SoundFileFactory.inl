@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -51,9 +51,7 @@ void SoundFileFactory::registerReader()
     unregisterReader<T>();
 
     // Create a new factory with the functions provided by the class
-    ReaderFactory factory;
-    factory.check  = &T::check;
-    factory.create = &priv::createReader<T>;
+    const ReaderFactory factory{&T::check, &priv::createReader<T>};
 
     // Add it
     s_readers.push_back(factory);
@@ -65,13 +63,11 @@ template <typename T>
 void SoundFileFactory::unregisterReader()
 {
     // Remove the instance(s) of the reader from the array of factories
-    for (auto it = s_readers.begin(); it != s_readers.end(); /* noop */)
-    {
-        if (it->create == &priv::createReader<T>)
-            it = s_readers.erase(it);
-        else
-            ++it;
-    }
+    s_readers.erase(std::remove_if(s_readers.begin(),
+                                   s_readers.end(),
+                                   [](const ReaderFactory& readerFactory)
+                                   { return readerFactory.create == &priv::createReader<T>; }),
+                    s_readers.end());
 }
 
 ////////////////////////////////////////////////////////////
@@ -82,9 +78,7 @@ void SoundFileFactory::registerWriter()
     unregisterWriter<T>();
 
     // Create a new factory with the functions provided by the class
-    WriterFactory factory;
-    factory.check  = &T::check;
-    factory.create = &priv::createWriter<T>;
+    const WriterFactory factory{&T::check, &priv::createWriter<T>};
 
     // Add it
     s_writers.push_back(factory);
@@ -96,13 +90,11 @@ template <typename T>
 void SoundFileFactory::unregisterWriter()
 {
     // Remove the instance(s) of the writer from the array of factories
-    for (auto it = s_writers.begin(); it != s_writers.end(); /* noop */)
-    {
-        if (it->create == &priv::createWriter<T>)
-            it = s_writers.erase(it);
-        else
-            ++it;
-    }
+    s_writers.erase(std::remove_if(s_writers.begin(),
+                                   s_writers.end(),
+                                   [](const WriterFactory& writerFactory)
+                                   { return writerFactory.create == &priv::createWriter<T>; }),
+                    s_writers.end());
 }
 
 } // namespace sf

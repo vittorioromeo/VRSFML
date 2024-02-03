@@ -16,26 +16,24 @@ endfunction()
 
 # This little macro lets you set any Xcode specific property
 macro(sfml_set_xcode_property TARGET XCODE_PROPERTY XCODE_VALUE)
-    set_property (TARGET ${TARGET} PROPERTY XCODE_ATTRIBUTE_${XCODE_PROPERTY} ${XCODE_VALUE})
+    set_property(TARGET ${TARGET} PROPERTY XCODE_ATTRIBUTE_${XCODE_PROPERTY} ${XCODE_VALUE})
 endmacro()
 
 # set the appropriate standard library on each platform for the given target
 # example: sfml_set_stdlib(sfml-system)
 function(sfml_set_stdlib target)
     # for gcc on Windows, apply the SFML_USE_STATIC_STD_LIBS option if it is enabled
-    if(SFML_OS_WINDOWS AND SFML_COMPILER_GCC)
-        if(SFML_USE_STATIC_STD_LIBS AND NOT SFML_COMPILER_GCC_TDM)
-            target_link_libraries(${target} PRIVATE "-static-libgcc" "-static-libstdc++")
-        elseif(NOT SFML_USE_STATIC_STD_LIBS AND SFML_COMPILER_GCC_TDM)
-            target_link_libraries(${target} PRIVATE "-shared-libgcc" "-shared-libstdc++")
-        endif()
-    endif()
-
-    if(SFML_OS_MACOSX)
-        if(${CMAKE_GENERATOR} MATCHES "Xcode")
-            sfml_set_xcode_property(${target} CLANG_CXX_LIBRARY "libc++")
-        elseif(NOT SFML_COMPILER_CLANG)
-            message(FATAL_ERROR "Clang is the only supported compiler on macOS")
+    if(SFML_OS_WINDOWS)
+        if(SFML_COMPILER_GCC)
+            if(SFML_USE_STATIC_STD_LIBS AND NOT SFML_COMPILER_GCC_TDM)
+                target_link_libraries(${target} PRIVATE "-static-libgcc" "-static-libstdc++")
+            elseif(NOT SFML_USE_STATIC_STD_LIBS AND SFML_COMPILER_GCC_TDM)
+                target_link_libraries(${target} PRIVATE "-shared-libgcc" "-shared-libstdc++")
+            endif()
+        elseif(SFML_COMPILER_MSVC)
+            if(SFML_USE_STATIC_STD_LIBS)
+                set_property(TARGET ${target} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+            endif()
         endif()
     endif()
 endfunction()
@@ -145,10 +143,6 @@ macro(sfml_add_library module)
         set_target_properties(${target} PROPERTIES RELEASE_POSTFIX -s)
         set_target_properties(${target} PROPERTIES MINSIZEREL_POSTFIX -s)
         set_target_properties(${target} PROPERTIES RELWITHDEBINFO_POSTFIX -s)
-
-        if(SFML_USE_STATIC_STD_LIBS)
-            set_property(TARGET ${target} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-        endif()
     endif()
 
     # set the version and soversion of the target (for compatible systems -- mostly Linuxes)
@@ -196,7 +190,7 @@ macro(sfml_add_library module)
     endif()
 
     # build frameworks or dylibs
-    if((SFML_OS_MACOSX OR SFML_OS_IOS) AND BUILD_SHARED_LIBS AND NOT THIS_STATIC)
+    if((SFML_OS_MACOS OR SFML_OS_IOS) AND BUILD_SHARED_LIBS AND NOT THIS_STATIC)
         if(SFML_BUILD_FRAMEWORKS)
             # adapt target to build frameworks instead of dylibs
             set_target_properties(${target} PROPERTIES
@@ -221,16 +215,10 @@ macro(sfml_add_library module)
         sfml_set_common_ios_properties(${target})
     endif()
 
-    # sfml-activity library is our bootstrap activity and must not depend on stlport_shared
-    # (otherwise Android will fail to load it)
     if(SFML_OS_ANDROID)
-        if(${target} MATCHES "sfml-activity")
-            set_target_properties(${target} PROPERTIES COMPILE_FLAGS -fpermissive)
-            set_target_properties(${target} PROPERTIES LINK_FLAGS "-landroid -llog")
-            set(CMAKE_CXX_CREATE_SHARED_LIBRARY ${CMAKE_CXX_CREATE_SHARED_LIBRARY_WITHOUT_STL})
-        else()
-            set(CMAKE_CXX_CREATE_SHARED_LIBRARY ${CMAKE_CXX_CREATE_SHARED_LIBRARY_WITH_STL})
-        endif()
+        # Always use position-independent code on Android, even when linking statically.
+        # This is needed because all c++ code is placed in a shared library on Android.
+        set_target_properties(${target} PROPERTIES POSITION_INDEPENDENT_CODE ON)
     endif()
 
     # add the install rule
@@ -300,10 +288,6 @@ macro(sfml_add_example target)
         add_executable(${target} ${target_input})
     endif()
 
-    if(SFML_USE_STATIC_STD_LIBS)
-        set_property(TARGET ${target} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-    endif()
-
     # enable precompiled headers
     if (SFML_ENABLE_PCH)
         message(VERBOSE "enabling PCH for SFML example '${target}'")
@@ -360,6 +344,12 @@ function(sfml_add_test target SOURCES DEPENDS)
     # set the target's folder (for IDEs that support it, e.g. Visual Studio)
     set_target_properties(${target} PROPERTIES FOLDER "Tests")
 
+    # set the target flags to use the appropriate C++ standard library
+    sfml_set_stdlib(${target})
+
+    # set the Visual Studio startup path for debugging
+    set_target_properties(${target} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
     # link the target to its SFML dependencies
     target_link_libraries(${target} PRIVATE ${DEPENDS} sfml-test-main)
 
@@ -379,39 +369,7 @@ function(sfml_add_test target SOURCES DEPENDS)
     endif()
 
     # Add the test
-    doctest_discover_tests(${target})
-endfunction()
-
-# Find the requested package and make an INTERFACE library from it
-# The created INTERFACE library is tagged for export to be part of the generated SFMLConfig
-# Usage: sfml_find_package(wanted_target_name
-#                          [INCLUDE "OPENGL_INCLUDE_DIR"]
-#                          [LINK "OPENGL_gl_LIBRARY"])
-function(sfml_find_package)
-    list(GET ARGN 0 target)
-    list(REMOVE_AT ARGN 0)
-
-    if(TARGET ${target})
-        message(FATAL_ERROR "Target '${target}' is already defined")
-    endif()
-
-    cmake_parse_arguments(THIS "" "" "INCLUDE;LINK" ${ARGN})
-    if(THIS_UNPARSED_ARGUMENTS)
-        message(FATAL_ERROR "Unknown arguments when calling sfml_find_package: ${THIS_UNPARSED_ARGUMENTS}")
-    endif()
-
-    find_package(${target} REQUIRED)
-    add_library(${target} INTERFACE)
-
-    foreach(include_dir IN LISTS THIS_INCLUDE)
-        target_include_directories(${target} SYSTEM INTERFACE "$<BUILD_INTERFACE:${${include_dir}}>")
-    endforeach()
-
-    foreach(link_item IN LISTS THIS_LINK)
-        target_link_libraries(${target} INTERFACE "$<BUILD_INTERFACE:${${link_item}}>")
-    endforeach()
-
-    install(TARGETS ${target} EXPORT SFMLConfigExport)
+    catch_discover_tests(${target} WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
 endfunction()
 
 # Generate a SFMLConfig.cmake file (and associated files) from the targets registered against
@@ -432,9 +390,6 @@ function(sfml_export_targets)
     endif()
     set(targets_config_filename "SFML${config_name}Targets.cmake")
 
-    export(EXPORT SFMLConfigExport
-           FILE "${CMAKE_CURRENT_BINARY_DIR}/${targets_config_filename}")
-
     if(SFML_BUILD_FRAMEWORKS)
         set(config_package_location "SFML.framework/Resources/CMake")
     else()
@@ -444,7 +399,6 @@ function(sfml_export_targets)
         INSTALL_DESTINATION "${config_package_location}")
     configure_package_config_file("${CURRENT_DIR}/SFMLConfigDependencies.cmake.in" "${CMAKE_CURRENT_BINARY_DIR}/SFMLConfigDependencies.cmake"
         INSTALL_DESTINATION "${config_package_location}")
-
 
     install(EXPORT SFMLConfigExport
             FILE ${targets_config_filename}

@@ -1,4 +1,3 @@
-
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -56,7 +55,7 @@ int main()
     // Get the buffer containing the captured data
     const sf::SoundBuffer& buffer = recorder.getBuffer();
 
-    // Display captured sound informations
+    // Display captured sound information
     std::cout << "Sound information:" << '\n'
               << " " << buffer.getDuration().asSeconds() << " seconds" << '\n'
               << " " << buffer.getSampleRate() << " samples / seconds" << '\n'

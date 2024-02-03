@@ -1,4 +1,3 @@
-
 # include the SFML specific macros
 include(${PROJECT_SOURCE_DIR}/cmake/Macros.cmake)
 
@@ -20,9 +19,9 @@ if(SFML_OS_WINDOWS)
             list(APPEND CMAKE_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/extlibs/libs-msvc-universal/x64")
         endif()
     endif()
-elseif(SFML_OS_MACOSX)
+elseif(SFML_OS_MACOS)
     list(APPEND CMAKE_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/extlibs/headers")
-    list(APPEND CMAKE_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/extlibs/libs-osx/lib/")
+    list(APPEND CMAKE_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/extlibs/libs-macos/Frameworks/")
 elseif(SFML_OS_IOS)
     list(APPEND CMAKE_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/extlibs/headers")
     list(APPEND CMAKE_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/extlibs/libs-ios/")
@@ -32,7 +31,7 @@ elseif(SFML_OS_ANDROID)
 endif()
 
 # define the path of our additional CMake modules
-set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Modules/")
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Modules/")
 
 # set the output directory for SFML libraries
 set(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/lib")
@@ -42,7 +41,7 @@ set(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/lib")
 # sfml-system
 add_subdirectory(System)
 
-# sfml-main and sfml-activity
+# sfml-main
 if(SFML_OS_WINDOWS OR SFML_OS_ANDROID OR SFML_OS_IOS)
     add_subdirectory(Main)
 endif()

@@ -2,126 +2,135 @@
 
 #include <SFML/System/Vector2.hpp>
 
-#include <doctest/doctest.h>
+#include <catch2/catch_template_test_macros.hpp>
 
 #include <GraphicsUtil.hpp>
 #include <type_traits>
 
-static_assert(std::is_copy_constructible_v<sf::IntRect>);
-static_assert(std::is_copy_assignable_v<sf::IntRect>);
-static_assert(std::is_nothrow_move_constructible_v<sf::IntRect>);
-static_assert(std::is_nothrow_move_assignable_v<sf::IntRect>);
-
-TEST_CASE("[Graphics] sf::Rect")
+TEMPLATE_TEST_CASE("[Graphics] sf::Rect", "", int, float)
 {
-    SUBCASE("Construction")
+    SECTION("Type traits")
     {
-        SUBCASE("Default constructor")
+        STATIC_CHECK(std::is_copy_constructible_v<sf::Rect<TestType>>);
+        STATIC_CHECK(std::is_copy_assignable_v<sf::Rect<TestType>>);
+        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Rect<TestType>>);
+        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Rect<TestType>>);
+    }
+
+    SECTION("Construction")
+    {
+        SECTION("Default constructor")
         {
-            sf::IntRect rectangle;
-            CHECK(rectangle.left == 0);
-            CHECK(rectangle.top == 0);
-            CHECK(rectangle.width == 0);
-            CHECK(rectangle.height == 0);
+            constexpr sf::Rect<TestType> rectangle;
+            STATIC_CHECK(rectangle.left == 0);
+            STATIC_CHECK(rectangle.top == 0);
+            STATIC_CHECK(rectangle.width == 0);
+            STATIC_CHECK(rectangle.height == 0);
         }
 
-        SUBCASE("(left, top, width, height) constructor")
+        SECTION("(left, top, width, height) constructor")
         {
-            sf::IntRect rectangle({1, 2}, {3, 4});
-            CHECK(rectangle.left == 1);
-            CHECK(rectangle.top == 2);
-            CHECK(rectangle.width == 3);
-            CHECK(rectangle.height == 4);
+            constexpr sf::Rect<TestType> rectangle({1, 2}, {3, 4});
+            STATIC_CHECK(rectangle.left == 1);
+            STATIC_CHECK(rectangle.top == 2);
+            STATIC_CHECK(rectangle.width == 3);
+            STATIC_CHECK(rectangle.height == 4);
         }
 
-        SUBCASE("(Vector2, Vector2) constructor")
+        SECTION("(Vector2, Vector2) constructor")
         {
-            sf::Vector2i position(1, 2);
-            sf::Vector2i dimension(3, 4);
-            sf::IntRect  rectangle(position, dimension);
+            constexpr sf::Vector2<TestType> position(1, 2);
+            constexpr sf::Vector2<TestType> dimension(3, 4);
+            constexpr sf::Rect<TestType>    rectangle(position, dimension);
 
-            CHECK(rectangle.left == 1);
-            CHECK(rectangle.top == 2);
-            CHECK(rectangle.width == 3);
-            CHECK(rectangle.height == 4);
+            STATIC_CHECK(rectangle.left == 1);
+            STATIC_CHECK(rectangle.top == 2);
+            STATIC_CHECK(rectangle.width == 3);
+            STATIC_CHECK(rectangle.height == 4);
         }
 
-        SUBCASE("Conversion constructor")
+        SECTION("Conversion constructor")
         {
-            sf::FloatRect sourceRectangle({1.0f, 2.0f}, {3.0f, 4.0f});
-            sf::IntRect   rectangle(sourceRectangle);
+            constexpr sf::FloatRect sourceRectangle({1.0f, 2.0f}, {3.0f, 4.0f});
+            constexpr sf::IntRect   rectangle(sourceRectangle);
 
-            CHECK(rectangle.left == static_cast<int>(sourceRectangle.left));
-            CHECK(rectangle.top == static_cast<int>(sourceRectangle.top));
-            CHECK(rectangle.width == static_cast<int>(sourceRectangle.width));
-            CHECK(rectangle.height == static_cast<int>(sourceRectangle.height));
+            STATIC_CHECK(rectangle.left == static_cast<int>(sourceRectangle.left));
+            STATIC_CHECK(rectangle.top == static_cast<int>(sourceRectangle.top));
+            STATIC_CHECK(rectangle.width == static_cast<int>(sourceRectangle.width));
+            STATIC_CHECK(rectangle.height == static_cast<int>(sourceRectangle.height));
         }
     }
 
-    SUBCASE("contains(Vector2)")
+    SECTION("contains(Vector2)")
     {
-        sf::IntRect rectangle({0, 0}, {10, 10});
+        constexpr sf::Rect<TestType> rectangle({0, 0}, {10, 10});
 
-        CHECK(rectangle.contains(sf::Vector2i(0, 0)) == true);
-        CHECK(rectangle.contains(sf::Vector2i(9, 0)) == true);
-        CHECK(rectangle.contains(sf::Vector2i(0, 9)) == true);
-        CHECK(rectangle.contains(sf::Vector2i(9, 9)) == true);
-        CHECK(rectangle.contains(sf::Vector2i(9, 10)) == false);
-        CHECK(rectangle.contains(sf::Vector2i(10, 9)) == false);
-        CHECK(rectangle.contains(sf::Vector2i(10, 10)) == false);
-        CHECK(rectangle.contains(sf::Vector2i(15, 15)) == false);
+        STATIC_CHECK(rectangle.contains(sf::Vector2<TestType>(0, 0)) == true);
+        STATIC_CHECK(rectangle.contains(sf::Vector2<TestType>(9, 0)) == true);
+        STATIC_CHECK(rectangle.contains(sf::Vector2<TestType>(0, 9)) == true);
+        STATIC_CHECK(rectangle.contains(sf::Vector2<TestType>(9, 9)) == true);
+        STATIC_CHECK(rectangle.contains(sf::Vector2<TestType>(9, 10)) == false);
+        STATIC_CHECK(rectangle.contains(sf::Vector2<TestType>(10, 9)) == false);
+        STATIC_CHECK(rectangle.contains(sf::Vector2<TestType>(10, 10)) == false);
+        STATIC_CHECK(rectangle.contains(sf::Vector2<TestType>(15, 15)) == false);
     }
 
-    SUBCASE("findIntersection()")
+    SECTION("findIntersection()")
     {
-        const sf::IntRect rectangle({0, 0}, {10, 10});
-        const sf::IntRect intersectingRectangle({5, 5}, {10, 10});
+        constexpr sf::Rect<TestType> rectangle({0, 0}, {10, 10});
+        constexpr sf::Rect<TestType> intersectingRectangle({5, 5}, {10, 10});
 
-        const auto intersectionResult = rectangle.findIntersection(intersectingRectangle);
-        REQUIRE(intersectionResult.has_value());
-        CHECK(intersectionResult->top == 5);
-        CHECK(intersectionResult->left == 5);
-        CHECK(intersectionResult->width == 5);
-        CHECK(intersectionResult->height == 5);
+        constexpr auto intersectionResult = rectangle.findIntersection(intersectingRectangle);
+        STATIC_REQUIRE(intersectionResult.has_value());
+        STATIC_CHECK(intersectionResult->top == 5);
+        STATIC_CHECK(intersectionResult->left == 5);
+        STATIC_CHECK(intersectionResult->width == 5);
+        STATIC_CHECK(intersectionResult->height == 5);
 
-        const sf::IntRect nonIntersectingRectangle({-5, -5}, {5, 5});
-        CHECK_FALSE(rectangle.findIntersection(nonIntersectingRectangle).has_value());
+        constexpr sf::Rect<TestType> nonIntersectingRectangle({-5, -5}, {5, 5});
+        STATIC_CHECK_FALSE(rectangle.findIntersection(nonIntersectingRectangle).has_value());
     }
 
-    SUBCASE("getPosition()")
+    SECTION("getPosition()")
     {
-        CHECK(sf::IntRect({}, {}).getPosition() == sf::Vector2i());
-        CHECK(sf::IntRect({1, 2}, {3, 4}).getPosition() == sf::Vector2i(1, 2));
+        STATIC_CHECK(sf::Rect<TestType>({}, {}).getPosition() == sf::Vector2<TestType>());
+        STATIC_CHECK(sf::Rect<TestType>({1, 2}, {3, 4}).getPosition() == sf::Vector2<TestType>(1, 2));
     }
 
-    SUBCASE("getSize()")
+    SECTION("getSize()")
     {
-        CHECK(sf::IntRect({}, {}).getSize() == sf::Vector2i());
-        CHECK(sf::IntRect({1, 2}, {3, 4}).getSize() == sf::Vector2i(3, 4));
+        STATIC_CHECK(sf::Rect<TestType>({}, {}).getSize() == sf::Vector2<TestType>());
+        STATIC_CHECK(sf::Rect<TestType>({1, 2}, {3, 4}).getSize() == sf::Vector2<TestType>(3, 4));
     }
 
-    SUBCASE("Operators")
+    SECTION("getCenter()")
     {
-        SUBCASE("operator==")
+        STATIC_CHECK(sf::Rect<TestType>({}, {}).getCenter() == sf::Vector2<TestType>());
+        STATIC_CHECK(sf::Rect<TestType>({1, 2}, {4, 6}).getCenter() == sf::Vector2<TestType>(3, 5));
+    }
+
+    SECTION("Operators")
+    {
+        SECTION("operator==")
         {
-            CHECK(sf::IntRect() == sf::IntRect());
-            CHECK(sf::IntRect({1, 3}, {2, 5}) == sf::IntRect({1, 3}, {2, 5}));
+            STATIC_CHECK(sf::Rect<TestType>() == sf::Rect<TestType>());
+            STATIC_CHECK(sf::Rect<TestType>({1, 3}, {2, 5}) == sf::Rect<TestType>({1, 3}, {2, 5}));
 
-            CHECK_FALSE(sf::IntRect({1, 0}, {0, 0}) == sf::IntRect({0, 0}, {0, 0}));
-            CHECK_FALSE(sf::IntRect({0, 1}, {0, 0}) == sf::IntRect({0, 0}, {0, 0}));
-            CHECK_FALSE(sf::IntRect({0, 0}, {1, 0}) == sf::IntRect({0, 0}, {0, 0}));
-            CHECK_FALSE(sf::IntRect({0, 0}, {0, 1}) == sf::IntRect({0, 0}, {0, 0}));
+            STATIC_CHECK_FALSE(sf::Rect<TestType>({1, 0}, {0, 0}) == sf::Rect<TestType>({0, 0}, {0, 0}));
+            STATIC_CHECK_FALSE(sf::Rect<TestType>({0, 1}, {0, 0}) == sf::Rect<TestType>({0, 0}, {0, 0}));
+            STATIC_CHECK_FALSE(sf::Rect<TestType>({0, 0}, {1, 0}) == sf::Rect<TestType>({0, 0}, {0, 0}));
+            STATIC_CHECK_FALSE(sf::Rect<TestType>({0, 0}, {0, 1}) == sf::Rect<TestType>({0, 0}, {0, 0}));
         }
 
-        SUBCASE("operator!=")
+        SECTION("operator!=")
         {
-            CHECK(sf::IntRect({1, 0}, {0, 0}) != sf::IntRect({0, 0}, {0, 0}));
-            CHECK(sf::IntRect({0, 1}, {0, 0}) != sf::IntRect({0, 0}, {0, 0}));
-            CHECK(sf::IntRect({0, 0}, {1, 0}) != sf::IntRect({0, 0}, {0, 0}));
-            CHECK(sf::IntRect({0, 0}, {0, 1}) != sf::IntRect({0, 0}, {0, 0}));
+            STATIC_CHECK(sf::Rect<TestType>({1, 0}, {0, 0}) != sf::Rect<TestType>({0, 0}, {0, 0}));
+            STATIC_CHECK(sf::Rect<TestType>({0, 1}, {0, 0}) != sf::Rect<TestType>({0, 0}, {0, 0}));
+            STATIC_CHECK(sf::Rect<TestType>({0, 0}, {1, 0}) != sf::Rect<TestType>({0, 0}, {0, 0}));
+            STATIC_CHECK(sf::Rect<TestType>({0, 0}, {0, 1}) != sf::Rect<TestType>({0, 0}, {0, 0}));
 
-            CHECK_FALSE(sf::IntRect() != sf::IntRect());
-            CHECK_FALSE(sf::IntRect({1, 3}, {2, 5}) != sf::IntRect({1, 3}, {2, 5}));
+            STATIC_CHECK_FALSE(sf::Rect<TestType>() != sf::Rect<TestType>());
+            STATIC_CHECK_FALSE(sf::Rect<TestType>({1, 3}, {2, 5}) != sf::Rect<TestType>({1, 3}, {2, 5}));
         }
     }
 }

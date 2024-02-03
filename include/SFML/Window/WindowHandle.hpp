@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -49,7 +49,7 @@ using WindowHandle = unsigned long;
 
 #elif defined(SFML_SYSTEM_MACOS)
 
-// Window handle is NSWindow or NSView (void*) on Mac OS X - Cocoa
+// Window handle is NSWindow or NSView (void*) on macOS - Cocoa
 using WindowHandle = void*;
 
 #elif defined(SFML_SYSTEM_IOS)
@@ -83,16 +83,16 @@ using WindowHandle = "platform-specific";
 /// ----------------|------------------------------------------------------------
 /// Windows         | \p HWND
 /// Linux/FreeBSD   | \p %Window
-/// Mac OS X        | either \p NSWindow* or \p NSView*, disguised as \p void*
+/// macOS           | either \p NSWindow* or \p NSView*, disguised as \p void*
 /// iOS             | \p UIWindow*
 /// Android         | \p ANativeWindow*
 ///
-/// \par Mac OS X Specification
+/// \par macOS Specification
 ///
-/// On Mac OS X, a sf::Window can be created either from an
+/// On macOS, a sf::Window can be created either from an
 /// existing \p NSWindow* or an \p NSView*. When the window
 /// is created from a window, SFML will use its content view
-/// as the OpenGL area. sf::Window::getSystemHandle() will
+/// as the OpenGL area. sf::Window::getNativeHandle() will
 /// return the handle that was used to create the window,
 /// which is a \p NSWindow* by default.
 ///

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -33,6 +33,7 @@
 #include <vector>
 
 #include <cstddef>
+#include <cstdint>
 
 
 namespace sf
@@ -55,37 +56,37 @@ public:
     /// Creates an empty packet.
     ///
     ////////////////////////////////////////////////////////////
-    Packet();
+    Packet() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Virtual destructor
     ///
     ////////////////////////////////////////////////////////////
-    virtual ~Packet();
+    virtual ~Packet() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy constructor
     ///
     ////////////////////////////////////////////////////////////
-    Packet(const Packet&);
+    Packet(const Packet&) = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy assignment
     ///
     ////////////////////////////////////////////////////////////
-    Packet& operator=(const Packet&);
+    Packet& operator=(const Packet&) = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    Packet(Packet&&) noexcept;
+    Packet(Packet&&) noexcept = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment
     ///
     ////////////////////////////////////////////////////////////
-    Packet& operator=(Packet&&) noexcept;
+    Packet& operator=(Packet&&) noexcept = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Append data to the end of the packet
@@ -410,13 +411,6 @@ protected:
 
 private:
     ////////////////////////////////////////////////////////////
-    /// Disallow comparisons between packets
-    ///
-    ////////////////////////////////////////////////////////////
-    bool operator==(const Packet& right) const;
-    bool operator!=(const Packet& right) const;
-
-    ////////////////////////////////////////////////////////////
     /// \brief Check if the packet can extract a given number of bytes
     ///
     /// This function updates accordingly the state of the packet.
@@ -431,10 +425,10 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::vector<char> m_data;          //!< Data stored in the packet
-    std::size_t       m_readPos{};     //!< Current reading position in the packet
-    std::size_t       m_sendPos{};     //!< Current send position in the packet (for handling partial sends)
-    bool              m_isValid{true}; //!< Reading state of the packet
+    std::vector<std::byte> m_data;          //!< Data stored in the packet
+    std::size_t            m_readPos{};     //!< Current reading position in the packet
+    std::size_t            m_sendPos{};     //!< Current send position in the packet (for handling partial sends)
+    bool                   m_isValid{true}; //!< Reading state of the packet
 };
 
 } // namespace sf

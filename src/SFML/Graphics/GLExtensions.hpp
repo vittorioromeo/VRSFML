@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -106,11 +106,13 @@
 #define GLEXT_GL_FRAMEBUFFER                   GL_FRAMEBUFFER_OES
 #define GLEXT_GL_RENDERBUFFER                  GL_RENDERBUFFER_OES
 #define GLEXT_GL_DEPTH_COMPONENT               GL_DEPTH_COMPONENT16_OES
+#define GLEXT_GL_STENCIL_INDEX8                GL_STENCIL_INDEX8
 #define GLEXT_GL_COLOR_ATTACHMENT0             GL_COLOR_ATTACHMENT0_OES
 #define GLEXT_GL_DEPTH_ATTACHMENT              GL_DEPTH_ATTACHMENT_OES
 #define GLEXT_GL_FRAMEBUFFER_COMPLETE          GL_FRAMEBUFFER_COMPLETE_OES
 #define GLEXT_GL_FRAMEBUFFER_BINDING           GL_FRAMEBUFFER_BINDING_OES
 #define GLEXT_GL_INVALID_FRAMEBUFFER_OPERATION GL_INVALID_FRAMEBUFFER_OPERATION_OES
+#define GLEXT_GL_STENCIL_ATTACHMENT            GL_STENCIL_ATTACHMENT_OES
 
 // Core since 3.0
 #define GLEXT_packed_depth_stencil SF_GLAD_GL_OES_packed_depth_stencil
@@ -277,6 +279,7 @@
 #define GLEXT_glGenerateMipmap                    glGenerateMipmapEXT
 #define GLEXT_GL_FRAMEBUFFER                      GL_FRAMEBUFFER_EXT
 #define GLEXT_GL_RENDERBUFFER                     GL_RENDERBUFFER_EXT
+#define GLEXT_GL_STENCIL_INDEX8                   GL_STENCIL_INDEX8_EXT
 #define GLEXT_GL_COLOR_ATTACHMENT0                GL_COLOR_ATTACHMENT0_EXT
 #define GLEXT_GL_DEPTH_ATTACHMENT                 GL_DEPTH_ATTACHMENT_EXT
 #define GLEXT_GL_FRAMEBUFFER_COMPLETE             GL_FRAMEBUFFER_COMPLETE_EXT

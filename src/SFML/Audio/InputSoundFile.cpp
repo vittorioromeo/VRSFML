@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -64,10 +64,6 @@ void InputSoundFile::StreamDeleter::operator()(InputStream* ptr) const
 
 
 ////////////////////////////////////////////////////////////
-InputSoundFile::InputSoundFile() = default;
-
-
-////////////////////////////////////////////////////////////
 bool InputSoundFile::openFromFile(const std::filesystem::path& filename)
 {
     // If the file is already open, first close it
@@ -86,8 +82,8 @@ bool InputSoundFile::openFromFile(const std::filesystem::path& filename)
         return false;
 
     // Pass the stream to the reader
-    SoundFileReader::Info info;
-    if (!reader->open(*file, info))
+    const auto info = reader->open(*file);
+    if (!info)
         return false;
 
     // Take ownership of successfully opened reader and stream
@@ -95,9 +91,9 @@ bool InputSoundFile::openFromFile(const std::filesystem::path& filename)
     m_stream = std::move(file);
 
     // Retrieve the attributes of the open sound file
-    m_sampleCount  = info.sampleCount;
-    m_channelCount = info.channelCount;
-    m_sampleRate   = info.sampleRate;
+    m_sampleCount  = info->sampleCount;
+    m_channelCount = info->channelCount;
+    m_sampleRate   = info->sampleRate;
 
     return true;
 }
@@ -121,8 +117,8 @@ bool InputSoundFile::openFromMemory(const void* data, std::size_t sizeInBytes)
     memory->open(data, sizeInBytes);
 
     // Pass the stream to the reader
-    SoundFileReader::Info info;
-    if (!reader->open(*memory, info))
+    const auto info = reader->open(*memory);
+    if (!info)
         return false;
 
     // Take ownership of successfully opened reader and stream
@@ -130,9 +126,9 @@ bool InputSoundFile::openFromMemory(const void* data, std::size_t sizeInBytes)
     m_stream = std::move(memory);
 
     // Retrieve the attributes of the open sound file
-    m_sampleCount  = info.sampleCount;
-    m_channelCount = info.channelCount;
-    m_sampleRate   = info.sampleRate;
+    m_sampleCount  = info->sampleCount;
+    m_channelCount = info->channelCount;
+    m_sampleRate   = info->sampleRate;
 
     return true;
 }
@@ -157,8 +153,8 @@ bool InputSoundFile::openFromStream(InputStream& stream)
     }
 
     // Pass the stream to the reader
-    SoundFileReader::Info info;
-    if (!reader->open(stream, info))
+    const auto info = reader->open(stream);
+    if (!info)
         return false;
 
     // Take ownership of reader and store a reference to the stream without taking ownership
@@ -166,9 +162,9 @@ bool InputSoundFile::openFromStream(InputStream& stream)
     m_stream = sf::priv::UniquePtr<InputStream, StreamDeleter>{&stream, false};
 
     // Retrieve the attributes of the open sound file
-    m_sampleCount  = info.sampleCount;
-    m_channelCount = info.channelCount;
-    m_sampleRate   = info.sampleRate;
+    m_sampleCount  = info->sampleCount;
+    m_channelCount = info->channelCount;
+    m_sampleRate   = info->sampleRate;
 
     return true;
 }
@@ -260,17 +256,7 @@ std::uint64_t InputSoundFile::read(std::int16_t* samples, std::uint64_t maxCount
 ////////////////////////////////////////////////////////////
 void InputSoundFile::close()
 {
-    // Destroy the reader
-    m_reader.reset();
-
-    // Destroy the stream if we own it
-    m_stream.reset();
-
-    // Reset the sound file attributes
-    m_sampleOffset = 0;
-    m_sampleCount  = 0;
-    m_channelCount = 0;
-    m_sampleRate   = 0;
+    *this = {};
 }
 
 } // namespace sf

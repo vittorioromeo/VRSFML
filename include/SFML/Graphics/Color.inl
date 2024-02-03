@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -77,10 +77,10 @@ constexpr Color operator+(const Color& left, const Color& right)
         return static_cast<std::uint8_t>(intResult < 255 ? intResult : 255);
     };
 
-    return Color(clampedAdd(left.r, right.r),
-                 clampedAdd(left.g, right.g),
-                 clampedAdd(left.b, right.b),
-                 clampedAdd(left.a, right.a));
+    return {clampedAdd(left.r, right.r),
+            clampedAdd(left.g, right.g),
+            clampedAdd(left.b, right.b),
+            clampedAdd(left.a, right.a)};
 }
 
 
@@ -93,10 +93,10 @@ constexpr Color operator-(const Color& left, const Color& right)
         return static_cast<std::uint8_t>(intResult > 0 ? intResult : 0);
     };
 
-    return Color(clampedSub(left.r, right.r),
-                 clampedSub(left.g, right.g),
-                 clampedSub(left.b, right.b),
-                 clampedSub(left.a, right.a));
+    return {clampedSub(left.r, right.r),
+            clampedSub(left.g, right.g),
+            clampedSub(left.b, right.b),
+            clampedSub(left.a, right.a)};
 }
 
 
@@ -109,10 +109,7 @@ constexpr Color operator*(const Color& left, const Color& right)
         return static_cast<std::uint8_t>(uint16Result / 255u);
     };
 
-    return Color(scaledMul(left.r, right.r),
-                 scaledMul(left.g, right.g),
-                 scaledMul(left.b, right.b),
-                 scaledMul(left.a, right.a));
+    return {scaledMul(left.r, right.r), scaledMul(left.g, right.g), scaledMul(left.b, right.b), scaledMul(left.a, right.a)};
 }
 
 

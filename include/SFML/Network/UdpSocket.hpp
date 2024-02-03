@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -34,6 +34,8 @@
 
 #include <optional>
 #include <vector>
+
+#include <cstddef>
 
 
 namespace sf
@@ -196,7 +198,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::vector<char> m_buffer{std::vector<char>(MaxDatagramSize)}; //!< Temporary buffer holding the received data in Receive(Packet)
+    std::vector<std::byte> m_buffer{MaxDatagramSize}; //!< Temporary buffer holding the received data in Receive(Packet)
 };
 
 } // namespace sf
@@ -211,7 +213,7 @@ private:
 /// it can send to and receive from any host at any time.
 ///
 /// It is a datagram protocol: bounded blocks of data (datagrams)
-/// are transfered over the network rather than a continuous
+/// are transferred over the network rather than a continuous
 /// stream of data (TCP). Therefore, one call to send will always
 /// match one call to receive (if the datagram is not lost),
 /// with the same data that was sent.

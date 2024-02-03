@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -27,9 +27,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Joystick.hpp>
-#include <SFML/Window/JoystickImpl.hpp>
-
+#include <SFML/System/EnumArray.hpp>
 #include <SFML/System/Win32/WindowsHeader.hpp>
 
 #include <dinput.h>
@@ -215,15 +213,15 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    unsigned int          m_index;        //!< Index of the joystick
-    JOYCAPS               m_caps;         //!< Joystick capabilities
-    IDirectInputDevice8W* m_device;       //!< DirectInput 8.x device
-    DIDEVCAPS             m_deviceCaps;   //!< DirectInput device capabilities
-    int m_axes[Joystick::AxisCount];      //!< Offsets to the bytes containing the axes states, -1 if not available
-    int m_buttons[Joystick::ButtonCount]; //!< Offsets to the bytes containing the button states, -1 if not available
+    unsigned int                                        m_index{};      //!< Index of the joystick
+    JOYCAPS                                             m_caps{};       //!< Joystick capabilities
+    IDirectInputDevice8W*                               m_device{};     //!< DirectInput 8.x device
+    DIDEVCAPS                                           m_deviceCaps{}; //!< DirectInput device capabilities
+    EnumArray<Joystick::Axis, int, Joystick::AxisCount> m_axes{}; //!< Offsets to the bytes containing the axes states, -1 if not available
+    int m_buttons[Joystick::ButtonCount]{}; //!< Offsets to the bytes containing the button states, -1 if not available
     Joystick::Identification m_identification; //!< Joystick identification
     JoystickState            m_state;          //!< Buffered joystick state
-    bool                     m_buffered;       //!< true if the device uses buffering, false if the device uses polling
+    bool                     m_buffered{};     //!< true if the device uses buffering, false if the device uses polling
 };
 
 } // namespace sf::priv

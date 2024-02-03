@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -36,16 +36,12 @@ namespace sf
 // We cannot use the default constructor here, because it accesses BlendAlpha, which is also global (and dynamically
 // initialized). Initialization order of global objects in different translation units is not defined.
 const RenderStates RenderStates::Default(BlendMode(
-    BlendMode::SrcAlpha,
-    BlendMode::OneMinusSrcAlpha,
-    BlendMode::Add,
-    BlendMode::One,
-    BlendMode::OneMinusSrcAlpha,
-    BlendMode::Add));
-
-
-////////////////////////////////////////////////////////////
-RenderStates::RenderStates() = default;
+    BlendMode::Factor::SrcAlpha,
+    BlendMode::Factor::OneMinusSrcAlpha,
+    BlendMode::Equation::Add,
+    BlendMode::Factor::One,
+    BlendMode::Factor::OneMinusSrcAlpha,
+    BlendMode::Equation::Add));
 
 
 ////////////////////////////////////////////////////////////
@@ -56,6 +52,12 @@ RenderStates::RenderStates(const Transform& theTransform) : transform(theTransfo
 
 ////////////////////////////////////////////////////////////
 RenderStates::RenderStates(const BlendMode& theBlendMode) : blendMode(theBlendMode)
+{
+}
+
+
+////////////////////////////////////////////////////////////
+RenderStates::RenderStates(const StencilMode& theStencilMode) : stencilMode(theStencilMode)
 {
 }
 
@@ -73,12 +75,16 @@ RenderStates::RenderStates(const Shader* theShader) : shader(theShader)
 
 
 ////////////////////////////////////////////////////////////
-RenderStates::RenderStates(const BlendMode& theBlendMode,
-                           const Transform& theTransform,
-                           const Texture*   theTexture,
-                           const Shader*    theShader) :
+RenderStates::RenderStates(const BlendMode&   theBlendMode,
+                           const StencilMode& theStencilMode,
+                           const Transform&   theTransform,
+                           CoordinateType     theCoordinateType,
+                           const Texture*     theTexture,
+                           const Shader*      theShader) :
 blendMode(theBlendMode),
+stencilMode(theStencilMode),
 transform(theTransform),
+coordinateType(theCoordinateType),
 texture(theTexture),
 shader(theShader)
 {

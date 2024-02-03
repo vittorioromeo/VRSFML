@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -25,7 +25,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/WindowStyle.hpp>
+#include <SFML/Window/WindowEnums.hpp>
 #include <SFML/Window/iOS/SFAppDelegate.hpp>
 #include <SFML/Window/iOS/SFView.hpp>
 #include <SFML/Window/iOS/SFViewController.hpp>
@@ -47,12 +47,16 @@ WindowImplUIKit::WindowImplUIKit(WindowHandle /* handle */)
 
 
 ////////////////////////////////////////////////////////////
-WindowImplUIKit::WindowImplUIKit(VideoMode mode, const String& /* title */, unsigned long style, const ContextSettings& /* settings */)
+WindowImplUIKit::WindowImplUIKit(VideoMode mode,
+                                 const String& /* title */,
+                                 std::uint32_t style,
+                                 State         state,
+                                 const ContextSettings& /* settings */)
 {
     m_backingScale = static_cast<float>([SFAppDelegate getInstance].backingScaleFactor);
 
     // Apply the fullscreen flag
-    [UIApplication sharedApplication].statusBarHidden = !(style & Style::Titlebar) || (style & Style::Fullscreen);
+    [UIApplication sharedApplication].statusBarHidden = !(style & Style::Titlebar) || (state == State::Fullscreen);
 
     // Set the orientation according to the requested size
     if (mode.size.x > mode.size.y)
@@ -61,14 +65,14 @@ WindowImplUIKit::WindowImplUIKit(VideoMode mode, const String& /* title */, unsi
         [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationPortrait];
 
     // Create the window
-    CGRect frame = [UIScreen mainScreen].bounds; // Ignore user size, it wouldn't make sense to use something else
-    m_window     = [[UIWindow alloc] initWithFrame:frame];
-    m_hasFocus   = true;
+    const CGRect frame = [UIScreen mainScreen].bounds; // Ignore user size, it wouldn't make sense to use something else
+    m_window           = [[UIWindow alloc] initWithFrame:frame];
+    m_hasFocus         = true;
 
     // Assign it to the application delegate
     [SFAppDelegate getInstance].sfWindow = this;
 
-    CGRect viewRect = frame;
+    const CGRect viewRect = frame;
 
     // Create the view
     m_view = [[SFView alloc] initWithFrame:viewRect andContentScaleFactor:(static_cast<double>(m_backingScale))];
@@ -94,7 +98,7 @@ void WindowImplUIKit::processEvents()
 
 
 ////////////////////////////////////////////////////////////
-WindowHandle WindowImplUIKit::getSystemHandle() const
+WindowHandle WindowImplUIKit::getNativeHandle() const
 {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
@@ -108,9 +112,9 @@ WindowHandle WindowImplUIKit::getSystemHandle() const
 ////////////////////////////////////////////////////////////
 Vector2i WindowImplUIKit::getPosition() const
 {
-    CGPoint origin = m_window.frame.origin;
-    return Vector2i(static_cast<int>(origin.x * static_cast<double>(m_backingScale)),
-                    static_cast<int>(origin.y * static_cast<double>(m_backingScale)));
+    const CGPoint origin = m_window.frame.origin;
+    return {static_cast<int>(origin.x * static_cast<double>(m_backingScale)),
+            static_cast<int>(origin.y * static_cast<double>(m_backingScale))};
 }
 
 
@@ -123,16 +127,16 @@ void WindowImplUIKit::setPosition(const Vector2i& /* position */)
 ////////////////////////////////////////////////////////////
 Vector2u WindowImplUIKit::getSize() const
 {
-    CGRect physicalFrame = m_window.frame;
-    return Vector2u(static_cast<unsigned int>(physicalFrame.size.width * static_cast<double>(m_backingScale)),
-                    static_cast<unsigned int>(physicalFrame.size.height * static_cast<double>(m_backingScale)));
+    const CGRect physicalFrame = m_window.frame;
+    return {static_cast<unsigned int>(physicalFrame.size.width * static_cast<double>(m_backingScale)),
+            static_cast<unsigned int>(physicalFrame.size.height * static_cast<double>(m_backingScale))};
 }
 
 
 ////////////////////////////////////////////////////////////
 void WindowImplUIKit::setSize(const Vector2u& size)
 {
-    // @todo ...
+    // TODO ...
 
     // if these sizes are required one day, don't forget to scale them!
     // size.x /= m_backingScale;
@@ -143,6 +147,20 @@ void WindowImplUIKit::setSize(const Vector2u& size)
         [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationLandscapeLeft];
     else
         [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationPortrait];
+}
+
+
+////////////////////////////////////////////////////////////
+void WindowImplUIKit::setMinimumSize(const std::optional<Vector2u>& /* minimumSize */)
+{
+    // Not applicable
+}
+
+
+////////////////////////////////////////////////////////////
+void WindowImplUIKit::setMaximumSize(const std::optional<Vector2u>& /* maximumSize */)
+{
+    // Not applicable
 }
 
 

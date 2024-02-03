@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -86,7 +86,7 @@ struct VulkanLibraryWrapper
     {
         entryPoint = reinterpret_cast<T>(dlsym(library, name));
 
-        return (entryPoint != nullptr);
+        return entryPoint != nullptr;
     }
 
     void* library{};
@@ -198,14 +198,13 @@ bool VulkanImplX11::createVulkanSurface(const VkInstance&            instance,
 
     // Since the surface is basically attached to the window, the connection
     // to the X display will stay open even after we open and close it here
+    const auto                 display           = openDisplay();
     VkXlibSurfaceCreateInfoKHR surfaceCreateInfo = VkXlibSurfaceCreateInfoKHR();
     surfaceCreateInfo.sType                      = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
-    surfaceCreateInfo.dpy                        = openDisplay();
+    surfaceCreateInfo.dpy                        = display.get();
     surfaceCreateInfo.window                     = windowHandle;
 
-    bool result = (vkCreateXlibSurfaceKHR(instance, &surfaceCreateInfo, allocator, &surface) == VK_SUCCESS);
-
-    closeDisplay(surfaceCreateInfo.dpy);
+    const bool result = (vkCreateXlibSurfaceKHR(instance, &surfaceCreateInfo, allocator, &surface) == VK_SUCCESS);
 
     return result;
 }

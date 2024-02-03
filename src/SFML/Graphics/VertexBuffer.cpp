@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -48,9 +48,9 @@ GLenum usageToGlEnum(sf::VertexBuffer::Usage usage)
 {
     switch (usage)
     {
-        case sf::VertexBuffer::Static:
+        case sf::VertexBuffer::Usage::Static:
             return GLEXT_GL_STATIC_DRAW;
-        case sf::VertexBuffer::Dynamic:
+        case sf::VertexBuffer::Usage::Dynamic:
             return GLEXT_GL_DYNAMIC_DRAW;
         default:
             return GLEXT_GL_STREAM_DRAW;
@@ -62,10 +62,6 @@ GLenum usageToGlEnum(sf::VertexBuffer::Usage usage)
 
 namespace sf
 {
-////////////////////////////////////////////////////////////
-VertexBuffer::VertexBuffer() = default;
-
-
 ////////////////////////////////////////////////////////////
 VertexBuffer::VertexBuffer(PrimitiveType type) : m_primitiveType(type)
 {
@@ -85,7 +81,10 @@ VertexBuffer::VertexBuffer(PrimitiveType type, Usage usage) : m_primitiveType(ty
 
 
 ////////////////////////////////////////////////////////////
-VertexBuffer::VertexBuffer(const VertexBuffer& copy) : m_primitiveType(copy.m_primitiveType), m_usage(copy.m_usage)
+VertexBuffer::VertexBuffer(const VertexBuffer& copy) :
+GlResource(copy),
+m_primitiveType(copy.m_primitiveType),
+m_usage(copy.m_usage)
 {
     if (copy.m_buffer && copy.m_size)
     {
@@ -106,7 +105,7 @@ VertexBuffer::~VertexBuffer()
 {
     if (m_buffer)
     {
-        TransientContextLock contextLock;
+        const TransientContextLock contextLock;
 
         glCheck(GLEXT_glDeleteBuffers(1, &m_buffer));
     }
@@ -119,7 +118,7 @@ bool VertexBuffer::create(std::size_t vertexCount)
     if (!isAvailable())
         return false;
 
-    TransientContextLock contextLock;
+    const TransientContextLock contextLock;
 
     if (!m_buffer)
         glCheck(GLEXT_glGenBuffers(1, &m_buffer));
@@ -170,7 +169,7 @@ bool VertexBuffer::update(const Vertex* vertices, std::size_t vertexCount, unsig
     if (offset && (offset + vertexCount > m_size))
         return false;
 
-    TransientContextLock contextLock;
+    const TransientContextLock contextLock;
 
     glCheck(GLEXT_glBindBuffer(GLEXT_GL_ARRAY_BUFFER, m_buffer));
 
@@ -208,7 +207,7 @@ bool VertexBuffer::update([[maybe_unused]] const VertexBuffer& vertexBuffer)
     if (!m_buffer || !vertexBuffer.m_buffer)
         return false;
 
-    TransientContextLock contextLock;
+    const TransientContextLock contextLock;
 
     // Make sure that extensions are initialized
     sf::priv::ensureExtensionsInit();
@@ -296,7 +295,7 @@ void VertexBuffer::bind(const VertexBuffer* vertexBuffer)
     if (!isAvailable())
         return;
 
-    TransientContextLock lock;
+    const TransientContextLock lock;
 
     glCheck(GLEXT_glBindBuffer(GLEXT_GL_ARRAY_BUFFER, vertexBuffer ? vertexBuffer->m_buffer : 0));
 }
@@ -335,7 +334,7 @@ bool VertexBuffer::isAvailable()
 {
     static const bool available = []() -> bool
     {
-        TransientContextLock contextLock;
+        const TransientContextLock contextLock;
 
         // Make sure that extensions are initialized
         sf::priv::ensureExtensionsInit();

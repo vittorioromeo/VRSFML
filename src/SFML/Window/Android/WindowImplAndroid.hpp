@@ -58,17 +58,18 @@ public:
     ///
     /// \param mode     Video mode to use
     /// \param title    Title of the window
-    /// \param style    Window style (resizable, fixed, or fullscren)
+    /// \param style    Window style
+    /// \param state    Window state
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    WindowImplAndroid(VideoMode mode, const String& title, unsigned long style, const ContextSettings& settings);
+    WindowImplAndroid(VideoMode mode, const String& title, std::uint32_t style, State state, const ContextSettings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    ~WindowImplAndroid();
+    ~WindowImplAndroid() override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the OS-specific handle of the window
@@ -76,7 +77,7 @@ public:
     /// \return Handle of the window
     ///
     ////////////////////////////////////////////////////////////
-    WindowHandle getSystemHandle() const override;
+    WindowHandle getNativeHandle() const override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the position of the window
@@ -109,6 +110,26 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void setSize(const Vector2u& size) override;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Set the minimum window rendering region size
+    ///
+    /// Pass std::nullopt to unset the minimum size
+    ///
+    /// \param minimumSize New minimum size, in pixels
+    ///
+    ////////////////////////////////////////////////////////////
+    void setMinimumSize(const std::optional<Vector2u>& minimumSize) override;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Set the maximum window rendering region size
+    ///
+    /// Pass std::nullopt to unset the maximum size
+    ///
+    /// \param maximumSize New maximum size, in pixels
+    ///
+    ////////////////////////////////////////////////////////////
+    void setMaximumSize(const std::optional<Vector2u>& maximumSize) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the title of the window
@@ -205,9 +226,9 @@ private:
     ////////////////////////////////////////////////////////////
     static int processEvent(int fd, int events, void* data);
 
-    static int processScrollEvent(AInputEvent* _event, ActivityStates& states);
-    static int processKeyEvent(AInputEvent* _event, ActivityStates& states);
-    static int processMotionEvent(AInputEvent* _event, ActivityStates& states);
+    static int processScrollEvent(AInputEvent* inputEvent, ActivityStates& states);
+    static int processKeyEvent(AInputEvent* inputEvent, ActivityStates& states);
+    static int processMotionEvent(AInputEvent* inputEvent, ActivityStates& states);
     static int processPointerEvent(bool isDown, AInputEvent* event, ActivityStates& states);
 
     ////////////////////////////////////////////////////////////

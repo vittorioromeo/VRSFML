@@ -1,4 +1,3 @@
-
 set(INCROOT ${PROJECT_SOURCE_DIR}/include/SFML/Graphics)
 set(SRCROOT ${PROJECT_SOURCE_DIR}/src/SFML/Graphics)
 
@@ -8,6 +7,7 @@ set(SRC
     ${INCROOT}/BlendMode.hpp
     ${INCROOT}/Color.hpp
     ${INCROOT}/Color.inl
+    ${INCROOT}/CoordinateType.hpp
     ${INCROOT}/Export.hpp
     ${SRCROOT}/Font.cpp
     ${INCROOT}/Font.hpp
@@ -21,8 +21,6 @@ set(SRC
     ${SRCROOT}/GLExtensions.cpp
     ${SRCROOT}/Image.cpp
     ${INCROOT}/Image.hpp
-    ${SRCROOT}/ImageLoader.cpp
-    ${SRCROOT}/ImageLoader.hpp
     ${INCROOT}/PrimitiveType.hpp
     ${SRCROOT}/Rect.cpp
     ${INCROOT}/Rect.hpp
@@ -37,6 +35,8 @@ set(SRC
     ${INCROOT}/RenderWindow.hpp
     ${SRCROOT}/Shader.cpp
     ${INCROOT}/Shader.hpp
+    ${SRCROOT}/StencilMode.cpp
+    ${INCROOT}/StencilMode.hpp
     ${SRCROOT}/Texture.cpp
     ${INCROOT}/Texture.hpp
     ${SRCROOT}/TextureSaver.cpp
@@ -88,7 +88,7 @@ source_group("render texture" FILES ${RENDER_TEXTURE_SRC})
 
 # define the sfml-graphics target
 sfml_add_library(Graphics
-                 SOURCES ${SRC} ${DRAWABLES_SRC} ${RENDER_TEXTURE_SRC} ${STB_SRC})
+                 SOURCES ${SRC} ${DRAWABLES_SRC} ${RENDER_TEXTURE_SRC})
 
 # setup dependencies
 target_link_libraries(sfml-graphics PUBLIC SFML::Window)
@@ -102,9 +102,9 @@ target_include_directories(sfml-graphics SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/e
 # let CMake know about our additional graphics libraries paths
 if(SFML_OS_WINDOWS)
     list(APPEND CMAKE_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/extlibs/headers/freetype2")
-elseif(SFML_OS_MACOSX)
+elseif(SFML_OS_MACOS)
     list(APPEND CMAKE_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/extlibs/headers/freetype2")
-    list(APPEND CMAKE_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/extlibs/libs-osx/Frameworks")
+    list(APPEND CMAKE_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/extlibs/libs-macos/Frameworks")
 elseif(SFML_OS_IOS)
     list(APPEND CMAKE_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/extlibs/headers/freetype2")
 elseif(SFML_OS_ANDROID)
@@ -118,14 +118,8 @@ elseif(SFML_OS_IOS)
     target_link_libraries(sfml-graphics PRIVATE z bz2)
 endif()
 
-# starting from Visual Studio 2015, inline versions of some C functions are used; for compatibility link this library
-# see https://docs.microsoft.com/en-us/cpp/porting/overview-of-potential-upgrade-issues-visual-cpp?view=msvc-160#libraries
-if(SFML_COMPILER_MSVC OR (SFML_COMPILER_CLANG AND SFML_OS_WINDOWS AND NOT MINGW))
-    target_link_libraries(sfml-graphics PRIVATE legacy_stdio_definitions.lib)
-endif()
-
-sfml_find_package(Freetype INCLUDE "FREETYPE_INCLUDE_DIRS" LINK "FREETYPE_LIBRARY")
-target_link_libraries(sfml-graphics PRIVATE Freetype)
+find_package(Freetype REQUIRED)
+target_link_libraries(sfml-graphics PRIVATE Freetype::Freetype)
 
 # on some platforms (e.g. Raspberry Pi 3 armhf), GCC requires linking libatomic to use <atomic> features
 # that aren't supported by native CPU instructions (64-bit atomic operations on 32-bit architecture)
@@ -141,8 +135,8 @@ endif()
 # add preprocessor symbols
 target_compile_definitions(sfml-graphics PRIVATE "STBI_FAILURE_USERMSG")
 
-# ImageLoader.cpp must be compiled with the -fno-strict-aliasing
+# Image.cpp must be compiled with the -fno-strict-aliasing
 # when gcc is used; otherwise saving PNGs may crash in stb_image_write
 if(SFML_COMPILER_GCC)
-    set_source_files_properties(${SRCROOT}/ImageLoader.cpp PROPERTIES COMPILE_FLAGS -fno-strict-aliasing)
+    set_source_files_properties(${SRCROOT}/Image.cpp PROPERTIES COMPILE_FLAGS -fno-strict-aliasing)
 endif()
