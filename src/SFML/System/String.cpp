@@ -34,8 +34,6 @@
 #include <cassert>
 #include <cstring>
 
-#include <cstring>
-
 
 namespace sf
 {
