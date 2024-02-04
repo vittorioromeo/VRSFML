@@ -34,6 +34,8 @@
 #include <SFML/Graphics/Transformable.hpp>
 #include <SFML/Graphics/Vertex.hpp>
 
+#include <SFML/System/DebugUtils.hpp>
+
 
 namespace sf
 {
@@ -225,6 +227,7 @@ private:
     std::array<Vertex, 4> m_vertices;    //!< Vertices defining the sprite's geometry
     const Texture*        m_texture{};   //!< Texture of the sprite
     IntRect               m_textureRect; //!< Rectangle defining the area of the source texture to display
+    SFML_DEBUG_DEFINE_DEPENDENT_TRACKER_MEMBER(sf::Texture, sf::Sprite, m_texture); //!< Used to catch lifetime issues in debug mode
 };
 
 } // namespace sf

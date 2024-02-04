@@ -33,6 +33,7 @@
 #include <SFML/Graphics/Transformable.hpp>
 #include <SFML/Graphics/VertexArray.hpp>
 
+#include <SFML/System/DebugUtils.hpp>
 #include <SFML/System/Vector2.hpp>
 
 
@@ -47,6 +48,12 @@ class Texture;
 class SFML_GRAPHICS_API Shape : public Drawable, public Transformable
 {
 public:
+    ////////////////////////////////////////////////////////////
+    /// \brief Default constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    Shape();
+
     ////////////////////////////////////////////////////////////
     /// \brief Change the source texture of the shape
     ///
@@ -312,6 +319,7 @@ private:
     VertexArray    m_outlineVertices{PrimitiveType::TriangleStrip}; //!< Vertex array containing the outline geometry
     FloatRect      m_insideBounds;                                  //!< Bounding rectangle of the inside (fill)
     FloatRect      m_bounds; //!< Bounding rectangle of the whole shape (outline + fill)
+    SFML_DEBUG_DEFINE_DEPENDENT_TRACKER_MEMBER(sf::Texture, sf::Shape, m_texture); //!< Used to catch lifetime issues in debug mode
 };
 
 } // namespace sf

@@ -34,6 +34,8 @@
 
 #include <SFML/Window/GlResource.hpp>
 
+#include <SFML/System/DebugUtils.hpp>
+
 #include <filesystem>
 
 
@@ -625,6 +627,7 @@ private:
     bool          m_fboAttachment{}; //!< Is this texture owned by a framebuffer object?
     bool          m_hasMipmap{};     //!< Has the mipmap been generated?
     std::uint64_t m_cacheId;         //!< Unique number that identifies the texture to the render target's cache
+    SFML_DEBUG_DEFINE_DEPENDENCY_TRACKER_MEMBER(sf::Texture); //!< Used to catch lifetime issues in debug mode
 };
 
 ////////////////////////////////////////////////////////////
