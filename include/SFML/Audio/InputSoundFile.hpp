@@ -206,6 +206,9 @@ private:
     {
         StreamDeleter(bool theOwned);
 
+        // To accept ownership transfer from default deleter
+        StreamDeleter(const priv::UniquePtrDefaultDeleter&);
+
         void operator()(InputStream* ptr) const;
 
         bool owned{true};

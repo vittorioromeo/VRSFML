@@ -74,46 +74,34 @@ public:
     }
 
     [[nodiscard, gnu::always_inline]] explicit UniquePtr(T* ptr, const TDeleter& deleter) noexcept :
-    TDeleter(deleter),
+    TDeleter{deleter},
     _ptr{ptr}
     {
     }
 
     [[gnu::always_inline]] ~UniquePtr() noexcept
     {
-        static_cast<TDeleter*>(this)->operator()(_ptr);
+        if (_ptr != nullptr)
+        {
+            static_cast<TDeleter*>(this)->operator()(_ptr);
+        }
     }
 
     UniquePtr(const UniquePtr&)            = delete;
     UniquePtr& operator=(const UniquePtr&) = delete;
 
-    [[nodiscard, gnu::always_inline]] UniquePtr(UniquePtr&& rhs) noexcept : _ptr{rhs._ptr}
+    template <typename U, typename UDeleter, typename = EnableIf<IsBaseOf<T, U>::value>>
+    [[nodiscard, gnu::always_inline]] UniquePtr(UniquePtr<U, UDeleter>&& rhs) noexcept : TDeleter{static_cast<UDeleter&&>(rhs)}, _ptr{rhs._ptr}
     {
         rhs._ptr = nullptr;
     }
 
-    template <typename U, typename = EnableIf<IsBaseOf<T, U>::value>>
-    [[nodiscard, gnu::always_inline]] UniquePtr(UniquePtr<U>&& rhs) noexcept : _ptr{rhs._ptr}
+    template <typename U, typename UDeleter, typename = EnableIf<IsBaseOf<T, U>::value>>
+    [[gnu::always_inline]] UniquePtr& operator=(UniquePtr<U, UDeleter>&& rhs) noexcept
     {
-        rhs._ptr = nullptr;
-    }
+        (*static_cast<TDeleter*>(this)) = static_cast<UDeleter&&>(rhs);
 
-    [[gnu::always_inline]] UniquePtr& operator=(UniquePtr&& rhs) noexcept
-    {
-        static_cast<TDeleter*>(this)->operator()(_ptr);
-
-        _ptr     = rhs._ptr;
-        rhs._ptr = nullptr;
-
-        return *this;
-    }
-
-    template <typename U, typename = EnableIf<IsBaseOf<T, U>::value>>
-    [[gnu::always_inline]] UniquePtr& operator=(UniquePtr<U>&& rhs) noexcept
-    {
-        static_cast<TDeleter*>(this)->operator()(_ptr);
-
-        _ptr     = rhs._ptr;
+        reset(rhs._ptr);
         rhs._ptr = nullptr;
 
         return *this;
@@ -163,7 +151,11 @@ public:
 
     [[gnu::always_inline]] void reset(T* const ptr = nullptr) noexcept
     {
-        static_cast<TDeleter*>(this)->operator()(_ptr);
+        if (_ptr != nullptr)
+        {
+            static_cast<TDeleter*>(this)->operator()(_ptr);
+        }
+
         _ptr = ptr;
     }
 };

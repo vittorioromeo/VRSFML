@@ -48,6 +48,12 @@ InputSoundFile::StreamDeleter::StreamDeleter(bool theOwned) : owned(theOwned)
 
 
 ////////////////////////////////////////////////////////////
+InputSoundFile::StreamDeleter::StreamDeleter(const priv::UniquePtrDefaultDeleter&)
+{
+}
+
+
+////////////////////////////////////////////////////////////
 void InputSoundFile::StreamDeleter::operator()(InputStream* ptr) const
 {
     if (owned)
