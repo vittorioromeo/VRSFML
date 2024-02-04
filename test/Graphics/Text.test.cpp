@@ -199,5 +199,14 @@ TEST_CASE("[Graphics] sf::Text", runDisplayTests())
             CHECK(text.getLocalBounds() == sf::FloatRect({1, 5}, {33, 13}));
             CHECK(text.getGlobalBounds() == Approx(sf::FloatRect({66, 182}, {33, 13})));
         }
+
+        SECTION("Foobar")
+        {
+            sf::Font emptyFont;
+            const sf::Text text(emptyFont);
+
+            sf::Font f2 = emptyFont;
+            const sf::Text text2(f2);
+        }
     }
 }

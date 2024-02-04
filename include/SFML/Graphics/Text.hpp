@@ -34,9 +34,8 @@
 #include <SFML/Graphics/Transformable.hpp>
 #include <SFML/Graphics/VertexArray.hpp>
 
+#include <SFML/System/DebugUtils.hpp>
 #include <SFML/System/String.hpp>
-
-#include <vector>
 
 
 namespace sf
@@ -420,6 +419,7 @@ private:
     mutable FloatRect     m_bounds;               //!< Bounding rectangle of the text (in local coordinates)
     mutable bool          m_geometryNeedUpdate{}; //!< Does the geometry need to be recomputed?
     mutable std::uint64_t m_fontTextureId{};      //!< The font texture id
+    SFML_DEBUG_DEFINE_DEPENDENT_TRACKER_MEMBER(sf::Font, sf::Text); //!< Used to catch lifetime issues in debug mode
 };
 
 } // namespace sf

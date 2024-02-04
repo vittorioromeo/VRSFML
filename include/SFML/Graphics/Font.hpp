@@ -33,6 +33,8 @@
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
+#include <SFML/System/DebugUtils.hpp>
+
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -383,6 +385,7 @@ private:
 #ifdef SFML_SYSTEM_ANDROID
     std::shared_ptr<priv::ResourceStream> m_stream; //!< Asset file streamer (if loaded from file)
 #endif
+    SFML_DEBUG_DEFINE_DEPENDENCY_TRACKER_MEMBER(sf::Font, sf::Text); //!< Used to catch lifetime issues in debug mode
 };
 
 } // namespace sf
