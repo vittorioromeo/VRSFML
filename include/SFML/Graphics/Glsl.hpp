@@ -182,7 +182,7 @@ using Mat3 = ImplementationDefined;
 ////////////////////////////////////////////////////////////
 using Mat4 = ImplementationDefined;
 
-#else  // SFML_DOXYGEN
+#else // SFML_DOXYGEN
 
 using Vec4  = priv::Vector4<float>;
 using Ivec4 = priv::Vector4<int>;

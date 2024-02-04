@@ -63,7 +63,7 @@ bool RenderTextureImplDefault::create(const Vector2u& size, unsigned int, const 
     m_size = size;
 
     // Create the in-memory OpenGL context
-    m_context = sf::priv::makeUnique<Context>(settings, size);
+    m_context = priv::makeUnique<Context>(settings, size);
 
     return true;
 }

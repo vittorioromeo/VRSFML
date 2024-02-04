@@ -252,7 +252,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    sf::priv::UniquePtr<priv::RenderTextureImpl> m_impl;    //!< Platform/hardware specific implementation
+    priv::UniquePtr<priv::RenderTextureImpl> m_impl;    //!< Platform/hardware specific implementation
     Texture                                      m_texture; //!< Target texture to draw on
 };
 

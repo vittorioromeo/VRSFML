@@ -35,8 +35,6 @@
 #include <SFML/System/Time.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
-#include <memory>
-
 #include <cmath>
 
 #if defined(SFML_SYSTEM_WINDOWS)
@@ -101,26 +99,26 @@ struct WindowImpl::JoystickStatesImpl
 };
 
 ////////////////////////////////////////////////////////////
-sf::priv::UniquePtr<WindowImpl> WindowImpl::create(
+priv::UniquePtr<WindowImpl> WindowImpl::create(
     VideoMode              mode,
     const String&          title,
     std::uint32_t          style,
     State                  state,
     const ContextSettings& settings)
 {
-    return sf::priv::makeUnique<WindowImplType>(mode, title, style, state, settings);
+    return priv::makeUnique<WindowImplType>(mode, title, style, state, settings);
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::priv::UniquePtr<WindowImpl> WindowImpl::create(WindowHandle handle)
+priv::UniquePtr<WindowImpl> WindowImpl::create(WindowHandle handle)
 {
-    return sf::priv::makeUnique<WindowImplType>(handle);
+    return priv::makeUnique<WindowImplType>(handle);
 }
 
 
 ////////////////////////////////////////////////////////////
-WindowImpl::WindowImpl() : m_joystickStatesImpl(sf::priv::makeUnique<JoystickStatesImpl>())
+WindowImpl::WindowImpl() : m_joystickStatesImpl(priv::makeUnique<JoystickStatesImpl>())
 {
     // Get the initial joystick states
     JoystickManager::getInstance().update();

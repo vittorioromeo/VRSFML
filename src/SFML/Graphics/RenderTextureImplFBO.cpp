@@ -528,7 +528,7 @@ bool RenderTextureImplFBO::activate(bool active)
     if (!contextId)
     {
         if (!m_context)
-            m_context = sf::priv::makeUnique<Context>();
+            m_context = priv::makeUnique<Context>();
 
         if (!m_context->setActive(true))
         {

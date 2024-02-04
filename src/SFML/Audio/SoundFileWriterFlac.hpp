@@ -29,9 +29,10 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/SoundFileWriter.hpp>
 
+#include <SFML/System/UniquePtr.hpp>
+
 #include <FLAC/stream_encoder.h>
 #include <filesystem>
-#include <memory>
 #include <vector>
 
 
@@ -83,7 +84,7 @@ private:
     {
         void operator()(FLAC__StreamEncoder* encoder) const;
     };
-    std::unique_ptr<FLAC__StreamEncoder, FlacStreamEncoderDeleter> m_encoder;        //!< FLAC stream encoder
+    UniquePtr<FLAC__StreamEncoder, FlacStreamEncoderDeleter> m_encoder;              //!< FLAC stream encoder
     unsigned int                                                   m_channelCount{}; //!< Number of channels
     std::vector<std::int32_t>                                      m_samples32;      //!< Conversion buffer
 };

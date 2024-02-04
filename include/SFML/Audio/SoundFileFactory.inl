@@ -32,14 +32,14 @@ namespace sf
 namespace priv
 {
 template <typename T>
-std::unique_ptr<SoundFileReader> createReader()
+UniquePtr<SoundFileReader> createReader()
 {
-    return std::make_unique<T>();
+    return makeUnique<T>();
 }
 template <typename T>
-std::unique_ptr<SoundFileWriter> createWriter()
+UniquePtr<SoundFileWriter> createWriter()
 {
-    return std::make_unique<T>();
+    return makeUnique<T>();
 }
 } // namespace priv
 

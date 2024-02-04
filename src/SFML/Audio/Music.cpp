@@ -347,7 +347,7 @@ Time Music::Impl::samplesToTime(std::uint64_t samples) const
 
 
 ////////////////////////////////////////////////////////////
-Music::Music() : m_impl(sf::priv::makeUnique<Impl>(this))
+Music::Music() : m_impl(priv::makeUnique<Impl>(this))
 {
 }
 

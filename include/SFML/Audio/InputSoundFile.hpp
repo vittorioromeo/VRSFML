@@ -206,10 +206,6 @@ private:
     {
         StreamDeleter(bool theOwned);
 
-        // To accept ownership transfer from usual std::unique_ptr<T>
-        template <typename T>
-        StreamDeleter(const std::default_delete<T>&);
-
         void operator()(InputStream* ptr) const;
 
         bool owned{true};
@@ -218,8 +214,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    sf::priv::UniquePtr<SoundFileReader> m_reader; //!< Reader that handles I/O on the file's format
-    sf::priv::UniquePtr<InputStream, StreamDeleter> m_stream{nullptr, false}; //!< Input stream used to access the file's data
+    priv::UniquePtr<SoundFileReader> m_reader; //!< Reader that handles I/O on the file's format
+    priv::UniquePtr<InputStream, StreamDeleter> m_stream{nullptr, false}; //!< Input stream used to access the file's data
     std::uint64_t m_sampleOffset{};                                           //!< Sample Read Position
     std::uint64_t m_sampleCount{};                                            //!< Total number of samples in the file
     unsigned int  m_channelCount{};                                           //!< Number of channels of the sound

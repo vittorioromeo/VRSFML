@@ -65,7 +65,7 @@ void ensureDefaultReadersWritersRegistered()
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-std::unique_ptr<SoundFileReader> SoundFileFactory::createReaderFromFilename(const std::filesystem::path& filename)
+priv::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromFilename(const std::filesystem::path& filename)
 {
     // Register the built-in readers/writers on first call
     ensureDefaultReadersWritersRegistered();
@@ -98,7 +98,7 @@ std::unique_ptr<SoundFileReader> SoundFileFactory::createReaderFromFilename(cons
 
 
 ////////////////////////////////////////////////////////////
-std::unique_ptr<SoundFileReader> SoundFileFactory::createReaderFromMemory(const void* data, std::size_t sizeInBytes)
+priv::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromMemory(const void* data, std::size_t sizeInBytes)
 {
     // Register the built-in readers/writers on first call
     ensureDefaultReadersWritersRegistered();
@@ -127,7 +127,7 @@ std::unique_ptr<SoundFileReader> SoundFileFactory::createReaderFromMemory(const 
 
 
 ////////////////////////////////////////////////////////////
-std::unique_ptr<SoundFileReader> SoundFileFactory::createReaderFromStream(InputStream& stream)
+priv::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromStream(InputStream& stream)
 {
     // Register the built-in readers/writers on first call
     ensureDefaultReadersWritersRegistered();
@@ -152,7 +152,7 @@ std::unique_ptr<SoundFileReader> SoundFileFactory::createReaderFromStream(InputS
 
 
 ////////////////////////////////////////////////////////////
-std::unique_ptr<SoundFileWriter> SoundFileFactory::createWriterFromFilename(const std::filesystem::path& filename)
+priv::UniquePtr<SoundFileWriter> SoundFileFactory::createWriterFromFilename(const std::filesystem::path& filename)
 {
     // Register the built-in readers/writers on first call
     ensureDefaultReadersWritersRegistered();

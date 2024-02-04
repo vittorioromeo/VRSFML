@@ -719,7 +719,7 @@ bool SoundStream::getLoop() const
 
 
 ////////////////////////////////////////////////////////////
-SoundStream::SoundStream() : m_impl(sf::priv::makeUnique<Impl>(this))
+SoundStream::SoundStream() : m_impl(priv::makeUnique<Impl>(this))
 {
 }
 

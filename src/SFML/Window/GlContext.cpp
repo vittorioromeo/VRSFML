@@ -552,14 +552,14 @@ void GlContext::releaseTransientContext()
 
 
 ////////////////////////////////////////////////////////////
-sf::priv::UniquePtr<GlContext> GlContext::create()
+priv::UniquePtr<GlContext> GlContext::create()
 {
     // Make sure that there's an active context (context creation may need extensions, and thus a valid context)
     const auto sharedContext = SharedContext::get();
 
     const std::lock_guard lock(sharedContext->mutex);
 
-    sf::priv::UniquePtr<GlContext> context;
+    priv::UniquePtr<GlContext> context;
 
     // We don't use acquireTransientContext here since we have
     // to ensure we have exclusive access to the shared context
@@ -567,7 +567,7 @@ sf::priv::UniquePtr<GlContext> GlContext::create()
     sharedContext->context->setActive(true);
 
     // Create the context
-    context = sf::priv::makeUnique<ContextType>(&sharedContext->context.value());
+    context = priv::makeUnique<ContextType>(&sharedContext->context.value());
 
     sharedContext->context->setActive(false);
 
@@ -578,7 +578,7 @@ sf::priv::UniquePtr<GlContext> GlContext::create()
 
 
 ////////////////////////////////////////////////////////////
-sf::priv::UniquePtr<GlContext> GlContext::create(const ContextSettings& settings, const WindowImpl& owner, unsigned int bitsPerPixel)
+priv::UniquePtr<GlContext> GlContext::create(const ContextSettings& settings, const WindowImpl& owner, unsigned int bitsPerPixel)
 {
     // Make sure that there's an active context (context creation may need extensions, and thus a valid context)
     const auto sharedContext = SharedContext::get();
@@ -602,7 +602,7 @@ sf::priv::UniquePtr<GlContext> GlContext::create(const ContextSettings& settings
         sharedContext->loadExtensions();
     }
 
-    sf::priv::UniquePtr<GlContext> context;
+    priv::UniquePtr<GlContext> context;
 
     // We don't use acquireTransientContext here since we have
     // to ensure we have exclusive access to the shared context
@@ -610,7 +610,7 @@ sf::priv::UniquePtr<GlContext> GlContext::create(const ContextSettings& settings
     sharedContext->context->setActive(true);
 
     // Create the context
-    context = sf::priv::makeUnique<ContextType>(&sharedContext->context.value(), settings, owner, bitsPerPixel);
+    context = priv::makeUnique<ContextType>(&sharedContext->context.value(), settings, owner, bitsPerPixel);
 
     sharedContext->context->setActive(false);
 
@@ -622,7 +622,7 @@ sf::priv::UniquePtr<GlContext> GlContext::create(const ContextSettings& settings
 
 
 ////////////////////////////////////////////////////////////
-sf::priv::UniquePtr<GlContext> GlContext::create(const ContextSettings& settings, const Vector2u& size)
+priv::UniquePtr<GlContext> GlContext::create(const ContextSettings& settings, const Vector2u& size)
 {
     // Make sure that there's an active context (context creation may need extensions, and thus a valid context)
     const auto sharedContext = SharedContext::get();
@@ -652,7 +652,7 @@ sf::priv::UniquePtr<GlContext> GlContext::create(const ContextSettings& settings
     sharedContext->context->setActive(true);
 
     // Create the context
-    auto context = sf::priv::makeUnique<ContextType>(&sharedContext->context.value(), settings, size);
+    auto context = priv::makeUnique<ContextType>(&sharedContext->context.value(), settings, size);
 
     sharedContext->context->setActive(false);
 
@@ -796,7 +796,7 @@ bool GlContext::setActive(bool active)
 
 
 ////////////////////////////////////////////////////////////
-GlContext::GlContext() : m_impl(sf::priv::makeUnique<Impl>())
+GlContext::GlContext() : m_impl(priv::makeUnique<Impl>())
 {
     // Nothing to do
 }

@@ -98,7 +98,7 @@ public:
     /// \return Pointer to the created context
     ///
     ////////////////////////////////////////////////////////////
-    static sf::priv::UniquePtr<GlContext> create();
+    static priv::UniquePtr<GlContext> create();
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context attached to a window
@@ -113,7 +113,7 @@ public:
     /// \return Pointer to the created context
     ///
     ////////////////////////////////////////////////////////////
-    static sf::priv::UniquePtr<GlContext> create(const ContextSettings& settings,
+    static priv::UniquePtr<GlContext> create(const ContextSettings& settings,
                                                  const WindowImpl&      owner,
                                                  unsigned int           bitsPerPixel);
 
@@ -129,7 +129,7 @@ public:
     /// \return Pointer to the created context
     ///
     ////////////////////////////////////////////////////////////
-    static sf::priv::UniquePtr<GlContext> create(const ContextSettings& settings, const Vector2u& size);
+    static priv::UniquePtr<GlContext> create(const ContextSettings& settings, const Vector2u& size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Check whether a given OpenGL extension is available
@@ -317,7 +317,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    const sf::priv::UniquePtr<Impl> m_impl; //!< Implementation details
+    const priv::UniquePtr<Impl> m_impl; //!< Implementation details
 };
 
 } // namespace sf::priv

@@ -62,7 +62,7 @@ FileInputStream& FileInputStream::operator=(FileInputStream&&) noexcept = defaul
 bool FileInputStream::open(const std::filesystem::path& filename)
 {
 #ifdef SFML_SYSTEM_ANDROID
-    m_file = std::make_unique<priv::ResourceStream>(filename);
+    m_file = priv::makeUnique<priv::ResourceStream>(filename);
     return m_file->tell() != -1;
 #else
 #ifdef SFML_SYSTEM_WINDOWS

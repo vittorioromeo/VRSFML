@@ -177,7 +177,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    sf::priv::UniquePtr<priv::GlContext> m_context; //!< Internal OpenGL context
+    priv::UniquePtr<priv::GlContext> m_context; //!< Internal OpenGL context
 };
 
 } // namespace sf
