@@ -31,8 +31,9 @@
 
 #include <SFML/Audio/SoundFileReader.hpp>
 
+#include <SFML/System/UniquePtr.hpp>
+
 #include <filesystem>
-#include <memory>
 
 #include <cstddef>
 #include <cstdint>
@@ -205,9 +206,8 @@ private:
     {
         StreamDeleter(bool theOwned);
 
-        // To accept ownership transfer from usual std::unique_ptr<T>
-        template <typename T>
-        StreamDeleter(const std::default_delete<T>&);
+        // To accept ownership transfer from default deleter
+        StreamDeleter(const priv::UniquePtrDefaultDeleter&);
 
         void operator()(InputStream* ptr) const;
 
@@ -217,12 +217,12 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::unique_ptr<SoundFileReader>            m_reader; //!< Reader that handles I/O on the file's format
-    std::unique_ptr<InputStream, StreamDeleter> m_stream{nullptr, false}; //!< Input stream used to access the file's data
-    std::uint64_t                               m_sampleOffset{};         //!< Sample Read Position
-    std::uint64_t                               m_sampleCount{};          //!< Total number of samples in the file
-    unsigned int                                m_channelCount{};         //!< Number of channels of the sound
-    unsigned int                                m_sampleRate{};           //!< Number of samples per second
+    priv::UniquePtr<SoundFileReader> m_reader; //!< Reader that handles I/O on the file's format
+    priv::UniquePtr<InputStream, StreamDeleter> m_stream{nullptr, false}; //!< Input stream used to access the file's data
+    std::uint64_t m_sampleOffset{};                                           //!< Sample Read Position
+    std::uint64_t m_sampleCount{};                                            //!< Total number of samples in the file
+    unsigned int  m_channelCount{};                                           //!< Number of channels of the sound
+    unsigned int  m_sampleRate{};                                             //!< Number of samples per second
 };
 
 } // namespace sf
