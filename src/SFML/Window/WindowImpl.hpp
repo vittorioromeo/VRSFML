@@ -40,10 +40,11 @@
 #include <SFML/Window/WindowEnums.hpp>
 #include <SFML/Window/WindowHandle.hpp>
 
+#include <SFML/System/UniquePtr.hpp>
+
 #include <SFML/System/EnumArray.hpp>
 
 #include <array>
-#include <memory>
 #include <optional>
 #include <queue>
 #include <set>
@@ -73,11 +74,11 @@ public:
     /// \return Pointer to the created window
     ///
     ////////////////////////////////////////////////////////////
-    static std::unique_ptr<WindowImpl> create(VideoMode              mode,
-                                              const String&          title,
-                                              std::uint32_t          style,
-                                              State                  state,
-                                              const ContextSettings& settings);
+    static priv::UniquePtr<WindowImpl> create(VideoMode              mode,
+                                                  const String&          title,
+                                                  std::uint32_t          style,
+                                                  State                  state,
+                                                  const ContextSettings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new window depending on to the current OS
@@ -87,7 +88,7 @@ public:
     /// \return Pointer to the created window
     ///
     ////////////////////////////////////////////////////////////
-    static std::unique_ptr<WindowImpl> create(WindowHandle handle);
+    static priv::UniquePtr<WindowImpl> create(WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -336,7 +337,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     std::queue<Event>                                m_events;             //!< Queue of available events
-    std::unique_ptr<JoystickStatesImpl>              m_joystickStatesImpl; //!< Previous state of the joysticks (PImpl)
+    priv::UniquePtr<JoystickStatesImpl>          m_joystickStatesImpl; //!< Previous state of the joysticks (PImpl)
     EnumArray<Sensor::Type, Vector3f, Sensor::Count> m_sensorValue;        //!< Previous value of the sensors
     float m_joystickThreshold{0.1f}; //!< Joystick threshold (minimum motion for "move" event to be generated)
     std::array<EnumArray<Joystick::Axis, float, Joystick::AxisCount>, Joystick::Count>

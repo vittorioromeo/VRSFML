@@ -36,7 +36,6 @@
 #include <SFML/System/Time.hpp>
 
 #include <exception>
-#include <memory>
 #include <ostream>
 
 #if defined(__APPLE__)
