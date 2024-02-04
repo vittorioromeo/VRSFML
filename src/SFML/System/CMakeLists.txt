@@ -7,6 +7,8 @@ set(SRC
     ${INCROOT}/Angle.inl
     ${SRCROOT}/Clock.cpp
     ${INCROOT}/Clock.hpp
+    ${SRCROOT}/DebugUtils.cpp
+    ${INCROOT}/DebugUtils.hpp
     ${SRCROOT}/EnumArray.hpp
     ${SRCROOT}/Err.cpp
     ${INCROOT}/Err.hpp
