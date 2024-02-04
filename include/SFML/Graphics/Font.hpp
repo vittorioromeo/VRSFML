@@ -382,7 +382,7 @@ private:
     mutable PageTable            m_pages;          //!< Table containing the glyphs pages by character size
     mutable std::vector<std::uint8_t> m_pixelBuffer; //!< Pixel buffer holding a glyph's pixels before being written to the texture
 #ifdef SFML_SYSTEM_ANDROID
-    sf::priv::UniquePtr<priv::ResourceStream> m_stream; //!< Asset file streamer (if loaded from file)
+    priv::UniquePtr<priv::ResourceStream> m_stream; //!< Asset file streamer (if loaded from file)
 #endif
 };
 

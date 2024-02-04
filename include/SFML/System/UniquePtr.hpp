@@ -60,13 +60,12 @@ class UniquePtr : private TDeleter
 private:
     T* _ptr;
 
-    [[gnu::always_inline]] void deleteImpl() noexcept
-    {
-        static_cast<TDeleter*>(this)->operator()(_ptr);
-    }
-
 public:
     [[nodiscard, gnu::always_inline]] explicit UniquePtr() noexcept : _ptr{nullptr}
+    {
+    }
+
+    [[nodiscard, gnu::always_inline]] /* implicit */ UniquePtr(decltype(nullptr)) noexcept : _ptr{nullptr}
     {
     }
 
@@ -82,7 +81,7 @@ public:
 
     [[gnu::always_inline]] ~UniquePtr() noexcept
     {
-        deleteImpl();
+        static_cast<TDeleter*>(this)->operator()(_ptr);
     }
 
     UniquePtr(const UniquePtr&)            = delete;
@@ -101,7 +100,7 @@ public:
 
     [[gnu::always_inline]] UniquePtr& operator=(UniquePtr&& rhs) noexcept
     {
-        deleteImpl();
+        static_cast<TDeleter*>(this)->operator()(_ptr);
 
         _ptr     = rhs._ptr;
         rhs._ptr = nullptr;
@@ -112,7 +111,7 @@ public:
     template <typename U, typename = EnableIf<IsBaseOf<T, U>::value>>
     [[gnu::always_inline]] UniquePtr& operator=(UniquePtr<U>&& rhs) noexcept
     {
-        deleteImpl();
+        static_cast<TDeleter*>(this)->operator()(_ptr);
 
         _ptr     = rhs._ptr;
         rhs._ptr = nullptr;
@@ -164,7 +163,7 @@ public:
 
     [[gnu::always_inline]] void reset(T* const ptr = nullptr) noexcept
     {
-        deleteImpl();
+        static_cast<TDeleter*>(this)->operator()(_ptr);
         _ptr = ptr;
     }
 };

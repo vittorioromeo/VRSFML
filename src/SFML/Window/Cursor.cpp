@@ -36,7 +36,7 @@ namespace sf
 {
 
 ////////////////////////////////////////////////////////////
-Cursor::Cursor() : m_impl(sf::priv::makeUnique<priv::CursorImpl>())
+Cursor::Cursor() : m_impl(priv::makeUnique<priv::CursorImpl>())
 {
 }
 

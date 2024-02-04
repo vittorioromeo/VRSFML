@@ -218,7 +218,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    sf::priv::UniquePtr<priv::CursorImpl> m_impl; //!< Platform-specific implementation of the cursor
+    priv::UniquePtr<priv::CursorImpl> m_impl; //!< Platform-specific implementation of the cursor
 };
 
 } // namespace sf

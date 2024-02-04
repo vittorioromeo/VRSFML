@@ -146,7 +146,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
 #ifdef SFML_SYSTEM_ANDROID
-    sf::priv::UniquePtr<priv::ResourceStream> m_file;
+    priv::UniquePtr<priv::ResourceStream> m_file;
 #else
     ////////////////////////////////////////////////////////////
     /// \brief Deleter for stdio file stream that closes the file stream
@@ -157,7 +157,7 @@ private:
         void operator()(std::FILE* file);
     };
 
-    sf::priv::UniquePtr<std::FILE, FileCloser> m_file; //!< stdio file stream
+    priv::UniquePtr<std::FILE, FileCloser> m_file; //!< stdio file stream
 #endif
 };
 

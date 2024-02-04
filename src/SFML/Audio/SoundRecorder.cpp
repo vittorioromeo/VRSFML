@@ -505,7 +505,7 @@ bool SoundRecorder::isAvailable()
 
 
 ////////////////////////////////////////////////////////////
-SoundRecorder::SoundRecorder() : m_impl(sf::priv::makeUnique<Impl>(this))
+SoundRecorder::SoundRecorder() : m_impl(priv::makeUnique<Impl>(this))
 {
 }
 

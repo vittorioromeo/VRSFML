@@ -29,12 +29,15 @@
 ////////////////////////////////////////////////////////////
 #include <X11/Xlib.h>
 
-#include <memory>
-#include <type_traits>
-
 
 namespace sf::priv
 {
+template <typename T>
+using RemoveArrayExtents = T;
+
+template <typename T>
+using RemoveArrayExtents<T[]> = T;
+
 ////////////////////////////////////////////////////////////
 /// \brief Class template for freeing X11 pointers
 ///
@@ -57,5 +60,5 @@ struct XDeleter
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-using X11Ptr = std::unique_ptr<T, XDeleter<std::remove_all_extents_t<T>>>;
+using X11Ptr = UniquePtr<T, XDeleter<RemoveArrayExtents<T>>>;
 } // namespace sf::priv

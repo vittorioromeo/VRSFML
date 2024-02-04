@@ -114,7 +114,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    sf::priv::UniquePtr<Context> m_context; //!< P-Buffer based context
+    priv::UniquePtr<Context> m_context; //!< P-Buffer based context
     Vector2u                     m_size;    //!< Width and height of the P-Buffer
 };
 

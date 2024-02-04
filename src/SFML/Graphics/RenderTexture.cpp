@@ -73,7 +73,7 @@ bool RenderTexture::create(const Vector2u& size, const ContextSettings& settings
     if (priv::RenderTextureImplFBO::isAvailable())
     {
         // Use frame-buffer object (FBO)
-        m_impl = sf::priv::makeUnique<priv::RenderTextureImplFBO>();
+        m_impl = priv::makeUnique<priv::RenderTextureImplFBO>();
 
         // Mark the texture as being a framebuffer object attachment
         m_texture.m_fboAttachment = true;
@@ -81,7 +81,7 @@ bool RenderTexture::create(const Vector2u& size, const ContextSettings& settings
     else
     {
         // Use default implementation
-        m_impl = sf::priv::makeUnique<priv::RenderTextureImplDefault>();
+        m_impl = priv::makeUnique<priv::RenderTextureImplDefault>();
     }
 
     // Initialize the render texture

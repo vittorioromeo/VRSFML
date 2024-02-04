@@ -38,8 +38,6 @@
 
 #include <cstdint>
 
-#include <cstdint>
-
 
 namespace sf
 {
@@ -255,7 +253,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    sf::priv::UniquePtr<Impl> m_impl;
+    priv::UniquePtr<Impl> m_impl;
 };
 
 } // namespace sf

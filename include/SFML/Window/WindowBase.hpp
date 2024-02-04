@@ -531,7 +531,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    sf::priv::UniquePtr<priv::WindowImpl> m_impl; //!< Platform-specific implementation of the window
+    priv::UniquePtr<priv::WindowImpl> m_impl; //!< Platform-specific implementation of the window
     Vector2u                              m_size; //!< Current size of the window
 };
 

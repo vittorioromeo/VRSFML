@@ -56,7 +56,7 @@ AlResource::AlResource()
 
     // If this is the very first resource, trigger the global device initialization
     if (count == 0)
-        globalDevice = sf::priv::makeUnique<priv::AudioDevice>();
+        globalDevice = priv::makeUnique<priv::AudioDevice>();
 
     // Increment the resources counter
     ++count;
