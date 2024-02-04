@@ -48,6 +48,10 @@ sf::Vector2f computeNormal(const sf::Vector2f& p1, const sf::Vector2f& p2)
 namespace sf
 {
 ////////////////////////////////////////////////////////////
+Shape::Shape() = default;
+
+
+////////////////////////////////////////////////////////////
 void Shape::setTexture(const Texture* texture, bool resetRect)
 {
     if (texture)
@@ -59,6 +63,7 @@ void Shape::setTexture(const Texture* texture, bool resetRect)
 
     // Assign the new texture
     m_texture = texture;
+    SFML_DEBUG_UPDATE_DEPENDENT_TRACKER_MEMBER(m_texture);
 }
 
 

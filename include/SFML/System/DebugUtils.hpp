@@ -26,22 +26,26 @@
 
 #ifndef SFML_DEBUG
 
-#define SFML_DEBUG_DEFINE_DEPENDENCY_TRACKER_MEMBER(dependencyType, dependantType)
-#define SFML_DEBUG_DEFINE_DEPENDENT_TRACKER_MEMBER(dependencyType, dependantType)
-#define SFML_DEBUG_INITIALIZE_DEPENDENT_TRACKER_MEMBER(dependency)
+#define SFML_DEBUG_DEFINE_DEPENDENCY_TRACKER_MEMBER(dependencyType)
+#define SFML_DEBUG_DEFINE_DEPENDENT_TRACKER_MEMBER(dependencyType, dependantType, dependency)
+#define SFML_DEBUG_UPDATE_DEPENDENT_TRACKER_MEMBER(dependency)
 
 #else
 
-#define SFML_DEBUG_DEFINE_DEPENDENCY_TRACKER_MEMBER(dependencyType, dependantType) \
-    friend class dependantType;                                                    \
-    mutable ::sf::priv::Dependency m_dependency                                    \
-    {                                                                              \
-        #dependencyType                                                            \
+#define SFML_DEBUG_DEFINE_DEPENDENCY_TRACKER_MEMBER(dependencyType) \
+    friend class ::sf::priv::Dependent;                             \
+    mutable ::sf::priv::Dependency m_dependency                     \
+    {                                                               \
+        #dependencyType                                             \
     }
 
-#define SFML_DEBUG_DEFINE_DEPENDENT_TRACKER_MEMBER(dependencyType, dependantType) ::sf::priv::Dependent m_dependent
+#define SFML_DEBUG_DEFINE_DEPENDENT_TRACKER_MEMBER(dependencyType, dependantType, dependency) \
+    ::sf::priv::Dependent m_dependent                                                         \
+    {                                                                                         \
+        this, &dependantType ::dependency                                                     \
+    }
 
-#define SFML_DEBUG_INITIALIZE_DEPENDENT_TRACKER_MEMBER(dependency) m_dependent.initialize(dependency->m_dependency)
+#define SFML_DEBUG_UPDATE_DEPENDENT_TRACKER_MEMBER(dependency) this->m_dependent.changeDependency(dependency)
 
 #include <SFML/Config.hpp>
 
@@ -144,6 +148,10 @@ public:
 
     void unregisterDependant()
     {
+        if (m_dependantCount.value == 0)
+        {
+            throw 100;
+        }
         assert(m_dependantCount.value > 0);
         --m_dependantCount.value;
     }
@@ -154,6 +162,7 @@ public:
     }
 };
 
+// TODO: something such as `Sprite::setTexture` or `Text::setFont` doesn't work, need to update internal dependencyPtr somehow
 class Dependent
 {
 private:
@@ -172,11 +181,10 @@ private:
     }
 
 public:
-    Dependent() = default;
-
-    void initialize(Dependency& dependency)
+    template <typename TDependent, typename TDependency>
+    explicit Dependent(TDependent* dependent, const TDependency* TDependent::*pmr) :
+    m_dependencyPtr{&(dependent->*pmr)->m_dependency}
     {
-        m_dependencyPtr.value = &dependency;
         registerSelf();
     }
 
@@ -203,6 +211,16 @@ public:
     {
         if (m_dependencyPtr.value != nullptr)
             unregisterSelf();
+    }
+
+    template <typename TDependency>
+    void changeDependency(const TDependency* dependency)
+    {
+        if (m_dependencyPtr.value != nullptr)
+            unregisterSelf();
+
+        m_dependencyPtr.value = &dependency->m_dependency;
+        registerSelf();
     }
 };
 

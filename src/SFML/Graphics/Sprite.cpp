@@ -36,19 +36,17 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-Sprite::Sprite(const Texture& texture)
+Sprite::Sprite(const Texture& texture) : m_texture{&texture}
 {
-    setTexture(texture, true);
+    setTextureRect(IntRect({0, 0}, Vector2i(texture.getSize())));
 }
 
 
 ////////////////////////////////////////////////////////////
-Sprite::Sprite(const Texture& texture, const IntRect& rectangle)
+Sprite::Sprite(const Texture& texture, const IntRect& rectangle) : m_texture{&texture}
 {
     // Compute the texture area
     setTextureRect(rectangle);
-    // Assign texture
-    setTexture(texture, false);
 }
 
 
@@ -63,6 +61,7 @@ void Sprite::setTexture(const Texture& texture, bool resetRect)
 
     // Assign the new texture
     m_texture = &texture;
+    SFML_DEBUG_UPDATE_DEPENDENT_TRACKER_MEMBER(m_texture);
 }
 
 

@@ -101,7 +101,6 @@ m_string(std::move(string)),
 m_font(&font),
 m_characterSize(characterSize)
 {
-    SFML_DEBUG_INITIALIZE_DEPENDENT_TRACKER_MEMBER(m_font);
 }
 
 
@@ -123,6 +122,8 @@ void Text::setFont(const Font& font)
     {
         m_font               = &font;
         m_geometryNeedUpdate = true;
+
+        SFML_DEBUG_UPDATE_DEPENDENT_TRACKER_MEMBER(m_font);
     }
 }
 
