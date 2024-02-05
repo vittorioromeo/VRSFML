@@ -314,8 +314,6 @@ using Vector3f = Vector3<float>;
 
 } // namespace sf
 
-#include <SFML/System/Vector3.inl>
-
 
 ////////////////////////////////////////////////////////////
 // Explicit instantiation declarations
@@ -328,11 +326,7 @@ extern template class sf::Vector3<bool>;
 extern template class sf::Vector3<int>;
 extern template class sf::Vector3<unsigned int>;
 
-
-namespace sf
-{
 #include <SFML/System/Vector3.inl>
-} // namespace sf
 
 
 ////////////////////////////////////////////////////////////
