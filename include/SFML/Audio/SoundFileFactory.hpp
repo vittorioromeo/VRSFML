@@ -31,9 +31,10 @@
 
 #include <SFML/System/UniquePtr.hpp>
 
-#include <algorithm>
 #include <filesystem>
 #include <vector>
+
+#include <cstddef>
 
 
 namespace sf

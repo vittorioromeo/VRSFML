@@ -28,8 +28,6 @@
 
 #include <SFML/System/Angle.hpp>
 
-#include <cassert>
-
 
 namespace sf
 {
@@ -412,11 +410,7 @@ extern template class sf::Vector2<bool>;
 extern template class sf::Vector2<int>;
 extern template class sf::Vector2<unsigned int>;
 
-
-namespace sf
-{
 #include <SFML/System/Vector2.inl>
-} // namespace sf
 
 
 ////////////////////////////////////////////////////////////

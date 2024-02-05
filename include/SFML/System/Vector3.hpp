@@ -26,7 +26,6 @@
 
 #include <SFML/System/Export.hpp>
 
-#include <cassert>
 
 namespace sf
 {
@@ -314,6 +313,8 @@ using Vector3i = Vector3<int>;
 using Vector3f = Vector3<float>;
 
 } // namespace sf
+
+#include <SFML/System/Vector3.inl>
 
 
 ////////////////////////////////////////////////////////////
