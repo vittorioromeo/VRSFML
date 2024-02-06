@@ -32,7 +32,6 @@
 #include <SFML/System/Err.hpp>
 
 #include <memory>
-#include <ostream>
 
 
 namespace sf
@@ -62,7 +61,7 @@ bool RenderTexture::create(const Vector2u& size, const ContextSettings& settings
     // Create the texture
     if (!m_texture.create(size))
     {
-        err() << "Impossible to create render texture (failed to create the target texture)" << std::endl;
+        err() << "Impossible to create render texture (failed to create the target texture)" << errEndl;
         return false;
     }
 

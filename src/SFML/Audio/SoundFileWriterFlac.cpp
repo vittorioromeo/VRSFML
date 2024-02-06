@@ -31,10 +31,8 @@
 #include <SFML/System/Utils.hpp>
 
 #include <algorithm>
-#include <ostream>
 
-#include <cassert>
-#include <cctype>
+#include <cstdint>
 
 
 namespace sf::priv
@@ -61,8 +59,7 @@ bool SoundFileWriterFlac::open(const std::filesystem::path& filename, unsigned i
     m_encoder.reset(FLAC__stream_encoder_new());
     if (!m_encoder)
     {
-        err() << "Failed to write flac file (failed to allocate encoder)\n"
-              << formatDebugPathInfo(filename) << std::endl;
+        err() << "Failed to write flac file (failed to allocate encoder)\n" << formatDebugPathInfo(filename) << errEndl;
         return false;
     }
 
@@ -75,7 +72,7 @@ bool SoundFileWriterFlac::open(const std::filesystem::path& filename, unsigned i
     if (FLAC__stream_encoder_init_file(m_encoder.get(), filename.string().c_str(), nullptr, nullptr) !=
         FLAC__STREAM_ENCODER_INIT_STATUS_OK)
     {
-        err() << "Failed to write flac file (failed to open the file)\n" << formatDebugPathInfo(filename) << std::endl;
+        err() << "Failed to write flac file (failed to open the file)\n" << formatDebugPathInfo(filename) << errEndl;
         m_encoder.reset();
         return false;
     }

@@ -34,6 +34,8 @@
 #include <memory>
 #include <unordered_map>
 
+#include <cstdint>
+
 
 namespace sf
 {

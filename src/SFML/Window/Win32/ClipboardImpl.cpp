@@ -31,8 +31,6 @@
 #include <SFML/System/String.hpp>
 #include <SFML/System/Win32/WindowsHeader.hpp>
 
-#include <ostream>
-
 #include <cstring>
 
 
@@ -45,13 +43,13 @@ String ClipboardImpl::getString()
 
     if (!IsClipboardFormatAvailable(CF_UNICODETEXT))
     {
-        err() << "Failed to get the clipboard data in Unicode format." << std::endl;
+        err() << "Failed to get the clipboard data in Unicode format." << errEndl;
         return text;
     }
 
     if (!OpenClipboard(nullptr))
     {
-        err() << "Failed to open the Win32 clipboard." << std::endl;
+        err() << "Failed to open the Win32 clipboard." << errEndl;
         return text;
     }
 
@@ -59,7 +57,7 @@ String ClipboardImpl::getString()
 
     if (!clipboardHandle)
     {
-        err() << "Failed to get Win32 handle for clipboard content." << std::endl;
+        err() << "Failed to get Win32 handle for clipboard content." << errEndl;
         CloseClipboard();
         return text;
     }
@@ -77,13 +75,13 @@ void ClipboardImpl::setString(const String& text)
 {
     if (!OpenClipboard(nullptr))
     {
-        err() << "Failed to open the Win32 clipboard." << std::endl;
+        err() << "Failed to open the Win32 clipboard." << errEndl;
         return;
     }
 
     if (!EmptyClipboard())
     {
-        err() << "Failed to empty the Win32 clipboard." << std::endl;
+        err() << "Failed to empty the Win32 clipboard." << errEndl;
         return;
     }
 

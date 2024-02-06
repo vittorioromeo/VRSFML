@@ -39,8 +39,6 @@
 #include <SFML/System/MemoryInputStream.hpp>
 #include <SFML/System/Utils.hpp>
 
-#include <ostream>
-
 
 namespace sf
 {
@@ -51,7 +49,7 @@ std::unique_ptr<SoundFileReader> SoundFileFactory::createReaderFromFilename(cons
     FileInputStream stream;
     if (!stream.open(filename))
     {
-        err() << "Failed to open sound file (couldn't open stream)\n" << formatDebugPathInfo(filename) << std::endl;
+        err() << "Failed to open sound file (couldn't open stream)\n" << formatDebugPathInfo(filename) << errEndl;
         return nullptr;
     }
 
@@ -60,7 +58,7 @@ std::unique_ptr<SoundFileReader> SoundFileFactory::createReaderFromFilename(cons
     {
         if (stream.seek(0) == -1)
         {
-            err() << "Failed to seek sound stream" << std::endl;
+            err() << "Failed to seek sound stream" << errEndl;
             return nullptr;
         }
 
@@ -69,7 +67,7 @@ std::unique_ptr<SoundFileReader> SoundFileFactory::createReaderFromFilename(cons
     }
 
     // No suitable reader found
-    err() << "Failed to open sound file (format not supported)\n" << formatDebugPathInfo(filename) << std::endl;
+    err() << "Failed to open sound file (format not supported)\n" << formatDebugPathInfo(filename) << errEndl;
     return nullptr;
 }
 
@@ -86,7 +84,7 @@ std::unique_ptr<SoundFileReader> SoundFileFactory::createReaderFromMemory(const 
     {
         if (stream.seek(0) == -1)
         {
-            err() << "Failed to seek sound stream" << std::endl;
+            err() << "Failed to seek sound stream" << errEndl;
             return nullptr;
         }
 
@@ -95,7 +93,7 @@ std::unique_ptr<SoundFileReader> SoundFileFactory::createReaderFromMemory(const 
     }
 
     // No suitable reader found
-    err() << "Failed to open sound file from memory (format not supported)" << std::endl;
+    err() << "Failed to open sound file from memory (format not supported)" << errEndl;
     return nullptr;
 }
 
@@ -108,7 +106,7 @@ std::unique_ptr<SoundFileReader> SoundFileFactory::createReaderFromStream(InputS
     {
         if (stream.seek(0) == -1)
         {
-            err() << "Failed to seek sound stream" << std::endl;
+            err() << "Failed to seek sound stream" << errEndl;
             return nullptr;
         }
 
@@ -117,7 +115,7 @@ std::unique_ptr<SoundFileReader> SoundFileFactory::createReaderFromStream(InputS
     }
 
     // No suitable reader found
-    err() << "Failed to open sound file from stream (format not supported)" << std::endl;
+    err() << "Failed to open sound file from stream (format not supported)" << errEndl;
     return nullptr;
 }
 
@@ -133,7 +131,7 @@ std::unique_ptr<SoundFileWriter> SoundFileFactory::createWriterFromFilename(cons
     }
 
     // No suitable writer found
-    err() << "Failed to open sound file (format not supported)\n" << formatDebugPathInfo(filename) << std::endl;
+    err() << "Failed to open sound file (format not supported)\n" << formatDebugPathInfo(filename) << errEndl;
     return nullptr;
 }
 

@@ -33,7 +33,6 @@
 #include <jni.h>
 
 #include <mutex>
-#include <ostream>
 
 
 namespace sf::priv::InputImpl
@@ -100,7 +99,7 @@ void setVirtualKeyboardVisible(bool visible)
     jint lResult = lJavaVM->AttachCurrentThread(&lJNIEnv, &lJavaVMAttachArgs);
 
     if (lResult == JNI_ERR)
-        err() << "Failed to initialize JNI, couldn't switch the keyboard visibility" << std::endl;
+        err() << "Failed to initialize JNI, couldn't switch the keyboard visibility" << errEndl;
 
     // Retrieves NativeActivity
     jobject lNativeActivity     = states.activity->clazz;

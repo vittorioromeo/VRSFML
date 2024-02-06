@@ -38,7 +38,6 @@
 // expects lowercase, and a native compile on windows, whether via msvc
 // or mingw-w64 addresses files in a case insensitive manner.
 #include <dbt.h>
-#include <ostream>
 #include <vector>
 
 // MinGW lacks the definition of some Win32 constants
@@ -93,7 +92,7 @@ void setProcessDpiAware()
             // by default when moving the window between monitors.
             if (setProcessDpiAwarenessFunc(ProcessPerMonitorDpiAware) == E_INVALIDARG)
             {
-                sf::err() << "Failed to set process DPI awareness" << std::endl;
+                sf::err() << "Failed to set process DPI awareness" << sf::errEndl;
             }
             else
             {
@@ -118,7 +117,7 @@ void setProcessDpiAware()
         if (setProcessDPIAwareFunc)
         {
             if (!setProcessDPIAwareFunc())
-                sf::err() << "Failed to set process DPI awareness" << std::endl;
+                sf::err() << "Failed to set process DPI awareness" << sf::errEndl;
         }
 
         FreeLibrary(user32Dll);
@@ -379,7 +378,7 @@ void WindowImplWin32::setIcon(const Vector2u& size, const std::uint8_t* pixels)
     }
     else
     {
-        err() << "Failed to set the window's icon" << std::endl;
+        err() << "Failed to set the window's icon" << sf::errEndl;
     }
 }
 
@@ -489,7 +488,7 @@ void WindowImplWin32::switchToFullscreen(const VideoMode& mode)
     // Apply fullscreen mode
     if (ChangeDisplaySettingsW(&devMode, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
     {
-        err() << "Failed to change display mode for fullscreen" << std::endl;
+        err() << "Failed to change display mode for fullscreen" << sf::errEndl;
         return;
     }
 

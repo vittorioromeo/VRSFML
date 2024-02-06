@@ -29,7 +29,6 @@
 
 #include <SFML/System/Err.hpp>
 
-#include <ostream>
 #include <string>
 #include <utility>
 
@@ -49,7 +48,7 @@ thread_local ALenum lastError(AL_NO_ERROR);
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-void alCheckError(const std::filesystem::path& file, unsigned int line, std::string_view expression)
+void alCheckError(std::string_view file, unsigned int line, std::string_view expression)
 {
     // Get the last error
     const ALenum errorCode = alGetError();
@@ -101,9 +100,9 @@ void alCheckError(const std::filesystem::path& file, unsigned int line, std::str
         }
 
         // Log the error
-        err() << "An internal OpenAL call failed in " << file.filename() << "(" << line << ")."
+        err() << "An internal OpenAL call failed in " << file << "(" << line << ")."
               << "\nExpression:\n   " << expression << "\nError description:\n   " << error << "\n   " << description << '\n'
-              << std::endl;
+              << errEndl;
     }
 }
 

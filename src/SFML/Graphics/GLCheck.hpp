@@ -29,7 +29,6 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Config.hpp>
 
-#include <filesystem>
 #include <string_view>
 
 
@@ -64,6 +63,6 @@ namespace sf::priv
 /// \param expression The evaluated expression as a string
 ///
 ////////////////////////////////////////////////////////////
-void glCheckError(const std::filesystem::path& file, unsigned int line, std::string_view expression);
+void glCheckError(std::string_view file, unsigned int line, std::string_view expression);
 
 } // namespace sf::priv

@@ -36,7 +36,7 @@
 #include <SFML/System/Time.hpp>
 
 #include <algorithm>
-#include <ostream>
+#include <utility>
 
 
 namespace sf
@@ -147,7 +147,7 @@ bool InputSoundFile::openFromStream(InputStream& stream)
     // Don't forget to reset the stream to its beginning before re-opening it
     if (stream.seek(0) != 0)
     {
-        err() << "Failed to open sound file from stream (cannot restart stream)" << std::endl;
+        err() << "Failed to open sound file from stream (cannot restart stream)" << errEndl;
         return false;
     }
 

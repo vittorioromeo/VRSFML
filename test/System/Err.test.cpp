@@ -17,25 +17,25 @@ TEST_CASE("[System] sf::err")
 
     SECTION("Redirect buffer to observe contents")
     {
-        sf::err() << "We'll never be able to observe this" << std::endl; // Ensure buffer is flushed
-        auto* const defaultStreamBuffer = sf::err().rdbuf();
+        sf::err() << "We'll never be able to observe this" << sf::errEndl; // Ensure buffer is flushed
+        auto* const defaultStreamBuffer = sf::err().getStream().rdbuf();
         CHECK(defaultStreamBuffer != nullptr);
 
         const std::stringstream stream;
-        sf::err().rdbuf(stream.rdbuf());
+        sf::err().getStream().rdbuf(stream.rdbuf());
         sf::err() << "Something went wrong!\n";
         CHECK(stream.str() == "Something went wrong!\n");
 
-        sf::err().rdbuf(nullptr);
+        sf::err().getStream().rdbuf(nullptr);
         sf::err() << "Sent to the abyss";
         CHECK(stream.str() == "Something went wrong!\n");
 
-        sf::err().rdbuf(stream.rdbuf());
+        sf::err().getStream().rdbuf(stream.rdbuf());
         sf::err() << "Back to the stringstream :)\n";
         CHECK(stream.str() == "Something went wrong!\nBack to the stringstream :)\n");
 
         // Restore sf::err to default stream defaultStreamBuffer
-        sf::err().rdbuf(defaultStreamBuffer);
-        CHECK(sf::err().rdbuf() == defaultStreamBuffer);
+        sf::err().getStream().rdbuf(defaultStreamBuffer);
+        CHECK(sf::err().getStream().rdbuf() == defaultStreamBuffer);
     }
 }

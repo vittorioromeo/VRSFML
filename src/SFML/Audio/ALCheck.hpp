@@ -29,7 +29,6 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Config.hpp>
 
-#include <filesystem>
 #include <string_view>
 
 #if defined(__APPLE__)
@@ -74,7 +73,7 @@ namespace sf::priv
 /// \param expression The evaluated expression as a string
 ///
 ////////////////////////////////////////////////////////////
-void alCheckError(const std::filesystem::path& file, unsigned int line, std::string_view expression);
+void alCheckError(std::string_view file, unsigned int line, std::string_view expression);
 
 
 ////////////////////////////////////////////////////////////

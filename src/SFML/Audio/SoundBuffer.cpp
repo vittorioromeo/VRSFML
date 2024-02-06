@@ -36,8 +36,6 @@
 #include <SFML/System/Time.hpp>
 
 #include <exception>
-#include <memory>
-#include <ostream>
 
 #if defined(__APPLE__)
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -62,7 +60,7 @@ SoundBuffer::SoundBuffer(const SoundBuffer& copy) : m_samples(copy.m_samples), m
 
     // Update the internal buffer with the new samples
     if (!update(copy.getChannelCount(), copy.getSampleRate()))
-        err() << "Failed to update copy-constructed sound buffer" << std::endl;
+        err() << "Failed to update copy-constructed sound buffer" << errEndl;
 }
 
 
@@ -72,7 +70,7 @@ SoundBuffer::~SoundBuffer()
     // Make sure no sound is attached to this buffer
     if (!m_sounds.empty())
     {
-        err() << "Failed to destruct sound buffer because it is used by " << m_sounds.size() << " sound(s)" << std::endl;
+        err() << "Failed to destruct sound buffer because it is used by " << m_sounds.size() << " sound(s)" << errEndl;
         std::terminate();
     }
 
@@ -133,10 +131,10 @@ bool SoundBuffer::loadFromSamples(const std::int16_t* samples,
     {
         // Error...
         err() << "Failed to load sound buffer from samples ("
-              << "array: " << samples << ", "
+              << "array: " << static_cast<const void*>(samples) << ", "
               << "count: " << sampleCount << ", "
               << "channels: " << channelCount << ", "
-              << "samplerate: " << sampleRate << ")" << std::endl;
+              << "samplerate: " << sampleRate << ")" << errEndl;
 
         return false;
     }
@@ -258,7 +256,7 @@ bool SoundBuffer::update(unsigned int channelCount, unsigned int sampleRate)
     // Check if the format is valid
     if (format == 0)
     {
-        err() << "Failed to load sound buffer (unsupported number of channels: " << channelCount << ")" << std::endl;
+        err() << "Failed to load sound buffer (unsupported number of channels: " << channelCount << ")" << errEndl;
         return false;
     }
 

@@ -32,8 +32,6 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Sleep.hpp>
 
-#include <ostream>
-
 #include <cassert>
 #include <cstring>
 
@@ -74,14 +72,14 @@ bool SoundRecorder::start(unsigned int sampleRate)
     {
         err() << "Failed to start capture: your system cannot capture audio data (call SoundRecorder::isAvailable to "
                  "check it)"
-              << std::endl;
+              << errEndl;
         return false;
     }
 
     // Check that another capture is not already running
     if (captureDevice)
     {
-        err() << "Trying to start audio capture, but another capture is already running" << std::endl;
+        err() << "Trying to start audio capture, but another capture is already running" << errEndl;
         return false;
     }
 
@@ -92,7 +90,7 @@ bool SoundRecorder::start(unsigned int sampleRate)
     captureDevice = alcCaptureOpenDevice(m_deviceName.c_str(), sampleRate, format, static_cast<ALCsizei>(sampleRate));
     if (!captureDevice)
     {
-        err() << "Failed to open the audio capture device with the name: " << m_deviceName << std::endl;
+        err() << "Failed to open the audio capture device with the name: " << m_deviceName << errEndl;
         return false;
     }
 
@@ -189,7 +187,7 @@ bool SoundRecorder::setDevice(const std::string& name)
             // Notify derived class
             onStop();
 
-            err() << "Failed to open the audio capture device with the name: " << m_deviceName << std::endl;
+            err() << "Failed to open the audio capture device with the name: " << m_deviceName << errEndl;
             return false;
         }
 
@@ -216,14 +214,14 @@ void SoundRecorder::setChannelCount(unsigned int channelCount)
 {
     if (m_isCapturing)
     {
-        err() << "It's not possible to change the channels while recording." << std::endl;
+        err() << "It's not possible to change the channels while recording." << errEndl;
         return;
     }
 
     if (channelCount < 1 || channelCount > 2)
     {
         err() << "Unsupported channel count: " << channelCount
-              << " Currently only mono (1) and stereo (2) recording is supported." << std::endl;
+              << " Currently only mono (1) and stereo (2) recording is supported." << errEndl;
         return;
     }
 

@@ -33,8 +33,6 @@
 
 #include <SFML/System/Err.hpp>
 
-#include <ostream>
-
 
 namespace
 {
@@ -60,7 +58,7 @@ std::string getDeviceString(IOHIDDeviceRef ref, CFStringRef prop, unsigned int i
     }
 
     sf::err() << "Unable to read string value for property '" << stringFromCFString(prop) << "' for joystick at index "
-              << index << std::endl;
+              << index << sf::errEndl;
     return "Unknown Joystick";
 }
 
@@ -77,7 +75,7 @@ unsigned int getDeviceUint(IOHIDDeviceRef ref, CFStringRef prop, unsigned int in
     }
 
     sf::err() << "Unable to read uint value for property '" << stringFromCFString(prop) << "' for joystick at index "
-              << index << std::endl;
+              << index << sf::errEndl;
     return 0;
 }
 } // namespace
@@ -273,7 +271,7 @@ bool JoystickImpl::open(unsigned int index)
                             {
                                 sf::err() << std::hex << "Joystick (vendor/product id: 0x" << m_identification.vendorId
                                           << "/0x" << m_identification.productId << std::dec
-                                          << ") range is an unexpected one: [" << min << ", " << max << "]" << std::endl;
+                                          << ") range is an unexpected one: [" << min << ", " << max << "]" << sf::errEndl;
                             }
                             else
                             {
@@ -290,14 +288,14 @@ bool JoystickImpl::open(unsigned int index)
                         {
                             sf::err() << std::hex << "Gamepage (vendor/product id: 0x" << m_identification.vendorId
                                       << "/0x" << m_identification.productId << ") is not an CA but a 0x"
-                                      << IOHIDElementGetCollectionType(element) << std::dec << std::endl;
+                                      << IOHIDElementGetCollectionType(element) << std::dec << sf::errEndl;
                         }
                         break;
 
                     default:
 #ifdef SFML_DEBUG
                         sf::err() << "Unexpected usage for element of Page Generic Desktop: 0x" << std::hex
-                                  << IOHIDElementGetUsage(element) << std::dec << std::endl;
+                                  << IOHIDElementGetUsage(element) << std::dec << sf::errEndl;
 #endif
                         break;
                 }

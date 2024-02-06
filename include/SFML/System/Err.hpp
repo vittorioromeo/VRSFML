@@ -30,15 +30,54 @@
 #include <SFML/System/Export.hpp>
 
 #include <iosfwd>
+#include <string>
+#include <string_view>
 
 
 namespace sf
 {
+class ErrStream
+{
+public:
+    ErrStream(std::ostream& os) : m_os(os)
+    {
+    }
+
+    std::ostream& getStream();
+
+    ErrStream& operator<<(const void* value);
+
+    ErrStream& operator<<(char value);
+    ErrStream& operator<<(short value);
+    ErrStream& operator<<(int value);
+    ErrStream& operator<<(long value);
+    ErrStream& operator<<(long long value);
+
+    ErrStream& operator<<(unsigned char value);
+    ErrStream& operator<<(unsigned short value);
+    ErrStream& operator<<(unsigned int value);
+    ErrStream& operator<<(unsigned long value);
+    ErrStream& operator<<(unsigned long long value);
+
+    ErrStream& operator<<(const char* value);
+    ErrStream& operator<<(const std::string& value);
+    ErrStream& operator<<(ErrStream& (*value)(ErrStream&));
+    ErrStream& operator<<(std::ostream& (*value)(std::ostream&));
+    ErrStream& operator<<(std::ios_base& (*value)(std::ios_base&));
+
+    ErrStream& operator<<(const std::string_view& value);
+
+private:
+    std::ostream& m_os;
+};
+
 ////////////////////////////////////////////////////////////
 /// \brief Standard stream used by SFML to output warnings and errors
 ///
 ////////////////////////////////////////////////////////////
-SFML_SYSTEM_API std::ostream& err();
+SFML_SYSTEM_API ErrStream& err();
+
+SFML_SYSTEM_API ErrStream& errEndl(ErrStream&);
 
 } // namespace sf
 
