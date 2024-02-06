@@ -29,14 +29,14 @@
 #include "ResourcePath.hpp"
 
 #import <Foundation/Foundation.h>
-#include <filesystem>
+#include <SFML/System/Filesystem.hpp>
 
 ////////////////////////////////////////////////////////////
-std::filesystem::path resourcePath()
+FilesystemPath resourcePath()
 {
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
-    std::filesystem::path rpath;
+    FilesystemPath rpath;
     NSBundle*             bundle = [NSBundle mainBundle];
 
     if (bundle == nil)

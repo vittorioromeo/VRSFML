@@ -33,7 +33,7 @@
 
 #include <SFML/System/Time.hpp>
 
-#include <filesystem>
+#include <SFML/System/Filesystem.hpp>
 #include <string>
 #include <vector>
 
@@ -201,13 +201,13 @@ public:
         /// \return Directory name
         ///
         ////////////////////////////////////////////////////////////
-        const std::filesystem::path& getDirectory() const;
+        const FilesystemPath& getDirectory() const;
 
     private:
         ////////////////////////////////////////////////////////////
         // Member data
         ////////////////////////////////////////////////////////////
-        std::filesystem::path m_directory; //!< Directory extracted from the response message
+        FilesystemPath m_directory; //!< Directory extracted from the response message
     };
 
 
@@ -438,7 +438,7 @@ public:
     /// \see deleteFile
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Response renameFile(const std::filesystem::path& file, const std::filesystem::path& newName);
+    [[nodiscard]] Response renameFile(const FilesystemPath& file, const FilesystemPath& newName);
 
     ////////////////////////////////////////////////////////////
     /// \brief Remove an existing file
@@ -455,7 +455,7 @@ public:
     /// \see renameFile
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Response deleteFile(const std::filesystem::path& name);
+    [[nodiscard]] Response deleteFile(const FilesystemPath& name);
 
     ////////////////////////////////////////////////////////////
     /// \brief Download a file from the server
@@ -477,8 +477,8 @@ public:
     /// \see upload
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Response download(const std::filesystem::path& remoteFile,
-                                    const std::filesystem::path& localPath,
+    [[nodiscard]] Response download(const FilesystemPath& remoteFile,
+                                    const FilesystemPath& localPath,
                                     TransferMode                 mode = TransferMode::Binary);
 
     ////////////////////////////////////////////////////////////
@@ -502,8 +502,8 @@ public:
     /// \see download
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Response upload(const std::filesystem::path& localFile,
-                                  const std::filesystem::path& remotePath,
+    [[nodiscard]] Response upload(const FilesystemPath& localFile,
+                                  const FilesystemPath& remotePath,
                                   TransferMode                 mode   = TransferMode::Binary,
                                   bool                         append = false);
 

@@ -45,7 +45,7 @@ void playSound()
 /// Play a music
 ///
 ////////////////////////////////////////////////////////////
-void playMusic(const std::filesystem::path& filename)
+void playMusic(const sf::FilesystemPath& filename)
 {
     // Load an ogg music file
     sf::Music music;

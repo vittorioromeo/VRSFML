@@ -31,7 +31,7 @@
 
 #include <SFML/Audio/SoundFileWriter.hpp>
 
-#include <filesystem>
+#include <SFML/System/Filesystem.hpp>
 #include <memory>
 
 
@@ -56,7 +56,7 @@ public:
     /// \return True if the file was successfully opened
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool openFromFile(const std::filesystem::path& filename, unsigned int sampleRate, unsigned int channelCount);
+    [[nodiscard]] bool openFromFile(const FilesystemPath& filename, unsigned int sampleRate, unsigned int channelCount);
 
     ////////////////////////////////////////////////////////////
     /// \brief Write audio samples to the file

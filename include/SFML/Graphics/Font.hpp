@@ -33,11 +33,14 @@
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
-#include <filesystem>
+#include <SFML/System/Filesystem.hpp>
+
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+#include <cstdint>
 
 
 #ifdef SFML_SYSTEM_ANDROID
@@ -87,7 +90,7 @@ public:
     /// \see loadFromMemory, loadFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool loadFromFile(const std::filesystem::path& filename);
+    [[nodiscard]] bool loadFromFile(const FilesystemPath& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the font from a file in memory

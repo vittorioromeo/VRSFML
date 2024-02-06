@@ -46,14 +46,14 @@ void SoundFileWriterFlac::FlacStreamEncoderDeleter::operator()(FLAC__StreamEncod
 
 
 ////////////////////////////////////////////////////////////
-bool SoundFileWriterFlac::check(const std::filesystem::path& filename)
+bool SoundFileWriterFlac::check(const FilesystemPath& filename)
 {
     return toLower(filename.extension().string()) == ".flac";
 }
 
 
 ////////////////////////////////////////////////////////////
-bool SoundFileWriterFlac::open(const std::filesystem::path& filename, unsigned int sampleRate, unsigned int channelCount)
+bool SoundFileWriterFlac::open(const FilesystemPath& filename, unsigned int sampleRate, unsigned int channelCount)
 {
     // Create the encoder
     m_encoder.reset(FLAC__stream_encoder_new());

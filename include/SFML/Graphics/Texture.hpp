@@ -34,7 +34,10 @@
 
 #include <SFML/Window/GlResource.hpp>
 
-#include <filesystem>
+#include <SFML/System/Filesystem.hpp>
+
+#include <cstddef>
+#include <cstdint>
 
 
 namespace sf
@@ -136,7 +139,7 @@ public:
     /// \see loadFromMemory, loadFromStream, loadFromImage
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool loadFromFile(const std::filesystem::path& filename, const IntRect& area = IntRect());
+    [[nodiscard]] bool loadFromFile(const FilesystemPath& filename, const IntRect& area = IntRect());
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the texture from a file in memory

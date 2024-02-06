@@ -11,7 +11,7 @@
 #include <SFML/Main.hpp>
 #endif
 
-std::filesystem::path resourcesDir()
+sf::FilesystemPath resourcesDir()
 {
 #ifdef SFML_SYSTEM_IOS
     return "";

@@ -39,7 +39,7 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-bool SoundFileWriterOgg::check(const std::filesystem::path& filename)
+bool SoundFileWriterOgg::check(const FilesystemPath& filename)
 {
     return toLower(filename.extension().string()) == ".ogg";
 }
@@ -53,7 +53,7 @@ SoundFileWriterOgg::~SoundFileWriterOgg()
 
 
 ////////////////////////////////////////////////////////////
-bool SoundFileWriterOgg::open(const std::filesystem::path& filename, unsigned int sampleRate, unsigned int channelCount)
+bool SoundFileWriterOgg::open(const FilesystemPath& filename, unsigned int sampleRate, unsigned int channelCount)
 {
     // Save the channel count
     m_channelCount = channelCount;
@@ -75,7 +75,7 @@ bool SoundFileWriterOgg::open(const std::filesystem::path& filename, unsigned in
     vorbis_analysis_init(&m_state, &m_vorbis);
 
     // Open the file after the vorbis setup is ok
-    m_file.open(filename, std::ios::binary);
+    m_file.open(filename.string(), std::ios::binary);
     if (!m_file)
     {
         err() << "Failed to write ogg/vorbis file (cannot open file)\n" << formatDebugPathInfo(filename) << errEndl;

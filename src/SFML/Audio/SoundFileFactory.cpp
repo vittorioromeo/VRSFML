@@ -43,7 +43,7 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-std::unique_ptr<SoundFileReader> SoundFileFactory::createReaderFromFilename(const std::filesystem::path& filename)
+std::unique_ptr<SoundFileReader> SoundFileFactory::createReaderFromFilename(const FilesystemPath& filename)
 {
     // Wrap the input file into a file stream
     FileInputStream stream;
@@ -121,7 +121,7 @@ std::unique_ptr<SoundFileReader> SoundFileFactory::createReaderFromStream(InputS
 
 
 ////////////////////////////////////////////////////////////
-std::unique_ptr<SoundFileWriter> SoundFileFactory::createWriterFromFilename(const std::filesystem::path& filename)
+std::unique_ptr<SoundFileWriter> SoundFileFactory::createWriterFromFilename(const FilesystemPath& filename)
 {
     // Test the filename in all the registered factories
     for (const auto& [fpCreate, fpCheck] : getWriterFactoryMap())

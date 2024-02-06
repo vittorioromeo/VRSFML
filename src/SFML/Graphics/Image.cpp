@@ -152,7 +152,7 @@ void Image::create(const Vector2u& size, const std::uint8_t* pixels)
 
 
 ////////////////////////////////////////////////////////////
-bool Image::loadFromFile(const std::filesystem::path& filename)
+bool Image::loadFromFile(const FilesystemPath& filename)
 {
 #ifndef SFML_SYSTEM_ANDROID
 
@@ -281,7 +281,7 @@ bool Image::loadFromStream(InputStream& stream)
 
 
 ////////////////////////////////////////////////////////////
-bool Image::saveToFile(const std::filesystem::path& filename) const
+bool Image::saveToFile(const FilesystemPath& filename) const
 {
     // Make sure the image is not empty
     if (!m_pixels.empty() && m_size.x > 0 && m_size.y > 0)
@@ -289,7 +289,7 @@ bool Image::saveToFile(const std::filesystem::path& filename) const
         // Deduce the image type from its extension
 
         // Extract the extension
-        const std::filesystem::path extension     = filename.extension();
+        const FilesystemPath extension     = filename.extension();
         const Vector2i              convertedSize = Vector2i(m_size);
 
         if (extension == ".bmp")

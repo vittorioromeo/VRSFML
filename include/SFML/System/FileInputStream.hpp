@@ -33,7 +33,7 @@
 
 #include <SFML/System/InputStream.hpp>
 
-#include <filesystem>
+#include <SFML/System/Filesystem.hpp>
 #include <memory>
 
 #include <cstdio>
@@ -99,7 +99,7 @@ public:
     /// \return True on success, false on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool open(const std::filesystem::path& filename);
+    [[nodiscard]] bool open(const FilesystemPath& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Read data from the stream

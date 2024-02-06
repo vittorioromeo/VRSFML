@@ -261,7 +261,7 @@ bool Texture::create(const Vector2u& size)
 
 
 ////////////////////////////////////////////////////////////
-bool Texture::loadFromFile(const std::filesystem::path& filename, const IntRect& area)
+bool Texture::loadFromFile(const FilesystemPath& filename, const IntRect& area)
 {
     Image image;
     return image.loadFromFile(filename) && loadFromImage(image, area);
