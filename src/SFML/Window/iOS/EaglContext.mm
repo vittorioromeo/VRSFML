@@ -124,7 +124,7 @@ m_context(nil)
     ensureInit();
 
     // This constructor should never be used by implementation
-    err() << "Calling bad EaglContext constructor, please contact your developer :)" << std::endl;
+    err() << "Calling bad EaglContext constructor, please contact your developer :)" << errEndl;
 }
 
 
@@ -229,7 +229,7 @@ void EaglContext::recreateRenderBuffers(SFView* glView)
     // Make sure that everything's ok
     const GLenum status = glCheckFramebufferStatusOESFunc(GL_FRAMEBUFFER_OES);
     if (status != GL_FRAMEBUFFER_COMPLETE_OES)
-        err() << "Failed to create a valid frame buffer (error code: " << status << ")" << std::endl;
+        err() << "Failed to create a valid frame buffer (error code: " << status << ")" << errEndl;
 
     // Restore the previous context
     [EAGLContext setCurrentContext:previousContext];

@@ -31,7 +31,6 @@
 
 #include <algorithm>
 #include <iterator>
-#include <ostream>
 
 
 namespace sf
@@ -70,7 +69,7 @@ void SoundBufferRecorder::onStop()
         return;
 
     if (!m_buffer.loadFromSamples(m_samples.data(), m_samples.size(), getChannelCount(), getSampleRate()))
-        err() << "Failed to stop capturing audio data" << std::endl;
+        err() << "Failed to stop capturing audio data" << errEndl;
 }
 
 

@@ -153,7 +153,7 @@ void initFileDescriptors()
         if (tempFD < 0)
         {
             if (errno != ENOENT)
-                sf::err() << "Error opening " << name << ": " << std::strerror(errno) << std::endl;
+                sf::err() << "Error opening " << name << ": " << std::strerror(errno) << errEndl;
 
             continue;
         }
@@ -500,7 +500,7 @@ bool eventProcess(sf::Event& event)
         }
 
         if ((bytesRead < 0) && (errno != EAGAIN))
-            sf::err() << " Error: " << std::strerror(errno) << std::endl;
+            sf::err() << " Error: " << std::strerror(errno) << errEndl;
     }
 
     // Finally check if there is a Text event on stdin
@@ -586,7 +586,7 @@ bool isKeyPressed(Keyboard::Key key)
 bool isKeyPressed(Keyboard::Scancode /* code */)
 {
     // TODO: not implemented
-    err() << "sf::Keyboard::isKeyPressed(Keyboard::Scancode) is not implemented for DRM." << std::endl;
+    err() << "sf::Keyboard::isKeyPressed(Keyboard::Scancode) is not implemented for DRM." << errEndl;
     return false;
 }
 
@@ -595,7 +595,7 @@ bool isKeyPressed(Keyboard::Scancode /* code */)
 Keyboard::Key localize(Keyboard::Scancode /* code */)
 {
     // TODO: not implemented
-    err() << "sf::Keyboard::localize is not implemented for DRM." << std::endl;
+    err() << "sf::Keyboard::localize is not implemented for DRM." << errEndl;
     return Keyboard::Key::Unknown;
 }
 
@@ -604,7 +604,7 @@ Keyboard::Key localize(Keyboard::Scancode /* code */)
 Keyboard::Scancode delocalize(Keyboard::Key /* key */)
 {
     // TODO: not implemented
-    err() << "sf::Keyboard::delocalize is not implemented for DRM." << std::endl;
+    err() << "sf::Keyboard::delocalize is not implemented for DRM." << errEndl;
     return Keyboard::Scan::Unknown;
 }
 
@@ -613,7 +613,7 @@ Keyboard::Scancode delocalize(Keyboard::Key /* key */)
 String getDescription(Keyboard::Scancode /* code */)
 {
     // TODO: not implemented
-    err() << "sf::Keyboard::getDescription is not implemented for DRM." << std::endl;
+    err() << "sf::Keyboard::getDescription is not implemented for DRM." << errEndl;
     return "";
 }
 

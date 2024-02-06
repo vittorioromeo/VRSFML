@@ -31,11 +31,9 @@
 #include <SFML/System/Utils.hpp>
 
 #include <algorithm>
-#include <ostream>
 #include <random>
 
 #include <cassert>
-#include <cctype>
 
 
 namespace sf::priv
@@ -70,8 +68,7 @@ bool SoundFileWriterOgg::open(const std::filesystem::path& filename, unsigned in
     int status = vorbis_encode_init_vbr(&m_vorbis, static_cast<long>(channelCount), static_cast<long>(sampleRate), 0.4f);
     if (status < 0)
     {
-        err() << "Failed to write ogg/vorbis file (unsupported bitrate)\n"
-              << formatDebugPathInfo(filename) << std::endl;
+        err() << "Failed to write ogg/vorbis file (unsupported bitrate)\n" << formatDebugPathInfo(filename) << errEndl;
         close();
         return false;
     }
@@ -81,7 +78,7 @@ bool SoundFileWriterOgg::open(const std::filesystem::path& filename, unsigned in
     m_file.open(filename, std::ios::binary);
     if (!m_file)
     {
-        err() << "Failed to write ogg/vorbis file (cannot open file)\n" << formatDebugPathInfo(filename) << std::endl;
+        err() << "Failed to write ogg/vorbis file (cannot open file)\n" << formatDebugPathInfo(filename) << errEndl;
         close();
         return false;
     }
@@ -99,7 +96,7 @@ bool SoundFileWriterOgg::open(const std::filesystem::path& filename, unsigned in
     if (status < 0)
     {
         err() << "Failed to write ogg/vorbis file (cannot generate the headers)\n"
-              << formatDebugPathInfo(filename) << std::endl;
+              << formatDebugPathInfo(filename) << errEndl;
         close();
         return false;
     }

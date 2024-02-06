@@ -33,6 +33,7 @@
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
+#include <filesystem>
 #include <memory>
 #include <string>
 #include <unordered_map>

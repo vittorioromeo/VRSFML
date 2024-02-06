@@ -33,7 +33,6 @@
 #include <SFML/System/Err.hpp>
 
 #include <algorithm>
-#include <ostream>
 
 #include <cstring>
 
@@ -225,7 +224,7 @@ void TcpSocket::disconnect()
 Socket::Status TcpSocket::send(const void* data, std::size_t size)
 {
     if (!isBlocking())
-        err() << "Warning: Partial sends might not be handled properly." << std::endl;
+        err() << "Warning: Partial sends might not be handled properly." << errEndl;
 
     std::size_t sent;
 
@@ -239,7 +238,7 @@ Socket::Status TcpSocket::send(const void* data, std::size_t size, std::size_t& 
     // Check the parameters
     if (!data || (size == 0))
     {
-        err() << "Cannot send data over the network (no data to send)" << std::endl;
+        err() << "Cannot send data over the network (no data to send)" << errEndl;
         return Status::Error;
     }
 
@@ -281,7 +280,7 @@ Socket::Status TcpSocket::receive(void* data, std::size_t size, std::size_t& rec
     // Check the destination buffer
     if (!data)
     {
-        err() << "Cannot receive data from the network (the destination buffer is invalid)" << std::endl;
+        err() << "Cannot receive data from the network (the destination buffer is invalid)" << errEndl;
         return Status::Error;
     }
 

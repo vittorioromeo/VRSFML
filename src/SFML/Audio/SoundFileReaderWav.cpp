@@ -31,11 +31,7 @@
 #include <SFML/System/InputStream.hpp>
 #include <SFML/System/Utils.hpp>
 
-#include <algorithm>
-#include <ostream>
-
 #include <cassert>
-#include <cctype>
 #include <cstddef>
 #include <cstring>
 
@@ -126,7 +122,7 @@ std::optional<SoundFileReader::Info> SoundFileReaderWav::open(InputStream& strea
 
     const auto info = parseHeader();
     if (!info)
-        err() << "Failed to open WAV sound file (invalid or unsupported file)" << std::endl;
+        err() << "Failed to open WAV sound file (invalid or unsupported file)" << errEndl;
 
     return info;
 }
@@ -138,7 +134,7 @@ void SoundFileReaderWav::seek(std::uint64_t sampleOffset)
     assert(m_stream && "Input stream cannot be null. Call SoundFileReaderWav::open() to initialize it.");
 
     if (m_stream->seek(static_cast<std::int64_t>(m_dataStart + sampleOffset * m_bytesPerSample) == -1))
-        err() << "Failed to seek WAV sound stream" << std::endl;
+        err() << "Failed to seek WAV sound stream" << errEndl;
 }
 
 
@@ -280,7 +276,7 @@ std::optional<SoundFileReader::Info> SoundFileReaderWav::parseHeader()
             if (bitsPerSample != 8 && bitsPerSample != 16 && bitsPerSample != 24 && bitsPerSample != 32)
             {
                 err() << "Unsupported sample size: " << bitsPerSample
-                      << " bit (Supported sample sizes are 8/16/24/32 bit)" << std::endl;
+                      << " bit (Supported sample sizes are 8/16/24/32 bit)" << errEndl;
                 return std::nullopt;
             }
             m_bytesPerSample = bitsPerSample / 8;
@@ -310,7 +306,7 @@ std::optional<SoundFileReader::Info> SoundFileReaderWav::parseHeader()
 
                 if (std::memcmp(subformat, waveSubformatPcm, sizeof(subformat)) != 0)
                 {
-                    err() << "Unsupported format: extensible format with non-PCM subformat" << std::endl;
+                    err() << "Unsupported format: extensible format with non-PCM subformat" << errEndl;
                     return std::nullopt;
                 }
 
@@ -319,7 +315,7 @@ std::optional<SoundFileReader::Info> SoundFileReaderWav::parseHeader()
                     err() << "Unsupported format: sample size (" << validBitsPerSample
                           << " bits) and "
                              "sample container size ("
-                          << bitsPerSample << " bits) differ" << std::endl;
+                          << bitsPerSample << " bits) differ" << errEndl;
                     return std::nullopt;
                 }
             }

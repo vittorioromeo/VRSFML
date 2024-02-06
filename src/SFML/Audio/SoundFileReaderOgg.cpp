@@ -30,10 +30,7 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/MemoryInputStream.hpp>
 
-#include <ostream>
-
 #include <cassert>
-#include <cctype>
 
 
 namespace
@@ -101,7 +98,7 @@ std::optional<SoundFileReader::Info> SoundFileReaderOgg::open(InputStream& strea
     const int status = ov_open_callbacks(&stream, &m_vorbis, nullptr, 0, callbacks);
     if (status < 0)
     {
-        err() << "Failed to open Vorbis file for reading" << std::endl;
+        err() << "Failed to open Vorbis file for reading" << errEndl;
         return std::nullopt;
     }
 

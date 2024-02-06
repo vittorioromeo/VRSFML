@@ -33,7 +33,6 @@
 #include <SFML/System/Sleep.hpp>
 
 #include <mutex>
-#include <ostream>
 
 #include <cassert>
 
@@ -77,7 +76,7 @@ void SoundStream::initialize(unsigned int channelCount, unsigned int sampleRate)
     {
         m_channelCount = 0;
         m_sampleRate   = 0;
-        err() << "Unsupported number of channels (" << m_channelCount << ")" << std::endl;
+        err() << "Unsupported number of channels (" << m_channelCount << ")" << errEndl;
     }
 }
 
@@ -89,7 +88,7 @@ void SoundStream::play()
     if (m_format == 0)
     {
         err() << "Failed to play audio stream: sound parameters have not been initialized (call initialize() first)"
-              << std::endl;
+              << errEndl;
         return;
     }
 
@@ -353,7 +352,7 @@ void SoundStream::streamData()
                 if (bits == 0)
                 {
                     err() << "Bits in sound stream are 0: make sure that the audio format is not corrupt "
-                          << "and initialize() has been called correctly" << std::endl;
+                          << "and initialize() has been called correctly" << errEndl;
 
                     // Abort streaming (exit main loop)
                     const std::lock_guard lock(m_threadMutex);

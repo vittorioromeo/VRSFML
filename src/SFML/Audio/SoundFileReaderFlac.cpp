@@ -30,8 +30,6 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InputStream.hpp>
 
-#include <ostream>
-
 #include <cassert>
 
 
@@ -233,7 +231,7 @@ std::optional<SoundFileReader::Info> SoundFileReaderFlac::open(InputStream& stre
     m_decoder.reset(FLAC__stream_decoder_new());
     if (!m_decoder)
     {
-        err() << "Failed to open FLAC file (failed to allocate the decoder)" << std::endl;
+        err() << "Failed to open FLAC file (failed to allocate the decoder)" << errEndl;
         return std::nullopt;
     }
 
@@ -254,7 +252,7 @@ std::optional<SoundFileReader::Info> SoundFileReaderFlac::open(InputStream& stre
     if (!FLAC__stream_decoder_process_until_end_of_metadata(m_decoder.get()))
     {
         m_decoder.reset();
-        err() << "Failed to open FLAC file (failed to read metadata)" << std::endl;
+        err() << "Failed to open FLAC file (failed to read metadata)" << errEndl;
         return std::nullopt;
     }
 

@@ -41,8 +41,6 @@
 #include FT_OUTLINE_H
 #include FT_BITMAP_H
 #include FT_STROKER_H
-#include <ostream>
-#include <type_traits>
 
 #include <cmath>
 #include <cstdlib>
@@ -138,7 +136,7 @@ bool Font::loadFromFile(const std::filesystem::path& filename)
     // global manager that would create a lot of issues regarding creation and destruction order.
     if (FT_Init_FreeType(&fontHandles->library) != 0)
     {
-        err() << "Failed to load font (failed to initialize FreeType)\n" << formatDebugPathInfo(filename) << std::endl;
+        err() << "Failed to load font (failed to initialize FreeType)\n" << formatDebugPathInfo(filename) << errEndl;
         return false;
     }
 
@@ -146,7 +144,7 @@ bool Font::loadFromFile(const std::filesystem::path& filename)
     FT_Face face;
     if (FT_New_Face(fontHandles->library, filename.string().c_str(), 0, &face) != 0)
     {
-        err() << "Failed to load font (failed to create the font face)\n" << formatDebugPathInfo(filename) << std::endl;
+        err() << "Failed to load font (failed to create the font face)\n" << formatDebugPathInfo(filename) << errEndl;
         return false;
     }
     fontHandles->face = face;
@@ -154,7 +152,7 @@ bool Font::loadFromFile(const std::filesystem::path& filename)
     // Load the stroker that will be used to outline the font
     if (FT_Stroker_New(fontHandles->library, &fontHandles->stroker) != 0)
     {
-        err() << "Failed to load font (failed to create the stroker)\n" << formatDebugPathInfo(filename) << std::endl;
+        err() << "Failed to load font (failed to create the stroker)\n" << formatDebugPathInfo(filename) << errEndl;
         return false;
     }
 
@@ -162,7 +160,7 @@ bool Font::loadFromFile(const std::filesystem::path& filename)
     if (FT_Select_Charmap(face, FT_ENCODING_UNICODE) != 0)
     {
         err() << "Failed to load font (failed to set the Unicode character set)\n"
-              << formatDebugPathInfo(filename) << std::endl;
+              << formatDebugPathInfo(filename) << errEndl;
         return false;
     }
 
@@ -196,7 +194,7 @@ bool Font::loadFromMemory(const void* data, std::size_t sizeInBytes)
     // global manager that would create a lot of issues regarding creation and destruction order.
     if (FT_Init_FreeType(&fontHandles->library) != 0)
     {
-        err() << "Failed to load font from memory (failed to initialize FreeType)" << std::endl;
+        err() << "Failed to load font from memory (failed to initialize FreeType)" << errEndl;
         return false;
     }
 
@@ -208,7 +206,7 @@ bool Font::loadFromMemory(const void* data, std::size_t sizeInBytes)
                            0,
                            &face) != 0)
     {
-        err() << "Failed to load font from memory (failed to create the font face)" << std::endl;
+        err() << "Failed to load font from memory (failed to create the font face)" << errEndl;
         return false;
     }
     fontHandles->face = face;
@@ -216,14 +214,14 @@ bool Font::loadFromMemory(const void* data, std::size_t sizeInBytes)
     // Load the stroker that will be used to outline the font
     if (FT_Stroker_New(fontHandles->library, &fontHandles->stroker) != 0)
     {
-        err() << "Failed to load font from memory (failed to create the stroker)" << std::endl;
+        err() << "Failed to load font from memory (failed to create the stroker)" << errEndl;
         return false;
     }
 
     // Select the Unicode character map
     if (FT_Select_Charmap(face, FT_ENCODING_UNICODE) != 0)
     {
-        err() << "Failed to load font from memory (failed to set the Unicode character set)" << std::endl;
+        err() << "Failed to load font from memory (failed to set the Unicode character set)" << errEndl;
         return false;
     }
 
@@ -250,14 +248,14 @@ bool Font::loadFromStream(InputStream& stream)
     // global manager that would create a lot of issues regarding creation and destruction order.
     if (FT_Init_FreeType(&fontHandles->library) != 0)
     {
-        err() << "Failed to load font from stream (failed to initialize FreeType)" << std::endl;
+        err() << "Failed to load font from stream (failed to initialize FreeType)" << errEndl;
         return false;
     }
 
     // Make sure that the stream's reading position is at the beginning
     if (stream.seek(0) == -1)
     {
-        err() << "Failed to seek font stream" << std::endl;
+        err() << "Failed to seek font stream" << errEndl;
         return false;
     }
 
@@ -279,7 +277,7 @@ bool Font::loadFromStream(InputStream& stream)
     FT_Face face;
     if (FT_Open_Face(fontHandles->library, &args, 0, &face) != 0)
     {
-        err() << "Failed to load font from stream (failed to create the font face)" << std::endl;
+        err() << "Failed to load font from stream (failed to create the font face)" << errEndl;
         return false;
     }
     fontHandles->face = face;
@@ -287,14 +285,14 @@ bool Font::loadFromStream(InputStream& stream)
     // Load the stroker that will be used to outline the font
     if (FT_Stroker_New(fontHandles->library, &fontHandles->stroker) != 0)
     {
-        err() << "Failed to load font from stream (failed to create the stroker)" << std::endl;
+        err() << "Failed to load font from stream (failed to create the stroker)" << errEndl;
         return false;
     }
 
     // Select the Unicode character map
     if (FT_Select_Charmap(face, FT_ENCODING_UNICODE) != 0)
     {
-        err() << "Failed to load font from stream (failed to set the Unicode character set)" << std::endl;
+        err() << "Failed to load font from stream (failed to set the Unicode character set)" << errEndl;
         return false;
     }
 
@@ -562,7 +560,7 @@ Glyph Font::loadGlyph(std::uint32_t codePoint, unsigned int characterSize, bool 
             FT_Bitmap_Embolden(m_fontHandles->library, &bitmap, weight, weight);
 
         if (outlineThickness != 0)
-            err() << "Failed to outline glyph (no fallback available)" << std::endl;
+            err() << "Failed to outline glyph (no fallback available)" << errEndl;
     }
 
     // Compute the glyph's advance offset
@@ -706,7 +704,7 @@ IntRect Font::findGlyphRect(Page& page, const Vector2u& size) const
                 Texture newTexture;
                 if (!newTexture.create(textureSize * 2u))
                 {
-                    err() << "Failed to create new page texture" << std::endl;
+                    err() << "Failed to create new page texture" << errEndl;
                     return {{0, 0}, {2, 2}};
                 }
 
@@ -718,7 +716,7 @@ IntRect Font::findGlyphRect(Page& page, const Vector2u& size) const
             {
                 // Oops, we've reached the maximum texture size...
                 err() << "Failed to add a new character to the font: the maximum texture size has been reached"
-                      << std::endl;
+                      << errEndl;
                 return {{0, 0}, {2, 2}};
             }
         }
@@ -759,18 +757,18 @@ bool Font::setCurrentSize(unsigned int characterSize) const
             // fail if the requested size is not available
             if (!FT_IS_SCALABLE(face))
             {
-                err() << "Failed to set bitmap font size to " << characterSize << std::endl;
+                err() << "Failed to set bitmap font size to " << characterSize << errEndl;
                 err() << "Available sizes are: ";
                 for (int i = 0; i < face->num_fixed_sizes; ++i)
                 {
                     const long size = (face->available_sizes[i].y_ppem + 32) >> 6;
                     err() << size << " ";
                 }
-                err() << std::endl;
+                err() << errEndl;
             }
             else
             {
-                err() << "Failed to set font size to " << characterSize << std::endl;
+                err() << "Failed to set font size to " << characterSize << errEndl;
             }
         }
 
@@ -796,7 +794,7 @@ Font::Page::Page(bool smooth)
     // Create the texture
     if (!texture.loadFromImage(image))
     {
-        err() << "Failed to load font page texture" << std::endl;
+        err() << "Failed to load font page texture" << errEndl;
     }
 
     texture.setSmooth(smooth);

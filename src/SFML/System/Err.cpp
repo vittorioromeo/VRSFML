@@ -99,13 +99,42 @@ private:
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-std::ostream& err()
+ErrStream& err()
 {
     static DefaultErrStreamBuf buffer;
     static std::ostream        stream(&buffer);
+    static ErrStream           errStream(stream);
 
-    return stream;
+    return errStream;
 }
 
+ErrStream& errEndl(ErrStream& os)
+{
+    return os << std::endl;
+}
+
+std::ostream& ErrStream::getStream() { return m_os; }
+
+ErrStream& ErrStream::operator<<(const void* value) { m_os << value; return *this; }
+
+ErrStream& ErrStream::operator<<(char value) { m_os << value; return *this; }
+ErrStream& ErrStream::operator<<(short value) { m_os << value; return *this; }
+ErrStream& ErrStream::operator<<(int value) { m_os << value; return *this; }
+ErrStream& ErrStream::operator<<(long value) { m_os << value; return *this; }
+ErrStream& ErrStream::operator<<(long long value) { m_os << value; return *this; }
+
+ErrStream& ErrStream::operator<<(unsigned char value) { m_os << value; return *this; }
+ErrStream& ErrStream::operator<<(unsigned short value) { m_os << value; return *this; }
+ErrStream& ErrStream::operator<<(unsigned int value) { m_os << value; return *this; }
+ErrStream& ErrStream::operator<<(unsigned long value) { m_os << value; return *this; }
+ErrStream& ErrStream::operator<<(unsigned long long value) { m_os << value; return *this; }
+
+ErrStream& ErrStream::operator<<(const char* value) { m_os << value; return *this; }
+ErrStream& ErrStream::operator<<(const std::string& value) { m_os << value; return *this; }
+ErrStream& ErrStream::operator<<(ErrStream& (*value)(ErrStream&)) { m_os << value; return *this; }
+ErrStream& ErrStream::operator<<(std::ostream& (*value)(std::ostream&)) { m_os << value; return *this; }
+ErrStream& ErrStream::operator<<(std::ios_base& (*value)(std::ios_base&)) { m_os << value; return *this; }
+
+ErrStream& ErrStream::operator<<(const std::string_view& value) { m_os << value; return *this; }
 
 } // namespace sf

@@ -41,7 +41,6 @@
 
 #include <algorithm>
 #include <memory>
-#include <ostream>
 
 #include <cassert>
 #include <cstring>
@@ -60,7 +59,7 @@ void skip(void* user, int size)
 {
     auto& stream = *static_cast<sf::InputStream*>(user);
     if (stream.seek(stream.tell() + size) == -1)
-        sf::err() << "Failed to seek image loader input stream" << std::endl;
+        sf::err() << "Failed to seek image loader input stream" << sf::errEndl;
 }
 
 int eof(void* user)
@@ -180,7 +179,7 @@ bool Image::loadFromFile(const std::filesystem::path& filename)
     {
         // Error, failed to load the image
         err() << "Failed to load image\n"
-              << formatDebugPathInfo(filename) << "\nReason: " << stbi_failure_reason() << std::endl;
+              << formatDebugPathInfo(filename) << "\nReason: " << stbi_failure_reason() << errEndl;
 
         return false;
     }
@@ -224,14 +223,14 @@ bool Image::loadFromMemory(const void* data, std::size_t size)
         else
         {
             // Error, failed to load the image
-            err() << "Failed to load image from memory. Reason: " << stbi_failure_reason() << std::endl;
+            err() << "Failed to load image from memory. Reason: " << stbi_failure_reason() << errEndl;
 
             return false;
         }
     }
     else
     {
-        err() << "Failed to load image from memory, no data provided" << std::endl;
+        err() << "Failed to load image from memory, no data provided" << errEndl;
         return false;
     }
 }
@@ -246,7 +245,7 @@ bool Image::loadFromStream(InputStream& stream)
     // Make sure that the stream's reading position is at the beginning
     if (stream.seek(0) == -1)
     {
-        err() << "Failed to seek image stream" << std::endl;
+        err() << "Failed to seek image stream" << errEndl;
         return false;
     }
 
@@ -275,7 +274,7 @@ bool Image::loadFromStream(InputStream& stream)
     else
     {
         // Error, failed to load the image
-        err() << "Failed to load image from stream. Reason: " << stbi_failure_reason() << std::endl;
+        err() << "Failed to load image from stream. Reason: " << stbi_failure_reason() << errEndl;
         return false;
     }
 }
@@ -319,11 +318,11 @@ bool Image::saveToFile(const std::filesystem::path& filename) const
         }
         else
         {
-            err() << "Image file extension " << extension << " not supported\n";
+            err() << "Image file extension " << extension.string() << " not supported\n";
         }
     }
 
-    err() << "Failed to save image\n" << formatDebugPathInfo(filename) << std::endl;
+    err() << "Failed to save image\n" << formatDebugPathInfo(filename) << errEndl;
     return false;
 }
 
@@ -366,7 +365,7 @@ std::optional<std::vector<std::uint8_t>> Image::saveToMemory(std::string_view fo
         }
     }
 
-    err() << "Failed to save image with format " << std::quoted(format) << std::endl;
+    err() << "Failed to save image with format " << '"' << format << '"' << errEndl;
     return std::nullopt;
 }
 
@@ -517,7 +516,7 @@ const std::uint8_t* Image::getPixelsPtr() const
     }
     else
     {
-        err() << "Trying to access the pixels of an empty image" << std::endl;
+        err() << "Trying to access the pixels of an empty image" << errEndl;
         return nullptr;
     }
 }

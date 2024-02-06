@@ -38,11 +38,9 @@
 
 #include <algorithm>
 #include <atomic>
-#include <ostream>
 #include <utility>
 
 #include <cassert>
-#include <climits>
 #include <cstring>
 
 
@@ -87,7 +85,7 @@ m_cacheId(TextureImpl::getUniqueId())
         }
         else
         {
-            err() << "Failed to copy texture, failed to create new texture" << std::endl;
+            err() << "Failed to copy texture, failed to create new texture" << errEndl;
         }
     }
 }
@@ -156,7 +154,7 @@ bool Texture::create(const Vector2u& size)
     // Check if texture parameters are valid before creating it
     if ((size.x == 0) || (size.y == 0))
     {
-        err() << "Failed to create texture, invalid size (" << size.x << "x" << size.y << ")" << std::endl;
+        err() << "Failed to create texture, invalid size (" << size.x << "x" << size.y << ")" << errEndl;
         return false;
     }
 
@@ -174,7 +172,7 @@ bool Texture::create(const Vector2u& size)
     {
         err() << "Failed to create texture, its internal size is too high "
               << "(" << actualSize.x << "x" << actualSize.y << ", "
-              << "maximum is " << maxSize << "x" << maxSize << ")" << std::endl;
+              << "maximum is " << maxSize << "x" << maxSize << ")" << errEndl;
         return false;
     }
 
@@ -206,7 +204,7 @@ bool Texture::create(const Vector2u& size)
         {
             err() << "OpenGL extension SGIS_texture_edge_clamp unavailable" << '\n'
                   << "Artifacts may occur along texture edges" << '\n'
-                  << "Ensure that hardware acceleration is enabled if available" << std::endl;
+                  << "Ensure that hardware acceleration is enabled if available" << errEndl;
 
             warned = true;
         }
@@ -225,7 +223,7 @@ bool Texture::create(const Vector2u& size)
 #else
             err() << "OpenGL ES extension EXT_sRGB unavailable" << '\n';
 #endif
-            err() << "Automatic sRGB to linear conversion disabled" << std::endl;
+            err() << "Automatic sRGB to linear conversion disabled" << errEndl;
 
             warned = true;
         }
@@ -438,10 +436,10 @@ Image Texture::copyToImage() const
         glCheck(glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, allPixels.data()));
 
         // Then we copy the useful pixels from the temporary array to the final one
-        const std::uint8_t* src = allPixels.data();
-        std::uint8_t* dst = pixels.data();
-        int srcPitch = static_cast<int>(m_actualSize.x * 4);
-        const unsigned int dstPitch = m_size.x * 4;
+        const std::uint8_t* src      = allPixels.data();
+        std::uint8_t*       dst      = pixels.data();
+        int                 srcPitch = static_cast<int>(m_actualSize.x * 4);
+        const unsigned int  dstPitch = m_size.x * 4;
 
         // Handle the case where source pixels are flipped vertically
         if (m_pixelsFlipped)
@@ -557,7 +555,7 @@ void Texture::update(const Texture& texture, const Vector2u& dest)
 
         if (!sourceFrameBuffer || !destFrameBuffer)
         {
-            err() << "Cannot copy texture, failed to create a frame buffer object" << std::endl;
+            err() << "Cannot copy texture, failed to create a frame buffer object" << errEndl;
             return;
         }
 
@@ -609,7 +607,7 @@ void Texture::update(const Texture& texture, const Vector2u& dest)
         }
         else
         {
-            err() << "Cannot copy texture, failed to link texture to frame buffer" << std::endl;
+            err() << "Cannot copy texture, failed to link texture to frame buffer" << errEndl;
         }
 
         // Restore previously bound framebuffers
@@ -777,7 +775,7 @@ void Texture::setRepeated(bool repeated)
                 {
                     err() << "OpenGL extension SGIS_texture_edge_clamp unavailable" << '\n'
                           << "Artifacts may occur along texture edges" << '\n'
-                          << "Ensure that hardware acceleration is enabled if available" << std::endl;
+                          << "Ensure that hardware acceleration is enabled if available" << errEndl;
 
                     warned = true;
                 }

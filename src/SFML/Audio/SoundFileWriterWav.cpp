@@ -30,8 +30,6 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Utils.hpp>
 
-#include <ostream>
-
 #include <cassert>
 #include <cstddef>
 
@@ -88,7 +86,7 @@ bool SoundFileWriterWav::open(const std::filesystem::path& filename, unsigned in
     m_file.open(filename, std::ios::binary);
     if (!m_file)
     {
-        err() << "Failed to open WAV sound file for writing\n" << formatDebugPathInfo(filename) << std::endl;
+        err() << "Failed to open WAV sound file for writing\n" << formatDebugPathInfo(filename) << errEndl;
         return false;
     }
 

@@ -38,9 +38,7 @@
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <ostream>
 #include <string>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -896,7 +894,7 @@ void GlContext::initialize(const ContextSettings& requestedSettings)
 
     if (!glGetIntegervFunc || !glGetErrorFunc || !glGetStringFunc || !glEnableFunc || !glIsEnabledFunc)
     {
-        err() << "Could not load necessary function to initialize OpenGL context" << std::endl;
+        err() << "Could not load necessary function to initialize OpenGL context" << errEndl;
         return;
     }
 
@@ -948,13 +946,13 @@ void GlContext::initialize(const ContextSettings& requestedSettings)
                 !parseVersionString(version, "OpenGL ES ", m_settings.majorVersion, m_settings.minorVersion) &&
                 !parseVersionString(version, "", m_settings.majorVersion, m_settings.minorVersion))
             {
-                err() << "Unable to parse OpenGL version string: " << std::quoted(version) << ", defaulting to 1.1"
-                      << std::endl;
+                err() << "Unable to parse OpenGL version string: " << '"' << version << '"' << ", defaulting to 1.1"
+                      << errEndl;
             }
         }
         else
         {
-            err() << "Unable to retrieve OpenGL version string, defaulting to 1.1" << std::endl;
+            err() << "Unable to retrieve OpenGL version string, defaulting to 1.1" << errEndl;
         }
     }
 
@@ -1037,7 +1035,7 @@ void GlContext::initialize(const ContextSettings& requestedSettings)
         // Check to see if the enable was successful
         if (glIsEnabledFunc(GL_FRAMEBUFFER_SRGB) == GL_FALSE)
         {
-            err() << "Warning: Failed to enable GL_FRAMEBUFFER_SRGB" << std::endl;
+            err() << "Warning: Failed to enable GL_FRAMEBUFFER_SRGB" << errEndl;
             m_settings.sRgbCapable = false;
         }
     }
@@ -1052,7 +1050,7 @@ void GlContext::initialize(const ContextSettings& requestedSettings)
 void GlContext::checkSettings(const ContextSettings& requestedSettings) const
 {
     // Perform checks to inform the user if they are getting a context they might not have expected
-    const int version          = static_cast<int>(m_settings.majorVersion * 10u + m_settings.minorVersion);
+    const int version = static_cast<int>(m_settings.majorVersion * 10u + m_settings.minorVersion);
     const int requestedVersion = static_cast<int>(requestedSettings.majorVersion * 10u + requestedSettings.minorVersion);
 
     if ((m_settings.attributeFlags != requestedSettings.attributeFlags) || (version < requestedVersion) ||
@@ -1072,7 +1070,7 @@ void GlContext::checkSettings(const ContextSettings& requestedSettings) const
               << " ; AA level = " << m_settings.antialiasingLevel << std::boolalpha
               << " ; core = " << ((m_settings.attributeFlags & ContextSettings::Core) != 0)
               << " ; debug = " << ((m_settings.attributeFlags & ContextSettings::Debug) != 0)
-              << " ; sRGB = " << m_settings.sRgbCapable << std::noboolalpha << std::endl;
+              << " ; sRGB = " << m_settings.sRgbCapable << std::noboolalpha << errEndl;
     }
 }
 

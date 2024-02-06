@@ -32,10 +32,6 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Sleep.hpp>
 
-#include <ostream>
-
-#include <cassert>
-
 
 namespace sf
 {
@@ -168,7 +164,7 @@ bool Window::setActive(bool active) const
         }
         else
         {
-            err() << "Failed to activate the window's context" << std::endl;
+            err() << "Failed to activate the window's context" << errEndl;
             return false;
         }
     }
@@ -208,7 +204,7 @@ void Window::initialize()
     // Activate the window
     if (!setActive())
     {
-        err() << "Failed to set window as active during initialization" << std::endl;
+        err() << "Failed to set window as active during initialization" << errEndl;
     }
 
     WindowBase::initialize();

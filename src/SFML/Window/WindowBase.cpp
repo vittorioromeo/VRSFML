@@ -33,7 +33,6 @@
 
 #include <algorithm>
 #include <limits>
-#include <ostream>
 
 #include <cassert>
 
@@ -365,7 +364,7 @@ void WindowBase::create(VideoMode mode, std::uint32_t& style, State& state)
         // Make sure there's not already a fullscreen window (only one is allowed)
         if (getFullscreenWindow())
         {
-            err() << "Creating two fullscreen windows is not allowed, switching to windowed mode" << std::endl;
+            err() << "Creating two fullscreen windows is not allowed, switching to windowed mode" << errEndl;
             state = State::Windowed;
         }
         else
@@ -373,11 +372,11 @@ void WindowBase::create(VideoMode mode, std::uint32_t& style, State& state)
             // Make sure that the chosen video mode is compatible
             if (!mode.isValid())
             {
-                err() << "The requested video mode is not available, switching to a valid mode" << std::endl;
+                err() << "The requested video mode is not available, switching to a valid mode" << errEndl;
                 assert(!VideoMode::getFullscreenModes().empty() && "No video modes available");
                 mode = VideoMode::getFullscreenModes()[0];
                 err() << "  VideoMode: { size: { " << mode.size.x << ", " << mode.size.y
-                      << " }, bitsPerPixel: " << mode.bitsPerPixel << " }" << std::endl;
+                      << " }, bitsPerPixel: " << mode.bitsPerPixel << " }" << errEndl;
             }
 
             // Update the fullscreen window

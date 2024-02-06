@@ -120,7 +120,7 @@ WindowImplCocoa::WindowImplCocoa(WindowHandle handle)
         sf::err() << "Cannot import this Window Handle because it is neither "
                   << "a <NSWindow*> nor <NSView*> object "
                   << "(or any of their subclasses). You gave a <" << [[nsHandle className] UTF8String] << "> object."
-                  << std::endl;
+                  << sf::errEndl;
         return;
     }
 

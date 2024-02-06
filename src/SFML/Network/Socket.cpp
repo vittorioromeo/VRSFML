@@ -30,7 +30,6 @@
 
 #include <SFML/System/Err.hpp>
 
-#include <ostream>
 #include <utility>
 
 
@@ -109,7 +108,7 @@ void Socket::create()
 
         if (handle == priv::SocketImpl::invalidSocket())
         {
-            err() << "Failed to create socket" << std::endl;
+            err() << "Failed to create socket" << errEndl;
             return;
         }
 
@@ -137,14 +136,14 @@ void Socket::create(SocketHandle handle)
             if (setsockopt(m_socket, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&yes), sizeof(yes)) == -1)
             {
                 err() << "Failed to set socket option \"TCP_NODELAY\" ; "
-                      << "all your TCP packets will be buffered" << std::endl;
+                      << "all your TCP packets will be buffered" << errEndl;
             }
 
 // On macOS, disable the SIGPIPE signal on disconnection
 #ifdef SFML_SYSTEM_MACOS
             if (setsockopt(m_socket, SOL_SOCKET, SO_NOSIGPIPE, reinterpret_cast<char*>(&yes), sizeof(yes)) == -1)
             {
-                err() << "Failed to set socket option \"SO_NOSIGPIPE\"" << std::endl;
+                err() << "Failed to set socket option \"SO_NOSIGPIPE\"" << errEndl;
             }
 #endif
         }
@@ -154,7 +153,7 @@ void Socket::create(SocketHandle handle)
             int yes = 1;
             if (setsockopt(m_socket, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<char*>(&yes), sizeof(yes)) == -1)
             {
-                err() << "Failed to enable broadcast on UDP socket" << std::endl;
+                err() << "Failed to enable broadcast on UDP socket" << errEndl;
             }
         }
     }
