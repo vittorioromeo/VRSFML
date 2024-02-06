@@ -81,7 +81,7 @@ SoundBuffer::~SoundBuffer()
 
 
 ////////////////////////////////////////////////////////////
-bool SoundBuffer::loadFromFile(const std::filesystem::path& filename)
+bool SoundBuffer::loadFromFile(const FilesystemPath& filename)
 {
     InputSoundFile file;
     if (file.openFromFile(filename))
@@ -142,7 +142,7 @@ bool SoundBuffer::loadFromSamples(const std::int16_t* samples,
 
 
 ////////////////////////////////////////////////////////////
-bool SoundBuffer::saveToFile(const std::filesystem::path& filename) const
+bool SoundBuffer::saveToFile(const FilesystemPath& filename) const
 {
     // Create the sound file in write mode
     OutputSoundFile file;

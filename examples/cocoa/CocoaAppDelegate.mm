@@ -27,7 +27,7 @@
 
 #import "NSString+stdstring.h"
 
-#include <filesystem>
+#include <SFML/System/Filesystem.hpp>
 
 // These define are used for converting the color of the NSPopUpButton
 #define BLUE  @"Blue"
@@ -41,7 +41,7 @@ struct SFMLmainWindow
 {
     SFMLmainWindow(sf::WindowHandle win) : renderWindow(win)
     {
-        const std::filesystem::path resPath = [[[NSBundle mainBundle] resourcePath] tostdstring];
+        const FilesystemPath resPath = [[[NSBundle mainBundle] resourcePath] tostdstring];
         if (!logo.loadFromFile(resPath / "logo.png"))
             NSLog(@"Couldn't load the logo image");
 

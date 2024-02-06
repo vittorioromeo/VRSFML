@@ -63,7 +63,7 @@ void InputSoundFile::StreamDeleter::operator()(InputStream* ptr) const
 
 
 ////////////////////////////////////////////////////////////
-bool InputSoundFile::openFromFile(const std::filesystem::path& filename)
+bool InputSoundFile::openFromFile(const FilesystemPath& filename)
 {
     // If the file is already open, first close it
     close();

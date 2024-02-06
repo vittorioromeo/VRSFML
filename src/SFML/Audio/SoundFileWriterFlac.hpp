@@ -30,7 +30,7 @@
 #include <SFML/Audio/SoundFileWriter.hpp>
 
 #include <FLAC/stream_encoder.h>
-#include <filesystem>
+#include <SFML/System/Filesystem.hpp>
 #include <memory>
 #include <vector>
 
@@ -52,7 +52,7 @@ public:
     /// \return True if the file can be written by this writer
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static bool check(const std::filesystem::path& filename);
+    [[nodiscard]] static bool check(const FilesystemPath& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a sound file for writing
@@ -64,7 +64,7 @@ public:
     /// \return True if the file was successfully opened
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool open(const std::filesystem::path& filename, unsigned int sampleRate, unsigned int channelCount) override;
+    [[nodiscard]] bool open(const FilesystemPath& filename, unsigned int sampleRate, unsigned int channelCount) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Write audio samples to the open file

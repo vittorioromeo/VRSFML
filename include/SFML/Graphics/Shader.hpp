@@ -36,7 +36,7 @@
 #include <SFML/System/Vector2.hpp>
 #include <SFML/System/Vector3.hpp>
 
-#include <filesystem>
+#include <SFML/System/Filesystem.hpp>
 #include <string>
 #include <unordered_map>
 
@@ -144,7 +144,7 @@ public:
     /// \see loadFromMemory, loadFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool loadFromFile(const std::filesystem::path& filename, Type type);
+    [[nodiscard]] bool loadFromFile(const FilesystemPath& filename, Type type);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load both the vertex and fragment shaders from files
@@ -165,8 +165,8 @@ public:
     /// \see loadFromMemory, loadFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool loadFromFile(const std::filesystem::path& vertexShaderFilename,
-                                    const std::filesystem::path& fragmentShaderFilename);
+    [[nodiscard]] bool loadFromFile(const FilesystemPath& vertexShaderFilename,
+                                    const FilesystemPath& fragmentShaderFilename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the vertex, geometry and fragment shaders from files
@@ -188,9 +188,9 @@ public:
     /// \see loadFromMemory, loadFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool loadFromFile(const std::filesystem::path& vertexShaderFilename,
-                                    const std::filesystem::path& geometryShaderFilename,
-                                    const std::filesystem::path& fragmentShaderFilename);
+    [[nodiscard]] bool loadFromFile(const FilesystemPath& vertexShaderFilename,
+                                    const FilesystemPath& geometryShaderFilename,
+                                    const FilesystemPath& fragmentShaderFilename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the vertex, geometry or fragment shader from a source code in memory

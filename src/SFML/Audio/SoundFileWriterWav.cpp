@@ -66,7 +66,7 @@ void encode(std::ostream& stream, std::uint32_t value)
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-bool SoundFileWriterWav::check(const std::filesystem::path& filename)
+bool SoundFileWriterWav::check(const FilesystemPath& filename)
 {
     return toLower(filename.extension().string()) == ".wav";
 }
@@ -80,10 +80,10 @@ SoundFileWriterWav::~SoundFileWriterWav()
 
 
 ////////////////////////////////////////////////////////////
-bool SoundFileWriterWav::open(const std::filesystem::path& filename, unsigned int sampleRate, unsigned int channelCount)
+bool SoundFileWriterWav::open(const FilesystemPath& filename, unsigned int sampleRate, unsigned int channelCount)
 {
     // Open the file
-    m_file.open(filename, std::ios::binary);
+    m_file.open(filename.string(), std::ios::binary);
     if (!m_file)
     {
         err() << "Failed to open WAV sound file for writing\n" << formatDebugPathInfo(filename) << errEndl;

@@ -12,14 +12,14 @@
 
 namespace
 {
-std::filesystem::path getTemporaryFilePath()
+sf::FilesystemPath getTemporaryFilePath()
 {
     static int counter = 0;
 
     std::ostringstream oss;
     oss << "sfmltemp" << counter++ << ".tmp";
 
-    return std::filesystem::temp_directory_path() / oss.str();
+    return sf::filesystemTempDirectoryPath() / oss.str();
 }
 
 class TemporaryFile
@@ -28,7 +28,7 @@ public:
     // Create a temporary file with a randomly generated path, containing 'contents'.
     TemporaryFile(const std::string& contents) : m_path(getTemporaryFilePath())
     {
-        std::ofstream ofs(m_path);
+        std::ofstream ofs(m_path.string());
         assert(ofs && "Stream encountered an error");
 
         ofs << contents;
@@ -38,7 +38,7 @@ public:
     // Close and delete the generated file.
     ~TemporaryFile()
     {
-        [[maybe_unused]] const bool removed = std::filesystem::remove(m_path);
+        [[maybe_unused]] const bool removed = filesystemRemove(m_path);
         assert(removed && "m_path failed to be removed from filesystem");
     }
 
@@ -48,13 +48,13 @@ public:
     TemporaryFile& operator=(const TemporaryFile&) = delete;
 
     // Return the randomly generated path.
-    const std::filesystem::path& getPath() const
+    const sf::FilesystemPath& getPath() const
     {
         return m_path;
     }
 
 private:
-    std::filesystem::path m_path;
+    sf::FilesystemPath m_path;
 };
 } // namespace
 

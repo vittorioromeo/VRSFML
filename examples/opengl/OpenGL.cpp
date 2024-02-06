@@ -19,7 +19,7 @@
 #define GL_SRGB8_ALPHA8 0x8C43
 #endif
 
-std::filesystem::path resourcesDir()
+sf::FilesystemPath resourcesDir()
 {
 #ifdef SFML_SYSTEM_IOS
     return "";

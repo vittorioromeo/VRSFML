@@ -29,14 +29,14 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Export.hpp>
 
-#include <filesystem>
+#include <SFML/System/Filesystem.hpp>
 #include <string>
 
 
 namespace sf
 {
 [[nodiscard]] SFML_SYSTEM_API std::string toLower(std::string str);
-[[nodiscard]] SFML_SYSTEM_API std::string formatDebugPathInfo(const std::filesystem::path& path);
+[[nodiscard]] SFML_SYSTEM_API std::string formatDebugPathInfo(const FilesystemPath& path);
 
 // Convert byte sequence into integer
 // toInteger<int>(0x12, 0x34, 0x56) == 0x563412

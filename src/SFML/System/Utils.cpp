@@ -41,11 +41,11 @@ std::string toLower(std::string str)
     return str;
 }
 
-std::string formatDebugPathInfo(const std::filesystem::path& path)
+std::string formatDebugPathInfo(const FilesystemPath& path)
 {
     std::ostringstream oss;
     oss << "    Provided path: " << path << '\n' //
-        << "    Absolute path: " << std::filesystem::absolute(path);
+        << "    Absolute path: " << filesystemAbsolute(path);
     return oss.str();
 }
 

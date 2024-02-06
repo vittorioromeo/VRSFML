@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
-#include <filesystem>
+#include <SFML/System/Filesystem.hpp>
 #include <memory>
 #include <unordered_map>
 
@@ -109,7 +109,7 @@ public:
     /// \see createReaderFromMemory, createReaderFromStream
     ///
     ////////////////////////////////////////////////////////////
-    static std::unique_ptr<SoundFileReader> createReaderFromFilename(const std::filesystem::path& filename);
+    static std::unique_ptr<SoundFileReader> createReaderFromFilename(const FilesystemPath& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Instantiate the right codec for the given file in memory
@@ -144,7 +144,7 @@ public:
     /// \return A new sound file writer that can write given file, or null if no writer can handle it
     ///
     ////////////////////////////////////////////////////////////
-    static std::unique_ptr<SoundFileWriter> createWriterFromFilename(const std::filesystem::path& filename);
+    static std::unique_ptr<SoundFileWriter> createWriterFromFilename(const FilesystemPath& filename);
 
 private:
     ////////////////////////////////////////////////////////////
@@ -154,7 +154,7 @@ private:
     using CreateFnPtr = std::unique_ptr<T> (*)();
 
     using ReaderCheckFnPtr = bool (*)(InputStream&);
-    using WriterCheckFnPtr = bool (*)(const std::filesystem::path&);
+    using WriterCheckFnPtr = bool (*)(const FilesystemPath&);
 
     using ReaderFactoryMap = std::unordered_map<CreateFnPtr<SoundFileReader>, ReaderCheckFnPtr>;
     using WriterFactoryMap = std::unordered_map<CreateFnPtr<SoundFileWriter>, WriterCheckFnPtr>;

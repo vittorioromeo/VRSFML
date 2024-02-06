@@ -9,7 +9,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include <filesystem>
+#include <SFML/System/Filesystem.hpp>
 #include <optional>
 #include <type_traits>
 
@@ -42,12 +42,12 @@ struct NoopSoundFileReader : sf::SoundFileReader
 
 struct NoopSoundFileWriter : sf::SoundFileWriter
 {
-    static bool check(const std::filesystem::path&)
+    static bool check(const sf::FilesystemPath&)
     {
         return false;
     }
 
-    bool open(const std::filesystem::path&, unsigned int, unsigned int) override
+    bool open(const sf::FilesystemPath&, unsigned int, unsigned int) override
     {
         return false;
     }

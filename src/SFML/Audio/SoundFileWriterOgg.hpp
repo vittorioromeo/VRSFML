@@ -29,10 +29,13 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/SoundFileWriter.hpp>
 
+#include <SFML/System/Filesystem.hpp>
+
 #include <vorbis/vorbisenc.h>
 
-#include <filesystem>
 #include <fstream>
+
+#include <cstdint>
 
 
 namespace sf::priv
@@ -52,7 +55,7 @@ public:
     /// \return True if the file can be written by this writer
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static bool check(const std::filesystem::path& filename);
+    [[nodiscard]] static bool check(const FilesystemPath& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -70,7 +73,7 @@ public:
     /// \return True if the file was successfully opened
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool open(const std::filesystem::path& filename, unsigned int sampleRate, unsigned int channelCount) override;
+    [[nodiscard]] bool open(const FilesystemPath& filename, unsigned int sampleRate, unsigned int channelCount) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Write audio samples to the open file

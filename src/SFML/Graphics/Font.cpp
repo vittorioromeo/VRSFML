@@ -122,7 +122,7 @@ struct Font::FontHandles
 
 
 ////////////////////////////////////////////////////////////
-bool Font::loadFromFile(const std::filesystem::path& filename)
+bool Font::loadFromFile(const FilesystemPath& filename)
 {
 #ifndef SFML_SYSTEM_ANDROID
 

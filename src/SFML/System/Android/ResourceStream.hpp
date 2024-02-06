@@ -33,7 +33,7 @@
 
 #include <android/asset_manager.h>
 
-#include <filesystem>
+#include <SFML/System/Filesystem.hpp>
 #include <string>
 
 
@@ -52,7 +52,7 @@ public:
     /// \param filename Filename of the asset
     ///
     ////////////////////////////////////////////////////////////
-    ResourceStream(const std::filesystem::path& filename);
+    ResourceStream(const FilesystemPath& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Read data from the asset

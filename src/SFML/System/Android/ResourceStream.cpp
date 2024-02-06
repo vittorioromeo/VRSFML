@@ -36,7 +36,7 @@ namespace sf::priv
 {
 
 ////////////////////////////////////////////////////////////
-ResourceStream::ResourceStream(const std::filesystem::path& filename)
+ResourceStream::ResourceStream(const FilesystemPath& filename)
 {
     ActivityStates&       states = getActivity();
     const std::lock_guard lock(states.mutex);

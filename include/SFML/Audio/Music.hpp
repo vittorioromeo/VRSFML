@@ -32,7 +32,7 @@
 #include <SFML/Audio/InputSoundFile.hpp>
 #include <SFML/Audio/SoundStream.hpp>
 
-#include <filesystem>
+#include <SFML/System/Filesystem.hpp>
 #include <vector>
 
 #include <cstdint>
@@ -89,7 +89,7 @@ public:
     /// \see openFromMemory, openFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool openFromFile(const std::filesystem::path& filename);
+    [[nodiscard]] bool openFromFile(const FilesystemPath& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a music from an audio file in memory

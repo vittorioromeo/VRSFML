@@ -10,6 +10,8 @@ set(SRC
     ${SRCROOT}/EnumArray.hpp
     ${SRCROOT}/Err.cpp
     ${INCROOT}/Err.hpp
+    ${SRCROOT}/Filesystem.cpp
+    ${INCROOT}/Filesystem.hpp
     ${INCROOT}/Export.hpp
     ${INCROOT}/InputStream.hpp
     ${INCROOT}/NativeActivity.hpp
