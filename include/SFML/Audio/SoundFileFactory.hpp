@@ -32,7 +32,7 @@
 #include <SFML/System/UniquePtr.hpp>
 
 #include <filesystem>
-#include <vector>
+#include <unordered_map>
 
 #include <cstddef>
 
@@ -69,6 +69,13 @@ public:
     static void unregisterReader();
 
     ////////////////////////////////////////////////////////////
+    /// \brief Check if a reader is registered
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename T>
+    static bool isReaderRegistered();
+
+    ////////////////////////////////////////////////////////////
     /// \brief Register a new writer
     ///
     /// \see unregisterWriter
@@ -85,6 +92,13 @@ public:
     ////////////////////////////////////////////////////////////
     template <typename T>
     static void unregisterWriter();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Check if a writer is registered
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename T>
+    static bool isWriterRegistered();
 
     ////////////////////////////////////////////////////////////
     /// \brief Instantiate the right reader for the given file on disk
@@ -137,27 +151,20 @@ private:
     ////////////////////////////////////////////////////////////
     // Types
     ////////////////////////////////////////////////////////////
-    struct ReaderFactory
-    {
-        bool (*check)(InputStream&);
-        priv::UniquePtr<SoundFileReader> (*create)();
-    };
-    using ReaderFactoryArray = std::vector<ReaderFactory>;
+    template <typename T>
+    using CreateFnPtr = priv::UniquePtr<T> (*)();
 
-    struct WriterFactory
-    {
-        bool (*check)(const std::filesystem::path&);
-        priv::UniquePtr<SoundFileWriter> (*create)();
-    };
-    using WriterFactoryArray = std::vector<WriterFactory>;
+    using ReaderCheckFnPtr = bool (*)(InputStream&);
+    using WriterCheckFnPtr = bool (*)(const std::filesystem::path&);
+
+    using ReaderFactoryMap = std::unordered_map<CreateFnPtr<SoundFileReader>, ReaderCheckFnPtr>;
+    using WriterFactoryMap = std::unordered_map<CreateFnPtr<SoundFileWriter>, WriterCheckFnPtr>;
 
     ////////////////////////////////////////////////////////////
-    // Static member data
+    // Static member functions
     ////////////////////////////////////////////////////////////
-    // NOLINTBEGIN(readability-identifier-naming)
-    static inline ReaderFactoryArray s_readers; //!< List of all registered readers
-    static inline WriterFactoryArray s_writers; //!< List of all registered writers
-    // NOLINTEND(readability-identifier-naming)
+    static ReaderFactoryMap& getReaderFactoryMap();
+    static WriterFactoryMap& getWriterFactoryMap();
 };
 
 } // namespace sf
@@ -183,7 +190,10 @@ private:
 /// Usage example:
 /// \code
 /// sf::SoundFileFactory::registerReader<MySoundFileReader>();
+/// assert(sf::SoundFileFactory::isReaderRegistered<MySoundFileReader>());
+///
 /// sf::SoundFileFactory::registerWriter<MySoundFileWriter>();
+/// assert(sf::SoundFileFactory::isWriterRegistered<MySoundFileWriter>());
 /// \endcode
 ///
 /// \see sf::InputSoundFile, sf::OutputSoundFile, sf::SoundFileReader, sf::SoundFileWriter
