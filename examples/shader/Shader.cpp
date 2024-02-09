@@ -23,8 +23,13 @@
 #include <SFML/System/Time.hpp>
 
 #include <array>
+#include <optional>
 #include <random>
+#include <vector>
 
+#include <cmath>
+#include <cstdint>
+#include <cstdlib>
 
 namespace
 {

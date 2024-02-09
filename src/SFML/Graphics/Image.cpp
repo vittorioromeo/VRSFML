@@ -41,7 +41,9 @@
 #include <stb_image_write.h>
 
 #include <algorithm>
+#include <iomanip>
 #include <ostream>
+#include <string>
 
 #include <cassert>
 #include <cstring>

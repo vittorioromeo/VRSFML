@@ -38,6 +38,8 @@
 
 #include <optional>
 
+#include <cstdint>
+
 
 namespace sf
 {

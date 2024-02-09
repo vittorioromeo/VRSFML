@@ -8,6 +8,9 @@
 
 #include <iomanip>
 #include <iostream>
+#include <optional>
+
+#include <cstddef>
 
 
 ////////////////////////////////////////////////////////////

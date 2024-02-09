@@ -9,6 +9,10 @@
 #include <SFML/Network/TcpSocket.hpp>
 
 #include <iostream>
+#include <optional>
+
+#include <cstddef>
+#include <cstdint>
 
 
 const std::uint8_t clientAudioData   = 1;

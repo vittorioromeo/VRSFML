@@ -4,7 +4,6 @@
 #include <SFML/Network/Ftp.hpp>
 #include <SFML/Network/IpAddress.hpp>
 
-#include <fstream>
 #include <iostream>
 #include <optional>
 

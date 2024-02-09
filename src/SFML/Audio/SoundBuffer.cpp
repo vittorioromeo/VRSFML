@@ -37,6 +37,7 @@
 
 #include <exception>
 #include <ostream>
+#include <utility>
 
 #if defined(__APPLE__)
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"

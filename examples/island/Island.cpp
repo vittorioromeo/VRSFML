@@ -32,6 +32,7 @@
 #include <vector>
 
 #include <cmath>
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 
