@@ -43,11 +43,15 @@
 #include <SFML/System/UniquePtr.hpp>
 
 #include <SFML/System/EnumArray.hpp>
+#include <SFML/System/Vector2.hpp>
+#include <SFML/System/Vector3.hpp>
 
 #include <array>
 #include <optional>
 #include <queue>
-#include <set>
+
+#include <cstdint>
+
 
 namespace sf
 {

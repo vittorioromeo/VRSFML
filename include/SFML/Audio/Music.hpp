@@ -36,6 +36,7 @@
 
 #include <filesystem>
 
+#include <cstddef>
 #include <cstdint>
 
 

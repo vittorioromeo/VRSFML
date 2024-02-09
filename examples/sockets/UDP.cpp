@@ -9,6 +9,8 @@
 #include <iostream>
 #include <optional>
 
+#include <cstddef>
+
 
 ////////////////////////////////////////////////////////////
 /// Launch a server, wait for a message, send an answer.

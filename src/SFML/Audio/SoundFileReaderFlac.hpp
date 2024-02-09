@@ -32,8 +32,16 @@
 #include <SFML/System/UniquePtr.hpp>
 
 #include <FLAC/stream_decoder.h>
+#include <optional>
 #include <vector>
 
+#include <cstdint>
+
+
+namespace sf
+{
+class InputStream;
+}
 
 namespace sf::priv
 {
@@ -113,7 +121,7 @@ private:
         void operator()(FLAC__StreamDecoder* decoder) const;
     };
     UniquePtr<FLAC__StreamDecoder, FlacStreamDecoderDeleter> m_decoder; //!< FLAC decoder
-    ClientData m_clientData; //!< Structure passed to the decoder callbacks
+    ClientData m_clientData;                                            //!< Structure passed to the decoder callbacks
 };
 
 } // namespace sf::priv

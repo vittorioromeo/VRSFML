@@ -35,6 +35,8 @@
 
 #include <filesystem>
 
+#include <cstdint>
+
 
 namespace sf
 {

@@ -32,7 +32,6 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
-#include <algorithm>
 #include <ostream>
 #include <utility>
 
@@ -64,8 +63,7 @@ SocketSelector::SocketSelector() : m_impl(priv::makeUnique<SocketSelectorImpl>()
 
 
 ////////////////////////////////////////////////////////////
-SocketSelector::SocketSelector(const SocketSelector& copy) :
-m_impl(priv::makeUnique<SocketSelectorImpl>(*copy.m_impl))
+SocketSelector::SocketSelector(const SocketSelector& copy) : m_impl(priv::makeUnique<SocketSelectorImpl>(*copy.m_impl))
 {
 }
 
@@ -120,7 +118,8 @@ void SocketSelector::add(Socket& socket)
         }
 
         // SocketHandle is an int in POSIX
-        m_impl->maxSocket = std::max(m_impl->maxSocket, handle);
+        if (m_impl->maxSocket < handle)
+            m_impl->maxSocket = handle;
 
 #endif
 

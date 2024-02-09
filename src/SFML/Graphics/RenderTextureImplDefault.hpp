@@ -32,12 +32,13 @@
 #include <SFML/Window/GlResource.hpp>
 
 #include <SFML/System/UniquePtr.hpp>
+#include <SFML/System/Vector2.hpp>
 
 
 namespace sf
 {
 class Context;
-
+struct ContextSettings;
 
 namespace priv
 {
@@ -115,7 +116,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     priv::UniquePtr<Context> m_context; //!< P-Buffer based context
-    Vector2u                     m_size;    //!< Width and height of the P-Buffer
+    Vector2u                 m_size;    //!< Width and height of the P-Buffer
 };
 
 } // namespace priv

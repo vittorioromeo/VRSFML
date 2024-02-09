@@ -23,7 +23,12 @@
 #include <SFML/System/Time.hpp>
 #include <SFML/System/Vector2.hpp>
 
+#include <filesystem>
 #include <random>
+#include <string>
+
+#include <cmath>
+#include <cstdlib>
 
 #ifdef SFML_SYSTEM_IOS
 #include <SFML/Main.hpp>
