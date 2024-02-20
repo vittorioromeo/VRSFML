@@ -58,21 +58,21 @@ struct TouchSlot
     sf::Vector2i pos;
 };
 
-std::recursive_mutex inputMutex; // threadsafe? maybe...
-sf::Vector2i         mousePos;   // current mouse position
+std::recursive_mutex inputMutex;                           // threadsafe? maybe...
+sf::Vector2i         mousePos;                             // current mouse position
 
 std::vector<int> fileDescriptors; // list of open file descriptors for /dev/input
 sf::priv::EnumArray<sf::Mouse::Button, bool, sf::Mouse::ButtonCount> mouseMap{}; // track whether mouse buttons are down
 sf::priv::EnumArray<sf::Keyboard::Key, bool, sf::Keyboard::KeyCount> keyMap{};   // track whether keys are down
 
-int                    touchFd = -1;    // file descriptor we have seen MT events on; assumes only 1
-std::vector<TouchSlot> touchSlots;      // track the state of each touch "slot"
-int                    currentSlot = 0; // which slot are we currently updating?
+int                    touchFd = -1;                       // file descriptor we have seen MT events on; assumes only 1
+std::vector<TouchSlot> touchSlots;                         // track the state of each touch "slot"
+int                    currentSlot = 0;                    // which slot are we currently updating?
 
-std::queue<sf::Event> eventQueue;    // events received and waiting to be consumed
-const int             maxQueue = 64; // The maximum size we let eventQueue grow to
+std::queue<sf::Event> eventQueue;                          // events received and waiting to be consumed
+const int             maxQueue = 64;                       // The maximum size we let eventQueue grow to
 
-termios newTerminalConfig, oldTerminalConfig; // Terminal configurations
+termios newTerminalConfig, oldTerminalConfig;              // Terminal configurations
 
 bool altDown()
 {
@@ -526,7 +526,7 @@ bool eventProcess(sf::Event& event)
 
     if ((code == 127) || (code == 8)) // Suppress 127 (DEL) to 8 (BACKSPACE)
         code = 0;
-    else if (code == 27) // ESC
+    else if (code == 27)              // ESC
     {
         // Suppress ANSI escape sequences
         FD_ZERO(&readFDSet);

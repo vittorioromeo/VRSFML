@@ -49,8 +49,7 @@ InputSoundFile::StreamDeleter::StreamDeleter(bool theOwned) : owned(theOwned)
 
 
 ////////////////////////////////////////////////////////////
-template <typename T>
-InputSoundFile::StreamDeleter::StreamDeleter(const std::default_delete<T>&)
+InputSoundFile::StreamDeleter::StreamDeleter(const priv::UniquePtrDefaultDeleter&)
 {
 }
 
@@ -75,7 +74,7 @@ bool InputSoundFile::openFromFile(const std::filesystem::path& filename)
         return false;
 
     // Wrap the file into a stream
-    auto file = std::make_unique<FileInputStream>();
+    auto file = priv::makeUnique<FileInputStream>();
 
     // Open it
     if (!file->open(filename))
@@ -111,7 +110,7 @@ bool InputSoundFile::openFromMemory(const void* data, std::size_t sizeInBytes)
         return false;
 
     // Wrap the memory file into a stream
-    auto memory = std::make_unique<MemoryInputStream>();
+    auto memory = priv::makeUnique<MemoryInputStream>();
 
     // Open it
     memory->open(data, sizeInBytes);
@@ -159,7 +158,7 @@ bool InputSoundFile::openFromStream(InputStream& stream)
 
     // Take ownership of reader and store a reference to the stream without taking ownership
     m_reader = std::move(reader);
-    m_stream = {&stream, false};
+    m_stream = priv::UniquePtr<InputStream, StreamDeleter>{&stream, false};
 
     // Retrieve the attributes of the open sound file
     m_sampleCount  = info->sampleCount;
