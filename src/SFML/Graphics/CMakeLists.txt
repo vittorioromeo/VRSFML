@@ -49,7 +49,6 @@ set(SRC
     ${SRCROOT}/View.cpp
     ${INCROOT}/View.hpp
     ${INCROOT}/Vertex.hpp
-    ${INCROOT}/Vertex.inl
 )
 source_group("" FILES ${SRC})
 
