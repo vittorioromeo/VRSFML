@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,44 +22,15 @@
 //
 ////////////////////////////////////////////////////////////
 
-#pragma once
+#include <SFML/Graphics/Rect.hpp>
+
 
 ////////////////////////////////////////////////////////////
-// Precompiled Headers
+// Explicit instantiation definitions
 ////////////////////////////////////////////////////////////
 
-#include <SFML/Config.hpp>
-
-#ifdef SFML_SYSTEM_WINDOWS
-
-#include <SFML/System/Win32/WindowsHeader.hpp>
-
-#include <dinput.h>
-#include <mmsystem.h>
-
-#endif // SFML_SYSTEM_WINDOWS
-
-#include <SFML/System/Err.hpp>
-#include <SFML/System/String.hpp>
-#include <SFML/System/Time.hpp>
-#include <SFML/System/UniquePtr.hpp>
-#include <SFML/System/Vector2.hpp>
-
-#include <algorithm>
-#include <chrono>
-#include <filesystem>
-#include <iostream>
-#include <locale>
-#include <memory>
-#include <mutex>
-#include <optional>
-#include <ostream>
-#include <string>
-#include <unordered_map>
-#include <vector>
-
-#include <cassert>
-#include <cmath>
-#include <cstdint>
-#include <cstdlib>
-#include <cstring>
+template class sf::Rect<float>;
+template class sf::Rect<double>;
+template class sf::Rect<long double>;
+template class sf::Rect<int>;
+template class sf::Rect<unsigned int>;
