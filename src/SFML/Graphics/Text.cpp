@@ -276,8 +276,7 @@ float Text::getOutlineThickness() const
 Vector2f Text::findCharacterPos(std::size_t index) const
 {
     // Adjust the index if it's out of range
-    if (index > m_string.getSize())
-        index = m_string.getSize();
+    index = std::min(index, m_string.getSize());
 
     // Precompute the variables needed by the algorithm
     const bool  isBold          = m_style & Bold;
@@ -340,21 +339,19 @@ FloatRect Text::getGlobalBounds() const
 
 
 ////////////////////////////////////////////////////////////
-void Text::draw(RenderTarget& target, const RenderStates& states) const
+void Text::draw(RenderTarget& target, RenderStates states) const
 {
     ensureGeometryUpdate();
 
-    RenderStates statesCopy(states);
-
-    statesCopy.transform *= getTransform();
-    statesCopy.texture        = &m_font->getTexture(m_characterSize);
-    statesCopy.coordinateType = CoordinateType::Pixels;
+    states.transform *= getTransform();
+    states.texture        = &m_font->getTexture(m_characterSize);
+    states.coordinateType = CoordinateType::Pixels;
 
     // Only draw the outline if there is something to draw
     if (m_outlineThickness != 0)
-        target.draw(m_outlineVertices, statesCopy);
+        target.draw(m_outlineVertices, states);
 
-    target.draw(m_vertices, statesCopy);
+    target.draw(m_vertices, states);
 }
 
 

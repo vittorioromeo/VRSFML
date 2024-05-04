@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
-#include <SFML/Audio/AlResource.hpp>
+#include <SFML/Audio/SoundChannel.hpp>
 
 #include <SFML/System/UniquePtr.hpp>
 
@@ -48,7 +48,7 @@ class Time;
 /// \brief Abstract base class for capturing sound data
 ///
 ////////////////////////////////////////////////////////////
-class SFML_AUDIO_API SoundRecorder : AlResource
+class SFML_AUDIO_API SoundRecorder
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -202,6 +202,17 @@ public:
     unsigned int getChannelCount() const;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Get the map of position in sample frame to sound channel
+    ///
+    /// This is used to map a sample in the sample stream to a
+    /// position during spatialisation.
+    ///
+    /// \return Map of position in sample frame to sound channel
+    ///
+    ////////////////////////////////////////////////////////////
+    const std::vector<SoundChannel>& getChannelMap() const;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Check if the system supports audio capture
     ///
     /// This function should always be called before using
@@ -222,24 +233,6 @@ protected:
     ///
     ////////////////////////////////////////////////////////////
     SoundRecorder();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Set the processing interval
-    ///
-    /// The processing interval controls the period
-    /// between calls to the onProcessSamples function. You may
-    /// want to use a small interval if you want to process the
-    /// recorded data in real time, for example.
-    ///
-    /// Note: this is only a hint, the actual period may vary.
-    /// So don't rely on this parameter to implement precise timing.
-    ///
-    /// The default processing interval is 100 ms.
-    ///
-    /// \param interval Processing interval
-    ///
-    ////////////////////////////////////////////////////////////
-    void setProcessingInterval(Time interval);
 
     ////////////////////////////////////////////////////////////
     /// \brief Start capturing audio data
@@ -282,11 +275,10 @@ protected:
     virtual void onStop();
 
 private:
-    class Impl;
-
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
+    struct Impl;
     priv::UniquePtr<Impl> m_impl;
 };
 
