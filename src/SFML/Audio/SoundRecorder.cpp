@@ -25,16 +25,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/System/UniquePtr.hpp"
 #include <SFML/Audio/SoundRecorder.hpp>
 
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Sleep.hpp>
-#include <SFML/System/Time.hpp>
-
-#include <mutex>
-#include <ostream>
-#include <thread>
-#include <vector>
 
 #include <miniaudio.h>
 
@@ -165,7 +160,7 @@ struct SoundRecorder::Impl
 
 
 ////////////////////////////////////////////////////////////
-SoundRecorder::SoundRecorder() : m_impl(std::make_unique<Impl>(this))
+SoundRecorder::SoundRecorder() : m_impl(priv::makeUnique<Impl>(this))
 {
     // Create the log
     m_impl->log.emplace();
@@ -209,102 +204,7 @@ SoundRecorder::SoundRecorder() : m_impl(std::make_unique<Impl>(this))
 
 
 ////////////////////////////////////////////////////////////
-class SoundRecorder::Impl
-{
-public:
-    Impl(SoundRecorder* parent);
-    ~Impl();
-
-    [[nodiscard]] bool start(unsigned int sampleRate = 44100);
-
-    void stop();
-
-    unsigned int getSampleRate() const;
-
-    static std::vector<std::string> getAvailableDevices();
-
-    static std::string getDefaultDevice();
-
-    [[nodiscard]] bool setDevice(const std::string& name);
-
-    const std::string& getDevice() const;
-
-    void setChannelCount(unsigned int channelCount);
-
-    unsigned int getChannelCount() const;
-
-    static bool isAvailable();
-
-    void setProcessingInterval(Time interval);
-
-private:
-    ////////////////////////////////////////////////////////////
-    /// \brief Function called as the entry point of the thread
-    ///
-    /// This function starts the recording loop, and returns
-    /// only when the capture is stopped.
-    ///
-    ////////////////////////////////////////////////////////////
-    void record();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the new available audio samples and process them
-    ///
-    /// This function is called continuously during the
-    /// capture loop. It retrieves the captured samples and
-    /// forwards them to the derived class.
-    ///
-    ////////////////////////////////////////////////////////////
-    void processCapturedSamples();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Clean up the recorder's internal resources
-    ///
-    /// This function is called when the capture stops.
-    ///
-    ////////////////////////////////////////////////////////////
-    void cleanup();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Launch a new capture thread running 'record'
-    ///
-    /// This function is called when the capture is started or
-    /// when the device is changed.
-    ///
-    ////////////////////////////////////////////////////////////
-    void launchCapturingThread();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Stop capturing and wait for 'm_thread' to join
-    ///
-    /// This function is called when the capture is stopped or
-    /// when the device is changed.
-    ///
-    ////////////////////////////////////////////////////////////
-    void awaitCapturingThread();
-
-    ////////////////////////////////////////////////////////////
-    // Member data
-    ////////////////////////////////////////////////////////////
-    SoundRecorder*            m_parent;
-    std::thread               m_thread;                   //!< Thread running the background recording task
-    std::vector<std::int16_t> m_samples;                  //!< Buffer to store captured samples
-    unsigned int              m_sampleRate{};             //!< Sample rate
-    Time         m_processingInterval{milliseconds(100)}; //!< Time period between calls to onProcessSamples
-    bool         m_isCapturing{};                         //!< Capturing state
-    std::string  m_deviceName{getDefaultDevice()};        //!< Name of the audio capture device
-    unsigned int m_channelCount{1};                       //!< Number of recording channels
-};
-
-////////////////////////////////////////////////////////////
-SoundRecorder::Impl::Impl(SoundRecorder* parent) : m_parent(parent)
-{
-    assert(parent != nullptr);
-}
-
-
-////////////////////////////////////////////////////////////
-SoundRecorder::Impl::~Impl()
+SoundRecorder::~SoundRecorder()
 {
     // This assertion is triggered if the recording is still running while
     // the object is destroyed. It ensures that stop() is called in the
@@ -330,13 +230,12 @@ SoundRecorder::Impl::~Impl()
 
 
 ////////////////////////////////////////////////////////////
-bool SoundRecorder::Impl::start(unsigned int sampleRate)
+bool SoundRecorder::start(unsigned int sampleRate)
 {
     // Check if the device can do audio capture
     if (!isAvailable())
     {
-        err() << "Failed to start capture: your system cannot capture audio data (call "
-                 "SoundRecorder::Impl::isAvailable to "
+        err() << "Failed to start capture: your system cannot capture audio data (call SoundRecorder::isAvailable to "
                  "check it)"
               << std::endl;
         return false;
@@ -369,7 +268,7 @@ bool SoundRecorder::Impl::start(unsigned int sampleRate)
     }
 
     // Notify derived class
-    if (m_parent->onStart())
+    if (onStart())
     {
         // Start the capture
         if (const auto result = ma_device_start(&*m_impl->captureDevice); result != MA_SUCCESS)
@@ -386,7 +285,7 @@ bool SoundRecorder::Impl::start(unsigned int sampleRate)
 
 
 ////////////////////////////////////////////////////////////
-void SoundRecorder::Impl::stop()
+void SoundRecorder::stop()
 {
     // Stop the capturing device if one is started
     if (m_impl->captureDevice && ma_device_is_started(&*m_impl->captureDevice))
@@ -399,20 +298,20 @@ void SoundRecorder::Impl::stop()
         }
 
         // Notify derived class
-        m_parent->onStop();
+        onStop();
     }
 }
 
 
 ////////////////////////////////////////////////////////////
-unsigned int SoundRecorder::Impl::getSampleRate() const
+unsigned int SoundRecorder::getSampleRate() const
 {
     return m_impl->sampleRate;
 }
 
 
 ////////////////////////////////////////////////////////////
-std::vector<std::string> SoundRecorder::Impl::getAvailableDevices()
+std::vector<std::string> SoundRecorder::getAvailableDevices()
 {
     // Convert the internal miniaudio device list into a name-only list
     const auto               devices = Impl::getAvailableDevices();
@@ -427,7 +326,7 @@ std::vector<std::string> SoundRecorder::Impl::getAvailableDevices()
 
 
 ////////////////////////////////////////////////////////////
-std::string SoundRecorder::Impl::getDefaultDevice()
+std::string SoundRecorder::getDefaultDevice()
 {
     const auto devices = Impl::getAvailableDevices();
 
@@ -442,7 +341,7 @@ std::string SoundRecorder::Impl::getDefaultDevice()
 
 
 ////////////////////////////////////////////////////////////
-bool SoundRecorder::Impl::setDevice(const std::string& name)
+bool SoundRecorder::setDevice(const std::string& name)
 {
     // Store the device name and re-initialize if necessary
     if (m_impl->deviceName != name)
@@ -458,14 +357,14 @@ bool SoundRecorder::Impl::setDevice(const std::string& name)
 
 
 ////////////////////////////////////////////////////////////
-const std::string& SoundRecorder::Impl::getDevice() const
+const std::string& SoundRecorder::getDevice() const
 {
     return m_impl->deviceName;
 }
 
 
 ////////////////////////////////////////////////////////////
-void SoundRecorder::Impl::setChannelCount(unsigned int channelCount)
+void SoundRecorder::setChannelCount(unsigned int channelCount)
 {
     // We only bother supporting mono/stereo recording for now
     if (channelCount < 1 || channelCount > 2)
@@ -495,7 +394,7 @@ void SoundRecorder::Impl::setChannelCount(unsigned int channelCount)
 
 
 ////////////////////////////////////////////////////////////
-unsigned int SoundRecorder::Impl::getChannelCount() const
+unsigned int SoundRecorder::getChannelCount() const
 {
     return m_impl->channelCount;
 }
@@ -509,7 +408,7 @@ const std::vector<SoundChannel>& SoundRecorder::getChannelMap() const
 
 
 ////////////////////////////////////////////////////////////
-bool SoundRecorder::Impl::isAvailable()
+bool SoundRecorder::isAvailable()
 {
     // Try to open a device for capture to see if recording is available
     const auto config = ma_device_config_init(ma_device_type_capture);

@@ -25,13 +25,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/System/UniquePtr.hpp"
 #include <SFML/Audio/AudioDevice.hpp>
 #include <SFML/Audio/MiniaudioUtils.hpp>
 #include <SFML/Audio/SoundStream.hpp>
 
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Sleep.hpp>
-#include <SFML/System/Time.hpp>
 
 #include <miniaudio.h>
 
@@ -240,9 +240,9 @@ struct SoundStream::Impl
     // Member data
     ////////////////////////////////////////////////////////////
     ma_data_source_base dataSourceBase{}; //!< The struct that makes this object a miniaudio data source (must be first member)
-    SoundStream* const owner;             //!< Owning SoundStream object
+    SoundStream* const      owner;        //!< Owning SoundStream object
     std::vector<ma_channel> soundChannelMap; //!< The map of position in sample frame to sound channel (miniaudio channels)
-    ma_sound                  sound{};       //!< The sound
+    ma_sound                sound{};         //!< The sound
     std::vector<std::int16_t> sampleBuffer;            //!< Our temporary sample buffer
     std::size_t               sampleBufferCursor{};    //!< The current read position in the temporary sample buffer
     std::uint64_t             samplesProcessed{};      //!< Number of samples processed since beginning of the stream
@@ -256,7 +256,7 @@ struct SoundStream::Impl
 
 
 ////////////////////////////////////////////////////////////
-SoundStream::SoundStream() : m_impl(std::make_unique<Impl>(this))
+SoundStream::SoundStream() : m_impl(priv::makeUnique<Impl>(this))
 {
 }
 
@@ -276,8 +276,9 @@ void SoundStream::initialize(unsigned int channelCount, unsigned int sampleRate,
     m_impl->reinitialize();
 }
 
+
 ////////////////////////////////////////////////////////////
-void SoundStream::Impl::play()
+void SoundStream::play()
 {
     if (m_impl->status == Status::Playing)
         setPlayingOffset(Time::Zero);
@@ -294,7 +295,7 @@ void SoundStream::Impl::play()
 
 
 ////////////////////////////////////////////////////////////
-void SoundStream::Impl::pause()
+void SoundStream::pause()
 {
     if (const ma_result result = ma_sound_stop(&m_impl->sound); result != MA_SUCCESS)
     {
@@ -309,7 +310,7 @@ void SoundStream::Impl::pause()
 
 
 ////////////////////////////////////////////////////////////
-void SoundStream::Impl::stop()
+void SoundStream::stop()
 {
     if (const ma_result result = ma_sound_stop(&m_impl->sound); result != MA_SUCCESS)
     {
@@ -324,14 +325,14 @@ void SoundStream::Impl::stop()
 
 
 ////////////////////////////////////////////////////////////
-unsigned int SoundStream::Impl::getChannelCount() const
+unsigned int SoundStream::getChannelCount() const
 {
     return m_impl->channelCount;
 }
 
 
 ////////////////////////////////////////////////////////////
-unsigned int SoundStream::Impl::getSampleRate() const
+unsigned int SoundStream::getSampleRate() const
 {
     return m_impl->sampleRate;
 }
@@ -345,14 +346,14 @@ std::vector<SoundChannel> SoundStream::getChannelMap() const
 
 
 ////////////////////////////////////////////////////////////
-SoundSource::Status SoundStream::Impl::getStatus() const
+SoundStream::Status SoundStream::getStatus() const
 {
     return m_impl->status;
 }
 
 
 ////////////////////////////////////////////////////////////
-void SoundStream::Impl::setPlayingOffset(Time timeOffset)
+void SoundStream::setPlayingOffset(Time timeOffset)
 {
     if (m_impl->sampleRate == 0)
         return;
@@ -372,7 +373,7 @@ void SoundStream::Impl::setPlayingOffset(Time timeOffset)
 
 
 ////////////////////////////////////////////////////////////
-Time SoundStream::Impl::getPlayingOffset() const
+Time SoundStream::getPlayingOffset() const
 {
     if (m_impl->channelCount == 0 || m_impl->sampleRate == 0)
         return {};
@@ -382,14 +383,14 @@ Time SoundStream::Impl::getPlayingOffset() const
 
 
 ////////////////////////////////////////////////////////////
-void SoundStream::Impl::setLoop(bool loop)
+void SoundStream::setLoop(bool loop)
 {
     ma_sound_set_looping(&m_impl->sound, loop ? MA_TRUE : MA_FALSE);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool SoundStream::Impl::getLoop() const
+bool SoundStream::getLoop() const
 {
     return ma_sound_is_looping(&m_impl->sound) == MA_TRUE;
 }
@@ -408,108 +409,5 @@ void* SoundStream::getSound() const
 {
     return &m_impl->sound;
 }
-
-
-////////////////////////////////////////////////////////////
-SoundStream::~SoundStream() = default;
-
-
-////////////////////////////////////////////////////////////
-void SoundStream::play()
-{
-    m_impl->play();
-}
-
-
-////////////////////////////////////////////////////////////
-void SoundStream::pause()
-{
-    m_impl->pause();
-}
-
-
-////////////////////////////////////////////////////////////
-void SoundStream::stop()
-{
-    m_impl->stop();
-}
-
-
-////////////////////////////////////////////////////////////
-unsigned int SoundStream::getChannelCount() const
-{
-    return m_impl->getChannelCount();
-}
-
-
-////////////////////////////////////////////////////////////
-unsigned int SoundStream::getSampleRate() const
-{
-    return m_impl->getSampleRate();
-}
-
-
-////////////////////////////////////////////////////////////
-SoundSource::Status SoundStream::getStatus() const
-{
-    return m_impl->getStatus();
-}
-
-
-////////////////////////////////////////////////////////////
-void SoundStream::setPlayingOffset(Time timeOffset)
-{
-    return m_impl->setPlayingOffset(timeOffset);
-}
-
-
-////////////////////////////////////////////////////////////
-Time SoundStream::getPlayingOffset() const
-{
-    return m_impl->getPlayingOffset();
-}
-
-
-////////////////////////////////////////////////////////////
-void SoundStream::setLoop(bool loop)
-{
-    return m_impl->setLoop(loop);
-}
-
-
-////////////////////////////////////////////////////////////
-bool SoundStream::getLoop() const
-{
-    return m_impl->getLoop();
-}
-
-
-////////////////////////////////////////////////////////////
-SoundStream::SoundStream() : m_impl(priv::makeUnique<Impl>(this))
-{
-}
-
-
-////////////////////////////////////////////////////////////
-void SoundStream::initialize(unsigned int channelCount, unsigned int sampleRate)
-{
-    return m_impl->initialize(channelCount, sampleRate);
-}
-
-
-////////////////////////////////////////////////////////////
-std::int64_t SoundStream::onLoop()
-{
-    onSeek(Time::Zero);
-    return 0;
-}
-
-
-////////////////////////////////////////////////////////////
-void SoundStream::setProcessingInterval(Time interval)
-{
-    m_impl->setProcessingInterval(interval);
-}
-
 
 } // namespace sf
