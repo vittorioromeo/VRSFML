@@ -31,99 +31,25 @@
 #include <SFML/System/Time.hpp>
 
 #include <algorithm>
-#include <filesystem>
-#include <fstream>
 #include <mutex>
 #include <ostream>
-#include <vector>
-
-#include <cassert>
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-class Music::Impl
+Music::~Music()
 {
-public:
-    Impl(Music* parent);
-    ~Impl();
-
-    [[nodiscard]] bool openFromFile(const std::filesystem::path& filename);
-
-    [[nodiscard]] bool openFromMemory(const void* data, std::size_t sizeInBytes);
-
-    [[nodiscard]] bool openFromStream(InputStream& stream);
-
-    Time getDuration() const;
-
-    Music::TimeSpan getLoopPoints() const;
-
-    void setLoopPoints(Music::TimeSpan timePoints);
-
-    bool onGetData(SoundStream::Chunk& data);
-
-    void onSeek(Time timeOffset);
-
-    std::int64_t onLoop();
-
-private:
-    ////////////////////////////////////////////////////////////
-    /// \brief Initialize the internal state after loading a new music
-    ///
-    ////////////////////////////////////////////////////////////
-    void initialize();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Helper to convert an sf::Time to a sample position
-    ///
-    /// \param position Time to convert to samples
-    ///
-    /// \return The number of samples elapsed at the given time
-    ///
-    ////////////////////////////////////////////////////////////
-    std::uint64_t timeToSamples(Time position) const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Helper to convert a sample position to an sf::Time
-    ///
-    /// \param samples Sample count to convert to Time
-    ///
-    /// \return The Time position of the given sample
-    ///
-    ////////////////////////////////////////////////////////////
-    Time samplesToTime(std::uint64_t samples) const;
-
-    ////////////////////////////////////////////////////////////
-    // Member data
-    ////////////////////////////////////////////////////////////
-    Music*                     m_parent;
-    InputSoundFile             m_file;     //!< The streamed music file
-    std::vector<std::int16_t>  m_samples;  //!< Temporary buffer of samples
-    std::recursive_mutex       m_mutex;    //!< Mutex protecting the data
-    Music::Span<std::uint64_t> m_loopSpan; //!< Loop Range Specifier
-};
-
-
-////////////////////////////////////////////////////////////
-Music::Impl::Impl(Music* parent) : m_parent(parent)
-{
-    assert(parent != nullptr);
+    // We must stop before destroying the file
+    stop();
 }
 
 
 ////////////////////////////////////////////////////////////
-Music::Impl::~Impl()
-{
-    m_parent->stop();
-}
-
-
-////////////////////////////////////////////////////////////
-bool Music::Impl::openFromFile(const std::filesystem::path& filename)
+bool Music::openFromFile(const std::filesystem::path& filename)
 {
     // First stop the music if it was already running
-    m_parent->stop();
+    stop();
 
     // Open the underlying sound file
     if (!m_file.openFromFile(filename))
@@ -137,10 +63,10 @@ bool Music::Impl::openFromFile(const std::filesystem::path& filename)
 
 
 ////////////////////////////////////////////////////////////
-bool Music::Impl::openFromMemory(const void* data, std::size_t sizeInBytes)
+bool Music::openFromMemory(const void* data, std::size_t sizeInBytes)
 {
     // First stop the music if it was already running
-    m_parent->stop();
+    stop();
 
     // Open the underlying sound file
     if (!m_file.openFromMemory(data, sizeInBytes))
@@ -154,10 +80,10 @@ bool Music::Impl::openFromMemory(const void* data, std::size_t sizeInBytes)
 
 
 ////////////////////////////////////////////////////////////
-bool Music::Impl::openFromStream(InputStream& stream)
+bool Music::openFromStream(InputStream& stream)
 {
     // First stop the music if it was already running
-    m_parent->stop();
+    stop();
 
     // Open the underlying sound file
     if (!m_file.openFromStream(stream))
@@ -171,36 +97,36 @@ bool Music::Impl::openFromStream(InputStream& stream)
 
 
 ////////////////////////////////////////////////////////////
-Time Music::Impl::getDuration() const
+Time Music::getDuration() const
 {
     return m_file.getDuration();
 }
 
 
 ////////////////////////////////////////////////////////////
-Music::TimeSpan Music::Impl::getLoopPoints() const
+Music::TimeSpan Music::getLoopPoints() const
 {
-    return Music::TimeSpan{samplesToTime(m_loopSpan.offset), samplesToTime(m_loopSpan.length)};
+    return TimeSpan{samplesToTime(m_loopSpan.offset), samplesToTime(m_loopSpan.length)};
 }
 
 
 ////////////////////////////////////////////////////////////
-void Music::Impl::setLoopPoints(Music::TimeSpan timePoints)
+void Music::setLoopPoints(TimeSpan timePoints)
 {
-    Music::Span<std::uint64_t> samplePoints{timeToSamples(timePoints.offset), timeToSamples(timePoints.length)};
+    Span<std::uint64_t> samplePoints{timeToSamples(timePoints.offset), timeToSamples(timePoints.length)};
 
     // Check our state. This averts a divide-by-zero. GetChannelCount() is cheap enough to use often
-    if (m_parent->getChannelCount() == 0 || m_file.getSampleCount() == 0)
+    if (getChannelCount() == 0 || m_file.getSampleCount() == 0)
     {
         err() << "Music is not in a valid state to assign Loop Points." << std::endl;
         return;
     }
 
     // Round up to the next even sample if needed
-    samplePoints.offset += (m_parent->getChannelCount() - 1);
-    samplePoints.offset -= (samplePoints.offset % m_parent->getChannelCount());
-    samplePoints.length += (m_parent->getChannelCount() - 1);
-    samplePoints.length -= (samplePoints.length % m_parent->getChannelCount());
+    samplePoints.offset += (getChannelCount() - 1);
+    samplePoints.offset -= (samplePoints.offset % getChannelCount());
+    samplePoints.length += (getChannelCount() - 1);
+    samplePoints.length -= (samplePoints.length % getChannelCount());
 
     // Validate
     if (samplePoints.offset >= m_file.getSampleCount())
@@ -224,27 +150,27 @@ void Music::Impl::setLoopPoints(Music::TimeSpan timePoints)
     // When we apply this change, we need to "reset" this instance and its buffer
 
     // Get old playing status and position
-    const Status oldStatus = m_parent->getStatus();
-    const Time   oldPos    = m_parent->getPlayingOffset();
+    const Status oldStatus = getStatus();
+    const Time   oldPos    = getPlayingOffset();
 
     // Unload
-    m_parent->stop();
+    stop();
 
     // Set
     m_loopSpan = samplePoints;
 
     // Restore
     if (oldPos != Time::Zero)
-        m_parent->setPlayingOffset(oldPos);
+        setPlayingOffset(oldPos);
 
     // Resume
     if (oldStatus == Status::Playing)
-        m_parent->play();
+        play();
 }
 
 
 ////////////////////////////////////////////////////////////
-bool Music::Impl::onGetData(SoundStream::Chunk& data)
+bool Music::onGetData(SoundStream::Chunk& data)
 {
     const std::lock_guard lock(m_mutex);
 
@@ -255,7 +181,7 @@ bool Music::Impl::onGetData(SoundStream::Chunk& data)
     // If the loop end is enabled and imminent, request less data.
     // This will trip an "onLoop()" call from the underlying SoundStream,
     // and we can then take action.
-    if (m_parent->getLoop() && (m_loopSpan.length != 0) && (currentOffset <= loopEnd) && (currentOffset + toFill > loopEnd))
+    if (getLoop() && (m_loopSpan.length != 0) && (currentOffset <= loopEnd) && (currentOffset + toFill > loopEnd))
         toFill = static_cast<std::size_t>(loopEnd - currentOffset);
 
     // Fill the chunk parameters
@@ -270,7 +196,7 @@ bool Music::Impl::onGetData(SoundStream::Chunk& data)
 
 
 ////////////////////////////////////////////////////////////
-void Music::Impl::onSeek(Time timeOffset)
+void Music::onSeek(Time timeOffset)
 {
     const std::lock_guard lock(m_mutex);
     m_file.seek(timeOffset);
@@ -278,19 +204,19 @@ void Music::Impl::onSeek(Time timeOffset)
 
 
 ////////////////////////////////////////////////////////////
-std::optional<std::uint64_t> Music::Impl::onLoop()
+std::optional<std::uint64_t> Music::onLoop()
 {
     // Called by underlying SoundStream so we can determine where to loop.
     const std::lock_guard lock(m_mutex);
     const std::uint64_t   currentOffset = m_file.getSampleOffset();
-    if (m_parent->getLoop() && (m_loopSpan.length != 0) && (currentOffset == m_loopSpan.offset + m_loopSpan.length))
+    if (getLoop() && (m_loopSpan.length != 0) && (currentOffset == m_loopSpan.offset + m_loopSpan.length))
     {
         // Looping is enabled, and either we're at the loop end, or we're at the EOF
         // when it's equivalent to the loop end (loop end takes priority). Send us to loop begin
         m_file.seek(m_loopSpan.offset);
         return static_cast<std::int64_t>(m_file.getSampleOffset());
     }
-    else if (m_parent->getLoop() && (currentOffset >= m_file.getSampleCount()))
+    else if (getLoop() && (currentOffset >= m_file.getSampleCount()))
     {
         // If we're at the EOF, reset to 0
         m_file.seek(0);
@@ -301,7 +227,7 @@ std::optional<std::uint64_t> Music::Impl::onLoop()
 
 
 ////////////////////////////////////////////////////////////
-void Music::Impl::initialize()
+void Music::initialize()
 {
     // Compute the music positions
     m_loopSpan.offset = 0;
@@ -311,108 +237,30 @@ void Music::Impl::initialize()
     m_samples.resize(m_file.getSampleRate() * m_file.getChannelCount());
 
     // Initialize the stream
-    m_parent->SoundStream::initialize(m_file.getChannelCount(), m_file.getSampleRate(), m_file.getChannelMap());
+    SoundStream::initialize(m_file.getChannelCount(), m_file.getSampleRate(), m_file.getChannelMap());
 }
 
 ////////////////////////////////////////////////////////////
-std::uint64_t Music::Impl::timeToSamples(Time position) const
+std::uint64_t Music::timeToSamples(Time position) const
 {
     // Always ROUND, no unchecked truncation, hence the addition in the numerator.
     // This avoids most precision errors arising from "samples => Time => samples" conversions
     // Original rounding calculation is ((Micros * Freq * Channels) / 1000000) + 0.5
     // We refactor it to keep std::int64_t as the data type throughout the whole operation.
-    return ((static_cast<std::uint64_t>(position.asMicroseconds()) * m_parent->getSampleRate() *
-             m_parent->getChannelCount()) +
-            500000) /
-           1000000;
+    return ((static_cast<std::uint64_t>(position.asMicroseconds()) * getSampleRate() * getChannelCount()) + 500000) / 1000000;
 }
 
 
 ////////////////////////////////////////////////////////////
-Time Music::Impl::samplesToTime(std::uint64_t samples) const
+Time Music::samplesToTime(std::uint64_t samples) const
 {
     Time position = Time::Zero;
 
     // Make sure we don't divide by 0
-    if (m_parent->getSampleRate() != 0 && m_parent->getChannelCount() != 0)
-        position = microseconds(
-            static_cast<std::int64_t>((samples * 1000000) / (m_parent->getChannelCount() * m_parent->getSampleRate())));
+    if (getSampleRate() != 0 && getChannelCount() != 0)
+        position = microseconds(static_cast<std::int64_t>((samples * 1000000) / (getChannelCount() * getSampleRate())));
 
     return position;
 }
-
-
-////////////////////////////////////////////////////////////
-Music::Music() : m_impl(priv::makeUnique<Impl>(this))
-{
-}
-
-
-////////////////////////////////////////////////////////////
-Music::~Music() = default;
-
-
-////////////////////////////////////////////////////////////
-bool Music::openFromFile(const std::filesystem::path& filename)
-{
-    return m_impl->openFromFile(filename);
-}
-
-
-////////////////////////////////////////////////////////////
-bool Music::openFromMemory(const void* data, std::size_t sizeInBytes)
-{
-    return m_impl->openFromMemory(data, sizeInBytes);
-}
-
-
-////////////////////////////////////////////////////////////
-bool Music::openFromStream(InputStream& stream)
-{
-    return m_impl->openFromStream(stream);
-}
-
-
-////////////////////////////////////////////////////////////
-Time Music::getDuration() const
-{
-    return m_impl->getDuration();
-}
-
-
-////////////////////////////////////////////////////////////
-Music::TimeSpan Music::getLoopPoints() const
-{
-    return m_impl->getLoopPoints();
-}
-
-
-////////////////////////////////////////////////////////////
-void Music::setLoopPoints(TimeSpan timePoints)
-{
-    m_impl->setLoopPoints(timePoints);
-}
-
-
-////////////////////////////////////////////////////////////
-bool Music::onGetData(Chunk& data)
-{
-    return m_impl->onGetData(data);
-}
-
-
-////////////////////////////////////////////////////////////
-void Music::onSeek(Time timeOffset)
-{
-    m_impl->onSeek(timeOffset);
-}
-
-
-////////////////////////////////////////////////////////////
-std::int64_t Music::onLoop()
-{
-    return m_impl->onLoop();
-}
-
 
 } // namespace sf
