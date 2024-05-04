@@ -25,7 +25,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/ALCheck.hpp>
 #include <SFML/Audio/Music.hpp>
 
 #include <SFML/System/Err.hpp>
@@ -40,9 +39,6 @@
 
 #include <cassert>
 
-#if defined(__APPLE__)
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
 
 namespace sf
 {
@@ -242,7 +238,7 @@ void Music::Impl::setLoopPoints(Music::TimeSpan timePoints)
         m_parent->setPlayingOffset(oldPos);
 
     // Resume
-    if (oldStatus == Playing)
+    if (oldStatus == Status::Playing)
         m_parent->play();
 }
 
@@ -282,7 +278,7 @@ void Music::Impl::onSeek(Time timeOffset)
 
 
 ////////////////////////////////////////////////////////////
-std::int64_t Music::Impl::onLoop()
+std::optional<std::uint64_t> Music::Impl::onLoop()
 {
     // Called by underlying SoundStream so we can determine where to loop.
     const std::lock_guard lock(m_mutex);
@@ -300,7 +296,7 @@ std::int64_t Music::Impl::onLoop()
         m_file.seek(0);
         return 0;
     }
-    return NoLoop;
+    return std::nullopt;
 }
 
 
@@ -315,7 +311,7 @@ void Music::Impl::initialize()
     m_samples.resize(m_file.getSampleRate() * m_file.getChannelCount());
 
     // Initialize the stream
-    m_parent->SoundStream::initialize(m_file.getChannelCount(), m_file.getSampleRate());
+    m_parent->SoundStream::initialize(m_file.getChannelCount(), m_file.getSampleRate(), m_file.getChannelMap());
 }
 
 ////////////////////////////////////////////////////////////

@@ -38,7 +38,7 @@ public:
     NetworkAudioStream()
     {
         // Set the sound parameters
-        initialize(1, 44100);
+        initialize(1, 44100, {sf::SoundChannel::Mono});
     }
 
     ////////////////////////////////////////////////////////////
@@ -128,7 +128,7 @@ private:
                 break;
 
             // Extract the message ID
-            std::uint8_t id;
+            std::uint8_t id = 0;
             packet >> id;
 
             if (id == serverAudioData)
@@ -185,7 +185,7 @@ void doServer(unsigned short port)
     audioStream.start(port);
 
     // Loop until the sound playback is finished
-    while (audioStream.getStatus() != sf::SoundStream::Stopped)
+    while (audioStream.getStatus() != sf::SoundStream::Status::Stopped)
     {
         // Leave some CPU time for other threads
         sf::sleep(sf::milliseconds(100));
@@ -201,7 +201,7 @@ void doServer(unsigned short port)
     audioStream.play();
 
     // Loop until the sound playback is finished
-    while (audioStream.getStatus() != sf::SoundStream::Stopped)
+    while (audioStream.getStatus() != sf::SoundStream::Status::Stopped)
     {
         // Leave some CPU time for other threads
         sf::sleep(sf::milliseconds(100));

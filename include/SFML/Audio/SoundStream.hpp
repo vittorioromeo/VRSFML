@@ -29,9 +29,14 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
+#include <SFML/Audio/SoundChannel.hpp>
 #include <SFML/Audio/SoundSource.hpp>
 
+#include <SFML/System/Time.hpp>
 #include <SFML/System/UniquePtr.hpp>
+
+#include <optional>
+#include <vector>
 
 #include <cstddef>
 #include <cstdint>
@@ -54,8 +59,8 @@ public:
     ////////////////////////////////////////////////////////////
     struct Chunk
     {
-        const std::int16_t* samples;     //!< Pointer to the audio samples
-        std::size_t         sampleCount; //!< Number of samples pointed by Samples
+        const std::int16_t* samples{};     //!< Pointer to the audio samples
+        std::size_t         sampleCount{}; //!< Number of samples pointed by Samples
     };
 
     ////////////////////////////////////////////////////////////
@@ -147,6 +152,17 @@ public:
     unsigned int getSampleRate() const;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Get the map of position in sample frame to sound channel
+    ///
+    /// This is used to map a sample in the sample stream to a
+    /// position during spatialisation.
+    ///
+    /// \return Map of position in sample frame to sound channel
+    ///
+    ////////////////////////////////////////////////////////////
+    std::vector<SoundChannel> getChannelMap() const;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Get the current status of the stream (stopped, paused, playing)
     ///
     /// \return Current status
@@ -205,11 +221,6 @@ public:
     bool getLoop() const;
 
 protected:
-    enum
-    {
-        NoLoop = -1 //!< "Invalid" endSeeks value, telling us to continue uninterrupted
-    };
-
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
@@ -230,9 +241,10 @@ protected:
     ///
     /// \param channelCount Number of channels of the stream
     /// \param sampleRate   Sample rate, in samples per second
+    /// \param channelMap   Map of position in sample frame to sound channel
     ///
     ////////////////////////////////////////////////////////////
-    void initialize(unsigned int channelCount, unsigned int sampleRate);
+    void initialize(unsigned int channelCount, unsigned int sampleRate, const std::vector<SoundChannel>& channelMap);
 
     ////////////////////////////////////////////////////////////
     /// \brief Request a new chunk of audio samples from the stream source
@@ -271,32 +283,25 @@ protected:
     /// allow implementation of custom loop points. Otherwise,
     /// it just calls onSeek(Time::Zero) and returns 0.
     ///
-    /// \return The seek position after looping (or -1 if there's no loop)
+    /// \return The seek position after looping (or std::nullopt if there's no loop)
     ///
     ////////////////////////////////////////////////////////////
-    virtual std::int64_t onLoop();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Set the processing interval
-    ///
-    /// The processing interval controls the period at which the
-    /// audio buffers are filled by calls to onGetData. A smaller
-    /// interval may be useful for low-latency streams. Note that
-    /// the given period is only a hint and the actual period may
-    /// vary. The default processing interval is 10 ms.
-    ///
-    /// \param interval Processing interval
-    ///
-    ////////////////////////////////////////////////////////////
-    void setProcessingInterval(Time interval);
+    virtual std::optional<std::uint64_t> onLoop();
 
 private:
-    class Impl;
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the sound object
+    ///
+    /// \return The sound object
+    ///
+    ////////////////////////////////////////////////////////////
+    void* getSound() const override;
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    priv::UniquePtr<Impl> m_impl;
+    struct Impl;
+    const priv::UniquePtr<Impl> m_impl; //!< Implementation details
 };
 
 } // namespace sf

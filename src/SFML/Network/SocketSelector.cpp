@@ -48,10 +48,10 @@ SocketSelector::~SocketSelector() = default;
 ////////////////////////////////////////////////////////////
 struct SocketSelector::SocketSelectorImpl
 {
-    fd_set allSockets;   //!< Set containing all the sockets handles
-    fd_set socketsReady; //!< Set containing handles of the sockets that are ready
-    int    maxSocket;    //!< Maximum socket handle
-    int    socketCount;  //!< Number of socket handles
+    fd_set allSockets{};   //!< Set containing all the sockets handles
+    fd_set socketsReady{}; //!< Set containing handles of the sockets that are ready
+    int    maxSocket{};    //!< Maximum socket handle
+    int    socketCount{};  //!< Number of socket handles
 };
 
 
