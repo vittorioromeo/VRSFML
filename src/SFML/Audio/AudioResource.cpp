@@ -28,35 +28,60 @@
 #include <SFML/Audio/AudioDevice.hpp>
 #include <SFML/Audio/AudioResource.hpp>
 
-#include <memory>
 #include <mutex>
 
+#include <cstdint>
+
+
+namespace
+{
+
+std::mutex             deviceMutex;
+sf::priv::AudioDevice* device;
+std::uint32_t          deviceRC = 0;
+
+void acquireDevice()
+{
+    std::lock_guard guard{deviceMutex};
+
+    if (deviceRC++ == 0)
+        device = new sf::priv::AudioDevice;
+}
+
+void releaseDevice()
+{
+    std::lock_guard guard{deviceMutex};
+
+    if (--deviceRC == 0)
+        delete device;
+}
+
+} // namespace
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-AudioResource::AudioResource() :
-m_device(
-    []()
-    {
-        // Ensure we only ever create a single instance of an
-        // AudioDevice that is shared between all AudioResources
-        static std::mutex                           mutex;
-        static std::weak_ptr<sf::priv::AudioDevice> weakAudioDevice;
-
-        const std::lock_guard lock(mutex);
-
-        auto audioDevice = weakAudioDevice.lock();
-
-        if (audioDevice == nullptr)
-        {
-            audioDevice     = std::make_shared<priv::AudioDevice>();
-            weakAudioDevice = audioDevice;
-        }
-
-        return audioDevice;
-    }())
+AudioResource::AudioResource()
 {
+    acquireDevice();
+}
+
+////////////////////////////////////////////////////////////
+AudioResource::~AudioResource()
+{
+    releaseDevice();
+}
+
+////////////////////////////////////////////////////////////
+AudioResource::AudioResource(const AudioResource&)
+{
+    acquireDevice();
+}
+
+////////////////////////////////////////////////////////////
+AudioResource::AudioResource(AudioResource&&) noexcept
+{
+    acquireDevice();
 }
 
 } // namespace sf
