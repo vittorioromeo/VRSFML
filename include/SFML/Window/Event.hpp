@@ -320,14 +320,31 @@ private:
     ////////////////////////////////////////////////////////////
     // Helper functions
     ////////////////////////////////////////////////////////////
-    template <typename T, typename... Ts>
-    static constexpr bool isInParameterPack(const std::variant<Ts...>&)
-    {
-        return (std::is_same_v<T, Ts> || ...);
-    }
-
     template <typename T>
-    static constexpr bool isEventType = isInParameterPack<T>(decltype(m_data)());
+    static constexpr bool
+        isEventType = std::is_same_v<T, Empty> ||                  //
+                      std::is_same_v<T, Closed> ||                 //
+                      std::is_same_v<T, Resized> ||                //
+                      std::is_same_v<T, FocusLost> ||              //
+                      std::is_same_v<T, FocusGained> ||            //
+                      std::is_same_v<T, TextEntered> ||            //
+                      std::is_same_v<T, KeyPressed> ||             //
+                      std::is_same_v<T, KeyReleased> ||            //
+                      std::is_same_v<T, MouseWheelScrolled> ||     //
+                      std::is_same_v<T, MouseButtonPressed> ||     //
+                      std::is_same_v<T, MouseButtonReleased> ||    //
+                      std::is_same_v<T, MouseMoved> ||             //
+                      std::is_same_v<T, MouseEntered> ||           //
+                      std::is_same_v<T, MouseLeft> ||              //
+                      std::is_same_v<T, JoystickButtonPressed> ||  //
+                      std::is_same_v<T, JoystickButtonReleased> || //
+                      std::is_same_v<T, JoystickMoved> ||          //
+                      std::is_same_v<T, JoystickConnected> ||      //
+                      std::is_same_v<T, JoystickDisconnected> ||   //
+                      std::is_same_v<T, TouchBegan> ||             //
+                      std::is_same_v<T, TouchMoved> ||             //
+                      std::is_same_v<T, TouchEnded> ||             //
+                      std::is_same_v<T, SensorChanged>;
 };
 
 #include <SFML/Window/Event.inl>
