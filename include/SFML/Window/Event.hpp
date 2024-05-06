@@ -34,10 +34,8 @@
 #include <SFML/Window/Mouse.hpp>
 #include <SFML/Window/Sensor.hpp>
 
+#include <SFML/System/Variant.hpp>
 #include <SFML/System/Vector2.hpp>
-
-#include <type_traits>
-#include <variant>
 
 
 namespace sf
@@ -289,68 +287,72 @@ public:
     }
 
 private:
+    using VariantType = vittorioromeo::tinyvariant<
+        Empty,
+        Closed,
+        Resized,
+        FocusLost,
+        FocusGained,
+        TextEntered,
+        KeyPressed,
+        KeyReleased,
+        MouseWheelScrolled,
+        MouseButtonPressed,
+        MouseButtonReleased,
+        MouseMoved,
+        MouseEntered,
+        MouseLeft,
+        JoystickButtonPressed,
+        JoystickButtonReleased,
+        JoystickMoved,
+        JoystickConnected,
+        JoystickDisconnected,
+        TouchBegan,
+        TouchMoved,
+        TouchEnded,
+        SensorChanged>;
+
+
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::variant<Empty,
-                 Closed,
-                 Resized,
-                 FocusLost,
-                 FocusGained,
-                 TextEntered,
-                 KeyPressed,
-                 KeyReleased,
-                 MouseWheelScrolled,
-                 MouseButtonPressed,
-                 MouseButtonReleased,
-                 MouseMoved,
-                 MouseEntered,
-                 MouseLeft,
-                 JoystickButtonPressed,
-                 JoystickButtonReleased,
-                 JoystickMoved,
-                 JoystickConnected,
-                 JoystickDisconnected,
-                 TouchBegan,
-                 TouchMoved,
-                 TouchEnded,
-                 SensorChanged>
-        m_data; //!< Event data
+    VariantType m_data; //!< Event data
 
     ////////////////////////////////////////////////////////////
     // Helper functions
     ////////////////////////////////////////////////////////////
     template <typename T>
-    static constexpr bool
-        isEventType = std::is_same_v<T, Empty> ||                  //
-                      std::is_same_v<T, Closed> ||                 //
-                      std::is_same_v<T, Resized> ||                //
-                      std::is_same_v<T, FocusLost> ||              //
-                      std::is_same_v<T, FocusGained> ||            //
-                      std::is_same_v<T, TextEntered> ||            //
-                      std::is_same_v<T, KeyPressed> ||             //
-                      std::is_same_v<T, KeyReleased> ||            //
-                      std::is_same_v<T, MouseWheelScrolled> ||     //
-                      std::is_same_v<T, MouseButtonPressed> ||     //
-                      std::is_same_v<T, MouseButtonReleased> ||    //
-                      std::is_same_v<T, MouseMoved> ||             //
-                      std::is_same_v<T, MouseEntered> ||           //
-                      std::is_same_v<T, MouseLeft> ||              //
-                      std::is_same_v<T, JoystickButtonPressed> ||  //
-                      std::is_same_v<T, JoystickButtonReleased> || //
-                      std::is_same_v<T, JoystickMoved> ||          //
-                      std::is_same_v<T, JoystickConnected> ||      //
-                      std::is_same_v<T, JoystickDisconnected> ||   //
-                      std::is_same_v<T, TouchBegan> ||             //
-                      std::is_same_v<T, TouchMoved> ||             //
-                      std::is_same_v<T, TouchEnded> ||             //
-                      std::is_same_v<T, SensorChanged>;
+    static constexpr bool isEventType = VariantType::index_of<T> != vittorioromeo::impl::bad_index;
 };
 
 #include <SFML/Window/Event.inl>
 
 } // namespace sf
 
+extern template class vittorioromeo::tinyvariant<
+    sf::Event::Empty,
+    sf::Event::Closed,
+    sf::Event::Resized,
+    sf::Event::FocusLost,
+    sf::Event::FocusGained,
+    sf::Event::TextEntered,
+    sf::Event::KeyPressed,
+    sf::Event::KeyReleased,
+    sf::Event::MouseWheelScrolled,
+    sf::Event::MouseButtonPressed,
+    sf::Event::MouseButtonReleased,
+    sf::Event::MouseMoved,
+    sf::Event::MouseEntered,
+    sf::Event::MouseLeft,
+    sf::Event::JoystickButtonPressed,
+    sf::Event::JoystickButtonReleased,
+    sf::Event::JoystickMoved,
+    sf::Event::JoystickConnected,
+    sf::Event::JoystickDisconnected,
+    sf::Event::TouchBegan,
+    sf::Event::TouchMoved,
+    sf::Event::TouchEnded,
+    sf::Event::SensorChanged>;
 
 ////////////////////////////////////////////////////////////
 /// \class sf::Event

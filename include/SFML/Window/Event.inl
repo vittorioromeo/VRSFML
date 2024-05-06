@@ -46,7 +46,7 @@ bool Event::is() const
 {
     static_assert(isEventType<T>, "T must be a subtype of sf::Event");
     if constexpr (isEventType<T>)
-        return std::holds_alternative<T>(m_data);
+        return m_data.is<T>();
 }
 
 
@@ -56,5 +56,5 @@ const T* Event::getIf() const
 {
     static_assert(isEventType<T>, "T must be a subtype of sf::Event");
     if constexpr (isEventType<T>)
-        return std::get_if<T>(&m_data);
+        return m_data.is<T>() ? &m_data.as<T>() : nullptr;
 }
