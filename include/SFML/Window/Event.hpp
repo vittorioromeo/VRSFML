@@ -287,7 +287,7 @@ public:
     }
 
 private:
-    using VariantType = vittorioromeo::tinyvariant<
+    using VariantType = priv::tinyvariant<
         Empty,
         Closed,
         Resized,
@@ -322,12 +322,12 @@ private:
     // Helper functions
     ////////////////////////////////////////////////////////////
     template <typename T>
-    static constexpr bool isEventType = VariantType::index_of<T> != vittorioromeo::impl::bad_index;
+    static constexpr bool isEventType = VariantType::index_of<T> != priv::bad_index;
 };
 
 } // namespace sf
 
-extern template class vittorioromeo::tinyvariant<
+extern template class sf::priv::tinyvariant<
     sf::Event::Empty,
     sf::Event::Closed,
     sf::Event::Resized,
