@@ -31,6 +31,14 @@
 // an incorrect template parameter is provided.
 
 ////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include <SFML/Window/Event.hpp> // NOLINT(misc-header-include-cycle)
+
+
+namespace sf
+{
+////////////////////////////////////////////////////////////
 template <typename T>
 Event::Event(const T& t)
 {
@@ -58,3 +66,5 @@ const T* Event::getIf() const
     if constexpr (isEventType<T>)
         return m_data.is<T>() ? &m_data.as<T>() : nullptr;
 }
+
+} // namespace sf

@@ -325,8 +325,6 @@ private:
     static constexpr bool isEventType = VariantType::index_of<T> != vittorioromeo::impl::bad_index;
 };
 
-#include <SFML/Window/Event.inl>
-
 } // namespace sf
 
 extern template class vittorioromeo::tinyvariant<
@@ -353,6 +351,9 @@ extern template class vittorioromeo::tinyvariant<
     sf::Event::TouchMoved,
     sf::Event::TouchEnded,
     sf::Event::SensorChanged>;
+
+#include <SFML/Window/Event.inl>
+
 
 ////////////////////////////////////////////////////////////
 /// \class sf::Event

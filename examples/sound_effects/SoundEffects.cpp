@@ -1,9 +1,24 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics.hpp>
+#include <SFML/Graphics/CircleShape.hpp>
+#include <SFML/Graphics/ConvexShape.hpp>
+#include <SFML/Graphics/Drawable.hpp>
+#include <SFML/Graphics/Font.hpp>
+#include <SFML/Graphics/RenderStates.hpp>
+#include <SFML/Graphics/RenderTarget.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/Text.hpp>
+#include <SFML/Graphics/Transform.hpp>
 
-#include <SFML/Audio.hpp>
+#include <SFML/Audio/Listener.hpp>
+#include <SFML/Audio/Music.hpp>
+
+#include <SFML/Window/Event.hpp>
+#include <SFML/Window/Keyboard.hpp>
+
+#include <SFML/System/Vector2.hpp>
 
 #include <algorithm>
 #include <limits>
