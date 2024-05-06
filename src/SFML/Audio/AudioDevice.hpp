@@ -231,7 +231,7 @@ private:
         sf::Vector3f   position{0, 0, 0};
         sf::Vector3f   direction{0, 0, -1};
         sf::Vector3f   velocity{0, 0, 0};
-        Listener::Cone cone{sf::degrees(360), sf::degrees(360), 1};
+        Listener::Cone cone{sf::Angle::FullCircle, sf::Angle::FullCircle, 1};
         sf::Vector3f   upVector{0, 1, 0};
     };
 
