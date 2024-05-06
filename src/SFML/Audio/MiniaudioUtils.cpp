@@ -63,8 +63,8 @@ struct SavedSettings
     float          minGain{0.f};
     float          maxGain{1.f};
     float          rollOff{1.f};
-    float          innerAngle{sf::degrees(360).asRadians()};
-    float          outerAngle{sf::degrees(360).asRadians()};
+    float          innerAngle{sf::Angle::FullCircle.asRadians()};
+    float          outerAngle{sf::Angle::FullCircle.asRadians()};
     float          outerGain{0.f};
 };
 

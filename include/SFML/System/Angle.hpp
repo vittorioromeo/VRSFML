@@ -138,26 +138,32 @@ public:
     ////////////////////////////////////////////////////////////
     // NOLINTNEXTLINE(readability-identifier-naming)
     static const Angle Zero; //!< Predefined 0 degree angle value
+    // NOLINTNEXTLINE(readability-identifier-naming)
+    static const Angle QuarterCircle; //!< Predefined 90 degree angle value
+    // NOLINTNEXTLINE(readability-identifier-naming)
+    static const Angle HalfCircle; //!< Predefined 180 degree angle value
+    // NOLINTNEXTLINE(readability-identifier-naming)
+    static const Angle FullCircle; //!< Predefined 360 degree angle value
 
 private:
     friend constexpr Angle degrees(float angle);
     friend constexpr Angle radians(float angle);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct from a number of degrees
+    /// \brief Construct from a number of radians
     ///
     /// This function is internal. To construct angle values,
     /// use sf::radians or sf::degrees instead.
     ///
-    /// \param degrees Angle in degrees
+    /// \param radians Angle in radians
     ///
     ////////////////////////////////////////////////////////////
-    constexpr explicit Angle(float degrees);
+    constexpr explicit Angle(float radians);
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    float m_degrees{}; //!< Angle value stored as degrees
+    float m_radians{}; //!< Angle value stored as radians
 };
 
 ////////////////////////////////////////////////////////////
@@ -187,6 +193,7 @@ private:
 ////////////////////////////////////////////////////////////
 /// \relates Angle
 /// \brief Overload of == operator to compare two angle values
+/// \note Does not automatically wrap the angle value
 ///
 /// \param left  Left operand (an angle)
 /// \param right Right operand (an angle)
@@ -199,6 +206,7 @@ private:
 ////////////////////////////////////////////////////////////
 /// \relates Angle
 /// \brief Overload of != operator to compare two angle values
+/// \note Does not automatically wrap the angle value
 ///
 /// \param left  Left operand (an angle)
 /// \param right Right operand (an angle)
@@ -211,6 +219,7 @@ private:
 ////////////////////////////////////////////////////////////
 /// \relates Angle
 /// \brief Overload of < operator to compare two angle values
+/// \note Does not automatically wrap the angle value
 ///
 /// \param left  Left operand (an angle)
 /// \param right Right operand (an angle)
@@ -223,6 +232,7 @@ private:
 ////////////////////////////////////////////////////////////
 /// \relates Angle
 /// \brief Overload of > operator to compare two angle values
+/// \note Does not automatically wrap the angle value
 ///
 /// \param left  Left operand (an angle)
 /// \param right Right operand (an angle)
@@ -235,6 +245,7 @@ private:
 ////////////////////////////////////////////////////////////
 /// \relates Angle
 /// \brief Overload of <= operator to compare two angle values
+/// \note Does not automatically wrap the angle value
 ///
 /// \param left  Left operand (an angle)
 /// \param right Right operand (an angle)
@@ -247,6 +258,7 @@ private:
 ////////////////////////////////////////////////////////////
 /// \relates Angle
 /// \brief Overload of >= operator to compare two angle values
+/// \note Does not automatically wrap the angle value
 ///
 /// \param left  Left operand (an angle)
 /// \param right Right operand (an angle)
@@ -506,5 +518,10 @@ namespace Literals
 /// sf::Angle a5 = 1_rad;    // 1 radians
 /// sf::Angle a6 = 3.14_rad; // 3.14 radians
 /// \endcode
+///
+/// Internally, sf::Angle stores the angle value as radians.
+///
+/// For the best performance and to minimize run-time conversions,
+/// it is recommended to work with radians whenever possible.
 ///
 ////////////////////////////////////////////////////////////

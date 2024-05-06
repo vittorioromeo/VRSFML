@@ -304,8 +304,8 @@ void AudioDevice::setCone(const Listener::Cone& cone)
 
     ma_engine_listener_set_cone(&*instance->m_engine,
                                 0,
-                                std::clamp(cone.innerAngle.asRadians(), 0.f, sf::degrees(360).asRadians()),
-                                std::clamp(cone.outerAngle.asRadians(), 0.f, sf::degrees(360).asRadians()),
+                                std::clamp(cone.innerAngle, sf::Angle::Zero, sf::Angle::FullCircle).asRadians(),
+                                std::clamp(cone.outerAngle, sf::Angle::Zero, sf::Angle::FullCircle).asRadians(),
                                 cone.outerGain);
 }
 
