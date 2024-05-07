@@ -21,6 +21,12 @@
 #define TINYVARIANT_USE_STD_INDEX_SEQUENCE
 #endif
 
+#ifdef TINYVARIANT_SUPPORTS_HAS_BUILTIN
+#if __has_builtin(__type_pack_element)
+#define TINYVARIANT_USE_TYPE_PACK_ELEMENT
+#endif
+#endif
+
 #ifdef TINYVARIANT_USE_STD_INDEX_SEQUENCE
 #include <utility>
 #endif
@@ -115,6 +121,13 @@ struct type_wrapper
     using type = T;
 };
 
+#ifdef TINYVARIANT_USE_TYPE_PACK_ELEMENT
+
+template <sz_t N, typename... Ts>
+using type_at = __type_pack_element<N, Ts...>;
+
+#else
+
 template <sz_t N,
           typename T0 = void,
           typename T1 = void,
@@ -146,6 +159,8 @@ template <sz_t N,
 
 template <sz_t N, typename... Ts>
 using type_at = typename decltype(type_at_impl<N, Ts...>())::type;
+
+#endif
 
 template <typename>
 struct tinyvariant_inplace_type_t
@@ -398,5 +413,6 @@ public:
 #undef TINYVARIANT_USE_STD_INDEX_SEQUENCE
 #undef TINYVARIANT_USE_INTEGER_PACK
 #undef TINYVARIANT_USE_MAKE_INTEGER_SEQ
+#undef TINYVARIANT_USE_TYPE_PACK_ELEMENT
 
 } // namespace sf::priv
