@@ -71,8 +71,8 @@ std::size_t CircleShape::getPointCount() const
 ////////////////////////////////////////////////////////////
 Vector2f CircleShape::getPoint(std::size_t index) const
 {
-    const Angle angle = static_cast<float>(index) / static_cast<float>(m_pointCount) * sf::Angle::FullCircle -
-                        sf::Angle::QuarterCircle;
+    const Angle angle = static_cast<float>(index) / static_cast<float>(m_pointCount) * Angle::FullCircle -
+                        Angle::QuarterCircle;
 
     return Vector2f(m_radius, m_radius) + Vector2f(m_radius, angle);
 }

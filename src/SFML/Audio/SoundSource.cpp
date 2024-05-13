@@ -26,6 +26,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Angle.hpp"
+
 #include <SFML/Audio/SoundSource.hpp>
 
 #include <miniaudio.h>
@@ -89,8 +90,8 @@ void SoundSource::setCone(const Cone& cone)
 {
     if (auto* sound = static_cast<ma_sound*>(getSound()))
         ma_sound_set_cone(sound,
-                          std::clamp(cone.innerAngle, sf::Angle::Zero, sf::Angle::FullCircle).asRadians(),
-                          std::clamp(cone.outerAngle, sf::Angle::Zero, sf::Angle::FullCircle).asRadians(),
+                          std::clamp(cone.innerAngle, Angle::Zero, Angle::FullCircle).asRadians(),
+                          std::clamp(cone.outerAngle, Angle::Zero, Angle::FullCircle).asRadians(),
                           cone.outerGain);
 }
 
@@ -242,12 +243,12 @@ SoundSource::Cone SoundSource::getCone() const
         float outerAngle = 0.f;
         Cone  cone;
         ma_sound_get_cone(sound, &innerAngle, &outerAngle, &cone.outerGain);
-        cone.innerAngle = sf::radians(innerAngle);
-        cone.outerAngle = sf::radians(outerAngle);
+        cone.innerAngle = radians(innerAngle);
+        cone.outerAngle = radians(outerAngle);
         return cone;
     }
 
-    return Cone{sf::radians(0), sf::radians(0), 0.f};
+    return Cone{radians(0), radians(0), 0.f};
 }
 
 
