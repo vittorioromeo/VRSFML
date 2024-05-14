@@ -28,9 +28,6 @@
 #include <SFML/System/Err.hpp>
 
 #include <iostream>
-#include <streambuf>
-
-#include <cstdio>
 
 
 namespace
@@ -60,22 +57,19 @@ public:
 private:
     int overflow(int character) override
     {
+        // Valid character
         if ((character != EOF) && (pptr() != epptr()))
-        {
-            // Valid character
             return sputc(static_cast<char>(character));
-        }
-        else if (character != EOF)
+
+        // Not enough space in the buffer: synchronize output and try again
+        if (character != EOF)
         {
-            // Not enough space in the buffer: synchronize output and try again
             sync();
             return overflow(character);
         }
-        else
-        {
-            // Invalid character: synchronize output
-            return sync();
-        }
+
+        // Invalid character: synchronize output
+        return sync();
     }
 
     int sync() override
@@ -101,10 +95,13 @@ namespace sf
 ////////////////////////////////////////////////////////////
 std::ostream& err()
 {
-    static DefaultErrStreamBuf buffer;
-    static std::ostream        stream(&buffer);
+    thread_local struct
+    {
+        DefaultErrStreamBuf buffer;
+        std::ostream        stream{std::cerr};
+    } result;
 
-    return stream;
+    return result.stream;
 }
 
 
