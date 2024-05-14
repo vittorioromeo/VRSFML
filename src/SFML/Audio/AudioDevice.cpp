@@ -33,6 +33,7 @@
 #include <miniaudio.h>
 
 #include <algorithm>
+#include <array>
 #include <optional>
 #include <ostream>
 
@@ -42,13 +43,15 @@ namespace sf::priv
 struct AudioDevice::ListenerProperties
 {
     float          volume{100.f};
-    sf::Vector3f   position{0, 0, 0};
-    sf::Vector3f   direction{0, 0, -1};
-    sf::Vector3f   velocity{0, 0, 0};
-    Listener::Cone cone{sf::degrees(360), sf::degrees(360), 1};
-    sf::Vector3f   upVector{0, 1, 0};
+    Vector3f       position{0, 0, 0};
+    Vector3f       direction{0, 0, -1};
+    Vector3f       velocity{0, 0, 0};
+    Listener::Cone cone{degrees(360.f), degrees(360.f), 1};
+    Vector3f       upVector{0, 1, 0};
 };
 
+
+////////////////////////////////////////////////////////////
 struct AudioDevice::Impl
 {
     std::optional<ma_log>     log;            //!< The miniaudio log
@@ -56,6 +59,7 @@ struct AudioDevice::Impl
     std::optional<ma_device>  playbackDevice; //!< The miniaudio playback device
     std::optional<ma_engine>  engine;         //!< The miniaudio engine (used for effects and spatialisation)
 };
+
 
 ////////////////////////////////////////////////////////////
 AudioDevice::AudioDevice() : m_impl(priv::makeUnique<Impl>())
@@ -90,32 +94,51 @@ AudioDevice::AudioDevice() : m_impl(priv::makeUnique<Impl>())
     // Create the context
     m_impl->context.emplace();
 
-    auto contextConfig = ma_context_config_init();
-    contextConfig.pLog = &*m_impl->log;
+    auto contextConfig                                 = ma_context_config_init();
+    contextConfig.pLog                                 = &*m_log;
+    ma_uint32                              deviceCount = 0;
+    const auto                             nullBackend = ma_backend_null;
+    const std::array<const ma_backend*, 2> backendLists{nullptr, &nullBackend};
 
-    if (const auto result = ma_context_init(nullptr, 0, &contextConfig, &*m_impl->context); result != MA_SUCCESS)
+    for (const auto* backendList : backendLists)
     {
-        m_impl->context.reset();
-        err() << "Failed to initialize the audio context: " << ma_result_description(result) << std::endl;
-        return;
+        // We can set backendCount to 1 since it is ignored when backends is set to nullptr
+        if (const auto result = ma_context_init(backendList, 1, &contextConfig, &*m_context); result != MA_SUCCESS)
+        {
+            m_context.reset();
+            err() << "Failed to initialize the audio playback context: " << ma_result_description(result) << std::endl;
+            return;
+        }
+
+        // Count the playback devices
+        if (const auto result = ma_context_get_devices(&*m_context, nullptr, &deviceCount, nullptr, nullptr);
+            result != MA_SUCCESS)
+        {
+            err() << "Failed to get audio playback devices: " << ma_result_description(result) << std::endl;
+            return;
+        }
+
+        // Check if there are audio playback devices available on the system
+        if (deviceCount > 0)
+            break;
+
+        // Warn if no devices were found using the default backend list
+        if (backendList == nullptr)
+            err() << "No audio playback devices available on the system" << std::endl;
+
+        // Clean up the context if we didn't find any devices
+        ma_context_uninit(&*m_context);
     }
 
-    // Count the playback devices
-    ma_uint32 deviceCount = 0;
-
-    if (const auto result = ma_context_get_devices(&*m_impl->context, nullptr, &deviceCount, nullptr, nullptr);
-        result != MA_SUCCESS)
-    {
-        err() << "Failed to get audio playback devices: " << ma_result_description(result) << std::endl;
-        return;
-    }
-
-    // Check if there are audio playback devices available on the system
+    // If the NULL audio backend also doesn't provide a device we give up
     if (deviceCount == 0)
     {
-        err() << "No audio playback devices available on the system" << std::endl;
+        m_context.reset();
         return;
     }
+
+    if (m_context->backend == ma_backend_null)
+        err() << "Using NULL audio backend for playback" << std::endl;
 
     // Create the playback device
     m_impl->playbackDevice.emplace();
@@ -327,8 +350,8 @@ void AudioDevice::setCone(const Listener::Cone& cone)
 
     ma_engine_listener_set_cone(&*instance->m_impl->engine,
                                 0,
-                                std::clamp(cone.innerAngle.asRadians(), 0.f, degrees(360).asRadians()),
-                                std::clamp(cone.outerAngle.asRadians(), 0.f, degrees(360).asRadians()),
+                                std::clamp(cone.innerAngle, Angle::Zero, degrees(360.f)).asRadians(),
+                                std::clamp(cone.outerAngle, Angle::Zero, degrees(360.f)).asRadians(),
                                 cone.outerGain);
 }
 

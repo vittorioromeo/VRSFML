@@ -35,6 +35,8 @@
 #include <SFML/System/Time.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
+#include <array>
+
 #include <cmath>
 
 #if defined(SFML_SYSTEM_WINDOWS)
@@ -95,7 +97,7 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 struct WindowImpl::JoystickStatesImpl
 {
-    JoystickState states[Joystick::Count]{}; //!< Previous state of the joysticks
+    std::array<JoystickState, Joystick::Count> states{}; //!< Previous state of the joysticks
 };
 
 
