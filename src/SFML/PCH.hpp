@@ -42,9 +42,11 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/String.hpp>
 #include <SFML/System/Time.hpp>
+#include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <filesystem>
 #include <iostream>
@@ -62,3 +64,18 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+
+
+////////////////////////////////////////////////////////////
+// Precompiled Headers (Test Suite Only)
+////////////////////////////////////////////////////////////
+
+#ifdef SFML_BUILD_TEST_SUITE
+
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/interfaces/catch_interfaces_reporter.hpp>
+#include <catch2/reporters/catch_reporter_common_base.hpp>
+
+#include <map>
+
+#endif
