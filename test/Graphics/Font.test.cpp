@@ -2,6 +2,8 @@
 #include <SFML/Graphics/Texture.hpp>
 
 // Other 1st party headers
+#include <SFML/Graphics/Image.hpp>
+
 #include <SFML/System/FileInputStream.hpp>
 
 #include <catch2/catch_test_macros.hpp>
@@ -9,10 +11,37 @@
 #include <GraphicsUtil.hpp>
 #include <WindowUtil.hpp>
 #include <fstream>
+#include <thread>
 #include <type_traits>
-
 TEST_CASE("[Graphics] sf::Font", runDisplayTests())
 {
+    SECTION("Porcu diu")
+    {
+        const int          num_images     = 3;
+        static std::string image_paths[3] = {"working-image.png", "non-existing-image.png", "main.cpp"};
+
+        const int   num_threads = 4;
+        std::thread threads[num_threads];
+
+        for (int i = 0; i < num_threads; ++i)
+        {
+            threads[i] = std::thread(
+                []()
+                {
+                    while (true)
+                    {
+                        for (int i = 0; i < num_images; ++i)
+                        {
+                            sf::Image image;
+                            image.loadFromFile(image_paths[i]);
+                        }
+                    }
+                });
+        }
+
+        std::this_thread::sleep_for(std::chrono::seconds(10));
+    }
+
     SECTION("Type traits")
     {
         STATIC_CHECK(std::is_copy_constructible_v<sf::Font>);
