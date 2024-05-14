@@ -25,55 +25,29 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Cursor.hpp>
-#include <SFML/Window/CursorImpl.hpp>
+#include <SFML/Window/Event.hpp>
 
-#include <SFML/System/UniquePtr.hpp>
-#include <SFML/System/Vector2.hpp>
-
-
-namespace sf
-{
-
-////////////////////////////////////////////////////////////
-Cursor::Cursor() : m_impl(priv::makeUnique<priv::CursorImpl>())
-{
-}
-
-
-////////////////////////////////////////////////////////////
-Cursor::~Cursor() = default;
-
-
-////////////////////////////////////////////////////////////
-Cursor::Cursor(Cursor&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
-Cursor& Cursor::operator=(Cursor&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
-bool Cursor::loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vector2u hotspot)
-{
-    if ((pixels == nullptr) || (size.x == 0) || (size.y == 0))
-        return false;
-    else
-        return m_impl->loadFromPixels(pixels, size, hotspot);
-}
-
-
-////////////////////////////////////////////////////////////
-bool Cursor::loadFromSystem(Type type)
-{
-    return m_impl->loadFromSystem(type);
-}
-
-
-////////////////////////////////////////////////////////////
-const priv::CursorImpl& Cursor::getImpl() const
-{
-    return *m_impl;
-}
-
-} // namespace sf
+template class sf::priv::tinyvariant<
+    sf::Event::Empty,
+    sf::Event::Closed,
+    sf::Event::Resized,
+    sf::Event::FocusLost,
+    sf::Event::FocusGained,
+    sf::Event::TextEntered,
+    sf::Event::KeyPressed,
+    sf::Event::KeyReleased,
+    sf::Event::MouseWheelScrolled,
+    sf::Event::MouseButtonPressed,
+    sf::Event::MouseButtonReleased,
+    sf::Event::MouseMoved,
+    sf::Event::MouseEntered,
+    sf::Event::MouseLeft,
+    sf::Event::JoystickButtonPressed,
+    sf::Event::JoystickButtonReleased,
+    sf::Event::JoystickMoved,
+    sf::Event::JoystickConnected,
+    sf::Event::JoystickDisconnected,
+    sf::Event::TouchBegan,
+    sf::Event::TouchMoved,
+    sf::Event::TouchEnded,
+    sf::Event::SensorChanged>;
