@@ -95,7 +95,7 @@ AudioDevice::AudioDevice() : m_impl(priv::makeUnique<Impl>())
     m_impl->context.emplace();
 
     auto contextConfig                                 = ma_context_config_init();
-    contextConfig.pLog                                 = &*m_log;
+    contextConfig.pLog                                 = &*m_impl->log;
     ma_uint32                              deviceCount = 0;
     const auto                             nullBackend = ma_backend_null;
     const std::array<const ma_backend*, 2> backendLists{nullptr, &nullBackend};
@@ -103,15 +103,15 @@ AudioDevice::AudioDevice() : m_impl(priv::makeUnique<Impl>())
     for (const auto* backendList : backendLists)
     {
         // We can set backendCount to 1 since it is ignored when backends is set to nullptr
-        if (const auto result = ma_context_init(backendList, 1, &contextConfig, &*m_context); result != MA_SUCCESS)
+        if (const auto result = ma_context_init(backendList, 1, &contextConfig, &*m_impl->context); result != MA_SUCCESS)
         {
-            m_context.reset();
+            m_impl->context.reset();
             err() << "Failed to initialize the audio playback context: " << ma_result_description(result) << std::endl;
             return;
         }
 
         // Count the playback devices
-        if (const auto result = ma_context_get_devices(&*m_context, nullptr, &deviceCount, nullptr, nullptr);
+        if (const auto result = ma_context_get_devices(&*m_impl->context, nullptr, &deviceCount, nullptr, nullptr);
             result != MA_SUCCESS)
         {
             err() << "Failed to get audio playback devices: " << ma_result_description(result) << std::endl;
@@ -127,17 +127,17 @@ AudioDevice::AudioDevice() : m_impl(priv::makeUnique<Impl>())
             err() << "No audio playback devices available on the system" << std::endl;
 
         // Clean up the context if we didn't find any devices
-        ma_context_uninit(&*m_context);
+        ma_context_uninit(&*m_impl->context);
     }
 
     // If the NULL audio backend also doesn't provide a device we give up
     if (deviceCount == 0)
     {
-        m_context.reset();
+        m_impl->context.reset();
         return;
     }
 
-    if (m_context->backend == ma_backend_null)
+    if (m_impl->context->backend == ma_backend_null)
         err() << "Using NULL audio backend for playback" << std::endl;
 
     // Create the playback device
@@ -192,16 +192,19 @@ AudioDevice::AudioDevice() : m_impl(priv::makeUnique<Impl>())
                                     getListenerProperties().position.x,
                                     getListenerProperties().position.y,
                                     getListenerProperties().position.z);
+
     ma_engine_listener_set_velocity(&*m_impl->engine,
                                     0,
                                     getListenerProperties().velocity.x,
                                     getListenerProperties().velocity.y,
                                     getListenerProperties().velocity.z);
+
     ma_engine_listener_set_cone(&*m_impl->engine,
                                 0,
                                 getListenerProperties().cone.innerAngle.asRadians(),
                                 getListenerProperties().cone.outerAngle.asRadians(),
                                 getListenerProperties().cone.outerGain);
+
     ma_engine_listener_set_world_up(&*m_impl->engine,
                                     0,
                                     getListenerProperties().upVector.x,
