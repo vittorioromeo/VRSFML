@@ -31,8 +31,6 @@
 #include <SFML/Graphics/Shader.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
-#include <SFML/Window/GlResource.hpp>
-
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InputStream.hpp>
 #include <SFML/System/Utils.hpp>
@@ -1080,7 +1078,7 @@ int Shader::getUniformLocation(const std::string& name)
 
 } // namespace sf
 
-#else  // SFML_OPENGL_ES
+#else // SFML_OPENGL_ES
 
 // OpenGL ES 1 doesn't support GLSL shaders at all, we have to provide an empty implementation
 

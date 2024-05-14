@@ -85,20 +85,12 @@ RenderTextureImplFBO::~RenderTextureImplFBO()
 
     // Unregister FBOs with the contexts if they haven't already been destroyed
     for (auto& entry : m_frameBuffers)
-    {
-        auto frameBuffer = entry.second.lock();
-
-        if (frameBuffer)
+        if (auto frameBuffer = entry.second.lock())
             unregisterUnsharedGlObject(std::move(frameBuffer));
-    }
 
     for (auto& entry : m_multisampleFrameBuffers)
-    {
-        auto frameBuffer = entry.second.lock();
-
-        if (frameBuffer)
+        if (auto frameBuffer = entry.second.lock())
             unregisterUnsharedGlObject(std::move(frameBuffer));
-    }
 }
 
 

@@ -39,6 +39,8 @@ endif()
 add_library(sfml-test-main STATIC
     TestUtilities/SystemUtil.hpp
     TestUtilities/SystemUtil.cpp
+    TestUtilities/LoadIntoMemory.hpp
+    TestUtilities/LoadIntoMemory.cpp
     TestUtilities/WindowUtil.hpp
     TestUtilities/WindowUtil.cpp
     TestUtilities/GraphicsUtil.hpp
