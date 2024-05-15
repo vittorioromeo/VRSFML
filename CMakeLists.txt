@@ -303,8 +303,8 @@ else()
     # create SFML.framework
     add_library(SFML ${SFML_SOURCES})
 
-    # enable C++17 support
-    target_compile_features(SFML PUBLIC cxx_std_17)
+    # enable C++20 support
+    target_compile_features(SFML PUBLIC cxx_std_20)
 
     # set the target flags to use the appropriate C++ standard library
     sfml_set_stdlib(SFML)
