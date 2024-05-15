@@ -5,10 +5,13 @@ include(${CMAKE_CURRENT_LIST_DIR}/CompilerWarnings.cmake)
 
 # helper function to tweak visibility of public symbols
 function(set_public_symbols_hidden target)
-    # ensure public symbols are hidden by default (exported ones are explicitly marked)
-    set_target_properties(${target} PROPERTIES
-                          CXX_VISIBILITY_PRESET hidden
-                          VISIBILITY_INLINES_HIDDEN YES)
+    # this breaks explicit template instantiations, see GCC bug #109387
+    if (NOT MINGW)
+        # ensure public symbols are hidden by default (exported ones are explicitly marked)
+        set_target_properties(${target} PROPERTIES
+        CXX_VISIBILITY_PRESET hidden
+        VISIBILITY_INLINES_HIDDEN YES)
+    endif()
 endfunction()
 
 # This little macro lets you set any Xcode specific property

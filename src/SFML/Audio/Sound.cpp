@@ -31,6 +31,7 @@
 #include <SFML/Audio/SoundBuffer.hpp>
 
 #include <SFML/System/Err.hpp>
+#include <SFML/System/UniquePtr.hpp>
 
 #include <miniaudio.h>
 
@@ -210,16 +211,16 @@ struct Sound::Impl
     ////////////////////////////////////////////////////////////
     ma_data_source_base dataSourceBase{}; //!< The struct that makes this object a miniaudio data source (must be first member)
     std::vector<ma_channel> soundChannelMap; //!< The map of position in sample frame to sound channel (miniaudio channels)
-    ma_sound                sound{};         //!< The sound
-    std::size_t             cursor{};        //!< The current playing position
-    bool                    looping{};       //!< True if we are looping the sound
-    const SoundBuffer*      buffer{};        //!< Sound buffer bound to the source
-    Status                  status{Status::Stopped}; //!< The status
+    ma_sound           sound{};              //!< The sound
+    std::size_t        cursor{};             //!< The current playing position
+    bool               looping{};            //!< True if we are looping the sound
+    const SoundBuffer* buffer{};             //!< Sound buffer bound to the source
+    Status             status{Status::Stopped}; //!< The status
 };
 
 
 ////////////////////////////////////////////////////////////
-Sound::Sound(const SoundBuffer& buffer) : m_impl(std::make_unique<Impl>())
+Sound::Sound(const SoundBuffer& buffer) : m_impl(priv::makeUnique<Impl>())
 {
     setBuffer(buffer);
 }
@@ -227,7 +228,7 @@ Sound::Sound(const SoundBuffer& buffer) : m_impl(std::make_unique<Impl>())
 
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(readability-redundant-member-init)
-Sound::Sound(const Sound& copy) : SoundSource(copy), m_impl(std::make_unique<Impl>())
+Sound::Sound(const Sound& copy) : SoundSource(copy), m_impl(priv::makeUnique<Impl>())
 {
     SoundSource::operator=(copy);
 

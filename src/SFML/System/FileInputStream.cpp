@@ -30,8 +30,6 @@
 #include <SFML/System/Android/Activity.hpp>
 #include <SFML/System/Android/ResourceStream.hpp>
 #endif
-#include <memory>
-
 #include <cstddef>
 
 namespace sf
@@ -65,7 +63,7 @@ bool FileInputStream::open(const std::filesystem::path& filename)
 #ifdef SFML_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
     {
-        m_androidFile = std::make_unique<priv::ResourceStream>(filename);
+        m_androidFile = priv::makeUnique<priv::ResourceStream>(filename);
         return m_androidFile->tell() != -1;
     }
 #endif
