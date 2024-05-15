@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,66 +22,15 @@
 //
 ////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
-// Headers
-////////////////////////////////////////////////////////////
-#include <SFML/Audio/AudioDevice.hpp>
-#include <SFML/Audio/AudioResource.hpp>
+#include <SFML/Graphics/Rect.hpp>
 
-#include <mutex>
-
-#include <cstdint>
-
-
-namespace
-{
-
-std::mutex             deviceMutex;
-sf::priv::AudioDevice* device;
-std::uint32_t          deviceRC = 0;
-
-void acquireDevice()
-{
-    std::lock_guard guard{deviceMutex};
-
-    if (deviceRC++ == 0)
-        device = new sf::priv::AudioDevice;
-}
-
-void releaseDevice()
-{
-    std::lock_guard guard{deviceMutex};
-
-    if (--deviceRC == 0)
-        delete device;
-}
-
-} // namespace
-
-namespace sf
-{
-////////////////////////////////////////////////////////////
-AudioResource::AudioResource()
-{
-    acquireDevice();
-}
 
 ////////////////////////////////////////////////////////////
-AudioResource::~AudioResource()
-{
-    releaseDevice();
-}
-
+// Explicit instantiation definitions
 ////////////////////////////////////////////////////////////
-AudioResource::AudioResource(const AudioResource&)
-{
-    acquireDevice();
-}
 
-////////////////////////////////////////////////////////////
-AudioResource::AudioResource(AudioResource&&) noexcept
-{
-    acquireDevice();
-}
-
-} // namespace sf
+template class sf::Rect<float>;
+template class sf::Rect<double>;
+template class sf::Rect<long double>;
+template class sf::Rect<int>;
+template class sf::Rect<unsigned int>;
