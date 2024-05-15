@@ -12,8 +12,8 @@ FetchContent_Declare(Catch2
 FetchContent_MakeAvailable(Catch2)
 include(Catch)
 
-# Build Catch2 in C++17 mode to enable C++17 features
-target_compile_features(Catch2 PRIVATE cxx_std_17)
+# Build Catch2 in C++20 mode to enable C++20 features
+target_compile_features(Catch2 PRIVATE cxx_std_20)
 
 # Ensure that Catch2 sources and headers are not analyzed by any tools
 set_target_properties(Catch2 PROPERTIES COMPILE_OPTIONS "" EXPORT_COMPILE_COMMANDS OFF)

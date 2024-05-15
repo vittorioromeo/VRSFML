@@ -76,8 +76,8 @@ macro(sfml_add_library module)
     endif()
     add_library(SFML::${module} ALIAS ${target})
 
-    # enable C++17 support
-    target_compile_features(${target} PUBLIC cxx_std_17)
+    # enable C++20 support
+    target_compile_features(${target} PUBLIC cxx_std_20)
 
     # Add required flags for GCC if coverage reporting is enabled
     if(SFML_ENABLE_COVERAGE AND (SFML_COMPILER_GCC OR SFML_COMPILER_CLANG))
