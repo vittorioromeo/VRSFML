@@ -120,37 +120,40 @@ struct Font::Page
 
 
 ////////////////////////////////////////////////////////////
-struct Font::Impl
+struct Font::FontHandles
 {
-    struct FontHandles
+    FontHandles() = default;
+
+    ~FontHandles()
     {
-        FontHandles() = default;
+        // All the function below are safe to call with null pointer arguments.
+        // The documentation of FreeType isn't clear on the matter, but the
+        // implementation does explicitly check for null.
 
-        ~FontHandles()
-        {
-            // All the function below are safe to call with null pointer arguments.
-            // The documentation of FreeType isn't clear on the matter, but the
-            // implementation does explicitly check for null.
+        FT_Stroker_Done(stroker);
+        FT_Done_Face(face);
+        // `streamRec` doesn't need to be explicitly freed.
+        FT_Done_FreeType(library);
+    }
 
-            FT_Stroker_Done(stroker);
-            FT_Done_Face(face);
-            // `streamRec` doesn't need to be explicitly freed.
-            FT_Done_FreeType(library);
-        }
-
-        // clang-format off
+    // clang-format off
     FontHandles(const FontHandles&)            = delete;
     FontHandles& operator=(const FontHandles&) = delete;
 
     FontHandles(FontHandles&&)            = delete;
     FontHandles& operator=(FontHandles&&) = delete;
-        // clang-format on
+    // clang-format on
 
-        FT_Library   library{};   //< Pointer to the internal library interface
-        FT_StreamRec streamRec{}; //< Stream rec object describing an input stream
-        FT_Face      face{};      //< Pointer to the internal font face
-        FT_Stroker   stroker{};   //< Pointer to the stroker
-    };
+    FT_Library   library{};   //< Pointer to the internal library interface
+    FT_StreamRec streamRec{}; //< Stream rec object describing an input stream
+    FT_Face      face{};      //< Pointer to the internal font face
+    FT_Stroker   stroker{};   //< Pointer to the stroker
+};
+
+
+////////////////////////////////////////////////////////////
+struct Font::Impl
+{
 
     using PageTable = std::unordered_map<unsigned int, Page>; //!< Table mapping a character size to its page (texture)
 
@@ -166,8 +169,10 @@ struct Font::Impl
 
 
 ////////////////////////////////////////////////////////////
-Font::Font() : m_impl(priv::makeUnique<Impl>())
+Font::Font(void* fontHandlesSharedPtr, std::string&& familyName) : m_impl(priv::makeUnique<Impl>())
 {
+    m_impl->fontHandles = std::move(*static_cast<std::shared_ptr<FontHandles>*>(fontHandlesSharedPtr));
+    m_impl->info.family = std::move(familyName);
 }
 
 
@@ -204,14 +209,11 @@ Font& Font::operator=(Font&& rhs) noexcept
 
 
 ////////////////////////////////////////////////////////////
-bool Font::loadFromFile(const std::filesystem::path& filename)
+std::optional<Font> Font::loadFromFile(const std::filesystem::path& filename)
 {
 #ifndef SFML_SYSTEM_ANDROID
 
-    // Cleanup the previous resources
-    cleanup();
-
-    auto fontHandles = std::make_shared<Impl::FontHandles>();
+    auto fontHandles = std::make_shared<FontHandles>();
 
     // Initialize FreeType
     // Note: we initialize FreeType for every font instance in order to avoid having a single
@@ -219,7 +221,7 @@ bool Font::loadFromFile(const std::filesystem::path& filename)
     if (FT_Init_FreeType(&fontHandles->library) != 0)
     {
         err() << "Failed to load font (failed to initialize FreeType)\n" << formatDebugPathInfo(filename) << std::endl;
-        return false;
+        return std::nullopt;
     }
 
     // Load the new font face from the specified file
@@ -227,7 +229,7 @@ bool Font::loadFromFile(const std::filesystem::path& filename)
     if (FT_New_Face(fontHandles->library, filename.string().c_str(), 0, &face) != 0)
     {
         err() << "Failed to load font (failed to create the font face)\n" << formatDebugPathInfo(filename) << std::endl;
-        return false;
+        return std::nullopt;
     }
     fontHandles->face = face;
 
@@ -235,7 +237,7 @@ bool Font::loadFromFile(const std::filesystem::path& filename)
     if (FT_Stroker_New(fontHandles->library, &fontHandles->stroker) != 0)
     {
         err() << "Failed to load font (failed to create the stroker)\n" << formatDebugPathInfo(filename) << std::endl;
-        return false;
+        return std::nullopt;
     }
 
     // Select the unicode character map
@@ -243,33 +245,27 @@ bool Font::loadFromFile(const std::filesystem::path& filename)
     {
         err() << "Failed to load font (failed to set the Unicode character set)\n"
               << formatDebugPathInfo(filename) << std::endl;
-        return false;
+        return std::nullopt;
     }
 
-    // Store the loaded font handles
-    m_impl->fontHandles = std::move(fontHandles);
-
-    // Store the font information
-    m_impl->info.family = face->family_name ? face->family_name : std::string();
-
-    return true;
+    return Font(&fontHandles, std::string(face->family_name ? face->family_name : ""));
 
 #else
 
-    m_stream = priv::makeUnique<priv::ResourceStream>(filename);
-    return loadFromStream(*m_stream);
+    auto stream = priv::makeUnique<priv::ResourceStream>(filename);
+    auto font   = loadFromStream(*stream);
+    if (font)
+        font->m_stream = std::move(stream);
+    return font;
 
 #endif
 }
 
 
 ////////////////////////////////////////////////////////////
-bool Font::loadFromMemory(const void* data, std::size_t sizeInBytes)
+std::optional<Font> Font::loadFromMemory(const void* data, std::size_t sizeInBytes)
 {
-    // Cleanup the previous resources
-    cleanup();
-
-    auto fontHandles = std::make_shared<Impl::FontHandles>();
+    auto fontHandles = std::make_shared<FontHandles>();
 
     // Initialize FreeType
     // Note: we initialize FreeType for every font instance in order to avoid having a single
@@ -277,7 +273,7 @@ bool Font::loadFromMemory(const void* data, std::size_t sizeInBytes)
     if (FT_Init_FreeType(&fontHandles->library) != 0)
     {
         err() << "Failed to load font from memory (failed to initialize FreeType)" << std::endl;
-        return false;
+        return std::nullopt;
     }
 
     // Load the new font face from the specified file
@@ -289,7 +285,7 @@ bool Font::loadFromMemory(const void* data, std::size_t sizeInBytes)
                            &face) != 0)
     {
         err() << "Failed to load font from memory (failed to create the font face)" << std::endl;
-        return false;
+        return std::nullopt;
     }
     fontHandles->face = face;
 
@@ -297,33 +293,24 @@ bool Font::loadFromMemory(const void* data, std::size_t sizeInBytes)
     if (FT_Stroker_New(fontHandles->library, &fontHandles->stroker) != 0)
     {
         err() << "Failed to load font from memory (failed to create the stroker)" << std::endl;
-        return false;
+        return std::nullopt;
     }
 
     // Select the Unicode character map
     if (FT_Select_Charmap(face, FT_ENCODING_UNICODE) != 0)
     {
         err() << "Failed to load font from memory (failed to set the Unicode character set)" << std::endl;
-        return false;
+        return std::nullopt;
     }
 
-    // Store the loaded font handles
-    m_impl->fontHandles = std::move(fontHandles);
-
-    // Store the font information
-    m_impl->info.family = face->family_name ? face->family_name : std::string();
-
-    return true;
+    return Font(&fontHandles, std::string(face->family_name ? face->family_name : ""));
 }
 
 
 ////////////////////////////////////////////////////////////
-bool Font::loadFromStream(InputStream& stream)
+std::optional<Font> Font::loadFromStream(InputStream& stream)
 {
-    // Cleanup the previous resources
-    cleanup();
-
-    auto fontHandles = std::make_shared<Impl::FontHandles>();
+    auto fontHandles = std::make_shared<FontHandles>();
 
     // Initialize FreeType
     // Note: we initialize FreeType for every font instance in order to avoid having a single
@@ -331,14 +318,14 @@ bool Font::loadFromStream(InputStream& stream)
     if (FT_Init_FreeType(&fontHandles->library) != 0)
     {
         err() << "Failed to load font from stream (failed to initialize FreeType)" << std::endl;
-        return false;
+        return std::nullopt;
     }
 
     // Make sure that the stream's reading position is at the beginning
     if (stream.seek(0) == -1)
     {
         err() << "Failed to seek font stream" << std::endl;
-        return false;
+        return std::nullopt;
     }
 
     // Prepare a wrapper for our stream, that we'll pass to FreeType callbacks
@@ -360,7 +347,7 @@ bool Font::loadFromStream(InputStream& stream)
     if (FT_Open_Face(fontHandles->library, &args, 0, &face) != 0)
     {
         err() << "Failed to load font from stream (failed to create the font face)" << std::endl;
-        return false;
+        return std::nullopt;
     }
     fontHandles->face = face;
 
@@ -368,23 +355,17 @@ bool Font::loadFromStream(InputStream& stream)
     if (FT_Stroker_New(fontHandles->library, &fontHandles->stroker) != 0)
     {
         err() << "Failed to load font from stream (failed to create the stroker)" << std::endl;
-        return false;
+        return std::nullopt;
     }
 
     // Select the Unicode character map
     if (FT_Select_Charmap(face, FT_ENCODING_UNICODE) != 0)
     {
         err() << "Failed to load font from stream (failed to set the Unicode character set)" << std::endl;
-        return false;
+        return std::nullopt;
     }
 
-    // Store the loaded font handles
-    m_impl->fontHandles = std::move(fontHandles);
-
-    // Store the font information
-    m_impl->info.family = face->family_name ? face->family_name : std::string();
-
-    return true;
+    return Font(&fontHandles, std::string(face->family_name ? face->family_name : ""));
 }
 
 
@@ -556,18 +537,6 @@ void Font::setSmooth(bool smooth)
 bool Font::isSmooth() const
 {
     return m_impl->isSmooth;
-}
-
-
-////////////////////////////////////////////////////////////
-void Font::cleanup()
-{
-    // Drop ownership of shared FreeType pointers
-    m_impl->fontHandles.reset();
-
-    // Reset members
-    m_impl->pages.clear();
-    std::vector<std::uint8_t>().swap(m_impl->pixelBuffer);
 }
 
 
@@ -871,8 +840,7 @@ bool Font::setCurrentSize(unsigned int characterSize) const
 Font::Page::Page(bool smooth)
 {
     // Make sure that the texture is initialized by default
-    Image image;
-    image.create({128, 128}, Color::Transparent);
+    Image image({128, 128}, Color::Transparent);
 
     // Reserve a 2x2 white square for texturing underlines
     for (unsigned int x = 0; x < 2; ++x)
