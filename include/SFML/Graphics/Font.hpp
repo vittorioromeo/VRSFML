@@ -36,6 +36,7 @@
 #include <SFML/System/Vector2.hpp>
 
 #include <filesystem>
+#include <optional>
 #include <string>
 
 #include <cstddef>
@@ -61,12 +62,6 @@ class Texture;
 class SFML_GRAPHICS_API Font
 {
 public:
-    ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    ////////////////////////////////////////////////////////////
-    Font();
-
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
@@ -121,12 +116,12 @@ public:
     ///
     /// \param filename Path of the font file to load
     ///
-    /// \return True if loading succeeded, false if it failed
+    /// \return Font if loading succeeded, `std::nullopt` if it failed
     ///
     /// \see loadFromMemory, loadFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool loadFromFile(const std::filesystem::path& filename);
+    [[nodiscard]] static std::optional<Font> loadFromFile(const std::filesystem::path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the font from a file in memory
@@ -142,12 +137,12 @@ public:
     /// \param data        Pointer to the file data in memory
     /// \param sizeInBytes Size of the data to load, in bytes
     ///
-    /// \return True if loading succeeded, false if it failed
+    /// \return Font if loading succeeded, `std::nullopt` if it failed
     ///
     /// \see loadFromFile, loadFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool loadFromMemory(const void* data, std::size_t sizeInBytes);
+    [[nodiscard]] static std::optional<Font> loadFromMemory(const void* data, std::size_t sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the font from a custom stream
@@ -164,12 +159,12 @@ public:
     ///
     /// \param stream Source stream to read from
     ///
-    /// \return True if loading succeeded, false if it failed
+    /// \return Font if loading succeeded, `std::nullopt` if it failed
     ///
     /// \see loadFromFile, loadFromMemory
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool loadFromStream(InputStream& stream);
+    [[nodiscard]] static std::optional<Font> loadFromStream(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the font information
@@ -337,12 +332,6 @@ private:
     struct Page;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Free all the internal resources
-    ///
-    ////////////////////////////////////////////////////////////
-    void cleanup();
-
-    ////////////////////////////////////////////////////////////
     /// \brief Find or create the glyphs page corresponding to the given character size
     ///
     /// \param characterSize Reference character size
@@ -385,6 +374,17 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool setCurrentSize(unsigned int characterSize) const;
+
+    ////////////////////////////////////////////////////////////
+    // Types
+    ////////////////////////////////////////////////////////////
+    struct FontHandles;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Create a font from font handles and a family name
+    ///
+    ////////////////////////////////////////////////////////////
+    Font(void* fontHandlesSharedPtr, std::string&& familyName);
 
     ////////////////////////////////////////////////////////////
     // Member data
@@ -432,14 +432,8 @@ private:
 ///
 /// Usage example:
 /// \code
-/// // Declare a new font
-/// sf::Font font;
-///
-/// // Load it from a file
-/// if (!font.loadFromFile("arial.ttf"))
-/// {
-///     // error...
-/// }
+/// // Load a new font
+/// const auto font = sf::Font::loadFromFile("arial.ttf").value();
 ///
 /// // Create a text which uses our font
 /// sf::Text text1(font);
