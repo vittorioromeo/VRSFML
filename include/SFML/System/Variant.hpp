@@ -230,8 +230,6 @@ public:
     static constexpr sz_t index_of = get_index_of<T, Alternatives...>();
 
 private:
-    static constexpr index_sequence_up_to<type_count> alternative_index_sequence{};
-
     alignas(max_alignment) byte _buffer[max_size];
     index_type _index;
 
@@ -246,11 +244,11 @@ private:
                                                                                   \
     static_assert((I) >= 0 && (I) < type_count, "Alternative index out of range")
 
-#define TINYVARIANT_DO_WITH_CURRENT_INDEX_OBJ(obj, Is, ...)                                      \
-    do                                                                                           \
-    {                                                                                            \
-        [&]<sz_t... Is>(index_sequence<Is...>) TINYVARIANT_ALWAYS_INLINE_LAMBDA                  \
-        { ((((obj)._index == Is) ? ((__VA_ARGS__), 0) : 0), ...); }(alternative_index_sequence); \
+#define TINYVARIANT_DO_WITH_CURRENT_INDEX_OBJ(obj, Is, ...)                                              \
+    do                                                                                                   \
+    {                                                                                                    \
+        [&]<sz_t... Is>(index_sequence<Is...>) TINYVARIANT_ALWAYS_INLINE_LAMBDA                          \
+        { ((((obj)._index == Is) ? ((__VA_ARGS__), 0) : 0), ...); }(index_sequence_up_to<type_count>{}); \
     } while (false)
 
 #define TINYVARIANT_DO_WITH_CURRENT_INDEX(Is, ...) TINYVARIANT_DO_WITH_CURRENT_INDEX_OBJ((*this), Is, __VA_ARGS__)
