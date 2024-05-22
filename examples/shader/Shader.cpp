@@ -54,9 +54,6 @@ public:
             return false;
         m_sprite.emplace(m_texture);
 
-        // Load the shader
-        if (!m_shader.loadFromFile("resources/pixelate.frag", sf::Shader::Type::Fragment))
-            return false;
         m_shader.setUniform("texture", sf::Shader::CurrentTexture);
 
         return true;
@@ -76,7 +73,7 @@ public:
 private:
     sf::Texture               m_texture;
     std::optional<sf::Sprite> m_sprite;
-    sf::Shader                m_shader;
+    sf::Shader m_shader{sf::Shader::loadFromFile("resources/pixelate.frag", sf::Shader::Type::Fragment).value()};
 };
 
 
@@ -115,8 +112,7 @@ public:
         m_text.setCharacterSize(22);
         m_text.setPosition({30.f, 20.f});
 
-        // Load the shader
-        return m_shader.loadFromFile("resources/wave.vert", "resources/blur.frag");
+        return true;
     }
 
     void onUpdate(float time, float x, float y) override
@@ -134,7 +130,7 @@ public:
 
 private:
     sf::Text   m_text;
-    sf::Shader m_shader;
+    sf::Shader m_shader{sf::Shader::loadFromFile("resources/wave.vert", "resources/blur.frag").value()};
 };
 
 
@@ -166,8 +162,7 @@ public:
             m_points.append({{x, y}, {r, g, b}});
         }
 
-        // Load the shader
-        return m_shader.loadFromFile("resources/storm.vert", "resources/blink.frag");
+        return true;
     }
 
     void onUpdate(float time, float x, float y) override
@@ -187,7 +182,7 @@ public:
 
 private:
     sf::VertexArray m_points;
-    sf::Shader      m_shader;
+    sf::Shader      m_shader{sf::Shader::loadFromFile("resources/storm.vert", "resources/blink.frag").value()};
 };
 
 
@@ -227,9 +222,7 @@ public:
             m_entities.push_back(entity);
         }
 
-        // Load the shader
-        if (!m_shader.loadFromFile("resources/edge.frag", sf::Shader::Type::Fragment))
-            return false;
+        // Set the shader uniform
         m_shader.setUniform("texture", sf::Shader::CurrentTexture);
 
         return true;
@@ -270,7 +263,7 @@ private:
     sf::Texture               m_entityTexture;
     std::optional<sf::Sprite> m_backgroundSprite;
     std::vector<sf::Sprite>   m_entities;
-    sf::Shader                m_shader;
+    sf::Shader m_shader{sf::Shader::loadFromFile("resources/edge.frag", sf::Shader::Type::Fragment).value()};
 };
 
 
@@ -303,9 +296,6 @@ public:
         if (!m_logoTexture.loadFromFile("resources/logo.png"))
             return false;
 
-        // Load the shader
-        if (!m_shader.loadFromFile("resources/billboard.vert", "resources/billboard.geom", "resources/billboard.frag"))
-            return false;
         m_shader.setUniform("texture", sf::Shader::CurrentTexture);
 
         // Set the render resolution (used for proper scaling)
@@ -342,9 +332,10 @@ public:
     }
 
 private:
-    sf::Texture     m_logoTexture;
-    sf::Transform   m_transform;
-    sf::Shader      m_shader;
+    sf::Texture   m_logoTexture;
+    sf::Transform m_transform;
+    sf::Shader    m_shader{
+        sf::Shader::loadFromFile("resources/billboard.vert", "resources/billboard.geom", "resources/billboard.frag").value()};
     sf::VertexArray m_pointCloud;
 };
 
