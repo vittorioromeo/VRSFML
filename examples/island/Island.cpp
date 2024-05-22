@@ -110,11 +110,10 @@ int main()
     const auto font = sf::Font::loadFromFile("resources/tuffy.ttf").value();
 
     // Create all of our graphics resources
-    sf::Text               hudText(font);
-    sf::Text               statusText(font);
-    sf::Shader             terrainShader;
-    const sf::RenderStates terrainStates(&terrainShader);
-    sf::VertexBuffer       terrain(sf::PrimitiveType::Triangles, sf::VertexBuffer::Usage::Static);
+    sf::Text                  hudText(font);
+    sf::Text                  statusText(font);
+    std::optional<sf::Shader> terrainShader;
+    sf::VertexBuffer          terrain(sf::PrimitiveType::Triangles, sf::VertexBuffer::Usage::Static);
 
     // Set up our text drawables
     statusText.setCharacterSize(28);
@@ -131,18 +130,13 @@ int main()
     // Staging buffer for our terrain data that we will upload to our VertexBuffer
     std::vector<sf::Vertex> terrainStagingBuffer;
 
-    // Check whether the prerequisites are supported
-    bool prerequisitesSupported = sf::VertexBuffer::isAvailable() && sf::Shader::isAvailable();
-
     // Set up our graphics resources and set the status text accordingly
-    if (!prerequisitesSupported)
+    if (!sf::VertexBuffer::isAvailable() || !sf::Shader::isAvailable())
     {
         statusText.setString("Shaders and/or Vertex Buffers Unsupported");
     }
-    else if (!terrainShader.loadFromFile("resources/terrain.vert", "resources/terrain.frag"))
+    else if (!(terrainShader = sf::Shader::loadFromFile("resources/terrain.vert", "resources/terrain.frag")))
     {
-        prerequisitesSupported = false;
-
         statusText.setString("Failed to load shader program");
     }
     else
@@ -204,7 +198,7 @@ int main()
             }
 
             // Arrow key pressed:
-            if (prerequisitesSupported && event.is<sf::Event::KeyPressed>())
+            if (terrainShader.has_value() && event.is<sf::Event::KeyPressed>())
             {
                 switch (event.getIf<sf::Event::KeyPressed>()->code)
                 {
@@ -234,7 +228,7 @@ int main()
 
         window.draw(statusText);
 
-        if (prerequisitesSupported)
+        if (terrainShader.has_value())
         {
             {
                 const std::lock_guard lock(workQueueMutex);
@@ -254,8 +248,8 @@ int main()
                         bufferUploadPending = false;
                     }
 
-                    terrainShader.setUniform("lightFactor", lightFactor);
-                    window.draw(terrain, terrainStates);
+                    terrainShader->setUniform("lightFactor", lightFactor);
+                    window.draw(terrain, sf::RenderStates(&*terrainShader));
                 }
             }
 
