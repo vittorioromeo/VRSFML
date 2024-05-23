@@ -198,9 +198,6 @@ public:
 
     bool onLoad() override
     {
-        // Create the off-screen surface
-        if (!m_surface.create({800, 600}))
-            return false;
         m_surface.setSmooth(true);
 
         // Load the textures
@@ -258,7 +255,7 @@ public:
     }
 
 private:
-    sf::RenderTexture         m_surface;
+    sf::RenderTexture         m_surface{sf::RenderTexture::create({800, 600}).value()};
     sf::Texture               m_backgroundTexture;
     sf::Texture               m_entityTexture;
     std::optional<sf::Sprite> m_backgroundSprite;
@@ -296,10 +293,16 @@ public:
         if (!m_logoTexture.loadFromFile("resources/logo.png"))
             return false;
 
-        m_shader.setUniform("texture", sf::Shader::CurrentTexture);
+        // Load the shader
+        m_shader = sf::Shader::loadFromFile("resources/billboard.vert",
+                                            "resources/billboard.geom",
+                                            "resources/billboard.frag");
+        if (!m_shader)
+            return false;
+        m_shader->setUniform("texture", sf::Shader::CurrentTexture);
 
         // Set the render resolution (used for proper scaling)
-        m_shader.setUniform("resolution", sf::Vector2f(800, 600));
+        m_shader->setUniform("resolution", sf::Vector2f(800, 600));
 
         return true;
     }
@@ -317,13 +320,13 @@ public:
         const float size = 25 + std::abs(y) * 50;
 
         // Update the shader parameter
-        m_shader.setUniform("size", sf::Vector2f(size, size));
+        m_shader->setUniform("size", sf::Vector2f(size, size));
     }
 
     void onDraw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
         // Prepare the render state
-        states.shader    = &m_shader;
+        states.shader    = &*m_shader;
         states.texture   = &m_logoTexture;
         states.transform = m_transform;
 
@@ -332,11 +335,10 @@ public:
     }
 
 private:
-    sf::Texture   m_logoTexture;
-    sf::Transform m_transform;
-    sf::Shader    m_shader{
-        sf::Shader::loadFromFile("resources/billboard.vert", "resources/billboard.geom", "resources/billboard.frag").value()};
-    sf::VertexArray m_pointCloud;
+    sf::Texture               m_logoTexture;
+    sf::Transform             m_transform;
+    std::optional<sf::Shader> m_shader;
+    sf::VertexArray           m_pointCloud;
 };
 
 
