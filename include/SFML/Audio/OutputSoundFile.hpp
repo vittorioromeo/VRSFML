@@ -89,7 +89,7 @@ private:
     /// \brief Constructor from writer
     ///
     ////////////////////////////////////////////////////////////
-    explicit OutputSoundFile(std::unique_ptr<SoundFileWriter>&& writer);
+    explicit OutputSoundFile(priv::UniquePtr<SoundFileWriter>&& writer);
 
     ////////////////////////////////////////////////////////////
     // Member data
