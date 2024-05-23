@@ -130,7 +130,11 @@ std::optional<InputSoundFile> InputSoundFile::openFromStream(InputStream& stream
     if (!info)
         return std::nullopt;
 
-    return InputSoundFile(std::move(reader), {&stream, false}, info->sampleCount, info->sampleRate, std::move(info->channelMap));
+    return InputSoundFile(std::move(reader),
+                          decltype(m_stream){&stream, false},
+                          info->sampleCount,
+                          info->sampleRate,
+                          std::move(info->channelMap));
 }
 
 
@@ -233,8 +237,8 @@ void InputSoundFile::close()
 
 
 ////////////////////////////////////////////////////////////
-InputSoundFile::InputSoundFile(std::unique_ptr<SoundFileReader>&&            reader,
-                               std::unique_ptr<InputStream, StreamDeleter>&& stream,
+InputSoundFile::InputSoundFile(priv::UniquePtr<SoundFileReader>&&            reader,
+                               priv::UniquePtr<InputStream, StreamDeleter>&& stream,
                                std::uint64_t                                 sampleCount,
                                unsigned int                                  sampleRate,
                                std::vector<SoundChannel>&&                   channelMap) :

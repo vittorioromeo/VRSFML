@@ -241,8 +241,8 @@ private:
     /// \brief Constructor from reader, stream, and attributes
     ///
     ////////////////////////////////////////////////////////////
-    InputSoundFile(std::unique_ptr<SoundFileReader>&&            reader,
-                   std::unique_ptr<InputStream, StreamDeleter>&& stream,
+    InputSoundFile(priv::UniquePtr<SoundFileReader>&&            reader,
+                   priv::UniquePtr<InputStream, StreamDeleter>&& stream,
                    std::uint64_t                                 sampleCount,
                    unsigned int                                  sampleRate,
                    std::vector<SoundChannel>&&                   channelMap);
