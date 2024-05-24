@@ -140,7 +140,7 @@ public:
     /// \return True if available, false if unavailable
     ///
     ////////////////////////////////////////////////////////////
-    static bool isExtensionAvailable(const char* name);
+    static bool isExtensionAvailable(std::string_view name);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the address of an OpenGL function
