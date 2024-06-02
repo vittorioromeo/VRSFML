@@ -15,6 +15,7 @@
 
 #include <SFML/Audio/Listener.hpp>
 #include <SFML/Audio/Music.hpp>
+#include <SFML/Audio/PlaybackDevice.hpp>
 
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Keyboard.hpp>
