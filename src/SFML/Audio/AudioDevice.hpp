@@ -31,12 +31,11 @@
 
 #include <SFML/System/UniquePtr.hpp>
 
+#include <miniaudio.h>
 
-////////////////////////////////////////////////////////////
-// Forward declarations
-////////////////////////////////////////////////////////////
-
-struct ma_engine;
+#include <list>
+#include <optional>
+#include <string>
 
 
 namespace sf::priv
@@ -73,6 +72,110 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     static ma_engine* getEngine();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Reinitialize the audio engine and device
+    ///
+    /// Calling this function will reinitialize the audio engine
+    /// and device using the currently selected device name as
+    /// returned by sf::PlaybackDevice::getDevice.
+    ///
+    /// \return True if reinitialization was successful, false otherwise
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool reinitialize();
+
+    struct DeviceEntry
+    {
+        std::string  name;
+        ma_device_id id{};
+        bool         isDefault{};
+    };
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get a list of all available audio playback devices
+    ///
+    /// This function returns a vector of device entries,
+    /// containing the names and IDs of all available audio
+    /// playback devices. Additionally, if applicable, one entry
+    /// will be marked as the default device as reported by the
+    /// operating system.
+    ///
+    /// \return A vector of device entries containing the names and IDs of all available audio playback devices
+    ///
+    ////////////////////////////////////////////////////////////
+    static std::vector<DeviceEntry> getAvailableDevices();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Set the audio playback device
+    ///
+    /// This function sets the audio playback device to the device
+    /// with the given \a name. It can be called on the fly (i.e:
+    /// while sounds are playing).
+    ///
+    /// If there are sounds playing when the audio playback
+    /// device is switched, the sounds will continue playing
+    /// uninterrupted on the new audio playback device.
+    ///
+    /// \param name The name of the audio playback device
+    ///
+    /// \return True, if it was able to set the requested device
+    ///
+    /// \see getAvailableDevices, getDefaultDevice
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool setDevice(const std::string& name);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the name of the current audio playback device
+    ///
+    /// \return The name of the current audio playback device or `std::nullopt` if there is none
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static std::optional<std::string> getDevice();
+
+    struct ResourceEntry
+    {
+        using Func = void (*)(void*);
+        void* resource{};
+        Func  deinitializeFunc{};
+        Func  reinitializeFunc{};
+    };
+
+    using ResourceEntryList = std::list<ResourceEntry>;
+    using ResourceEntryIter = ResourceEntryList::const_iterator;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Register an audio resource
+    ///
+    /// In order to support switching audio devices during
+    /// runtime, all audio resources will have to be
+    /// deinitialized using the old engine and device and then
+    /// reinitialized using the new engine and device. In order
+    /// for the AudioDevice to know which resources have to be
+    /// notified, they need to register themselves with the
+    /// AudioDevice using this function
+    ///
+    /// \param resource         A pointer uniquely identifying the object
+    /// \param deinitializeFunc The function to call to deinitialize the object
+    /// \param reinitializeFunc The function to call to reinitialize the object
+    ///
+    /// \see unregisterResource
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static ResourceEntryIter registerResource(void*               resource,
+                                                            ResourceEntry::Func deinitializeFunc,
+                                                            ResourceEntry::Func reinitializeFunc);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Unregister an audio resource
+    ///
+    /// \param resourceEntry The iterator returned when registering the resource
+    ///
+    /// \see registerResource
+    ///
+    ////////////////////////////////////////////////////////////
+    static void unregisterResource(ResourceEntryIter resourceEntry);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the global volume of all the sounds and musics
@@ -220,6 +323,22 @@ public:
     static Vector3f getUpVector();
 
 private:
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the device ID of the currently selected device
+    ///
+    /// \return The device ID of the currently selected device or `std::nullopt` if none could be found
+    ///
+    ////////////////////////////////////////////////////////////
+    std::optional<ma_device_id> getSelectedDeviceId() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Initialize the audio device and engine
+    ///
+    /// \return True if initialization was successful, false if it failed
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool initialize();
+
     ////////////////////////////////////////////////////////////
     /// \brief This function makes sure the instance pointer is initialized before using it
     ///

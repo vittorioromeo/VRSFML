@@ -32,6 +32,7 @@
 #include <SFML/Audio/Listener.hpp>
 #include <SFML/Audio/Music.hpp>
 #include <SFML/Audio/OutputSoundFile.hpp>
+#include <SFML/Audio/PlaybackDevice.hpp>
 #include <SFML/Audio/Sound.hpp>
 #include <SFML/Audio/SoundBuffer.hpp>
 #include <SFML/Audio/SoundBufferRecorder.hpp>
