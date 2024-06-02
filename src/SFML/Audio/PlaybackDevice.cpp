@@ -25,82 +25,59 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Vulkan.hpp>
+#include <SFML/Audio/AudioDevice.hpp>
+#include <SFML/Audio/PlaybackDevice.hpp>
 
-#include <cassert>
-
-#if defined(SFML_SYSTEM_WINDOWS)
-
-#include <SFML/Window/VulkanImpl.hpp>
-
-#elif defined(SFML_SYSTEM_LINUX) || defined(SFML_SYSTEM_FREEBSD) || defined(SFML_SYSTEM_OPENBSD) || \
-    defined(SFML_SYSTEM_NETBSD)
-
-#if defined(SFML_USE_DRM)
-
-#define SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
-
-#else
-
-#include <SFML/Window/VulkanImpl.hpp>
-
-#endif
-
-#else
-
-#define SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
-
-#endif
+#include <algorithm>
 
 
-namespace sf
+namespace sf::PlaybackDevice
 {
 ////////////////////////////////////////////////////////////
-bool Vulkan::isAvailable([[maybe_unused]] bool requireGraphics)
+std::vector<std::string> getAvailableDevices()
 {
-#if defined(SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE)
+    const auto devices = priv::AudioDevice::getAvailableDevices();
 
-    return false;
+    std::vector<std::string> deviceNameList;
+    deviceNameList.reserve(devices.size());
 
-#else
+    for (const auto& device : devices)
+        deviceNameList.emplace_back(device.name);
 
-    return priv::VulkanImpl::isAvailable(requireGraphics);
-
-#endif
+    return deviceNameList;
 }
 
 
 ////////////////////////////////////////////////////////////
-VulkanFunctionPointer Vulkan::getFunction([[maybe_unused]] const char* name)
+std::optional<std::string> getDefaultDevice()
 {
-    assert(name && "Name cannot be a null pointer");
+    for (const auto& device : priv::AudioDevice::getAvailableDevices())
+    {
+        if (device.isDefault)
+            return device.name;
+    }
 
-#if defined(SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE)
-
-    return nullptr;
-
-#else
-
-    return priv::VulkanImpl::getFunction(name);
-
-#endif
+    return std::nullopt;
 }
 
 
 ////////////////////////////////////////////////////////////
-const std::vector<const char*>& Vulkan::getGraphicsRequiredInstanceExtensions()
+bool setDevice(const std::string& name)
 {
-#if defined(SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE)
+    // Perform a sanity check to make sure the user isn't passing us a non-existant device name
+    const auto devices = priv::AudioDevice::getAvailableDevices();
+    if (auto iter = std::find_if(devices.begin(), devices.end(), [&](const auto& device) { return device.name == name; });
+        iter == devices.end())
+        return false;
 
-    static const std::vector<const char*> empty;
-
-    return empty;
-
-#else
-
-    return priv::VulkanImpl::getGraphicsRequiredInstanceExtensions();
-
-#endif
+    return priv::AudioDevice::setDevice(name);
 }
 
-} // namespace sf
+
+////////////////////////////////////////////////////////////
+std::optional<std::string> getDevice()
+{
+    return priv::AudioDevice::getDevice();
+}
+
+} // namespace sf::PlaybackDevice
