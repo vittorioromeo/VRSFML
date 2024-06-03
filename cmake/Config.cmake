@@ -47,7 +47,6 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "^NetBSD$")
     set(OPENGL_ES 0)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "iOS")
     set(SFML_OS_IOS 1)
-
     # use the OpenGL ES implementation on iOS
     set(OPENGL_ES 1)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
