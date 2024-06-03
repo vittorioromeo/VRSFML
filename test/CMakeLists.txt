@@ -27,6 +27,7 @@ target_compile_features(doctest INTERFACE cxx_std_20)
 # Ensure that doctest sources and headers are not analyzed by any tools
 set_target_properties(doctest PROPERTIES COMPILE_OPTIONS "" EXPORT_COMPILE_COMMANDS OFF)
 set_target_properties(doctest_with_main PROPERTIES EXPORT_COMPILE_COMMANDS OFF)
+set_target_properties(doctest doctest_with_main PROPERTIES FOLDER "Dependencies")
 get_target_property(DOCTEST_INCLUDE_DIRS doctest INTERFACE_INCLUDE_DIRECTORIES)
 target_include_directories(doctest SYSTEM INTERFACE ${DOCTEST_INCLUDE_DIRS})
 target_compile_options(doctest_with_main PRIVATE "-w")

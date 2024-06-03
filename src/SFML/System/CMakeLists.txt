@@ -34,7 +34,8 @@ find_package(Threads REQUIRED)
 
 # define the sfml-system target
 sfml_add_library(System
-                 SOURCES ${SRC} ${PLATFORM_SRC})
+                 SOURCES ${SRC} ${PLATFORM_SRC}
+                 DEPENDENCIES "Dependencies.cmake.in")
 
 # stb_rect_pack sources
 target_include_directories(sfml-system SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/extlibs/headers/stb_rect_pack")
