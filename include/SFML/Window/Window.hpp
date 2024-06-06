@@ -33,8 +33,6 @@
 #include <SFML/Window/WindowEnums.hpp>
 #include <SFML/Window/WindowHandle.hpp>
 
-#include <SFML/System/Clock.hpp>
-#include <SFML/System/Time.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
 #include <cstdint>
@@ -42,11 +40,6 @@
 
 namespace sf
 {
-namespace priv
-{
-class GlContext;
-}
-
 ////////////////////////////////////////////////////////////
 /// \brief Window that serves as a target for OpenGL rendering
 ///
@@ -292,9 +285,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    priv::UniquePtr<priv::GlContext> m_context;        //!< Platform-specific implementation of the OpenGL context
-    Clock                                m_clock;          //!< Clock for measuring the elapsed time between frames
-    Time                                 m_frameTimeLimit; //!< Current framerate limit
+    struct CommonImpl;
+    priv::UniquePtr<CommonImpl> m_commonImpl; //!< Implementation details
 };
 
 } // namespace sf
