@@ -25,63 +25,29 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/AudioDevice.hpp>
-#include <SFML/Audio/AudioResource.hpp>
+#include <SFML/Window/Event.hpp>
 
-#include <mutex>
-
-#include <cstdint>
-
-
-namespace
-{
-
-std::mutex             deviceMutex;
-sf::priv::AudioDevice* device;
-std::uint32_t          deviceRC = 0;
-
-void acquireDevice()
-{
-    std::lock_guard guard{deviceMutex};
-
-    if (deviceRC++ == 0)
-        device = new sf::priv::AudioDevice;
-}
-
-void releaseDevice()
-{
-    std::lock_guard guard{deviceMutex};
-
-    if (--deviceRC == 0)
-        delete device;
-}
-
-} // namespace
-
-namespace sf
-{
-////////////////////////////////////////////////////////////
-AudioResource::AudioResource()
-{
-    acquireDevice();
-}
-
-////////////////////////////////////////////////////////////
-AudioResource::~AudioResource()
-{
-    releaseDevice();
-}
-
-////////////////////////////////////////////////////////////
-AudioResource::AudioResource(const AudioResource&)
-{
-    acquireDevice();
-}
-
-////////////////////////////////////////////////////////////
-AudioResource::AudioResource(AudioResource&&) noexcept
-{
-    acquireDevice();
-}
-
-} // namespace sf
+template class sf::priv::tinyvariant<
+    sf::Event::Empty,
+    sf::Event::Closed,
+    sf::Event::Resized,
+    sf::Event::FocusLost,
+    sf::Event::FocusGained,
+    sf::Event::TextEntered,
+    sf::Event::KeyPressed,
+    sf::Event::KeyReleased,
+    sf::Event::MouseWheelScrolled,
+    sf::Event::MouseButtonPressed,
+    sf::Event::MouseButtonReleased,
+    sf::Event::MouseMoved,
+    sf::Event::MouseEntered,
+    sf::Event::MouseLeft,
+    sf::Event::JoystickButtonPressed,
+    sf::Event::JoystickButtonReleased,
+    sf::Event::JoystickMoved,
+    sf::Event::JoystickConnected,
+    sf::Event::JoystickDisconnected,
+    sf::Event::TouchBegan,
+    sf::Event::TouchMoved,
+    sf::Event::TouchEnded,
+    sf::Event::SensorChanged>;
