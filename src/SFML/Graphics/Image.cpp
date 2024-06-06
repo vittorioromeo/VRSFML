@@ -29,6 +29,7 @@
 
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InputStream.hpp>
+#include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Utils.hpp>
 #ifdef SFML_SYSTEM_ANDROID
 #include <SFML/System/Android/Activity.hpp>
@@ -42,7 +43,6 @@
 
 #include <algorithm>
 #include <iomanip>
-#include <memory>
 #include <ostream>
 #include <string>
 
@@ -88,7 +88,7 @@ struct StbDeleter
         stbi_image_free(image);
     }
 };
-using StbPtr = std::unique_ptr<stbi_uc, StbDeleter>;
+using StbPtr = sf::priv::UniquePtr<stbi_uc, StbDeleter>;
 } // namespace
 
 

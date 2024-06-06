@@ -33,8 +33,8 @@
 #include <SFML/Audio/SoundSource.hpp>
 
 #include <SFML/System/Time.hpp>
+#include <SFML/System/UniquePtr.hpp>
 
-#include <memory>
 #include <optional>
 #include <vector>
 
@@ -44,6 +44,8 @@
 
 namespace sf
 {
+class Time;
+
 ////////////////////////////////////////////////////////////
 /// \brief Abstract base class for streamed audio sources
 ///
@@ -66,6 +68,30 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     ~SoundStream() override;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    SoundStream(const SoundStream&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    SoundStream& operator=(const SoundStream&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    SoundStream(SoundStream&&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted move assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    SoundStream& operator=(SoundStream&&) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Start or resume playing the audio stream
@@ -142,7 +168,7 @@ public:
     /// \return Current status
     ///
     ////////////////////////////////////////////////////////////
-    Status getStatus() const override;
+    SoundSource::Status getStatus() const override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current playing position of the stream
@@ -286,7 +312,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    const std::unique_ptr<Impl> m_impl; //!< Implementation details
+    const priv::UniquePtr<Impl> m_impl; //!< Implementation details
 };
 
 } // namespace sf
