@@ -65,7 +65,7 @@ std::optional<Cursor> Cursor::loadFromPixels(const std::uint8_t* pixels, Vector2
     if (!cursor->m_impl->loadFromPixels(pixels, size, hotspot))
         cursor.reset();
 
-    return std::make_optional(std::move(cursor));
+    return cursor;
 }
 
 
@@ -77,7 +77,7 @@ std::optional<Cursor> Cursor::loadFromSystem(Type type)
     if (!cursor->m_impl->loadFromSystem(type))
         cursor.reset();
 
-    return std::make_optional(std::move(cursor));
+    return cursor;
 }
 
 
