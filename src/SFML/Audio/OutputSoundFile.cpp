@@ -75,7 +75,7 @@ void OutputSoundFile::close()
 
 
 ////////////////////////////////////////////////////////////
-OutputSoundFile::OutputSoundFile(priv::PassKey<OutputSoundFile>&&, std::unique_ptr<SoundFileWriter>&& writer) :
+OutputSoundFile::OutputSoundFile(priv::PassKey<OutputSoundFile>&&, priv::UniquePtr<SoundFileWriter>&& writer) :
 m_writer(std::move(writer))
 {
 }

@@ -51,8 +51,7 @@ InputSoundFile::StreamDeleter::StreamDeleter(bool theOwned) : owned(theOwned)
 
 
 ////////////////////////////////////////////////////////////
-template <typename T>
-InputSoundFile::StreamDeleter::StreamDeleter(const std::default_delete<T>&)
+InputSoundFile::StreamDeleter::StreamDeleter(const priv::UniquePtrDefaultDeleter&)
 {
 }
 
@@ -74,7 +73,7 @@ std::optional<InputSoundFile> InputSoundFile::openFromFile(const std::filesystem
         return std::nullopt;
 
     // Wrap the file into a stream
-    auto file = std::make_unique<FileInputStream>();
+    auto file = priv::makeUnique<FileInputStream>();
 
     // Open it
     if (!file->open(filename))
@@ -103,7 +102,7 @@ std::optional<InputSoundFile> InputSoundFile::openFromMemory(const void* data, s
         return std::nullopt;
 
     // Wrap the memory file into a stream
-    auto memory = std::make_unique<MemoryInputStream>();
+    auto memory = priv::makeUnique<MemoryInputStream>();
 
     // Open it
     memory->open(data, sizeInBytes);
@@ -142,12 +141,12 @@ std::optional<InputSoundFile> InputSoundFile::openFromStream(InputStream& stream
     if (!info)
         return std::nullopt;
 
-    return std::make_optional<InputSoundFile>(priv::PassKey<InputSoundFile>{},
-                                              std::move(reader),
-                                              std::unique_ptr<InputStream, StreamDeleter>{&stream, false},
-                                              info->sampleCount,
-                                              info->sampleRate,
-                                              std::move(info->channelMap));
+    return InputSoundFile(priv::PassKey<InputSoundFile>{},
+                          std::move(reader),
+                          decltype(m_stream){&stream, false},
+                          info->sampleCount,
+                          info->sampleRate,
+                          std::move(info->channelMap));
 }
 
 
@@ -255,8 +254,8 @@ void InputSoundFile::close()
 
 ////////////////////////////////////////////////////////////
 InputSoundFile::InputSoundFile(priv::PassKey<InputSoundFile>&&,
-                               std::unique_ptr<SoundFileReader>&&            reader,
-                               std::unique_ptr<InputStream, StreamDeleter>&& stream,
+                               priv::UniquePtr<SoundFileReader>&&            reader,
+                               priv::UniquePtr<InputStream, StreamDeleter>&& stream,
                                std::uint64_t                                 sampleCount,
                                unsigned int                                  sampleRate,
                                std::vector<SoundChannel>&&                   channelMap) :

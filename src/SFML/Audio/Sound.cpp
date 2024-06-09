@@ -30,6 +30,7 @@
 #include <SFML/Audio/SoundBuffer.hpp>
 
 #include <SFML/System/Err.hpp>
+#include <SFML/System/UniquePtr.hpp>
 
 #include <miniaudio.h>
 
@@ -186,7 +187,7 @@ struct Sound::Impl : priv::MiniaudioUtils::SoundBase
 
 
 ////////////////////////////////////////////////////////////
-Sound::Sound(const SoundBuffer& buffer) : m_impl(std::make_unique<Impl>())
+Sound::Sound(const SoundBuffer& buffer) : m_impl(priv::makeUnique<Impl>())
 {
     setBuffer(buffer);
 }
@@ -194,7 +195,7 @@ Sound::Sound(const SoundBuffer& buffer) : m_impl(std::make_unique<Impl>())
 
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(readability-redundant-member-init)
-Sound::Sound(const Sound& copy) : SoundSource(copy), m_impl(std::make_unique<Impl>())
+Sound::Sound(const Sound& copy) : SoundSource(copy), m_impl(priv::makeUnique<Impl>())
 {
     SoundSource::operator=(copy);
 

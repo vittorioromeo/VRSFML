@@ -224,7 +224,7 @@ struct SoundStream::Impl : priv::MiniaudioUtils::SoundBase
 
 
 ////////////////////////////////////////////////////////////
-SoundStream::SoundStream() : m_impl(std::make_unique<Impl>(this))
+SoundStream::SoundStream() : m_impl(priv::makeUnique<Impl>(this))
 {
 }
 
