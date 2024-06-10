@@ -28,6 +28,7 @@
 #include <SFML/Window/Cursor.hpp>
 #include <SFML/Window/CursorImpl.hpp>
 
+#include <SFML/System/Err.hpp>
 #include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
 
@@ -65,6 +66,7 @@ std::optional<Cursor> Cursor::loadFromPixels(const std::uint8_t* pixels, Vector2
     if (!cursor->m_impl->loadFromPixels(pixels, size, hotspot))
         cursor.reset();
 
+    // Error message generated in called function.
     return cursor;
 }
 
@@ -77,6 +79,7 @@ std::optional<Cursor> Cursor::loadFromSystem(Type type)
     if (!cursor->m_impl->loadFromSystem(type))
         cursor.reset();
 
+    // Error message generated in called function.
     return cursor;
 }
 
