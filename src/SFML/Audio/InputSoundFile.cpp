@@ -46,27 +46,6 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-InputSoundFile::StreamDeleter::StreamDeleter(bool theOwned) : owned(theOwned)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-InputSoundFile::StreamDeleter::StreamDeleter(const std::default_delete<T>&)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-void InputSoundFile::StreamDeleter::operator()(InputStream* ptr) const
-{
-    if (owned)
-        delete ptr;
-}
-
-
-////////////////////////////////////////////////////////////
 std::optional<InputSoundFile> InputSoundFile::openFromFile(const std::filesystem::path& filename)
 {
     // Find a suitable reader for the file type
@@ -78,10 +57,10 @@ std::optional<InputSoundFile> InputSoundFile::openFromFile(const std::filesystem
     }
 
     // Wrap the file into a stream
-    auto file = std::make_unique<FileInputStream>();
+    FileInputStream file;
 
     // Open it
-    if (!file->open(filename))
+    if (!file.open(filename))
     {
         err() << "Failed to open input sound file from file (couldn't open file input stream)\n"
               << formatDebugPathInfo(filename) << std::endl;
@@ -90,7 +69,7 @@ std::optional<InputSoundFile> InputSoundFile::openFromFile(const std::filesystem
     }
 
     // Pass the stream to the reader
-    auto info = reader->open(*file);
+    auto info = reader->open(file);
     if (!info)
     {
         err() << "Failed to open input sound file from file (reader open failure)\n"
@@ -115,10 +94,10 @@ std::optional<InputSoundFile> InputSoundFile::openFromMemory(const void* data, s
     }
 
     // Wrap the memory file into a stream
-    auto memory = std::make_unique<MemoryInputStream>(data, sizeInBytes);
+    MemoryInputStream memory(data, sizeInBytes);
 
     // Pass the stream to the reader
-    auto info = reader->open(*memory);
+    auto info = reader->open(memory);
     if (!info)
     {
         err() << "Failed to open input sound file from memory (reader open failure)" << std::endl;
@@ -155,7 +134,7 @@ std::optional<InputSoundFile> InputSoundFile::openFromStream(InputStream& stream
         return std::nullopt;
     }
 
-    return InputSoundFile(std::move(reader), {&stream, false}, info->sampleCount, info->sampleRate, std::move(info->channelMap));
+    return InputSoundFile(std::move(reader), &stream, info->sampleCount, info->sampleRate, std::move(info->channelMap));
 }
 
 
@@ -262,11 +241,11 @@ void InputSoundFile::close()
 
 
 ////////////////////////////////////////////////////////////
-InputSoundFile::InputSoundFile(std::unique_ptr<SoundFileReader>&&            reader,
-                               std::unique_ptr<InputStream, StreamDeleter>&& stream,
-                               std::uint64_t                                 sampleCount,
-                               unsigned int                                  sampleRate,
-                               std::vector<SoundChannel>&&                   channelMap) :
+InputSoundFile::InputSoundFile(std::unique_ptr<SoundFileReader>&& reader,
+                               StreamVariant&&                    stream,
+                               std::uint64_t                      sampleCount,
+                               unsigned int                       sampleRate,
+                               std::vector<SoundChannel>&&        channelMap) :
 m_reader(std::move(reader)),
 m_stream(std::move(stream)),
 m_sampleCount(sampleCount),
