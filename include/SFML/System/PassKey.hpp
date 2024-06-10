@@ -22,66 +22,40 @@
 //
 ////////////////////////////////////////////////////////////
 
+#pragma once
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/AudioDevice.hpp>
-#include <SFML/Audio/AudioResource.hpp>
-
-#include <mutex>
-
-#include <cstdint>
+#include <SFML/System/Export.hpp>
 
 
-namespace
-{
-
-std::mutex             deviceMutex;
-sf::priv::AudioDevice* device;
-std::uint32_t          deviceRC = 0;
-
-void acquireDevice()
-{
-    std::lock_guard guard{deviceMutex};
-
-    if (deviceRC++ == 0)
-        device = new sf::priv::AudioDevice;
-}
-
-void releaseDevice()
-{
-    std::lock_guard guard{deviceMutex};
-
-    if (--deviceRC == 0)
-        delete device;
-}
-
-} // namespace
-
-namespace sf
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-AudioResource::AudioResource()
-{
-    acquireDevice();
-}
-
+/// \private
+///
+/// \brief Generic implementation of the PassKey idiom
+///
 ////////////////////////////////////////////////////////////
-AudioResource::~AudioResource()
+template <typename T>
+class PassKey
 {
-    releaseDevice();
-}
+    friend T;
 
-////////////////////////////////////////////////////////////
-AudioResource::AudioResource(const AudioResource&)
-{
-    acquireDevice();
-}
+private:
+    // Intentionally not using `= default` here as it would make `PassKey` an aggregate
+    // and thus constructible from anyone
+    explicit PassKey() noexcept
+    {
+    }
 
-////////////////////////////////////////////////////////////
-AudioResource::AudioResource(AudioResource&&) noexcept
-{
-    acquireDevice();
-}
+public:
+    PassKey(const PassKey&) = delete;
+    PassKey(PassKey&&)      = delete;
 
-} // namespace sf
+    PassKey& operator=(const PassKey&) = delete;
+    PassKey& operator=(PassKey&&)      = delete;
+};
+
+} // namespace sf::priv

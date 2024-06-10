@@ -32,8 +32,10 @@
 #include <SFML/Audio/SoundChannel.hpp>
 #include <SFML/Audio/SoundFileWriter.hpp>
 
+#include <SFML/System/PassKey.hpp>
+#include <SFML/System/UniquePtr.hpp>
+
 #include <filesystem>
-#include <memory>
 #include <optional>
 #include <vector>
 
@@ -83,17 +85,19 @@ public:
     ////////////////////////////////////////////////////////////
     void close();
 
-private:
     ////////////////////////////////////////////////////////////
+    /// \private
+    ///
     /// \brief Constructor from writer
     ///
     ////////////////////////////////////////////////////////////
-    explicit OutputSoundFile(std::unique_ptr<SoundFileWriter>&& writer);
+    explicit OutputSoundFile(priv::PassKey<OutputSoundFile>&&, priv::UniquePtr<SoundFileWriter>&& writer);
 
+private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::unique_ptr<SoundFileWriter> m_writer; //!< Writer that handles I/O on the file's format
+    priv::UniquePtr<SoundFileWriter> m_writer; //!< Writer that handles I/O on the file's format
 };
 
 } // namespace sf
