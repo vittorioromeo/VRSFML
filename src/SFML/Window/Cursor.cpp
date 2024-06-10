@@ -28,15 +28,15 @@
 #include <SFML/Window/Cursor.hpp>
 #include <SFML/Window/CursorImpl.hpp>
 
+#include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
 
-#include <memory>
 
 namespace sf
 {
 
 ////////////////////////////////////////////////////////////
-Cursor::Cursor() : m_impl(std::make_unique<priv::CursorImpl>())
+Cursor::Cursor(priv::PassKey<Cursor>&&) : m_impl(priv::makeUnique<priv::CursorImpl>())
 {
 }
 
@@ -56,12 +56,14 @@ Cursor& Cursor::operator=(Cursor&&) noexcept = default;
 ////////////////////////////////////////////////////////////
 std::optional<Cursor> Cursor::loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vector2u hotspot)
 {
-    if ((pixels == nullptr) || (size.x == 0) || (size.y == 0))
-        return std::nullopt;
+    std::optional<Cursor> cursor; // Use a single local variable for NRVO
 
-    Cursor cursor;
-    if (!cursor.m_impl->loadFromPixels(pixels, size, hotspot))
-        return std::nullopt;
+    if ((pixels == nullptr) || (size.x == 0) || (size.y == 0))
+        return cursor;
+
+    cursor = std::make_optional<Cursor>(priv::PassKey<Cursor>{});
+    if (!cursor->m_impl->loadFromPixels(pixels, size, hotspot))
+        cursor.reset();
 
     return cursor;
 }
@@ -70,9 +72,10 @@ std::optional<Cursor> Cursor::loadFromPixels(const std::uint8_t* pixels, Vector2
 ////////////////////////////////////////////////////////////
 std::optional<Cursor> Cursor::loadFromSystem(Type type)
 {
-    Cursor cursor;
-    if (!cursor.m_impl->loadFromSystem(type))
-        return std::nullopt;
+    auto cursor = std::make_optional<Cursor>(priv::PassKey<Cursor>{}); // Use a single local variable for NRVO
+
+    if (!cursor->m_impl->loadFromSystem(type))
+        cursor.reset();
 
     return cursor;
 }

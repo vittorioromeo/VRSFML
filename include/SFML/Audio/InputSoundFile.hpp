@@ -31,8 +31,10 @@
 
 #include <SFML/Audio/SoundFileReader.hpp>
 
+#include <SFML/System/PassKey.hpp>
+#include <SFML/System/UniquePtr.hpp>
+
 #include <filesystem>
-#include <memory>
 #include <optional>
 #include <vector>
 
@@ -228,34 +230,38 @@ private:
     {
         StreamDeleter(bool theOwned);
 
-        // To accept ownership transfer from usual std::unique_ptr<T>
-        template <typename T>
-        StreamDeleter(const std::default_delete<T>&);
+        // To accept ownership transfer from default deleter
+        StreamDeleter(const priv::UniquePtrDefaultDeleter&);
 
         void operator()(InputStream* ptr) const;
 
         bool owned{true};
     };
 
+public:
     ////////////////////////////////////////////////////////////
+    /// \private
+    ///
     /// \brief Constructor from reader, stream, and attributes
     ///
     ////////////////////////////////////////////////////////////
-    InputSoundFile(std::unique_ptr<SoundFileReader>&&            reader,
-                   std::unique_ptr<InputStream, StreamDeleter>&& stream,
+    InputSoundFile(priv::PassKey<InputSoundFile>&&,
+                   priv::UniquePtr<SoundFileReader>&&            reader,
+                   priv::UniquePtr<InputStream, StreamDeleter>&& stream,
                    std::uint64_t                                 sampleCount,
                    unsigned int                                  sampleRate,
                    std::vector<SoundChannel>&&                   channelMap);
 
+private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::unique_ptr<SoundFileReader>            m_reader; //!< Reader that handles I/O on the file's format
-    std::unique_ptr<InputStream, StreamDeleter> m_stream{nullptr, false}; //!< Input stream used to access the file's data
-    std::uint64_t                               m_sampleOffset{};         //!< Sample Read Position
-    std::uint64_t                               m_sampleCount{};          //!< Total number of samples in the file
-    unsigned int                                m_sampleRate{};           //!< Number of samples per second
-    std::vector<SoundChannel>                   m_channelMap; //!< The map of position in sample frame to sound channel
+    priv::UniquePtr<SoundFileReader> m_reader; //!< Reader that handles I/O on the file's format
+    priv::UniquePtr<InputStream, StreamDeleter> m_stream{nullptr, false}; //!< Input stream used to access the file's data
+    std::uint64_t             m_sampleOffset{};                           //!< Sample Read Position
+    std::uint64_t             m_sampleCount{};                            //!< Total number of samples in the file
+    unsigned int              m_sampleRate{};                             //!< Number of samples per second
+    std::vector<SoundChannel> m_channelMap; //!< The map of position in sample frame to sound channel
 };
 
 } // namespace sf
