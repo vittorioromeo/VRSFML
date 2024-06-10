@@ -103,9 +103,9 @@ const char* appendFileContentsToVector(const std::filesystem::path& filename, st
 // Read the contents of a stream into an array of char
 const char* appendStreamContentsToVector(sf::InputStream& stream, std::vector<char>& buffer)
 {
-    const std::int64_t size = stream.getSize();
+    const std::optional<std::size_t> size = stream.getSize();
 
-    if (size <= 0)
+    if (!size.has_value())
     {
         buffer.push_back('\0');
         return nullptr;
@@ -113,7 +113,7 @@ const char* appendStreamContentsToVector(sf::InputStream& stream, std::vector<ch
 
     const std::size_t bufferSizeBeforeRead = buffer.size();
 
-    buffer.resize(static_cast<std::size_t>(size) + bufferSizeBeforeRead);
+    buffer.resize(*size + bufferSizeBeforeRead);
 
     if (stream.seek(0) == -1)
     {
@@ -121,9 +121,9 @@ const char* appendStreamContentsToVector(sf::InputStream& stream, std::vector<ch
         return nullptr;
     }
 
-    const std::int64_t read = stream.read(buffer.data() + bufferSizeBeforeRead, size);
+    const std::optional<std::size_t> read = stream.read(buffer.data() + bufferSizeBeforeRead, *size);
 
-    if (read != size)
+    if (!read.has_value() || *read != size)
     {
         sf::err() << "Failed to read stream contents into buffer" << std::endl;
         return nullptr;
