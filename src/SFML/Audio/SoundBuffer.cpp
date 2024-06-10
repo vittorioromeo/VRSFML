@@ -72,8 +72,9 @@ std::optional<SoundBuffer> SoundBuffer::loadFromFile(const std::filesystem::path
 {
     if (auto file = InputSoundFile::openFromFile(filename))
         return initialize(*file);
-    else
-        return std::nullopt;
+
+    err() << "Failed to open sound buffer from file" << std::endl;
+    return std::nullopt;
 }
 
 
@@ -82,8 +83,9 @@ std::optional<SoundBuffer> SoundBuffer::loadFromMemory(const void* data, std::si
 {
     if (auto file = InputSoundFile::openFromMemory(data, sizeInBytes))
         return initialize(*file);
-    else
-        return std::nullopt;
+
+    err() << "Failed to open sound buffer from memory" << std::endl;
+    return std::nullopt;
 }
 
 
@@ -92,8 +94,9 @@ std::optional<SoundBuffer> SoundBuffer::loadFromStream(InputStream& stream)
 {
     if (auto file = InputSoundFile::openFromStream(stream))
         return initialize(*file);
-    else
-        return std::nullopt;
+
+    err() << "Failed to open sound buffer from stream" << std::endl;
+    return std::nullopt;
 }
 
 

@@ -273,30 +273,33 @@ std::optional<Texture> Texture::create(const Vector2u& size, bool sRgb)
 ////////////////////////////////////////////////////////////
 std::optional<Texture> Texture::loadFromFile(const std::filesystem::path& filename, bool sRgb, const IntRect& area)
 {
-    const auto image = sf::Image::loadFromFile(filename);
-    if (!image)
-        return std::nullopt;
-    return loadFromImage(*image, sRgb, area);
+    if (const auto image = sf::Image::loadFromFile(filename))
+        return loadFromImage(*image, sRgb, area);
+
+    err() << "Failed to load texture from file" << std::endl;
+    return std::nullopt;
 }
 
 
 ////////////////////////////////////////////////////////////
 std::optional<Texture> Texture::loadFromMemory(const void* data, std::size_t size, bool sRgb, const IntRect& area)
 {
-    const auto image = sf::Image::loadFromMemory(data, size);
-    if (!image)
-        return std::nullopt;
-    return loadFromImage(*image, sRgb, area);
+    if (const auto image = sf::Image::loadFromMemory(data, size))
+        return loadFromImage(*image, sRgb, area);
+
+    err() << "Failed to load texture from memory" << std::endl;
+    return std::nullopt;
 }
 
 
 ////////////////////////////////////////////////////////////
 std::optional<Texture> Texture::loadFromStream(InputStream& stream, bool sRgb, const IntRect& area)
 {
-    const auto image = sf::Image::loadFromStream(stream);
-    if (!image)
-        return std::nullopt;
-    return loadFromImage(*image, sRgb, area);
+    if (const auto image = sf::Image::loadFromStream(stream))
+        return loadFromImage(*image, sRgb, area);
+
+    err() << "Failed to load texture from stream" << std::endl;
+    return std::nullopt;
 }
 
 
@@ -359,6 +362,7 @@ std::optional<Texture> Texture::loadFromImage(const Image& image, bool sRgb, con
         }
         else
         {
+            // Error message generated in called function.
             assert(!result.has_value());
             return result;
         }
