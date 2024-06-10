@@ -30,31 +30,13 @@
 
 #include <mutex>
 
-#include <cstdint>
-
 
 namespace
 {
 
 std::mutex             deviceMutex;
 sf::priv::AudioDevice* device;
-std::uint32_t          deviceRC = 0;
-
-void acquireDevice()
-{
-    std::lock_guard guard{deviceMutex};
-
-    if (deviceRC++ == 0)
-        device = new sf::priv::AudioDevice;
-}
-
-void releaseDevice()
-{
-    std::lock_guard guard{deviceMutex};
-
-    if (--deviceRC == 0)
-        delete device;
-}
+unsigned int           deviceRC{};
 
 } // namespace
 
@@ -63,25 +45,29 @@ namespace sf
 ////////////////////////////////////////////////////////////
 AudioResource::AudioResource()
 {
-    acquireDevice();
+    std::lock_guard guard{deviceMutex};
+
+    if (deviceRC++ == 0u)
+        device = new sf::priv::AudioDevice;
 }
 
 ////////////////////////////////////////////////////////////
 AudioResource::~AudioResource()
 {
-    releaseDevice();
+    std::lock_guard guard{deviceMutex};
+
+    if (--deviceRC == 0u)
+        delete device;
 }
 
 ////////////////////////////////////////////////////////////
-AudioResource::AudioResource(const AudioResource&)
+AudioResource::AudioResource(const AudioResource&) : AudioResource{}
 {
-    acquireDevice();
 }
 
 ////////////////////////////////////////////////////////////
-AudioResource::AudioResource(AudioResource&&) noexcept
+AudioResource::AudioResource(AudioResource&&) noexcept : AudioResource{}
 {
-    acquireDevice();
 }
 
 } // namespace sf
