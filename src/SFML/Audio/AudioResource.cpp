@@ -28,34 +28,45 @@
 #include <SFML/Audio/AudioDevice.hpp>
 #include <SFML/Audio/AudioResource.hpp>
 
-#include <memory>
 #include <mutex>
 
+
+namespace
+{
+
+std::mutex             deviceMutex;
+sf::priv::AudioDevice* device;
+unsigned int           deviceRC{};
+
+} // namespace
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-AudioResource::AudioResource() :
-m_device(
-    []
-    {
-        // Ensure we only ever create a single instance of an
-        // AudioDevice that is shared between all AudioResources
-        static std::mutex                       mutex;
-        static std::weak_ptr<priv::AudioDevice> weakAudioDevice;
+AudioResource::AudioResource()
+{
+    std::lock_guard guard{deviceMutex};
 
-        const std::lock_guard lock(mutex);
+    if (deviceRC++ == 0u)
+        device = new sf::priv::AudioDevice;
+}
 
-        auto audioDevice = weakAudioDevice.lock();
+////////////////////////////////////////////////////////////
+AudioResource::~AudioResource()
+{
+    std::lock_guard guard{deviceMutex};
 
-        if (audioDevice == nullptr)
-        {
-            audioDevice     = std::make_shared<priv::AudioDevice>();
-            weakAudioDevice = audioDevice;
-        }
+    if (--deviceRC == 0u)
+        delete device;
+}
 
-        return audioDevice;
-    }())
+////////////////////////////////////////////////////////////
+AudioResource::AudioResource(const AudioResource&) : AudioResource{}
+{
+}
+
+////////////////////////////////////////////////////////////
+AudioResource::AudioResource(AudioResource&&) noexcept : AudioResource{}
 {
 }
 
