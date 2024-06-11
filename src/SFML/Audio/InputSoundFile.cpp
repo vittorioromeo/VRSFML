@@ -25,6 +25,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/System/UniquePtr.hpp"
 #include <SFML/Audio/InputSoundFile.hpp>
 #include <SFML/Audio/SoundFileFactory.hpp>
 #include <SFML/Audio/SoundFileReader.hpp>
@@ -76,17 +77,18 @@ std::optional<InputSoundFile> InputSoundFile::openFromFile(const std::filesystem
         return std::nullopt;
     }
 
-    // Wrap the file into a stream
-    auto file = priv::makeUnique<FileInputStream>();
-
-    // Open it
-    if (!file->open(filename))
+    // Open the file
+    auto fileInputStream = FileInputStream::open(filename);
+    if (!fileInputStream)
     {
         err() << "Failed to open input sound file from file (couldn't open file input stream)\n"
               << formatDebugPathInfo(filename) << std::endl;
 
         return std::nullopt;
     }
+
+    // Wrap the file into a stream
+    auto file = priv::makeUnique<FileInputStream>(std::move(*fileInputStream));
 
     // Pass the stream to the reader
     auto info = reader->open(*file);
