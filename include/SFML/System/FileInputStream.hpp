@@ -36,7 +36,6 @@
 
 #include <filesystem>
 
-#include <cstdint>
 #include <cstdio>
 
 #ifdef SFML_SYSTEM_ANDROID

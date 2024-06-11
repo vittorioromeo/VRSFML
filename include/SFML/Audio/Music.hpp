@@ -32,9 +32,9 @@
 #include <SFML/Audio/SoundStream.hpp>
 
 #include <SFML/System/PassKey.hpp>
+#include <SFML/System/UniquePtr.hpp>
 
 #include <filesystem>
-#include <memory>
 #include <optional>
 
 #include <cstddef>
@@ -272,7 +272,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    std::unique_ptr<Impl> m_impl; //!< Implementation details
+    priv::UniquePtr<Impl> m_impl; //!< Implementation details
 };
 
 } // namespace sf
