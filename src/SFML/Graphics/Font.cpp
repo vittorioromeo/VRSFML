@@ -122,7 +122,8 @@ struct Font::FontHandles
 
 
 ////////////////////////////////////////////////////////////
-Font::Font(std::shared_ptr<FontHandles>&& fontHandles, std::string&& familyName) : m_fontHandles(std::move(fontHandles))
+Font::Font(priv::PassKey<Font>&&, std::shared_ptr<FontHandles>&& fontHandles, std::string&& familyName) :
+m_fontHandles(std::move(fontHandles))
 {
     m_info.family = std::move(familyName);
 }
@@ -168,7 +169,9 @@ std::optional<Font> Font::loadFromFile(const std::filesystem::path& filename)
         return std::nullopt;
     }
 
-    return Font(std::move(fontHandles), std::string(face->family_name ? face->family_name : ""));
+    return std::make_optional<Font>(priv::PassKey<Font>{},
+                                    std::move(fontHandles),
+                                    std::string(face->family_name ? face->family_name : ""));
 
 #else
 
@@ -223,7 +226,9 @@ std::optional<Font> Font::loadFromMemory(const void* data, std::size_t sizeInByt
         return std::nullopt;
     }
 
-    return Font(std::move(fontHandles), std::string(face->family_name ? face->family_name : ""));
+    return std::make_optional<Font>(priv::PassKey<Font>{},
+                                    std::move(fontHandles),
+                                    std::string(face->family_name ? face->family_name : ""));
 }
 
 
@@ -285,7 +290,9 @@ std::optional<Font> Font::loadFromStream(InputStream& stream)
         return std::nullopt;
     }
 
-    return Font(std::move(fontHandles), std::string(face->family_name ? face->family_name : ""));
+    return std::make_optional<Font>(priv::PassKey<Font>{},
+                                    std::move(fontHandles),
+                                    std::string(face->family_name ? face->family_name : ""));
 }
 
 
@@ -665,6 +672,8 @@ IntRect Font::findGlyphRect(Page& page, const Vector2u& size) const
         bestRatio = ratio;
     }
 
+    IntRect rect{{0, 0}, {2, 2}}; // Use a single local variable for NRVO
+
     // If we didn't find a matching row, create a new one (10% taller than the glyph)
     if (!row)
     {
@@ -680,7 +689,7 @@ IntRect Font::findGlyphRect(Page& page, const Vector2u& size) const
                 if (!newTexture)
                 {
                     err() << "Failed to create new page texture" << std::endl;
-                    return {{0, 0}, {2, 2}};
+                    return rect;
                 }
 
                 newTexture->setSmooth(m_isSmooth);
@@ -692,7 +701,7 @@ IntRect Font::findGlyphRect(Page& page, const Vector2u& size) const
                 // Oops, we've reached the maximum texture size...
                 err() << "Failed to add a new character to the font: the maximum texture size has been reached"
                       << std::endl;
-                return {{0, 0}, {2, 2}};
+                return rect;
             }
         }
 
@@ -703,7 +712,10 @@ IntRect Font::findGlyphRect(Page& page, const Vector2u& size) const
     }
 
     // Find the glyph's rectangle on the selected row
-    IntRect rect(Rect<unsigned int>({row->width, row->top}, size));
+    rect.left   = static_cast<int>(row->width);
+    rect.top    = static_cast<int>(row->top);
+    rect.width  = static_cast<int>(size.x);
+    rect.height = static_cast<int>(size.y);
 
     // Update the row information
     row->width += size.x;
@@ -773,7 +785,7 @@ std::optional<Font::Page> Font::Page::make(bool smooth)
     }
 
     texture->setSmooth(smooth);
-    return Page(std::move(*texture));
+    return std::make_optional<Page>(std::move(*texture));
 }
 
 
