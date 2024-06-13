@@ -211,6 +211,12 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMake")
 
+if(SFML_BUILD_TEST_SUITE)
+    # this definition is used in the PCH file to speed up compilation of tests
+    # `add_definitions` must be called before `add_subdirectory`
+    add_definitions(-DSFML_BUILD_TEST_SUITE)
+endif()
+
 # add the subdirectories
 add_subdirectory(src/SFML)
 
@@ -297,8 +303,8 @@ else()
     # create SFML.framework
     add_library(SFML ${SFML_SOURCES})
 
-    # enable C++17 support
-    target_compile_features(SFML PUBLIC cxx_std_17)
+    # enable C++20 support
+    target_compile_features(SFML PUBLIC cxx_std_20)
 
     # set the target flags to use the appropriate C++ standard library
     sfml_set_stdlib(SFML)

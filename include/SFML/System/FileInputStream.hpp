@@ -32,11 +32,10 @@
 #include <SFML/System/Export.hpp>
 
 #include <SFML/System/InputStream.hpp>
+#include <SFML/System/UniquePtr.hpp>
 
 #include <filesystem>
-#include <memory>
 
-#include <cstdint>
 #include <cstdio>
 
 #ifdef SFML_SYSTEM_ANDROID
@@ -150,24 +149,24 @@ private:
     /// \brief Construct from file
     ///
     ////////////////////////////////////////////////////////////
-    explicit FileInputStream(std::unique_ptr<std::FILE, FileCloser>&& file);
+    explicit FileInputStream(priv::UniquePtr<std::FILE, FileCloser>&& file);
 
 #ifdef SFML_SYSTEM_ANDROID
     ////////////////////////////////////////////////////////////
     /// \brief Construct from resource stream
     ///
     ////////////////////////////////////////////////////////////
-    explicit FileInputStream(std::unique_ptr<priv::ResourceStream>&& androidFile);
+    explicit FileInputStream(priv::UniquePtr<priv::ResourceStream>&& androidFile);
 #endif
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
 #ifdef SFML_SYSTEM_ANDROID
-    std::unique_ptr<priv::ResourceStream> m_androidFile;
+    priv::UniquePtr<priv::ResourceStream> m_androidFile;
 #endif
 
-    std::unique_ptr<std::FILE, FileCloser> m_file; //!< stdio file stream
+    priv::UniquePtr<std::FILE, FileCloser> m_file; //!< stdio file stream
 };
 
 } // namespace sf
