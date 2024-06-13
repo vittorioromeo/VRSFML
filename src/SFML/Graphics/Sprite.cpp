@@ -29,7 +29,7 @@
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
-#include <cassert>
+#include <cmath>
 
 
 namespace sf
@@ -52,9 +52,7 @@ void Sprite::setTexture(const Texture& texture, bool resetRect)
 {
     // Recompute the texture area if requested
     if (resetRect)
-    {
         setTextureRect(IntRect({0, 0}, Vector2i(texture.getSize())));
-    }
 
     // Assign the new texture
     m_texture = &texture;
@@ -104,7 +102,11 @@ const Color& Sprite::getColor() const
 ////////////////////////////////////////////////////////////
 FloatRect Sprite::getLocalBounds() const
 {
+<<<<<<< HEAD
     // The position of the last vertex is equal to the texture rect size
+=======
+    // Last vertex posiion is equal to texture rect size absolute value
+>>>>>>> 51efe50ec4685614d3be161c1410d2f0a8968946
     return {{0.f, 0.f}, m_vertices[3].position};
 }
 
@@ -130,6 +132,7 @@ void Sprite::draw(RenderTarget& target, RenderStates states) const
 ////////////////////////////////////////////////////////////
 void Sprite::updateVertices()
 {
+<<<<<<< HEAD
     assert(m_textureRect.width >= 0);
     assert(m_textureRect.height >= 0);
 
@@ -145,6 +148,24 @@ void Sprite::updateVertices()
     m_vertices[1].position = {0.f, height};
     m_vertices[2].position = {width, 0.f};
     m_vertices[3].position = {width, height};
+=======
+    const auto left   = static_cast<float>(m_textureRect.left);
+    const auto top    = static_cast<float>(m_textureRect.top);
+    const auto width  = static_cast<float>(m_textureRect.width);
+    const auto height = static_cast<float>(m_textureRect.height);
+    const auto right  = float{left + width};
+    const auto bottom = float{top + height};
+
+    // Absolute value is used to support negative texture rect sizes
+    const auto absWidth  = float{std::abs(width)};
+    const auto absHeight = float{std::abs(height)};
+
+    // Update positions
+    m_vertices[0].position = {0.f, 0.f};
+    m_vertices[1].position = {0.f, absHeight};
+    m_vertices[2].position = {absWidth, 0.f};
+    m_vertices[3].position = {absWidth, absHeight};
+>>>>>>> 51efe50ec4685614d3be161c1410d2f0a8968946
 
     // Update texture coordinates
     m_vertices[0].texCoords = {left, top};
