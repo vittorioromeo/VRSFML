@@ -298,6 +298,7 @@ public:
     template <typename T>
     [[nodiscard]] const T* getIf() const;
 
+    /*
     ////////////////////////////////////////////////////////////
     /// \brief Applies the specified `visitor` to the event
     ///
@@ -306,6 +307,7 @@ public:
     ////////////////////////////////////////////////////////////
     template <typename Visitor>
     decltype(auto) visit(Visitor&& visitor);
+    */
 
 private:
     using VariantType = priv::tinyvariant<
