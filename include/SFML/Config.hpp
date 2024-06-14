@@ -118,6 +118,11 @@
 
 #define SFML_DEBUG
 
+// Enable lifetime tracking by default in debug mode, unless explicitly disabled by user
+#ifndef SFML_DISABLE_LIFETIME_TRACKING
+#define SFML_LIFETIME_TRACKING 1
+#endif
+
 #endif
 
 

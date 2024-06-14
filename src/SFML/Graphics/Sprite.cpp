@@ -41,7 +41,10 @@ Sprite::Sprite(const Texture& texture) : Sprite(texture, IntRect({0, 0}, Vector2
 
 
 ////////////////////////////////////////////////////////////
-Sprite::Sprite(const Texture& texture, const IntRect& rectangle) : m_texture(&texture), m_textureRect(rectangle)
+Sprite::Sprite(const Texture& texture, const IntRect& rectangle) :
+m_texture(&texture),
+m_textureRect(rectangle),
+SFML_INITIALIZE_LIFETIME_DEPENDANT(Texture, Sprite, m_texture)
 {
     updateVertices();
 }
@@ -56,6 +59,7 @@ void Sprite::setTexture(const Texture& texture, bool resetRect)
 
     // Assign the new texture
     m_texture = &texture;
+    SFML_UPDATE_LIFETIME_DEPENDANT(Texture, Sprite, m_texture);
 }
 
 
@@ -102,11 +106,7 @@ const Color& Sprite::getColor() const
 ////////////////////////////////////////////////////////////
 FloatRect Sprite::getLocalBounds() const
 {
-<<<<<<< HEAD
-    // The position of the last vertex is equal to the texture rect size
-=======
-    // Last vertex posiion is equal to texture rect size absolute value
->>>>>>> 51efe50ec4685614d3be161c1410d2f0a8968946
+    // Last vertex position is equal to texture rect size absolute value
     return {{0.f, 0.f}, m_vertices[3].position};
 }
 
@@ -132,23 +132,6 @@ void Sprite::draw(RenderTarget& target, RenderStates states) const
 ////////////////////////////////////////////////////////////
 void Sprite::updateVertices()
 {
-<<<<<<< HEAD
-    assert(m_textureRect.width >= 0);
-    assert(m_textureRect.height >= 0);
-
-    const auto width  = static_cast<float>(m_textureRect.width);
-    const auto height = static_cast<float>(m_textureRect.height);
-    const auto left   = static_cast<float>(m_textureRect.left);
-    const auto top    = static_cast<float>(m_textureRect.top);
-    const auto right  = float{left + width};
-    const auto bottom = float{top + height};
-
-    // Update positions
-    m_vertices[0].position = {0.f, 0.f};
-    m_vertices[1].position = {0.f, height};
-    m_vertices[2].position = {width, 0.f};
-    m_vertices[3].position = {width, height};
-=======
     const auto left   = static_cast<float>(m_textureRect.left);
     const auto top    = static_cast<float>(m_textureRect.top);
     const auto width  = static_cast<float>(m_textureRect.width);
@@ -165,7 +148,6 @@ void Sprite::updateVertices()
     m_vertices[1].position = {0.f, absHeight};
     m_vertices[2].position = {absWidth, 0.f};
     m_vertices[3].position = {absWidth, absHeight};
->>>>>>> 51efe50ec4685614d3be161c1410d2f0a8968946
 
     // Update texture coordinates
     m_vertices[0].texCoords = {left, top};
