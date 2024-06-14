@@ -68,6 +68,13 @@ std::optional<Cursor> Cursor::loadFromPixels(const std::uint8_t* pixels, Vector2
     if (!cursor->m_impl->loadFromPixels(pixels, size, hotspot))
     {
         err() << "Failed to load cursor from pixels (invalid arguments)" << std::endl;
+        return cursor; // Empty optional
+    }
+
+    cursor.emplace(priv::PassKey<Cursor>{});
+    if (!cursor->m_impl->loadFromPixels(pixels, size, hotspot))
+    {
+        // Error message generated in called function.
         cursor.reset();
     }
 
@@ -82,7 +89,10 @@ std::optional<Cursor> Cursor::loadFromSystem(Type type)
     auto cursor = std::make_optional<Cursor>(priv::PassKey<Cursor>{}); // Use a single local variable for NRVO
 
     if (!cursor->m_impl->loadFromSystem(type))
+    {
+        // Error message generated in called function.
         cursor.reset();
+    }
 
     // Error message generated in called function.
     return cursor;

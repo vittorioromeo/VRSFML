@@ -111,18 +111,17 @@ std::optional<SoundBuffer> SoundBuffer::loadFromSamplesImpl(
 
     if (channelCount == 0 || sampleRate == 0 || channelMap.empty())
     {
-        // Error...
         err() << "Failed to load sound buffer from samples ("
               << "array: " << samples.data() << ", "
               << "count: " << samples.size() << ", "
               << "channels: " << channelCount << ", "
               << "samplerate: " << sampleRate << ")" << std::endl;
 
-        return soundBuffer;
+        return soundBuffer; // Empty optional
     }
 
     // Take ownership of the audio samples
-    soundBuffer = std::make_optional<SoundBuffer>(priv::PassKey<SoundBuffer>{}, std::move(samples));
+    soundBuffer.emplace(priv::PassKey<SoundBuffer>{}, std::move(samples));
 
     // Update the internal buffer with the new samples
     if (!soundBuffer->update(channelCount, sampleRate, channelMap))

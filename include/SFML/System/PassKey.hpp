@@ -44,11 +44,15 @@ class PassKey
     friend T;
 
 private:
+    // NOLINTBEGIN(modernize-use-equals-delete)
+    // NOLINTBEGIN(modernize-use-equals-default)
     // Intentionally not using `= default` here as it would make `PassKey` an aggregate
     // and thus constructible from anyone
     explicit PassKey() noexcept
     {
     }
+    //NOLINTEND(modernize-use-equals-default)
+    //NOLINTEND(modernize-use-equals-delete)
 
 public:
     PassKey(const PassKey&) = delete;
