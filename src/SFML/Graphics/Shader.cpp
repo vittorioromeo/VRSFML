@@ -105,7 +105,7 @@ const char* appendStreamContentsToVector(sf::InputStream& stream, std::vector<ch
 {
     const std::optional<std::size_t> size = stream.getSize();
 
-    if (!size.has_value())
+    if (!size.has_value() || size.value() == 0)
     {
         buffer.push_back('\0');
         return nullptr;

@@ -153,7 +153,6 @@ struct Font::FontHandles
 ////////////////////////////////////////////////////////////
 struct Font::Impl
 {
-
     using PageTable = std::unordered_map<unsigned int, Page>; //!< Table mapping a character size to its page (texture)
 
     std::shared_ptr<FontHandles> fontHandles;    //!< Shared information about the internal font instance

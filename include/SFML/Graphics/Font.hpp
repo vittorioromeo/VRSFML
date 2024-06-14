@@ -32,6 +32,7 @@
 #include <SFML/Graphics/Glyph.hpp>
 #include <SFML/Graphics/Rect.hpp>
 
+#include <SFML/System/LifetimeTracking.hpp>
 #include <SFML/System/PassKey.hpp>
 #include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
@@ -55,6 +56,7 @@ namespace sf
 {
 class InputStream;
 class Texture;
+class Text;
 
 ////////////////////////////////////////////////////////////
 /// \brief Class for loading and manipulating character fonts
@@ -396,6 +398,11 @@ private:
     ////////////////////////////////////////////////////////////
     struct Impl;
     priv::UniquePtr<Impl> m_impl; //!< Implementation details
+
+    ////////////////////////////////////////////////////////////
+    // Lifetime tracking
+    ////////////////////////////////////////////////////////////
+    SFML_DEFINE_LIFETIME_DEPENDEE(Font, Text);
 };
 
 } // namespace sf

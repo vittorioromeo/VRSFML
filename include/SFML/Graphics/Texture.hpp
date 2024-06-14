@@ -34,6 +34,7 @@
 
 #include <SFML/Window/GlResource.hpp>
 
+#include <SFML/System/LifetimeTracking.hpp>
 #include <SFML/System/PassKey.hpp>
 #include <SFML/System/Vector2.hpp>
 
@@ -49,6 +50,8 @@ namespace sf
 class InputStream;
 class Window;
 class Image;
+class Sprite;
+class Shape;
 
 ////////////////////////////////////////////////////////////
 /// \brief Image living on the graphics card that can be used for drawing
@@ -595,6 +598,12 @@ private:
     bool          m_fboAttachment{}; //!< Is this texture owned by a framebuffer object?
     bool          m_hasMipmap{};     //!< Has the mipmap been generated?
     std::uint64_t m_cacheId;         //!< Unique number that identifies the texture to the render target's cache
+
+    ////////////////////////////////////////////////////////////
+    // Lifetime tracking
+    ////////////////////////////////////////////////////////////
+    SFML_DEFINE_LIFETIME_DEPENDEE(Texture, Sprite);
+    SFML_DEFINE_LIFETIME_DEPENDEE(Texture, Shape);
 };
 
 ////////////////////////////////////////////////////////////
