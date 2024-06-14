@@ -342,7 +342,10 @@ private:
 ///    {
 ///        // Request for closing the window
 ///        if (event.is<sf::Event::Closed>())
+///        {
 ///            window.close();
+///            break;
+///        }
 ///    }
 ///
 ///    // Activate the window for OpenGL rendering
