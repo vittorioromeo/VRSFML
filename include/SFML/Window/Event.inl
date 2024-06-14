@@ -67,4 +67,12 @@ const T* Event::getIf() const
         return m_data.is<T>() ? &m_data.as<T>() : nullptr;
 }
 
+
+////////////////////////////////////////////////////////////
+template <typename Visitor>
+decltype(auto) Event::visit(Visitor&& visitor)
+{
+    return std::visit(std::forward<Visitor>(visitor), m_data);
+}
+
 } // namespace sf
