@@ -49,14 +49,6 @@ class SFML_WINDOW_API Event
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Empty event
-    ///
-    ////////////////////////////////////////////////////////////
-    struct Empty
-    {
-    };
-
-    ////////////////////////////////////////////////////////////
     /// \brief Closed event
     ///
     ////////////////////////////////////////////////////////////
@@ -125,8 +117,8 @@ public:
     struct MouseWheelScrolled
     {
         Mouse::Wheel wheel{}; //!< Which wheel (for mice with multiple ones)
-        float        delta{}; //!< Wheel offset (positive is up/left, negative is down/right). High-precision mice may use non-integral offsets.
-        Vector2i     position; //!< Position of the mouse pointer, relative to the top left of the owner window
+        float delta{}; //!< Wheel offset (positive is up/left, negative is down/right). High-precision mice may use non-integral offsets.
+        Vector2i position; //!< Position of the mouse pointer, relative to the top left of the owner window
     };
 
     ////////////////////////////////////////////////////////////
@@ -275,12 +267,10 @@ public:
     };
 
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// Sets the event to sf::Event::Empty
+    /// \brief Deleted default constructor
     ///
     ////////////////////////////////////////////////////////////
-    Event() = default;
+    Event() = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from a given sf::Event subtype
@@ -309,23 +299,11 @@ public:
     template <typename T>
     [[nodiscard]] const T* getIf() const;
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Check if current event type is not `Empty`
-    ///
-    /// \return True if current event type is not `Empty`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit operator bool() const
-    {
-        return !is<Empty>();
-    }
-
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::variant<Empty,
-                 Closed,
+    std::variant<Closed,
                  Resized,
                  FocusLost,
                  FocusGained,
@@ -390,19 +368,19 @@ private:
 /// any of the corresponding event data.
 ///
 /// \code
-/// while (const auto event = window.pollEvent())
+/// while (const std::optional event = window.pollEvent())
 /// {
-///     // Request for closing the window
-///     if (event.is<sf::Event::Closed>())
+///     // Window closed or escape key pressed: exit
+///     if (event->is<sf::Event::Closed>() ||
+///         (event->is<sf::Event::KeyPressed>() &&
+///          event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape))
+///     {
 ///         window.close();
-///
-///     // The escape key was pressed
-///     if (const auto* keyPressed = event.getIf<sf::Event::KeyPressed>())
-///         if (keyPressed->code == sf::Keyboard::Key::Escape)
-///             window.close();
+///         break;
+///     }
 ///
 ///     // The window was resized
-///     if (const auto* resized = event.getIf<sf::Event::Resized>())
+///     if (const auto* resized = event->getIf<sf::Event::Resized>())
 ///         doSomethingWithTheNewSize(resized->size);
 ///
 ///     // etc ...
