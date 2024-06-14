@@ -68,14 +68,11 @@ const T* Event::getIf() const
 }
 
 
-/*
 ////////////////////////////////////////////////////////////
 template <typename Visitor>
 decltype(auto) Event::visit(Visitor&& visitor)
 {
-    return m_data.
-    return std::visit(std::forward<Visitor>(visitor), m_data);
+    return m_data.linear_visit(static_cast<Visitor&&>(visitor));
 }
-*/
 
 } // namespace sf

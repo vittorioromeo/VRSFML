@@ -298,7 +298,6 @@ public:
     template <typename T>
     [[nodiscard]] const T* getIf() const;
 
-    /*
     ////////////////////////////////////////////////////////////
     /// \brief Applies the specified `visitor` to the event
     ///
@@ -307,10 +306,9 @@ public:
     ////////////////////////////////////////////////////////////
     template <typename Visitor>
     decltype(auto) visit(Visitor&& visitor);
-    */
 
 private:
-    using VariantType = priv::tinyvariant<
+    using VariantType = ::vittorioromeo::tinyvariant<
         Closed,
         Resized,
         FocusLost,
@@ -345,12 +343,12 @@ private:
     // Helper functions
     ////////////////////////////////////////////////////////////
     template <typename T>
-    static constexpr bool isEventType = VariantType::index_of<T> != priv::bad_index;
+    static constexpr bool isEventType = VariantType::index_of<T> != ::vittorioromeo::impl::bad_index;
 };
 
 } // namespace sf
 
-extern template class sf::priv::tinyvariant<
+extern template class ::vittorioromeo::tinyvariant<
     sf::Event::Closed,
     sf::Event::Resized,
     sf::Event::FocusLost,
