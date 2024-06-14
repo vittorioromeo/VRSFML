@@ -166,9 +166,7 @@ std::optional<Texture> Texture::create(const Vector2u& size, bool sRgb)
     if ((size.x == 0) || (size.y == 0))
     {
         err() << "Failed to create texture, invalid size (" << size.x << "x" << size.y << ")" << std::endl;
-
-        assert(!result.has_value());
-        return result;
+        return result; // Empty optional
     }
 
     const TransientContextLock lock;
@@ -187,8 +185,7 @@ std::optional<Texture> Texture::create(const Vector2u& size, bool sRgb)
               << "(" << actualSize.x << "x" << actualSize.y << ", "
               << "maximum is " << maxSize << "x" << maxSize << ")" << std::endl;
 
-        assert(!result.has_value());
-        return result;
+        return result; // Empty optional
     }
 
     // Create the OpenGL texture
@@ -319,6 +316,12 @@ std::optional<Texture> Texture::loadFromImage(const Image& image, bool sRgb, con
         if ((result = sf::Texture::create(image.getSize(), sRgb)))
         {
             result->update(image);
+            return result;
+        }
+        else
+        {
+            // Error message generated in called function.
+            return result; // Empty optional
         }
 
         return result;
@@ -363,8 +366,7 @@ std::optional<Texture> Texture::loadFromImage(const Image& image, bool sRgb, con
         else
         {
             // Error message generated in called function.
-            assert(!result.has_value());
-            return result;
+            return result; // Empty optional
         }
     }
 }

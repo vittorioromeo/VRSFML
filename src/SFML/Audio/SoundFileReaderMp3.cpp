@@ -123,22 +123,19 @@ SoundFileReaderMp3::~SoundFileReaderMp3()
 ////////////////////////////////////////////////////////////
 std::optional<SoundFileReader::Info> SoundFileReaderMp3::open(InputStream& stream)
 {
-    std::optional<Info> result; // Use a single local variable for NRVO
-
     // Init IO callbacks
     m_io.read_data = &stream;
     m_io.seek_data = &stream;
 
+    std::optional<Info> result; // Use a single local variable for NRVO
+
     // Init mp3 decoder
     mp3dec_ex_open_cb(&m_decoder, &m_io, MP3D_SEEK_TO_SAMPLE);
     if (!m_decoder.samples)
-        return result;
+        return result; // Empty optional
 
     // Retrieve the music attributes
-
-    result.emplace();
-    Info& info = *result;
-
+    Info& info        = result.emplace();
     info.channelCount = static_cast<unsigned int>(m_decoder.info.channels);
     info.sampleRate   = static_cast<unsigned int>(m_decoder.info.hz);
     info.sampleCount  = m_decoder.samples;

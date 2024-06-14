@@ -32,6 +32,7 @@
 #include <SFML/System/Export.hpp>
 
 #include <SFML/System/InputStream.hpp>
+#include <SFML/System/PassKey.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
 #include <filesystem>
@@ -145,20 +146,26 @@ private:
         void operator()(std::FILE* file);
     };
 
+public:
     ////////////////////////////////////////////////////////////
+    /// \private
+    ///
     /// \brief Construct from file
     ///
     ////////////////////////////////////////////////////////////
-    explicit FileInputStream(priv::UniquePtr<std::FILE, FileCloser>&& file);
+    explicit FileInputStream(priv::PassKey<FileInputStream>&&, priv::UniquePtr<std::FILE, FileCloser>&& file);
 
 #ifdef SFML_SYSTEM_ANDROID
     ////////////////////////////////////////////////////////////
+    /// \private
+    ///
     /// \brief Construct from resource stream
     ///
     ////////////////////////////////////////////////////////////
-    explicit FileInputStream(priv::UniquePtr<priv::ResourceStream>&& androidFile);
+    explicit FileInputStream(priv::PassKey<FileInputStream>&&, priv::UniquePtr<priv::ResourceStream>&& androidFile);
 #endif
 
+private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////

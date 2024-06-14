@@ -25,7 +25,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/System/UniquePtr.hpp"
 #include <SFML/Audio/InputSoundFile.hpp>
 #include <SFML/Audio/SoundFileFactory.hpp>
 #include <SFML/Audio/SoundFileReader.hpp>
@@ -166,12 +165,12 @@ std::optional<InputSoundFile> InputSoundFile::openFromStream(InputStream& stream
         return std::nullopt;
     }
 
-    return InputSoundFile(priv::PassKey<InputSoundFile>{},
-                          std::move(reader),
-                          decltype(m_stream){&stream, false},
-                          info->sampleCount,
-                          info->sampleRate,
-                          std::move(info->channelMap));
+    return std::make_optional<InputSoundFile>(priv::PassKey<InputSoundFile>{},
+                                              std::move(reader),
+                                              std::unique_ptr<InputStream, StreamDeleter>{&stream, false},
+                                              info->sampleCount,
+                                              info->sampleRate,
+                                              std::move(info->channelMap));
 }
 
 
