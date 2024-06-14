@@ -167,7 +167,7 @@ std::optional<InputSoundFile> InputSoundFile::openFromStream(InputStream& stream
 
     return std::make_optional<InputSoundFile>(priv::PassKey<InputSoundFile>{},
                                               std::move(reader),
-                                              std::unique_ptr<InputStream, StreamDeleter>{&stream, false},
+                                              priv::UniquePtr<InputStream, StreamDeleter>{&stream, false},
                                               info->sampleCount,
                                               info->sampleRate,
                                               std::move(info->channelMap));

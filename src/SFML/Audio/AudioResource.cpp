@@ -29,15 +29,14 @@
 #include <SFML/Audio/AudioResource.hpp>
 
 #include <mutex>
+#include <optional>
 
 
 namespace
 {
-
-std::mutex             deviceMutex;
-sf::priv::AudioDevice* device;
-unsigned int           deviceRC{};
-
+std::mutex                           deviceMutex;
+std::optional<sf::priv::AudioDevice> optDevice;
+unsigned int                         deviceRC{};
 } // namespace
 
 namespace sf
@@ -45,19 +44,19 @@ namespace sf
 ////////////////////////////////////////////////////////////
 AudioResource::AudioResource()
 {
-    std::lock_guard guard{deviceMutex};
+    const std::lock_guard guard{deviceMutex};
 
     if (deviceRC++ == 0u)
-        device = new sf::priv::AudioDevice;
+        optDevice.emplace();
 }
 
 ////////////////////////////////////////////////////////////
 AudioResource::~AudioResource()
 {
-    std::lock_guard guard{deviceMutex};
+    const std::lock_guard guard{deviceMutex};
 
     if (--deviceRC == 0u)
-        delete device;
+        optDevice.reset();
 }
 
 ////////////////////////////////////////////////////////////
