@@ -37,6 +37,7 @@
 #include <SFML/Graphics/Transformable.hpp>
 #include <SFML/Graphics/VertexArray.hpp>
 
+#include <SFML/System/LifetimeTracking.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #include <cstddef>
@@ -264,6 +265,12 @@ public:
 
 protected:
     ////////////////////////////////////////////////////////////
+    /// \brief Default constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    Shape();
+
+    ////////////////////////////////////////////////////////////
     /// \brief Recompute the internal geometry of the shape
     ///
     /// This function must be called by the derived class every time
@@ -319,6 +326,11 @@ private:
     VertexArray    m_outlineVertices{PrimitiveType::TriangleStrip}; //!< Vertex array containing the outline geometry
     FloatRect      m_insideBounds;                                  //!< Bounding rectangle of the inside (fill)
     FloatRect      m_bounds; //!< Bounding rectangle of the whole shape (outline + fill)
+
+    ////////////////////////////////////////////////////////////
+    // Lifetime tracking
+    ////////////////////////////////////////////////////////////
+    SFML_DEFINE_LIFETIME_DEPENDANT(Texture);
 };
 
 } // namespace sf

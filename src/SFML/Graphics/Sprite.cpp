@@ -41,7 +41,10 @@ Sprite::Sprite(const Texture& texture) : Sprite(texture, IntRect({0, 0}, Vector2
 
 
 ////////////////////////////////////////////////////////////
-Sprite::Sprite(const Texture& texture, const IntRect& rectangle) : m_texture(&texture), m_textureRect(rectangle)
+Sprite::Sprite(const Texture& texture, const IntRect& rectangle) :
+m_texture(&texture),
+m_textureRect(rectangle),
+SFML_INITIALIZE_LIFETIME_DEPENDANT(Texture, Sprite, m_texture)
 {
     updateVertices();
 }
@@ -56,6 +59,7 @@ void Sprite::setTexture(const Texture& texture, bool resetRect)
 
     // Assign the new texture
     m_texture = &texture;
+    SFML_UPDATE_LIFETIME_DEPENDANT(Texture, Sprite, m_texture);
 }
 
 

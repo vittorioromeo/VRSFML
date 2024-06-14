@@ -186,7 +186,9 @@ struct Sound::Impl : priv::MiniaudioUtils::SoundBase
 
 
 ////////////////////////////////////////////////////////////
-Sound::Sound(const SoundBuffer& buffer) : m_impl(std::make_unique<Impl>())
+Sound::Sound(const SoundBuffer& buffer) :
+m_impl(std::make_unique<Impl>()),
+SFML_INITIALIZE_LIFETIME_DEPENDANT(SoundBuffer, Sound, m_impl->buffer)
 {
     setBuffer(buffer);
 }
@@ -194,7 +196,10 @@ Sound::Sound(const SoundBuffer& buffer) : m_impl(std::make_unique<Impl>())
 
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(readability-redundant-member-init)
-Sound::Sound(const Sound& copy) : SoundSource(copy), m_impl(std::make_unique<Impl>())
+Sound::Sound(const Sound& copy) :
+SoundSource(copy),
+m_impl(std::make_unique<Impl>()),
+SFML_INITIALIZE_LIFETIME_DEPENDANT(SoundBuffer, Sound, m_impl->buffer)
 {
     SoundSource::operator=(copy);
 
@@ -276,6 +281,8 @@ void Sound::setBuffer(const SoundBuffer& buffer)
     // Assign and use the new buffer
     m_impl->buffer = &buffer;
     m_impl->buffer->attachSound(this);
+
+    SFML_UPDATE_LIFETIME_DEPENDANT(SoundBuffer, Sound, m_impl->buffer);
 
     m_impl->deinitialize();
     m_impl->initialize();

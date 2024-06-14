@@ -62,6 +62,7 @@ void Shape::setTexture(const Texture* texture, bool resetRect)
 
     // Assign the new texture
     m_texture = texture;
+    SFML_UPDATE_LIFETIME_DEPENDANT(Texture, Shape, m_texture);
 }
 
 
@@ -193,6 +194,12 @@ FloatRect Shape::getLocalBounds() const
 FloatRect Shape::getGlobalBounds() const
 {
     return getTransform().transformRect(getLocalBounds());
+}
+
+
+////////////////////////////////////////////////////////////
+Shape::Shape() : SFML_INITIALIZE_LIFETIME_DEPENDANT(Texture, Shape, m_texture)
+{
 }
 
 
