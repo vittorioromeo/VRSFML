@@ -9,6 +9,7 @@
 
 #include <AudioUtil.hpp>
 #include <SystemUtil.hpp>
+#include <optional>
 #include <type_traits>
 
 TEST_CASE("[Audio] sf::Sound", runAudioDeviceTests())
@@ -83,7 +84,7 @@ TEST_CASE("[Audio] sf::Sound", runAudioDeviceTests())
         CHECK(sound.getPlayingOffset() == sf::seconds(10));
     }
 
-#ifdef SFML_LIFETIME_TRACKING
+#ifdef SFML_ENABLE_LIFETIME_TRACKING
     SECTION("Lifetime tracking")
     {
         SECTION("Return local from function")

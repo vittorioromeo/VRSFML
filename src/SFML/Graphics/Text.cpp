@@ -94,6 +94,7 @@ m_font(&font),
 m_characterSize(characterSize),
 SFML_INITIALIZE_LIFETIME_DEPENDANT(Font, Text, m_font)
 {
+    SFML_UPDATE_LIFETIME_DEPENDANT(Font, Text, m_font);
 }
 
 

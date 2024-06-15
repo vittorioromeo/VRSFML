@@ -9,6 +9,7 @@
 
 #include <GraphicsUtil.hpp>
 #include <WindowUtil.hpp>
+#include <optional>
 #include <type_traits>
 
 TEST_CASE("[Graphics] sf::Text", runDisplayTests())
@@ -185,7 +186,7 @@ TEST_CASE("[Graphics] sf::Text", runDisplayTests())
         }
     }
 
-#ifdef SFML_LIFETIME_TRACKING
+#ifdef SFML_ENABLE_LIFETIME_TRACKING
     SECTION("Lifetime tracking")
     {
         SECTION("Return local from function")

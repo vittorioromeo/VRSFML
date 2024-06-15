@@ -24,9 +24,7 @@
 
 #pragma once
 
-#include <SFML/Config.hpp>
-
-#ifdef SFML_LIFETIME_TRACKING
+#ifdef SFML_ENABLE_LIFETIME_TRACKING
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -83,7 +81,7 @@ private:
 class SFML_SYSTEM_API LifetimeDependant
 {
 public:
-    explicit LifetimeDependant(LifetimeDependee* dependee) noexcept;
+    explicit LifetimeDependant(LifetimeDependee* dependee = nullptr) noexcept;
     ~LifetimeDependant();
 
     LifetimeDependant(const LifetimeDependant& rhs) noexcept;
@@ -104,44 +102,27 @@ private:
 } // namespace sf::priv
 
 // NOLINTBEGIN(bugprone-macro-parentheses)
-#define SFML_DEFINE_LIFETIME_DEPENDEE(dependantType, dependeeType)                                        \
-    friend dependeeType;                                                                                  \
-    mutable ::sf::priv::LifetimeDependee m_lifetimeDependee##dependeeType{#dependeeType, #dependantType}; \
-    using __swallowSemicolon##dependantType##dependeeType = void
+#define SFML_DEFINE_LIFETIME_DEPENDEE(dependeeType, dependantType)                                               \
+    friend dependantType;                                                                                        \
+    mutable ::sf::priv::LifetimeDependee m_sfPrivLifetimeDependee##dependantType{#dependeeType, #dependantType}; \
+    using sfPrivSwallowSemicolon##dependantType##dependeeType = void
 
-#define SFML_DEFINE_LIFETIME_DEPENDANT(dependantType)                         \
-    mutable ::sf::priv::LifetimeDependant m_lifetimeDependant##dependantType; \
-    using __swallowSemicolon##dependantType = void
-
-#define SFML_INITIALIZE_LIFETIME_DEPENDANT(dependantType, dependeeType, dependantMemberPtr)             \
-    m_lifetimeDependant##dependantType                                                                  \
-    {                                                                                                   \
-        dependantMemberPtr == nullptr ? nullptr : &dependantMemberPtr->m_lifetimeDependee##dependeeType \
-    }
+#define SFML_DEFINE_LIFETIME_DEPENDANT(dependantType)                               \
+    mutable ::sf::priv::LifetimeDependant m_sfPrivLifetimeDependant##dependantType; \
+    using sfPrivSwallowSemicolon##dependantType = void
 
 #define SFML_UPDATE_LIFETIME_DEPENDANT(dependantType, dependeeType, dependantMemberPtr) \
-    m_lifetimeDependant##dependantType.update(                                          \
-        dependantMemberPtr == nullptr ? nullptr : &dependantMemberPtr->m_lifetimeDependee##dependeeType)
+    m_sfPrivLifetimeDependant##dependantType.update(                                    \
+        dependantMemberPtr == nullptr ? nullptr : &dependantMemberPtr->m_sfPrivLifetimeDependee##dependeeType)
 // NOLINTEND(bugprone-macro-parentheses)
 
-#else // SFML_LIFETIME_TRACKING
+#else // SFML_ENABLE_LIFETIME_TRACKING
 
 #define SFML_DEFINE_LIFETIME_DEPENDEE(dependantType, dependeeType) \
-    using __swallowSemicolon##dependantType##dependeeType = void
+    using sfPrivSwallowSemicolon##dependantType##dependeeType = void
 
-#define SFML_DEFINE_LIFETIME_DEPENDANT(dependantType) \
-    [[maybe_unused]] struct                           \
-    {                                                 \
-    } __m_lifetimeDummy##dependantType
+#define SFML_DEFINE_LIFETIME_DEPENDANT(dependantType) using sfPrivSwallowSemicolon##dependantType = void
 
-#define SFML_INITIALIZE_LIFETIME_DEPENDANT(dependantType, ...) \
-    __m_lifetimeDummy##dependantType                           \
-    {                                                          \
-    }
+#define SFML_UPDATE_LIFETIME_DEPENDANT(...) (void)0
 
-#define SFML_UPDATE_LIFETIME_DEPENDANT(dependantType, ...) \
-    do                                                     \
-    {                                                      \
-    } while (false)
-
-#endif // SFML_LIFETIME_TRACKING
+#endif // SFML_ENABLE_LIFETIME_TRACKING

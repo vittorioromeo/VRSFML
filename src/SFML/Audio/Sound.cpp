@@ -192,6 +192,8 @@ m_impl(priv::makeUnique<Impl>()),
 SFML_INITIALIZE_LIFETIME_DEPENDANT(SoundBuffer, Sound, m_impl->buffer)
 {
     setBuffer(buffer);
+
+    SFML_UPDATE_LIFETIME_DEPENDANT(SoundBuffer, Sound, m_impl->buffer);
 }
 
 
@@ -207,6 +209,8 @@ SFML_INITIALIZE_LIFETIME_DEPENDANT(SoundBuffer, Sound, m_impl->buffer)
     if (copy.m_impl->buffer)
         setBuffer(*copy.m_impl->buffer);
     setLoop(copy.getLoop());
+
+    SFML_UPDATE_LIFETIME_DEPENDANT(SoundBuffer, Sound, m_impl->buffer);
 }
 
 
@@ -287,6 +291,8 @@ void Sound::setBuffer(const SoundBuffer& buffer)
 
     m_impl->deinitialize();
     m_impl->initialize();
+
+    SFML_UPDATE_LIFETIME_DEPENDANT(SoundBuffer, Sound, m_impl->buffer);
 }
 
 

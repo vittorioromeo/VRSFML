@@ -47,9 +47,9 @@ if(SFML_OS_ANDROID)
 endif()
 
 # add an option to enable lifetime tracking
-sfml_set_option(SFML_LIFETIME_TRACKING $<CONFIG:Debug> BOOL "TRUE to enable lifetime tracking, FALSE to disable it")
-if(SFML_LIFETIME_TRACKING)
-    add_definitions(-DSFML_LIFETIME_TRACKING)
+sfml_set_option(SFML_ENABLE_LIFETIME_TRACKING $<CONFIG:Debug> BOOL "TRUE to enable lifetime tracking, FALSE to disable it")
+if(SFML_ENABLE_LIFETIME_TRACKING)
+    add_definitions(-DSFML_ENABLE_LIFETIME_TRACKING)
 endif()
 
 # add options to select which modules to build
