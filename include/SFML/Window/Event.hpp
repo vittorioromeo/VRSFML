@@ -308,7 +308,7 @@ public:
     decltype(auto) visit(Visitor&& visitor);
 
 private:
-    using VariantType = ::vittorioromeo::tinyvariant<
+    using VariantType = ::sfvittorioromeo::tinyvariant<
         Closed,
         Resized,
         FocusLost,
@@ -343,12 +343,12 @@ private:
     // Helper functions
     ////////////////////////////////////////////////////////////
     template <typename T>
-    static constexpr bool isEventType = VariantType::index_of<T> != ::vittorioromeo::impl::bad_index;
+    static constexpr bool isEventType = VariantType::index_of<T> != ::sfvittorioromeo::impl::bad_index;
 };
 
 } // namespace sf
 
-extern template class ::vittorioromeo::tinyvariant<
+extern template class ::sfvittorioromeo::tinyvariant<
     sf::Event::Closed,
     sf::Event::Resized,
     sf::Event::FocusLost,
