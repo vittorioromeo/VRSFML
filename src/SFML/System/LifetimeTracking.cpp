@@ -22,9 +22,7 @@
 //
 ////////////////////////////////////////////////////////////
 
-#include <SFML/Config.hpp>
-
-#ifdef SFML_LIFETIME_TRACKING
+#ifdef SFML_ENABLE_LIFETIME_TRACKING
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -37,8 +35,10 @@
 
 #include <exception>
 #include <ostream>
+#include <string>
 
 #include <cassert>
+#include <cctype>
 
 
 namespace sf::priv
@@ -139,23 +139,63 @@ LifetimeDependee::~LifetimeDependee()
         return;
     }
 
-    err() << "FATAL ERROR: " << m_dependeeName << " object was destroyed before its " << m_dependantName
-          << " dependants.\n";
+    const auto toLowerStr = [](std::string s)
+    {
+        for (char& c : s)
+            c = static_cast<char>(std::tolower(c));
 
-    err() << "Please ensure that all " << m_dependantName << " objects using a " << m_dependeeName
-          << " are destroyed before that " << m_dependeeName << " to avoid lifetime issues.\n"
-          << "In practice, this error can happen if a " << m_dependeeName
-          << " object is created as a local variable and its address is given to a " << m_dependantName << ".\n";
+        return s;
+    };
 
-    err() << "If the " << m_dependantName
-          << " object is returned from that same scope, the given address will point to an invalid memory "
-             "location.\n";
+    const auto toTildes = [](std::string s)
+    {
+        for (char& c : s)
+            c = '~';
 
-    err() << "Another possible cause of this error is storing both a " << m_dependeeName << " and a " << m_dependantName
-          << " together in a class or struct, and then moving that class or struct -- the internal pointers "
+        s[s.size() - 1] = '\0';
+        return s;
+    };
+
+    const auto dependeeNameLower  = toLowerStr(m_dependeeName);
+    const auto dependantNameLower = toLowerStr(m_dependantName);
+
+    err() << "FATAL ERROR: a " << dependeeNameLower << " object was destroyed while existing " << dependantNameLower
+          << " objects depended on it.\n\n";
+
+    err() << "Please ensure that every " << dependeeNameLower << " object outlives all of the " << dependantNameLower
+          << " objects associated with it, otherwise those " << dependantNameLower
+          << "s will try to access the memory of the destroyed " << dependeeNameLower
+          << ", causing undefined behavior (e.g., crashes, segfaults, or unexpected run-time behavior).\n\n";
+
+    err() << "One of the ways this issue can occur is when a " << dependeeNameLower
+          << " object is created as a local variable in a function and passed to a " << dependantNameLower
+          << " object. When the function has finished executing, the local " << dependeeNameLower
+          << " object will be destroyed, and the " << dependantNameLower
+          << " object associated with it will now be referring to invalid memory. Example:\n\n";
+
+    // clang-format off
+    err() << "    sf::" << m_dependantName << " create" << m_dependantName << "()\n"
+          << "    {\n"
+          << "        " << "sf::" << m_dependeeName << " " << dependeeNameLower << "(/* ... */);\n"
+          << "        " << "sf::" << m_dependantName << " " << dependantNameLower << "(" << dependeeNameLower << ", /* ... */);\n"
+          << "        " << "\n"
+          << "        " << "return " << dependantNameLower << ";\n"
+          << "        " << "//     ^" << toTildes(dependantNameLower) << "\n"
+          << "        " << "// ERROR: `" << dependeeNameLower << "` will be destroyed right after\n"
+          << "        " << "//        `" << dependantNameLower << "` is returned from the function!\n"
+          << "    }\n\n";
+    // clang-format on
+
+    err() << "Another possible cause of this error is storing both a " << dependeeNameLower << " and a "
+          << dependantNameLower
+          << " together in a data structure (e.g., `class`, `struct`, container, pair, etc...), and then moving that "
+             "data structure (i.e., returning it from a function, or using `std::move`) -- the internal references "
              "between the "
-          << m_dependeeName << " and " << m_dependantName << " will not be updated, resulting in a dangling pointer."
-          << std::endl;
+          << dependeeNameLower << " and " << dependantNameLower
+          << " will not be updated, resulting in the same lifetime issue.\n\n";
+
+    err() << "In general, make sure that all your " << dependeeNameLower << " objects are destroyed *after* all the "
+          << dependantNameLower << " objects depending on them to avoid these sort of issues." << std::endl;
 
     std::terminate();
 }
@@ -249,4 +289,4 @@ void LifetimeDependant::subSelfAsDependant()
 
 } // namespace sf::priv
 
-#endif // SFML_LIFETIME_TRACKING
+#endif // SFML_ENABLE_LIFETIME_TRACKING

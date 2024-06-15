@@ -80,7 +80,7 @@ TEST_CASE("[Graphics] sf::Sprite", runDisplayTests())
         CHECK(sprite.getColor() == sf::Color::Red);
     }
 
-#ifdef SFML_LIFETIME_TRACKING
+#ifdef SFML_ENABLE_LIFETIME_TRACKING
     SECTION("Lifetime tracking")
     {
         SECTION("Return local from function")
