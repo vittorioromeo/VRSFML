@@ -187,9 +187,7 @@ struct Sound::Impl : priv::MiniaudioUtils::SoundBase
 
 
 ////////////////////////////////////////////////////////////
-Sound::Sound(const SoundBuffer& buffer) :
-m_impl(priv::makeUnique<Impl>()),
-SFML_INITIALIZE_LIFETIME_DEPENDANT(SoundBuffer, Sound, m_impl->buffer)
+Sound::Sound(const SoundBuffer& buffer) : m_impl(priv::makeUnique<Impl>())
 {
     setBuffer(buffer);
 
@@ -199,10 +197,7 @@ SFML_INITIALIZE_LIFETIME_DEPENDANT(SoundBuffer, Sound, m_impl->buffer)
 
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(readability-redundant-member-init)
-Sound::Sound(const Sound& copy) :
-SoundSource(copy),
-m_impl(priv::makeUnique<Impl>()),
-SFML_INITIALIZE_LIFETIME_DEPENDANT(SoundBuffer, Sound, m_impl->buffer)
+Sound::Sound(const Sound& copy) : SoundSource(copy), m_impl(priv::makeUnique<Impl>())
 {
     SoundSource::operator=(copy);
 
