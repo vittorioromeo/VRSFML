@@ -27,7 +27,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/Event.hpp>
 
-template class ::vittorioromeo::tinyvariant<
+template class ::sfvittorioromeo::tinyvariant<
     sf::Event::Closed,
     sf::Event::Resized,
     sf::Event::FocusLost,

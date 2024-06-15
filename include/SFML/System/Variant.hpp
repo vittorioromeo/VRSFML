@@ -11,27 +11,27 @@
 // From:
 // https://github.com/redorav/crstl/blob/master/include/crstl/utility/placement_new.h
 
-namespace vittorioromeo::impl {
+namespace sfvittorioromeo::impl {
 
 using sz_t = decltype(sizeof(int));
 
 struct placement_new_dummy
 {};
 
-} // namespace vittorioromeo::impl
+} // namespace sfvittorioromeo::impl
 
-inline void* operator new(vittorioromeo::impl::sz_t,
-    vittorioromeo::impl::placement_new_dummy, void* ptr)
+inline void* operator new(sfvittorioromeo::impl::sz_t,
+    sfvittorioromeo::impl::placement_new_dummy, void* ptr)
 {
     return ptr;
 }
 
 inline void operator delete(
-    void*, vittorioromeo::impl::placement_new_dummy, void*) noexcept
+    void*, sfvittorioromeo::impl::placement_new_dummy, void*) noexcept
 {}
 
 #define TINYVARIANT_PLACEMENT_NEW(...) \
-    ::new (::vittorioromeo::impl::placement_new_dummy{}, __VA_ARGS__)
+    ::new (::sfvittorioromeo::impl::placement_new_dummy{}, __VA_ARGS__)
 
 #if ((__GNUC__ >= 10) || defined(__clang__)) && !defined(_MSC_VER)
 #define TINYVARIANT_SUPPORTS_HAS_BUILTIN
@@ -59,7 +59,7 @@ inline void operator delete(
 #include <utility>
 #endif
 
-namespace vittorioromeo::impl {
+namespace sfvittorioromeo::impl {
 
 template <typename T>
 T&& declval();
@@ -319,9 +319,9 @@ using regularize_void_t = typename regularize_void<T>::type;
 template <typename... Ts>
 using common_type_between_t = typename common_type_between<Ts...>::type;
 
-} // namespace vittorioromeo::impl
+} // namespace sfvittorioromeo::impl
 
-namespace vittorioromeo {
+namespace sfvittorioromeo {
 
 template <typename T>
 inline constexpr impl::tinyvariant_inplace_type_t<T> tinyvariant_inplace_type{};
@@ -795,7 +795,7 @@ public:
 
 #undef TINYVARIANT_PLACEMENT_NEW
 
-} // namespace vittorioromeo
+} // namespace sfvittorioromeo
 
 #pragma GCC diagnostic pop
 
