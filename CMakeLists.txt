@@ -221,6 +221,8 @@ if(SFML_BUILD_TEST_SUITE)
     # this definition is used in the PCH file to speed up compilation of tests
     # `add_definitions` must be called before `add_subdirectory`
     add_definitions(-DSFML_BUILD_TEST_SUITE)
+    add_definitions(-D_GLIBCXX_ASSERTIONS=1) # TODO
+    add_definitions(-D_FORTIFY_SOURCE=2) # TODO
 endif()
 
 # add the subdirectories
