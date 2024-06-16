@@ -27,9 +27,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <X11/Xlib.h>
-
 #include <SFML/System/UniquePtr.hpp>
+
+#include <X11/Xlib.h>
 
 namespace sf::priv
 {
@@ -70,5 +70,5 @@ struct XDeleter
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-using X11Ptr = UniquePtr<T, XDeleter<RemoveArrayExtents<T>>>;
+using X11Ptr = UniquePtr<RemoveArrayExtents<T>, XDeleter<RemoveArrayExtents<T>>>;
 } // namespace sf::priv
