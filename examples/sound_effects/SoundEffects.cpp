@@ -1051,7 +1051,7 @@ int main()
 
     // Create the messages background
     const auto textBackgroundTexture = sf::Texture::loadFromFile(resourcesDir() / "text-background.png").value();
-    sf::Sprite textBackground(textBackgroundTexture);
+    sf::Sprite textBackground(textBackgroundTexture.getRect());
     textBackground.setPosition({0.f, 520.f});
     textBackground.setColor(sf::Color(255, 255, 255, 200));
 
@@ -1184,7 +1184,7 @@ int main()
         window.draw(*effects[current]);
 
         // Draw the text
-        window.draw(textBackground);
+        window.draw(textBackground, textBackgroundTexture);
         window.draw(instructions);
         window.draw(description);
         window.draw(playbackDevice);

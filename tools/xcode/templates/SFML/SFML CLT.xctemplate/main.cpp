@@ -37,7 +37,7 @@ int main()
 
     // Load a sprite to display
     const auto texture = sf::Texture::loadFromFile("background.jpg").value();
-    sf::Sprite sprite(texture);
+    sf::Sprite sprite(texture.getRect());
 
     // Create a graphical text to display
     const auto font = sf::Font::loadFromFile("tuffy.ttf").value();
@@ -74,7 +74,7 @@ int main()
         window.clear();
 
         // Draw the sprite
-        window.draw(sprite);
+        window.draw(sprite, texture);
 
         // Draw the string
         window.draw(text);

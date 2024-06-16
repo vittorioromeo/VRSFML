@@ -66,8 +66,9 @@ public:
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
-        states.shader = &m_shader;
-        target.draw(sf::Sprite{m_texture}, states);
+        states.texture = &m_texture;
+        states.shader  = &m_shader;
+        target.draw(sf::Sprite{m_texture.getRect()}, states);
     }
 
 private:
@@ -190,22 +191,22 @@ public:
         // Render the updated scene to the off-screen surface
         m_surface.clear(sf::Color::White);
 
-        sf::Sprite backgroundSprite{m_backgroundTexture};
+        sf::Sprite backgroundSprite{m_backgroundTexture.getRect()};
         backgroundSprite.setPosition({135.f, 100.f});
-        m_surface.draw(backgroundSprite);
+        m_surface.draw(backgroundSprite, m_backgroundTexture);
 
         // Update the position of the moving entities
         constexpr int numEntities = 6;
 
         for (int i = 0; i < 6; ++i)
         {
-            sf::Sprite entity{m_entityTexture, sf::IntRect({96 * i, 0}, {96, 96})};
+            sf::Sprite entity{{{96 * i, 0}, {96, 96}}};
 
             entity.setPosition(
                 {std::cos(0.25f * (time * static_cast<float>(i) + static_cast<float>(numEntities - i))) * 300 + 350,
                  std::sin(0.25f * (time * static_cast<float>(numEntities - i) + static_cast<float>(i))) * 200 + 250});
 
-            m_surface.draw(entity);
+            m_surface.draw(entity, m_entityTexture);
         }
 
         m_surface.display();
@@ -213,8 +214,11 @@ public:
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
-        states.shader = &m_shader;
-        target.draw(sf::Sprite{m_surface.getTexture()}, states);
+        const sf::Texture& texture = m_surface.getTexture();
+
+        states.texture = &texture;
+        states.shader  = &m_shader;
+        target.draw(sf::Sprite{texture.getRect()}, states);
     }
 
     explicit Edge(sf::RenderTexture&& surface, sf::Texture&& backgroundTexture, sf::Texture&& entityTexture, sf::Shader&& shader) :
@@ -436,7 +440,7 @@ int main()
 
     // Create the messages background
     const auto textBackgroundTexture = sf::Texture::loadFromFile("resources/text-background.png").value();
-    sf::Sprite textBackground(textBackgroundTexture);
+    sf::Sprite textBackground(textBackgroundTexture.getRect());
     textBackground.setPosition({0.f, 520.f});
     textBackground.setColor(sf::Color(255, 255, 255, 200));
 
@@ -530,7 +534,7 @@ int main()
         }
 
         // Draw the text
-        window.draw(textBackground);
+        window.draw(textBackground, textBackgroundTexture);
         window.draw(instructions);
         window.draw(description);
 
