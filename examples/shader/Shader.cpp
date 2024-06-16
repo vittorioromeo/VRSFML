@@ -66,9 +66,8 @@ public:
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
-        states.texture = &m_texture;
-        states.shader  = &m_shader;
-        target.draw(sf::Sprite{m_texture.getRect()}, states);
+        states.shader = &m_shader;
+        target.draw(sf::Sprite{m_texture.getRect()}, m_texture, states);
     }
 
 private:
@@ -216,9 +215,8 @@ public:
     {
         const sf::Texture& texture = m_surface.getTexture();
 
-        states.texture = &texture;
-        states.shader  = &m_shader;
-        target.draw(sf::Sprite{texture.getRect()}, states);
+        states.shader = &m_shader;
+        target.draw(sf::Sprite{texture.getRect()}, texture, states);
     }
 
     explicit Edge(sf::RenderTexture&& surface, sf::Texture&& backgroundTexture, sf::Texture&& entityTexture, sf::Shader&& shader) :

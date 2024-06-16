@@ -39,6 +39,7 @@
 
 #include <fstream>
 #include <iomanip>
+#include <optional>
 #include <ostream>
 #include <utility>
 #include <vector>
@@ -76,13 +77,32 @@ std::size_t getMaxTextureUnits()
     return static_cast<std::size_t>(maxUnits);
 }
 
+// Pair of indices into thread-local buffer
+struct BufferSlice
+{
+    const std::size_t beginIdx;
+    const std::size_t count;
+
+    explicit BufferSlice(std::size_t b, std::size_t c) : beginIdx(b), count(c)
+    {
+    }
+
+    [[nodiscard]] std::string_view toView(const std::vector<char>& buffer) const
+    {
+        return {buffer.data() + beginIdx, count};
+    }
+};
+
 // Read the contents of a file into an array of char
-const char* appendFileContentsToVector(const std::filesystem::path& filename, std::vector<char>& buffer)
+std::optional<BufferSlice> appendFileContentsToVector(const std::filesystem::path& filename, std::vector<char>& buffer)
 {
     std::ifstream file(filename, std::ios_base::binary);
 
     if (!file)
-        return nullptr;
+    {
+        sf::err() << "Failed to open shader file" << std::endl;
+        return std::nullopt;
+    }
 
     file.seekg(0, std::ios_base::end);
     const std::ifstream::pos_type size = file.tellg();
@@ -97,28 +117,27 @@ const char* appendFileContentsToVector(const std::filesystem::path& filename, st
     }
 
     buffer.push_back('\0');
-    return buffer.data() + bufferSizeBeforeRead;
+    return std::make_optional<BufferSlice>(bufferSizeBeforeRead, buffer.size() - bufferSizeBeforeRead);
 }
 
 // Read the contents of a stream into an array of char
-const char* appendStreamContentsToVector(sf::InputStream& stream, std::vector<char>& buffer)
+std::optional<BufferSlice> appendStreamContentsToVector(sf::InputStream& stream, std::vector<char>& buffer)
 {
     const std::optional<std::size_t> size = stream.getSize();
 
     if (!size.has_value() || size.value() == 0)
     {
         buffer.push_back('\0');
-        return nullptr;
+        return std::nullopt;
     }
 
     const std::size_t bufferSizeBeforeRead = buffer.size();
-
     buffer.resize(*size + bufferSizeBeforeRead);
 
     if (stream.seek(0) == -1)
     {
         sf::err() << "Failed to seek shader stream" << std::endl;
-        return nullptr;
+        return std::nullopt;
     }
 
     const std::optional<std::size_t> read = stream.read(buffer.data() + bufferSizeBeforeRead, *size);
@@ -126,11 +145,11 @@ const char* appendStreamContentsToVector(sf::InputStream& stream, std::vector<ch
     if (!read.has_value() || *read != size)
     {
         sf::err() << "Failed to read stream contents into buffer" << std::endl;
-        return nullptr;
+        return std::nullopt;
     }
 
     buffer.push_back('\0');
-    return buffer.data() + bufferSizeBeforeRead;
+    return std::make_optional<BufferSlice>(bufferSizeBeforeRead, buffer.size() - bufferSizeBeforeRead);
 }
 
 // Return a thread-local vector for suitable use as a temporary buffer
@@ -350,20 +369,22 @@ std::optional<Shader> Shader::loadFromFile(const std::filesystem::path& filename
     buffer.clear();
 
     // Read the file
-    const char* shaderReadPtr = appendFileContentsToVector(filename, buffer);
-    if (shaderReadPtr == nullptr)
+    const std::optional<BufferSlice> shaderSlice = appendFileContentsToVector(filename, buffer);
+    if (!shaderSlice.has_value())
     {
         err() << "Failed to open shader file\n" << formatDebugPathInfo(filename) << std::endl;
         return std::nullopt;
     }
 
+    const std::string_view shaderView = shaderSlice->toView(buffer);
+
     // Compile the shader program
     if (type == Type::Vertex)
-        return compile(shaderReadPtr, {}, {});
+        return compile(shaderView, {}, {});
     else if (type == Type::Geometry)
-        return compile({}, shaderReadPtr, {});
+        return compile({}, shaderView, {});
     else
-        return compile({}, {}, shaderReadPtr);
+        return compile({}, {}, shaderView);
 }
 
 
@@ -376,23 +397,23 @@ std::optional<Shader> Shader::loadFromFile(const std::filesystem::path& vertexSh
     buffer.clear();
 
     // Read the vertex shader file
-    const char* vertexShaderReadPtr = appendFileContentsToVector(vertexShaderFilename, buffer);
-    if (vertexShaderReadPtr == nullptr)
+    const std::optional<BufferSlice> vertexShaderSlice = appendFileContentsToVector(vertexShaderFilename, buffer);
+    if (!vertexShaderSlice.has_value())
     {
         err() << "Failed to open vertex shader file\n" << formatDebugPathInfo(vertexShaderFilename) << std::endl;
         return std::nullopt;
     }
 
     // Read the fragment shader file
-    const char* fragmentShaderReadPtr = appendFileContentsToVector(fragmentShaderFilename, buffer);
-    if (fragmentShaderReadPtr == nullptr)
+    const std::optional<BufferSlice> fragmentShaderSlice = appendFileContentsToVector(fragmentShaderFilename, buffer);
+    if (!fragmentShaderSlice.has_value())
     {
         err() << "Failed to open fragment shader file\n" << formatDebugPathInfo(fragmentShaderFilename) << std::endl;
         return std::nullopt;
     }
 
     // Compile the shader program
-    return compile(vertexShaderReadPtr, {}, fragmentShaderReadPtr);
+    return compile(vertexShaderSlice->toView(buffer), {}, fragmentShaderSlice->toView(buffer));
 }
 
 
@@ -406,31 +427,33 @@ std::optional<Shader> Shader::loadFromFile(const std::filesystem::path& vertexSh
     buffer.clear();
 
     // Read the vertex shader file
-    const char* vertexShaderReadPtr = appendFileContentsToVector(vertexShaderFilename, buffer);
-    if (vertexShaderReadPtr == nullptr)
+    const std::optional<BufferSlice> vertexShaderSlice = appendFileContentsToVector(vertexShaderFilename, buffer);
+    if (!vertexShaderSlice.has_value())
     {
         err() << "Failed to open vertex shader file\n" << formatDebugPathInfo(vertexShaderFilename) << std::endl;
         return std::nullopt;
     }
 
     // Read the geometry shader file
-    const char* geometryShaderReadPtr = appendFileContentsToVector(geometryShaderFilename, buffer);
-    if (geometryShaderReadPtr == nullptr)
+    const std::optional<BufferSlice> geometryShaderSlice = appendFileContentsToVector(geometryShaderFilename, buffer);
+    if (!geometryShaderSlice.has_value())
     {
         err() << "Failed to open geometry shader file\n" << formatDebugPathInfo(geometryShaderFilename) << std::endl;
         return std::nullopt;
     }
 
     // Read the fragment shader file
-    const char* fragmentShaderReadPtr = appendFileContentsToVector(fragmentShaderFilename, buffer);
-    if (fragmentShaderReadPtr == nullptr)
+    const std::optional<BufferSlice> fragmentShaderSlice = appendFileContentsToVector(fragmentShaderFilename, buffer);
+    if (!fragmentShaderSlice.has_value())
     {
         err() << "Failed to open fragment shader file\n" << formatDebugPathInfo(fragmentShaderFilename) << std::endl;
         return std::nullopt;
     }
 
     // Compile the shader program
-    return compile(vertexShaderReadPtr, geometryShaderReadPtr, fragmentShaderReadPtr);
+    return compile(vertexShaderSlice->toView(buffer),
+                   geometryShaderSlice->toView(buffer),
+                   fragmentShaderSlice->toView(buffer));
 }
 
 
@@ -473,20 +496,22 @@ std::optional<Shader> Shader::loadFromStream(InputStream& stream, Type type)
     buffer.clear();
 
     // Read the shader code from the stream
-    const char* vertexShaderReadPtr = appendStreamContentsToVector(stream, buffer);
-    if (vertexShaderReadPtr == nullptr)
+    const std::optional<BufferSlice> shaderSlice = appendStreamContentsToVector(stream, buffer);
+    if (!shaderSlice.has_value())
     {
         err() << "Failed to read vertex shader from stream" << std::endl;
         return std::nullopt;
     }
 
+    const std::string_view shaderView = shaderSlice->toView(buffer);
+
     // Compile the shader program
     if (type == Type::Vertex)
-        return compile(vertexShaderReadPtr, {}, {});
+        return compile(shaderView, {}, {});
     else if (type == Type::Geometry)
-        return compile({}, vertexShaderReadPtr, {});
+        return compile({}, shaderView, {});
     else
-        return compile({}, {}, vertexShaderReadPtr);
+        return compile({}, {}, shaderView);
 }
 
 
@@ -498,23 +523,23 @@ std::optional<Shader> Shader::loadFromStream(InputStream& vertexShaderStream, In
     buffer.clear();
 
     // Read the vertex shader code from the stream
-    const char* vertexShaderReadPtr = appendStreamContentsToVector(vertexShaderStream, buffer);
-    if (vertexShaderReadPtr == nullptr)
+    const std::optional<BufferSlice> vertexShaderSlice = appendStreamContentsToVector(vertexShaderStream, buffer);
+    if (!vertexShaderSlice.has_value())
     {
         err() << "Failed to read vertex shader from stream" << std::endl;
         return std::nullopt;
     }
 
     // Read the fragment shader code from the stream
-    const char* fragmentShaderReadPtr = appendStreamContentsToVector(fragmentShaderStream, buffer);
-    if (fragmentShaderReadPtr == nullptr)
+    const std::optional<BufferSlice> fragmentShaderSlice = appendStreamContentsToVector(fragmentShaderStream, buffer);
+    if (!fragmentShaderSlice.has_value())
     {
         err() << "Failed to read fragment shader from stream" << std::endl;
         return std::nullopt;
     }
 
     // Compile the shader program
-    return compile(vertexShaderReadPtr, {}, fragmentShaderReadPtr);
+    return compile(vertexShaderSlice->toView(buffer), {}, fragmentShaderSlice->toView(buffer));
 }
 
 
@@ -528,31 +553,33 @@ std::optional<Shader> Shader::loadFromStream(InputStream& vertexShaderStream,
     buffer.clear();
 
     // Read the vertex shader code from the stream
-    const char* vertexShaderReadPtr = appendStreamContentsToVector(vertexShaderStream, buffer);
-    if (vertexShaderReadPtr == nullptr)
+    const std::optional<BufferSlice> vertexShaderSlice = appendStreamContentsToVector(vertexShaderStream, buffer);
+    if (!vertexShaderSlice.has_value())
     {
         err() << "Failed to read vertex shader from stream" << std::endl;
         return std::nullopt;
     }
 
     // Read the geometry shader code from the stream
-    const char* geometryShaderReadPtr = appendStreamContentsToVector(geometryShaderStream, buffer);
-    if (geometryShaderReadPtr == nullptr)
+    const std::optional<BufferSlice> geometryShaderSlice = appendStreamContentsToVector(geometryShaderStream, buffer);
+    if (!geometryShaderSlice.has_value())
     {
         err() << "Failed to read geometry shader from stream" << std::endl;
         return std::nullopt;
     }
 
     // Read the fragment shader code from the stream
-    const char* fragmentShaderReadPtr = appendStreamContentsToVector(fragmentShaderStream, buffer);
-    if (fragmentShaderReadPtr == nullptr)
+    const std::optional<BufferSlice> fragmentShaderSlice = appendStreamContentsToVector(fragmentShaderStream, buffer);
+    if (!fragmentShaderSlice.has_value())
     {
         err() << "Failed to read fragment shader from stream" << std::endl;
         return std::nullopt;
     }
 
     // Compile the shader program
-    return compile(vertexShaderReadPtr, geometryShaderReadPtr, fragmentShaderReadPtr);
+    return compile(vertexShaderSlice->toView(buffer),
+                   geometryShaderSlice->toView(buffer),
+                   fragmentShaderSlice->toView(buffer));
 }
 
 
