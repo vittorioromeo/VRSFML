@@ -29,14 +29,24 @@
 ////////////////////////////////////////////////////////////
 #include <X11/Xlib.h>
 
+#include <SFML/System/UniquePtr.hpp>
 
 namespace sf::priv
 {
 template <typename T>
-using RemoveArrayExtents = T;
+struct RemoveArrayExtentsImpl
+{
+    using type = T;
+};
 
 template <typename T>
-using RemoveArrayExtents<T[]> = T;
+struct RemoveArrayExtentsImpl<T[]>
+{
+    using type = T;
+};
+
+template <typename T>
+using RemoveArrayExtents = typename RemoveArrayExtentsImpl<T>::type;
 
 ////////////////////////////////////////////////////////////
 /// \brief Class template for freeing X11 pointers
