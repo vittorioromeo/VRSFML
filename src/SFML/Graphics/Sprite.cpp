@@ -25,7 +25,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 
 #include <cmath>
@@ -85,16 +84,6 @@ FloatRect Sprite::getLocalBounds() const
 FloatRect Sprite::getGlobalBounds() const
 {
     return getTransform().transformRect(getLocalBounds());
-}
-
-
-////////////////////////////////////////////////////////////
-void Sprite::draw(RenderTarget& target, RenderStates states) const
-{
-    states.transform *= getTransform();
-    states.coordinateType = CoordinateType::Pixels;
-
-    target.draw(m_vertices.data(), m_vertices.size(), PrimitiveType::TriangleStrip, states);
 }
 
 
