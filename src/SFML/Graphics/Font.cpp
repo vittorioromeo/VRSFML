@@ -638,42 +638,36 @@ Glyph Font::loadGlyph(std::uint32_t codePoint, unsigned int characterSize, bool 
     glyph.lsbDelta = static_cast<int>(face->glyph->lsb_delta);
     glyph.rsbDelta = static_cast<int>(face->glyph->rsb_delta);
 
-    unsigned int width  = bitmap.width;
-    unsigned int height = bitmap.rows;
+    Vector2u size(bitmap.width, bitmap.rows);
 
-    if ((width > 0) && (height > 0))
+    if ((size.x > 0) && (size.y > 0))
     {
         // Leave a small padding around characters, so that filtering doesn't
         // pollute them with pixels from neighbors
         const unsigned int padding = 2;
 
-        width += 2 * padding;
-        height += 2 * padding;
+        size += 2u * Vector2u(padding, padding);
 
         // Get the glyphs page corresponding to the character size
         Page& page = loadPage(characterSize);
 
         // Find a good position for the new glyph into the texture
-        glyph.textureRect = findGlyphRect(page, {width, height});
+        glyph.textureRect = findGlyphRect(page, size);
 
         // Make sure the texture data is positioned in the center
         // of the allocated texture rectangle
-        glyph.textureRect.left += static_cast<int>(padding);
-        glyph.textureRect.top += static_cast<int>(padding);
-        glyph.textureRect.width -= static_cast<int>(2 * padding);
-        glyph.textureRect.height -= static_cast<int>(2 * padding);
+        glyph.textureRect.position += Vector2i(padding, padding);
+        glyph.textureRect.size -= 2 * Vector2i(padding, padding);
 
         // Compute the glyph's bounding box
-        glyph.bounds.left   = static_cast<float>(bitmapGlyph->left);
-        glyph.bounds.top    = static_cast<float>(-bitmapGlyph->top);
-        glyph.bounds.width  = static_cast<float>(bitmap.width);
-        glyph.bounds.height = static_cast<float>(bitmap.rows);
+        glyph.bounds.position = Vector2f(Vector2i(bitmapGlyph->left, -bitmapGlyph->top));
+        glyph.bounds.size     = Vector2f(Vector2u(bitmap.width, bitmap.rows));
 
         // Resize the pixel buffer to the new size and fill it with transparent white pixels
-        m_impl->pixelBuffer.resize(static_cast<std::size_t>(width) * static_cast<std::size_t>(height) * 4);
+        m_impl->pixelBuffer.resize(static_cast<std::size_t>(size.x) * static_cast<std::size_t>(size.y) * 4);
 
         std::uint8_t* current = m_impl->pixelBuffer.data();
-        std::uint8_t* end     = current + width * height * 4;
+        std::uint8_t* end     = current + size.x * size.y * 4;
 
         while (current != end)
         {
@@ -688,12 +682,12 @@ Glyph Font::loadGlyph(std::uint32_t codePoint, unsigned int characterSize, bool 
         if (bitmap.pixel_mode == FT_PIXEL_MODE_MONO)
         {
             // Pixels are 1 bit monochrome values
-            for (unsigned int y = padding; y < height - padding; ++y)
+            for (unsigned int y = padding; y < size.y - padding; ++y)
             {
-                for (unsigned int x = padding; x < width - padding; ++x)
+                for (unsigned int x = padding; x < size.x - padding; ++x)
                 {
                     // The color channels remain white, just fill the alpha channel
-                    const std::size_t index = x + y * width;
+                    const std::size_t index = x + y * size.x;
                     m_impl->pixelBuffer[index * 4 + 3] = ((pixels[(x - padding) / 8]) & (1 << (7 - ((x - padding) % 8))))
                                                              ? 255
                                                              : 0;
@@ -704,12 +698,12 @@ Glyph Font::loadGlyph(std::uint32_t codePoint, unsigned int characterSize, bool 
         else
         {
             // Pixels are 8 bits gray levels
-            for (unsigned int y = padding; y < height - padding; ++y)
+            for (unsigned int y = padding; y < size.y - padding; ++y)
             {
-                for (unsigned int x = padding; x < width - padding; ++x)
+                for (unsigned int x = padding; x < size.x - padding; ++x)
                 {
                     // The color channels remain white, just fill the alpha channel
-                    const std::size_t index            = x + y * width;
+                    const std::size_t index            = x + y * size.x;
                     m_impl->pixelBuffer[index * 4 + 3] = pixels[x - padding];
                 }
                 pixels += bitmap.pitch;
@@ -717,11 +711,9 @@ Glyph Font::loadGlyph(std::uint32_t codePoint, unsigned int characterSize, bool 
         }
 
         // Write the pixels to the texture
-        const unsigned int x = static_cast<unsigned int>(glyph.textureRect.left) - padding;
-        const unsigned int y = static_cast<unsigned int>(glyph.textureRect.top) - padding;
-        const unsigned int w = static_cast<unsigned int>(glyph.textureRect.width) + 2 * padding;
-        const unsigned int h = static_cast<unsigned int>(glyph.textureRect.height) + 2 * padding;
-        page.texture.update(m_impl->pixelBuffer.data(), {w, h}, {x, y});
+        const auto dest       = Vector2u(glyph.textureRect.position) - Vector2u(padding, padding);
+        const auto updateSize = Vector2u(glyph.textureRect.size) + 2u * Vector2u(padding, padding);
+        page.texture.update(m_impl->pixelBuffer.data(), updateSize, dest);
     }
 
     // Delete the FT glyph
@@ -799,10 +791,10 @@ IntRect Font::findGlyphRect(Page& page, const Vector2u& size) const
     }
 
     // Find the glyph's rectangle on the selected row
-    rect.left   = static_cast<int>(row->width);
-    rect.top    = static_cast<int>(row->top);
-    rect.width  = static_cast<int>(size.x);
-    rect.height = static_cast<int>(size.y);
+    rect.position.x = static_cast<int>(row->width);
+    rect.position.y = static_cast<int>(row->top);
+    rect.size.x     = static_cast<int>(size.x);
+    rect.size.y     = static_cast<int>(size.y);
 
     // Update the row information
     row->width += size.x;

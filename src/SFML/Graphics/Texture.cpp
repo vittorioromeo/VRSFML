@@ -306,11 +306,11 @@ std::optional<Texture> Texture::loadFromImage(const Image& image, bool sRgb, con
     std::optional<Texture> result; // Use a single local variable for NRVO
 
     // Retrieve the image size
-    const auto [width, height] = Vector2i(image.getSize());
+    const auto size = Vector2i(image.getSize());
 
     // Load the entire image if the source area is either empty or contains the whole image
-    if (area.width == 0 || (area.height == 0) ||
-        ((area.left <= 0) && (area.top <= 0) && (area.width >= width) && (area.height >= height)))
+    if (area.size.x == 0 || (area.size.y == 0) ||
+        ((area.position.x <= 0) && (area.position.y <= 0) && (area.size.x >= size.x) && (area.size.y >= size.y)))
     {
         // Load the entire image
         if ((result = sf::Texture::create(image.getSize(), sRgb)))
@@ -331,14 +331,14 @@ std::optional<Texture> Texture::loadFromImage(const Image& image, bool sRgb, con
         // Load a sub-area of the image
 
         // Adjust the rectangle to the size of the image
-        IntRect rectangle = area;
-        rectangle.left    = std::max(rectangle.left, 0);
-        rectangle.top     = std::max(rectangle.top, 0);
-        rectangle.width   = std::min(rectangle.width, width - rectangle.left);
-        rectangle.height  = std::min(rectangle.height, height - rectangle.top);
+        IntRect rectangle    = area;
+        rectangle.position.x = std::max(rectangle.position.x, 0);
+        rectangle.position.y = std::max(rectangle.position.y, 0);
+        rectangle.size.x     = std::min(rectangle.size.x, size.x - rectangle.position.x);
+        rectangle.size.y     = std::min(rectangle.size.y, size.y - rectangle.position.y);
 
         // Create the texture and upload the pixels
-        if ((result = sf::Texture::create(Vector2u(rectangle.getSize()), sRgb)))
+        if ((result = sf::Texture::create(Vector2u(rectangle.size), sRgb)))
         {
             const TransientContextLock lock;
 
@@ -346,12 +346,12 @@ std::optional<Texture> Texture::loadFromImage(const Image& image, bool sRgb, con
             const priv::TextureSaver save;
 
             // Copy the pixels to the texture, row by row
-            const std::uint8_t* pixels = image.getPixelsPtr() + 4 * (rectangle.left + (width * rectangle.top));
+            const std::uint8_t* pixels = image.getPixelsPtr() + 4 * (rectangle.position.x + (size.x * rectangle.position.y));
             glCheck(glBindTexture(GL_TEXTURE_2D, result->m_texture));
-            for (int i = 0; i < rectangle.height; ++i)
+            for (int i = 0; i < rectangle.size.y; ++i)
             {
-                glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, i, rectangle.width, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixels));
-                pixels += 4 * width;
+                glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, i, rectangle.size.x, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixels));
+                pixels += 4 * size.x;
             }
 
             glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
