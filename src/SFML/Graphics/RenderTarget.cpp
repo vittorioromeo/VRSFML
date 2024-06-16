@@ -346,7 +346,13 @@ void RenderTarget::draw(const Drawable& drawable, const RenderStates& states)
 ////////////////////////////////////////////////////////////
 void RenderTarget::draw(const Sprite& sprite, const Texture& texture)
 {
-    draw(sprite, sf::RenderStates{&texture});
+    sf::RenderStates states;
+
+    states.texture = &texture;
+    states.transform *= sprite.getTransform();
+    states.coordinateType = CoordinateType::Pixels;
+
+    draw(sprite.m_vertices.data(), sprite.m_vertices.size(), PrimitiveType::TriangleStrip, states);
 }
 
 

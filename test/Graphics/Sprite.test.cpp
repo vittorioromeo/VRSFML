@@ -34,8 +34,7 @@ TEST_CASE("[Graphics] sf::Sprite", runDisplayTests())
 
         SECTION("Negative-size texture rectangle")
         {
-            const sf::Sprite sprite(texture, {{0, 0}, {-40, -60}});
-            CHECK(&sprite.getTexture() == &texture);
+            const sf::Sprite sprite({{0, 0}, {-40, -60}});
             CHECK(sprite.getTextureRect() == sf::IntRect({0, 0}, {-40, -60}));
             CHECK(sprite.getColor() == sf::Color::White);
             CHECK(sprite.getLocalBounds() == sf::FloatRect({0, 0}, {40, 60}));

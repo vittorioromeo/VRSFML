@@ -29,9 +29,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Export.hpp>
 
-#include <SFML/Graphics/Drawable.hpp>
 #include <SFML/Graphics/Rect.hpp>
-#include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/Transformable.hpp>
 #include <SFML/Graphics/Vertex.hpp>
 
@@ -40,12 +38,14 @@
 
 namespace sf
 {
+class RenderTarget;
+
 ////////////////////////////////////////////////////////////
-/// \brief Drawable representation of a texture, with its
+/// \brief TODO representation of a texture, with its
 ///        own transformations, color, etc.
 ///
 ////////////////////////////////////////////////////////////
-class SFML_GRAPHICS_API Sprite : public Drawable, public Transformable
+class SFML_GRAPHICS_API Sprite : public Transformable
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -86,7 +86,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void setColor(const Color& color);
-
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the sub-rectangle of the texture displayed by the sprite
@@ -137,14 +136,7 @@ public:
     FloatRect getGlobalBounds() const;
 
 private:
-    ////////////////////////////////////////////////////////////
-    /// \brief Draw the sprite to a render target
-    ///
-    /// \param target Render target to draw to
-    /// \param states Current render states
-    ///
-    ////////////////////////////////////////////////////////////
-    void draw(RenderTarget& target, RenderStates states) const override;
+    friend RenderTarget;
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the vertices' positions and texture coordinates
