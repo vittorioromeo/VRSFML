@@ -556,9 +556,12 @@ bool Font::isSmooth() const
 ////////////////////////////////////////////////////////////
 Font::Page& Font::loadPage(unsigned int characterSize) const
 {
+    if (const auto it = m_impl->pages.find(characterSize); it != m_impl->pages.end())
+        return it->second;
+
     auto page = Page::make(m_impl->isSmooth);
     assert(page && "Font::loadPage() Failed to load page");
-    return m_impl->pages.try_emplace(characterSize, std::move(*page)).first->second;
+    return m_impl->pages.emplace(characterSize, std::move(*page)).first->second;
 }
 
 
