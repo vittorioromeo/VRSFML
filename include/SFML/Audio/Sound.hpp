@@ -31,7 +31,8 @@
 
 #include <SFML/Audio/SoundSource.hpp>
 
-#include <memory>
+#include <SFML/System/LifetimeTracking.hpp>
+#include <SFML/System/UniquePtr.hpp>
 
 #include <cstdlib>
 
@@ -243,7 +244,12 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    const std::unique_ptr<Impl> m_impl; //!< Implementation details
+    const priv::UniquePtr<Impl> m_impl; //!< Implementation details
+
+    ////////////////////////////////////////////////////////////
+    // Lifetime tracking
+    ////////////////////////////////////////////////////////////
+    SFML_DEFINE_LIFETIME_DEPENDANT(SoundBuffer);
 };
 
 } // namespace sf

@@ -34,9 +34,8 @@
 #include <SFML/Window/Mouse.hpp>
 #include <SFML/Window/Sensor.hpp>
 
+#include <SFML/System/Variant.hpp>
 #include <SFML/System/Vector2.hpp>
-
-#include <variant>
 
 
 namespace sf
@@ -48,14 +47,6 @@ namespace sf
 class SFML_WINDOW_API Event
 {
 public:
-    ////////////////////////////////////////////////////////////
-    /// \brief Empty event
-    ///
-    ////////////////////////////////////////////////////////////
-    struct Empty
-    {
-    };
-
     ////////////////////////////////////////////////////////////
     /// \brief Closed event
     ///
@@ -125,8 +116,8 @@ public:
     struct MouseWheelScrolled
     {
         Mouse::Wheel wheel{}; //!< Which wheel (for mice with multiple ones)
-        float        delta{}; //!< Wheel offset (positive is up/left, negative is down/right). High-precision mice may use non-integral offsets.
-        Vector2i     position; //!< Position of the mouse pointer, relative to the top left of the owner window
+        float delta{}; //!< Wheel offset (positive is up/left, negative is down/right). High-precision mice may use non-integral offsets.
+        Vector2i position; //!< Position of the mouse pointer, relative to the top left of the owner window
     };
 
     ////////////////////////////////////////////////////////////
@@ -275,12 +266,10 @@ public:
     };
 
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// Sets the event to sf::Event::Empty
+    /// \brief Deleted default constructor
     ///
     ////////////////////////////////////////////////////////////
-    Event() = default;
+    Event() = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from a given sf::Event subtype
@@ -310,60 +299,78 @@ public:
     [[nodiscard]] const T* getIf() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Check if current event type is not `Empty`
+    /// \brief Applies the specified `visitor` to the event
     ///
-    /// \return True if current event type is not `Empty`
+    /// \return Transparently forwards whatever `visitor` returns
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit operator bool() const
-    {
-        return !is<Empty>();
-    }
+    template <typename Visitor>
+    decltype(auto) visit(Visitor&& visitor);
 
 private:
+    using VariantType = ::sfvittorioromeo::tinyvariant<
+        Closed,
+        Resized,
+        FocusLost,
+        FocusGained,
+        TextEntered,
+        KeyPressed,
+        KeyReleased,
+        MouseWheelScrolled,
+        MouseButtonPressed,
+        MouseButtonReleased,
+        MouseMoved,
+        MouseMovedRaw,
+        MouseEntered,
+        MouseLeft,
+        JoystickButtonPressed,
+        JoystickButtonReleased,
+        JoystickMoved,
+        JoystickConnected,
+        JoystickDisconnected,
+        TouchBegan,
+        TouchMoved,
+        TouchEnded,
+        SensorChanged>;
+
+
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::variant<Empty,
-                 Closed,
-                 Resized,
-                 FocusLost,
-                 FocusGained,
-                 TextEntered,
-                 KeyPressed,
-                 KeyReleased,
-                 MouseWheelScrolled,
-                 MouseButtonPressed,
-                 MouseButtonReleased,
-                 MouseMoved,
-                 MouseMovedRaw,
-                 MouseEntered,
-                 MouseLeft,
-                 JoystickButtonPressed,
-                 JoystickButtonReleased,
-                 JoystickMoved,
-                 JoystickConnected,
-                 JoystickDisconnected,
-                 TouchBegan,
-                 TouchMoved,
-                 TouchEnded,
-                 SensorChanged>
-        m_data; //!< Event data
+    VariantType m_data; //!< Event data
 
     ////////////////////////////////////////////////////////////
     // Helper functions
     ////////////////////////////////////////////////////////////
-    template <typename T, typename... Ts>
-    static constexpr bool isInParameterPack(const std::variant<Ts...>&)
-    {
-        return (std::is_same_v<T, Ts> || ...);
-    }
-
     template <typename T>
-    static constexpr bool isEventType = isInParameterPack<T>(decltype(m_data)());
+    static constexpr bool isEventType = VariantType::index_of<T> != ::sfvittorioromeo::impl::bad_index;
 };
 
 } // namespace sf
+
+extern template class ::sfvittorioromeo::tinyvariant<
+    sf::Event::Closed,
+    sf::Event::Resized,
+    sf::Event::FocusLost,
+    sf::Event::FocusGained,
+    sf::Event::TextEntered,
+    sf::Event::KeyPressed,
+    sf::Event::KeyReleased,
+    sf::Event::MouseWheelScrolled,
+    sf::Event::MouseButtonPressed,
+    sf::Event::MouseButtonReleased,
+    sf::Event::MouseMoved,
+    sf::Event::MouseEntered,
+    sf::Event::MouseLeft,
+    sf::Event::JoystickButtonPressed,
+    sf::Event::JoystickButtonReleased,
+    sf::Event::JoystickMoved,
+    sf::Event::JoystickConnected,
+    sf::Event::JoystickDisconnected,
+    sf::Event::TouchBegan,
+    sf::Event::TouchMoved,
+    sf::Event::TouchEnded,
+    sf::Event::SensorChanged>;
 
 #include <SFML/Window/Event.inl>
 
@@ -390,19 +397,19 @@ private:
 /// any of the corresponding event data.
 ///
 /// \code
-/// while (const auto event = window.pollEvent())
+/// while (const std::optional event = window.pollEvent())
 /// {
-///     // Request for closing the window
-///     if (event.is<sf::Event::Closed>())
+///     // Window closed or escape key pressed: exit
+///     if (event->is<sf::Event::Closed>() ||
+///         (event->is<sf::Event::KeyPressed>() &&
+///          event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape))
+///     {
 ///         window.close();
-///
-///     // The escape key was pressed
-///     if (const auto* keyPressed = event.getIf<sf::Event::KeyPressed>())
-///         if (keyPressed->code == sf::Keyboard::Key::Escape)
-///             window.close();
+///         break;
+///     }
 ///
 ///     // The window was resized
-///     if (const auto* resized = event.getIf<sf::Event::Resized>())
+///     if (const auto* resized = event->getIf<sf::Event::Resized>())
 ///         doSomethingWithTheNewSize(resized->size);
 ///
 ///     // etc ...
