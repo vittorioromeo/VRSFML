@@ -423,7 +423,8 @@ private:
     Color                       m_outlineColor{Color::Black}; //!< Text outline color
     float                       m_outlineThickness{0.f};      //!< Thickness of the text's outline
     mutable std::vector<Vertex> m_vertices;                   //!< Vertex array containing the fill geometry
-    mutable std::vector<Vertex> m_outlineVertices;            //!< Vertex array containing the outline geometry
+    mutable std::vector<Vertex> m_tempVertices;               //!< TODO
+    mutable std::size_t         m_fillVerticesStartIndex{};     //< TODO
     mutable FloatRect           m_bounds;                     //!< Bounding rectangle of the text (in local coordinates)
     mutable bool                m_geometryNeedUpdate{};       //!< Does the geometry need to be recomputed?
     mutable std::uint64_t       m_fontTextureId{};            //!< The font texture id
