@@ -108,7 +108,7 @@ struct Font::Page
 
     using GlyphTable = std::unordered_map<std::uint64_t, Glyph>; //!< Table mapping a codepoint to its glyph
 
-    [[nodiscard]] static std::optional<Page> make(bool smooth);
+    [[nodiscard]] static std::optional<Page> create(bool smooth);
     explicit Page(Texture&& texture);
 
     GlyphTable       glyphs;     //!< Table mapping code points to their corresponding glyph
@@ -559,7 +559,7 @@ Font::Page& Font::loadPage(unsigned int characterSize) const
     if (const auto it = m_impl->pages.find(characterSize); it != m_impl->pages.end())
         return it->second;
 
-    auto page = Page::create(m_impl->m_isSmooth);
+    auto page = Page::create(m_impl->isSmooth);
     assert(page && "Font::loadPage() Failed to load page");
     return m_impl->pages.emplace(characterSize, std::move(*page)).first->second;
 }
