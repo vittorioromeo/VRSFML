@@ -476,7 +476,7 @@ void Text::ensureGeometryUpdate() const
     m_vertices.resize(outlineVerticesCount + fillVerticesCount);
     m_fillVerticesStartIndex = outlineVerticesCount;
 
-    std::size_t currFillIndex    = 0;
+    std::size_t currFillIndex    = outlineVerticesCount;
     std::size_t currOutlineIndex = 0;
 
     // Create one quad for each character
