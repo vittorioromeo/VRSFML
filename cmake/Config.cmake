@@ -4,9 +4,10 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 
     # don't use the OpenGL ES implementation on Windows
     set(OPENGL_ES 0)
-
-    # detect the architecture
-    if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+    
+    if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "ARM64")
+        set(ARCH_ARM64 1)
+    elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
         set(ARCH_32BITS 1)
     elseif(CMAKE_SIZEOF_VOID_P EQUAL 8)
         set(ARCH_64BITS 1)
