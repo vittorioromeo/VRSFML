@@ -34,8 +34,10 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/Xrandr.h>
 
-#include <deque>
 #include <memory>
+#include <optional>
+
+#include <cstdint>
 
 
 namespace sf::priv
