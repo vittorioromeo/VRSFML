@@ -31,6 +31,8 @@
 
 #include <SFML/Graphics/Shape.hpp>
 
+#include <SFML/System/Vector2.hpp>
+
 #include <vector>
 
 #include <cstddef>
