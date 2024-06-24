@@ -208,6 +208,13 @@ if(SFML_ENABLE_SANITIZERS)
     string(APPEND CMAKE_CXX_FLAGS " -fno-omit-frame-pointer -fno-sanitize-recover=all -fsanitize=undefined")
 endif()
 
+if(SFML_BUILD_TEST_SUITE)
+    # this definition is used in the PCH file to speed up compilation of tests
+    # `add_definitions` must be called before `add_subdirectory`
+    add_definitions(-DSFML_BUILD_TEST_SUITE)
+    set(SFML_ENABLE_STDLIB_ASSERTIONS ON)
+endif()
+
 option(SFML_ENABLE_STDLIB_ASSERTIONS "Enable standard library assertions" OFF)
 if(SFML_ENABLE_STDLIB_ASSERTIONS)
     # intentionally using `add_definitions` here to propagate defines to subdirectories
