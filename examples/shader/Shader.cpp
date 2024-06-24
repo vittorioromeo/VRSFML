@@ -43,9 +43,7 @@ std::mt19937       rng(rd());
 ////////////////////////////////////////////////////////////
 struct Effect
 {
-    virtual ~Effect()
-    {
-    }
+    virtual ~Effect() = default;
 
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const = 0;
     virtual void update(float time, float x, float y)                          = 0;
