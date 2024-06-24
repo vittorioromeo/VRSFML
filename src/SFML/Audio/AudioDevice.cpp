@@ -48,17 +48,113 @@ namespace sf::priv
 {
 namespace
 {
-// Instead of a variable in an anonymous namespace,
-// we use a function that returns a reference to a static
-// variable to delay initialization of the variable as long
-// as possible, i.e. until it is requested by someone.
-// This also avoids static initialization order races in the
-// event some other static object gets/sets the current device.
+////////////////////////////////////////////////////////////
 std::optional<std::string>& getCurrentDevice()
 {
+    // Instead of a variable in an anonymous namespace,
+    // we use a function that returns a reference to a static
+    // variable to delay initialization of the variable as long
+    // as possible, i.e. until it is requested by someone.
+    // This also avoids static initialization order races in the
+    // event some other static object gets/sets the current device.
+
     static std::optional<std::string> currentDevice;
     return currentDevice;
 }
+
+
+////////////////////////////////////////////////////////////
+struct DeviceEntryImpl
+{
+    std::string  name;
+    ma_device_id id{};
+    bool         isDefault{};
+};
+
+
+////////////////////////////////////////////////////////////
+std::vector<DeviceEntryImpl> getAvailableDevicesImpl(ma_context* instanceContext)
+{
+    const auto getDevices = [](auto& context)
+    {
+        std::vector<DeviceEntryImpl> deviceList; // Use a single local variable for NRVO
+
+        ma_device_info* deviceInfos{};
+        ma_uint32       deviceCount{};
+
+        // Get the playback devices
+        if (const auto result = ma_context_get_devices(&context, &deviceInfos, &deviceCount, nullptr, nullptr);
+            result != MA_SUCCESS)
+        {
+            err() << "Failed to get audio playback devices: " << ma_result_description(result) << std::endl;
+            return deviceList; // Empty device list
+        }
+
+        deviceList.reserve(deviceCount);
+
+        // In order to report devices with identical names and still allow
+        // the user to differentiate between them when selecting, we append
+        // an index (number) to their name starting from the second entry
+        std::unordered_map<std::string, int> deviceIndices;
+        deviceIndices.reserve(deviceCount);
+
+        for (auto i = 0u; i < deviceCount; ++i)
+        {
+            auto  name  = std::string(deviceInfos[i].name);
+            auto& index = deviceIndices[name];
+
+            ++index;
+
+            if (index > 1)
+                name += ' ' + std::to_string(index);
+
+            // Make sure the default device is always placed at the front
+            deviceList.emplace(deviceInfos[i].isDefault ? deviceList.begin() : deviceList.end(),
+                               DeviceEntryImpl{name, deviceInfos[i].id, deviceInfos[i].isDefault == MA_TRUE});
+        }
+
+        return deviceList;
+    };
+
+    // Use an existing instance's context if one exists
+    if (instanceContext != nullptr)
+        return getDevices(*instanceContext);
+
+    // Otherwise, construct a temporary context
+    ma_context context{};
+
+    if (const auto result = ma_context_init(nullptr, 0, nullptr, &context); result != MA_SUCCESS)
+    {
+        err() << "Failed to initialize the audio playback context: " << ma_result_description(result) << std::endl;
+        return {};
+    }
+
+    auto deviceList = getDevices(context);
+    ma_context_uninit(&context);
+    return deviceList;
+}
+
+
+////////////////////////////////////////////////////////////
+std::optional<ma_device_id> getSelectedDeviceId(ma_context* instanceContext)
+{
+    const auto devices    = getAvailableDevicesImpl(instanceContext);
+    auto       deviceName = AudioDevice::getDevice();
+
+    // If no device has been selected by the user yet, use the default device
+    if (!deviceName)
+        deviceName = PlaybackDevice::getDefaultDevice();
+
+    auto iter = std::find_if(devices.begin(),
+                             devices.end(),
+                             [&](const auto& device) { return device.name == deviceName; });
+
+    if (iter != devices.end())
+        return iter->id;
+
+    return std::nullopt;
+}
+
 } // namespace
 
 
@@ -77,12 +173,12 @@ struct AudioDevice::ListenerProperties
 ////////////////////////////////////////////////////////////
 struct AudioDevice::Impl
 {
-    std::optional<ma_log>     log;            //!< The miniaudio log
-    std::optional<ma_context> context;        //!< The miniaudio context
-    std::optional<ma_device>  playbackDevice; //!< The miniaudio playback device
-    std::optional<ma_engine>  engine;         //!< The miniaudio engine (used for effects and spatialisation)
-    ResourceEntryList         resources;      //!< Registered resources
-    std::mutex                resourcesMutex; //!< The mutex guarding the registered resources
+    std::optional<ma_log>                     log;            //!< The miniaudio log
+    std::optional<ma_context>                 context;        //!< The miniaudio context
+    std::optional<ma_device>                  playbackDevice; //!< The miniaudio playback device
+    std::optional<ma_engine>                  engine;    //!< The miniaudio engine (used for effects and spatialisation)
+    std::vector<std::optional<ResourceEntry>> resources; //!< Registered resources
+    std::mutex                                resourcesMutex; //!< The mutex guarding the registered resources
 };
 
 
@@ -220,7 +316,8 @@ bool AudioDevice::reinitialize()
 
     // Deinitialize all audio resources
     for (const auto& entry : instance->m_impl->resources)
-        entry.deinitializeFunc(entry.resource);
+        if (entry.has_value())
+            entry->deinitializeFunc(entry->resource);
 
     // Destroy the old engine
     if (instance->m_impl->engine)
@@ -235,7 +332,8 @@ bool AudioDevice::reinitialize()
 
     // Reinitialize all audio resources
     for (const auto& entry : instance->m_impl->resources)
-        entry.reinitializeFunc(entry.resource);
+        if (entry.has_value())
+            entry->reinitializeFunc(entry->resource);
 
     return result;
 }
@@ -244,65 +342,16 @@ bool AudioDevice::reinitialize()
 ////////////////////////////////////////////////////////////
 std::vector<AudioDevice::DeviceEntry> AudioDevice::getAvailableDevices()
 {
-    const auto getDevices = [](auto& context)
-    {
-        std::vector<DeviceEntry> deviceList; // Use a single local variable for NRVO
-
-        ma_device_info* deviceInfos{};
-        ma_uint32       deviceCount{};
-
-        // Get the playback devices
-        if (const auto result = ma_context_get_devices(&context, &deviceInfos, &deviceCount, nullptr, nullptr);
-            result != MA_SUCCESS)
-        {
-            err() << "Failed to get audio playback devices: " << ma_result_description(result) << std::endl;
-            return deviceList; // Empty device list
-        }
-
-        deviceList.reserve(deviceCount);
-
-        // In order to report devices with identical names and still allow
-        // the user to differentiate between them when selecting, we append
-        // an index (number) to their name starting from the second entry
-        std::unordered_map<std::string, int> deviceIndices;
-        deviceIndices.reserve(deviceCount);
-
-        for (auto i = 0u; i < deviceCount; ++i)
-        {
-            auto  name  = std::string(deviceInfos[i].name);
-            auto& index = deviceIndices[name];
-
-            ++index;
-
-            if (index > 1)
-                name += ' ' + std::to_string(index);
-
-            // Make sure the default device is always placed at the front
-            deviceList.emplace(deviceInfos[i].isDefault ? deviceList.begin() : deviceList.end(),
-                               DeviceEntry{name, deviceInfos[i].id, deviceInfos[i].isDefault == MA_TRUE});
-        }
-
-        return deviceList;
-    };
-
     // Use an existing instance's context if one exists
-    auto* instance = getInstance();
+    auto* instance        = AudioDevice::getInstance();
+    auto* instanceContext = (instance && instance->m_impl->context) ? &*instance->m_impl->context : nullptr;
 
-    if (instance && instance->m_impl->context)
-        return getDevices(*instance->m_impl->context);
+    std::vector<AudioDevice::DeviceEntry> result;
 
-    // Otherwise, construct a temporary context
-    ma_context context{};
+    for (const DeviceEntryImpl& deviceEntryImpl : getAvailableDevicesImpl(instanceContext))
+        result.push_back({deviceEntryImpl.name, deviceEntryImpl.isDefault});
 
-    if (const auto result = ma_context_init(nullptr, 0, nullptr, &context); result != MA_SUCCESS)
-    {
-        err() << "Failed to initialize the audio playback context: " << ma_result_description(result) << std::endl;
-        return {};
-    }
-
-    auto deviceList = getDevices(context);
-    ma_context_uninit(&context);
-    return deviceList;
+    return result;
 }
 
 
@@ -322,27 +371,40 @@ std::optional<std::string> AudioDevice::getDevice()
 
 
 ////////////////////////////////////////////////////////////
-AudioDevice::ResourceEntryIter AudioDevice::registerResource(void*               resource,
-                                                             ResourceEntry::Func deinitializeFunc,
-                                                             ResourceEntry::Func reinitializeFunc)
+AudioDevice::ResourceEntryIndex AudioDevice::registerResource(void*               resource,
+                                                              ResourceEntry::Func deinitializeFunc,
+                                                              ResourceEntry::Func reinitializeFunc)
 {
     // There should always be an AudioDevice instance when registerResource is called
     auto* instance = getInstance();
     assert(instance && "AudioDevice instance should exist when calling AudioDevice::registerResource");
     const std::lock_guard lock(instance->m_impl->resourcesMutex);
-    return instance->m_impl->resources.insert(instance->m_impl->resources.end(),
-                                              {resource, deinitializeFunc, reinitializeFunc});
+
+    auto& resources = instance->m_impl->resources;
+
+    for (ResourceEntryIndex i = 0; i < resources.size(); ++i)
+        if (!resources[i].has_value())
+            return i;
+
+    resources.emplace_back(ResourceEntry{resource, deinitializeFunc, reinitializeFunc});
+    return resources.size() - 1;
 }
 
 
 ////////////////////////////////////////////////////////////
-void AudioDevice::unregisterResource(AudioDevice::ResourceEntryIter resourceEntry)
+void AudioDevice::unregisterResource(AudioDevice::ResourceEntryIndex resourceEntryIndex)
 {
     // There should always be an AudioDevice instance when unregisterResource is called
     auto* instance = getInstance();
     assert(instance && "AudioDevice instance should exist when calling AudioDevice::unregisterResource");
     const std::lock_guard lock(instance->m_impl->resourcesMutex);
-    instance->m_impl->resources.erase(resourceEntry);
+
+    auto& resources = instance->m_impl->resources;
+
+    auto it = resources.begin() + static_cast<std::vector<ResourceEntry>::difference_type>(resourceEntryIndex);
+    assert(it->has_value() && "Attempted to unregister previously erased audio resource");
+
+    resources.erase(it);
 }
 
 
@@ -485,30 +547,9 @@ Vector3f AudioDevice::getUpVector()
 
 
 ////////////////////////////////////////////////////////////
-std::optional<ma_device_id> AudioDevice::getSelectedDeviceId() const
-{
-    const auto devices    = getAvailableDevices();
-    auto       deviceName = getDevice();
-
-    // If no device has been selected by the user yet, use the default device
-    if (!deviceName)
-        deviceName = PlaybackDevice::getDefaultDevice();
-
-    auto iter = std::find_if(devices.begin(),
-                             devices.end(),
-                             [&](const auto& device) { return device.name == deviceName; });
-
-    if (iter != devices.end())
-        return iter->id;
-
-    return std::nullopt;
-}
-
-
-////////////////////////////////////////////////////////////
 bool AudioDevice::initialize()
 {
-    const auto deviceId = getSelectedDeviceId();
+    const auto deviceId = getSelectedDeviceId(m_impl->context.has_value() ? &*m_impl->context : nullptr);
 
     // Create the playback device
     m_impl->playbackDevice.emplace();

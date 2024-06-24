@@ -121,17 +121,15 @@ MiniaudioUtils::SoundBase::SoundBase(const ma_data_source_vtable&     dataSource
     if (const ma_result result = ma_data_source_init(&config, &dataSourceBase); result != MA_SUCCESS)
         err() << "Failed to initialize audio data source: " << ma_result_description(result) << std::endl;
 
-    resourceEntryIter = priv::AudioDevice::registerResource(
-        this,
-        [](void* ptr) { static_cast<SoundBase*>(ptr)->deinitialize(); },
-        reinitializeFunc);
+    resourceEntryIndex = priv::AudioDevice::
+        registerResource(this, [](void* ptr) { static_cast<SoundBase*>(ptr)->deinitialize(); }, reinitializeFunc);
 }
 
 
 ////////////////////////////////////////////////////////////
 MiniaudioUtils::SoundBase::~SoundBase()
 {
-    priv::AudioDevice::unregisterResource(resourceEntryIter);
+    priv::AudioDevice::unregisterResource(resourceEntryIndex);
     ma_sound_uninit(&sound);
     ma_node_uninit(&effectNode, nullptr);
     ma_data_source_uninit(&dataSourceBase);
