@@ -664,11 +664,11 @@ SFML_GRAPHICS_API void swap(Texture& left, Texture& right) noexcept;
 /// // Load a texture from a file
 /// const auto texture = sf::Texture::loadFromFile("texture.png").value();
 ///
-/// // Assign it to a sprite
-/// sf::Sprite sprite(texture);
+/// // Create a sprite covering the entirety of the texture
+/// sf::Sprite sprite(texture.getRect());
 ///
-/// // Draw the textured sprite
-/// window.draw(sprite);
+/// // Draw the sprite with the intended texture
+/// window.draw(sprite, texture);
 /// \endcode
 ///
 /// \code
@@ -678,8 +678,8 @@ SFML_GRAPHICS_API void swap(Texture& left, Texture& right) noexcept;
 /// // Create an empty texture
 /// auto texture = sf::Texture::create({640, 480}).value();
 ///
-/// // Create a sprite that will display the texture
-/// sf::Sprite sprite(texture);
+/// // Create a sprite covering the entirety of the texture
+/// sf::Sprite sprite(texture.getRect());
 ///
 /// while (...) // the main loop
 /// {
@@ -689,8 +689,8 @@ SFML_GRAPHICS_API void swap(Texture& left, Texture& right) noexcept;
 ///     std::uint8_t* pixels = ...; // get a fresh chunk of pixels (the next frame of a movie, for example)
 ///     texture.update(pixels);
 ///
-///     // draw it
-///     window.draw(sprite);
+///     // draw the sprite with the intended texture
+///     window.draw(sprite, texture);
 ///
 ///     ...
 /// }
