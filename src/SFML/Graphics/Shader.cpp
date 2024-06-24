@@ -31,8 +31,6 @@
 #include <SFML/Graphics/Shader.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
-#include <SFML/Window/GlResource.hpp>
-
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InputStream.hpp>
 #include <SFML/System/Utils.hpp>
@@ -969,7 +967,7 @@ bool Shader::isGeometryAvailable()
 
 
 ////////////////////////////////////////////////////////////
-Shader::Shader(unsigned int shaderProgram) : m_shaderProgram(shaderProgram)
+Shader::Shader(priv::PassKey<Shader>&&, unsigned int shaderProgram) : m_shaderProgram(shaderProgram)
 {
 }
 
@@ -1106,7 +1104,7 @@ std::optional<Shader> Shader::compile(std::string_view vertexShaderCode,
     // in all contexts immediately (solves problems in multi-threaded apps)
     glCheck(glFlush());
 
-    return Shader(castFromGlHandle(shaderProgram));
+    return std::make_optional<Shader>(priv::PassKey<Shader>{}, castFromGlHandle(shaderProgram));
 }
 
 
@@ -1400,7 +1398,7 @@ bool Shader::isGeometryAvailable()
 
 
 ////////////////////////////////////////////////////////////
-Shader::Shader(unsigned int shaderProgram) : m_shaderProgram(shaderProgram)
+Shader::Shader(priv::PassKey<Shader>&&, unsigned int shaderProgram) : m_shaderProgram(shaderProgram)
 {
 }
 

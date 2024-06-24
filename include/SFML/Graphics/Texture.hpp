@@ -35,6 +35,7 @@
 #include <SFML/Window/GlResource.hpp>
 
 #include <SFML/System/LifetimeTracking.hpp>
+#include <SFML/System/PassKey.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #include <filesystem>
@@ -548,14 +549,18 @@ private:
     friend class RenderTexture;
     friend class RenderTarget;
 
+public:
     ////////////////////////////////////////////////////////////
+    /// \private
+    ///
     /// \brief Default constructor
     ///
     /// Creates an empty texture.
     ///
     ////////////////////////////////////////////////////////////
-    Texture(const Vector2u& size, const Vector2u& actualSize, unsigned int texture, bool sRgb);
+    Texture(priv::PassKey<Texture>&&, const Vector2u& size, const Vector2u& actualSize, unsigned int texture, bool sRgb);
 
+private:
     ////////////////////////////////////////////////////////////
     /// \brief Get a valid image size according to hardware support
     ///

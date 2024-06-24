@@ -29,6 +29,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/Export.hpp>
 
+#include <SFML/System/PassKey.hpp>
 #include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
 
@@ -195,12 +196,16 @@ public:
 private:
     friend class WindowBase;
 
+public:
     ////////////////////////////////////////////////////////////
+    /// \private
+    ///
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    Cursor();
+    Cursor(priv::PassKey<Cursor>&&);
 
+private:
     ////////////////////////////////////////////////////////////
     /// \brief Get access to the underlying implementation
     ///
