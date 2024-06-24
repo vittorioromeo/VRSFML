@@ -117,6 +117,7 @@ int main()
         // We draw the first rectangle with comparison set to always so that it will definitely draw and update (Replace)
         // the stencil buffer values of its pixels to the specified reference value.
         window.draw(red,
+                    /* texture */ nullptr,
                     sf::StencilMode{sf::StencilComparison::Always, sf::StencilUpdateOperation::Replace, 3, ~0u, false});
 
         // Just like the first, we draw the second rectangle with comparison set to always so that it will definitely
@@ -124,6 +125,7 @@ int main()
         // In the case of pixels overlapping the first rectangle, because we specify Always as the comparison, it is
         // as if we are drawing using the painter's algorithm, i.e. newer pixels overwrite older pixels.
         window.draw(green,
+                    /* texture */ nullptr,
                     sf::StencilMode{sf::StencilComparison::Always, sf::StencilUpdateOperation::Replace, 1, ~0u, false});
 
         // Now comes the magic. We want to draw the third rectangle so it is behind i.e. does not overwrite pixels of the
@@ -134,6 +136,7 @@ int main()
         // second rectangle. The stencil update operation for this draw operation is not significant in any way since this is
         // the last draw call in the frame.
         window.draw(blue,
+                    /* texture */ nullptr,
                     sf::StencilMode{sf::StencilComparison::Greater, sf::StencilUpdateOperation::Replace, 2, ~0u, false});
 
         // Display things on screen

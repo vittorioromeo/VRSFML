@@ -88,30 +88,6 @@ sf::FloatRect getVertexRangeBounds(const std::vector<sf::Vertex>& data)
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-void Shape::setTexture(const Texture* texture, bool resetRect)
-{
-    if (texture)
-    {
-        // Recompute the texture area if requested, or if there was no texture & rect before
-        if (resetRect || (!m_texture && (m_textureRect == IntRect())))
-            setTextureRect(IntRect({0, 0}, Vector2i(texture->getSize())));
-    }
-
-    // Assign the new texture
-    m_texture = texture;
-
-    SFML_UPDATE_LIFETIME_DEPENDANT(Texture, Shape, m_texture);
-}
-
-
-////////////////////////////////////////////////////////////
-const Texture* Shape::getTexture() const
-{
-    return m_texture;
-}
-
-
-////////////////////////////////////////////////////////////
 void Shape::setTextureRect(const IntRect& rect)
 {
     m_textureRect = rect;
@@ -269,25 +245,6 @@ void Shape::update()
 
     // Outline
     updateOutline();
-}
-
-
-////////////////////////////////////////////////////////////
-void Shape::draw(RenderTarget& target, RenderStates states) const
-{
-    states.transform *= getTransform();
-    states.coordinateType = CoordinateType::Pixels;
-
-    // Render the inside
-    states.texture = m_texture;
-    target.draw(m_vertices, PrimitiveType::TriangleFan, states);
-
-    // Render the outline
-    if (m_outlineThickness != 0)
-    {
-        states.texture = nullptr;
-        target.draw(m_outlineVertices, PrimitiveType::TriangleStrip, states);
-    }
 }
 
 

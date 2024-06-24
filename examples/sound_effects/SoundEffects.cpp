@@ -56,9 +56,7 @@ std::filesystem::path resourcesDir()
 class Effect
 {
 public:
-    virtual ~Effect()
-    {
-    }
+    virtual ~Effect() = default;
 
     const std::string& getName() const
     {
@@ -111,12 +109,12 @@ public:
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
-        target.draw(m_listener, states);
+        target.draw(m_listener, /* texture */ nullptr, states);
 
         states.transform = sf::Transform::Identity;
         states.transform.translate(m_position);
 
-        target.draw(m_soundShape, states);
+        target.draw(m_soundShape, /* texture */ nullptr, states);
     }
 
     void start() override
@@ -286,10 +284,10 @@ public:
         statesCopy.transform = sf::Transform::Identity;
         statesCopy.transform.translate(m_position);
 
-        target.draw(m_soundConeOuter, statesCopy);
-        target.draw(m_soundConeInner, statesCopy);
-        target.draw(m_soundShape, statesCopy);
-        target.draw(m_listener, states);
+        target.draw(m_soundConeOuter, /* texture */ nullptr, statesCopy);
+        target.draw(m_soundConeInner, /* texture */ nullptr, statesCopy);
+        target.draw(m_soundShape, /* texture */ nullptr, statesCopy);
+        target.draw(m_listener, /* texture */ nullptr, states);
         target.draw(m_text, states);
     }
 
@@ -527,8 +525,8 @@ public:
         statesCopy.transform = sf::Transform::Identity;
         statesCopy.transform.translate(m_position - sf::Vector2f({20.f, 0.f}));
 
-        target.draw(m_listener, states);
-        target.draw(m_soundShape, statesCopy);
+        target.draw(m_listener, /* texture */ nullptr, states);
+        target.draw(m_soundShape, /* texture */ nullptr, statesCopy);
         target.draw(m_currentVelocity, states);
         target.draw(m_currentFactor, states);
     }
@@ -603,12 +601,12 @@ public:
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
-        target.draw(m_listener, states);
+        target.draw(m_listener, /* texture */ nullptr, states);
 
         states.transform = sf::Transform::Identity;
         states.transform.translate(m_position);
 
-        target.draw(m_soundShape, states);
+        target.draw(m_soundShape, /* texture */ nullptr, states);
         target.draw(m_enabledText);
         target.draw(m_instructions);
     }

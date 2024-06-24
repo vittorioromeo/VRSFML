@@ -35,7 +35,6 @@
 #include <SFML/Graphics/Transformable.hpp>
 #include <SFML/Graphics/Vertex.hpp>
 
-#include <SFML/System/LifetimeTracking.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #include <vector>
@@ -45,7 +44,6 @@
 
 namespace sf
 {
-class Texture;
 class RenderTarget;
 
 ////////////////////////////////////////////////////////////
@@ -90,28 +88,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     Shape& operator=(Shape&&) noexcept = default;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Change the source texture of the shape
-    ///
-    /// The \a texture argument refers to a texture that must
-    /// exist as long as the shape uses it. Indeed, the shape
-    /// doesn't store its own copy of the texture, but rather keeps
-    /// a pointer to the one that you passed to this function.
-    /// If the source texture is destroyed and the shape tries to
-    /// use it, the behavior is undefined.
-    /// \a texture can be a null pointer to disable texturing.
-    /// If \a resetRect is true, the TextureRect property of
-    /// the shape is automatically adjusted to the size of the new
-    /// texture. If it is false, the texture rect is left unchanged.
-    ///
-    /// \param texture   New texture
-    /// \param resetRect Should the texture rect be reset to the size of the new texture?
-    ///
-    /// \see getTexture, setTextureRect
-    ///
-    ////////////////////////////////////////////////////////////
-    void setTexture(const Texture* texture, bool resetRect = false);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the sub-rectangle of the texture that the shape will display
@@ -170,20 +146,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void setOutlineThickness(float thickness);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the source texture of the shape
-    ///
-    /// If the shape has no source texture, a null pointer is returned.
-    /// The returned pointer is const, which means that you can't
-    /// modify the texture when you retrieve it with this function.
-    ///
-    /// \return Pointer to the shape's texture
-    ///
-    /// \see setTexture
-    ///
-    ////////////////////////////////////////////////////////////
-    const Texture* getTexture() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the sub-rectangle of the texture displayed by the shape
@@ -299,15 +261,6 @@ public:
     ////////////////////////////////////////////////////////////
     FloatRect getGlobalBounds() const;
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Draw the shape to a render target
-    ///
-    /// \param target Render target to draw to
-    /// \param states Current render states
-    ///
-    ////////////////////////////////////////////////////////////
-    void draw(RenderTarget& target, RenderStates states) const;
-
 protected:
     ////////////////////////////////////////////////////////////
     /// \brief Recompute the internal geometry of the shape
@@ -320,6 +273,8 @@ protected:
     void update();
 
 private:
+    friend RenderTarget;
+
     ////////////////////////////////////////////////////////////
     /// \brief Update the fill vertices' color
     ///
@@ -347,7 +302,6 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    const Texture*      m_texture{};                  //!< Texture of the shape
     IntRect             m_textureRect;                //!< Rectangle defining the area of the source texture to display
     Color               m_fillColor{Color::White};    //!< Fill color
     Color               m_outlineColor{Color::White}; //!< Outline color
@@ -356,11 +310,6 @@ private:
     std::vector<Vertex> m_outlineVertices;            //!< Vertex array containing the outline geometry
     FloatRect           m_insideBounds;               //!< Bounding rectangle of the inside (fill)
     FloatRect           m_bounds;                     //!< Bounding rectangle of the whole shape (outline + fill)
-
-    ////////////////////////////////////////////////////////////
-    // Lifetime tracking
-    ////////////////////////////////////////////////////////////
-    SFML_DEFINE_LIFETIME_DEPENDANT(Texture);
 };
 
 } // namespace sf

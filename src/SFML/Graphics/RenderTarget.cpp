@@ -29,6 +29,7 @@
 #include <SFML/Graphics/GLExtensions.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Shader.hpp>
+#include <SFML/Graphics/Shape.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/VertexBuffer.hpp>
@@ -342,7 +343,26 @@ void RenderTarget::draw(const Sprite& sprite, const Texture& texture, RenderStat
     states.transform *= sprite.getTransform();
     states.coordinateType = CoordinateType::Pixels;
 
-    draw(sprite.m_vertices.data(), sprite.m_vertices.size(), PrimitiveType::TriangleStrip, states);
+    draw(sprite.m_vertices, PrimitiveType::TriangleStrip, states);
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::draw(const Shape& shape, const Texture* texture, RenderStates states)
+{
+    states.transform *= shape.getTransform();
+    states.coordinateType = CoordinateType::Pixels;
+
+    // Render the inside
+    states.texture = texture;
+    draw(shape.m_vertices, PrimitiveType::TriangleFan, states);
+
+    // Render the outline
+    if (shape.m_outlineThickness != 0)
+    {
+        states.texture = nullptr;
+        draw(shape.m_outlineVertices, PrimitiveType::TriangleStrip, states);
+    }
 }
 
 

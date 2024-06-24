@@ -287,9 +287,9 @@ int main()
         if (isPlaying)
         {
             // Draw the paddles and the ball
-            window.draw(leftPaddle);
-            window.draw(rightPaddle);
-            window.draw(ball);
+            window.draw(leftPaddle, /* texture */ nullptr);
+            window.draw(rightPaddle, /* texture */ nullptr);
+            window.draw(ball, /* texture */ nullptr);
         }
         else
         {
