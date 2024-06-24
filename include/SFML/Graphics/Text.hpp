@@ -30,7 +30,6 @@
 #include <SFML/Graphics/Export.hpp>
 
 #include <SFML/Graphics/Color.hpp>
-#include <SFML/Graphics/Drawable.hpp>
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/Transformable.hpp>
@@ -55,7 +54,7 @@ class RenderTarget;
 /// \brief Graphical text that can be drawn to a render target
 ///
 ////////////////////////////////////////////////////////////
-class SFML_GRAPHICS_API Text : public Drawable, public Transformable
+class SFML_GRAPHICS_API Text : public Transformable
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -392,7 +391,6 @@ public:
     ////////////////////////////////////////////////////////////
     FloatRect getGlobalBounds() const;
 
-private:
     ////////////////////////////////////////////////////////////
     /// \brief Draw the text to a render target
     ///
@@ -400,8 +398,9 @@ private:
     /// \param states Current render states
     ///
     ////////////////////////////////////////////////////////////
-    void draw(RenderTarget& target, RenderStates states) const override;
+    void draw(RenderTarget& target, RenderStates states) const;
 
+private:
     ////////////////////////////////////////////////////////////
     /// \brief Make sure the text's geometry is updated
     ///

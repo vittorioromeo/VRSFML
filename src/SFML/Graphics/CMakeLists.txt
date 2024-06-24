@@ -54,7 +54,6 @@ source_group("" FILES ${SRC})
 
 # drawables sources
 set(DRAWABLES_SRC
-    ${INCROOT}/Drawable.hpp
     ${SRCROOT}/Shape.cpp
     ${INCROOT}/Shape.hpp
     ${SRCROOT}/CircleShape.cpp

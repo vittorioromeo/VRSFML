@@ -178,14 +178,13 @@ struct SFML_GRAPHICS_API RenderStates
 /// window.draw(sprite, shader);
 /// \endcode
 ///
-/// When you're inside the Draw function of a drawable
-/// object (inherited from sf::Drawable), you can
-/// either pass the render states unmodified, or change
-/// some of them.
+/// When you're inside the draw function of a drawable
+/// object, you can either pass the render states unmodified,
+/// or change some of them.
 /// For example, a transformable object will combine the
 /// current transform with its own transform. A sprite will
 /// set its texture. Etc.
 ///
-/// \see sf::RenderTarget, sf::Drawable
+/// \see sf::RenderTarget
 ///
 ////////////////////////////////////////////////////////////

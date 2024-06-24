@@ -25,7 +25,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Drawable.hpp>
 #include <SFML/Graphics/GLCheck.hpp>
 #include <SFML/Graphics/GLExtensions.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
@@ -333,13 +332,6 @@ Vector2i RenderTarget::mapCoordsToPixel(const Vector2f& point, const View& view)
     const FloatRect viewport = FloatRect(getViewport(view));
     return Vector2i((normalized.cwiseMul({1, -1}) + sf::Vector2f(1, 1)).cwiseDiv({2, 2}).cwiseMul(viewport.size) +
                     viewport.position);
-}
-
-
-////////////////////////////////////////////////////////////
-void RenderTarget::draw(const Drawable& drawable, const RenderStates& states)
-{
-    drawable.draw(*this, states);
 }
 
 

@@ -3,7 +3,6 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics/ConvexShape.hpp>
-#include <SFML/Graphics/Drawable.hpp>
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
@@ -54,17 +53,20 @@ std::filesystem::path resourcesDir()
 ////////////////////////////////////////////////////////////
 // Base class for effects
 ////////////////////////////////////////////////////////////
-class Effect : public sf::Drawable
+class Effect
 {
 public:
+    virtual ~Effect()
+    {
+    }
+
     const std::string& getName() const
     {
         return m_name;
     }
 
-    virtual void update(float time, float x, float y) = 0;
-
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override = 0;
+    virtual void update(float time, float x, float y)                          = 0;
+    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const = 0;
 
     virtual void start() = 0;
     virtual void stop()  = 0;
