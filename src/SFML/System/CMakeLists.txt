@@ -38,6 +38,7 @@ set(SRC
     ${INCROOT}/PassKey.hpp
     ${SRCROOT}/LifetimeTracking.cpp
     ${INCROOT}/LifetimeTracking.hpp
+    ${INCROOT}/Variant.hpp
 )
 source_group("" FILES ${SRC})
 
