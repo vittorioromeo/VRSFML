@@ -34,6 +34,7 @@
 #include <SFML/System/Vector2.hpp>
 
 #include <cstddef>
+#include <array>
 
 
 namespace sf
@@ -80,7 +81,7 @@ public:
     ///         shapes, this number is always 4.
     ///
     ////////////////////////////////////////////////////////////
-    std::size_t getPointCount() const override;
+    std::size_t getPointCount() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a point of the rectangle
@@ -95,7 +96,7 @@ public:
     /// \return index-th point of the shape
     ///
     ////////////////////////////////////////////////////////////
-    Vector2f getPoint(std::size_t index) const override;
+    Vector2f getPoint(std::size_t index) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the geometric center of the rectangle
@@ -107,13 +108,14 @@ public:
     /// \return The geometric center of the shape
     ///
     ////////////////////////////////////////////////////////////
-    Vector2f getGeometricCenter() const override;
+    Vector2f getGeometricCenter() const;
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2f m_size; //!< Size of the rectangle
+    Vector2f                m_size;   //!< Size of the rectangle
+    std::array<Vector2f, 4> m_points; //!< Points composing the rectangle
 };
 
 } // namespace sf

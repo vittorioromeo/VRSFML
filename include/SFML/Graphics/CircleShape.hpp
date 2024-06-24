@@ -92,7 +92,7 @@ public:
     /// \see setPointCount
     ///
     ////////////////////////////////////////////////////////////
-    std::size_t getPointCount() const override;
+    std::size_t getPointCount() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a point of the circle
@@ -107,7 +107,7 @@ public:
     /// \return index-th point of the shape
     ///
     ////////////////////////////////////////////////////////////
-    Vector2f getPoint(std::size_t index) const override;
+    Vector2f getPoint(std::size_t index) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the geometric center of the circle
@@ -119,14 +119,20 @@ public:
     /// \return The geometric center of the shape
     ///
     ////////////////////////////////////////////////////////////
-    Vector2f getGeometricCenter() const override;
+    Vector2f getGeometricCenter() const;
 
 private:
     ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    void update(float radius, std::size_t pointCount);
+
+    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    float       m_radius;     //!< Radius of the circle
-    std::size_t m_pointCount; //!< Number of points composing the circle
+    float                 m_radius; //!< Radius of the circle
+    std::vector<Vector2f> m_points; //!< Points composing the circle
 };
 
 } // namespace sf
