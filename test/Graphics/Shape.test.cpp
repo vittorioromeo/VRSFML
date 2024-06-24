@@ -14,42 +14,28 @@ class TriangleShape : public sf::Shape
 public:
     explicit TriangleShape(const sf::Vector2f& size) : m_size(size)
     {
-        update();
-    }
+        m_points[0] = {m_size.x / 2, 0};
+        m_points[1] = {0, m_size.y};
+        m_points[2] = {m_size.x, m_size.y};
 
-    std::size_t getPointCount() const override
-    {
-        return 3;
-    }
-
-    sf::Vector2f getPoint(std::size_t index) const override
-    {
-        switch (index)
-        {
-            default:
-            case 0:
-                return {m_size.x / 2, 0};
-            case 1:
-                return {0, m_size.y};
-            case 2:
-                return {m_size.x, m_size.y};
-        }
+        update(m_points.data(), 3);
     }
 
 private:
-    sf::Vector2f m_size;
+    sf::Vector2f                m_size;
+    std::array<sf::Vector2f, 3> m_points;
 };
 
 TEST_CASE("[Graphics] sf::Shape", runDisplayTests())
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(!std::is_constructible_v<sf::Shape>);
-        STATIC_CHECK(!std::is_copy_constructible_v<sf::Shape>);
+        STATIC_CHECK(std::is_constructible_v<sf::Shape>);
+        STATIC_CHECK(std::is_copy_constructible_v<sf::Shape>);
         STATIC_CHECK(std::is_copy_assignable_v<sf::Shape>);
-        STATIC_CHECK(!std::is_move_constructible_v<sf::Shape>);
+        STATIC_CHECK(std::is_move_constructible_v<sf::Shape>);
         STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Shape>);
-        STATIC_CHECK(std::has_virtual_destructor_v<sf::Shape>);
+        STATIC_CHECK(!std::has_virtual_destructor_v<sf::Shape>);
     }
 
     SECTION("Default constructor")
@@ -89,16 +75,6 @@ TEST_CASE("[Graphics] sf::Shape", runDisplayTests())
         TriangleShape triangleShape({});
         triangleShape.setOutlineThickness(3.14f);
         CHECK(triangleShape.getOutlineThickness() == 3.14f);
-    }
-
-    SECTION("Virtual functions: getPoint, getPointCount, getGeometricCenter")
-    {
-        const TriangleShape triangleShape({2, 2});
-        CHECK(triangleShape.getPointCount() == 3);
-        CHECK(triangleShape.getPoint(0) == sf::Vector2f(1, 0));
-        CHECK(triangleShape.getPoint(1) == sf::Vector2f(0, 2));
-        CHECK(triangleShape.getPoint(2) == sf::Vector2f(2, 2));
-        CHECK(triangleShape.getGeometricCenter() == sf::Vector2f(1.f, 4.f / 3.f));
     }
 
     SECTION("Get bounds")

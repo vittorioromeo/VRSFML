@@ -74,7 +74,7 @@ public:
     /// \see setPointCount
     ///
     ////////////////////////////////////////////////////////////
-    std::size_t getPointCount() const override;
+    std::size_t getPointCount() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the position of a point
@@ -111,7 +111,19 @@ public:
     /// \see setPoint
     ///
     ////////////////////////////////////////////////////////////
-    Vector2f getPoint(std::size_t index) const override;
+    Vector2f getPoint(std::size_t index) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the geometric center of the convex shape
+    ///
+    /// The returned point is in local coordinates, that is,
+    /// the shape's transforms (position, rotation, scale) are
+    /// not taken into account.
+    ///
+    /// \return The geometric center of the shape
+    ///
+    ////////////////////////////////////////////////////////////
+    Vector2f getGeometricCenter() const;
 
 private:
     ////////////////////////////////////////////////////////////

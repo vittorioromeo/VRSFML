@@ -54,42 +54,6 @@ class SFML_GRAPHICS_API Shape : public Transformable
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Default construcftor
-    ///
-    ////////////////////////////////////////////////////////////
-    Shape() = default;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Virtual destructor
-    ///
-    ////////////////////////////////////////////////////////////
-    virtual ~Shape() = default;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Copy constructor
-    ///
-    ////////////////////////////////////////////////////////////
-    Shape(const Shape&) = default;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Copy assignment
-    ///
-    ////////////////////////////////////////////////////////////
-    Shape& operator=(const Shape&) = default;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Move constructor
-    ///
-    ////////////////////////////////////////////////////////////
-    Shape(Shape&&) noexcept = default;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Move assignment
-    ///
-    ////////////////////////////////////////////////////////////
-    Shape& operator=(Shape&&) noexcept = default;
-
-    ////////////////////////////////////////////////////////////
     /// \brief Set the sub-rectangle of the texture that the shape will display
     ///
     /// The texture rect is useful when you don't want to display
@@ -98,7 +62,7 @@ public:
     ///
     /// \param rect Rectangle defining the region of the texture to display
     ///
-    /// \see getTextureRect, setTexture
+    /// \see getTextureRect
     ///
     ////////////////////////////////////////////////////////////
     void setTextureRect(const IntRect& rect);
@@ -188,45 +152,6 @@ public:
     float getOutlineThickness() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the total number of points of the shape
-    ///
-    /// \return Number of points of the shape
-    ///
-    /// \see getPoint
-    ///
-    ////////////////////////////////////////////////////////////
-    virtual std::size_t getPointCount() const = 0;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get a point of the shape
-    ///
-    /// The returned point is in local coordinates, that is,
-    /// the shape's transforms (position, rotation, scale) are
-    /// not taken into account.
-    /// The result is undefined if \a index is out of the valid range.
-    ///
-    /// \param index Index of the point to get, in range [0 .. getPointCount() - 1]
-    ///
-    /// \return index-th point of the shape
-    ///
-    /// \see getPointCount
-    ///
-    ////////////////////////////////////////////////////////////
-    virtual Vector2f getPoint(std::size_t index) const = 0;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the geometric center of the shape
-    ///
-    /// The returned point is in local coordinates, that is,
-    /// the shape's transforms (position, rotation, scale) are
-    /// not taken into account.
-    ///
-    /// \return The geometric center of the shape
-    ///
-    ////////////////////////////////////////////////////////////
-    virtual Vector2f getGeometricCenter() const;
-
-    ////////////////////////////////////////////////////////////
     /// \brief Get the local bounding rectangle of the entity
     ///
     /// The returned rectangle is in local coordinates, which means
@@ -270,7 +195,7 @@ protected:
     /// getPointCount or getPoint is different).
     ///
     ////////////////////////////////////////////////////////////
-    void update();
+    void update(const sf::Vector2f* points, std::size_t pointCount);
 
 private:
     friend RenderTarget;
@@ -319,11 +244,8 @@ private:
 /// \class sf::Shape
 /// \ingroup graphics
 ///
-/// sf::Shape is a drawable class that allows to define and
-/// display a custom convex shape on a render target.
-/// It's only an abstract base, it needs to be specialized for
-/// concrete types of shapes (circle, rectangle, convex polygon,
-/// star, ...).
+/// sf::Shape is a non-polymorphic base class that allows to
+/// define and display a custom convex shape on a render target.
 ///
 /// In addition to the attributes provided by the specialized
 /// shape classes, a shape always has the following attributes:
@@ -337,11 +259,6 @@ private:
 /// \li the texture can be null
 /// \li the fill/outline colors can be sf::Color::Transparent
 /// \li the outline thickness can be zero
-///
-/// You can write your own derived shape class, there are only
-/// two virtual functions to override:
-/// \li getPointCount must return the number of points of the shape
-/// \li getPoint must return the points of the shape
 ///
 /// \see sf::RectangleShape, sf::CircleShape, sf::ConvexShape, sf::Transformable
 ///

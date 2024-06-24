@@ -30,7 +30,7 @@
 #include <SFML/Graphics/Shape.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
-#include <algorithm>
+#include <SFML/System/Vector2.hpp>
 
 #include <cassert>
 #include <cstddef>
@@ -136,7 +136,16 @@ const Color& Shape::getOutlineColor() const
 void Shape::setOutlineThickness(float thickness)
 {
     m_outlineThickness = thickness;
-    update(); // recompute everything because the whole shape must be offset
+
+    const std::size_t pointCount = m_vertices.size() - 2;
+
+    std::vector<Vector2f> points;
+    points.reserve(pointCount);
+
+    for (std::size_t i = 0; i < pointCount; ++i)
+        points.push_back(m_vertices[i + 1].position);
+
+    update(points.data(), pointCount); // recompute everything because the whole shape must be offset
 }
 
 
@@ -144,56 +153,6 @@ void Shape::setOutlineThickness(float thickness)
 float Shape::getOutlineThickness() const
 {
     return m_outlineThickness;
-}
-
-
-////////////////////////////////////////////////////////////
-Vector2f Shape::getGeometricCenter() const
-{
-    const auto count = getPointCount();
-
-    switch (count)
-    {
-        case 0:
-            assert(false && "Cannot calculate geometric center of shape with no points");
-            return Vector2f{};
-        case 1:
-            return getPoint(0);
-        case 2:
-            return (getPoint(0) + getPoint(1)) / 2.f;
-        default: // more than two points
-            Vector2f centroid;
-            float    twiceArea = 0;
-
-            auto previousPoint = getPoint(count - 1);
-            for (std::size_t i = 0; i < count; ++i)
-            {
-                const auto  currentPoint = getPoint(i);
-                const float product      = previousPoint.cross(currentPoint);
-                twiceArea += product;
-                centroid += (currentPoint + previousPoint) * product;
-
-                previousPoint = currentPoint;
-            }
-
-            if (twiceArea != 0.f)
-            {
-                return centroid / 3.f / twiceArea;
-            }
-
-            // Fallback for no area - find the center of the bounding box
-            auto minPoint = getPoint(0);
-            auto maxPoint = minPoint;
-            for (std::size_t i = 1; i < count; ++i)
-            {
-                const auto currentPoint = getPoint(i);
-                minPoint.x              = std::min(minPoint.x, currentPoint.x);
-                maxPoint.x              = std::max(maxPoint.x, currentPoint.x);
-                minPoint.y              = std::min(minPoint.y, currentPoint.y);
-                maxPoint.y              = std::max(maxPoint.y, currentPoint.y);
-            }
-            return (maxPoint + minPoint) / 2.f;
-    }
 }
 
 
@@ -212,23 +171,23 @@ FloatRect Shape::getGlobalBounds() const
 
 
 ////////////////////////////////////////////////////////////
-void Shape::update()
+void Shape::update(const sf::Vector2f* points, const std::size_t pointCount)
 {
     // Get the total number of points of the shape
-    const std::size_t count = getPointCount();
-    if (count < 3)
+    if (pointCount < 3)
     {
         m_vertices.resize(0);
         m_outlineVertices.resize(0);
         return;
     }
 
-    m_vertices.resize(count + 2); // + 2 for center and repeated first point
+    m_vertices.resize(pointCount + 2); // + 2 for center and repeated first point
 
     // Position
-    for (std::size_t i = 0; i < count; ++i)
-        m_vertices[i + 1].position = getPoint(i);
-    m_vertices[count + 1].position = m_vertices[1].position;
+    for (std::size_t i = 0; i < pointCount; ++i)
+        m_vertices[i + 1].position = points[i];
+
+    m_vertices[pointCount + 1].position = m_vertices[1].position;
 
     // Update the bounding rectangle
     m_vertices[0]  = m_vertices[1]; // so that the result of getBounds() is correct
