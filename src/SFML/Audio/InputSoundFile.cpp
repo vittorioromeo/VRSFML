@@ -99,7 +99,12 @@ std::optional<InputSoundFile> InputSoundFile::openFromFile(const std::filesystem
         return std::nullopt;
     }
 
-    return InputSoundFile(std::move(reader), std::move(file), info->sampleCount, info->sampleRate, std::move(info->channelMap));
+    return std::make_optional<InputSoundFile>(priv::PassKey<InputSoundFile>{},
+                                              std::move(reader),
+                                              std::move(file),
+                                              info->sampleCount,
+                                              info->sampleRate,
+                                              std::move(info->channelMap));
 }
 
 
@@ -115,7 +120,7 @@ std::optional<InputSoundFile> InputSoundFile::openFromMemory(const void* data, s
     }
 
     // Wrap the memory file into a stream
-    auto memory = std::make_unique<MemoryInputStream>(data, sizeInBytes);
+    auto memory = priv::makeUnique<MemoryInputStream>(data, sizeInBytes);
 
     // Pass the stream to the reader
     auto info = reader->open(*memory);
@@ -125,7 +130,12 @@ std::optional<InputSoundFile> InputSoundFile::openFromMemory(const void* data, s
         return std::nullopt;
     }
 
-    return InputSoundFile(std::move(reader), std::move(memory), info->sampleCount, info->sampleRate, std::move(info->channelMap));
+    return std::make_optional<InputSoundFile>(priv::PassKey<InputSoundFile>{},
+                                              std::move(reader),
+                                              std::move(memory),
+                                              info->sampleCount,
+                                              info->sampleRate,
+                                              std::move(info->channelMap));
 }
 
 
@@ -155,7 +165,12 @@ std::optional<InputSoundFile> InputSoundFile::openFromStream(InputStream& stream
         return std::nullopt;
     }
 
-    return InputSoundFile(std::move(reader), {&stream, false}, info->sampleCount, info->sampleRate, std::move(info->channelMap));
+    return std::make_optional<InputSoundFile>(priv::PassKey<InputSoundFile>{},
+                                              std::move(reader),
+                                              priv::UniquePtr<InputStream, StreamDeleter>{&stream, false},
+                                              info->sampleCount,
+                                              info->sampleRate,
+                                              std::move(info->channelMap));
 }
 
 
@@ -262,6 +277,7 @@ void InputSoundFile::close()
 
 
 ////////////////////////////////////////////////////////////
+InputSoundFile::InputSoundFile(priv::PassKey<InputSoundFile>&&,
                                priv::UniquePtr<SoundFileReader>&&            reader,
                                priv::UniquePtr<InputStream, StreamDeleter>&& stream,
                                std::uint64_t                                 sampleCount,

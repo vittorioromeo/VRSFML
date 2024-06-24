@@ -149,14 +149,15 @@ std::optional<std::size_t> FileInputStream::getSize()
 
 
 ////////////////////////////////////////////////////////////
-FileInputStream::FileInputStream(std::unique_ptr<std::FILE, FileCloser>&& file) : m_file(std::move(file))
+FileInputStream::FileInputStream(priv::PassKey<FileInputStream>&&, priv::UniquePtr<std::FILE, FileCloser>&& file) :
+m_file(std::move(file))
 {
 }
 
 
 ////////////////////////////////////////////////////////////
 #ifdef SFML_SYSTEM_ANDROID
-FileInputStream::FileInputStream(std::unique_ptr<priv::ResourceStream>&& androidFile) :
+FileInputStream::FileInputStream(priv::PassKey<FileInputStream>&&, priv::UniquePtr<priv::ResourceStream>&& androidFile) :
 m_androidFile(std::move(androidFile))
 {
 }

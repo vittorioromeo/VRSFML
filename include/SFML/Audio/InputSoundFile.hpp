@@ -30,6 +30,8 @@
 #include <SFML/Audio/Export.hpp>
 
 #include <SFML/Audio/SoundFileReader.hpp>
+
+#include <SFML/System/PassKey.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
 #include <filesystem>
@@ -236,16 +238,21 @@ private:
         bool owned{true};
     };
 
+public:
     ////////////////////////////////////////////////////////////
+    /// \private
+    ///
     /// \brief Constructor from reader, stream, and attributes
     ///
     ////////////////////////////////////////////////////////////
+    InputSoundFile(priv::PassKey<InputSoundFile>&&,
                    priv::UniquePtr<SoundFileReader>&&            reader,
                    priv::UniquePtr<InputStream, StreamDeleter>&& stream,
                    std::uint64_t                                 sampleCount,
                    unsigned int                                  sampleRate,
                    std::vector<SoundChannel>&&                   channelMap);
 
+private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////

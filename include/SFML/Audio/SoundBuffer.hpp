@@ -32,6 +32,7 @@
 #include <SFML/Audio/SoundChannel.hpp>
 
 #include <SFML/System/LifetimeTracking.hpp>
+#include <SFML/System/PassKey.hpp>
 #include <SFML/System/Time.hpp>
 
 #include <filesystem>
@@ -244,11 +245,25 @@ public:
 private:
     friend class Sound;
 
+public:
     ////////////////////////////////////////////////////////////
+    /// \private
+    ///
     /// \brief Construct from vector of samples
     ///
     ////////////////////////////////////////////////////////////
-    explicit SoundBuffer(std::vector<std::int16_t>&& samples);
+    explicit SoundBuffer(priv::PassKey<SoundBuffer>&&, std::vector<std::int16_t>&& samples);
+
+private:
+    ////////////////////////////////////////////////////////////
+    /// \brief Load the sound buffer taking ownership of a vector of audio samples
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static std::optional<SoundBuffer> loadFromSamplesImpl(
+        std::vector<std::int16_t>&&      samples,
+        unsigned int                     channelCount,
+        unsigned int                     sampleRate,
+        const std::vector<SoundChannel>& channelMap);
 
     ////////////////////////////////////////////////////////////
     /// \brief Initialize the internal state after loading a new sound
@@ -299,6 +314,8 @@ private:
     std::vector<std::int16_t> m_samples;                        //!< Samples buffer
     unsigned int              m_sampleRate{44100};              //!< Number of samples per second
     std::vector<SoundChannel> m_channelMap{SoundChannel::Mono}; //!< The map of position in sample frame to sound channel
+    Time              m_duration;                               //!< Sound duration
+    mutable SoundList m_sounds;                                 //!< List of sounds that are using this buffer
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking
