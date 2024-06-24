@@ -24,7 +24,7 @@ target_include_directories(Catch2 SYSTEM INTERFACE ${CATCH2_INCLUDE_DIRS})
 # enable precompiled headers
 if (SFML_ENABLE_PCH)
     message(VERBOSE "enabling PCH for Catch2")
-    target_precompile_headers(Catch2 PRIVATE ${PROJECT_SOURCE_DIR}/src/SFML/PCH.hpp)
+    target_precompile_headers(Catch2 REUSE_FROM sfml-system)
 
     # necessary to find `WindowsHeader.hpp` on Windows
     target_include_directories(Catch2 PRIVATE ${PROJECT_SOURCE_DIR}/src)
