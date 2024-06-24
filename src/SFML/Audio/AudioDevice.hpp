@@ -31,12 +31,18 @@
 
 #include <SFML/System/UniquePtr.hpp>
 
-#include <miniaudio.h>
-
-#include <list>
 #include <optional>
 #include <string>
 #include <vector>
+
+#include <cstddef>
+
+
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+
+struct ma_engine;
 
 
 namespace sf::priv
@@ -88,9 +94,8 @@ public:
 
     struct DeviceEntry
     {
-        std::string  name;
-        ma_device_id id{};
-        bool         isDefault{};
+        std::string name;
+        bool        isDefault{};
     };
 
     ////////////////////////////////////////////////////////////
@@ -143,8 +148,7 @@ public:
         Func  reinitializeFunc{};
     };
 
-    using ResourceEntryList = std::list<ResourceEntry>;
-    using ResourceEntryIter = ResourceEntryList::const_iterator;
+    using ResourceEntryIndex = std::size_t;
 
     ////////////////////////////////////////////////////////////
     /// \brief Register an audio resource
@@ -164,9 +168,9 @@ public:
     /// \see unregisterResource
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static ResourceEntryIter registerResource(void*               resource,
-                                                            ResourceEntry::Func deinitializeFunc,
-                                                            ResourceEntry::Func reinitializeFunc);
+    [[nodiscard]] static ResourceEntryIndex registerResource(void*               resource,
+                                                             ResourceEntry::Func deinitializeFunc,
+                                                             ResourceEntry::Func reinitializeFunc);
 
     ////////////////////////////////////////////////////////////
     /// \brief Unregister an audio resource
@@ -176,7 +180,7 @@ public:
     /// \see registerResource
     ///
     ////////////////////////////////////////////////////////////
-    static void unregisterResource(ResourceEntryIter resourceEntry);
+    static void unregisterResource(ResourceEntryIndex resourceEntryIndex);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the global volume of all the sounds and musics
@@ -324,14 +328,6 @@ public:
     static Vector3f getUpVector();
 
 private:
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the device ID of the currently selected device
-    ///
-    /// \return The device ID of the currently selected device or `std::nullopt` if none could be found
-    ///
-    ////////////////////////////////////////////////////////////
-    std::optional<ma_device_id> getSelectedDeviceId() const;
-
     ////////////////////////////////////////////////////////////
     /// \brief Initialize the audio device and engine
     ///
