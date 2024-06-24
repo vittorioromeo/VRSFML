@@ -55,21 +55,12 @@ TEST_CASE("[Graphics] sf::Shape", runDisplayTests())
     SECTION("Default constructor")
     {
         const TriangleShape triangleShape({0, 0});
-        CHECK(triangleShape.getTexture() == nullptr);
         CHECK(triangleShape.getTextureRect() == sf::IntRect());
         CHECK(triangleShape.getFillColor() == sf::Color::White);
         CHECK(triangleShape.getOutlineColor() == sf::Color::White);
         CHECK(triangleShape.getOutlineThickness() == 0.0f);
         CHECK(triangleShape.getLocalBounds() == sf::FloatRect());
         CHECK(triangleShape.getGlobalBounds() == sf::FloatRect());
-    }
-
-    SECTION("Set/get texture")
-    {
-        const auto    texture = sf::Texture::create({64, 64}).value();
-        TriangleShape triangleShape({});
-        triangleShape.setTexture(&texture, true);
-        CHECK(triangleShape.getTexture() == &texture);
     }
 
     SECTION("Set/get texture rect")
@@ -131,56 +122,4 @@ TEST_CASE("[Graphics] sf::Shape", runDisplayTests())
             CHECK(triangleShape.getGlobalBounds() == Approx(sf::FloatRect({-7.2150f, -14.2400f}, {44.4300f, 59.2400f})));
         }
     }
-
-#ifdef SFML_ENABLE_LIFETIME_TRACKING
-    SECTION("Lifetime tracking")
-    {
-        SECTION("Return local from function")
-        {
-            const auto badFunction = []
-            {
-                const auto localTexture = sf::Texture::create({64, 64}).value();
-
-                TriangleShape localShape{{64, 64}};
-                localShape.setTexture(&localTexture);
-
-                return localShape;
-            };
-
-            const sf::priv::LifetimeDependee::TestingModeGuard guard;
-            CHECK(!guard.fatalErrorTriggered());
-
-            badFunction();
-
-            CHECK(guard.fatalErrorTriggered());
-        }
-
-        SECTION("Move struct holding both dependee and dependant")
-        {
-            struct BadStruct
-            {
-                sf::Texture   memberTexture{sf::Texture::create({64, 64}).value()};
-                TriangleShape memberShape{{64, 64}};
-
-                BadStruct()
-                {
-                    memberShape.setTexture(&memberTexture);
-                }
-            };
-
-            const sf::priv::LifetimeDependee::TestingModeGuard guard;
-            CHECK(!guard.fatalErrorTriggered());
-
-            std::optional<BadStruct> badStruct0;
-            badStruct0.emplace();
-            CHECK(!guard.fatalErrorTriggered());
-
-            const BadStruct badStruct1 = std::move(badStruct0.value());
-            CHECK(!guard.fatalErrorTriggered());
-
-            badStruct0.reset();
-            CHECK(guard.fatalErrorTriggered());
-        }
-    }
-#endif
 }

@@ -54,6 +54,7 @@ class Texture;
 class Transform;
 class VertexBuffer;
 class Sprite;
+class Shape;
 
 ////////////////////////////////////////////////////////////
 /// \brief Base class for all render targets (window, texture, ...)
@@ -306,7 +307,8 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename DrawableObject>
-    void draw(const DrawableObject& drawableObject, const RenderStates& states = RenderStates::Default)
+    auto draw(const DrawableObject& drawableObject, const RenderStates& states = RenderStates::Default)
+        -> decltype(drawableObject.draw(*this, states), void()) // for SFINAE
     {
         drawableObject.draw(*this, states);
     }
@@ -329,6 +331,17 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void draw(const Sprite&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw a shape object to the render target
+    ///
+    /// A texture associated with a shape can be passed while drawing.
+    ///
+    /// \param shape   Shape to draw
+    /// \param texture Texture associated with the shape
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const Shape& shape, const Texture* texture, RenderStates states = RenderStates::Default);
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by an array of vertices
