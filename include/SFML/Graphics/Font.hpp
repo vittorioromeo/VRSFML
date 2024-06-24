@@ -33,6 +33,7 @@
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
+#include <SFML/System/LifetimeTracking.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #include <filesystem>
@@ -56,6 +57,7 @@ class ResourceStream;
 namespace sf
 {
 class InputStream;
+class Text;
 
 ////////////////////////////////////////////////////////////
 /// \brief Class for loading and manipulating character fonts
@@ -383,14 +385,11 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::shared_ptr<FontHandles> m_fontHandles;    //!< Shared information about the internal font instance
-    bool                         m_isSmooth{true}; //!< Status of the smooth filter
-    Info                         m_info;           //!< Information about the font
-    mutable PageTable            m_pages;          //!< Table containing the glyphs pages by character size
-    mutable std::vector<std::uint8_t> m_pixelBuffer; //!< Pixel buffer holding a glyph's pixels before being written to the texture
-#ifdef SFML_SYSTEM_ANDROID
-    std::shared_ptr<priv::ResourceStream> m_stream; //!< Asset file streamer (if loaded from file)
-#endif
+
+    ////////////////////////////////////////////////////////////
+    // Lifetime tracking
+    ////////////////////////////////////////////////////////////
+    SFML_DEFINE_LIFETIME_DEPENDEE(Font, Text);
 };
 
 } // namespace sf
