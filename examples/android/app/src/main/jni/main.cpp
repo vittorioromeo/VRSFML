@@ -116,9 +116,10 @@ int main(int argc, char* argv[])
                  event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape))
             {
                 window.close();
+                break;
             }
 
-            else if (const auto* resized = event->getIf<sf::Event::Resized>())
+            if (const auto* resized = event->getIf<sf::Event::Resized>())
             {
                 const auto size = sf::Vector2f(resized->size);
                 view.setSize(size);

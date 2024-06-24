@@ -149,6 +149,7 @@ int main()
                  event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape))
             {
                 window.close();
+                break;
             }
 
             // Resize event: adjust the viewport
