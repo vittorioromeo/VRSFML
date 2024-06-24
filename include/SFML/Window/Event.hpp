@@ -366,6 +366,7 @@ extern template class ::sfvittorioromeo::tinyvariant<
     sf::Event::MouseButtonPressed,
     sf::Event::MouseButtonReleased,
     sf::Event::MouseMoved,
+    sf::Event::MouseMovedRaw,
     sf::Event::MouseEntered,
     sf::Event::MouseLeft,
     sf::Event::JoystickButtonPressed,
