@@ -34,9 +34,8 @@
 #include <SFML/Window/Mouse.hpp>
 #include <SFML/Window/Sensor.hpp>
 
+#include <SFML/System/Variant.hpp>
 #include <SFML/System/Vector2.hpp>
-
-#include <variant>
 
 
 namespace sf
@@ -305,49 +304,79 @@ public:
     template <typename EventSubtype>
     [[nodiscard]] const EventSubtype* getIf() const;
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Applies the specified `visitor` to the event
+    ///
+    /// \return Transparently forwards whatever `visitor` returns
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename Visitor>
+    decltype(auto) visit(Visitor&& visitor);
+
 private:
+    using VariantType = ::sfvittorioromeo::tinyvariant<
+        Closed,
+        Resized,
+        FocusLost,
+        FocusGained,
+        TextEntered,
+        KeyPressed,
+        KeyReleased,
+        MouseWheelScrolled,
+        MouseButtonPressed,
+        MouseButtonReleased,
+        MouseMoved,
+        MouseMovedRaw,
+        MouseEntered,
+        MouseLeft,
+        JoystickButtonPressed,
+        JoystickButtonReleased,
+        JoystickMoved,
+        JoystickConnected,
+        JoystickDisconnected,
+        TouchBegan,
+        TouchMoved,
+        TouchEnded,
+        SensorChanged>;
+
+
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::variant<Closed,
-                 Resized,
-                 FocusLost,
-                 FocusGained,
-                 TextEntered,
-                 KeyPressed,
-                 KeyReleased,
-                 MouseWheelScrolled,
-                 MouseButtonPressed,
-                 MouseButtonReleased,
-                 MouseMoved,
-                 MouseMovedRaw,
-                 MouseEntered,
-                 MouseLeft,
-                 JoystickButtonPressed,
-                 JoystickButtonReleased,
-                 JoystickMoved,
-                 JoystickConnected,
-                 JoystickDisconnected,
-                 TouchBegan,
-                 TouchMoved,
-                 TouchEnded,
-                 SensorChanged>
-        m_data; //!< Event data
+    VariantType m_data; //!< Event data
 
     ////////////////////////////////////////////////////////////
     // Helper functions
     ////////////////////////////////////////////////////////////
-    template <typename T, typename... Ts>
-    static constexpr bool isInParameterPack(const std::variant<Ts...>&)
-    {
-        return (std::is_same_v<T, Ts> || ...);
-    }
-
     template <typename T>
-    static constexpr bool isEventType = isInParameterPack<T>(decltype(m_data)());
+    static constexpr bool isEventSubtype = VariantType::index_of<T> != ::sfvittorioromeo::impl::bad_index;
 };
 
 } // namespace sf
+
+extern template class ::sfvittorioromeo::tinyvariant<
+    sf::Event::Closed,
+    sf::Event::Resized,
+    sf::Event::FocusLost,
+    sf::Event::FocusGained,
+    sf::Event::TextEntered,
+    sf::Event::KeyPressed,
+    sf::Event::KeyReleased,
+    sf::Event::MouseWheelScrolled,
+    sf::Event::MouseButtonPressed,
+    sf::Event::MouseButtonReleased,
+    sf::Event::MouseMoved,
+    sf::Event::MouseEntered,
+    sf::Event::MouseLeft,
+    sf::Event::JoystickButtonPressed,
+    sf::Event::JoystickButtonReleased,
+    sf::Event::JoystickMoved,
+    sf::Event::JoystickConnected,
+    sf::Event::JoystickDisconnected,
+    sf::Event::TouchBegan,
+    sf::Event::TouchMoved,
+    sf::Event::TouchEnded,
+    sf::Event::SensorChanged>;
 
 #include <SFML/Window/Event.inl>
 
