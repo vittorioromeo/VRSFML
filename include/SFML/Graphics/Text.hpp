@@ -92,7 +92,7 @@ public:
     /// \brief Disallow construction from a temporary font
     ///
     ////////////////////////////////////////////////////////////
-    Text(Font&& font, String string = "", unsigned int characterSize = 30) = delete;
+    Text(const Font&& font, String string = "", unsigned int characterSize = 30) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the text's string
