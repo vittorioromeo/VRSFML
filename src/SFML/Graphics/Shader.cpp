@@ -768,6 +768,78 @@ void Shader::setUniformArray(const std::string& name, const Glsl::Mat4* matrixAr
 
 
 ////////////////////////////////////////////////////////////
+void Shader::setUniformUnsafe(const std::string& name, float x)
+{
+    UnsafeUniformBinder binder(*this, name);
+    if (binder.location != -1)
+        glCheck(GLEXT_glUniform1f(binder.location, x));
+}
+
+
+////////////////////////////////////////////////////////////
+void Shader::setUniformUnsafe(const std::string& name, const Glsl::Vec2& v)
+{
+    UnsafeUniformBinder binder(*this, name);
+    if (binder.location != -1)
+        glCheck(GLEXT_glUniform2f(binder.location, v.x, v.y));
+}
+
+
+////////////////////////////////////////////////////////////
+void Shader::setUniformUnsafe(const std::string& name, const Glsl::Vec3& v)
+{
+    UnsafeUniformBinder binder(*this, name);
+    if (binder.location != -1)
+        glCheck(GLEXT_glUniform3f(binder.location, v.x, v.y, v.z));
+}
+
+
+////////////////////////////////////////////////////////////
+void Shader::setUniformUnsafe(const std::string& name, const Glsl::Vec4& v)
+{
+    UnsafeUniformBinder binder(*this, name);
+    if (binder.location != -1)
+        glCheck(GLEXT_glUniform4f(binder.location, v.x, v.y, v.z, v.w));
+}
+
+
+////////////////////////////////////////////////////////////
+void Shader::setUniformUnsafe(const std::string& name, int x)
+{
+    UnsafeUniformBinder binder(*this, name);
+    if (binder.location != -1)
+        glCheck(GLEXT_glUniform1i(binder.location, x));
+}
+
+
+////////////////////////////////////////////////////////////
+void Shader::setUniformUnsafe(const std::string& name, const Glsl::Ivec2& v)
+{
+    UnsafeUniformBinder binder(*this, name);
+    if (binder.location != -1)
+        glCheck(GLEXT_glUniform2i(binder.location, v.x, v.y));
+}
+
+
+////////////////////////////////////////////////////////////
+void Shader::setUniformUnsafe(const std::string& name, const Glsl::Ivec3& v)
+{
+    UnsafeUniformBinder binder(*this, name);
+    if (binder.location != -1)
+        glCheck(GLEXT_glUniform3i(binder.location, v.x, v.y, v.z));
+}
+
+
+////////////////////////////////////////////////////////////
+void Shader::setUniformUnsafe(const std::string& name, const Glsl::Ivec4& v)
+{
+    UnsafeUniformBinder binder(*this, name);
+    if (binder.location != -1)
+        glCheck(GLEXT_glUniform4i(binder.location, v.x, v.y, v.z, v.w));
+}
+
+
+////////////////////////////////////////////////////////////
 unsigned int Shader::getNativeHandle() const
 {
     return m_shaderProgram;
