@@ -210,6 +210,7 @@ int main()
                 {
                     exit = true;
                     window.close();
+                    break;
                 }
 
                 // Return key: toggle mipmapping
@@ -235,6 +236,7 @@ int main()
                 {
                     sRgb = !sRgb;
                     window.close();
+                    break;
                 }
 
                 // Adjust the viewport when the window is resized
