@@ -207,7 +207,7 @@ SFML_GRAPHICS_API bool operator!=(const StencilMode& left, const StencilMode& ri
 /// buffer and not the color buffer during a draw. The written stencil buffer
 /// value can then be used in subsequent draws as a masking region.
 ///
-/// In SFML, a stencil mode can be specified every time you draw a sf::Drawable
+/// In SFML, a stencil mode can be specified every time you draw a drawable
 /// object to a render target. It is part of the sf::RenderStates compound
 /// that is passed to the member function sf::RenderTarget::draw().
 ///

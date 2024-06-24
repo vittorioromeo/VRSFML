@@ -29,7 +29,6 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Export.hpp>
 
-#include <SFML/Graphics/Drawable.hpp>
 #include <SFML/Graphics/PrimitiveType.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
 
@@ -47,7 +46,7 @@ struct Vertex;
 /// \brief Vertex buffer storage for one or more 2D primitives
 ///
 ////////////////////////////////////////////////////////////
-class SFML_GRAPHICS_API VertexBuffer : public Drawable, private GlResource
+class SFML_GRAPHICS_API VertexBuffer : private GlResource
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -119,7 +118,7 @@ public:
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    ~VertexBuffer() override;
+    ~VertexBuffer();
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the vertex buffer
@@ -287,6 +286,15 @@ public:
     Usage getUsage() const;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Draw the vertex buffer to a render target
+    ///
+    /// \param target Render target to draw to
+    /// \param states Current render states
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(RenderTarget& target, RenderStates states) const;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Bind a vertex buffer for rendering
     ///
     /// This function is not part of the graphics API, it mustn't be
@@ -322,15 +330,6 @@ public:
     static bool isAvailable();
 
 private:
-    ////////////////////////////////////////////////////////////
-    /// \brief Draw the vertex buffer to a render target
-    ///
-    /// \param target Render target to draw to
-    /// \param states Current render states
-    ///
-    ////////////////////////////////////////////////////////////
-    void draw(RenderTarget& target, RenderStates states) const override;
-
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////

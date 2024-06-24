@@ -276,25 +276,6 @@ private:
 /// relatively to its top-left corner while rotating it around its
 /// center, for example. To do such things, use sf::Transform directly.
 ///
-/// sf::Transformable can be used as a base class. It is often
-/// combined with sf::Drawable -- that's what SFML's sprites,
-/// texts and shapes do.
-/// \code
-/// class MyEntity : public sf::Transformable, public sf::Drawable
-/// {
-///     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
-///     {
-///         states.transform *= getTransform();
-///         target.draw(..., states);
-///     }
-/// };
-///
-/// MyEntity entity;
-/// entity.setPosition({10, 20});
-/// entity.setRotation(sf::degrees(45));
-/// window.draw(entity);
-/// \endcode
-///
 /// It can also be used as a member, if you don't want to use
 /// its API directly (because you don't need all its functions,
 /// or you have different naming conventions for example).

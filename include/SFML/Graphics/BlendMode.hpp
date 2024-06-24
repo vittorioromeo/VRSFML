@@ -211,7 +211,7 @@ SFML_GRAPHICS_API extern const BlendMode BlendNone;     //!< Overwrite dest with
 /// sf::BlendMode noBlending             = sf::BlendNone;
 /// \endcode
 ///
-/// In SFML, a blend mode can be specified every time you draw a sf::Drawable
+/// In SFML, a blend mode can be specified every time you draw a drawable
 /// object to a render target. It is part of the sf::RenderStates compound
 /// that is passed to the member function sf::RenderTarget::draw().
 ///

@@ -110,7 +110,6 @@ set(GRAPHICS_SRC
     Graphics/Color.test.cpp
     Graphics/ConvexShape.test.cpp
     Graphics/CoordinateType.test.cpp
-    Graphics/Drawable.test.cpp
     Graphics/Font.test.cpp
     Graphics/Glsl.test.cpp
     Graphics/Glyph.test.cpp

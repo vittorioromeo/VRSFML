@@ -49,7 +49,6 @@
 
 namespace sf
 {
-class Drawable;
 class Shader;
 class Texture;
 class Transform;
@@ -306,7 +305,11 @@ public:
     /// \param states   Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Drawable& drawable, const RenderStates& states = RenderStates::Default);
+    template <typename DrawableObject>
+    void draw(const DrawableObject& drawableObject, const RenderStates& states = RenderStates::Default)
+    {
+        drawableObject.draw(*this, states);
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a sprite object to the render target
