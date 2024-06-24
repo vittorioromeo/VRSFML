@@ -32,11 +32,10 @@
 #include <SFML/System/Export.hpp>
 
 #include <SFML/System/InputStream.hpp>
+#include <SFML/System/UniquePtr.hpp>
 
 #include <filesystem>
-#include <memory>
 
-#include <cstdint>
 #include <cstdio>
 
 #ifdef SFML_SYSTEM_ANDROID
@@ -164,10 +163,10 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
 #ifdef SFML_SYSTEM_ANDROID
-    std::unique_ptr<priv::ResourceStream> m_androidFile;
+    priv::UniquePtr<priv::ResourceStream> m_androidFile;
 #endif
 
-    std::unique_ptr<std::FILE, FileCloser> m_file; //!< stdio file stream
+    priv::UniquePtr<std::FILE, FileCloser> m_file; //!< stdio file stream
 };
 
 } // namespace sf

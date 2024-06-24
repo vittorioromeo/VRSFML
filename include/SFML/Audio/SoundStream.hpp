@@ -33,8 +33,8 @@
 #include <SFML/Audio/SoundSource.hpp>
 
 #include <SFML/System/Time.hpp>
+#include <SFML/System/UniquePtr.hpp>
 
-#include <memory>
 #include <optional>
 #include <vector>
 
@@ -44,6 +44,8 @@
 
 namespace sf
 {
+class Time;
+
 ////////////////////////////////////////////////////////////
 /// \brief Abstract base class for streamed audio sources
 ///
@@ -154,7 +156,7 @@ public:
     /// \return Current status
     ///
     ////////////////////////////////////////////////////////////
-    Status getStatus() const override;
+    SoundSource::Status getStatus() const override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current playing position of the stream
@@ -298,7 +300,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    std::unique_ptr<Impl> m_impl; //!< Implementation details
+    priv::UniquePtr<Impl> m_impl; //!< Implementation details
 };
 
 } // namespace sf

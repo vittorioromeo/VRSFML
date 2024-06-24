@@ -34,6 +34,7 @@
 #include <SFML/Window/WindowHandle.hpp>
 
 #include <SFML/System/Time.hpp>
+#include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #include <memory>
@@ -531,7 +532,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::unique_ptr<priv::WindowImpl> m_impl; //!< Platform-specific implementation of the window
+    priv::UniquePtr<priv::WindowImpl> m_impl; //!< Platform-specific implementation of the window
     Vector2u                          m_size; //!< Current size of the window
 };
 

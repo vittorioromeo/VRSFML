@@ -31,9 +31,9 @@
 
 #include <SFML/Audio/SoundChannel.hpp>
 #include <SFML/Audio/SoundFileWriter.hpp>
+#include <SFML/System/UniquePtr.hpp>
 
 #include <filesystem>
-#include <memory>
 #include <optional>
 #include <vector>
 
@@ -90,10 +90,11 @@ private:
     ////////////////////////////////////////////////////////////
     explicit OutputSoundFile(std::unique_ptr<SoundFileWriter>&& writer);
 
+private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::unique_ptr<SoundFileWriter> m_writer; //!< Writer that handles I/O on the file's format
+    priv::UniquePtr<SoundFileWriter> m_writer; //!< Writer that handles I/O on the file's format
 };
 
 } // namespace sf

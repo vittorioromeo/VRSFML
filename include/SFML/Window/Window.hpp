@@ -33,10 +33,7 @@
 #include <SFML/Window/WindowEnums.hpp>
 #include <SFML/Window/WindowHandle.hpp>
 
-#include <SFML/System/Clock.hpp>
-#include <SFML/System/Time.hpp>
-
-#include <memory>
+#include <SFML/System/UniquePtr.hpp>
 
 #include <cstdint>
 
