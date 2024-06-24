@@ -9,6 +9,7 @@
 #include <optional>
 #include <random>
 #include <string>
+#include <vector>
 
 #include <cmath>
 #include <cstdint>
@@ -50,7 +51,7 @@ public:
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
         states.shader = &m_shader;
-        target.draw(sf::Sprite{m_texture}, states);
+        target.draw(sf::Sprite{m_texture.getRect()}, m_texture, states);
     }
 
 private:
@@ -129,7 +130,7 @@ public:
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
         states.shader = &m_shader;
-        target.draw(m_points, states);
+        target.draw(m_points, sf::PrimitiveType::Points, states);
     }
 
     explicit StormBlink(sf::Shader&& shader) : m_shader(std::move(shader))
@@ -139,8 +140,6 @@ public:
         std::uniform_int_distribution<std::uint16_t> colorDistribution(0, 255);
 
         // Create the points
-        m_points.setPrimitiveType(sf::PrimitiveType::Points);
-
         for (int i = 0; i < 40000; ++i)
         {
             const auto x = xDistribution(rng);
@@ -150,13 +149,13 @@ public:
             const auto g = static_cast<std::uint8_t>(colorDistribution(rng));
             const auto b = static_cast<std::uint8_t>(colorDistribution(rng));
 
-            m_points.append({{x, y}, {r, g, b}});
+            m_points.push_back({{x, y}, {r, g, b}});
         }
     }
 
 private:
-    sf::VertexArray m_points;
-    sf::Shader      m_shader;
+    std::vector<sf::Vertex> m_points;
+    sf::Shader              m_shader;
 };
 
 
@@ -173,22 +172,22 @@ public:
         // Render the updated scene to the off-screen surface
         m_surface.clear(sf::Color::White);
 
-        sf::Sprite backgroundSprite{m_backgroundTexture};
+        sf::Sprite backgroundSprite{m_backgroundTexture.getRect()};
         backgroundSprite.setPosition({135.f, 100.f});
-        m_surface.draw(backgroundSprite);
+        m_surface.draw(backgroundSprite, m_backgroundTexture);
 
         // Update the position of the moving entities
         constexpr int numEntities = 6;
 
         for (int i = 0; i < 6; ++i)
         {
-            sf::Sprite entity{m_entityTexture, sf::IntRect({96 * i, 0}, {96, 96})};
+            sf::Sprite entity{{{96 * i, 0}, {96, 96}}};
 
             entity.setPosition(
                 {std::cos(0.25f * (time * static_cast<float>(i) + static_cast<float>(numEntities - i))) * 300 + 350,
                  std::sin(0.25f * (time * static_cast<float>(numEntities - i) + static_cast<float>(i))) * 200 + 250});
 
-            m_surface.draw(entity);
+            m_surface.draw(entity, m_entityTexture);
         }
 
         m_surface.display();
@@ -196,8 +195,10 @@ public:
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
+        const sf::Texture& texture = m_surface.getTexture();
+
         states.shader = &m_shader;
-        target.draw(sf::Sprite{m_surface.getTexture()}, states);
+        target.draw(sf::Sprite{texture.getRect()}, texture, states);
     }
 
     explicit Edge(sf::RenderTexture&& surface, sf::Texture&& backgroundTexture, sf::Texture&& entityTexture, sf::Shader&& shader) :
@@ -248,13 +249,13 @@ public:
         states.transform = m_transform;
 
         // Draw the point cloud
-        target.draw(m_pointCloud, states);
+        target.draw(m_pointCloud, sf::PrimitiveType::Points, states);
     }
 
     explicit Geometry(sf::Texture&& logoTexture, sf::Shader&& shader) :
     m_logoTexture(std::move(logoTexture)),
     m_shader(std::move(shader)),
-    m_pointCloud(sf::PrimitiveType::Points, 10000)
+    m_pointCloud(10000)
     {
         // Move the points in the point cloud to random positions
         for (std::size_t i = 0; i < 10000; ++i)
@@ -266,10 +267,10 @@ public:
     }
 
 private:
-    sf::Texture     m_logoTexture;
-    sf::Transform   m_transform;
-    sf::Shader      m_shader;
-    sf::VertexArray m_pointCloud;
+    sf::Texture             m_logoTexture;
+    sf::Transform           m_transform;
+    sf::Shader              m_shader;
+    std::vector<sf::Vertex> m_pointCloud;
 };
 
 
@@ -419,7 +420,7 @@ int main()
 
     // Create the messages background
     const auto textBackgroundTexture = sf::Texture::loadFromFile("resources/text-background.png").value();
-    sf::Sprite textBackground(textBackgroundTexture);
+    sf::Sprite textBackground(textBackgroundTexture.getRect());
     textBackground.setPosition({0.f, 520.f});
     textBackground.setColor(sf::Color(255, 255, 255, 200));
 
@@ -427,11 +428,15 @@ int main()
     sf::Text description(font, "Current effect: " + effectNames[current], 20);
     description.setPosition({10.f, 530.f});
     description.setFillColor(sf::Color(80, 80, 80));
+    description.setOutlineThickness(3.f);
+    description.setOutlineColor(sf::Color::Red);
 
     // Create the instructions text
     sf::Text instructions(font, "Press left and right arrows to change the current shader", 20);
     instructions.setPosition({280.f, 555.f});
     instructions.setFillColor(sf::Color(80, 80, 80));
+    instructions.setOutlineThickness(3.f);
+    instructions.setOutlineColor(sf::Color::Red);
 
     // Start the game loop
     const sf::Clock clock;
@@ -513,7 +518,7 @@ int main()
         }
 
         // Draw the text
-        window.draw(textBackground);
+        window.draw(textBackground, textBackgroundTexture);
         window.draw(instructions);
         window.draw(description);
 

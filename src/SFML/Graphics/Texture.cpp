@@ -965,6 +965,12 @@ unsigned int Texture::getNativeHandle() const
     return m_texture;
 }
 
+////////////////////////////////////////////////////////////
+IntRect Texture::getRect() const
+{
+    return {{0, 0}, Vector2i(getSize())};
+}
+
 
 ////////////////////////////////////////////////////////////
 unsigned int Texture::getValidSize(unsigned int size)
