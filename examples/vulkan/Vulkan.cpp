@@ -5,9 +5,19 @@
 #include <vulkan.h>
 
 // Include graphics because we use sf::Image for loading images
-#include <SFML/Graphics.hpp>
+#include <SFML/Graphics/Image.hpp>
 
-#include <SFML/Window.hpp>
+#include <SFML/Window/Event.hpp>
+#include <SFML/Window/Keyboard.hpp>
+#include <SFML/Window/VideoMode.hpp>
+#include <SFML/Window/Vulkan.hpp>
+#include <SFML/Window/WindowBase.hpp>
+
+#include <SFML/System/Angle.hpp>
+#include <SFML/System/Clock.hpp>
+#include <SFML/System/FileInputStream.hpp>
+#include <SFML/System/Time.hpp>
+#include <SFML/System/Vector2.hpp>
 
 #include <algorithm>
 #include <array>
@@ -2552,6 +2562,7 @@ public:
                      event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape))
                 {
                     window.close();
+                    break;
                 }
 
                 // Re-create the swapchain when the window is resized
