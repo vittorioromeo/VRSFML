@@ -500,6 +500,16 @@ public:
     unsigned int getNativeHandle() const;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Get a rectangle covering the entire texture
+    ///
+    /// This function is useful to conveniently initialize `sf::Sprite`
+    /// objects that are intended to be used with this texture.
+    ///
+    /// \return Rectangle covering the entire texture, from {0, 0} to {width, height}
+    ////////////////////////////////////////////////////////////
+    IntRect getRect() const;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Bind a texture for rendering
     ///
     /// This function is not part of the graphics API, it mustn't be
