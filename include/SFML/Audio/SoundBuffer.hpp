@@ -31,6 +31,7 @@
 
 #include <SFML/Audio/SoundChannel.hpp>
 
+#include <SFML/System/LifetimeTracking.hpp>
 #include <SFML/System/Time.hpp>
 
 #include <filesystem>
@@ -298,8 +299,11 @@ private:
     std::vector<std::int16_t> m_samples;                        //!< Samples buffer
     unsigned int              m_sampleRate{44100};              //!< Number of samples per second
     std::vector<SoundChannel> m_channelMap{SoundChannel::Mono}; //!< The map of position in sample frame to sound channel
-    Time                      m_duration;                       //!< Sound duration
-    mutable SoundList         m_sounds;                         //!< List of sounds that are using this buffer
+
+    ////////////////////////////////////////////////////////////
+    // Lifetime tracking
+    ////////////////////////////////////////////////////////////
+    SFML_DEFINE_LIFETIME_DEPENDEE(SoundBuffer, Sound);
 };
 
 } // namespace sf
