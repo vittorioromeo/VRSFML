@@ -31,17 +31,15 @@
 
 #include <SFML/Graphics/Glyph.hpp>
 #include <SFML/Graphics/Rect.hpp>
-#include <SFML/Graphics/Texture.hpp>
 
 #include <SFML/System/LifetimeTracking.hpp>
+#include <SFML/System/PassKey.hpp>
 #include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #include <filesystem>
 #include <optional>
 #include <string>
-#include <unordered_map>
-#include <vector>
 
 #include <cstddef>
 #include <cstdint>
@@ -57,6 +55,7 @@ class ResourceStream;
 namespace sf
 {
 class InputStream;
+class Texture;
 class Text;
 
 ////////////////////////////////////////////////////////////
@@ -66,6 +65,36 @@ class Text;
 class SFML_GRAPHICS_API Font
 {
 public:
+    ////////////////////////////////////////////////////////////
+    /// \brief Destructor
+    ///
+    ////////////////////////////////////////////////////////////
+    ~Font();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Copy constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    Font(const Font& rhs);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    Font(Font&& rhs) noexcept;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Copy assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    Font& operator=(const Font& rhs);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    Font& operator=(Font&& rhs) noexcept;
+
     ////////////////////////////////////////////////////////////
     /// \brief Holds various information about a font
     ///
@@ -292,39 +321,18 @@ public:
 
 private:
     ////////////////////////////////////////////////////////////
-    /// \brief Structure defining a row of glyphs
+    /// \brief Return the index of the internal representation a character
+    ///
+    /// \param codePoint Unicode code point of the character to load
     ///
     ////////////////////////////////////////////////////////////
-    struct Row
-    {
-        Row(unsigned int rowTop, unsigned int rowHeight) : top(rowTop), height(rowHeight)
-        {
-        }
-
-        unsigned int width{}; //!< Current width of the row
-        unsigned int top;     //!< Y position of the row into the texture
-        unsigned int height;  //!< Height of the row
-    };
-
-    ////////////////////////////////////////////////////////////
-    // Types
-    ////////////////////////////////////////////////////////////
-    using GlyphTable = std::unordered_map<std::uint64_t, Glyph>; //!< Table mapping a codepoint to its glyph
+    unsigned int getCharIndex(std::uint32_t codePoint) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Structure defining a page of glyphs
     ///
     ////////////////////////////////////////////////////////////
-    struct Page
-    {
-        [[nodiscard]] static std::optional<Page> create(bool smooth);
-        explicit Page(Texture&& texture);
-
-        GlyphTable       glyphs;     //!< Table mapping code points to their corresponding glyph
-        Texture          texture;    //!< Texture containing the pixels of the glyphs
-        unsigned int     nextRow{3}; //!< Y position of the next new row in the texture
-        std::vector<Row> rows;       //!< List containing the position of all the existing rows
-    };
+    struct Page;
 
     ////////////////////////////////////////////////////////////
     /// \brief Find or create the glyphs page corresponding to the given character size
@@ -374,14 +382,17 @@ private:
     // Types
     ////////////////////////////////////////////////////////////
     struct FontHandles;
-    using PageTable = std::unordered_map<unsigned int, Page>; //!< Table mapping a character size to its page (texture)
 
+public:
     ////////////////////////////////////////////////////////////
+    /// \private
+    ///
     /// \brief Create a font from font handles and a family name
     ///
     ////////////////////////////////////////////////////////////
-    Font(std::shared_ptr<FontHandles>&& fontHandles, std::string&& familyName);
+    Font(priv::PassKey<Font>&&, void* fontHandlesSharedPtr, std::string&& familyName);
 
+private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
