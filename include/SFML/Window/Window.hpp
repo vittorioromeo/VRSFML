@@ -40,11 +40,6 @@
 
 namespace sf
 {
-namespace priv
-{
-class GlContext;
-}
-
 ////////////////////////////////////////////////////////////
 /// \brief Window that serves as a target for OpenGL rendering
 ///
@@ -290,9 +285,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::unique_ptr<priv::GlContext> m_context;        //!< Platform-specific implementation of the OpenGL context
-    Clock                            m_clock;          //!< Clock for measuring the elapsed time between frames
-    Time                             m_frameTimeLimit; //!< Current framerate limit
+    struct CommonImpl;
+    priv::UniquePtr<CommonImpl> m_commonImpl; //!< Implementation details
 };
 
 } // namespace sf
