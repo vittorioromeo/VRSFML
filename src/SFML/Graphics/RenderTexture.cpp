@@ -30,6 +30,7 @@
 #include <SFML/Graphics/RenderTextureImplFBO.hpp>
 
 #include <SFML/System/Err.hpp>
+#include <SFML/System/UniquePtr.hpp>
 
 #include <memory>
 #include <ostream>
@@ -69,7 +70,7 @@ std::optional<RenderTexture> RenderTexture::create(const Vector2u& size, const C
     if (priv::RenderTextureImplFBO::isAvailable())
     {
         // Use frame-buffer object (FBO)
-        renderTexture.m_impl = std::make_unique<priv::RenderTextureImplFBO>();
+        renderTexture.m_impl = priv::makeUnique<priv::RenderTextureImplFBO>();
 
         // Mark the texture as being a framebuffer object attachment
         renderTexture.m_texture.m_fboAttachment = true;
@@ -77,7 +78,7 @@ std::optional<RenderTexture> RenderTexture::create(const Vector2u& size, const C
     else
     {
         // Use default implementation
-        renderTexture.m_impl = std::make_unique<priv::RenderTextureImplDefault>();
+        renderTexture.m_impl = priv::makeUnique<priv::RenderTextureImplDefault>();
     }
 
     // Initialize the render texture

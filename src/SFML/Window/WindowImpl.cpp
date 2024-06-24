@@ -33,10 +33,10 @@
 
 #include <SFML/System/Sleep.hpp>
 #include <SFML/System/Time.hpp>
+#include <SFML/System/UniquePtr.hpp>
 
 #include <array>
 #include <chrono>
-#include <memory>
 
 #include <cmath>
 
@@ -101,26 +101,26 @@ struct WindowImpl::JoystickStatesImpl
 
 
 ////////////////////////////////////////////////////////////
-std::unique_ptr<WindowImpl> WindowImpl::create(
+priv::UniquePtr<WindowImpl> WindowImpl::create(
     VideoMode              mode,
     const String&          title,
     std::uint32_t          style,
     State                  state,
     const ContextSettings& settings)
 {
-    return std::make_unique<WindowImplType>(mode, title, style, state, settings);
+    return priv::makeUnique<WindowImplType>(mode, title, style, state, settings);
 }
 
 
 ////////////////////////////////////////////////////////////
-std::unique_ptr<WindowImpl> WindowImpl::create(WindowHandle handle)
+priv::UniquePtr<WindowImpl> WindowImpl::create(WindowHandle handle)
 {
-    return std::make_unique<WindowImplType>(handle);
+    return priv::makeUnique<WindowImplType>(handle);
 }
 
 
 ////////////////////////////////////////////////////////////
-WindowImpl::WindowImpl() : m_joystickStatesImpl(std::make_unique<JoystickStatesImpl>())
+WindowImpl::WindowImpl() : m_joystickStatesImpl(priv::makeUnique<JoystickStatesImpl>())
 {
     // Get the initial joystick states
     JoystickManager::getInstance().update();

@@ -30,7 +30,6 @@
 #include <SFML/System/Android/Activity.hpp>
 #include <SFML/System/Android/ResourceStream.hpp>
 #endif
-#include <memory>
 
 #include <cassert>
 #include <cstddef>
@@ -62,18 +61,18 @@ std::optional<FileInputStream> FileInputStream::open(const std::filesystem::path
 #ifdef SFML_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
     {
-        auto androidFile = std::make_unique<priv::ResourceStream>(filename);
+        auto androidFile = priv::makeUnique<priv::ResourceStream>(filename);
         if (androidFile->tell().has_value())
-            return FileInputStream(std::move(androidFile));
+            return std::make_optional<FileInputStream>(priv::PassKey<FileInputStream>{}, std::move(androidFile));
         return std::nullopt;
     }
 #endif
 #ifdef SFML_SYSTEM_WINDOWS
-    if (auto file = std::unique_ptr<std::FILE, FileCloser>(_wfopen(filename.c_str(), L"rb")))
+    if (auto file = priv::UniquePtr<std::FILE, FileCloser>(_wfopen(filename.c_str(), L"rb")))
 #else
-    if (auto file = std::unique_ptr<std::FILE, FileCloser>(std::fopen(filename.c_str(), "rb")))
+    if (auto file = priv::UniquePtr<std::FILE, FileCloser>(std::fopen(filename.c_str(), "rb")))
 #endif
-        return FileInputStream(std::move(file));
+        return std::make_optional<FileInputStream>(priv::PassKey<FileInputStream>{}, std::move(file));
     return std::nullopt;
 }
 

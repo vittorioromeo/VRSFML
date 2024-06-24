@@ -52,8 +52,7 @@ InputSoundFile::StreamDeleter::StreamDeleter(bool theOwned) : owned(theOwned)
 
 
 ////////////////////////////////////////////////////////////
-template <typename T>
-InputSoundFile::StreamDeleter::StreamDeleter(const std::default_delete<T>&)
+InputSoundFile::StreamDeleter::StreamDeleter(const priv::UniquePtrDefaultDeleter&)
 {
 }
 
@@ -88,7 +87,7 @@ std::optional<InputSoundFile> InputSoundFile::openFromFile(const std::filesystem
     }
 
     // Wrap the file into a stream
-    auto file = std::make_unique<FileInputStream>(std::move(*fileInputStream));
+    auto file = priv::makeUnique<FileInputStream>(std::move(*fileInputStream));
 
     // Pass the stream to the reader
     auto info = reader->open(*file);
@@ -263,8 +262,8 @@ void InputSoundFile::close()
 
 
 ////////////////////////////////////////////////////////////
-InputSoundFile::InputSoundFile(std::unique_ptr<SoundFileReader>&&            reader,
-                               std::unique_ptr<InputStream, StreamDeleter>&& stream,
+                               priv::UniquePtr<SoundFileReader>&&            reader,
+                               priv::UniquePtr<InputStream, StreamDeleter>&& stream,
                                std::uint64_t                                 sampleCount,
                                unsigned int                                  sampleRate,
                                std::vector<SoundChannel>&&                   channelMap) :
