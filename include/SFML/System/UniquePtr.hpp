@@ -93,9 +93,9 @@ public:
     template <typename U, typename UDeleter, typename = EnableIf<IsBaseOf<T, U>::value>>
     [[nodiscard, gnu::always_inline]] UniquePtr(UniquePtr<U, UDeleter>&& rhs) noexcept :
     TDeleter{static_cast<UDeleter&&>(rhs)},
-    m_ptr{rhs._ptr}
+    m_ptr{rhs.m_ptr}
     {
-        rhs._ptr = nullptr;
+        rhs.m_ptr = nullptr;
     }
 
     template <typename U, typename UDeleter, typename = EnableIf<IsBaseOf<T, U>::value>>
@@ -103,8 +103,8 @@ public:
     {
         (*static_cast<TDeleter*>(this)) = static_cast<UDeleter&&>(rhs);
 
-        reset(rhs._ptr);
-        rhs._ptr = nullptr;
+        reset(rhs.m_ptr);
+        rhs.m_ptr = nullptr;
 
         return *this;
     }
