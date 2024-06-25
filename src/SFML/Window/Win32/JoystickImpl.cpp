@@ -558,7 +558,7 @@ bool JoystickImpl::openDInput(unsigned int index)
     // Initialize DirectInput members
     m_device = nullptr;
 
-    for (int& axis : m_axes)
+    for (int& axis : m_axes.data)
         axis = -1;
 
     for (int& button : m_buttons)
@@ -753,7 +753,7 @@ bool JoystickImpl::openDInput(unsigned int index)
             }
 
             // Set device's axis mode to absolute if the device reports having at least one axis
-            for (const int axis : m_axes)
+            for (const int axis : m_axes.data)
             {
                 if (axis != -1)
                 {

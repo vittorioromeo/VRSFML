@@ -8,7 +8,6 @@
 #include <AudioUtil.hpp>
 #include <LoadIntoMemory.hpp>
 #include <SystemUtil.hpp>
-#include <array>
 #include <type_traits>
 
 TEST_CASE("[Audio] sf::SoundBuffer", runAudioDeviceTests())
@@ -72,8 +71,8 @@ TEST_CASE("[Audio] sf::SoundBuffer", runAudioDeviceTests())
     {
         SECTION("Invalid memory")
         {
-            constexpr std::array<std::byte, 5> memory{};
-            CHECK(!sf::SoundBuffer::loadFromMemory(memory.data(), memory.size()));
+            constexpr std::byte memory[5]{};
+            CHECK(!sf::SoundBuffer::loadFromMemory(memory, 5));
         }
 
         SECTION("Valid memory")

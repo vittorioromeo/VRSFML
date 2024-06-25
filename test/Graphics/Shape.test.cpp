@@ -18,12 +18,12 @@ public:
         m_points[1] = {0, m_size.y};
         m_points[2] = {m_size.x, m_size.y};
 
-        update(m_points.data(), 3);
+        update(m_points, 3);
     }
 
 private:
-    sf::Vector2f                m_size;
-    std::array<sf::Vector2f, 3> m_points;
+    sf::Vector2f m_size;
+    sf::Vector2f m_points[3];
 };
 
 TEST_CASE("[Graphics] sf::Shape", runDisplayTests())

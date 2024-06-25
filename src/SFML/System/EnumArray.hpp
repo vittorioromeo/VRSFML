@@ -27,8 +27,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <array>
+#if !__has_builtin(__is_enum)
 #include <type_traits>
+#endif
 
 #include <cassert>
 #include <cstddef>
@@ -41,9 +42,15 @@ namespace sf::priv
 ///
 ////////////////////////////////////////////////////////////
 template <typename Enum, typename Value, std::size_t Count>
-struct EnumArray : public std::array<Value, Count>
+struct EnumArray
 {
-    static_assert(std::is_enum_v<Enum>, "Enum type parameter must be an enumeration");
+    static_assert(
+#if !__has_builtin(__is_enum)
+        std::is_enum_v<Enum>,
+#else
+        __is_enum(Enum),
+#endif
+        "Enum type parameter must be an enumeration");
 
     ////////////////////////////////////////////////////////////
     /// \brief Returns a reference to the element associated to specified \a key
@@ -55,7 +62,7 @@ struct EnumArray : public std::array<Value, Count>
     {
         const auto index = static_cast<std::size_t>(key);
         assert(index < Count && "Index is out of bounds");
-        return std::array<Value, Count>::operator[](index);
+        return data[index];
     }
 
     ////////////////////////////////////////////////////////////
@@ -68,8 +75,16 @@ struct EnumArray : public std::array<Value, Count>
     {
         const auto index = static_cast<std::size_t>(key);
         assert(index < Count && "Index is out of bounds");
-        return std::array<Value, Count>::operator[](index);
+        return data[index];
     }
+
+    constexpr void fill(Value key)
+    {
+        for (Value& value : data)
+            value = key;
+    }
+
+    Value data[Count];
 };
 
 } // namespace sf::priv

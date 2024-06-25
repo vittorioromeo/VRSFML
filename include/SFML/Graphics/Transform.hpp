@@ -267,7 +267,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     // clang-format off
-    // Not using `std::array` here to minimize compilation impact of `Transform.hpp`.
+    // Using a C-style array here to minimize compilation impact of `Transform.hpp`.
     float m_matrix[16]{1.f, 0.f, 0.f, 0.f,
                        0.f, 1.f, 0.f, 0.f,
                        0.f, 0.f, 1.f, 0.f,

@@ -52,7 +52,6 @@
 #endif // SFML_ENABLE_LIFETIME_TRACKING
 
 #include <algorithm>
-#include <array>
 #include <chrono>
 #include <filesystem>
 #include <iostream>

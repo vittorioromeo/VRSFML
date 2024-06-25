@@ -34,7 +34,6 @@
 #include <miniaudio.h>
 
 #include <algorithm>
-#include <array>
 #include <mutex>
 #include <optional>
 #include <ostream>
@@ -215,11 +214,11 @@ AudioDevice::AudioDevice() : m_impl(priv::makeUnique<Impl>())
     // Create the context
     m_impl->context.emplace();
 
-    auto contextConfig                                 = ma_context_config_init();
-    contextConfig.pLog                                 = &*m_impl->log;
-    ma_uint32                              deviceCount = 0;
-    const auto                             nullBackend = ma_backend_null;
-    const std::array<const ma_backend*, 2> backendLists{nullptr, &nullBackend};
+    auto contextConfig            = ma_context_config_init();
+    contextConfig.pLog            = &*m_impl->log;
+    ma_uint32         deviceCount = 0;
+    const auto        nullBackend = ma_backend_null;
+    const ma_backend* backendLists[2]{nullptr, &nullBackend};
 
     for (const auto* backendList : backendLists)
     {
@@ -581,13 +580,15 @@ bool AudioDevice::initialize()
 
     // Update the current device string from the the device we just initialized
     {
-        std::array<char, MA_MAX_DEVICE_NAME_LENGTH + 1> deviceName{};
-        std::size_t                                     deviceNameLength{};
+        char        deviceName[MA_MAX_DEVICE_NAME_LENGTH + 1]{};
+        std::size_t deviceNameLength{};
+
+        const auto arraySize = []<typename T, std::size_t N>(const T(&)[N]) { return N; };
 
         if (const auto result = ma_device_get_name(&*m_impl->playbackDevice,
                                                    ma_device_type_playback,
-                                                   deviceName.data(),
-                                                   deviceName.size(),
+                                                   deviceName,
+                                                   arraySize(deviceName),
                                                    &deviceNameLength);
             result != MA_SUCCESS)
         {
@@ -596,7 +597,7 @@ bool AudioDevice::initialize()
         }
         else
         {
-            getCurrentDevice() = std::string(deviceName.data(), deviceNameLength);
+            getCurrentDevice() = std::string(deviceName, deviceNameLength);
         }
     }
 

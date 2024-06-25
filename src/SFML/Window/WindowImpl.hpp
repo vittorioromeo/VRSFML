@@ -45,7 +45,6 @@
 #include <SFML/System/Vector2.hpp>
 #include <SFML/System/Vector3.hpp>
 
-#include <array>
 #include <optional>
 #include <queue>
 
@@ -364,8 +363,8 @@ private:
     priv::UniquePtr<JoystickStatesImpl>              m_joystickStatesImpl; //!< Previous state of the joysticks (PImpl)
     EnumArray<Sensor::Type, Vector3f, Sensor::Count> m_sensorValue;        //!< Previous value of the sensors
     float m_joystickThreshold{0.1f}; //!< Joystick threshold (minimum motion for "move" event to be generated)
-    std::array<EnumArray<Joystick::Axis, float, Joystick::AxisCount>, Joystick::Count>
-        m_previousAxes{}; //!< Position of each axis last time a move event triggered, in range [-100, 100]
+    EnumArray<Joystick::Axis, float, Joystick::AxisCount>
+        m_previousAxes[Joystick::Count]{}; //!< Position of each axis last time a move event triggered, in range [-100, 100]
     std::optional<Vector2u> m_minimumSize; //!< Minimum window size
     std::optional<Vector2u> m_maximumSize; //!< Maximum window size
 };

@@ -33,8 +33,6 @@
 #include <SFML/Graphics/Transformable.hpp>
 #include <SFML/Graphics/Vertex.hpp>
 
-#include <array>
-
 
 namespace sf
 {
@@ -147,8 +145,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::array<Vertex, 4> m_vertices;    //!< Vertices defining the sprite's geometry
-    IntRect               m_textureRect; //!< Rectangle defining the area of the source texture to display
+    Vertex  m_vertices[4]; //!< Vertices defining the sprite's geometry
+    IntRect m_textureRect; //!< Rectangle defining the area of the source texture to display
 };
 
 } // namespace sf

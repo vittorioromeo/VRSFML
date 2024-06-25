@@ -369,6 +369,8 @@ void RenderTarget::draw(const Shape& shape, const Texture* texture, RenderStates
 ////////////////////////////////////////////////////////////
 void RenderTarget::draw(const Vertex* vertices, std::size_t vertexCount, PrimitiveType type, const RenderStates& states)
 {
+    const auto arraySize = []<typename T, std::size_t N>(const T(&)[N]) { return N; };
+
     // Nothing to draw?
     if (!vertices || (vertexCount == 0))
         return;
@@ -376,7 +378,7 @@ void RenderTarget::draw(const Vertex* vertices, std::size_t vertexCount, Primiti
     if (RenderTargetImpl::isActive(m_id) || setActive(true))
     {
         // Check if the vertex count is low enough so that we can pre-transform them
-        const bool useVertexCache = (vertexCount <= m_cache.vertexCache.size());
+        const bool useVertexCache = (vertexCount <= arraySize(m_cache.vertexCache));
 
         if (useVertexCache)
         {
@@ -410,7 +412,7 @@ void RenderTarget::draw(const Vertex* vertices, std::size_t vertexCount, Primiti
 
             // If we pre-transform the vertices, we must use our internal vertex cache
             if (useVertexCache)
-                data = reinterpret_cast<const std::byte*>(m_cache.vertexCache.data());
+                data = reinterpret_cast<const std::byte*>(m_cache.vertexCache);
 
             glCheck(glVertexPointer(2, GL_FLOAT, sizeof(Vertex), data + 0));
             glCheck(glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), data + 8));
@@ -420,7 +422,7 @@ void RenderTarget::draw(const Vertex* vertices, std::size_t vertexCount, Primiti
         else if (enableTexCoordsArray && !m_cache.texCoordsArrayEnabled)
         {
             // If we enter this block, we are already using our internal vertex cache
-            const auto* data = reinterpret_cast<const std::byte*>(m_cache.vertexCache.data());
+            const auto* data = reinterpret_cast<const std::byte*>(m_cache.vertexCache);
 
             glCheck(glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), data + 12));
         }

@@ -35,7 +35,6 @@
 #include <SFML/System/Time.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
-#include <array>
 #include <chrono>
 
 #include <cmath>
@@ -96,7 +95,7 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 struct WindowImpl::JoystickStatesImpl
 {
-    std::array<JoystickState, Joystick::Count> states{}; //!< Previous state of the joysticks
+    JoystickState states[Joystick::Count]{}; //!< Previous state of the joysticks
 };
 
 
@@ -131,7 +130,7 @@ WindowImpl::WindowImpl() : m_joystickStatesImpl(priv::makeUnique<JoystickStatesI
     }
 
     // Get the initial sensor states
-    for (Vector3f& vec : m_sensorValue)
+    for (Vector3f& vec : m_sensorValue.data)
         vec = Vector3f(0, 0, 0);
 }
 

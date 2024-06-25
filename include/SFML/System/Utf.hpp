@@ -29,7 +29,6 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Config.hpp>
 
-#include <array>
 #include <locale>
 
 #include <cstdint>

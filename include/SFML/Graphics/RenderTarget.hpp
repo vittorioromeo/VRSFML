@@ -41,8 +41,6 @@
 
 #include <SFML/System/Vector2.hpp>
 
-#include <array>
-
 #include <cstddef>
 #include <cstdint>
 
@@ -376,6 +374,20 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
+    /// \brief Draw primitives defined by a C-style array of vertices
+    ///
+    /// \param vertices    Reference to the C-style vertex array
+    /// \param type        Type of primitives to draw
+    /// \param states      Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename CStyleVertexArray, std::size_t N>
+    void draw(const CStyleVertexArray (&vertices)[N], PrimitiveType type, const RenderStates& states = RenderStates::Default)
+    {
+        draw(vertices, N, type, states);
+    }
+
+    ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by a vertex buffer
     ///
     /// \param vertexBuffer Vertex buffer
@@ -601,18 +613,18 @@ private:
     ////////////////////////////////////////////////////////////
     struct StatesCache
     {
-        bool                  enable{};                //!< Is the cache enabled?
-        bool                  glStatesSet{};           //!< Are our internal GL states set yet?
-        bool                  viewChanged{};           //!< Has the current view changed since last draw?
-        bool                  scissorEnabled{};        //!< Is scissor testing enabled?
-        bool                  stencilEnabled{};        //!< Is stencil testing enabled?
-        BlendMode             lastBlendMode;           //!< Cached blending mode
-        StencilMode           lastStencilMode;         //!< Cached stencil
-        std::uint64_t         lastTextureId{};         //!< Cached texture
-        CoordinateType        lastCoordinateType{};    //!< Texture coordinate type
-        bool                  texCoordsArrayEnabled{}; //!< Is GL_TEXTURE_COORD_ARRAY client state enabled?
-        bool                  useVertexCache{};        //!< Did we previously use the vertex cache?
-        std::array<Vertex, 4> vertexCache{};           //!< Pre-transformed vertices cache
+        bool           enable{};                //!< Is the cache enabled?
+        bool           glStatesSet{};           //!< Are our internal GL states set yet?
+        bool           viewChanged{};           //!< Has the current view changed since last draw?
+        bool           scissorEnabled{};        //!< Is scissor testing enabled?
+        bool           stencilEnabled{};        //!< Is stencil testing enabled?
+        BlendMode      lastBlendMode;           //!< Cached blending mode
+        StencilMode    lastStencilMode;         //!< Cached stencil
+        std::uint64_t  lastTextureId{};         //!< Cached texture
+        CoordinateType lastCoordinateType{};    //!< Texture coordinate type
+        bool           texCoordsArrayEnabled{}; //!< Is GL_TEXTURE_COORD_ARRAY client state enabled?
+        bool           useVertexCache{};        //!< Did we previously use the vertex cache?
+        Vertex         vertexCache[4]{};        //!< Pre-transformed vertices cache
     };
 
     ////////////////////////////////////////////////////////////

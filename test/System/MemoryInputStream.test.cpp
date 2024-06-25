@@ -2,8 +2,6 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include <array>
-#include <ostream>
 #include <string_view>
 
 TEST_CASE("[System] sf::MemoryInputStream")
@@ -45,15 +43,15 @@ TEST_CASE("[System] sf::MemoryInputStream")
         CHECK(memoryInputStream.getSize().value() == input.size());
 
         // Read within input
-        std::array<char, 32> output{};
-        CHECK(memoryInputStream.read(output.data(), 5).value() == 5);
-        CHECK(std::string_view(output.data(), 5) == "hello"sv);
+        char output[32]{};
+        CHECK(memoryInputStream.read(output, 5).value() == 5);
+        CHECK(std::string_view(output, 5) == "hello"sv);
         CHECK(memoryInputStream.tell().value() == 5);
         CHECK(memoryInputStream.getSize().value() == input.size());
 
         // Read beyond input
-        CHECK(memoryInputStream.read(output.data(), 100).value() == 6);
-        CHECK(std::string_view(output.data(), 6) == " world"sv);
+        CHECK(memoryInputStream.read(output, 100).value() == 6);
+        CHECK(std::string_view(output, 6) == " world"sv);
         CHECK(memoryInputStream.tell().value() == 11);
         CHECK(memoryInputStream.getSize().value() == input.size());
     }

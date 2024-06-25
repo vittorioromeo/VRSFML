@@ -30,6 +30,7 @@
 ////////////////////////////////////////////////////////////
 #include <IOKit/hid/IOHIDDevice.h>
 #include <IOKit/hid/IOHIDKeys.h>
+#include <array>
 #include <unordered_map>
 #include <vector>
 
