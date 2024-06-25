@@ -6,7 +6,8 @@ include(${CMAKE_CURRENT_LIST_DIR}/CompilerWarnings.cmake)
 # helper function to tweak visibility of public symbols
 function(set_public_symbols_hidden target)
     # this breaks explicit template instantiations, see GCC bug #109387
-    if (NOT MINGW)
+    # checking test suite macro for Catch PCH
+    if (NOT MINGW AND NOT SFML_BUILD_TEST_SUITE)
         # ensure public symbols are hidden by default (exported ones are explicitly marked)
         set_target_properties(${target} PROPERTIES
                               CXX_VISIBILITY_PRESET hidden
