@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "configurePresets":[
+  "configurePresets": [
     {
       "name": "dev",
       "binaryDir": "build",
@@ -13,6 +13,24 @@
         "SFML_ENABLE_LIFETIME_TRACKING": "ON",
         "SFML_ENABLE_STDLIB_ASSERTIONS": "ON",
         "SFML_WARNINGS_AS_ERRORS": "ON"
+      }
+    },
+    {
+      "name": "vrdev",
+      "binaryDir": "build",
+      "installDir": "${sourceDir}/build/install",
+      "cacheVariables": {
+        "CMAKE_CXX_EXTENSIONS": "OFF",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "SFML_BUILD_EXAMPLES": "ON",
+        "SFML_BUILD_TEST_SUITE": "ON",
+        "SFML_ENABLE_LIFETIME_TRACKING": "ON",
+        "SFML_ENABLE_STDLIB_ASSERTIONS": "ON",
+        "SFML_WARNINGS_AS_ERRORS": "ON",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace -Wall -Wextra -Wpedantic -Wno-ignored-attributes",
+        "SFML_ENABLE_PCH": "ON",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "ccache"
       }
     }
   ]
