@@ -58,32 +58,32 @@ class UniquePtr : private TDeleter
     friend class UniquePtr;
 
 private:
-    T* _ptr;
+    T* m_ptr;
 
 public:
-    [[nodiscard, gnu::always_inline]] explicit UniquePtr() noexcept : _ptr{nullptr}
+    [[nodiscard, gnu::always_inline]] explicit UniquePtr() noexcept : m_ptr{nullptr}
     {
     }
 
-    [[nodiscard, gnu::always_inline]] /* implicit */ UniquePtr(decltype(nullptr)) noexcept : _ptr{nullptr}
+    [[nodiscard, gnu::always_inline]] /* implicit */ UniquePtr(decltype(nullptr)) noexcept : m_ptr{nullptr}
     {
     }
 
-    [[nodiscard, gnu::always_inline]] explicit UniquePtr(T* ptr) noexcept : _ptr{ptr}
+    [[nodiscard, gnu::always_inline]] explicit UniquePtr(T* ptr) noexcept : m_ptr{ptr}
     {
     }
 
     [[nodiscard, gnu::always_inline]] explicit UniquePtr(T* ptr, const TDeleter& deleter) noexcept :
     TDeleter{deleter},
-    _ptr{ptr}
+    m_ptr{ptr}
     {
     }
 
     [[gnu::always_inline]] ~UniquePtr() noexcept
     {
-        if (_ptr != nullptr)
+        if (m_ptr != nullptr)
         {
-            static_cast<TDeleter*>(this)->operator()(_ptr);
+            static_cast<TDeleter*>(this)->operator()(m_ptr);
         }
     }
 
@@ -91,7 +91,9 @@ public:
     UniquePtr& operator=(const UniquePtr&) = delete;
 
     template <typename U, typename UDeleter, typename = EnableIf<IsBaseOf<T, U>::value>>
-    [[nodiscard, gnu::always_inline]] UniquePtr(UniquePtr<U, UDeleter>&& rhs) noexcept : TDeleter{static_cast<UDeleter&&>(rhs)}, _ptr{rhs._ptr}
+    [[nodiscard, gnu::always_inline]] UniquePtr(UniquePtr<U, UDeleter>&& rhs) noexcept :
+    TDeleter{static_cast<UDeleter&&>(rhs)},
+    m_ptr{rhs._ptr}
     {
         rhs._ptr = nullptr;
     }
@@ -109,54 +111,54 @@ public:
 
     [[nodiscard, gnu::always_inline]] T* get() const noexcept
     {
-        return _ptr;
+        return m_ptr;
     }
 
     [[nodiscard, gnu::always_inline]] T& operator*() const noexcept
     {
-        assert(_ptr != nullptr);
-        return *_ptr;
+        assert(m_ptr != nullptr);
+        return *m_ptr;
     }
 
     [[nodiscard, gnu::always_inline]] T* operator->() const noexcept
     {
-        assert(_ptr != nullptr);
-        return _ptr;
+        assert(m_ptr != nullptr);
+        return m_ptr;
     }
 
     [[nodiscard, gnu::always_inline]] explicit operator bool() const noexcept
     {
-        return _ptr != nullptr;
+        return m_ptr != nullptr;
     }
 
     [[nodiscard, gnu::always_inline]] bool operator==(const T* ptr) const noexcept
     {
-        return _ptr == ptr;
+        return m_ptr == ptr;
     }
 
     [[nodiscard, gnu::always_inline]] bool operator!=(const T* ptr) const noexcept
     {
-        return _ptr != ptr;
+        return m_ptr != ptr;
     }
 
     [[nodiscard, gnu::always_inline]] bool operator==(decltype(nullptr)) const noexcept
     {
-        return _ptr == nullptr;
+        return m_ptr == nullptr;
     }
 
     [[nodiscard, gnu::always_inline]] bool operator!=(decltype(nullptr)) const noexcept
     {
-        return _ptr != nullptr;
+        return m_ptr != nullptr;
     }
 
     [[gnu::always_inline]] void reset(T* const ptr = nullptr) noexcept
     {
-        if (_ptr != nullptr)
+        if (m_ptr != nullptr)
         {
-            static_cast<TDeleter*>(this)->operator()(_ptr);
+            static_cast<TDeleter*>(this)->operator()(m_ptr);
         }
 
-        _ptr = ptr;
+        m_ptr = ptr;
     }
 };
 
