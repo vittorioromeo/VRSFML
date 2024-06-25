@@ -33,7 +33,6 @@
 #include <miniaudio.h>
 
 #include <algorithm>
-#include <array>
 #include <optional>
 #include <ostream>
 
@@ -188,11 +187,11 @@ SoundRecorder::SoundRecorder() : m_impl(priv::makeUnique<Impl>(this))
     // Create the context
     m_impl->context.emplace();
 
-    auto contextConfig                                 = ma_context_config_init();
-    contextConfig.pLog                                 = &*m_impl->log;
-    ma_uint32                              deviceCount = 0;
-    const auto                             nullBackend = ma_backend_null;
-    const std::array<const ma_backend*, 2> backendLists{nullptr, &nullBackend};
+    auto contextConfig            = ma_context_config_init();
+    contextConfig.pLog            = &*m_impl->log;
+    ma_uint32         deviceCount = 0;
+    const auto        nullBackend = ma_backend_null;
+    const ma_backend* backendLists[2]{nullptr, &nullBackend};
 
     for (const auto* backendList : backendLists)
     {

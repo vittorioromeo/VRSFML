@@ -31,7 +31,6 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InputStream.hpp>
 
-#include <array>
 #include <ostream>
 #include <vector>
 
@@ -148,15 +147,14 @@ std::optional<SoundFileReader::Info> SoundFileReaderWav::open(InputStream& strea
         return std::nullopt;
     }
 
-    auto                       format = ma_format_unknown;
-    ma_uint32                  sampleRate{};
-    std::array<ma_channel, 20> channelMap{};
-    if (const ma_result result = ma_decoder_get_data_format(&*m_decoder,
-                                                            &format,
-                                                            &m_channelCount,
-                                                            &sampleRate,
-                                                            channelMap.data(),
-                                                            channelMap.size());
+    auto       format = ma_format_unknown;
+    ma_uint32  sampleRate{};
+    ma_channel channelMap[20]{};
+
+    const auto arraySize = []<typename T, std::size_t N>(const T(&)[N]) { return N; };
+
+    if (const ma_result
+            result = ma_decoder_get_data_format(&*m_decoder, &format, &m_channelCount, &sampleRate, channelMap, arraySize(channelMap));
         result != MA_SUCCESS)
     {
         err() << "Failed to get data format from wav decoder: " << ma_result_description(result) << std::endl;

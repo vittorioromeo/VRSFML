@@ -47,7 +47,7 @@ void RectangleShape::setSize(const Vector2f& size)
     m_points[2] = {m_size.x, m_size.y};
     m_points[3] = {0, m_size.y};
 
-    update(m_points.data(), /* pointCount */ 4);
+    update(m_points, /* pointCount */ 4);
 }
 
 

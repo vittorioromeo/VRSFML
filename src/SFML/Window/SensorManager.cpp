@@ -82,7 +82,7 @@ Vector3f SensorManager::getValue(Sensor::Type sensor) const
 ////////////////////////////////////////////////////////////
 void SensorManager::update()
 {
-    for (Item& item : m_sensors)
+    for (Item& item : m_sensors.data)
     {
         // Only process available sensors
         if (item.available)
@@ -125,7 +125,7 @@ SensorManager::SensorManager()
 SensorManager::~SensorManager()
 {
     // Per sensor cleanup
-    for (Item& item : m_sensors)
+    for (Item& item : m_sensors.data)
     {
         if (item.available)
             item.sensor.close();

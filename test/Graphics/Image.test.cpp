@@ -55,8 +55,8 @@ TEST_CASE("[Graphics] sf::Image")
         SECTION("Vector2 and std::uint8_t* constructor")
         {
             // 10 x 10, with 4 color channels array
-            std::array<std::uint8_t, 400> pixels{};
-            for (std::size_t i = 0; i < pixels.size(); i += 4)
+            std::uint8_t pixels[400]{};
+            for (std::size_t i = 0; i < 400; i += 4)
             {
                 pixels[i]     = 255; // r
                 pixels[i + 1] = 0;   // g
@@ -64,7 +64,7 @@ TEST_CASE("[Graphics] sf::Image")
                 pixels[i + 3] = 255; // a
             }
 
-            const sf::Image image(sf::Vector2u(10, 10), pixels.data());
+            const sf::Image image(sf::Vector2u(10, 10), pixels);
             CHECK(image.getSize() == sf::Vector2u(10, 10));
             CHECK(image.getPixelsPtr() != nullptr);
 

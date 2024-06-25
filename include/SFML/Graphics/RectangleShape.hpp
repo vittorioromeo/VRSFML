@@ -34,7 +34,6 @@
 #include <SFML/System/Vector2.hpp>
 
 #include <cstddef>
-#include <array>
 
 
 namespace sf
@@ -114,8 +113,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2f                m_size;   //!< Size of the rectangle
-    std::array<Vector2f, 4> m_points; //!< Points composing the rectangle
+    Vector2f m_size;      //!< Size of the rectangle
+    Vector2f m_points[4]; //!< Points composing the rectangle
 };
 
 } // namespace sf
