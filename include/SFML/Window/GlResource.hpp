@@ -29,8 +29,6 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/Export.hpp>
 
-#include <memory>
-
 
 namespace sf
 {
@@ -90,7 +88,7 @@ protected:
     /// \param object Object to be destroyed when its containing context is destroyed
     ///
     ////////////////////////////////////////////////////////////
-    static void registerUnsharedGlObject(std::shared_ptr<void> object);
+    static void registerUnsharedGlObject(void* objectSharedPtr);
 
     ////////////////////////////////////////////////////////////
     /// \brief Unregister an OpenGL object from its containing context
@@ -98,7 +96,7 @@ protected:
     /// \param object Object to be unregistered
     ///
     ////////////////////////////////////////////////////////////
-    static void unregisterUnsharedGlObject(std::shared_ptr<void> object);
+    static void unregisterUnsharedGlObject(void* objectSharedPtr);
 
     ////////////////////////////////////////////////////////////
     /// \brief RAII helper class to temporarily lock an available context for use

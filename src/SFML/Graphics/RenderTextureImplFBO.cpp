@@ -86,11 +86,17 @@ RenderTextureImplFBO::~RenderTextureImplFBO()
     // Unregister FBOs with the contexts if they haven't already been destroyed
     for (auto& entry : m_frameBuffers)
         if (auto frameBuffer = entry.second.lock())
-            unregisterUnsharedGlObject(std::move(frameBuffer));
+        {
+            std::shared_ptr<void> voidFrameBuffer = std::move(frameBuffer);
+            registerUnsharedGlObject(&voidFrameBuffer);
+        }
 
     for (auto& entry : m_multisampleFrameBuffers)
-        if (auto frameBuffer = entry.second.lock())
-            unregisterUnsharedGlObject(std::move(frameBuffer));
+        if (auto multisampleFrameBuffer = entry.second.lock())
+        {
+            std::shared_ptr<void> voidMultisampleFrameBuffer = std::move(multisampleFrameBuffer);
+            registerUnsharedGlObject(&voidMultisampleFrameBuffer);
+        }
 }
 
 
@@ -436,7 +442,8 @@ bool RenderTextureImplFBO::createFrameBuffer()
     m_frameBuffers.emplace(Context::getActiveContextId(), frameBuffer);
 
     // Register the object with the current context so it is automatically destroyed
-    registerUnsharedGlObject(std::move(frameBuffer));
+    std::shared_ptr<void> voidFrameBuffer = std::move(frameBuffer);
+    registerUnsharedGlObject(&voidFrameBuffer);
 
 #ifndef SFML_OPENGL_ES
 
@@ -493,7 +500,8 @@ bool RenderTextureImplFBO::createFrameBuffer()
         m_multisampleFrameBuffers.emplace(Context::getActiveContextId(), multisampleFrameBuffer);
 
         // Register the object with the current context so it is automatically destroyed
-        registerUnsharedGlObject(std::move(multisampleFrameBuffer));
+        std::shared_ptr<void> voidMultisampleFrameBuffer = std::move(multisampleFrameBuffer);
+        registerUnsharedGlObject(&voidMultisampleFrameBuffer);
     }
 
 #endif
