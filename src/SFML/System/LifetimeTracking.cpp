@@ -53,7 +53,7 @@ namespace
 std::atomic<bool> lifetimeTrackingTestingModfe{false};
 std::atomic<bool> lifetimeTrackingFatalErrorTriggered{false};
 
-[[gnu::always_inline]] AtomicUInt& asAtomicUInt(char* ptr)
+[[gnu::always_inline]] inline AtomicUInt& asAtomicUInt(char* ptr)
 {
     return *std::launder(reinterpret_cast<AtomicUInt*>(ptr));
 }
