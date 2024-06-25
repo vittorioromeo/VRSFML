@@ -50,12 +50,10 @@ static_assert(alignof(AtomicUInt) == alignof(unsigned int));
 
 namespace
 {
-// NOLINTBEGIN(readability-identifier-naming)
-std::atomic<bool> s_testingMode{false};
-std::atomic<bool> s_fatalErrorTriggered{false};
-// NOLINTEND(readability-identifier-naming)
+std::atomic<bool> lifetimeTrackingTestingModfe{false};
+std::atomic<bool> lifetimeTrackingFatalErrorTriggered{false};
 
-AtomicUInt& asAtomicUInt(char* ptr)
+[[gnu::always_inline]] AtomicUInt& asAtomicUInt(char* ptr)
 {
     return *std::launder(reinterpret_cast<AtomicUInt*>(ptr));
 }
@@ -67,22 +65,22 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 LifetimeDependee::TestingModeGuard::TestingModeGuard()
 {
-    s_testingMode.store(true, std::memory_order_seq_cst);
+    lifetimeTrackingTestingModfe.store(true, std::memory_order_seq_cst);
 }
 
 
 ////////////////////////////////////////////////////////////
 LifetimeDependee::TestingModeGuard::~TestingModeGuard()
 {
-    s_testingMode.store(false, std::memory_order_seq_cst);
-    s_fatalErrorTriggered.store(false, std::memory_order_seq_cst);
+    lifetimeTrackingTestingModfe.store(false, std::memory_order_seq_cst);
+    lifetimeTrackingFatalErrorTriggered.store(false, std::memory_order_seq_cst);
 }
 
 
 ////////////////////////////////////////////////////////////
 bool LifetimeDependee::TestingModeGuard::fatalErrorTriggered()
 {
-    return s_fatalErrorTriggered.load(std::memory_order_seq_cst);
+    return lifetimeTrackingFatalErrorTriggered.load(std::memory_order_seq_cst);
 }
 
 
@@ -161,9 +159,9 @@ LifetimeDependee::~LifetimeDependee()
     if (finalCount == 0u)
         return;
 
-    if (s_testingMode)
+    if (lifetimeTrackingTestingModfe)
     {
-        s_fatalErrorTriggered = true;
+        lifetimeTrackingFatalErrorTriggered = true;
         return;
     }
 
