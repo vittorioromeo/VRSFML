@@ -34,7 +34,27 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-GlResource::GlResource() : m_sharedContext(priv::GlContext::getSharedContext())
+GlResource::GlResource()
+{
+    priv::GlContext::acquireSharedContext();
+}
+
+
+////////////////////////////////////////////////////////////
+GlResource::~GlResource()
+{
+    priv::GlContext::releaseSharedContext();
+}
+
+
+////////////////////////////////////////////////////////////
+GlResource::GlResource(const GlResource&) : GlResource{}
+{
+}
+
+
+////////////////////////////////////////////////////////////
+GlResource::GlResource(GlResource&&) noexcept : GlResource{}
 {
 }
 

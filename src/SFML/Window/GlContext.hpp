@@ -32,11 +32,16 @@
 #include <SFML/Window/Context.hpp>
 #include <SFML/Window/ContextSettings.hpp>
 
+#include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
 
-#include <SFML/System/UniquePtr.hpp>
-
 #include <cstdint>
+
+
+namespace sf
+{
+class GlResource;
+}
 
 
 namespace sf::priv
@@ -114,9 +119,7 @@ public:
     /// \return Pointer to the created context
     ///
     ////////////////////////////////////////////////////////////
-    static priv::UniquePtr<GlContext> create(const ContextSettings& settings,
-                                                 const WindowImpl&      owner,
-                                                 unsigned int           bitsPerPixel);
+    static priv::UniquePtr<GlContext> create(const ContextSettings& settings, const WindowImpl& owner, unsigned int bitsPerPixel);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context that embeds its own rendering target
@@ -297,9 +300,14 @@ protected:
     ContextSettings m_settings; //!< Creation settings of the context
 
 private:
+    friend GlResource;
+
     struct TransientContext;
     struct SharedContext;
     struct Impl;
+
+    static void acquireSharedContext();
+    static void releaseSharedContext();
 
     ////////////////////////////////////////////////////////////
     /// \brief Perform various initializations after the context construction
