@@ -32,8 +32,6 @@
 
 #include <SFML/System/Export.hpp>
 
-#include <atomic>
-
 
 namespace sf::priv
 {
@@ -68,14 +66,9 @@ public:
     void subDependant();
 
 private:
-    // NOLINTBEGIN(readability-identifier-naming)
-    static inline std::atomic<bool> s_testingMode{false};
-    static inline std::atomic<bool> s_fatalErrorTriggered{false};
-    // NOLINTEND(readability-identifier-naming)
-
-    const char*               m_dependeeName;   ///< Readable dependee type name
-    const char*               m_dependantName;  ///< Readable dependent type name
-    std::atomic<unsigned int> m_dependantCount; ///< Current alive dependant count
+    const char* m_dependeeName;                                        ///< Readable dependee type name
+    const char* m_dependantName;                                       ///< Readable dependent type name
+    alignas(unsigned int) char m_dependantCount[sizeof(unsigned int)]; ///< Current alive dependant count
 };
 
 class SFML_SYSTEM_API LifetimeDependant

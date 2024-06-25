@@ -33,7 +33,9 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/LifetimeTracking.hpp>
 
+#include <atomic>
 #include <exception>
+#include <new>
 #include <ostream>
 #include <string>
 
@@ -41,36 +43,56 @@
 #include <cctype>
 
 
+using AtomicUInt = std::atomic<unsigned int>;
+
+static_assert(sizeof(AtomicUInt) == sizeof(unsigned int));
+static_assert(alignof(AtomicUInt) == alignof(unsigned int));
+
+namespace
+{
+// NOLINTBEGIN(readability-identifier-naming)
+std::atomic<bool> s_testingMode{false};
+std::atomic<bool> s_fatalErrorTriggered{false};
+// NOLINTEND(readability-identifier-naming)
+
+AtomicUInt& asAtomicUInt(char* ptr)
+{
+    return *std::launder(reinterpret_cast<AtomicUInt*>(ptr));
+}
+
+} // namespace
+
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 LifetimeDependee::TestingModeGuard::TestingModeGuard()
 {
-    LifetimeDependee::s_testingMode.store(true, std::memory_order_seq_cst);
+    s_testingMode.store(true, std::memory_order_seq_cst);
 }
 
 
 ////////////////////////////////////////////////////////////
 LifetimeDependee::TestingModeGuard::~TestingModeGuard()
 {
-    LifetimeDependee::s_testingMode.store(false, std::memory_order_seq_cst);
-    LifetimeDependee::s_fatalErrorTriggered.store(false, std::memory_order_seq_cst);
+    s_testingMode.store(false, std::memory_order_seq_cst);
+    s_fatalErrorTriggered.store(false, std::memory_order_seq_cst);
 }
 
 
 ////////////////////////////////////////////////////////////
 bool LifetimeDependee::TestingModeGuard::fatalErrorTriggered()
 {
-    return LifetimeDependee::s_fatalErrorTriggered.load(std::memory_order_seq_cst);
+    return s_fatalErrorTriggered.load(std::memory_order_seq_cst);
 }
 
 
 ////////////////////////////////////////////////////////////
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 LifetimeDependee::LifetimeDependee(const char* dependeeName, const char* dependantName) :
 m_dependeeName(dependeeName),
-m_dependantName(dependantName),
-m_dependantCount(0u)
+m_dependantName(dependantName)
 {
+    new (m_dependantCount) AtomicUInt(0u);
 }
 
 
@@ -83,11 +105,13 @@ LifetimeDependee(rhs.m_dependeeName, rhs.m_dependantName)
 
 
 ////////////////////////////////////////////////////////////
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 LifetimeDependee::LifetimeDependee(LifetimeDependee&& rhs) noexcept :
 m_dependeeName(rhs.m_dependeeName),
-m_dependantName(rhs.m_dependantName),
-m_dependantCount(rhs.m_dependantCount.load(std::memory_order_relaxed))
+m_dependantName(rhs.m_dependantName)
 {
+    new (m_dependantCount) AtomicUInt(asAtomicUInt(rhs.m_dependantCount).load(std::memory_order_relaxed));
+
     // Intentionally not resetting `rhs.m_dependantCount` here, as we want to get a fatal error
     // if it wasn't `0u` when the move occurred.
 
@@ -105,7 +129,7 @@ LifetimeDependee& LifetimeDependee::operator=(const LifetimeDependee& rhs)
 
     m_dependeeName  = rhs.m_dependeeName;
     m_dependantName = rhs.m_dependantName;
-    m_dependantCount.store(0u, std::memory_order_relaxed);
+    asAtomicUInt(m_dependantCount).store(0u, std::memory_order_relaxed);
 
     return *this;
 }
@@ -119,7 +143,8 @@ LifetimeDependee& LifetimeDependee::operator=(LifetimeDependee&& rhs) noexcept
 
     m_dependeeName  = rhs.m_dependeeName;
     m_dependantName = rhs.m_dependantName;
-    m_dependantCount.store(rhs.m_dependantCount.load(std::memory_order_relaxed), std::memory_order_relaxed);
+    asAtomicUInt(m_dependantCount)
+        .store(asAtomicUInt(rhs.m_dependantCount).load(std::memory_order_relaxed), std::memory_order_relaxed);
 
     // See rationale in move constructor for not resetting `rhs.m_dependantCount`.
 
@@ -130,7 +155,10 @@ LifetimeDependee& LifetimeDependee::operator=(LifetimeDependee&& rhs) noexcept
 ////////////////////////////////////////////////////////////
 LifetimeDependee::~LifetimeDependee()
 {
-    if (m_dependantCount.load(std::memory_order_relaxed) == 0u)
+    const unsigned int finalCount = asAtomicUInt(m_dependantCount).load(std::memory_order_relaxed);
+    asAtomicUInt(m_dependantCount).~AtomicUInt();
+
+    if (finalCount == 0u)
         return;
 
     if (s_testingMode)
@@ -204,15 +232,15 @@ LifetimeDependee::~LifetimeDependee()
 ////////////////////////////////////////////////////////////
 void LifetimeDependee::addDependant()
 {
-    m_dependantCount.fetch_add(1u, std::memory_order_relaxed);
+    asAtomicUInt(m_dependantCount).fetch_add(1u, std::memory_order_relaxed);
 }
 
 
 ////////////////////////////////////////////////////////////
 void LifetimeDependee::subDependant()
 {
-    assert(m_dependantCount.load(std::memory_order_relaxed) > 0u);
-    m_dependantCount.fetch_sub(1u, std::memory_order_relaxed);
+    assert(asAtomicUInt(m_dependantCount).load(std::memory_order_relaxed) > 0u);
+    asAtomicUInt(m_dependantCount).fetch_sub(1u, std::memory_order_relaxed);
 }
 
 
