@@ -33,8 +33,6 @@
 
 #include <SFML/System/Vector2.hpp>
 
-#include <array>
-
 
 namespace sf
 {
@@ -269,10 +267,11 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     // clang-format off
-    std::array<float, 16> m_matrix{1.f, 0.f, 0.f, 0.f,
-                                   0.f, 1.f, 0.f, 0.f,
-                                   0.f, 0.f, 1.f, 0.f,
-                                   0.f, 0.f, 0.f, 1.f}; //!< 4x4 matrix defining the transformation
+    // Not using `std::array` here to minimize compilation impact of `Transform.hpp`.
+    float m_matrix[16]{1.f, 0.f, 0.f, 0.f,
+                       0.f, 1.f, 0.f, 0.f,
+                       0.f, 0.f, 1.f, 0.f,
+                       0.f, 0.f, 0.f, 1.f}; //!< 4x4 matrix defining the transformation
     // clang-format off
 };
 
