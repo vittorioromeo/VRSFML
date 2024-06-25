@@ -28,6 +28,7 @@
 #include <SFML/Window/GlContext.hpp>
 #include <SFML/Window/GlResource.hpp>
 
+#include <memory>
 #include <utility>
 
 
@@ -60,16 +61,16 @@ GlResource::GlResource(GlResource&&) noexcept : GlResource{}
 
 
 ////////////////////////////////////////////////////////////
-void GlResource::registerUnsharedGlObject(std::shared_ptr<void> object)
+void GlResource::registerUnsharedGlObject(void* objectSharedPtr)
 {
-    priv::GlContext::registerUnsharedGlObject(std::move(object));
+    priv::GlContext::registerUnsharedGlObject(std::move(*static_cast<std::shared_ptr<void>*>(objectSharedPtr)));
 }
 
 
 ////////////////////////////////////////////////////////////
-void GlResource::unregisterUnsharedGlObject(std::shared_ptr<void> object)
+void GlResource::unregisterUnsharedGlObject(void* objectSharedPtr)
 {
-    priv::GlContext::unregisterUnsharedGlObject(std::move(object));
+    priv::GlContext::unregisterUnsharedGlObject(std::move(*static_cast<std::shared_ptr<void>*>(objectSharedPtr)));
 }
 
 
