@@ -34,10 +34,10 @@
 #include <SFML/System/LifetimeTracking.hpp>
 #include <SFML/System/PassKey.hpp>
 #include <SFML/System/Time.hpp>
+#include <SFML/System/UniquePtr.hpp>
 
 #include <filesystem>
 #include <optional>
-#include <unordered_set>
 #include <vector>
 
 #include <cstddef>
@@ -304,18 +304,10 @@ private:
     void detachSound(Sound* sound) const;
 
     ////////////////////////////////////////////////////////////
-    // Types
-    ////////////////////////////////////////////////////////////
-    using SoundList = std::unordered_set<Sound*>; //!< Set of unique sound instances
-
-    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::vector<std::int16_t> m_samples;                        //!< Samples buffer
-    unsigned int              m_sampleRate{44100};              //!< Number of samples per second
-    std::vector<SoundChannel> m_channelMap{SoundChannel::Mono}; //!< The map of position in sample frame to sound channel
-    Time              m_duration;                               //!< Sound duration
-    mutable SoundList m_sounds;                                 //!< List of sounds that are using this buffer
+    struct Impl;
+    priv::UniquePtr<Impl> m_impl; //!< Implementation details
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking
