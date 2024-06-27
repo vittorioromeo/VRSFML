@@ -50,7 +50,6 @@ struct ErrFlushType
 
 inline constexpr ErrFlushType errFlush;
 
-
 ////////////////////////////////////////////////////////////
 class SFML_SYSTEM_API ErrStream
 {
