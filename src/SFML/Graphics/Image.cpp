@@ -42,7 +42,6 @@
 #include <stb_image_write.h>
 
 #include <algorithm>
-#include <iomanip>
 #include <ostream>
 #include <string>
 
@@ -360,7 +359,7 @@ std::optional<std::vector<std::uint8_t>> Image::saveToMemory(std::string_view fo
         }
     }
 
-    priv::err() << "Failed to save image with format " << std::quoted(format) << std::endl;
+    priv::err() << "Failed to save image with format \"" << format << '"' << std::endl;
     return std::nullopt;
 }
 

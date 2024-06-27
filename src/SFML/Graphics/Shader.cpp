@@ -38,14 +38,12 @@
 #include <SFML/System/Vector3.hpp>
 
 #include <fstream>
-#include <iomanip>
 #include <optional>
 #include <ostream>
 #include <utility>
 #include <vector>
 
 #include <cassert>
-#include <cstdint>
 
 #ifndef SFML_OPENGL_ES
 
@@ -722,7 +720,7 @@ void Shader::setUniform(const std::string& name, const Texture& texture)
             // New entry, make sure there are enough texture units
             if (m_textures.size() + 1 >= getMaxTextureUnits())
             {
-                priv::err() << "Impossible to use texture " << std::quoted(name)
+                priv::err() << "Impossible to use texture \"" << name << '"'
                             << " for shader: all available texture units are used" << std::endl;
                 return;
             }
@@ -1021,7 +1019,7 @@ std::optional<Shader> Shader::compile(std::string_view vertexShaderCode,
         {
             char log[1024];
             glCheck(GLEXT_glGetInfoLog(vertexShader, sizeof(log), nullptr, log));
-            priv::err() << "Failed to compile vertex shader:" << '\n' << log << std::endl;
+            priv::err() << "Failed to compile vertex shader:" << '\n' << static_cast<const char*>(log) << std::endl;
             glCheck(GLEXT_glDeleteObject(vertexShader));
             glCheck(GLEXT_glDeleteObject(shaderProgram));
             return std::nullopt;
@@ -1049,7 +1047,7 @@ std::optional<Shader> Shader::compile(std::string_view vertexShaderCode,
         {
             char log[1024];
             glCheck(GLEXT_glGetInfoLog(geometryShader, sizeof(log), nullptr, log));
-            priv::err() << "Failed to compile geometry shader:" << '\n' << log << std::endl;
+            priv::err() << "Failed to compile geometry shader:" << '\n' << static_cast<const char*>(log) << std::endl;
             glCheck(GLEXT_glDeleteObject(geometryShader));
             glCheck(GLEXT_glDeleteObject(shaderProgram));
             return std::nullopt;
@@ -1078,7 +1076,7 @@ std::optional<Shader> Shader::compile(std::string_view vertexShaderCode,
         {
             char log[1024];
             glCheck(GLEXT_glGetInfoLog(fragmentShader, sizeof(log), nullptr, log));
-            priv::err() << "Failed to compile fragment shader:" << '\n' << log << std::endl;
+            priv::err() << "Failed to compile fragment shader:" << '\n' << static_cast<const char*>(log) << std::endl;
             glCheck(GLEXT_glDeleteObject(fragmentShader));
             glCheck(GLEXT_glDeleteObject(shaderProgram));
             return std::nullopt;
@@ -1099,7 +1097,7 @@ std::optional<Shader> Shader::compile(std::string_view vertexShaderCode,
     {
         char log[1024];
         glCheck(GLEXT_glGetInfoLog(shaderProgram, sizeof(log), nullptr, log));
-        priv::err() << "Failed to link shader:" << '\n' << log << std::endl;
+        priv::err() << "Failed to link shader:" << '\n' << static_cast<const char*>(log) << std::endl;
         glCheck(GLEXT_glDeleteObject(shaderProgram));
         return std::nullopt;
     }
@@ -1146,7 +1144,7 @@ int Shader::getUniformLocation(const std::string& name)
         m_uniforms.emplace(name, location);
 
         if (location == -1)
-            priv::err() << "Uniform " << std::quoted(name) << " not found in shader" << std::endl;
+            priv::err() << "Uniform \"" << name << "\" not found in shader" << std::endl;
 
         return location;
     }

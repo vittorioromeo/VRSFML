@@ -29,9 +29,9 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Export.hpp>
 
-#include <mutex>
-#include <ostream>
-#include <utility>
+#include <SFML/System/UniquePtr.hpp>
+
+#include <iosfwd>
 
 
 namespace sf::priv
@@ -43,7 +43,8 @@ private:
     class SFML_SYSTEM_API Guard
     {
     public:
-        explicit Guard(std::ostream& stream, std::unique_lock<std::mutex>&& lockGuard);
+        explicit Guard(std::ostream& stream, void* mutexPtr);
+        ~Guard();
 
         Guard(const Guard&)            = delete;
         Guard& operator=(const Guard&) = delete;
@@ -51,22 +52,21 @@ private:
         Guard(Guard&&)            = delete;
         Guard& operator=(Guard&&) = delete;
 
+        Guard& operator<<(std::ios_base& (*func)(std::ios_base&));
         Guard& operator<<(std::ostream& (*func)(std::ostream&));
 
+        Guard& operator<<(const char* value);
+
         template <typename T>
-        Guard& operator<<(const T& value)
-        {
-            m_stream << value;
-            return *this;
-        }
+        Guard& operator<<(const T& value);
 
     private:
-        std::ostream&                m_stream;
-        std::unique_lock<std::mutex> m_lockGuard;
+        std::ostream& m_stream;
+        void*         m_mutexPtr;
     };
 
-    std::ostream m_stream;
-    std::mutex   m_mutex;
+    struct Impl;
+    priv::UniquePtr<Impl> m_impl; //!< Implementation details
 
 public:
     explicit ErrStream(std::streambuf* sbuf);
@@ -76,14 +76,10 @@ public:
     std::streambuf* rdbuf();
     void            rdbuf(std::streambuf* sbuf);
 
-    template <typename T>
-    Guard operator<<(const T& value)
-    {
-        std::unique_lock lockGuard(m_mutex);
-        m_stream << value;
+    Guard operator<<(const char* value);
 
-        return Guard{m_stream, std::move(lockGuard)};
-    }
+    template <typename T>
+    Guard operator<<(const T& value);
 };
 
 ////////////////////////////////////////////////////////////

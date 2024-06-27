@@ -5,7 +5,6 @@
 #include <SFML/Network/Socket.hpp>
 #include <SFML/Network/UdpSocket.hpp>
 
-#include <iomanip>
 #include <iostream>
 #include <optional>
 
@@ -33,13 +32,13 @@ void runUdpServer(unsigned short port)
     unsigned short               senderPort = 0;
     if (socket.receive(in, sizeof(in), received, sender, senderPort) != sf::Socket::Status::Done)
         return;
-    std::cout << "Message received from client " << sender.value() << ": " << std::quoted(in) << std::endl;
+    std::cout << "Message received from client " << sender.value() << ": \"" << in << '"' << std::endl;
 
     // Send an answer to the client
     const char out[] = "Hi, I'm the server";
     if (socket.send(out, sizeof(out), sender.value(), senderPort) != sf::Socket::Status::Done)
         return;
-    std::cout << "Message sent to the client: " << std::quoted(out) << std::endl;
+    std::cout << "Message sent to the client: \"" << out << '"' << std::endl;
 }
 
 
@@ -64,7 +63,7 @@ void runUdpClient(unsigned short port)
     const char out[] = "Hi, I'm a client";
     if (socket.send(out, sizeof(out), server.value(), port) != sf::Socket::Status::Done)
         return;
-    std::cout << "Message sent to the server: " << std::quoted(out) << std::endl;
+    std::cout << "Message sent to the server: \"" << out << '"' << std::endl;
 
     // Receive an answer from anyone (but most likely from the server)
     char                         in[128];
@@ -73,5 +72,5 @@ void runUdpClient(unsigned short port)
     unsigned short               senderPort = 0;
     if (socket.receive(in, sizeof(in), received, sender, senderPort) != sf::Socket::Status::Done)
         return;
-    std::cout << "Message received from " << sender.value() << ": " << std::quoted(in) << std::endl;
+    std::cout << "Message received from " << sender.value() << ": \"" << in << '"' << std::endl;
 }

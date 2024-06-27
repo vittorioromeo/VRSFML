@@ -33,7 +33,6 @@
 #include <SFML/System/Win32/WindowsHeader.hpp>
 
 #include <algorithm>
-#include <iomanip>
 #include <ostream>
 #include <regstr.h>
 #include <sstream>
@@ -767,8 +766,8 @@ bool JoystickImpl::openDInput(unsigned int index)
 
                     if (FAILED(result))
                     {
-                        priv::err() << "Failed to get DirectInput device axis mode for device "
-                                    << std::quoted(m_identification.name.toAnsiString()) << ": " << result << std::endl;
+                        priv::err() << "Failed to get DirectInput device axis mode for device " << '"'
+                                    << m_identification.name.toAnsiString() << "\": " << result << std::endl;
 
                         m_device->Release();
                         m_device = nullptr;
@@ -799,8 +798,8 @@ bool JoystickImpl::openDInput(unsigned int index)
 
                     if (FAILED(result))
                     {
-                        priv::err() << "Failed to verify DirectInput device axis mode for device "
-                                    << std::quoted(m_identification.name.toAnsiString()) << ": " << result << std::endl;
+                        priv::err() << "Failed to verify DirectInput device axis mode for device " << '"'
+                                    << m_identification.name.toAnsiString() << "\": " << result << std::endl;
 
                         m_device->Release();
                         m_device = nullptr;
@@ -852,8 +851,8 @@ bool JoystickImpl::openDInput(unsigned int index)
             }
             else
             {
-                priv::err() << "Failed to set DirectInput device buffer size for device "
-                            << std::quoted(m_identification.name.toAnsiString()) << ": " << result << std::endl;
+                priv::err() << "Failed to set DirectInput device buffer size for device " << '"'
+                            << m_identification.name.toAnsiString() << "\": " << result << std::endl;
 
                 m_device->Release();
                 m_device = nullptr;

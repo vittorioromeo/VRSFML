@@ -6,7 +6,6 @@
 #include <SFML/Network/TcpListener.hpp>
 #include <SFML/Network/TcpSocket.hpp>
 
-#include <iomanip>
 #include <iostream>
 #include <optional>
 
@@ -38,14 +37,14 @@ void runTcpServer(unsigned short port)
     const char out[] = "Hi, I'm the server";
     if (socket.send(out, sizeof(out)) != sf::Socket::Status::Done)
         return;
-    std::cout << "Message sent to the client: " << std::quoted(out) << std::endl;
+    std::cout << "Message sent to the client: \"" << out << '"' << std::endl;
 
     // Receive a message back from the client
     char        in[128];
     std::size_t received = 0;
     if (socket.receive(in, sizeof(in), received) != sf::Socket::Status::Done)
         return;
-    std::cout << "Answer received from the client: " << std::quoted(in) << std::endl;
+    std::cout << "Answer received from the client: \"" << in << '"' << std::endl;
 }
 
 
@@ -77,11 +76,11 @@ void runTcpClient(unsigned short port)
     std::size_t received = 0;
     if (socket.receive(in, sizeof(in), received) != sf::Socket::Status::Done)
         return;
-    std::cout << "Message received from the server: " << std::quoted(in) << std::endl;
+    std::cout << "Message received from the server: \"" << in << '"' << std::endl;
 
     // Send an answer to the server
     const char out[] = "Hi, I'm a client";
     if (socket.send(out, sizeof(out)) != sf::Socket::Status::Done)
         return;
-    std::cout << "Message sent to the server: " << std::quoted(out) << std::endl;
+    std::cout << "Message sent to the server: \"" << out << '"' << std::endl;
 }
