@@ -167,8 +167,7 @@ struct Font::Impl
 
 
 ////////////////////////////////////////////////////////////
-Font::Font(priv::PassKey<Font>&&, void* fontHandlesSharedPtr, std::string&& familyName) :
-m_impl(priv::makeUnique<Impl>())
+Font::Font(priv::PassKey<Font>&&, void* fontHandlesSharedPtr, std::string&& familyName)
 {
     m_impl->fontHandles = std::move(*static_cast<std::shared_ptr<FontHandles>*>(fontHandlesSharedPtr));
     m_impl->info.family = std::move(familyName);
@@ -180,31 +179,19 @@ Font::~Font() = default;
 
 
 ////////////////////////////////////////////////////////////
-Font::Font(const Font& rhs) : m_impl(priv::makeUnique<Impl>(*rhs.m_impl))
-{
-}
+Font::Font(const Font& rhs) = default;
 
 
 ////////////////////////////////////////////////////////////
-Font::Font(Font&& rhs) noexcept : m_impl(std::move(rhs.m_impl))
-{
-}
+Font::Font(Font&& rhs) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-Font& Font::operator=(const Font& rhs)
-{
-    m_impl = priv::makeUnique<Impl>(*rhs.m_impl);
-    return *this;
-}
+Font& Font::operator=(const Font& rhs) = default;
 
 
 ////////////////////////////////////////////////////////////
-Font& Font::operator=(Font&& rhs) noexcept
-{
-    m_impl = std::move(rhs.m_impl);
-    return *this;
-}
+Font& Font::operator=(Font&& rhs) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////

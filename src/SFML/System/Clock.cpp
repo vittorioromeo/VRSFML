@@ -28,7 +28,6 @@
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Time.hpp>
 #include <SFML/System/TimeChronoUtil.hpp>
-#include <SFML/System/UniquePtr.hpp>
 
 #ifdef SFML_SYSTEM_ANDROID
 #include <SFML/System/SuspendAwareClock.hpp>
@@ -91,9 +90,7 @@ struct Clock::Impl
 
 
 ////////////////////////////////////////////////////////////
-Clock::Clock() : m_impl(priv::makeUnique<Impl>())
-{
-}
+Clock::Clock() = default;
 
 
 ////////////////////////////////////////////////////////////
@@ -101,17 +98,11 @@ Clock::~Clock() = default;
 
 
 ////////////////////////////////////////////////////////////
-Clock::Clock(const Clock& rhs) : m_impl(priv::makeUnique<Impl>(*rhs.m_impl))
-{
-}
+Clock::Clock(const Clock& rhs) = default;
 
 
 ////////////////////////////////////////////////////////////
-Clock& Clock::operator=(const Clock& rhs)
-{
-    m_impl = priv::makeUnique<Impl>(*rhs.m_impl);
-    return *this;
-}
+Clock& Clock::operator=(const Clock& rhs) = default;
 
 
 ////////////////////////////////////////////////////////////

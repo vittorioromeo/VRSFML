@@ -31,9 +31,9 @@
 
 #include <SFML/Graphics/Rect.hpp>
 
+#include <SFML/System/InPlacePImpl.hpp>
 #include <SFML/System/LifetimeTracking.hpp>
 #include <SFML/System/PassKey.hpp>
-#include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #include <filesystem>
@@ -394,7 +394,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    priv::UniquePtr<Impl> m_impl; //!< Implementation details
+    priv::InPlacePImpl<Impl, 256> m_impl; //!< Implementation details
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking

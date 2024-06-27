@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Export.hpp>
 
-#include <SFML/System/UniquePtr.hpp>
+#include <SFML/System/InPlacePImpl.hpp>
 
 #include <iosfwd>
 
@@ -82,7 +82,7 @@ private:
     };
 
     struct Impl;
-    priv::UniquePtr<Impl> m_impl; //!< Implementation details
+    priv::InPlacePImpl<Impl, 512> m_impl; //!< Implementation details
 
 public:
     explicit ErrStream(std::streambuf* sbuf);

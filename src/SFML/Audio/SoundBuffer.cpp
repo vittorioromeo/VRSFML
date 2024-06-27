@@ -25,8 +25,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/System/UniquePtr.hpp"
-
 #include <SFML/Audio/InputSoundFile.hpp>
 #include <SFML/Audio/OutputSoundFile.hpp>
 #include <SFML/Audio/Sound.hpp>
@@ -49,6 +47,8 @@ using SoundList = std::unordered_set<Sound*>; //!< Set of unique sound instances
 ////////////////////////////////////////////////////////////
 struct SoundBuffer::Impl
 {
+    explicit Impl() = default;
+
     explicit Impl(std::vector<std::int16_t>&& theSamples) : samples(std::move(theSamples))
     {
     }
@@ -62,7 +62,7 @@ struct SoundBuffer::Impl
 
 
 ////////////////////////////////////////////////////////////
-SoundBuffer::SoundBuffer(const SoundBuffer& copy) : m_impl(priv::makeUnique<Impl>(*copy.m_impl))
+SoundBuffer::SoundBuffer(const SoundBuffer& copy)
 {
     // don't copy the attached sounds
     m_impl->samples  = copy.m_impl->samples;
@@ -228,14 +228,20 @@ Time SoundBuffer::getDuration() const
 ////////////////////////////////////////////////////////////
 SoundBuffer& SoundBuffer::operator=(const SoundBuffer& right)
 {
-    m_impl = priv::makeUnique<Impl>(*right.m_impl);
+    SoundBuffer temp(right);
+
+    std::swap(m_impl->samples, temp.m_impl->samples);
+    std::swap(m_impl->sampleRate, temp.m_impl->sampleRate);
+    std::swap(m_impl->channelMap, temp.m_impl->channelMap);
+    std::swap(m_impl->duration, temp.m_impl->duration);
+    std::swap(m_impl->sounds, temp.m_impl->sounds); // swap sounds too, so that they are detached when temp is destroyed
+
     return *this;
 }
 
 
 ////////////////////////////////////////////////////////////
-SoundBuffer::SoundBuffer(priv::PassKey<SoundBuffer>&&, std::vector<std::int16_t>&& samples) :
-m_impl(priv::makeUnique<Impl>(std::move(samples)))
+SoundBuffer::SoundBuffer(priv::PassKey<SoundBuffer>&&, std::vector<std::int16_t>&& samples) : m_impl(std::move(samples))
 {
 }
 

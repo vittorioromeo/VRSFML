@@ -877,10 +877,7 @@ bool GlContext::setActive(bool active)
 
 
 ////////////////////////////////////////////////////////////
-GlContext::GlContext() : m_impl(priv::makeUnique<Impl>())
-{
-    // Nothing to do
-}
+GlContext::GlContext() = default;
 
 
 ////////////////////////////////////////////////////////////

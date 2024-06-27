@@ -31,10 +31,10 @@
 
 #include <SFML/Audio/SoundChannel.hpp>
 
+#include <SFML/System/InPlacePImpl.hpp>
 #include <SFML/System/LifetimeTracking.hpp>
 #include <SFML/System/PassKey.hpp>
 #include <SFML/System/Time.hpp>
-#include <SFML/System/UniquePtr.hpp>
 
 #include <filesystem>
 #include <optional>
@@ -307,7 +307,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    priv::UniquePtr<Impl> m_impl; //!< Implementation details
+    priv::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking
