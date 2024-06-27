@@ -3,12 +3,12 @@
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/Graphics/StencilMode.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
 #include <GraphicsUtil.hpp>
 #include <WindowUtil.hpp>
 
-TEST_CASE("[Graphics] Render Tests", runDisplayTests())
+TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
 {
     SECTION("Stencil Tests")
     {

@@ -1,11 +1,13 @@
 #include <SFML/Window/Cursor.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
+#include <StringifyOptionalUtil.hpp>
 #include <WindowUtil.hpp>
+
 #include <type_traits>
 
-TEST_CASE("[Window] sf::Cursor", runDisplayTests())
+TEST_CASE("[Window] sf::Cursor" * doctest::skip(skipDisplayTests))
 {
     SECTION("Type traits")
     {

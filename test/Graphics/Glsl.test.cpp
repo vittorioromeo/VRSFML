@@ -4,9 +4,10 @@
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/Transform.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
 #include <SystemUtil.hpp>
+
 #include <type_traits>
 
 TEST_CASE("[Graphics] sf::Glsl")

@@ -1,8 +1,9 @@
 #include <SFML/System/Angle.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
 #include <SystemUtil.hpp>
+
 #include <type_traits>
 
 TEST_CASE("[System] sf::Angle")

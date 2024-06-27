@@ -3,9 +3,10 @@
 // Other 1st party headers
 #include <SFML/Graphics/Vertex.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
 #include <GraphicsUtil.hpp>
+
 #include <type_traits>
 
 // Skip these tests with [.display] because they produce flakey failures in CI when using xvfb-run

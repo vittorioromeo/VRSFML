@@ -1,12 +1,14 @@
 #include <SFML/Window/VideoMode.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
+#include <SystemUtil.hpp>
 #include <WindowUtil.hpp>
+
 #include <algorithm>
 #include <type_traits>
 
-TEST_CASE("[Window] sf::VideoMode", runDisplayTests())
+TEST_CASE("[Window] sf::VideoMode" * doctest::skip(skipDisplayTests))
 {
     SECTION("Type traits")
     {

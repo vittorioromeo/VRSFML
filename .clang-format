@@ -112,10 +112,12 @@ IncludeCategories:
   - Priority: 8
     Regex: '^<SFML\/System'
   - Priority: 9
-    Regex: '^<(glad|gl|X11|jni|android|stb_|GLES2|vorbis|miniaudio|catch2)'
+    Regex: '^<(glad|gl|X11|jni|android|stb_|GLES2|vorbis|miniaudio|doctest|Doctest)'
   - Priority: 10
-    Regex: '^<([^c](.+)|coroutine|charconv|chrono|complex|concepts|condition_variable)>$'
+    Regex: '^<(AudioUtil|SystemUtil|GraphicsUtil|WindowUtil|StringifyVectorUtil|StringifyOptionalUtil|StringifyStringUtil|StringifyArrayUtil|LoadIntoMemoryUtil)'
   - Priority: 11
+    Regex: '^<([^c](.+)|coroutine|charconv|chrono|complex|concepts|condition_variable)>$'
+  - Priority: 12
     Regex: '^<c(.+)>$'
 SortIncludes: true
 SortUsingDeclarations: true

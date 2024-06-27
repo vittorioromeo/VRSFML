@@ -3,10 +3,10 @@
 // Other 1st party headers
 #include <SFML/Graphics/CircleShape.hpp>
 
-#include <catch2/catch_approx.hpp>
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
 #include <SystemUtil.hpp>
+
 #include <type_traits>
 
 TEST_CASE("[Graphics] sf::ConvexShape")

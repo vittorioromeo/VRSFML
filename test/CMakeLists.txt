@@ -3,58 +3,67 @@ include(FetchContent)
 add_subdirectory(install)
 set_target_warnings(test-sfml-install)
 
-set(CATCH_CONFIG_FAST_COMPILE ON CACHE BOOL "")
-set(CATCH_CONFIG_NO_EXPERIMENTAL_STATIC_ANALYSIS_SUPPORT ON CACHE BOOL "")
-FetchContent_Declare(Catch2
-    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-    GIT_TAG v3.6.0
+set(DOCTEST_CONFIG_SUPER_FAST_ASSERTS ON CACHE BOOL "")
+set(DOCTEST_NO_INSTALL ON CACHE BOOL "")
+
+FetchContent_Declare(doctest
+    GIT_REPOSITORY https://github.com/doctest/doctest
+    GIT_TAG v2.4.11
     GIT_SHALLOW ON)
-FetchContent_MakeAvailable(Catch2)
-include(Catch)
 
-# Build Catch2 in C++20 mode to enable C++20 features
-target_compile_features(Catch2 PRIVATE cxx_std_20)
+FetchContent_MakeAvailable(doctest)
+include(${doctest_SOURCE_DIR}/scripts/cmake/doctest.cmake)
 
-# Ensure that Catch2 sources and headers are not analyzed by any tools
-set_target_properties(Catch2 PROPERTIES COMPILE_OPTIONS "" EXPORT_COMPILE_COMMANDS OFF)
-set_target_properties(Catch2WithMain PROPERTIES EXPORT_COMPILE_COMMANDS OFF)
-get_target_property(CATCH2_INCLUDE_DIRS Catch2 INTERFACE_INCLUDE_DIRECTORIES)
-target_include_directories(Catch2 SYSTEM INTERFACE ${CATCH2_INCLUDE_DIRS})
+# Build doctest in C++20 mode to enable C++20 features
+target_compile_features(doctest INTERFACE cxx_std_20)
+
+# Ensure that doctest sources and headers are not analyzed by any tools
+set_target_properties(doctest PROPERTIES COMPILE_OPTIONS "" EXPORT_COMPILE_COMMANDS OFF)
+set_target_properties(doctest_with_main PROPERTIES EXPORT_COMPILE_COMMANDS OFF)
+get_target_property(DOCTEST_INCLUDE_DIRS doctest INTERFACE_INCLUDE_DIRECTORIES)
+target_include_directories(doctest SYSTEM INTERFACE ${DOCTEST_INCLUDE_DIRS})
 
 # enable precompiled headers
 if (SFML_ENABLE_PCH)
-    message(VERBOSE "enabling PCH for Catch2")
-    target_precompile_headers(Catch2 REUSE_FROM sfml-system)
+    message(VERBOSE "enabling PCH for doctest")
+    target_precompile_headers(doctest REUSE_FROM sfml-system)
 
     # necessary to find `WindowsHeader.hpp` on Windows
-    target_include_directories(Catch2 PRIVATE ${PROJECT_SOURCE_DIR}/src)
+    target_include_directories(doctest PRIVATE ${PROJECT_SOURCE_DIR}/src)
 
-    # necessary to find SFML headers from Catch2 through the PCH header
-    target_include_directories(Catch2 PRIVATE ${PROJECT_SOURCE_DIR}/include)
+    # necessary to find SFML headers from doctest through the PCH header
+    target_include_directories(doctest PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
-    # necessary to find Catch2 headers from SFML through the PCH header
-    target_include_directories(sfml-system PRIVATE ${CATCH2_INCLUDE_DIRS})
+    # necessary to find doctest headers from SFML through the PCH header
+    target_include_directories(sfml-system PRIVATE ${DOCTEST_INCLUDE_DIRS})
 endif()
 
 add_library(sfml-test-main STATIC
+    TestUtilities/Doctest.hpp
+    TestUtilities/Doctest.cpp
     TestUtilities/SystemUtil.hpp
     TestUtilities/SystemUtil.cpp
-    TestUtilities/LoadIntoMemory.hpp
-    TestUtilities/LoadIntoMemory.cpp
+    TestUtilities/LoadIntoMemoryUtil.hpp
+    TestUtilities/LoadIntoMemoryUtil.cpp
     TestUtilities/WindowUtil.hpp
     TestUtilities/WindowUtil.cpp
     TestUtilities/GraphicsUtil.hpp
     TestUtilities/GraphicsUtil.cpp
     TestUtilities/AudioUtil.hpp
     TestUtilities/AudioUtil.cpp
+    TestUtilities/StringifyArrayUtil.hpp
+    TestUtilities/StringifyOptionalUtil.hpp
+    TestUtilities/StringifyStringUtil.hpp
+    TestUtilities/StringifyVectorUtil.hpp
 )
 target_include_directories(sfml-test-main PUBLIC TestUtilities)
-target_link_libraries(sfml-test-main PUBLIC SFML::System Catch2::Catch2WithMain)
+target_compile_definitions(sfml-test-main PUBLIC DOCTEST_CONFIG_REQUIRE_STRINGIFICATION_FOR_ALL_USED_TYPES)
+target_link_libraries(sfml-test-main PUBLIC SFML::System doctest::doctest_with_main)
 set_target_warnings(sfml-test-main)
 
 # set the target flags to use the appropriate C++ standard library
-sfml_set_stdlib(Catch2)
-sfml_set_stdlib(Catch2WithMain)
+sfml_set_stdlib(doctest)
+sfml_set_stdlib(doctest_with_main)
 sfml_set_stdlib(sfml-test-main)
 
 sfml_set_option(SFML_RUN_DISPLAY_TESTS ON BOOL "TRUE to run tests that require a display, FALSE to ignore it")
@@ -186,8 +195,8 @@ if(SFML_OS_ANDROID AND DEFINED ENV{LIBCXX_SHARED_SO})
         adb push $<TARGET_FILE:SFML::Network>      ${TARGET_DIR}\n\
         adb push $<TARGET_FILE:SFML::System>       ${TARGET_DIR}\n\
         adb push $<TARGET_FILE:SFML::Window>       ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:Catch2>             ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:Catch2WithMain>     ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:doctest>            ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:doctest_with_main>  ${TARGET_DIR}\n\
         adb push $ENV{LIBCXX_SHARED_SO}            ${TARGET_DIR}\n\
         adb push ${CMAKE_CURRENT_LIST_DIR}         ${TARGET_DIR}\n\
         adb shell \"chmod -R 775 ${TARGET_DIR} && ls -la ${TARGET_DIR}\"\n"

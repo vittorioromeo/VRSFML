@@ -1,6 +1,6 @@
 #include <SFML/Window/Vulkan.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
 TEST_CASE("[Window] sf::Vulkan")
 {

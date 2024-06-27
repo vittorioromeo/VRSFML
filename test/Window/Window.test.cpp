@@ -5,12 +5,14 @@
 
 #include <SFML/System/String.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
+#include <SystemUtil.hpp>
 #include <WindowUtil.hpp>
+
 #include <type_traits>
 
-TEST_CASE("[Window] sf::Window", runDisplayTests())
+TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 {
     SECTION("Type traits")
     {

@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <SFML/System/UniquePtr.hpp>
+
 #include <iosfwd>
 
 // String conversions for Catch2
@@ -31,6 +33,12 @@ std::ostream& operator<<(std::ostream& os, const Vector2<T>& vector);
 
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const Vector3<T>& vector);
+
+template <typename T, typename Del>
+std::ostream& operator<<(std::ostream& os, const sf::priv::UniquePtr<T, Del>&)
+{
+    return os;
+}
 } // namespace sf
 
 ////////////////////////////////////////////////////////////
@@ -54,7 +62,4 @@ bool operator==(const sf::Vector3<float>& lhs, const Approx<sf::Vector3<float>>&
 bool operator==(const sf::Angle& lhs, const Approx<sf::Angle>& rhs);
 
 template <typename T>
-std::ostream& operator<<(std::ostream& os, const Approx<T>& approx)
-{
-    return os << approx.value;
-}
+std::ostream& operator<<(std::ostream& os, const Approx<T>& approx);

@@ -5,14 +5,15 @@
 
 #include <SFML/System/LifetimeTracking.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
 #include <GraphicsUtil.hpp>
 #include <WindowUtil.hpp>
+
 #include <optional>
 #include <type_traits>
 
-TEST_CASE("[Graphics] sf::Text", runDisplayTests())
+TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
 {
     SECTION("Type traits")
     {

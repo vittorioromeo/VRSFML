@@ -6,13 +6,16 @@
 
 #include <SFML/System/String.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
+#include <StringifyOptionalUtil.hpp>
+#include <SystemUtil.hpp>
 #include <WindowUtil.hpp>
+
 #include <chrono>
 #include <type_traits>
 
-TEST_CASE("[Window] sf::WindowBase", runDisplayTests())
+TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 {
     SECTION("Type traits")
     {

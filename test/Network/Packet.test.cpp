@@ -3,13 +3,17 @@
 // Other 1st party headers
 #include <SFML/System/String.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
+
+#include <StringifyVectorUtil.hpp>
+#include <SystemUtil.hpp>
 
 #include <limits>
 #include <type_traits>
 #include <vector>
 
 #include <cstddef>
+#include <cstring>
 #include <cwchar>
 
 #define CHECK_PACKET_STREAM_OPERATORS(expected)              \

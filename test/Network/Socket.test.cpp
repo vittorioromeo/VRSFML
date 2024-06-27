@@ -1,8 +1,9 @@
 #include <SFML/Network/Socket.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
 #include <type_traits>
+#include <utility>
 
 class TestSocket : public sf::Socket
 {

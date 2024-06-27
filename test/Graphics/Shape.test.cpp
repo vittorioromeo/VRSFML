@@ -3,10 +3,11 @@
 // Other 1st party headers
 #include <SFML/Graphics/Texture.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
 #include <GraphicsUtil.hpp>
 #include <WindowUtil.hpp>
+
 #include <type_traits>
 
 class TriangleShape : public sf::Shape
@@ -26,7 +27,7 @@ private:
     sf::Vector2f m_points[3];
 };
 
-TEST_CASE("[Graphics] sf::Shape", runDisplayTests())
+TEST_CASE("[Graphics] sf::Shape" * doctest::skip(skipDisplayTests))
 {
     SECTION("Type traits")
     {

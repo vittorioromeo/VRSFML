@@ -1,4 +1,5 @@
-#include <LoadIntoMemory.hpp>
+#include <LoadIntoMemoryUtil.hpp>
+
 #include <fstream>
 
 #include <cassert>

@@ -1,9 +1,10 @@
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Time.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
 #include <SystemUtil.hpp>
+
 #include <thread>
 #include <type_traits>
 
