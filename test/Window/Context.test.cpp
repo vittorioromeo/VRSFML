@@ -3,9 +3,10 @@
 // Other 1st party headers
 #include <SFML/Window/ContextSettings.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
 #include <WindowUtil.hpp>
+
 #include <string>
 #include <type_traits>
 
@@ -15,7 +16,7 @@
 #define GLAPI
 #endif
 
-TEST_CASE("[Window] sf::Context", runDisplayTests())
+TEST_CASE("[Window] sf::Context" * doctest::skip(skipDisplayTests))
 {
     SECTION("Type traits")
     {

@@ -1,6 +1,6 @@
 #include <SFML/Audio/SoundFileReader.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
 TEST_CASE("[Audio] sf::SoundFileReader")
 {

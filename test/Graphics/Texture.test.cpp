@@ -5,14 +5,15 @@
 
 #include <SFML/System/FileInputStream.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
 #include <GraphicsUtil.hpp>
-#include <LoadIntoMemory.hpp>
+#include <LoadIntoMemoryUtil.hpp>
 #include <WindowUtil.hpp>
+
 #include <type_traits>
 
-TEST_CASE("[Graphics] sf::Texture", runDisplayTests())
+TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
 {
     SECTION("Type traits")
     {

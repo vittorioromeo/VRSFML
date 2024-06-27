@@ -1,9 +1,11 @@
 #include <SFML/Audio/AudioResource.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
 #include <AudioUtil.hpp>
+
 #include <type_traits>
+#include <utility>
 
 struct ma_engine;
 
@@ -33,7 +35,7 @@ struct TestAudioResource : public sf::AudioResource
 
 } // namespace
 
-TEST_CASE("[Audio] sf::AudioResource", runAudioDeviceTests())
+TEST_CASE("[Audio] sf::AudioResource" * doctest::skip(skipAudioDeviceTests))
 {
     SECTION("Type traits")
     {

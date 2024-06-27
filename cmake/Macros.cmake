@@ -380,7 +380,7 @@ function(sfml_add_test target SOURCES DEPENDS)
     endif()
 
     # Add the test
-    catch_discover_tests(${target} WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+    doctest_discover_tests(${target} WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
 endfunction()
 
 # Generate a SFMLConfig.cmake file (and associated files) from the targets registered against

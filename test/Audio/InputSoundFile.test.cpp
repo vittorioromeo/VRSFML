@@ -4,10 +4,12 @@
 #include <SFML/System/FileInputStream.hpp>
 #include <SFML/System/Time.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
-#include <LoadIntoMemory.hpp>
+#include <LoadIntoMemoryUtil.hpp>
+#include <StringifyArrayUtil.hpp>
 #include <SystemUtil.hpp>
+
 #include <array>
 #include <type_traits>
 

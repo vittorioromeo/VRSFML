@@ -5,12 +5,13 @@
 
 #pragma once
 
-#include <SystemUtil.hpp>
-#include <string>
+#include <iosfwd>
 
-// Required because WindowUtil.cpp doesn't include WindowUtil.hpp
-// NOLINTNEXTLINE(readability-redundant-declaration)
-std::string runDisplayTests();
+#ifdef SFML_RUN_DISPLAY_TESTS
+inline constexpr bool skipDisplayTests = false;
+#else
+inline constexpr bool skipDisplayTests = true;
+#endif
 
 // String conversions for Catch2
 namespace sf

@@ -3,13 +3,15 @@
 // Other 1st party headers
 #include <SFML/Graphics/Texture.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
+#include <GraphicsUtil.hpp>
 #include <WindowUtil.hpp>
+
 #include <optional>
 #include <type_traits>
 
-TEST_CASE("[Graphics] sf::Sprite", runDisplayTests())
+TEST_CASE("[Graphics] sf::Sprite" * doctest::skip(skipDisplayTests))
 {
     SECTION("Type traits")
     {

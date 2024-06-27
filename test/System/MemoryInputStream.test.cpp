@@ -1,6 +1,6 @@
 #include <SFML/System/MemoryInputStream.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
 #include <string_view>
 

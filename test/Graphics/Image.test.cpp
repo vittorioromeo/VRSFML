@@ -3,9 +3,10 @@
 // Other 1st party headers
 #include <SFML/System/FileInputStream.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
 #include <GraphicsUtil.hpp>
+
 #include <array>
 #include <type_traits>
 
