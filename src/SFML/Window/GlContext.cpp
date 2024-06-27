@@ -36,7 +36,6 @@
 
 #include <algorithm>
 #include <atomic>
-#include <iomanip>
 #include <mutex>
 #include <optional>
 #include <ostream>
@@ -1045,8 +1044,8 @@ void GlContext::initialize(const ContextSettings& requestedSettings)
                 !parseVersionString(version, "OpenGL ES ", m_settings.majorVersion, m_settings.minorVersion) &&
                 !parseVersionString(version, "", m_settings.majorVersion, m_settings.minorVersion))
             {
-                priv::err() << "Unable to parse OpenGL version string: " << std::quoted(version)
-                            << ", defaulting to 1.1" << std::endl;
+                priv::err() << "Unable to parse OpenGL version string: \"" << version << '"' << ", defaulting to 1.1"
+                            << std::endl;
             }
         }
         else

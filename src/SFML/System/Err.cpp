@@ -26,8 +26,14 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Err.hpp>
+#include <SFML/System/UniquePtr.hpp>
 
+#include <filesystem>
 #include <iostream>
+#include <mutex>
+#include <ostream>
+#include <string>
+#include <string_view>
 
 #include <cstdio>
 
@@ -35,10 +41,27 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-ErrStream::Guard::Guard(std::ostream& stream, std::unique_lock<std::mutex>&& lockGuard) :
-m_stream(stream),
-m_lockGuard(std::move(lockGuard))
+struct ErrStream::Impl
 {
+    std::ostream stream;
+    std::mutex   mutex;
+
+    explicit Impl(std::streambuf* sbuf) : stream(sbuf)
+    {
+    }
+};
+
+
+////////////////////////////////////////////////////////////
+ErrStream::Guard::Guard(std::ostream& stream, void* mutexPtr) : m_stream(stream), m_mutexPtr(mutexPtr)
+{
+}
+
+
+////////////////////////////////////////////////////////////
+ErrStream::Guard::~Guard()
+{
+    static_cast<std::mutex*>(m_mutexPtr)->unlock();
 }
 
 
@@ -50,7 +73,14 @@ ErrStream::Guard& ErrStream::Guard::operator<<(std::ostream& (*func)(std::ostrea
 
 
 ////////////////////////////////////////////////////////////
-ErrStream::ErrStream(std::streambuf* sbuf) : m_stream(sbuf)
+ErrStream::Guard& ErrStream::Guard::operator<<(std::ios_base& (*func)(std::ios_base&))
+{
+    return this->operator<< <decltype(func)>(func);
+}
+
+
+////////////////////////////////////////////////////////////
+ErrStream::ErrStream(std::streambuf* sbuf) : m_impl(priv::makeUnique<Impl>(sbuf))
 {
 }
 
@@ -65,16 +95,16 @@ ErrStream::Guard ErrStream::operator<<(std::ostream& (*func)(std::ostream&))
 ////////////////////////////////////////////////////////////
 std::streambuf* ErrStream::rdbuf()
 {
-    const std::unique_lock lockGuard(m_mutex);
-    return m_stream.rdbuf();
+    const std::unique_lock lockGuard(m_impl->mutex);
+    return m_impl->stream.rdbuf();
 }
 
 
 ////////////////////////////////////////////////////////////
 void ErrStream::rdbuf(std::streambuf* sbuf)
 {
-    const std::unique_lock lockGuard(m_mutex);
-    m_stream.rdbuf(sbuf);
+    const std::unique_lock lockGuard(m_impl->mutex);
+    m_impl->stream.rdbuf(sbuf);
 }
 
 
@@ -84,5 +114,63 @@ ErrStream& err()
     static ErrStream stream(std::cerr.rdbuf());
     return stream;
 }
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+ErrStream::Guard ErrStream::operator<<(const T& value)
+{
+    m_impl->mutex.lock(); // Will be unlocked by `~Guard()`
+    m_impl->stream << value;
+
+    return Guard{m_impl->stream, &m_impl->mutex};
+}
+
+
+////////////////////////////////////////////////////////////
+ErrStream::Guard ErrStream::operator<<(const char* value)
+{
+    m_impl->mutex.lock(); // Will be unlocked by `~Guard()`
+    m_impl->stream << value;
+
+    return Guard{m_impl->stream, &m_impl->mutex};
+}
+
+
+////////////////////////////////////////////////////////////
+template ErrStream::Guard ErrStream::operator<< <const char* const>(const char* const&);
+template ErrStream::Guard ErrStream::operator<< <long>(const long&);
+
+
+////////////////////////////////////////////////////////////
+ErrStream::Guard& ErrStream::Guard::operator<<(const char* value)
+{
+    m_stream << value;
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+ErrStream::Guard& ErrStream::Guard::operator<<(const T& value)
+{
+    m_stream << value;
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+template ErrStream::Guard& ErrStream::Guard::operator<< <bool>(const bool&);
+template ErrStream::Guard& ErrStream::Guard::operator<< <char>(const char&);
+template ErrStream::Guard& ErrStream::Guard::operator<< <const char* const>(const char* const&);
+template ErrStream::Guard& ErrStream::Guard::operator<< <int>(const int&);
+template ErrStream::Guard& ErrStream::Guard::operator<< <long>(const long&);
+template ErrStream::Guard& ErrStream::Guard::operator<< <short*>(short* const&);
+template ErrStream::Guard& ErrStream::Guard::operator<< <std::filesystem::path>(const std::filesystem::path&);
+template ErrStream::Guard& ErrStream::Guard::operator<< <std::string_view>(const std::string_view&);
+template ErrStream::Guard& ErrStream::Guard::operator<< <std::string>(const std::string&);
+template ErrStream::Guard& ErrStream::Guard::operator<< <unsigned int>(const unsigned int&);
+template ErrStream::Guard& ErrStream::Guard::operator<< <unsigned long long>(const unsigned long long&);
+template ErrStream::Guard& ErrStream::Guard::operator<< <unsigned short>(const unsigned short&);
 
 } // namespace sf::priv
