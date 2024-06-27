@@ -51,7 +51,8 @@ priv::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromFilename(cons
     auto stream = FileInputStream::open(filename);
     if (!stream)
     {
-        err() << "Failed to open sound file (couldn't open stream)\n" << formatDebugPathInfo(filename) << std::endl;
+        priv::err() << "Failed to open sound file (couldn't open stream)\n"
+                    << formatDebugPathInfo(filename) << std::endl;
         return nullptr;
     }
 
@@ -60,7 +61,7 @@ priv::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromFilename(cons
     {
         if (!stream->seek(0).has_value())
         {
-            err() << "Failed to seek sound stream" << std::endl;
+            priv::err() << "Failed to seek sound stream" << std::endl;
             return nullptr;
         }
 
@@ -69,7 +70,7 @@ priv::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromFilename(cons
     }
 
     // No suitable reader found
-    err() << "Failed to open sound file (format not supported)\n" << formatDebugPathInfo(filename) << std::endl;
+    priv::err() << "Failed to open sound file (format not supported)\n" << formatDebugPathInfo(filename) << std::endl;
     return nullptr;
 }
 
@@ -85,7 +86,7 @@ priv::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromMemory(const 
     {
         if (!stream.seek(0).has_value())
         {
-            err() << "Failed to seek sound stream" << std::endl;
+            priv::err() << "Failed to seek sound stream" << std::endl;
             return nullptr;
         }
 
@@ -94,7 +95,7 @@ priv::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromMemory(const 
     }
 
     // No suitable reader found
-    err() << "Failed to open sound file from memory (format not supported)" << std::endl;
+    priv::err() << "Failed to open sound file from memory (format not supported)" << std::endl;
     return nullptr;
 }
 
@@ -107,7 +108,7 @@ priv::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromStream(InputS
     {
         if (!stream.seek(0).has_value())
         {
-            err() << "Failed to seek sound stream" << std::endl;
+            priv::err() << "Failed to seek sound stream" << std::endl;
             return nullptr;
         }
 
@@ -116,7 +117,7 @@ priv::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromStream(InputS
     }
 
     // No suitable reader found
-    err() << "Failed to open sound file from stream (format not supported)" << std::endl;
+    priv::err() << "Failed to open sound file from stream (format not supported)" << std::endl;
     return nullptr;
 }
 
@@ -132,7 +133,7 @@ priv::UniquePtr<SoundFileWriter> SoundFileFactory::createWriterFromFilename(cons
     }
 
     // No suitable writer found
-    err() << "Failed to open sound file (format not supported)\n" << formatDebugPathInfo(filename) << std::endl;
+    priv::err() << "Failed to open sound file (format not supported)\n" << formatDebugPathInfo(filename) << std::endl;
     return nullptr;
 }
 

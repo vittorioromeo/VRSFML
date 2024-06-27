@@ -34,7 +34,7 @@
 #include <utility>
 
 
-namespace sf
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 class SFML_SYSTEM_API ErrStream
@@ -92,14 +92,14 @@ public:
 ////////////////////////////////////////////////////////////
 SFML_SYSTEM_API ErrStream& err();
 
-} // namespace sf
+} // namespace sf::priv
 
 
 ////////////////////////////////////////////////////////////
 /// \fn sf::err
 /// \ingroup system
 ///
-/// By default, sf::err() outputs to the same location as std::cerr,
+/// By default, sf::priv::err() outputs to the same location as std::cerr,
 /// (-> the stderr descriptor) which is the console if there's
 /// one available.
 ///
@@ -107,7 +107,7 @@ SFML_SYSTEM_API ErrStream& err();
 /// insertion operations defined by the STL
 /// (operator <<, manipulators, etc.).
 ///
-/// sf::err() can be redirected to write to another output, independently
+/// sf::priv::err() can be redirected to write to another output, independently
 /// of std::cerr, by using the rdbuf() function provided by the
 /// std::ostream class.
 ///
@@ -115,13 +115,13 @@ SFML_SYSTEM_API ErrStream& err();
 /// \code
 /// // Redirect to a file
 /// std::ofstream file("sfml-log.txt");
-/// std::streambuf* previous = sf::err().rdbuf(file.rdbuf());
+/// std::streambuf* previous = sf::priv::err().rdbuf(file.rdbuf());
 ///
 /// // Redirect to nothing
-/// sf::err().rdbuf(nullptr);
+/// sf::priv::err().rdbuf(nullptr);
 ///
 /// // Restore the original output
-/// sf::err().rdbuf(previous);
+/// sf::priv::err().rdbuf(previous);
 /// \endcode
 ///
 /// \return Reference to std::ostream representing the SFML error stream

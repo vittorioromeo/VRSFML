@@ -93,7 +93,7 @@ void ensureInit()
                        {
                            // At this point, the failure is unrecoverable
                            // Dump a message to the console and let the application terminate
-                           sf::err() << "Failed to load EGL entry points" << std::endl;
+                           sf::priv::err() << "Failed to load EGL entry points" << std::endl;
 
                            assert(false);
 
@@ -177,9 +177,10 @@ EglContext::EglContext(EglContext* /*shared*/, const ContextSettings& /*settings
 {
     EglContextImpl::ensureInit();
 
-    sf::err() << "Warning: context has not been initialized. The constructor EglContext(shared, settings, size) is "
-                 "currently not implemented."
-              << std::endl;
+    sf::priv::err() << "Warning: context has not been initialized. The constructor EglContext(shared, settings, size) "
+                       "is "
+                       "currently not implemented."
+                    << std::endl;
 }
 
 
@@ -424,7 +425,7 @@ XVisualInfo EglContext::selectBestVisual(::Display* xDisplay, unsigned int bitsP
     if (nativeVisualId == 0)
     {
         // Should never happen...
-        err() << "No EGL visual found. You should check your graphics driver" << std::endl;
+        priv::err() << "No EGL visual found. You should check your graphics driver" << std::endl;
 
         return {};
     }
@@ -433,13 +434,13 @@ XVisualInfo EglContext::selectBestVisual(::Display* xDisplay, unsigned int bitsP
     vTemplate.visualid = static_cast<VisualID>(nativeVisualId);
 
     // Get X11 visuals compatible with this EGL config
-    int        visualCount      = 0;
+    int visualCount = 0;
     const auto availableVisuals = X11Ptr<XVisualInfo[]>(XGetVisualInfo(xDisplay, VisualIDMask, &vTemplate, &visualCount));
 
     if (visualCount == 0)
     {
         // Can't happen...
-        err() << "No X11 visual found. Bug in your EGL implementation ?" << std::endl;
+        priv::err() << "No X11 visual found. Bug in your EGL implementation ?" << std::endl;
 
         return {};
     }

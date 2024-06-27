@@ -99,7 +99,7 @@ bool SoundFileWriterWav::open(const std::filesystem::path&     filename,
 
     if (channelCount == 0)
     {
-        err() << "WAV sound file channel count 0" << std::endl;
+        priv::err() << "WAV sound file channel count 0" << std::endl;
         return false;
     }
     else if (channelCount == 1)
@@ -166,7 +166,7 @@ bool SoundFileWriterWav::open(const std::filesystem::path&     filename,
 
             if (std::adjacent_find(sortedChannelMap.begin(), sortedChannelMap.end()) != sortedChannelMap.end())
             {
-                err() << "Duplicate channels in channel map" << std::endl;
+                priv::err() << "Duplicate channels in channel map" << std::endl;
                 return false;
             }
         }
@@ -192,7 +192,7 @@ bool SoundFileWriterWav::open(const std::filesystem::path&     filename,
                              [channel](const SupportedChannel& c) { return c.channel == channel; }) ==
                 targetChannelMap.end())
             {
-                err() << "Could not map all input channels to a channel supported by WAV" << std::endl;
+                priv::err() << "Could not map all input channels to a channel supported by WAV" << std::endl;
                 return false;
             }
         }
@@ -214,7 +214,7 @@ bool SoundFileWriterWav::open(const std::filesystem::path&     filename,
     m_file.open(filename, std::ios::binary);
     if (!m_file)
     {
-        err() << "Failed to open WAV sound file for writing\n" << formatDebugPathInfo(filename) << std::endl;
+        priv::err() << "Failed to open WAV sound file for writing\n" << formatDebugPathInfo(filename) << std::endl;
         return false;
     }
 
@@ -232,7 +232,7 @@ void SoundFileWriterWav::write(const std::int16_t* samples, std::uint64_t count)
     assert(count % m_channelCount == 0);
 
     if (count % m_channelCount != 0)
-        err() << "Writing samples to WAV sound file requires writing full frames at a time" << std::endl;
+        priv::err() << "Writing samples to WAV sound file requires writing full frames at a time" << std::endl;
 
     while (count >= m_channelCount)
     {

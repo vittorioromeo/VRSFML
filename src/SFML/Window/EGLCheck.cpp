@@ -163,9 +163,10 @@ void eglCheckError(const std::filesystem::path& file, unsigned int line, std::st
         }
 
         // Log the error
-        err() << "An internal EGL call failed in " << file.filename() << " (" << line << ") : "
-              << "\nExpression:\n   " << expression << "\nError description:\n   " << error << "\n   " << description << '\n'
-              << std::endl;
+        priv::err() << "An internal EGL call failed in " << file.filename() << " (" << line << ") : "
+                    << "\nExpression:\n   " << expression << "\nError description:\n   " << error << "\n   "
+                    << description << '\n'
+                    << std::endl;
     }
 }
 

@@ -64,7 +64,7 @@ void skip(void* user, int size)
 {
     auto& stream = *static_cast<sf::InputStream*>(user);
     if (!stream.seek(stream.tell().value() + static_cast<std::size_t>(size)).has_value())
-        sf::err() << "Failed to seek image loader input stream" << std::endl;
+        sf::priv::err() << "Failed to seek image loader input stream" << std::endl;
 }
 
 int eof(void* user)
@@ -194,8 +194,8 @@ std::optional<Image> Image::loadFromFile(const std::filesystem::path& filename)
     else
     {
         // Error, failed to load the image
-        err() << "Failed to load image\n"
-              << formatDebugPathInfo(filename) << "\nReason: " << stbi_failure_reason() << std::endl;
+        priv::err() << "Failed to load image\n"
+                    << formatDebugPathInfo(filename) << "\nReason: " << stbi_failure_reason() << std::endl;
 
         return std::nullopt;
     }
@@ -225,14 +225,14 @@ std::optional<Image> Image::loadFromMemory(const void* data, std::size_t size)
         else
         {
             // Error, failed to load the image
-            err() << "Failed to load image from memory. Reason: " << stbi_failure_reason() << std::endl;
+            priv::err() << "Failed to load image from memory. Reason: " << stbi_failure_reason() << std::endl;
 
             return std::nullopt;
         }
     }
     else
     {
-        err() << "Failed to load image from memory, no data provided" << std::endl;
+        priv::err() << "Failed to load image from memory, no data provided" << std::endl;
         return std::nullopt;
     }
 }
@@ -244,7 +244,7 @@ std::optional<Image> Image::loadFromStream(InputStream& stream)
     // Make sure that the stream's reading position is at the beginning
     if (!stream.seek(0).has_value())
     {
-        err() << "Failed to seek image stream" << std::endl;
+        priv::err() << "Failed to seek image stream" << std::endl;
         return std::nullopt;
     }
 
@@ -269,7 +269,7 @@ std::optional<Image> Image::loadFromStream(InputStream& stream)
     else
     {
         // Error, failed to load the image
-        err() << "Failed to load image from stream. Reason: " << stbi_failure_reason() << std::endl;
+        priv::err() << "Failed to load image from stream. Reason: " << stbi_failure_reason() << std::endl;
         return std::nullopt;
     }
 }
@@ -313,11 +313,11 @@ bool Image::saveToFile(const std::filesystem::path& filename) const
         }
         else
         {
-            err() << "Image file extension " << extension << " not supported\n";
+            priv::err() << "Image file extension " << extension << " not supported\n";
         }
     }
 
-    err() << "Failed to save image\n" << formatDebugPathInfo(filename) << std::endl;
+    priv::err() << "Failed to save image\n" << formatDebugPathInfo(filename) << std::endl;
     return false;
 }
 
@@ -360,7 +360,7 @@ std::optional<std::vector<std::uint8_t>> Image::saveToMemory(std::string_view fo
         }
     }
 
-    err() << "Failed to save image with format " << std::quoted(format) << std::endl;
+    priv::err() << "Failed to save image with format " << std::quoted(format) << std::endl;
     return std::nullopt;
 }
 
@@ -431,7 +431,7 @@ void Image::createMaskFromColor(const Color& color, std::uint8_t alpha)
     const unsigned int dstStride = m_size.x * 4;
 
     const std::uint8_t* srcPixels = source.m_pixels.data() + (srcRect.position.x + srcRect.position.y * source.m_size.x) * 4;
-    std::uint8_t*       dstPixels = m_pixels.data() + (dest.x + dest.y * m_size.x) * 4;
+    std::uint8_t* dstPixels = m_pixels.data() + (dest.x + dest.y * m_size.x) * 4;
 
     // Copy the pixels
     if (applyAlpha)
@@ -515,7 +515,7 @@ const std::uint8_t* Image::getPixelsPtr() const
     }
     else
     {
-        err() << "Trying to access the pixels of an empty image" << std::endl;
+        priv::err() << "Trying to access the pixels of an empty image" << std::endl;
         return nullptr;
     }
 }

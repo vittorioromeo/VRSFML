@@ -95,7 +95,7 @@ void setProcessDpiAware()
             // by default when moving the window between monitors.
             if (setProcessDpiAwarenessFunc(ProcessPerMonitorDpiAware) == E_INVALIDARG)
             {
-                sf::err() << "Failed to set process DPI awareness" << std::endl;
+                sf::priv::err() << "Failed to set process DPI awareness" << std::endl;
             }
             else
             {
@@ -120,7 +120,7 @@ void setProcessDpiAware()
         if (setProcessDPIAwareFunc)
         {
             if (!setProcessDPIAwareFunc())
-                sf::err() << "Failed to set process DPI awareness" << std::endl;
+                sf::priv::err() << "Failed to set process DPI awareness" << std::endl;
         }
 
         FreeLibrary(user32Dll);
@@ -134,7 +134,7 @@ void initRawMouse()
     const RAWINPUTDEVICE rawMouse{0x01, 0x02, 0, nullptr}; // HID usage: mouse device class, no flags, follow keyboard focus
 
     if (RegisterRawInputDevices(&rawMouse, 1, sizeof(rawMouse)) != TRUE)
-        sf::err() << "Failed to initialize raw mouse input" << std::endl;
+        sf::priv::err() << "Failed to initialize raw mouse input" << std::endl;
 }
 } // namespace
 
@@ -399,7 +399,7 @@ void WindowImplWin32::setIcon(const Vector2u& size, const std::uint8_t* pixels)
     }
     else
     {
-        err() << "Failed to set the window's icon" << std::endl;
+        priv::err() << "Failed to set the window's icon" << std::endl;
     }
 }
 
@@ -509,7 +509,7 @@ void WindowImplWin32::switchToFullscreen(const VideoMode& mode)
     // Apply fullscreen mode
     if (ChangeDisplaySettingsW(&devMode, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
     {
-        err() << "Failed to change display mode for fullscreen" << std::endl;
+        priv::err() << "Failed to change display mode for fullscreen" << std::endl;
         return;
     }
 

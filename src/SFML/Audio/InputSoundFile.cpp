@@ -80,8 +80,8 @@ std::optional<InputSoundFile> InputSoundFile::openFromFile(const std::filesystem
     auto fileInputStream = FileInputStream::open(filename);
     if (!fileInputStream)
     {
-        err() << "Failed to open input sound file from file (couldn't open file input stream)\n"
-              << formatDebugPathInfo(filename) << std::endl;
+        priv::err() << "Failed to open input sound file from file (couldn't open file input stream)\n"
+                    << formatDebugPathInfo(filename) << std::endl;
 
         return std::nullopt;
     }
@@ -93,8 +93,8 @@ std::optional<InputSoundFile> InputSoundFile::openFromFile(const std::filesystem
     auto info = reader->open(*file);
     if (!info)
     {
-        err() << "Failed to open input sound file from file (reader open failure)\n"
-              << formatDebugPathInfo(filename) << std::endl;
+        priv::err() << "Failed to open input sound file from file (reader open failure)\n"
+                    << formatDebugPathInfo(filename) << std::endl;
 
         return std::nullopt;
     }
@@ -126,7 +126,7 @@ std::optional<InputSoundFile> InputSoundFile::openFromMemory(const void* data, s
     auto info = reader->open(*memory);
     if (!info)
     {
-        err() << "Failed to open input sound file from memory (reader open failure)" << std::endl;
+        priv::err() << "Failed to open input sound file from memory (reader open failure)" << std::endl;
         return std::nullopt;
     }
 
@@ -153,7 +153,7 @@ std::optional<InputSoundFile> InputSoundFile::openFromStream(InputStream& stream
     // Don't forget to reset the stream to its beginning before re-opening it
     if (stream.seek(0) != 0)
     {
-        err() << "Failed to open sound file from stream (cannot restart stream)" << std::endl;
+        priv::err() << "Failed to open sound file from stream (cannot restart stream)" << std::endl;
         return std::nullopt;
     }
 
@@ -161,7 +161,7 @@ std::optional<InputSoundFile> InputSoundFile::openFromStream(InputStream& stream
     auto info = reader->open(stream);
     if (!info)
     {
-        err() << "Failed to open input sound file from stream (reader open failure)" << std::endl;
+        priv::err() << "Failed to open input sound file from stream (reader open failure)" << std::endl;
         return std::nullopt;
     }
 

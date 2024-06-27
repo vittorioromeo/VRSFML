@@ -58,7 +58,7 @@ std::optional<RenderTexture> RenderTexture::create(const Vector2u& size, const C
     auto texture = sf::Texture::create(size, settings.sRgbCapable);
     if (!texture)
     {
-        err() << "Impossible to create render texture (failed to create the target texture)" << std::endl;
+        priv::err() << "Impossible to create render texture (failed to create the target texture)" << std::endl;
         return result; // Empty optional
     }
 

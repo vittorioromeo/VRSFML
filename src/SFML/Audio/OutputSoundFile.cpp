@@ -54,7 +54,7 @@ std::optional<OutputSoundFile> OutputSoundFile::openFromFile(
     // Pass the stream to the reader
     if (!writer->open(filename, sampleRate, channelCount, channelMap))
     {
-        err() << "Failed to open output sound file from file (writer open failure)" << std::endl;
+        priv::err() << "Failed to open output sound file from file (writer open failure)" << std::endl;
         return std::nullopt;
     }
 

@@ -75,7 +75,7 @@ void SoundBufferRecorder::onStop()
                                                 getSampleRate(),
                                                 getChannelMap());
     if (!m_buffer)
-        err() << "Failed to stop capturing audio data" << std::endl;
+        priv::err() << "Failed to stop capturing audio data" << std::endl;
 }
 
 

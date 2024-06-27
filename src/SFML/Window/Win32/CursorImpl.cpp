@@ -75,7 +75,7 @@ bool CursorImpl::loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vecto
 
     if (!color)
     {
-        err() << "Failed to create cursor color bitmap" << std::endl;
+        priv::err() << "Failed to create cursor color bitmap" << std::endl;
         return false;
     }
 
@@ -93,7 +93,7 @@ bool CursorImpl::loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vecto
     if (!mask)
     {
         DeleteObject(color);
-        err() << "Failed to create cursor mask bitmap" << std::endl;
+        priv::err() << "Failed to create cursor mask bitmap" << std::endl;
         return false;
     }
 
@@ -119,7 +119,7 @@ bool CursorImpl::loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vecto
     }
     else
     {
-        err() << "Failed to create cursor from bitmaps" << std::endl;
+        priv::err() << "Failed to create cursor from bitmaps" << std::endl;
         return false;
     }
 }
@@ -169,7 +169,7 @@ bool CursorImpl::loadFromSystem(Cursor::Type type)
     }
     else
     {
-        err() << "Could not create copy of a system cursor" << std::endl;
+        priv::err() << "Could not create copy of a system cursor" << std::endl;
         return false;
     }
 }
