@@ -28,24 +28,107 @@
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Time.hpp>
 #include <SFML/System/TimeChronoUtil.hpp>
+#include <SFML/System/UniquePtr.hpp>
+
+#ifdef SFML_SYSTEM_ANDROID
+#include <SFML/System/SuspendAwareClock.hpp>
+#endif
+
+#include <chrono>
+#include <ratio>
+#include <type_traits>
+
+
+namespace sf::priv
+{
+
+////////////////////////////////////////////////////////////
+/// \brief Chooses a monotonic clock of highest resolution
+///
+/// The high_resolution_clock is usually an alias for other
+/// clocks: steady_clock or system_clock, whichever has a
+/// higher precision.
+///
+/// sf::Clock, however, is aimed towards monotonic time
+/// measurements and so system_clock could never be a choice
+/// as its subject to discontinuous jumps in the system time
+/// (e.g., if the system administrator manually changes
+/// the clock), and by the incremental adjustments performed
+/// by `adjtime` and Network Time Protocol. On the other
+/// hand, monotonic clocks are unaffected by this behavior.
+///
+/// Note: Linux implementation of a monotonic clock that
+/// takes sleep time into account is represented by
+/// CLOCK_BOOTTIME. Android devices can define the macro:
+/// SFML_ANDROID_USE_SUSPEND_AWARE_CLOCK to use a separate
+/// implementation of that clock, instead.
+///
+/// For more information on Linux clocks visit:
+/// https://linux.die.net/man/2/clock_gettime
+///
+////////////////////////////////////////////////////////////
+#if defined(SFML_SYSTEM_ANDROID) && defined(SFML_ANDROID_USE_SUSPEND_AWARE_CLOCK)
+using ClockImpl = SuspendAwareClock;
+#else
+using ClockImpl = std::conditional_t<std::chrono::high_resolution_clock::is_steady, std::chrono::high_resolution_clock, std::chrono::steady_clock>;
+#endif
+
+static_assert(ClockImpl::is_steady, "Provided implementation is not a monotonic clock");
+static_assert(std::ratio_less_equal_v<ClockImpl::period, std::micro>,
+              "Clock resolution is too low. Expecting at least a microsecond precision");
+
+} // namespace sf::priv
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
+struct Clock::Impl
+{
+    priv::ClockImpl::time_point refPoint{priv::ClockImpl::now()}; //!< Time of last reset
+    priv::ClockImpl::time_point stopPoint;                        //!< Time of last stop
+};
+
+
+////////////////////////////////////////////////////////////
+Clock::Clock() : m_impl(priv::makeUnique<Impl>())
+{
+}
+
+
+////////////////////////////////////////////////////////////
+Clock::~Clock() = default;
+
+
+////////////////////////////////////////////////////////////
+Clock::Clock(const Clock& rhs) : m_impl(priv::makeUnique<Impl>(*rhs.m_impl))
+{
+}
+
+
+////////////////////////////////////////////////////////////
+Clock& Clock::operator=(const Clock& rhs)
+{
+    m_impl = priv::makeUnique<Impl>(*rhs.m_impl);
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
 Time Clock::getElapsedTime() const
 {
     if (isRunning())
         return TimeChronoUtil::fromDuration(
-            std::chrono::duration_cast<std::chrono::microseconds>(priv::ClockImpl::now() - m_refPoint));
-    return TimeChronoUtil::fromDuration(std::chrono::duration_cast<std::chrono::microseconds>(m_stopPoint - m_refPoint));
+            std::chrono::duration_cast<std::chrono::microseconds>(priv::ClockImpl::now() - m_impl->refPoint));
+    return TimeChronoUtil::fromDuration(
+        std::chrono::duration_cast<std::chrono::microseconds>(m_impl->stopPoint - m_impl->refPoint));
 }
 
 
 ////////////////////////////////////////////////////////////
 bool Clock::isRunning() const
 {
-    return m_stopPoint == priv::ClockImpl::time_point();
+    return m_impl->stopPoint == priv::ClockImpl::time_point();
 }
 
 
@@ -54,8 +137,8 @@ void Clock::start()
 {
     if (!isRunning())
     {
-        m_refPoint += priv::ClockImpl::now() - m_stopPoint;
-        m_stopPoint = {};
+        m_impl->refPoint += priv::ClockImpl::now() - m_impl->stopPoint;
+        m_impl->stopPoint = {};
     }
 }
 
@@ -64,7 +147,7 @@ void Clock::start()
 void Clock::stop()
 {
     if (isRunning())
-        m_stopPoint = priv::ClockImpl::now();
+        m_impl->stopPoint = priv::ClockImpl::now();
 }
 
 
@@ -72,8 +155,8 @@ void Clock::stop()
 Time Clock::restart()
 {
     const Time elapsed = getElapsedTime();
-    m_refPoint         = priv::ClockImpl::now();
-    m_stopPoint        = {};
+    m_impl->refPoint   = priv::ClockImpl::now();
+    m_impl->stopPoint  = {};
     return elapsed;
 }
 
@@ -82,8 +165,8 @@ Time Clock::restart()
 Time Clock::reset()
 {
     const Time elapsed = getElapsedTime();
-    m_refPoint         = priv::ClockImpl::now();
-    m_stopPoint        = m_refPoint;
+    m_impl->refPoint   = priv::ClockImpl::now();
+    m_impl->stopPoint  = m_impl->refPoint;
     return elapsed;
 }
 

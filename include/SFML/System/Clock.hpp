@@ -29,57 +29,11 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Export.hpp>
 
-#include <chrono>
-#include <ratio>
-#include <type_traits>
-
-#ifdef SFML_SYSTEM_ANDROID
-#include <SFML/System/SuspendAwareClock.hpp>
-#endif
+#include <SFML/System/UniquePtr.hpp>
 
 
 namespace sf
 {
-namespace priv
-{
-
-////////////////////////////////////////////////////////////
-/// \brief Chooses a monotonic clock of highest resolution
-///
-/// The high_resolution_clock is usually an alias for other
-/// clocks: steady_clock or system_clock, whichever has a
-/// higher precision.
-///
-/// sf::Clock, however, is aimed towards monotonic time
-/// measurements and so system_clock could never be a choice
-/// as its subject to discontinuous jumps in the system time
-/// (e.g., if the system administrator manually changes
-/// the clock), and by the incremental adjustments performed
-/// by `adjtime` and Network Time Protocol. On the other
-/// hand, monotonic clocks are unaffected by this behavior.
-///
-/// Note: Linux implementation of a monotonic clock that
-/// takes sleep time into account is represented by
-/// CLOCK_BOOTTIME. Android devices can define the macro:
-/// SFML_ANDROID_USE_SUSPEND_AWARE_CLOCK to use a separate
-/// implementation of that clock, instead.
-///
-/// For more information on Linux clocks visit:
-/// https://linux.die.net/man/2/clock_gettime
-///
-////////////////////////////////////////////////////////////
-#if defined(SFML_SYSTEM_ANDROID) && defined(SFML_ANDROID_USE_SUSPEND_AWARE_CLOCK)
-using ClockImpl = SuspendAwareClock;
-#else
-using ClockImpl = std::conditional_t<std::chrono::high_resolution_clock::is_steady, std::chrono::high_resolution_clock, std::chrono::steady_clock>;
-#endif
-
-static_assert(ClockImpl::is_steady, "Provided implementation is not a monotonic clock");
-static_assert(std::ratio_less_equal_v<ClockImpl::period, std::micro>,
-              "Clock resolution is too low. Expecting at least a microsecond precision");
-
-} // namespace priv
-
 class Time;
 
 ////////////////////////////////////////////////////////////
@@ -91,6 +45,42 @@ class Time;
 class SFML_SYSTEM_API Clock
 {
 public:
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    Clock();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    ~Clock();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    Clock(const Clock& rhs);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    Clock& operator=(const Clock& rhs);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    Clock(Clock&&) = default;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    Clock& operator=(Clock&&) = default;
+
     ////////////////////////////////////////////////////////////
     /// \brief Get the elapsed time
     ///
@@ -156,9 +146,10 @@ public:
 private:
     ////////////////////////////////////////////////////////////
     // Member data
-    ////////////////////////////////////////////////////////////
-    priv::ClockImpl::time_point m_refPoint{priv::ClockImpl::now()}; //!< Time of last reset
-    priv::ClockImpl::time_point m_stopPoint;                        //!< Time of last stop
+    ///////////////////////////////////////////////////////////
+    // TODO: avoid allocation
+    struct Impl;
+    priv::UniquePtr<Impl> m_impl; //!< Implementation details
 };
 
 } // namespace sf
