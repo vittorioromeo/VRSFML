@@ -22,69 +22,63 @@
 //
 ////////////////////////////////////////////////////////////
 
+#pragma once
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/Clock.hpp>
+#include <SFML/System/Export.hpp>
+
 #include <SFML/System/Time.hpp>
-#include <SFML/System/TimeChronoUtil.hpp>
+
+#include <chrono>
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-Time Clock::getElapsedTime() const
-{
-    if (isRunning())
-        return TimeChronoUtil::fromDuration(
-            std::chrono::duration_cast<std::chrono::microseconds>(priv::ClockImpl::now() - m_refPoint));
-    return TimeChronoUtil::fromDuration(std::chrono::duration_cast<std::chrono::microseconds>(m_stopPoint - m_refPoint));
-}
-
-
+/// \brief TODO
+///
 ////////////////////////////////////////////////////////////
-bool Clock::isRunning() const
+class TimeChronoUtil
 {
-    return m_stopPoint == priv::ClockImpl::time_point();
-}
+public:
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO Construct from std::chrono::duration
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename Rep, typename Period>
+    static constexpr Time fromDuration(const std::chrono::duration<Rep, Period>& duration);
 
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO Return the time value as a std::chorono::duration
+    ///
+    /// \return Time in microseconds
+    ///
+    ////////////////////////////////////////////////////////////
+    static constexpr std::chrono::microseconds toDuration(Time time);
 
-////////////////////////////////////////////////////////////
-void Clock::start()
-{
-    if (!isRunning())
-    {
-        m_refPoint += priv::ClockImpl::now() - m_stopPoint;
-        m_stopPoint = {};
-    }
-}
-
-
-////////////////////////////////////////////////////////////
-void Clock::stop()
-{
-    if (isRunning())
-        m_stopPoint = priv::ClockImpl::now();
-}
-
-
-////////////////////////////////////////////////////////////
-Time Clock::restart()
-{
-    const Time elapsed = getElapsedTime();
-    m_refPoint         = priv::ClockImpl::now();
-    m_stopPoint        = {};
-    return elapsed;
-}
-
-
-////////////////////////////////////////////////////////////
-Time Clock::reset()
-{
-    const Time elapsed = getElapsedTime();
-    m_refPoint         = priv::ClockImpl::now();
-    m_stopPoint        = m_refPoint;
-    return elapsed;
-}
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO Conversion to std::chrono::duration
+    ///
+    /// \return Duration in microseconds
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename Rep, typename Period>
+    static constexpr std::chrono::duration<Rep, Period> toCustomDuration(Time time);
+};
 
 } // namespace sf
+
+#include <SFML/System/TimeChronoUtil.inl>
+
+
+////////////////////////////////////////////////////////////
+/// \class sf::TimeChronoUtil
+/// \ingroup system
+///
+/// TODO
+///
+/// \see sf::Time, sf::Clock
+///
+////////////////////////////////////////////////////////////

@@ -22,34 +22,37 @@
 //
 ////////////////////////////////////////////////////////////
 
-#pragma once
-
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/System/TimeChronoUtil.hpp> // NOLINT(misc-header-include-cycle)
 
-#include <SFML/Config.hpp>
+#include <chrono>
 
-#include <SFML/System/Angle.hpp>
-#include <SFML/System/Clock.hpp>
-#include <SFML/System/Err.hpp>
-#include <SFML/System/FileInputStream.hpp>
-#include <SFML/System/InputStream.hpp>
-#include <SFML/System/MemoryInputStream.hpp>
-#include <SFML/System/Sleep.hpp>
-#include <SFML/System/String.hpp>
-#include <SFML/System/Time.hpp>
-#include <SFML/System/TimeChronoUtil.hpp>
-#include <SFML/System/Utf.hpp>
-#include <SFML/System/Vector2.hpp>
-#include <SFML/System/Vector3.hpp>
+#include <cassert>
+
+
+namespace sf
+{
+////////////////////////////////////////////////////////////
+template <typename Rep, typename Period>
+constexpr Time TimeChronoUtil::fromDuration(const std::chrono::duration<Rep, Period>& duration)
+{
+    return Time(std::chrono::duration_cast<std::chrono::microseconds>(duration).count());
+}
+
+////////////////////////////////////////////////////////////
+constexpr std::chrono::microseconds TimeChronoUtil::toDuration(Time time)
+{
+    return std::chrono::microseconds(time.asMicroseconds());
+}
 
 
 ////////////////////////////////////////////////////////////
-/// \defgroup system System module
-///
-/// Base module of SFML, defining various utilities. It provides
-/// vector classes, Unicode strings and conversion functions,
-/// threads and mutexes, timing classes.
-///
-////////////////////////////////////////////////////////////
+template <typename Rep, typename Period>
+constexpr std::chrono::duration<Rep, Period> TimeChronoUtil::toCustomDuration(Time time)
+{
+    return std::chrono::microseconds(time.asMicroseconds());
+}
+
+} // namespace sf

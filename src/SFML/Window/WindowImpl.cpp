@@ -33,6 +33,7 @@
 
 #include <SFML/System/Sleep.hpp>
 #include <SFML/System/Time.hpp>
+#include <SFML/System/TimeChronoUtil.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
 #include <chrono>
@@ -180,7 +181,7 @@ std::optional<Event> WindowImpl::waitEvent(Time timeout)
     const auto timedOut = [&, startTime = std::chrono::steady_clock::now()]
     {
         const bool infiniteTimeout = timeout == Time::Zero;
-        return !infiniteTimeout && (std::chrono::steady_clock::now() - startTime) >= timeout.toDuration();
+        return !infiniteTimeout && (std::chrono::steady_clock::now() - startTime) >= TimeChronoUtil::toDuration(timeout);
     };
 
     // If the event queue is empty, let's first check if new events are available from the OS

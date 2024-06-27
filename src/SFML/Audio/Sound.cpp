@@ -336,7 +336,7 @@ bool Sound::getLoop() const
 Time Sound::getPlayingOffset() const
 {
     if (!m_impl->buffer || m_impl->buffer->getChannelCount() == 0 || m_impl->buffer->getSampleRate() == 0)
-        return {};
+        return Time{};
 
     return priv::MiniaudioUtils::getPlayingOffset(m_impl->sound);
 }

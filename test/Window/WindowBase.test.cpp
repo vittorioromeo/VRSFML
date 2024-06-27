@@ -5,6 +5,7 @@
 #include <SFML/Window/VideoMode.hpp>
 
 #include <SFML/System/String.hpp>
+#include <SFML/System/TimeChronoUtil.hpp>
 
 #include <Doctest.hpp>
 
@@ -133,9 +134,9 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
             const auto event     = windowBase.waitEvent(timeout);
             const auto elapsed   = std::chrono::steady_clock::now() - startTime;
 
-            REQUIRE(elapsed < (timeout + sf::milliseconds(100)).toDuration());
+            REQUIRE(elapsed < sf::TimeChronoUtil::toDuration(timeout + sf::milliseconds(100)));
 
-            if (elapsed <= timeout.toDuration())
+            if (elapsed <= sf::TimeChronoUtil::toDuration(timeout))
                 CHECK(event);
             else
                 CHECK(!event);

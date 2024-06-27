@@ -368,7 +368,7 @@ void SoundStream::setPlayingOffset(Time timeOffset)
 Time SoundStream::getPlayingOffset() const
 {
     if (m_impl->channelCount == 0 || m_impl->sampleRate == 0)
-        return {};
+        return Time{};
 
     return priv::MiniaudioUtils::getPlayingOffset(m_impl->sound);
 }

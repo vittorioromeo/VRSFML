@@ -27,8 +27,6 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Time.hpp> // NOLINT(misc-header-include-cycle)
 
-#include <ratio>
-
 #include <cassert>
 
 
@@ -39,8 +37,7 @@ constexpr Time::Time() = default;
 
 
 ////////////////////////////////////////////////////////////
-template <typename Rep, typename Period>
-constexpr Time::Time(const std::chrono::duration<Rep, Period>& duration) : m_microseconds(duration)
+constexpr Time::Time(std::int64_t microseconds) : m_microseconds(microseconds)
 {
 }
 
@@ -48,34 +45,19 @@ constexpr Time::Time(const std::chrono::duration<Rep, Period>& duration) : m_mic
 ////////////////////////////////////////////////////////////
 constexpr float Time::asSeconds() const
 {
-    return std::chrono::duration<float>(m_microseconds).count();
+    return static_cast<float>(m_microseconds) / 1'000'000.f;
 }
 
 
 ////////////////////////////////////////////////////////////
 constexpr std::int32_t Time::asMilliseconds() const
 {
-    return std::chrono::duration_cast<std::chrono::duration<std::int32_t, std::milli>>(m_microseconds).count();
+    return static_cast<std::int32_t>(static_cast<float>(m_microseconds) / 1'000.f);
 }
 
 
 ////////////////////////////////////////////////////////////
 constexpr std::int64_t Time::asMicroseconds() const
-{
-    return m_microseconds.count();
-}
-
-
-////////////////////////////////////////////////////////////
-constexpr std::chrono::microseconds Time::toDuration() const
-{
-    return m_microseconds;
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename Rep, typename Period>
-constexpr Time::operator std::chrono::duration<Rep, Period>() const
 {
     return m_microseconds;
 }
@@ -84,21 +66,21 @@ constexpr Time::operator std::chrono::duration<Rep, Period>() const
 ////////////////////////////////////////////////////////////
 constexpr Time seconds(float amount)
 {
-    return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::duration<float>(amount));
+    return Time(static_cast<std::int64_t>(amount * 1'000'000.f));
 }
 
 
 ////////////////////////////////////////////////////////////
 constexpr Time milliseconds(std::int32_t amount)
 {
-    return std::chrono::milliseconds(amount);
+    return Time(amount * 1'000);
 }
 
 
 ////////////////////////////////////////////////////////////
 constexpr Time microseconds(std::int64_t amount)
 {
-    return std::chrono::microseconds(amount);
+    return Time(amount);
 }
 
 
