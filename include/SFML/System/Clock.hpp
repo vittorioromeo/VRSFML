@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Export.hpp>
 
-#include <SFML/System/UniquePtr.hpp>
+#include <SFML/System/InPlacePImpl.hpp>
 
 
 namespace sf
@@ -147,9 +147,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ///////////////////////////////////////////////////////////
-    // TODO: avoid allocation
     struct Impl;
-    priv::UniquePtr<Impl> m_impl; //!< Implementation details
+    priv::InPlacePImpl<Impl, 16> m_impl; //!< Implementation details
 };
 
 } // namespace sf

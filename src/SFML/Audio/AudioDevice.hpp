@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Listener.hpp>
 
-#include <SFML/System/UniquePtr.hpp>
+#include <SFML/System/InPlacePImpl.hpp>
 
 #include <optional>
 #include <string>
@@ -362,7 +362,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    const priv::UniquePtr<Impl> m_impl; //!< Implementation details
+    priv::InPlacePImpl<Impl, 8192> m_impl; //!< Implementation details
 };
 
 } // namespace sf::priv

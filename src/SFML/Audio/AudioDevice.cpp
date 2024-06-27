@@ -181,7 +181,7 @@ struct AudioDevice::Impl
 
 
 ////////////////////////////////////////////////////////////
-AudioDevice::AudioDevice() : m_impl(priv::makeUnique<Impl>())
+AudioDevice::AudioDevice()
 {
     // Ensure we only ever have a single AudioDevice instance
     assert(getInstance() == nullptr);

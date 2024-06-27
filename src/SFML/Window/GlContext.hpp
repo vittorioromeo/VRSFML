@@ -32,7 +32,7 @@
 #include <SFML/Window/Context.hpp>
 #include <SFML/Window/ContextSettings.hpp>
 
-#include <SFML/System/UniquePtr.hpp>
+#include <SFML/System/InPlacePImpl.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #include <memory>
@@ -328,7 +328,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    const priv::UniquePtr<Impl> m_impl; //!< Implementation details
+    const priv::InPlacePImpl<Impl, 32> m_impl; //!< Implementation details
 };
 
 } // namespace sf::priv

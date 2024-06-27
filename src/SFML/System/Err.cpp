@@ -26,7 +26,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Err.hpp>
-#include <SFML/System/UniquePtr.hpp>
 
 #include <filesystem>
 #include <iostream>
@@ -80,7 +79,7 @@ ErrStream::Guard& ErrStream::Guard::operator<<(std::ios_base& (*func)(std::ios_b
 
 
 ////////////////////////////////////////////////////////////
-ErrStream::ErrStream(std::streambuf* sbuf) : m_impl(priv::makeUnique<Impl>(sbuf))
+ErrStream::ErrStream(std::streambuf* sbuf) : m_impl(sbuf)
 {
 }
 
