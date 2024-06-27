@@ -16,7 +16,7 @@ TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
     SECTION("Type traits")
     {
         STATIC_CHECK(!std::is_default_constructible_v<sf::SoundBuffer>);
-        STATIC_CHECK(std::is_copy_constructible_v<sf::SoundBuffer>);
+        static_assert(std::is_copy_constructible_v<sf::SoundBuffer>);
         STATIC_CHECK(std::is_copy_assignable_v<sf::SoundBuffer>);
         STATIC_CHECK(std::is_move_constructible_v<sf::SoundBuffer>);
         STATIC_CHECK(!std::is_nothrow_move_constructible_v<sf::SoundBuffer>);
