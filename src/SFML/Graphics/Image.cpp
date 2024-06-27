@@ -237,7 +237,8 @@ std::optional<Image> Image::loadFromMemory(const void* data, std::size_t size)
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Image> Image::loadFromStream(InputStream& stream){
+std::optional<Image> Image::loadFromStream(InputStream& stream)
+{
     // Make sure that the stream's reading position is at the beginning
     if (!stream.seek(0).has_value())
     {
