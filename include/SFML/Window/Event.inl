@@ -22,7 +22,7 @@
 //
 ////////////////////////////////////////////////////////////
 
-// Repeating isEventType<T> allows for cleaner compiler errors.
+// Repeating isEventSubtype<T> allows for cleaner compiler errors.
 // It is not strictly necessary but it's useful nonetheless.
 // It works by ensuring that the code within the conditional is
 // only compiled when the condition is met. Otherwise you get
@@ -39,32 +39,32 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-template <typename EventSubtype>
-Event::Event(const EventSubtype& eventSubtype)
+template <typename TEventSubtype>
+Event::Event(const TEventSubtype& eventSubtype)
 {
-    static_assert(isEventSubtype<EventSubtype>, "T must be a subtype of sf::Event");
-    if constexpr (isEventSubtype<EventSubtype>)
+    static_assert(isEventSubtype<TEventSubtype>, "TEventSubtype must be a subtype of sf::Event");
+    if constexpr (isEventSubtype<TEventSubtype>)
         m_data = eventSubtype;
 }
 
 
 ////////////////////////////////////////////////////////////
-template <typename EventSubtype>
+template <typename TEventSubtype>
 bool Event::is() const
 {
-    static_assert(isEventSubtype<EventSubtype>, "T must be a subtype of sf::Event");
-    if constexpr (isEventSubtype<EventSubtype>)
-        return m_data.is<EventSubtype>();
+    static_assert(isEventSubtype<TEventSubtype>, "TEventSubtype must be a subtype of sf::Event");
+    if constexpr (isEventSubtype<TEventSubtype>)
+        return m_data.is<TEventSubtype>();
 }
 
 
 ////////////////////////////////////////////////////////////
-template <typename EventSubtype>
-const EventSubtype* Event::getIf() const
+template <typename TEventSubtype>
+const TEventSubtype* Event::getIf() const
 {
-    static_assert(isEventSubtype<EventSubtype>, "T must be a subtype of sf::Event");
-    if constexpr (isEventSubtype<EventSubtype>)
-        return m_data.is<EventSubtype>() ? &m_data.as<EventSubtype>() : nullptr;
+    static_assert(isEventSubtype<TEventSubtype>, "TEventSubtype must be a subtype of sf::Event");
+    if constexpr (isEventSubtype<TEventSubtype>)
+        return m_data.is<TEventSubtype>() ? &m_data.as<TEventSubtype>() : nullptr;
 }
 
 

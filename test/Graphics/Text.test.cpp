@@ -25,7 +25,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
         STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Text>);
     }
 
-    const auto font = sf::Font::loadFromFile("Graphics/tuffy.ttf").value();
+    const auto font = sf::Font::openFromFile("Graphics/tuffy.ttf").value();
 
     SECTION("Construction")
     {
@@ -91,7 +91,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
     SECTION("Set/get font")
     {
         sf::Text   text(font);
-        const auto otherFont = sf::Font::loadFromFile("Graphics/tuffy.ttf").value();
+        const auto otherFont = sf::Font::openFromFile("Graphics/tuffy.ttf").value();
         text.setFont(otherFont);
         CHECK(&text.getFont() == &otherFont);
     }
@@ -195,7 +195,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
         {
             const auto badFunction = []
             {
-                const auto localFont = sf::Font::loadFromFile("Graphics/tuffy.ttf").value();
+                const auto localFont = sf::Font::openFromFile("Graphics/tuffy.ttf").value();
                 return sf::Text(localFont);
             };
 
@@ -211,7 +211,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
         {
             struct BadStruct
             {
-                sf::Font memberFont{sf::Font::loadFromFile("Graphics/tuffy.ttf").value()};
+                sf::Font memberFont{sf::Font::openFromFile("Graphics/tuffy.ttf").value()};
                 sf::Text memberText{memberFont};
             };
 

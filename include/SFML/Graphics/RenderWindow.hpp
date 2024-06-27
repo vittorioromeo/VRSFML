@@ -270,8 +270,8 @@ private:
 ///
 /// // Create a sprite and a text to display
 /// const auto texture = sf::Texture::loadFromFile("circle.png").value();
-/// sf::Sprite sprite(texture.getRect());
-/// const auto font = sf::Font::loadFromFile("arial.ttf").value();
+/// sf::Sprite sprite(texture);
+/// const auto font = sf::Font::openFromFile("arial.ttf").value();
 /// sf::Text text(font);
 /// ...
 ///

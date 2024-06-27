@@ -274,35 +274,35 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Construct from a given `sf::Event` subtype
     ///
-    /// \tparam EventSubtype Type of event subtype used to construct the event
+    /// \tparam TEventSubtype Type of event subtype used to construct the event
     ///
-    /// \param eventSubtype Event subtype used to construct the event
+    /// \param eventSubtype Event subtype instance used to construct the event
     ///
     ////////////////////////////////////////////////////////////
-    template <typename EventSubtype>
-    Event(const EventSubtype& eventSubtype);
+    template <typename TEventSubtype>
+    Event(const TEventSubtype& eventSubtype);
 
     ////////////////////////////////////////////////////////////
     /// \brief Check current event subtype
     ///
-    /// \tparam EventSubtype Type of the event subtype to check against
+    /// \tparam TEventSubtype Type of the event subtype to check against
     ///
     /// \return True if the current event subtype matches given template parameter
     ///
     ////////////////////////////////////////////////////////////
-    template <typename EventSubtype>
+    template <typename TEventSubtype>
     [[nodiscard]] bool is() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Attempt to get specified event subtype
     ///
-    /// \tparam EventSubtype Type of the desired event subtype
+    /// \tparam TEventSubtype Type of the desired event subtype
     ///
     /// \return Address of current event subtype, otherwise `nullptr`
     ///
     ////////////////////////////////////////////////////////////
-    template <typename EventSubtype>
-    [[nodiscard]] const EventSubtype* getIf() const;
+    template <typename TEventSubtype>
+    [[nodiscard]] const TEventSubtype* getIf() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Applies the specified `visitor` to the event
