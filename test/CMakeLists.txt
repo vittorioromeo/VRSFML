@@ -27,15 +27,6 @@ target_include_directories(doctest SYSTEM INTERFACE ${DOCTEST_INCLUDE_DIRS})
 if (SFML_ENABLE_PCH)
     message(VERBOSE "enabling PCH for doctest")
     target_precompile_headers(doctest REUSE_FROM sfml-system)
-
-    # necessary to find `WindowsHeader.hpp` on Windows
-    target_include_directories(doctest PRIVATE ${PROJECT_SOURCE_DIR}/src)
-
-    # necessary to find SFML headers from doctest through the PCH header
-    target_include_directories(doctest PRIVATE ${PROJECT_SOURCE_DIR}/include)
-
-    # necessary to find doctest headers from SFML through the PCH header
-    target_include_directories(sfml-system PRIVATE ${DOCTEST_INCLUDE_DIRS})
 endif()
 
 add_library(sfml-test-main STATIC

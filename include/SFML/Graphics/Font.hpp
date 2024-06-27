@@ -29,7 +29,6 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Export.hpp>
 
-#include <SFML/Graphics/Glyph.hpp>
 #include <SFML/Graphics/Rect.hpp>
 
 #include <SFML/System/LifetimeTracking.hpp>
@@ -57,6 +56,7 @@ namespace sf
 class InputStream;
 class Texture;
 class Text;
+struct Glyph;
 
 ////////////////////////////////////////////////////////////
 /// \brief Class for loading and manipulating character fonts

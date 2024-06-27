@@ -54,12 +54,9 @@
 #include <algorithm>
 #include <chrono>
 #include <filesystem>
-#include <iostream>
-#include <locale>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <ostream>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -69,14 +66,3 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
-
-
-////////////////////////////////////////////////////////////
-// Precompiled Headers (Test Suite Only)
-////////////////////////////////////////////////////////////
-
-#ifdef SFML_BUILD_TEST_SUITE
-
-#include <Doctest.hpp>
-
-#endif
