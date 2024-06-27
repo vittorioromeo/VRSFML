@@ -869,7 +869,6 @@ public:
     {
         static constexpr auto sustain = 0.7f; // [0.f; 1.f]
 
-
         // We use a mutable lambda to tie the lifetime of the state to the lambda itself
         // This is necessary since the Echo object will be destroyed before the Music object
         // While the Music object exists, it is possible that the audio engine will try to call
@@ -1025,7 +1024,7 @@ int main()
     window.setVerticalSyncEnabled(true);
 
     // Load the application font and pass it to the Effect class
-    const auto font = sf::Font::loadFromFile(resourcesDir() / "tuffy.ttf").value();
+    const auto font = sf::Font::openFromFile(resourcesDir() / "tuffy.ttf").value();
 
     // Exit early if music file not found
     const auto musicPath = resourcesDir() / "doodle_pop.ogg";

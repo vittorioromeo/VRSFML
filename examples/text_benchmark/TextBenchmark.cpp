@@ -6,7 +6,7 @@
 
 int main()
 {
-    const auto       font         = sf::Font::loadFromFile("resources/tuffy.ttf").value();
+    const auto       font         = sf::Font::openFromFile("resources/tuffy.ttf").value();
     const sf::String textContents = "abcdefghilmnopqrstuvz\nabcdefghilmnopqrstuvz\nabcdefghilmnopqrstuvz\n";
 
     auto text          = sf::Text(font, textContents);
