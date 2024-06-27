@@ -382,7 +382,7 @@ Time MiniaudioUtils::getPlayingOffset(ma_sound& sound)
     if (const ma_result result = ma_sound_get_cursor_in_seconds(&sound, &cursor); result != MA_SUCCESS)
     {
         err() << "Failed to get sound cursor: " << ma_result_description(result) << std::endl;
-        return {};
+        return Time{};
     }
 
     return seconds(cursor);

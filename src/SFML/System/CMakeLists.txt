@@ -20,6 +20,8 @@ set(SRC
     ${INCROOT}/String.inl
     ${INCROOT}/Time.hpp
     ${INCROOT}/Time.inl
+    ${INCROOT}/TimeChronoUtil.hpp
+    ${INCROOT}/TimeChronoUtil.inl
     ${INCROOT}/Utf.hpp
     ${INCROOT}/Utf.inl
     ${SRCROOT}/Utils.hpp

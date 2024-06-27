@@ -42,9 +42,9 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct Window::Window::CommonImpl
 {
-    priv::UniquePtr<priv::GlContext> context{};      //!< Platform-specific implementation of the OpenGL context
-    Clock                            clock;          //!< Clock for measuring the elapsed time between frames
-    Time                             frameTimeLimit; //!< Current framerate limit
+    priv::UniquePtr<priv::GlContext> context{};        //!< Platform-specific implementation of the OpenGL context
+    Clock                            clock;            //!< Clock for measuring the elapsed time between frames
+    Time                             frameTimeLimit{}; //!< Current framerate limit
 };
 
 
