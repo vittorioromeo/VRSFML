@@ -31,7 +31,6 @@
 #include <SFML/System/Utils.hpp>
 
 #include <algorithm>
-#include <ostream>
 #include <random>
 
 #include <cassert>
@@ -65,7 +64,7 @@ bool SoundFileWriterOgg::open(const std::filesystem::path&     filename,
     switch (channelCount)
     {
         case 0:
-            priv::err() << "No channels to write to Vorbis file" << std::endl;
+            priv::err() << "No channels to write to Vorbis file" << priv::errEndl;
             return false;
         case 1:
             targetChannelMap = {SoundChannel::Mono};
@@ -114,14 +113,14 @@ bool SoundFileWriterOgg::open(const std::filesystem::path&     filename,
                                 SoundChannel::LowFrequencyEffects};
             break;
         default:
-            priv::err() << "Vorbis files with more than 8 channels not supported" << std::endl;
+            priv::err() << "Vorbis files with more than 8 channels not supported" << priv::errEndl;
             return false;
     }
 
     // Check if the channel map contains channels that we cannot remap to a mapping supported by FLAC
     if (!std::is_permutation(channelMap.begin(), channelMap.end(), targetChannelMap.begin()))
     {
-        priv::err() << "Provided channel map cannot be reordered to a channel map supported by Vorbis" << std::endl;
+        priv::err() << "Provided channel map cannot be reordered to a channel map supported by Vorbis" << priv::errEndl;
         return false;
     }
 
@@ -144,7 +143,7 @@ bool SoundFileWriterOgg::open(const std::filesystem::path&     filename,
     if (status < 0)
     {
         priv::err() << "Failed to write ogg/vorbis file (unsupported bitrate)\n"
-                    << formatDebugPathInfo(filename) << std::endl;
+                    << formatDebugPathInfo(filename) << priv::errEndl;
         close();
         return false;
     }
@@ -155,7 +154,7 @@ bool SoundFileWriterOgg::open(const std::filesystem::path&     filename,
     if (!m_file)
     {
         priv::err() << "Failed to write ogg/vorbis file (cannot open file)\n"
-                    << formatDebugPathInfo(filename) << std::endl;
+                    << formatDebugPathInfo(filename) << priv::errEndl;
         close();
         return false;
     }
@@ -173,7 +172,7 @@ bool SoundFileWriterOgg::open(const std::filesystem::path&     filename,
     if (status < 0)
     {
         priv::err() << "Failed to write ogg/vorbis file (cannot generate the headers)\n"
-                    << formatDebugPathInfo(filename) << std::endl;
+                    << formatDebugPathInfo(filename) << priv::errEndl;
         close();
         return false;
     }

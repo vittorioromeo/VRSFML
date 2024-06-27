@@ -36,7 +36,6 @@
 #include <SFML/System/Err.hpp>
 
 #import <AppKit/AppKit.h>
-#include <ostream>
 
 ////////////////////////////////////////////////////////////
 /// In order to keep track of the keyboard's state and mouse buttons' state
@@ -82,7 +81,7 @@ SFOpenGLView* getSFOpenGLViewFromSFMLWindow(const sf::WindowBase& window)
             }
             else
             {
-                sf::priv::err() << "The content view is not a valid SFOpenGLView" << std::endl;
+                sf::priv::err() << "The content view is not a valid SFOpenGLView" << sf::priv::errEndl;
 
                 view = nil;
             }
@@ -103,19 +102,19 @@ SFOpenGLView* getSFOpenGLViewFromSFMLWindow(const sf::WindowBase& window)
 
         // No matching subview ?
         if (view == nil)
-            sf::priv::err() << "Cannot find a valid SFOpenGLView subview." << std::endl;
+            sf::priv::err() << "Cannot find a valid SFOpenGLView subview." << sf::priv::errEndl;
     }
     else
     {
         if (nsHandle != nil)
             sf::priv::err() << "The system handle is neither a <NSWindow*> nor <NSView*>"
-                      << "object. This shouldn't happen." << std::endl;
+                            << "object. This shouldn't happen." << sf::priv::errEndl;
         // Else: this probably means the SFML window was previously closed.
     }
 
     return view;
 }
-}
+} // namespace
 
 namespace sf::priv::InputImpl
 {
@@ -263,4 +262,4 @@ Vector2i getTouchPosition(unsigned int /*finger*/, const WindowBase& /*relativeT
     return {};
 }
 
-} // namespace sf::priv
+} // namespace sf::priv::InputImpl

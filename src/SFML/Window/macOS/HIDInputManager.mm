@@ -31,13 +31,12 @@
 #include <SFML/System/Err.hpp>
 
 #include <AppKit/AppKit.h>
-#include <ostream>
 
 namespace
 {
 const std::uint8_t unknownVirtualCode = 0xff;
 const bool         isIsoKeyboard      = (KBGetLayoutType(LMGetKbdType()) == kKeyboardISO);
-}
+} // namespace
 
 namespace sf::priv
 {
@@ -710,7 +709,7 @@ HIDInputManager::HIDInputManager()
 
     if (openStatus != kIOReturnSuccess)
     {
-        priv::err() << "Error when opening the HID manager" << std::endl;
+        priv::err() << "Error when opening the HID manager" << priv::errEndl;
         freeUp();
         return;
     }
@@ -749,7 +748,7 @@ void HIDInputManager::initializeKeyboard()
     CFSetRef underlying = copyDevices(kHIDPage_GenericDesktop, kHIDUsage_GD_Keyboard);
     if (underlying == nullptr)
     {
-        priv::err() << "No keyboard detected by the HID manager!" << std::endl;
+        priv::err() << "No keyboard detected by the HID manager!" << priv::errEndl;
         freeUp();
         return;
     }
@@ -771,7 +770,7 @@ void HIDInputManager::loadKeyboard(IOHIDDeviceRef keyboard)
     CFArrayRef underlying = IOHIDDeviceCopyMatchingElements(keyboard, nullptr, kIOHIDOptionsTypeNone);
     if ((underlying == nullptr) || (CFArrayGetCount(underlying) == 0))
     {
-        priv::err() << "Detected a keyboard without any keys." << std::endl;
+        priv::err() << "Detected a keyboard without any keys." << priv::errEndl;
         return;
     }
 

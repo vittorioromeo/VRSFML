@@ -155,7 +155,7 @@ public:
 ///     if (listener.accept(client) == sf::Socket::Done)
 ///     {
 ///         // A new client just connected!
-///         std::cout << "New connection received from " << client.getRemoteAddress().value() << std::endl;
+///         std::cout << "New connection received from " << client.getRemoteAddress().value() << '\n';
 ///         doSomethingWith(client);
 ///     }
 /// }

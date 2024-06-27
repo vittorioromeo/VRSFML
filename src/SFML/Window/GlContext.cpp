@@ -38,7 +38,6 @@
 #include <atomic>
 #include <mutex>
 #include <optional>
-#include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -992,7 +991,7 @@ void GlContext::initialize(const ContextSettings& requestedSettings)
 
     if (!glGetIntegervFunc || !glGetErrorFunc || !glGetStringFunc || !glEnableFunc || !glIsEnabledFunc)
     {
-        priv::err() << "Could not load necessary function to initialize OpenGL context" << std::endl;
+        priv::err() << "Could not load necessary function to initialize OpenGL context" << priv::errEndl;
         return;
     }
 
@@ -1045,12 +1044,12 @@ void GlContext::initialize(const ContextSettings& requestedSettings)
                 !parseVersionString(version, "", m_settings.majorVersion, m_settings.minorVersion))
             {
                 priv::err() << "Unable to parse OpenGL version string: \"" << version << '"' << ", defaulting to 1.1"
-                            << std::endl;
+                            << priv::errEndl;
             }
         }
         else
         {
-            priv::err() << "Unable to retrieve OpenGL version string, defaulting to 1.1" << std::endl;
+            priv::err() << "Unable to retrieve OpenGL version string, defaulting to 1.1" << priv::errEndl;
         }
     }
 
@@ -1133,7 +1132,7 @@ void GlContext::initialize(const ContextSettings& requestedSettings)
         // Check to see if the enable was successful
         if (glIsEnabledFunc(GL_FRAMEBUFFER_SRGB) == GL_FALSE)
         {
-            priv::err() << "Warning: Failed to enable GL_FRAMEBUFFER_SRGB" << std::endl;
+            priv::err() << "Warning: Failed to enable GL_FRAMEBUFFER_SRGB" << priv::errEndl;
             m_settings.sRgbCapable = false;
         }
     }
@@ -1169,7 +1168,7 @@ void GlContext::checkSettings(const ContextSettings& requestedSettings) const
             << " ; AA level = " << m_settings.antialiasingLevel << std::boolalpha
             << " ; core = " << ((m_settings.attributeFlags & ContextSettings::Core) != 0)
             << " ; debug = " << ((m_settings.attributeFlags & ContextSettings::Debug) != 0)
-            << " ; sRGB = " << m_settings.sRgbCapable << std::noboolalpha << std::endl;
+            << " ; sRGB = " << m_settings.sRgbCapable << std::noboolalpha << priv::errEndl;
     }
 }
 

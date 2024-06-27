@@ -30,15 +30,13 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/String.hpp>
 
-#include <ostream>
-
 
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 String ClipboardImpl::getString()
 {
-    priv::err() << "Clipboard API not implemented for Android.\n";
+    priv::err() << "Clipboard API not implemented for Android." << priv::errEndl;
     return {};
 }
 
@@ -46,7 +44,7 @@ String ClipboardImpl::getString()
 ////////////////////////////////////////////////////////////
 void ClipboardImpl::setString(const String& /* text */)
 {
-    priv::err() << "Clipboard API not implemented for Android.\n";
+    priv::err() << "Clipboard API not implemented for Android." << priv::errEndl;
 }
 
 } // namespace sf::priv

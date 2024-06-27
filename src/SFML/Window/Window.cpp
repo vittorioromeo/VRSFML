@@ -34,8 +34,6 @@
 #include <SFML/System/Sleep.hpp>
 #include <SFML/System/Time.hpp>
 
-#include <ostream>
-
 
 namespace sf
 {
@@ -180,7 +178,7 @@ bool Window::setActive(bool active) const
         }
         else
         {
-            priv::err() << "Failed to activate the window's context" << std::endl;
+            priv::err() << "Failed to activate the window's context" << priv::errEndl;
             return false;
         }
     }
@@ -220,7 +218,7 @@ void Window::initialize()
     // Activate the window
     if (!setActive())
     {
-        priv::err() << "Failed to set window as active during initialization" << std::endl;
+        priv::err() << "Failed to set window as active during initialization" << priv::errEndl;
     }
 
     WindowBase::initialize();

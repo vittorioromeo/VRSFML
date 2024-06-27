@@ -32,7 +32,6 @@
 #include <X11/keysym.h>
 
 #include <mutex>
-#include <ostream>
 #include <unordered_map>
 
 #include <cassert>
@@ -69,7 +68,7 @@ std::shared_ptr<Display> openDisplay()
         if (!sharedDisplay)
         {
             priv::err() << "Failed to open X11 display; make sure the DISPLAY environment variable is set correctly"
-                        << std::endl;
+                        << priv::errEndl;
             std::abort();
         }
     }

@@ -32,7 +32,6 @@
 #include <SFML/System/Err.hpp>
 
 #include <istream>
-#include <ostream>
 
 #include <cstring>
 
@@ -132,7 +131,7 @@ std::optional<IpAddress> IpAddress::getLocalAddress()
     const SocketHandle sock = socket(PF_INET, SOCK_DGRAM, 0);
     if (sock == priv::SocketImpl::invalidSocket())
     {
-        priv::err() << "Failed to retrieve local address (invalid socket)" << std::endl;
+        priv::err() << "Failed to retrieve local address (invalid socket)" << priv::errEndl;
         return std::nullopt;
     }
 
@@ -142,7 +141,7 @@ std::optional<IpAddress> IpAddress::getLocalAddress()
     {
         priv::SocketImpl::close(sock);
 
-        priv::err() << "Failed to retrieve local address (socket connection failure)" << std::endl;
+        priv::err() << "Failed to retrieve local address (socket connection failure)" << priv::errEndl;
         return std::nullopt;
     }
 
@@ -152,7 +151,7 @@ std::optional<IpAddress> IpAddress::getLocalAddress()
     {
         priv::SocketImpl::close(sock);
 
-        priv::err() << "Failed to retrieve local address (socket local address retrieval failure)" << std::endl;
+        priv::err() << "Failed to retrieve local address (socket local address retrieval failure)" << priv::errEndl;
         return std::nullopt;
     }
 
@@ -183,7 +182,7 @@ std::optional<IpAddress> IpAddress::getPublicAddress(Time timeout)
         return IpAddress::resolve(page.getBody());
 
     priv::err() << "Failed to retrieve public address from external IP resolution server (HTTP response status "
-                << static_cast<int>(status) << ")" << std::endl;
+                << static_cast<int>(status) << ")" << priv::errEndl;
 
     return std::nullopt;
 }

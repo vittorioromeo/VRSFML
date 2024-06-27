@@ -33,7 +33,6 @@
 #include <SFML/System/Err.hpp>
 
 #include <optional>
-#include <ostream>
 #include <utility>
 
 
@@ -48,7 +47,7 @@ SoundBuffer::SoundBuffer(const SoundBuffer& copy)
 
     // Update the internal buffer with the new samples
     if (!update(copy.getChannelCount(), copy.getSampleRate(), copy.getChannelMap()))
-        priv::err() << "Failed to update copy-constructed sound buffer" << std::endl;
+        priv::err() << "Failed to update copy-constructed sound buffer" << priv::errEndl;
 }
 
 
@@ -73,7 +72,7 @@ std::optional<SoundBuffer> SoundBuffer::loadFromFile(const std::filesystem::path
     if (auto file = InputSoundFile::openFromFile(filename))
         return initialize(*file);
 
-    priv::err() << "Failed to open sound buffer from file" << std::endl;
+    priv::err() << "Failed to open sound buffer from file" << priv::errEndl;
     return std::nullopt;
 }
 
@@ -84,7 +83,7 @@ std::optional<SoundBuffer> SoundBuffer::loadFromMemory(const void* data, std::si
     if (auto file = InputSoundFile::openFromMemory(data, sizeInBytes))
         return initialize(*file);
 
-    priv::err() << "Failed to open sound buffer from memory" << std::endl;
+    priv::err() << "Failed to open sound buffer from memory" << priv::errEndl;
     return std::nullopt;
 }
 
@@ -95,7 +94,7 @@ std::optional<SoundBuffer> SoundBuffer::loadFromStream(InputStream& stream)
     if (auto file = InputSoundFile::openFromStream(stream))
         return initialize(*file);
 
-    priv::err() << "Failed to open sound buffer from stream" << std::endl;
+    priv::err() << "Failed to open sound buffer from stream" << priv::errEndl;
     return std::nullopt;
 }
 
@@ -115,7 +114,7 @@ std::optional<SoundBuffer> SoundBuffer::loadFromSamplesImpl(
                     << "array: " << samples.data() << ", "
                     << "count: " << samples.size() << ", "
                     << "channels: " << channelCount << ", "
-                    << "samplerate: " << sampleRate << ")" << std::endl;
+                    << "samplerate: " << sampleRate << ")" << priv::errEndl;
 
         return soundBuffer; // Empty optional
     }

@@ -32,8 +32,6 @@
 #include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
 
-#include <ostream>
-
 
 namespace sf
 {
@@ -67,7 +65,7 @@ std::optional<Cursor> Cursor::loadFromPixels(const std::uint8_t* pixels, Vector2
     cursor = std::make_optional<Cursor>(priv::PassKey<Cursor>{});
     if (!cursor->m_impl->loadFromPixels(pixels, size, hotspot))
     {
-        priv::err() << "Failed to load cursor from pixels (invalid arguments)" << std::endl;
+        priv::err() << "Failed to load cursor from pixels (invalid arguments)" << priv::errEndl;
         return cursor; // Empty optional
     }
 

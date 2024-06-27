@@ -32,7 +32,6 @@
 #include <SFML/System/Err.hpp>
 
 #include <algorithm>
-#include <ostream>
 
 namespace sf::priv
 {
@@ -47,7 +46,7 @@ std::vector<VideoMode> VideoModeImpl::getFullscreenModes()
 
     if (cgmodes == nullptr)
     {
-        sf::priv::err() << "Couldn't get VideoMode for main display." << std::endl;
+        sf::priv::err() << "Couldn't get VideoMode for main display." << sf::priv::errEndl;
         return modes;
     }
 

@@ -32,7 +32,6 @@
 
 #include <algorithm>
 #include <fstream>
-#include <ostream>
 #include <sstream>
 #include <utility>
 
@@ -594,7 +593,7 @@ void Ftp::DataChannel::receive(std::ostream& stream)
 
         if (!stream.good())
         {
-            priv::err() << "FTP Error: Writing to the file has failed" << std::endl;
+            priv::err() << "FTP Error: Writing to the file has failed" << priv::errEndl;
             break;
         }
     }
@@ -618,7 +617,7 @@ void Ftp::DataChannel::send(std::istream& stream)
 
         if (!stream.good() && !stream.eof())
         {
-            priv::err() << "FTP Error: Reading from the file has failed" << std::endl;
+            priv::err() << "FTP Error: Reading from the file has failed" << priv::errEndl;
             break;
         }
 

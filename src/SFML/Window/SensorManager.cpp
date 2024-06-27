@@ -29,8 +29,6 @@
 
 #include <SFML/System/Err.hpp>
 
-#include <ostream>
-
 
 namespace sf::priv
 {
@@ -60,7 +58,7 @@ void SensorManager::setEnabled(Sensor::Type sensor, bool enabled)
     else
     {
         priv::err() << "Warning: trying to enable a sensor that is not available (call Sensor::isAvailable to check it)"
-                    << std::endl;
+                    << priv::errEndl;
     }
 }
 
@@ -115,7 +113,7 @@ SensorManager::SensorManager()
             else
             {
                 m_sensors[sensor].available = false;
-                priv::err() << "Warning: sensor " << i << " failed to open, will not be available" << std::endl;
+                priv::err() << "Warning: sensor " << i << " failed to open, will not be available" << priv::errEndl;
             }
         }
     }

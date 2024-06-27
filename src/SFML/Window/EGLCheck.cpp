@@ -32,7 +32,6 @@
 
 #include <glad/egl.h>
 
-#include <ostream>
 #include <string>
 
 
@@ -166,7 +165,7 @@ void eglCheckError(const std::filesystem::path& file, unsigned int line, std::st
         priv::err() << "An internal EGL call failed in " << file.filename() << " (" << line << ") : "
                     << "\nExpression:\n   " << expression << "\nError description:\n   " << error << "\n   "
                     << description << '\n'
-                    << std::endl;
+                    << priv::errEndl;
     }
 }
 

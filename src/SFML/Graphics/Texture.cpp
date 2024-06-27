@@ -38,7 +38,6 @@
 
 #include <algorithm>
 #include <atomic>
-#include <ostream>
 #include <utility>
 
 #include <cassert>
@@ -90,7 +89,7 @@ m_cacheId(TextureImpl::getUniqueId())
     }
     else
     {
-        priv::err() << "Failed to copy texture, failed to create new texture" << std::endl;
+        priv::err() << "Failed to copy texture, failed to create new texture" << priv::errEndl;
     }
 }
 
@@ -164,7 +163,7 @@ std::optional<Texture> Texture::create(const Vector2u& size, bool sRgb)
     // Check if texture parameters are valid before creating it
     if ((size.x == 0) || (size.y == 0))
     {
-        priv::err() << "Failed to create texture, invalid size (" << size.x << "x" << size.y << ")" << std::endl;
+        priv::err() << "Failed to create texture, invalid size (" << size.x << "x" << size.y << ")" << priv::errEndl;
         return result; // Empty optional
     }
 
@@ -182,7 +181,7 @@ std::optional<Texture> Texture::create(const Vector2u& size, bool sRgb)
     {
         priv::err() << "Failed to create texture, its internal size is too high "
                     << "(" << actualSize.x << "x" << actualSize.y << ", "
-                    << "maximum is " << maxSize << "x" << maxSize << ")" << std::endl;
+                    << "maximum is " << maxSize << "x" << maxSize << ")" << priv::errEndl;
 
         return result; // Empty optional
     }
@@ -210,7 +209,7 @@ std::optional<Texture> Texture::create(const Vector2u& size, bool sRgb)
         {
             priv::err() << "OpenGL extension SGIS_texture_edge_clamp unavailable" << '\n'
                         << "Artifacts may occur along texture edges" << '\n'
-                        << "Ensure that hardware acceleration is enabled if available" << std::endl;
+                        << "Ensure that hardware acceleration is enabled if available" << priv::errEndl;
 
             warned = true;
         }
@@ -229,7 +228,7 @@ std::optional<Texture> Texture::create(const Vector2u& size, bool sRgb)
 #else
             priv::err() << "OpenGL ES extension EXT_sRGB unavailable" << '\n';
 #endif
-            priv::err() << "Automatic sRGB to linear conversion disabled" << std::endl;
+            priv::err() << "Automatic sRGB to linear conversion disabled" << priv::errEndl;
 
             warned = true;
         }
@@ -272,7 +271,7 @@ std::optional<Texture> Texture::loadFromFile(const std::filesystem::path& filena
     if (const auto image = sf::Image::loadFromFile(filename))
         return loadFromImage(*image, sRgb, area);
 
-    priv::err() << "Failed to load texture from file" << std::endl;
+    priv::err() << "Failed to load texture from file" << priv::errEndl;
     return std::nullopt;
 }
 
@@ -283,7 +282,7 @@ std::optional<Texture> Texture::loadFromMemory(const void* data, std::size_t siz
     if (const auto image = sf::Image::loadFromMemory(data, size))
         return loadFromImage(*image, sRgb, area);
 
-    priv::err() << "Failed to load texture from memory" << std::endl;
+    priv::err() << "Failed to load texture from memory" << priv::errEndl;
     return std::nullopt;
 }
 
@@ -294,7 +293,7 @@ std::optional<Texture> Texture::loadFromStream(InputStream& stream, bool sRgb, c
     if (const auto image = sf::Image::loadFromStream(stream))
         return loadFromImage(*image, sRgb, area);
 
-    priv::err() << "Failed to load texture from stream" << std::endl;
+    priv::err() << "Failed to load texture from stream" << priv::errEndl;
     return std::nullopt;
 }
 
@@ -566,7 +565,7 @@ void Texture::update(const Texture& texture, const Vector2u& dest)
 
         if (!sourceFrameBuffer || !destFrameBuffer)
         {
-            priv::err() << "Cannot copy texture, failed to create a frame buffer object" << std::endl;
+            priv::err() << "Cannot copy texture, failed to create a frame buffer object" << priv::errEndl;
             return;
         }
 
@@ -618,7 +617,7 @@ void Texture::update(const Texture& texture, const Vector2u& dest)
         }
         else
         {
-            priv::err() << "Cannot copy texture, failed to link texture to frame buffer" << std::endl;
+            priv::err() << "Cannot copy texture, failed to link texture to frame buffer" << priv::errEndl;
         }
 
         // Restore previously bound framebuffers
@@ -779,7 +778,7 @@ void Texture::setRepeated(bool repeated)
                 {
                     priv::err() << "OpenGL extension SGIS_texture_edge_clamp unavailable" << '\n'
                                 << "Artifacts may occur along texture edges" << '\n'
-                                << "Ensure that hardware acceleration is enabled if available" << std::endl;
+                                << "Ensure that hardware acceleration is enabled if available" << priv::errEndl;
 
                     warned = true;
                 }

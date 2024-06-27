@@ -32,7 +32,6 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
-#include <ostream>
 #include <utility>
 
 #ifdef _MSC_VER
