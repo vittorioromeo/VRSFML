@@ -137,12 +137,17 @@ std::optional<std::size_t> FileInputStream::getSize()
     }
 #endif
     assert(m_file);
+
     const auto position = tell().value();
     std::fseek(m_file.get(), 0, SEEK_END);
-    const std::optional size = tell();
+
+    std::optional<std::size_t> size = tell(); // Use a single local variable for NRVO
 
     if (!seek(position).has_value())
-        return std::nullopt;
+    {
+        size.reset();
+        return size; // Empty optional
+    }
 
     return size;
 }

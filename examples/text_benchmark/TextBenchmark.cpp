@@ -16,7 +16,7 @@ int main()
 
     for (std::size_t i = 0; i < 100'000; ++i)
     {
-        text.setOutlineThickness(5 + (i % 2));
+        text.setOutlineThickness(static_cast<float>(5 + (i % 2)));
         renderTexture.draw(text);
     }
 
