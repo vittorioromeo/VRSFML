@@ -119,7 +119,7 @@ MiniaudioUtils::SoundBase::SoundBase(const ma_data_source_vtable&     dataSource
     config.vtable                = &dataSourceVTable;
 
     if (const ma_result result = ma_data_source_init(&config, &dataSourceBase); result != MA_SUCCESS)
-        err() << "Failed to initialize audio data source: " << ma_result_description(result) << std::endl;
+        priv::err() << "Failed to initialize audio data source: " << ma_result_description(result) << std::endl;
 
     resourceEntryIndex = priv::AudioDevice::
         registerResource(this, [](void* ptr) { static_cast<SoundBase*>(ptr)->deinitialize(); }, reinitializeFunc);
@@ -144,7 +144,7 @@ void MiniaudioUtils::SoundBase::initialize(ma_sound_end_proc endCallback)
 
     if (engine == nullptr)
     {
-        err() << "Failed to initialize sound: No engine available" << std::endl;
+        priv::err() << "Failed to initialize sound: No engine available" << std::endl;
         return;
     }
 
@@ -157,7 +157,7 @@ void MiniaudioUtils::SoundBase::initialize(ma_sound_end_proc endCallback)
 
     if (const ma_result result = ma_sound_init_ex(engine, &soundConfig, &sound); result != MA_SUCCESS)
     {
-        err() << "Failed to initialize sound: " << ma_result_description(result) << std::endl;
+        priv::err() << "Failed to initialize sound: " << ma_result_description(result) << std::endl;
         return;
     }
 
@@ -179,7 +179,7 @@ void MiniaudioUtils::SoundBase::initialize(ma_sound_end_proc endCallback)
     if (const ma_result result = ma_node_init(ma_engine_get_node_graph(engine), &nodeConfig, nullptr, &effectNode);
         result != MA_SUCCESS)
     {
-        err() << "Failed to initialize effect node: " << ma_result_description(result) << std::endl;
+        priv::err() << "Failed to initialize effect node: " << ma_result_description(result) << std::endl;
         return;
     }
 
@@ -240,7 +240,7 @@ void MiniaudioUtils::SoundBase::connectEffect(bool connect)
 
     if (engine == nullptr)
     {
-        err() << "Failed to connect effect: No engine available" << std::endl;
+        priv::err() << "Failed to connect effect: No engine available" << std::endl;
         return;
     }
 
@@ -250,7 +250,7 @@ void MiniaudioUtils::SoundBase::connectEffect(bool connect)
         if (const ma_result result = ma_node_attach_output_bus(&effectNode, 0, ma_engine_get_endpoint(engine), 0);
             result != MA_SUCCESS)
         {
-            err() << "Failed to attach effect node output to endpoint: " << ma_result_description(result) << std::endl;
+            priv::err() << "Failed to attach effect node output to endpoint: " << ma_result_description(result) << std::endl;
             return;
         }
     }
@@ -259,7 +259,8 @@ void MiniaudioUtils::SoundBase::connectEffect(bool connect)
         // Detach the custom effect node output from our engine endpoint
         if (const ma_result result = ma_node_detach_output_bus(&effectNode, 0); result != MA_SUCCESS)
         {
-            err() << "Failed to detach effect node output from endpoint: " << ma_result_description(result) << std::endl;
+            priv::err() << "Failed to detach effect node output from endpoint: " << ma_result_description(result)
+                        << std::endl;
             return;
         }
     }
@@ -268,7 +269,7 @@ void MiniaudioUtils::SoundBase::connectEffect(bool connect)
     if (const ma_result result = ma_node_attach_output_bus(&sound, 0, connect ? &effectNode : ma_engine_get_endpoint(engine), 0);
         result != MA_SUCCESS)
     {
-        err() << "Failed to attach sound node output to effect node: " << ma_result_description(result) << std::endl;
+        priv::err() << "Failed to attach sound node output to effect node: " << ma_result_description(result) << std::endl;
         return;
     }
 }
@@ -381,7 +382,7 @@ Time MiniaudioUtils::getPlayingOffset(ma_sound& sound)
 
     if (const ma_result result = ma_sound_get_cursor_in_seconds(&sound, &cursor); result != MA_SUCCESS)
     {
-        err() << "Failed to get sound cursor: " << ma_result_description(result) << std::endl;
+        priv::err() << "Failed to get sound cursor: " << ma_result_description(result) << std::endl;
         return Time{};
     }
 
@@ -396,12 +397,12 @@ ma_uint64 MiniaudioUtils::getFrameIndex(ma_sound& sound, Time timeOffset)
 
     if (const ma_result result = ma_sound_get_data_format(&sound, nullptr, nullptr, &sampleRate, nullptr, 0);
         result != MA_SUCCESS)
-        err() << "Failed to get sound data format: " << ma_result_description(result) << std::endl;
+        priv::err() << "Failed to get sound data format: " << ma_result_description(result) << std::endl;
 
     const auto frameIndex = static_cast<ma_uint64>(timeOffset.asSeconds() * static_cast<float>(sampleRate));
 
     if (const ma_result result = ma_sound_seek_to_pcm_frame(&sound, frameIndex); result != MA_SUCCESS)
-        err() << "Failed to seek sound to pcm frame: " << ma_result_description(result) << std::endl;
+        priv::err() << "Failed to seek sound to pcm frame: " << ma_result_description(result) << std::endl;
 
     return frameIndex;
 }

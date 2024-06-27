@@ -81,7 +81,7 @@ struct Sound::Impl : priv::MiniaudioUtils::SoundBase
 
         // Seek back to the start of the sound when it finishes playing
         if (const ma_result result = ma_sound_seek_to_pcm_frame(soundPtr, 0); result != MA_SUCCESS)
-            err() << "Failed to seek sound to frame 0: " << ma_result_description(result) << std::endl;
+            priv::err() << "Failed to seek sound to frame 0: " << ma_result_description(result) << std::endl;
     }
 
     static ma_result read(ma_data_source* dataSource, void* framesOut, ma_uint64 frameCount, ma_uint64* framesRead)
@@ -226,7 +226,7 @@ void Sound::play()
 
     if (const ma_result result = ma_sound_start(&m_impl->sound); result != MA_SUCCESS)
     {
-        err() << "Failed to start playing sound: " << ma_result_description(result) << std::endl;
+        priv::err() << "Failed to start playing sound: " << ma_result_description(result) << std::endl;
     }
     else
     {
@@ -240,7 +240,7 @@ void Sound::pause()
 {
     if (const ma_result result = ma_sound_stop(&m_impl->sound); result != MA_SUCCESS)
     {
-        err() << "Failed to stop playing sound: " << ma_result_description(result) << std::endl;
+        priv::err() << "Failed to stop playing sound: " << ma_result_description(result) << std::endl;
     }
     else
     {
@@ -255,7 +255,7 @@ void Sound::stop()
 {
     if (const ma_result result = ma_sound_stop(&m_impl->sound); result != MA_SUCCESS)
     {
-        err() << "Failed to stop playing sound: " << ma_result_description(result) << std::endl;
+        priv::err() << "Failed to stop playing sound: " << ma_result_description(result) << std::endl;
     }
     else
     {

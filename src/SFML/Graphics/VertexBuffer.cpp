@@ -91,12 +91,12 @@ m_usage(copy.m_usage)
     {
         if (!create(copy.m_size))
         {
-            err() << "Could not create vertex buffer for copying" << std::endl;
+            priv::err() << "Could not create vertex buffer for copying" << std::endl;
             return;
         }
 
         if (!update(copy))
-            err() << "Could not copy vertex buffer" << std::endl;
+            priv::err() << "Could not copy vertex buffer" << std::endl;
     }
 }
 
@@ -126,7 +126,7 @@ bool VertexBuffer::create(std::size_t vertexCount)
 
     if (!m_buffer)
     {
-        err() << "Could not create vertex buffer, generation failed" << std::endl;
+        priv::err() << "Could not create vertex buffer, generation failed" << std::endl;
         return false;
     }
 

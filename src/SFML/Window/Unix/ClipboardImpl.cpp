@@ -164,7 +164,7 @@ void ClipboardImpl::setStringImpl(const String& text)
 
     // Check if setting the selection owner was successful
     if (XGetSelectionOwner(m_display.get(), m_clipboard) != m_window)
-        err() << "Cannot set clipboard string: Unable to get ownership of X selection" << std::endl;
+        priv::err() << "Cannot set clipboard string: Unable to get ownership of X selection" << std::endl;
 }
 
 

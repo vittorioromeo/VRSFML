@@ -144,7 +144,7 @@ std::optional<SoundFileReader::Info> SoundFileReaderMp3::open(InputStream& strea
     switch (info.channelCount)
     {
         case 0:
-            err() << "No channels in MP3 file" << std::endl;
+            priv::err() << "No channels in MP3 file" << std::endl;
             break;
         case 1:
             info.channelMap = {SoundChannel::Mono};
@@ -153,7 +153,7 @@ std::optional<SoundFileReader::Info> SoundFileReaderMp3::open(InputStream& strea
             info.channelMap = {SoundChannel::SideLeft, SoundChannel::SideRight};
             break;
         default:
-            err() << "MP3 files with more than 2 channels not supported" << std::endl;
+            priv::err() << "MP3 files with more than 2 channels not supported" << std::endl;
             assert(false);
             break;
     }

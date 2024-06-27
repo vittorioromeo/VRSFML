@@ -104,7 +104,7 @@ std::uint32_t factorToGlConstant(sf::BlendMode::Factor blendFactor)
     }
     // clang-format on
 
-    sf::err() << "Invalid value for sf::BlendMode::Factor! Fallback to sf::BlendMode::Factor::Zero." << std::endl;
+    sf::priv::err() << "Invalid value for sf::BlendMode::Factor! Fallback to sf::BlendMode::Factor::Zero." << std::endl;
     assert(false);
     return GL_ZERO;
 }
@@ -138,9 +138,9 @@ std::uint32_t equationToGlConstant(sf::BlendMode::Equation blendEquation)
     static bool warned = false;
     if (!warned)
     {
-        sf::err() << "OpenGL extension EXT_blend_minmax or EXT_blend_subtract unavailable" << '\n'
-                  << "Some blending equations will fallback to sf::BlendMode::Equation::Add" << '\n'
-                  << "Ensure that hardware acceleration is enabled if available" << std::endl;
+        sf::priv::err() << "OpenGL extension EXT_blend_minmax or EXT_blend_subtract unavailable" << '\n'
+                        << "Some blending equations will fallback to sf::BlendMode::Equation::Add" << '\n'
+                        << "Ensure that hardware acceleration is enabled if available" << std::endl;
 
         warned = true;
     }
@@ -164,7 +164,7 @@ std::uint32_t stencilOperationToGlConstant(sf::StencilUpdateOperation operation)
     }
     // clang-format on
 
-    sf::err() << "Invalid value for sf::StencilUpdateOperation! Fallback to sf::StencilMode::Keep." << std::endl;
+    sf::priv::err() << "Invalid value for sf::StencilUpdateOperation! Fallback to sf::StencilMode::Keep." << std::endl;
     assert(false);
     return GL_KEEP;
 }
@@ -187,7 +187,7 @@ std::uint32_t stencilFunctionToGlConstant(sf::StencilComparison comparison)
     }
     // clang-format on
 
-    sf::err() << "Invalid value for sf::StencilComparison! Fallback to sf::StencilMode::Always." << std::endl;
+    sf::priv::err() << "Invalid value for sf::StencilComparison! Fallback to sf::StencilMode::Always." << std::endl;
     assert(false);
     return GL_ALWAYS;
 }
@@ -450,7 +450,7 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, std::size_t firstVerte
     // VertexBuffer not supported?
     if (!VertexBuffer::isAvailable())
     {
-        err() << "sf::VertexBuffer is not available, drawing skipped" << std::endl;
+        priv::err() << "sf::VertexBuffer is not available, drawing skipped" << std::endl;
         return;
     }
 
@@ -552,8 +552,8 @@ void RenderTarget::pushGLStates()
         const GLenum error = glGetError();
         if (error != GL_NO_ERROR)
         {
-            err() << "OpenGL error (" << error << ") detected in user code, "
-                  << "you should check for errors with glGetError()" << std::endl;
+            priv::err() << "OpenGL error (" << error << ") detected in user code, "
+                        << "you should check for errors with glGetError()" << std::endl;
         }
 #endif
 
@@ -604,7 +604,7 @@ void RenderTarget::resetGLStates()
 #if defined(SFML_SYSTEM_MACOS)
     if (!setActive(false))
     {
-        err() << "Failed to set render target inactive" << std::endl;
+        priv::err() << "Failed to set render target inactive" << std::endl;
     }
 #endif
 
@@ -756,12 +756,12 @@ void RenderTarget::applyBlendMode(const BlendMode& mode)
         if (!warned)
         {
 #ifdef SFML_OPENGL_ES
-            err() << "OpenGL ES extension OES_blend_subtract unavailable" << std::endl;
+            priv::err() << "OpenGL ES extension OES_blend_subtract unavailable" << std::endl;
 #else
-            err() << "OpenGL extension EXT_blend_minmax and EXT_blend_subtract unavailable" << std::endl;
+            priv::err() << "OpenGL extension EXT_blend_minmax and EXT_blend_subtract unavailable" << std::endl;
 #endif
-            err() << "Selecting a blend equation not possible" << '\n'
-                  << "Ensure that hardware acceleration is enabled if available" << std::endl;
+            priv::err() << "Selecting a blend equation not possible" << '\n'
+                        << "Ensure that hardware acceleration is enabled if available" << std::endl;
 
             warned = true;
         }

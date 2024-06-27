@@ -82,7 +82,7 @@ SFOpenGLView* getSFOpenGLViewFromSFMLWindow(const sf::WindowBase& window)
             }
             else
             {
-                sf::err() << "The content view is not a valid SFOpenGLView" << std::endl;
+                sf::priv::err() << "The content view is not a valid SFOpenGLView" << std::endl;
 
                 view = nil;
             }
@@ -103,12 +103,12 @@ SFOpenGLView* getSFOpenGLViewFromSFMLWindow(const sf::WindowBase& window)
 
         // No matching subview ?
         if (view == nil)
-            sf::err() << "Cannot find a valid SFOpenGLView subview." << std::endl;
+            sf::priv::err() << "Cannot find a valid SFOpenGLView subview." << std::endl;
     }
     else
     {
         if (nsHandle != nil)
-            sf::err() << "The system handle is neither a <NSWindow*> nor <NSView*>"
+            sf::priv::err() << "The system handle is neither a <NSWindow*> nor <NSView*>"
                       << "object. This shouldn't happen." << std::endl;
         // Else: this probably means the SFML window was previously closed.
     }

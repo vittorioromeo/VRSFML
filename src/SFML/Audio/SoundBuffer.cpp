@@ -48,7 +48,7 @@ SoundBuffer::SoundBuffer(const SoundBuffer& copy)
 
     // Update the internal buffer with the new samples
     if (!update(copy.getChannelCount(), copy.getSampleRate(), copy.getChannelMap()))
-        err() << "Failed to update copy-constructed sound buffer" << std::endl;
+        priv::err() << "Failed to update copy-constructed sound buffer" << std::endl;
 }
 
 
@@ -73,7 +73,7 @@ std::optional<SoundBuffer> SoundBuffer::loadFromFile(const std::filesystem::path
     if (auto file = InputSoundFile::openFromFile(filename))
         return initialize(*file);
 
-    err() << "Failed to open sound buffer from file" << std::endl;
+    priv::err() << "Failed to open sound buffer from file" << std::endl;
     return std::nullopt;
 }
 
@@ -84,7 +84,7 @@ std::optional<SoundBuffer> SoundBuffer::loadFromMemory(const void* data, std::si
     if (auto file = InputSoundFile::openFromMemory(data, sizeInBytes))
         return initialize(*file);
 
-    err() << "Failed to open sound buffer from memory" << std::endl;
+    priv::err() << "Failed to open sound buffer from memory" << std::endl;
     return std::nullopt;
 }
 
@@ -95,7 +95,7 @@ std::optional<SoundBuffer> SoundBuffer::loadFromStream(InputStream& stream)
     if (auto file = InputSoundFile::openFromStream(stream))
         return initialize(*file);
 
-    err() << "Failed to open sound buffer from stream" << std::endl;
+    priv::err() << "Failed to open sound buffer from stream" << std::endl;
     return std::nullopt;
 }
 
@@ -111,11 +111,11 @@ std::optional<SoundBuffer> SoundBuffer::loadFromSamplesImpl(
 
     if (channelCount == 0 || sampleRate == 0 || channelMap.empty())
     {
-        err() << "Failed to load sound buffer from samples ("
-              << "array: " << samples.data() << ", "
-              << "count: " << samples.size() << ", "
-              << "channels: " << channelCount << ", "
-              << "samplerate: " << sampleRate << ")" << std::endl;
+        priv::err() << "Failed to load sound buffer from samples ("
+                    << "array: " << samples.data() << ", "
+                    << "count: " << samples.size() << ", "
+                    << "channels: " << channelCount << ", "
+                    << "samplerate: " << sampleRate << ")" << std::endl;
 
         return soundBuffer; // Empty optional
     }

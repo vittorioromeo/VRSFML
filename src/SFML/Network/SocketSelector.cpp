@@ -97,9 +97,9 @@ void SocketSelector::add(Socket& socket)
 
         if (m_impl->socketCount >= FD_SETSIZE)
         {
-            err() << "The socket can't be added to the selector because the "
-                  << "selector is full. This is a limitation of your operating "
-                  << "system's FD_SETSIZE setting.";
+            priv::err() << "The socket can't be added to the selector because the "
+                        << "selector is full. This is a limitation of your operating "
+                        << "system's FD_SETSIZE setting.";
             return;
         }
 
@@ -112,9 +112,9 @@ void SocketSelector::add(Socket& socket)
 
         if (handle >= FD_SETSIZE)
         {
-            err() << "The socket can't be added to the selector because its "
-                  << "ID is too high. This is a limitation of your operating "
-                  << "system's FD_SETSIZE setting.";
+            priv::err() << "The socket can't be added to the selector because its "
+                        << "ID is too high. This is a limitation of your operating "
+                        << "system's FD_SETSIZE setting.";
             return;
         }
 

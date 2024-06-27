@@ -81,7 +81,7 @@ Socket::Status UdpSocket::bind(unsigned short port, const IpAddress& address)
     sockaddr_in addr = priv::SocketImpl::createAddress(address.toInteger(), port);
     if (::bind(getNativeHandle(), reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) == -1)
     {
-        err() << "Failed to bind socket to port " << port << std::endl;
+        priv::err() << "Failed to bind socket to port " << port << std::endl;
         return Status::Error;
     }
 
@@ -106,8 +106,8 @@ Socket::Status UdpSocket::send(const void* data, std::size_t size, const IpAddre
     // Make sure that all the data will fit in one datagram
     if (size > MaxDatagramSize)
     {
-        err() << "Cannot send data over the network "
-              << "(the number of bytes to send is greater than sf::UdpSocket::MaxDatagramSize)" << std::endl;
+        priv::err() << "Cannot send data over the network "
+                    << "(the number of bytes to send is greater than sf::UdpSocket::MaxDatagramSize)" << std::endl;
         return Status::Error;
     }
 
@@ -149,7 +149,7 @@ Socket::Status UdpSocket::receive(void*                     data,
     // Check the destination buffer
     if (!data)
     {
-        err() << "Cannot receive data from the network (the destination buffer is invalid)" << std::endl;
+        priv::err() << "Cannot receive data from the network (the destination buffer is invalid)" << std::endl;
         return Status::Error;
     }
 

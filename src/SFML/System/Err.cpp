@@ -32,7 +32,7 @@
 #include <cstdio>
 
 
-namespace sf
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 ErrStream::Guard::Guard(std::ostream& stream, std::unique_lock<std::mutex>&& lockGuard) :
@@ -85,4 +85,4 @@ ErrStream& err()
     return stream;
 }
 
-} // namespace sf
+} // namespace sf::priv

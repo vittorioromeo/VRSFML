@@ -180,7 +180,7 @@ bool Window::setActive(bool active) const
         }
         else
         {
-            err() << "Failed to activate the window's context" << std::endl;
+            priv::err() << "Failed to activate the window's context" << std::endl;
             return false;
         }
     }
@@ -220,7 +220,7 @@ void Window::initialize()
     // Activate the window
     if (!setActive())
     {
-        err() << "Failed to set window as active during initialization" << std::endl;
+        priv::err() << "Failed to set window as active during initialization" << std::endl;
     }
 
     WindowBase::initialize();

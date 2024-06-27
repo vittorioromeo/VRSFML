@@ -101,9 +101,10 @@ void glCheckError(const std::filesystem::path& file, unsigned int line, std::str
         }
 
         // Log the error
-        err() << "An internal OpenGL call failed in " << file.filename() << "(" << line << ")."
-              << "\nExpression:\n   " << expression << "\nError description:\n   " << error << "\n   " << description << '\n'
-              << std::endl;
+        priv::err() << "An internal OpenGL call failed in " << file.filename() << "(" << line << ")."
+                    << "\nExpression:\n   " << expression << "\nError description:\n   " << error << "\n   "
+                    << description << '\n'
+                    << std::endl;
     }
 }
 

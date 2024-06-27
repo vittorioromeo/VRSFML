@@ -193,7 +193,7 @@ DrmFb* drmFbGetFromBo(gbm_bo& bo)
 
     if (result)
     {
-        sf::err() << "Failed to create fb: " << std::strerror(errno) << std::endl;
+        sf::priv::err() << "Failed to create fb: " << std::strerror(errno) << std::endl;
         delete fb;
         return nullptr;
     }
@@ -280,7 +280,7 @@ int findDrmDevice(drmModeResPtr& resources)
     const int numDevices = drmGetDevices2(0, devices, maxDrmDevices);
     if (numDevices < 0)
     {
-        sf::err() << "drmGetDevices2 failed: " << std::strerror(-numDevices) << std::endl;
+        sf::priv::err() << "drmGetDevices2 failed: " << std::strerror(-numDevices) << std::endl;
         return -1;
     }
 
@@ -298,7 +298,7 @@ int findDrmDevice(drmModeResPtr& resources)
             continue;
         result = getResources(fileDescriptor, resources);
 #ifdef SFML_DEBUG
-        sf::err() << "DRM device used: " << i << std::endl;
+        sf::priv::err() << "DRM device used: " << i << std::endl;
 #endif
         if (!result && hasMonitorConnected(fileDescriptor, *resources) != 0)
             break;
@@ -308,7 +308,7 @@ int findDrmDevice(drmModeResPtr& resources)
     drmFreeDevices(devices, numDevices);
 
     if (fileDescriptor < 0)
-        sf::err() << "No drm device found!" << std::endl;
+        sf::priv::err() << "No drm device found!" << std::endl;
     return fileDescriptor;
 }
 
@@ -321,7 +321,7 @@ int initDrm(sf::priv::Drm& drm, const char* device, const char* modeStr, unsigne
         drm.fileDescriptor = open(device, O_RDWR);
         const int ret      = getResources(drm.fileDescriptor, resources);
         if (ret < 0 && errno == EOPNOTSUPP)
-            sf::err() << device << " does not look like a modeset device" << std::endl;
+            sf::priv::err() << device << " does not look like a modeset device" << std::endl;
     }
     else
     {
@@ -330,13 +330,13 @@ int initDrm(sf::priv::Drm& drm, const char* device, const char* modeStr, unsigne
 
     if (drm.fileDescriptor < 0)
     {
-        sf::err() << "Could not open drm device" << std::endl;
+        sf::priv::err() << "Could not open drm device" << std::endl;
         return -1;
     }
 
     if (!resources)
     {
-        sf::err() << "drmModeGetResources failed: " << std::strerror(errno) << std::endl;
+        sf::priv::err() << "drmModeGetResources failed: " << std::strerror(errno) << std::endl;
         return -1;
     }
 
@@ -357,7 +357,7 @@ int initDrm(sf::priv::Drm& drm, const char* device, const char* modeStr, unsigne
     if (!connector)
     {
         // We could be fancy and listen for hotplug events and wait for a connector..
-        sf::err() << "No connected connector!" << std::endl;
+        sf::priv::err() << "No connected connector!" << std::endl;
         return -1;
     }
 
@@ -378,7 +378,7 @@ int initDrm(sf::priv::Drm& drm, const char* device, const char* modeStr, unsigne
             }
         }
         if (!drm.mode)
-            sf::err() << "Requested mode not found, using default mode!" << std::endl;
+            sf::priv::err() << "Requested mode not found, using default mode!" << std::endl;
     }
 
     // Find encoder:
@@ -401,7 +401,7 @@ int initDrm(sf::priv::Drm& drm, const char* device, const char* modeStr, unsigne
         const std::uint32_t crtcId = findCrtcForConnector(drm, *resources, *connector);
         if (crtcId == 0)
         {
-            sf::err() << "No crtc found!" << std::endl;
+            sf::priv::err() << "No crtc found!" << std::endl;
             return -1;
         }
 
@@ -422,13 +422,13 @@ int initDrm(sf::priv::Drm& drm, const char* device, const char* modeStr, unsigne
     if (!drm.mode)
     {
 #ifdef SFML_DEBUG
-        sf::err() << "DRM using the current mode" << std::endl;
+        sf::priv::err() << "DRM using the current mode" << std::endl;
 #endif
         drm.mode = &(drm.originalCrtc->mode);
     }
 
 #ifdef SFML_DEBUG
-    sf::err() << "DRM Mode used: " << drm.mode->name << "@" << drm.mode->vrefresh << std::endl;
+    sf::priv::err() << "DRM Mode used: " << drm.mode->name << "@" << drm.mode->vrefresh << std::endl;
 #endif
 
     return 0;
@@ -461,7 +461,7 @@ void checkInit()
                 modeString,       // requested mode
                 refreshRate) < 0) // screen refresh rate
     {
-        sf::err() << "Error initializing DRM" << std::endl;
+        sf::priv::err() << "Error initializing DRM" << std::endl;
         return;
     }
 
@@ -495,12 +495,12 @@ EGLDisplay getInitializedDisplay()
 #if defined(SFML_OPENGL_ES)
         if (!eglBindAPI(EGL_OPENGL_ES_API))
         {
-            sf::err() << "failed to bind api EGL_OPENGL_ES_API" << std::endl;
+            sf::priv::err() << "failed to bind api EGL_OPENGL_ES_API" << std::endl;
         }
 #else
         if (!eglBindAPI(EGL_OPENGL_API))
         {
-            sf::err() << "failed to bind api EGL_OPENGL_API" << std::endl;
+            sf::priv::err() << "failed to bind api EGL_OPENGL_API" << std::endl;
         }
 #endif
     }
@@ -659,7 +659,7 @@ void DRMContext::display()
     fb = drmFbGetFromBo(*m_nextBO);
     if (!fb)
     {
-        err() << "Failed to get FB from buffer object" << std::endl;
+        priv::err() << "Failed to get FB from buffer object" << std::endl;
         return;
     }
 
@@ -668,7 +668,7 @@ void DRMContext::display()
     {
         if (drmModeSetCrtc(drmNode.fileDescriptor, drmNode.crtcId, fb->fbId, 0, 0, &drmNode.connectorId, 1, drmNode.mode))
         {
-            err() << "Failed to set mode: " << std::strerror(errno) << std::endl;
+            priv::err() << "Failed to set mode: " << std::strerror(errno) << std::endl;
             std::abort();
         }
         m_shown = true;
@@ -705,7 +705,7 @@ void DRMContext::createContext(DRMContext* shared)
     // Create EGL context
     eglCheck(m_context = eglCreateContext(m_display, m_config, toShared, contextVersion));
     if (m_context == EGL_NO_CONTEXT)
-        err() << "Failed to create EGL context" << std::endl;
+        priv::err() << "Failed to create EGL context" << std::endl;
 }
 
 
@@ -722,7 +722,7 @@ void DRMContext::createSurface(const Vector2u& size, unsigned int /*bpp*/, bool 
 
     if (!m_gbmSurface)
     {
-        err() << "Failed to create gbm surface." << std::endl;
+        priv::err() << "Failed to create gbm surface." << std::endl;
         return;
     }
 
@@ -733,7 +733,7 @@ void DRMContext::createSurface(const Vector2u& size, unsigned int /*bpp*/, bool 
 
     if (m_surface == EGL_NO_SURFACE)
     {
-        err() << "Failed to create EGL Surface" << std::endl;
+        priv::err() << "Failed to create EGL Surface" << std::endl;
     }
 }
 
@@ -757,33 +757,33 @@ EGLConfig DRMContext::getBestConfig(EGLDisplay display, unsigned int bitsPerPixe
 {
     // Set our video settings constraint
     const EGLint attributes[] =
-    { EGL_BUFFER_SIZE,
-      static_cast<EGLint>(bitsPerPixel),
-      EGL_DEPTH_SIZE,
-      static_cast<EGLint>(settings.depthBits),
-      EGL_STENCIL_SIZE,
-      static_cast<EGLint>(settings.stencilBits),
-      EGL_SAMPLE_BUFFERS,
-      static_cast<EGLint>(settings.antialiasingLevel),
-      EGL_BLUE_SIZE,
-      8,
-      EGL_GREEN_SIZE,
-      8,
-      EGL_RED_SIZE,
-      8,
-      EGL_ALPHA_SIZE,
-      8,
+        {EGL_BUFFER_SIZE,
+         static_cast<EGLint>(bitsPerPixel),
+         EGL_DEPTH_SIZE,
+         static_cast<EGLint>(settings.depthBits),
+         EGL_STENCIL_SIZE,
+         static_cast<EGLint>(settings.stencilBits),
+         EGL_SAMPLE_BUFFERS,
+         static_cast<EGLint>(settings.antialiasingLevel),
+         EGL_BLUE_SIZE,
+         8,
+         EGL_GREEN_SIZE,
+         8,
+         EGL_RED_SIZE,
+         8,
+         EGL_ALPHA_SIZE,
+         8,
 
-      EGL_SURFACE_TYPE,
-      EGL_WINDOW_BIT,
+         EGL_SURFACE_TYPE,
+         EGL_WINDOW_BIT,
 #if defined(SFML_OPENGL_ES)
-      EGL_RENDERABLE_TYPE,
-      EGL_OPENGL_ES_BIT,
+         EGL_RENDERABLE_TYPE,
+         EGL_OPENGL_ES_BIT,
 #else
-      EGL_RENDERABLE_TYPE,
-      EGL_OPENGL_BIT,
+         EGL_RENDERABLE_TYPE,
+         EGL_OPENGL_BIT,
 #endif
-      EGL_NONE };
+         EGL_NONE};
 
     EGLint    configCount = 0;
     EGLConfig configs[1];

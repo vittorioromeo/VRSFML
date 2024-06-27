@@ -993,7 +993,7 @@ void GlContext::initialize(const ContextSettings& requestedSettings)
 
     if (!glGetIntegervFunc || !glGetErrorFunc || !glGetStringFunc || !glEnableFunc || !glIsEnabledFunc)
     {
-        err() << "Could not load necessary function to initialize OpenGL context" << std::endl;
+        priv::err() << "Could not load necessary function to initialize OpenGL context" << std::endl;
         return;
     }
 
@@ -1045,13 +1045,13 @@ void GlContext::initialize(const ContextSettings& requestedSettings)
                 !parseVersionString(version, "OpenGL ES ", m_settings.majorVersion, m_settings.minorVersion) &&
                 !parseVersionString(version, "", m_settings.majorVersion, m_settings.minorVersion))
             {
-                err() << "Unable to parse OpenGL version string: " << std::quoted(version) << ", defaulting to 1.1"
-                      << std::endl;
+                priv::err() << "Unable to parse OpenGL version string: " << std::quoted(version)
+                            << ", defaulting to 1.1" << std::endl;
             }
         }
         else
         {
-            err() << "Unable to retrieve OpenGL version string, defaulting to 1.1" << std::endl;
+            priv::err() << "Unable to retrieve OpenGL version string, defaulting to 1.1" << std::endl;
         }
     }
 
@@ -1134,7 +1134,7 @@ void GlContext::initialize(const ContextSettings& requestedSettings)
         // Check to see if the enable was successful
         if (glIsEnabledFunc(GL_FRAMEBUFFER_SRGB) == GL_FALSE)
         {
-            err() << "Warning: Failed to enable GL_FRAMEBUFFER_SRGB" << std::endl;
+            priv::err() << "Warning: Failed to enable GL_FRAMEBUFFER_SRGB" << std::endl;
             m_settings.sRgbCapable = false;
         }
     }
@@ -1157,19 +1157,20 @@ void GlContext::checkSettings(const ContextSettings& requestedSettings) const
         (m_settings.antialiasingLevel < requestedSettings.antialiasingLevel) ||
         (m_settings.depthBits < requestedSettings.depthBits) || (!m_settings.sRgbCapable && requestedSettings.sRgbCapable))
     {
-        err() << "Warning: The created OpenGL context does not fully meet the settings that were requested" << '\n'
-              << "Requested: version = " << requestedSettings.majorVersion << "." << requestedSettings.minorVersion
-              << " ; depth bits = " << requestedSettings.depthBits << " ; stencil bits = " << requestedSettings.stencilBits
-              << " ; AA level = " << requestedSettings.antialiasingLevel << std::boolalpha
-              << " ; core = " << ((requestedSettings.attributeFlags & ContextSettings::Core) != 0)
-              << " ; debug = " << ((requestedSettings.attributeFlags & ContextSettings::Debug) != 0)
-              << " ; sRGB = " << requestedSettings.sRgbCapable << std::noboolalpha << '\n'
-              << "Created: version = " << m_settings.majorVersion << "." << m_settings.minorVersion
-              << " ; depth bits = " << m_settings.depthBits << " ; stencil bits = " << m_settings.stencilBits
-              << " ; AA level = " << m_settings.antialiasingLevel << std::boolalpha
-              << " ; core = " << ((m_settings.attributeFlags & ContextSettings::Core) != 0)
-              << " ; debug = " << ((m_settings.attributeFlags & ContextSettings::Debug) != 0)
-              << " ; sRGB = " << m_settings.sRgbCapable << std::noboolalpha << std::endl;
+        priv::err()
+            << "Warning: The created OpenGL context does not fully meet the settings that were requested" << '\n'
+            << "Requested: version = " << requestedSettings.majorVersion << "." << requestedSettings.minorVersion
+            << " ; depth bits = " << requestedSettings.depthBits << " ; stencil bits = " << requestedSettings.stencilBits
+            << " ; AA level = " << requestedSettings.antialiasingLevel << std::boolalpha
+            << " ; core = " << ((requestedSettings.attributeFlags & ContextSettings::Core) != 0)
+            << " ; debug = " << ((requestedSettings.attributeFlags & ContextSettings::Debug) != 0)
+            << " ; sRGB = " << requestedSettings.sRgbCapable << std::noboolalpha << '\n'
+            << "Created: version = " << m_settings.majorVersion << "." << m_settings.minorVersion
+            << " ; depth bits = " << m_settings.depthBits << " ; stencil bits = " << m_settings.stencilBits
+            << " ; AA level = " << m_settings.antialiasingLevel << std::boolalpha
+            << " ; core = " << ((m_settings.attributeFlags & ContextSettings::Core) != 0)
+            << " ; debug = " << ((m_settings.attributeFlags & ContextSettings::Debug) != 0)
+            << " ; sRGB = " << m_settings.sRgbCapable << std::noboolalpha << std::endl;
     }
 }
 

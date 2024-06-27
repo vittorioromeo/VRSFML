@@ -309,7 +309,7 @@ void Http::setHost(const std::string& host, unsigned short port)
     else if (toLower(host.substr(0, 8)) == "https://")
     {
         // HTTPS protocol -- unsupported (requires encryption and certificates and stuff...)
-        err() << "HTTPS protocol is not supported by sf::Http" << std::endl;
+        priv::err() << "HTTPS protocol is not supported by sf::Http" << std::endl;
         m_hostName.clear();
         m_port = 0;
     }

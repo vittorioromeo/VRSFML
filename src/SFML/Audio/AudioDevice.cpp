@@ -85,7 +85,7 @@ std::vector<DeviceEntryImpl> getAvailableDevicesImpl(ma_context* instanceContext
         if (const auto result = ma_context_get_devices(&context, &deviceInfos, &deviceCount, nullptr, nullptr);
             result != MA_SUCCESS)
         {
-            err() << "Failed to get audio playback devices: " << ma_result_description(result) << std::endl;
+            priv::err() << "Failed to get audio playback devices: " << ma_result_description(result) << std::endl;
             return deviceList; // Empty device list
         }
 
@@ -124,7 +124,7 @@ std::vector<DeviceEntryImpl> getAvailableDevicesImpl(ma_context* instanceContext
 
     if (const auto result = ma_context_init(nullptr, 0, nullptr, &context); result != MA_SUCCESS)
     {
-        err() << "Failed to initialize the audio playback context: " << ma_result_description(result) << std::endl;
+        priv::err() << "Failed to initialize the audio playback context: " << ma_result_description(result) << std::endl;
         return {};
     }
 
@@ -194,7 +194,7 @@ AudioDevice::AudioDevice() : m_impl(priv::makeUnique<Impl>())
     if (const auto result = ma_log_init(nullptr, &*m_impl->log); result != MA_SUCCESS)
     {
         m_impl->log.reset();
-        err() << "Failed to initialize the audio log: " << ma_result_description(result) << std::endl;
+        priv::err() << "Failed to initialize the audio log: " << ma_result_description(result) << std::endl;
         return;
     }
 
@@ -204,12 +204,13 @@ AudioDevice::AudioDevice() : m_impl(priv::makeUnique<Impl>())
                                                          [](void*, ma_uint32 level, const char* message)
                                                          {
                                                              if (level <= MA_LOG_LEVEL_WARNING)
-                                                                 err() << "miniaudio " << ma_log_level_to_string(level)
-                                                                       << ": " << message << std::flush;
+                                                                 priv::err()
+                                                                     << "miniaudio " << ma_log_level_to_string(level)
+                                                                     << ": " << message << std::flush;
                                                          },
                                                          nullptr));
         result != MA_SUCCESS)
-        err() << "Failed to register audio log callback: " << ma_result_description(result) << std::endl;
+        priv::err() << "Failed to register audio log callback: " << ma_result_description(result) << std::endl;
 
     // Create the context
     m_impl->context.emplace();
@@ -226,7 +227,7 @@ AudioDevice::AudioDevice() : m_impl(priv::makeUnique<Impl>())
         if (const auto result = ma_context_init(backendList, 1, &contextConfig, &*m_impl->context); result != MA_SUCCESS)
         {
             m_impl->context.reset();
-            err() << "Failed to initialize the audio playback context: " << ma_result_description(result) << std::endl;
+            priv::err() << "Failed to initialize the audio playback context: " << ma_result_description(result) << std::endl;
             return;
         }
 
@@ -234,7 +235,7 @@ AudioDevice::AudioDevice() : m_impl(priv::makeUnique<Impl>())
         if (const auto result = ma_context_get_devices(&*m_impl->context, nullptr, &deviceCount, nullptr, nullptr);
             result != MA_SUCCESS)
         {
-            err() << "Failed to get audio playback devices: " << ma_result_description(result) << std::endl;
+            priv::err() << "Failed to get audio playback devices: " << ma_result_description(result) << std::endl;
             return;
         }
 
@@ -244,7 +245,7 @@ AudioDevice::AudioDevice() : m_impl(priv::makeUnique<Impl>())
 
         // Warn if no devices were found using the default backend list
         if (backendList == nullptr)
-            err() << "No audio playback devices available on the system" << std::endl;
+            priv::err() << "No audio playback devices available on the system" << std::endl;
 
         // Clean up the context if we didn't find any devices
         ma_context_uninit(&*m_impl->context);
@@ -258,10 +259,10 @@ AudioDevice::AudioDevice() : m_impl(priv::makeUnique<Impl>())
     }
 
     if (m_impl->context->backend == ma_backend_null)
-        err() << "Using NULL audio backend for playback" << std::endl;
+        priv::err() << "Using NULL audio backend for playback" << std::endl;
 
     if (!initialize())
-        err() << "Failed to initialize audio device or engine" << std::endl;
+        priv::err() << "Failed to initialize audio device or engine" << std::endl;
 }
 
 
@@ -420,7 +421,7 @@ void AudioDevice::setGlobalVolume(float volume)
 
     if (const auto result = ma_device_set_master_volume(ma_engine_get_device(&*instance->m_impl->engine), volume * 0.01f);
         result != MA_SUCCESS)
-        err() << "Failed to set audio device master volume: " << ma_result_description(result) << std::endl;
+        priv::err() << "Failed to set audio device master volume: " << ma_result_description(result) << std::endl;
 }
 
 
@@ -562,7 +563,7 @@ bool AudioDevice::initialize()
         {
             if (const auto result = ma_engine_read_pcm_frames(&*audioDevice.m_impl->engine, output, frameCount, nullptr);
                 result != MA_SUCCESS)
-                err() << "Failed to read PCM frames from audio engine: " << ma_result_description(result) << std::endl;
+                priv::err() << "Failed to read PCM frames from audio engine: " << ma_result_description(result) << std::endl;
         }
     };
     playbackDeviceConfig.pUserData          = this;
@@ -574,7 +575,7 @@ bool AudioDevice::initialize()
     {
         m_impl->playbackDevice.reset();
         getCurrentDevice() = std::nullopt;
-        err() << "Failed to initialize the audio playback device: " << ma_result_description(result) << std::endl;
+        priv::err() << "Failed to initialize the audio playback device: " << ma_result_description(result) << std::endl;
         return false;
     }
 
@@ -592,7 +593,7 @@ bool AudioDevice::initialize()
                                                    &deviceNameLength);
             result != MA_SUCCESS)
         {
-            err() << "Failed to get name of audio playback device: " << ma_result_description(result) << std::endl;
+            priv::err() << "Failed to get name of audio playback device: " << ma_result_description(result) << std::endl;
             getCurrentDevice() = std::nullopt;
         }
         else
@@ -612,7 +613,7 @@ bool AudioDevice::initialize()
     if (const auto result = ma_engine_init(&engineConfig, &*m_impl->engine); result != MA_SUCCESS)
     {
         m_impl->engine.reset();
-        err() << "Failed to initialize the audio engine: " << ma_result_description(result) << std::endl;
+        priv::err() << "Failed to initialize the audio engine: " << ma_result_description(result) << std::endl;
         return false;
     }
 
@@ -620,7 +621,7 @@ bool AudioDevice::initialize()
     if (const auto result = ma_device_set_master_volume(ma_engine_get_device(&*m_impl->engine),
                                                         getListenerProperties().volume * 0.01f);
         result != MA_SUCCESS)
-        err() << "Failed to set audio device master volume: " << ma_result_description(result) << std::endl;
+        priv::err() << "Failed to set audio device master volume: " << ma_result_description(result) << std::endl;
 
     ma_engine_listener_set_position(&*m_impl->engine,
                                     0,
