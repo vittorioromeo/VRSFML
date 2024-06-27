@@ -102,10 +102,8 @@ unsigned int RenderTexture::getMaximumAntialiasingLevel()
     {
         return priv::RenderTextureImplFBO::getMaximumAntialiasingLevel();
     }
-    else
-    {
-        return priv::RenderTextureImplDefault::getMaximumAntialiasingLevel();
-    }
+
+    return priv::RenderTextureImplDefault::getMaximumAntialiasingLevel();
 }
 
 

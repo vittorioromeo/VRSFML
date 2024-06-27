@@ -48,7 +48,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename Rep, typename Period>
-    static constexpr Time fromDuration(const std::chrono::duration<Rep, Period>& duration);
+    [[nodiscard]] static constexpr Time fromDuration(const std::chrono::duration<Rep, Period>& duration);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO Return the time value as a std::chorono::duration
@@ -56,7 +56,7 @@ public:
     /// \return Time in microseconds
     ///
     ////////////////////////////////////////////////////////////
-    static constexpr std::chrono::microseconds toDuration(Time time);
+    [[nodiscard]] static constexpr std::chrono::microseconds toDuration(Time time);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO Conversion to std::chrono::duration
@@ -65,7 +65,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename Rep, typename Period>
-    static constexpr std::chrono::duration<Rep, Period> toCustomDuration(Time time);
+    [[nodiscard]] static constexpr std::chrono::duration<Rep, Period> toCustomDuration(Time time);
 };
 
 } // namespace sf

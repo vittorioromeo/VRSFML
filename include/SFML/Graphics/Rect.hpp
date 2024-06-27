@@ -92,7 +92,7 @@ public:
     /// \see findIntersection
     ///
     ////////////////////////////////////////////////////////////
-    SFML_GRAPHICS_API constexpr bool contains(const Vector2<T>& point) const;
+    [[nodiscard]] SFML_GRAPHICS_API constexpr bool contains(const Vector2<T>& point) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Check the intersection between two rectangles
@@ -104,7 +104,7 @@ public:
     /// \see contains
     ///
     ////////////////////////////////////////////////////////////
-    SFML_GRAPHICS_API constexpr std::optional<Rect<T>> findIntersection(const Rect<T>& rectangle) const;
+    [[nodiscard]] SFML_GRAPHICS_API constexpr std::optional<Rect<T>> findIntersection(const Rect<T>& rectangle) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the position of the center of the rectangle
@@ -112,7 +112,7 @@ public:
     /// \return Center of rectangle
     ///
     ////////////////////////////////////////////////////////////
-    constexpr Vector2<T> getCenter() const;
+    [[nodiscard]] constexpr Vector2<T> getCenter() const;
 
     ////////////////////////////////////////////////////////////
     // Member data

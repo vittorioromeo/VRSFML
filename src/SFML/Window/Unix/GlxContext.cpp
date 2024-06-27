@@ -380,13 +380,10 @@ XVisualInfo GlxContext::selectBestVisual(::Display* display, unsigned int bitsPe
 
         return bestVisual;
     }
-    else
-    {
-        // Should never happen...
-        priv::err() << "No GLX visual found. You should check your graphics driver" << priv::errEndl;
 
-        return {};
-    }
+    // Should never happen...
+    priv::err() << "No GLX visual found. You should check your graphics driver" << priv::errEndl;
+    return {};
 }
 
 

@@ -105,6 +105,13 @@ Texture::~Texture()
         const GLuint texture = m_texture;
         glCheck(glDeleteTextures(1, &texture));
     }
+
+#ifndef NDEBUG
+    // Set m_texture and m_cacheId to an invalid value to help the assert and glIsTexture in bind detect trying
+    // to bind this texture in cases where it has already been destroyed but its memory not yet deallocated
+    m_texture = 0xFFFFFFFFu;
+    m_cacheId = 0xFFFFFFFFFFFFFFFFull;
+#endif
 }
 
 ////////////////////////////////////////////////////////////
@@ -316,57 +323,47 @@ std::optional<Texture> Texture::loadFromImage(const Image& image, bool sRgb, con
             result->update(image);
             return result;
         }
-        else
-        {
-            // Error message generated in called function.
-            return result; // Empty optional
-        }
 
-        return result;
+        // Error message generated in called function.
+        return result; // Empty optional
     }
-    else
+
+    // Load a sub-area of the image
+
+    // Adjust the rectangle to the size of the image
+    IntRect rectangle    = area;
+    rectangle.position.x = std::max(rectangle.position.x, 0);
+    rectangle.position.y = std::max(rectangle.position.y, 0);
+    rectangle.size.x     = std::min(rectangle.size.x, size.x - rectangle.position.x);
+    rectangle.size.y     = std::min(rectangle.size.y, size.y - rectangle.position.y);
+
+    // Create the texture and upload the pixels
+    if ((result = sf::Texture::create(Vector2u(rectangle.size), sRgb)))
     {
-        // Load a sub-area of the image
+        const TransientContextLock lock;
 
-        // Adjust the rectangle to the size of the image
-        IntRect rectangle    = area;
-        rectangle.position.x = std::max(rectangle.position.x, 0);
-        rectangle.position.y = std::max(rectangle.position.y, 0);
-        rectangle.size.x     = std::min(rectangle.size.x, size.x - rectangle.position.x);
-        rectangle.size.y     = std::min(rectangle.size.y, size.y - rectangle.position.y);
+        // Make sure that the current texture binding will be preserved
+        const priv::TextureSaver save;
 
-        // Create the texture and upload the pixels
-        if ((result = sf::Texture::create(Vector2u(rectangle.size), sRgb)))
+        // Copy the pixels to the texture, row by row
+        const std::uint8_t* pixels = image.getPixelsPtr() + 4 * (rectangle.position.x + (size.x * rectangle.position.y));
+        glCheck(glBindTexture(GL_TEXTURE_2D, result->m_texture));
+        for (int i = 0; i < rectangle.size.y; ++i)
         {
-            const TransientContextLock lock;
-
-            // Make sure that the current texture binding will be preserved
-            const priv::TextureSaver save;
-
-            // Copy the pixels to the texture, row by row
-            const std::uint8_t* pixels = image.getPixelsPtr() + 4 * (rectangle.position.x + (size.x * rectangle.position.y));
-            glCheck(glBindTexture(GL_TEXTURE_2D, result->m_texture));
-            for (int i = 0; i < rectangle.size.y; ++i)
-            {
-                glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, i, rectangle.size.x, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixels));
-                pixels += 4 * size.x;
-            }
-
-            glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-            result->m_hasMipmap = false;
-
-            // Force an OpenGL flush, so that the texture will appear updated
-            // in all contexts immediately (solves problems in multi-threaded apps)
-            glCheck(glFlush());
-
-            return result;
+            glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, i, rectangle.size.x, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixels));
+            pixels += 4 * size.x;
         }
-        else
-        {
-            // Error message generated in called function.
-            return result; // Empty optional
-        }
+
+        glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+        result->m_hasMipmap = false;
+
+        // Force an OpenGL flush, so that the texture will appear updated
+        // in all contexts immediately (solves problems in multi-threaded apps)
+        glCheck(glFlush());
     }
+
+    // Error message generated in called function.
+    return result;
 }
 
 
@@ -860,6 +857,10 @@ void Texture::bind(const Texture* texture, CoordinateType coordinateType)
 
     if (texture && texture->m_texture)
     {
+        // When debugging, ensure that the texture name is valid
+        assert((glIsTexture(texture->m_texture) == GL_TRUE) &&
+               "Texture to be bound is invalid, check if the texture is still being used after it has been destroyed");
+
         // Bind the texture
         glCheck(glBindTexture(GL_TEXTURE_2D, texture->m_texture));
 
@@ -987,15 +988,13 @@ unsigned int Texture::getValidSize(unsigned int size)
         // If hardware supports NPOT textures, then just return the unmodified size
         return size;
     }
-    else
-    {
-        // If hardware doesn't support NPOT textures, we calculate the nearest power of two
-        unsigned int powerOfTwo = 1;
-        while (powerOfTwo < size)
-            powerOfTwo *= 2;
 
-        return powerOfTwo;
-    }
+    // If hardware doesn't support NPOT textures, we calculate the nearest power of two
+    unsigned int powerOfTwo = 1;
+    while (powerOfTwo < size)
+        powerOfTwo *= 2;
+
+    return powerOfTwo;
 }
 
 

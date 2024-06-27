@@ -176,10 +176,8 @@ bool SoundBuffer::saveToFile(const std::filesystem::path& filename) const
 
         return true;
     }
-    else
-    {
-        return false;
-    }
+
+    return false;
 }
 
 

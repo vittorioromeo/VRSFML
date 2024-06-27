@@ -81,10 +81,8 @@ bool SoundFileReaderOgg::check(InputStream& stream)
         ov_clear(&file);
         return true;
     }
-    else
-    {
-        return false;
-    }
+
+    return false;
 }
 
 
