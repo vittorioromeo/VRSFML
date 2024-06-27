@@ -33,7 +33,6 @@
 
 #include <SFML/System/Err.hpp>
 
-#include <ostream>
 #include <utility>
 
 #include <cstddef>
@@ -91,12 +90,12 @@ m_usage(copy.m_usage)
     {
         if (!create(copy.m_size))
         {
-            priv::err() << "Could not create vertex buffer for copying" << std::endl;
+            priv::err() << "Could not create vertex buffer for copying" << priv::errEndl;
             return;
         }
 
         if (!update(copy))
-            priv::err() << "Could not copy vertex buffer" << std::endl;
+            priv::err() << "Could not copy vertex buffer" << priv::errEndl;
     }
 }
 
@@ -126,7 +125,7 @@ bool VertexBuffer::create(std::size_t vertexCount)
 
     if (!m_buffer)
     {
-        priv::err() << "Could not create vertex buffer, generation failed" << std::endl;
+        priv::err() << "Could not create vertex buffer, generation failed" << priv::errEndl;
         return false;
     }
 

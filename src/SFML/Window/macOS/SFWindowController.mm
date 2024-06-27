@@ -42,7 +42,6 @@
 #include <ApplicationServices/ApplicationServices.h>
 #import <OpenGL/OpenGL.h>
 #include <algorithm>
-#include <ostream>
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
@@ -110,7 +109,7 @@
 
         if (m_window == nil)
         {
-            sf::priv::err() << "No window was given to -[SFWindowController initWithWindow:]." << std::endl;
+            sf::priv::err() << "No window was given to -[SFWindowController initWithWindow:]." << sf::priv::errEndl;
             return self;
         }
 
@@ -120,7 +119,7 @@
         if (m_oglView == nil)
         {
             sf::priv::err() << "Could not create an instance of NSOpenGLView "
-                      << "in -[SFWindowController initWithWindow:]." << std::endl;
+                            << "in -[SFWindowController initWithWindow:]." << sf::priv::errEndl;
             return self;
         }
 
@@ -144,7 +143,7 @@
          * See https://lists.apple.com/archives/cocoa-dev/2011/Feb/msg00460.html
          * for more information.
          */
-        sf::priv::err() << "Cannot create a window from a worker thread. (OS X limitation)" << std::endl;
+        sf::priv::err() << "Cannot create a window from a worker thread. (OS X limitation)" << sf::priv::errEndl;
 
         return nil;
     }
@@ -185,7 +184,7 @@
     if (m_window == nil)
     {
         sf::priv::err() << "Could not create an instance of NSWindow "
-                  << "in -[SFWindowController setupFullscreenViewWithMode:]." << std::endl;
+                        << "in -[SFWindowController setupFullscreenViewWithMode:]." << sf::priv::errEndl;
         return;
     }
 
@@ -209,7 +208,7 @@
     if (masterView == nil)
     {
         sf::priv::err() << "Could not create an instance of SFBlackView "
-                  << "in -[SFWindowController setupFullscreenViewWithMode:]." << std::endl;
+                        << "in -[SFWindowController setupFullscreenViewWithMode:]." << sf::priv::errEndl;
         return;
     }
 
@@ -225,7 +224,7 @@
     if (m_oglView == nil)
     {
         sf::priv::err() << "Could not create an instance of NSOpenGLView "
-                  << "in -[SFWindowController setupFullscreenViewWithMode:]." << std::endl;
+                        << "in -[SFWindowController setupFullscreenViewWithMode:]." << sf::priv::errEndl;
         return;
     }
 
@@ -271,7 +270,7 @@
     if (m_window == nil)
     {
         sf::priv::err() << "Could not create an instance of NSWindow "
-                  << "in -[SFWindowController setupWindowWithMode:andStyle:]." << std::endl;
+                        << "in -[SFWindowController setupWindowWithMode:andStyle:]." << sf::priv::errEndl;
 
         return;
     }
@@ -282,7 +281,7 @@
     if (m_oglView == nil)
     {
         sf::priv::err() << "Could not create an instance of NSOpenGLView "
-                  << "in -[SFWindowController setupWindowWithMode:andStyle:]." << std::endl;
+                        << "in -[SFWindowController setupWindowWithMode:andStyle:]." << sf::priv::errEndl;
 
         return;
     }
@@ -575,7 +574,7 @@
          * See https://lists.apple.com/archives/cocoa-dev/2011/Feb/msg00460.html
          * for more information.
          */
-        sf::priv::err() << "Cannot fetch event from a worker thread. (OS X restriction)" << std::endl;
+        sf::priv::err() << "Cannot fetch event from a worker thread. (OS X restriction)" << sf::priv::errEndl;
 
         return;
     }

@@ -29,10 +29,6 @@
 
 #include <SFML/System/Err.hpp>
 
-#include <algorithm>
-#include <iterator>
-#include <ostream>
-
 
 namespace sf
 {
@@ -57,7 +53,8 @@ bool SoundBufferRecorder::onStart()
 ////////////////////////////////////////////////////////////
 bool SoundBufferRecorder::onProcessSamples(const std::int16_t* samples, std::size_t sampleCount)
 {
-    std::copy(samples, samples + sampleCount, std::back_inserter(m_samples));
+    for (const std::int16_t* p = samples; p != p + sampleCount; ++p)
+        m_samples.push_back(*p);
 
     return true;
 }
@@ -75,7 +72,7 @@ void SoundBufferRecorder::onStop()
                                                 getSampleRate(),
                                                 getChannelMap());
     if (!m_buffer)
-        priv::err() << "Failed to stop capturing audio data" << std::endl;
+        priv::err() << "Failed to stop capturing audio data" << priv::errEndl;
 }
 
 

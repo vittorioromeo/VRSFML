@@ -33,7 +33,6 @@
 #include <algorithm>
 #include <iterator>
 #include <limits>
-#include <ostream>
 #include <sstream>
 #include <utility>
 
@@ -309,7 +308,7 @@ void Http::setHost(const std::string& host, unsigned short port)
     else if (toLower(host.substr(0, 8)) == "https://")
     {
         // HTTPS protocol -- unsupported (requires encryption and certificates and stuff...)
-        priv::err() << "HTTPS protocol is not supported by sf::Http" << std::endl;
+        priv::err() << "HTTPS protocol is not supported by sf::Http" << priv::errEndl;
         m_hostName.clear();
         m_port = 0;
     }

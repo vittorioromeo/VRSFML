@@ -56,7 +56,6 @@
 #include <SFML/System/InputStream.hpp>
 
 #include <algorithm>
-#include <ostream>
 
 #include <cassert>
 #include <cstdint>
@@ -144,7 +143,7 @@ std::optional<SoundFileReader::Info> SoundFileReaderMp3::open(InputStream& strea
     switch (info.channelCount)
     {
         case 0:
-            priv::err() << "No channels in MP3 file" << std::endl;
+            priv::err() << "No channels in MP3 file" << priv::errEndl;
             break;
         case 1:
             info.channelMap = {SoundChannel::Mono};
@@ -153,7 +152,7 @@ std::optional<SoundFileReader::Info> SoundFileReaderMp3::open(InputStream& strea
             info.channelMap = {SoundChannel::SideLeft, SoundChannel::SideRight};
             break;
         default:
-            priv::err() << "MP3 files with more than 2 channels not supported" << std::endl;
+            priv::err() << "MP3 files with more than 2 channels not supported" << priv::errEndl;
             assert(false);
             break;
     }

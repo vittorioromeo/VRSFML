@@ -32,8 +32,6 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
-#include <ostream>
-
 
 namespace sf
 {
@@ -58,7 +56,7 @@ std::optional<RenderTexture> RenderTexture::create(const Vector2u& size, const C
     auto texture = sf::Texture::create(size, settings.sRgbCapable);
     if (!texture)
     {
-        priv::err() << "Impossible to create render texture (failed to create the target texture)" << std::endl;
+        priv::err() << "Impossible to create render texture (failed to create the target texture)" << priv::errEndl;
         return result; // Empty optional
     }
 

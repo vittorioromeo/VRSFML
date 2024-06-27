@@ -39,7 +39,6 @@
 
 #include <fstream>
 #include <optional>
-#include <ostream>
 #include <utility>
 #include <vector>
 
@@ -98,7 +97,7 @@ std::optional<BufferSlice> appendFileContentsToVector(const std::filesystem::pat
 
     if (!file)
     {
-        sf::priv::err() << "Failed to open shader file" << std::endl;
+        sf::priv::err() << "Failed to open shader file" << sf::priv::errEndl;
         return std::nullopt;
     }
 
@@ -134,7 +133,7 @@ std::optional<BufferSlice> appendStreamContentsToVector(sf::InputStream& stream,
 
     if (stream.seek(0) == -1)
     {
-        sf::priv::err() << "Failed to seek shader stream" << std::endl;
+        sf::priv::err() << "Failed to seek shader stream" << sf::priv::errEndl;
         return std::nullopt;
     }
 
@@ -142,7 +141,7 @@ std::optional<BufferSlice> appendStreamContentsToVector(sf::InputStream& stream,
 
     if (!read.has_value() || *read != size)
     {
-        sf::priv::err() << "Failed to read stream contents into buffer" << std::endl;
+        sf::priv::err() << "Failed to read stream contents into buffer" << sf::priv::errEndl;
         return std::nullopt;
     }
 
@@ -273,6 +272,7 @@ struct Shader::UnsafeUniformBinder
         if (currentProgram)
         {
             // Enable program object
+            // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
             GLint temp;
             glCheck(glGetIntegerv(GL_CURRENT_PROGRAM, &temp));
             savedProgram = static_cast<GLuint>(temp);
@@ -370,7 +370,7 @@ std::optional<Shader> Shader::loadFromFile(const std::filesystem::path& filename
     const std::optional<BufferSlice> shaderSlice = appendFileContentsToVector(filename, buffer);
     if (!shaderSlice.has_value())
     {
-        priv::err() << "Failed to open shader file\n" << formatDebugPathInfo(filename) << std::endl;
+        priv::err() << "Failed to open shader file\n" << formatDebugPathInfo(filename) << priv::errEndl;
         return std::nullopt;
     }
 
@@ -398,7 +398,8 @@ std::optional<Shader> Shader::loadFromFile(const std::filesystem::path& vertexSh
     const std::optional<BufferSlice> vertexShaderSlice = appendFileContentsToVector(vertexShaderFilename, buffer);
     if (!vertexShaderSlice.has_value())
     {
-        priv::err() << "Failed to open vertex shader file\n" << formatDebugPathInfo(vertexShaderFilename) << std::endl;
+        priv::err() << "Failed to open vertex shader file\n"
+                    << formatDebugPathInfo(vertexShaderFilename) << priv::errEndl;
         return std::nullopt;
     }
 
@@ -407,7 +408,7 @@ std::optional<Shader> Shader::loadFromFile(const std::filesystem::path& vertexSh
     if (!fragmentShaderSlice.has_value())
     {
         priv::err() << "Failed to open fragment shader file\n"
-                    << formatDebugPathInfo(fragmentShaderFilename) << std::endl;
+                    << formatDebugPathInfo(fragmentShaderFilename) << priv::errEndl;
         return std::nullopt;
     }
 
@@ -429,7 +430,8 @@ std::optional<Shader> Shader::loadFromFile(const std::filesystem::path& vertexSh
     const std::optional<BufferSlice> vertexShaderSlice = appendFileContentsToVector(vertexShaderFilename, buffer);
     if (!vertexShaderSlice.has_value())
     {
-        priv::err() << "Failed to open vertex shader file\n" << formatDebugPathInfo(vertexShaderFilename) << std::endl;
+        priv::err() << "Failed to open vertex shader file\n"
+                    << formatDebugPathInfo(vertexShaderFilename) << priv::errEndl;
         return std::nullopt;
     }
 
@@ -438,7 +440,7 @@ std::optional<Shader> Shader::loadFromFile(const std::filesystem::path& vertexSh
     if (!geometryShaderSlice.has_value())
     {
         priv::err() << "Failed to open geometry shader file\n"
-                    << formatDebugPathInfo(geometryShaderFilename) << std::endl;
+                    << formatDebugPathInfo(geometryShaderFilename) << priv::errEndl;
         return std::nullopt;
     }
 
@@ -447,7 +449,7 @@ std::optional<Shader> Shader::loadFromFile(const std::filesystem::path& vertexSh
     if (!fragmentShaderSlice.has_value())
     {
         priv::err() << "Failed to open fragment shader file\n"
-                    << formatDebugPathInfo(fragmentShaderFilename) << std::endl;
+                    << formatDebugPathInfo(fragmentShaderFilename) << priv::errEndl;
         return std::nullopt;
     }
 
@@ -500,7 +502,7 @@ std::optional<Shader> Shader::loadFromStream(InputStream& stream, Type type)
     const std::optional<BufferSlice> shaderSlice = appendStreamContentsToVector(stream, buffer);
     if (!shaderSlice.has_value())
     {
-        priv::err() << "Failed to read vertex shader from stream" << std::endl;
+        priv::err() << "Failed to read vertex shader from stream" << priv::errEndl;
         return std::nullopt;
     }
 
@@ -527,7 +529,7 @@ std::optional<Shader> Shader::loadFromStream(InputStream& vertexShaderStream, In
     const std::optional<BufferSlice> vertexShaderSlice = appendStreamContentsToVector(vertexShaderStream, buffer);
     if (!vertexShaderSlice.has_value())
     {
-        priv::err() << "Failed to read vertex shader from stream" << std::endl;
+        priv::err() << "Failed to read vertex shader from stream" << priv::errEndl;
         return std::nullopt;
     }
 
@@ -535,7 +537,7 @@ std::optional<Shader> Shader::loadFromStream(InputStream& vertexShaderStream, In
     const std::optional<BufferSlice> fragmentShaderSlice = appendStreamContentsToVector(fragmentShaderStream, buffer);
     if (!fragmentShaderSlice.has_value())
     {
-        priv::err() << "Failed to read fragment shader from stream" << std::endl;
+        priv::err() << "Failed to read fragment shader from stream" << priv::errEndl;
         return std::nullopt;
     }
 
@@ -557,7 +559,7 @@ std::optional<Shader> Shader::loadFromStream(InputStream& vertexShaderStream,
     const std::optional<BufferSlice> vertexShaderSlice = appendStreamContentsToVector(vertexShaderStream, buffer);
     if (!vertexShaderSlice.has_value())
     {
-        priv::err() << "Failed to read vertex shader from stream" << std::endl;
+        priv::err() << "Failed to read vertex shader from stream" << priv::errEndl;
         return std::nullopt;
     }
 
@@ -565,7 +567,7 @@ std::optional<Shader> Shader::loadFromStream(InputStream& vertexShaderStream,
     const std::optional<BufferSlice> geometryShaderSlice = appendStreamContentsToVector(geometryShaderStream, buffer);
     if (!geometryShaderSlice.has_value())
     {
-        priv::err() << "Failed to read geometry shader from stream" << std::endl;
+        priv::err() << "Failed to read geometry shader from stream" << priv::errEndl;
         return std::nullopt;
     }
 
@@ -573,7 +575,7 @@ std::optional<Shader> Shader::loadFromStream(InputStream& vertexShaderStream,
     const std::optional<BufferSlice> fragmentShaderSlice = appendStreamContentsToVector(fragmentShaderStream, buffer);
     if (!fragmentShaderSlice.has_value())
     {
-        priv::err() << "Failed to read fragment shader from stream" << std::endl;
+        priv::err() << "Failed to read fragment shader from stream" << priv::errEndl;
         return std::nullopt;
     }
 
@@ -721,7 +723,7 @@ void Shader::setUniform(const std::string& name, const Texture& texture)
             if (m_textures.size() + 1 >= getMaxTextureUnits())
             {
                 priv::err() << "Impossible to use texture \"" << name << '"'
-                            << " for shader: all available texture units are used" << std::endl;
+                            << " for shader: all available texture units are used" << priv::errEndl;
                 return;
             }
 
@@ -908,7 +910,7 @@ void Shader::bind(const Shader* shader)
     if (!isAvailable())
     {
         priv::err() << "Failed to bind or unbind shader: your system doesn't support shaders "
-                    << "(you should test Shader::isAvailable() before trying to use the Shader class)" << std::endl;
+                    << "(you should test Shader::isAvailable() before trying to use the Shader class)" << priv::errEndl;
         return;
     }
 
@@ -984,7 +986,7 @@ std::optional<Shader> Shader::compile(std::string_view vertexShaderCode,
     if (!isAvailable())
     {
         priv::err() << "Failed to create a shader: your system doesn't support shaders "
-                    << "(you should test Shader::isAvailable() before trying to use the Shader class)" << std::endl;
+                    << "(you should test Shader::isAvailable() before trying to use the Shader class)" << priv::errEndl;
         return std::nullopt;
     }
 
@@ -993,7 +995,7 @@ std::optional<Shader> Shader::compile(std::string_view vertexShaderCode,
     {
         priv::err() << "Failed to create a shader: your system doesn't support geometry shaders "
                     << "(you should test Shader::isGeometryAvailable() before trying to use geometry shaders)"
-                    << std::endl;
+                    << priv::errEndl;
         return std::nullopt;
     }
 
@@ -1019,7 +1021,7 @@ std::optional<Shader> Shader::compile(std::string_view vertexShaderCode,
         {
             char log[1024];
             glCheck(GLEXT_glGetInfoLog(vertexShader, sizeof(log), nullptr, log));
-            priv::err() << "Failed to compile vertex shader:" << '\n' << static_cast<const char*>(log) << std::endl;
+            priv::err() << "Failed to compile vertex shader:" << '\n' << static_cast<const char*>(log) << priv::errEndl;
             glCheck(GLEXT_glDeleteObject(vertexShader));
             glCheck(GLEXT_glDeleteObject(shaderProgram));
             return std::nullopt;
@@ -1047,7 +1049,8 @@ std::optional<Shader> Shader::compile(std::string_view vertexShaderCode,
         {
             char log[1024];
             glCheck(GLEXT_glGetInfoLog(geometryShader, sizeof(log), nullptr, log));
-            priv::err() << "Failed to compile geometry shader:" << '\n' << static_cast<const char*>(log) << std::endl;
+            priv::err() << "Failed to compile geometry shader:" << '\n'
+                        << static_cast<const char*>(log) << priv::errEndl;
             glCheck(GLEXT_glDeleteObject(geometryShader));
             glCheck(GLEXT_glDeleteObject(shaderProgram));
             return std::nullopt;
@@ -1076,7 +1079,8 @@ std::optional<Shader> Shader::compile(std::string_view vertexShaderCode,
         {
             char log[1024];
             glCheck(GLEXT_glGetInfoLog(fragmentShader, sizeof(log), nullptr, log));
-            priv::err() << "Failed to compile fragment shader:" << '\n' << static_cast<const char*>(log) << std::endl;
+            priv::err() << "Failed to compile fragment shader:" << '\n'
+                        << static_cast<const char*>(log) << priv::errEndl;
             glCheck(GLEXT_glDeleteObject(fragmentShader));
             glCheck(GLEXT_glDeleteObject(shaderProgram));
             return std::nullopt;
@@ -1097,7 +1101,7 @@ std::optional<Shader> Shader::compile(std::string_view vertexShaderCode,
     {
         char log[1024];
         glCheck(GLEXT_glGetInfoLog(shaderProgram, sizeof(log), nullptr, log));
-        priv::err() << "Failed to link shader:" << '\n' << static_cast<const char*>(log) << std::endl;
+        priv::err() << "Failed to link shader:" << '\n' << static_cast<const char*>(log) << priv::errEndl;
         glCheck(GLEXT_glDeleteObject(shaderProgram));
         return std::nullopt;
     }
@@ -1144,7 +1148,7 @@ int Shader::getUniformLocation(const std::string& name)
         m_uniforms.emplace(name, location);
 
         if (location == -1)
-            priv::err() << "Uniform \"" << name << "\" not found in shader" << std::endl;
+            priv::err() << "Uniform \"" << name << "\" not found in shader" << priv::errEndl;
 
         return location;
     }

@@ -36,7 +36,6 @@
 #include <atomic>
 #include <exception>
 #include <new>
-#include <ostream>
 #include <string>
 
 #include <cassert>
@@ -223,7 +222,7 @@ LifetimeDependee::~LifetimeDependee()
                 << " will not be updated, resulting in the same lifetime issue.\n\n";
 
     priv::err() << "In general, make sure that all your " << dependeeNameLower << " objects are destroyed *after* all the "
-                << dependantNameLower << " objects depending on them to avoid these sort of issues." << std::endl;
+                << dependantNameLower << " objects depending on them to avoid these sort of issues." << priv::errEndl;
 
     std::terminate();
 }

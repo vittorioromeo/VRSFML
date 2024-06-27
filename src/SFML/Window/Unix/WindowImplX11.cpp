@@ -56,7 +56,6 @@
 #include <filesystem>
 #include <libgen.h>
 #include <mutex>
-#include <ostream>
 #include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -552,7 +551,7 @@ m_cursorGrabbed(m_fullscreen)
 
     if (!m_window)
     {
-        priv::err() << "Failed to create window" << std::endl;
+        priv::err() << "Failed to create window" << priv::errEndl;
         return;
     }
 
@@ -996,7 +995,7 @@ void WindowImplX11::setIcon(const Vector2u& size, const std::uint8_t* pixels)
         XCreateImage(m_display.get(), defVisual, defDepth, ZPixmap, 0, reinterpret_cast<char*>(iconPixels), size.x, size.y, 32, 0));
     if (!iconImage)
     {
-        priv::err() << "Failed to set the window's icon" << std::endl;
+        priv::err() << "Failed to set the window's icon" << priv::errEndl;
         return;
     }
 
@@ -1152,7 +1151,7 @@ void WindowImplX11::setMouseCursorGrabbed(bool grabbed)
         }
 
         if (!m_cursorGrabbed)
-            priv::err() << "Failed to grab mouse cursor" << std::endl;
+            priv::err() << "Failed to grab mouse cursor" << priv::errEndl;
     }
     else
     {
@@ -1197,7 +1196,7 @@ void WindowImplX11::requestFocus()
     XWindowAttributes attributes;
     if (XGetWindowAttributes(m_display.get(), m_window, &attributes) == 0)
     {
-        sf::priv::err() << "Failed to check if window is viewable while requesting focus" << std::endl;
+        sf::priv::err() << "Failed to check if window is viewable while requesting focus" << priv::errEndl;
         return; // error getting attribute
     }
 
@@ -1273,7 +1272,7 @@ void WindowImplX11::grabFocus()
         XFlush(m_display.get());
 
         if (!result)
-            priv::err() << "Setting fullscreen failed, could not send \"_NET_ACTIVE_WINDOW\" event" << std::endl;
+            priv::err() << "Setting fullscreen failed, could not send \"_NET_ACTIVE_WINDOW\" event" << priv::errEndl;
     }
     else
     {
@@ -1297,7 +1296,7 @@ void WindowImplX11::setVideoMode(const VideoMode& mode)
     if (!checkXRandR())
     {
         // XRandR extension is not supported: we cannot use fullscreen mode
-        priv::err() << "Fullscreen is not supported, switching to window mode" << std::endl;
+        priv::err() << "Fullscreen is not supported, switching to window mode" << priv::errEndl;
         return;
     }
 
@@ -1309,7 +1308,7 @@ void WindowImplX11::setVideoMode(const VideoMode& mode)
     if (!res)
     {
         priv::err() << "Failed to get the current screen resources for fullscreen mode, switching to window mode"
-                    << std::endl;
+                    << priv::errEndl;
         return;
     }
 
@@ -1319,7 +1318,7 @@ void WindowImplX11::setVideoMode(const VideoMode& mode)
     const auto outputInfo = X11Ptr<XRROutputInfo>(XRRGetOutputInfo(m_display.get(), res.get(), output));
     if (!outputInfo || outputInfo->connection == RR_Disconnected)
     {
-        priv::err() << "Failed to get output info for fullscreen mode, switching to window mode" << std::endl;
+        priv::err() << "Failed to get output info for fullscreen mode, switching to window mode" << priv::errEndl;
         return;
     }
 
@@ -1327,7 +1326,7 @@ void WindowImplX11::setVideoMode(const VideoMode& mode)
     const auto crtcInfo = X11Ptr<XRRCrtcInfo>(XRRGetCrtcInfo(m_display.get(), res.get(), outputInfo->crtc));
     if (!crtcInfo)
     {
-        priv::err() << "Failed to get crtc info for fullscreen mode, switching to window mode" << std::endl;
+        priv::err() << "Failed to get crtc info for fullscreen mode, switching to window mode" << priv::errEndl;
         return;
     }
 
@@ -1350,7 +1349,7 @@ void WindowImplX11::setVideoMode(const VideoMode& mode)
 
     if (!modeFound)
     {
-        priv::err() << "Failed to find a matching RRMode for fullscreen mode, switching to window mode" << std::endl;
+        priv::err() << "Failed to find a matching RRMode for fullscreen mode, switching to window mode" << priv::errEndl;
         return;
     }
 
@@ -1390,7 +1389,7 @@ void WindowImplX11::resetVideoMode()
                 XRRGetScreenResources(m_display.get(), DefaultRootWindow(m_display.get())));
             if (!res)
             {
-                priv::err() << "Failed to get the current screen resources to reset the video mode" << std::endl;
+                priv::err() << "Failed to get the current screen resources to reset the video mode" << priv::errEndl;
                 return;
             }
 
@@ -1398,7 +1397,7 @@ void WindowImplX11::resetVideoMode()
             const auto crtcInfo = X11Ptr<XRRCrtcInfo>(XRRGetCrtcInfo(m_display.get(), res.get(), m_oldRRCrtc));
             if (!crtcInfo)
             {
-                priv::err() << "Failed to get crtc info to reset the video mode" << std::endl;
+                priv::err() << "Failed to get crtc info to reset the video mode" << priv::errEndl;
                 return;
             }
 
@@ -1457,7 +1456,7 @@ void WindowImplX11::switchToFullscreen()
 
         if (!netWmState || !netWmStateFullscreen)
         {
-            priv::err() << "Setting fullscreen failed. Could not get required atoms" << std::endl;
+            priv::err() << "Setting fullscreen failed. Could not get required atoms" << priv::errEndl;
             return;
         }
 
@@ -1478,7 +1477,7 @@ void WindowImplX11::switchToFullscreen()
                                       &event);
 
         if (!result)
-            priv::err() << "Setting fullscreen failed, could not send \"_NET_WM_STATE\" event" << std::endl;
+            priv::err() << "Setting fullscreen failed, could not send \"_NET_WM_STATE\" event" << priv::errEndl;
     }
 }
 
@@ -1493,7 +1492,7 @@ void WindowImplX11::setProtocols()
 
     if (!wmProtocols)
     {
-        priv::err() << "Failed to request WM_PROTOCOLS atom." << std::endl;
+        priv::err() << "Failed to request WM_PROTOCOLS atom." << priv::errEndl;
         return;
     }
 
@@ -1505,7 +1504,7 @@ void WindowImplX11::setProtocols()
     }
     else
     {
-        priv::err() << "Failed to request WM_DELETE_WINDOW atom." << std::endl;
+        priv::err() << "Failed to request WM_DELETE_WINDOW atom." << priv::errEndl;
     }
 
     Atom netWmPing = None;
@@ -1546,7 +1545,7 @@ void WindowImplX11::setProtocols()
     }
     else
     {
-        priv::err() << "Didn't set any window protocols" << std::endl;
+        priv::err() << "Didn't set any window protocols" << priv::errEndl;
     }
 }
 
@@ -1577,7 +1576,7 @@ void WindowImplX11::initialize()
 
     if (!m_inputContext)
         priv::err() << "Failed to create input context for window -- TextEntered event won't be able to return unicode"
-                    << std::endl;
+                    << priv::errEndl;
 
     const Atom wmWindowType       = getAtom("_NET_WM_WINDOW_TYPE", false);
     Atom       wmWindowTypeNormal = getAtom("_NET_WM_WINDOW_TYPE_NORMAL", false);
@@ -1598,7 +1597,7 @@ void WindowImplX11::initialize()
     if (allWindows.empty())
     {
         if (!initRawMouse(m_display.get()))
-            sf::priv::err() << "Failed to initialize raw mouse input" << std::endl;
+            sf::priv::err() << "Failed to initialize raw mouse input" << priv::errEndl;
     }
 
     // Show the window
@@ -1724,7 +1723,7 @@ bool WindowImplX11::processEvent(XEvent& windowEvent)
                 }
 
                 if (!m_cursorGrabbed)
-                    priv::err() << "Failed to grab mouse cursor" << std::endl;
+                    priv::err() << "Failed to grab mouse cursor" << priv::errEndl;
             }
 
             pushEvent(Event::FocusGained{});
@@ -1860,7 +1859,7 @@ bool WindowImplX11::processEvent(XEvent& windowEvent)
                         priv::err() << "A TextEntered event has more than 64 bytes of UTF-8 input, and "
                                        "has been discarded\nThis means either you have typed a very long string "
                                        "(more than 20 chars), or your input method is broken in obscure ways."
-                                    << std::endl;
+                                    << priv::errEndl;
                     else if (status == XLookupChars)
                     {
                         // There might be more than 1 characters in this event,
@@ -2091,7 +2090,7 @@ bool WindowImplX11::checkXRandR()
     int version = 0;
     if (!XQueryExtension(m_display.get(), "RANDR", &version, &version, &version))
     {
-        priv::err() << "XRandR extension is not supported" << std::endl;
+        priv::err() << "XRandR extension is not supported" << priv::errEndl;
         return false;
     }
 
@@ -2124,7 +2123,7 @@ Vector2i WindowImplX11::getPrimaryMonitorPosition()
     const auto res = X11Ptr<XRRScreenResources>(XRRGetScreenResources(m_display.get(), rootWindow));
     if (!res)
     {
-        priv::err() << "Failed to get the current screen resources for primary monitor position" << std::endl;
+        priv::err() << "Failed to get the current screen resources for primary monitor position" << priv::errEndl;
         return monitorPosition;
     }
 
@@ -2134,7 +2133,7 @@ Vector2i WindowImplX11::getPrimaryMonitorPosition()
     const auto outputInfo = X11Ptr<XRROutputInfo>(XRRGetOutputInfo(m_display.get(), res.get(), output));
     if (!outputInfo || outputInfo->connection == RR_Disconnected)
     {
-        priv::err() << "Failed to get output info for primary monitor position" << std::endl;
+        priv::err() << "Failed to get output info for primary monitor position" << priv::errEndl;
         return monitorPosition;
     }
 
@@ -2142,7 +2141,7 @@ Vector2i WindowImplX11::getPrimaryMonitorPosition()
     const auto crtcInfo = X11Ptr<XRRCrtcInfo>(XRRGetCrtcInfo(m_display.get(), res.get(), outputInfo->crtc));
     if (!crtcInfo)
     {
-        priv::err() << "Failed to get crtc info for primary monitor position" << std::endl;
+        priv::err() << "Failed to get crtc info for primary monitor position" << priv::errEndl;
         return monitorPosition;
     }
 

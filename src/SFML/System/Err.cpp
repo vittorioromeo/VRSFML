@@ -138,6 +138,26 @@ ErrStream::Guard ErrStream::operator<<(const char* value)
 
 
 ////////////////////////////////////////////////////////////
+ErrStream::Guard ErrStream::operator<<(ErrEndlType)
+{
+    m_impl->mutex.lock(); // Will be unlocked by `~Guard()`
+    m_impl->stream << '\n' << std::flush;
+
+    return Guard{m_impl->stream, &m_impl->mutex};
+}
+
+
+////////////////////////////////////////////////////////////
+ErrStream::Guard ErrStream::operator<<(ErrFlushType)
+{
+    m_impl->mutex.lock(); // Will be unlocked by `~Guard()`
+    m_impl->stream << std::flush;
+
+    return Guard{m_impl->stream, &m_impl->mutex};
+}
+
+
+////////////////////////////////////////////////////////////
 template ErrStream::Guard ErrStream::operator<< <const char* const>(const char* const&);
 template ErrStream::Guard ErrStream::operator<< <long>(const long&);
 
@@ -146,6 +166,22 @@ template ErrStream::Guard ErrStream::operator<< <long>(const long&);
 ErrStream::Guard& ErrStream::Guard::operator<<(const char* value)
 {
     m_stream << value;
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+ErrStream::Guard& ErrStream::Guard::operator<<(ErrEndlType)
+{
+    m_stream << '\n' << std::flush;
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+ErrStream::Guard& ErrStream::Guard::operator<<(ErrFlushType)
+{
+    m_stream << std::flush;
     return *this;
 }
 

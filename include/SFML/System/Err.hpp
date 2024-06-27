@@ -37,6 +37,21 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
+struct ErrEndlType
+{
+};
+
+inline constexpr ErrEndlType errEndl;
+
+////////////////////////////////////////////////////////////
+struct ErrFlushType
+{
+};
+
+inline constexpr ErrFlushType errFlush;
+
+
+////////////////////////////////////////////////////////////
 class SFML_SYSTEM_API ErrStream
 {
 private:
@@ -56,6 +71,8 @@ private:
         Guard& operator<<(std::ostream& (*func)(std::ostream&));
 
         Guard& operator<<(const char* value);
+        Guard& operator<<(ErrEndlType);
+        Guard& operator<<(ErrFlushType);
 
         template <typename T>
         Guard& operator<<(const T& value);
@@ -77,6 +94,8 @@ public:
     void            rdbuf(std::streambuf* sbuf);
 
     Guard operator<<(const char* value);
+    Guard operator<<(ErrEndlType);
+    Guard operator<<(ErrFlushType);
 
     template <typename T>
     Guard operator<<(const T& value);

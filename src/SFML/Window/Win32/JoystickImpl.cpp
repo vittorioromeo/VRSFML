@@ -33,7 +33,6 @@
 #include <SFML/System/Win32/WindowsHeader.hpp>
 
 #include <algorithm>
-#include <ostream>
 #include <regstr.h>
 #include <sstream>
 #include <string>
@@ -162,7 +161,7 @@ sf::String getDeviceName(unsigned int index, JOYCAPS caps)
         if (result != ERROR_SUCCESS)
         {
             sf::priv::err() << "Unable to open registry for joystick at index " << index << ": "
-                            << getErrorString(static_cast<DWORD>(result)) << std::endl;
+                            << getErrorString(static_cast<DWORD>(result)) << sf::priv::errEndl;
             return joystickDescription;
         }
     }
@@ -183,7 +182,7 @@ sf::String getDeviceName(unsigned int index, JOYCAPS caps)
     if (result != ERROR_SUCCESS)
     {
         sf::priv::err() << "Unable to query registry key for joystick at index " << index << ": "
-                        << getErrorString(static_cast<DWORD>(result)) << std::endl;
+                        << getErrorString(static_cast<DWORD>(result)) << sf::priv::errEndl;
         return joystickDescription;
     }
 
@@ -196,7 +195,7 @@ sf::String getDeviceName(unsigned int index, JOYCAPS caps)
     if (result != ERROR_SUCCESS)
     {
         sf::priv::err() << "Unable to open registry key for joystick at index " << index << ": "
-                        << getErrorString(static_cast<DWORD>(result)) << std::endl;
+                        << getErrorString(static_cast<DWORD>(result)) << sf::priv::errEndl;
         return joystickDescription;
     }
 
@@ -208,7 +207,7 @@ sf::String getDeviceName(unsigned int index, JOYCAPS caps)
     if (result != ERROR_SUCCESS)
     {
         sf::priv::err() << "Unable to query name for joystick at index " << index << ": "
-                        << getErrorString(static_cast<DWORD>(result)) << std::endl;
+                        << getErrorString(static_cast<DWORD>(result)) << sf::priv::errEndl;
         return joystickDescription;
     }
 
@@ -228,7 +227,7 @@ void JoystickImpl::initialize()
     initializeDInput();
 
     if (!directInput)
-        priv::err() << "DirectInput not available, falling back to Windows joystick API" << std::endl;
+        priv::err() << "DirectInput not available, falling back to Windows joystick API" << priv::errEndl;
 
     // Perform the initial scan and populate the connection cache
     updateConnections();
@@ -468,7 +467,7 @@ void JoystickImpl::initializeDInput()
                 FreeLibrary(dinput8dll);
                 dinput8dll = nullptr;
 
-                priv::err() << "Failed to initialize DirectInput: " << result << std::endl;
+                priv::err() << "Failed to initialize DirectInput: " << result << priv::errEndl;
             }
         }
         else
@@ -528,7 +527,7 @@ void JoystickImpl::updateConnectionsDInput()
 
     if (FAILED(result))
     {
-        priv::err() << "Failed to enumerate DirectInput devices: " << result << std::endl;
+        priv::err() << "Failed to enumerate DirectInput devices: " << result << priv::errEndl;
 
         return;
     }
@@ -578,7 +577,7 @@ bool JoystickImpl::openDInput(unsigned int index)
 
             if (FAILED(result))
             {
-                priv::err() << "Failed to create DirectInput device: " << result << std::endl;
+                priv::err() << "Failed to create DirectInput device: " << result << priv::errEndl;
 
                 return false;
             }
@@ -715,7 +714,7 @@ bool JoystickImpl::openDInput(unsigned int index)
 
             if (FAILED(result))
             {
-                priv::err() << "Failed to set DirectInput device data format: " << result << std::endl;
+                priv::err() << "Failed to set DirectInput device data format: " << result << priv::errEndl;
 
                 m_device->Release();
                 m_device = nullptr;
@@ -728,7 +727,7 @@ bool JoystickImpl::openDInput(unsigned int index)
 
             if (FAILED(result))
             {
-                priv::err() << "Failed to get DirectInput device capabilities: " << result << std::endl;
+                priv::err() << "Failed to get DirectInput device capabilities: " << result << priv::errEndl;
 
                 m_device->Release();
                 m_device = nullptr;
@@ -743,7 +742,7 @@ bool JoystickImpl::openDInput(unsigned int index)
 
             if (FAILED(result))
             {
-                priv::err() << "Failed to enumerate DirectInput device objects: " << result << std::endl;
+                priv::err() << "Failed to enumerate DirectInput device objects: " << result << priv::errEndl;
 
                 m_device->Release();
                 m_device = nullptr;
@@ -767,7 +766,7 @@ bool JoystickImpl::openDInput(unsigned int index)
                     if (FAILED(result))
                     {
                         priv::err() << "Failed to get DirectInput device axis mode for device " << '"'
-                                    << m_identification.name.toAnsiString() << "\": " << result << std::endl;
+                                    << m_identification.name.toAnsiString() << "\": " << result << priv::errEndl;
 
                         m_device->Release();
                         m_device = nullptr;
@@ -799,7 +798,7 @@ bool JoystickImpl::openDInput(unsigned int index)
                     if (FAILED(result))
                     {
                         priv::err() << "Failed to verify DirectInput device axis mode for device " << '"'
-                                    << m_identification.name.toAnsiString() << "\": " << result << std::endl;
+                                    << m_identification.name.toAnsiString() << "\": " << result << priv::errEndl;
 
                         m_device->Release();
                         m_device = nullptr;
@@ -852,7 +851,7 @@ bool JoystickImpl::openDInput(unsigned int index)
             else
             {
                 priv::err() << "Failed to set DirectInput device buffer size for device " << '"'
-                            << m_identification.name.toAnsiString() << "\": " << result << std::endl;
+                            << m_identification.name.toAnsiString() << "\": " << result << priv::errEndl;
 
                 m_device->Release();
                 m_device = nullptr;
@@ -913,7 +912,7 @@ JoystickState JoystickImpl::updateDInputBuffered()
 
     if (FAILED(result))
     {
-        priv::err() << "Failed to get DirectInput device data: " << result << std::endl;
+        priv::err() << "Failed to get DirectInput device data: " << result << priv::errEndl;
 
         return m_state;
     }
@@ -1008,7 +1007,7 @@ JoystickState JoystickImpl::updateDInputPolled()
 
         if (FAILED(result))
         {
-            priv::err() << "Failed to get DirectInput device state: " << result << std::endl;
+            priv::err() << "Failed to get DirectInput device state: " << result << priv::errEndl;
 
             return state;
         }
@@ -1135,7 +1134,7 @@ BOOL CALLBACK JoystickImpl::deviceObjectEnumerationCallback(const DIDEVICEOBJECT
         const HRESULT result = joystick.m_device->SetProperty(DIPROP_RANGE, &propertyRange.diph);
 
         if (result != DI_OK)
-            priv::err() << "Failed to set DirectInput device axis property range: " << result << std::endl;
+            priv::err() << "Failed to set DirectInput device axis property range: " << result << priv::errEndl;
 
         return DIENUM_CONTINUE;
     }

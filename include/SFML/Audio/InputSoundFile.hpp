@@ -287,7 +287,7 @@ private:
 /// std::cout << "duration: " << file.getDuration().asSeconds() << '\n'
 ///           << "channels: " << file.getChannelCount() << '\n'
 ///           << "sample rate: " << file.getSampleRate() << '\n'
-///           << "sample count: " << file.getSampleCount() << std::endl;
+///           << "sample count: " << file.getSampleCount() << '\n';
 ///
 /// // Read and process batches of samples until the end of file is reached
 /// std::int16_t samples[1024];

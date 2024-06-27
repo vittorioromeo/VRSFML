@@ -31,7 +31,6 @@
 #include <SFML/System/Utils.hpp>
 
 #include <algorithm>
-#include <ostream>
 
 
 namespace sf::priv
@@ -63,7 +62,7 @@ bool SoundFileWriterFlac::open(const std::filesystem::path&     filename,
     switch (channelCount)
     {
         case 0:
-            priv::err() << "No channels to write to FLAC file" << std::endl;
+            priv::err() << "No channels to write to FLAC file" << priv::errEndl;
             return false;
         case 1:
             targetChannelMap = {SoundChannel::Mono};
@@ -112,14 +111,14 @@ bool SoundFileWriterFlac::open(const std::filesystem::path&     filename,
                                 SoundChannel::SideRight};
             break;
         default:
-            priv::err() << "FLAC files with more than 8 channels not supported" << std::endl;
+            priv::err() << "FLAC files with more than 8 channels not supported" << priv::errEndl;
             return false;
     }
 
     // Check if the channel map contains channels that we cannot remap to a mapping supported by FLAC
     if (!std::is_permutation(channelMap.begin(), channelMap.end(), targetChannelMap.begin()))
     {
-        priv::err() << "Provided channel map cannot be reordered to a channel map supported by FLAC" << std::endl;
+        priv::err() << "Provided channel map cannot be reordered to a channel map supported by FLAC" << priv::errEndl;
         return false;
     }
 
@@ -133,7 +132,7 @@ bool SoundFileWriterFlac::open(const std::filesystem::path&     filename,
     if (!m_encoder)
     {
         priv::err() << "Failed to write flac file (failed to allocate encoder)\n"
-                    << formatDebugPathInfo(filename) << std::endl;
+                    << formatDebugPathInfo(filename) << priv::errEndl;
         return false;
     }
 
@@ -147,7 +146,7 @@ bool SoundFileWriterFlac::open(const std::filesystem::path&     filename,
         FLAC__STREAM_ENCODER_INIT_STATUS_OK)
     {
         priv::err() << "Failed to write flac file (failed to open the file)\n"
-                    << formatDebugPathInfo(filename) << std::endl;
+                    << formatDebugPathInfo(filename) << priv::errEndl;
         m_encoder.reset();
         return false;
     }

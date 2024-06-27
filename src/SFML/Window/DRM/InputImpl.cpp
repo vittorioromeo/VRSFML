@@ -153,7 +153,7 @@ void initFileDescriptors()
         if (tempFD < 0)
         {
             if (errno != ENOENT)
-                sf::priv::err() << "Error opening " << name << ": " << std::strerror(errno) << std::endl;
+                sf::priv::err() << "Error opening " << name << ": " << std::strerror(errno) << sf::priv::errEndl;
 
             continue;
         }
@@ -480,7 +480,7 @@ std::optional<sf::Event> eventProcess()
         }
 
         if ((bytesRead < 0) && (errno != EAGAIN))
-            sf::priv::err() << " Error: " << std::strerror(errno) << std::endl;
+            sf::priv::err() << " Error: " << std::strerror(errno) << sf::priv::errEndl;
     }
     // Finally check if there is a Text event on stdin
     //
@@ -560,7 +560,7 @@ bool isKeyPressed(Keyboard::Key key)
 bool isKeyPressed(Keyboard::Scancode /* code */)
 {
     // TODO: not implemented
-    priv::err() << "sf::Keyboard::isKeyPressed(Keyboard::Scancode) is not implemented for DRM." << std::endl;
+    priv::err() << "sf::Keyboard::isKeyPressed(Keyboard::Scancode) is not implemented for DRM." << priv::errEndl;
     return false;
 }
 
@@ -569,7 +569,7 @@ bool isKeyPressed(Keyboard::Scancode /* code */)
 Keyboard::Key localize(Keyboard::Scancode /* code */)
 {
     // TODO: not implemented
-    priv::err() << "sf::Keyboard::localize is not implemented for DRM." << std::endl;
+    priv::err() << "sf::Keyboard::localize is not implemented for DRM." << priv::errEndl;
     return Keyboard::Key::Unknown;
 }
 
@@ -578,7 +578,7 @@ Keyboard::Key localize(Keyboard::Scancode /* code */)
 Keyboard::Scancode delocalize(Keyboard::Key /* key */)
 {
     // TODO: not implemented
-    priv::err() << "sf::Keyboard::delocalize is not implemented for DRM." << std::endl;
+    priv::err() << "sf::Keyboard::delocalize is not implemented for DRM." << priv::errEndl;
     return Keyboard::Scan::Unknown;
 }
 
@@ -587,7 +587,7 @@ Keyboard::Scancode delocalize(Keyboard::Key /* key */)
 String getDescription(Keyboard::Scancode /* code */)
 {
     // TODO: not implemented
-    priv::err() << "sf::Keyboard::getDescription is not implemented for DRM." << std::endl;
+    priv::err() << "sf::Keyboard::getDescription is not implemented for DRM." << priv::errEndl;
     return "";
 }
 

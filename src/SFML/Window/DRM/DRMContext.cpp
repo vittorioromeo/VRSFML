@@ -193,7 +193,7 @@ DrmFb* drmFbGetFromBo(gbm_bo& bo)
 
     if (result)
     {
-        sf::priv::err() << "Failed to create fb: " << std::strerror(errno) << std::endl;
+        sf::priv::err() << "Failed to create fb: " << std::strerror(errno) << sf::priv::errEndl;
         delete fb;
         return nullptr;
     }
@@ -280,7 +280,7 @@ int findDrmDevice(drmModeResPtr& resources)
     const int numDevices = drmGetDevices2(0, devices, maxDrmDevices);
     if (numDevices < 0)
     {
-        sf::priv::err() << "drmGetDevices2 failed: " << std::strerror(-numDevices) << std::endl;
+        sf::priv::err() << "drmGetDevices2 failed: " << std::strerror(-numDevices) << sf::priv::errEndl;
         return -1;
     }
 
@@ -298,7 +298,7 @@ int findDrmDevice(drmModeResPtr& resources)
             continue;
         result = getResources(fileDescriptor, resources);
 #ifdef SFML_DEBUG
-        sf::priv::err() << "DRM device used: " << i << std::endl;
+        sf::priv::err() << "DRM device used: " << i << sf::priv::errEndl;
 #endif
         if (!result && hasMonitorConnected(fileDescriptor, *resources) != 0)
             break;
@@ -308,7 +308,7 @@ int findDrmDevice(drmModeResPtr& resources)
     drmFreeDevices(devices, numDevices);
 
     if (fileDescriptor < 0)
-        sf::priv::err() << "No drm device found!" << std::endl;
+        sf::priv::err() << "No drm device found!" << sf::priv::errEndl;
     return fileDescriptor;
 }
 
@@ -321,7 +321,7 @@ int initDrm(sf::priv::Drm& drm, const char* device, const char* modeStr, unsigne
         drm.fileDescriptor = open(device, O_RDWR);
         const int ret      = getResources(drm.fileDescriptor, resources);
         if (ret < 0 && errno == EOPNOTSUPP)
-            sf::priv::err() << device << " does not look like a modeset device" << std::endl;
+            sf::priv::err() << device << " does not look like a modeset device" << sf::priv::errEndl;
     }
     else
     {
@@ -330,13 +330,13 @@ int initDrm(sf::priv::Drm& drm, const char* device, const char* modeStr, unsigne
 
     if (drm.fileDescriptor < 0)
     {
-        sf::priv::err() << "Could not open drm device" << std::endl;
+        sf::priv::err() << "Could not open drm device" << sf::priv::errEndl;
         return -1;
     }
 
     if (!resources)
     {
-        sf::priv::err() << "drmModeGetResources failed: " << std::strerror(errno) << std::endl;
+        sf::priv::err() << "drmModeGetResources failed: " << std::strerror(errno) << sf::priv::errEndl;
         return -1;
     }
 
@@ -357,7 +357,7 @@ int initDrm(sf::priv::Drm& drm, const char* device, const char* modeStr, unsigne
     if (!connector)
     {
         // We could be fancy and listen for hotplug events and wait for a connector..
-        sf::priv::err() << "No connected connector!" << std::endl;
+        sf::priv::err() << "No connected connector!" << sf::priv::errEndl;
         return -1;
     }
 
@@ -378,7 +378,7 @@ int initDrm(sf::priv::Drm& drm, const char* device, const char* modeStr, unsigne
             }
         }
         if (!drm.mode)
-            sf::priv::err() << "Requested mode not found, using default mode!" << std::endl;
+            sf::priv::err() << "Requested mode not found, using default mode!" << sf::priv::errEndl;
     }
 
     // Find encoder:
@@ -401,7 +401,7 @@ int initDrm(sf::priv::Drm& drm, const char* device, const char* modeStr, unsigne
         const std::uint32_t crtcId = findCrtcForConnector(drm, *resources, *connector);
         if (crtcId == 0)
         {
-            sf::priv::err() << "No crtc found!" << std::endl;
+            sf::priv::err() << "No crtc found!" << sf::priv::errEndl;
             return -1;
         }
 
@@ -422,13 +422,13 @@ int initDrm(sf::priv::Drm& drm, const char* device, const char* modeStr, unsigne
     if (!drm.mode)
     {
 #ifdef SFML_DEBUG
-        sf::priv::err() << "DRM using the current mode" << std::endl;
+        sf::priv::err() << "DRM using the current mode" << sf::priv::errEndl;
 #endif
         drm.mode = &(drm.originalCrtc->mode);
     }
 
 #ifdef SFML_DEBUG
-    sf::priv::err() << "DRM Mode used: " << drm.mode->name << "@" << drm.mode->vrefresh << std::endl;
+    sf::priv::err() << "DRM Mode used: " << drm.mode->name << "@" << drm.mode->vrefresh << sf::priv::errEndl;
 #endif
 
     return 0;
@@ -461,7 +461,7 @@ void checkInit()
                 modeString,       // requested mode
                 refreshRate) < 0) // screen refresh rate
     {
-        sf::priv::err() << "Error initializing DRM" << std::endl;
+        sf::priv::err() << "Error initializing DRM" << sf::priv::errEndl;
         return;
     }
 
@@ -495,12 +495,12 @@ EGLDisplay getInitializedDisplay()
 #if defined(SFML_OPENGL_ES)
         if (!eglBindAPI(EGL_OPENGL_ES_API))
         {
-            sf::priv::err() << "failed to bind api EGL_OPENGL_ES_API" << std::endl;
+            sf::priv::err() << "failed to bind api EGL_OPENGL_ES_API" << sf::priv::errEndl;
         }
 #else
         if (!eglBindAPI(EGL_OPENGL_API))
         {
-            sf::priv::err() << "failed to bind api EGL_OPENGL_API" << std::endl;
+            sf::priv::err() << "failed to bind api EGL_OPENGL_API" << sf::priv::errEndl;
         }
 #endif
     }
@@ -659,7 +659,7 @@ void DRMContext::display()
     fb = drmFbGetFromBo(*m_nextBO);
     if (!fb)
     {
-        priv::err() << "Failed to get FB from buffer object" << std::endl;
+        priv::err() << "Failed to get FB from buffer object" << priv::errEndl;
         return;
     }
 
@@ -668,7 +668,7 @@ void DRMContext::display()
     {
         if (drmModeSetCrtc(drmNode.fileDescriptor, drmNode.crtcId, fb->fbId, 0, 0, &drmNode.connectorId, 1, drmNode.mode))
         {
-            priv::err() << "Failed to set mode: " << std::strerror(errno) << std::endl;
+            priv::err() << "Failed to set mode: " << std::strerror(errno) << priv::errEndl;
             std::abort();
         }
         m_shown = true;
@@ -705,7 +705,7 @@ void DRMContext::createContext(DRMContext* shared)
     // Create EGL context
     eglCheck(m_context = eglCreateContext(m_display, m_config, toShared, contextVersion));
     if (m_context == EGL_NO_CONTEXT)
-        priv::err() << "Failed to create EGL context" << std::endl;
+        priv::err() << "Failed to create EGL context" << priv::errEndl;
 }
 
 
@@ -722,7 +722,7 @@ void DRMContext::createSurface(const Vector2u& size, unsigned int /*bpp*/, bool 
 
     if (!m_gbmSurface)
     {
-        priv::err() << "Failed to create gbm surface." << std::endl;
+        priv::err() << "Failed to create gbm surface." << priv::errEndl;
         return;
     }
 
@@ -733,7 +733,7 @@ void DRMContext::createSurface(const Vector2u& size, unsigned int /*bpp*/, bool 
 
     if (m_surface == EGL_NO_SURFACE)
     {
-        priv::err() << "Failed to create EGL Surface" << std::endl;
+        priv::err() << "Failed to create EGL Surface" << priv::errEndl;
     }
 }
 

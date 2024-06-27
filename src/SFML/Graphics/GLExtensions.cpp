@@ -39,8 +39,6 @@
 #include <glad/gl.h>
 #endif
 
-#include <ostream>
-
 #if !defined(GL_MAJOR_VERSION)
 #define GL_MAJOR_VERSION 0x821B
 #endif
@@ -134,7 +132,7 @@ void ensureExtensionsInit()
         if ((majorVersion < 1) || ((majorVersion == 1) && (minorVersion < 1)))
         {
             priv::err() << "sfml-graphics requires support for OpenGL 1.1 or greater" << '\n'
-                        << "Ensure that hardware acceleration is enabled if available" << std::endl;
+                        << "Ensure that hardware acceleration is enabled if available" << priv::errEndl;
         }
     }
 }

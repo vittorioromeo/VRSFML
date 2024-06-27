@@ -18,7 +18,7 @@ TEST_CASE("[System] sf::err")
 
     SECTION("Redirect buffer to observe contents")
     {
-        sf::priv::err() << "We'll never be able to observe this" << std::endl; // Ensure buffer is flushed
+        sf::priv::err() << "We'll never be able to observe this" << sf::priv::errEndl; // Ensure buffer is flushed
         auto* const defaultStreamBuffer = sf::priv::err().rdbuf();
         CHECK(defaultStreamBuffer != nullptr);
 

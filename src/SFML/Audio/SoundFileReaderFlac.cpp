@@ -31,7 +31,6 @@
 #include <SFML/System/InputStream.hpp>
 
 #include <algorithm>
-#include <ostream>
 
 #include <cassert>
 #include <cstddef>
@@ -179,7 +178,7 @@ void streamMetadata(const FLAC__StreamDecoder*, const FLAC__StreamMetadata* meta
         switch (data->info.channelCount)
         {
             case 0:
-                sf::priv::err() << "No channels in FLAC file" << std::endl;
+                sf::priv::err() << "No channels in FLAC file" << sf::priv::errEndl;
                 break;
             case 1:
                 data->info.channelMap = {sf::SoundChannel::Mono};
@@ -233,7 +232,7 @@ void streamMetadata(const FLAC__StreamDecoder*, const FLAC__StreamMetadata* meta
                                          sf::SoundChannel::SideRight};
                 break;
             default:
-                sf::priv::err() << "FLAC files with more than 8 channels not supported" << std::endl;
+                sf::priv::err() << "FLAC files with more than 8 channels not supported" << sf::priv::errEndl;
                 assert(false);
                 break;
         }
@@ -298,7 +297,7 @@ std::optional<SoundFileReader::Info> SoundFileReaderFlac::open(InputStream& stre
     m_decoder.reset(FLAC__stream_decoder_new());
     if (!m_decoder)
     {
-        priv::err() << "Failed to open FLAC file (failed to allocate the decoder)" << std::endl;
+        priv::err() << "Failed to open FLAC file (failed to allocate the decoder)" << priv::errEndl;
         return std::nullopt;
     }
 
@@ -319,7 +318,7 @@ std::optional<SoundFileReader::Info> SoundFileReaderFlac::open(InputStream& stre
     if (!FLAC__stream_decoder_process_until_end_of_metadata(m_decoder.get()))
     {
         m_decoder.reset();
-        priv::err() << "Failed to open FLAC file (failed to read metadata)" << std::endl;
+        priv::err() << "Failed to open FLAC file (failed to read metadata)" << priv::errEndl;
         return std::nullopt;
     }
 
