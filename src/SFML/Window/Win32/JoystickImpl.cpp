@@ -372,17 +372,13 @@ Joystick::Identification JoystickImpl::getIdentification() const
 ////////////////////////////////////////////////////////////
 JoystickState JoystickImpl::update()
 {
+    JoystickState state; // Use a single local variable for NRVO
+
     if (directInput)
     {
-        if (m_buffered)
-        {
-            return updateDInputBuffered();
-        }
-
-        return updateDInputPolled();
+        state = m_buffered ? updateDInputBuffered() : updateDInputPolled();
+        return state;
     }
-
-    JoystickState state;
 
     // Get the current joystick state
     JOYINFOEX pos;

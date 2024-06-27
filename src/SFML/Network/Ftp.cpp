@@ -288,33 +288,39 @@ Ftp::Response Ftp::download(const std::filesystem::path& remoteFile, const std::
 {
     // Open a data channel using the given transfer mode
     DataChannel data(*this);
-    Response    response = data.open(mode);
-    if (response.isOk())
+    Response    response = data.open(mode); // Use a single local variable for NRVO
+
+    if (!response.isOk())
+        return response;
+
+    // Tell the server to start the transfer
+    response = sendCommand("RETR", remoteFile.string());
+
+    if (!response.isOk())
+        return response;
+
+    // Create the file and truncate it if necessary
+    const std::filesystem::path filepath = localPath / remoteFile.filename();
+    std::ofstream               file(filepath, std::ios_base::binary | std::ios_base::trunc);
+
+    if (!file)
     {
-        // Tell the server to start the transfer
-        response = sendCommand("RETR", remoteFile.string());
-        if (response.isOk())
-        {
-            // Create the file and truncate it if necessary
-            const std::filesystem::path filepath = localPath / remoteFile.filename();
-            std::ofstream               file(filepath, std::ios_base::binary | std::ios_base::trunc);
-            if (!file)
-                return Response(Response::Status::InvalidFile);
-
-            // Receive the file data
-            data.receive(file);
-
-            // Close the file
-            file.close();
-
-            // Get the response from the server
-            response = getResponse();
-
-            // If the download was unsuccessful, delete the partial file
-            if (!response.isOk())
-                std::filesystem::remove(filepath);
-        }
+        response = Response(Response::Status::InvalidFile);
+        return response;
     }
+
+    // Receive the file data
+    data.receive(file);
+
+    // Close the file
+    file.close();
+
+    // Get the response from the server
+    response = getResponse();
+
+    // If the download was unsuccessful, delete the partial file
+    if (!response.isOk())
+        std::filesystem::remove(filepath);
 
     return response;
 }
@@ -326,27 +332,34 @@ Ftp::Response Ftp::upload(const std::filesystem::path& localFile,
                           TransferMode                 mode,
                           bool                         append)
 {
+    Response response; //  Use a single local variable for NRVO
+
     // Get the contents of the file to send
     std::ifstream file(localFile, std::ios_base::binary);
     if (!file)
-        return Response(Response::Status::InvalidFile);
+    {
+        response = Response(Response::Status::InvalidFile);
+        return response;
+    }
 
     // Open a data channel using the given transfer mode
     DataChannel data(*this);
-    Response    response = data.open(mode);
-    if (response.isOk())
-    {
-        // Tell the server to start the transfer
-        response = sendCommand(append ? "APPE" : "STOR", (remotePath / localFile.filename()).string());
-        if (response.isOk())
-        {
-            // Send the file data
-            data.send(file);
+    response = data.open(mode);
 
-            // Get the response from the server
-            response = getResponse();
-        }
-    }
+    if (!response.isOk())
+        return response;
+
+    // Tell the server to start the transfer
+    response = sendCommand(append ? "APPE" : "STOR", (remotePath / localFile.filename()).string());
+
+    if (!response.isOk())
+        return response;
+
+    // Send the file data
+    data.send(file);
+
+    // Get the response from the server
+    response = getResponse();
 
     return response;
 }

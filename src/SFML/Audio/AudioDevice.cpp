@@ -71,52 +71,59 @@ struct DeviceEntryImpl
 
 
 ////////////////////////////////////////////////////////////
+std::vector<DeviceEntryImpl> getDevices(ma_context& context)
+{
+    std::vector<DeviceEntryImpl> deviceList; // Use a single local variable for NRVO
+
+    ma_device_info* deviceInfos{};
+    ma_uint32       deviceCount{};
+
+    // Get the playback devices
+    if (const auto result = ma_context_get_devices(&context, &deviceInfos, &deviceCount, nullptr, nullptr);
+        result != MA_SUCCESS)
+    {
+        priv::err() << "Failed to get audio playback devices: " << ma_result_description(result) << priv::errEndl;
+        return deviceList; // Empty device list
+    }
+
+    deviceList.reserve(deviceCount);
+
+    // In order to report devices with identical names and still allow
+    // the user to differentiate between them when selecting, we append
+    // an index (number) to their name starting from the second entry
+    std::unordered_map<std::string, int> deviceIndices;
+    deviceIndices.reserve(deviceCount);
+
+    for (auto i = 0u; i < deviceCount; ++i)
+    {
+        auto  name  = std::string(deviceInfos[i].name);
+        auto& index = deviceIndices[name];
+
+        ++index;
+
+        if (index > 1)
+            name += ' ' + std::to_string(index);
+
+        // Make sure the default device is always placed at the front
+        deviceList.emplace(deviceInfos[i].isDefault ? deviceList.begin() : deviceList.end(),
+                           DeviceEntryImpl{name, deviceInfos[i].id, deviceInfos[i].isDefault == MA_TRUE});
+    }
+
+    return deviceList;
+}
+
+
+////////////////////////////////////////////////////////////
 [[nodiscard]] std::vector<DeviceEntryImpl> getAvailableDevicesImpl(ma_context* instanceContext)
 {
-    const auto getDevices = [](auto& context)
-    {
-        std::vector<DeviceEntryImpl> deviceList; // Use a single local variable for NRVO
-
-        ma_device_info* deviceInfos{};
-        ma_uint32       deviceCount{};
-
-        // Get the playback devices
-        if (const auto result = ma_context_get_devices(&context, &deviceInfos, &deviceCount, nullptr, nullptr);
-            result != MA_SUCCESS)
-        {
-            priv::err() << "Failed to get audio playback devices: " << ma_result_description(result) << priv::errEndl;
-            return deviceList; // Empty device list
-        }
-
-        deviceList.reserve(deviceCount);
-
-        // In order to report devices with identical names and still allow
-        // the user to differentiate between them when selecting, we append
-        // an index (number) to their name starting from the second entry
-        std::unordered_map<std::string, int> deviceIndices;
-        deviceIndices.reserve(deviceCount);
-
-        for (auto i = 0u; i < deviceCount; ++i)
-        {
-            auto  name  = std::string(deviceInfos[i].name);
-            auto& index = deviceIndices[name];
-
-            ++index;
-
-            if (index > 1)
-                name += ' ' + std::to_string(index);
-
-            // Make sure the default device is always placed at the front
-            deviceList.emplace(deviceInfos[i].isDefault ? deviceList.begin() : deviceList.end(),
-                               DeviceEntryImpl{name, deviceInfos[i].id, deviceInfos[i].isDefault == MA_TRUE});
-        }
-
-        return deviceList;
-    };
+    std::vector<DeviceEntryImpl> deviceList; // Use a single local variable for NRVO
 
     // Use an existing instance's context if one exists
     if (instanceContext != nullptr)
-        return getDevices(*instanceContext);
+    {
+        deviceList = getDevices(*instanceContext);
+        return deviceList;
+    }
 
     // Otherwise, construct a temporary context
     ma_context context{};
@@ -124,11 +131,12 @@ struct DeviceEntryImpl
     if (const auto result = ma_context_init(nullptr, 0, nullptr, &context); result != MA_SUCCESS)
     {
         priv::err() << "Failed to initialize the audio playback context: " << ma_result_description(result) << priv::errEndl;
-        return {};
+        return deviceList; // Empty vector
     }
 
-    auto deviceList = getDevices(context);
+    deviceList = getDevices(context);
     ma_context_uninit(&context);
+
     return deviceList;
 }
 
