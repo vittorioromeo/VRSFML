@@ -71,7 +71,7 @@ struct DeviceEntryImpl
 
 
 ////////////////////////////////////////////////////////////
-std::vector<DeviceEntryImpl> getAvailableDevicesImpl(ma_context* instanceContext)
+[[nodiscard]] std::vector<DeviceEntryImpl> getAvailableDevicesImpl(ma_context* instanceContext)
 {
     const auto getDevices = [](auto& context)
     {
@@ -134,7 +134,7 @@ std::vector<DeviceEntryImpl> getAvailableDevicesImpl(ma_context* instanceContext
 
 
 ////////////////////////////////////////////////////////////
-std::optional<ma_device_id> getSelectedDeviceId(ma_context* instanceContext)
+[[nodiscard]] std::optional<ma_device_id> getSelectedDeviceId(ma_context* instanceContext)
 {
     const auto devices    = getAvailableDevicesImpl(instanceContext);
     auto       deviceName = AudioDevice::getDevice();

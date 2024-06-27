@@ -176,16 +176,12 @@ bool Window::setActive(bool active) const
         {
             return true;
         }
-        else
-        {
-            priv::err() << "Failed to activate the window's context" << priv::errEndl;
-            return false;
-        }
-    }
-    else
-    {
+
+        priv::err() << "Failed to activate the window's context" << priv::errEndl;
         return false;
     }
+
+    return false;
 }
 
 

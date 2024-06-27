@@ -63,7 +63,7 @@ public:
     /// \see asMilliseconds, asMicroseconds
     ///
     ////////////////////////////////////////////////////////////
-    constexpr float asSeconds() const;
+    [[nodiscard]] constexpr float asSeconds() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the time value as a number of milliseconds
@@ -73,7 +73,7 @@ public:
     /// \see asSeconds, asMicroseconds
     ///
     ////////////////////////////////////////////////////////////
-    constexpr std::int32_t asMilliseconds() const;
+    [[nodiscard]] constexpr std::int32_t asMilliseconds() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the time value as a number of microseconds
@@ -83,7 +83,7 @@ public:
     /// \see asSeconds, asMilliseconds
     ///
     ////////////////////////////////////////////////////////////
-    constexpr std::int64_t asMicroseconds() const;
+    [[nodiscard]] constexpr std::int64_t asMicroseconds() const;
 
     ////////////////////////////////////////////////////////////
     // Static member data

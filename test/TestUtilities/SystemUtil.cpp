@@ -11,6 +11,7 @@
 
 #include <iomanip>
 #include <limits>
+#include <ostream>
 
 #include <cassert>
 

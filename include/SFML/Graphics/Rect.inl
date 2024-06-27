@@ -104,10 +104,8 @@ constexpr std::optional<Rect<T>> Rect<T>::findIntersection(const Rect<T>& rectan
         return std::make_optional<Rect<T>>(Vector2<T>{interLeft, interTop},
                                            Vector2<T>{interRight - interLeft, interBottom - interTop});
     }
-    else
-    {
-        return std::nullopt;
-    }
+
+    return std::nullopt;
 }
 
 
