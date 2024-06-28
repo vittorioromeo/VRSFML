@@ -287,7 +287,7 @@ private:
 /// \return New combined transform
 ///
 ////////////////////////////////////////////////////////////
-constexpr Transform operator*(const Transform& left, const Transform& right);
+[[nodiscard]] constexpr Transform operator*(const Transform& left, const Transform& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates sf::Transform
@@ -315,7 +315,7 @@ constexpr Transform& operator*=(Transform& left, const Transform& right);
 /// \return New transformed point
 ///
 ////////////////////////////////////////////////////////////
-constexpr Vector2f operator*(const Transform& left, const Vector2f& right);
+[[nodiscard]] constexpr Vector2f operator*(const Transform& left, const Vector2f& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates sf::Transform

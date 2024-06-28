@@ -204,7 +204,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename T>
-    static String fromUtf8(T begin, T end);
+    [[nodiscard]] static String fromUtf8(T begin, T end);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new sf::String from a UTF-16 encoded string
@@ -218,7 +218,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename T>
-    static String fromUtf16(T begin, T end);
+    [[nodiscard]] static String fromUtf16(T begin, T end);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new sf::String from a UTF-32 encoded string
@@ -236,7 +236,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename T>
-    static String fromUtf32(T begin, T end);
+    [[nodiscard]] static String fromUtf32(T begin, T end);
 
     ////////////////////////////////////////////////////////////
     /// \brief Implicit conversion operator to std::string (ANSI string)
@@ -354,7 +354,7 @@ public:
     /// \return Character at position \a index
     ///
     ////////////////////////////////////////////////////////////
-    char32_t operator[](std::size_t index) const;
+    [[nodiscard]] char32_t operator[](std::size_t index) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Overload of [] operator to access a character by its position
@@ -367,7 +367,7 @@ public:
     /// \return Reference to the character at position \a index
     ///
     ////////////////////////////////////////////////////////////
-    char32_t& operator[](std::size_t index);
+    [[nodiscard]] char32_t& operator[](std::size_t index);
 
     ////////////////////////////////////////////////////////////
     /// \brief Clear the string
@@ -501,7 +501,7 @@ public:
     /// \see end
     ///
     ////////////////////////////////////////////////////////////
-    Iterator begin();
+    [[nodiscard]] Iterator begin();
 
     ////////////////////////////////////////////////////////////
     /// \brief Return an iterator to the beginning of the string
@@ -525,7 +525,7 @@ public:
     /// \see begin
     ///
     ////////////////////////////////////////////////////////////
-    Iterator end();
+    [[nodiscard]] Iterator end();
 
     ////////////////////////////////////////////////////////////
     /// \brief Return an iterator to the end of the string
@@ -561,7 +561,7 @@ private:
 /// \return True if both strings are equal
 ///
 ////////////////////////////////////////////////////////////
-SFML_SYSTEM_API bool operator==(const String& left, const String& right);
+[[nodiscard]] SFML_SYSTEM_API bool operator==(const String& left, const String& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates String
@@ -573,7 +573,7 @@ SFML_SYSTEM_API bool operator==(const String& left, const String& right);
 /// \return True if both strings are different
 ///
 ////////////////////////////////////////////////////////////
-SFML_SYSTEM_API bool operator!=(const String& left, const String& right);
+[[nodiscard]] SFML_SYSTEM_API bool operator!=(const String& left, const String& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates String
@@ -585,7 +585,7 @@ SFML_SYSTEM_API bool operator!=(const String& left, const String& right);
 /// \return True if \a left is lexicographically before \a right
 ///
 ////////////////////////////////////////////////////////////
-SFML_SYSTEM_API bool operator<(const String& left, const String& right);
+[[nodiscard]] SFML_SYSTEM_API bool operator<(const String& left, const String& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates String
@@ -597,7 +597,7 @@ SFML_SYSTEM_API bool operator<(const String& left, const String& right);
 /// \return True if \a left is lexicographically after \a right
 ///
 ////////////////////////////////////////////////////////////
-SFML_SYSTEM_API bool operator>(const String& left, const String& right);
+[[nodiscard]] SFML_SYSTEM_API bool operator>(const String& left, const String& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates String
@@ -609,7 +609,7 @@ SFML_SYSTEM_API bool operator>(const String& left, const String& right);
 /// \return True if \a left is lexicographically before or equivalent to \a right
 ///
 ////////////////////////////////////////////////////////////
-SFML_SYSTEM_API bool operator<=(const String& left, const String& right);
+[[nodiscard]] SFML_SYSTEM_API bool operator<=(const String& left, const String& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates String
@@ -621,7 +621,7 @@ SFML_SYSTEM_API bool operator<=(const String& left, const String& right);
 /// \return True if \a left is lexicographically after or equivalent to \a right
 ///
 ////////////////////////////////////////////////////////////
-SFML_SYSTEM_API bool operator>=(const String& left, const String& right);
+[[nodiscard]] SFML_SYSTEM_API bool operator>=(const String& left, const String& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates String
@@ -633,7 +633,7 @@ SFML_SYSTEM_API bool operator>=(const String& left, const String& right);
 /// \return Concatenated string
 ///
 ////////////////////////////////////////////////////////////
-SFML_SYSTEM_API String operator+(const String& left, const String& right);
+[[nodiscard]] SFML_SYSTEM_API String operator+(const String& left, const String& right);
 
 } // namespace sf
 
