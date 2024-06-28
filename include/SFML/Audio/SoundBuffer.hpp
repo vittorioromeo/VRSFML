@@ -167,7 +167,7 @@ public:
     /// \see getSampleCount
     ///
     ////////////////////////////////////////////////////////////
-    const std::int16_t* getSamples() const;
+    [[nodiscard]] const std::int16_t* getSamples() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the number of samples stored in the buffer
@@ -180,7 +180,7 @@ public:
     /// \see getSamples
     ///
     ////////////////////////////////////////////////////////////
-    std::uint64_t getSampleCount() const;
+    [[nodiscard]] std::uint64_t getSampleCount() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the sample rate of the sound
@@ -194,7 +194,7 @@ public:
     /// \see getChannelCount, getChannelmap, getDuration
     ///
     ////////////////////////////////////////////////////////////
-    unsigned int getSampleRate() const;
+    [[nodiscard]] unsigned int getSampleRate() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the number of channels used by the sound
@@ -207,7 +207,7 @@ public:
     /// \see getSampleRate, getChannelmap, getDuration
     ///
     ////////////////////////////////////////////////////////////
-    unsigned int getChannelCount() const;
+    [[nodiscard]] unsigned int getChannelCount() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the map of position in sample frame to sound channel
@@ -220,7 +220,7 @@ public:
     /// \see getSampleRate, getChannelCount, getDuration
     ///
     ////////////////////////////////////////////////////////////
-    std::vector<SoundChannel> getChannelMap() const;
+    [[nodiscard]] std::vector<SoundChannel> getChannelMap() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the total duration of the sound
@@ -230,7 +230,7 @@ public:
     /// \see getSampleRate, getChannelCount, getChannelmap
     ///
     ////////////////////////////////////////////////////////////
-    Time getDuration() const;
+    [[nodiscard]] Time getDuration() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Overload of assignment operator

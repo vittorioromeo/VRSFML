@@ -113,7 +113,7 @@ private:
 /// \see milliseconds, microseconds
 ///
 ////////////////////////////////////////////////////////////
-constexpr Time seconds(float amount);
+[[nodiscard]] constexpr Time seconds(float amount);
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -126,7 +126,7 @@ constexpr Time seconds(float amount);
 /// \see seconds, microseconds
 ///
 ////////////////////////////////////////////////////////////
-constexpr Time milliseconds(std::int32_t amount);
+[[nodiscard]] constexpr Time milliseconds(std::int32_t amount);
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -139,7 +139,7 @@ constexpr Time milliseconds(std::int32_t amount);
 /// \see seconds, milliseconds
 ///
 ////////////////////////////////////////////////////////////
-constexpr Time microseconds(std::int64_t amount);
+[[nodiscard]] constexpr Time microseconds(std::int64_t amount);
 
 ////////////////////////////////////////////////////////////
 /// \relates Time

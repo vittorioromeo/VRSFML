@@ -104,7 +104,7 @@ public:
 /// \brief Standard stream used by SFML to output warnings and errors
 ///
 ////////////////////////////////////////////////////////////
-SFML_SYSTEM_API ErrStream& err();
+[[nodiscard]] SFML_SYSTEM_API ErrStream& err();
 
 } // namespace sf::priv
 
