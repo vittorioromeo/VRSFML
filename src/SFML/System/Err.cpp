@@ -205,6 +205,7 @@ template ErrStream::Guard& ErrStream::Guard::operator<< <std::filesystem::path>(
 template ErrStream::Guard& ErrStream::Guard::operator<< <std::string_view>(const std::string_view&);
 template ErrStream::Guard& ErrStream::Guard::operator<< <std::string>(const std::string&);
 template ErrStream::Guard& ErrStream::Guard::operator<< <unsigned int>(const unsigned int&);
+template ErrStream::Guard& ErrStream::Guard::operator<< <unsigned long>(const unsigned long&);
 template ErrStream::Guard& ErrStream::Guard::operator<< <unsigned long long>(const unsigned long long&);
 template ErrStream::Guard& ErrStream::Guard::operator<< <unsigned short>(const unsigned short&);
 
