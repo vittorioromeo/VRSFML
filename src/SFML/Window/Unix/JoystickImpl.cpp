@@ -649,7 +649,7 @@ JoystickState JoystickImpl::JoystickImpl::update()
             {
                 const float value = joyState.value * 100.f / 32767.f;
 
-                if (joyState.number < m_mapping.size())
+                if (joyState.number < ABS_CNT)
                 {
                     switch (m_mapping[joyState.number])
                     {
