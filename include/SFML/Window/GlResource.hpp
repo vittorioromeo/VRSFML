@@ -76,7 +76,7 @@ protected:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    GlResource();
+    [[nodiscard]] GlResource();
 
     ////////////////////////////////////////////////////////////
     /// \brief Register an OpenGL object to be destroyed when its containing context is destroyed
@@ -109,7 +109,7 @@ protected:
         /// \brief Default constructor
         ///
         ////////////////////////////////////////////////////////////
-        TransientContextLock();
+        [[nodiscard]] TransientContextLock();
 
         ////////////////////////////////////////////////////////////
         /// \brief Destructor

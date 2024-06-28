@@ -39,7 +39,7 @@ namespace sf
 /// The comparisons are mapped directly to their OpenGL equivalents,
 /// specified by glStencilFunc().
 ////////////////////////////////////////////////////////
-enum class StencilComparison
+enum class [[nodiscard]] StencilComparison
 {
     Never,        //!< The stencil test never passes
     Less,         //!< The stencil test passes if the new value is less than the value in the stencil buffer
@@ -57,7 +57,7 @@ enum class StencilComparison
 /// The update operations are mapped directly to their OpenGL equivalents,
 /// specified by glStencilOp().
 ////////////////////////////////////////////////////////
-enum class StencilUpdateOperation
+enum class [[nodiscard]] StencilUpdateOperation
 {
     Keep,      //!< If the stencil test passes, the value in the stencil buffer is not modified
     Zero,      //!< If the stencil test passes, the value in the stencil buffer is set to zero
@@ -71,7 +71,7 @@ enum class StencilUpdateOperation
 /// \brief Stencil value type (also used as a mask)
 ///
 ////////////////////////////////////////////////////////
-struct SFML_GRAPHICS_API StencilValue
+struct [[nodiscard]] SFML_GRAPHICS_API StencilValue
 {
     ////////////////////////////////////////////////////////////
     /// \brief Construct a stencil value from a signed integer
@@ -79,7 +79,7 @@ struct SFML_GRAPHICS_API StencilValue
     /// \param theValue Signed integer value to use
     ///
     ////////////////////////////////////////////////////////////
-    StencilValue(int theValue);
+    [[nodiscard]] StencilValue(int theValue);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a stencil value from an unsigned integer
@@ -87,7 +87,7 @@ struct SFML_GRAPHICS_API StencilValue
     /// \param theValue Unsigned integer value to use
     ///
     ////////////////////////////////////////////////////////////
-    StencilValue(unsigned int theValue);
+    [[nodiscard]] StencilValue(unsigned int theValue);
 
     ////////////////////////////////////////////////////////////
     /// \brief Disable construction from any other type
@@ -103,7 +103,7 @@ struct SFML_GRAPHICS_API StencilValue
 /// \brief Stencil modes for drawing
 ///
 ////////////////////////////////////////////////////////////
-struct SFML_GRAPHICS_API StencilMode
+struct [[nodiscard]] SFML_GRAPHICS_API StencilMode
 {
     StencilComparison stencilComparison{StencilComparison::Always}; //!< The comparison we're performing the stencil test with
     StencilUpdateOperation stencilUpdateOperation{
@@ -123,7 +123,7 @@ struct SFML_GRAPHICS_API StencilMode
 /// \return True if stencil modes are equal, false if they are different
 ///
 ////////////////////////////////////////////////////////////
-SFML_GRAPHICS_API bool operator==(const StencilMode& left, const StencilMode& right);
+[[nodiscard]] SFML_GRAPHICS_API bool operator==(const StencilMode& left, const StencilMode& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates StencilMode
@@ -135,7 +135,7 @@ SFML_GRAPHICS_API bool operator==(const StencilMode& left, const StencilMode& ri
 /// \return True if stencil modes are different, false if they are equal
 ///
 ////////////////////////////////////////////////////////////
-SFML_GRAPHICS_API bool operator!=(const StencilMode& left, const StencilMode& right);
+[[nodiscard]] SFML_GRAPHICS_API bool operator!=(const StencilMode& left, const StencilMode& right);
 
 } // namespace sf
 

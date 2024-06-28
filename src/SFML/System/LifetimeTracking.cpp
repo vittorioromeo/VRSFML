@@ -34,12 +34,18 @@
 #include <SFML/System/LifetimeTracking.hpp>
 
 #include <atomic>
-#include <exception>
-#include <new>
 #include <string>
 
 #include <cassert>
 #include <cctype>
+#include <cstdlib>
+
+#if __has_builtin(__builtin_launder)
+#define SFML_PRIV_LAUNDER __builtin_launder
+#else
+#include <new>
+#define SFML_PRIV_LAUNDER ::std::launder
+#endif
 
 
 using AtomicUInt = std::atomic<unsigned int>;
@@ -54,7 +60,7 @@ std::atomic<bool> lifetimeTrackingFatalErrorTriggered{false};
 
 [[gnu::always_inline]] inline AtomicUInt& asAtomicUInt(char* ptr)
 {
-    return *std::launder(reinterpret_cast<AtomicUInt*>(ptr));
+    return *SFML_PRIV_LAUNDER(reinterpret_cast<AtomicUInt*>(ptr));
 }
 
 } // namespace
@@ -224,7 +230,7 @@ LifetimeDependee::~LifetimeDependee()
     priv::err() << "In general, make sure that all your " << dependeeNameLower << " objects are destroyed *after* all the "
                 << dependantNameLower << " objects depending on them to avoid these sort of issues." << priv::errEndl;
 
-    std::terminate();
+    std::abort();
 }
 
 

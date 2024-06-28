@@ -53,7 +53,7 @@ public:
     /// \param pointCount Number of points of the polygon
     ///
     ////////////////////////////////////////////////////////////
-    explicit ConvexShape(std::size_t pointCount = 0);
+    [[nodiscard]] explicit ConvexShape(std::size_t pointCount = 0);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the number of points of the polygon
@@ -76,7 +76,7 @@ public:
     /// \see setPointCount
     ///
     ////////////////////////////////////////////////////////////
-    std::size_t getPointCount() const;
+    [[nodiscard]] std::size_t getPointCount() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the position of a point
@@ -113,7 +113,7 @@ public:
     /// \see setPoint
     ///
     ////////////////////////////////////////////////////////////
-    Vector2f getPoint(std::size_t index) const;
+    [[nodiscard]] Vector2f getPoint(std::size_t index) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the geometric center of the convex shape
@@ -125,7 +125,7 @@ public:
     /// \return The geometric center of the shape
     ///
     ////////////////////////////////////////////////////////////
-    Vector2f getGeometricCenter() const;
+    [[nodiscard]] Vector2f getGeometricCenter() const;
 
 private:
     ////////////////////////////////////////////////////////////

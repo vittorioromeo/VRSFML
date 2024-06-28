@@ -34,6 +34,7 @@
 #include <iterator>
 #include <limits>
 #include <sstream>
+#include <string_view>
 #include <utility>
 
 #include <cctype>
@@ -96,28 +97,27 @@ std::string Http::Request::prepare() const
     std::ostringstream out;
 
     // Convert the method to its string representation
-    std::string method;
     switch (m_method)
     {
         case Method::Get:
-            method = "GET";
+            out << "GET";
             break;
         case Method::Post:
-            method = "POST";
+            out << "POST";
             break;
         case Method::Head:
-            method = "HEAD";
+            out << "HEAD";
             break;
         case Method::Put:
-            method = "PUT";
+            out << "PUT";
             break;
         case Method::Delete:
-            method = "DELETE";
+            out << "DELETE";
             break;
     }
 
     // Write the first line containing the request type
-    out << method << " " << m_uri << " ";
+    out << " " << m_uri << " ";
     out << "HTTP/" << m_majorVersion << "." << m_minorVersion << "\r\n";
 
     // Write fields

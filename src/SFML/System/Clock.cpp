@@ -108,11 +108,10 @@ Clock& Clock::operator=(const Clock& rhs) = default;
 ////////////////////////////////////////////////////////////
 Time Clock::getElapsedTime() const
 {
-    if (isRunning())
-        return TimeChronoUtil::fromDuration(
-            std::chrono::duration_cast<std::chrono::microseconds>(priv::ClockImpl::now() - m_impl->refPoint));
-    return TimeChronoUtil::fromDuration(
-        std::chrono::duration_cast<std::chrono::microseconds>(m_impl->stopPoint - m_impl->refPoint));
+    const priv::ClockImpl::duration diff = isRunning() ? priv::ClockImpl::now() - m_impl->refPoint
+                                                       : m_impl->stopPoint - m_impl->refPoint;
+
+    return TimeChronoUtil::fromDuration(std::chrono::duration_cast<std::chrono::microseconds>(diff));
 }
 
 
@@ -126,19 +125,21 @@ bool Clock::isRunning() const
 ////////////////////////////////////////////////////////////
 void Clock::start()
 {
-    if (!isRunning())
-    {
-        m_impl->refPoint += priv::ClockImpl::now() - m_impl->stopPoint;
-        m_impl->stopPoint = {};
-    }
+    if (isRunning())
+        return;
+
+    m_impl->refPoint += priv::ClockImpl::now() - m_impl->stopPoint;
+    m_impl->stopPoint = {};
 }
 
 
 ////////////////////////////////////////////////////////////
 void Clock::stop()
 {
-    if (isRunning())
-        m_impl->stopPoint = priv::ClockImpl::now();
+    if (!isRunning())
+        return;
+
+    m_impl->stopPoint = priv::ClockImpl::now();
 }
 
 

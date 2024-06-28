@@ -61,7 +61,7 @@ public:
     /// use the other constructors or call create() to do so.
     ///
     ////////////////////////////////////////////////////////////
-    RenderWindow() = default;
+    [[nodiscard]] RenderWindow() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a new window
@@ -83,11 +83,11 @@ public:
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    RenderWindow(VideoMode              mode,
-                 const String&          title,
-                 std::uint32_t          style    = Style::Default,
-                 State                  state    = State::Windowed,
-                 const ContextSettings& settings = ContextSettings());
+    [[nodiscard]] RenderWindow(VideoMode              mode,
+                               const String&          title,
+                               std::uint32_t          style    = Style::Default,
+                               State                  state    = State::Windowed,
+                               const ContextSettings& settings = ContextSettings());
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a new window
@@ -106,7 +106,10 @@ public:
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    RenderWindow(VideoMode mode, const String& title, State state, const ContextSettings& settings = ContextSettings());
+    [[nodiscard]] RenderWindow(VideoMode              mode,
+                               const String&          title,
+                               State                  state,
+                               const ContextSettings& settings = ContextSettings());
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control
@@ -124,7 +127,7 @@ public:
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    explicit RenderWindow(WindowHandle handle, const ContextSettings& settings = ContextSettings());
+    [[nodiscard]] explicit RenderWindow(WindowHandle handle, const ContextSettings& settings = ContextSettings());
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the size of the rendering region of the window
@@ -135,7 +138,7 @@ public:
     /// \return Size in pixels
     ///
     ////////////////////////////////////////////////////////////
-    Vector2u getSize() const override;
+    [[nodiscard]] Vector2u getSize() const override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the window's icon
@@ -158,7 +161,7 @@ public:
     /// \return True if the window use sRGB encoding, false otherwise
     ///
     ////////////////////////////////////////////////////////////
-    bool isSrgb() const override;
+    [[nodiscard]] bool isSrgb() const override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Activate or deactivate the window as the current target

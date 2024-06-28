@@ -44,7 +44,7 @@ public:
     /// Creates a Vector3(0, 0, 0).
     ///
     ////////////////////////////////////////////////////////////
-    SFML_API_EXPORT constexpr Vector3();
+    [[nodiscard]] SFML_API_EXPORT constexpr Vector3();
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the vector from its coordinates
@@ -54,7 +54,7 @@ public:
     /// \param z Z coordinate
     ///
     ////////////////////////////////////////////////////////////
-    SFML_API_EXPORT constexpr Vector3(T x, T y, T z);
+    [[nodiscard]] SFML_API_EXPORT constexpr Vector3(T x, T y, T z);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the vector from another type of vector
@@ -68,7 +68,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename U>
-    SFML_API_EXPORT constexpr explicit Vector3(const Vector3<U>& vector);
+    [[nodiscard]] SFML_API_EXPORT constexpr explicit Vector3(const Vector3<U>& vector);
 
     ////////////////////////////////////////////////////////////
     /// \brief Length of the vector <i><b>(floating-point)</b></i>.

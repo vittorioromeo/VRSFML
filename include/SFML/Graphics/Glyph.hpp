@@ -38,7 +38,7 @@ namespace sf
 /// \brief Structure describing a glyph
 ///
 ////////////////////////////////////////////////////////////
-struct SFML_GRAPHICS_API Glyph
+struct [[nodiscard]] SFML_GRAPHICS_API Glyph
 {
     float     advance{};   //!< Offset to move horizontally to the next character
     int       lsbDelta{};  //!< Left offset after forced autohint. Internally used by getKerning()

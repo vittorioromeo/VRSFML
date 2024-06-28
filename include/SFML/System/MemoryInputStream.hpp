@@ -34,7 +34,6 @@
 #include <SFML/System/InputStream.hpp>
 
 #include <cstddef>
-#include <cstdint>
 
 
 namespace sf
@@ -93,7 +92,7 @@ public:
     /// \return The total number of bytes available in the stream, or `std::nullopt` on error
     ///
     ////////////////////////////////////////////////////////////
-    std::optional<std::size_t> getSize() override;
+    [[nodiscard]] std::optional<std::size_t> getSize() override;
 
 private:
     ////////////////////////////////////////////////////////////

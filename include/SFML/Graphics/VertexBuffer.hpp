@@ -59,7 +59,7 @@ public:
     /// good compromise.
     ///
     ////////////////////////////////////////////////////////////
-    enum class Usage
+    enum class [[nodiscard]] Usage
     {
         Stream,  //!< Constantly changing data
         Dynamic, //!< Occasionally changing data
@@ -72,7 +72,7 @@ public:
     /// Creates an empty vertex buffer.
     ///
     ////////////////////////////////////////////////////////////
-    VertexBuffer() = default;
+    [[nodiscard]] VertexBuffer() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a VertexBuffer with a specific PrimitiveType
@@ -82,7 +82,7 @@ public:
     /// \param type Type of primitive
     ///
     ////////////////////////////////////////////////////////////
-    explicit VertexBuffer(PrimitiveType type);
+    [[nodiscard]] explicit VertexBuffer(PrimitiveType type);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a VertexBuffer with a specific usage specifier
@@ -92,7 +92,7 @@ public:
     /// \param usage Usage specifier
     ///
     ////////////////////////////////////////////////////////////
-    explicit VertexBuffer(Usage usage);
+    [[nodiscard]] explicit VertexBuffer(Usage usage);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a VertexBuffer with a specific PrimitiveType and usage specifier
@@ -104,7 +104,7 @@ public:
     /// \param usage Usage specifier
     ///
     ////////////////////////////////////////////////////////////
-    VertexBuffer(PrimitiveType type, Usage usage);
+    [[nodiscard]] VertexBuffer(PrimitiveType type, Usage usage);
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy constructor
@@ -327,7 +327,7 @@ public:
     /// \return True if vertex buffers are supported, false otherwise
     ///
     ////////////////////////////////////////////////////////////
-    static bool isAvailable();
+    [[nodiscard]] static bool isAvailable();
 
 private:
     ////////////////////////////////////////////////////////////

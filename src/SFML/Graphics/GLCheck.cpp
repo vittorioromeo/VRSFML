@@ -30,7 +30,7 @@
 
 #include <SFML/System/Err.hpp>
 
-#include <string>
+#include <string_view>
 
 
 namespace sf::priv
@@ -43,8 +43,8 @@ void glCheckError(const std::filesystem::path& file, unsigned int line, std::str
 
     if (errorCode != GL_NO_ERROR)
     {
-        std::string error       = "Unknown error";
-        std::string description = "No description";
+        std::string_view error       = "Unknown error";
+        std::string_view description = "No description";
 
         // Decode the error code
         switch (errorCode)

@@ -33,7 +33,7 @@
 
 #include <optional>
 
-#include <cstdint>
+#include <cstddef>
 
 
 namespace sf
@@ -89,7 +89,7 @@ public:
     /// \return The total number of bytes available in the stream, or `std::nullopt` on error
     ///
     ////////////////////////////////////////////////////////////
-    virtual std::optional<std::size_t> getSize() = 0;
+    [[nodiscard]] virtual std::optional<std::size_t> getSize() = 0;
 };
 
 } // namespace sf

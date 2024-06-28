@@ -35,7 +35,7 @@ namespace sf
 /// and view.
 ///
 ////////////////////////////////////////////////////////////
-enum class PrimitiveType
+enum class [[nodiscard]] PrimitiveType
 {
     Points,        //!< List of individual points
     Lines,         //!< List of individual lines

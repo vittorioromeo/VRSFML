@@ -54,7 +54,7 @@ public:
     /// \see setTextureRect
     ///
     ////////////////////////////////////////////////////////////
-    explicit Sprite(const IntRect& rectangle);
+    [[nodiscard]] explicit Sprite(const IntRect& rectangle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the sub-rectangle of the texture that the sprite will display
@@ -93,7 +93,7 @@ public:
     /// \see setTextureRect
     ///
     ////////////////////////////////////////////////////////////
-    const IntRect& getTextureRect() const;
+    [[nodiscard]] const IntRect& getTextureRect() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the global color of the sprite
@@ -103,7 +103,7 @@ public:
     /// \see setColor
     ///
     ////////////////////////////////////////////////////////////
-    const Color& getColor() const;
+    [[nodiscard]] const Color& getColor() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the local bounding rectangle of the entity
@@ -117,7 +117,7 @@ public:
     /// \return Local bounding rectangle of the entity
     ///
     ////////////////////////////////////////////////////////////
-    FloatRect getLocalBounds() const;
+    [[nodiscard]] FloatRect getLocalBounds() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the global bounding rectangle of the entity
@@ -131,7 +131,7 @@ public:
     /// \return Global bounding rectangle of the entity
     ///
     ////////////////////////////////////////////////////////////
-    FloatRect getGlobalBounds() const;
+    [[nodiscard]] FloatRect getGlobalBounds() const;
 
 private:
     friend RenderTarget;

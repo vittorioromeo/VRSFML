@@ -54,7 +54,7 @@ public:
     /// \param pointCount Number of points composing the circle
     ///
     ////////////////////////////////////////////////////////////
-    explicit CircleShape(float radius = 0, std::size_t pointCount = 30);
+    [[nodiscard]] explicit CircleShape(float radius = 0, std::size_t pointCount = 30);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the radius of the circle
@@ -74,7 +74,7 @@ public:
     /// \see setRadius
     ///
     ////////////////////////////////////////////////////////////
-    float getRadius() const;
+    [[nodiscard]] float getRadius() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the number of points of the circle
@@ -94,7 +94,7 @@ public:
     /// \see setPointCount
     ///
     ////////////////////////////////////////////////////////////
-    std::size_t getPointCount() const;
+    [[nodiscard]] std::size_t getPointCount() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a point of the circle
@@ -109,7 +109,7 @@ public:
     /// \return index-th point of the shape
     ///
     ////////////////////////////////////////////////////////////
-    Vector2f getPoint(std::size_t index) const;
+    [[nodiscard]] Vector2f getPoint(std::size_t index) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the geometric center of the circle
@@ -121,7 +121,7 @@ public:
     /// \return The geometric center of the shape
     ///
     ////////////////////////////////////////////////////////////
-    Vector2f getGeometricCenter() const;
+    [[nodiscard]] Vector2f getGeometricCenter() const;
 
 private:
     ////////////////////////////////////////////////////////////

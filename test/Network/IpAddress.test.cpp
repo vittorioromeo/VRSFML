@@ -1,3 +1,5 @@
+#include "SFML/System/Time.hpp"
+
 #include <SFML/Network/IpAddress.hpp>
 
 #include <Doctest.hpp>
@@ -80,7 +82,7 @@ TEST_CASE("[Network] sf::IpAddress")
 
         SECTION("getPublicAddress")
         {
-            const std::optional<sf::IpAddress> ipAddress = sf::IpAddress::getPublicAddress(sf::seconds(1));
+            const std::optional<sf::IpAddress> ipAddress = sf::IpAddress::getPublicAddress(sf::milliseconds(250));
             if (ipAddress.has_value())
             {
                 CHECK(ipAddress->toString() != "0.0.0.0");

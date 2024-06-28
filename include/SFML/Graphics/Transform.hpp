@@ -42,7 +42,7 @@ class Angle;
 /// \brief Define a 3x3 transform matrix
 ///
 ////////////////////////////////////////////////////////////
-class Transform
+class [[nodiscard]] Transform
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -51,7 +51,7 @@ public:
     /// Creates an identity transform (a transform that does nothing).
     ///
     ////////////////////////////////////////////////////////////
-    constexpr Transform();
+    [[nodiscard]] constexpr Transform();
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a transform from a 3x3 matrix
@@ -67,7 +67,7 @@ public:
     /// \param a22 Element (2, 2) of the matrix
     ///
     ////////////////////////////////////////////////////////////
-    constexpr Transform(float a00, float a01, float a02, float a10, float a11, float a12, float a20, float a21, float a22);
+    [[nodiscard]] constexpr Transform(float a00, float a01, float a02, float a10, float a11, float a12, float a20, float a21, float a22);
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the transform as a 4x4 matrix

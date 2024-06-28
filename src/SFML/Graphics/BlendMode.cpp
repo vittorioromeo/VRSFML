@@ -39,12 +39,14 @@ const BlendMode BlendAlpha(BlendMode::Factor::SrcAlpha,
                            BlendMode::Factor::One,
                            BlendMode::Factor::OneMinusSrcAlpha,
                            BlendMode::Equation::Add);
+
 const BlendMode BlendAdd(BlendMode::Factor::SrcAlpha,
                          BlendMode::Factor::One,
                          BlendMode::Equation::Add,
                          BlendMode::Factor::One,
                          BlendMode::Factor::One,
                          BlendMode::Equation::Add);
+
 const BlendMode BlendMultiply(BlendMode::Factor::DstColor, BlendMode::Factor::Zero, BlendMode::Equation::Add);
 const BlendMode BlendMin(BlendMode::Factor::One, BlendMode::Factor::One, BlendMode::Equation::Min);
 const BlendMode BlendMax(BlendMode::Factor::One, BlendMode::Factor::One, BlendMode::Equation::Max);

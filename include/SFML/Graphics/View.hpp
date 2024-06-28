@@ -42,7 +42,7 @@ namespace sf
 /// \brief 2D camera that defines what region is shown on screen
 ///
 ////////////////////////////////////////////////////////////
-class SFML_GRAPHICS_API View
+class [[nodiscard]] SFML_GRAPHICS_API View
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -51,7 +51,7 @@ public:
     /// This constructor creates a default view of (0, 0, 1000, 1000)
     ///
     ////////////////////////////////////////////////////////////
-    View() = default;
+    [[nodiscard]] View() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the view from a rectangle
@@ -59,7 +59,7 @@ public:
     /// \param rectangle Rectangle defining the zone to display
     ///
     ////////////////////////////////////////////////////////////
-    explicit View(const FloatRect& rectangle);
+    [[nodiscard]] explicit View(const FloatRect& rectangle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the view from its center and size
@@ -68,7 +68,7 @@ public:
     /// \param size   Size of zone to display
     ///
     ////////////////////////////////////////////////////////////
-    View(const Vector2f& center, const Vector2f& size);
+    [[nodiscard]] View(const Vector2f& center, const Vector2f& size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the center of the view
@@ -151,7 +151,7 @@ public:
     /// \see getSize, setCenter
     ///
     ////////////////////////////////////////////////////////////
-    const Vector2f& getCenter() const;
+    [[nodiscard]] const Vector2f& getCenter() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the size of the view
@@ -161,7 +161,7 @@ public:
     /// \see getCenter, setSize
     ///
     ////////////////////////////////////////////////////////////
-    const Vector2f& getSize() const;
+    [[nodiscard]] const Vector2f& getSize() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current orientation of the view
@@ -171,7 +171,7 @@ public:
     /// \see setRotation
     ///
     ////////////////////////////////////////////////////////////
-    Angle getRotation() const;
+    [[nodiscard]] Angle getRotation() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the target viewport rectangle of the view
@@ -181,7 +181,7 @@ public:
     /// \see setViewport
     ///
     ////////////////////////////////////////////////////////////
-    const FloatRect& getViewport() const;
+    [[nodiscard]] const FloatRect& getViewport() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the scissor rectangle of the view
@@ -191,7 +191,7 @@ public:
     /// \see setScissor
     ///
     ////////////////////////////////////////////////////////////
-    const FloatRect& getScissor() const;
+    [[nodiscard]] const FloatRect& getScissor() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move the view relatively to its current position
@@ -240,7 +240,7 @@ public:
     /// \see getInverseTransform
     ///
     ////////////////////////////////////////////////////////////
-    const Transform& getTransform() const;
+    [[nodiscard]] const Transform& getTransform() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the inverse projection transform of the view
@@ -252,7 +252,7 @@ public:
     /// \see getTransform
     ///
     ////////////////////////////////////////////////////////////
-    const Transform& getInverseTransform() const;
+    [[nodiscard]] const Transform& getInverseTransform() const;
 
 private:
     ////////////////////////////////////////////////////////////

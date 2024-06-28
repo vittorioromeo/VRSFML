@@ -37,7 +37,7 @@ namespace sf
 {
 
 ////////////////////////////////////////////////////////////
-Cursor::Cursor(priv::PassKey<Cursor>&&) : m_impl(priv::makeUnique<priv::CursorImpl>())
+Cursor::Cursor(priv::PassKey<Cursor>&&)
 {
 }
 

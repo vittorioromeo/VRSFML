@@ -119,7 +119,7 @@ public:
     /// \see setTextureRect
     ///
     ////////////////////////////////////////////////////////////
-    const IntRect& getTextureRect() const;
+    [[nodiscard]] const IntRect& getTextureRect() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the fill color of the shape
@@ -129,7 +129,7 @@ public:
     /// \see setFillColor
     ///
     ////////////////////////////////////////////////////////////
-    const Color& getFillColor() const;
+    [[nodiscard]] const Color& getFillColor() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the outline color of the shape
@@ -139,7 +139,7 @@ public:
     /// \see setOutlineColor
     ///
     ////////////////////////////////////////////////////////////
-    const Color& getOutlineColor() const;
+    [[nodiscard]] const Color& getOutlineColor() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the outline thickness of the shape
@@ -149,7 +149,7 @@ public:
     /// \see setOutlineThickness
     ///
     ////////////////////////////////////////////////////////////
-    float getOutlineThickness() const;
+    [[nodiscard]] float getOutlineThickness() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the local bounding rectangle of the entity
@@ -163,7 +163,7 @@ public:
     /// \return Local bounding rectangle of the entity
     ///
     ////////////////////////////////////////////////////////////
-    FloatRect getLocalBounds() const;
+    [[nodiscard]] FloatRect getLocalBounds() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the global (non-minimal) bounding rectangle of the entity
@@ -184,7 +184,7 @@ public:
     /// \return Global bounding rectangle of the entity
     ///
     ////////////////////////////////////////////////////////////
-    FloatRect getGlobalBounds() const;
+    [[nodiscard]] FloatRect getGlobalBounds() const;
 
 protected:
     ////////////////////////////////////////////////////////////

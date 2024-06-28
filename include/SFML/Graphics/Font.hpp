@@ -171,7 +171,7 @@ public:
     /// \return A structure that holds the font information
     ///
     ////////////////////////////////////////////////////////////
-    const Info& getInfo() const;
+    [[nodiscard]] const Info& getInfo() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Retrieve a glyph of the font
@@ -195,7 +195,10 @@ public:
     /// \return The glyph corresponding to \a codePoint and \a characterSize
     ///
     ////////////////////////////////////////////////////////////
-    const Glyph& getGlyph(std::uint32_t codePoint, unsigned int characterSize, bool bold, float outlineThickness = 0) const;
+    [[nodiscard]] const Glyph& getGlyph(std::uint32_t codePoint,
+                                        unsigned int  characterSize,
+                                        bool          bold,
+                                        float         outlineThickness = 0) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Determine if this font has a glyph representing the requested code point
@@ -213,7 +216,7 @@ public:
     /// \return True if the codepoint has a glyph representation, false otherwise
     ///
     ////////////////////////////////////////////////////////////
-    bool hasGlyph(std::uint32_t codePoint) const;
+    [[nodiscard]] bool hasGlyph(std::uint32_t codePoint) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the kerning offset of two glyphs
@@ -232,7 +235,7 @@ public:
     /// \return Kerning value for \a first and \a second, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    float getKerning(std::uint32_t first, std::uint32_t second, unsigned int characterSize, bool bold = false) const;
+    [[nodiscard]] float getKerning(std::uint32_t first, std::uint32_t second, unsigned int characterSize, bool bold = false) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the line spacing
@@ -245,7 +248,7 @@ public:
     /// \return Line spacing, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    float getLineSpacing(unsigned int characterSize) const;
+    [[nodiscard]] float getLineSpacing(unsigned int characterSize) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the position of the underline
@@ -260,7 +263,7 @@ public:
     /// \see getUnderlineThickness
     ///
     ////////////////////////////////////////////////////////////
-    float getUnderlinePosition(unsigned int characterSize) const;
+    [[nodiscard]] float getUnderlinePosition(unsigned int characterSize) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the thickness of the underline
@@ -274,7 +277,7 @@ public:
     /// \see getUnderlinePosition
     ///
     ////////////////////////////////////////////////////////////
-    float getUnderlineThickness(unsigned int characterSize) const;
+    [[nodiscard]] float getUnderlineThickness(unsigned int characterSize) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Retrieve the texture containing the loaded glyphs of a certain size
@@ -288,7 +291,7 @@ public:
     /// \return Texture containing the glyphs of the requested size
     ///
     ////////////////////////////////////////////////////////////
-    const Texture& getTexture(unsigned int characterSize) const;
+    [[nodiscard]] const Texture& getTexture(unsigned int characterSize) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Enable or disable the smooth filter
@@ -314,7 +317,7 @@ public:
     /// \see setSmooth
     ///
     ////////////////////////////////////////////////////////////
-    bool isSmooth() const;
+    [[nodiscard]] bool isSmooth() const;
 
 private:
     ////////////////////////////////////////////////////////////
@@ -323,7 +326,7 @@ private:
     /// \param codePoint Unicode code point of the character to load
     ///
     ////////////////////////////////////////////////////////////
-    unsigned int getCharIndex(std::uint32_t codePoint) const;
+    [[nodiscard]] unsigned int getCharIndex(std::uint32_t codePoint) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Structure defining a page of glyphs
@@ -339,7 +342,7 @@ private:
     /// \return The glyphs page corresponding to \a characterSize
     ///
     ////////////////////////////////////////////////////////////
-    Page& loadPage(unsigned int characterSize) const;
+    [[nodiscard]] Page& loadPage(unsigned int characterSize) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Load a new glyph and store it in the cache
@@ -352,7 +355,7 @@ private:
     /// \return The glyph corresponding to \a codePoint and \a characterSize
     ///
     ////////////////////////////////////////////////////////////
-    Glyph loadGlyph(std::uint32_t codePoint, unsigned int characterSize, bool bold, float outlineThickness) const;
+    [[nodiscard]] Glyph loadGlyph(std::uint32_t codePoint, unsigned int characterSize, bool bold, float outlineThickness) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Find a suitable rectangle within the texture for a glyph
@@ -363,7 +366,7 @@ private:
     /// \return Found rectangle within the texture
     ///
     ////////////////////////////////////////////////////////////
-    IntRect findGlyphRect(Page& page, const Vector2u& size) const;
+    [[nodiscard]] IntRect findGlyphRect(Page& page, const Vector2u& size) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Make sure that the given size is the current one
@@ -387,7 +390,7 @@ public:
     /// \brief Create a font from font handles and a family name
     ///
     ////////////////////////////////////////////////////////////
-    Font(priv::PassKey<Font>&&, void* fontHandlesSharedPtr, std::string&& familyName);
+    [[nodiscard]] Font(priv::PassKey<Font>&&, void* fontHandlesSharedPtr, std::string&& familyName);
 
 private:
     ////////////////////////////////////////////////////////////

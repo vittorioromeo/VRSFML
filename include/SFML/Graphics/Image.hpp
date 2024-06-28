@@ -62,7 +62,7 @@ public:
     /// \param color Fill color
     ///
     ////////////////////////////////////////////////////////////
-    explicit Image(const Vector2u& size, const Color& color = Color::Black);
+    [[nodiscard]] explicit Image(const Vector2u& size, const Color& color = Color::Black);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the image from an array of pixels
@@ -76,7 +76,7 @@ public:
     /// \param pixels Array of pixels to copy to the image
     ///
     ////////////////////////////////////////////////////////////
-    Image(const Vector2u& size, const std::uint8_t* pixels);
+    [[nodiscard]] Image(const Vector2u& size, const std::uint8_t* pixels);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the image from a file on disk
@@ -284,7 +284,7 @@ public:
     /// \brief Directly initialize data members
     ///
     ////////////////////////////////////////////////////////////
-    Image(priv::PassKey<Image>&&, Vector2u size, std::vector<std::uint8_t>&& pixels);
+    [[nodiscard]] Image(priv::PassKey<Image>&&, Vector2u size, std::vector<std::uint8_t>&& pixels);
 
 private:
     ////////////////////////////////////////////////////////////

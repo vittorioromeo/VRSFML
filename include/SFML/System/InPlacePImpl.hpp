@@ -7,20 +7,21 @@
 #if __has_builtin(__builtin_launder)
 #define SFML_PRIV_LAUNDER __builtin_launder
 #else
-#include <cstdlib>
+#include <new>
 #define SFML_PRIV_LAUNDER ::std::launder
 #endif
 
 
 namespace sf::priv
 {
-
+////////////////////////////////////////////////////////////
 struct MaxAlignT
 {
     alignas(alignof(long long)) long long a;
     alignas(alignof(long double)) long double b;
 };
 
+////////////////////////////////////////////////////////////
 template <typename T, decltype(sizeof(int)) BufferSize>
 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 class InPlacePImpl

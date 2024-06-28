@@ -51,7 +51,7 @@ public:
     /// Rect({0, 0}, {0, 0})).
     ///
     ////////////////////////////////////////////////////////////
-    SFML_GRAPHICS_API constexpr Rect();
+    [[nodiscard]] SFML_GRAPHICS_API constexpr Rect();
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the rectangle from position and size
@@ -63,7 +63,7 @@ public:
     /// \param size     Size of the rectangle
     ///
     ////////////////////////////////////////////////////////////
-    SFML_GRAPHICS_API constexpr Rect(const Vector2<T>& position, const Vector2<T>& size);
+    [[nodiscard]] SFML_GRAPHICS_API constexpr Rect(const Vector2<T>& position, const Vector2<T>& size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the rectangle from another type of rectangle
@@ -77,7 +77,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename U>
-    SFML_GRAPHICS_API constexpr explicit Rect(const Rect<U>& rectangle);
+    [[nodiscard]] SFML_GRAPHICS_API constexpr explicit Rect(const Rect<U>& rectangle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Check if a point is inside the rectangle's area
