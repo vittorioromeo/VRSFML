@@ -31,7 +31,7 @@
 #include <SFML/System/Export.hpp>
 
 #include <SFML/System/Err.hpp>
-#include <SFML/System/LifetimeTracking.hpp>
+#include <SFML/System/LifetimeDependee.hpp>
 
 #include <atomic>
 #include <string>
@@ -247,78 +247,6 @@ void LifetimeDependee::subDependant()
     assert(asAtomicUInt(m_dependantCount).load(std::memory_order_relaxed) > 0u);
     asAtomicUInt(m_dependantCount).fetch_sub(1u, std::memory_order_relaxed);
 }
-
-
-////////////////////////////////////////////////////////////
-LifetimeDependant::LifetimeDependant(LifetimeDependee* dependee) noexcept : m_dependee(dependee)
-{
-    addSelfAsDependant();
-}
-
-
-////////////////////////////////////////////////////////////
-LifetimeDependant::~LifetimeDependant()
-{
-    subSelfAsDependant();
-}
-
-
-////////////////////////////////////////////////////////////
-LifetimeDependant::LifetimeDependant(const LifetimeDependant& rhs) noexcept : LifetimeDependant(rhs.m_dependee)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-LifetimeDependant::LifetimeDependant(LifetimeDependant&& rhs) noexcept : LifetimeDependant(rhs.m_dependee)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-LifetimeDependant& LifetimeDependant::operator=(const LifetimeDependant& rhs) noexcept
-{
-    if (&rhs == this)
-        return *this;
-
-    m_dependee = rhs.m_dependee;
-    addSelfAsDependant();
-
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-LifetimeDependant& LifetimeDependant::operator=(LifetimeDependant&& rhs) noexcept
-{
-    return (*this = rhs);
-}
-
-
-////////////////////////////////////////////////////////////
-void LifetimeDependant::update(LifetimeDependee* dependee) noexcept
-{
-    subSelfAsDependant();
-    m_dependee = dependee;
-    addSelfAsDependant();
-}
-
-
-////////////////////////////////////////////////////////////
-void LifetimeDependant::addSelfAsDependant()
-{
-    if (m_dependee != nullptr && !LifetimeDependee::TestingModeGuard::fatalErrorTriggered())
-        m_dependee->addDependant();
-}
-
-
-////////////////////////////////////////////////////////////
-void LifetimeDependant::subSelfAsDependant()
-{
-    if (m_dependee != nullptr && !LifetimeDependee::TestingModeGuard::fatalErrorTriggered())
-        m_dependee->subDependant();
-}
-
 
 } // namespace sf::priv
 

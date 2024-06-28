@@ -31,20 +31,19 @@
 
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/Rect.hpp>
-#include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/Transformable.hpp>
-#include <SFML/Graphics/Vertex.hpp>
 
+#include <SFML/System/InPlacePImpl.hpp>
 #include <SFML/System/Vector2.hpp>
-
-#include <vector>
 
 #include <cstddef>
 
 
 namespace sf
 {
+struct RenderStates;
 class RenderTarget;
+class Texture;
 
 ////////////////////////////////////////////////////////////
 /// \brief Base class for textured shapes with outline
@@ -53,6 +52,42 @@ class RenderTarget;
 class SFML_GRAPHICS_API Shape : public Transformable
 {
 public:
+    ////////////////////////////////////////////////////////////
+    /// \brief Default constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    Shape();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Destructor
+    ///
+    ////////////////////////////////////////////////////////////
+    ~Shape();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Copy constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    Shape(const Shape&) = default;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Copy assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    Shape& operator=(const Shape&) = default;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    Shape(Shape&&) = default;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    Shape& operator=(Shape&&) = default;
+
     ////////////////////////////////////////////////////////////
     /// \brief Set the sub-rectangle of the texture that the shape will display
     ///
@@ -201,6 +236,12 @@ private:
     friend RenderTarget;
 
     ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    void drawOnto(RenderTarget& renderTarget, const Texture* texture, const RenderStates& states) const;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Update the fill vertices' color
     ///
     ////////////////////////////////////////////////////////////
@@ -227,14 +268,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    IntRect             m_textureRect;                //!< Rectangle defining the area of the source texture to display
-    Color               m_fillColor{Color::White};    //!< Fill color
-    Color               m_outlineColor{Color::White}; //!< Outline color
-    float               m_outlineThickness{};         //!< Thickness of the shape's outline
-    std::vector<Vertex> m_vertices;                   //!< Vertex array containing the fill geometry
-    std::vector<Vertex> m_outlineVertices;            //!< Vertex array containing the outline geometry
-    FloatRect           m_insideBounds;               //!< Bounding rectangle of the inside (fill)
-    FloatRect           m_bounds;                     //!< Bounding rectangle of the whole shape (outline + fill)
+    struct Impl;
+    priv::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
 };
 
 } // namespace sf

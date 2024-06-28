@@ -29,8 +29,10 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/SoundFileWriter.hpp>
 
+#include <SFML/System/InPlacePImpl.hpp>
+
 #include <filesystem>
-#include <fstream>
+#include <vector>
 
 #include <cstdint>
 
@@ -53,6 +55,12 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static bool check(const std::filesystem::path& filename);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Default constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    SoundFileWriterWav();
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -105,9 +113,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::ofstream m_file;             //!< File stream to write to
-    unsigned int  m_channelCount{};   //!< Channel count of the sound being written
-    std::size_t   m_remapTable[18]{}; //!< Table we use to remap source to target channel order
+    struct Impl;
+    priv::InPlacePImpl<Impl, 768> m_impl; //!< Implementation details
 };
 
 } // namespace sf::priv

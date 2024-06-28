@@ -31,7 +31,7 @@
 
 #include <SFML/Audio/SoundSource.hpp>
 
-#include <SFML/System/LifetimeTracking.hpp>
+#include <SFML/System/LifetimeDependant.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
 #include <cstdlib>

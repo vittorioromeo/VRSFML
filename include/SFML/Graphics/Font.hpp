@@ -32,7 +32,7 @@
 #include <SFML/Graphics/Rect.hpp>
 
 #include <SFML/System/InPlacePImpl.hpp>
-#include <SFML/System/LifetimeTracking.hpp>
+#include <SFML/System/LifetimeDependee.hpp>
 #include <SFML/System/PassKey.hpp>
 #include <SFML/System/Vector2.hpp>
 

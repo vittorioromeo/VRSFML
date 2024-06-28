@@ -34,7 +34,6 @@
 #include <SFML/Graphics/CoordinateType.hpp>
 #include <SFML/Graphics/PrimitiveType.hpp>
 #include <SFML/Graphics/Rect.hpp>
-#include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/StencilMode.hpp>
 #include <SFML/Graphics/Vertex.hpp>
 #include <SFML/Graphics/View.hpp>
@@ -47,12 +46,13 @@
 
 namespace sf
 {
+struct RenderStates;
 class Shader;
+class Shape;
+class Sprite;
 class Texture;
 class Transform;
 class VertexBuffer;
-class Sprite;
-class Shape;
 
 ////////////////////////////////////////////////////////////
 /// \brief Base class for all render targets (window, texture, ...)
@@ -305,7 +305,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename DrawableObject>
-    auto draw(const DrawableObject& drawableObject, const RenderStates& states = RenderStates::Default)
+    auto draw(const DrawableObject& drawableObject, const RenderStates& states = getDefaultRenderStates())
         -> decltype(drawableObject.draw(*this, states), void()) // for SFINAE
     {
         drawableObject.draw(*this, states);
@@ -320,7 +320,7 @@ public:
     /// \param texture Texture associated with the sprite
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Sprite& sprite, const Texture& texture, RenderStates states = RenderStates::Default);
+    void draw(const Sprite& sprite, const Texture& texture, const RenderStates& states = getDefaultRenderStates());
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted overload of `draw` for sprites without a texture
@@ -339,7 +339,7 @@ public:
     /// \param texture Texture associated with the shape
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Shape& shape, const Texture* texture, RenderStates states = RenderStates::Default);
+    void draw(const Shape& shape, const Texture* texture, const RenderStates& states = getDefaultRenderStates());
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by an array of vertices
@@ -353,7 +353,7 @@ public:
     void draw(const Vertex*       vertices,
               std::size_t         vertexCount,
               PrimitiveType       type,
-              const RenderStates& states = RenderStates::Default);
+              const RenderStates& states = getDefaultRenderStates());
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by a contiguous container of vertices
@@ -367,8 +367,9 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename ContiguousVertexRange>
-    auto draw(const ContiguousVertexRange& vertices, PrimitiveType type, const RenderStates& states = RenderStates::Default)
-        -> decltype(vertices.data(), vertices.size(), void()) // for SFINAE
+    auto draw(const ContiguousVertexRange& vertices,
+              PrimitiveType                type,
+              const RenderStates& states = getDefaultRenderStates()) -> decltype(vertices.data(), vertices.size(), void()) // for SFINAE
     {
         draw(vertices.data(), vertices.size(), type, states);
     }
@@ -382,7 +383,9 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename CStyleVertexArray, std::size_t N>
-    void draw(const CStyleVertexArray (&vertices)[N], PrimitiveType type, const RenderStates& states = RenderStates::Default)
+    void draw(const CStyleVertexArray (&vertices)[N],
+              PrimitiveType       type,
+              const RenderStates& states = getDefaultRenderStates())
     {
         draw(vertices, N, type, states);
     }
@@ -394,7 +397,7 @@ public:
     /// \param states       Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const VertexBuffer& vertexBuffer, const RenderStates& states = RenderStates::Default);
+    void draw(const VertexBuffer& vertexBuffer, const RenderStates& states = getDefaultRenderStates());
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by a vertex buffer
@@ -408,7 +411,7 @@ public:
     void draw(const VertexBuffer& vertexBuffer,
               std::size_t         firstVertex,
               std::size_t         vertexCount,
-              const RenderStates& states = RenderStates::Default);
+              const RenderStates& states = getDefaultRenderStates());
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the rendering region of the target
@@ -533,6 +536,12 @@ protected:
     void initialize();
 
 private:
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    static const RenderStates& getDefaultRenderStates();
+
     ////////////////////////////////////////////////////////////
     /// \brief Apply the current view
     ///

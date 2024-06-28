@@ -34,7 +34,7 @@
 
 #include <SFML/Window/GlResource.hpp>
 
-#include <SFML/System/LifetimeTracking.hpp>
+#include <SFML/System/LifetimeDependee.hpp>
 #include <SFML/System/PassKey.hpp>
 #include <SFML/System/Vector2.hpp>
 
