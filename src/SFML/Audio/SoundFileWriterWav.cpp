@@ -28,7 +28,8 @@
 #include <SFML/Audio/SoundFileWriterWav.hpp>
 
 #include <SFML/System/Err.hpp>
-#include <SFML/System/Utils.hpp>
+#include <SFML/System/PathUtils.hpp>
+#include <SFML/System/StringUtils.hpp>
 
 #include <algorithm>
 
@@ -77,7 +78,7 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 bool SoundFileWriterWav::check(const std::filesystem::path& filename)
 {
-    return toLower(filename.extension().string()) == ".wav";
+    return priv::toLower(filename.extension().string()) == ".wav";
 }
 
 
@@ -214,7 +215,8 @@ bool SoundFileWriterWav::open(const std::filesystem::path&     filename,
     m_file.open(filename, std::ios::binary);
     if (!m_file)
     {
-        priv::err() << "Failed to open WAV sound file for writing\n" << formatDebugPathInfo(filename) << priv::errEndl;
+        priv::err() << "Failed to open WAV sound file for writing\n"
+                    << priv::formatDebugPathInfo(filename) << priv::errEndl;
         return false;
     }
 

@@ -7,6 +7,7 @@
 #include <SFML/Audio/SoundRecorder.hpp>
 
 #include <SFML/System/Sleep.hpp>
+#include <SFML/System/Time.hpp>
 
 #include <iostream>
 

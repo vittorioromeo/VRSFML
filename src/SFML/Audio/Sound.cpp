@@ -25,16 +25,17 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Audio/EffectProcessor.hpp>
 #include <SFML/Audio/MiniaudioUtils.hpp>
 #include <SFML/Audio/Sound.hpp>
 #include <SFML/Audio/SoundBuffer.hpp>
 
 #include <SFML/System/Err.hpp>
+#include <SFML/System/Time.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
 #include <miniaudio.h>
 
-#include <algorithm>
 #include <vector>
 
 #include <cassert>
@@ -92,7 +93,8 @@ struct Sound::Impl : priv::MiniaudioUtils::SoundBase
             return MA_NO_DATA_AVAILABLE;
 
         // Determine how many frames we can read
-        *framesRead = std::min<ma_uint64>(frameCount, (buffer->getSampleCount() - impl.cursor) / buffer->getChannelCount());
+        const auto min = [](ma_uint64 a, ma_uint64 b) { return (a < b) ? a : b; };
+        *framesRead    = min(frameCount, (buffer->getSampleCount() - impl.cursor) / buffer->getChannelCount());
 
         // Copy the samples to the output
         const auto sampleCount = *framesRead * buffer->getChannelCount();

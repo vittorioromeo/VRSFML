@@ -43,7 +43,7 @@ struct DeviceState
 };
 
 ////////////////////////////////////////////////////////////
-DeviceState& getDeviceState()
+[[nodiscard]] DeviceState& getDeviceState()
 {
     static DeviceState deviceState;
     return deviceState;

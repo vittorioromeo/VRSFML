@@ -33,8 +33,8 @@
 #include <SFML/System/FileInputStream.hpp>
 #include <SFML/System/InputStream.hpp>
 #include <SFML/System/MemoryInputStream.hpp>
+#include <SFML/System/PathUtils.hpp>
 #include <SFML/System/Time.hpp>
-#include <SFML/System/Utils.hpp>
 
 #include <utility>
 
@@ -80,7 +80,7 @@ std::optional<InputSoundFile> InputSoundFile::openFromFile(const std::filesystem
     if (!fileInputStream)
     {
         priv::err() << "Failed to open input sound file from file (couldn't open file input stream)\n"
-                    << formatDebugPathInfo(filename) << priv::errEndl;
+                    << priv::formatDebugPathInfo(filename) << priv::errEndl;
 
         return std::nullopt;
     }
@@ -93,7 +93,7 @@ std::optional<InputSoundFile> InputSoundFile::openFromFile(const std::filesystem
     if (!info)
     {
         priv::err() << "Failed to open input sound file from file (reader open failure)\n"
-                    << formatDebugPathInfo(filename) << priv::errEndl;
+                    << priv::formatDebugPathInfo(filename) << priv::errEndl;
 
         return std::nullopt;
     }
@@ -270,7 +270,11 @@ std::uint64_t InputSoundFile::read(std::int16_t* samples, std::uint64_t maxCount
 ////////////////////////////////////////////////////////////
 void InputSoundFile::close()
 {
-    *this = {};
+    m_reader.reset();
+    m_stream.reset();
+    m_sampleOffset = {};
+    m_sampleCount  = {};
+    m_sampleRate   = {};
     m_channelMap.clear();
 }
 

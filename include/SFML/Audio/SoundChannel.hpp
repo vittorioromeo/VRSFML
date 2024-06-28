@@ -38,7 +38,7 @@ namespace sf
 /// incorrectly when using spatialisation.
 ///
 ////////////////////////////////////////////////////////////
-enum class SoundChannel
+enum class [[nodiscard]] SoundChannel
 {
     Unspecified,
     Mono,

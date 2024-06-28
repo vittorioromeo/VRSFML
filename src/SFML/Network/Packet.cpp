@@ -196,7 +196,8 @@ Packet& Packet::operator>>(std::int64_t& data)
         std::byte bytes[sizeof(data)];
         std::memcpy(bytes, &m_data[m_readPos], sizeof(data));
 
-        data = toInteger<std::int64_t>(bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0]);
+        data = priv::byteSequenceToInteger<
+            std::int64_t>(bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0]);
 
         m_readPos += sizeof(data);
     }
@@ -215,7 +216,8 @@ Packet& Packet::operator>>(std::uint64_t& data)
         std::byte bytes[sizeof(data)]{};
         std::memcpy(bytes, &m_data[m_readPos], sizeof(data));
 
-        data = toInteger<std::uint64_t>(bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0]);
+        data = priv::byteSequenceToInteger<
+            std::uint64_t>(bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0]);
 
         m_readPos += sizeof(data);
     }

@@ -232,7 +232,7 @@ protected:
     /// This constructor is only meant to be called by derived classes.
     ///
     ////////////////////////////////////////////////////////////
-    SoundRecorder();
+    [[nodiscard]] SoundRecorder();
 
     ////////////////////////////////////////////////////////////
     /// \brief Start capturing audio data
@@ -279,7 +279,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    priv::UniquePtr<Impl> m_impl;
+    priv::UniquePtr<Impl> m_impl; //!< Implementation details
 };
 
 } // namespace sf

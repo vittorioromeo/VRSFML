@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
-#include <SFML/Audio/SoundFileReader.hpp>
+#include <SFML/Audio/SoundChannel.hpp>
 
 #include <SFML/System/PassKey.hpp>
 #include <SFML/System/UniquePtr.hpp>
@@ -46,6 +46,7 @@ namespace sf
 {
 class Time;
 class InputStream;
+class SoundFileReader;
 
 ////////////////////////////////////////////////////////////
 /// \brief Provide read access to sound files
@@ -215,14 +216,6 @@ public:
 
 private:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// Useful for implementing close()
-    ///
-    ////////////////////////////////////////////////////////////
-    InputSoundFile() = default;
-
-    ////////////////////////////////////////////////////////////
     /// \brief Deleter for input streams that only conditionally deletes
     ///
     ////////////////////////////////////////////////////////////
@@ -245,12 +238,12 @@ public:
     /// \brief Constructor from reader, stream, and attributes
     ///
     ////////////////////////////////////////////////////////////
-    InputSoundFile(priv::PassKey<InputSoundFile>&&,
-                   priv::UniquePtr<SoundFileReader>&&            reader,
-                   priv::UniquePtr<InputStream, StreamDeleter>&& stream,
-                   std::uint64_t                                 sampleCount,
-                   unsigned int                                  sampleRate,
-                   std::vector<SoundChannel>&&                   channelMap);
+    [[nodiscard]] InputSoundFile(priv::PassKey<InputSoundFile>&&,
+                                 priv::UniquePtr<SoundFileReader>&&            reader,
+                                 priv::UniquePtr<InputStream, StreamDeleter>&& stream,
+                                 std::uint64_t                                 sampleCount,
+                                 unsigned int                                  sampleRate,
+                                 std::vector<SoundChannel>&&                   channelMap);
 
 private:
     ////////////////////////////////////////////////////////////

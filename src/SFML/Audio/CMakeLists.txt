@@ -34,6 +34,7 @@ set(SRC
     ${INCROOT}/SoundSource.hpp
     ${SRCROOT}/SoundStream.cpp
     ${INCROOT}/SoundStream.hpp
+    ${INCROOT}/EffectProcessor.hpp
 )
 source_group("" FILES ${SRC})
 

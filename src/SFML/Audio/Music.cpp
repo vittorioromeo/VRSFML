@@ -31,7 +31,6 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Time.hpp>
 
-#include <algorithm>
 #include <mutex>
 
 
@@ -157,7 +156,8 @@ void Music::setLoopPoints(TimeSpan timePoints)
     }
 
     // Clamp End Point
-    samplePoints.length = std::min(samplePoints.length, m_impl->file.getSampleCount() - samplePoints.offset);
+    const auto min      = []<typename T>(T a, T b) { return (a < b) ? a : b; };
+    samplePoints.length = min(samplePoints.length, m_impl->file.getSampleCount() - samplePoints.offset);
 
     // If this change has no effect, we can return without touching anything
     if (samplePoints.offset == m_impl->loopSpan.offset && samplePoints.length == m_impl->loopSpan.length)

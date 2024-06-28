@@ -32,7 +32,6 @@
 #include <SFML/System/UniquePtr.hpp>
 
 #include <filesystem>
-#include <unordered_map>
 
 #include <cstddef>
 
@@ -157,14 +156,16 @@ private:
     using ReaderCheckFnPtr = bool (*)(InputStream&);
     using WriterCheckFnPtr = bool (*)(const std::filesystem::path&);
 
-    using ReaderFactoryMap = std::unordered_map<CreateFnPtr<SoundFileReader>, ReaderCheckFnPtr>;
-    using WriterFactoryMap = std::unordered_map<CreateFnPtr<SoundFileWriter>, WriterCheckFnPtr>;
-
     ////////////////////////////////////////////////////////////
     // Static member functions
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static ReaderFactoryMap& getReaderFactoryMap();
-    [[nodiscard]] static WriterFactoryMap& getWriterFactoryMap();
+    static void               registerReaderImpl(CreateFnPtr<SoundFileReader> key, ReaderCheckFnPtr value);
+    static void               unregisterReaderImpl(CreateFnPtr<SoundFileReader> key);
+    [[nodiscard]] static bool isReaderRegisteredImpl(CreateFnPtr<SoundFileReader> key);
+
+    static void               registerWriterImpl(CreateFnPtr<SoundFileWriter> key, WriterCheckFnPtr value);
+    static void               unregisterWriterImpl(CreateFnPtr<SoundFileWriter> key);
+    [[nodiscard]] static bool isWriterRegisteredImpl(CreateFnPtr<SoundFileWriter> key);
 };
 
 } // namespace sf

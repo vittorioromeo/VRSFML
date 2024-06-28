@@ -29,8 +29,9 @@
 
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InputStream.hpp>
+#include <SFML/System/PathUtils.hpp>
+#include <SFML/System/StringUtils.hpp>
 #include <SFML/System/UniquePtr.hpp>
-#include <SFML/System/Utils.hpp>
 #ifdef SFML_SYSTEM_ANDROID
 #include <SFML/System/Android/Activity.hpp>
 #include <SFML/System/Android/ResourceStream.hpp>
@@ -192,7 +193,7 @@ std::optional<Image> Image::loadFromFile(const std::filesystem::path& filename)
 
     // Error, failed to load the image
     priv::err() << "Failed to load image\n"
-                << formatDebugPathInfo(filename) << "\nReason: " << stbi_failure_reason() << priv::errEndl;
+                << priv::formatDebugPathInfo(filename) << "\nReason: " << stbi_failure_reason() << priv::errEndl;
 
 
     return std::nullopt;
@@ -307,7 +308,7 @@ bool Image::saveToFile(const std::filesystem::path& filename) const
         }
     }
 
-    priv::err() << "Failed to save image\n" << formatDebugPathInfo(filename) << priv::errEndl;
+    priv::err() << "Failed to save image\n" << priv::formatDebugPathInfo(filename) << priv::errEndl;
     return false;
 }
 
@@ -325,7 +326,7 @@ std::optional<std::vector<std::uint8_t>> Image::saveToMemory(std::string_view fo
     }
 
     // Choose function based on format
-    const std::string specified     = toLower(std::string(format));
+    const std::string specified     = priv::toLower(std::string(format));
     const Vector2i    convertedSize = Vector2i(m_size);
 
     if (specified == "bmp")

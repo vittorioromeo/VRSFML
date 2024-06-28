@@ -59,7 +59,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename T>
-    struct Span
+    struct [[nodiscard]] Span
     {
         T offset{}; //!< The beginning offset of the time range
         T length{}; //!< The length of the time range
@@ -247,7 +247,7 @@ public:
     /// \brief Initialize the internal state after loading a new music
     ///
     ////////////////////////////////////////////////////////////
-    explicit Music(priv::PassKey<Music>&&, InputSoundFile&& file);
+    [[nodiscard]] explicit Music(priv::PassKey<Music>&&, InputSoundFile&& file);
 
 private:
     ////////////////////////////////////////////////////////////

@@ -1,5 +1,7 @@
 #include <SFML/Audio/SoundStream.hpp>
 
+#include <SFML/System/Time.hpp>
+
 #include <Doctest.hpp>
 
 #include <AudioUtil.hpp>

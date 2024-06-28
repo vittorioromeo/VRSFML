@@ -28,7 +28,8 @@
 #include <SFML/Audio/SoundFileWriterOgg.hpp>
 
 #include <SFML/System/Err.hpp>
-#include <SFML/System/Utils.hpp>
+#include <SFML/System/PathUtils.hpp>
+#include <SFML/System/StringUtils.hpp>
 
 #include <algorithm>
 #include <random>
@@ -41,7 +42,7 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 bool SoundFileWriterOgg::check(const std::filesystem::path& filename)
 {
-    return toLower(filename.extension().string()) == ".ogg";
+    return priv::toLower(filename.extension().string()) == ".ogg";
 }
 
 
@@ -143,7 +144,7 @@ bool SoundFileWriterOgg::open(const std::filesystem::path&     filename,
     if (status < 0)
     {
         priv::err() << "Failed to write ogg/vorbis file (unsupported bitrate)\n"
-                    << formatDebugPathInfo(filename) << priv::errEndl;
+                    << priv::formatDebugPathInfo(filename) << priv::errEndl;
         close();
         return false;
     }
@@ -154,7 +155,7 @@ bool SoundFileWriterOgg::open(const std::filesystem::path&     filename,
     if (!m_file)
     {
         priv::err() << "Failed to write ogg/vorbis file (cannot open file)\n"
-                    << formatDebugPathInfo(filename) << priv::errEndl;
+                    << priv::formatDebugPathInfo(filename) << priv::errEndl;
         close();
         return false;
     }
@@ -172,7 +173,7 @@ bool SoundFileWriterOgg::open(const std::filesystem::path&     filename,
     if (status < 0)
     {
         priv::err() << "Failed to write ogg/vorbis file (cannot generate the headers)\n"
-                    << formatDebugPathInfo(filename) << priv::errEndl;
+                    << priv::formatDebugPathInfo(filename) << priv::errEndl;
         close();
         return false;
     }

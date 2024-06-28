@@ -6,6 +6,7 @@
 #include <SFML/Audio/SoundBuffer.hpp>
 
 #include <SFML/System/Sleep.hpp>
+#include <SFML/System/Time.hpp>
 
 #include <iostream>
 
