@@ -1,12 +1,13 @@
 #include <LoadIntoMemoryUtil.hpp>
 
 #include <fstream>
+#include <string>
 
 #include <cassert>
 
-std::vector<std::byte> loadIntoMemory(const std::filesystem::path& path)
+std::vector<std::byte> loadIntoMemory(const std::string_view& path)
 {
-    std::ifstream file(path, std::ios::binary | std::ios::ate);
+    std::ifstream file(std::string(path), std::ios::binary | std::ios::ate);
     assert(file);
     const auto size = file.tellg();
     file.seekg(0, std::ios::beg);

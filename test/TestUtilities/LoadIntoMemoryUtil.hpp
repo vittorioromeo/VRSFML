@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <filesystem>
+#include <string_view>
 #include <vector>
 
-[[nodiscard]] std::vector<std::byte> loadIntoMemory(const std::filesystem::path& path);
+[[nodiscard]] std::vector<std::byte> loadIntoMemory(const std::string_view& path);
