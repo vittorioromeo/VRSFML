@@ -38,8 +38,10 @@ set(SRC
     ${INCROOT}/MemoryInputStream.hpp
     ${INCROOT}/SuspendAwareClock.hpp
     ${INCROOT}/PassKey.hpp
-    ${SRCROOT}/LifetimeTracking.cpp
-    ${INCROOT}/LifetimeTracking.hpp
+    ${SRCROOT}/LifetimeDependee.cpp
+    ${INCROOT}/LifetimeDependee.hpp
+    ${SRCROOT}/LifetimeDependant.cpp
+    ${INCROOT}/LifetimeDependant.hpp
     ${INCROOT}/Variant.hpp
     ${INCROOT}/UniquePtr.hpp
     ${INCROOT}/InPlacePImpl.hpp

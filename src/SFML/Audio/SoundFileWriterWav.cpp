@@ -32,6 +32,7 @@
 #include <SFML/System/StringUtils.hpp>
 
 #include <algorithm>
+#include <fstream>
 
 #include <cassert>
 #include <cstddef>
@@ -76,10 +77,23 @@ void encode(std::ostream& stream, std::uint32_t value)
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
+struct SoundFileWriterWav::Impl
+{
+    std::ofstream file;             //!< File stream to write to
+    unsigned int  channelCount{};   //!< Channel count of the sound being written
+    std::size_t   remapTable[18]{}; //!< Table we use to remap source to target channel order
+};
+
+
+////////////////////////////////////////////////////////////
 bool SoundFileWriterWav::check(const std::filesystem::path& filename)
 {
     return priv::toLower(filename.extension().string()) == ".wav";
 }
+
+
+////////////////////////////////////////////////////////////
+SoundFileWriterWav::SoundFileWriterWav() = default;
 
 
 ////////////////////////////////////////////////////////////
@@ -105,12 +119,12 @@ bool SoundFileWriterWav::open(const std::filesystem::path&     filename,
 
     if (channelCount == 1)
     {
-        m_remapTable[0] = 0;
+        m_impl->remapTable[0] = 0;
     }
     else if (channelCount == 2)
     {
-        m_remapTable[0] = 0;
-        m_remapTable[1] = 1;
+        m_impl->remapTable[0] = 0;
+        m_impl->remapTable[1] = 1;
     }
     else
     {
@@ -200,7 +214,7 @@ bool SoundFileWriterWav::open(const std::filesystem::path&     filename,
 
         // Build the remap table
         for (auto i = 0u; i < channelCount; ++i)
-            m_remapTable[i] = static_cast<std::size_t>(
+            m_impl->remapTable[i] = static_cast<std::size_t>(
                 std::find(channelMap.begin(), channelMap.end(), targetChannelMap[i].channel) - channelMap.begin());
 
         // Generate the channel mask
@@ -209,11 +223,11 @@ bool SoundFileWriterWav::open(const std::filesystem::path&     filename,
     }
 
     // Save the channel count
-    m_channelCount = channelCount;
+    m_impl->channelCount = channelCount;
 
     // Open the file
-    m_file.open(filename, std::ios::binary);
-    if (!m_file)
+    m_impl->file.open(filename, std::ios::binary);
+    if (!m_impl->file)
     {
         priv::err() << "Failed to open WAV sound file for writing\n"
                     << priv::formatDebugPathInfo(filename) << priv::errEndl;
@@ -230,19 +244,19 @@ bool SoundFileWriterWav::open(const std::filesystem::path&     filename,
 ////////////////////////////////////////////////////////////
 void SoundFileWriterWav::write(const std::int16_t* samples, std::uint64_t count)
 {
-    assert(m_file.good() && "Most recent I/O operation failed");
-    assert(count % m_channelCount == 0);
+    assert(m_impl->file.good() && "Most recent I/O operation failed");
+    assert(count % m_impl->channelCount == 0);
 
-    if (count % m_channelCount != 0)
+    if (count % m_impl->channelCount != 0)
         priv::err() << "Writing samples to WAV sound file requires writing full frames at a time" << priv::errEndl;
 
-    while (count >= m_channelCount)
+    while (count >= m_impl->channelCount)
     {
-        for (auto i = 0u; i < m_channelCount; ++i)
-            encode(m_file, samples[m_remapTable[i]]);
+        for (auto i = 0u; i < m_impl->channelCount; ++i)
+            encode(m_impl->file, samples[m_impl->remapTable[i]]);
 
-        samples += m_channelCount;
-        count -= m_channelCount;
+        samples += m_impl->channelCount;
+        count -= m_impl->channelCount;
     }
 }
 
@@ -250,67 +264,67 @@ void SoundFileWriterWav::write(const std::int16_t* samples, std::uint64_t count)
 ////////////////////////////////////////////////////////////
 void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int channelCount, unsigned int channelMask)
 {
-    assert(m_file.good() && "Most recent I/O operation failed");
+    assert(m_impl->file.good() && "Most recent I/O operation failed");
 
     // Write the main chunk ID
     char mainChunkId[] = {'R', 'I', 'F', 'F'};
-    m_file.write(mainChunkId, static_cast<std::streamsize>(arraySize(mainChunkId)));
+    m_impl->file.write(mainChunkId, static_cast<std::streamsize>(arraySize(mainChunkId)));
 
     // Write the main chunk header
-    encode(m_file, std::uint32_t{0}); // 0 is a placeholder, will be written later
+    encode(m_impl->file, std::uint32_t{0}); // 0 is a placeholder, will be written later
     char mainChunkFormat[] = {'W', 'A', 'V', 'E'};
-    m_file.write(mainChunkFormat, static_cast<std::streamsize>(arraySize(mainChunkFormat)));
+    m_impl->file.write(mainChunkFormat, static_cast<std::streamsize>(arraySize(mainChunkFormat)));
 
     // Write the sub-chunk 1 ("format") id and size
     char fmtChunkId[] = {'f', 'm', 't', ' '};
-    m_file.write(fmtChunkId, static_cast<std::streamsize>(arraySize(fmtChunkId)));
+    m_impl->file.write(fmtChunkId, static_cast<std::streamsize>(arraySize(fmtChunkId)));
 
     if (channelCount > 2)
     {
         const std::uint32_t fmtChunkSize = 40;
-        encode(m_file, fmtChunkSize);
+        encode(m_impl->file, fmtChunkSize);
 
         // Write the format (Extensible)
         const std::uint16_t format = 65534;
-        encode(m_file, format);
+        encode(m_impl->file, format);
     }
     else
     {
         const std::uint32_t fmtChunkSize = 16;
-        encode(m_file, fmtChunkSize);
+        encode(m_impl->file, fmtChunkSize);
 
         // Write the format (PCM)
         const std::uint16_t format = 1;
-        encode(m_file, format);
+        encode(m_impl->file, format);
     }
 
     // Write the sound attributes
-    encode(m_file, static_cast<std::uint16_t>(channelCount));
-    encode(m_file, sampleRate);
+    encode(m_impl->file, static_cast<std::uint16_t>(channelCount));
+    encode(m_impl->file, sampleRate);
     const std::uint32_t byteRate = sampleRate * channelCount * 2;
-    encode(m_file, byteRate);
+    encode(m_impl->file, byteRate);
     const auto blockAlign = static_cast<std::uint16_t>(channelCount * 2);
-    encode(m_file, blockAlign);
+    encode(m_impl->file, blockAlign);
     const std::uint16_t bitsPerSample = 16;
-    encode(m_file, bitsPerSample);
+    encode(m_impl->file, bitsPerSample);
 
     if (channelCount > 2)
     {
         const std::uint16_t extensionSize = 16;
-        encode(m_file, extensionSize);
-        encode(m_file, bitsPerSample);
-        encode(m_file, channelMask);
+        encode(m_impl->file, extensionSize);
+        encode(m_impl->file, bitsPerSample);
+        encode(m_impl->file, channelMask);
         // Write the subformat (PCM)
         char subformat[] =
             {'\x01', '\x00', '\x00', '\x00', '\x00', '\x00', '\x10', '\x00', '\x80', '\x00', '\x00', '\xAA', '\x00', '\x38', '\x9B', '\x71'};
-        m_file.write(subformat, static_cast<std::streamsize>(arraySize(subformat)));
+        m_impl->file.write(subformat, static_cast<std::streamsize>(arraySize(subformat)));
     }
 
     // Write the sub-chunk 2 ("data") id and size
     char dataChunkId[] = {'d', 'a', 't', 'a'};
-    m_file.write(dataChunkId, static_cast<std::streamsize>(arraySize(dataChunkId)));
+    m_impl->file.write(dataChunkId, static_cast<std::streamsize>(arraySize(dataChunkId)));
     const std::uint32_t dataChunkSize = 0; // placeholder, will be written later
-    encode(m_file, dataChunkSize);
+    encode(m_impl->file, dataChunkSize);
 }
 
 
@@ -318,18 +332,18 @@ void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int chann
 void SoundFileWriterWav::close()
 {
     // If the file is open, finalize the header and close it
-    if (m_file.is_open())
+    if (m_impl->file.is_open())
     {
-        m_file.flush();
+        m_impl->file.flush();
 
         // Update the main chunk size and data sub-chunk size
-        const std::uint32_t fileSize = static_cast<std::uint32_t>(m_file.tellp());
-        m_file.seekp(4);
-        encode(m_file, fileSize - 8); // 8 bytes RIFF header
-        m_file.seekp(40);
-        encode(m_file, fileSize - 44); // 44 bytes RIFF + WAVE headers
+        const std::uint32_t fileSize = static_cast<std::uint32_t>(m_impl->file.tellp());
+        m_impl->file.seekp(4);
+        encode(m_impl->file, fileSize - 8); // 8 bytes RIFF header
+        m_impl->file.seekp(40);
+        encode(m_impl->file, fileSize - 44); // 44 bytes RIFF + WAVE headers
 
-        m_file.close();
+        m_impl->file.close();
     }
 }
 

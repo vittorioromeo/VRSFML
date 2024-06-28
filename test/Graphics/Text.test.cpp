@@ -3,7 +3,7 @@
 // Other 1st party headers
 #include <SFML/Graphics/Font.hpp>
 
-#include <SFML/System/LifetimeTracking.hpp>
+#include <SFML/System/LifetimeDependee.hpp>
 
 #include <Doctest.hpp>
 

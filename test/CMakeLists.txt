@@ -23,12 +23,6 @@ set_target_properties(doctest_with_main PROPERTIES EXPORT_COMPILE_COMMANDS OFF)
 get_target_property(DOCTEST_INCLUDE_DIRS doctest INTERFACE_INCLUDE_DIRECTORIES)
 target_include_directories(doctest SYSTEM INTERFACE ${DOCTEST_INCLUDE_DIRS})
 
-# enable precompiled headers
-if (SFML_ENABLE_PCH)
-    message(VERBOSE "enabling PCH for doctest")
-    target_precompile_headers(doctest REUSE_FROM sfml-system)
-endif()
-
 add_library(sfml-test-main STATIC
     TestUtilities/Doctest.hpp
     TestUtilities/Doctest.cpp
@@ -51,6 +45,14 @@ target_include_directories(sfml-test-main PUBLIC TestUtilities)
 target_compile_definitions(sfml-test-main PUBLIC DOCTEST_CONFIG_REQUIRE_STRINGIFICATION_FOR_ALL_USED_TYPES)
 target_link_libraries(sfml-test-main PUBLIC SFML::System doctest::doctest_with_main)
 set_target_warnings(sfml-test-main)
+
+# enable precompiled headers
+if (SFML_ENABLE_PCH)
+    message(VERBOSE "enabling PCH for doctest")
+    target_precompile_headers(doctest REUSE_FROM sfml-system)
+    target_precompile_headers(doctest_with_main REUSE_FROM sfml-system)
+    target_precompile_headers(sfml-test-main REUSE_FROM sfml-system)
+endif()
 
 # set the target flags to use the appropriate C++ standard library
 sfml_set_stdlib(doctest)

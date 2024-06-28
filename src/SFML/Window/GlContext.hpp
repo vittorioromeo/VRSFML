@@ -306,7 +306,6 @@ private:
 
     struct TransientContext;
     struct SharedContext;
-    struct Impl;
 
     static void acquireSharedContext();
     static void releaseSharedContext();
@@ -328,6 +327,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
+    struct Impl;
     const priv::InPlacePImpl<Impl, 32> m_impl; //!< Implementation details
 };
 

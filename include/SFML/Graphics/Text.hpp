@@ -35,7 +35,7 @@
 #include <SFML/Graphics/Transformable.hpp>
 #include <SFML/Graphics/Vertex.hpp>
 
-#include <SFML/System/LifetimeTracking.hpp>
+#include <SFML/System/LifetimeDependant.hpp>
 #include <SFML/System/String.hpp>
 #include <SFML/System/Vector2.hpp>
 

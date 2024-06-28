@@ -29,10 +29,10 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/SoundFileWriter.hpp>
 
-#include <vorbis/vorbisenc.h>
+#include <SFML/System/InPlacePImpl.hpp>
 
 #include <filesystem>
-#include <fstream>
+#include <vector>
 
 #include <cstdint>
 
@@ -55,6 +55,12 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static bool check(const std::filesystem::path& filename);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Default constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    SoundFileWriterOgg();
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -103,12 +109,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    unsigned int     m_channelCount{};  //!< Channel count of the sound being written
-    std::size_t      m_remapTable[8]{}; //!< Table we use to remap source to target channel order
-    std::ofstream    m_file;            //!< Output file
-    ogg_stream_state m_ogg{};           //!< OGG stream
-    vorbis_info      m_vorbis{};        //!< Vorbis handle
-    vorbis_dsp_state m_state{};         //!< Current encoding state
+    struct Impl;
+    priv::InPlacePImpl<Impl, 1280> m_impl; //!< Implementation details
 };
 
 } // namespace sf::priv

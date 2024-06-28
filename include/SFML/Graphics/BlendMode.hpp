@@ -45,7 +45,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API BlendMode
     /// The factors are mapped directly to their OpenGL equivalents,
     /// specified by glBlendFunc() or glBlendFuncSeparate().
     ////////////////////////////////////////////////////////
-    enum class Factor
+    enum class [[nodiscard]] Factor
     {
         Zero,             //!< (0, 0, 0, 0)
         One,              //!< (1, 1, 1, 1)
@@ -65,7 +65,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API BlendMode
     /// The equations are mapped directly to their OpenGL equivalents,
     /// specified by glBlendEquation() or glBlendEquationSeparate().
     ////////////////////////////////////////////////////////
-    enum class Equation
+    enum class [[nodiscard]] Equation
     {
         Add,             //!< Pixel = Src * SrcFactor + Dst * DstFactor
         Subtract,        //!< Pixel = Src * SrcFactor - Dst * DstFactor

@@ -31,7 +31,10 @@
 #include <SFML/System/PathUtils.hpp>
 #include <SFML/System/StringUtils.hpp>
 
+#include <vorbis/vorbisenc.h>
+
 #include <algorithm>
+#include <fstream>
 #include <random>
 
 #include <cassert>
@@ -40,10 +43,26 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
+struct SoundFileWriterOgg::Impl
+{
+    unsigned int     channelCount{};  //!< Channel count of the sound being written
+    std::size_t      remapTable[8]{}; //!< Table we use to remap source to target channel order
+    std::ofstream    file;            //!< Output file
+    ogg_stream_state ogg{};           //!< OGG stream
+    vorbis_info      vorbis{};        //!< Vorbis handle
+    vorbis_dsp_state state{};         //!< Current encoding state
+};
+
+
+////////////////////////////////////////////////////////////
 bool SoundFileWriterOgg::check(const std::filesystem::path& filename)
 {
     return priv::toLower(filename.extension().string()) == ".ogg";
 }
+
+
+////////////////////////////////////////////////////////////
+SoundFileWriterOgg::SoundFileWriterOgg() = default;
 
 
 ////////////////////////////////////////////////////////////
@@ -127,20 +146,20 @@ bool SoundFileWriterOgg::open(const std::filesystem::path&     filename,
 
     // Build the remap table
     for (auto i = 0u; i < channelCount; ++i)
-        m_remapTable[i] = static_cast<std::size_t>(
+        m_impl->remapTable[i] = static_cast<std::size_t>(
             std::find(channelMap.begin(), channelMap.end(), targetChannelMap[i]) - channelMap.begin());
 
     // Save the channel count
-    m_channelCount = channelCount;
+    m_impl->channelCount = channelCount;
 
     // Initialize the ogg/vorbis stream
     static std::mt19937 rng(std::random_device{}());
-    ogg_stream_init(&m_ogg, std::uniform_int_distribution(0, std::numeric_limits<int>::max())(rng));
-    vorbis_info_init(&m_vorbis);
+    ogg_stream_init(&m_impl->ogg, std::uniform_int_distribution(0, std::numeric_limits<int>::max())(rng));
+    vorbis_info_init(&m_impl->vorbis);
 
     // Setup the encoder: VBR, automatic bitrate management
     // Quality is in range [-1 .. 1], 0.4 gives ~128 kbps for a 44 KHz stereo sound
-    int status = vorbis_encode_init_vbr(&m_vorbis, static_cast<long>(channelCount), static_cast<long>(sampleRate), 0.4f);
+    int status = vorbis_encode_init_vbr(&m_impl->vorbis, static_cast<long>(channelCount), static_cast<long>(sampleRate), 0.4f);
     if (status < 0)
     {
         priv::err() << "Failed to write ogg/vorbis file (unsupported bitrate)\n"
@@ -148,11 +167,11 @@ bool SoundFileWriterOgg::open(const std::filesystem::path&     filename,
         close();
         return false;
     }
-    vorbis_analysis_init(&m_state, &m_vorbis);
+    vorbis_analysis_init(&m_impl->state, &m_impl->vorbis);
 
     // Open the file after the vorbis setup is ok
-    m_file.open(filename, std::ios::binary);
-    if (!m_file)
+    m_impl->file.open(filename, std::ios::binary);
+    if (!m_impl->file)
     {
         priv::err() << "Failed to write ogg/vorbis file (cannot open file)\n"
                     << priv::formatDebugPathInfo(filename) << priv::errEndl;
@@ -168,7 +187,7 @@ bool SoundFileWriterOgg::open(const std::filesystem::path&     filename,
     ogg_packet header;
     ogg_packet headerComm;
     ogg_packet headerCode;
-    status = vorbis_analysis_headerout(&m_state, &comment, &header, &headerComm, &headerCode);
+    status = vorbis_analysis_headerout(&m_impl->state, &comment, &header, &headerComm, &headerCode);
     vorbis_comment_clear(&comment);
     if (status < 0)
     {
@@ -179,16 +198,16 @@ bool SoundFileWriterOgg::open(const std::filesystem::path&     filename,
     }
 
     // Write the header packets to the ogg stream
-    ogg_stream_packetin(&m_ogg, &header);
-    ogg_stream_packetin(&m_ogg, &headerComm);
-    ogg_stream_packetin(&m_ogg, &headerCode);
+    ogg_stream_packetin(&m_impl->ogg, &header);
+    ogg_stream_packetin(&m_impl->ogg, &headerComm);
+    ogg_stream_packetin(&m_impl->ogg, &headerCode);
 
     // This ensures the actual audio data will start on a new page, as per spec
     ogg_page page;
-    while (ogg_stream_flush(&m_ogg, &page) > 0)
+    while (ogg_stream_flush(&m_impl->ogg, &page) > 0)
     {
-        m_file.write(reinterpret_cast<const char*>(page.header), page.header_len);
-        m_file.write(reinterpret_cast<const char*>(page.body), page.body_len);
+        m_impl->file.write(reinterpret_cast<const char*>(page.header), page.header_len);
+        m_impl->file.write(reinterpret_cast<const char*>(page.body), page.body_len);
     }
 
     return true;
@@ -202,25 +221,25 @@ void SoundFileWriterOgg::write(const std::int16_t* samples, std::uint64_t count)
     constexpr int bufferSize = 65536;
 
     // A frame contains a sample from each channel
-    int frameCount = static_cast<int>(count / m_channelCount);
+    int frameCount = static_cast<int>(count / m_impl->channelCount);
 
     while (frameCount > 0)
     {
         // Prepare a buffer to hold our samples
-        float** buffer = vorbis_analysis_buffer(&m_state, bufferSize);
+        float** buffer = vorbis_analysis_buffer(&m_impl->state, bufferSize);
         assert(buffer && "Vorbis buffer failed to allocate");
 
         // Write the samples to the buffer, converted to float and remapped to target channels
         for (int i = 0; i < std::min(frameCount, bufferSize); ++i)
         {
-            for (unsigned int j = 0; j < m_channelCount; ++j)
-                buffer[j][i] = samples[m_remapTable[j]] / 32767.0f;
+            for (unsigned int j = 0; j < m_impl->channelCount; ++j)
+                buffer[j][i] = samples[m_impl->remapTable[j]] / 32767.0f;
 
-            samples += m_channelCount;
+            samples += m_impl->channelCount;
         }
 
         // Tell the library how many samples we've written
-        vorbis_analysis_wrote(&m_state, std::min(frameCount, bufferSize));
+        vorbis_analysis_wrote(&m_impl->state, std::min(frameCount, bufferSize));
 
         frameCount -= bufferSize;
 
@@ -235,8 +254,8 @@ void SoundFileWriterOgg::flushBlocks()
 {
     // Let the library divide uncompressed data into blocks, and process them
     vorbis_block block;
-    vorbis_block_init(&m_state, &block);
-    while (vorbis_analysis_blockout(&m_state, &block) == 1)
+    vorbis_block_init(&m_impl->state, &block);
+    while (vorbis_analysis_blockout(&m_impl->state, &block) == 1)
     {
         // Let the automatic bitrate management do its job
         vorbis_analysis(&block, nullptr);
@@ -244,17 +263,17 @@ void SoundFileWriterOgg::flushBlocks()
 
         // Get new packets from the bitrate management engine
         ogg_packet packet;
-        while (vorbis_bitrate_flushpacket(&m_state, &packet))
+        while (vorbis_bitrate_flushpacket(&m_impl->state, &packet))
         {
             // Write the packet to the ogg stream
-            ogg_stream_packetin(&m_ogg, &packet);
+            ogg_stream_packetin(&m_impl->ogg, &packet);
 
             // If the stream produced new pages, write them to the output file
             ogg_page page;
-            while (ogg_stream_flush(&m_ogg, &page) > 0)
+            while (ogg_stream_flush(&m_impl->ogg, &page) > 0)
             {
-                m_file.write(reinterpret_cast<const char*>(page.header), page.header_len);
-                m_file.write(reinterpret_cast<const char*>(page.body), page.body_len);
+                m_impl->file.write(reinterpret_cast<const char*>(page.header), page.header_len);
+                m_impl->file.write(reinterpret_cast<const char*>(page.body), page.body_len);
             }
         }
     }
@@ -267,20 +286,20 @@ void SoundFileWriterOgg::flushBlocks()
 ////////////////////////////////////////////////////////////
 void SoundFileWriterOgg::close()
 {
-    if (m_file.is_open())
+    if (m_impl->file.is_open())
     {
         // Submit an empty packet to mark the end of stream
-        vorbis_analysis_wrote(&m_state, 0);
+        vorbis_analysis_wrote(&m_impl->state, 0);
         flushBlocks();
 
         // Close the file
-        m_file.close();
+        m_impl->file.close();
     }
 
     // Clear all the ogg/vorbis structures
-    ogg_stream_clear(&m_ogg);
-    vorbis_dsp_clear(&m_state);
-    vorbis_info_clear(&m_vorbis);
+    ogg_stream_clear(&m_impl->ogg);
+    vorbis_dsp_clear(&m_impl->state);
+    vorbis_info_clear(&m_impl->vorbis);
 }
 
 } // namespace sf::priv

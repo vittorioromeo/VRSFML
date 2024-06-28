@@ -27,6 +27,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/GLCheck.hpp>
 #include <SFML/Graphics/GLExtensions.hpp>
+#include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Shader.hpp>
 #include <SFML/Graphics/Shape.hpp>
@@ -338,32 +339,22 @@ Vector2i RenderTarget::mapCoordsToPixel(const Vector2f& point, const View& view)
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::draw(const Sprite& sprite, const Texture& texture, RenderStates states)
+void RenderTarget::draw(const Sprite& sprite, const Texture& texture, const RenderStates& states)
 {
-    states.texture = &texture;
-    states.transform *= sprite.getTransform();
-    states.coordinateType = CoordinateType::Pixels;
+    auto statesCopy = states;
 
-    draw(sprite.m_vertices, PrimitiveType::TriangleStrip, states);
+    statesCopy.texture = &texture;
+    statesCopy.transform *= sprite.getTransform();
+    statesCopy.coordinateType = CoordinateType::Pixels;
+
+    draw(sprite.m_vertices, PrimitiveType::TriangleStrip, statesCopy);
 }
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::draw(const Shape& shape, const Texture* texture, RenderStates states)
+void RenderTarget::draw(const Shape& shape, const Texture* texture, const RenderStates& states)
 {
-    states.transform *= shape.getTransform();
-    states.coordinateType = CoordinateType::Pixels;
-
-    // Render the inside
-    states.texture = texture;
-    draw(shape.m_vertices, PrimitiveType::TriangleFan, states);
-
-    // Render the outline
-    if (shape.m_outlineThickness != 0)
-    {
-        states.texture = nullptr;
-        draw(shape.m_outlineVertices, PrimitiveType::TriangleStrip, states);
-    }
+    shape.drawOnto(*this, texture, states);
 }
 
 
@@ -659,6 +650,13 @@ void RenderTarget::resetGLStates()
 
         m_cache.enable = true;
     }
+}
+
+
+////////////////////////////////////////////////////////////
+const RenderStates& RenderTarget::getDefaultRenderStates()
+{
+    return RenderStates::Default;
 }
 
 
