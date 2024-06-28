@@ -40,6 +40,8 @@ namespace sf
 class Shader;
 class Texture;
 
+// TODO make explicit ctors
+
 ////////////////////////////////////////////////////////////
 /// \brief Define the states used for drawing to a RenderTarget
 ///
