@@ -30,7 +30,6 @@
 #include <SFML/Audio/Export.hpp>
 
 #include <SFML/Audio/SoundChannel.hpp>
-#include <SFML/Audio/SoundFileWriter.hpp>
 
 #include <SFML/System/PassKey.hpp>
 #include <SFML/System/UniquePtr.hpp>
@@ -44,6 +43,8 @@
 
 namespace sf
 {
+class SoundFileWriter;
+
 ////////////////////////////////////////////////////////////
 /// \brief Provide write access to sound files
 ///
@@ -91,7 +92,7 @@ public:
     /// \brief Constructor from writer
     ///
     ////////////////////////////////////////////////////////////
-    explicit OutputSoundFile(priv::PassKey<OutputSoundFile>&&, priv::UniquePtr<SoundFileWriter>&& writer);
+    [[nodiscard]] explicit OutputSoundFile(priv::PassKey<OutputSoundFile>&&, priv::UniquePtr<SoundFileWriter>&& writer);
 
 private:
     ////////////////////////////////////////////////////////////

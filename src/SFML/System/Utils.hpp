@@ -29,26 +29,22 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Export.hpp>
 
-#include <filesystem>
-#include <string>
 
-#include <cstddef>
-
-
-namespace sf
+namespace sf::priv
 {
-[[nodiscard]] SFML_SYSTEM_API std::string toLower(std::string str);
-[[nodiscard]] SFML_SYSTEM_API std::string formatDebugPathInfo(const std::filesystem::path& path);
-
+////////////////////////////////////////////////////////////
 // Convert byte sequence into integer
-// toInteger<int>(0x12, 0x34, 0x56) == 0x563412
+// byteSequenceToInteger<int>(0x12, 0x34, 0x56) == 0x563412
 template <typename IntegerType, typename... Bytes>
-[[nodiscard]] constexpr IntegerType toInteger(Bytes... byte)
+[[nodiscard]] constexpr IntegerType byteSequenceToInteger(Bytes... byte)
 {
+    using SizeT = decltype(sizeof(int));
+
     static_assert(sizeof(IntegerType) >= sizeof...(Bytes), "IntegerType not large enough to contain bytes");
 
     IntegerType integer = 0;
-    std::size_t index   = 0;
+    SizeT       index   = 0;
     return ((integer |= static_cast<IntegerType>(static_cast<IntegerType>(byte) << 8 * index++)), ...);
 }
-} // namespace sf
+
+} // namespace sf::priv

@@ -2,6 +2,7 @@
 
 // Other 1st party headers
 #include <SFML/System/FileInputStream.hpp>
+#include <SFML/System/Time.hpp>
 
 #include <Doctest.hpp>
 

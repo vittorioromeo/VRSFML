@@ -31,6 +31,7 @@
 #include <SFML/Audio/SoundBuffer.hpp>
 
 #include <SFML/System/Err.hpp>
+#include <SFML/System/Time.hpp>
 
 #include <optional>
 #include <unordered_set>

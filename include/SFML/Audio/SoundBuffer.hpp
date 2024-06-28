@@ -34,7 +34,6 @@
 #include <SFML/System/InPlacePImpl.hpp>
 #include <SFML/System/LifetimeTracking.hpp>
 #include <SFML/System/PassKey.hpp>
-#include <SFML/System/Time.hpp>
 
 #include <filesystem>
 #include <optional>
@@ -46,6 +45,7 @@
 
 namespace sf
 {
+class Time;
 class Sound;
 class InputSoundFile;
 class InputStream;
@@ -252,7 +252,7 @@ public:
     /// \brief Construct from vector of samples
     ///
     ////////////////////////////////////////////////////////////
-    explicit SoundBuffer(priv::PassKey<SoundBuffer>&&, std::vector<std::int16_t>&& samples);
+    [[nodiscard]] explicit SoundBuffer(priv::PassKey<SoundBuffer>&&, std::vector<std::int16_t>&& samples);
 
 private:
     ////////////////////////////////////////////////////////////

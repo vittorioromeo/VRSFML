@@ -36,10 +36,12 @@
 
 #include <cstdlib>
 
+
 namespace sf
 {
 class Time;
 class SoundBuffer;
+struct EffectProcessor;
 
 ////////////////////////////////////////////////////////////
 /// \brief Regular sound that can be played in the audio environment
@@ -54,7 +56,7 @@ public:
     /// \param buffer Sound buffer containing the audio data to play with the sound
     ///
     ////////////////////////////////////////////////////////////
-    explicit Sound(const SoundBuffer& buffer);
+    [[nodiscard]] explicit Sound(const SoundBuffer& buffer);
 
     ////////////////////////////////////////////////////////////
     /// \brief Disallow construction from a temporary sound buffer

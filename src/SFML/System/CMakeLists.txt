@@ -43,6 +43,10 @@ set(SRC
     ${INCROOT}/Variant.hpp
     ${INCROOT}/UniquePtr.hpp
     ${INCROOT}/InPlacePImpl.hpp
+    ${SRCROOT}/StringUtils.hpp
+    ${SRCROOT}/StringUtils.cpp
+    ${SRCROOT}/PathUtils.hpp
+    ${SRCROOT}/PathUtils.cpp
 )
 source_group("" FILES ${SRC})
 

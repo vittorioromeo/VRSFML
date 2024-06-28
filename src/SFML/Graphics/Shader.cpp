@@ -33,7 +33,7 @@
 
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InputStream.hpp>
-#include <SFML/System/Utils.hpp>
+#include <SFML/System/PathUtils.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <SFML/System/Vector3.hpp>
 
@@ -371,7 +371,7 @@ std::optional<Shader> Shader::loadFromFile(const std::filesystem::path& filename
     const std::optional<BufferSlice> shaderSlice = appendFileContentsToVector(filename, buffer);
     if (!shaderSlice.has_value())
     {
-        priv::err() << "Failed to open shader file\n" << formatDebugPathInfo(filename) << priv::errEndl;
+        priv::err() << "Failed to open shader file\n" << priv::formatDebugPathInfo(filename) << priv::errEndl;
         return std::nullopt;
     }
 
@@ -401,7 +401,7 @@ std::optional<Shader> Shader::loadFromFile(const std::filesystem::path& vertexSh
     if (!vertexShaderSlice.has_value())
     {
         priv::err() << "Failed to open vertex shader file\n"
-                    << formatDebugPathInfo(vertexShaderFilename) << priv::errEndl;
+                    << priv::formatDebugPathInfo(vertexShaderFilename) << priv::errEndl;
         return std::nullopt;
     }
 
@@ -410,7 +410,7 @@ std::optional<Shader> Shader::loadFromFile(const std::filesystem::path& vertexSh
     if (!fragmentShaderSlice.has_value())
     {
         priv::err() << "Failed to open fragment shader file\n"
-                    << formatDebugPathInfo(fragmentShaderFilename) << priv::errEndl;
+                    << priv::formatDebugPathInfo(fragmentShaderFilename) << priv::errEndl;
         return std::nullopt;
     }
 
@@ -433,7 +433,7 @@ std::optional<Shader> Shader::loadFromFile(const std::filesystem::path& vertexSh
     if (!vertexShaderSlice.has_value())
     {
         priv::err() << "Failed to open vertex shader file\n"
-                    << formatDebugPathInfo(vertexShaderFilename) << priv::errEndl;
+                    << priv::formatDebugPathInfo(vertexShaderFilename) << priv::errEndl;
         return std::nullopt;
     }
 
@@ -442,7 +442,7 @@ std::optional<Shader> Shader::loadFromFile(const std::filesystem::path& vertexSh
     if (!geometryShaderSlice.has_value())
     {
         priv::err() << "Failed to open geometry shader file\n"
-                    << formatDebugPathInfo(geometryShaderFilename) << priv::errEndl;
+                    << priv::formatDebugPathInfo(geometryShaderFilename) << priv::errEndl;
         return std::nullopt;
     }
 
@@ -451,7 +451,7 @@ std::optional<Shader> Shader::loadFromFile(const std::filesystem::path& vertexSh
     if (!fragmentShaderSlice.has_value())
     {
         priv::err() << "Failed to open fragment shader file\n"
-                    << formatDebugPathInfo(fragmentShaderFilename) << priv::errEndl;
+                    << priv::formatDebugPathInfo(fragmentShaderFilename) << priv::errEndl;
         return std::nullopt;
     }
 

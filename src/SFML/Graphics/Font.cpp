@@ -34,7 +34,7 @@
 #endif
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InputStream.hpp>
-#include <SFML/System/Utils.hpp>
+#include <SFML/System/PathUtils.hpp>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -207,7 +207,7 @@ std::optional<Font> Font::openFromFile(const std::filesystem::path& filename)
     if (FT_Init_FreeType(&fontHandles->library) != 0)
     {
         priv::err() << "Failed to load font (failed to initialize FreeType)\n"
-                    << formatDebugPathInfo(filename) << priv::errEndl;
+                    << priv::formatDebugPathInfo(filename) << priv::errEndl;
         return std::nullopt;
     }
 
@@ -216,7 +216,7 @@ std::optional<Font> Font::openFromFile(const std::filesystem::path& filename)
     if (FT_New_Face(fontHandles->library, filename.string().c_str(), 0, &face) != 0)
     {
         priv::err() << "Failed to load font (failed to create the font face)\n"
-                    << formatDebugPathInfo(filename) << priv::errEndl;
+                    << priv::formatDebugPathInfo(filename) << priv::errEndl;
         return std::nullopt;
     }
     fontHandles->face = face;
@@ -225,7 +225,7 @@ std::optional<Font> Font::openFromFile(const std::filesystem::path& filename)
     if (FT_Stroker_New(fontHandles->library, &fontHandles->stroker) != 0)
     {
         priv::err() << "Failed to load font (failed to create the stroker)\n"
-                    << formatDebugPathInfo(filename) << priv::errEndl;
+                    << priv::formatDebugPathInfo(filename) << priv::errEndl;
         return std::nullopt;
     }
 
@@ -233,7 +233,7 @@ std::optional<Font> Font::openFromFile(const std::filesystem::path& filename)
     if (FT_Select_Charmap(face, FT_ENCODING_UNICODE) != 0)
     {
         priv::err() << "Failed to load font (failed to set the Unicode character set)\n"
-                    << formatDebugPathInfo(filename) << priv::errEndl;
+                    << priv::formatDebugPathInfo(filename) << priv::errEndl;
         return std::nullopt;
     }
 

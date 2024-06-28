@@ -28,7 +28,8 @@
 #include <SFML/Audio/SoundFileWriterFlac.hpp>
 
 #include <SFML/System/Err.hpp>
-#include <SFML/System/Utils.hpp>
+#include <SFML/System/PathUtils.hpp>
+#include <SFML/System/StringUtils.hpp>
 
 #include <algorithm>
 
@@ -46,7 +47,7 @@ void SoundFileWriterFlac::FlacStreamEncoderDeleter::operator()(FLAC__StreamEncod
 ////////////////////////////////////////////////////////////
 bool SoundFileWriterFlac::check(const std::filesystem::path& filename)
 {
-    return toLower(filename.extension().string()) == ".flac";
+    return priv::toLower(filename.extension().string()) == ".flac";
 }
 
 
@@ -132,7 +133,7 @@ bool SoundFileWriterFlac::open(const std::filesystem::path&     filename,
     if (!m_encoder)
     {
         priv::err() << "Failed to write flac file (failed to allocate encoder)\n"
-                    << formatDebugPathInfo(filename) << priv::errEndl;
+                    << priv::formatDebugPathInfo(filename) << priv::errEndl;
         return false;
     }
 
@@ -146,7 +147,7 @@ bool SoundFileWriterFlac::open(const std::filesystem::path&     filename,
         FLAC__STREAM_ENCODER_INIT_STATUS_OK)
     {
         priv::err() << "Failed to write flac file (failed to open the file)\n"
-                    << formatDebugPathInfo(filename) << priv::errEndl;
+                    << priv::formatDebugPathInfo(filename) << priv::errEndl;
         m_encoder.reset();
         return false;
     }

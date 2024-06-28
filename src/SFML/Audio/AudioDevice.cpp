@@ -517,10 +517,21 @@ void AudioDevice::setCone(const Listener::Cone& cone)
     if (!instance || !instance->m_impl->engine)
         return;
 
+    const auto clamp = []<typename T>(T value, T minValue, T maxValue)
+    {
+        if (value < minValue)
+            return minValue;
+
+        if (value > maxValue)
+            return maxValue;
+
+        return value;
+    };
+
     ma_engine_listener_set_cone(&*instance->m_impl->engine,
                                 0,
-                                std::clamp(cone.innerAngle, Angle::Zero, degrees(360.f)).asRadians(),
-                                std::clamp(cone.outerAngle, Angle::Zero, degrees(360.f)).asRadians(),
+                                clamp(cone.innerAngle, Angle::Zero, degrees(360.f)).asRadians(),
+                                clamp(cone.outerAngle, Angle::Zero, degrees(360.f)).asRadians(),
                                 cone.outerGain);
 }
 

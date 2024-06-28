@@ -37,8 +37,51 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/FileInputStream.hpp>
 #include <SFML/System/MemoryInputStream.hpp>
-#include <SFML/System/Utils.hpp>
+#include <SFML/System/PathUtils.hpp>
 
+#include <unordered_map>
+
+
+namespace
+{
+////////////////////////////////////////////////////////////
+template <typename T>
+using CreateFnPtr = sf::priv::UniquePtr<T> (*)();
+
+using ReaderCheckFnPtr = bool (*)(sf::InputStream&);
+using WriterCheckFnPtr = bool (*)(const std::filesystem::path&);
+
+using ReaderFactoryMap = std::unordered_map<CreateFnPtr<sf::SoundFileReader>, ReaderCheckFnPtr>;
+using WriterFactoryMap = std::unordered_map<CreateFnPtr<sf::SoundFileWriter>, WriterCheckFnPtr>;
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] ReaderFactoryMap& getReaderFactoryMap()
+{
+    // The map is pre-populated with default readers on construction
+    static ReaderFactoryMap
+        result{{&sf::priv::createReader<sf::priv::SoundFileReaderFlac>, &sf::priv::SoundFileReaderFlac::check},
+               {&sf::priv::createReader<sf::priv::SoundFileReaderMp3>, &sf::priv::SoundFileReaderMp3::check},
+               {&sf::priv::createReader<sf::priv::SoundFileReaderOgg>, &sf::priv::SoundFileReaderOgg::check},
+               {&sf::priv::createReader<sf::priv::SoundFileReaderWav>, &sf::priv::SoundFileReaderWav::check}};
+
+    return result;
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] WriterFactoryMap& getWriterFactoryMap()
+{
+    // The map is pre-populated with default writers on construction
+    static WriterFactoryMap
+        result{{&sf::priv::createWriter<sf::priv::SoundFileWriterFlac>, &sf::priv::SoundFileWriterFlac::check},
+               {&sf::priv::createWriter<sf::priv::SoundFileWriterOgg>, &sf::priv::SoundFileWriterOgg::check},
+               {&sf::priv::createWriter<sf::priv::SoundFileWriterWav>, &sf::priv::SoundFileWriterWav::check}};
+
+    return result;
+}
+
+} // namespace
 
 namespace sf
 {
@@ -50,7 +93,7 @@ priv::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromFilename(cons
     if (!stream)
     {
         priv::err() << "Failed to open sound file (couldn't open stream)\n"
-                    << formatDebugPathInfo(filename) << priv::errEndl;
+                    << priv::formatDebugPathInfo(filename) << priv::errEndl;
         return nullptr;
     }
 
@@ -69,7 +112,7 @@ priv::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromFilename(cons
 
     // No suitable reader found
     priv::err() << "Failed to open sound file (format not supported)\n"
-                << formatDebugPathInfo(filename) << priv::errEndl;
+                << priv::formatDebugPathInfo(filename) << priv::errEndl;
     return nullptr;
 }
 
@@ -133,33 +176,50 @@ priv::UniquePtr<SoundFileWriter> SoundFileFactory::createWriterFromFilename(cons
 
     // No suitable writer found
     priv::err() << "Failed to open sound file (format not supported)\n"
-                << formatDebugPathInfo(filename) << priv::errEndl;
+                << priv::formatDebugPathInfo(filename) << priv::errEndl;
     return nullptr;
 }
 
 
 ////////////////////////////////////////////////////////////
-SoundFileFactory::ReaderFactoryMap& SoundFileFactory::getReaderFactoryMap()
+void SoundFileFactory::registerReaderImpl(CreateFnPtr<SoundFileReader> key, ReaderCheckFnPtr value)
 {
-    // The map is pre-populated with default readers on construction
-    static ReaderFactoryMap result{{&priv::createReader<priv::SoundFileReaderFlac>, &priv::SoundFileReaderFlac::check},
-                                   {&priv::createReader<priv::SoundFileReaderMp3>, &priv::SoundFileReaderMp3::check},
-                                   {&priv::createReader<priv::SoundFileReaderOgg>, &priv::SoundFileReaderOgg::check},
-                                   {&priv::createReader<priv::SoundFileReaderWav>, &priv::SoundFileReaderWav::check}};
-
-    return result;
+    getReaderFactoryMap()[key] = value;
 }
 
 
 ////////////////////////////////////////////////////////////
-SoundFileFactory::WriterFactoryMap& SoundFileFactory::getWriterFactoryMap()
+void SoundFileFactory::unregisterReaderImpl(CreateFnPtr<SoundFileReader> key)
 {
-    // The map is pre-populated with default writers on construction
-    static WriterFactoryMap result{{&priv::createWriter<priv::SoundFileWriterFlac>, &priv::SoundFileWriterFlac::check},
-                                   {&priv::createWriter<priv::SoundFileWriterOgg>, &priv::SoundFileWriterOgg::check},
-                                   {&priv::createWriter<priv::SoundFileWriterWav>, &priv::SoundFileWriterWav::check}};
+    getReaderFactoryMap().erase(key);
+}
 
-    return result;
+
+////////////////////////////////////////////////////////////
+bool SoundFileFactory::isReaderRegisteredImpl(CreateFnPtr<SoundFileReader> key)
+{
+    return getReaderFactoryMap().count(key) == 1;
+}
+
+
+////////////////////////////////////////////////////////////
+void SoundFileFactory::registerWriterImpl(CreateFnPtr<SoundFileWriter> key, WriterCheckFnPtr value)
+{
+    getWriterFactoryMap()[key] = value;
+}
+
+
+////////////////////////////////////////////////////////////
+void SoundFileFactory::unregisterWriterImpl(CreateFnPtr<SoundFileWriter> key)
+{
+    getWriterFactoryMap().erase(key);
+}
+
+
+////////////////////////////////////////////////////////////
+bool SoundFileFactory::isWriterRegisteredImpl(CreateFnPtr<SoundFileWriter> key)
+{
+    return getWriterFactoryMap().count(key) == 1;
 }
 
 } // namespace sf

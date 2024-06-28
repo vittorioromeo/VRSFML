@@ -29,10 +29,9 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
-#include <SFML/Audio/SoundBuffer.hpp>
 #include <SFML/Audio/SoundRecorder.hpp>
 
-#include <vector>
+#include <SFML/System/InPlacePImpl.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -40,6 +39,8 @@
 
 namespace sf
 {
+class SoundBuffer;
+
 ////////////////////////////////////////////////////////////
 /// \brief Specialized SoundRecorder which stores the captured
 ///        audio data into a sound buffer
@@ -49,7 +50,13 @@ class SFML_AUDIO_API SoundBufferRecorder : public SoundRecorder
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief destructor
+    /// \brief Default constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] SoundBufferRecorder();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
     ~SoundBufferRecorder() override;
@@ -97,8 +104,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::vector<std::int16_t>  m_samples; //!< Temporary sample buffer to hold the recorded data
-    std::optional<SoundBuffer> m_buffer;  //!< Sound buffer that will contain the recorded data
+    struct Impl;
+    priv::InPlacePImpl<Impl, 256> m_impl; //!< Implementation details
 };
 
 } // namespace sf

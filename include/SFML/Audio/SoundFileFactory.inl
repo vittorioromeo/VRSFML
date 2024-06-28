@@ -27,28 +27,31 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/SoundFileFactory.hpp> // NOLINT(misc-header-include-cycle)
 
-namespace sf
+namespace sf::priv
 {
-namespace priv
-{
+////////////////////////////////////////////////////////////
 template <typename T>
 UniquePtr<SoundFileReader> createReader()
 {
     return makeUnique<T>();
 }
+
+////////////////////////////////////////////////////////////
 template <typename T>
 UniquePtr<SoundFileWriter> createWriter()
 {
     return makeUnique<T>();
 }
-} // namespace priv
 
+} // namespace sf::priv
 
+namespace sf
+{
 ////////////////////////////////////////////////////////////
 template <typename T>
 void SoundFileFactory::registerReader()
 {
-    getReaderFactoryMap()[&priv::createReader<T>] = &T::check;
+    registerReaderImpl(&priv::createReader<T>, &T::check);
 }
 
 
@@ -56,7 +59,7 @@ void SoundFileFactory::registerReader()
 template <typename T>
 void SoundFileFactory::unregisterReader()
 {
-    getReaderFactoryMap().erase(&priv::createReader<T>);
+    unregisterReaderImpl(&priv::createReader<T>);
 }
 
 
@@ -64,7 +67,7 @@ void SoundFileFactory::unregisterReader()
 template <typename T>
 bool SoundFileFactory::isReaderRegistered()
 {
-    return getReaderFactoryMap().count(&priv::createReader<T>) == 1;
+    return isReaderRegisteredImpl(&priv::createReader<T>);
 }
 
 
@@ -72,7 +75,7 @@ bool SoundFileFactory::isReaderRegistered()
 template <typename T>
 void SoundFileFactory::registerWriter()
 {
-    getWriterFactoryMap()[&priv::createWriter<T>] = &T::check;
+    registerWriterImpl(&priv::createWriter<T>, &T::check);
 }
 
 
@@ -80,7 +83,7 @@ void SoundFileFactory::registerWriter()
 template <typename T>
 void SoundFileFactory::unregisterWriter()
 {
-    getWriterFactoryMap().erase(&priv::createWriter<T>);
+    unregisterWriterImpl(&priv::createWriter<T>);
 }
 
 
@@ -88,7 +91,7 @@ void SoundFileFactory::unregisterWriter()
 template <typename T>
 bool SoundFileFactory::isWriterRegistered()
 {
-    return getWriterFactoryMap().count(&priv::createWriter<T>) == 1;
+    return isWriterRegisteredImpl(&priv::createWriter<T>);
 }
 
 } // namespace sf
