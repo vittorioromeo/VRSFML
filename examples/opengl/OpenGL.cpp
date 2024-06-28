@@ -231,6 +231,7 @@ int main()
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>();
                     keyPressed && keyPressed->code == sf::Keyboard::Key::Enter)
                 {
+                    // TODO: not working
                     if (mipmapEnabled)
                     {
                         // We simply reload the texture to disable mipmapping

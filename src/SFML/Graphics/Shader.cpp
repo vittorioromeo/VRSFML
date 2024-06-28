@@ -61,7 +61,7 @@
 namespace
 {
 // Retrieve the maximum number of texture units available
-std::size_t getMaxTextureUnits()
+[[nodiscard]] std::size_t getMaxTextureUnits()
 {
     static const GLint maxUnits = []
     {
@@ -75,7 +75,7 @@ std::size_t getMaxTextureUnits()
 }
 
 // Pair of indices into thread-local buffer
-struct BufferSlice
+struct [[nodiscard]] BufferSlice
 {
     const std::size_t beginIdx;
     const std::size_t count;
@@ -119,7 +119,7 @@ struct BufferSlice
 }
 
 // Read the contents of a stream into an array of char
-std::optional<BufferSlice> appendStreamContentsToVector(sf::InputStream& stream, std::vector<char>& buffer)
+[[nodiscard]] std::optional<BufferSlice> appendStreamContentsToVector(sf::InputStream& stream, std::vector<char>& buffer)
 {
     const std::optional<std::size_t> size = stream.getSize();
 
@@ -152,14 +152,14 @@ std::optional<BufferSlice> appendStreamContentsToVector(sf::InputStream& stream,
 
 // Return a thread-local vector for suitable use as a temporary buffer
 // This function is non-reentrant
-std::vector<char>& getThreadLocalCharBuffer()
+[[nodiscard]] std::vector<char>& getThreadLocalCharBuffer()
 {
     thread_local std::vector<char> result;
     return result;
 }
 
 // Transforms an array of 2D vectors into a contiguous array of scalars
-std::vector<float> flatten(const sf::Vector2f* vectorArray, std::size_t length)
+[[nodiscard]] std::vector<float> flatten(const sf::Vector2f* vectorArray, std::size_t length)
 {
     const std::size_t vectorSize = 2;
 
@@ -174,7 +174,7 @@ std::vector<float> flatten(const sf::Vector2f* vectorArray, std::size_t length)
 }
 
 // Transforms an array of 3D vectors into a contiguous array of scalars
-std::vector<float> flatten(const sf::Vector3f* vectorArray, std::size_t length)
+[[nodiscard]] std::vector<float> flatten(const sf::Vector3f* vectorArray, std::size_t length)
 {
     const std::size_t vectorSize = 3;
 
@@ -190,7 +190,7 @@ std::vector<float> flatten(const sf::Vector3f* vectorArray, std::size_t length)
 }
 
 // Transforms an array of 4D vectors into a contiguous array of scalars
-std::vector<float> flatten(const sf::Glsl::Vec4* vectorArray, std::size_t length)
+[[nodiscard]] std::vector<float> flatten(const sf::Glsl::Vec4* vectorArray, std::size_t length)
 {
     const std::size_t vectorSize = 4;
 
@@ -219,16 +219,16 @@ struct Shader::UniformBinder
     ////////////////////////////////////////////////////////////
     UniformBinder(Shader& shader, const std::string& name) : currentProgram(castToGlHandle(shader.m_shaderProgram))
     {
-        if (currentProgram)
-        {
-            // Enable program object
-            glCheck(savedProgram = GLEXT_glGetHandle(GLEXT_GL_PROGRAM_OBJECT));
-            if (currentProgram != savedProgram)
-                glCheck(GLEXT_glUseProgramObject(currentProgram));
+        if (!currentProgram)
+            return;
 
-            // Store uniform location for further use outside constructor
-            location = shader.getUniformLocation(name);
-        }
+        // Enable program object
+        glCheck(savedProgram = GLEXT_glGetHandle(GLEXT_GL_PROGRAM_OBJECT));
+        if (currentProgram != savedProgram)
+            glCheck(GLEXT_glUseProgramObject(currentProgram));
+
+        // Store uniform location for further use outside constructor
+        location = shader.getUniformLocation(name);
     }
 
     ////////////////////////////////////////////////////////////
@@ -270,20 +270,20 @@ struct Shader::UnsafeUniformBinder
     ////////////////////////////////////////////////////////////
     UnsafeUniformBinder(Shader& shader, const std::string& name) : currentProgram(shader.m_shaderProgram)
     {
-        if (currentProgram)
-        {
-            // Enable program object
-            // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
-            GLint temp;
-            glCheck(glGetIntegerv(GL_CURRENT_PROGRAM, &temp));
-            savedProgram = static_cast<GLuint>(temp);
+        if (!currentProgram)
+            return;
 
-            if (currentProgram != savedProgram)
-                glCheck(glUseProgram(currentProgram));
+        // Enable program object
+        // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
+        GLint temp;
+        glCheck(glGetIntegerv(GL_CURRENT_PROGRAM, &temp));
+        savedProgram = static_cast<GLuint>(temp);
 
-            // Store uniform location for further use outside constructor
-            location = shader.getUniformLocation(name);
-        }
+        if (currentProgram != savedProgram)
+            glCheck(glUseProgram(currentProgram));
+
+        // Store uniform location for further use outside constructor
+        location = shader.getUniformLocation(name);
     }
 
     ////////////////////////////////////////////////////////////
@@ -717,27 +717,27 @@ void Shader::setUniform(const std::string& name, const Texture& texture)
 
     // Find the location of the variable in the shader
     const int location = getUniformLocation(name);
-    if (location != -1)
-    {
-        // Store the location -> texture mapping
-        const auto it = m_textures.find(location);
-        if (it == m_textures.end())
-        {
-            // New entry, make sure there are enough texture units
-            if (m_textures.size() + 1 >= getMaxTextureUnits())
-            {
-                priv::err() << "Impossible to use texture \"" << name << '"'
-                            << " for shader: all available texture units are used" << priv::errEndl;
-                return;
-            }
+    if (location == -1)
+        return;
 
-            m_textures[location] = &texture;
-        }
-        else
+    // Store the location -> texture mapping
+    const auto it = m_textures.find(location);
+    if (it == m_textures.end())
+    {
+        // New entry, make sure there are enough texture units
+        if (m_textures.size() + 1 >= getMaxTextureUnits())
         {
-            // Location already used, just replace the texture
-            it->second = &texture;
+            priv::err() << "Impossible to use texture \"" << name << '"'
+                        << " for shader: all available texture units are used" << priv::errEndl;
+            return;
         }
+
+        m_textures[location] = &texture;
+    }
+    else
+    {
+        // Location already used, just replace the texture
+        it->second = &texture;
     }
 }
 

@@ -134,7 +134,7 @@ public:
     /// \return The total number of bytes available in the stream, or `std::nullopt` on error
     ///
     ////////////////////////////////////////////////////////////
-    std::optional<std::size_t> getSize() override;
+    [[nodiscard]] std::optional<std::size_t> getSize() override;
 
 private:
     ////////////////////////////////////////////////////////////

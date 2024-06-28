@@ -26,11 +26,11 @@
 
 #include <SFML/System/Export.hpp>
 
-#include <SFML/System/Angle.hpp>
-
 
 namespace sf
 {
+class Angle;
+
 ////////////////////////////////////////////////////////////
 /// \brief Class template for manipulating
 ///        2-dimensional vectors
@@ -46,7 +46,7 @@ public:
     /// Creates a Vector2(0, 0).
     ///
     ////////////////////////////////////////////////////////////
-    SFML_SYSTEM_API constexpr Vector2();
+    [[nodiscard]] SFML_SYSTEM_API constexpr Vector2();
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the vector from cartesian coordinates
@@ -55,7 +55,7 @@ public:
     /// \param y Y coordinate
     ///
     ////////////////////////////////////////////////////////////
-    SFML_SYSTEM_API constexpr Vector2(T x, T y);
+    [[nodiscard]] SFML_SYSTEM_API constexpr Vector2(T x, T y);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the vector from another type of vector
@@ -69,7 +69,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename U>
-    SFML_SYSTEM_API constexpr explicit Vector2(const Vector2<U>& vector);
+    [[nodiscard]] SFML_SYSTEM_API constexpr explicit Vector2(const Vector2<U>& vector);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the vector from polar coordinates <i><b>(floating-point)</b></i>
@@ -85,7 +85,7 @@ public:
     /// * Vector2(r, phi) == Vector2(r, phi + n * 360_deg)
     ///
     ////////////////////////////////////////////////////////////
-    SFML_SYSTEM_API Vector2(T r, Angle phi);
+    [[nodiscard]] SFML_SYSTEM_API Vector2(T r, Angle phi);
 
     ////////////////////////////////////////////////////////////
     /// \brief Length of the vector <i><b>(floating-point)</b></i>.

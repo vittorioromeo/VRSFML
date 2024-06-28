@@ -61,7 +61,7 @@ public:
     /// \brief Enumeration of the string drawing styles
     ///
     ////////////////////////////////////////////////////////////
-    enum Style
+    enum [[nodiscard]] Style
     {
         Regular       = 0,      //!< Regular characters, no style
         Bold          = 1 << 0, //!< Bold characters
@@ -85,13 +85,13 @@ public:
     /// \param characterSize  Base size of characters, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    Text(const Font& font, String string = "", unsigned int characterSize = 30);
+    [[nodiscard]] Text(const Font& font, String string = "", unsigned int characterSize = 30);
 
     ////////////////////////////////////////////////////////////
     /// \brief Disallow construction from a temporary font
     ///
     ////////////////////////////////////////////////////////////
-    Text(const Font&& font, String string = "", unsigned int characterSize = 30) = delete;
+    [[nodiscard]] Text(const Font&& font, String string = "", unsigned int characterSize = 30) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the text's string
@@ -261,7 +261,7 @@ public:
     /// \see setString
     ///
     ////////////////////////////////////////////////////////////
-    const String& getString() const;
+    [[nodiscard]] const String& getString() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the text's font
@@ -274,7 +274,7 @@ public:
     /// \see setFont
     ///
     ////////////////////////////////////////////////////////////
-    const Font& getFont() const;
+    [[nodiscard]] const Font& getFont() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the character size
@@ -284,7 +284,7 @@ public:
     /// \see setCharacterSize
     ///
     ////////////////////////////////////////////////////////////
-    unsigned int getCharacterSize() const;
+    [[nodiscard]] unsigned int getCharacterSize() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the size of the letter spacing factor
@@ -294,7 +294,7 @@ public:
     /// \see setLetterSpacing
     ///
     ////////////////////////////////////////////////////////////
-    float getLetterSpacing() const;
+    [[nodiscard]] float getLetterSpacing() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the size of the line spacing factor
@@ -304,7 +304,7 @@ public:
     /// \see setLineSpacing
     ///
     ////////////////////////////////////////////////////////////
-    float getLineSpacing() const;
+    [[nodiscard]] float getLineSpacing() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the text's style
@@ -314,7 +314,7 @@ public:
     /// \see setStyle
     ///
     ////////////////////////////////////////////////////////////
-    std::uint32_t getStyle() const;
+    [[nodiscard]] std::uint32_t getStyle() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the fill color of the text
@@ -324,7 +324,7 @@ public:
     /// \see setFillColor
     ///
     ////////////////////////////////////////////////////////////
-    const Color& getFillColor() const;
+    [[nodiscard]] const Color& getFillColor() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the outline color of the text
@@ -334,7 +334,7 @@ public:
     /// \see setOutlineColor
     ///
     ////////////////////////////////////////////////////////////
-    const Color& getOutlineColor() const;
+    [[nodiscard]] const Color& getOutlineColor() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the outline thickness of the text
@@ -344,7 +344,7 @@ public:
     /// \see setOutlineThickness
     ///
     ////////////////////////////////////////////////////////////
-    float getOutlineThickness() const;
+    [[nodiscard]] float getOutlineThickness() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the position of the \a index-th character
@@ -361,7 +361,7 @@ public:
     /// \return Position of the character
     ///
     ////////////////////////////////////////////////////////////
-    Vector2f findCharacterPos(std::size_t index) const;
+    [[nodiscard]] Vector2f findCharacterPos(std::size_t index) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the local bounding rectangle of the entity
@@ -375,7 +375,7 @@ public:
     /// \return Local bounding rectangle of the entity
     ///
     ////////////////////////////////////////////////////////////
-    FloatRect getLocalBounds() const;
+    [[nodiscard]] FloatRect getLocalBounds() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the global bounding rectangle of the entity
@@ -389,7 +389,7 @@ public:
     /// \return Global bounding rectangle of the entity
     ///
     ////////////////////////////////////////////////////////////
-    FloatRect getGlobalBounds() const;
+    [[nodiscard]] FloatRect getGlobalBounds() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw the text to a render target

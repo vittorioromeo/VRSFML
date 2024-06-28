@@ -154,7 +154,7 @@ public:
     /// \see setView, getDefaultView
     ///
     ////////////////////////////////////////////////////////////
-    const View& getView() const;
+    [[nodiscard]] const View& getView() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the default view of the render target
@@ -167,7 +167,7 @@ public:
     /// \see setView, getView
     ///
     ////////////////////////////////////////////////////////////
-    const View& getDefaultView() const;
+    [[nodiscard]] const View& getDefaultView() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the viewport of a view, applied to this render target
@@ -182,7 +182,7 @@ public:
     /// \return Viewport rectangle, expressed in pixels
     ///
     ////////////////////////////////////////////////////////////
-    IntRect getViewport(const View& view) const;
+    [[nodiscard]] IntRect getViewport(const View& view) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the scissor rectangle of a view, applied to this render target
@@ -197,7 +197,7 @@ public:
     /// \return Scissor rectangle, expressed in pixels
     ///
     ////////////////////////////////////////////////////////////
-    IntRect getScissor(const View& view) const;
+    [[nodiscard]] IntRect getScissor(const View& view) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert a point from target coordinates to world
@@ -217,7 +217,7 @@ public:
     /// \see mapCoordsToPixel
     ///
     ////////////////////////////////////////////////////////////
-    Vector2f mapPixelToCoords(const Vector2i& point) const;
+    [[nodiscard]] Vector2f mapPixelToCoords(const Vector2i& point) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert a point from target coordinates to world coordinates
@@ -248,7 +248,7 @@ public:
     /// \see mapCoordsToPixel
     ///
     ////////////////////////////////////////////////////////////
-    Vector2f mapPixelToCoords(const Vector2i& point, const View& view) const;
+    [[nodiscard]] Vector2f mapPixelToCoords(const Vector2i& point, const View& view) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert a point from world coordinates to target
@@ -268,7 +268,7 @@ public:
     /// \see mapPixelToCoords
     ///
     ////////////////////////////////////////////////////////////
-    Vector2i mapCoordsToPixel(const Vector2f& point) const;
+    [[nodiscard]] Vector2i mapCoordsToPixel(const Vector2f& point) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert a point from world coordinates to target coordinates
@@ -295,7 +295,7 @@ public:
     /// \see mapPixelToCoords
     ///
     ////////////////////////////////////////////////////////////
-    Vector2i mapCoordsToPixel(const Vector2f& point, const View& view) const;
+    [[nodiscard]] Vector2i mapCoordsToPixel(const Vector2f& point, const View& view) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a drawable object to the render target
@@ -416,7 +416,7 @@ public:
     /// \return Size in pixels
     ///
     ////////////////////////////////////////////////////////////
-    virtual Vector2u getSize() const = 0;
+    [[nodiscard]] virtual Vector2u getSize() const = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Tell if the render target will use sRGB encoding when drawing on it
@@ -424,7 +424,7 @@ public:
     /// \return True if the render target use sRGB encoding, false otherwise
     ///
     ////////////////////////////////////////////////////////////
-    virtual bool isSrgb() const;
+    [[nodiscard]] virtual bool isSrgb() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Activate or deactivate the render target for rendering
@@ -521,7 +521,7 @@ protected:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    RenderTarget() = default;
+    [[nodiscard]] RenderTarget() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Performs the common initialization step after creation
@@ -611,7 +611,7 @@ private:
     /// \brief Render states cache
     ///
     ////////////////////////////////////////////////////////////
-    struct StatesCache
+    struct [[nodiscard]] StatesCache
     {
         bool           enable{};                //!< Is the cache enabled?
         bool           glStatesSet{};           //!< Are our internal GL states set yet?

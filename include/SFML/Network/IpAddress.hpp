@@ -74,7 +74,7 @@ public:
     /// \param byte3 Fourth byte of the address
     ///
     ////////////////////////////////////////////////////////////
-    IpAddress(std::uint8_t byte0, std::uint8_t byte1, std::uint8_t byte2, std::uint8_t byte3);
+    [[nodiscard]] IpAddress(std::uint8_t byte0, std::uint8_t byte1, std::uint8_t byte2, std::uint8_t byte3);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the address from a 32-bits integer
@@ -89,7 +89,7 @@ public:
     /// \see toInteger
     ///
     ////////////////////////////////////////////////////////////
-    explicit IpAddress(std::uint32_t address);
+    [[nodiscard]] explicit IpAddress(std::uint32_t address);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a string representation of the address

@@ -90,7 +90,7 @@ public:
     };
 
     ////////////////////////////////////////////////////////////
-    /// \brief KeyChanged event subtypes
+    /// \brief Key changed event subtypes
     ///
     ////////////////////////////////////////////////////////////
     struct KeyChanged
@@ -280,7 +280,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename TEventSubtype>
-    Event(const TEventSubtype& eventSubtype);
+    [[nodiscard]] Event(const TEventSubtype& eventSubtype);
 
     ////////////////////////////////////////////////////////////
     /// \brief Check current event subtype
@@ -338,7 +338,6 @@ private:
         TouchMoved,
         TouchEnded,
         SensorChanged>;
-
 
     ////////////////////////////////////////////////////////////
     // Member data

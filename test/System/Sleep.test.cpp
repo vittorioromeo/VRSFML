@@ -22,6 +22,6 @@ using namespace std::chrono_literals;
 TEST_CASE("[System] sf::sleep")
 {
     CHECK_SLEEP_DURATION(1ms);
-    CHECK_SLEEP_DURATION(10ms);
-    CHECK_SLEEP_DURATION(100ms);
+    CHECK_SLEEP_DURATION(5ms);
+    CHECK_SLEEP_DURATION(25ms);
 }

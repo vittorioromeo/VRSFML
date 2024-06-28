@@ -37,7 +37,7 @@ namespace sf
 /// \brief Blending modes for drawing
 ///
 ////////////////////////////////////////////////////////////
-struct SFML_GRAPHICS_API BlendMode
+struct [[nodiscard]] SFML_GRAPHICS_API BlendMode
 {
     ////////////////////////////////////////////////////////
     /// \brief Enumeration of the blending factors
@@ -80,7 +80,7 @@ struct SFML_GRAPHICS_API BlendMode
     /// Constructs a blending mode that does alpha blending.
     ///
     ////////////////////////////////////////////////////////////
-    BlendMode() = default;
+    [[nodiscard]] BlendMode() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the blend mode given the factors and equation.
@@ -93,7 +93,7 @@ struct SFML_GRAPHICS_API BlendMode
     /// \param blendEquation     Specifies how to combine the source and destination colors and alpha.
     ///
     ////////////////////////////////////////////////////////////
-    BlendMode(Factor sourceFactor, Factor destinationFactor, Equation blendEquation = Equation::Add);
+    [[nodiscard]] BlendMode(Factor sourceFactor, Factor destinationFactor, Equation blendEquation = Equation::Add);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the blend mode given the factors and equation.
@@ -106,12 +106,12 @@ struct SFML_GRAPHICS_API BlendMode
     /// \param alphaBlendEquation     Specifies how to combine the source and destination alphas.
     ///
     ////////////////////////////////////////////////////////////
-    BlendMode(Factor   colorSourceFactor,
-              Factor   colorDestinationFactor,
-              Equation colorBlendEquation,
-              Factor   alphaSourceFactor,
-              Factor   alphaDestinationFactor,
-              Equation alphaBlendEquation);
+    [[nodiscard]] BlendMode(Factor   colorSourceFactor,
+                            Factor   colorDestinationFactor,
+                            Equation colorBlendEquation,
+                            Factor   alphaSourceFactor,
+                            Factor   alphaDestinationFactor,
+                            Equation alphaBlendEquation);
 
     ////////////////////////////////////////////////////////////
     // Member Data

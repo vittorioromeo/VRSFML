@@ -54,7 +54,7 @@ public:
     /// Creates an empty packet.
     ///
     ////////////////////////////////////////////////////////////
-    Packet() = default;
+    [[nodiscard]] Packet() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Virtual destructor
@@ -386,7 +386,7 @@ protected:
     /// \see onReceive
     ///
     ////////////////////////////////////////////////////////////
-    virtual const void* onSend(std::size_t& size);
+    [[nodiscard]] virtual const void* onSend(std::size_t& size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Called after the packet is received over the network
@@ -418,7 +418,7 @@ private:
     /// \return True if \a size bytes can be read from the packet
     ///
     ////////////////////////////////////////////////////////////
-    bool checkSize(std::size_t size);
+    [[nodiscard]] bool checkSize(std::size_t size);
 
     ////////////////////////////////////////////////////////////
     // Member data

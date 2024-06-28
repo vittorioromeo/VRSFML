@@ -143,7 +143,7 @@ public:
         /// \param message Response message
         ///
         ////////////////////////////////////////////////////////////
-        explicit Response(Status code = Status::InvalidResponse, std::string message = "");
+        [[nodiscard]] explicit Response(Status code = Status::InvalidResponse, std::string message = "");
 
         ////////////////////////////////////////////////////////////
         /// \brief Check if the status code means a success
@@ -193,7 +193,7 @@ public:
         /// \param response Source response
         ///
         ////////////////////////////////////////////////////////////
-        DirectoryResponse(const Response& response);
+        [[nodiscard]] DirectoryResponse(const Response& response);
 
         ////////////////////////////////////////////////////////////
         /// \brief Get the directory returned in the response
@@ -225,7 +225,7 @@ public:
         /// \param data      Data containing the raw listing
         ///
         ////////////////////////////////////////////////////////////
-        ListingResponse(const Response& response, const std::string& data);
+        [[nodiscard]] ListingResponse(const Response& response, const std::string& data);
 
         ////////////////////////////////////////////////////////////
         /// \brief Return the array of directory/file names
@@ -246,7 +246,7 @@ public:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    Ftp() = default;
+    [[nodiscard]] Ftp() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -535,7 +535,7 @@ private:
     /// \return Server response to the request
     ///
     ////////////////////////////////////////////////////////////
-    Response getResponse();
+    [[nodiscard]] Response getResponse();
 
     ////////////////////////////////////////////////////////////
     /// \brief Utility class for exchanging data with the server

@@ -95,7 +95,7 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct Font::Page
 {
-    struct Row
+    struct [[nodiscard]] Row
     {
         Row(unsigned int rowTop, unsigned int rowHeight) : top(rowTop), height(rowHeight)
         {
@@ -796,34 +796,31 @@ bool Font::setCurrentSize(unsigned int characterSize) const
     FT_Face         face        = m_impl->fontHandles->face;
     const FT_UShort currentSize = face->size->metrics.x_ppem;
 
-    if (currentSize != characterSize)
-    {
-        const FT_Error result = FT_Set_Pixel_Sizes(face, 0, characterSize);
+    if (currentSize == characterSize)
+        return true;
 
-        if (result == FT_Err_Invalid_Pixel_Size)
-        {
-            // In the case of bitmap fonts, resizing can
-            // fail if the requested size is not available
-            if (!FT_IS_SCALABLE(face))
-            {
-                priv::err() << "Failed to set bitmap font size to " << characterSize << '\n' << "Available sizes are: ";
-                for (int i = 0; i < face->num_fixed_sizes; ++i)
-                {
-                    const long size = (face->available_sizes[i].y_ppem + 32) >> 6;
-                    priv::err() << size << " ";
-                }
-                priv::err() << priv::errEndl;
-            }
-            else
-            {
-                priv::err() << "Failed to set font size to " << characterSize << priv::errEndl;
-            }
-        }
+    const FT_Error result = FT_Set_Pixel_Sizes(face, 0, characterSize);
 
+    if (result != FT_Err_Invalid_Pixel_Size)
         return result == FT_Err_Ok;
+
+    // In the case of bitmap fonts, resizing can fail if the requested size is not available
+    if (!FT_IS_SCALABLE(face))
+    {
+        priv::err() << "Failed to set bitmap font size to " << characterSize << '\n' << "Available sizes are: ";
+        for (int i = 0; i < face->num_fixed_sizes; ++i)
+        {
+            const long size = (face->available_sizes[i].y_ppem + 32) >> 6;
+            priv::err() << size << " ";
+        }
+        priv::err() << priv::errEndl;
+    }
+    else
+    {
+        priv::err() << "Failed to set font size to " << characterSize << priv::errEndl;
     }
 
-    return true;
+    return false;
 }
 
 

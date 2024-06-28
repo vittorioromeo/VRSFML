@@ -93,6 +93,7 @@ bool Context::setActive(bool active)
         ContextImpl::currentContext = this;
     else if (this == ContextImpl::currentContext)
         ContextImpl::currentContext = nullptr;
+
     return true;
 }
 

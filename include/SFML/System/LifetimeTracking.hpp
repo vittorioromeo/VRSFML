@@ -41,7 +41,7 @@ class SFML_SYSTEM_API LifetimeDependee
 public:
     struct SFML_SYSTEM_API TestingModeGuard
     {
-        TestingModeGuard();
+        [[nodiscard]] TestingModeGuard();
         ~TestingModeGuard();
 
         TestingModeGuard(const TestingModeGuard&) = delete;

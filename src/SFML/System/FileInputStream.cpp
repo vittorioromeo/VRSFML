@@ -67,12 +67,14 @@ std::optional<FileInputStream> FileInputStream::open(const std::filesystem::path
         return std::nullopt;
     }
 #endif
+
 #ifdef SFML_SYSTEM_WINDOWS
     if (auto file = priv::UniquePtr<std::FILE, FileCloser>(_wfopen(filename.c_str(), L"rb")))
 #else
     if (auto file = priv::UniquePtr<std::FILE, FileCloser>(std::fopen(filename.c_str(), "rb")))
 #endif
         return std::make_optional<FileInputStream>(priv::PassKey<FileInputStream>{}, std::move(file));
+
     return std::nullopt;
 }
 
@@ -87,6 +89,7 @@ std::optional<std::size_t> FileInputStream::read(void* data, std::size_t size)
         return m_androidFile->read(data, size);
     }
 #endif
+
     assert(m_file);
     return std::fread(data, 1, size, m_file.get());
 }
@@ -102,7 +105,9 @@ std::optional<std::size_t> FileInputStream::seek(std::size_t position)
         return m_androidFile->seek(position);
     }
 #endif
+
     assert(m_file);
+
     if (std::fseek(m_file.get(), static_cast<long>(position), SEEK_SET))
         return std::nullopt;
 
@@ -120,7 +125,9 @@ std::optional<std::size_t> FileInputStream::tell()
         return m_androidFile->tell();
     }
 #endif
+
     assert(m_file);
+
     const auto position = std::ftell(m_file.get());
     return position < 0 ? std::nullopt : std::optional<std::size_t>(position);
 }
@@ -136,6 +143,7 @@ std::optional<std::size_t> FileInputStream::getSize()
         return m_androidFile->getSize();
     }
 #endif
+
     assert(m_file);
 
     const auto position = tell().value();

@@ -259,39 +259,39 @@ void WindowImpl::processJoystickEvents()
                 m_previousAxes[i].fill(0.f);
         }
 
-        if (connected)
+        if (!connected)
+            continue;
+
+        const JoystickCaps caps = JoystickManager::getInstance().getCapabilities(i);
+
+        // Axes
+        for (unsigned int j = 0; j < Joystick::AxisCount; ++j)
         {
-            const JoystickCaps caps = JoystickManager::getInstance().getCapabilities(i);
+            const auto axis = static_cast<Joystick::Axis>(j);
+            if (!caps.axes[axis])
+                continue;
 
-            // Axes
-            for (unsigned int j = 0; j < Joystick::AxisCount; ++j)
+            const float prevPos = m_previousAxes[i][axis];
+            const float currPos = m_joystickStatesImpl->states[i].axes[axis];
+            if (std::abs(currPos - prevPos) >= m_joystickThreshold)
             {
-                const auto axis = static_cast<Joystick::Axis>(j);
-                if (caps.axes[axis])
-                {
-                    const float prevPos = m_previousAxes[i][axis];
-                    const float currPos = m_joystickStatesImpl->states[i].axes[axis];
-                    if (std::abs(currPos - prevPos) >= m_joystickThreshold)
-                    {
-                        pushEvent(Event::JoystickMoved{i, axis, currPos});
-                        m_previousAxes[i][axis] = currPos;
-                    }
-                }
+                pushEvent(Event::JoystickMoved{i, axis, currPos});
+                m_previousAxes[i][axis] = currPos;
             }
+        }
 
-            // Buttons
-            for (unsigned int j = 0; j < caps.buttonCount; ++j)
+        // Buttons
+        for (unsigned int j = 0; j < caps.buttonCount; ++j)
+        {
+            const bool prevPressed = previousState.buttons[j];
+            const bool currPressed = m_joystickStatesImpl->states[i].buttons[j];
+
+            if (prevPressed ^ currPressed)
             {
-                const bool prevPressed = previousState.buttons[j];
-                const bool currPressed = m_joystickStatesImpl->states[i].buttons[j];
-
-                if (prevPressed ^ currPressed)
-                {
-                    if (currPressed)
-                        pushEvent(Event::JoystickButtonPressed{i, j});
-                    else
-                        pushEvent(Event::JoystickButtonReleased{i, j});
-                }
+                if (currPressed)
+                    pushEvent(Event::JoystickButtonPressed{i, j});
+                else
+                    pushEvent(Event::JoystickButtonReleased{i, j});
             }
         }
     }
@@ -309,16 +309,16 @@ void WindowImpl::processSensorEvents()
         const auto sensor = static_cast<Sensor::Type>(i);
 
         // Only process enabled sensors
-        if (SensorManager::getInstance().isEnabled(sensor))
-        {
-            // Copy the previous value of the sensor and get the new one
-            const Vector3f previousValue = m_sensorValue[sensor];
-            m_sensorValue[sensor]        = SensorManager::getInstance().getValue(sensor);
+        if (!SensorManager::getInstance().isEnabled(sensor))
+            continue;
 
-            // If the value has changed, trigger an event
-            if (m_sensorValue[sensor] != previousValue) // TODO use a threshold?
-                pushEvent(Event::SensorChanged{sensor, m_sensorValue[sensor]});
-        }
+        // Copy the previous value of the sensor and get the new one
+        const Vector3f previousValue = m_sensorValue[sensor];
+        m_sensorValue[sensor]        = SensorManager::getInstance().getValue(sensor);
+
+        // If the value has changed, trigger an event
+        if (m_sensorValue[sensor] != previousValue) // TODO use a threshold?
+            pushEvent(Event::SensorChanged{sensor, m_sensorValue[sensor]});
     }
 }
 

@@ -48,7 +48,7 @@ public:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    TcpListener();
+    [[nodiscard]] TcpListener();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the port to which the socket is bound locally

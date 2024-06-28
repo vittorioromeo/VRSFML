@@ -80,7 +80,7 @@ public:
         /// \param body   Content of the request's body
         ///
         ////////////////////////////////////////////////////////////
-        Request(const std::string& uri = "/", Method method = Method::Get, const std::string& body = "");
+        [[nodiscard]] Request(const std::string& uri = "/", Method method = Method::Get, const std::string& body = "");
 
         ////////////////////////////////////////////////////////////
         /// \brief Set the value of a field
@@ -339,7 +339,7 @@ public:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    Http() = default;
+    [[nodiscard]] Http() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the HTTP client with the target host
@@ -355,7 +355,7 @@ public:
     /// \param port Port to use for connection
     ///
     ////////////////////////////////////////////////////////////
-    Http(const std::string& host, unsigned short port = 0);
+    [[nodiscard]] Http(const std::string& host, unsigned short port = 0);
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy constructor

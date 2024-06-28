@@ -49,7 +49,7 @@ public:
     /// This constructors initializes all members to 0.
     ///
     ////////////////////////////////////////////////////////////
-    VideoMode() = default;
+    [[nodiscard]] VideoMode() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the video mode with its attributes
@@ -58,7 +58,7 @@ public:
     /// \param modeBitsPerPixel Pixel depths in bits per pixel
     ///
     ////////////////////////////////////////////////////////////
-    explicit VideoMode(const Vector2u& modeSize, unsigned int modeBitsPerPixel = 32);
+    [[nodiscard]] explicit VideoMode(const Vector2u& modeSize, unsigned int modeBitsPerPixel = 32);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current desktop video mode
@@ -66,7 +66,7 @@ public:
     /// \return Current desktop video mode
     ///
     ////////////////////////////////////////////////////////////
-    static VideoMode getDesktopMode();
+    [[nodiscard]] static VideoMode getDesktopMode();
 
     ////////////////////////////////////////////////////////////
     /// \brief Retrieve all the video modes supported in fullscreen mode
@@ -82,7 +82,7 @@ public:
     /// \return Array containing all the supported fullscreen modes
     ///
     ////////////////////////////////////////////////////////////
-    static const std::vector<VideoMode>& getFullscreenModes();
+    [[nodiscard]] static const std::vector<VideoMode>& getFullscreenModes();
 
     ////////////////////////////////////////////////////////////
     /// \brief Tell whether or not the video mode is valid

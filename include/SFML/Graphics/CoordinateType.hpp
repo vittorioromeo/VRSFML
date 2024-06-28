@@ -34,7 +34,7 @@ namespace sf
 /// \see sf::Texture::bind
 ///
 ////////////////////////////////////////////////////////////
-enum class CoordinateType
+enum class [[nodiscard]] CoordinateType
 {
     Normalized, //!< Texture coordinates in range [0 .. 1]
     Pixels      //!< Texture coordinates in range [0 .. size]

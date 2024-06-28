@@ -43,7 +43,7 @@ private:
     // NOLINTBEGIN(modernize-use-equals-default)
     // Intentionally not using `= default` here as it would make `PassKey` an aggregate
     // and thus constructible from anyone
-    explicit PassKey() noexcept
+    [[nodiscard]] explicit PassKey() noexcept
     {
     }
     //NOLINTEND(modernize-use-equals-default)

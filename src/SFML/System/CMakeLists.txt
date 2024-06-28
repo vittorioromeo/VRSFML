@@ -41,6 +41,8 @@ set(SRC
     ${SRCROOT}/LifetimeTracking.cpp
     ${INCROOT}/LifetimeTracking.hpp
     ${INCROOT}/Variant.hpp
+    ${INCROOT}/UniquePtr.hpp
+    ${INCROOT}/InplacePImpl.hpp
 )
 source_group("" FILES ${SRC})
 

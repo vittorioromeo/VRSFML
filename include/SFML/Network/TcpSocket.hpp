@@ -57,7 +57,7 @@ public:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    TcpSocket();
+    [[nodiscard]] TcpSocket();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the port to which the socket is bound locally

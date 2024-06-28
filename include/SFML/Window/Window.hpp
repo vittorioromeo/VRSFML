@@ -33,7 +33,7 @@
 #include <SFML/Window/WindowEnums.hpp>
 #include <SFML/Window/WindowHandle.hpp>
 
-#include <SFML/System/UniquePtr.hpp>
+#include <SFML/System/InPlacePImpl.hpp>
 
 #include <cstdint>
 
@@ -54,7 +54,7 @@ public:
     /// use the other constructors or call create() to do so.
     ///
     ////////////////////////////////////////////////////////////
-    Window();
+    [[nodiscard]] Window();
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a new window
@@ -77,11 +77,11 @@ public:
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    Window(VideoMode              mode,
-           const String&          title,
-           std::uint32_t          style    = Style::Default,
-           State                  state    = State::Windowed,
-           const ContextSettings& settings = ContextSettings());
+    [[nodiscard]] Window(VideoMode              mode,
+                         const String&          title,
+                         std::uint32_t          style    = Style::Default,
+                         State                  state    = State::Windowed,
+                         const ContextSettings& settings = ContextSettings());
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a new window
@@ -100,7 +100,7 @@ public:
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    Window(VideoMode mode, const String& title, State state, const ContextSettings& settings = ContextSettings());
+    [[nodiscard]] Window(VideoMode mode, const String& title, State state, const ContextSettings& settings = ContextSettings());
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control
@@ -116,7 +116,7 @@ public:
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    explicit Window(WindowHandle handle, const ContextSettings& settings = ContextSettings());
+    [[nodiscard]] explicit Window(WindowHandle handle, const ContextSettings& settings = ContextSettings());
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -286,7 +286,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct CommonImpl;
-    priv::UniquePtr<CommonImpl> m_commonImpl; //!< Implementation details
+    priv::InPlacePImpl<CommonImpl, 64> m_commonImpl; //!< Implementation details
 };
 
 } // namespace sf

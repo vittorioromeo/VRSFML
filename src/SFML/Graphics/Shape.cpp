@@ -39,7 +39,7 @@ namespace
 {
 ////////////////////////////////////////////////////////////
 // Compute the normal of a segment
-sf::Vector2f computeNormal(const sf::Vector2f& p1, const sf::Vector2f& p2)
+[[nodiscard]] sf::Vector2f computeNormal(const sf::Vector2f& p1, const sf::Vector2f& p2)
 {
     sf::Vector2f normal = (p2 - p1).perpendicular();
     const float  length = normal.length();
@@ -50,7 +50,7 @@ sf::Vector2f computeNormal(const sf::Vector2f& p1, const sf::Vector2f& p2)
 
 ////////////////////////////////////////////////////////////
 // Get bounds of a vertex range
-sf::FloatRect getVertexRangeBounds(const std::vector<sf::Vertex>& data)
+[[nodiscard]] sf::FloatRect getVertexRangeBounds(const std::vector<sf::Vertex>& data)
 {
     if (data.empty())
     {

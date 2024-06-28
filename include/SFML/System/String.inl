@@ -26,6 +26,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/System/String.hpp> // NOLINT(misc-header-include-cycle)
+#include <SFML/System/Utf.hpp>
 
 #include <iterator>
 

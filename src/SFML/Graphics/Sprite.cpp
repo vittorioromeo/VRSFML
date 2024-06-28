@@ -42,11 +42,11 @@ Sprite::Sprite(const IntRect& rectangle) : m_textureRect(rectangle)
 ////////////////////////////////////////////////////////////
 void Sprite::setTextureRect(const IntRect& rectangle)
 {
-    if (rectangle != m_textureRect)
-    {
-        m_textureRect = rectangle;
-        updateVertices();
-    }
+    if (rectangle == m_textureRect)
+        return;
+
+    m_textureRect = rectangle;
+    updateVertices();
 }
 
 

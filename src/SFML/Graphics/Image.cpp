@@ -315,43 +315,45 @@ bool Image::saveToFile(const std::filesystem::path& filename) const
 ////////////////////////////////////////////////////////////
 std::optional<std::vector<std::uint8_t>> Image::saveToMemory(std::string_view format) const
 {
+    std::optional<std::vector<std::uint8_t>> buffer; // Use a single local variable for NRVO
+
     // Make sure the image is not empty
-    if (!m_pixels.empty() && m_size.x > 0 && m_size.y > 0)
+    if (m_pixels.empty() || m_size.x == 0 || m_size.y == 0)
     {
-        // Choose function based on format
-        const std::string specified     = toLower(std::string(format));
-        const Vector2i    convertedSize = Vector2i(m_size);
-
-        auto buffer = std::make_optional<std::vector<std::uint8_t>>();
-
-        if (specified == "bmp")
-        {
-            // BMP format
-            if (stbi_write_bmp_to_func(bufferFromCallback, &*buffer, convertedSize.x, convertedSize.y, 4, m_pixels.data()))
-                return buffer;
-        }
-        else if (specified == "tga")
-        {
-            // TGA format
-            if (stbi_write_tga_to_func(bufferFromCallback, &*buffer, convertedSize.x, convertedSize.y, 4, m_pixels.data()))
-                return buffer;
-        }
-        else if (specified == "png")
-        {
-            // PNG format
-            if (stbi_write_png_to_func(bufferFromCallback, &*buffer, convertedSize.x, convertedSize.y, 4, m_pixels.data(), 0))
-                return buffer;
-        }
-        else if (specified == "jpg" || specified == "jpeg")
-        {
-            // JPG format
-            if (stbi_write_jpg_to_func(bufferFromCallback, &*buffer, convertedSize.x, convertedSize.y, 4, m_pixels.data(), 90))
-                return buffer;
-        }
+        priv::err() << "Failed to save image with format \"" << format << '"' << priv::errEndl;
+        return buffer; // Empty optional
     }
 
-    priv::err() << "Failed to save image with format \"" << format << '"' << priv::errEndl;
-    return std::nullopt;
+    // Choose function based on format
+    const std::string specified     = toLower(std::string(format));
+    const Vector2i    convertedSize = Vector2i(m_size);
+
+    if (specified == "bmp")
+    {
+        buffer.emplace();
+        if (stbi_write_bmp_to_func(bufferFromCallback, &*buffer, convertedSize.x, convertedSize.y, 4, m_pixels.data()))
+            return buffer;
+    }
+    else if (specified == "tga")
+    {
+        buffer.emplace();
+        if (stbi_write_tga_to_func(bufferFromCallback, &*buffer, convertedSize.x, convertedSize.y, 4, m_pixels.data()))
+            return buffer;
+    }
+    else if (specified == "png")
+    {
+        buffer.emplace();
+        if (stbi_write_png_to_func(bufferFromCallback, &*buffer, convertedSize.x, convertedSize.y, 4, m_pixels.data(), 0))
+            return buffer;
+    }
+    else if (specified == "jpg" || specified == "jpeg")
+    {
+        buffer.emplace();
+        if (stbi_write_jpg_to_func(bufferFromCallback, &*buffer, convertedSize.x, convertedSize.y, 4, m_pixels.data(), 90))
+            return buffer;
+    }
+
+    return buffer; // Empty optional
 }
 
 
@@ -366,17 +368,17 @@ Vector2u Image::getSize() const
 void Image::createMaskFromColor(const Color& color, std::uint8_t alpha)
 {
     // Make sure that the image is not empty
-    if (!m_pixels.empty())
+    if (m_pixels.empty())
+        return;
+
+    // Replace the alpha of the pixels that match the transparent color
+    std::uint8_t* ptr = m_pixels.data();
+    std::uint8_t* end = ptr + m_pixels.size();
+    while (ptr < end)
     {
-        // Replace the alpha of the pixels that match the transparent color
-        std::uint8_t* ptr = m_pixels.data();
-        std::uint8_t* end = ptr + m_pixels.size();
-        while (ptr < end)
-        {
-            if ((ptr[0] == color.r) && (ptr[1] == color.g) && (ptr[2] == color.b) && (ptr[3] == color.a))
-                ptr[3] = alpha;
-            ptr += 4;
-        }
+        if ((ptr[0] == color.r) && (ptr[1] == color.g) && (ptr[2] == color.b) && (ptr[3] == color.a))
+            ptr[3] = alpha;
+        ptr += 4;
     }
 }
 
@@ -499,36 +501,36 @@ Color Image::getPixel(const Vector2u& coords) const
 ////////////////////////////////////////////////////////////
 const std::uint8_t* Image::getPixelsPtr() const
 {
-    if (!m_pixels.empty())
+    if (m_pixels.empty())
     {
-        return m_pixels.data();
+        priv::err() << "Trying to access the pixels of an empty image" << priv::errEndl;
+        return nullptr;
     }
 
-    priv::err() << "Trying to access the pixels of an empty image" << priv::errEndl;
-    return nullptr;
+    return m_pixels.data();
 }
 
 
 ////////////////////////////////////////////////////////////
 void Image::flipHorizontally()
 {
-    if (!m_pixels.empty())
+    if (m_pixels.empty())
+        return;
+
+    const std::size_t rowSize = m_size.x * 4;
+
+    for (std::size_t y = 0; y < m_size.y; ++y)
     {
-        const std::size_t rowSize = m_size.x * 4;
+        auto left  = m_pixels.begin() + static_cast<std::vector<std::uint8_t>::iterator::difference_type>(y * rowSize);
+        auto right = m_pixels.begin() +
+                     static_cast<std::vector<std::uint8_t>::iterator::difference_type>((y + 1) * rowSize - 4);
 
-        for (std::size_t y = 0; y < m_size.y; ++y)
+        for (std::size_t x = 0; x < m_size.x / 2; ++x)
         {
-            auto left = m_pixels.begin() + static_cast<std::vector<std::uint8_t>::iterator::difference_type>(y * rowSize);
-            auto right = m_pixels.begin() +
-                         static_cast<std::vector<std::uint8_t>::iterator::difference_type>((y + 1) * rowSize - 4);
+            std::swap_ranges(left, left + 4, right);
 
-            for (std::size_t x = 0; x < m_size.x / 2; ++x)
-            {
-                std::swap_ranges(left, left + 4, right);
-
-                left += 4;
-                right -= 4;
-            }
+            left += 4;
+            right -= 4;
         }
     }
 }
@@ -537,20 +539,20 @@ void Image::flipHorizontally()
 ////////////////////////////////////////////////////////////
 void Image::flipVertically()
 {
-    if (!m_pixels.empty())
+    if (m_pixels.empty())
+        return;
+
+    const auto rowSize = static_cast<std::vector<std::uint8_t>::iterator::difference_type>(m_size.x * 4);
+
+    auto top    = m_pixels.begin();
+    auto bottom = m_pixels.end() - rowSize;
+
+    for (std::size_t y = 0; y < m_size.y / 2; ++y)
     {
-        const auto rowSize = static_cast<std::vector<std::uint8_t>::iterator::difference_type>(m_size.x * 4);
+        std::swap_ranges(top, top + rowSize, bottom);
 
-        auto top    = m_pixels.begin();
-        auto bottom = m_pixels.end() - rowSize;
-
-        for (std::size_t y = 0; y < m_size.y / 2; ++y)
-        {
-            std::swap_ranges(top, top + rowSize, bottom);
-
-            top += rowSize;
-            bottom -= rowSize;
-        }
+        top += rowSize;
+        bottom -= rowSize;
     }
 }
 

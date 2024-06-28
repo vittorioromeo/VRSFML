@@ -60,7 +60,7 @@ public:
     /// \brief Types of shaders
     ///
     ////////////////////////////////////////////////////////////
-    enum class Type
+    enum class [[nodiscard]] Type
     {
         Vertex,   //!< %Vertex shader
         Geometry, //!< Geometry shader
@@ -713,7 +713,7 @@ public:
     /// \return True if shaders are supported, false otherwise
     ///
     ////////////////////////////////////////////////////////////
-    static bool isAvailable();
+    [[nodiscard]] static bool isAvailable();
 
     ////////////////////////////////////////////////////////////
     /// \brief Tell whether or not the system supports geometry shaders
@@ -732,7 +732,7 @@ public:
     /// \return True if geometry shaders are supported, false otherwise
     ///
     ////////////////////////////////////////////////////////////
-    static bool isGeometryAvailable();
+    [[nodiscard]] static bool isGeometryAvailable();
 
     ////////////////////////////////////////////////////////////
     /// \private
@@ -740,7 +740,7 @@ public:
     /// \brief Construct from shader program
     ///
     ////////////////////////////////////////////////////////////
-    explicit Shader(priv::PassKey<Shader>&&, unsigned int shaderProgram);
+    [[nodiscard]] explicit Shader(priv::PassKey<Shader>&&, unsigned int shaderProgram);
 
 private:
     ////////////////////////////////////////////////////////////
@@ -777,7 +777,7 @@ private:
     /// \return Location ID of the uniform, or -1 if not found
     ///
     ////////////////////////////////////////////////////////////
-    int getUniformLocation(const std::string& name);
+    [[nodiscard]] int getUniformLocation(const std::string& name);
 
     ////////////////////////////////////////////////////////////
     /// \brief RAII object to save and restore the program
@@ -786,7 +786,7 @@ private:
     /// Implementation is private in the .cpp file.
     ///
     ////////////////////////////////////////////////////////////
-    struct UniformBinder;
+    struct [[nodiscard]] UniformBinder;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO RAII object to save and restore the program
@@ -795,7 +795,7 @@ private:
     /// Implementation is private in the .cpp file.
     ///
     ////////////////////////////////////////////////////////////
-    struct UnsafeUniformBinder;
+    struct [[nodiscard]] UnsafeUniformBinder;
 
     ////////////////////////////////////////////////////////////
     // Types

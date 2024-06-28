@@ -57,12 +57,15 @@ void addLine(std::vector<sf::Vertex>& vertices,
     const float top    = std::floor(lineTop + offset - (thickness / 2) + 0.5f);
     const float bottom = top + std::floor(thickness + 0.5f);
 
-    vertices[index++] = {{-outlineThickness, top - outlineThickness}, color, {1.0f, 1.0f}};
-    vertices[index++] = {{lineLength + outlineThickness, top - outlineThickness}, color, {1.0f, 1.0f}};
-    vertices[index++] = {{-outlineThickness, bottom + outlineThickness}, color, {1.0f, 1.0f}};
-    vertices[index++] = {{-outlineThickness, bottom + outlineThickness}, color, {1.0f, 1.0f}};
-    vertices[index++] = {{lineLength + outlineThickness, top - outlineThickness}, color, {1.0f, 1.0f}};
-    vertices[index++] = {{lineLength + outlineThickness, bottom + outlineThickness}, color, {1.0f, 1.0f}};
+    const sf::Vertex vertexData[] = {{{-outlineThickness, top - outlineThickness}, color, {1.0f, 1.0f}},
+                                     {{lineLength + outlineThickness, top - outlineThickness}, color, {1.0f, 1.0f}},
+                                     {{-outlineThickness, bottom + outlineThickness}, color, {1.0f, 1.0f}},
+                                     {{-outlineThickness, bottom + outlineThickness}, color, {1.0f, 1.0f}},
+                                     {{lineLength + outlineThickness, top - outlineThickness}, color, {1.0f, 1.0f}},
+                                     {{lineLength + outlineThickness, bottom + outlineThickness}, color, {1.0f, 1.0f}}};
+
+    std::memcpy(vertices.data() + index, vertexData, sizeof(sf::Vertex) * 6);
+    index += 6;
 }
 
 // Add a glyph quad to the vertex array
@@ -81,12 +84,15 @@ void addGlyphQuad(std::vector<sf::Vertex>& vertices,
     const auto uv1 = sf::Vector2f(glyph.textureRect.position) - padding;
     const auto uv2 = sf::Vector2f(glyph.textureRect.position + glyph.textureRect.size) + padding;
 
-    vertices[index++] = {position + sf::Vector2f(p1.x - italicShear * p1.y, p1.y), color, {uv1.x, uv1.y}};
-    vertices[index++] = {position + sf::Vector2f(p2.x - italicShear * p1.y, p1.y), color, {uv2.x, uv1.y}};
-    vertices[index++] = {position + sf::Vector2f(p1.x - italicShear * p2.y, p2.y), color, {uv1.x, uv2.y}};
-    vertices[index++] = {position + sf::Vector2f(p1.x - italicShear * p2.y, p2.y), color, {uv1.x, uv2.y}};
-    vertices[index++] = {position + sf::Vector2f(p2.x - italicShear * p1.y, p1.y), color, {uv2.x, uv1.y}};
-    vertices[index++] = {position + sf::Vector2f(p2.x - italicShear * p2.y, p2.y), color, {uv2.x, uv2.y}};
+    const sf::Vertex vertexData[] = {{position + sf::Vector2f(p1.x - italicShear * p1.y, p1.y), color, {uv1.x, uv1.y}},
+                                     {position + sf::Vector2f(p2.x - italicShear * p1.y, p1.y), color, {uv2.x, uv1.y}},
+                                     {position + sf::Vector2f(p1.x - italicShear * p2.y, p2.y), color, {uv1.x, uv2.y}},
+                                     {position + sf::Vector2f(p1.x - italicShear * p2.y, p2.y), color, {uv1.x, uv2.y}},
+                                     {position + sf::Vector2f(p2.x - italicShear * p1.y, p1.y), color, {uv2.x, uv1.y}},
+                                     {position + sf::Vector2f(p2.x - italicShear * p2.y, p2.y), color, {uv2.x, uv2.y}}};
+
+    std::memcpy(vertices.data() + index, vertexData, sizeof(sf::Vertex) * 6);
+    index += 6;
 }
 
 } // namespace
@@ -107,83 +113,83 @@ m_characterSize(characterSize)
 ////////////////////////////////////////////////////////////
 void Text::setString(const String& string)
 {
-    if (m_string != string)
-    {
-        m_string             = string;
-        m_geometryNeedUpdate = true;
-    }
+    if (m_string == string)
+        return;
+
+    m_string             = string;
+    m_geometryNeedUpdate = true;
 }
 
 
 ////////////////////////////////////////////////////////////
 void Text::setFont(const Font& font)
 {
-    if (m_font != &font)
-    {
-        m_font               = &font;
-        m_geometryNeedUpdate = true;
-    }
+    if (m_font == &font)
+        return;
+
+    m_font               = &font;
+    m_geometryNeedUpdate = true;
 }
 
 
 ////////////////////////////////////////////////////////////
 void Text::setCharacterSize(unsigned int size)
 {
-    if (m_characterSize != size)
-    {
-        m_characterSize      = size;
-        m_geometryNeedUpdate = true;
-    }
+    if (m_characterSize == size)
+        return;
+
+    m_characterSize      = size;
+    m_geometryNeedUpdate = true;
 }
 
 
 ////////////////////////////////////////////////////////////
 void Text::setLetterSpacing(float spacingFactor)
 {
-    if (m_letterSpacingFactor != spacingFactor)
-    {
-        m_letterSpacingFactor = spacingFactor;
-        m_geometryNeedUpdate  = true;
-    }
+    if (m_letterSpacingFactor == spacingFactor)
+        return;
+
+    m_letterSpacingFactor = spacingFactor;
+    m_geometryNeedUpdate  = true;
 }
 
 
 ////////////////////////////////////////////////////////////
 void Text::setLineSpacing(float spacingFactor)
 {
-    if (m_lineSpacingFactor != spacingFactor)
-    {
-        m_lineSpacingFactor  = spacingFactor;
-        m_geometryNeedUpdate = true;
-    }
+    if (m_lineSpacingFactor == spacingFactor)
+        return;
+
+    m_lineSpacingFactor  = spacingFactor;
+    m_geometryNeedUpdate = true;
 }
 
 
 ////////////////////////////////////////////////////////////
 void Text::setStyle(std::uint32_t style)
 {
-    if (m_style != style)
-    {
-        m_style              = style;
-        m_geometryNeedUpdate = true;
-    }
+    if (m_style == style)
+        return;
+
+    m_style              = style;
+    m_geometryNeedUpdate = true;
 }
 
 
 ////////////////////////////////////////////////////////////
 void Text::setFillColor(const Color& color)
 {
-    if (color != m_fillColor)
-    {
-        m_fillColor = color;
+    if (color == m_fillColor)
+        return;
 
-        // Change vertex colors directly, no need to update whole geometry
-        // (if geometry is updated anyway, we can skip this step)
-        if (!m_geometryNeedUpdate)
-        {
-            for (std::size_t i = m_fillVerticesStartIndex; i < m_vertices.size(); ++i)
-                m_vertices[i].color = m_fillColor;
-        }
+    m_fillColor = color;
+
+    // Change vertex colors directly, no need to update whole geometry
+    // (if geometry is updated anyway, we can skip this step)
+    if (!m_geometryNeedUpdate)
+    {
+        for (std::size_t i = m_fillVerticesStartIndex; i < m_vertices.size(); ++i)
+            m_vertices[i].color = m_fillColor;
     }
 }
 
@@ -191,17 +197,17 @@ void Text::setFillColor(const Color& color)
 ////////////////////////////////////////////////////////////
 void Text::setOutlineColor(const Color& color)
 {
-    if (color != m_outlineColor)
-    {
-        m_outlineColor = color;
+    if (color == m_outlineColor)
+        return;
 
-        // Change vertex colors directly, no need to update whole geometry
-        // (if geometry is updated anyway, we can skip this step)
-        if (!m_geometryNeedUpdate)
-        {
-            for (std::size_t i = 0; i < m_fillVerticesStartIndex; ++i)
-                m_vertices[i].color = m_outlineColor;
-        }
+    m_outlineColor = color;
+
+    // Change vertex colors directly, no need to update whole geometry
+    // (if geometry is updated anyway, we can skip this step)
+    if (!m_geometryNeedUpdate)
+    {
+        for (std::size_t i = 0; i < m_fillVerticesStartIndex; ++i)
+            m_vertices[i].color = m_outlineColor;
     }
 }
 
@@ -209,11 +215,11 @@ void Text::setOutlineColor(const Color& color)
 ////////////////////////////////////////////////////////////
 void Text::setOutlineThickness(float thickness)
 {
-    if (thickness != m_outlineThickness)
-    {
-        m_outlineThickness   = thickness;
-        m_geometryNeedUpdate = true;
-    }
+    if (thickness == m_outlineThickness)
+        return;
+
+    m_outlineThickness   = thickness;
+    m_geometryNeedUpdate = true;
 }
 
 

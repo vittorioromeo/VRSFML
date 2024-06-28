@@ -40,16 +40,14 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct Window::Window::CommonImpl
 {
-    priv::UniquePtr<priv::GlContext> context{};        //!< Platform-specific implementation of the OpenGL context
-    Clock                            clock;            //!< Clock for measuring the elapsed time between frames
-    Time                             frameTimeLimit{}; //!< Current framerate limit
+    priv::UniquePtr<priv::GlContext> context;        //!< Platform-specific implementation of the OpenGL context
+    Clock                            clock;          //!< Clock for measuring the elapsed time between frames
+    Time                             frameTimeLimit; //!< Current framerate limit
 };
 
 
 ////////////////////////////////////////////////////////////
-Window::Window() : m_commonImpl(priv::makeUnique<CommonImpl>())
-{
-}
+Window::Window() = default;
 
 
 ////////////////////////////////////////////////////////////
@@ -160,10 +158,7 @@ void Window::setVerticalSyncEnabled(bool enabled)
 ////////////////////////////////////////////////////////////
 void Window::setFramerateLimit(unsigned int limit)
 {
-    if (limit > 0)
-        m_commonImpl->frameTimeLimit = seconds(1.f / static_cast<float>(limit));
-    else
-        m_commonImpl->frameTimeLimit = Time::Zero;
+    m_commonImpl->frameTimeLimit = limit > 0 ? seconds(1.f / static_cast<float>(limit)) : Time::Zero;
 }
 
 
