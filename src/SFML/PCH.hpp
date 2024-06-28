@@ -40,17 +40,10 @@
 #endif // SFML_SYSTEM_WINDOWS
 
 #include <SFML/System/Err.hpp>
-#include <SFML/System/InPlacePImpl.hpp>
 #include <SFML/System/String.hpp>
 #include <SFML/System/Time.hpp>
 #include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
-
-#ifdef SFML_ENABLE_LIFETIME_TRACKING
-
-#include <SFML/System/LifetimeTracking.hpp>
-
-#endif // SFML_ENABLE_LIFETIME_TRACKING
 
 #include <algorithm>
 #include <chrono>
