@@ -52,6 +52,13 @@ if(SFML_ENABLE_LIFETIME_TRACKING)
     add_definitions(-DSFML_ENABLE_LIFETIME_TRACKING)
 endif()
 
+# option to enable precompiled headers
+sfml_set_option(SFML_ENABLE_PCH FALSE BOOL "TRUE to enable precompiled headers for SFML builds -- only supported on Windows/Linux and for static library builds")
+
+if(SFML_ENABLE_PCH)
+    add_definitions(-DSFML_ENABLE_PCH)
+endif()
+
 # add options to select which modules to build
 sfml_set_option(SFML_BUILD_WINDOW TRUE BOOL "TRUE to build SFML's Window module. This setting is ignored, if the graphics module is built.")
 sfml_set_option(SFML_BUILD_GRAPHICS TRUE BOOL "TRUE to build SFML's Graphics module.")
@@ -264,9 +271,6 @@ if(SFML_INSTALL_PKGCONFIG_FILES)
             DESTINATION "${SFML_PKGCONFIG_INSTALL_PREFIX}")
     endforeach()
 endif()
-
-# option to enable precompiled headers
-sfml_set_option(SFML_ENABLE_PCH FALSE BOOL "TRUE to enable precompiled headers for SFML builds -- only supported on Windows/Linux and for static library builds")
 
 if(SFML_ENABLE_PCH AND BUILD_SHARED_LIBS)
     message(FATAL_ERROR "Precompiled headers are currently not supported for shared library builds")

@@ -51,3 +51,12 @@ doctest::String StringMaker<Catch::Approx>::convert(const Catch::Approx&)
 }
 
 } // namespace doctest
+
+#ifdef SFML_ENABLE_PCH
+
+int main(int argc, char** argv)
+{
+    return doctest::Context(argc, argv).run();
+}
+
+#endif
