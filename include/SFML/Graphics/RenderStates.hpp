@@ -40,8 +40,6 @@ namespace sf
 class Shader;
 class Texture;
 
-// TODO make explicit ctors
-
 ////////////////////////////////////////////////////////////
 /// \brief Define the states used for drawing to a RenderTarget
 ///
@@ -61,7 +59,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
     /// \li a null shader
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] RenderStates() = default;
+    [[nodiscard]] explicit RenderStates() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a default set of render states with a custom blend mode
@@ -69,7 +67,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
     /// \param theBlendMode Blend mode to use
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] RenderStates(const BlendMode& theBlendMode);
+    [[nodiscard]] explicit RenderStates(const BlendMode& theBlendMode);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a default set of render states with a custom stencil mode
@@ -77,7 +75,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
     /// \param theStencilMode Stencil mode to use
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] RenderStates(const StencilMode& theStencilMode);
+    [[nodiscard]] explicit RenderStates(const StencilMode& theStencilMode);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a default set of render states with a custom transform
@@ -85,7 +83,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
     /// \param theTransform Transform to use
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] RenderStates(const Transform& theTransform);
+    [[nodiscard]] explicit RenderStates(const Transform& theTransform);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a default set of render states with a custom texture
@@ -93,7 +91,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
     /// \param theTexture Texture to use
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] RenderStates(const Texture* theTexture);
+    [[nodiscard]] explicit RenderStates(const Texture* theTexture);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a default set of render states with a custom shader
@@ -101,7 +99,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
     /// \param theShader Shader to use
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] RenderStates(const Shader* theShader);
+    [[nodiscard]] explicit RenderStates(const Shader* theShader);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a set of render states with all its attributes
@@ -114,12 +112,13 @@ struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
     /// \param theShader         Shader to use
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] RenderStates(const BlendMode&   theBlendMode,
-                               const StencilMode& theStencilMode,
-                               const Transform&   theTransform,
-                               CoordinateType     theCoordinateType,
-                               const Texture*     theTexture,
-                               const Shader*      theShader);
+    [[nodiscard]] explicit RenderStates(
+        const BlendMode&   theBlendMode,
+        const StencilMode& theStencilMode,
+        const Transform&   theTransform,
+        CoordinateType     theCoordinateType,
+        const Texture*     theTexture,
+        const Shader*      theShader);
 
     ////////////////////////////////////////////////////////////
     // Static member data
