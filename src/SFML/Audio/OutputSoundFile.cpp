@@ -37,6 +37,18 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
+OutputSoundFile::~OutputSoundFile() = default;
+
+
+////////////////////////////////////////////////////////////
+OutputSoundFile::OutputSoundFile(OutputSoundFile&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
+OutputSoundFile& OutputSoundFile::operator=(OutputSoundFile&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
 std::optional<OutputSoundFile> OutputSoundFile::openFromFile(
     const std::filesystem::path&     filename,
     unsigned int                     sampleRate,
