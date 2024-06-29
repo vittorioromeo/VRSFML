@@ -37,4 +37,4 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_SYSTEM_API std::string toLower(std::string str);
 
-} // namespace sf
+} // namespace sf::priv
