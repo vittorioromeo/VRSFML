@@ -43,15 +43,20 @@ add_library(sfml-test-main STATIC
 )
 target_include_directories(sfml-test-main PUBLIC TestUtilities)
 target_compile_definitions(sfml-test-main PUBLIC DOCTEST_CONFIG_REQUIRE_STRINGIFICATION_FOR_ALL_USED_TYPES)
-target_link_libraries(sfml-test-main PUBLIC SFML::System doctest::doctest_with_main)
 set_target_warnings(sfml-test-main)
 
 # enable precompiled headers
 if (SFML_ENABLE_PCH)
     message(VERBOSE "enabling PCH for doctest")
-    target_precompile_headers(doctest REUSE_FROM sfml-system)
+
     target_precompile_headers(doctest_with_main REUSE_FROM sfml-system)
     target_precompile_headers(sfml-test-main REUSE_FROM sfml-system)
+
+    target_include_directories(sfml-system PUBLIC ${DOCTEST_INCLUDE_DIRS})
+    target_link_libraries(sfml-system PUBLIC $<BUILD_INTERFACE:doctest::doctest>)
+    target_link_libraries(sfml-test-main PUBLIC SFML::System doctest::doctest)
+else()
+    target_link_libraries(sfml-test-main PUBLIC SFML::System doctest::doctest_with_main)
 endif()
 
 # set the target flags to use the appropriate C++ standard library

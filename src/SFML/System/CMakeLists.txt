@@ -50,6 +50,11 @@ set(SRC
     ${SRCROOT}/PathUtils.hpp
     ${SRCROOT}/PathUtils.cpp
 )
+
+if(SFML_ENABLE_PCH)
+    list(APPEND SRC ${SRCROOT}/PCH.cpp)
+endif()
+
 source_group("" FILES ${SRC})
 
 # add platform specific sources
