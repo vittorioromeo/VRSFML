@@ -39,36 +39,6 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-template <typename TEventSubtype>
-Event::Event(const TEventSubtype& eventSubtype)
-{
-    static_assert(isEventSubtype<TEventSubtype>, "TEventSubtype must be a subtype of sf::Event");
-    if constexpr (isEventSubtype<TEventSubtype>)
-        m_data = eventSubtype;
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename TEventSubtype>
-bool Event::is() const
-{
-    static_assert(isEventSubtype<TEventSubtype>, "TEventSubtype must be a subtype of sf::Event");
-    if constexpr (isEventSubtype<TEventSubtype>)
-        return m_data.is<TEventSubtype>();
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename TEventSubtype>
-const TEventSubtype* Event::getIf() const
-{
-    static_assert(isEventSubtype<TEventSubtype>, "TEventSubtype must be a subtype of sf::Event");
-    if constexpr (isEventSubtype<TEventSubtype>)
-        return m_data.is<TEventSubtype>() ? &m_data.as<TEventSubtype>() : nullptr;
-}
-
-
-////////////////////////////////////////////////////////////
 template <typename Visitor>
 decltype(auto) Event::visit(Visitor&& visitor)
 {
