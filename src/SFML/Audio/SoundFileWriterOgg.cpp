@@ -27,13 +27,13 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/SoundFileWriterOgg.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/PathUtils.hpp>
 #include <SFML/System/StringUtils.hpp>
 
 #include <vorbis/vorbisenc.h>
 
-#include <algorithm>
 #include <fstream>
 #include <random>
 
@@ -147,7 +147,7 @@ bool SoundFileWriterOgg::open(const std::filesystem::path&     filename,
     // Build the remap table
     for (auto i = 0u; i < channelCount; ++i)
         m_impl->remapTable[i] = static_cast<std::size_t>(
-            std::find(channelMap.begin(), channelMap.end(), targetChannelMap[i]) - channelMap.begin());
+            priv::find(channelMap.begin(), channelMap.end(), targetChannelMap[i]) - channelMap.begin());
 
     // Save the channel count
     m_impl->channelCount = channelCount;

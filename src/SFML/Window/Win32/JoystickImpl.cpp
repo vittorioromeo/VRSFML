@@ -27,6 +27,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/JoystickImpl.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Time.hpp>
@@ -494,7 +495,7 @@ void JoystickImpl::cleanupDInput()
 bool JoystickImpl::isConnectedDInput(unsigned int index)
 {
     // Check if a joystick with the given index is in the connected list
-    return std::any_of(joystickList.cbegin(),
+    return priv::anyOf(joystickList.cbegin(),
                        joystickList.cend(),
                        [index](const JoystickRecord& record) { return record.index == index; });
 }

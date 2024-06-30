@@ -30,11 +30,9 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/StringUtils.hpp>
 
-#include <algorithm>
 #include <iterator>
 #include <limits>
 #include <sstream>
-#include <string_view>
 #include <utility>
 
 #include <cctype>
@@ -232,7 +230,8 @@ void Http::Response::parse(const std::string& data)
     if (priv::toLower(getField("transfer-encoding")) != "chunked")
     {
         // Not chunked - just read everything at once
-        std::copy(std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>(), std::back_inserter(m_body));
+        for (auto it = std::istreambuf_iterator<char>(in); it != std::istreambuf_iterator<char>(); ++it)
+            m_body.push_back(*it);
     }
     else
     {

@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/SoundFileReader.hpp>
 
-#include <miniaudio.h>
+#include <SFML/System/InPlacePImpl.hpp>
 
 #include <optional>
 
@@ -59,6 +59,12 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static bool check(InputStream& stream);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Default constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    SoundFileReaderWav();
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -106,8 +112,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::optional<ma_decoder> m_decoder;        //!< wav decoder
-    ma_uint32                 m_channelCount{}; //!< Number of channels
+    struct Impl;
+    priv::InPlacePImpl<Impl, 768> m_impl; //!< Implementation details
 };
 
 } // namespace sf::priv

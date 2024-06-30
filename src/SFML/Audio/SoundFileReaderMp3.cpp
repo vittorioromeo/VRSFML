@@ -27,7 +27,7 @@
 ////////////////////////////////////////////////////////////
 #define MINIMP3_IMPLEMENTATION // Minimp3 control define, places implementation in this file.
 #ifndef NOMINMAX
-#define NOMINMAX // To avoid windows.h and std::min issue
+#define NOMINMAX // To avoid windows.h and min/max issue
 #endif
 #define MINIMP3_NO_STDIO // Minimp3 control define, eliminate file manipulation code which is useless here
 
@@ -52,10 +52,9 @@
 
 #include <SFML/Audio/SoundFileReaderMp3.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InputStream.hpp>
-
-#include <algorithm>
 
 #include <cassert>
 #include <cstdint>
@@ -64,28 +63,44 @@
 
 namespace
 {
-std::size_t readCallback(void* ptr, std::size_t size, void* data)
+////////////////////////////////////////////////////////////
+[[nodiscard]] std::size_t readCallback(void* ptr, std::size_t size, void* data)
 {
     auto* stream = static_cast<sf::InputStream*>(data);
     return stream->read(ptr, size).value_or(-1);
 }
 
-int seekCallback(std::uint64_t offset, void* data)
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] int seekCallback(std::uint64_t offset, void* data)
 {
     auto*               stream   = static_cast<sf::InputStream*>(data);
     const std::optional position = stream->seek(static_cast<std::size_t>(offset));
     return position ? 0 : -1;
 }
 
-bool hasValidId3Tag(const std::uint8_t* header)
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] bool hasValidId3Tag(const std::uint8_t* header)
 {
     return std::memcmp(header, "ID3", 3) == 0 &&
            !((header[5] & 15) || (header[6] & 0x80) || (header[7] & 0x80) || (header[8] & 0x80) || (header[9] & 0x80));
 }
+
 } // namespace
 
 namespace sf::priv
 {
+////////////////////////////////////////////////////////////
+struct SoundFileReaderMp3::Impl
+{
+    mp3dec_io_t   io{};
+    mp3dec_ex_t   decoder{};
+    std::uint64_t numSamples{}; // Decompressed audio storage size
+    std::uint64_t position{};   // Position in decompressed audio buffer
+};
+
+
 ////////////////////////////////////////////////////////////
 bool SoundFileReaderMp3::check(InputStream& stream)
 {
@@ -107,15 +122,15 @@ bool SoundFileReaderMp3::check(InputStream& stream)
 ////////////////////////////////////////////////////////////
 SoundFileReaderMp3::SoundFileReaderMp3()
 {
-    m_io.read = readCallback;
-    m_io.seek = seekCallback;
+    m_impl->io.read = readCallback;
+    m_impl->io.seek = seekCallback;
 }
 
 
 ////////////////////////////////////////////////////////////
 SoundFileReaderMp3::~SoundFileReaderMp3()
 {
-    mp3dec_ex_close(&m_decoder);
+    mp3dec_ex_close(&m_impl->decoder);
 }
 
 
@@ -123,21 +138,21 @@ SoundFileReaderMp3::~SoundFileReaderMp3()
 std::optional<SoundFileReader::Info> SoundFileReaderMp3::open(InputStream& stream)
 {
     // Init IO callbacks
-    m_io.read_data = &stream;
-    m_io.seek_data = &stream;
+    m_impl->io.read_data = &stream;
+    m_impl->io.seek_data = &stream;
 
     std::optional<Info> result; // Use a single local variable for NRVO
 
     // Init mp3 decoder
-    mp3dec_ex_open_cb(&m_decoder, &m_io, MP3D_SEEK_TO_SAMPLE);
-    if (!m_decoder.samples)
+    mp3dec_ex_open_cb(&m_impl->decoder, &m_impl->io, MP3D_SEEK_TO_SAMPLE);
+    if (!m_impl->decoder.samples)
         return result; // Empty optional
 
     // Retrieve the music attributes
     Info& info        = result.emplace();
-    info.channelCount = static_cast<unsigned int>(m_decoder.info.channels);
-    info.sampleRate   = static_cast<unsigned int>(m_decoder.info.hz);
-    info.sampleCount  = m_decoder.samples;
+    info.channelCount = static_cast<unsigned int>(m_impl->decoder.info.channels);
+    info.sampleRate   = static_cast<unsigned int>(m_impl->decoder.info.hz);
+    info.sampleCount  = m_impl->decoder.samples;
 
     // MP3 only supports mono/stereo channels
     switch (info.channelCount)
@@ -157,7 +172,7 @@ std::optional<SoundFileReader::Info> SoundFileReaderMp3::open(InputStream& strea
             break;
     }
 
-    m_numSamples = info.sampleCount;
+    m_impl->numSamples = info.sampleCount;
     return result;
 }
 
@@ -165,17 +180,17 @@ std::optional<SoundFileReader::Info> SoundFileReaderMp3::open(InputStream& strea
 ////////////////////////////////////////////////////////////
 void SoundFileReaderMp3::seek(std::uint64_t sampleOffset)
 {
-    m_position = std::min(sampleOffset, m_numSamples);
-    mp3dec_ex_seek(&m_decoder, m_position);
+    m_impl->position = priv::min(sampleOffset, m_impl->numSamples);
+    mp3dec_ex_seek(&m_impl->decoder, m_impl->position);
 }
 
 
 ////////////////////////////////////////////////////////////
 std::uint64_t SoundFileReaderMp3::read(std::int16_t* samples, std::uint64_t maxCount)
 {
-    std::uint64_t toRead = std::min(maxCount, m_numSamples - m_position);
-    toRead               = std::uint64_t{mp3dec_ex_read(&m_decoder, samples, static_cast<std::size_t>(toRead))};
-    m_position += toRead;
+    std::uint64_t toRead = priv::min(maxCount, m_impl->numSamples - m_impl->position);
+    toRead               = std::uint64_t{mp3dec_ex_read(&m_impl->decoder, samples, static_cast<std::size_t>(toRead))};
+    m_impl->position += toRead;
     return toRead;
 }
 

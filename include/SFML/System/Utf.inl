@@ -25,9 +25,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Utf.hpp> // NOLINT(misc-header-include-cycle)
 
-#include <iterator>
 
 ////////////////////////////////////////////////////////////
 // References:
@@ -42,16 +42,6 @@
 
 namespace sf
 {
-////////////////////////////////////////////////////////////
-template <typename InputIt, typename OutputIt>
-OutputIt priv::copy(InputIt first, InputIt last, OutputIt dFirst)
-{
-    while (first != last)
-        *dFirst++ = static_cast<typename OutputIt::container_type::value_type>(*first++);
-
-    return dFirst;
-}
-
 template <typename In>
 In Utf<8>::decode(In begin, In end, std::uint32_t& output, std::uint32_t replacement)
 {
@@ -135,15 +125,15 @@ Out Utf<8>::encode(std::uint32_t input, Out output, std::uint8_t replacement)
         // clang-format on
 
         // Extract the bytes to write
-        std::byte bytes[4]{};
+        unsigned char bytes[4]{};
 
         // clang-format off
         switch (bytestoWrite)
         {
-            case 4: bytes[3] = static_cast<std::byte>((input | 0x80) & 0xBF); input >>= 6; [[fallthrough]];
-            case 3: bytes[2] = static_cast<std::byte>((input | 0x80) & 0xBF); input >>= 6; [[fallthrough]];
-            case 2: bytes[1] = static_cast<std::byte>((input | 0x80) & 0xBF); input >>= 6; [[fallthrough]];
-            case 1: bytes[0] = static_cast<std::byte> (input | firstBytes[bytestoWrite]);
+            case 4: bytes[3] = static_cast<unsigned char>((input | 0x80) & 0xBF); input >>= 6; [[fallthrough]];
+            case 3: bytes[2] = static_cast<unsigned char>((input | 0x80) & 0xBF); input >>= 6; [[fallthrough]];
+            case 2: bytes[1] = static_cast<unsigned char>((input | 0x80) & 0xBF); input >>= 6; [[fallthrough]];
+            case 1: bytes[0] = static_cast<unsigned char> (input | firstBytes[bytestoWrite]);
         }
         // clang-format on
 

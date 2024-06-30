@@ -28,10 +28,10 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/InputImpl.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/EnumArray.hpp>
 #include <SFML/System/Err.hpp>
 
-#include <algorithm>
 #include <fcntl.h>
 #include <linux/input.h>
 #include <mutex>
@@ -642,7 +642,7 @@ void setMousePosition(const Vector2i& position, const WindowBase& /*relativeTo*/
 ////////////////////////////////////////////////////////////
 bool isTouchDown(unsigned int finger)
 {
-    return std::any_of(touchSlots.cbegin(),
+    return priv::anyOf(touchSlots.cbegin(),
                        touchSlots.cend(),
                        [finger](const TouchSlot& slot) { return slot.id == finger; });
 }

@@ -49,6 +49,8 @@ set(SRC
     ${SRCROOT}/StringUtils.cpp
     ${SRCROOT}/PathUtils.hpp
     ${SRCROOT}/PathUtils.cpp
+    ${INCROOT}/AlgorithmUtils.hpp
+    ${SRCROOT}/AlgorithmUtils.cpp
 )
 
 if(SFML_ENABLE_PCH)

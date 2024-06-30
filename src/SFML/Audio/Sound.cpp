@@ -30,6 +30,7 @@
 #include <SFML/Audio/Sound.hpp>
 #include <SFML/Audio/SoundBuffer.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Time.hpp>
 #include <SFML/System/UniquePtr.hpp>
@@ -93,8 +94,7 @@ struct Sound::Impl : priv::MiniaudioUtils::SoundBase
             return MA_NO_DATA_AVAILABLE;
 
         // Determine how many frames we can read
-        const auto min = [](ma_uint64 a, ma_uint64 b) { return (a < b) ? a : b; };
-        *framesRead    = min(frameCount, (buffer->getSampleCount() - impl.cursor) / buffer->getChannelCount());
+        *framesRead = priv::min(frameCount, (buffer->getSampleCount() - impl.cursor) / buffer->getChannelCount());
 
         // Copy the samples to the output
         const auto sampleCount = *framesRead * buffer->getChannelCount();

@@ -28,12 +28,12 @@
 #include <SFML/Audio/AudioDevice.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Vector3.hpp>
 
 #include <miniaudio.h>
 
-#include <algorithm>
 #include <mutex>
 #include <optional>
 #include <string>
@@ -151,7 +151,7 @@ std::vector<DeviceEntryImpl> getDevices(ma_context& context)
     if (!deviceName)
         deviceName = PlaybackDevice::getDefaultDevice();
 
-    auto iter = std::find_if(devices.begin(),
+    auto iter = priv::findIf(devices.begin(),
                              devices.end(),
                              [&](const auto& device) { return device.name == deviceName; });
 
@@ -517,21 +517,10 @@ void AudioDevice::setCone(const Listener::Cone& cone)
     if (!instance || !instance->m_impl->engine)
         return;
 
-    const auto clamp = []<typename T>(T value, T minValue, T maxValue)
-    {
-        if (value < minValue)
-            return minValue;
-
-        if (value > maxValue)
-            return maxValue;
-
-        return value;
-    };
-
     ma_engine_listener_set_cone(&*instance->m_impl->engine,
                                 0,
-                                clamp(cone.innerAngle, Angle::Zero, degrees(360.f)).asRadians(),
-                                clamp(cone.outerAngle, Angle::Zero, degrees(360.f)).asRadians(),
+                                priv::clamp(cone.innerAngle, Angle::Zero, degrees(360.f)).asRadians(),
+                                priv::clamp(cone.outerAngle, Angle::Zero, degrees(360.f)).asRadians(),
                                 cone.outerGain);
 }
 
@@ -604,12 +593,10 @@ bool AudioDevice::initialize()
         char        deviceName[MA_MAX_DEVICE_NAME_LENGTH + 1]{};
         std::size_t deviceNameLength{};
 
-        const auto arraySize = []<typename T, std::size_t N>(const T(&)[N]) { return N; };
-
         if (const auto result = ma_device_get_name(&*m_impl->playbackDevice,
                                                    ma_device_type_playback,
                                                    deviceName,
-                                                   arraySize(deviceName),
+                                                   priv::getArraySize(deviceName),
                                                    &deviceNameLength);
             result != MA_SUCCESS)
         {

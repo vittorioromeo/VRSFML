@@ -34,9 +34,9 @@
 #include <SFML/Window/Context.hpp>
 #include <SFML/Window/Window.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 
-#include <algorithm>
 #include <atomic>
 #include <utility>
 
@@ -325,10 +325,10 @@ std::optional<Texture> Texture::loadFromImage(const Image& image, bool sRgb, con
 
     // Adjust the rectangle to the size of the image
     IntRect rectangle    = area;
-    rectangle.position.x = std::max(rectangle.position.x, 0);
-    rectangle.position.y = std::max(rectangle.position.y, 0);
-    rectangle.size.x     = std::min(rectangle.size.x, size.x - rectangle.position.x);
-    rectangle.size.y     = std::min(rectangle.size.y, size.y - rectangle.position.y);
+    rectangle.position.x = priv::max(rectangle.position.x, 0);
+    rectangle.position.y = priv::max(rectangle.position.y, 0);
+    rectangle.size.x     = priv::min(rectangle.size.x, size.x - rectangle.position.x);
+    rectangle.size.y     = priv::min(rectangle.size.y, size.y - rectangle.position.y);
 
     // Create the texture and upload the pixels
     if ((result = sf::Texture::create(Vector2u(rectangle.size), sRgb)))

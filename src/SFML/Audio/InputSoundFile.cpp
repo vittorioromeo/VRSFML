@@ -29,6 +29,7 @@
 #include <SFML/Audio/SoundFileFactory.hpp>
 #include <SFML/Audio/SoundFileReader.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/FileInputStream.hpp>
 #include <SFML/System/InputStream.hpp>
@@ -253,7 +254,7 @@ void InputSoundFile::seek(std::uint64_t sampleOffset)
     {
         // The reader handles an overrun gracefully, but we
         // pre-check to keep our known position consistent
-        m_sampleOffset = std::min(sampleOffset / m_channelMap.size() * m_channelMap.size(), m_sampleCount);
+        m_sampleOffset = priv::min(sampleOffset / m_channelMap.size() * m_channelMap.size(), m_sampleCount);
         m_reader->seek(m_sampleOffset);
     }
 }

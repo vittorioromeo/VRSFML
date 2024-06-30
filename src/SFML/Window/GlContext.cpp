@@ -29,12 +29,12 @@
 #include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/GlContext.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
 #include <glad/gl.h>
 
-#include <algorithm>
 #include <atomic>
 #include <mutex>
 #include <optional>
@@ -554,7 +554,7 @@ void GlContext::unregisterUnsharedGlObject(std::shared_ptr<void> object)
         // Find the object in unshared objects and remove it if its associated context is currently active
         // This will trigger the destructor of the object since shared_ptr
         // in unshared objects should be the only one existing
-        const auto iter = std::find_if(unsharedGlObjects->begin(),
+        const auto iter = priv::findIf(unsharedGlObjects->begin(),
                                        unsharedGlObjects->end(),
                                        [&](const Impl::UnsharedGlObject& obj) {
                                            return (obj.object == object) &&
@@ -747,7 +747,7 @@ bool GlContext::isExtensionAvailable(std::string_view name)
     // the shared context will be created for the duration of this call
     auto& sharedContext = SharedContext::acquireSharedContext();
 
-    const bool result = std::find(sharedContext.extensions.begin(), sharedContext.extensions.end(), name) !=
+    const bool result = priv::find(sharedContext.extensions.begin(), sharedContext.extensions.end(), name) !=
                         sharedContext.extensions.end();
 
     SharedContext::releaseSharedContext();

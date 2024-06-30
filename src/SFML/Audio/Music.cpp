@@ -28,6 +28,7 @@
 #include <SFML/Audio/InputSoundFile.hpp>
 #include <SFML/Audio/Music.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Time.hpp>
 
@@ -156,8 +157,7 @@ void Music::setLoopPoints(TimeSpan timePoints)
     }
 
     // Clamp End Point
-    const auto min      = []<typename T>(T a, T b) { return (a < b) ? a : b; };
-    samplePoints.length = min(samplePoints.length, m_impl->file.getSampleCount() - samplePoints.offset);
+    samplePoints.length = priv::min(samplePoints.length, m_impl->file.getSampleCount() - samplePoints.offset);
 
     // If this change has no effect, we can return without touching anything
     if (samplePoints.offset == m_impl->loopSpan.offset && samplePoints.length == m_impl->loopSpan.length)

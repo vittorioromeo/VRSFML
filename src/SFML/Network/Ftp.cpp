@@ -28,9 +28,9 @@
 #include <SFML/Network/Ftp.hpp>
 #include <SFML/Network/IpAddress.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 
-#include <algorithm>
 #include <fstream>
 #include <sstream>
 #include <utility>
@@ -403,7 +403,7 @@ Ftp::Response Ftp::getResponse()
         }
         else
         {
-            std::copy(m_receiveBuffer.begin(), m_receiveBuffer.end(), buffer);
+            priv::copy(m_receiveBuffer.begin(), m_receiveBuffer.end(), buffer);
             length = m_receiveBuffer.size();
             m_receiveBuffer.clear();
         }
