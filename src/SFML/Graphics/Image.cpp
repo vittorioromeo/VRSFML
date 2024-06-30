@@ -27,6 +27,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Image.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InputStream.hpp>
 #include <SFML/System/PathUtils.hpp>
@@ -42,7 +43,6 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
 
-#include <algorithm>
 #include <string>
 
 #include <cassert>
@@ -78,8 +78,7 @@ void bufferFromCallback(void* context, void* data, int size)
     const auto* source = static_cast<std::uint8_t*>(data);
     auto*       dest   = static_cast<std::vector<std::uint8_t>*>(context);
 
-    dest->reserve(static_cast<std::size_t>(size));
-    std::copy(source, source + size, std::back_inserter(*dest));
+    sf::priv::appendRangeIntoVector(source, source + size, *dest);
 }
 
 // Deleter for STB pointers
@@ -416,7 +415,7 @@ void Image::createMaskFromColor(const Color& color, std::uint8_t alpha)
         return false;
 
     // Then find the valid size of the destination rectangle
-    const Vector2u dstSize(std::min(m_size.x - dest.x, srcRect.size.x), std::min(m_size.y - dest.y, srcRect.size.y));
+    const Vector2u dstSize(priv::min(m_size.x - dest.x, srcRect.size.x), priv::min(m_size.y - dest.y, srcRect.size.y));
 
     // Precompute as much as possible
     const std::size_t  pitch     = static_cast<std::size_t>(dstSize.x) * 4;

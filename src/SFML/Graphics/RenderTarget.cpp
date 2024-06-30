@@ -37,9 +37,9 @@
 
 #include <SFML/Window/Context.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 
-#include <algorithm>
 #include <mutex>
 #include <unordered_map>
 
@@ -361,8 +361,6 @@ void RenderTarget::draw(const Shape& shape, const Texture* texture, const Render
 ////////////////////////////////////////////////////////////
 void RenderTarget::draw(const Vertex* vertices, std::size_t vertexCount, PrimitiveType type, const RenderStates& states)
 {
-    const auto arraySize = []<typename T, std::size_t N>(const T(&)[N]) { return N; };
-
     // Nothing to draw?
     if (!vertices || (vertexCount == 0))
         return;
@@ -370,7 +368,7 @@ void RenderTarget::draw(const Vertex* vertices, std::size_t vertexCount, Primiti
     if (RenderTargetImpl::isActive(m_id) || setActive(true))
     {
         // Check if the vertex count is low enough so that we can pre-transform them
-        const bool useVertexCache = (vertexCount <= arraySize(m_cache.vertexCache));
+        const bool useVertexCache = (vertexCount <= priv::getArraySize(m_cache.vertexCache));
 
         if (useVertexCache)
         {
@@ -451,7 +449,7 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, std::size_t firstVerte
         return;
 
     // Clamp vertexCount to something that makes sense
-    vertexCount = std::min(vertexCount, vertexBuffer.getVertexCount() - firstVertex);
+    vertexCount = priv::min(vertexCount, vertexBuffer.getVertexCount() - firstVertex);
 
     // Nothing to draw?
     if (!vertexCount || !vertexBuffer.getNativeHandle())

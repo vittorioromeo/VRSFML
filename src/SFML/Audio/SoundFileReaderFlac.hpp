@@ -29,9 +29,8 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/SoundFileReader.hpp>
 
-#include <SFML/System/UniquePtr.hpp>
+#include <SFML/System/InPlacePImpl.hpp>
 
-#include <FLAC/stream_decoder.h>
 #include <optional>
 #include <vector>
 
@@ -52,6 +51,18 @@ namespace sf::priv
 class SoundFileReaderFlac : public SoundFileReader
 {
 public:
+    ////////////////////////////////////////////////////////////
+    /// \brief Default constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    SoundFileReaderFlac();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Destructor
+    ///
+    ////////////////////////////////////////////////////////////
+    ~SoundFileReaderFlac() override;
+
     ////////////////////////////////////////////////////////////
     /// \brief Check if this reader can handle a file given by an input stream
     ///
@@ -116,12 +127,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    struct FlacStreamDecoderDeleter
-    {
-        void operator()(FLAC__StreamDecoder* decoder) const;
-    };
-    UniquePtr<FLAC__StreamDecoder, FlacStreamDecoderDeleter> m_decoder; //!< FLAC decoder
-    ClientData m_clientData;                                            //!< Structure passed to the decoder callbacks
+    struct Impl;
+    priv::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
 };
 
 } // namespace sf::priv

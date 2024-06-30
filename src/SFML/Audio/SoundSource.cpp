@@ -28,6 +28,8 @@
 #include <SFML/Audio/EffectProcessor.hpp>
 #include <SFML/Audio/SoundSource.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
+
 #include <miniaudio.h>
 
 
@@ -85,21 +87,10 @@ void SoundSource::setDirection(const Vector3f& direction)
 ////////////////////////////////////////////////////////////
 void SoundSource::setCone(const Cone& cone)
 {
-    const auto clamp = []<typename T>(T value, T minValue, T maxValue)
-    {
-        if (value < minValue)
-            return minValue;
-
-        if (value > maxValue)
-            return maxValue;
-
-        return value;
-    };
-
     if (auto* sound = static_cast<ma_sound*>(getSound()))
         ma_sound_set_cone(sound,
-                          clamp(cone.innerAngle, Angle::Zero, degrees(360.f)).asRadians(),
-                          clamp(cone.outerAngle, Angle::Zero, degrees(360.f)).asRadians(),
+                          priv::clamp(cone.innerAngle, Angle::Zero, degrees(360.f)).asRadians(),
+                          priv::clamp(cone.outerAngle, Angle::Zero, degrees(360.f)).asRadians(),
                           cone.outerGain);
 }
 

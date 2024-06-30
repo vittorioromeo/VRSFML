@@ -25,6 +25,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/MemoryInputStream.hpp>
 
 #include <cassert>
@@ -45,10 +46,7 @@ m_size(sizeInBytes)
 ////////////////////////////////////////////////////////////
 std::optional<std::size_t> MemoryInputStream::read(void* data, std::size_t size)
 {
-    // Not using 'std::min' to avoid depending on '<algorithm>'
-    const auto min = [](std::size_t a, std::size_t b) { return (a < b) ? a : b; };
-
-    const std::size_t count = min(size, m_size - m_offset);
+    const std::size_t count = priv::min(size, m_size - m_offset);
 
     if (count > 0)
     {

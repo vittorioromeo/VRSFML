@@ -27,12 +27,12 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/SoundRecorder.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Sleep.hpp>
 
 #include <miniaudio.h>
 
-#include <algorithm>
 #include <optional>
 
 #include <cassert>
@@ -55,7 +55,7 @@ struct SoundRecorder::Impl
         // Find the device by its name
         auto devices = getAvailableDevices();
 
-        const auto iter = std::find_if(devices.begin(),
+        const auto iter = priv::findIf(devices.begin(),
                                        devices.end(),
                                        [this](const ma_device_info& info) { return info.name == deviceName; });
 

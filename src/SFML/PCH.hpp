@@ -43,6 +43,7 @@
 
 #endif // SFML_SYSTEM_WINDOWS
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/String.hpp>
 #include <SFML/System/Time.hpp>

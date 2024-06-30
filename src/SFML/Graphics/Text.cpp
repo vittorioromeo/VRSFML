@@ -33,7 +33,6 @@
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/Vertex.hpp>
 
-#include <algorithm>
 #include <utility>
 
 #include <cmath>
@@ -290,7 +289,7 @@ float Text::getOutlineThickness() const
 Vector2f Text::findCharacterPos(std::size_t index) const
 {
     // Adjust the index if it's out of range
-    index = std::min(index, m_string.getSize());
+    index = priv::min(index, m_string.getSize());
 
     // Precompute the variables needed by the algorithm
     const bool  isBold          = m_style & Bold;
@@ -530,8 +529,8 @@ void Text::ensureGeometryUpdate() const
         if ((curChar == U' ') || (curChar == U'\n') || (curChar == U'\t'))
         {
             // Update the current bounds (min coordinates)
-            minX = std::min(minX, x);
-            minY = std::min(minY, y);
+            minX = priv::min(minX, x);
+            minY = priv::min(minY, y);
 
             switch (curChar)
             {
@@ -548,8 +547,8 @@ void Text::ensureGeometryUpdate() const
             }
 
             // Update the current bounds (max coordinates)
-            maxX = std::max(maxX, x);
-            maxY = std::max(maxY, y);
+            maxX = priv::max(maxX, x);
+            maxY = priv::max(maxY, y);
 
             // Next glyph, no need to create a quad for whitespace
             continue;
@@ -574,10 +573,10 @@ void Text::ensureGeometryUpdate() const
         const Vector2f p1 = glyph.bounds.position;
         const Vector2f p2 = glyph.bounds.position + glyph.bounds.size;
 
-        minX = std::min(minX, x + p1.x - italicShear * p2.y);
-        maxX = std::max(maxX, x + p2.x - italicShear * p1.y);
-        minY = std::min(minY, y + p1.y);
-        maxY = std::max(maxY, y + p2.y);
+        minX = priv::min(minX, x + p1.x - italicShear * p2.y);
+        maxX = priv::max(maxX, x + p2.x - italicShear * p1.y);
+        minY = priv::min(minY, y + p1.y);
+        maxY = priv::max(maxY, y + p2.y);
 
         // Advance to the next character
         x += glyph.advance + letterSpacing;

@@ -29,12 +29,13 @@
 #include <SFML/Window/Unix/Utils.hpp>
 #include <SFML/Window/VideoModeImpl.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 
 #include <X11/Xlib.h>
 #include <X11/extensions/Xrandr.h>
 
-#include <algorithm>
+#include <utility>
 
 
 namespace sf::priv
@@ -97,7 +98,7 @@ std::vector<VideoMode> VideoModeImpl::getFullscreenModes()
                                     std::swap(mode.size.x, mode.size.y);
 
                                 // Add it only if it is not already in the array
-                                if (std::find(modes.begin(), modes.end(), mode) == modes.end())
+                                if (priv::find(modes.begin(), modes.end(), mode) == modes.end())
                                     modes.push_back(mode);
                             }
                         }

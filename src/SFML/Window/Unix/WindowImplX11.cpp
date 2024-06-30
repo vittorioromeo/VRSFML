@@ -33,6 +33,7 @@
 #include <SFML/Window/Unix/Utils.hpp>
 #include <SFML/Window/Unix/WindowImplX11.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Sleep.hpp>
 #include <SFML/System/String.hpp>
@@ -49,7 +50,6 @@
 #include <X11/extensions/Xrandr.h>
 #include <X11/keysym.h>
 
-#include <algorithm>
 #include <array>
 #include <bitset>
 #include <fcntl.h>
@@ -364,7 +364,7 @@ bool isWMAbsolutePositionGood()
     if (!ewmhSupported())
         return false;
 
-    return std::any_of(std::begin(wmAbsPosGood),
+    return priv::anyOf(std::begin(wmAbsPosGood),
                        std::end(wmAbsPosGood),
                        [&](const sf::String& name) { return name == windowManagerName; });
 }
@@ -650,7 +650,7 @@ m_cursorGrabbed(m_fullscreen)
     // For simplicity, we retrieve it via the base executable name.
     std::string       executableName = findExecutableName().string();
     std::vector<char> windowInstance(executableName.size() + 1, 0);
-    std::copy(executableName.begin(), executableName.end(), windowInstance.begin());
+    priv::copy(executableName.begin(), executableName.end(), windowInstance.begin());
     hint.res_name = windowInstance.data();
 
     // The class name identifies a class of windows that
@@ -658,7 +658,7 @@ m_cursorGrabbed(m_fullscreen)
     // the class name.
     std::string       ansiTitle = title.toAnsiString();
     std::vector<char> windowClass(ansiTitle.size() + 1, 0);
-    std::copy(ansiTitle.begin(), ansiTitle.end(), windowClass.begin());
+    priv::copy(ansiTitle.begin(), ansiTitle.end(), windowClass.begin());
     hint.res_class = windowClass.data();
 
     XSetClassHint(m_display.get(), m_window, &hint);
@@ -719,7 +719,7 @@ WindowImplX11::~WindowImplX11()
 
     // Remove this window from the global list of windows (required for focus request)
     const std::lock_guard lock(allWindowsMutex);
-    allWindows.erase(std::find(allWindows.begin(), allWindows.end(), this));
+    allWindows.erase(priv::find(allWindows.begin(), allWindows.end(), this));
 }
 
 

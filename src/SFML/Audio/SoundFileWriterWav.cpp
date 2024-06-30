@@ -27,6 +27,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/SoundFileWriterWav.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/PathUtils.hpp>
 #include <SFML/System/StringUtils.hpp>
@@ -41,25 +42,19 @@
 
 namespace
 {
-template <typename T, std::size_t N>
-std::size_t arraySize(const T (&)[N])
-{
-    return N;
-}
-
 // The following functions takes integers in host byte order
 // and writes them to a stream as little endian
 
 void encode(std::ostream& stream, std::int16_t value)
 {
     const char bytes[] = {static_cast<char>(value & 0xFF), static_cast<char>(value >> 8)};
-    stream.write(bytes, static_cast<std::streamsize>(arraySize(bytes)));
+    stream.write(bytes, static_cast<std::streamsize>(sf::priv::getArraySize(bytes)));
 }
 
 void encode(std::ostream& stream, std::uint16_t value)
 {
     const char bytes[] = {static_cast<char>(value & 0xFF), static_cast<char>(value >> 8)};
-    stream.write(bytes, static_cast<std::streamsize>(arraySize(bytes)));
+    stream.write(bytes, static_cast<std::streamsize>(sf::priv::getArraySize(bytes)));
 }
 
 void encode(std::ostream& stream, std::uint32_t value)
@@ -70,7 +65,7 @@ void encode(std::ostream& stream, std::uint32_t value)
         static_cast<char>((value & 0x00FF0000) >> 16),
         static_cast<char>((value & 0xFF000000) >> 24),
     };
-    stream.write(bytes, static_cast<std::streamsize>(arraySize(bytes)));
+    stream.write(bytes, static_cast<std::streamsize>(sf::priv::getArraySize(bytes)));
 }
 } // namespace
 
@@ -189,7 +184,7 @@ bool SoundFileWriterWav::open(const std::filesystem::path&     filename,
         // Construct the target channel map by removing unused channels
         for (auto iter = targetChannelMap.begin(); iter != targetChannelMap.end();)
         {
-            if (std::find(channelMap.begin(), channelMap.end(), iter->channel) == channelMap.end())
+            if (priv::find(channelMap.begin(), channelMap.end(), iter->channel) == channelMap.end())
             {
                 iter = targetChannelMap.erase(iter);
             }
@@ -202,7 +197,7 @@ bool SoundFileWriterWav::open(const std::filesystem::path&     filename,
         // Verify that all the input channels exist in the target channel map
         for (const SoundChannel channel : channelMap)
         {
-            if (std::find_if(targetChannelMap.begin(),
+            if (priv::findIf(targetChannelMap.begin(),
                              targetChannelMap.end(),
                              [channel](const SupportedChannel& c) { return c.channel == channel; }) ==
                 targetChannelMap.end())
@@ -215,7 +210,7 @@ bool SoundFileWriterWav::open(const std::filesystem::path&     filename,
         // Build the remap table
         for (auto i = 0u; i < channelCount; ++i)
             m_impl->remapTable[i] = static_cast<std::size_t>(
-                std::find(channelMap.begin(), channelMap.end(), targetChannelMap[i].channel) - channelMap.begin());
+                priv::find(channelMap.begin(), channelMap.end(), targetChannelMap[i].channel) - channelMap.begin());
 
         // Generate the channel mask
         for (const auto& channel : targetChannelMap)
@@ -268,16 +263,16 @@ void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int chann
 
     // Write the main chunk ID
     char mainChunkId[] = {'R', 'I', 'F', 'F'};
-    m_impl->file.write(mainChunkId, static_cast<std::streamsize>(arraySize(mainChunkId)));
+    m_impl->file.write(mainChunkId, static_cast<std::streamsize>(priv::getArraySize(mainChunkId)));
 
     // Write the main chunk header
     encode(m_impl->file, std::uint32_t{0}); // 0 is a placeholder, will be written later
     char mainChunkFormat[] = {'W', 'A', 'V', 'E'};
-    m_impl->file.write(mainChunkFormat, static_cast<std::streamsize>(arraySize(mainChunkFormat)));
+    m_impl->file.write(mainChunkFormat, static_cast<std::streamsize>(priv::getArraySize(mainChunkFormat)));
 
     // Write the sub-chunk 1 ("format") id and size
     char fmtChunkId[] = {'f', 'm', 't', ' '};
-    m_impl->file.write(fmtChunkId, static_cast<std::streamsize>(arraySize(fmtChunkId)));
+    m_impl->file.write(fmtChunkId, static_cast<std::streamsize>(priv::getArraySize(fmtChunkId)));
 
     if (channelCount > 2)
     {
@@ -317,12 +312,12 @@ void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int chann
         // Write the subformat (PCM)
         char subformat[] =
             {'\x01', '\x00', '\x00', '\x00', '\x00', '\x00', '\x10', '\x00', '\x80', '\x00', '\x00', '\xAA', '\x00', '\x38', '\x9B', '\x71'};
-        m_impl->file.write(subformat, static_cast<std::streamsize>(arraySize(subformat)));
+        m_impl->file.write(subformat, static_cast<std::streamsize>(priv::getArraySize(subformat)));
     }
 
     // Write the sub-chunk 2 ("data") id and size
     char dataChunkId[] = {'d', 'a', 't', 'a'};
-    m_impl->file.write(dataChunkId, static_cast<std::streamsize>(arraySize(dataChunkId)));
+    m_impl->file.write(dataChunkId, static_cast<std::streamsize>(priv::getArraySize(dataChunkId)));
     const std::uint32_t dataChunkSize = 0; // placeholder, will be written later
     encode(m_impl->file, dataChunkSize);
 }

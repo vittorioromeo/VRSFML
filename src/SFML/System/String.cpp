@@ -25,10 +25,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/String.hpp>
 #include <SFML/System/Utf.hpp>
 
-#include <iterator>
 #include <utility>
 
 #include <cassert>
@@ -170,7 +170,7 @@ String::String(const char* ansiString, const std::locale& locale)
         if (length > 0)
         {
             m_string.reserve(length + 1);
-            Utf32::fromAnsi(ansiString, ansiString + length, std::back_inserter(m_string), locale);
+            Utf32::fromAnsi(ansiString, ansiString + length, priv::BackInserter(m_string), locale);
         }
     }
 }
@@ -180,7 +180,7 @@ String::String(const char* ansiString, const std::locale& locale)
 String::String(const std::string& ansiString, const std::locale& locale)
 {
     m_string.reserve(ansiString.length() + 1);
-    Utf32::fromAnsi(ansiString.begin(), ansiString.end(), std::back_inserter(m_string), locale);
+    Utf32::fromAnsi(ansiString.begin(), ansiString.end(), priv::BackInserter(m_string), locale);
 }
 
 
@@ -193,7 +193,7 @@ String::String(const wchar_t* wideString)
         if (length > 0)
         {
             m_string.reserve(length + 1);
-            Utf32::fromWide(wideString, wideString + length, std::back_inserter(m_string));
+            Utf32::fromWide(wideString, wideString + length, priv::BackInserter(m_string));
         }
     }
 }
@@ -203,7 +203,7 @@ String::String(const wchar_t* wideString)
 String::String(const std::wstring& wideString)
 {
     m_string.reserve(wideString.length() + 1);
-    Utf32::fromWide(wideString.begin(), wideString.end(), std::back_inserter(m_string));
+    Utf32::fromWide(wideString.begin(), wideString.end(), priv::BackInserter(m_string));
 }
 
 
@@ -243,7 +243,7 @@ std::string String::toAnsiString(const std::locale& locale) const
     output.reserve(m_string.length() + 1);
 
     // Convert
-    Utf32::toAnsi(m_string.begin(), m_string.end(), std::back_inserter(output), 0, locale);
+    Utf32::toAnsi(m_string.begin(), m_string.end(), priv::BackInserter(output), 0, locale);
 
     return output;
 }
@@ -257,7 +257,7 @@ std::wstring String::toWideString() const
     output.reserve(m_string.length() + 1);
 
     // Convert
-    Utf32::toWide(m_string.begin(), m_string.end(), std::back_inserter(output), 0);
+    Utf32::toWide(m_string.begin(), m_string.end(), priv::BackInserter(output), 0);
 
     return output;
 }
@@ -271,7 +271,7 @@ U8String String::toUtf8() const
     output.reserve(m_string.length());
 
     // Convert
-    Utf32::toUtf8(m_string.begin(), m_string.end(), std::back_inserter(output));
+    Utf32::toUtf8(m_string.begin(), m_string.end(), priv::BackInserter(output));
 
     return output;
 }
@@ -285,7 +285,7 @@ std::u16string String::toUtf16() const
     output.reserve(m_string.length());
 
     // Convert
-    Utf32::toUtf16(m_string.begin(), m_string.end(), std::back_inserter(output));
+    Utf32::toUtf16(m_string.begin(), m_string.end(), priv::BackInserter(output));
 
     return output;
 }

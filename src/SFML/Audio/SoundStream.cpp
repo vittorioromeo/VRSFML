@@ -29,6 +29,7 @@
 #include <SFML/Audio/MiniaudioUtils.hpp>
 #include <SFML/Audio/SoundStream.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Sleep.hpp>
 #include <SFML/System/Time.hpp>
@@ -109,8 +110,7 @@ struct SoundStream::Impl : priv::MiniaudioUtils::SoundBase
         if (!impl.sampleBuffer.empty())
         {
             // Determine how many frames we can read
-            const auto min = [](ma_uint64 a, ma_uint64 b) { return (a < b) ? a : b; };
-            *framesRead    = min(frameCount, (impl.sampleBuffer.size() - impl.sampleBufferCursor) / impl.channelCount);
+            *framesRead = priv::min(frameCount, (impl.sampleBuffer.size() - impl.sampleBufferCursor) / impl.channelCount);
 
             const auto sampleCount = *framesRead * impl.channelCount;
 

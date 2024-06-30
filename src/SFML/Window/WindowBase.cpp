@@ -35,6 +35,7 @@
 #include <SFML/Window/WindowHandle.hpp>
 #include <SFML/Window/WindowImpl.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 
 #include <limits>
@@ -211,19 +212,8 @@ void WindowBase::setSize(const Vector2u& size)
     const auto maximumSize = m_impl->getMaximumSize().value_or(
         Vector2u(std::numeric_limits<unsigned int>::max(), std::numeric_limits<unsigned int>::max()));
 
-    const auto clamp = []<typename T>(T value, T minValue, T maxValue)
-    {
-        if (value < minValue)
-            return minValue;
-
-        if (value > maxValue)
-            return maxValue;
-
-        return value;
-    };
-
-    const auto width  = clamp(size.x, minimumSize.x, maximumSize.x);
-    const auto height = clamp(size.y, minimumSize.y, maximumSize.y);
+    const auto width  = priv::clamp(size.x, minimumSize.x, maximumSize.x);
+    const auto height = priv::clamp(size.y, minimumSize.y, maximumSize.y);
 
     // Do nothing if requested size matches current size
     const Vector2u clampedSize(width, height);
