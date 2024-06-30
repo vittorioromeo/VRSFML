@@ -29,8 +29,8 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/Export.hpp>
 
+#include <SFML/System/InPlacePImpl.hpp>
 #include <SFML/System/PassKey.hpp>
-#include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #include <optional>
@@ -114,9 +114,6 @@ public:
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
-    ///
-    /// This destructor releases the system resources
-    /// associated with this cursor, if any.
     ///
     ////////////////////////////////////////////////////////////
     ~Cursor();
@@ -220,7 +217,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    priv::UniquePtr<priv::CursorImpl> m_impl; //!< Platform-specific implementation of the cursor
+    struct Impl;
+    priv::InPlacePImpl<priv::CursorImpl, 32> m_impl; //!< Implementation details
 };
 
 } // namespace sf

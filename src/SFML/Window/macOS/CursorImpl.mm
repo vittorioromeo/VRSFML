@@ -45,7 +45,7 @@ NSCursor* loadFromSelector(SEL selector)
     return nil;
 }
 
-}
+} // namespace
 
 namespace sf::priv
 {
@@ -53,7 +53,29 @@ namespace sf::priv
 CursorImpl::~CursorImpl()
 {
     const AutoreleasePool pool;
-    [m_cursor release];
+
+    if (m_cursor)
+        [m_cursor release];
+}
+
+
+////////////////////////////////////////////////////////////
+CursorImpl::CursorImpl(CursorImpl&& rhs) noexcept : m_cursor(rhs.m_cursor)
+{
+    rhs.m_cursor = nil;
+}
+
+
+////////////////////////////////////////////////////////////
+CursorImpl& CursorImpl::operator=(CursorImpl&& rhs) noexcept
+{
+    if (&rhs == this)
+    {
+        m_cursor     = rhs.m_cursor;
+        rhs.m_cursor = nil;
+    }
+
+    return *this;
 }
 
 
