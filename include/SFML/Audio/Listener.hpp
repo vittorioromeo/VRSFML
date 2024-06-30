@@ -202,6 +202,7 @@ SFML_AUDIO_API void setUpVector(const Vector3f& upVector);
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_AUDIO_API Vector3f getUpVector();
+
 } // namespace sf::Listener
 
 

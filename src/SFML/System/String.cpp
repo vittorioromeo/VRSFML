@@ -26,10 +26,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/System/AlgorithmUtils.hpp>
+#include <SFML/System/Macros.hpp>
 #include <SFML/System/String.hpp>
 #include <SFML/System/Utf.hpp>
-
-#include <utility>
 
 #include <cassert>
 #include <cstring>
@@ -216,7 +215,7 @@ String::String(const char32_t* utf32String)
 
 
 ////////////////////////////////////////////////////////////
-String::String(std::u32string utf32String) : m_string(std::move(utf32String))
+String::String(std::u32string utf32String) : m_string(SFML_MOVE(utf32String))
 {
 }
 

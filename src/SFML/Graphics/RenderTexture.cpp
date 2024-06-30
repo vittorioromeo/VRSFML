@@ -30,6 +30,7 @@
 #include <SFML/Graphics/RenderTextureImplFBO.hpp>
 
 #include <SFML/System/Err.hpp>
+#include <SFML/System/Macros.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
 
@@ -60,7 +61,7 @@ std::optional<RenderTexture> RenderTexture::create(const Vector2u& size, const C
         return result; // Empty optional
     }
 
-    auto& renderTexture = result.emplace(priv::PassKey<RenderTexture>{}, std::move(*texture));
+    auto& renderTexture = result.emplace(priv::PassKey<RenderTexture>{}, SFML_MOVE(*texture));
 
     // We disable smoothing by default for render textures
     renderTexture.setSmooth(false);
@@ -198,7 +199,7 @@ const Texture& RenderTexture::getTexture() const
 
 
 ////////////////////////////////////////////////////////////
-RenderTexture::RenderTexture(priv::PassKey<RenderTexture>&&, Texture&& texture) : m_texture(std::move(texture))
+RenderTexture::RenderTexture(priv::PassKey<RenderTexture>&&, Texture&& texture) : m_texture(SFML_MOVE(texture))
 {
 }
 

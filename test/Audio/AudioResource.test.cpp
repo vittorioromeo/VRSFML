@@ -1,11 +1,12 @@
 #include <SFML/Audio/AudioResource.hpp>
 
+#include <SFML/System/Macros.hpp>
+
 #include <Doctest.hpp>
 
 #include <AudioUtil.hpp>
 
 #include <type_traits>
-#include <utility>
 
 struct ma_engine;
 
@@ -86,7 +87,7 @@ TEST_CASE("[Audio] sf::AudioResource" * doctest::skip(skipAudioDeviceTests))
             TestAudioResource tar0;
             CHECK(audioDeviceInstanceCreated());
 
-            auto tar1 = std::move(tar0);
+            auto tar1 = SFML_MOVE(tar0);
             CHECK(audioDeviceInstanceCreated());
         }
 
@@ -121,7 +122,7 @@ TEST_CASE("[Audio] sf::AudioResource" * doctest::skip(skipAudioDeviceTests))
             TestAudioResource tar1;
             CHECK(audioDeviceInstanceCreated());
 
-            tar0 = std::move(tar1);
+            tar0 = SFML_MOVE(tar1);
             CHECK(audioDeviceInstanceCreated());
         }
 

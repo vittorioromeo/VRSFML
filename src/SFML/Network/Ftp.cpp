@@ -30,10 +30,10 @@
 
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
+#include <SFML/System/Macros.hpp>
 
 #include <fstream>
 #include <sstream>
-#include <utility>
 
 #include <cctype>
 #include <cstddef>
@@ -80,7 +80,7 @@ private:
 
 
 ////////////////////////////////////////////////////////////
-Ftp::Response::Response(Status code, std::string message) : m_status(code), m_message(std::move(message))
+Ftp::Response::Response(Status code, std::string message) : m_status(code), m_message(SFML_MOVE(message))
 {
 }
 

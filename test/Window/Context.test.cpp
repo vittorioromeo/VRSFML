@@ -3,6 +3,8 @@
 // Other 1st party headers
 #include <SFML/Window/ContextSettings.hpp>
 
+#include <SFML/System/Macros.hpp>
+
 #include <Doctest.hpp>
 
 #include <WindowUtil.hpp>
@@ -41,7 +43,7 @@ TEST_CASE("[Window] sf::Context" * doctest::skip(skipDisplayTests))
             SECTION("From active context")
             {
                 sf::Context       movedContext;
-                const sf::Context context(std::move(movedContext));
+                const sf::Context context(SFML_MOVE(movedContext));
                 CHECK(context.getSettings().majorVersion > 0);
                 CHECK(sf::Context::getActiveContext() == &context);
                 CHECK(sf::Context::getActiveContextId() != 0);
@@ -54,7 +56,7 @@ TEST_CASE("[Window] sf::Context" * doctest::skip(skipDisplayTests))
                 CHECK(sf::Context::getActiveContext() == nullptr);
                 CHECK(sf::Context::getActiveContextId() == 0);
 
-                const sf::Context context(std::move(movedContext));
+                const sf::Context context(SFML_MOVE(movedContext));
                 CHECK(context.getSettings().majorVersion > 0);
                 CHECK(sf::Context::getActiveContext() == nullptr);
                 CHECK(sf::Context::getActiveContextId() == 0);
@@ -71,7 +73,7 @@ TEST_CASE("[Window] sf::Context" * doctest::skip(skipDisplayTests))
                 CHECK(sf::Context::getActiveContext() == &movedContext);
                 CHECK(sf::Context::getActiveContextId() != 0);
 
-                context = std::move(movedContext);
+                context = SFML_MOVE(movedContext);
                 CHECK(context.getSettings().majorVersion > 0);
                 CHECK(sf::Context::getActiveContext() == &context);
                 CHECK(sf::Context::getActiveContextId() != 0);
@@ -85,7 +87,7 @@ TEST_CASE("[Window] sf::Context" * doctest::skip(skipDisplayTests))
                 CHECK(sf::Context::getActiveContextId() == 0);
 
                 sf::Context context;
-                context = std::move(movedContext);
+                context = SFML_MOVE(movedContext);
                 CHECK(context.getSettings().majorVersion > 0);
                 CHECK(sf::Context::getActiveContext() == nullptr);
                 CHECK(sf::Context::getActiveContextId() == 0);

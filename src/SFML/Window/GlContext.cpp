@@ -31,6 +31,7 @@
 
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
+#include <SFML/System/Macros.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
 #include <glad/gl.h>
@@ -39,7 +40,6 @@
 #include <mutex>
 #include <optional>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include <cassert>
@@ -541,7 +541,7 @@ void GlContext::registerUnsharedGlObject(std::shared_ptr<void> object)
 {
     if (const std::lock_guard lock(Impl::getUnsharedGlObjectsMutex());
         const auto            unsharedGlObjects = Impl::getWeakUnsharedGlObjects().lock())
-        unsharedGlObjects->emplace_back(Impl::UnsharedGlObject{GlContextImpl::CurrentContext::get().id, std::move(object)});
+        unsharedGlObjects->emplace_back(Impl::UnsharedGlObject{GlContextImpl::CurrentContext::get().id, SFML_MOVE(object)});
 }
 
 

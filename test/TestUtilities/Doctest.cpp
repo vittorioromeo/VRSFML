@@ -35,6 +35,7 @@ doctest::String StringMaker<char32_t>::convert(const char32_t&)
 {
     return ""; // TODO
 }
+
 doctest::String StringMaker<Matchers::WithinRel>::convert(const Matchers::WithinRel&)
 {
     return ""; // TODO

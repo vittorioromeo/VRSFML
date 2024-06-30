@@ -3,6 +3,7 @@
 // Other 1st party headers
 #include <SFML/Audio/SoundBuffer.hpp>
 
+#include <SFML/System/Macros.hpp>
 #include <SFML/System/Time.hpp>
 
 #include <Doctest.hpp>
@@ -120,7 +121,7 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
             badStruct0.emplace();
             CHECK(!guard.fatalErrorTriggered());
 
-            const BadStruct badStruct1 = std::move(badStruct0.value());
+            const BadStruct badStruct1 = SFML_MOVE(badStruct0.value());
             CHECK(!guard.fatalErrorTriggered());
 
             badStruct0.reset();

@@ -31,15 +31,16 @@
 #include <SFML/Graphics/Shader.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InputStream.hpp>
+#include <SFML/System/Macros.hpp>
 #include <SFML/System/PathUtils.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <SFML/System/Vector3.hpp>
 
 #include <fstream>
 #include <optional>
-#include <utility>
 #include <vector>
 
 #include <cassert>
@@ -327,10 +328,10 @@ Shader::~Shader()
 
 ////////////////////////////////////////////////////////////
 Shader::Shader(Shader&& source) noexcept :
-m_shaderProgram(std::exchange(source.m_shaderProgram, 0U)),
-m_currentTexture(std::exchange(source.m_currentTexture, -1)),
-m_textures(std::move(source.m_textures)),
-m_uniforms(std::move(source.m_uniforms))
+m_shaderProgram(priv::exchange(source.m_shaderProgram, 0U)),
+m_currentTexture(priv::exchange(source.m_currentTexture, -1)),
+m_textures(SFML_MOVE(source.m_textures)),
+m_uniforms(SFML_MOVE(source.m_uniforms))
 {
 }
 
@@ -352,10 +353,10 @@ Shader& Shader::operator=(Shader&& right) noexcept
     }
 
     // Move the contents of right.
-    m_shaderProgram  = std::exchange(right.m_shaderProgram, 0U);
-    m_currentTexture = std::exchange(right.m_currentTexture, -1);
-    m_textures       = std::move(right.m_textures);
-    m_uniforms       = std::move(right.m_uniforms);
+    m_shaderProgram  = priv::exchange(right.m_shaderProgram, 0U);
+    m_currentTexture = priv::exchange(right.m_currentTexture, -1);
+    m_textures       = SFML_MOVE(right.m_textures);
+    m_uniforms       = SFML_MOVE(right.m_uniforms);
     return *this;
 }
 
