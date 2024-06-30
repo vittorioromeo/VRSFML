@@ -291,6 +291,16 @@ constexpr Vector2<T> Vector2<T>::rotatedBy(Angle phi) const
 
 ////////////////////////////////////////////////////////////
 template <typename T>
+constexpr Vector2<T> Vector2<T>::movedAndRotatedBy(T r, Angle phi) const
+{
+    static_assert(priv::isVec2FloatingPoint<T>,
+                  "Vector2::movedAndRotatedBy() is only supported for floating point types");
+
+    return *this + Vector2<T>(r, phi);
+}
+
+////////////////////////////////////////////////////////////
+template <typename T>
 constexpr Vector2<T> Vector2<T>::projectedOnto(const Vector2<T>& axis) const
 {
     static_assert(priv::isVec2FloatingPoint<T>, "Vector2::projectedOnto() is only supported for floating point types");

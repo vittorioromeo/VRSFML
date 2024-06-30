@@ -149,6 +149,18 @@ public:
     [[nodiscard, gnu::always_inline]] inline constexpr Vector2 rotatedBy(Angle phi) const;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Rotate by angle \c phi <i><b>(floating-point)</b></i> and move by \c r.
+    ///
+    /// Returns a vector starting at the position of the original, but moved by \c r
+    /// units in the direction of \c phi.
+    ///
+    /// In SFML's default coordinate system with +X right and +Y down,
+    /// this amounts to a clockwise rotation by \c phi.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline]] inline constexpr Vector2 movedAndRotatedBy(T r, Angle phi) const;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Projection of this vector onto \c axis <i><b>(floating-point)</b></i>.
     ///
     /// \param axis Vector being projected onto. Need not be normalized.
