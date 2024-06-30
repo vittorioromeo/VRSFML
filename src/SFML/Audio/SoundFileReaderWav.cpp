@@ -31,6 +31,7 @@
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InputStream.hpp>
+#include <SFML/System/Macros.hpp>
 
 #include <miniaudio.h>
 
@@ -184,7 +185,7 @@ std::optional<SoundFileReader::Info> SoundFileReaderWav::open(InputStream& strea
         soundChannels.emplace_back(priv::MiniaudioUtils::miniaudioChannelToSoundChannel(channelMap[i]));
 
     return std::make_optional<Info>(
-        {frameCount * m_impl->channelCount, m_impl->channelCount, sampleRate, std::move(soundChannels)});
+        {frameCount * m_impl->channelCount, m_impl->channelCount, sampleRate, SFML_MOVE(soundChannels)});
 }
 
 

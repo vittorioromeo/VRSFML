@@ -2,6 +2,7 @@
 
 // Other 1st party headers
 #include <SFML/System/FileInputStream.hpp>
+#include <SFML/System/Macros.hpp>
 
 #include <Doctest.hpp>
 
@@ -151,7 +152,7 @@ TEST_CASE("[Graphics] sf::Shader" * doctest::skip(skipShaderFullTest))
         SECTION("Construction")
         {
             sf::Shader movedShader = sf::Shader::loadFromFile("Graphics/shader.vert", sf::Shader::Type::Vertex).value();
-            const sf::Shader shader = std::move(movedShader);
+            const sf::Shader shader = SFML_MOVE(movedShader);
             CHECK(shader.getNativeHandle() != 0);
         }
 
@@ -159,7 +160,7 @@ TEST_CASE("[Graphics] sf::Shader" * doctest::skip(skipShaderFullTest))
         {
             sf::Shader movedShader = sf::Shader::loadFromFile("Graphics/shader.vert", sf::Shader::Type::Vertex).value();
             sf::Shader shader = sf::Shader::loadFromFile("Graphics/shader.frag", sf::Shader::Type::Fragment).value();
-            shader            = std::move(movedShader);
+            shader            = SFML_MOVE(movedShader);
             CHECK(shader.getNativeHandle() != 0);
         }
     }

@@ -33,11 +33,10 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/FileInputStream.hpp>
 #include <SFML/System/InputStream.hpp>
+#include <SFML/System/Macros.hpp>
 #include <SFML/System/MemoryInputStream.hpp>
 #include <SFML/System/PathUtils.hpp>
 #include <SFML/System/Time.hpp>
-
-#include <utility>
 
 #include <cassert>
 #include <cstdint>
@@ -99,7 +98,7 @@ std::optional<InputSoundFile> InputSoundFile::openFromFile(const std::filesystem
     }
 
     // Wrap the file into a stream
-    auto file = priv::makeUnique<FileInputStream>(std::move(*fileInputStream));
+    auto file = priv::makeUnique<FileInputStream>(SFML_MOVE(*fileInputStream));
 
     // Pass the stream to the reader
     auto info = reader->open(*file);
@@ -112,11 +111,11 @@ std::optional<InputSoundFile> InputSoundFile::openFromFile(const std::filesystem
     }
 
     return std::make_optional<InputSoundFile>(priv::PassKey<InputSoundFile>{},
-                                              std::move(reader),
-                                              std::move(file),
+                                              SFML_MOVE(reader),
+                                              SFML_MOVE(file),
                                               info->sampleCount,
                                               info->sampleRate,
-                                              std::move(info->channelMap));
+                                              SFML_MOVE(info->channelMap));
 }
 
 
@@ -143,11 +142,11 @@ std::optional<InputSoundFile> InputSoundFile::openFromMemory(const void* data, s
     }
 
     return std::make_optional<InputSoundFile>(priv::PassKey<InputSoundFile>{},
-                                              std::move(reader),
-                                              std::move(memory),
+                                              SFML_MOVE(reader),
+                                              SFML_MOVE(memory),
                                               info->sampleCount,
                                               info->sampleRate,
-                                              std::move(info->channelMap));
+                                              SFML_MOVE(info->channelMap));
 }
 
 
@@ -178,11 +177,11 @@ std::optional<InputSoundFile> InputSoundFile::openFromStream(InputStream& stream
     }
 
     return std::make_optional<InputSoundFile>(priv::PassKey<InputSoundFile>{},
-                                              std::move(reader),
+                                              SFML_MOVE(reader),
                                               priv::UniquePtr<InputStream, StreamDeleter>{&stream, false},
                                               info->sampleCount,
                                               info->sampleRate,
-                                              std::move(info->channelMap));
+                                              SFML_MOVE(info->channelMap));
 }
 
 
@@ -299,11 +298,11 @@ InputSoundFile::InputSoundFile(priv::PassKey<InputSoundFile>&&,
                                std::uint64_t                                 sampleCount,
                                unsigned int                                  sampleRate,
                                std::vector<SoundChannel>&&                   channelMap) :
-m_reader(std::move(reader)),
-m_stream(std::move(stream)),
+m_reader(SFML_MOVE(reader)),
+m_stream(SFML_MOVE(stream)),
 m_sampleCount(sampleCount),
 m_sampleRate(sampleRate),
-m_channelMap(std::move(channelMap))
+m_channelMap(SFML_MOVE(channelMap))
 {
 }
 

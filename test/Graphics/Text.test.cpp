@@ -4,6 +4,7 @@
 #include <SFML/Graphics/Font.hpp>
 
 #include <SFML/System/LifetimeDependee.hpp>
+#include <SFML/System/Macros.hpp>
 
 #include <Doctest.hpp>
 
@@ -222,7 +223,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             badStruct0.emplace();
             CHECK(!guard.fatalErrorTriggered());
 
-            const BadStruct badStruct1 = std::move(badStruct0.value());
+            const BadStruct badStruct1 = SFML_MOVE(badStruct0.value());
             CHECK(!guard.fatalErrorTriggered());
 
             badStruct0.reset();

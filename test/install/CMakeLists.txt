@@ -19,6 +19,10 @@ endif()
 add_executable(test-sfml-install Install.cpp)
 target_link_libraries(test-sfml-install PRIVATE SFML::Graphics SFML::Network SFML::Audio)
 
+if (SFML_ENABLE_PCH)
+    target_precompile_headers(test-sfml-install REUSE_FROM sfml-system)
+endif()
+
 if(SFML_USE_STATIC_STD_LIBS)
     set_target_properties(test-sfml-install PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif()

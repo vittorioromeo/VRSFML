@@ -32,6 +32,7 @@
 
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
+#include <SFML/System/Macros.hpp>
 #include <SFML/System/Time.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
@@ -313,7 +314,7 @@ void Sound::setPlayingOffset(Time timeOffset)
 ////////////////////////////////////////////////////////////
 void Sound::setEffectProcessor(EffectProcessor effectProcessor)
 {
-    m_impl->effectProcessor = std::move(effectProcessor);
+    m_impl->effectProcessor = SFML_MOVE(effectProcessor);
     m_impl->connectEffect(bool{m_impl->effectProcessor});
 }
 

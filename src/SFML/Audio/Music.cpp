@@ -30,6 +30,7 @@
 
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
+#include <SFML/System/Macros.hpp>
 #include <SFML/System/Time.hpp>
 
 #include <mutex>
@@ -46,7 +47,7 @@ struct Music::Impl
     Span<std::uint64_t>       loopSpan; //!< Loop Range Specifier
 
     explicit Impl(InputSoundFile&& theFile) :
-    file(std::move(theFile)),
+    file(SFML_MOVE(theFile)),
 
     // Resize the internal buffer so that it can contain 1 second of audio samples
     samples(file.getSampleRate() * file.getChannelCount()),
@@ -86,7 +87,7 @@ std::optional<Music> Music::tryOpenFromInputSoundFile(std::optional<InputSoundFi
         return std::nullopt;
     }
 
-    return std::make_optional<Music>(priv::PassKey<Music>{}, std::move(*optFile));
+    return std::make_optional<Music>(priv::PassKey<Music>{}, SFML_MOVE(*optFile));
 }
 
 
@@ -246,7 +247,7 @@ std::optional<std::uint64_t> Music::onLoop()
 
 
 ////////////////////////////////////////////////////////////
-Music::Music(priv::PassKey<Music>&&, InputSoundFile&& file) : m_impl(priv::makeUnique<Impl>(std::move(file)))
+Music::Music(priv::PassKey<Music>&&, InputSoundFile&& file) : m_impl(priv::makeUnique<Impl>(SFML_MOVE(file)))
 {
     // Initialize the stream
     SoundStream::initialize(m_impl->file.getChannelCount(), m_impl->file.getSampleRate(), m_impl->file.getChannelMap());

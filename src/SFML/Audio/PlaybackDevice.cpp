@@ -28,6 +28,8 @@
 #include <SFML/Audio/AudioDevice.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
+
 
 namespace sf::PlaybackDevice
 {
@@ -63,15 +65,13 @@ std::optional<std::string> getDefaultDevice()
 bool setDevice(const std::string& name)
 {
     // Perform a sanity check to make sure the user isn't passing us a non-existant device name
-    bool foundAny = false;
-    for (const priv::AudioDevice::DeviceEntry& deviceEntry : priv::AudioDevice::getAvailableDevices())
+    if (const auto& availableDevices = priv::AudioDevice::getAvailableDevices();
+        !priv::anyOf(availableDevices.begin(),
+                     availableDevices.end(),
+                     [&](const priv::AudioDevice::DeviceEntry& deviceEntry) { return deviceEntry.name == name; }))
     {
-        if (deviceEntry.name == name)
-            foundAny = true;
-    }
-
-    if (!foundAny)
         return false;
+    }
 
     return priv::AudioDevice::setDevice(name);
 }

@@ -31,6 +31,7 @@
 
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
+#include <SFML/System/Macros.hpp>
 #include <SFML/System/Sleep.hpp>
 #include <SFML/System/Time.hpp>
 
@@ -234,7 +235,7 @@ SoundStream::~SoundStream() = default;
 
 
 ////////////////////////////////////////////////////////////
-SoundStream::SoundStream(SoundStream&& rhs) noexcept : m_impl(std::move(rhs.m_impl))
+SoundStream::SoundStream(SoundStream&& rhs) noexcept : m_impl(SFML_MOVE(rhs.m_impl))
 {
     // Update self-referential owner pointer.
     m_impl->owner = this;
@@ -246,7 +247,7 @@ SoundStream& SoundStream::operator=(SoundStream&& rhs) noexcept
 {
     if (this != &rhs)
     {
-        m_impl = std::move(rhs.m_impl);
+        m_impl = SFML_MOVE(rhs.m_impl);
 
         // Update self-referential owner pointer.
         m_impl->owner = this;
@@ -391,7 +392,7 @@ bool SoundStream::getLoop() const
 ////////////////////////////////////////////////////////////
 void SoundStream::setEffectProcessor(EffectProcessor effectProcessor)
 {
-    m_impl->effectProcessor = std::move(effectProcessor);
+    m_impl->effectProcessor = SFML_MOVE(effectProcessor);
     m_impl->connectEffect(bool{m_impl->effectProcessor});
 }
 

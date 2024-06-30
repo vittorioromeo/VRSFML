@@ -31,11 +31,11 @@
 #include <SFML/Audio/SoundBuffer.hpp>
 
 #include <SFML/System/Err.hpp>
+#include <SFML/System/Macros.hpp>
 #include <SFML/System/Time.hpp>
 
 #include <optional>
 #include <unordered_set>
-#include <utility>
 
 
 namespace sf
@@ -50,7 +50,7 @@ struct SoundBuffer::Impl
 {
     explicit Impl() = default;
 
-    explicit Impl(std::vector<std::int16_t>&& theSamples) : samples(std::move(theSamples))
+    explicit Impl(std::vector<std::int16_t>&& theSamples) : samples(SFML_MOVE(theSamples))
     {
     }
 
@@ -144,7 +144,7 @@ std::optional<SoundBuffer> SoundBuffer::loadFromSamplesImpl(
     }
 
     // Take ownership of the audio samples
-    soundBuffer.emplace(priv::PassKey<SoundBuffer>{}, std::move(samples));
+    soundBuffer.emplace(priv::PassKey<SoundBuffer>{}, SFML_MOVE(samples));
 
     // Update the internal buffer with the new samples
     if (!soundBuffer->update(channelCount, sampleRate, channelMap))
@@ -240,7 +240,7 @@ SoundBuffer& SoundBuffer::operator=(const SoundBuffer& right)
 
 
 ////////////////////////////////////////////////////////////
-SoundBuffer::SoundBuffer(priv::PassKey<SoundBuffer>&&, std::vector<std::int16_t>&& samples) : m_impl(std::move(samples))
+SoundBuffer::SoundBuffer(priv::PassKey<SoundBuffer>&&, std::vector<std::int16_t>&& samples) : m_impl(SFML_MOVE(samples))
 {
 }
 
@@ -257,7 +257,7 @@ std::optional<SoundBuffer> SoundBuffer::initialize(InputSoundFile& file)
         return std::nullopt;
     }
 
-    return loadFromSamplesImpl(std::move(samples), file.getChannelCount(), file.getSampleRate(), file.getChannelMap());
+    return loadFromSamplesImpl(SFML_MOVE(samples), file.getChannelCount(), file.getSampleRate(), file.getChannelMap());
 }
 
 

@@ -336,12 +336,12 @@ constexpr T Vector2<T>::length() const
 ////////////////////////////////////////////////////////////
 
 template <typename T>
-const Vector2<T> Vector2<T>::UnitX(static_cast<T>(1), static_cast<T>(0));
+inline constexpr Vector2<T> Vector2<T>::UnitX(static_cast<T>(1), static_cast<T>(0));
 
 template <typename T>
-const Vector2<T> Vector2<T>::UnitY(static_cast<T>(0), static_cast<T>(1));
+inline constexpr Vector2<T> Vector2<T>::UnitY(static_cast<T>(0), static_cast<T>(1));
 
 template <typename T>
-const Vector2<T> Vector2<T>::Zero(static_cast<T>(0), static_cast<T>(0));
+inline constexpr Vector2<T> Vector2<T>::Zero(static_cast<T>(0), static_cast<T>(0));
 
 } // namespace sf

@@ -45,6 +45,8 @@
 
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
+#include <SFML/System/InPlacePImpl.hpp>
+#include <SFML/System/Macros.hpp>
 #include <SFML/System/String.hpp>
 #include <SFML/System/Time.hpp>
 #include <SFML/System/UniquePtr.hpp>

@@ -34,6 +34,7 @@
 #endif
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InputStream.hpp>
+#include <SFML/System/Macros.hpp>
 #include <SFML/System/PathUtils.hpp>
 
 #include <ft2build.h>
@@ -45,7 +46,6 @@
 
 #include <memory>
 #include <unordered_map>
-#include <utility>
 #include <vector>
 
 #include <cassert>
@@ -169,8 +169,8 @@ struct Font::Impl
 ////////////////////////////////////////////////////////////
 Font::Font(priv::PassKey<Font>&&, void* fontHandlesSharedPtr, std::string&& familyName)
 {
-    m_impl->fontHandles = std::move(*static_cast<std::shared_ptr<FontHandles>*>(fontHandlesSharedPtr));
-    m_impl->info.family = std::move(familyName);
+    m_impl->fontHandles = SFML_MOVE(*static_cast<std::shared_ptr<FontHandles>*>(fontHandlesSharedPtr));
+    m_impl->info.family = SFML_MOVE(familyName);
 }
 
 
@@ -246,7 +246,7 @@ std::optional<Font> Font::openFromFile(const std::filesystem::path& filename)
     auto stream = priv::makeUnique<priv::ResourceStream>(filename);
     auto font   = openFromStream(*stream);
     if (font)
-        font->m_stream = std::move(stream);
+        font->m_stream = SFML_MOVE(stream);
     return font;
 
 #endif
@@ -541,7 +541,7 @@ Font::Page& Font::loadPage(unsigned int characterSize) const
 
     auto page = Page::create(m_impl->isSmooth);
     assert(page && "Font::loadPage() Failed to load page");
-    return m_impl->pages.emplace(characterSize, std::move(*page)).first->second;
+    return m_impl->pages.emplace(characterSize, SFML_MOVE(*page)).first->second;
 }
 
 
@@ -844,12 +844,12 @@ std::optional<Font::Page> Font::Page::create(bool smooth)
     }
 
     texture->setSmooth(smooth);
-    return std::make_optional<Page>(std::move(*texture));
+    return std::make_optional<Page>(SFML_MOVE(*texture));
 }
 
 
 ////////////////////////////////////////////////////////////
-Font::Page::Page(Texture&& theTexture) : texture(std::move(theTexture))
+Font::Page::Page(Texture&& theTexture) : texture(SFML_MOVE(theTexture))
 {
 }
 

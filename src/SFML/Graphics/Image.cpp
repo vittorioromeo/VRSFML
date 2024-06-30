@@ -30,6 +30,7 @@
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InputStream.hpp>
+#include <SFML/System/Macros.hpp>
 #include <SFML/System/PathUtils.hpp>
 #include <SFML/System/StringUtils.hpp>
 #include <SFML/System/UniquePtr.hpp>
@@ -159,7 +160,7 @@ Image::Image(const Vector2u& size, const std::uint8_t* pixels)
 ////////////////////////////////////////////////////////////
 Image::Image(priv::PassKey<Image>&&, Vector2u size, std::vector<std::uint8_t>&& pixels) :
 m_size(size),
-m_pixels(std::move(pixels))
+m_pixels(SFML_MOVE(pixels))
 {
 }
 

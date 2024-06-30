@@ -30,6 +30,7 @@
 #include <SFML/Audio/SoundFileWriter.hpp>
 
 #include <SFML/System/Err.hpp>
+#include <SFML/System/Macros.hpp>
 
 #include <cassert>
 
@@ -70,7 +71,7 @@ std::optional<OutputSoundFile> OutputSoundFile::openFromFile(
         return std::nullopt;
     }
 
-    return std::make_optional<OutputSoundFile>(priv::PassKey<OutputSoundFile>{}, std::move(writer));
+    return std::make_optional<OutputSoundFile>(priv::PassKey<OutputSoundFile>{}, SFML_MOVE(writer));
 }
 
 
@@ -94,7 +95,7 @@ void OutputSoundFile::close()
 
 ////////////////////////////////////////////////////////////
 OutputSoundFile::OutputSoundFile(priv::PassKey<OutputSoundFile>&&, priv::UniquePtr<SoundFileWriter>&& writer) :
-m_writer(std::move(writer))
+m_writer(SFML_MOVE(writer))
 {
 }
 

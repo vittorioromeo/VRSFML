@@ -33,7 +33,7 @@
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/Vertex.hpp>
 
-#include <utility>
+#include <SFML/System/Macros.hpp>
 
 #include <cmath>
 #include <cstddef>
@@ -101,7 +101,7 @@ namespace sf
 {
 ////////////////////////////////////////////////////////////
 Text::Text(const Font& font, String string, unsigned int characterSize) :
-m_string(std::move(string)),
+m_string(SFML_MOVE(string)),
 m_font(&font),
 m_characterSize(characterSize)
 {

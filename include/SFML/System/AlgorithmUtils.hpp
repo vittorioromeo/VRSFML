@@ -29,6 +29,8 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Export.hpp>
 
+#include <SFML/System/Macros.hpp>
+
 
 namespace sf::priv
 {
@@ -55,7 +57,7 @@ template <typename Iter, typename TargetIter>
 }
 
 template <typename T, typename Vector>
-[[gnu::always_inline]] void appendRangeIntoVector(const T* rangeBegin, const T* rangeEnd, Vector& target)
+[[gnu::always_inline]] inline void appendRangeIntoVector(const T* rangeBegin, const T* rangeEnd, Vector& target)
 {
     using SizeT = decltype(sizeof(int));
 
@@ -107,8 +109,8 @@ template <typename T>
     return value;
 }
 
-template <typename T, std::size_t N>
-[[nodiscard, gnu::always_inline]] constexpr std::size_t getArraySize(const T (&)[N])
+template <typename T, decltype(sizeof(int)) N>
+[[nodiscard, gnu::always_inline]] constexpr decltype(sizeof(int)) getArraySize(const T (&)[N])
 {
     return N;
 }
@@ -154,5 +156,13 @@ public:
         return *this;
     }
 };
+
+template <typename T, typename U = T>
+[[nodiscard, gnu::always_inline]] inline constexpr T exchange(T& obj, U&& newVal)
+{
+    T oldVal = SFML_MOVE(obj);
+    obj      = SFML_FORWARD(newVal);
+    return oldVal;
+}
 
 } // namespace sf::priv

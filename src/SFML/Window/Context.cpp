@@ -29,8 +29,7 @@
 #include <SFML/Window/GlContext.hpp>
 
 #include <SFML/System/Err.hpp>
-
-#include <utility>
+#include <SFML/System/Macros.hpp>
 
 
 namespace
@@ -62,7 +61,7 @@ Context::~Context()
 
 
 ////////////////////////////////////////////////////////////
-Context::Context(Context&& context) noexcept : m_context(std::move(context.m_context))
+Context::Context(Context&& context) noexcept : m_context(SFML_MOVE(context.m_context))
 {
     if (&context == ContextImpl::currentContext)
         ContextImpl::currentContext = this;
@@ -75,7 +74,7 @@ Context& Context::operator=(Context&& context) noexcept
     if (this == &context)
         return *this;
 
-    m_context = std::move(context.m_context);
+    m_context = SFML_MOVE(context.m_context);
     if (&context == ContextImpl::currentContext)
         ContextImpl::currentContext = this;
 

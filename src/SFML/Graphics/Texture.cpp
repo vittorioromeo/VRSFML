@@ -36,9 +36,9 @@
 
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
+#include <SFML/System/Macros.hpp>
 
 #include <atomic>
-#include <utility>
 
 #include <cassert>
 #include <cstring>
@@ -84,7 +84,7 @@ m_cacheId(TextureImpl::getUniqueId())
 {
     if (auto texture = create(copy.getSize(), copy.isSrgb()))
     {
-        *this = std::move(*texture);
+        *this = SFML_MOVE(*texture);
         update(copy);
     }
     else
@@ -109,16 +109,16 @@ Texture::~Texture()
 
 ////////////////////////////////////////////////////////////
 Texture::Texture(Texture&& right) noexcept :
-m_size(std::exchange(right.m_size, {})),
-m_actualSize(std::exchange(right.m_actualSize, {})),
-m_texture(std::exchange(right.m_texture, 0)),
-m_isSmooth(std::exchange(right.m_isSmooth, false)),
-m_sRgb(std::exchange(right.m_sRgb, false)),
-m_isRepeated(std::exchange(right.m_isRepeated, false)),
-m_pixelsFlipped(std::exchange(right.m_pixelsFlipped, false)),
-m_fboAttachment(std::exchange(right.m_fboAttachment, false)),
-m_hasMipmap(std::exchange(right.m_hasMipmap, false)),
-m_cacheId(std::exchange(right.m_cacheId, 0))
+m_size(priv::exchange(right.m_size, {})),
+m_actualSize(priv::exchange(right.m_actualSize, {})),
+m_texture(priv::exchange(right.m_texture, 0u)),
+m_isSmooth(priv::exchange(right.m_isSmooth, false)),
+m_sRgb(priv::exchange(right.m_sRgb, false)),
+m_isRepeated(priv::exchange(right.m_isRepeated, false)),
+m_pixelsFlipped(priv::exchange(right.m_pixelsFlipped, false)),
+m_fboAttachment(priv::exchange(right.m_fboAttachment, false)),
+m_hasMipmap(priv::exchange(right.m_hasMipmap, false)),
+m_cacheId(priv::exchange(right.m_cacheId, 0u))
 {
 }
 
@@ -141,16 +141,16 @@ Texture& Texture::operator=(Texture&& right) noexcept
     }
 
     // Move old to new.
-    m_size          = std::exchange(right.m_size, {});
-    m_actualSize    = std::exchange(right.m_actualSize, {});
-    m_texture       = std::exchange(right.m_texture, 0);
-    m_isSmooth      = std::exchange(right.m_isSmooth, false);
-    m_sRgb          = std::exchange(right.m_sRgb, false);
-    m_isRepeated    = std::exchange(right.m_isRepeated, false);
-    m_pixelsFlipped = std::exchange(right.m_pixelsFlipped, false);
-    m_fboAttachment = std::exchange(right.m_fboAttachment, false);
-    m_hasMipmap     = std::exchange(right.m_hasMipmap, false);
-    m_cacheId       = std::exchange(right.m_cacheId, 0);
+    m_size          = priv::exchange(right.m_size, {});
+    m_actualSize    = priv::exchange(right.m_actualSize, {});
+    m_texture       = priv::exchange(right.m_texture, 0u);
+    m_isSmooth      = priv::exchange(right.m_isSmooth, false);
+    m_sRgb          = priv::exchange(right.m_sRgb, false);
+    m_isRepeated    = priv::exchange(right.m_isRepeated, false);
+    m_pixelsFlipped = priv::exchange(right.m_pixelsFlipped, false);
+    m_fboAttachment = priv::exchange(right.m_fboAttachment, false);
+    m_hasMipmap     = priv::exchange(right.m_hasMipmap, false);
+    m_cacheId       = priv::exchange(right.m_cacheId, 0u);
     return *this;
 }
 

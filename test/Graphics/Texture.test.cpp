@@ -4,6 +4,7 @@
 #include <SFML/Graphics/Image.hpp>
 
 #include <SFML/System/FileInputStream.hpp>
+#include <SFML/System/Macros.hpp>
 
 #include <Doctest.hpp>
 
@@ -30,7 +31,7 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
         SECTION("Construction")
         {
             sf::Texture       movedTexture = sf::Texture::create({64, 64}).value();
-            const sf::Texture texture      = std::move(movedTexture);
+            const sf::Texture texture      = SFML_MOVE(movedTexture);
             CHECK(texture.getSize() == sf::Vector2u(64, 64));
             CHECK(!texture.isSmooth());
             CHECK(!texture.isSrgb());
@@ -42,7 +43,7 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
         {
             sf::Texture movedTexture = sf::Texture::create({64, 64}).value();
             sf::Texture texture      = sf::Texture::create({128, 128}).value();
-            texture                  = std::move(movedTexture);
+            texture                  = SFML_MOVE(movedTexture);
             CHECK(texture.getSize() == sf::Vector2u(64, 64));
             CHECK(!texture.isSmooth());
             CHECK(!texture.isSrgb());

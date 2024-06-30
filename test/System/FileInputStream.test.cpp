@@ -1,4 +1,5 @@
 #include <SFML/System/FileInputStream.hpp>
+#include <SFML/System/Macros.hpp>
 
 #include <Doctest.hpp>
 
@@ -10,7 +11,6 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
-#include <utility>
 
 #include <cassert>
 
@@ -83,7 +83,7 @@ TEST_CASE("[System] sf::FileInputStream")
         SECTION("Move constructor")
         {
             auto                movedFileInputStream = sf::FileInputStream::open(temporaryFile.getPath()).value();
-            sf::FileInputStream fileInputStream      = std::move(movedFileInputStream);
+            sf::FileInputStream fileInputStream      = SFML_MOVE(movedFileInputStream);
             CHECK(fileInputStream.read(buffer, 6) == 6);
             CHECK(fileInputStream.tell() == 6);
             CHECK(fileInputStream.getSize() == 11);
@@ -95,7 +95,7 @@ TEST_CASE("[System] sf::FileInputStream")
             auto                movedFileInputStream = sf::FileInputStream::open(temporaryFile.getPath()).value();
             const TemporaryFile temporaryFile2("Hello world the sequel");
             auto                fileInputStream = sf::FileInputStream::open(temporaryFile2.getPath()).value();
-            fileInputStream                     = std::move(movedFileInputStream);
+            fileInputStream                     = SFML_MOVE(movedFileInputStream);
             CHECK(fileInputStream.read(buffer, 6) == 6);
             CHECK(fileInputStream.tell() == 6);
             CHECK(fileInputStream.getSize() == 11);
