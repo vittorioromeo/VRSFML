@@ -336,7 +336,7 @@ Vector2f Text::findCharacterPos(std::size_t index) const
 
 
 ////////////////////////////////////////////////////////////
-FloatRect Text::getLocalBounds() const
+const FloatRect& Text::getLocalBounds() const
 {
     ensureGeometryUpdate();
 

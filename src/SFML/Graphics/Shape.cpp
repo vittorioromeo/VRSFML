@@ -184,7 +184,7 @@ float Shape::getOutlineThickness() const
 
 
 ////////////////////////////////////////////////////////////
-FloatRect Shape::getLocalBounds() const
+const FloatRect& Shape::getLocalBounds() const
 {
     return m_impl->bounds;
 }
