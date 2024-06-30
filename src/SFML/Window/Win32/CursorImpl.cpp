@@ -43,6 +43,30 @@ CursorImpl::~CursorImpl()
 
 
 ////////////////////////////////////////////////////////////
+CursorImpl::CursorImpl(CursorImpl&& rhs) noexcept : m_cursor(rhs.m_cursor), m_systemCursor(rhs.m_systemCursor)
+{
+    rhs.m_cursor       = nullptr;
+    rhs.m_systemCursor = false;
+}
+
+
+////////////////////////////////////////////////////////////
+CursorImpl& CursorImpl::operator=(CursorImpl&& rhs) noexcept
+{
+    if (&rhs != this)
+    {
+        m_cursor       = rhs.m_cursor;
+        m_systemCursor = rhs.m_systemCursor;
+
+        rhs.m_cursor       = nullptr;
+        rhs.m_systemCursor = false;
+    }
+
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
 bool CursorImpl::loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vector2u hotspot)
 {
     release();
