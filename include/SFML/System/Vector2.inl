@@ -25,10 +25,25 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/System/Angle.hpp>
 #include <SFML/System/Vector2.hpp> // NOLINT(misc-header-include-cycle)
 
 #include <cassert>
+#include <cmath>
 
+namespace sf::priv
+{
+
+// Named differently from the one in 'Vector3.cpp' to support unity builds.
+
+// clang-format off
+template <typename> inline constexpr bool isVec2FloatingPoint              = false;
+template <>         inline constexpr bool isVec2FloatingPoint<float>       = true;
+template <>         inline constexpr bool isVec2FloatingPoint<double>      = true;
+template <>         inline constexpr bool isVec2FloatingPoint<long double> = true;
+// clang-format on
+
+} // namespace sf::priv
 
 namespace sf
 {
@@ -105,6 +120,7 @@ constexpr Vector2<T> Vector2<T>::cwiseDiv(const Vector2<T>& rhs) const
 {
     assert(rhs.x != 0 && "Vector2::cwiseDiv() cannot divide by 0 (x coordinate)");
     assert(rhs.y != 0 && "Vector2::cwiseDiv() cannot divide by 0 (y coordinate)");
+
     return Vector2<T>(x / rhs.x, y / rhs.y);
 }
 
@@ -187,6 +203,7 @@ template <typename T>
 constexpr Vector2<T> operator/(const Vector2<T>& left, T right)
 {
     assert(right != 0 && "Vector2::operator/ cannot divide by 0");
+
     return Vector2<T>(left.x / right, left.y / right);
 }
 
@@ -196,6 +213,7 @@ template <typename T>
 constexpr Vector2<T>& operator/=(Vector2<T>& left, T right)
 {
     assert(right != 0 && "Vector2::operator/= cannot divide by 0");
+
     left.x /= right;
     left.y /= right;
 
@@ -220,6 +238,90 @@ constexpr bool operator!=(const Vector2<T>& left, const Vector2<T>& right)
 
 
 ////////////////////////////////////////////////////////////
+template <typename T>
+constexpr Vector2<T> Vector2<T>::normalized() const
+{
+    static_assert(priv::isVec2FloatingPoint<T>, "Vector2::normalized() is only supported for floating point types");
+
+    assert(*this != Vector2<T>() && "Vector2::normalized() cannot normalize a zero vector");
+
+    return (*this) / length();
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+constexpr Angle Vector2<T>::angleTo(const Vector2<T>& rhs) const
+{
+    static_assert(priv::isVec2FloatingPoint<T>, "Vector2::angleTo() is only supported for floating point types");
+
+    assert(*this != Vector2<T>() && "Vector2::angleTo() cannot calculate angle from a zero vector");
+    assert(rhs != Vector2<T>() && "Vector2::angleTo() cannot calculate angle to a zero vector");
+
+    return radians(static_cast<float>(std::atan2(cross(rhs), dot(rhs))));
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+constexpr Angle Vector2<T>::angle() const
+{
+    static_assert(priv::isVec2FloatingPoint<T>, "Vector2::angle() is only supported for floating point types");
+
+    assert(*this != Vector2<T>() && "Vector2::angle() cannot calculate angle from a zero vector");
+
+    return radians(static_cast<float>(std::atan2(y, x)));
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+constexpr Vector2<T> Vector2<T>::rotatedBy(Angle phi) const
+{
+    static_assert(priv::isVec2FloatingPoint<T>, "Vector2::rotatedBy() is only supported for floating point types");
+
+    // No zero vector assert, because rotating a zero vector is well-defined (yields always itself)
+    const T cos = std::cos(static_cast<T>(phi.asRadians()));
+    const T sin = std::sin(static_cast<T>(phi.asRadians()));
+
+    // Don't manipulate x and y separately, otherwise they're overwritten too early
+    return Vector2<T>(cos * x - sin * y, sin * x + cos * y);
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+constexpr Vector2<T> Vector2<T>::projectedOnto(const Vector2<T>& axis) const
+{
+    static_assert(priv::isVec2FloatingPoint<T>, "Vector2::projectedOnto() is only supported for floating point types");
+
+    assert(axis != Vector2<T>() && "Vector2::projectedOnto() cannot project onto a zero vector");
+    return dot(axis) / axis.lengthSq() * axis;
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+constexpr Vector2<T>::Vector2(T r, Angle phi) :
+x(r * static_cast<T>(std::cos(phi.asRadians()))),
+y(r * static_cast<T>(std::sin(phi.asRadians())))
+{
+    static_assert(priv::isVec2FloatingPoint<T>, "Vector2::Vector2(T, Angle) is only supported for floating point types");
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+constexpr T Vector2<T>::length() const
+{
+    static_assert(priv::isVec2FloatingPoint<T>, "Vector2::length() is only supported for floating point types");
+
+    // don't use std::hypot because of slow performance
+    return std::sqrt(x * x + y * y);
+}
+
+
+////////////////////////////////////////////////////////////
 // Static member data
 ////////////////////////////////////////////////////////////
 
@@ -228,5 +330,8 @@ const Vector2<T> Vector2<T>::UnitX(static_cast<T>(1), static_cast<T>(0));
 
 template <typename T>
 const Vector2<T> Vector2<T>::UnitY(static_cast<T>(0), static_cast<T>(1));
+
+template <typename T>
+const Vector2<T> Vector2<T>::Zero(static_cast<T>(0), static_cast<T>(0));
 
 } // namespace sf
