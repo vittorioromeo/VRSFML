@@ -37,7 +37,7 @@ namespace sf
 /// \brief Blending modes for drawing
 ///
 ////////////////////////////////////////////////////////////
-struct SFML_GRAPHICS_API BlendMode
+struct [[nodiscard]] SFML_GRAPHICS_API BlendMode
 {
     ////////////////////////////////////////////////////////
     /// \brief Enumeration of the blending factors
@@ -45,7 +45,7 @@ struct SFML_GRAPHICS_API BlendMode
     /// The factors are mapped directly to their OpenGL equivalents,
     /// specified by glBlendFunc() or glBlendFuncSeparate().
     ////////////////////////////////////////////////////////
-    enum class Factor
+    enum class [[nodiscard]] Factor
     {
         Zero,             //!< (0, 0, 0, 0)
         One,              //!< (1, 1, 1, 1)
@@ -65,7 +65,7 @@ struct SFML_GRAPHICS_API BlendMode
     /// The equations are mapped directly to their OpenGL equivalents,
     /// specified by glBlendEquation() or glBlendEquationSeparate().
     ////////////////////////////////////////////////////////
-    enum class Equation
+    enum class [[nodiscard]] Equation
     {
         Add,             //!< Pixel = Src * SrcFactor + Dst * DstFactor
         Subtract,        //!< Pixel = Src * SrcFactor - Dst * DstFactor
@@ -80,7 +80,7 @@ struct SFML_GRAPHICS_API BlendMode
     /// Constructs a blending mode that does alpha blending.
     ///
     ////////////////////////////////////////////////////////////
-    BlendMode() = default;
+    [[nodiscard]] BlendMode() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the blend mode given the factors and equation.
@@ -93,7 +93,7 @@ struct SFML_GRAPHICS_API BlendMode
     /// \param blendEquation     Specifies how to combine the source and destination colors and alpha.
     ///
     ////////////////////////////////////////////////////////////
-    BlendMode(Factor sourceFactor, Factor destinationFactor, Equation blendEquation = Equation::Add);
+    [[nodiscard]] BlendMode(Factor sourceFactor, Factor destinationFactor, Equation blendEquation = Equation::Add);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the blend mode given the factors and equation.
@@ -106,12 +106,12 @@ struct SFML_GRAPHICS_API BlendMode
     /// \param alphaBlendEquation     Specifies how to combine the source and destination alphas.
     ///
     ////////////////////////////////////////////////////////////
-    BlendMode(Factor   colorSourceFactor,
-              Factor   colorDestinationFactor,
-              Equation colorBlendEquation,
-              Factor   alphaSourceFactor,
-              Factor   alphaDestinationFactor,
-              Equation alphaBlendEquation);
+    [[nodiscard]] BlendMode(Factor   colorSourceFactor,
+                            Factor   colorDestinationFactor,
+                            Equation colorBlendEquation,
+                            Factor   alphaSourceFactor,
+                            Factor   alphaDestinationFactor,
+                            Equation alphaBlendEquation);
 
     ////////////////////////////////////////////////////////////
     // Member Data
@@ -211,7 +211,7 @@ SFML_GRAPHICS_API extern const BlendMode BlendNone;     //!< Overwrite dest with
 /// sf::BlendMode noBlending             = sf::BlendNone;
 /// \endcode
 ///
-/// In SFML, a blend mode can be specified every time you draw a sf::Drawable
+/// In SFML, a blend mode can be specified every time you draw a drawable
 /// object to a render target. It is part of the sf::RenderStates compound
 /// that is passed to the member function sf::RenderTarget::draw().
 ///

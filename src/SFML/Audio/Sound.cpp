@@ -25,16 +25,18 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Audio/EffectProcessor.hpp>
 #include <SFML/Audio/MiniaudioUtils.hpp>
 #include <SFML/Audio/Sound.hpp>
 #include <SFML/Audio/SoundBuffer.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
+#include <SFML/System/Time.hpp>
+#include <SFML/System/UniquePtr.hpp>
 
 #include <miniaudio.h>
 
-#include <algorithm>
-#include <ostream>
 #include <vector>
 
 #include <cassert>
@@ -80,7 +82,7 @@ struct Sound::Impl : priv::MiniaudioUtils::SoundBase
 
         // Seek back to the start of the sound when it finishes playing
         if (const ma_result result = ma_sound_seek_to_pcm_frame(soundPtr, 0); result != MA_SUCCESS)
-            err() << "Failed to seek sound to frame 0: " << ma_result_description(result) << std::endl;
+            priv::err() << "Failed to seek sound to frame 0: " << ma_result_description(result) << priv::errEndl;
     }
 
     static ma_result read(ma_data_source* dataSource, void* framesOut, ma_uint64 frameCount, ma_uint64* framesRead)
@@ -92,7 +94,7 @@ struct Sound::Impl : priv::MiniaudioUtils::SoundBase
             return MA_NO_DATA_AVAILABLE;
 
         // Determine how many frames we can read
-        *framesRead = std::min<ma_uint64>(frameCount, (buffer->getSampleCount() - impl.cursor) / buffer->getChannelCount());
+        *framesRead = priv::min(frameCount, (buffer->getSampleCount() - impl.cursor) / buffer->getChannelCount());
 
         // Copy the samples to the output
         const auto sampleCount = *framesRead * buffer->getChannelCount();
@@ -186,21 +188,25 @@ struct Sound::Impl : priv::MiniaudioUtils::SoundBase
 
 
 ////////////////////////////////////////////////////////////
-Sound::Sound(const SoundBuffer& buffer) : m_impl(std::make_unique<Impl>())
+Sound::Sound(const SoundBuffer& buffer) : m_impl(priv::makeUnique<Impl>())
 {
     setBuffer(buffer);
+
+    SFML_UPDATE_LIFETIME_DEPENDANT(SoundBuffer, Sound, m_impl->buffer);
 }
 
 
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(readability-redundant-member-init)
-Sound::Sound(const Sound& copy) : SoundSource(copy), m_impl(std::make_unique<Impl>())
+Sound::Sound(const Sound& copy) : SoundSource(copy), m_impl(priv::makeUnique<Impl>())
 {
     SoundSource::operator=(copy);
 
     if (copy.m_impl->buffer)
         setBuffer(*copy.m_impl->buffer);
     setLoop(copy.getLoop());
+
+    SFML_UPDATE_LIFETIME_DEPENDANT(SoundBuffer, Sound, m_impl->buffer);
 }
 
 
@@ -221,7 +227,7 @@ void Sound::play()
 
     if (const ma_result result = ma_sound_start(&m_impl->sound); result != MA_SUCCESS)
     {
-        err() << "Failed to start playing sound: " << ma_result_description(result) << std::endl;
+        priv::err() << "Failed to start playing sound: " << ma_result_description(result) << priv::errEndl;
     }
     else
     {
@@ -235,7 +241,7 @@ void Sound::pause()
 {
     if (const ma_result result = ma_sound_stop(&m_impl->sound); result != MA_SUCCESS)
     {
-        err() << "Failed to stop playing sound: " << ma_result_description(result) << std::endl;
+        priv::err() << "Failed to stop playing sound: " << ma_result_description(result) << priv::errEndl;
     }
     else
     {
@@ -250,7 +256,7 @@ void Sound::stop()
 {
     if (const ma_result result = ma_sound_stop(&m_impl->sound); result != MA_SUCCESS)
     {
-        err() << "Failed to stop playing sound: " << ma_result_description(result) << std::endl;
+        priv::err() << "Failed to stop playing sound: " << ma_result_description(result) << priv::errEndl;
     }
     else
     {
@@ -279,6 +285,8 @@ void Sound::setBuffer(const SoundBuffer& buffer)
 
     m_impl->deinitialize();
     m_impl->initialize();
+
+    SFML_UPDATE_LIFETIME_DEPENDANT(SoundBuffer, Sound, m_impl->buffer);
 }
 
 
@@ -329,7 +337,7 @@ bool Sound::getLoop() const
 Time Sound::getPlayingOffset() const
 {
     if (!m_impl->buffer || m_impl->buffer->getChannelCount() == 0 || m_impl->buffer->getSampleRate() == 0)
-        return {};
+        return Time{};
 
     return priv::MiniaudioUtils::getPlayingOffset(m_impl->sound);
 }

@@ -27,14 +27,13 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/JoystickImpl.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Time.hpp>
 #include <SFML/System/Win32/WindowsHeader.hpp>
 
 #include <algorithm>
-#include <iomanip>
-#include <ostream>
 #include <regstr.h>
 #include <sstream>
 #include <string>
@@ -162,8 +161,8 @@ sf::String getDeviceName(unsigned int index, JOYCAPS caps)
 
         if (result != ERROR_SUCCESS)
         {
-            sf::err() << "Unable to open registry for joystick at index " << index << ": "
-                      << getErrorString(static_cast<DWORD>(result)) << std::endl;
+            sf::priv::err() << "Unable to open registry for joystick at index " << index << ": "
+                            << getErrorString(static_cast<DWORD>(result)) << sf::priv::errEndl;
             return joystickDescription;
         }
     }
@@ -183,8 +182,8 @@ sf::String getDeviceName(unsigned int index, JOYCAPS caps)
 
     if (result != ERROR_SUCCESS)
     {
-        sf::err() << "Unable to query registry key for joystick at index " << index << ": "
-                  << getErrorString(static_cast<DWORD>(result)) << std::endl;
+        sf::priv::err() << "Unable to query registry key for joystick at index " << index << ": "
+                        << getErrorString(static_cast<DWORD>(result)) << sf::priv::errEndl;
         return joystickDescription;
     }
 
@@ -196,8 +195,8 @@ sf::String getDeviceName(unsigned int index, JOYCAPS caps)
 
     if (result != ERROR_SUCCESS)
     {
-        sf::err() << "Unable to open registry key for joystick at index " << index << ": "
-                  << getErrorString(static_cast<DWORD>(result)) << std::endl;
+        sf::priv::err() << "Unable to open registry key for joystick at index " << index << ": "
+                        << getErrorString(static_cast<DWORD>(result)) << sf::priv::errEndl;
         return joystickDescription;
     }
 
@@ -208,8 +207,8 @@ sf::String getDeviceName(unsigned int index, JOYCAPS caps)
 
     if (result != ERROR_SUCCESS)
     {
-        sf::err() << "Unable to query name for joystick at index " << index << ": "
-                  << getErrorString(static_cast<DWORD>(result)) << std::endl;
+        sf::priv::err() << "Unable to query name for joystick at index " << index << ": "
+                        << getErrorString(static_cast<DWORD>(result)) << sf::priv::errEndl;
         return joystickDescription;
     }
 
@@ -229,7 +228,7 @@ void JoystickImpl::initialize()
     initializeDInput();
 
     if (!directInput)
-        err() << "DirectInput not available, falling back to Windows joystick API" << std::endl;
+        priv::err() << "DirectInput not available, falling back to Windows joystick API" << priv::errEndl;
 
     // Perform the initial scan and populate the connection cache
     updateConnections();
@@ -324,23 +323,41 @@ void JoystickImpl::close()
 ////////////////////////////////////////////////////////////
 JoystickCaps JoystickImpl::getCapabilities() const
 {
+    JoystickCaps caps; // Use a single local variable for NRVO
+
     if (directInput)
-        return getCapabilitiesDInput();
+    {
+        // Count how many buttons have valid offsets
+        caps.buttonCount = 0;
 
-    JoystickCaps caps;
+        for (const int button : m_buttons)
+        {
+            if (button != -1)
+                ++caps.buttonCount;
+        }
 
-    caps.buttonCount = m_caps.wNumButtons;
-    if (caps.buttonCount > Joystick::ButtonCount)
-        caps.buttonCount = Joystick::ButtonCount;
+        // Check which axes have valid offsets
+        for (unsigned int i = 0; i < Joystick::AxisCount; ++i)
+        {
+            const auto axis = static_cast<Joystick::Axis>(i);
+            caps.axes[axis] = (m_axes[axis] != -1);
+        }
+    }
+    else
+    {
+        caps.buttonCount = m_caps.wNumButtons;
+        if (caps.buttonCount > Joystick::ButtonCount)
+            caps.buttonCount = Joystick::ButtonCount;
 
-    caps.axes[Joystick::Axis::X]    = true;
-    caps.axes[Joystick::Axis::Y]    = true;
-    caps.axes[Joystick::Axis::Z]    = (m_caps.wCaps & JOYCAPS_HASZ) != 0;
-    caps.axes[Joystick::Axis::R]    = (m_caps.wCaps & JOYCAPS_HASR) != 0;
-    caps.axes[Joystick::Axis::U]    = (m_caps.wCaps & JOYCAPS_HASU) != 0;
-    caps.axes[Joystick::Axis::V]    = (m_caps.wCaps & JOYCAPS_HASV) != 0;
-    caps.axes[Joystick::Axis::PovX] = (m_caps.wCaps & JOYCAPS_HASPOV) != 0;
-    caps.axes[Joystick::Axis::PovY] = (m_caps.wCaps & JOYCAPS_HASPOV) != 0;
+        caps.axes[Joystick::Axis::X]    = true;
+        caps.axes[Joystick::Axis::Y]    = true;
+        caps.axes[Joystick::Axis::Z]    = (m_caps.wCaps & JOYCAPS_HASZ) != 0;
+        caps.axes[Joystick::Axis::R]    = (m_caps.wCaps & JOYCAPS_HASR) != 0;
+        caps.axes[Joystick::Axis::U]    = (m_caps.wCaps & JOYCAPS_HASU) != 0;
+        caps.axes[Joystick::Axis::V]    = (m_caps.wCaps & JOYCAPS_HASV) != 0;
+        caps.axes[Joystick::Axis::PovX] = (m_caps.wCaps & JOYCAPS_HASPOV) != 0;
+        caps.axes[Joystick::Axis::PovY] = (m_caps.wCaps & JOYCAPS_HASPOV) != 0;
+    }
 
     return caps;
 }
@@ -356,17 +373,13 @@ Joystick::Identification JoystickImpl::getIdentification() const
 ////////////////////////////////////////////////////////////
 JoystickState JoystickImpl::update()
 {
+    JoystickState state; // Use a single local variable for NRVO
+
     if (directInput)
     {
-        if (m_buffered)
-        {
-            return updateDInputBuffered();
-        }
-
-        return updateDInputPolled();
+        state = m_buffered ? updateDInputBuffered() : updateDInputPolled();
+        return state;
     }
-
-    JoystickState state;
 
     // Get the current joystick state
     JOYINFOEX pos;
@@ -449,7 +462,7 @@ void JoystickImpl::initializeDInput()
                 FreeLibrary(dinput8dll);
                 dinput8dll = nullptr;
 
-                err() << "Failed to initialize DirectInput: " << result << std::endl;
+                priv::err() << "Failed to initialize DirectInput: " << result << priv::errEndl;
             }
         }
         else
@@ -482,7 +495,7 @@ void JoystickImpl::cleanupDInput()
 bool JoystickImpl::isConnectedDInput(unsigned int index)
 {
     // Check if a joystick with the given index is in the connected list
-    return std::any_of(joystickList.cbegin(),
+    return priv::anyOf(joystickList.cbegin(),
                        joystickList.cend(),
                        [index](const JoystickRecord& record) { return record.index == index; });
 }
@@ -509,7 +522,7 @@ void JoystickImpl::updateConnectionsDInput()
 
     if (FAILED(result))
     {
-        err() << "Failed to enumerate DirectInput devices: " << result << std::endl;
+        priv::err() << "Failed to enumerate DirectInput devices: " << result << priv::errEndl;
 
         return;
     }
@@ -538,7 +551,7 @@ bool JoystickImpl::openDInput(unsigned int index)
     // Initialize DirectInput members
     m_device = nullptr;
 
-    for (int& axis : m_axes)
+    for (int& axis : m_axes.data)
         axis = -1;
 
     for (int& button : m_buttons)
@@ -559,7 +572,7 @@ bool JoystickImpl::openDInput(unsigned int index)
 
             if (FAILED(result))
             {
-                err() << "Failed to create DirectInput device: " << result << std::endl;
+                priv::err() << "Failed to create DirectInput device: " << result << priv::errEndl;
 
                 return false;
             }
@@ -696,7 +709,7 @@ bool JoystickImpl::openDInput(unsigned int index)
 
             if (FAILED(result))
             {
-                err() << "Failed to set DirectInput device data format: " << result << std::endl;
+                priv::err() << "Failed to set DirectInput device data format: " << result << priv::errEndl;
 
                 m_device->Release();
                 m_device = nullptr;
@@ -709,7 +722,7 @@ bool JoystickImpl::openDInput(unsigned int index)
 
             if (FAILED(result))
             {
-                err() << "Failed to get DirectInput device capabilities: " << result << std::endl;
+                priv::err() << "Failed to get DirectInput device capabilities: " << result << priv::errEndl;
 
                 m_device->Release();
                 m_device = nullptr;
@@ -724,7 +737,7 @@ bool JoystickImpl::openDInput(unsigned int index)
 
             if (FAILED(result))
             {
-                err() << "Failed to enumerate DirectInput device objects: " << result << std::endl;
+                priv::err() << "Failed to enumerate DirectInput device objects: " << result << priv::errEndl;
 
                 m_device->Release();
                 m_device = nullptr;
@@ -733,7 +746,7 @@ bool JoystickImpl::openDInput(unsigned int index)
             }
 
             // Set device's axis mode to absolute if the device reports having at least one axis
-            for (const int axis : m_axes)
+            for (const int axis : m_axes.data)
             {
                 if (axis != -1)
                 {
@@ -747,8 +760,8 @@ bool JoystickImpl::openDInput(unsigned int index)
 
                     if (FAILED(result))
                     {
-                        err() << "Failed to get DirectInput device axis mode for device "
-                              << std::quoted(m_identification.name.toAnsiString()) << ": " << result << std::endl;
+                        priv::err() << "Failed to get DirectInput device axis mode for device " << '"'
+                                    << m_identification.name.toAnsiString() << "\": " << result << priv::errEndl;
 
                         m_device->Release();
                         m_device = nullptr;
@@ -779,8 +792,8 @@ bool JoystickImpl::openDInput(unsigned int index)
 
                     if (FAILED(result))
                     {
-                        err() << "Failed to verify DirectInput device axis mode for device "
-                              << std::quoted(m_identification.name.toAnsiString()) << ": " << result << std::endl;
+                        priv::err() << "Failed to verify DirectInput device axis mode for device " << '"'
+                                    << m_identification.name.toAnsiString() << "\": " << result << priv::errEndl;
 
                         m_device->Release();
                         m_device = nullptr;
@@ -832,8 +845,8 @@ bool JoystickImpl::openDInput(unsigned int index)
             }
             else
             {
-                err() << "Failed to set DirectInput device buffer size for device "
-                      << std::quoted(m_identification.name.toAnsiString()) << ": " << result << std::endl;
+                priv::err() << "Failed to set DirectInput device buffer size for device " << '"'
+                            << m_identification.name.toAnsiString() << "\": " << result << priv::errEndl;
 
                 m_device->Release();
                 m_device = nullptr;
@@ -858,31 +871,6 @@ void JoystickImpl::closeDInput()
         m_device->Release();
         m_device = nullptr;
     }
-}
-
-
-////////////////////////////////////////////////////////////
-JoystickCaps JoystickImpl::getCapabilitiesDInput() const
-{
-    JoystickCaps caps;
-
-    // Count how many buttons have valid offsets
-    caps.buttonCount = 0;
-
-    for (const int button : m_buttons)
-    {
-        if (button != -1)
-            ++caps.buttonCount;
-    }
-
-    // Check which axes have valid offsets
-    for (unsigned int i = 0; i < Joystick::AxisCount; ++i)
-    {
-        const auto axis = static_cast<Joystick::Axis>(i);
-        caps.axes[axis] = (m_axes[axis] != -1);
-    }
-
-    return caps;
 }
 
 
@@ -919,7 +907,7 @@ JoystickState JoystickImpl::updateDInputBuffered()
 
     if (FAILED(result))
     {
-        err() << "Failed to get DirectInput device data: " << result << std::endl;
+        priv::err() << "Failed to get DirectInput device data: " << result << priv::errEndl;
 
         return m_state;
     }
@@ -1014,7 +1002,7 @@ JoystickState JoystickImpl::updateDInputPolled()
 
         if (FAILED(result))
         {
-            err() << "Failed to get DirectInput device state: " << result << std::endl;
+            priv::err() << "Failed to get DirectInput device state: " << result << priv::errEndl;
 
             return state;
         }
@@ -1141,7 +1129,7 @@ BOOL CALLBACK JoystickImpl::deviceObjectEnumerationCallback(const DIDEVICEOBJECT
         const HRESULT result = joystick.m_device->SetProperty(DIPROP_RANGE, &propertyRange.diph);
 
         if (result != DI_OK)
-            err() << "Failed to set DirectInput device axis property range: " << result << std::endl;
+            priv::err() << "Failed to set DirectInput device axis property range: " << result << priv::errEndl;
 
         return DIENUM_CONTINUE;
     }

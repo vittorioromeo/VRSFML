@@ -34,9 +34,9 @@
 #include <SFML/Window/WindowHandle.hpp>
 
 #include <SFML/System/Time.hpp>
+#include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
 
-#include <memory>
 #include <optional>
 
 #include <cstdint>
@@ -69,7 +69,7 @@ public:
     /// use the other constructors or call create() to do so.
     ///
     ////////////////////////////////////////////////////////////
-    WindowBase();
+    [[nodiscard]] WindowBase();
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a new window
@@ -87,7 +87,10 @@ public:
     /// \param state %Window state
     ///
     ////////////////////////////////////////////////////////////
-    WindowBase(VideoMode mode, const String& title, std::uint32_t style = Style::Default, State state = State::Windowed);
+    [[nodiscard]] WindowBase(VideoMode     mode,
+                             const String& title,
+                             std::uint32_t style = Style::Default,
+                             State         state = State::Windowed);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a new window
@@ -100,7 +103,7 @@ public:
     /// \param state %Window state
     ///
     ////////////////////////////////////////////////////////////
-    WindowBase(VideoMode mode, const String& title, State state);
+    [[nodiscard]] WindowBase(VideoMode mode, const String& title, State state);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control
@@ -108,7 +111,7 @@ public:
     /// \param handle Platform-specific handle of the control
     ///
     ////////////////////////////////////////////////////////////
-    explicit WindowBase(WindowHandle handle);
+    [[nodiscard]] explicit WindowBase(WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -518,7 +521,7 @@ private:
     /// \return The fullscreen window or a null pointer if there is none
     ///
     ////////////////////////////////////////////////////////////
-    const WindowBase* getFullscreenWindow();
+    [[nodiscard]] const WindowBase* getFullscreenWindow();
 
     ////////////////////////////////////////////////////////////
     /// \brief Set a window as the fullscreen window
@@ -531,7 +534,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::unique_ptr<priv::WindowImpl> m_impl; //!< Platform-specific implementation of the window
+    priv::UniquePtr<priv::WindowImpl> m_impl; //!< Platform-specific implementation of the window
     Vector2u                          m_size; //!< Current size of the window
 };
 
@@ -565,7 +568,10 @@ private:
 ///    {
 ///        // Request for closing the window
 ///        if (event->is<sf::Event::Closed>())
+///        {
 ///            window.close();
+///            break;
+///        }
 ///    }
 ///
 ///    // Do things with the window here...

@@ -30,8 +30,6 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Win32/WindowsHeader.hpp>
 
-#include <ostream>
-
 #include <cstring>
 
 
@@ -75,7 +73,7 @@ bool CursorImpl::loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vecto
 
     if (!color)
     {
-        err() << "Failed to create cursor color bitmap" << std::endl;
+        priv::err() << "Failed to create cursor color bitmap" << priv::errEndl;
         return false;
     }
 
@@ -93,7 +91,7 @@ bool CursorImpl::loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vecto
     if (!mask)
     {
         DeleteObject(color);
-        err() << "Failed to create cursor mask bitmap" << std::endl;
+        priv::err() << "Failed to create cursor mask bitmap" << priv::errEndl;
         return false;
     }
 
@@ -118,7 +116,7 @@ bool CursorImpl::loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vecto
         return true;
     }
 
-    err() << "Failed to create cursor from bitmaps" << std::endl;
+    priv::err() << "Failed to create cursor from bitmaps" << priv::errEndl;
     return false;
 }
 
@@ -166,7 +164,7 @@ bool CursorImpl::loadFromSystem(Cursor::Type type)
         return true;
     }
 
-    err() << "Could not create copy of a system cursor" << std::endl;
+    priv::err() << "Could not create copy of a system cursor" << priv::errEndl;
     return false;
 }
 

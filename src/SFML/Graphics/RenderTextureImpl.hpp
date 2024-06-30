@@ -48,7 +48,7 @@ public:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    RenderTextureImpl() = default;
+    [[nodiscard]] RenderTextureImpl() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -78,7 +78,7 @@ public:
     /// \return True if creation has been successful
     ///
     ////////////////////////////////////////////////////////////
-    virtual bool create(const Vector2u& size, unsigned int textureId, const ContextSettings& settings) = 0;
+    [[nodiscard]] virtual bool create(const Vector2u& size, unsigned int textureId, const ContextSettings& settings) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Activate or deactivate the render texture for rendering
@@ -88,7 +88,7 @@ public:
     /// \return True on success, false on failure
     ///
     ////////////////////////////////////////////////////////////
-    virtual bool activate(bool active) = 0;
+    [[nodiscard]] virtual bool activate(bool active) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Tell if the render-texture will use sRGB encoding when drawing on it

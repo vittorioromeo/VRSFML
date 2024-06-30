@@ -30,8 +30,7 @@
 #include <SFML/Network/Export.hpp>
 
 #include <SFML/System/Time.hpp>
-
-#include <memory>
+#include <SFML/System/UniquePtr.hpp>
 
 
 namespace sf
@@ -49,7 +48,7 @@ public:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    SocketSelector();
+    [[nodiscard]] SocketSelector();
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -170,7 +169,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::unique_ptr<SocketSelectorImpl> m_impl; //!< Opaque pointer to the implementation (which requires OS-specific types)
+    priv::UniquePtr<SocketSelectorImpl> m_impl; //!< Opaque pointer to the implementation (which requires OS-specific types)
 };
 
 } // namespace sf

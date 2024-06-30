@@ -30,15 +30,16 @@
 #include <SFML/Graphics/Export.hpp>
 
 #include <SFML/Graphics/Color.hpp>
-#include <SFML/Graphics/Drawable.hpp>
-#include <SFML/Graphics/PrimitiveType.hpp>
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/Transformable.hpp>
-#include <SFML/Graphics/VertexArray.hpp>
+#include <SFML/Graphics/Vertex.hpp>
 
+#include <SFML/System/LifetimeDependant.hpp>
 #include <SFML/System/String.hpp>
 #include <SFML/System/Vector2.hpp>
+
+#include <vector>
 
 #include <cstddef>
 #include <cstdint>
@@ -53,14 +54,14 @@ class RenderTarget;
 /// \brief Graphical text that can be drawn to a render target
 ///
 ////////////////////////////////////////////////////////////
-class SFML_GRAPHICS_API Text : public Drawable, public Transformable
+class SFML_GRAPHICS_API Text : public Transformable
 {
 public:
     ////////////////////////////////////////////////////////////
     /// \brief Enumeration of the string drawing styles
     ///
     ////////////////////////////////////////////////////////////
-    enum Style
+    enum [[nodiscard]] Style
     {
         Regular       = 0,      //!< Regular characters, no style
         Bold          = 1 << 0, //!< Bold characters
@@ -84,13 +85,13 @@ public:
     /// \param characterSize  Base size of characters, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    Text(const Font& font, String string = "", unsigned int characterSize = 30);
+    [[nodiscard]] Text(const Font& font, String string = "", unsigned int characterSize = 30);
 
     ////////////////////////////////////////////////////////////
     /// \brief Disallow construction from a temporary font
     ///
     ////////////////////////////////////////////////////////////
-    Text(const Font&& font, String string = "", unsigned int characterSize = 30) = delete;
+    [[nodiscard]] Text(const Font&& font, String string = "", unsigned int characterSize = 30) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the text's string
@@ -134,7 +135,7 @@ public:
     /// \brief Disallow setting from a temporary font
     ///
     ////////////////////////////////////////////////////////////
-    void setFont(const Font&& font) = delete;
+    void setFont(Font&& font) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the character size
@@ -390,7 +391,6 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] FloatRect getGlobalBounds() const;
 
-private:
     ////////////////////////////////////////////////////////////
     /// \brief Draw the text to a render target
     ///
@@ -398,8 +398,9 @@ private:
     /// \param states Current render states
     ///
     ////////////////////////////////////////////////////////////
-    void draw(RenderTarget& target, RenderStates states) const override;
+    void draw(RenderTarget& target, RenderStates states) const;
 
+private:
     ////////////////////////////////////////////////////////////
     /// \brief Make sure the text's geometry is updated
     ///
@@ -412,20 +413,25 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    String                m_string;                                    //!< String to display
-    const Font*           m_font{};                                    //!< Font used to display the string
-    unsigned int          m_characterSize{30};                         //!< Base size of characters, in pixels
-    float                 m_letterSpacingFactor{1.f};                  //!< Spacing factor between letters
-    float                 m_lineSpacingFactor{1.f};                    //!< Spacing factor between lines
-    std::uint32_t         m_style{Regular};                            //!< Text style (see Style enum)
-    Color                 m_fillColor{Color::White};                   //!< Text fill color
-    Color                 m_outlineColor{Color::Black};                //!< Text outline color
-    float                 m_outlineThickness{0.f};                     //!< Thickness of the text's outline
-    mutable VertexArray   m_vertices{PrimitiveType::Triangles};        //!< Vertex array containing the fill geometry
-    mutable VertexArray   m_outlineVertices{PrimitiveType::Triangles}; //!< Vertex array containing the outline geometry
-    mutable FloatRect     m_bounds;               //!< Bounding rectangle of the text (in local coordinates)
-    mutable bool          m_geometryNeedUpdate{}; //!< Does the geometry need to be recomputed?
-    mutable std::uint64_t m_fontTextureId{};      //!< The font texture id
+    String                      m_string;                     //!< String to display
+    const Font*                 m_font{};                     //!< Font used to display the string
+    unsigned int                m_characterSize{30};          //!< Base size of characters, in pixels
+    float                       m_letterSpacingFactor{1.f};   //!< Spacing factor between letters
+    float                       m_lineSpacingFactor{1.f};     //!< Spacing factor between lines
+    std::uint32_t               m_style{Regular};             //!< Text style (see Style enum)
+    Color                       m_fillColor{Color::White};    //!< Text fill color
+    Color                       m_outlineColor{Color::Black}; //!< Text outline color
+    float                       m_outlineThickness{0.f};      //!< Thickness of the text's outline
+    mutable std::vector<Vertex> m_vertices;                   //!< Vertex array containing the fill geometry
+    mutable std::size_t         m_fillVerticesStartIndex{};   //!< TODO
+    mutable FloatRect           m_bounds;                     //!< Bounding rectangle of the text (in local coordinates)
+    mutable bool                m_geometryNeedUpdate{};       //!< Does the geometry need to be recomputed?
+    mutable std::uint64_t       m_fontTextureId{};            //!< The font texture id
+
+    ////////////////////////////////////////////////////////////
+    // Lifetime tracking
+    ////////////////////////////////////////////////////////////
+    SFML_DEFINE_LIFETIME_DEPENDANT(Font);
 };
 
 } // namespace sf

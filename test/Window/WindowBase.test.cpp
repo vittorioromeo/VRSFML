@@ -5,14 +5,18 @@
 #include <SFML/Window/VideoMode.hpp>
 
 #include <SFML/System/String.hpp>
+#include <SFML/System/TimeChronoUtil.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
+#include <StringifyOptionalUtil.hpp>
+#include <SystemUtil.hpp>
 #include <WindowUtil.hpp>
+
 #include <chrono>
 #include <type_traits>
 
-TEST_CASE("[Window] sf::WindowBase", runDisplayTests())
+TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 {
     SECTION("Type traits")
     {
@@ -124,15 +128,15 @@ TEST_CASE("[Window] sf::WindowBase", runDisplayTests())
         {
             sf::WindowBase windowBase(sf::VideoMode({360, 240}), "WindowBase Tests");
 
-            constexpr auto timeout = sf::milliseconds(100);
+            constexpr auto timeout = sf::milliseconds(50);
 
             const auto startTime = std::chrono::steady_clock::now();
             const auto event     = windowBase.waitEvent(timeout);
             const auto elapsed   = std::chrono::steady_clock::now() - startTime;
 
-            REQUIRE(elapsed < (timeout + sf::milliseconds(100)).toDuration());
+            REQUIRE(elapsed < sf::TimeChronoUtil::toDuration(timeout + sf::milliseconds(50)));
 
-            if (elapsed <= timeout.toDuration())
+            if (elapsed <= sf::TimeChronoUtil::toDuration(timeout))
                 CHECK(event);
             else
                 CHECK(!event);

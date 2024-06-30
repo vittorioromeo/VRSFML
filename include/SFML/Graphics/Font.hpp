@@ -29,18 +29,16 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Export.hpp>
 
-#include <SFML/Graphics/Glyph.hpp>
 #include <SFML/Graphics/Rect.hpp>
-#include <SFML/Graphics/Texture.hpp>
 
+#include <SFML/System/InPlacePImpl.hpp>
+#include <SFML/System/LifetimeDependee.hpp>
+#include <SFML/System/PassKey.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #include <filesystem>
-#include <memory>
 #include <optional>
 #include <string>
-#include <unordered_map>
-#include <vector>
 
 #include <cstddef>
 #include <cstdint>
@@ -56,6 +54,9 @@ class ResourceStream;
 namespace sf
 {
 class InputStream;
+class Texture;
+class Text;
+struct Glyph;
 
 ////////////////////////////////////////////////////////////
 /// \brief Class for loading and manipulating character fonts
@@ -64,6 +65,36 @@ class InputStream;
 class SFML_GRAPHICS_API Font
 {
 public:
+    ////////////////////////////////////////////////////////////
+    /// \brief Destructor
+    ///
+    ////////////////////////////////////////////////////////////
+    ~Font();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Copy constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    Font(const Font& rhs);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    Font(Font&& rhs) noexcept;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Copy assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    Font& operator=(const Font& rhs);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    Font& operator=(Font&& rhs) noexcept;
+
     ////////////////////////////////////////////////////////////
     /// \brief Holds various information about a font
     ///
@@ -290,39 +321,18 @@ public:
 
 private:
     ////////////////////////////////////////////////////////////
-    /// \brief Structure defining a row of glyphs
+    /// \brief Return the index of the internal representation a character
+    ///
+    /// \param codePoint Unicode code point of the character to load
     ///
     ////////////////////////////////////////////////////////////
-    struct Row
-    {
-        Row(unsigned int rowTop, unsigned int rowHeight) : top(rowTop), height(rowHeight)
-        {
-        }
-
-        unsigned int width{}; //!< Current width of the row
-        unsigned int top;     //!< Y position of the row into the texture
-        unsigned int height;  //!< Height of the row
-    };
-
-    ////////////////////////////////////////////////////////////
-    // Types
-    ////////////////////////////////////////////////////////////
-    using GlyphTable = std::unordered_map<std::uint64_t, Glyph>; //!< Table mapping a codepoint to its glyph
+    [[nodiscard]] unsigned int getCharIndex(std::uint32_t codePoint) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Structure defining a page of glyphs
     ///
     ////////////////////////////////////////////////////////////
-    struct Page
-    {
-        [[nodiscard]] static std::optional<Page> create(bool smooth);
-        explicit Page(Texture&& texture);
-
-        GlyphTable       glyphs;     //!< Table mapping code points to their corresponding glyph
-        Texture          texture;    //!< Texture containing the pixels of the glyphs
-        unsigned int     nextRow{3}; //!< Y position of the next new row in the texture
-        std::vector<Row> rows;       //!< List containing the position of all the existing rows
-    };
+    struct Page;
 
     ////////////////////////////////////////////////////////////
     /// \brief Find or create the glyphs page corresponding to the given character size
@@ -332,7 +342,7 @@ private:
     /// \return The glyphs page corresponding to \a characterSize
     ///
     ////////////////////////////////////////////////////////////
-    Page& loadPage(unsigned int characterSize) const;
+    [[nodiscard]] Page& loadPage(unsigned int characterSize) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Load a new glyph and store it in the cache
@@ -345,7 +355,7 @@ private:
     /// \return The glyph corresponding to \a codePoint and \a characterSize
     ///
     ////////////////////////////////////////////////////////////
-    Glyph loadGlyph(std::uint32_t codePoint, unsigned int characterSize, bool bold, float outlineThickness) const;
+    [[nodiscard]] Glyph loadGlyph(std::uint32_t codePoint, unsigned int characterSize, bool bold, float outlineThickness) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Find a suitable rectangle within the texture for a glyph
@@ -356,7 +366,7 @@ private:
     /// \return Found rectangle within the texture
     ///
     ////////////////////////////////////////////////////////////
-    IntRect findGlyphRect(Page& page, const Vector2u& size) const;
+    [[nodiscard]] IntRect findGlyphRect(Page& page, const Vector2u& size) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Make sure that the given size is the current one
@@ -372,25 +382,27 @@ private:
     // Types
     ////////////////////////////////////////////////////////////
     struct FontHandles;
-    using PageTable = std::unordered_map<unsigned int, Page>; //!< Table mapping a character size to its page (texture)
 
+public:
     ////////////////////////////////////////////////////////////
+    /// \private
+    ///
     /// \brief Create a font from font handles and a family name
     ///
     ////////////////////////////////////////////////////////////
-    Font(std::shared_ptr<FontHandles>&& fontHandles, std::string&& familyName);
+    [[nodiscard]] Font(priv::PassKey<Font>&&, void* fontHandlesSharedPtr, std::string&& familyName);
 
+private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::shared_ptr<FontHandles> m_fontHandles;    //!< Shared information about the internal font instance
-    bool                         m_isSmooth{true}; //!< Status of the smooth filter
-    Info                         m_info;           //!< Information about the font
-    mutable PageTable            m_pages;          //!< Table containing the glyphs pages by character size
-    mutable std::vector<std::uint8_t> m_pixelBuffer; //!< Pixel buffer holding a glyph's pixels before being written to the texture
-#ifdef SFML_SYSTEM_ANDROID
-    std::shared_ptr<priv::ResourceStream> m_stream; //!< Asset file streamer (if loaded from file)
-#endif
+    struct Impl;
+    priv::InPlacePImpl<Impl, 256> m_impl; //!< Implementation details
+
+    ////////////////////////////////////////////////////////////
+    // Lifetime tracking
+    ////////////////////////////////////////////////////////////
+    SFML_DEFINE_LIFETIME_DEPENDEE(Font, Text);
 };
 
 } // namespace sf

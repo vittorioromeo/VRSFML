@@ -29,7 +29,6 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Export.hpp>
 
-#include <SFML/Graphics/Drawable.hpp>
 #include <SFML/Graphics/PrimitiveType.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
 
@@ -47,7 +46,7 @@ struct Vertex;
 /// \brief Vertex buffer storage for one or more 2D primitives
 ///
 ////////////////////////////////////////////////////////////
-class SFML_GRAPHICS_API VertexBuffer : public Drawable, private GlResource
+class SFML_GRAPHICS_API VertexBuffer : private GlResource
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -60,7 +59,7 @@ public:
     /// good compromise.
     ///
     ////////////////////////////////////////////////////////////
-    enum class Usage
+    enum class [[nodiscard]] Usage
     {
         Stream,  //!< Constantly changing data
         Dynamic, //!< Occasionally changing data
@@ -73,7 +72,7 @@ public:
     /// Creates an empty vertex buffer.
     ///
     ////////////////////////////////////////////////////////////
-    VertexBuffer() = default;
+    [[nodiscard]] VertexBuffer() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a VertexBuffer with a specific PrimitiveType
@@ -83,7 +82,7 @@ public:
     /// \param type Type of primitive
     ///
     ////////////////////////////////////////////////////////////
-    explicit VertexBuffer(PrimitiveType type);
+    [[nodiscard]] explicit VertexBuffer(PrimitiveType type);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a VertexBuffer with a specific usage specifier
@@ -93,7 +92,7 @@ public:
     /// \param usage Usage specifier
     ///
     ////////////////////////////////////////////////////////////
-    explicit VertexBuffer(Usage usage);
+    [[nodiscard]] explicit VertexBuffer(Usage usage);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a VertexBuffer with a specific PrimitiveType and usage specifier
@@ -105,7 +104,7 @@ public:
     /// \param usage Usage specifier
     ///
     ////////////////////////////////////////////////////////////
-    VertexBuffer(PrimitiveType type, Usage usage);
+    [[nodiscard]] VertexBuffer(PrimitiveType type, Usage usage);
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy constructor
@@ -119,7 +118,7 @@ public:
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    ~VertexBuffer() override;
+    ~VertexBuffer();
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the vertex buffer
@@ -287,6 +286,15 @@ public:
     [[nodiscard]] Usage getUsage() const;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Draw the vertex buffer to a render target
+    ///
+    /// \param target Render target to draw to
+    /// \param states Current render states
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(RenderTarget& target, RenderStates states) const;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Bind a vertex buffer for rendering
     ///
     /// This function is not part of the graphics API, it mustn't be
@@ -323,15 +331,6 @@ public:
 
 private:
     ////////////////////////////////////////////////////////////
-    /// \brief Draw the vertex buffer to a render target
-    ///
-    /// \param target Render target to draw to
-    /// \param states Current render states
-    ///
-    ////////////////////////////////////////////////////////////
-    void draw(RenderTarget& target, RenderStates states) const override;
-
-    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     unsigned int  m_buffer{};                             //!< Internal buffer identifier
@@ -359,16 +358,15 @@ SFML_GRAPHICS_API void swap(VertexBuffer& left, VertexBuffer& right) noexcept;
 /// sf::VertexBuffer is a simple wrapper around a dynamic
 /// buffer of vertices and a primitives type.
 ///
-/// Unlike sf::VertexArray, the vertex data is stored in
-/// graphics memory.
+/// The vertex data is stored in graphics memory.
 ///
 /// In situations where a large amount of vertex data would
 /// have to be transferred from system memory to graphics memory
 /// every frame, using sf::VertexBuffer can help. By using a
 /// sf::VertexBuffer, data that has not been changed between frames
 /// does not have to be re-transferred from system to graphics
-/// memory as would be the case with sf::VertexArray. If data transfer
-/// is a bottleneck, this can lead to performance gains.
+/// memory as would be the case with a `std::vector<sf::Vertex>`.
+/// If data transfer is a bottleneck, this can lead to performance gains.
 ///
 /// Using sf::VertexBuffer, the user also has the ability to only modify
 /// a portion of the buffer in graphics memory. This way, a large buffer
@@ -409,6 +407,6 @@ SFML_GRAPHICS_API void swap(VertexBuffer& left, VertexBuffer& right) noexcept;
 /// window.draw(triangles);
 /// \endcode
 ///
-/// \see sf::Vertex, sf::VertexArray
+/// \see sf::Vertex
 ///
 ////////////////////////////////////////////////////////////

@@ -1,8 +1,9 @@
 #include <SFML/Graphics/View.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
 #include <GraphicsUtil.hpp>
+
 #include <type_traits>
 
 TEST_CASE("[Graphics] sf::View")

@@ -28,12 +28,10 @@
 #include <SFML/Network/Http.hpp>
 
 #include <SFML/System/Err.hpp>
-#include <SFML/System/Utils.hpp>
+#include <SFML/System/StringUtils.hpp>
 
-#include <algorithm>
 #include <iterator>
 #include <limits>
-#include <ostream>
 #include <sstream>
 #include <utility>
 
@@ -54,7 +52,7 @@ Http::Request::Request(const std::string& uri, Method method, const std::string&
 ////////////////////////////////////////////////////////////
 void Http::Request::setField(const std::string& field, const std::string& value)
 {
-    m_fields[toLower(field)] = value;
+    m_fields[priv::toLower(field)] = value;
 }
 
 
@@ -97,28 +95,27 @@ std::string Http::Request::prepare() const
     std::ostringstream out;
 
     // Convert the method to its string representation
-    std::string method;
     switch (m_method)
     {
         case Method::Get:
-            method = "GET";
+            out << "GET";
             break;
         case Method::Post:
-            method = "POST";
+            out << "POST";
             break;
         case Method::Head:
-            method = "HEAD";
+            out << "HEAD";
             break;
         case Method::Put:
-            method = "PUT";
+            out << "PUT";
             break;
         case Method::Delete:
-            method = "DELETE";
+            out << "DELETE";
             break;
     }
 
     // Write the first line containing the request type
-    out << method << " " << m_uri << " ";
+    out << " " << m_uri << " ";
     out << "HTTP/" << m_majorVersion << "." << m_minorVersion << "\r\n";
 
     // Write fields
@@ -140,14 +137,14 @@ std::string Http::Request::prepare() const
 ////////////////////////////////////////////////////////////
 bool Http::Request::hasField(const std::string& field) const
 {
-    return m_fields.find(toLower(field)) != m_fields.end();
+    return m_fields.find(priv::toLower(field)) != m_fields.end();
 }
 
 
 ////////////////////////////////////////////////////////////
 const std::string& Http::Response::getField(const std::string& field) const
 {
-    if (const auto it = m_fields.find(toLower(field)); it != m_fields.end())
+    if (const auto it = m_fields.find(priv::toLower(field)); it != m_fields.end())
     {
         return it->second;
     }
@@ -194,7 +191,7 @@ void Http::Response::parse(const std::string& data)
     std::string version;
     if (in >> version)
     {
-        if ((version.size() >= 8) && (version[6] == '.') && (toLower(version.substr(0, 5)) == "http/") &&
+        if ((version.size() >= 8) && (version[6] == '.') && (priv::toLower(version.substr(0, 5)) == "http/") &&
             std::isdigit(version[5]) && std::isdigit(version[7]))
         {
             m_majorVersion = static_cast<unsigned int>(version[5] - '0');
@@ -230,10 +227,11 @@ void Http::Response::parse(const std::string& data)
     m_body.clear();
 
     // Determine whether the transfer is chunked
-    if (toLower(getField("transfer-encoding")) != "chunked")
+    if (priv::toLower(getField("transfer-encoding")) != "chunked")
     {
         // Not chunked - just read everything at once
-        std::copy(std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>(), std::back_inserter(m_body));
+        for (auto it = std::istreambuf_iterator<char>(in); it != std::istreambuf_iterator<char>(); ++it)
+            m_body.push_back(*it);
     }
     else
     {
@@ -283,7 +281,7 @@ void Http::Response::parseFields(std::istream& in)
                 value.erase(value.size() - 1);
 
             // Add the field
-            m_fields[toLower(field)] = value;
+            m_fields[priv::toLower(field)] = value;
         }
     }
 }
@@ -300,16 +298,16 @@ Http::Http(const std::string& host, unsigned short port)
 void Http::setHost(const std::string& host, unsigned short port)
 {
     // Check the protocol
-    if (toLower(host.substr(0, 7)) == "http://")
+    if (priv::toLower(host.substr(0, 7)) == "http://")
     {
         // HTTP protocol
         m_hostName = host.substr(7);
         m_port     = (port != 0 ? port : 80);
     }
-    else if (toLower(host.substr(0, 8)) == "https://")
+    else if (priv::toLower(host.substr(0, 8)) == "https://")
     {
         // HTTPS protocol -- unsupported (requires encryption and certificates and stuff...)
-        err() << "HTTPS protocol is not supported by sf::Http" << std::endl;
+        priv::err() << "HTTPS protocol is not supported by sf::Http" << priv::errEndl;
         m_hostName.clear();
         m_port = 0;
     }

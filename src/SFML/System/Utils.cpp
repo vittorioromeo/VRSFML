@@ -26,27 +26,3 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Utils.hpp>
-
-#include <sstream>
-
-#include <cctype>
-
-
-namespace sf
-{
-std::string toLower(std::string str)
-{
-    for (char& c : str)
-        c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
-    return str;
-}
-
-std::string formatDebugPathInfo(const std::filesystem::path& path)
-{
-    std::ostringstream oss;
-    oss << "    Provided path: " << path << '\n' //
-        << "    Absolute path: " << std::filesystem::absolute(path);
-    return oss.str();
-}
-
-} // namespace sf

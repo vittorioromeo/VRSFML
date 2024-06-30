@@ -29,15 +29,20 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Listener.hpp>
 
-#include <SFML/System/Vector3.hpp>
+#include <SFML/System/InPlacePImpl.hpp>
 
-#include <miniaudio.h>
-
-#include <list>
-#include <mutex>
 #include <optional>
 #include <string>
 #include <vector>
+
+#include <cstddef>
+
+
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+
+struct ma_engine;
 
 
 namespace sf::priv
@@ -89,9 +94,8 @@ public:
 
     struct DeviceEntry
     {
-        std::string  name;
-        ma_device_id id{};
-        bool         isDefault{};
+        std::string name;
+        bool        isDefault{};
     };
 
     ////////////////////////////////////////////////////////////
@@ -144,8 +148,7 @@ public:
         Func  reinitializeFunc{};
     };
 
-    using ResourceEntryList = std::list<ResourceEntry>;
-    using ResourceEntryIter = ResourceEntryList::const_iterator;
+    using ResourceEntryIndex = std::size_t;
 
     ////////////////////////////////////////////////////////////
     /// \brief Register an audio resource
@@ -165,9 +168,9 @@ public:
     /// \see unregisterResource
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static ResourceEntryIter registerResource(void*               resource,
-                                                            ResourceEntry::Func deinitializeFunc,
-                                                            ResourceEntry::Func reinitializeFunc);
+    [[nodiscard]] static ResourceEntryIndex registerResource(void*               resource,
+                                                             ResourceEntry::Func deinitializeFunc,
+                                                             ResourceEntry::Func reinitializeFunc);
 
     ////////////////////////////////////////////////////////////
     /// \brief Unregister an audio resource
@@ -177,7 +180,7 @@ public:
     /// \see registerResource
     ///
     ////////////////////////////////////////////////////////////
-    static void unregisterResource(ResourceEntryIter resourceEntry);
+    static void unregisterResource(ResourceEntryIndex resourceEntryIndex);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the global volume of all the sounds and musics
@@ -326,14 +329,6 @@ public:
 
 private:
     ////////////////////////////////////////////////////////////
-    /// \brief Get the device ID of the currently selected device
-    ///
-    /// \return The device ID of the currently selected device or `std::nullopt` if none could be found
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::optional<ma_device_id> getSelectedDeviceId() const;
-
-    ////////////////////////////////////////////////////////////
     /// \brief Initialize the audio device and engine
     ///
     /// \return True if initialization was successful, false if it failed
@@ -349,15 +344,11 @@ private:
     ////////////////////////////////////////////////////////////
     static AudioDevice*& getInstance();
 
-    struct ListenerProperties
-    {
-        float          volume{100.f};
-        Vector3f       position{0, 0, 0};
-        Vector3f       direction{0, 0, -1};
-        Vector3f       velocity{0, 0, 0};
-        Listener::Cone cone{degrees(360.f), degrees(360.f), 1};
-        Vector3f       upVector{0, 1, 0};
-    };
+    ////////////////////////////////////////////////////////////
+    /// \brief Structure holding listener properties
+    ///
+    ////////////////////////////////////////////////////////////
+    struct ListenerProperties;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the listener properties
@@ -370,12 +361,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::optional<ma_log>     m_log;            //!< The miniaudio log
-    std::optional<ma_context> m_context;        //!< The miniaudio context
-    std::optional<ma_device>  m_playbackDevice; //!< The miniaudio playback device
-    std::optional<ma_engine>  m_engine;         //!< The miniaudio engine (used for effects and spatialisation)
-    ResourceEntryList         m_resources;      //!< Registered resources
-    std::mutex                m_resourcesMutex; //!< The mutex guarding the registered resources
+    struct Impl;
+    priv::InPlacePImpl<Impl, 8192> m_impl; //!< Implementation details
 };
 
 } // namespace sf::priv

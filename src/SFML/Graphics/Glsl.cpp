@@ -26,11 +26,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/Glsl.hpp>
 #include <SFML/Graphics/Transform.hpp>
-
-#include <algorithm>
 
 
 namespace sf::priv
@@ -66,7 +63,8 @@ void copyMatrix(const Transform& source, Matrix<4, 4>& dest)
 ////////////////////////////////////////////////////////////
 void copyMatrix(const float* source, std::size_t elements, float* dest)
 {
-    std::copy(source, source + elements, dest);
+    for (const float* sourcePtr = source; sourcePtr != source + elements;)
+        *dest++ = *sourcePtr++;
 }
 
 } // namespace sf::priv

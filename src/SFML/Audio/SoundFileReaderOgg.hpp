@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/SoundFileReader.hpp>
 
-#include <vorbis/vorbisfile.h>
+#include <SFML/System/InPlacePImpl.hpp>
 
 #include <optional>
 
@@ -59,6 +59,12 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static bool check(InputStream& stream);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Default constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    SoundFileReaderOgg();
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -112,8 +118,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    OggVorbis_File m_vorbis{};       // ogg/vorbis file handle
-    unsigned int   m_channelCount{}; // number of channels of the open sound file
+    struct Impl;
+    priv::InPlacePImpl<Impl, 896> m_impl; //!< Implementation details
 };
 
 } // namespace sf::priv

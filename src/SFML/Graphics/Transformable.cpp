@@ -33,6 +33,10 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
+Transformable::Transformable() = default;
+
+
+////////////////////////////////////////////////////////////
 void Transformable::setPosition(const Vector2f& position)
 {
     m_position                   = position;

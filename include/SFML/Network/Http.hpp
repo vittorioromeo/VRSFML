@@ -80,7 +80,7 @@ public:
         /// \param body   Content of the request's body
         ///
         ////////////////////////////////////////////////////////////
-        Request(const std::string& uri = "/", Method method = Method::Get, const std::string& body = "");
+        [[nodiscard]] Request(const std::string& uri = "/", Method method = Method::Get, const std::string& body = "");
 
         ////////////////////////////////////////////////////////////
         /// \brief Set the value of a field
@@ -214,10 +214,10 @@ public:
             NotModified = 304, //!< For conditional requests, means the requested page hasn't changed and doesn't need to be refreshed
 
             // 4xx: client error
-            BadRequest          = 400, //!< The server couldn't understand the request (syntax error)
-            Unauthorized        = 401, //!< The requested page needs an authentication to be accessed
-            Forbidden           = 403, //!< The requested page cannot be accessed at all, even with authentication
-            NotFound            = 404, //!< The requested page doesn't exist
+            BadRequest   = 400,        //!< The server couldn't understand the request (syntax error)
+            Unauthorized = 401,        //!< The requested page needs an authentication to be accessed
+            Forbidden    = 403,        //!< The requested page cannot be accessed at all, even with authentication
+            NotFound     = 404,        //!< The requested page doesn't exist
             RangeNotSatisfiable = 407, //!< The server can't satisfy the partial GET request (with a "Range" header field)
 
             // 5xx: server error
@@ -339,7 +339,7 @@ public:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    Http() = default;
+    [[nodiscard]] Http() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the HTTP client with the target host
@@ -355,7 +355,7 @@ public:
     /// \param port Port to use for connection
     ///
     ////////////////////////////////////////////////////////////
-    Http(const std::string& host, unsigned short port = 0);
+    [[nodiscard]] Http(const std::string& host, unsigned short port = 0);
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy constructor
@@ -469,11 +469,11 @@ private:
 /// sf::Http::Response::Status status = response.getStatus();
 /// if (status == sf::Http::Response::Status::Ok)
 /// {
-///     std::cout << response.getBody() << std::endl;
+///     std::cout << response.getBody() << '\n';
 /// }
 /// else
 /// {
-///     std::cout << "Error " << status << std::endl;
+///     std::cout << "Error " << status << '\n';
 /// }
 /// \endcode
 ///

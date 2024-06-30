@@ -29,8 +29,6 @@
 
 #include <SFML/System/Err.hpp>
 
-#include <ostream>
-
 
 namespace sf::priv
 {
@@ -59,8 +57,8 @@ void SensorManager::setEnabled(Sensor::Type sensor, bool enabled)
     }
     else
     {
-        err() << "Warning: trying to enable a sensor that is not available (call Sensor::isAvailable to check it)"
-              << std::endl;
+        priv::err() << "Warning: trying to enable a sensor that is not available (call Sensor::isAvailable to check it)"
+                    << priv::errEndl;
     }
 }
 
@@ -82,7 +80,7 @@ Vector3f SensorManager::getValue(Sensor::Type sensor) const
 ////////////////////////////////////////////////////////////
 void SensorManager::update()
 {
-    for (Item& item : m_sensors)
+    for (Item& item : m_sensors.data)
     {
         // Only process available sensors
         if (item.available)
@@ -115,7 +113,7 @@ SensorManager::SensorManager()
             else
             {
                 m_sensors[sensor].available = false;
-                err() << "Warning: sensor " << i << " failed to open, will not be available" << std::endl;
+                priv::err() << "Warning: sensor " << i << " failed to open, will not be available" << priv::errEndl;
             }
         }
     }
@@ -125,7 +123,7 @@ SensorManager::SensorManager()
 SensorManager::~SensorManager()
 {
     // Per sensor cleanup
-    for (Item& item : m_sensors)
+    for (Item& item : m_sensors.data)
     {
         if (item.available)
             item.sensor.close();

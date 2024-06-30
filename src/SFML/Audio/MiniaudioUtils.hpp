@@ -28,6 +28,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/AudioDevice.hpp>
+#include <SFML/Audio/EffectProcessor.hpp>
 #include <SFML/Audio/SoundChannel.hpp>
 #include <SFML/Audio/SoundSource.hpp>
 
@@ -92,13 +93,13 @@ struct SoundBase
     };
 
     ma_data_source_base dataSourceBase{}; //!< The struct that makes this object a miniaudio data source (must be first member)
-    ma_node_vtable          effectNodeVTable{}; //!< Vtable of the effect node
-    EffectNode              effectNode;         //!< The engine node that performs effect processing
+    ma_node_vtable effectNodeVTable{};       //!< Vtable of the effect node
+    EffectNode     effectNode;               //!< The engine node that performs effect processing
     std::vector<ma_channel> soundChannelMap; //!< The map of position in sample frame to sound channel (miniaudio channels)
-    ma_sound                sound{};         //!< The sound
-    SoundSource::Status     status{SoundSource::Status::Stopped}; //!< The status
-    SoundSource::EffectProcessor         effectProcessor;         //!< The effect processor
-    priv::AudioDevice::ResourceEntryIter resourceEntryIter; //!< Iterator to the resource entry registered with the AudioDevice
+    ma_sound            sound{};             //!< The sound
+    SoundSource::Status status{SoundSource::Status::Stopped}; //!< The status
+    EffectProcessor     effectProcessor;                      //!< The effect processor
+    priv::AudioDevice::ResourceEntryIndex resourceEntryIndex; //!< Index of the resource entry registered with the AudioDevice
     priv::MiniaudioUtils::SavedSettings savedSettings; //!< Saved settings used to restore ma_sound state in case we need to recreate it
 };
 

@@ -171,7 +171,7 @@ void goToFullscreenMode(ANativeActivity& activity)
     // API Level 19
     if (apiLevel >= 19)
     {
-        jfieldID   fieldSystemUiFlagImmersiveSticky = lJNIEnv->GetStaticFieldID(classView,
+        jfieldID fieldSystemUiFlagImmersiveSticky = lJNIEnv->GetStaticFieldID(classView,
                                                                               "SYSTEM_UI_FLAG_IMMERSIVE_STICKY",
                                                                               "I");
         const jint systemUiFlagImmersiveSticky = lJNIEnv->GetStaticIntField(classView, fieldSystemUiFlagImmersiveSticky);
@@ -504,7 +504,7 @@ JNIEXPORT void ANativeActivity_onCreate(ANativeActivity* activity, void* savedSt
     getScreenSizeInPixels(*activity, states->screenSize.x, states->screenSize.y);
 
     // Redirect error messages to logcat
-    sf::err().rdbuf(&states->logcat);
+    sf::priv::err().rdbuf(&states->logcat);
 
     // Launch the main thread
     std::thread(sf::priv::main, states).detach();

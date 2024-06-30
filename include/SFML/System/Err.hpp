@@ -29,25 +29,91 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Export.hpp>
 
+#include <SFML/System/InPlacePImpl.hpp>
+
 #include <iosfwd>
 
 
-namespace sf
+namespace sf::priv
 {
+////////////////////////////////////////////////////////////
+struct ErrEndlType
+{
+};
+
+inline constexpr ErrEndlType errEndl;
+
+////////////////////////////////////////////////////////////
+struct ErrFlushType
+{
+};
+
+inline constexpr ErrFlushType errFlush;
+
+////////////////////////////////////////////////////////////
+class SFML_SYSTEM_API ErrStream
+{
+private:
+    class SFML_SYSTEM_API Guard
+    {
+    public:
+        explicit Guard(std::ostream& stream, void* mutexPtr);
+        ~Guard();
+
+        Guard(const Guard&)            = delete;
+        Guard& operator=(const Guard&) = delete;
+
+        Guard(Guard&&)            = delete;
+        Guard& operator=(Guard&&) = delete;
+
+        Guard& operator<<(std::ios_base& (*func)(std::ios_base&));
+        Guard& operator<<(std::ostream& (*func)(std::ostream&));
+
+        Guard& operator<<(const char* value);
+        Guard& operator<<(ErrEndlType);
+        Guard& operator<<(ErrFlushType);
+
+        template <typename T>
+        Guard& operator<<(const T& value);
+
+    private:
+        std::ostream& m_stream;
+        void*         m_mutexPtr;
+    };
+
+    struct Impl;
+    priv::InPlacePImpl<Impl, 512> m_impl; //!< Implementation details
+
+public:
+    explicit ErrStream(std::streambuf* sbuf);
+
+    Guard operator<<(std::ostream& (*func)(std::ostream&));
+
+    std::streambuf* rdbuf();
+    void            rdbuf(std::streambuf* sbuf);
+
+    Guard operator<<(const char* value);
+    Guard operator<<(ErrEndlType);
+    Guard operator<<(ErrFlushType);
+
+    template <typename T>
+    Guard operator<<(const T& value);
+};
+
 ////////////////////////////////////////////////////////////
 /// \brief Standard stream used by SFML to output warnings and errors
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_SYSTEM_API std::ostream& err();
+[[nodiscard]] SFML_SYSTEM_API ErrStream& err();
 
-} // namespace sf
+} // namespace sf::priv
 
 
 ////////////////////////////////////////////////////////////
 /// \fn sf::err
 /// \ingroup system
 ///
-/// By default, sf::err() outputs to the same location as std::cerr,
+/// By default, sf::priv::err() outputs to the same location as std::cerr,
 /// (-> the stderr descriptor) which is the console if there's
 /// one available.
 ///
@@ -55,7 +121,7 @@ namespace sf
 /// insertion operations defined by the STL
 /// (operator <<, manipulators, etc.).
 ///
-/// sf::err() can be redirected to write to another output, independently
+/// sf::priv::err() can be redirected to write to another output, independently
 /// of std::cerr, by using the rdbuf() function provided by the
 /// std::ostream class.
 ///
@@ -63,13 +129,13 @@ namespace sf
 /// \code
 /// // Redirect to a file
 /// std::ofstream file("sfml-log.txt");
-/// std::streambuf* previous = sf::err().rdbuf(file.rdbuf());
+/// std::streambuf* previous = sf::priv::err().rdbuf(file.rdbuf());
 ///
 /// // Redirect to nothing
-/// sf::err().rdbuf(nullptr);
+/// sf::priv::err().rdbuf(nullptr);
 ///
 /// // Restore the original output
-/// sf::err().rdbuf(previous);
+/// sf::priv::err().rdbuf(previous);
 /// \endcode
 ///
 /// \return Reference to std::ostream representing the SFML error stream

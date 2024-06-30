@@ -35,11 +35,10 @@
 #include <SFML/Window/WindowHandle.hpp>
 #include <SFML/Window/WindowImpl.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 
-#include <algorithm>
 #include <limits>
-#include <ostream>
 #include <vector>
 
 #include <cassert>
@@ -205,66 +204,70 @@ Vector2u WindowBase::getSize() const
 ////////////////////////////////////////////////////////////
 void WindowBase::setSize(const Vector2u& size)
 {
-    if (m_impl)
-    {
-        // Constrain requested size within minimum and maximum bounds
-        const auto minimumSize = m_impl->getMinimumSize().value_or(Vector2u());
-        const auto maximumSize = m_impl->getMaximumSize().value_or(
-            Vector2u(std::numeric_limits<unsigned int>::max(), std::numeric_limits<unsigned int>::max()));
-        const auto width  = std::clamp(size.x, minimumSize.x, maximumSize.x);
-        const auto height = std::clamp(size.y, minimumSize.y, maximumSize.y);
+    if (m_impl == nullptr)
+        return;
 
-        // Do nothing if requested size matches current size
-        const Vector2u clampedSize(width, height);
-        if (clampedSize == m_size)
-            return;
+    // Constrain requested size within minimum and maximum bounds
+    const auto minimumSize = m_impl->getMinimumSize().value_or(Vector2u());
+    const auto maximumSize = m_impl->getMaximumSize().value_or(
+        Vector2u(std::numeric_limits<unsigned int>::max(), std::numeric_limits<unsigned int>::max()));
 
-        m_impl->setSize(clampedSize);
+    const auto width  = priv::clamp(size.x, minimumSize.x, maximumSize.x);
+    const auto height = priv::clamp(size.y, minimumSize.y, maximumSize.y);
 
-        // Cache the new size
-        m_size = clampedSize;
+    // Do nothing if requested size matches current size
+    const Vector2u clampedSize(width, height);
+    if (clampedSize == m_size)
+        return;
 
-        // Notify the derived class
-        onResize();
-    }
+    m_impl->setSize(clampedSize);
+
+    // Cache the new size
+    m_size = clampedSize;
+
+    // Notify the derived class
+    onResize();
 }
 
 
 ////////////////////////////////////////////////////////////
 void WindowBase::setMinimumSize(const std::optional<Vector2u>& minimumSize)
 {
-    if (m_impl)
-    {
-        [[maybe_unused]] const auto validateMinimumSize = [this, minimumSize]
-        {
-            if (!minimumSize.has_value() || !m_impl->getMaximumSize().has_value())
-                return true;
-            return minimumSize->x <= m_impl->getMaximumSize()->x && minimumSize->y <= m_impl->getMaximumSize()->y;
-        };
-        assert(validateMinimumSize() && "Minimum size cannot be bigger than the maximum size along either axis");
+    if (m_impl == nullptr)
+        return;
 
-        m_impl->setMinimumSize(minimumSize);
-        setSize(getSize());
-    }
+    [[maybe_unused]] const auto validateMinimumSize = [this, minimumSize]
+    {
+        if (!minimumSize.has_value() || !m_impl->getMaximumSize().has_value())
+            return true;
+
+        return minimumSize->x <= m_impl->getMaximumSize()->x && minimumSize->y <= m_impl->getMaximumSize()->y;
+    };
+
+    assert(validateMinimumSize() && "Minimum size cannot be bigger than the maximum size along either axis");
+
+    m_impl->setMinimumSize(minimumSize);
+    setSize(getSize());
 }
 
 
 ////////////////////////////////////////////////////////////
 void WindowBase::setMaximumSize(const std::optional<Vector2u>& maximumSize)
 {
-    if (m_impl)
-    {
-        [[maybe_unused]] const auto validateMaxiumSize = [this, maximumSize]
-        {
-            if (!maximumSize.has_value() || !m_impl->getMinimumSize().has_value())
-                return true;
-            return maximumSize->x >= m_impl->getMinimumSize()->x && maximumSize->y >= m_impl->getMinimumSize()->y;
-        };
-        assert(validateMaxiumSize() && "Maximum size cannot be smaller than the minimum size along either axis");
+    if (m_impl == nullptr)
+        return;
 
-        m_impl->setMaximumSize(maximumSize);
-        setSize(getSize());
-    }
+    [[maybe_unused]] const auto validateMaxiumSize = [this, maximumSize]
+    {
+        if (!maximumSize.has_value() || !m_impl->getMinimumSize().has_value())
+            return true;
+        return maximumSize->x >= m_impl->getMinimumSize()->x && maximumSize->y >= m_impl->getMinimumSize()->y;
+    };
+
+    assert(validateMaxiumSize() && "Maximum size cannot be smaller than the minimum size along either axis");
+
+    m_impl->setMaximumSize(maximumSize);
+    setSize(getSize());
 }
 
 
@@ -387,7 +390,7 @@ void WindowBase::create(VideoMode mode, std::uint32_t& style, State& state)
         // Make sure there's not already a fullscreen window (only one is allowed)
         if (getFullscreenWindow())
         {
-            err() << "Creating two fullscreen windows is not allowed, switching to windowed mode" << std::endl;
+            priv::err() << "Creating two fullscreen windows is not allowed, switching to windowed mode" << priv::errEndl;
             state = State::Windowed;
         }
         else
@@ -395,11 +398,11 @@ void WindowBase::create(VideoMode mode, std::uint32_t& style, State& state)
             // Make sure that the chosen video mode is compatible
             if (!mode.isValid())
             {
-                err() << "The requested video mode is not available, switching to a valid mode" << std::endl;
+                priv::err() << "The requested video mode is not available, switching to a valid mode" << priv::errEndl;
                 assert(!VideoMode::getFullscreenModes().empty() && "No video modes available");
                 mode = VideoMode::getFullscreenModes()[0];
-                err() << "  VideoMode: { size: { " << mode.size.x << ", " << mode.size.y
-                      << " }, bitsPerPixel: " << mode.bitsPerPixel << " }" << std::endl;
+                priv::err() << "  VideoMode: { size: { " << mode.size.x << ", " << mode.size.y
+                            << " }, bitsPerPixel: " << mode.bitsPerPixel << " }" << priv::errEndl;
             }
 
             // Update the fullscreen window

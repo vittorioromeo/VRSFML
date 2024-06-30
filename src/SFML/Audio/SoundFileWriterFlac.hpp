@@ -29,9 +29,9 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/SoundFileWriter.hpp>
 
-#include <FLAC/stream_encoder.h>
+#include <SFML/System/InPlacePImpl.hpp>
+
 #include <filesystem>
-#include <memory>
 #include <vector>
 
 #include <cstdint>
@@ -46,6 +46,18 @@ namespace sf::priv
 class SoundFileWriterFlac : public SoundFileWriter
 {
 public:
+    ////////////////////////////////////////////////////////////
+    /// \brief Default constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    SoundFileWriterFlac();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Destructor
+    ///
+    ////////////////////////////////////////////////////////////
+    ~SoundFileWriterFlac() override;
+
     ////////////////////////////////////////////////////////////
     /// \brief Check if this writer can handle a file on disk
     ///
@@ -85,14 +97,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    struct FlacStreamEncoderDeleter
-    {
-        void operator()(FLAC__StreamEncoder* encoder) const;
-    };
-    std::unique_ptr<FLAC__StreamEncoder, FlacStreamEncoderDeleter> m_encoder;        //!< FLAC stream encoder
-    unsigned int                                                   m_channelCount{}; //!< Number of channels
-    std::size_t               m_remapTable[8]{}; //!< Table we use to remap source to target channel order
-    std::vector<std::int32_t> m_samples32;       //!< Conversion buffer
+    struct Impl;
+    priv::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
 };
 
 } // namespace sf::priv

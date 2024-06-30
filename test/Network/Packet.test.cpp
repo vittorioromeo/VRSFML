@@ -3,14 +3,17 @@
 // Other 1st party headers
 #include <SFML/System/String.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
-#include <array>
+#include <StringifyVectorUtil.hpp>
+#include <SystemUtil.hpp>
+
 #include <limits>
 #include <type_traits>
 #include <vector>
 
 #include <cstddef>
+#include <cstring>
 #include <cwchar>
 
 #define CHECK_PACKET_STREAM_OPERATORS(expected)              \
@@ -81,15 +84,15 @@ TEST_CASE("[Network] sf::Packet")
         CHECK(bool{packet});
     }
 
-    static constexpr std::array data = {1, 2, 3, 4, 5, 6};
+    static constexpr int data[] = {1, 2, 3, 4, 5, 6};
 
     SECTION("Append and clear")
     {
         sf::Packet packet;
-        packet.append(data.data(), data.size());
+        packet.append(data, 6);
         CHECK(packet.getReadPosition() == 0);
         CHECK(packet.getData() != nullptr);
-        CHECK(packet.getDataSize() == data.size());
+        CHECK(packet.getDataSize() == 6);
         CHECK(!packet.endOfPacket());
         CHECK(bool{packet});
 
@@ -275,17 +278,17 @@ TEST_CASE("[Network] sf::Packet")
         CHECK(packet.onSend(size) == nullptr);
         CHECK(size == 0);
 
-        packet.append(data.data(), data.size());
+        packet.append(data, 6);
         CHECK(packet.onSend(size) != nullptr);
-        CHECK(size == data.size());
+        CHECK(size == 6);
     }
 
     SECTION("onReceive")
     {
         Packet packet;
-        packet.onReceive(data.data(), data.size());
+        packet.onReceive(data, 6);
         CHECK(packet.getReadPosition() == 0);
         CHECK(packet.getData() != nullptr);
-        CHECK(packet.getDataSize() == data.size());
+        CHECK(packet.getDataSize() == 6);
     }
 }

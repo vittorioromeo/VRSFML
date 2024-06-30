@@ -30,9 +30,7 @@
 #include <SFML/Graphics/RenderTextureImplFBO.hpp>
 
 #include <SFML/System/Err.hpp>
-
-#include <memory>
-#include <ostream>
+#include <SFML/System/UniquePtr.hpp>
 
 
 namespace sf
@@ -52,15 +50,17 @@ RenderTexture& RenderTexture::operator=(RenderTexture&&) noexcept = default;
 ////////////////////////////////////////////////////////////
 std::optional<RenderTexture> RenderTexture::create(const Vector2u& size, const ContextSettings& settings)
 {
+    std::optional<RenderTexture> result; // Use a single local variable for NRVO
+
     // Create the texture
     auto texture = sf::Texture::create(size, settings.sRgbCapable);
     if (!texture)
     {
-        err() << "Impossible to create render texture (failed to create the target texture)" << std::endl;
-        return std::nullopt;
+        priv::err() << "Impossible to create render texture (failed to create the target texture)" << priv::errEndl;
+        return result; // Empty optional
     }
 
-    RenderTexture renderTexture(std::move(*texture));
+    auto& renderTexture = result.emplace(priv::PassKey<RenderTexture>{}, std::move(*texture));
 
     // We disable smoothing by default for render textures
     renderTexture.setSmooth(false);
@@ -69,7 +69,7 @@ std::optional<RenderTexture> RenderTexture::create(const Vector2u& size, const C
     if (priv::RenderTextureImplFBO::isAvailable())
     {
         // Use frame-buffer object (FBO)
-        renderTexture.m_impl = std::make_unique<priv::RenderTextureImplFBO>();
+        renderTexture.m_impl = priv::makeUnique<priv::RenderTextureImplFBO>();
 
         // Mark the texture as being a framebuffer object attachment
         renderTexture.m_texture.m_fboAttachment = true;
@@ -77,18 +77,21 @@ std::optional<RenderTexture> RenderTexture::create(const Vector2u& size, const C
     else
     {
         // Use default implementation
-        renderTexture.m_impl = std::make_unique<priv::RenderTextureImplDefault>();
+        renderTexture.m_impl = priv::makeUnique<priv::RenderTextureImplDefault>();
     }
 
     // Initialize the render texture
     // We pass the actual size of our texture since OpenGL ES requires that all attachments have identical sizes
     if (!renderTexture.m_impl->create(renderTexture.m_texture.m_actualSize, renderTexture.m_texture.m_texture, settings))
-        return std::nullopt;
+    {
+        result.reset();
+        return result; // Empty optional
+    }
 
     // We can now initialize the render target part
     renderTexture.initialize();
 
-    return renderTexture;
+    return result;
 }
 
 
@@ -195,7 +198,7 @@ const Texture& RenderTexture::getTexture() const
 
 
 ////////////////////////////////////////////////////////////
-RenderTexture::RenderTexture(Texture&& texture) : m_texture(std::move(texture))
+RenderTexture::RenderTexture(priv::PassKey<RenderTexture>&&, Texture&& texture) : m_texture(std::move(texture))
 {
 }
 

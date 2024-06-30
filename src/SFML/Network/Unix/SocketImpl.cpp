@@ -30,7 +30,6 @@
 #include <SFML/System/Err.hpp>
 
 #include <fcntl.h>
-#include <ostream>
 
 #include <cerrno>
 
@@ -74,12 +73,12 @@ void SocketImpl::setBlocking(SocketHandle sock, bool block)
     if (block)
     {
         if (fcntl(sock, F_SETFL, status & ~O_NONBLOCK) == -1)
-            err() << "Failed to set file status flags: " << errno << std::endl;
+            priv::err() << "Failed to set file status flags: " << errno << priv::errEndl;
     }
     else
     {
         if (fcntl(sock, F_SETFL, status | O_NONBLOCK) == -1)
-            err() << "Failed to set file status flags: " << errno << std::endl;
+            priv::err() << "Failed to set file status flags: " << errno << priv::errEndl;
     }
 }
 

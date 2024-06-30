@@ -51,7 +51,7 @@ public:
     /// \param size Size of the rectangle
     ///
     ////////////////////////////////////////////////////////////
-    explicit RectangleShape(const Vector2f& size = {});
+    [[nodiscard]] explicit RectangleShape(const Vector2f& size = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the size of the rectangle
@@ -80,7 +80,7 @@ public:
     ///         shapes, this number is always 4.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::size_t getPointCount() const override;
+    [[nodiscard]] std::size_t getPointCount() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a point of the rectangle
@@ -95,7 +95,7 @@ public:
     /// \return index-th point of the shape
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2f getPoint(std::size_t index) const override;
+    [[nodiscard]] Vector2f getPoint(std::size_t index) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the geometric center of the rectangle
@@ -107,13 +107,14 @@ public:
     /// \return The geometric center of the shape
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2f getGeometricCenter() const override;
+    [[nodiscard]] Vector2f getGeometricCenter() const;
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2f m_size; //!< Size of the rectangle
+    Vector2f m_size;      //!< Size of the rectangle
+    Vector2f m_points[4]; //!< Points composing the rectangle
 };
 
 } // namespace sf

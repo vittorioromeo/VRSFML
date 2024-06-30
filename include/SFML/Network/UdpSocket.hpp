@@ -59,7 +59,7 @@ public:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    UdpSocket();
+    [[nodiscard]] UdpSocket();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the port to which the socket is bound locally
@@ -267,7 +267,7 @@ private:
 /// std::optional<sf::IpAddress> sender;
 /// unsigned short port;
 /// if (socket.receive(buffer, sizeof(buffer), received, sender, port) == sf::Socket::Status::Done)
-///     std::cout << sender->toString() << " said: " << buffer << std::endl;
+///     std::cout << sender->toString() << " said: " << buffer << '\n';
 ///
 /// // ----- The server -----
 ///
@@ -281,7 +281,7 @@ private:
 /// std::optional<sf::IpAddress> sender;
 /// unsigned short port;
 /// if (socket.receive(buffer, sizeof(buffer), received, sender, port) == sf::Socket::Status::Done)
-///     std::cout << sender->toString() << " said: " << buffer << std::endl;
+///     std::cout << sender->toString() << " said: " << buffer << '\n';
 ///
 /// // Send an answer
 /// std::string message = "Welcome " + sender.toString();

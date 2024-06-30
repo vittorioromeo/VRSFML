@@ -40,7 +40,7 @@ namespace sf
 /// By default, the vertex color is white and texture coordinates are (0, 0).
 ///
 ////////////////////////////////////////////////////////////
-struct Vertex
+struct [[nodiscard]] Vertex
 {
     ////////////////////////////////////////////////////////////
     // Member data
@@ -117,6 +117,6 @@ struct Vertex
 /// amount of pixels, their type is float because of some buggy graphics
 /// drivers that are not able to process integer coordinates correctly.
 ///
-/// \see sf::VertexArray
+/// \see sf::VertexBuffer
 ///
 ////////////////////////////////////////////////////////////

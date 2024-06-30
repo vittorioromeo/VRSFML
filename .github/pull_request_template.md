@@ -42,7 +42,10 @@ int main()
         while (const std::optional event = window.pollEvent())
         {
             if (event->is<sf::Event::Closed>())
+            {
                 window.close();
+                break;
+            }
         }
 
         window.clear();

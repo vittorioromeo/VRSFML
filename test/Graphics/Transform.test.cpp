@@ -2,10 +2,11 @@
 
 #include <SFML/System/Angle.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
 #include <GraphicsUtil.hpp>
-#include <sstream>
+#include <StringifyVectorUtil.hpp>
+
 #include <type_traits>
 #include <vector>
 

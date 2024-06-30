@@ -54,7 +54,7 @@ bool Event::is() const
 {
     static_assert(isEventSubtype<TEventSubtype>, "TEventSubtype must be a subtype of sf::Event");
     if constexpr (isEventSubtype<TEventSubtype>)
-        return std::holds_alternative<TEventSubtype>(m_data);
+        return m_data.is<TEventSubtype>();
 }
 
 
@@ -64,7 +64,15 @@ const TEventSubtype* Event::getIf() const
 {
     static_assert(isEventSubtype<TEventSubtype>, "TEventSubtype must be a subtype of sf::Event");
     if constexpr (isEventSubtype<TEventSubtype>)
-        return std::get_if<TEventSubtype>(&m_data);
+        return m_data.is<TEventSubtype>() ? &m_data.as<TEventSubtype>() : nullptr;
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename Visitor>
+decltype(auto) Event::visit(Visitor&& visitor)
+{
+    return m_data.linear_visit(static_cast<Visitor&&>(visitor));
 }
 
 } // namespace sf

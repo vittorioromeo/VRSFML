@@ -31,6 +31,7 @@
 
 #include <SFML/Window/GlResource.hpp>
 
+#include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #include <memory>
@@ -58,7 +59,7 @@ public:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    RenderTextureImplFBO();
+    [[nodiscard]] RenderTextureImplFBO();
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -72,7 +73,7 @@ public:
     /// \return True if FBO render textures are supported
     ///
     ////////////////////////////////////////////////////////////
-    static bool isAvailable();
+    [[nodiscard]] static bool isAvailable();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the maximum anti-aliasing level supported by the system
@@ -80,7 +81,7 @@ public:
     /// \return The maximum anti-aliasing level supported by the system
     ///
     ////////////////////////////////////////////////////////////
-    static unsigned int getMaximumAntialiasingLevel();
+    [[nodiscard]] static unsigned int getMaximumAntialiasingLevel();
 
     ////////////////////////////////////////////////////////////
     /// \brief Unbind the currently bound FBO
@@ -99,7 +100,7 @@ private:
     /// \return True if creation has been successful
     ///
     ////////////////////////////////////////////////////////////
-    bool create(const Vector2u& size, unsigned int textureId, const ContextSettings& settings) override;
+    [[nodiscard]] bool create(const Vector2u& size, unsigned int textureId, const ContextSettings& settings) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Create an FBO in the current context
@@ -107,7 +108,7 @@ private:
     /// \return True if creation has been successful
     ///
     ////////////////////////////////////////////////////////////
-    bool createFrameBuffer();
+    [[nodiscard]] bool createFrameBuffer();
 
     ////////////////////////////////////////////////////////////
     /// \brief Activate or deactivate the render texture for rendering
@@ -117,7 +118,7 @@ private:
     /// \return True on success, false on failure
     ///
     ////////////////////////////////////////////////////////////
-    bool activate(bool active) override;
+    [[nodiscard]] bool activate(bool active) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Tell if the render-texture will use sRGB encoding when drawing on it
@@ -150,7 +151,7 @@ private:
     unsigned int             m_depthStencilBuffer{}; //!< Optional depth/stencil buffer attached to the frame buffer
     unsigned int             m_colorBuffer{};        //!< Optional multisample color buffer attached to the frame buffer
     Vector2u                 m_size;                 //!< Width and height of the attachments
-    std::unique_ptr<Context> m_context;              //!< Backup OpenGL context, used when none already exist
+    priv::UniquePtr<Context> m_context;              //!< Backup OpenGL context, used when none already exist
     unsigned int             m_textureId{};          //!< The ID of the texture to attach to the FBO
     bool                     m_multisample{};        //!< Whether we have to create a multisample frame buffer as well
     bool                     m_depth{};              //!< Whether we have depth attachment

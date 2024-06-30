@@ -3,7 +3,7 @@
 // Other 1st party headers
 #include <SFML/System/FileInputStream.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
 #include <type_traits>
 
@@ -115,29 +115,9 @@ constexpr bool skipShaderDummyTest = true;
 constexpr bool skipShaderFullTest  = true;
 #endif
 
-std::string skipShaderDummyTests()
-{
-    if constexpr (skipShaderDummyTest)
-        // https://github.com/catchorg/Catch2/blob/devel/docs/test-cases-and-sections.md#special-tags
-        // This tag tells Catch2 to not run a given TEST_CASE
-        return "[.shaderDummy]";
-    else
-        return "";
-}
-
-std::string skipShaderFullTests()
-{
-    if constexpr (skipShaderFullTest)
-        // https://github.com/catchorg/Catch2/blob/devel/docs/test-cases-and-sections.md#special-tags
-        // This tag tells Catch2 to not run a given TEST_CASE
-        return "[.shaderFull]";
-    else
-        return "";
-}
-
 } // namespace
 
-TEST_CASE("[Graphics] sf::Shader (Dummy Implementation)", skipShaderDummyTests())
+TEST_CASE("[Graphics] sf::Shader (Dummy Implementation)" * doctest::skip(skipShaderDummyTest))
 {
     SECTION("Available")
     {
@@ -155,7 +135,7 @@ TEST_CASE("[Graphics] sf::Shader (Dummy Implementation)", skipShaderDummyTests()
     }
 }
 
-TEST_CASE("[Graphics] sf::Shader", skipShaderFullTests())
+TEST_CASE("[Graphics] sf::Shader" * doctest::skip(skipShaderFullTest))
 {
     SECTION("Type traits")
     {

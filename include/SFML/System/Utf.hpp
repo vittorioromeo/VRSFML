@@ -29,7 +29,6 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Config.hpp>
 
-#include <array>
 #include <locale>
 
 #include <cstdint>
@@ -38,12 +37,6 @@
 
 namespace sf
 {
-namespace priv
-{
-template <class InputIt, class OutputIt>
-OutputIt copy(InputIt first, InputIt last, OutputIt dFirst);
-}
-
 template <unsigned int N>
 class Utf;
 

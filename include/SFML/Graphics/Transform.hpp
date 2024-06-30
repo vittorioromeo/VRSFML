@@ -33,8 +33,6 @@
 
 #include <SFML/System/Vector2.hpp>
 
-#include <array>
-
 
 namespace sf
 {
@@ -44,7 +42,7 @@ class Angle;
 /// \brief Define a 3x3 transform matrix
 ///
 ////////////////////////////////////////////////////////////
-class Transform
+class [[nodiscard]] Transform
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -53,7 +51,7 @@ public:
     /// Creates an identity transform (a transform that does nothing).
     ///
     ////////////////////////////////////////////////////////////
-    constexpr Transform();
+    [[nodiscard]] constexpr Transform();
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a transform from a 3x3 matrix
@@ -69,7 +67,7 @@ public:
     /// \param a22 Element (2, 2) of the matrix
     ///
     ////////////////////////////////////////////////////////////
-    constexpr Transform(float a00, float a01, float a02, float a10, float a11, float a12, float a20, float a21, float a22);
+    [[nodiscard]] constexpr Transform(float a00, float a01, float a02, float a10, float a11, float a12, float a20, float a21, float a22);
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the transform as a 4x4 matrix
@@ -269,10 +267,11 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     // clang-format off
-    std::array<float, 16> m_matrix{1.f, 0.f, 0.f, 0.f,
-                                   0.f, 1.f, 0.f, 0.f,
-                                   0.f, 0.f, 1.f, 0.f,
-                                   0.f, 0.f, 0.f, 1.f}; //!< 4x4 matrix defining the transformation
+    // Using a C-style array here to minimize compilation impact of `Transform.hpp`.
+    float m_matrix[16]{1.f, 0.f, 0.f, 0.f,
+                       0.f, 1.f, 0.f, 0.f,
+                       0.f, 0.f, 1.f, 0.f,
+                       0.f, 0.f, 0.f, 1.f}; //!< 4x4 matrix defining the transformation
     // clang-format off
 };
 

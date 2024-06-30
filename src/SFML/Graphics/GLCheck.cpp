@@ -30,22 +30,22 @@
 
 #include <SFML/System/Err.hpp>
 
-#include <ostream>
-#include <string>
+#include <filesystem>
+#include <string_view>
 
 
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-void glCheckError(const std::filesystem::path& file, unsigned int line, std::string_view expression)
+void glCheckError(std::string_view file, unsigned int line, std::string_view expression)
 {
     // Get the last error
     const GLenum errorCode = glGetError();
 
     if (errorCode != GL_NO_ERROR)
     {
-        std::string error       = "Unknown error";
-        std::string description = "No description";
+        std::string_view error       = "Unknown error";
+        std::string_view description = "No description";
 
         // Decode the error code
         switch (errorCode)
@@ -101,9 +101,10 @@ void glCheckError(const std::filesystem::path& file, unsigned int line, std::str
         }
 
         // Log the error
-        err() << "An internal OpenGL call failed in " << file.filename() << "(" << line << ")."
-              << "\nExpression:\n   " << expression << "\nError description:\n   " << error << "\n   " << description << '\n'
-              << std::endl;
+        priv::err() << "An internal OpenGL call failed in " << std::filesystem::path{file}.filename() << "(" << line << ")."
+                    << "\nExpression:\n   " << expression << "\nError description:\n   " << error << "\n   "
+                    << description << '\n'
+                    << priv::errEndl;
     }
 }
 

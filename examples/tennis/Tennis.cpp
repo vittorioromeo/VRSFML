@@ -1,9 +1,27 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics.hpp>
+#include <SFML/Graphics/CircleShape.hpp>
+#include <SFML/Graphics/Font.hpp>
+#include <SFML/Graphics/Image.hpp>
+#include <SFML/Graphics/RectangleShape.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/Text.hpp>
+#include <SFML/Graphics/Texture.hpp>
 
-#include <SFML/Audio.hpp>
+#include <SFML/Audio/Sound.hpp>
+#include <SFML/Audio/SoundBuffer.hpp>
+
+#include <SFML/Window/Event.hpp>
+#include <SFML/Window/Touch.hpp>
+#include <SFML/Window/VideoMode.hpp>
+#include <SFML/Window/WindowEnums.hpp>
+
+#include <SFML/System/Angle.hpp>
+#include <SFML/System/Clock.hpp>
+#include <SFML/System/Time.hpp>
+#include <SFML/System/Vector2.hpp>
 
 #include <filesystem>
 #include <random>
@@ -54,7 +72,7 @@ int main()
 
     // Create the SFML logo texture:
     const auto sfmlLogoTexture = sf::Texture::loadFromFile(resourcesDir() / "sfml_logo.png").value();
-    sf::Sprite sfmlLogo(sfmlLogoTexture);
+    sf::Sprite sfmlLogo(sfmlLogoTexture.getRect());
     sfmlLogo.setPosition({170.f, 50.f});
 
     // Create the left paddle
@@ -269,15 +287,15 @@ int main()
         if (isPlaying)
         {
             // Draw the paddles and the ball
-            window.draw(leftPaddle);
-            window.draw(rightPaddle);
-            window.draw(ball);
+            window.draw(leftPaddle, /* texture */ nullptr);
+            window.draw(rightPaddle, /* texture */ nullptr);
+            window.draw(ball, /* texture */ nullptr);
         }
         else
         {
             // Draw the pause message
             window.draw(pauseMessage);
-            window.draw(sfmlLogo);
+            window.draw(sfmlLogo, sfmlLogoTexture);
         }
 
         // Display things on screen

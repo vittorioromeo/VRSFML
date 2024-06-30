@@ -27,27 +27,50 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/SoundFileWriterFlac.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
-#include <SFML/System/Utils.hpp>
+#include <SFML/System/PathUtils.hpp>
+#include <SFML/System/StringUtils.hpp>
+#include <SFML/System/UniquePtr.hpp>
 
-#include <algorithm>
-#include <ostream>
-
+#include <FLAC/stream_encoder.h>
 
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-void SoundFileWriterFlac::FlacStreamEncoderDeleter::operator()(FLAC__StreamEncoder* encoder) const
+struct SoundFileWriterFlac::Impl
 {
-    FLAC__stream_encoder_finish(encoder);
-    FLAC__stream_encoder_delete(encoder);
+    struct FlacStreamEncoderDeleter
+    {
+        void operator()(FLAC__StreamEncoder* theEncoder) const;
+    };
+    UniquePtr<FLAC__StreamEncoder, FlacStreamEncoderDeleter> encoder;        //!< FLAC stream encoder
+    unsigned int                                             channelCount{}; //!< Number of channels
+    std::size_t               remapTable[8]{}; //!< Table we use to remap source to target channel order
+    std::vector<std::int32_t> samples32;       //!< Conversion buffer
+};
+
+
+////////////////////////////////////////////////////////////
+SoundFileWriterFlac::SoundFileWriterFlac() = default;
+
+
+////////////////////////////////////////////////////////////
+SoundFileWriterFlac::~SoundFileWriterFlac() = default;
+
+
+////////////////////////////////////////////////////////////
+void SoundFileWriterFlac::Impl::FlacStreamEncoderDeleter::operator()(FLAC__StreamEncoder* theEncoder) const
+{
+    FLAC__stream_encoder_finish(theEncoder);
+    FLAC__stream_encoder_delete(theEncoder);
 }
 
 
 ////////////////////////////////////////////////////////////
 bool SoundFileWriterFlac::check(const std::filesystem::path& filename)
 {
-    return toLower(filename.extension().string()) == ".flac";
+    return priv::toLower(filename.extension().string()) == ".flac";
 }
 
 
@@ -63,7 +86,7 @@ bool SoundFileWriterFlac::open(const std::filesystem::path&     filename,
     switch (channelCount)
     {
         case 0:
-            err() << "No channels to write to FLAC file" << std::endl;
+            priv::err() << "No channels to write to FLAC file" << priv::errEndl;
             return false;
         case 1:
             targetChannelMap = {SoundChannel::Mono};
@@ -112,47 +135,48 @@ bool SoundFileWriterFlac::open(const std::filesystem::path&     filename,
                                 SoundChannel::SideRight};
             break;
         default:
-            err() << "FLAC files with more than 8 channels not supported" << std::endl;
+            priv::err() << "FLAC files with more than 8 channels not supported" << priv::errEndl;
             return false;
     }
 
     // Check if the channel map contains channels that we cannot remap to a mapping supported by FLAC
     if (!std::is_permutation(channelMap.begin(), channelMap.end(), targetChannelMap.begin()))
     {
-        err() << "Provided channel map cannot be reordered to a channel map supported by FLAC" << std::endl;
+        priv::err() << "Provided channel map cannot be reordered to a channel map supported by FLAC" << priv::errEndl;
         return false;
     }
 
     // Build the remap rable
     for (auto i = 0u; i < channelCount; ++i)
-        m_remapTable[i] = static_cast<std::size_t>(
-            std::find(channelMap.begin(), channelMap.end(), targetChannelMap[i]) - channelMap.begin());
+        m_impl->remapTable[i] = static_cast<std::size_t>(
+            priv::find(channelMap.begin(), channelMap.end(), targetChannelMap[i]) - channelMap.begin());
 
     // Create the encoder
-    m_encoder.reset(FLAC__stream_encoder_new());
-    if (!m_encoder)
+    m_impl->encoder.reset(FLAC__stream_encoder_new());
+    if (!m_impl->encoder)
     {
-        err() << "Failed to write flac file (failed to allocate encoder)\n"
-              << formatDebugPathInfo(filename) << std::endl;
+        priv::err() << "Failed to write flac file (failed to allocate encoder)\n"
+                    << priv::formatDebugPathInfo(filename) << priv::errEndl;
         return false;
     }
 
     // Setup the encoder
-    FLAC__stream_encoder_set_channels(m_encoder.get(), channelCount);
-    FLAC__stream_encoder_set_bits_per_sample(m_encoder.get(), 16);
-    FLAC__stream_encoder_set_sample_rate(m_encoder.get(), sampleRate);
+    FLAC__stream_encoder_set_channels(m_impl->encoder.get(), channelCount);
+    FLAC__stream_encoder_set_bits_per_sample(m_impl->encoder.get(), 16);
+    FLAC__stream_encoder_set_sample_rate(m_impl->encoder.get(), sampleRate);
 
     // Initialize the output stream
-    if (FLAC__stream_encoder_init_file(m_encoder.get(), filename.string().c_str(), nullptr, nullptr) !=
+    if (FLAC__stream_encoder_init_file(m_impl->encoder.get(), filename.string().c_str(), nullptr, nullptr) !=
         FLAC__STREAM_ENCODER_INIT_STATUS_OK)
     {
-        err() << "Failed to write flac file (failed to open the file)\n" << formatDebugPathInfo(filename) << std::endl;
-        m_encoder.reset();
+        priv::err() << "Failed to write flac file (failed to open the file)\n"
+                    << priv::formatDebugPathInfo(filename) << priv::errEndl;
+        m_impl->encoder.reset();
         return false;
     }
 
     // Store the channel count
-    m_channelCount = channelCount;
+    m_impl->channelCount = channelCount;
 
     return true;
 }
@@ -164,24 +188,24 @@ void SoundFileWriterFlac::write(const std::int16_t* samples, std::uint64_t count
     while (count > 0)
     {
         // Make sure that we don't process too many samples at once
-        const unsigned int frames = std::min(static_cast<unsigned int>(count / m_channelCount), 10000u);
+        const unsigned int frames = priv::min(static_cast<unsigned int>(count / m_impl->channelCount), 10000u);
 
         // Convert the samples to 32-bits and remap the channels
-        m_samples32.clear();
-        m_samples32.reserve(frames * m_channelCount);
+        m_impl->samples32.clear();
+        m_impl->samples32.reserve(frames * m_impl->channelCount);
 
         for (auto frame = 0u; frame < frames; ++frame)
         {
-            for (auto channel = 0u; channel < m_channelCount; ++channel)
-                m_samples32.push_back(samples[frame * m_channelCount + m_remapTable[channel]]);
+            for (auto channel = 0u; channel < m_impl->channelCount; ++channel)
+                m_impl->samples32.push_back(samples[frame * m_impl->channelCount + m_impl->remapTable[channel]]);
         }
 
         // Write them to the FLAC stream
-        FLAC__stream_encoder_process_interleaved(m_encoder.get(), m_samples32.data(), frames);
+        FLAC__stream_encoder_process_interleaved(m_impl->encoder.get(), m_impl->samples32.data(), frames);
 
         // Next chunk
-        count -= m_samples32.size();
-        samples += m_samples32.size();
+        count -= m_impl->samples32.size();
+        samples += m_impl->samples32.size();
     }
 }
 

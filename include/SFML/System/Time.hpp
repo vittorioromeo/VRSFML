@@ -29,8 +29,6 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Export.hpp>
 
-#include <chrono>
-
 #include <cstdint>
 
 
@@ -49,14 +47,13 @@ public:
     /// Sets the time value to zero.
     ///
     ////////////////////////////////////////////////////////////
-    constexpr Time();
+    [[nodiscard]] explicit constexpr Time();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct from std::chrono::duration
+    /// \brief Construct from microseconds
     ///
     ////////////////////////////////////////////////////////////
-    template <typename Rep, typename Period>
-    constexpr Time(const std::chrono::duration<Rep, Period>& duration);
+    [[nodiscard]] explicit constexpr Time(std::int64_t microseconds);
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the time value as a number of seconds
@@ -89,23 +86,6 @@ public:
     [[nodiscard]] constexpr std::int64_t asMicroseconds() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Return the time value as a std::chorono::duration
-    ///
-    /// \return Time in microseconds
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr std::chrono::microseconds toDuration() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Implicit conversion to std::chrono::duration
-    ///
-    /// \return Duration in microseconds
-    ///
-    ////////////////////////////////////////////////////////////
-    template <typename Rep, typename Period>
-    constexpr operator std::chrono::duration<Rep, Period>() const;
-
-    ////////////////////////////////////////////////////////////
     // Static member data
     ////////////////////////////////////////////////////////////
     // NOLINTNEXTLINE(readability-identifier-naming)
@@ -119,7 +99,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::chrono::microseconds m_microseconds{}; //!< Time value stored as microseconds
+    std::int64_t m_microseconds{}; //!< Time value stored as microseconds
 };
 
 ////////////////////////////////////////////////////////////

@@ -30,6 +30,8 @@
 #import <SFML/Window/macOS/SFOpenGLView.h>
 #include <SFML/Window/macOS/WindowImplCocoa.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
+
 #include <algorithm>
 
 #include <cmath>
@@ -385,8 +387,8 @@
         NSSize  size   = [self frame].size;
         NSPoint origin = [self frame].origin;
         NSPoint oldPos = rawPos;
-        rawPos.x       = std::clamp(rawPos.x, origin.x, origin.x + size.width - 1);
-        rawPos.y       = std::clamp(rawPos.y, origin.y + 1, origin.y + size.height);
+        rawPos.x       = priv::clamp(rawPos.x, origin.x, origin.x + size.width - 1);
+        rawPos.y       = priv::clamp(rawPos.y, origin.y + 1, origin.y + size.height);
         // Note: the `-1` and `+1` on the two lines above prevent the user to click
         // on the left or below the window, respectively, and therefore prevent the
         // application to lose focus by accident. The sign of this offset is determined

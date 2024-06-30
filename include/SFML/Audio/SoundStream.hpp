@@ -32,9 +32,8 @@
 #include <SFML/Audio/SoundChannel.hpp>
 #include <SFML/Audio/SoundSource.hpp>
 
-#include <SFML/System/Time.hpp>
+#include <SFML/System/UniquePtr.hpp>
 
-#include <memory>
 #include <optional>
 #include <vector>
 
@@ -44,6 +43,9 @@
 
 namespace sf
 {
+struct EffectProcessor;
+class Time;
+
 ////////////////////////////////////////////////////////////
 /// \brief Abstract base class for streamed audio sources
 ///
@@ -55,7 +57,7 @@ public:
     /// \brief Structure defining a chunk of audio data to stream
     ///
     ////////////////////////////////////////////////////////////
-    struct Chunk
+    struct [[nodiscard]] Chunk
     {
         const std::int16_t* samples{};     //!< Pointer to the audio samples
         std::size_t         sampleCount{}; //!< Number of samples pointed by Samples
@@ -224,7 +226,7 @@ protected:
     /// This constructor is only meant to be called by derived classes.
     ///
     ////////////////////////////////////////////////////////////
-    SoundStream();
+    [[nodiscard]] SoundStream();
 
     ////////////////////////////////////////////////////////////
     /// \brief Define the audio stream parameters
@@ -283,7 +285,7 @@ protected:
     /// \return The seek position after looping (or std::nullopt if there's no loop)
     ///
     ////////////////////////////////////////////////////////////
-    virtual std::optional<std::uint64_t> onLoop();
+    [[nodiscard]] virtual std::optional<std::uint64_t> onLoop();
 
 private:
     ////////////////////////////////////////////////////////////
@@ -298,7 +300,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    std::unique_ptr<Impl> m_impl; //!< Implementation details
+    priv::UniquePtr<Impl> m_impl; //!< Implementation details
 };
 
 } // namespace sf

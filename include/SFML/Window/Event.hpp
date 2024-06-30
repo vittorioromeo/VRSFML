@@ -34,9 +34,8 @@
 #include <SFML/Window/Mouse.hpp>
 #include <SFML/Window/Sensor.hpp>
 
+#include <SFML/System/Variant.hpp>
 #include <SFML/System/Vector2.hpp>
-
-#include <variant>
 
 
 namespace sf
@@ -91,7 +90,7 @@ public:
     };
 
     ////////////////////////////////////////////////////////////
-    /// \brief KeyChanged event subtypes
+    /// \brief Key changed event subtypes
     ///
     ////////////////////////////////////////////////////////////
     struct KeyChanged
@@ -117,8 +116,8 @@ public:
     struct MouseWheelScrolled
     {
         Mouse::Wheel wheel{}; //!< Which wheel (for mice with multiple ones)
-        float        delta{}; //!< Wheel offset (positive is up/left, negative is down/right). High-precision mice may use non-integral offsets.
-        Vector2i     position; //!< Position of the mouse pointer, relative to the top left of the owner window
+        float delta{}; //!< Wheel offset (positive is up/left, negative is down/right). High-precision mice may use non-integral offsets.
+        Vector2i position; //!< Position of the mouse pointer, relative to the top left of the owner window
     };
 
     ////////////////////////////////////////////////////////////
@@ -267,6 +266,12 @@ public:
     };
 
     ////////////////////////////////////////////////////////////
+    /// \brief Deleted default constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    Event() = delete;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Construct from a given `sf::Event` subtype
     ///
     /// \tparam TEventSubtype Type of event subtype used to construct the event
@@ -275,7 +280,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename TEventSubtype>
-    Event(const TEventSubtype& eventSubtype);
+    [[nodiscard]] Event(const TEventSubtype& eventSubtype);
 
     ////////////////////////////////////////////////////////////
     /// \brief Check current event subtype
@@ -299,49 +304,79 @@ public:
     template <typename TEventSubtype>
     [[nodiscard]] const TEventSubtype* getIf() const;
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Applies the specified `visitor` to the event
+    ///
+    /// \return Transparently forwards whatever `visitor` returns
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename Visitor>
+    decltype(auto) visit(Visitor&& visitor);
+
 private:
+    using VariantType = ::sfvittorioromeo::tinyvariant<
+        Closed,
+        Resized,
+        FocusLost,
+        FocusGained,
+        TextEntered,
+        KeyPressed,
+        KeyReleased,
+        MouseWheelScrolled,
+        MouseButtonPressed,
+        MouseButtonReleased,
+        MouseMoved,
+        MouseMovedRaw,
+        MouseEntered,
+        MouseLeft,
+        JoystickButtonPressed,
+        JoystickButtonReleased,
+        JoystickMoved,
+        JoystickConnected,
+        JoystickDisconnected,
+        TouchBegan,
+        TouchMoved,
+        TouchEnded,
+        SensorChanged>;
+
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::variant<Closed,
-                 Resized,
-                 FocusLost,
-                 FocusGained,
-                 TextEntered,
-                 KeyPressed,
-                 KeyReleased,
-                 MouseWheelScrolled,
-                 MouseButtonPressed,
-                 MouseButtonReleased,
-                 MouseMoved,
-                 MouseMovedRaw,
-                 MouseEntered,
-                 MouseLeft,
-                 JoystickButtonPressed,
-                 JoystickButtonReleased,
-                 JoystickMoved,
-                 JoystickConnected,
-                 JoystickDisconnected,
-                 TouchBegan,
-                 TouchMoved,
-                 TouchEnded,
-                 SensorChanged>
-        m_data; //!< Event data
+    VariantType m_data; //!< Event data
 
     ////////////////////////////////////////////////////////////
     // Helper functions
     ////////////////////////////////////////////////////////////
-    template <typename T, typename... Ts>
-    [[nodiscard]] static constexpr bool isInParameterPack(const std::variant<Ts...>&)
-    {
-        return (std::is_same_v<T, Ts> || ...);
-    }
-
     template <typename T>
-    static constexpr bool isEventSubtype = isInParameterPack<T>(decltype(m_data)());
+    static constexpr bool isEventSubtype = VariantType::index_of<T> != ::sfvittorioromeo::impl::bad_index;
 };
 
 } // namespace sf
+
+extern template class ::sfvittorioromeo::tinyvariant<
+    sf::Event::Closed,
+    sf::Event::Resized,
+    sf::Event::FocusLost,
+    sf::Event::FocusGained,
+    sf::Event::TextEntered,
+    sf::Event::KeyPressed,
+    sf::Event::KeyReleased,
+    sf::Event::MouseWheelScrolled,
+    sf::Event::MouseButtonPressed,
+    sf::Event::MouseButtonReleased,
+    sf::Event::MouseMoved,
+    sf::Event::MouseMovedRaw,
+    sf::Event::MouseEntered,
+    sf::Event::MouseLeft,
+    sf::Event::JoystickButtonPressed,
+    sf::Event::JoystickButtonReleased,
+    sf::Event::JoystickMoved,
+    sf::Event::JoystickConnected,
+    sf::Event::JoystickDisconnected,
+    sf::Event::TouchBegan,
+    sf::Event::TouchMoved,
+    sf::Event::TouchEnded,
+    sf::Event::SensorChanged>;
 
 #include <SFML/Window/Event.inl>
 
@@ -378,7 +413,10 @@ private:
 ///     if (event->is<sf::Event::Closed>() ||
 ///         (event->is<sf::Event::KeyPressed>() &&
 ///          event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape))
+///     {
 ///         window.close();
+///         break;
+///     }
 ///
 ///     // The window was resized
 ///     if (const auto* resized = event->getIf<sf::Event::Resized>())

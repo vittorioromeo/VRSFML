@@ -97,8 +97,8 @@ namespace Vulkan
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_WINDOW_API const std::vector<const char*>& getGraphicsRequiredInstanceExtensions();
-} // namespace Vulkan
 
+} // namespace Vulkan
 } // namespace sf
 
 

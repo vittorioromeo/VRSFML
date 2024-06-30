@@ -34,14 +34,11 @@
 #include <SFML/Graphics/CoordinateType.hpp>
 #include <SFML/Graphics/PrimitiveType.hpp>
 #include <SFML/Graphics/Rect.hpp>
-#include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/StencilMode.hpp>
 #include <SFML/Graphics/Vertex.hpp>
 #include <SFML/Graphics/View.hpp>
 
 #include <SFML/System/Vector2.hpp>
-
-#include <array>
 
 #include <cstddef>
 #include <cstdint>
@@ -49,8 +46,10 @@
 
 namespace sf
 {
-class Drawable;
+struct RenderStates;
 class Shader;
+class Shape;
+class Sprite;
 class Texture;
 class Transform;
 class VertexBuffer;
@@ -305,7 +304,42 @@ public:
     /// \param states   Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Drawable& drawable, const RenderStates& states = RenderStates::Default);
+    template <typename DrawableObject>
+    auto draw(const DrawableObject& drawableObject, const RenderStates& states = getDefaultRenderStates())
+        -> decltype(drawableObject.draw(*this, states), void()) // for SFINAE
+    {
+        drawableObject.draw(*this, states);
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw a sprite object to the render target
+    ///
+    /// The texture associated with a sprite must be passed while drawing.
+    ///
+    /// \param sprite  Sprite to draw
+    /// \param texture Texture associated with the sprite
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const Sprite& sprite, const Texture& texture, const RenderStates& states = getDefaultRenderStates());
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted overload of `draw` for sprites without a texture
+    ///
+    /// The texture associated with a sprite must be passed while drawing.
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const Sprite&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw a shape object to the render target
+    ///
+    /// A texture associated with a shape can be passed while drawing.
+    ///
+    /// \param shape   Shape to draw
+    /// \param texture Texture associated with the shape
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const Shape& shape, const Texture* texture, const RenderStates& states = getDefaultRenderStates());
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by an array of vertices
@@ -319,7 +353,42 @@ public:
     void draw(const Vertex*       vertices,
               std::size_t         vertexCount,
               PrimitiveType       type,
-              const RenderStates& states = RenderStates::Default);
+              const RenderStates& states = getDefaultRenderStates());
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw primitives defined by a contiguous container of vertices
+    ///
+    /// \tparam ContiguousVertexRange Type of the contiguous container,
+    ///         must support `.data()` and `.size()` operations.
+    ///
+    /// \param vertices    Reference to the contiguous vertex container
+    /// \param type        Type of primitives to draw
+    /// \param states      Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename ContiguousVertexRange>
+    auto draw(const ContiguousVertexRange& vertices,
+              PrimitiveType                type,
+              const RenderStates& states = getDefaultRenderStates()) -> decltype(vertices.data(), vertices.size(), void()) // for SFINAE
+    {
+        draw(vertices.data(), vertices.size(), type, states);
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw primitives defined by a C-style array of vertices
+    ///
+    /// \param vertices    Reference to the C-style vertex array
+    /// \param type        Type of primitives to draw
+    /// \param states      Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename CStyleVertexArray, std::size_t N>
+    void draw(const CStyleVertexArray (&vertices)[N],
+              PrimitiveType       type,
+              const RenderStates& states = getDefaultRenderStates())
+    {
+        draw(vertices, N, type, states);
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by a vertex buffer
@@ -328,7 +397,7 @@ public:
     /// \param states       Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const VertexBuffer& vertexBuffer, const RenderStates& states = RenderStates::Default);
+    void draw(const VertexBuffer& vertexBuffer, const RenderStates& states = getDefaultRenderStates());
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by a vertex buffer
@@ -342,7 +411,7 @@ public:
     void draw(const VertexBuffer& vertexBuffer,
               std::size_t         firstVertex,
               std::size_t         vertexCount,
-              const RenderStates& states = RenderStates::Default);
+              const RenderStates& states = getDefaultRenderStates());
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the rendering region of the target
@@ -455,7 +524,7 @@ protected:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    RenderTarget() = default;
+    [[nodiscard]] RenderTarget() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Performs the common initialization step after creation
@@ -467,6 +536,12 @@ protected:
     void initialize();
 
 private:
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    static const RenderStates& getDefaultRenderStates();
+
     ////////////////////////////////////////////////////////////
     /// \brief Apply the current view
     ///
@@ -545,20 +620,20 @@ private:
     /// \brief Render states cache
     ///
     ////////////////////////////////////////////////////////////
-    struct StatesCache
+    struct [[nodiscard]] StatesCache
     {
-        bool                  enable{};                //!< Is the cache enabled?
-        bool                  glStatesSet{};           //!< Are our internal GL states set yet?
-        bool                  viewChanged{};           //!< Has the current view changed since last draw?
-        bool                  scissorEnabled{};        //!< Is scissor testing enabled?
-        bool                  stencilEnabled{};        //!< Is stencil testing enabled?
-        BlendMode             lastBlendMode;           //!< Cached blending mode
-        StencilMode           lastStencilMode;         //!< Cached stencil
-        std::uint64_t         lastTextureId{};         //!< Cached texture
-        CoordinateType        lastCoordinateType{};    //!< Texture coordinate type
-        bool                  texCoordsArrayEnabled{}; //!< Is GL_TEXTURE_COORD_ARRAY client state enabled?
-        bool                  useVertexCache{};        //!< Did we previously use the vertex cache?
-        std::array<Vertex, 4> vertexCache{};           //!< Pre-transformed vertices cache
+        bool           enable{};                //!< Is the cache enabled?
+        bool           glStatesSet{};           //!< Are our internal GL states set yet?
+        bool           viewChanged{};           //!< Has the current view changed since last draw?
+        bool           scissorEnabled{};        //!< Is scissor testing enabled?
+        bool           stencilEnabled{};        //!< Is stencil testing enabled?
+        BlendMode      lastBlendMode;           //!< Cached blending mode
+        StencilMode    lastStencilMode;         //!< Cached stencil
+        std::uint64_t  lastTextureId{};         //!< Cached texture
+        CoordinateType lastCoordinateType{};    //!< Texture coordinate type
+        bool           texCoordsArrayEnabled{}; //!< Is GL_TEXTURE_COORD_ARRAY client state enabled?
+        bool           useVertexCache{};        //!< Did we previously use the vertex cache?
+        Vertex         vertexCache[4]{};        //!< Pre-transformed vertices cache
     };
 
     ////////////////////////////////////////////////////////////

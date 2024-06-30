@@ -31,6 +31,8 @@
 
 #include <SFML/Graphics/Shape.hpp>
 
+#include <SFML/System/Vector2.hpp>
+
 #include <vector>
 
 #include <cstddef>
@@ -51,7 +53,7 @@ public:
     /// \param pointCount Number of points of the polygon
     ///
     ////////////////////////////////////////////////////////////
-    explicit ConvexShape(std::size_t pointCount = 0);
+    [[nodiscard]] explicit ConvexShape(std::size_t pointCount = 0);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the number of points of the polygon
@@ -74,7 +76,7 @@ public:
     /// \see setPointCount
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::size_t getPointCount() const override;
+    [[nodiscard]] std::size_t getPointCount() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the position of a point
@@ -111,7 +113,19 @@ public:
     /// \see setPoint
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2f getPoint(std::size_t index) const override;
+    [[nodiscard]] Vector2f getPoint(std::size_t index) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the geometric center of the convex shape
+    ///
+    /// The returned point is in local coordinates, that is,
+    /// the shape's transforms (position, rotation, scale) are
+    /// not taken into account.
+    ///
+    /// \return The geometric center of the shape
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] Vector2f getGeometricCenter() const;
 
 private:
     ////////////////////////////////////////////////////////////

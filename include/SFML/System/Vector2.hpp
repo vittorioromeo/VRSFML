@@ -26,11 +26,11 @@
 
 #include <SFML/System/Export.hpp>
 
-#include <SFML/System/Angle.hpp>
-
 
 namespace sf
 {
+class Angle;
+
 ////////////////////////////////////////////////////////////
 /// \brief Class template for manipulating
 ///        2-dimensional vectors
@@ -46,7 +46,7 @@ public:
     /// Creates a Vector2(0, 0).
     ///
     ////////////////////////////////////////////////////////////
-    constexpr Vector2();
+    [[nodiscard]] SFML_SYSTEM_API constexpr Vector2();
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the vector from cartesian coordinates
@@ -55,7 +55,7 @@ public:
     /// \param y Y coordinate
     ///
     ////////////////////////////////////////////////////////////
-    constexpr Vector2(T x, T y);
+    [[nodiscard]] SFML_SYSTEM_API constexpr Vector2(T x, T y);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the vector from another type of vector
@@ -69,7 +69,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename U>
-    constexpr explicit Vector2(const Vector2<U>& vector);
+    [[nodiscard]] SFML_SYSTEM_API constexpr explicit Vector2(const Vector2<U>& vector);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the vector from polar coordinates <i><b>(floating-point)</b></i>
@@ -85,7 +85,7 @@ public:
     /// * Vector2(r, phi) == Vector2(r, phi + n * 360_deg)
     ///
     ////////////////////////////////////////////////////////////
-    SFML_SYSTEM_API Vector2(T r, Angle phi);
+    [[nodiscard]] SFML_SYSTEM_API Vector2(T r, Angle phi);
 
     ////////////////////////////////////////////////////////////
     /// \brief Length of the vector <i><b>(floating-point)</b></i>.
@@ -163,13 +163,13 @@ public:
     /// this amounts to a clockwise rotation.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr Vector2 perpendicular() const;
+    [[nodiscard]] SFML_SYSTEM_API constexpr Vector2 perpendicular() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Dot product of two 2D vectors.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr T dot(const Vector2& rhs) const;
+    [[nodiscard]] SFML_SYSTEM_API constexpr T dot(const Vector2& rhs) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Z component of the cross product of two 2D vectors.
@@ -178,7 +178,7 @@ public:
     /// and returns the result's Z component (X and Y components are always zero).
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr T cross(const Vector2& rhs) const;
+    [[nodiscard]] SFML_SYSTEM_API constexpr T cross(const Vector2& rhs) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Component-wise multiplication of \c *this and \c rhs.
@@ -189,7 +189,7 @@ public:
     /// This operation is also known as the Hadamard or Schur product.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr Vector2 cwiseMul(const Vector2& rhs) const;
+    [[nodiscard]] SFML_SYSTEM_API constexpr Vector2 cwiseMul(const Vector2& rhs) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Component-wise division of \c *this and \c rhs.
@@ -201,7 +201,7 @@ public:
     /// \pre Neither component of \c rhs is zero.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr Vector2 cwiseDiv(const Vector2& rhs) const;
+    [[nodiscard]] SFML_SYSTEM_API constexpr Vector2 cwiseDiv(const Vector2& rhs) const;
 
 
     ////////////////////////////////////////////////////////////
@@ -215,8 +215,8 @@ public:
     // Static member data
     ////////////////////////////////////////////////////////////
     // NOLINTBEGIN(readability-identifier-naming)
-    static const Vector2 UnitX; //!< The X unit vector (1, 0), usually facing right
-    static const Vector2 UnitY; //!< The Y unit vector (0, 1), usually facing down
+    SFML_API_EXPORT static const Vector2 UnitX; //!< The X unit vector (1, 0), usually facing right
+    SFML_API_EXPORT static const Vector2 UnitY; //!< The Y unit vector (0, 1), usually facing down
     // NOLINTEND(readability-identifier-naming)
 };
 
@@ -397,6 +397,18 @@ template <typename T>
 [[nodiscard]] constexpr bool operator!=(const Vector2<T>& left, const Vector2<T>& right);
 
 } // namespace sf
+
+
+////////////////////////////////////////////////////////////
+// Explicit instantiation declarations
+////////////////////////////////////////////////////////////
+
+extern template class sf::Vector2<float>;
+extern template class sf::Vector2<double>;
+extern template class sf::Vector2<long double>;
+extern template class sf::Vector2<bool>;
+extern template class sf::Vector2<int>;
+extern template class sf::Vector2<unsigned int>;
 
 #include <SFML/System/Vector2.inl>
 

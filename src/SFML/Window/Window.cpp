@@ -29,34 +29,44 @@
 #include <SFML/Window/Window.hpp>
 #include <SFML/Window/WindowImpl.hpp>
 
+#include <SFML/System/Clock.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Sleep.hpp>
-
-#include <ostream>
+#include <SFML/System/Time.hpp>
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
+struct Window::Window::CommonImpl
+{
+    priv::UniquePtr<priv::GlContext> context;        //!< Platform-specific implementation of the OpenGL context
+    Clock                            clock;          //!< Clock for measuring the elapsed time between frames
+    Time                             frameTimeLimit; //!< Current framerate limit
+};
+
+
+////////////////////////////////////////////////////////////
 Window::Window() = default;
 
 
 ////////////////////////////////////////////////////////////
-Window::Window(VideoMode mode, const String& title, std::uint32_t style, State state, const ContextSettings& settings)
+Window::Window(VideoMode mode, const String& title, std::uint32_t style, State state, const ContextSettings& settings) :
+Window()
 {
     Window::create(mode, title, style, state, settings);
 }
 
 
 ////////////////////////////////////////////////////////////
-Window::Window(VideoMode mode, const String& title, State state, const ContextSettings& settings)
+Window::Window(VideoMode mode, const String& title, State state, const ContextSettings& settings) : Window()
 {
     Window::create(mode, title, sf::Style::Default, state, settings);
 }
 
 
 ////////////////////////////////////////////////////////////
-Window::Window(WindowHandle handle, const ContextSettings& settings)
+Window::Window(WindowHandle handle, const ContextSettings& settings) : Window()
 {
     Window::create(handle, settings);
 }
@@ -86,7 +96,7 @@ void Window::create(VideoMode mode, const String& title, std::uint32_t style, St
     m_impl = priv::WindowImpl::create(mode, title, style, state, settings);
 
     // Recreate the context
-    m_context = priv::GlContext::create(settings, *m_impl, mode.bitsPerPixel);
+    m_commonImpl->context = priv::GlContext::create(settings, *m_impl, mode.bitsPerPixel);
 
     // Perform common initializations
     initialize();
@@ -110,7 +120,7 @@ void Window::create(WindowHandle handle, const ContextSettings& settings)
     WindowBase::create(handle);
 
     // Recreate the context
-    m_context = priv::GlContext::create(settings, *m_impl, VideoMode::getDesktopMode().bitsPerPixel);
+    m_commonImpl->context = priv::GlContext::create(settings, *m_impl, VideoMode::getDesktopMode().bitsPerPixel);
 
     // Perform common initializations
     initialize();
@@ -121,7 +131,7 @@ void Window::create(WindowHandle handle, const ContextSettings& settings)
 void Window::close()
 {
     // Delete the context
-    m_context.reset();
+    m_commonImpl->context.reset();
 
     // Close the base window
     WindowBase::close();
@@ -133,7 +143,7 @@ const ContextSettings& Window::getSettings() const
 {
     static constexpr ContextSettings empty{/* depthBits */ 0, /* stencilBits */ 0, /* antialiasingLevel */ 0};
 
-    return m_context ? m_context->getSettings() : empty;
+    return m_commonImpl->context ? m_commonImpl->context->getSettings() : empty;
 }
 
 
@@ -141,31 +151,28 @@ const ContextSettings& Window::getSettings() const
 void Window::setVerticalSyncEnabled(bool enabled)
 {
     if (setActive())
-        m_context->setVerticalSyncEnabled(enabled);
+        m_commonImpl->context->setVerticalSyncEnabled(enabled);
 }
 
 
 ////////////////////////////////////////////////////////////
 void Window::setFramerateLimit(unsigned int limit)
 {
-    if (limit > 0)
-        m_frameTimeLimit = seconds(1.f / static_cast<float>(limit));
-    else
-        m_frameTimeLimit = Time::Zero;
+    m_commonImpl->frameTimeLimit = limit > 0 ? seconds(1.f / static_cast<float>(limit)) : Time::Zero;
 }
 
 
 ////////////////////////////////////////////////////////////
 bool Window::setActive(bool active) const
 {
-    if (m_context)
+    if (m_commonImpl->context)
     {
-        if (m_context->setActive(active))
+        if (m_commonImpl->context->setActive(active))
         {
             return true;
         }
 
-        err() << "Failed to activate the window's context" << std::endl;
+        priv::err() << "Failed to activate the window's context" << priv::errEndl;
         return false;
     }
 
@@ -178,13 +185,13 @@ void Window::display()
 {
     // Display the backbuffer on screen
     if (setActive())
-        m_context->display();
+        m_commonImpl->context->display();
 
     // Limit the framerate if needed
-    if (m_frameTimeLimit != Time::Zero)
+    if (m_commonImpl->frameTimeLimit != Time::Zero)
     {
-        sleep(m_frameTimeLimit - m_clock.getElapsedTime());
-        m_clock.restart();
+        sleep(m_commonImpl->frameTimeLimit - m_commonImpl->clock.getElapsedTime());
+        m_commonImpl->clock.restart();
     }
 }
 
@@ -197,12 +204,12 @@ void Window::initialize()
     setFramerateLimit(0);
 
     // Reset frame time
-    m_clock.restart();
+    m_commonImpl->clock.restart();
 
     // Activate the window
     if (!setActive())
     {
-        err() << "Failed to set window as active during initialization" << std::endl;
+        priv::err() << "Failed to set window as active during initialization" << priv::errEndl;
     }
 
     WindowBase::initialize();

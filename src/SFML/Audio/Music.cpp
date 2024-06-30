@@ -28,12 +28,11 @@
 #include <SFML/Audio/InputSoundFile.hpp>
 #include <SFML/Audio/Music.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Time.hpp>
 
-#include <algorithm>
 #include <mutex>
-#include <ostream>
 
 
 namespace sf
@@ -83,12 +82,11 @@ std::optional<Music> Music::tryOpenFromInputSoundFile(std::optional<InputSoundFi
 {
     if (!optFile.has_value())
     {
-        err() << "Failed to open music from " << errorContext << std::endl;
+        priv::err() << "Failed to open music from " << errorContext << priv::errEndl;
         return std::nullopt;
     }
 
-    // TODO: apply RVO here via passkey idiom
-    return Music(std::move(*optFile));
+    return std::make_optional<Music>(priv::PassKey<Music>{}, std::move(*optFile));
 }
 
 
@@ -135,7 +133,7 @@ void Music::setLoopPoints(TimeSpan timePoints)
     // Check our state. This averts a divide-by-zero. GetChannelCount() is cheap enough to use often
     if (getChannelCount() == 0 || m_impl->file.getSampleCount() == 0)
     {
-        err() << "Music is not in a valid state to assign Loop Points." << std::endl;
+        priv::err() << "Music is not in a valid state to assign Loop Points." << priv::errEndl;
         return;
     }
 
@@ -148,18 +146,18 @@ void Music::setLoopPoints(TimeSpan timePoints)
     // Validate
     if (samplePoints.offset >= m_impl->file.getSampleCount())
     {
-        err() << "LoopPoints offset val must be in range [0, Duration)." << std::endl;
+        priv::err() << "LoopPoints offset val must be in range [0, Duration)." << priv::errEndl;
         return;
     }
 
     if (samplePoints.length == 0)
     {
-        err() << "LoopPoints length val must be nonzero." << std::endl;
+        priv::err() << "LoopPoints length val must be nonzero." << priv::errEndl;
         return;
     }
 
     // Clamp End Point
-    samplePoints.length = std::min(samplePoints.length, m_impl->file.getSampleCount() - samplePoints.offset);
+    samplePoints.length = priv::min(samplePoints.length, m_impl->file.getSampleCount() - samplePoints.offset);
 
     // If this change has no effect, we can return without touching anything
     if (samplePoints.offset == m_impl->loopSpan.offset && samplePoints.length == m_impl->loopSpan.length)
@@ -248,7 +246,7 @@ std::optional<std::uint64_t> Music::onLoop()
 
 
 ////////////////////////////////////////////////////////////
-Music::Music(InputSoundFile&& file) : m_impl(std::make_unique<Impl>(std::move(file)))
+Music::Music(priv::PassKey<Music>&&, InputSoundFile&& file) : m_impl(priv::makeUnique<Impl>(std::move(file)))
 {
     // Initialize the stream
     SoundStream::initialize(m_impl->file.getChannelCount(), m_impl->file.getSampleRate(), m_impl->file.getChannelMap());

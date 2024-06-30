@@ -39,7 +39,7 @@ namespace sf
 /// The comparisons are mapped directly to their OpenGL equivalents,
 /// specified by glStencilFunc().
 ////////////////////////////////////////////////////////
-enum class StencilComparison
+enum class [[nodiscard]] StencilComparison
 {
     Never,        //!< The stencil test never passes
     Less,         //!< The stencil test passes if the new value is less than the value in the stencil buffer
@@ -57,7 +57,7 @@ enum class StencilComparison
 /// The update operations are mapped directly to their OpenGL equivalents,
 /// specified by glStencilOp().
 ////////////////////////////////////////////////////////
-enum class StencilUpdateOperation
+enum class [[nodiscard]] StencilUpdateOperation
 {
     Keep,      //!< If the stencil test passes, the value in the stencil buffer is not modified
     Zero,      //!< If the stencil test passes, the value in the stencil buffer is set to zero
@@ -71,7 +71,7 @@ enum class StencilUpdateOperation
 /// \brief Stencil value type (also used as a mask)
 ///
 ////////////////////////////////////////////////////////
-struct SFML_GRAPHICS_API StencilValue
+struct [[nodiscard]] SFML_GRAPHICS_API StencilValue
 {
     ////////////////////////////////////////////////////////////
     /// \brief Construct a stencil value from a signed integer
@@ -79,7 +79,7 @@ struct SFML_GRAPHICS_API StencilValue
     /// \param theValue Signed integer value to use
     ///
     ////////////////////////////////////////////////////////////
-    StencilValue(int theValue);
+    [[nodiscard]] StencilValue(int theValue);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a stencil value from an unsigned integer
@@ -87,7 +87,7 @@ struct SFML_GRAPHICS_API StencilValue
     /// \param theValue Unsigned integer value to use
     ///
     ////////////////////////////////////////////////////////////
-    StencilValue(unsigned int theValue);
+    [[nodiscard]] StencilValue(unsigned int theValue);
 
     ////////////////////////////////////////////////////////////
     /// \brief Disable construction from any other type
@@ -103,14 +103,14 @@ struct SFML_GRAPHICS_API StencilValue
 /// \brief Stencil modes for drawing
 ///
 ////////////////////////////////////////////////////////////
-struct SFML_GRAPHICS_API StencilMode
+struct [[nodiscard]] SFML_GRAPHICS_API StencilMode
 {
     StencilComparison stencilComparison{StencilComparison::Always}; //!< The comparison we're performing the stencil test with
     StencilUpdateOperation stencilUpdateOperation{
         StencilUpdateOperation::Keep}; //!< The update operation to perform if the stencil test passes
     StencilValue stencilReference{0};  //!< The reference value we're performing the stencil test with
     StencilValue stencilMask{~0u}; //!< The mask to apply to both the reference value and the value in the stencil buffer
-    bool         stencilOnly{};    //!< Whether we should update the color buffer in addition to the stencil buffer
+    bool stencilOnly{};            //!< Whether we should update the color buffer in addition to the stencil buffer
 };
 
 ////////////////////////////////////////////////////////////
@@ -207,7 +207,7 @@ struct SFML_GRAPHICS_API StencilMode
 /// buffer and not the color buffer during a draw. The written stencil buffer
 /// value can then be used in subsequent draws as a masking region.
 ///
-/// In SFML, a stencil mode can be specified every time you draw a sf::Drawable
+/// In SFML, a stencil mode can be specified every time you draw a drawable
 /// object to a render target. It is part of the sf::RenderStates compound
 /// that is passed to the member function sf::RenderTarget::draw().
 ///

@@ -30,11 +30,8 @@
 #include <SFML/Network/SocketImpl.hpp>
 #include <SFML/Network/TcpSocket.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
-
-#include <algorithm>
-#include <array>
-#include <ostream>
 
 #include <cstring>
 
@@ -224,7 +221,7 @@ void TcpSocket::disconnect()
 Socket::Status TcpSocket::send(const void* data, std::size_t size)
 {
     if (!isBlocking())
-        err() << "Warning: Partial sends might not be handled properly." << std::endl;
+        priv::err() << "Warning: Partial sends might not be handled properly." << priv::errEndl;
 
     std::size_t sent = 0;
 
@@ -238,7 +235,7 @@ Socket::Status TcpSocket::send(const void* data, std::size_t size, std::size_t& 
     // Check the parameters
     if (!data || (size == 0))
     {
-        err() << "Cannot send data over the network (no data to send)" << std::endl;
+        priv::err() << "Cannot send data over the network (no data to send)" << priv::errEndl;
         return Status::Error;
     }
 
@@ -280,7 +277,7 @@ Socket::Status TcpSocket::receive(void* data, std::size_t size, std::size_t& rec
     // Check the destination buffer
     if (!data)
     {
-        err() << "Cannot receive data from the network (the destination buffer is invalid)" << std::endl;
+        priv::err() << "Cannot receive data from the network (the destination buffer is invalid)" << priv::errEndl;
         return Status::Error;
     }
 
@@ -398,12 +395,12 @@ Socket::Status TcpSocket::receive(Packet& packet)
     }
 
     // Loop until we receive all the packet data
-    std::array<char, 1024> buffer{};
+    char buffer[1024]{};
     while (m_pendingPacket.data.size() < packetSize)
     {
         // Receive a chunk of data
-        const std::size_t sizeToGet = std::min(packetSize - m_pendingPacket.data.size(), sizeof(buffer));
-        const Status      status    = receive(buffer.data(), sizeToGet, received);
+        const std::size_t sizeToGet = priv::min(packetSize - m_pendingPacket.data.size(), sizeof(buffer));
+        const Status      status    = receive(buffer, sizeToGet, received);
         if (status != Status::Done)
             return status;
 
@@ -412,7 +409,7 @@ Socket::Status TcpSocket::receive(Packet& packet)
         {
             m_pendingPacket.data.resize(m_pendingPacket.data.size() + received);
             std::byte* begin = m_pendingPacket.data.data() + m_pendingPacket.data.size() - received;
-            std::memcpy(begin, buffer.data(), received);
+            std::memcpy(begin, buffer, received);
         }
     }
 

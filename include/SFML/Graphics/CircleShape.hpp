@@ -33,6 +33,8 @@
 
 #include <SFML/System/Vector2.hpp>
 
+#include <vector>
+
 #include <cstddef>
 
 
@@ -52,7 +54,7 @@ public:
     /// \param pointCount Number of points composing the circle
     ///
     ////////////////////////////////////////////////////////////
-    explicit CircleShape(float radius = 0, std::size_t pointCount = 30);
+    [[nodiscard]] explicit CircleShape(float radius = 0, std::size_t pointCount = 30);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the radius of the circle
@@ -92,7 +94,7 @@ public:
     /// \see setPointCount
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::size_t getPointCount() const override;
+    [[nodiscard]] std::size_t getPointCount() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a point of the circle
@@ -107,7 +109,7 @@ public:
     /// \return index-th point of the shape
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2f getPoint(std::size_t index) const override;
+    [[nodiscard]] Vector2f getPoint(std::size_t index) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the geometric center of the circle
@@ -119,14 +121,20 @@ public:
     /// \return The geometric center of the shape
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2f getGeometricCenter() const override;
+    [[nodiscard]] Vector2f getGeometricCenter() const;
 
 private:
     ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    void update(float radius, std::size_t pointCount);
+
+    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    float       m_radius;     //!< Radius of the circle
-    std::size_t m_pointCount; //!< Number of points composing the circle
+    float                 m_radius; //!< Radius of the circle
+    std::vector<Vector2f> m_points; //!< Points composing the circle
 };
 
 } // namespace sf

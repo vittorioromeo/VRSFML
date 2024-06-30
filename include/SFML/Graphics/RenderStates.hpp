@@ -44,7 +44,7 @@ class Texture;
 /// \brief Define the states used for drawing to a RenderTarget
 ///
 ////////////////////////////////////////////////////////////
-struct SFML_GRAPHICS_API RenderStates
+struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
 {
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
@@ -59,7 +59,7 @@ struct SFML_GRAPHICS_API RenderStates
     /// \li a null shader
     ///
     ////////////////////////////////////////////////////////////
-    RenderStates() = default;
+    [[nodiscard]] explicit RenderStates() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a default set of render states with a custom blend mode
@@ -67,7 +67,7 @@ struct SFML_GRAPHICS_API RenderStates
     /// \param theBlendMode Blend mode to use
     ///
     ////////////////////////////////////////////////////////////
-    RenderStates(const BlendMode& theBlendMode);
+    [[nodiscard]] explicit RenderStates(const BlendMode& theBlendMode);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a default set of render states with a custom stencil mode
@@ -75,7 +75,7 @@ struct SFML_GRAPHICS_API RenderStates
     /// \param theStencilMode Stencil mode to use
     ///
     ////////////////////////////////////////////////////////////
-    RenderStates(const StencilMode& theStencilMode);
+    [[nodiscard]] explicit RenderStates(const StencilMode& theStencilMode);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a default set of render states with a custom transform
@@ -83,7 +83,7 @@ struct SFML_GRAPHICS_API RenderStates
     /// \param theTransform Transform to use
     ///
     ////////////////////////////////////////////////////////////
-    RenderStates(const Transform& theTransform);
+    [[nodiscard]] explicit RenderStates(const Transform& theTransform);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a default set of render states with a custom texture
@@ -91,7 +91,7 @@ struct SFML_GRAPHICS_API RenderStates
     /// \param theTexture Texture to use
     ///
     ////////////////////////////////////////////////////////////
-    RenderStates(const Texture* theTexture);
+    [[nodiscard]] explicit RenderStates(const Texture* theTexture);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a default set of render states with a custom shader
@@ -99,7 +99,7 @@ struct SFML_GRAPHICS_API RenderStates
     /// \param theShader Shader to use
     ///
     ////////////////////////////////////////////////////////////
-    RenderStates(const Shader* theShader);
+    [[nodiscard]] explicit RenderStates(const Shader* theShader);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a set of render states with all its attributes
@@ -112,12 +112,13 @@ struct SFML_GRAPHICS_API RenderStates
     /// \param theShader         Shader to use
     ///
     ////////////////////////////////////////////////////////////
-    RenderStates(const BlendMode&   theBlendMode,
-                 const StencilMode& theStencilMode,
-                 const Transform&   theTransform,
-                 CoordinateType     theCoordinateType,
-                 const Texture*     theTexture,
-                 const Shader*      theShader);
+    [[nodiscard]] explicit RenderStates(
+        const BlendMode&   theBlendMode,
+        const StencilMode& theStencilMode,
+        const Transform&   theTransform,
+        CoordinateType     theCoordinateType,
+        const Texture*     theTexture,
+        const Shader*      theShader);
 
     ////////////////////////////////////////////////////////////
     // Static member data
@@ -178,14 +179,13 @@ struct SFML_GRAPHICS_API RenderStates
 /// window.draw(sprite, shader);
 /// \endcode
 ///
-/// When you're inside the Draw function of a drawable
-/// object (inherited from sf::Drawable), you can
-/// either pass the render states unmodified, or change
-/// some of them.
+/// When you're inside the draw function of a drawable
+/// object, you can either pass the render states unmodified,
+/// or change some of them.
 /// For example, a transformable object will combine the
 /// current transform with its own transform. A sprite will
 /// set its texture. Etc.
 ///
-/// \see sf::RenderTarget, sf::Drawable
+/// \see sf::RenderTarget
 ///
 ////////////////////////////////////////////////////////////

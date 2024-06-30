@@ -2,8 +2,9 @@
 
 // Other 1st party headers
 #include <SFML/System/Time.hpp>
+#include <SFML/System/TimeChronoUtil.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
 #include <chrono>
 
@@ -13,7 +14,7 @@ using namespace std::chrono_literals;
     do                                                                     \
     {                                                                      \
         const auto startTime = std::chrono::steady_clock::now();           \
-        sf::sleep((duration));                                             \
+        sf::sleep(sf::TimeChronoUtil::fromDuration(duration));             \
         const auto elapsed = std::chrono::steady_clock::now() - startTime; \
         CHECK(elapsed >= (duration));                                      \
     } while (false)
@@ -21,6 +22,6 @@ using namespace std::chrono_literals;
 TEST_CASE("[System] sf::sleep")
 {
     CHECK_SLEEP_DURATION(1ms);
-    CHECK_SLEEP_DURATION(10ms);
-    CHECK_SLEEP_DURATION(100ms);
+    CHECK_SLEEP_DURATION(5ms);
+    CHECK_SLEEP_DURATION(25ms);
 }

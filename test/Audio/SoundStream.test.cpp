@@ -1,9 +1,12 @@
 #include <SFML/Audio/SoundStream.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <SFML/System/Time.hpp>
+
+#include <Doctest.hpp>
 
 #include <AudioUtil.hpp>
 #include <SystemUtil.hpp>
+
 #include <type_traits>
 
 namespace
@@ -21,7 +24,7 @@ class SoundStream : public sf::SoundStream
 };
 } // namespace
 
-TEST_CASE("[Audio] sf::SoundStream", runAudioDeviceTests())
+TEST_CASE("[Audio] sf::SoundStream" * doctest::skip(skipAudioDeviceTests))
 {
     SECTION("Type traits")
     {

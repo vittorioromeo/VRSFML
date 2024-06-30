@@ -27,8 +27,6 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Transform.hpp> // NOLINT(misc-header-include-cycle)
 
-#include <array>
-
 #include <cstddef>
 
 
@@ -55,7 +53,7 @@ constexpr Transform::Transform(float a00, float a01, float a02,
 ////////////////////////////////////////////////////////////
 constexpr const float* Transform::getMatrix() const
 {
-    return m_matrix.data();
+    return m_matrix;
 }
 
 
@@ -102,7 +100,7 @@ constexpr Vector2f Transform::transformPoint(const Vector2f& point) const
 constexpr FloatRect Transform::transformRect(const FloatRect& rectangle) const
 {
     // Transform the 4 corners of the rectangle
-    const std::array points = {transformPoint(rectangle.position),
+    const Vector2f points[] = {transformPoint(rectangle.position),
                                transformPoint(rectangle.position + Vector2f(0.f, rectangle.size.y)),
                                transformPoint(rectangle.position + Vector2f(rectangle.size.x, 0.f)),
                                transformPoint(rectangle.position + rectangle.size)};
@@ -111,7 +109,7 @@ constexpr FloatRect Transform::transformRect(const FloatRect& rectangle) const
     Vector2f pmin = points[0];
     Vector2f pmax = points[0];
 
-    for (std::size_t i = 1; i < points.size(); ++i)
+    for (std::size_t i = 1; i < 4; ++i)
     {
         // clang-format off
         if      (points[i].x < pmin.x) pmin.x = points[i].x;

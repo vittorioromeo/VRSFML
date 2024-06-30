@@ -1,11 +1,14 @@
 #include <SFML/Graphics/RenderTexture.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
+#include <StringifyOptionalUtil.hpp>
+#include <SystemUtil.hpp>
 #include <WindowUtil.hpp>
+
 #include <type_traits>
 
-TEST_CASE("[Graphics] sf::RenderTexture", runDisplayTests())
+TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
 {
     SECTION("Type traits")
     {

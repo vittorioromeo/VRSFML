@@ -31,8 +31,10 @@
 
 #include <SFML/Audio/SoundStream.hpp>
 
+#include <SFML/System/PassKey.hpp>
+#include <SFML/System/UniquePtr.hpp>
+
 #include <filesystem>
-#include <memory>
 #include <optional>
 
 #include <cstddef>
@@ -57,7 +59,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename T>
-    struct Span
+    struct [[nodiscard]] Span
     {
         T offset{}; //!< The beginning offset of the time range
         T length{}; //!< The length of the time range
@@ -238,12 +240,16 @@ private:
     [[nodiscard]] static std::optional<Music> tryOpenFromInputSoundFile(std::optional<InputSoundFile>&& optFile,
                                                                         const char*                     errorContext);
 
+public:
     ////////////////////////////////////////////////////////////
+    /// \private
+    ///
     /// \brief Initialize the internal state after loading a new music
     ///
     ////////////////////////////////////////////////////////////
-    explicit Music(InputSoundFile&& file);
+    [[nodiscard]] explicit Music(priv::PassKey<Music>&&, InputSoundFile&& file);
 
+private:
     ////////////////////////////////////////////////////////////
     /// \brief Helper to convert an sf::Time to a sample position
     ///
@@ -268,7 +274,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    std::unique_ptr<Impl> m_impl; //!< Implementation details
+    priv::UniquePtr<Impl> m_impl; //!< Implementation details
 };
 
 } // namespace sf

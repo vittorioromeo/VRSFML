@@ -22,6 +22,7 @@ set(SRC
     ${SRCROOT}/Image.cpp
     ${INCROOT}/Image.hpp
     ${INCROOT}/PrimitiveType.hpp
+    ${SRCROOT}/Rect.cpp
     ${INCROOT}/Rect.hpp
     ${INCROOT}/Rect.inl
     ${SRCROOT}/RenderStates.cpp
@@ -53,7 +54,6 @@ source_group("" FILES ${SRC})
 
 # drawables sources
 set(DRAWABLES_SRC
-    ${INCROOT}/Drawable.hpp
     ${SRCROOT}/Shape.cpp
     ${INCROOT}/Shape.hpp
     ${SRCROOT}/CircleShape.cpp
@@ -66,8 +66,6 @@ set(DRAWABLES_SRC
     ${INCROOT}/Sprite.hpp
     ${SRCROOT}/Text.cpp
     ${INCROOT}/Text.hpp
-    ${SRCROOT}/VertexArray.cpp
-    ${INCROOT}/VertexArray.hpp
     ${SRCROOT}/VertexBuffer.cpp
     ${INCROOT}/VertexBuffer.hpp
 )

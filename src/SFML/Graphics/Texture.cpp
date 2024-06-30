@@ -34,12 +34,10 @@
 #include <SFML/Window/Context.hpp>
 #include <SFML/Window/Window.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 
-#include <algorithm>
-#include <array>
 #include <atomic>
-#include <ostream>
 #include <utility>
 
 #include <cassert>
@@ -66,7 +64,7 @@ std::uint64_t getUniqueId() noexcept
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-Texture::Texture(const Vector2u& size, const Vector2u& actualSize, unsigned int texture, bool sRgb) :
+Texture::Texture(priv::PassKey<Texture>&&, const Vector2u& size, const Vector2u& actualSize, unsigned int texture, bool sRgb) :
 m_size(size),
 m_actualSize(actualSize),
 m_texture(texture),
@@ -91,7 +89,7 @@ m_cacheId(TextureImpl::getUniqueId())
     }
     else
     {
-        err() << "Failed to copy texture, failed to create new texture" << std::endl;
+        priv::err() << "Failed to copy texture, failed to create new texture" << priv::errEndl;
     }
 }
 
@@ -107,13 +105,6 @@ Texture::~Texture()
         const GLuint texture = m_texture;
         glCheck(glDeleteTextures(1, &texture));
     }
-
-#ifndef NDEBUG
-    // Set m_texture and m_cacheId to an invalid value to help the assert and glIsTexture in bind detect trying
-    // to bind this texture in cases where it has already been destroyed but its memory not yet deallocated
-    m_texture = 0xFFFFFFFFu;
-    m_cacheId = 0xFFFFFFFFFFFFFFFFull;
-#endif
 }
 
 ////////////////////////////////////////////////////////////
@@ -167,11 +158,13 @@ Texture& Texture::operator=(Texture&& right) noexcept
 ////////////////////////////////////////////////////////////
 std::optional<Texture> Texture::create(const Vector2u& size, bool sRgb)
 {
+    std::optional<Texture> result; // Use a single local variable for NRVO
+
     // Check if texture parameters are valid before creating it
     if ((size.x == 0) || (size.y == 0))
     {
-        err() << "Failed to create texture, invalid size (" << size.x << "x" << size.y << ")" << std::endl;
-        return std::nullopt;
+        priv::err() << "Failed to create texture, invalid size (" << size.x << "x" << size.y << ")" << priv::errEndl;
+        return result; // Empty optional
     }
 
     const TransientContextLock lock;
@@ -186,10 +179,11 @@ std::optional<Texture> Texture::create(const Vector2u& size, bool sRgb)
     const unsigned int maxSize = getMaximumSize();
     if ((actualSize.x > maxSize) || (actualSize.y > maxSize))
     {
-        err() << "Failed to create texture, its internal size is too high "
-              << "(" << actualSize.x << "x" << actualSize.y << ", "
-              << "maximum is " << maxSize << "x" << maxSize << ")" << std::endl;
-        return std::nullopt;
+        priv::err() << "Failed to create texture, its internal size is too high "
+                    << "(" << actualSize.x << "x" << actualSize.y << ", "
+                    << "maximum is " << maxSize << "x" << maxSize << ")" << priv::errEndl;
+
+        return result; // Empty optional
     }
 
     // Create the OpenGL texture
@@ -198,7 +192,8 @@ std::optional<Texture> Texture::create(const Vector2u& size, bool sRgb)
     assert(glTexture);
 
     // All the validity checks passed, we can store the new texture settings
-    Texture texture(size, actualSize, glTexture, sRgb);
+    result.emplace(priv::PassKey<Texture>{}, size, actualSize, glTexture, sRgb);
+    Texture& texture = *result;
 
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
@@ -212,9 +207,9 @@ std::optional<Texture> Texture::create(const Vector2u& size, bool sRgb)
 
         if (!warned)
         {
-            err() << "OpenGL extension SGIS_texture_edge_clamp unavailable" << '\n'
-                  << "Artifacts may occur along texture edges" << '\n'
-                  << "Ensure that hardware acceleration is enabled if available" << std::endl;
+            priv::err() << "OpenGL extension SGIS_texture_edge_clamp unavailable" << '\n'
+                        << "Artifacts may occur along texture edges" << '\n'
+                        << "Ensure that hardware acceleration is enabled if available" << priv::errEndl;
 
             warned = true;
         }
@@ -229,11 +224,11 @@ std::optional<Texture> Texture::create(const Vector2u& size, bool sRgb)
         if (!warned)
         {
 #ifndef SFML_OPENGL_ES
-            err() << "OpenGL extension EXT_texture_sRGB unavailable" << '\n';
+            priv::err() << "OpenGL extension EXT_texture_sRGB unavailable" << '\n';
 #else
-            err() << "OpenGL ES extension EXT_sRGB unavailable" << '\n';
+            priv::err() << "OpenGL ES extension EXT_sRGB unavailable" << '\n';
 #endif
-            err() << "Automatic sRGB to linear conversion disabled" << std::endl;
+            priv::err() << "Automatic sRGB to linear conversion disabled" << priv::errEndl;
 
             warned = true;
         }
@@ -266,7 +261,7 @@ std::optional<Texture> Texture::create(const Vector2u& size, bool sRgb)
 
     texture.m_hasMipmap = false;
 
-    return texture;
+    return result;
 }
 
 
@@ -276,7 +271,7 @@ std::optional<Texture> Texture::loadFromFile(const std::filesystem::path& filena
     if (const auto image = sf::Image::loadFromFile(filename))
         return loadFromImage(*image, sRgb, area);
 
-    err() << "Failed to load texture from file" << std::endl;
+    priv::err() << "Failed to load texture from file" << priv::errEndl;
     return std::nullopt;
 }
 
@@ -287,7 +282,7 @@ std::optional<Texture> Texture::loadFromMemory(const void* data, std::size_t siz
     if (const auto image = sf::Image::loadFromMemory(data, size))
         return loadFromImage(*image, sRgb, area);
 
-    err() << "Failed to load texture from memory" << std::endl;
+    priv::err() << "Failed to load texture from memory" << priv::errEndl;
     return std::nullopt;
 }
 
@@ -298,7 +293,7 @@ std::optional<Texture> Texture::loadFromStream(InputStream& stream, bool sRgb, c
     if (const auto image = sf::Image::loadFromStream(stream))
         return loadFromImage(*image, sRgb, area);
 
-    err() << "Failed to load texture from stream" << std::endl;
+    priv::err() << "Failed to load texture from stream" << priv::errEndl;
     return std::nullopt;
 }
 
@@ -306,6 +301,8 @@ std::optional<Texture> Texture::loadFromStream(InputStream& stream, bool sRgb, c
 ////////////////////////////////////////////////////////////
 std::optional<Texture> Texture::loadFromImage(const Image& image, bool sRgb, const IntRect& area)
 {
+    std::optional<Texture> result; // Use a single local variable for NRVO
+
     // Retrieve the image size
     const auto size = Vector2i(image.getSize());
 
@@ -314,27 +311,27 @@ std::optional<Texture> Texture::loadFromImage(const Image& image, bool sRgb, con
         ((area.position.x <= 0) && (area.position.y <= 0) && (area.size.x >= size.x) && (area.size.y >= size.y)))
     {
         // Load the entire image
-        if (auto texture = sf::Texture::create(image.getSize(), sRgb))
+        if ((result = sf::Texture::create(image.getSize(), sRgb)))
         {
-            texture->update(image);
-            return texture;
+            result->update(image);
+            return result;
         }
 
         // Error message generated in called function.
-        return std::nullopt;
+        return result; // Empty optional
     }
 
     // Load a sub-area of the image
 
     // Adjust the rectangle to the size of the image
     IntRect rectangle    = area;
-    rectangle.position.x = std::max(rectangle.position.x, 0);
-    rectangle.position.y = std::max(rectangle.position.y, 0);
-    rectangle.size.x     = std::min(rectangle.size.x, size.x - rectangle.position.x);
-    rectangle.size.y     = std::min(rectangle.size.y, size.y - rectangle.position.y);
+    rectangle.position.x = priv::max(rectangle.position.x, 0);
+    rectangle.position.y = priv::max(rectangle.position.y, 0);
+    rectangle.size.x     = priv::min(rectangle.size.x, size.x - rectangle.position.x);
+    rectangle.size.y     = priv::min(rectangle.size.y, size.y - rectangle.position.y);
 
     // Create the texture and upload the pixels
-    if (auto texture = sf::Texture::create(Vector2u(rectangle.size), sRgb))
+    if ((result = sf::Texture::create(Vector2u(rectangle.size), sRgb)))
     {
         const TransientContextLock lock;
 
@@ -343,7 +340,7 @@ std::optional<Texture> Texture::loadFromImage(const Image& image, bool sRgb, con
 
         // Copy the pixels to the texture, row by row
         const std::uint8_t* pixels = image.getPixelsPtr() + 4 * (rectangle.position.x + (size.x * rectangle.position.y));
-        glCheck(glBindTexture(GL_TEXTURE_2D, texture->m_texture));
+        glCheck(glBindTexture(GL_TEXTURE_2D, result->m_texture));
         for (int i = 0; i < rectangle.size.y; ++i)
         {
             glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, i, rectangle.size.x, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixels));
@@ -351,17 +348,15 @@ std::optional<Texture> Texture::loadFromImage(const Image& image, bool sRgb, con
         }
 
         glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        texture->m_hasMipmap = false;
+        result->m_hasMipmap = false;
 
         // Force an OpenGL flush, so that the texture will appear updated
         // in all contexts immediately (solves problems in multi-threaded apps)
         glCheck(glFlush());
-
-        return texture;
     }
 
     // Error message generated in called function.
-    return std::nullopt;
+    return result;
 }
 
 
@@ -445,10 +440,10 @@ Image Texture::copyToImage() const
         glCheck(glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, allPixels.data()));
 
         // Then we copy the useful pixels from the temporary array to the final one
-        const std::uint8_t* src = allPixels.data();
-        std::uint8_t* dst = pixels.data();
-        int srcPitch = static_cast<int>(m_actualSize.x * 4);
-        const unsigned int dstPitch = m_size.x * 4;
+        const std::uint8_t* src      = allPixels.data();
+        std::uint8_t*       dst      = pixels.data();
+        int                 srcPitch = static_cast<int>(m_actualSize.x * 4);
+        const unsigned int  dstPitch = m_size.x * 4;
 
         // Handle the case where source pixels are flipped vertically
         if (m_pixelsFlipped)
@@ -560,7 +555,7 @@ void Texture::update(const Texture& texture, const Vector2u& dest)
 
         if (!sourceFrameBuffer || !destFrameBuffer)
         {
-            err() << "Cannot copy texture, failed to create a frame buffer object" << std::endl;
+            priv::err() << "Cannot copy texture, failed to create a frame buffer object" << priv::errEndl;
             return;
         }
 
@@ -612,7 +607,7 @@ void Texture::update(const Texture& texture, const Vector2u& dest)
         }
         else
         {
-            err() << "Cannot copy texture, failed to link texture to frame buffer" << std::endl;
+            priv::err() << "Cannot copy texture, failed to link texture to frame buffer" << priv::errEndl;
         }
 
         // Restore previously bound framebuffers
@@ -771,9 +766,9 @@ void Texture::setRepeated(bool repeated)
 
                 if (!warned)
                 {
-                    err() << "OpenGL extension SGIS_texture_edge_clamp unavailable" << '\n'
-                          << "Artifacts may occur along texture edges" << '\n'
-                          << "Ensure that hardware acceleration is enabled if available" << std::endl;
+                    priv::err() << "OpenGL extension SGIS_texture_edge_clamp unavailable" << '\n'
+                                << "Artifacts may occur along texture edges" << '\n'
+                                << "Ensure that hardware acceleration is enabled if available" << priv::errEndl;
 
                     warned = true;
                 }
@@ -855,10 +850,6 @@ void Texture::bind(const Texture* texture, CoordinateType coordinateType)
 
     if (texture && texture->m_texture)
     {
-        // When debugging, ensure that the texture name is valid
-        assert((glIsTexture(texture->m_texture) == GL_TRUE) &&
-               "Texture to be bound is invalid, check if the texture is still being used after it has been destroyed");
-
         // Bind the texture
         glCheck(glBindTexture(GL_TEXTURE_2D, texture->m_texture));
 
@@ -866,10 +857,10 @@ void Texture::bind(const Texture* texture, CoordinateType coordinateType)
         if ((coordinateType == CoordinateType::Pixels) || texture->m_pixelsFlipped)
         {
             // clang-format off
-            std::array matrix = {1.f, 0.f, 0.f, 0.f,
-                                 0.f, 1.f, 0.f, 0.f,
-                                 0.f, 0.f, 1.f, 0.f,
-                                 0.f, 0.f, 0.f, 1.f};
+            float matrix[] = {1.f, 0.f, 0.f, 0.f,
+                              0.f, 1.f, 0.f, 0.f,
+                              0.f, 0.f, 1.f, 0.f,
+                              0.f, 0.f, 0.f, 1.f};
             // clang-format on
 
             // If non-normalized coordinates (= pixels) are requested, we need to
@@ -889,7 +880,7 @@ void Texture::bind(const Texture* texture, CoordinateType coordinateType)
 
             // Load the matrix
             glCheck(glMatrixMode(GL_TEXTURE));
-            glCheck(glLoadMatrixf(matrix.data()));
+            glCheck(glLoadMatrixf(matrix));
         }
         else
         {
@@ -968,6 +959,13 @@ void Texture::swap(Texture& right) noexcept
 unsigned int Texture::getNativeHandle() const
 {
     return m_texture;
+}
+
+
+////////////////////////////////////////////////////////////
+IntRect Texture::getRect() const
+{
+    return {{0, 0}, Vector2i(getSize())};
 }
 
 
