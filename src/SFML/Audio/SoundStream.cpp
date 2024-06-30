@@ -25,16 +25,17 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Audio/EffectProcessor.hpp>
 #include <SFML/Audio/MiniaudioUtils.hpp>
 #include <SFML/Audio/SoundStream.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Sleep.hpp>
+#include <SFML/System/Time.hpp>
 
 #include <miniaudio.h>
 
-#include <algorithm>
-#include <ostream>
 #include <vector>
 
 #include <cassert>
@@ -83,7 +84,7 @@ struct SoundStream::Impl : priv::MiniaudioUtils::SoundBase
         impl.status    = Status::Stopped;
 
         if (const ma_result result = ma_sound_seek_to_pcm_frame(soundPtr, 0); result != MA_SUCCESS)
-            err() << "Failed to seek sound to frame 0: " << ma_result_description(result) << std::endl;
+            priv::err() << "Failed to seek sound to frame 0: " << ma_result_description(result) << priv::errEndl;
     }
 
     static ma_result read(ma_data_source* dataSource, void* framesOut, ma_uint64 frameCount, ma_uint64* framesRead)
@@ -109,8 +110,7 @@ struct SoundStream::Impl : priv::MiniaudioUtils::SoundBase
         if (!impl.sampleBuffer.empty())
         {
             // Determine how many frames we can read
-            *framesRead = std::min<ma_uint64>(frameCount,
-                                              (impl.sampleBuffer.size() - impl.sampleBufferCursor) / impl.channelCount);
+            *framesRead = priv::min(frameCount, (impl.sampleBuffer.size() - impl.sampleBufferCursor) / impl.channelCount);
 
             const auto sampleCount = *framesRead * impl.channelCount;
 
@@ -211,20 +211,20 @@ struct SoundStream::Impl : priv::MiniaudioUtils::SoundBase
     // Member data
     ////////////////////////////////////////////////////////////
     static constexpr ma_data_source_vtable vtable{read, seek, getFormat, getCursor, getLength, setLooping, /* flags */ 0};
-    SoundStream*                           owner;        //!< Owning SoundStream object
-    std::vector<std::int16_t>              sampleBuffer; //!< Our temporary sample buffer
-    std::size_t               sampleBufferCursor{};      //!< The current read position in the temporary sample buffer
-    std::uint64_t             samplesProcessed{};        //!< Number of samples processed since beginning of the stream
-    unsigned int              channelCount{};            //!< Number of channels (1 = mono, 2 = stereo, ...)
-    unsigned int              sampleRate{};              //!< Frequency (samples / second)
-    std::vector<SoundChannel> channelMap;                //!< The map of position in sample frame to sound channel
-    bool                      loop{};                    //!< Loop flag (true to loop, false to play once)
-    bool                      streaming{true};           //!< True if we are still streaming samples from the source
+    SoundStream*              owner;                //!< Owning SoundStream object
+    std::vector<std::int16_t> sampleBuffer;         //!< Our temporary sample buffer
+    std::size_t               sampleBufferCursor{}; //!< The current read position in the temporary sample buffer
+    std::uint64_t             samplesProcessed{};   //!< Number of samples processed since beginning of the stream
+    unsigned int              channelCount{};       //!< Number of channels (1 = mono, 2 = stereo, ...)
+    unsigned int              sampleRate{};         //!< Frequency (samples / second)
+    std::vector<SoundChannel> channelMap;           //!< The map of position in sample frame to sound channel
+    bool                      loop{};               //!< Loop flag (true to loop, false to play once)
+    bool                      streaming{true};      //!< True if we are still streaming samples from the source
 };
 
 
 ////////////////////////////////////////////////////////////
-SoundStream::SoundStream() : m_impl(std::make_unique<Impl>(this))
+SoundStream::SoundStream() : m_impl(priv::makeUnique<Impl>(this))
 {
 }
 
@@ -277,7 +277,7 @@ void SoundStream::play()
 
     if (const ma_result result = ma_sound_start(&m_impl->sound); result != MA_SUCCESS)
     {
-        err() << "Failed to start playing sound: " << ma_result_description(result) << std::endl;
+        priv::err() << "Failed to start playing sound: " << ma_result_description(result) << priv::errEndl;
     }
     else
     {
@@ -291,7 +291,7 @@ void SoundStream::pause()
 {
     if (const ma_result result = ma_sound_stop(&m_impl->sound); result != MA_SUCCESS)
     {
-        err() << "Failed to stop playing sound: " << ma_result_description(result) << std::endl;
+        priv::err() << "Failed to stop playing sound: " << ma_result_description(result) << priv::errEndl;
     }
     else
     {
@@ -306,7 +306,7 @@ void SoundStream::stop()
 {
     if (const ma_result result = ma_sound_stop(&m_impl->sound); result != MA_SUCCESS)
     {
-        err() << "Failed to stop playing sound: " << ma_result_description(result) << std::endl;
+        priv::err() << "Failed to stop playing sound: " << ma_result_description(result) << priv::errEndl;
     }
     else
     {
@@ -368,7 +368,7 @@ void SoundStream::setPlayingOffset(Time timeOffset)
 Time SoundStream::getPlayingOffset() const
 {
     if (m_impl->channelCount == 0 || m_impl->sampleRate == 0)
-        return {};
+        return Time{};
 
     return priv::MiniaudioUtils::getPlayingOffset(m_impl->sound);
 }

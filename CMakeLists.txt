@@ -46,6 +46,19 @@ if(SFML_OS_ANDROID)
     set(BUILD_SHARED_LIBS TRUE)
 endif()
 
+# add an option to enable lifetime tracking
+sfml_set_option(SFML_ENABLE_LIFETIME_TRACKING $<CONFIG:Debug> BOOL "TRUE to enable lifetime tracking, FALSE to disable it")
+if(SFML_ENABLE_LIFETIME_TRACKING)
+    add_definitions(-DSFML_ENABLE_LIFETIME_TRACKING)
+endif()
+
+# option to enable precompiled headers
+sfml_set_option(SFML_ENABLE_PCH FALSE BOOL "TRUE to enable precompiled headers for SFML builds -- only supported on Windows/Linux and for static library builds")
+
+if(SFML_ENABLE_PCH)
+    add_definitions(-DSFML_ENABLE_PCH)
+endif()
+
 # add options to select which modules to build
 sfml_set_option(SFML_BUILD_WINDOW TRUE BOOL "TRUE to build SFML's Window module. This setting is ignored, if the graphics module is built.")
 sfml_set_option(SFML_BUILD_GRAPHICS TRUE BOOL "TRUE to build SFML's Graphics module.")
@@ -202,6 +215,13 @@ if(SFML_ENABLE_SANITIZERS)
     string(APPEND CMAKE_CXX_FLAGS " -fno-omit-frame-pointer -fno-sanitize-recover=all -fsanitize=undefined")
 endif()
 
+if(SFML_BUILD_TEST_SUITE)
+    # this definition is used in the PCH file to speed up compilation of tests
+    # `add_definitions` must be called before `add_subdirectory`
+    add_definitions(-DSFML_BUILD_TEST_SUITE)
+    set(SFML_ENABLE_STDLIB_ASSERTIONS ON)
+endif()
+
 option(SFML_ENABLE_STDLIB_ASSERTIONS "Enable standard library assertions" OFF)
 if(SFML_ENABLE_STDLIB_ASSERTIONS)
     # intentionally using `add_definitions` here to propagate defines to subdirectories
@@ -252,9 +272,6 @@ if(SFML_INSTALL_PKGCONFIG_FILES)
     endforeach()
 endif()
 
-# option to enable precompiled headers
-sfml_set_option(SFML_ENABLE_PCH FALSE BOOL "TRUE to enable precompiled headers for SFML builds -- only supported on Windows/Linux and for static library builds")
-
 if(SFML_ENABLE_PCH AND BUILD_SHARED_LIBS)
     message(FATAL_ERROR "Precompiled headers are currently not supported for shared library builds")
 endif()
@@ -302,8 +319,8 @@ else()
     # create SFML.framework
     add_library(SFML ${SFML_SOURCES})
 
-    # enable C++17 support
-    target_compile_features(SFML PUBLIC cxx_std_17)
+    # enable C++20 support
+    target_compile_features(SFML PUBLIC cxx_std_20)
 
     # set the target flags to use the appropriate C++ standard library
     sfml_set_stdlib(SFML)

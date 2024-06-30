@@ -31,9 +31,8 @@
 
 #include <SFML/Window/GlResource.hpp>
 
+#include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
-
-#include <memory>
 
 
 namespace sf
@@ -55,7 +54,7 @@ public:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    RenderTextureImplDefault();
+    [[nodiscard]] RenderTextureImplDefault();
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -69,7 +68,7 @@ public:
     /// \return The maximum anti-aliasing level supported by the system
     ///
     ////////////////////////////////////////////////////////////
-    static unsigned int getMaximumAntialiasingLevel();
+    [[nodiscard]] static unsigned int getMaximumAntialiasingLevel();
 
 private:
     ////////////////////////////////////////////////////////////
@@ -82,7 +81,7 @@ private:
     /// \return True if creation has been successful
     ///
     ////////////////////////////////////////////////////////////
-    bool create(const Vector2u& size, unsigned int textureId, const ContextSettings& settings) override;
+    [[nodiscard]] bool create(const Vector2u& size, unsigned int textureId, const ContextSettings& settings) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Activate or deactivate the render texture for rendering
@@ -92,7 +91,7 @@ private:
     /// \return True on success, false on failure
     ///
     ////////////////////////////////////////////////////////////
-    bool activate(bool active) override;
+    [[nodiscard]] bool activate(bool active) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Tell if the render-texture will use sRGB encoding when drawing on it
@@ -116,7 +115,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::unique_ptr<Context> m_context; //!< P-Buffer based context
+    priv::UniquePtr<Context> m_context; //!< P-Buffer based context
     Vector2u                 m_size;    //!< Width and height of the P-Buffer
 };
 

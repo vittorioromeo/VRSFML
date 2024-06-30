@@ -41,7 +41,13 @@ RectangleShape::RectangleShape(const Vector2f& size)
 void RectangleShape::setSize(const Vector2f& size)
 {
     m_size = size;
-    update();
+
+    m_points[0] = {0, 0};
+    m_points[1] = {m_size.x, 0};
+    m_points[2] = {m_size.x, m_size.y};
+    m_points[3] = {0, m_size.y};
+
+    update(m_points, /* pointCount */ 4);
 }
 
 
@@ -62,18 +68,7 @@ std::size_t RectangleShape::getPointCount() const
 ////////////////////////////////////////////////////////////
 Vector2f RectangleShape::getPoint(std::size_t index) const
 {
-    switch (index)
-    {
-        default:
-        case 0:
-            return {0, 0};
-        case 1:
-            return {m_size.x, 0};
-        case 2:
-            return {m_size.x, m_size.y};
-        case 3:
-            return {0, m_size.y};
-    }
+    return m_points[index];
 }
 
 

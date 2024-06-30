@@ -34,7 +34,6 @@
 #include <SFML/System/Err.hpp>
 
 #include <algorithm>
-#include <ostream>
 
 
 namespace
@@ -60,8 +59,8 @@ std::string getDeviceString(IOHIDDeviceRef ref, CFStringRef prop, unsigned int i
         return stringFromCFString(str);
     }
 
-    sf::err() << "Unable to read string value for property '" << stringFromCFString(prop) << "' for joystick at index "
-              << index << std::endl;
+    sf::priv::err() << "Unable to read string value for property '" << stringFromCFString(prop)
+                    << "' for joystick at index " << index << sf::priv::errEndl;
     return "Unknown Joystick";
 }
 
@@ -77,8 +76,8 @@ unsigned int getDeviceUint(IOHIDDeviceRef ref, CFStringRef prop, unsigned int in
         return static_cast<unsigned int>(value);
     }
 
-    sf::err() << "Unable to read uint value for property '" << stringFromCFString(prop) << "' for joystick at index "
-              << index << std::endl;
+    sf::priv::err() << "Unable to read uint value for property '" << stringFromCFString(prop)
+                    << "' for joystick at index " << index << sf::priv::errEndl;
     return 0;
 }
 } // namespace
@@ -268,9 +267,10 @@ bool JoystickImpl::open(unsigned int index)
 
                             if (min != 0 || max != 7)
                             {
-                                sf::err() << std::hex << "Joystick (vendor/product id: 0x" << m_identification.vendorId
-                                          << "/0x" << m_identification.productId << std::dec
-                                          << ") range is an unexpected one: [" << min << ", " << max << "]" << std::endl;
+                                sf::priv::err()
+                                    << std::hex << "Joystick (vendor/product id: 0x" << m_identification.vendorId << "/0x"
+                                    << m_identification.productId << std::dec << ") range is an unexpected one: ["
+                                    << min << ", " << max << "]" << sf::priv::errEndl;
                             }
                             else
                             {
@@ -285,16 +285,17 @@ bool JoystickImpl::open(unsigned int index)
                         // See §3.4.3 Usage Types (Collection) of HUT v1.12
                         if (IOHIDElementGetCollectionType(element) != kIOHIDElementCollectionTypeApplication)
                         {
-                            sf::err() << std::hex << "Gamepage (vendor/product id: 0x" << m_identification.vendorId
-                                      << "/0x" << m_identification.productId << ") is not an CA but a 0x"
-                                      << IOHIDElementGetCollectionType(element) << std::dec << std::endl;
+                            sf::priv::err()
+                                << std::hex << "Gamepage (vendor/product id: 0x" << m_identification.vendorId << "/0x"
+                                << m_identification.productId << ") is not an CA but a 0x"
+                                << IOHIDElementGetCollectionType(element) << std::dec << sf::priv::errEndl;
                         }
                         break;
 
                     default:
 #ifdef SFML_DEBUG
-                        sf::err() << "Unexpected usage for element of Page Generic Desktop: 0x" << std::hex
-                                  << IOHIDElementGetUsage(element) << std::dec << std::endl;
+                        sf::priv::err() << "Unexpected usage for element of Page Generic Desktop: 0x" << std::hex
+                                        << IOHIDElementGetUsage(element) << std::dec << sf::priv::errEndl;
 #endif
                         break;
                 }

@@ -1,7 +1,11 @@
 .cache/
 .idea/
 .vs/
+
+build2/
 .vscode/
 build/
+build/installed/
 cmake-build-*/
 CMakeUserPresets.json
+buildarm/

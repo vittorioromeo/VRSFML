@@ -88,6 +88,7 @@ SFML_WINDOW_API void setEnabled(Type sensor, bool enabled);
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_WINDOW_API Vector3f getValue(Type sensor);
+
 } // namespace sf::Sensor
 
 

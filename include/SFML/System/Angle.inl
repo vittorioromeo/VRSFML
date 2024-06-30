@@ -30,22 +30,25 @@
 #include <cassert>
 
 
-namespace sf
+namespace sf::priv
 {
-namespace priv
-{
-constexpr float pi  = 3.141592654f;
-constexpr float tau = pi * 2.f;
+////////////////////////////////////////////////////////////
+inline constexpr float pi  = 3.141592654f;
+inline constexpr float tau = pi * 2.f;
 
-constexpr float positiveRemainder(float a, float b)
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] constexpr float positiveRemainder(float a, float b)
 {
     assert(b > 0.f && "Cannot calculate remainder with non-positive divisor");
     const float val = a - static_cast<float>(static_cast<int>(a / b)) * b;
     return val >= 0.f ? val : val + b;
 }
-} // namespace priv
 
+} // namespace sf::priv
 
+namespace sf
+{
 ////////////////////////////////////////////////////////////
 constexpr Angle::Angle() = default;
 

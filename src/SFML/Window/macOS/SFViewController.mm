@@ -33,8 +33,6 @@
 
 #include <SFML/System/Err.hpp>
 
-#include <ostream>
-
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
 @implementation SFViewController
@@ -52,7 +50,7 @@
 
         if (m_view == nil)
         {
-            sf::err() << "No view was given to initWithWindow:." << std::endl;
+            sf::priv::err() << "No view was given to initWithWindow:." << sf::priv::errEndl;
             return self;
         }
 
@@ -64,8 +62,8 @@
 
         if (m_oglView == nil)
         {
-            sf::err() << "Could not create an instance of NSOpenGLView "
-                      << "in (SFViewController -initWithView:)." << std::endl;
+            sf::priv::err() << "Could not create an instance of NSOpenGLView "
+                            << "in (SFViewController -initWithView:)." << sf::priv::errEndl;
 
             return self;
         }
@@ -150,8 +148,9 @@
 - (void)setWindowPositionTo:(sf::Vector2i)position
 {
     (void)position;
-    sf::err() << "Cannot move SFML area when SFML is integrated in a NSView. Use the view handler directly instead."
-              << std::endl;
+    sf::priv::err() << "Cannot move SFML area when SFML is integrated in a NSView. Use the view handler directly "
+                       "instead."
+                    << sf::priv::errEndl;
 }
 
 
@@ -188,7 +187,7 @@
 - (void)changeTitle:(NSString*)title
 {
     (void)title;
-    sf::err() << "Cannot change the title of the SFML area when SFML is integrated in a NSView." << std::endl;
+    sf::priv::err() << "Cannot change the title of the SFML area when SFML is integrated in a NSView." << sf::priv::errEndl;
 }
 
 
@@ -252,7 +251,7 @@
 {
     (void)size;
     (void)pixels;
-    sf::err() << "Cannot set an icon when SFML is integrated in a NSView." << std::endl;
+    sf::priv::err() << "Cannot set an icon when SFML is integrated in a NSView." << sf::priv::errEndl;
 }
 
 
@@ -266,7 +265,7 @@
          * See https://lists.apple.com/archives/cocoa-dev/2011/Feb/msg00460.html
          * for more information.
          */
-        sf::err() << "Cannot fetch event from a worker thread. (OS X restriction)" << std::endl;
+        sf::priv::err() << "Cannot fetch event from a worker thread. (OS X restriction)" << sf::priv::errEndl;
 
         return;
     }

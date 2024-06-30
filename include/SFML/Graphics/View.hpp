@@ -42,7 +42,7 @@ namespace sf
 /// \brief 2D camera that defines what region is shown on screen
 ///
 ////////////////////////////////////////////////////////////
-class SFML_GRAPHICS_API View
+class [[nodiscard]] SFML_GRAPHICS_API View
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -51,7 +51,7 @@ public:
     /// This constructor creates a default view of (0, 0, 1000, 1000)
     ///
     ////////////////////////////////////////////////////////////
-    View() = default;
+    [[nodiscard]] View() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the view from a rectangle
@@ -59,7 +59,7 @@ public:
     /// \param rectangle Rectangle defining the zone to display
     ///
     ////////////////////////////////////////////////////////////
-    explicit View(const FloatRect& rectangle);
+    [[nodiscard]] explicit View(const FloatRect& rectangle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the view from its center and size
@@ -68,7 +68,7 @@ public:
     /// \param size   Size of zone to display
     ///
     ////////////////////////////////////////////////////////////
-    View(const Vector2f& center, const Vector2f& size);
+    [[nodiscard]] View(const Vector2f& center, const Vector2f& size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the center of the view

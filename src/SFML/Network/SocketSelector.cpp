@@ -30,9 +30,8 @@
 #include <SFML/Network/SocketSelector.hpp>
 
 #include <SFML/System/Err.hpp>
+#include <SFML/System/UniquePtr.hpp>
 
-#include <memory>
-#include <ostream>
 #include <utility>
 
 #ifdef _MSC_VER
@@ -42,6 +41,10 @@
 
 namespace sf
 {
+////////////////////////////////////////////////////////////
+SocketSelector::~SocketSelector() = default;
+
+
 ////////////////////////////////////////////////////////////
 struct SocketSelector::SocketSelectorImpl
 {
@@ -53,18 +56,14 @@ struct SocketSelector::SocketSelectorImpl
 
 
 ////////////////////////////////////////////////////////////
-SocketSelector::SocketSelector() : m_impl(std::make_unique<SocketSelectorImpl>())
+SocketSelector::SocketSelector() : m_impl(priv::makeUnique<SocketSelectorImpl>())
 {
     clear();
 }
 
 
 ////////////////////////////////////////////////////////////
-SocketSelector::~SocketSelector() = default;
-
-
-////////////////////////////////////////////////////////////
-SocketSelector::SocketSelector(const SocketSelector& copy) : m_impl(std::make_unique<SocketSelectorImpl>(*copy.m_impl))
+SocketSelector::SocketSelector(const SocketSelector& copy) : m_impl(priv::makeUnique<SocketSelectorImpl>(*copy.m_impl))
 {
 }
 
@@ -97,9 +96,9 @@ void SocketSelector::add(Socket& socket)
 
         if (m_impl->socketCount >= FD_SETSIZE)
         {
-            err() << "The socket can't be added to the selector because the "
-                  << "selector is full. This is a limitation of your operating "
-                  << "system's FD_SETSIZE setting.";
+            priv::err() << "The socket can't be added to the selector because the "
+                        << "selector is full. This is a limitation of your operating "
+                        << "system's FD_SETSIZE setting.";
             return;
         }
 
@@ -112,9 +111,9 @@ void SocketSelector::add(Socket& socket)
 
         if (handle >= FD_SETSIZE)
         {
-            err() << "The socket can't be added to the selector because its "
-                  << "ID is too high. This is a limitation of your operating "
-                  << "system's FD_SETSIZE setting.";
+            priv::err() << "The socket can't be added to the selector because its "
+                        << "ID is too high. This is a limitation of your operating "
+                        << "system's FD_SETSIZE setting.";
             return;
         }
 

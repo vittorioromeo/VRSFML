@@ -6,6 +6,7 @@
 #pragma once
 
 #include <SystemUtil.hpp>
+
 #include <iosfwd>
 
 namespace sf

@@ -25,11 +25,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Audio/EffectProcessor.hpp>
 #include <SFML/Audio/SoundSource.hpp>
 
-#include <miniaudio.h>
+#include <SFML/System/AlgorithmUtils.hpp>
 
-#include <algorithm>
+#include <miniaudio.h>
 
 
 namespace sf
@@ -88,8 +89,8 @@ void SoundSource::setCone(const Cone& cone)
 {
     if (auto* sound = static_cast<ma_sound*>(getSound()))
         ma_sound_set_cone(sound,
-                          std::clamp(cone.innerAngle, Angle::Zero, degrees(360.f)).asRadians(),
-                          std::clamp(cone.outerAngle, Angle::Zero, degrees(360.f)).asRadians(),
+                          priv::clamp(cone.innerAngle, Angle::Zero, degrees(360.f)).asRadians(),
+                          priv::clamp(cone.outerAngle, Angle::Zero, degrees(360.f)).asRadians(),
                           cone.outerGain);
 }
 

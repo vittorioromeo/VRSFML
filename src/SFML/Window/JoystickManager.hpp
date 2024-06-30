@@ -30,8 +30,6 @@
 #include <SFML/Window/Joystick.hpp>
 #include <SFML/Window/JoystickImpl.hpp>
 
-#include <array>
-
 
 namespace sf::priv
 {
@@ -126,7 +124,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::array<Item, Joystick::Count> m_joysticks; //!< Joysticks information and state
+    Item m_joysticks[Joystick::Count]; //!< Joysticks information and state
 };
 
 } // namespace sf::priv

@@ -8,7 +8,10 @@
 #include <SFML/System/FileInputStream.hpp>
 #include <SFML/System/InputStream.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
+
+#include <StringifyOptionalUtil.hpp>
+#include <SystemUtil.hpp>
 
 #include <filesystem>
 #include <optional>

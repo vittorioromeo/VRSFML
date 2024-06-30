@@ -1,10 +1,11 @@
 #include <SFML/System/String.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
 #include <GraphicsUtil.hpp>
+#include <StringifyStringUtil.hpp>
+
 #include <array>
-#include <iomanip>
 #include <sstream>
 #include <type_traits>
 
@@ -37,12 +38,12 @@ auto toHex(const std::uint32_t character)
 // Specialize StringMaker for alternative std::basic_string<T> specializations
 // std::string's string conversion cannot be specialized but all other string types get special treatment
 // https://github.com/catchorg/Catch2/blob/devel/docs/tostring.md#catchstringmaker-specialisation
-namespace Catch
+namespace doctest
 {
 template <>
 struct StringMaker<sf::U8String>
 {
-    static std::string convert(const sf::U8String& string)
+    static doctest::String convert(const sf::U8String& string)
     {
         std::ostringstream output;
         for (const auto character : string)
@@ -52,10 +53,12 @@ struct StringMaker<sf::U8String>
             else
                 output << toHex(character);
         }
-        return output.str();
+
+        const auto result = output.str();
+        return {result.c_str(), static_cast<doctest::String::size_type>(result.size())};
     }
 };
-} // namespace Catch
+} // namespace doctest
 
 TEST_CASE("[System] sf::U8StringCharTraits")
 {

@@ -74,7 +74,7 @@ protected:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    AudioResource();
+    [[nodiscard]] AudioResource();
 };
 
 } // namespace sf

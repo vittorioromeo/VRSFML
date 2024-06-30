@@ -48,7 +48,7 @@ public:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    TcpListener();
+    [[nodiscard]] TcpListener();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the port to which the socket is bound locally
@@ -155,7 +155,7 @@ public:
 ///     if (listener.accept(client) == sf::Socket::Done)
 ///     {
 ///         // A new client just connected!
-///         std::cout << "New connection received from " << client.getRemoteAddress().value() << std::endl;
+///         std::cout << "New connection received from " << client.getRemoteAddress().value() << '\n';
 ///         doSomethingWith(client);
 ///     }
 /// }

@@ -155,6 +155,7 @@ struct SFML_WINDOW_API Identification
 ///
 ////////////////////////////////////////////////////////////
 SFML_WINDOW_API void update();
+
 } // namespace sf::Joystick
 
 

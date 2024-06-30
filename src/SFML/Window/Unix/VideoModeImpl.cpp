@@ -29,13 +29,13 @@
 #include <SFML/Window/Unix/Utils.hpp>
 #include <SFML/Window/VideoModeImpl.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 
 #include <X11/Xlib.h>
 #include <X11/extensions/Xrandr.h>
 
-#include <algorithm>
-#include <ostream>
+#include <utility>
 
 
 namespace sf::priv
@@ -89,7 +89,7 @@ std::vector<VideoMode> VideoModeImpl::getFullscreenModes()
                                 // Convert to VideoMode
                                 VideoMode mode({static_cast<unsigned int>(sizes[j].width),
                                                 static_cast<unsigned int>(sizes[j].height)},
-                                               static_cast<unsigned int>(depths[i]));
+                                               static_cast<unsigned int>(depths.get()[i]));
 
                                 Rotation currentRotation = 0;
                                 XRRConfigRotations(config.get(), &currentRotation);
@@ -98,7 +98,7 @@ std::vector<VideoMode> VideoModeImpl::getFullscreenModes()
                                     std::swap(mode.size.x, mode.size.y);
 
                                 // Add it only if it is not already in the array
-                                if (std::find(modes.begin(), modes.end(), mode) == modes.end())
+                                if (priv::find(modes.begin(), modes.end(), mode) == modes.end())
                                     modes.push_back(mode);
                             }
                         }
@@ -108,20 +108,22 @@ std::vector<VideoMode> VideoModeImpl::getFullscreenModes()
             else
             {
                 // Failed to get the screen configuration
-                err() << "Failed to retrieve the screen configuration while trying to get the supported video modes"
-                      << std::endl;
+                priv::err() << "Failed to retrieve the screen configuration while trying to get the supported video "
+                               "modes"
+                            << priv::errEndl;
             }
         }
         else
         {
             // XRandr extension is not supported: we cannot get the video modes
-            err() << "Failed to use the XRandR extension while trying to get the supported video modes" << std::endl;
+            priv::err() << "Failed to use the XRandR extension while trying to get the supported video modes"
+                        << priv::errEndl;
         }
     }
     else
     {
         // We couldn't connect to the X server
-        err() << "Failed to connect to the X server while trying to get the supported video modes" << std::endl;
+        priv::err() << "Failed to connect to the X server while trying to get the supported video modes" << priv::errEndl;
     }
 
     return modes;
@@ -171,20 +173,20 @@ VideoMode VideoModeImpl::getDesktopMode()
             else
             {
                 // Failed to get the screen configuration
-                err() << "Failed to retrieve the screen configuration while trying to get the desktop video modes"
-                      << std::endl;
+                priv::err() << "Failed to retrieve the screen configuration while trying to get the desktop video modes"
+                            << priv::errEndl;
             }
         }
         else
         {
             // XRandr extension is not supported: we cannot get the video modes
-            err() << "Failed to use the XRandR extension while trying to get the desktop video modes" << std::endl;
+            priv::err() << "Failed to use the XRandR extension while trying to get the desktop video modes" << priv::errEndl;
         }
     }
     else
     {
         // We couldn't connect to the X server
-        err() << "Failed to connect to the X server while trying to get the desktop video modes" << std::endl;
+        priv::err() << "Failed to connect to the X server while trying to get the desktop video modes" << priv::errEndl;
     }
 
     return desktopMode;

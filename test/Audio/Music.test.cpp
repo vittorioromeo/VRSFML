@@ -2,15 +2,18 @@
 
 // Other 1st party headers
 #include <SFML/System/FileInputStream.hpp>
+#include <SFML/System/Time.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
 #include <AudioUtil.hpp>
+#include <LoadIntoMemoryUtil.hpp>
 #include <SystemUtil.hpp>
+
 #include <thread>
 #include <type_traits>
 
-TEST_CASE("[Audio] sf::Music", runAudioDeviceTests())
+TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
 {
     SECTION("Type traits")
     {

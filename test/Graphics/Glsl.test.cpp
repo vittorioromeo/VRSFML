@@ -4,10 +4,10 @@
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/Transform.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
 #include <SystemUtil.hpp>
-#include <array>
+
 #include <type_traits>
 
 TEST_CASE("[Graphics] sf::Glsl")
@@ -252,8 +252,8 @@ TEST_CASE("[Graphics] sf::Glsl")
 
         SECTION("Array constructor")
         {
-            static constexpr std::array<float, 9> data = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-            const sf::Glsl::Mat3                  mat(data.data());
+            static constexpr float data[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+            const sf::Glsl::Mat3   mat(data);
             CHECK(mat.array[0] == 1);
             CHECK(mat.array[1] == 2);
             CHECK(mat.array[2] == 3);
@@ -291,8 +291,8 @@ TEST_CASE("[Graphics] sf::Glsl")
             STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Glsl::Mat4>);
         }
 
-        static constexpr std::array<float, 16> data = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
-        const sf::Glsl::Mat4                   mat(data.data());
+        static constexpr float data[16] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+        const sf::Glsl::Mat4   mat(data);
         CHECK(mat.array[0] == 1);
         CHECK(mat.array[1] == 2);
         CHECK(mat.array[2] == 3);

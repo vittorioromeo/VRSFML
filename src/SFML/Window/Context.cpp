@@ -30,7 +30,6 @@
 
 #include <SFML/System/Err.hpp>
 
-#include <ostream>
 #include <utility>
 
 
@@ -50,7 +49,7 @@ namespace sf
 Context::Context() : m_context(priv::GlContext::create())
 {
     if (!setActive(true))
-        err() << "Failed to set context as active during construction" << std::endl;
+        priv::err() << "Failed to set context as active during construction" << priv::errEndl;
 }
 
 
@@ -58,7 +57,7 @@ Context::Context() : m_context(priv::GlContext::create())
 Context::~Context()
 {
     if (m_context && !setActive(false))
-        err() << "Failed to set context as inactive during destruction" << std::endl;
+        priv::err() << "Failed to set context as inactive during destruction" << priv::errEndl;
 }
 
 
@@ -94,6 +93,7 @@ bool Context::setActive(bool active)
         ContextImpl::currentContext = this;
     else if (this == ContextImpl::currentContext)
         ContextImpl::currentContext = nullptr;
+
     return true;
 }
 
@@ -144,7 +144,7 @@ Context::Context(const ContextSettings& settings, const Vector2u& size) :
 m_context(priv::GlContext::create(settings, size))
 {
     if (!setActive(true))
-        err() << "Failed to set context as active during construction" << std::endl;
+        priv::err() << "Failed to set context as active during construction" << priv::errEndl;
 }
 
 } // namespace sf

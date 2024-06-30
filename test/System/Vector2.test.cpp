@@ -1,8 +1,10 @@
+#include <SFML/System/Angle.hpp>
 #include <SFML/System/Vector2.hpp>
 
-#include <catch2/catch_template_test_macros.hpp>
+#include <Doctest.hpp>
 
 #include <SystemUtil.hpp>
+
 #include <type_traits>
 
 #include <cmath>

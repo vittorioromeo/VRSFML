@@ -25,9 +25,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/MemoryInputStream.hpp>
-
-#include <algorithm>
 
 #include <cassert>
 #include <cstring>
@@ -47,7 +46,8 @@ m_size(sizeInBytes)
 ////////////////////////////////////////////////////////////
 std::optional<std::size_t> MemoryInputStream::read(void* data, std::size_t size)
 {
-    const std::size_t count = std::min(size, m_size - m_offset);
+    const std::size_t count = priv::min(size, m_size - m_offset);
+
     if (count > 0)
     {
         std::memcpy(data, m_data + m_offset, static_cast<std::size_t>(count));

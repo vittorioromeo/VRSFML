@@ -33,6 +33,8 @@
 
 #include <SFML/Window/GlResource.hpp>
 
+#include <SFML/System/PassKey.hpp>
+
 #include <filesystem>
 #include <optional>
 #include <string>
@@ -58,7 +60,7 @@ public:
     /// \brief Types of shaders
     ///
     ////////////////////////////////////////////////////////////
-    enum class Type
+    enum class [[nodiscard]] Type
     {
         Vertex,   //!< %Vertex shader
         Geometry, //!< Geometry shader
@@ -114,7 +116,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     Shader& operator=(Shader&& right) noexcept;
-
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the vertex, geometry or fragment shader from a file
@@ -579,6 +580,95 @@ public:
     void setUniformArray(const std::string& name, const Glsl::Mat4* matrixArray, std::size_t length);
 
     ////////////////////////////////////////////////////////////
+    /// \brief TODO Specify value for \p float uniform
+    ///
+    /// \param name Name of the uniform variable in GLSL
+    /// \param x    Value of the float scalar
+    ///
+    ////////////////////////////////////////////////////////////
+    void setUniformUnsafe(const std::string& name, float x);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO Specify value for \p vec2 uniform
+    ///
+    /// \param name   Name of the uniform variable in GLSL
+    /// \param vector Value of the vec2 vector
+    ///
+    ////////////////////////////////////////////////////////////
+    void setUniformUnsafe(const std::string& name, const Glsl::Vec2& vector);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO Specify value for \p vec3 uniform
+    ///
+    /// \param name   Name of the uniform variable in GLSL
+    /// \param vector Value of the vec3 vector
+    ///
+    ////////////////////////////////////////////////////////////
+    void setUniformUnsafe(const std::string& name, const Glsl::Vec3& vector);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO Specify value for \p vec4 uniform
+    ///
+    /// This overload can also be called with sf::Color objects
+    /// that are converted to sf::Glsl::Vec4.
+    ///
+    /// It is important to note that the components of the color are
+    /// normalized before being passed to the shader. Therefore,
+    /// they are converted from range [0 .. 255] to range [0 .. 1].
+    /// For example, a sf::Color(255, 127, 0, 255) will be transformed
+    /// to a vec4(1.0, 0.5, 0.0, 1.0) in the shader.
+    ///
+    /// \param name   Name of the uniform variable in GLSL
+    /// \param vector Value of the vec4 vector
+    ///
+    ////////////////////////////////////////////////////////////
+    void setUniformUnsafe(const std::string& name, const Glsl::Vec4& vector);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO Specify value for \p int uniform
+    ///
+    /// \param name Name of the uniform variable in GLSL
+    /// \param x    Value of the int scalar
+    ///
+    ////////////////////////////////////////////////////////////
+    void setUniformUnsafe(const std::string& name, int x);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO Specify value for \p ivec2 uniform
+    ///
+    /// \param name   Name of the uniform variable in GLSL
+    /// \param vector Value of the ivec2 vector
+    ///
+    ////////////////////////////////////////////////////////////
+    void setUniformUnsafe(const std::string& name, const Glsl::Ivec2& vector);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO Specify value for \p ivec3 uniform
+    ///
+    /// \param name   Name of the uniform variable in GLSL
+    /// \param vector Value of the ivec3 vector
+    ///
+    ////////////////////////////////////////////////////////////
+    void setUniformUnsafe(const std::string& name, const Glsl::Ivec3& vector);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO Specify value for \p ivec4 uniform
+    ///
+    /// This overload can also be called with sf::Color objects
+    /// that are converted to sf::Glsl::Ivec4.
+    ///
+    /// If color conversions are used, the ivec4 uniform in GLSL
+    /// will hold the same values as the original sf::Color
+    /// instance. For example, sf::Color(255, 127, 0, 255) is
+    /// mapped to ivec4(255, 127, 0, 255).
+    ///
+    /// \param name   Name of the uniform variable in GLSL
+    /// \param vector Value of the ivec4 vector
+    ///
+    ////////////////////////////////////////////////////////////
+    void setUniformUnsafe(const std::string& name, const Glsl::Ivec4& vector);
+
+    ////////////////////////////////////////////////////////////
     /// \brief Get the underlying OpenGL handle of the shader.
     ///
     /// You shouldn't need to use this function, unless you have
@@ -644,13 +734,15 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static bool isGeometryAvailable();
 
-private:
     ////////////////////////////////////////////////////////////
+    /// \private
+    ///
     /// \brief Construct from shader program
     ///
     ////////////////////////////////////////////////////////////
-    explicit Shader(unsigned int shaderProgram);
+    [[nodiscard]] explicit Shader(priv::PassKey<Shader>&&, unsigned int shaderProgram);
 
+private:
     ////////////////////////////////////////////////////////////
     /// \brief Compile the shader(s) and create the program
     ///
@@ -685,7 +777,7 @@ private:
     /// \return Location ID of the uniform, or -1 if not found
     ///
     ////////////////////////////////////////////////////////////
-    int getUniformLocation(const std::string& name);
+    [[nodiscard]] int getUniformLocation(const std::string& name);
 
     ////////////////////////////////////////////////////////////
     /// \brief RAII object to save and restore the program
@@ -694,7 +786,16 @@ private:
     /// Implementation is private in the .cpp file.
     ///
     ////////////////////////////////////////////////////////////
-    struct UniformBinder;
+    struct [[nodiscard]] UniformBinder;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO RAII object to save and restore the program
+    ///        binding while uniforms are being set
+    ///
+    /// Implementation is private in the .cpp file.
+    ///
+    ////////////////////////////////////////////////////////////
+    struct [[nodiscard]] UnsafeUniformBinder;
 
     ////////////////////////////////////////////////////////////
     // Types

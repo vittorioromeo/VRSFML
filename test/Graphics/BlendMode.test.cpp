@@ -1,8 +1,9 @@
 #include <SFML/Graphics/BlendMode.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
 #include <GraphicsUtil.hpp>
+
 #include <type_traits>
 
 TEST_CASE("[Graphics] sf::BlendMode")

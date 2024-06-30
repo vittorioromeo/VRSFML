@@ -1,12 +1,13 @@
 #include <SFML/Window/Cursor.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
+#include <StringifyOptionalUtil.hpp>
 #include <WindowUtil.hpp>
-#include <array>
+
 #include <type_traits>
 
-TEST_CASE("[Window] sf::Cursor", runDisplayTests())
+TEST_CASE("[Window] sf::Cursor" * doctest::skip(skipDisplayTests))
 {
     SECTION("Type traits")
     {
@@ -19,12 +20,12 @@ TEST_CASE("[Window] sf::Cursor", runDisplayTests())
 
     SECTION("loadFromPixels()")
     {
-        static constexpr std::array<std::uint8_t, 4> pixels{};
+        static constexpr std::uint8_t pixels[4]{};
 
         CHECK(!sf::Cursor::loadFromPixels(nullptr, {}, {}));
-        CHECK(!sf::Cursor::loadFromPixels(pixels.data(), {0, 1}, {}));
-        CHECK(!sf::Cursor::loadFromPixels(pixels.data(), {1, 0}, {}));
-        CHECK(sf::Cursor::loadFromPixels(pixels.data(), {1, 1}, {}));
+        CHECK(!sf::Cursor::loadFromPixels(pixels, {0, 1}, {}));
+        CHECK(!sf::Cursor::loadFromPixels(pixels, {1, 0}, {}));
+        CHECK(sf::Cursor::loadFromPixels(pixels, {1, 1}, {}));
     }
 
     SECTION("loadFromSystem()")

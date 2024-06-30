@@ -31,9 +31,9 @@
 
 #include <SFML/Window/GlResource.hpp>
 
+#include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
 
-#include <memory>
 #include <string_view>
 
 #include <cstdint>
@@ -63,7 +63,7 @@ public:
     /// The constructor creates and activates the context
     ///
     ////////////////////////////////////////////////////////////
-    Context();
+    [[nodiscard]] Context();
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -175,13 +175,13 @@ public:
     /// \param size     Back buffer size
     ///
     ////////////////////////////////////////////////////////////
-    Context(const ContextSettings& settings, const Vector2u& size);
+    [[nodiscard]] Context(const ContextSettings& settings, const Vector2u& size);
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::unique_ptr<priv::GlContext> m_context; //!< Internal OpenGL context
+    priv::UniquePtr<priv::GlContext> m_context; //!< Internal OpenGL context
 };
 
 } // namespace sf

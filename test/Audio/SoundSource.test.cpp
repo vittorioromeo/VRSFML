@@ -1,9 +1,10 @@
 #include <SFML/Audio/SoundSource.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
 #include <AudioUtil.hpp>
 #include <SystemUtil.hpp>
+
 #include <type_traits>
 
 namespace
@@ -35,7 +36,7 @@ public:
 };
 } // namespace
 
-TEST_CASE("[Audio] sf::SoundSource", runAudioDeviceTests())
+TEST_CASE("[Audio] sf::SoundSource" * doctest::skip(skipAudioDeviceTests))
 {
     SECTION("Type traits")
     {

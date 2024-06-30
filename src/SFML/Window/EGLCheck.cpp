@@ -32,14 +32,14 @@
 
 #include <glad/egl.h>
 
-#include <ostream>
-#include <string>
+#include <filesystem>
+#include <string_view>
 
 
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-void eglCheckError(const std::filesystem::path& file, unsigned int line, std::string_view expression)
+void eglCheckError(std::string_view file, unsigned int line, std::string_view expression)
 {
     // Obtain information about the success or failure of the most recent EGL
     // function called in the current thread
@@ -47,8 +47,8 @@ void eglCheckError(const std::filesystem::path& file, unsigned int line, std::st
 
     if (errorCode != EGL_SUCCESS)
     {
-        std::string error       = "unknown error";
-        std::string description = "no description";
+        std::string_view error       = "unknown error";
+        std::string_view description = "no description";
 
         // Decode the error code returned
         switch (errorCode)
@@ -163,9 +163,10 @@ void eglCheckError(const std::filesystem::path& file, unsigned int line, std::st
         }
 
         // Log the error
-        err() << "An internal EGL call failed in " << file.filename() << " (" << line << ") : "
-              << "\nExpression:\n   " << expression << "\nError description:\n   " << error << "\n   " << description << '\n'
-              << std::endl;
+        priv::err() << "An internal EGL call failed in " << std::filesystem::path{file}.filename() << " (" << line << ") : "
+                    << "\nExpression:\n   " << expression << "\nError description:\n   " << error << "\n   "
+                    << description << '\n'
+                    << priv::errEndl;
     }
 }
 

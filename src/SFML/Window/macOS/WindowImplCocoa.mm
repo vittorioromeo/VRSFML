@@ -39,7 +39,6 @@
 #include <SFML/System/String.hpp>
 
 #include <limits>
-#include <ostream>
 
 namespace sf::priv
 {
@@ -69,7 +68,7 @@ NSString* sfStringToNSString(const sf::String& string)
     NSString* const str = [[NSString alloc] initWithBytes:data length:length encoding:encoding];
     return [str autorelease];
 }
-}
+} // namespace
 
 
 ////////////////////////////////////////////////////////
@@ -117,10 +116,10 @@ WindowImplCocoa::WindowImplCocoa(WindowHandle handle)
     else
     {
 
-        sf::err() << "Cannot import this Window Handle because it is neither "
-                  << "a <NSWindow*> nor <NSView*> object "
-                  << "(or any of their subclasses). You gave a <" << [[nsHandle className] UTF8String] << "> object."
-                  << std::endl;
+        sf::priv::err() << "Cannot import this Window Handle because it is neither "
+                        << "a <NSWindow*> nor <NSView*> object "
+                        << "(or any of their subclasses). You gave a <" <<
+            [[nsHandle className] UTF8String] << "> object." << sf::priv::errEndl;
         return;
     }
 

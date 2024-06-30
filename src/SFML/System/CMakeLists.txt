@@ -20,6 +20,8 @@ set(SRC
     ${INCROOT}/String.inl
     ${INCROOT}/Time.hpp
     ${INCROOT}/Time.inl
+    ${INCROOT}/TimeChronoUtil.hpp
+    ${INCROOT}/TimeChronoUtil.inl
     ${INCROOT}/Utf.hpp
     ${INCROOT}/Utf.inl
     ${SRCROOT}/Utils.hpp
@@ -35,7 +37,26 @@ set(SRC
     ${SRCROOT}/MemoryInputStream.cpp
     ${INCROOT}/MemoryInputStream.hpp
     ${INCROOT}/SuspendAwareClock.hpp
+    ${INCROOT}/PassKey.hpp
+    ${SRCROOT}/LifetimeDependee.cpp
+    ${INCROOT}/LifetimeDependee.hpp
+    ${SRCROOT}/LifetimeDependant.cpp
+    ${INCROOT}/LifetimeDependant.hpp
+    ${INCROOT}/Variant.hpp
+    ${INCROOT}/UniquePtr.hpp
+    ${INCROOT}/InPlacePImpl.hpp
+    ${SRCROOT}/StringUtils.hpp
+    ${SRCROOT}/StringUtils.cpp
+    ${SRCROOT}/PathUtils.hpp
+    ${SRCROOT}/PathUtils.cpp
+    ${INCROOT}/AlgorithmUtils.hpp
+    ${SRCROOT}/AlgorithmUtils.cpp
 )
+
+if(SFML_ENABLE_PCH)
+    list(APPEND SRC ${SRCROOT}/PCH.cpp)
+endif()
+
 source_group("" FILES ${SRC})
 
 # add platform specific sources

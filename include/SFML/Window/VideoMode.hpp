@@ -49,7 +49,7 @@ public:
     /// This constructors initializes all members to 0.
     ///
     ////////////////////////////////////////////////////////////
-    VideoMode() = default;
+    [[nodiscard]] VideoMode() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the video mode with its attributes
@@ -58,7 +58,7 @@ public:
     /// \param modeBitsPerPixel Pixel depths in bits per pixel
     ///
     ////////////////////////////////////////////////////////////
-    explicit VideoMode(const Vector2u& modeSize, unsigned int modeBitsPerPixel = 32);
+    [[nodiscard]] explicit VideoMode(const Vector2u& modeSize, unsigned int modeBitsPerPixel = 32);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current desktop video mode
@@ -213,7 +213,7 @@ public:
 ///     sf::VideoMode mode = modes[i];
 ///     std::cout << "Mode #" << i << ": "
 ///               << mode.size.x << "x" << mode.size.y << " - "
-///               << mode.bitsPerPixel << " bpp" << std::endl;
+///               << mode.bitsPerPixel << " bpp\n";
 /// }
 ///
 /// // Create a window with the same pixel depth as the desktop

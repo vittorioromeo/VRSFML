@@ -31,11 +31,12 @@
 
 #include <SFML/Audio/SoundChannel.hpp>
 
-#include <SFML/System/Time.hpp>
+#include <SFML/System/InPlacePImpl.hpp>
+#include <SFML/System/LifetimeDependee.hpp>
+#include <SFML/System/PassKey.hpp>
 
 #include <filesystem>
 #include <optional>
-#include <unordered_set>
 #include <vector>
 
 #include <cstddef>
@@ -44,6 +45,7 @@
 
 namespace sf
 {
+class Time;
 class Sound;
 class InputSoundFile;
 class InputStream;
@@ -243,11 +245,25 @@ public:
 private:
     friend class Sound;
 
+public:
     ////////////////////////////////////////////////////////////
+    /// \private
+    ///
     /// \brief Construct from vector of samples
     ///
     ////////////////////////////////////////////////////////////
-    explicit SoundBuffer(std::vector<std::int16_t>&& samples);
+    [[nodiscard]] explicit SoundBuffer(priv::PassKey<SoundBuffer>&&, std::vector<std::int16_t>&& samples);
+
+private:
+    ////////////////////////////////////////////////////////////
+    /// \brief Load the sound buffer taking ownership of a vector of audio samples
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static std::optional<SoundBuffer> loadFromSamplesImpl(
+        std::vector<std::int16_t>&&      samples,
+        unsigned int                     channelCount,
+        unsigned int                     sampleRate,
+        const std::vector<SoundChannel>& channelMap);
 
     ////////////////////////////////////////////////////////////
     /// \brief Initialize the internal state after loading a new sound
@@ -288,18 +304,15 @@ private:
     void detachSound(Sound* sound) const;
 
     ////////////////////////////////////////////////////////////
-    // Types
-    ////////////////////////////////////////////////////////////
-    using SoundList = std::unordered_set<Sound*>; //!< Set of unique sound instances
-
-    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::vector<std::int16_t> m_samples;                        //!< Samples buffer
-    unsigned int              m_sampleRate{44100};              //!< Number of samples per second
-    std::vector<SoundChannel> m_channelMap{SoundChannel::Mono}; //!< The map of position in sample frame to sound channel
-    Time                      m_duration;                       //!< Sound duration
-    mutable SoundList         m_sounds;                         //!< List of sounds that are using this buffer
+    struct Impl;
+    priv::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
+
+    ////////////////////////////////////////////////////////////
+    // Lifetime tracking
+    ////////////////////////////////////////////////////////////
+    SFML_DEFINE_LIFETIME_DEPENDEE(SoundBuffer, Sound);
 };
 
 } // namespace sf

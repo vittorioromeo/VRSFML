@@ -25,21 +25,22 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Drawable.hpp>
 #include <SFML/Graphics/GLCheck.hpp>
 #include <SFML/Graphics/GLExtensions.hpp>
+#include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Shader.hpp>
+#include <SFML/Graphics/Shape.hpp>
+#include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/VertexBuffer.hpp>
 
 #include <SFML/Window/Context.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 
-#include <algorithm>
 #include <mutex>
-#include <ostream>
 #include <unordered_map>
 
 #include <cassert>
@@ -103,7 +104,8 @@ std::uint32_t factorToGlConstant(sf::BlendMode::Factor blendFactor)
     }
     // clang-format on
 
-    sf::err() << "Invalid value for sf::BlendMode::Factor! Fallback to sf::BlendMode::Factor::Zero." << std::endl;
+    sf::priv::err() << "Invalid value for sf::BlendMode::Factor! Fallback to sf::BlendMode::Factor::Zero."
+                    << sf::priv::errEndl;
     assert(false);
     return GL_ZERO;
 }
@@ -137,9 +139,9 @@ std::uint32_t equationToGlConstant(sf::BlendMode::Equation blendEquation)
     static bool warned = false;
     if (!warned)
     {
-        sf::err() << "OpenGL extension EXT_blend_minmax or EXT_blend_subtract unavailable" << '\n'
-                  << "Some blending equations will fallback to sf::BlendMode::Equation::Add" << '\n'
-                  << "Ensure that hardware acceleration is enabled if available" << std::endl;
+        sf::priv::err() << "OpenGL extension EXT_blend_minmax or EXT_blend_subtract unavailable" << '\n'
+                        << "Some blending equations will fallback to sf::BlendMode::Equation::Add" << '\n'
+                        << "Ensure that hardware acceleration is enabled if available" << sf::priv::errEndl;
 
         warned = true;
     }
@@ -163,7 +165,8 @@ std::uint32_t stencilOperationToGlConstant(sf::StencilUpdateOperation operation)
     }
     // clang-format on
 
-    sf::err() << "Invalid value for sf::StencilUpdateOperation! Fallback to sf::StencilMode::Keep." << std::endl;
+    sf::priv::err() << "Invalid value for sf::StencilUpdateOperation! Fallback to sf::StencilMode::Keep."
+                    << sf::priv::errEndl;
     assert(false);
     return GL_KEEP;
 }
@@ -186,7 +189,7 @@ std::uint32_t stencilFunctionToGlConstant(sf::StencilComparison comparison)
     }
     // clang-format on
 
-    sf::err() << "Invalid value for sf::StencilComparison! Fallback to sf::StencilMode::Always." << std::endl;
+    sf::priv::err() << "Invalid value for sf::StencilComparison! Fallback to sf::StencilMode::Always." << sf::priv::errEndl;
     assert(false);
     return GL_ALWAYS;
 }
@@ -336,9 +339,22 @@ Vector2i RenderTarget::mapCoordsToPixel(const Vector2f& point, const View& view)
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::draw(const Drawable& drawable, const RenderStates& states)
+void RenderTarget::draw(const Sprite& sprite, const Texture& texture, const RenderStates& states)
 {
-    drawable.draw(*this, states);
+    auto statesCopy = states;
+
+    statesCopy.texture = &texture;
+    statesCopy.transform *= sprite.getTransform();
+    statesCopy.coordinateType = CoordinateType::Pixels;
+
+    draw(sprite.m_vertices, PrimitiveType::TriangleStrip, statesCopy);
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::draw(const Shape& shape, const Texture* texture, const RenderStates& states)
+{
+    shape.drawOnto(*this, texture, states);
 }
 
 
@@ -352,7 +368,7 @@ void RenderTarget::draw(const Vertex* vertices, std::size_t vertexCount, Primiti
     if (RenderTargetImpl::isActive(m_id) || setActive(true))
     {
         // Check if the vertex count is low enough so that we can pre-transform them
-        const bool useVertexCache = (vertexCount <= m_cache.vertexCache.size());
+        const bool useVertexCache = (vertexCount <= priv::getArraySize(m_cache.vertexCache));
 
         if (useVertexCache)
         {
@@ -386,7 +402,7 @@ void RenderTarget::draw(const Vertex* vertices, std::size_t vertexCount, Primiti
 
             // If we pre-transform the vertices, we must use our internal vertex cache
             if (useVertexCache)
-                data = reinterpret_cast<const std::byte*>(m_cache.vertexCache.data());
+                data = reinterpret_cast<const std::byte*>(m_cache.vertexCache);
 
             glCheck(glVertexPointer(2, GL_FLOAT, sizeof(Vertex), data + 0));
             glCheck(glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), data + 8));
@@ -396,7 +412,7 @@ void RenderTarget::draw(const Vertex* vertices, std::size_t vertexCount, Primiti
         else if (enableTexCoordsArray && !m_cache.texCoordsArrayEnabled)
         {
             // If we enter this block, we are already using our internal vertex cache
-            const auto* data = reinterpret_cast<const std::byte*>(m_cache.vertexCache.data());
+            const auto* data = reinterpret_cast<const std::byte*>(m_cache.vertexCache);
 
             glCheck(glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), data + 12));
         }
@@ -424,7 +440,7 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, std::size_t firstVerte
     // VertexBuffer not supported?
     if (!VertexBuffer::isAvailable())
     {
-        err() << "sf::VertexBuffer is not available, drawing skipped" << std::endl;
+        priv::err() << "sf::VertexBuffer is not available, drawing skipped" << priv::errEndl;
         return;
     }
 
@@ -433,7 +449,7 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, std::size_t firstVerte
         return;
 
     // Clamp vertexCount to something that makes sense
-    vertexCount = std::min(vertexCount, vertexBuffer.getVertexCount() - firstVertex);
+    vertexCount = priv::min(vertexCount, vertexBuffer.getVertexCount() - firstVertex);
 
     // Nothing to draw?
     if (!vertexCount || !vertexBuffer.getNativeHandle())
@@ -526,8 +542,8 @@ void RenderTarget::pushGLStates()
         const GLenum error = glGetError();
         if (error != GL_NO_ERROR)
         {
-            err() << "OpenGL error (" << error << ") detected in user code, "
-                  << "you should check for errors with glGetError()" << std::endl;
+            priv::err() << "OpenGL error (" << error << ") detected in user code, "
+                        << "you should check for errors with glGetError()" << priv::errEndl;
         }
 #endif
 
@@ -578,7 +594,7 @@ void RenderTarget::resetGLStates()
 #if defined(SFML_SYSTEM_MACOS)
     if (!setActive(false))
     {
-        err() << "Failed to set render target inactive" << std::endl;
+        priv::err() << "Failed to set render target inactive" << priv::errEndl;
     }
 #endif
 
@@ -632,6 +648,13 @@ void RenderTarget::resetGLStates()
 
         m_cache.enable = true;
     }
+}
+
+
+////////////////////////////////////////////////////////////
+const RenderStates& RenderTarget::getDefaultRenderStates()
+{
+    return RenderStates::Default;
 }
 
 
@@ -730,12 +753,12 @@ void RenderTarget::applyBlendMode(const BlendMode& mode)
         if (!warned)
         {
 #ifdef SFML_OPENGL_ES
-            err() << "OpenGL ES extension OES_blend_subtract unavailable" << std::endl;
+            priv::err() << "OpenGL ES extension OES_blend_subtract unavailable" << priv::errEndl;
 #else
-            err() << "OpenGL extension EXT_blend_minmax and EXT_blend_subtract unavailable" << std::endl;
+            priv::err() << "OpenGL extension EXT_blend_minmax and EXT_blend_subtract unavailable" << priv::errEndl;
 #endif
-            err() << "Selecting a blend equation not possible" << '\n'
-                  << "Ensure that hardware acceleration is enabled if available" << std::endl;
+            priv::err() << "Selecting a blend equation not possible" << '\n'
+                        << "Ensure that hardware acceleration is enabled if available" << priv::errEndl;
 
             warned = true;
         }
@@ -888,7 +911,7 @@ void RenderTarget::drawPrimitives(PrimitiveType type, std::size_t firstVertex, s
 {
     // Find the OpenGL primitive type
     static constexpr GLenum modes[] = {GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN};
-    const GLenum            mode = modes[static_cast<std::size_t>(type)];
+    const GLenum mode = modes[static_cast<std::size_t>(type)];
 
     // Draw the primitives
     glCheck(glDrawArrays(mode, static_cast<GLint>(firstVertex), static_cast<GLsizei>(vertexCount)));

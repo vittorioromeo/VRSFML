@@ -25,6 +25,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Utf.hpp> // NOLINT(misc-header-include-cycle)
 
 
@@ -41,22 +42,12 @@
 
 namespace sf
 {
-////////////////////////////////////////////////////////////
-template <typename InputIt, typename OutputIt>
-OutputIt priv::copy(InputIt first, InputIt last, OutputIt dFirst)
-{
-    while (first != last)
-        *dFirst++ = static_cast<typename OutputIt::container_type::value_type>(*first++);
-
-    return dFirst;
-}
-
 template <typename In>
 In Utf<8>::decode(In begin, In end, std::uint32_t& output, std::uint32_t replacement)
 {
     // clang-format off
     // Some useful precomputed data
-    static constexpr std::array<std::uint8_t, 256> trailing =
+    static constexpr std::uint8_t trailing[256] =
     {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -68,7 +59,7 @@ In Utf<8>::decode(In begin, In end, std::uint32_t& output, std::uint32_t replace
         2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5
     };
 
-    static constexpr std::array<std::uint32_t, 6> offsets =
+    static constexpr std::uint32_t offsets[6] =
     {
         0x00000000, 0x00003080, 0x000E2080, 0x03C82080, 0xFA082080, 0x82082080
     };
@@ -110,7 +101,7 @@ template <typename Out>
 Out Utf<8>::encode(std::uint32_t input, Out output, std::uint8_t replacement)
 {
     // Some useful precomputed data
-    static constexpr std::array<std::uint8_t, 7> firstBytes = {0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC};
+    static constexpr std::uint8_t firstBytes[7] = {0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC};
 
     // encode the character
     if ((input > 0x0010FFFF) || ((input >= 0xD800) && (input <= 0xDBFF)))
@@ -134,20 +125,20 @@ Out Utf<8>::encode(std::uint32_t input, Out output, std::uint8_t replacement)
         // clang-format on
 
         // Extract the bytes to write
-        std::array<std::byte, 4> bytes{};
+        unsigned char bytes[4]{};
 
         // clang-format off
         switch (bytestoWrite)
         {
-            case 4: bytes[3] = static_cast<std::byte>((input | 0x80) & 0xBF); input >>= 6; [[fallthrough]];
-            case 3: bytes[2] = static_cast<std::byte>((input | 0x80) & 0xBF); input >>= 6; [[fallthrough]];
-            case 2: bytes[1] = static_cast<std::byte>((input | 0x80) & 0xBF); input >>= 6; [[fallthrough]];
-            case 1: bytes[0] = static_cast<std::byte> (input | firstBytes[bytestoWrite]);
+            case 4: bytes[3] = static_cast<unsigned char>((input | 0x80) & 0xBF); input >>= 6; [[fallthrough]];
+            case 3: bytes[2] = static_cast<unsigned char>((input | 0x80) & 0xBF); input >>= 6; [[fallthrough]];
+            case 2: bytes[1] = static_cast<unsigned char>((input | 0x80) & 0xBF); input >>= 6; [[fallthrough]];
+            case 1: bytes[0] = static_cast<unsigned char> (input | firstBytes[bytestoWrite]);
         }
         // clang-format on
 
         // Add them to the output
-        output = priv::copy(bytes.data(), bytes.data() + bytestoWrite, output);
+        output = priv::copy(bytes, bytes + bytestoWrite, output);
     }
 
     return output;

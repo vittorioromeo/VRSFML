@@ -31,14 +31,17 @@
 
 #include <SFML/Audio/SoundSource.hpp>
 
-#include <memory>
+#include <SFML/System/LifetimeDependant.hpp>
+#include <SFML/System/UniquePtr.hpp>
 
 #include <cstdlib>
+
 
 namespace sf
 {
 class Time;
 class SoundBuffer;
+struct EffectProcessor;
 
 ////////////////////////////////////////////////////////////
 /// \brief Regular sound that can be played in the audio environment
@@ -53,7 +56,7 @@ public:
     /// \param buffer Sound buffer containing the audio data to play with the sound
     ///
     ////////////////////////////////////////////////////////////
-    explicit Sound(const SoundBuffer& buffer);
+    [[nodiscard]] explicit Sound(const SoundBuffer& buffer);
 
     ////////////////////////////////////////////////////////////
     /// \brief Disallow construction from a temporary sound buffer
@@ -243,7 +246,12 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    const std::unique_ptr<Impl> m_impl; //!< Implementation details
+    const priv::UniquePtr<Impl> m_impl; //!< Implementation details
+
+    ////////////////////////////////////////////////////////////
+    // Lifetime tracking
+    ////////////////////////////////////////////////////////////
+    SFML_DEFINE_LIFETIME_DEPENDANT(SoundBuffer);
 };
 
 } // namespace sf

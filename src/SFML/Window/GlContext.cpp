@@ -29,19 +29,16 @@
 #include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/GlContext.hpp>
 
+#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
+#include <SFML/System/UniquePtr.hpp>
 
 #include <glad/gl.h>
 
-#include <algorithm>
 #include <atomic>
-#include <iomanip>
-#include <memory>
 #include <mutex>
 #include <optional>
-#include <ostream>
 #include <string>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -197,11 +194,15 @@ namespace sf::priv
 // track SharedContext usage
 struct GlContext::SharedContext
 {
+    struct SharedContextState;
+
     ////////////////////////////////////////////////////////////
     /// \brief Constructor
     ///
     ////////////////////////////////////////////////////////////
-    SharedContext()
+    SharedContext() = default;
+
+    void initialize()
     {
         const std::lock_guard lock(mutex);
 
@@ -211,40 +212,6 @@ struct GlContext::SharedContext
         loadExtensions();
 
         context->setActive(false);
-    }
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get weak_ptr
-    ///
-    /// \return weak_ptr to the SharedContext
-    ///
-    ////////////////////////////////////////////////////////////
-    static std::weak_ptr<SharedContext>& getWeakPtr()
-    {
-        static std::weak_ptr<SharedContext> weakSharedContext;
-        return weakSharedContext;
-    }
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get shared_ptr to the shared context
-    ///
-    /// Create new object if one doesn't already exist.
-    ///
-    /// \return shared_ptr to the shared context
-    ///
-    ////////////////////////////////////////////////////////////
-    static std::shared_ptr<SharedContext> get()
-    {
-        auto& weakSharedContext = getWeakPtr();
-        auto  sharedContext     = weakSharedContext.lock();
-
-        if (!sharedContext)
-        {
-            sharedContext     = std::make_shared<GlContext::SharedContext>();
-            weakSharedContext = sharedContext;
-        }
-
-        return sharedContext;
     }
 
     ////////////////////////////////////////////////////////////
@@ -307,6 +274,13 @@ struct GlContext::SharedContext
         }
     }
 
+    static SharedContextState& getSharedContextState();
+
+    static SharedContext& acquireSharedContext();
+    static void           releaseSharedContext();
+    static std::size_t    getSharedContextUseCount();
+    static SharedContext* getSharedContextIfAvailable();
+
     // AMD drivers have issues with internal synchronization
     // We need to make sure that no operating system context
     // or pixel format operations are performed simultaneously
@@ -320,6 +294,82 @@ struct GlContext::SharedContext
     // The hidden, inactive context that will be shared with all other contexts
     std::optional<ContextType> context;
 };
+
+
+////////////////////////////////////////////////////////////
+struct GlContext::SharedContext::SharedContextState
+{
+    std::recursive_mutex                              mutex;
+    std::optional<sf::priv::GlContext::SharedContext> sharedContext;
+    unsigned int                                      referenceCounter{};
+};
+
+
+////////////////////////////////////////////////////////////
+GlContext::SharedContext::SharedContextState& GlContext::SharedContext::getSharedContextState()
+{
+    static SharedContextState sharedContextState;
+    return sharedContextState;
+}
+
+
+////////////////////////////////////////////////////////////
+GlContext::SharedContext& GlContext::SharedContext::acquireSharedContext()
+{
+    auto& [mutex, sharedContext, referenceCounter] = getSharedContextState();
+    const std::lock_guard guard{mutex};
+
+    if (referenceCounter++ == 0u)
+    {
+        assert(!sharedContext.has_value());
+        sharedContext.emplace();
+
+        sharedContext->initialize(); // Needed because `SharedContext` invokes `getSharedContextIfAvailable()` during construction
+    }
+
+    assert(sharedContext.has_value());
+    return *sharedContext;
+}
+
+
+////////////////////////////////////////////////////////////
+void GlContext::SharedContext::releaseSharedContext()
+{
+    auto& [mutex, sharedContext, referenceCounter] = getSharedContextState();
+    const std::lock_guard guard{mutex};
+
+    assert(sharedContext.has_value());
+
+    if (--referenceCounter == 0u)
+        sharedContext.reset();
+}
+
+
+////////////////////////////////////////////////////////////
+std::size_t GlContext::SharedContext::getSharedContextUseCount()
+{
+    auto& [mutex, sharedContext, referenceCounter] = getSharedContextState();
+    const std::lock_guard guard{mutex};
+
+    return referenceCounter;
+}
+
+
+////////////////////////////////////////////////////////////
+GlContext::SharedContext* GlContext::SharedContext::getSharedContextIfAvailable()
+{
+    auto& [mutex, sharedContext, referenceCounter] = getSharedContextState();
+    const std::lock_guard guard{mutex};
+
+    if (referenceCounter == 0u)
+    {
+        assert(!sharedContext.has_value());
+        return nullptr;
+    }
+
+    assert(sharedContext.has_value());
+    return &*sharedContext;
+}
 
 
 // This structure contains all the state necessary to
@@ -337,7 +387,7 @@ struct GlContext::TransientContext
         assert(!GlContextImpl::CurrentContext::get().id && "Another context is active on the current thread");
 
         // Lock ourselves so we don't create a new object if one doesn't already exist
-        sharedContext = SharedContext::getWeakPtr().lock();
+        sharedContext = SharedContext::getSharedContextIfAvailable();
 
         if (!sharedContext)
         {
@@ -352,6 +402,8 @@ struct GlContext::TransientContext
             // Lock the shared context for temporary use
             sharedContextLock = std::unique_lock(sharedContext->mutex);
             sharedContext->context->setActive(true);
+
+            SharedContext::acquireSharedContext();
         }
     }
 
@@ -362,7 +414,10 @@ struct GlContext::TransientContext
     ~TransientContext()
     {
         if (sharedContextLock)
+        {
             sharedContext->context->setActive(false);
+            SharedContext::releaseSharedContext();
+        }
     }
 
     ////////////////////////////////////////////////////////////
@@ -376,6 +431,18 @@ struct GlContext::TransientContext
     ///
     ////////////////////////////////////////////////////////////
     TransientContext& operator=(const TransientContext&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    TransientContext(TransientContext&&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted move assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    TransientContext& operator=(TransientContext&&) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the thread local TransientContext
@@ -397,7 +464,7 @@ struct GlContext::TransientContext
     ////////////////////////////////////////////////////////////
     std::optional<sf::Context>             context;
     std::unique_lock<std::recursive_mutex> sharedContextLock;
-    std::shared_ptr<SharedContext>         sharedContext;
+    SharedContext*                         sharedContext;
 };
 
 
@@ -470,13 +537,6 @@ struct GlContext::Impl
 
 
 ////////////////////////////////////////////////////////////
-std::shared_ptr<void> GlContext::getSharedContext()
-{
-    return GlContext::SharedContext::get();
-}
-
-
-////////////////////////////////////////////////////////////
 void GlContext::registerUnsharedGlObject(std::shared_ptr<void> object)
 {
     if (const std::lock_guard lock(Impl::getUnsharedGlObjectsMutex());
@@ -494,7 +554,7 @@ void GlContext::unregisterUnsharedGlObject(std::shared_ptr<void> object)
         // Find the object in unshared objects and remove it if its associated context is currently active
         // This will trigger the destructor of the object since shared_ptr
         // in unshared objects should be the only one existing
-        const auto iter = std::find_if(unsharedGlObjects->begin(),
+        const auto iter = priv::findIf(unsharedGlObjects->begin(),
                                        unsharedGlObjects->end(),
                                        [&](const Impl::UnsharedGlObject& obj) {
                                            return (obj.object == object) &&
@@ -553,45 +613,47 @@ void GlContext::releaseTransientContext()
 
 
 ////////////////////////////////////////////////////////////
-std::unique_ptr<GlContext> GlContext::create()
+priv::UniquePtr<GlContext> GlContext::create()
 {
     // Make sure that there's an active context (context creation may need extensions, and thus a valid context)
-    const auto sharedContext = SharedContext::get();
+    auto& sharedContext = SharedContext::acquireSharedContext();
 
-    const std::lock_guard lock(sharedContext->mutex);
+    const std::lock_guard lock(sharedContext.mutex);
 
-    std::unique_ptr<GlContext> context;
+    priv::UniquePtr<GlContext> context;
 
     // We don't use acquireTransientContext here since we have
     // to ensure we have exclusive access to the shared context
     // in order to make sure it is not active during context creation
-    sharedContext->context->setActive(true);
+    sharedContext.context->setActive(true);
 
     // Create the context
-    context = std::make_unique<ContextType>(&sharedContext->context.value());
+    context = priv::makeUnique<ContextType>(&sharedContext.context.value());
 
-    sharedContext->context->setActive(false);
+    sharedContext.context->setActive(false);
 
     context->initialize(ContextSettings{});
 
+    SharedContext::releaseSharedContext();
+
     return context;
 }
 
 
 ////////////////////////////////////////////////////////////
-std::unique_ptr<GlContext> GlContext::create(const ContextSettings& settings, const WindowImpl& owner, unsigned int bitsPerPixel)
+priv::UniquePtr<GlContext> GlContext::create(const ContextSettings& settings, const WindowImpl& owner, unsigned int bitsPerPixel)
 {
     // Make sure that there's an active context (context creation may need extensions, and thus a valid context)
-    const auto sharedContext = SharedContext::get();
+    auto& sharedContext = SharedContext::acquireSharedContext();
 
-    const std::lock_guard lock(sharedContext->mutex);
+    const std::lock_guard lock(sharedContext.mutex);
 
     // If use_count is 2 (GlResource + sharedContext) we know that we are inside sf::Context or sf::Window
     // Only in this situation we allow the user to indirectly re-create the shared context as a core context
 
     // Check if we need to convert our shared context into a core context
-    if ((sharedContext.use_count() == 2) && (settings.attributeFlags & ContextSettings::Core) &&
-        !(sharedContext->context->m_settings.attributeFlags & ContextSettings::Core))
+    if ((SharedContext::getSharedContextUseCount() == 2) && (settings.attributeFlags & ContextSettings::Core) &&
+        !(sharedContext.context->m_settings.attributeFlags & ContextSettings::Core))
     {
         // Re-create our shared context as a core context
         const ContextSettings sharedSettings{/* depthBits */ 0,
@@ -601,46 +663,48 @@ std::unique_ptr<GlContext> GlContext::create(const ContextSettings& settings, co
                                              settings.minorVersion,
                                              settings.attributeFlags};
 
-        sharedContext->context.emplace(nullptr, sharedSettings, Vector2u(1, 1));
-        sharedContext->context->initialize(sharedSettings);
+        sharedContext.context.emplace(nullptr, sharedSettings, Vector2u(1, 1));
+        sharedContext.context->initialize(sharedSettings);
 
         // Reload our extensions vector
-        sharedContext->loadExtensions();
+        sharedContext.loadExtensions();
     }
 
-    std::unique_ptr<GlContext> context;
+    priv::UniquePtr<GlContext> context;
 
     // We don't use acquireTransientContext here since we have
     // to ensure we have exclusive access to the shared context
     // in order to make sure it is not active during context creation
-    sharedContext->context->setActive(true);
+    sharedContext.context->setActive(true);
 
     // Create the context
-    context = std::make_unique<ContextType>(&sharedContext->context.value(), settings, owner, bitsPerPixel);
+    context = priv::makeUnique<ContextType>(&sharedContext.context.value(), settings, owner, bitsPerPixel);
 
-    sharedContext->context->setActive(false);
+    sharedContext.context->setActive(false);
 
     context->initialize(settings);
     context->checkSettings(settings);
+
+    SharedContext::releaseSharedContext();
 
     return context;
 }
 
 
 ////////////////////////////////////////////////////////////
-std::unique_ptr<GlContext> GlContext::create(const ContextSettings& settings, const Vector2u& size)
+priv::UniquePtr<GlContext> GlContext::create(const ContextSettings& settings, const Vector2u& size)
 {
     // Make sure that there's an active context (context creation may need extensions, and thus a valid context)
-    const auto sharedContext = SharedContext::get();
+    auto& sharedContext = SharedContext::acquireSharedContext();
 
-    const std::lock_guard lock(sharedContext->mutex);
+    const std::lock_guard lock(sharedContext.mutex);
 
     // If use_count is 2 (GlResource + sharedContext) we know that we are inside sf::Context or sf::Window
     // Only in this situation we allow the user to indirectly re-create the shared context as a core context
 
     // Check if we need to convert our shared context into a core context
-    if ((sharedContext.use_count() == 2) && (settings.attributeFlags & ContextSettings::Core) &&
-        !(sharedContext->context->m_settings.attributeFlags & ContextSettings::Core))
+    if ((SharedContext::getSharedContextUseCount() == 2) && (settings.attributeFlags & ContextSettings::Core) &&
+        !(sharedContext.context->m_settings.attributeFlags & ContextSettings::Core))
     {
         // Re-create our shared context as a core context
         const ContextSettings sharedSettings{/* depthBits */ 0,
@@ -650,25 +714,27 @@ std::unique_ptr<GlContext> GlContext::create(const ContextSettings& settings, co
                                              settings.minorVersion,
                                              settings.attributeFlags};
 
-        sharedContext->context.emplace(nullptr, sharedSettings, Vector2u(1, 1));
-        sharedContext->context->initialize(sharedSettings);
+        sharedContext.context.emplace(nullptr, sharedSettings, Vector2u(1, 1));
+        sharedContext.context->initialize(sharedSettings);
 
         // Reload our extensions vector
-        sharedContext->loadExtensions();
+        sharedContext.loadExtensions();
     }
 
     // We don't use acquireTransientContext here since we have
     // to ensure we have exclusive access to the shared context
     // in order to make sure it is not active during context creation
-    sharedContext->context->setActive(true);
+    sharedContext.context->setActive(true);
 
     // Create the context
-    auto context = std::make_unique<ContextType>(&sharedContext->context.value(), settings, size);
+    auto context = priv::makeUnique<ContextType>(&sharedContext.context.value(), settings, size);
 
-    sharedContext->context->setActive(false);
+    sharedContext.context->setActive(false);
 
     context->initialize(settings);
     context->checkSettings(settings);
+
+    SharedContext::releaseSharedContext();
 
     return context;
 }
@@ -679,10 +745,14 @@ bool GlContext::isExtensionAvailable(std::string_view name)
 {
     // If this function is called before any context is available,
     // the shared context will be created for the duration of this call
-    const auto sharedContext = SharedContext::get();
+    auto& sharedContext = SharedContext::acquireSharedContext();
 
-    return std::find(sharedContext->extensions.begin(), sharedContext->extensions.end(), name) !=
-           sharedContext->extensions.end();
+    const bool result = priv::find(sharedContext.extensions.begin(), sharedContext.extensions.end(), name) !=
+                        sharedContext.extensions.end();
+
+    SharedContext::releaseSharedContext();
+
+    return result;
 }
 
 
@@ -691,7 +761,7 @@ GlFunctionPointer GlContext::getFunction(const char* name)
 {
     // Make sure we don't try to create the shared context here since
     // setActive can be called during construction and lead to infinite recursion
-    auto* sharedContext = SharedContext::getWeakPtr().lock().get();
+    auto* sharedContext = SharedContext::getSharedContextIfAvailable();
 
     // We can't and don't need to lock when we are currently creating the shared context
     std::unique_lock<std::recursive_mutex> lock;
@@ -744,7 +814,7 @@ bool GlContext::setActive(bool active)
 
     // Make sure we don't try to create the shared context here since
     // setActive can be called during construction and lead to infinite recursion
-    auto* sharedContext = SharedContext::getWeakPtr().lock().get();
+    auto* sharedContext = SharedContext::getSharedContextIfAvailable();
 
     if (active)
     {
@@ -797,10 +867,7 @@ bool GlContext::setActive(bool active)
 
 
 ////////////////////////////////////////////////////////////
-GlContext::GlContext() : m_impl(std::make_unique<Impl>())
-{
-    // Nothing to do
-}
+GlContext::GlContext() = default;
 
 
 ////////////////////////////////////////////////////////////
@@ -879,6 +946,20 @@ void GlContext::cleanupUnsharedResources()
 
 
 ////////////////////////////////////////////////////////////
+void GlContext::acquireSharedContext()
+{
+    SharedContext::acquireSharedContext();
+}
+
+
+////////////////////////////////////////////////////////////
+void GlContext::releaseSharedContext()
+{
+    SharedContext::releaseSharedContext();
+}
+
+
+////////////////////////////////////////////////////////////
 void GlContext::initialize(const ContextSettings& requestedSettings)
 {
     // Activate the context
@@ -897,7 +978,7 @@ void GlContext::initialize(const ContextSettings& requestedSettings)
 
     if (!glGetIntegervFunc || !glGetErrorFunc || !glGetStringFunc || !glEnableFunc || !glIsEnabledFunc)
     {
-        err() << "Could not load necessary function to initialize OpenGL context" << std::endl;
+        priv::err() << "Could not load necessary function to initialize OpenGL context" << priv::errEndl;
         return;
     }
 
@@ -949,13 +1030,13 @@ void GlContext::initialize(const ContextSettings& requestedSettings)
                 !parseVersionString(version, "OpenGL ES ", m_settings.majorVersion, m_settings.minorVersion) &&
                 !parseVersionString(version, "", m_settings.majorVersion, m_settings.minorVersion))
             {
-                err() << "Unable to parse OpenGL version string: " << std::quoted(version) << ", defaulting to 1.1"
-                      << std::endl;
+                priv::err() << "Unable to parse OpenGL version string: \"" << version << '"' << ", defaulting to 1.1"
+                            << priv::errEndl;
             }
         }
         else
         {
-            err() << "Unable to retrieve OpenGL version string, defaulting to 1.1" << std::endl;
+            priv::err() << "Unable to retrieve OpenGL version string, defaulting to 1.1" << priv::errEndl;
         }
     }
 
@@ -1038,7 +1119,7 @@ void GlContext::initialize(const ContextSettings& requestedSettings)
         // Check to see if the enable was successful
         if (glIsEnabledFunc(GL_FRAMEBUFFER_SRGB) == GL_FALSE)
         {
-            err() << "Warning: Failed to enable GL_FRAMEBUFFER_SRGB" << std::endl;
+            priv::err() << "Warning: Failed to enable GL_FRAMEBUFFER_SRGB" << priv::errEndl;
             m_settings.sRgbCapable = false;
         }
     }
@@ -1053,7 +1134,7 @@ void GlContext::initialize(const ContextSettings& requestedSettings)
 void GlContext::checkSettings(const ContextSettings& requestedSettings) const
 {
     // Perform checks to inform the user if they are getting a context they might not have expected
-    const int version          = static_cast<int>(m_settings.majorVersion * 10u + m_settings.minorVersion);
+    const int version = static_cast<int>(m_settings.majorVersion * 10u + m_settings.minorVersion);
     const int requestedVersion = static_cast<int>(requestedSettings.majorVersion * 10u + requestedSettings.minorVersion);
 
     if ((m_settings.attributeFlags != requestedSettings.attributeFlags) || (version < requestedVersion) ||
@@ -1061,19 +1142,20 @@ void GlContext::checkSettings(const ContextSettings& requestedSettings) const
         (m_settings.antialiasingLevel < requestedSettings.antialiasingLevel) ||
         (m_settings.depthBits < requestedSettings.depthBits) || (!m_settings.sRgbCapable && requestedSettings.sRgbCapable))
     {
-        err() << "Warning: The created OpenGL context does not fully meet the settings that were requested" << '\n'
-              << "Requested: version = " << requestedSettings.majorVersion << "." << requestedSettings.minorVersion
-              << " ; depth bits = " << requestedSettings.depthBits << " ; stencil bits = " << requestedSettings.stencilBits
-              << " ; AA level = " << requestedSettings.antialiasingLevel << std::boolalpha
-              << " ; core = " << ((requestedSettings.attributeFlags & ContextSettings::Core) != 0)
-              << " ; debug = " << ((requestedSettings.attributeFlags & ContextSettings::Debug) != 0)
-              << " ; sRGB = " << requestedSettings.sRgbCapable << std::noboolalpha << '\n'
-              << "Created: version = " << m_settings.majorVersion << "." << m_settings.minorVersion
-              << " ; depth bits = " << m_settings.depthBits << " ; stencil bits = " << m_settings.stencilBits
-              << " ; AA level = " << m_settings.antialiasingLevel << std::boolalpha
-              << " ; core = " << ((m_settings.attributeFlags & ContextSettings::Core) != 0)
-              << " ; debug = " << ((m_settings.attributeFlags & ContextSettings::Debug) != 0)
-              << " ; sRGB = " << m_settings.sRgbCapable << std::noboolalpha << std::endl;
+        priv::err()
+            << "Warning: The created OpenGL context does not fully meet the settings that were requested" << '\n'
+            << "Requested: version = " << requestedSettings.majorVersion << "." << requestedSettings.minorVersion
+            << " ; depth bits = " << requestedSettings.depthBits << " ; stencil bits = " << requestedSettings.stencilBits
+            << " ; AA level = " << requestedSettings.antialiasingLevel << std::boolalpha
+            << " ; core = " << ((requestedSettings.attributeFlags & ContextSettings::Core) != 0)
+            << " ; debug = " << ((requestedSettings.attributeFlags & ContextSettings::Debug) != 0)
+            << " ; sRGB = " << requestedSettings.sRgbCapable << std::noboolalpha << '\n'
+            << "Created: version = " << m_settings.majorVersion << "." << m_settings.minorVersion
+            << " ; depth bits = " << m_settings.depthBits << " ; stencil bits = " << m_settings.stencilBits
+            << " ; AA level = " << m_settings.antialiasingLevel << std::boolalpha
+            << " ; core = " << ((m_settings.attributeFlags & ContextSettings::Core) != 0)
+            << " ; debug = " << ((m_settings.attributeFlags & ContextSettings::Debug) != 0)
+            << " ; sRGB = " << m_settings.sRgbCapable << std::noboolalpha << priv::errEndl;
     }
 }
 

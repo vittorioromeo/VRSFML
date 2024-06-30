@@ -29,9 +29,9 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
+#include <SFML/System/UniquePtr.hpp>
+
 #include <filesystem>
-#include <memory>
-#include <unordered_map>
 
 #include <cstddef>
 
@@ -109,7 +109,7 @@ public:
     /// \see createReaderFromMemory, createReaderFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::unique_ptr<SoundFileReader> createReaderFromFilename(const std::filesystem::path& filename);
+    [[nodiscard]] static priv::UniquePtr<SoundFileReader> createReaderFromFilename(const std::filesystem::path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Instantiate the right codec for the given file in memory
@@ -122,7 +122,7 @@ public:
     /// \see createReaderFromFilename, createReaderFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::unique_ptr<SoundFileReader> createReaderFromMemory(const void* data, std::size_t sizeInBytes);
+    [[nodiscard]] static priv::UniquePtr<SoundFileReader> createReaderFromMemory(const void* data, std::size_t sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Instantiate the right codec for the given file in stream
@@ -134,7 +134,7 @@ public:
     /// \see createReaderFromFilename, createReaderFromMemory
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::unique_ptr<SoundFileReader> createReaderFromStream(InputStream& stream);
+    [[nodiscard]] static priv::UniquePtr<SoundFileReader> createReaderFromStream(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Instantiate the right writer for the given file on disk
@@ -144,26 +144,28 @@ public:
     /// \return A new sound file writer that can write given file, or null if no writer can handle it
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::unique_ptr<SoundFileWriter> createWriterFromFilename(const std::filesystem::path& filename);
+    [[nodiscard]] static priv::UniquePtr<SoundFileWriter> createWriterFromFilename(const std::filesystem::path& filename);
 
 private:
     ////////////////////////////////////////////////////////////
     // Types
     ////////////////////////////////////////////////////////////
     template <typename T>
-    using CreateFnPtr = std::unique_ptr<T> (*)();
+    using CreateFnPtr = priv::UniquePtr<T> (*)();
 
     using ReaderCheckFnPtr = bool (*)(InputStream&);
     using WriterCheckFnPtr = bool (*)(const std::filesystem::path&);
 
-    using ReaderFactoryMap = std::unordered_map<CreateFnPtr<SoundFileReader>, ReaderCheckFnPtr>;
-    using WriterFactoryMap = std::unordered_map<CreateFnPtr<SoundFileWriter>, WriterCheckFnPtr>;
-
     ////////////////////////////////////////////////////////////
     // Static member functions
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static ReaderFactoryMap& getReaderFactoryMap();
-    [[nodiscard]] static WriterFactoryMap& getWriterFactoryMap();
+    static void               registerReaderImpl(CreateFnPtr<SoundFileReader> key, ReaderCheckFnPtr value);
+    static void               unregisterReaderImpl(CreateFnPtr<SoundFileReader> key);
+    [[nodiscard]] static bool isReaderRegisteredImpl(CreateFnPtr<SoundFileReader> key);
+
+    static void               registerWriterImpl(CreateFnPtr<SoundFileWriter> key, WriterCheckFnPtr value);
+    static void               unregisterWriterImpl(CreateFnPtr<SoundFileWriter> key);
+    [[nodiscard]] static bool isWriterRegisteredImpl(CreateFnPtr<SoundFileWriter> key);
 };
 
 } // namespace sf

@@ -28,28 +28,49 @@
 #include <SFML/Window/GlContext.hpp>
 #include <SFML/Window/GlResource.hpp>
 
+#include <memory>
 #include <utility>
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-GlResource::GlResource() : m_sharedContext(priv::GlContext::getSharedContext())
+GlResource::GlResource()
+{
+    priv::GlContext::acquireSharedContext();
+}
+
+
+////////////////////////////////////////////////////////////
+GlResource::~GlResource()
+{
+    priv::GlContext::releaseSharedContext();
+}
+
+
+////////////////////////////////////////////////////////////
+GlResource::GlResource(const GlResource&) : GlResource{}
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-void GlResource::registerUnsharedGlObject(std::shared_ptr<void> object)
+GlResource::GlResource(GlResource&&) noexcept : GlResource{}
 {
-    priv::GlContext::registerUnsharedGlObject(std::move(object));
 }
 
 
 ////////////////////////////////////////////////////////////
-void GlResource::unregisterUnsharedGlObject(std::shared_ptr<void> object)
+void GlResource::registerUnsharedGlObject(void* objectSharedPtr)
 {
-    priv::GlContext::unregisterUnsharedGlObject(std::move(object));
+    priv::GlContext::registerUnsharedGlObject(std::move(*static_cast<std::shared_ptr<void>*>(objectSharedPtr)));
+}
+
+
+////////////////////////////////////////////////////////////
+void GlResource::unregisterUnsharedGlObject(void* objectSharedPtr)
+{
+    priv::GlContext::unregisterUnsharedGlObject(std::move(*static_cast<std::shared_ptr<void>*>(objectSharedPtr)));
 }
 
 

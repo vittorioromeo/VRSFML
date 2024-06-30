@@ -33,7 +33,6 @@
 #include <SFML/System/Err.hpp>
 
 #include <dlfcn.h>
-#include <ostream>
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
@@ -229,7 +228,7 @@ void SFContext::createContext(SFContext* shared, unsigned int bitsPerPixel, cons
     {
         if (!(m_settings.attributeFlags & ContextSettings::Core))
         {
-            err() << "Warning. Compatibility profile not supported on this platform." << std::endl;
+            priv::err() << "Warning. Compatibility profile not supported on this platform." << priv::errEndl;
             m_settings.attributeFlags |= ContextSettings::Core;
         }
         m_settings.majorVersion = 3;
@@ -240,7 +239,7 @@ void SFContext::createContext(SFContext* shared, unsigned int bitsPerPixel, cons
 
     if (m_settings.attributeFlags & ContextSettings::Debug)
     {
-        err() << "Warning. OpenGL debugging not supported on this platform." << std::endl;
+        priv::err() << "Warning. OpenGL debugging not supported on this platform." << priv::errEndl;
         m_settings.attributeFlags &= ~static_cast<unsigned int>(ContextSettings::Debug);
     }
 
@@ -254,7 +253,7 @@ void SFContext::createContext(SFContext* shared, unsigned int bitsPerPixel, cons
 
     if (pixFmt == nil)
     {
-        err() << "Error. Unable to find a suitable pixel format." << std::endl;
+        priv::err() << "Error. Unable to find a suitable pixel format." << priv::errEndl;
         return;
     }
 
@@ -267,7 +266,7 @@ void SFContext::createContext(SFContext* shared, unsigned int bitsPerPixel, cons
 
         if (sharedContext == [NSOpenGLContext currentContext])
         {
-            err() << "Failed to deactivate shared context before sharing" << std::endl;
+            priv::err() << "Failed to deactivate shared context before sharing" << priv::errEndl;
             return;
         }
     }
@@ -277,13 +276,13 @@ void SFContext::createContext(SFContext* shared, unsigned int bitsPerPixel, cons
 
     if (m_context == nil)
     {
-        err() << "Error. Unable to create the context. Retrying without shared context." << std::endl;
+        priv::err() << "Error. Unable to create the context. Retrying without shared context." << priv::errEndl;
         m_context = [[NSOpenGLContext alloc] initWithFormat:pixFmt shareContext:nil];
 
         if (m_context == nil)
-            err() << "Error. Unable to create the context." << std::endl;
+            priv::err() << "Error. Unable to create the context." << priv::errEndl;
         else
-            err() << "Warning. New context created without shared context." << std::endl;
+            priv::err() << "Warning. New context created without shared context." << priv::errEndl;
     }
 
     // Free up.

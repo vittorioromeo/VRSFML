@@ -27,26 +27,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#ifndef NOMINMAX
-#define NOMINMAX // To avoid windows.h and std::min issue
-#endif
-#define MINIMP3_NO_STDIO // Minimp3 control define, eliminate file manipulation code which is useless here
-
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4242 4244 4267 4456 4706)
-#endif
-
-#include <minimp3_ex.h>
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
-
-#undef NOMINMAX
-#undef MINIMP3_NO_STDIO
-
 #include <SFML/Audio/SoundFileReader.hpp>
+
+#include <SFML/System/InPlacePImpl.hpp>
 
 #include <optional>
 
@@ -124,10 +107,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    mp3dec_io_t   m_io{};
-    mp3dec_ex_t   m_decoder{};
-    std::uint64_t m_numSamples{}; // Decompressed audio storage size
-    std::uint64_t m_position{};   // Position in decompressed audio buffer
+    struct Impl;
+    priv::InPlacePImpl<Impl, 12288> m_impl; //!< Implementation details
 };
 
 } // namespace sf::priv

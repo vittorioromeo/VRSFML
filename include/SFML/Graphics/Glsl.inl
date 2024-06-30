@@ -50,9 +50,6 @@ void SFML_GRAPHICS_API copyMatrix(const Transform& source, Matrix<4, 4>& dest);
 ////////////////////////////////////////////////////////////
 /// \brief Copy array-based matrix with given number of elements
 ///
-/// Indirection to std::copy() to avoid inclusion of
-/// <algorithm> and MSVC's annoying 4996 warning in header
-///
 ////////////////////////////////////////////////////////////
 void SFML_GRAPHICS_API copyMatrix(const float* source, std::size_t elements, float* dest);
 

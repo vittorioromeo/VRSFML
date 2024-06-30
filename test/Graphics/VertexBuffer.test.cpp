@@ -3,10 +3,10 @@
 // Other 1st party headers
 #include <SFML/Graphics/Vertex.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
 #include <GraphicsUtil.hpp>
-#include <array>
+
 #include <type_traits>
 
 // Skip these tests with [.display] because they produce flakey failures in CI when using xvfb-run
@@ -99,14 +99,14 @@ TEST_CASE("[Graphics] sf::VertexBuffer", "[.display]")
 
     SECTION("update()")
     {
-        sf::VertexBuffer            vertexBuffer;
-        std::array<sf::Vertex, 128> vertices{};
+        sf::VertexBuffer vertexBuffer;
+        sf::Vertex       vertices[128]{};
 
         SECTION("Vertices")
         {
             SECTION("Uninitialized buffer")
             {
-                CHECK(!vertexBuffer.update(vertices.data()));
+                CHECK(!vertexBuffer.update(vertices));
             }
 
             CHECK(vertexBuffer.create(128));
@@ -116,7 +116,7 @@ TEST_CASE("[Graphics] sf::VertexBuffer", "[.display]")
                 CHECK(!vertexBuffer.update(nullptr));
             }
 
-            CHECK(vertexBuffer.update(vertices.data()));
+            CHECK(vertexBuffer.update(vertices));
             CHECK(vertexBuffer.getVertexCount() == 128);
             CHECK(vertexBuffer.getNativeHandle() != 0);
         }
@@ -127,10 +127,10 @@ TEST_CASE("[Graphics] sf::VertexBuffer", "[.display]")
 
             SECTION("Count + offset too large")
             {
-                CHECK(!vertexBuffer.update(vertices.data(), 100, 100));
+                CHECK(!vertexBuffer.update(vertices, 100, 100));
             }
 
-            CHECK(vertexBuffer.update(vertices.data(), 128, 0));
+            CHECK(vertexBuffer.update(vertices, 128, 0));
             CHECK(vertexBuffer.getVertexCount() == 128);
         }
 

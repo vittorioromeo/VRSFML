@@ -78,8 +78,8 @@ namespace Touch
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_WINDOW_API Vector2i getPosition(unsigned int finger, const WindowBase& relativeTo);
-} // namespace Touch
 
+} // namespace Touch
 } // namespace sf
 
 

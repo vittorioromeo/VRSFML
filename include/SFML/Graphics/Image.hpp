@@ -32,6 +32,7 @@
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/Rect.hpp>
 
+#include <SFML/System/PassKey.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #include <filesystem>
@@ -61,7 +62,7 @@ public:
     /// \param color Fill color
     ///
     ////////////////////////////////////////////////////////////
-    explicit Image(const Vector2u& size, const Color& color = Color::Black);
+    [[nodiscard]] explicit Image(const Vector2u& size, const Color& color = Color::Black);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the image from an array of pixels
@@ -75,7 +76,7 @@ public:
     /// \param pixels Array of pixels to copy to the image
     ///
     ////////////////////////////////////////////////////////////
-    Image(const Vector2u& size, const std::uint8_t* pixels);
+    [[nodiscard]] Image(const Vector2u& size, const std::uint8_t* pixels);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the image from a file on disk
@@ -277,13 +278,15 @@ public:
     ////////////////////////////////////////////////////////////
     void flipVertically();
 
-private:
     ////////////////////////////////////////////////////////////
+    /// \private
+    ///
     /// \brief Directly initialize data members
     ///
     ////////////////////////////////////////////////////////////
-    Image(Vector2u size, std::vector<std::uint8_t>&& pixels);
+    [[nodiscard]] Image(priv::PassKey<Image>&&, Vector2u size, std::vector<std::uint8_t>&& pixels);
 
+private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////

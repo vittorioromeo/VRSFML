@@ -29,9 +29,10 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/Export.hpp>
 
+#include <SFML/System/PassKey.hpp>
+#include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
 
-#include <memory>
 #include <optional>
 
 #include <cstdint>
@@ -195,12 +196,16 @@ public:
 private:
     friend class WindowBase;
 
+public:
     ////////////////////////////////////////////////////////////
+    /// \private
+    ///
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    Cursor();
+    [[nodiscard]] Cursor(priv::PassKey<Cursor>&&);
 
+private:
     ////////////////////////////////////////////////////////////
     /// \brief Get access to the underlying implementation
     ///
@@ -215,7 +220,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::unique_ptr<priv::CursorImpl> m_impl; //!< Platform-specific implementation of the cursor
+    priv::UniquePtr<priv::CursorImpl> m_impl; //!< Platform-specific implementation of the cursor
 };
 
 } // namespace sf

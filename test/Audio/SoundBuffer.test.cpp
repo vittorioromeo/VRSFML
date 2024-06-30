@@ -2,20 +2,22 @@
 
 // Other 1st party headers
 #include <SFML/System/FileInputStream.hpp>
+#include <SFML/System/Time.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
 #include <AudioUtil.hpp>
+#include <LoadIntoMemoryUtil.hpp>
 #include <SystemUtil.hpp>
-#include <array>
+
 #include <type_traits>
 
-TEST_CASE("[Audio] sf::SoundBuffer", runAudioDeviceTests())
+TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
 {
     SECTION("Type traits")
     {
         STATIC_CHECK(!std::is_default_constructible_v<sf::SoundBuffer>);
-        STATIC_CHECK(std::is_copy_constructible_v<sf::SoundBuffer>);
+        static_assert(std::is_copy_constructible_v<sf::SoundBuffer>);
         STATIC_CHECK(std::is_copy_assignable_v<sf::SoundBuffer>);
         STATIC_CHECK(std::is_move_constructible_v<sf::SoundBuffer>);
         STATIC_CHECK(!std::is_nothrow_move_constructible_v<sf::SoundBuffer>);
@@ -71,8 +73,8 @@ TEST_CASE("[Audio] sf::SoundBuffer", runAudioDeviceTests())
     {
         SECTION("Invalid memory")
         {
-            constexpr std::array<std::byte, 5> memory{};
-            CHECK(!sf::SoundBuffer::loadFromMemory(memory.data(), memory.size()));
+            constexpr std::byte memory[5]{};
+            CHECK(!sf::SoundBuffer::loadFromMemory(memory, 5));
         }
 
         SECTION("Valid memory")

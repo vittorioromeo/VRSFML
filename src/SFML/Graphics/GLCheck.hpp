@@ -29,7 +29,6 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Config.hpp>
 
-#include <filesystem>
 #include <string_view>
 
 
@@ -42,11 +41,11 @@ namespace sf::priv
 
 // In debug mode, perform a test on every OpenGL call
 // The do-while loop is needed so that glCheck can be used as a single statement in if/else branches
-#define glCheck(expr)                                      \
-    do                                                     \
-    {                                                      \
-        expr;                                              \
-        sf::priv::glCheckError(__FILE__, __LINE__, #expr); \
+#define glCheck(expr)                                        \
+    do                                                       \
+    {                                                        \
+        expr;                                                \
+        ::sf::priv::glCheckError(__FILE__, __LINE__, #expr); \
     } while (false)
 
 #else
@@ -64,6 +63,6 @@ namespace sf::priv
 /// \param expression The evaluated expression as a string
 ///
 ////////////////////////////////////////////////////////////
-void glCheckError(const std::filesystem::path& file, unsigned int line, std::string_view expression);
+void glCheckError(std::string_view file, unsigned int line, std::string_view expression);
 
 } // namespace sf::priv

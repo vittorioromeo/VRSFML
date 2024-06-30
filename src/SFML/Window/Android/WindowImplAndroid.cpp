@@ -35,7 +35,6 @@
 #include <android/looper.h>
 
 #include <mutex>
-#include <ostream>
 
 // Define missing constants for older API levels
 #if __ANDROID_API__ < 13
@@ -343,7 +342,7 @@ int WindowImplAndroid::processScrollEvent(AInputEvent* inputEvent, ActivityState
 
     if (lResult == JNI_ERR)
     {
-        err() << "Failed to initialize JNI, couldn't get the Unicode value" << std::endl;
+        priv::err() << "Failed to initialize JNI, couldn't get the Unicode value" << priv::errEndl;
         return 0;
     }
 
@@ -693,7 +692,7 @@ int WindowImplAndroid::getUnicode(AInputEvent* event)
     lResult = lJavaVM->AttachCurrentThread(&lJNIEnv, &lJavaVMAttachArgs);
 
     if (lResult == JNI_ERR)
-        err() << "Failed to initialize JNI, couldn't get the Unicode value" << std::endl;
+        priv::err() << "Failed to initialize JNI, couldn't get the Unicode value" << priv::errEndl;
 
     // Retrieve key data from the input event
     const jlong downTime  = AKeyEvent_getDownTime(event);

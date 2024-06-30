@@ -37,6 +37,18 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
+OutputSoundFile::~OutputSoundFile() = default;
+
+
+////////////////////////////////////////////////////////////
+OutputSoundFile::OutputSoundFile(OutputSoundFile&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
+OutputSoundFile& OutputSoundFile::operator=(OutputSoundFile&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
 std::optional<OutputSoundFile> OutputSoundFile::openFromFile(
     const std::filesystem::path&     filename,
     unsigned int                     sampleRate,
@@ -54,11 +66,11 @@ std::optional<OutputSoundFile> OutputSoundFile::openFromFile(
     // Pass the stream to the reader
     if (!writer->open(filename, sampleRate, channelCount, channelMap))
     {
-        err() << "Failed to open output sound file from file (writer open failure)" << std::endl;
+        priv::err() << "Failed to open output sound file from file (writer open failure)" << priv::errEndl;
         return std::nullopt;
     }
 
-    return OutputSoundFile(std::move(writer));
+    return std::make_optional<OutputSoundFile>(priv::PassKey<OutputSoundFile>{}, std::move(writer));
 }
 
 
@@ -81,7 +93,8 @@ void OutputSoundFile::close()
 
 
 ////////////////////////////////////////////////////////////
-OutputSoundFile::OutputSoundFile(std::unique_ptr<SoundFileWriter>&& writer) : m_writer(std::move(writer))
+OutputSoundFile::OutputSoundFile(priv::PassKey<OutputSoundFile>&&, priv::UniquePtr<SoundFileWriter>&& writer) :
+m_writer(std::move(writer))
 {
 }
 
