@@ -314,72 +314,67 @@ public:
     decltype(auto) visit(Visitor&& visitor);
 
 private:
-    using VariantType = ::sfvittorioromeo::tinyvariant<
-        Closed,
-        Resized,
-        FocusLost,
-        FocusGained,
-        TextEntered,
-        KeyPressed,
-        KeyReleased,
-        MouseWheelScrolled,
-        MouseButtonPressed,
-        MouseButtonReleased,
-        MouseMoved,
-        MouseMovedRaw,
-        MouseEntered,
-        MouseLeft,
-        JoystickButtonPressed,
-        JoystickButtonReleased,
-        JoystickMoved,
-        JoystickConnected,
-        JoystickDisconnected,
-        TouchBegan,
-        TouchMoved,
-        TouchEnded,
-        SensorChanged>;
+    // clang-format off
+
+    #define SFML_PRIV_EVENTS_X_MACRO(x, xSep)         \
+        x(::sf::Event::Closed)                 xSep() \
+        x(::sf::Event::Resized)                xSep() \
+        x(::sf::Event::FocusLost)              xSep() \
+        x(::sf::Event::FocusGained)            xSep() \
+        x(::sf::Event::TextEntered)            xSep() \
+        x(::sf::Event::KeyPressed)             xSep() \
+        x(::sf::Event::KeyReleased)            xSep() \
+        x(::sf::Event::MouseWheelScrolled)     xSep() \
+        x(::sf::Event::MouseButtonPressed)     xSep() \
+        x(::sf::Event::MouseButtonReleased)    xSep() \
+        x(::sf::Event::MouseMoved)             xSep() \
+        x(::sf::Event::MouseMovedRaw)          xSep() \
+        x(::sf::Event::MouseEntered)           xSep() \
+        x(::sf::Event::MouseLeft)              xSep() \
+        x(::sf::Event::JoystickButtonPressed)  xSep() \
+        x(::sf::Event::JoystickButtonReleased) xSep() \
+        x(::sf::Event::JoystickMoved)          xSep() \
+        x(::sf::Event::JoystickConnected)      xSep() \
+        x(::sf::Event::JoystickDisconnected)   xSep() \
+        x(::sf::Event::TouchBegan)             xSep() \
+        x(::sf::Event::TouchMoved)             xSep() \
+        x(::sf::Event::TouchEnded)             xSep() \
+        x(::sf::Event::SensorChanged)
+
+    // clang-format on
+
+#define SFML_PRIV_EVENT_X_EXPAND(x) x
+#define SFML_PRIV_EVENT_X_COMMA()   ,
+
+#define SFML_PRIV_EVENT_VARIANT_TYPE \
+    ::sfvr::tinyvariant<SFML_PRIV_EVENTS_X_MACRO(SFML_PRIV_EVENT_X_EXPAND, SFML_PRIV_EVENT_X_COMMA)>
+
+    using VariantType = SFML_PRIV_EVENT_VARIANT_TYPE;
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     VariantType m_data; //!< Event data
-
-    ////////////////////////////////////////////////////////////
-    // Helper functions
-    ////////////////////////////////////////////////////////////
-    template <typename T>
-    static constexpr bool isEventSubtype = VariantType::index_of<T> != ::sfvittorioromeo::impl::bad_index;
 };
 
 } // namespace sf
 
-extern template class ::sfvittorioromeo::tinyvariant<
-    sf::Event::Closed,
-    sf::Event::Resized,
-    sf::Event::FocusLost,
-    sf::Event::FocusGained,
-    sf::Event::TextEntered,
-    sf::Event::KeyPressed,
-    sf::Event::KeyReleased,
-    sf::Event::MouseWheelScrolled,
-    sf::Event::MouseButtonPressed,
-    sf::Event::MouseButtonReleased,
-    sf::Event::MouseMoved,
-    sf::Event::MouseMovedRaw,
-    sf::Event::MouseEntered,
-    sf::Event::MouseLeft,
-    sf::Event::JoystickButtonPressed,
-    sf::Event::JoystickButtonReleased,
-    sf::Event::JoystickMoved,
-    sf::Event::JoystickConnected,
-    sf::Event::JoystickDisconnected,
-    sf::Event::TouchBegan,
-    sf::Event::TouchMoved,
-    sf::Event::TouchEnded,
-    sf::Event::SensorChanged>;
+
+////////////////////////////////////////////////////////////
+// Explicit instantiation declarations
+////////////////////////////////////////////////////////////
+
+extern template class SFML_PRIV_EVENT_VARIANT_TYPE;
+
+#define SFML_PRIV_EVENT_X_EXTERN_TEMPLATE_CTOR(x)  extern template sf::Event::Event(const x&);
+#define SFML_PRIV_EVENT_X_EXTERN_TEMPLATE_IS(x)    extern template bool sf::Event::is<x>() const;
+#define SFML_PRIV_EVENT_X_EXTERN_TEMPLATE_GETIF(x) extern template const x* sf::Event::getIf<x>() const;
+
+#define SFML_PRIV_EVENT_X_SEMICOLON() ;
+
+SFML_PRIV_EVENTS_X_MACRO(SFML_PRIV_EVENT_X_EXTERN_TEMPLATE_GETIF, SFML_PRIV_EVENT_X_SEMICOLON);
 
 #include <SFML/Window/Event.inl>
-
 
 ////////////////////////////////////////////////////////////
 /// \class sf::Event

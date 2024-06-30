@@ -11,7 +11,7 @@
 // From:
 // https://github.com/redorav/crstl/blob/master/include/crstl/utility/placement_new.h
 
-namespace sfvittorioromeo::impl
+namespace sfvr::impl
 {
 
 using sz_t = decltype(sizeof(int));
@@ -20,18 +20,18 @@ struct placement_new_dummy
 {
 };
 
-} // namespace sfvittorioromeo::impl
+} // namespace sfvr::impl
 
-inline void* operator new(sfvittorioromeo::impl::sz_t, sfvittorioromeo::impl::placement_new_dummy, void* ptr)
+inline void* operator new(sfvr::impl::sz_t, sfvr::impl::placement_new_dummy, void* ptr)
 {
     return ptr;
 }
 
-inline void operator delete(void*, sfvittorioromeo::impl::placement_new_dummy, void*) noexcept
+inline void operator delete(void*, sfvr::impl::placement_new_dummy, void*) noexcept
 {
 }
 
-#define TINYVARIANT_PLACEMENT_NEW(...) ::new (::sfvittorioromeo::impl::placement_new_dummy{}, __VA_ARGS__)
+#define TINYVARIANT_PLACEMENT_NEW(...) ::new (::sfvr::impl::placement_new_dummy{}, __VA_ARGS__)
 
 #if ((__GNUC__ >= 10) || defined(__clang__)) && !defined(_MSC_VER)
 #define TINYVARIANT_SUPPORTS_HAS_BUILTIN
@@ -59,12 +59,13 @@ inline void operator delete(void*, sfvittorioromeo::impl::placement_new_dummy, v
 #include <utility>
 #endif
 
-namespace sfvittorioromeo::impl
+namespace sfvr::impl
 {
 
 template <typename T>
 T&& declval();
 
+/*
 template <typename...>
 struct common_type_between;
 
@@ -85,7 +86,7 @@ struct common_type_between<T, U, Rest...>
 {
     using type = typename common_type_between<decltype(true ? declval<T>() : declval<U>()), Rest...>::type;
 };
-
+*/
 
 #ifdef TINYVARIANT_USE_STD_INDEX_SEQUENCE
 
@@ -128,11 +129,15 @@ using index_sequence_up_to = std::make_index_sequence<N>;
 
 #endif
 
+#if !__has_builtin(__is_same)
+
 template <typename, typename>
 inline constexpr bool is_same_type = false;
 
 template <typename T>
 inline constexpr bool is_same_type<T, T> = true;
+
+#endif
 
 template <auto X, auto... Xs>
 [[nodiscard, gnu::always_inline]] consteval auto variadic_max() noexcept
@@ -185,7 +190,11 @@ enum : sz_t
 template <typename T, typename... Ts>
 [[nodiscard, gnu::always_inline]] consteval sz_t index_of() noexcept
 {
+#if !__has_builtin(__is_same)
     constexpr bool matches[]{is_same_type<T, Ts>...};
+#else
+    constexpr bool matches[]{__is_same(T, Ts)...};
+#endif
 
     for (sz_t i = 0; i < sizeof...(Ts); ++i)
     {
@@ -247,12 +256,12 @@ using type_at = typename decltype(type_at_impl<N, Ts...>())::type;
 #endif
 
 template <typename>
-struct tinyvariant_inplace_type_t
+struct inplace_type_t
 {
 };
 
 template <sz_t>
-struct tinyvariant_inplace_index_t
+struct inplace_index_t
 {
 };
 
@@ -326,19 +335,21 @@ struct regularize_void<void>
 template <typename T>
 using regularize_void_t = typename regularize_void<T>::type;
 
+/*
 template <typename... Ts>
 using common_type_between_t = typename common_type_between<Ts...>::type;
+*/
 
-} // namespace sfvittorioromeo::impl
+} // namespace sfvr::impl
 
-namespace sfvittorioromeo
+namespace sfvr
 {
 
 template <typename T>
-inline constexpr impl::tinyvariant_inplace_type_t<T> tinyvariant_inplace_type{};
+inline constexpr impl::inplace_type_t<T> inplace_type{};
 
 template <impl::sz_t N>
-inline constexpr impl::tinyvariant_inplace_index_t<N> tinyvariant_inplace_index{};
+inline constexpr impl::inplace_index_t<N> inplace_index{};
 
 template <typename... Alternatives>
 class [[nodiscard]] tinyvariant
@@ -410,9 +421,9 @@ private:
 #define TINYVARIANT_DO_WITH_CURRENT_INDEX(Is, ...) TINYVARIANT_DO_WITH_CURRENT_INDEX_OBJ((*this), Is, __VA_ARGS__)
 
     template <typename T, impl::sz_t I, typename... Args>
-    [[nodiscard, gnu::always_inline]] explicit tinyvariant(impl::tinyvariant_inplace_type_t<T>,
-                                                           impl::tinyvariant_inplace_index_t<I>,
-                                                           Args&&... args) noexcept :
+    [[nodiscard,
+      gnu::always_inline]] explicit tinyvariant(impl::inplace_type_t<T>, impl::inplace_index_t<I>, Args&&... args) noexcept
+    :
     _index{static_cast<index_type>(I)}
     {
         TINYVARIANT_STATIC_ASSERT_INDEX_VALIDITY(I);
@@ -496,26 +507,25 @@ private:
 
 public:
     template <typename T, typename... Args>
-    [[nodiscard,
-      gnu::always_inline]] explicit tinyvariant(impl::tinyvariant_inplace_type_t<T> inplace_type, Args&&... args) noexcept :
-    tinyvariant{inplace_type, tinyvariant_inplace_index<index_of<T>>, static_cast<Args&&>(args)...}
+    [[nodiscard, gnu::always_inline]] explicit tinyvariant(impl::inplace_type_t<T> inplace_type, Args&&... args) noexcept :
+    tinyvariant{inplace_type, inplace_index<index_of<T>>, static_cast<Args&&>(args)...}
     {
     }
 
     template <impl::sz_t I, typename... Args>
-    [[nodiscard, gnu::always_inline]] explicit tinyvariant(impl::tinyvariant_inplace_index_t<I> inplace_index,
-                                                           Args&&... args) noexcept :
-    tinyvariant{tinyvariant_inplace_type<nth_type<I>>, inplace_index, static_cast<Args&&>(args)...}
+    [[nodiscard, gnu::always_inline]] explicit tinyvariant(impl::inplace_index_t<I> inplace_index, Args&&... args) noexcept
+    :
+    tinyvariant{inplace_type<nth_type<I>>, inplace_index, static_cast<Args&&>(args)...}
     {
     }
 
     template <typename T>
     [[nodiscard, gnu::always_inline]] explicit tinyvariant(T&& x) noexcept :
-    tinyvariant{tinyvariant_inplace_type<T>, static_cast<T&&>(x)}
+    tinyvariant{inplace_type<T>, static_cast<T&&>(x)}
     {
     }
 
-    [[nodiscard, gnu::always_inline]] explicit tinyvariant() noexcept : tinyvariant{tinyvariant_inplace_index<0>}
+    [[nodiscard, gnu::always_inline]] explicit tinyvariant() noexcept : tinyvariant{inplace_index<0>}
     {
     }
 
@@ -772,7 +782,7 @@ public:
 
 #undef TINYVARIANT_PLACEMENT_NEW
 
-} // namespace sfvittorioromeo
+} // namespace sfvr
 
 #pragma GCC diagnostic pop
 
