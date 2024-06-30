@@ -343,4 +343,17 @@ TEMPLATE_TEST_CASE("[System] sf::Vector2", "", int, float)
         STATIC_CHECK(v.cwiseMul(w) == sf::Vector2<TestType>(2, -12));
         STATIC_CHECK(w.cwiseDiv(v) == sf::Vector2<TestType>(2, -3));
     }
+
+    SECTION("Zero")
+    {
+        CHECK(sf::Vector2<TestType>::Zero == sf::Vector2<TestType>{static_cast<TestType>(0), static_cast<TestType>(0)});
+    }
+
+    SECTION("Move and rotate by")
+    {
+        CHECK(sf::Vector2f{}.rotatedBy(-158.9902_deg) == sf::Vector2f{}.movedAndRotatedBy(0.f, -158.9902_deg));
+
+        constexpr sf::Vector2f v(2.4f, 3.0f);
+        CHECK(v + sf::Vector2f(10.f, -158.9902_deg) == v.movedAndRotatedBy(10.f, -158.9902_deg));
+    }
 }
