@@ -29,14 +29,9 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Network/Export.hpp>
 
-#include <SFML/Network/IpAddress.hpp>
-#include <SFML/Network/TcpSocket.hpp>
-
+#include <SFML/System/InPlacePImpl.hpp>
 #include <SFML/System/Time.hpp>
 
-#include <iosfwd>
-#include <map>
-#include <optional>
 #include <string>
 
 
@@ -81,6 +76,36 @@ public:
         ///
         ////////////////////////////////////////////////////////////
         [[nodiscard]] Request(const std::string& uri = "/", Method method = Method::Get, const std::string& body = "");
+
+        ////////////////////////////////////////////////////////////
+        /// \brief Destructor
+        ///
+        ////////////////////////////////////////////////////////////
+        ~Request();
+
+        ////////////////////////////////////////////////////////////
+        /// \brief Copy constructor
+        ///
+        ////////////////////////////////////////////////////////////
+        Request(const Request&) noexcept = default;
+
+        ////////////////////////////////////////////////////////////
+        /// \brief Copy assignment
+        ///
+        ////////////////////////////////////////////////////////////
+        Request& operator=(const Request&) noexcept = default;
+
+        ////////////////////////////////////////////////////////////
+        /// \brief Move constructor
+        ///
+        ////////////////////////////////////////////////////////////
+        Request(Request&&) noexcept = default;
+
+        ////////////////////////////////////////////////////////////
+        /// \brief Move assignment
+        ///
+        ////////////////////////////////////////////////////////////
+        Request& operator=(Request&&) noexcept = default;
 
         ////////////////////////////////////////////////////////////
         /// \brief Set the value of a field
@@ -171,19 +196,10 @@ public:
         [[nodiscard]] bool hasField(const std::string& field) const;
 
         ////////////////////////////////////////////////////////////
-        // Types
-        ////////////////////////////////////////////////////////////
-        using FieldTable = std::map<std::string, std::string>; // Use an ordered map for predictable payloads
-
-        ////////////////////////////////////////////////////////////
         // Member data
         ////////////////////////////////////////////////////////////
-        FieldTable   m_fields;          //!< Fields of the header associated to their value
-        Method       m_method;          //!< Method to use for the request
-        std::string  m_uri;             //!< Target URI of the request
-        unsigned int m_majorVersion{1}; //!< Major HTTP version
-        unsigned int m_minorVersion{};  //!< Minor HTTP version
-        std::string  m_body;            //!< Body of the request
+        struct Impl;
+        priv::InPlacePImpl<Impl, 192> m_impl;
     };
 
     ////////////////////////////////////////////////////////////
@@ -232,6 +248,42 @@ public:
             InvalidResponse  = 1000, //!< Response is not a valid HTTP one
             ConnectionFailed = 1001  //!< Connection with server failed
         };
+
+        ////////////////////////////////////////////////////////////
+        /// \brief Default constructor
+        ///
+        ////////////////////////////////////////////////////////////
+        [[nodiscard]] Response();
+
+        ////////////////////////////////////////////////////////////
+        /// \brief Destructor
+        ///
+        ////////////////////////////////////////////////////////////
+        ~Response();
+
+        ////////////////////////////////////////////////////////////
+        /// \brief Copy constructor
+        ///
+        ////////////////////////////////////////////////////////////
+        Response(const Response&) noexcept = default;
+
+        ////////////////////////////////////////////////////////////
+        /// \brief Copy assignment
+        ///
+        ////////////////////////////////////////////////////////////
+        Response& operator=(const Response&) noexcept = default;
+
+        ////////////////////////////////////////////////////////////
+        /// \brief Move constructor
+        ///
+        ////////////////////////////////////////////////////////////
+        Response(Response&&) noexcept = default;
+
+        ////////////////////////////////////////////////////////////
+        /// \brief Move assignment
+        ///
+        ////////////////////////////////////////////////////////////
+        Response& operator=(Response&&) noexcept = default;
 
         ////////////////////////////////////////////////////////////
         /// \brief Get the value of a field
@@ -308,38 +360,24 @@ public:
         ////////////////////////////////////////////////////////////
         void parse(const std::string& data);
 
-
-        ////////////////////////////////////////////////////////////
-        /// \brief Read values passed in the answer header
-        ///
-        /// This function is used by Http to extract values passed
-        /// in the response.
-        ///
-        /// \param in String stream containing the header values
-        ///
-        ////////////////////////////////////////////////////////////
-        void parseFields(std::istream& in);
-
-        ////////////////////////////////////////////////////////////
-        // Types
-        ////////////////////////////////////////////////////////////
-        using FieldTable = std::map<std::string, std::string>; // Use an ordered map for predictable payloads
-
         ////////////////////////////////////////////////////////////
         // Member data
         ////////////////////////////////////////////////////////////
-        FieldTable   m_fields;                           //!< Fields of the header
-        Status       m_status{Status::ConnectionFailed}; //!< Status code
-        unsigned int m_majorVersion{};                   //!< Major HTTP version
-        unsigned int m_minorVersion{};                   //!< Minor HTTP version
-        std::string  m_body;                             //!< Body of the response
+        struct Impl;
+        priv::InPlacePImpl<Impl, 128> m_impl;
     };
 
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Http() = default;
+    [[nodiscard]] Http();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Destructor
+    ///
+    ////////////////////////////////////////////////////////////
+    ~Http();
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the HTTP client with the target host
@@ -410,10 +448,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    TcpSocket                m_connection; //!< Connection to the host
-    std::optional<IpAddress> m_host;       //!< Web host address
-    std::string              m_hostName;   //!< Web host name
-    unsigned short           m_port{};     //!< Port used for connection with host
+    struct Impl;
+    priv::InPlacePImpl<Impl, 256> m_impl;
 };
 
 } // namespace sf

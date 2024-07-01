@@ -26,23 +26,73 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Network/Http.hpp>
+#include <SFML/Network/IpAddress.hpp>
+#include <SFML/Network/TcpSocket.hpp>
 
 #include <SFML/System/Err.hpp>
 #include <SFML/System/StringUtils.hpp>
 
 #include <iterator>
 #include <limits>
+#include <map>
+#include <optional>
 #include <sstream>
-#include <utility>
 
 #include <cctype>
 #include <cstddef>
+
+namespace
+{
+////////////////////////////////////////////////////////////
+using FieldTable = std::map<std::string, std::string>; // Use an ordered map for predictable payloads
+
+
+////////////////////////////////////////////////////////////
+void parseFields(std::istream& in, FieldTable& fields)
+{
+    std::string line;
+    while (std::getline(in, line) && (line.size() > 2))
+    {
+        const std::string::size_type pos = line.find(": ");
+        if (pos != std::string::npos)
+        {
+            // Extract the field name and its value
+            const std::string field = line.substr(0, pos);
+            std::string       value = line.substr(pos + 2);
+
+            // Remove any trailing \r
+            if (!value.empty() && (*value.rbegin() == '\r'))
+                value.erase(value.size() - 1);
+
+            // Add the field
+            fields[sf::priv::toLower(field)] = value;
+        }
+    }
+}
+
+} // namespace
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-Http::Request::Request(const std::string& uri, Method method, const std::string& body) : m_method(method)
+struct Http::Request::Impl
+{
+    FieldTable   fields;          //!< Fields of the header associated to their value
+    Method       method;          //!< Method to use for the request
+    std::string  uri;             //!< Target URI of the request
+    unsigned int majorVersion{1}; //!< Major HTTP version
+    unsigned int minorVersion{};  //!< Minor HTTP version
+    std::string  body;            //!< Body of the request
+
+    explicit Impl(Method theMethod) : method(theMethod)
+    {
+    }
+};
+
+
+////////////////////////////////////////////////////////////
+Http::Request::Request(const std::string& uri, Method method, const std::string& body) : m_impl(method)
 {
     setUri(uri);
     setBody(body);
@@ -50,42 +100,46 @@ Http::Request::Request(const std::string& uri, Method method, const std::string&
 
 
 ////////////////////////////////////////////////////////////
+Http::Request::~Request() = default;
+
+
+////////////////////////////////////////////////////////////
 void Http::Request::setField(const std::string& field, const std::string& value)
 {
-    m_fields[priv::toLower(field)] = value;
+    m_impl->fields[priv::toLower(field)] = value;
 }
 
 
 ////////////////////////////////////////////////////////////
 void Http::Request::setMethod(Http::Request::Method method)
 {
-    m_method = method;
+    m_impl->method = method;
 }
 
 
 ////////////////////////////////////////////////////////////
 void Http::Request::setUri(const std::string& uri)
 {
-    m_uri = uri;
+    m_impl->uri = uri;
 
     // Make sure it starts with a '/'
-    if (m_uri.empty() || (m_uri[0] != '/'))
-        m_uri.insert(m_uri.begin(), '/');
+    if (m_impl->uri.empty() || (m_impl->uri[0] != '/'))
+        m_impl->uri.insert(m_impl->uri.begin(), '/');
 }
 
 
 ////////////////////////////////////////////////////////////
 void Http::Request::setHttpVersion(unsigned int major, unsigned int minor)
 {
-    m_majorVersion = major;
-    m_minorVersion = minor;
+    m_impl->majorVersion = major;
+    m_impl->minorVersion = minor;
 }
 
 
 ////////////////////////////////////////////////////////////
 void Http::Request::setBody(const std::string& body)
 {
-    m_body = body;
+    m_impl->body = body;
 }
 
 
@@ -95,7 +149,7 @@ std::string Http::Request::prepare() const
     std::ostringstream out;
 
     // Convert the method to its string representation
-    switch (m_method)
+    switch (m_impl->method)
     {
         case Method::Get:
             out << "GET";
@@ -115,11 +169,11 @@ std::string Http::Request::prepare() const
     }
 
     // Write the first line containing the request type
-    out << " " << m_uri << " ";
-    out << "HTTP/" << m_majorVersion << "." << m_minorVersion << "\r\n";
+    out << " " << m_impl->uri << " ";
+    out << "HTTP/" << m_impl->majorVersion << "." << m_impl->minorVersion << "\r\n";
 
     // Write fields
-    for (const auto& [fieldKey, fieldValue] : m_fields)
+    for (const auto& [fieldKey, fieldValue] : m_impl->fields)
     {
         out << fieldKey << ": " << fieldValue << "\r\n";
     }
@@ -128,7 +182,7 @@ std::string Http::Request::prepare() const
     out << "\r\n";
 
     // Add the body
-    out << m_body;
+    out << m_impl->body;
 
     return out.str();
 }
@@ -137,14 +191,33 @@ std::string Http::Request::prepare() const
 ////////////////////////////////////////////////////////////
 bool Http::Request::hasField(const std::string& field) const
 {
-    return m_fields.find(priv::toLower(field)) != m_fields.end();
+    return m_impl->fields.find(priv::toLower(field)) != m_impl->fields.end();
 }
+
+
+////////////////////////////////////////////////////////////
+struct Http::Response::Impl
+{
+    FieldTable   fields;                           //!< Fields of the header
+    Status       status{Status::ConnectionFailed}; //!< Status code
+    unsigned int majorVersion{};                   //!< Major HTTP version
+    unsigned int minorVersion{};                   //!< Minor HTTP version
+    std::string  body;                             //!< Body of the response
+};
+
+
+////////////////////////////////////////////////////////////
+Http::Response::Response() = default;
+
+
+////////////////////////////////////////////////////////////
+Http::Response::~Response() = default;
 
 
 ////////////////////////////////////////////////////////////
 const std::string& Http::Response::getField(const std::string& field) const
 {
-    if (const auto it = m_fields.find(priv::toLower(field)); it != m_fields.end())
+    if (const auto it = m_impl->fields.find(priv::toLower(field)); it != m_impl->fields.end())
     {
         return it->second;
     }
@@ -157,28 +230,28 @@ const std::string& Http::Response::getField(const std::string& field) const
 ////////////////////////////////////////////////////////////
 Http::Response::Status Http::Response::getStatus() const
 {
-    return m_status;
+    return m_impl->status;
 }
 
 
 ////////////////////////////////////////////////////////////
 unsigned int Http::Response::getMajorHttpVersion() const
 {
-    return m_majorVersion;
+    return m_impl->majorVersion;
 }
 
 
 ////////////////////////////////////////////////////////////
 unsigned int Http::Response::getMinorHttpVersion() const
 {
-    return m_minorVersion;
+    return m_impl->minorVersion;
 }
 
 
 ////////////////////////////////////////////////////////////
 const std::string& Http::Response::getBody() const
 {
-    return m_body;
+    return m_impl->body;
 }
 
 
@@ -194,13 +267,13 @@ void Http::Response::parse(const std::string& data)
         if ((version.size() >= 8) && (version[6] == '.') && (priv::toLower(version.substr(0, 5)) == "http/") &&
             std::isdigit(version[5]) && std::isdigit(version[7]))
         {
-            m_majorVersion = static_cast<unsigned int>(version[5] - '0');
-            m_minorVersion = static_cast<unsigned int>(version[7] - '0');
+            m_impl->majorVersion = static_cast<unsigned int>(version[5] - '0');
+            m_impl->minorVersion = static_cast<unsigned int>(version[7] - '0');
         }
         else
         {
             // Invalid HTTP version
-            m_status = Status::InvalidResponse;
+            m_impl->status = Status::InvalidResponse;
             return;
         }
     }
@@ -209,12 +282,12 @@ void Http::Response::parse(const std::string& data)
     int status = 0;
     if (in >> status)
     {
-        m_status = static_cast<Status>(status);
+        m_impl->status = static_cast<Status>(status);
     }
     else
     {
         // Invalid status code
-        m_status = Status::InvalidResponse;
+        m_impl->status = Status::InvalidResponse;
         return;
     }
 
@@ -222,16 +295,16 @@ void Http::Response::parse(const std::string& data)
     in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
     // Parse the other lines, which contain fields, one by one
-    parseFields(in);
+    parseFields(in, m_impl->fields);
 
-    m_body.clear();
+    m_impl->body.clear();
 
     // Determine whether the transfer is chunked
     if (priv::toLower(getField("transfer-encoding")) != "chunked")
     {
         // Not chunked - just read everything at once
         for (auto it = std::istreambuf_iterator<char>(in); it != std::istreambuf_iterator<char>(); ++it)
-            m_body.push_back(*it);
+            m_impl->body.push_back(*it);
     }
     else
     {
@@ -249,7 +322,7 @@ void Http::Response::parse(const std::string& data)
             const std::istreambuf_iterator<char> itEnd;
             for (std::size_t i = 0; ((i < length) && (it != itEnd)); ++i)
             {
-                m_body.push_back(*it);
+                m_impl->body.push_back(*it);
                 ++it; // Iterate in separate expression to work around false positive -Wnull-dereference warning in GCC 12.1.0
             }
         }
@@ -258,33 +331,27 @@ void Http::Response::parse(const std::string& data)
         in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
         // Read all trailers (if present)
-        parseFields(in);
+        parseFields(in, m_impl->fields);
     }
 }
 
 
 ////////////////////////////////////////////////////////////
-void Http::Response::parseFields(std::istream& in)
+struct Http::Impl
 {
-    std::string line;
-    while (std::getline(in, line) && (line.size() > 2))
-    {
-        const std::string::size_type pos = line.find(": ");
-        if (pos != std::string::npos)
-        {
-            // Extract the field name and its value
-            const std::string field = line.substr(0, pos);
-            std::string       value = line.substr(pos + 2);
+    TcpSocket                connection; //!< Connection to the host
+    std::optional<IpAddress> host;       //!< Web host address
+    std::string              hostName;   //!< Web host name
+    unsigned short           port{};     //!< Port used for connection with host
+};
 
-            // Remove any trailing \r
-            if (!value.empty() && (*value.rbegin() == '\r'))
-                value.erase(value.size() - 1);
 
-            // Add the field
-            m_fields[priv::toLower(field)] = value;
-        }
-    }
-}
+////////////////////////////////////////////////////////////
+Http::Http() = default;
+
+
+////////////////////////////////////////////////////////////
+Http::~Http() = default;
 
 
 ////////////////////////////////////////////////////////////
@@ -301,28 +368,28 @@ void Http::setHost(const std::string& host, unsigned short port)
     if (priv::toLower(host.substr(0, 7)) == "http://")
     {
         // HTTP protocol
-        m_hostName = host.substr(7);
-        m_port     = (port != 0 ? port : 80);
+        m_impl->hostName = host.substr(7);
+        m_impl->port     = (port != 0 ? port : 80);
     }
     else if (priv::toLower(host.substr(0, 8)) == "https://")
     {
         // HTTPS protocol -- unsupported (requires encryption and certificates and stuff...)
         priv::err() << "HTTPS protocol is not supported by sf::Http" << priv::errEndl;
-        m_hostName.clear();
-        m_port = 0;
+        m_impl->hostName.clear();
+        m_impl->port = 0;
     }
     else
     {
         // Undefined protocol - use HTTP
-        m_hostName = host;
-        m_port     = (port != 0 ? port : 80);
+        m_impl->hostName = host;
+        m_impl->port     = (port != 0 ? port : 80);
     }
 
     // Remove any trailing '/' from the host name
-    if (!m_hostName.empty() && (*m_hostName.rbegin() == '/'))
-        m_hostName.erase(m_hostName.size() - 1);
+    if (!m_impl->hostName.empty() && (*m_impl->hostName.rbegin() == '/'))
+        m_impl->hostName.erase(m_impl->hostName.size() - 1);
 
-    m_host = IpAddress::resolve(m_hostName);
+    m_impl->host = IpAddress::resolve(m_impl->hostName);
 }
 
 
@@ -341,19 +408,19 @@ Http::Response Http::sendRequest(const Http::Request& request, Time timeout)
     }
     if (!toSend.hasField("Host"))
     {
-        toSend.setField("Host", m_hostName);
+        toSend.setField("Host", m_impl->hostName);
     }
     if (!toSend.hasField("Content-Length"))
     {
         std::ostringstream out;
-        out << toSend.m_body.size();
+        out << toSend.m_impl->body.size();
         toSend.setField("Content-Length", out.str());
     }
-    if ((toSend.m_method == Request::Method::Post) && !toSend.hasField("Content-Type"))
+    if ((toSend.m_impl->method == Request::Method::Post) && !toSend.hasField("Content-Type"))
     {
         toSend.setField("Content-Type", "application/x-www-form-urlencoded");
     }
-    if ((toSend.m_majorVersion * 10 + toSend.m_minorVersion >= 11) && !toSend.hasField("Connection"))
+    if ((toSend.m_impl->majorVersion * 10 + toSend.m_impl->minorVersion >= 11) && !toSend.hasField("Connection"))
     {
         toSend.setField("Connection", "close");
     }
@@ -362,7 +429,7 @@ Http::Response Http::sendRequest(const Http::Request& request, Time timeout)
     Response received;
 
     // Connect the socket to the host
-    if (m_connection.connect(m_host.value(), m_port, timeout) == Socket::Status::Done)
+    if (m_impl->connection.connect(m_impl->host.value(), m_impl->port, timeout) == Socket::Status::Done)
     {
         // Convert the request to string and send it through the connected socket
         const std::string requestStr = toSend.prepare();
@@ -370,13 +437,13 @@ Http::Response Http::sendRequest(const Http::Request& request, Time timeout)
         if (!requestStr.empty())
         {
             // Send it through the socket
-            if (m_connection.send(requestStr.c_str(), requestStr.size()) == Socket::Status::Done)
+            if (m_impl->connection.send(requestStr.c_str(), requestStr.size()) == Socket::Status::Done)
             {
                 // Wait for the server's response
                 std::string receivedStr;
                 std::size_t size = 0;
                 char        buffer[1024];
-                while (m_connection.receive(buffer, sizeof(buffer), size) == Socket::Status::Done)
+                while (m_impl->connection.receive(buffer, sizeof(buffer), size) == Socket::Status::Done)
                 {
                     receivedStr.append(buffer, buffer + size);
                 }
@@ -387,7 +454,7 @@ Http::Response Http::sendRequest(const Http::Request& request, Time timeout)
         }
 
         // Close the connection
-        m_connection.disconnect();
+        m_impl->connection.disconnect();
     }
 
     return received;

@@ -41,6 +41,7 @@
 
 #include <fstream>
 #include <optional>
+#include <unordered_map>
 #include <vector>
 
 #include <cassert>
@@ -211,6 +212,29 @@ struct [[nodiscard]] BufferSlice
 
 namespace sf
 {
+struct Shader::Impl
+{
+    using TextureTable = std::unordered_map<int, const Texture*>;
+    using UniformTable = std::unordered_map<std::string, int>;
+
+    unsigned int shaderProgram{};    //!< OpenGL identifier for the program
+    int          currentTexture{-1}; //!< Location of the current texture in the shader
+    TextureTable textures;           //!< Texture variables in the shader, mapped to their location
+    UniformTable uniforms;           //!< Parameters location cache
+
+    explicit Impl(unsigned int theShaderProgram) : shaderProgram(theShaderProgram)
+    {
+    }
+
+    Impl(Impl&& rhs) noexcept :
+    shaderProgram(priv::exchange(rhs.shaderProgram, 0U)),
+    currentTexture(priv::exchange(rhs.currentTexture, -1)),
+    textures(SFML_MOVE(rhs.textures)),
+    uniforms(SFML_MOVE(rhs.uniforms))
+    {
+    }
+};
+
 ////////////////////////////////////////////////////////////
 struct Shader::UniformBinder
 {
@@ -218,7 +242,8 @@ struct Shader::UniformBinder
     /// \brief Constructor: set up state before uniform is set
     ///
     ////////////////////////////////////////////////////////////
-    UniformBinder(Shader& shader, const std::string& name) : currentProgram(castToGlHandle(shader.m_shaderProgram))
+    UniformBinder(Shader& shader, const std::string& name) :
+    currentProgram(castToGlHandle(shader.m_impl->shaderProgram))
     {
         if (!currentProgram)
             return;
@@ -269,7 +294,7 @@ struct Shader::UnsafeUniformBinder
     /// \brief Constructor: set up state before uniform is set
     ///
     ////////////////////////////////////////////////////////////
-    UnsafeUniformBinder(Shader& shader, const std::string& name) : currentProgram(shader.m_shaderProgram)
+    UnsafeUniformBinder(Shader& shader, const std::string& name) : currentProgram(shader.m_impl->shaderProgram)
     {
         if (!currentProgram)
             return;
@@ -322,18 +347,13 @@ Shader::~Shader()
     const TransientContextLock lock;
 
     // Destroy effect program
-    if (m_shaderProgram)
-        glCheck(GLEXT_glDeleteObject(castToGlHandle(m_shaderProgram)));
+    if (m_impl->shaderProgram)
+        glCheck(GLEXT_glDeleteObject(castToGlHandle(m_impl->shaderProgram)));
 }
 
+
 ////////////////////////////////////////////////////////////
-Shader::Shader(Shader&& source) noexcept :
-m_shaderProgram(priv::exchange(source.m_shaderProgram, 0U)),
-m_currentTexture(priv::exchange(source.m_currentTexture, -1)),
-m_textures(SFML_MOVE(source.m_textures)),
-m_uniforms(SFML_MOVE(source.m_uniforms))
-{
-}
+Shader::Shader(Shader&& source) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
@@ -344,19 +364,21 @@ Shader& Shader::operator=(Shader&& right) noexcept
     {
         return *this;
     }
+
     // Explicit scope for RAII
     {
         // Destroy effect program
         const TransientContextLock lock;
-        assert(m_shaderProgram);
-        glCheck(GLEXT_glDeleteObject(castToGlHandle(m_shaderProgram)));
+        assert(m_impl->shaderProgram);
+        glCheck(GLEXT_glDeleteObject(castToGlHandle(m_impl->shaderProgram)));
     }
 
     // Move the contents of right.
-    m_shaderProgram  = priv::exchange(right.m_shaderProgram, 0U);
-    m_currentTexture = priv::exchange(right.m_currentTexture, -1);
-    m_textures       = SFML_MOVE(right.m_textures);
-    m_uniforms       = SFML_MOVE(right.m_uniforms);
+    m_impl->shaderProgram  = priv::exchange(right.m_impl->shaderProgram, 0U);
+    m_impl->currentTexture = priv::exchange(right.m_impl->currentTexture, -1);
+    m_impl->textures       = SFML_MOVE(right.m_impl->textures);
+    m_impl->uniforms       = SFML_MOVE(right.m_impl->uniforms);
+
     return *this;
 }
 
@@ -712,7 +734,7 @@ void Shader::setUniform(const std::string& name, const Glsl::Mat4& matrix)
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(const std::string& name, const Texture& texture)
 {
-    assert(m_shaderProgram);
+    assert(m_impl->shaderProgram);
 
     const TransientContextLock lock;
 
@@ -722,18 +744,18 @@ void Shader::setUniform(const std::string& name, const Texture& texture)
         return;
 
     // Store the location -> texture mapping
-    const auto it = m_textures.find(location);
-    if (it == m_textures.end())
+    const auto it = m_impl->textures.find(location);
+    if (it == m_impl->textures.end())
     {
         // New entry, make sure there are enough texture units
-        if (m_textures.size() + 1 >= getMaxTextureUnits())
+        if (m_impl->textures.size() + 1 >= getMaxTextureUnits())
         {
             priv::err() << "Impossible to use texture \"" << name << '"'
                         << " for shader: all available texture units are used" << priv::errEndl;
             return;
         }
 
-        m_textures[location] = &texture;
+        m_impl->textures[location] = &texture;
     }
     else
     {
@@ -746,12 +768,12 @@ void Shader::setUniform(const std::string& name, const Texture& texture)
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(const std::string& name, CurrentTextureType)
 {
-    assert(m_shaderProgram);
+    assert(m_impl->shaderProgram);
 
     const TransientContextLock lock;
 
     // Find the location of the variable in the shader
-    m_currentTexture = getUniformLocation(name);
+    m_impl->currentTexture = getUniformLocation(name);
 }
 
 
@@ -902,7 +924,7 @@ void Shader::setUniformUnsafe(const std::string& name, const Glsl::Ivec4& v)
 ////////////////////////////////////////////////////////////
 unsigned int Shader::getNativeHandle() const
 {
-    return m_shaderProgram;
+    return m_impl->shaderProgram;
 }
 
 
@@ -919,17 +941,17 @@ void Shader::bind(const Shader* shader)
         return;
     }
 
-    if (shader && shader->m_shaderProgram)
+    if (shader && shader->m_impl->shaderProgram)
     {
         // Enable the program
-        glCheck(GLEXT_glUseProgramObject(castToGlHandle(shader->m_shaderProgram)));
+        glCheck(GLEXT_glUseProgramObject(castToGlHandle(shader->m_impl->shaderProgram)));
 
         // Bind the textures
         shader->bindTextures();
 
         // Bind the current texture
-        if (shader->m_currentTexture != -1)
-            glCheck(GLEXT_glUniform1i(shader->m_currentTexture, 0));
+        if (shader->m_impl->currentTexture != -1)
+            glCheck(GLEXT_glUniform1i(shader->m_impl->currentTexture, 0));
     }
     else
     {
@@ -975,7 +997,7 @@ bool Shader::isGeometryAvailable()
 
 
 ////////////////////////////////////////////////////////////
-Shader::Shader(priv::PassKey<Shader>&&, unsigned int shaderProgram) : m_shaderProgram(shaderProgram)
+Shader::Shader(priv::PassKey<Shader>&&, unsigned int shaderProgram) : m_impl(shaderProgram)
 {
 }
 
@@ -1122,8 +1144,8 @@ std::optional<Shader> Shader::compile(std::string_view vertexShaderCode,
 ////////////////////////////////////////////////////////////
 void Shader::bindTextures() const
 {
-    auto it = m_textures.begin();
-    for (std::size_t i = 0; i < m_textures.size(); ++i)
+    auto it = m_impl->textures.begin();
+    for (std::size_t i = 0; i < m_impl->textures.size(); ++i)
     {
         const auto index = static_cast<GLsizei>(i + 1);
         glCheck(GLEXT_glUniform1i(it->first, index));
@@ -1141,15 +1163,15 @@ void Shader::bindTextures() const
 int Shader::getUniformLocation(const std::string& name)
 {
     // Check the cache
-    if (const auto it = m_uniforms.find(name); it != m_uniforms.end())
+    if (const auto it = m_impl->uniforms.find(name); it != m_impl->uniforms.end())
     {
         // Already in cache, return it
         return it->second;
     }
 
     // Not in cache, request the location from OpenGL
-    const int location = GLEXT_glGetUniformLocation(castToGlHandle(m_shaderProgram), name.c_str());
-    m_uniforms.emplace(name, location);
+    const int location = GLEXT_glGetUniformLocation(castToGlHandle(m_impl->shaderProgram), name.c_str());
+    m_impl->uniforms.emplace(name, location);
 
     if (location == -1)
         priv::err() << "Uniform \"" << name << "\" not found in shader" << priv::errEndl;
@@ -1407,7 +1429,7 @@ bool Shader::isGeometryAvailable()
 
 
 ////////////////////////////////////////////////////////////
-Shader::Shader(priv::PassKey<Shader>&&, unsigned int shaderProgram) : m_shaderProgram(shaderProgram)
+Shader::Shader(priv::PassKey<Shader>&&, unsigned int shaderProgram) : m_impl->shaderProgram(shaderProgram)
 {
 }
 
