@@ -26,11 +26,16 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/Event.hpp>
+#include <SFML/Window/Joystick.hpp>
 #include <SFML/Window/JoystickImpl.hpp>
 #include <SFML/Window/JoystickManager.hpp>
+#include <SFML/Window/Sensor.hpp>
+#include <SFML/Window/SensorImpl.hpp>
 #include <SFML/Window/SensorManager.hpp>
+#include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/WindowImpl.hpp>
 
+#include <SFML/System/Macros.hpp>
 #include <SFML/System/MathUtils.hpp>
 #include <SFML/System/Sleep.hpp>
 #include <SFML/System/Time.hpp>
@@ -38,6 +43,7 @@
 #include <SFML/System/UniquePtr.hpp>
 
 #include <chrono>
+#include <queue>
 
 #if defined(SFML_SYSTEM_WINDOWS)
 
@@ -110,6 +116,25 @@ struct WindowImpl::JoystickStatesImpl
 
 
 ////////////////////////////////////////////////////////////
+struct WindowImpl::Impl
+{
+    std::queue<Event>                                events;             //!< Queue of available events
+    priv::UniquePtr<JoystickStatesImpl>              joystickStatesImpl; //!< Previous state of the joysticks (PImpl)
+    EnumArray<Sensor::Type, Vector3f, Sensor::Count> sensorValue;        //!< Previous value of the sensors
+    float joystickThreshold{0.1f}; //!< Joystick threshold (minimum motion for "move" event to be generated)
+    EnumArray<Joystick::Axis, float, Joystick::AxisCount>
+        previousAxes[Joystick::Count]{}; //!< Position of each axis last time a move event triggered, in range [-100, 100]
+    std::optional<Vector2u> minimumSize; //!< Minimum window size
+    std::optional<Vector2u> maximumSize; //!< Maximum window size
+
+    explicit Impl(priv::UniquePtr<JoystickStatesImpl>&& theJoystickStatesImpl) :
+    joystickStatesImpl(SFML_MOVE(theJoystickStatesImpl))
+    {
+    }
+};
+
+
+////////////////////////////////////////////////////////////
 priv::UniquePtr<WindowImpl> WindowImpl::create(
     VideoMode              mode,
     const String&          title,
@@ -129,18 +154,18 @@ priv::UniquePtr<WindowImpl> WindowImpl::create(WindowHandle handle)
 
 
 ////////////////////////////////////////////////////////////
-WindowImpl::WindowImpl() : m_joystickStatesImpl(priv::makeUnique<JoystickStatesImpl>())
+WindowImpl::WindowImpl() : m_impl(priv::makeUnique<JoystickStatesImpl>())
 {
     // Get the initial joystick states
     JoystickManager::getInstance().update();
     for (unsigned int i = 0; i < Joystick::Count; ++i)
     {
-        m_joystickStatesImpl->states[i] = JoystickManager::getInstance().getState(i);
-        m_previousAxes[i].fill(0.f);
+        m_impl->joystickStatesImpl->states[i] = JoystickManager::getInstance().getState(i);
+        m_impl->previousAxes[i].fill(0.f);
     }
 
     // Get the initial sensor states
-    for (Vector3f& vec : m_sensorValue.data)
+    for (Vector3f& vec : m_impl->sensorValue.data)
         vec = Vector3f(0, 0, 0);
 }
 
@@ -156,35 +181,35 @@ WindowImpl::~WindowImpl()
 ////////////////////////////////////////////////////////////
 std::optional<Vector2u> WindowImpl::getMinimumSize() const
 {
-    return m_minimumSize;
+    return m_impl->minimumSize;
 }
 
 
 ////////////////////////////////////////////////////////////
 std::optional<Vector2u> WindowImpl::getMaximumSize() const
 {
-    return m_maximumSize;
+    return m_impl->maximumSize;
 }
 
 
 ////////////////////////////////////////////////////////////
 void WindowImpl::setJoystickThreshold(float threshold)
 {
-    m_joystickThreshold = threshold;
+    m_impl->joystickThreshold = threshold;
 }
 
 
 ////////////////////////////////////////////////////////////
 void WindowImpl::setMinimumSize(const std::optional<Vector2u>& minimumSize)
 {
-    m_minimumSize = minimumSize;
+    m_impl->minimumSize = minimumSize;
 }
 
 
 ////////////////////////////////////////////////////////////
 void WindowImpl::setMaximumSize(const std::optional<Vector2u>& maximumSize)
 {
-    m_maximumSize = maximumSize;
+    m_impl->maximumSize = maximumSize;
 }
 
 
@@ -198,12 +223,12 @@ std::optional<Event> WindowImpl::waitEvent(Time timeout)
     };
 
     // If the event queue is empty, let's first check if new events are available from the OS
-    if (m_events.empty())
+    if (m_impl->events.empty())
         populateEventQueue();
 
     // Here we use a manual wait loop instead of the optimized wait-event provided by the OS,
     // so that we don't skip joystick events (which require polling)
-    while (m_events.empty() && !timedOut())
+    while (m_impl->events.empty() && !timedOut())
     {
         sleep(milliseconds(10));
         populateEventQueue();
@@ -217,7 +242,7 @@ std::optional<Event> WindowImpl::waitEvent(Time timeout)
 std::optional<Event> WindowImpl::pollEvent()
 {
     // If the event queue is empty, let's first check if new events are available from the OS
-    if (m_events.empty())
+    if (m_impl->events.empty())
         populateEventQueue();
 
     return popEvent();
@@ -229,10 +254,10 @@ std::optional<Event> WindowImpl::popEvent()
 {
     std::optional<Event> event; // Use a single local variable for NRVO
 
-    if (!m_events.empty())
+    if (!m_impl->events.empty())
     {
-        event.emplace(m_events.front());
-        m_events.pop();
+        event.emplace(m_impl->events.front());
+        m_impl->events.pop();
     }
 
     return event;
@@ -242,7 +267,7 @@ std::optional<Event> WindowImpl::popEvent()
 ////////////////////////////////////////////////////////////
 void WindowImpl::pushEvent(const Event& event)
 {
-    m_events.push(event);
+    m_impl->events.push(event);
 }
 
 
@@ -255,11 +280,11 @@ void WindowImpl::processJoystickEvents()
     for (unsigned int i = 0; i < Joystick::Count; ++i)
     {
         // Copy the previous state of the joystick and get the new one
-        const JoystickState previousState = m_joystickStatesImpl->states[i];
-        m_joystickStatesImpl->states[i]   = JoystickManager::getInstance().getState(i);
+        const JoystickState previousState     = m_impl->joystickStatesImpl->states[i];
+        m_impl->joystickStatesImpl->states[i] = JoystickManager::getInstance().getState(i);
 
         // Connection state
-        const bool connected = m_joystickStatesImpl->states[i].connected;
+        const bool connected = m_impl->joystickStatesImpl->states[i].connected;
         if (previousState.connected ^ connected)
         {
             if (connected)
@@ -269,7 +294,7 @@ void WindowImpl::processJoystickEvents()
 
             // Clear previous axes positions
             if (connected)
-                m_previousAxes[i].fill(0.f);
+                m_impl->previousAxes[i].fill(0.f);
         }
 
         if (!connected)
@@ -284,12 +309,12 @@ void WindowImpl::processJoystickEvents()
             if (!caps.axes[axis])
                 continue;
 
-            const float prevPos = m_previousAxes[i][axis];
-            const float currPos = m_joystickStatesImpl->states[i].axes[axis];
-            if (priv::fabs(currPos - prevPos) >= m_joystickThreshold)
+            const float prevPos = m_impl->previousAxes[i][axis];
+            const float currPos = m_impl->joystickStatesImpl->states[i].axes[axis];
+            if (priv::fabs(currPos - prevPos) >= m_impl->joystickThreshold)
             {
                 pushEvent(Event::JoystickMoved{i, axis, currPos});
-                m_previousAxes[i][axis] = currPos;
+                m_impl->previousAxes[i][axis] = currPos;
             }
         }
 
@@ -297,7 +322,7 @@ void WindowImpl::processJoystickEvents()
         for (unsigned int j = 0; j < caps.buttonCount; ++j)
         {
             const bool prevPressed = previousState.buttons[j];
-            const bool currPressed = m_joystickStatesImpl->states[i].buttons[j];
+            const bool currPressed = m_impl->joystickStatesImpl->states[i].buttons[j];
 
             if (prevPressed ^ currPressed)
             {
@@ -326,12 +351,12 @@ void WindowImpl::processSensorEvents()
             continue;
 
         // Copy the previous value of the sensor and get the new one
-        const Vector3f previousValue = m_sensorValue[sensor];
-        m_sensorValue[sensor]        = SensorManager::getInstance().getValue(sensor);
+        const Vector3f previousValue = m_impl->sensorValue[sensor];
+        m_impl->sensorValue[sensor]  = SensorManager::getInstance().getValue(sensor);
 
         // If the value has changed, trigger an event
-        if (m_sensorValue[sensor] != previousValue) // TODO use a threshold?
-            pushEvent(Event::SensorChanged{sensor, m_sensorValue[sensor]});
+        if (m_impl->sensorValue[sensor] != previousValue) // TODO use a threshold?
+            pushEvent(Event::SensorChanged{sensor, m_impl->sensorValue[sensor]});
     }
 }
 

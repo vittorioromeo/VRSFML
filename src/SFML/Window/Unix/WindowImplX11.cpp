@@ -26,6 +26,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 
+#include <SFML/Window/CursorImpl.hpp>
 #include <SFML/Window/InputImpl.hpp>
 #include <SFML/Window/Unix/ClipboardImpl.hpp>
 #include <SFML/Window/Unix/Display.hpp>

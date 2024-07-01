@@ -29,35 +29,33 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Config.hpp>
 
-#include <SFML/Window/ContextSettings.hpp>
-#include <SFML/Window/CursorImpl.hpp>
 #include <SFML/Window/Event.hpp>
-#include <SFML/Window/Joystick.hpp>
-#include <SFML/Window/Sensor.hpp>
-#include <SFML/Window/SensorImpl.hpp>
-#include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/Vulkan.hpp>
 #include <SFML/Window/WindowEnums.hpp>
 #include <SFML/Window/WindowHandle.hpp>
 
 #include <SFML/System/EnumArray.hpp>
+#include <SFML/System/InPlacePImpl.hpp>
 #include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <SFML/System/Vector3.hpp>
 
 #include <optional>
-#include <queue>
 
 #include <cstdint>
 
 
 namespace sf
 {
+struct ContextSettings;
 class String;
 class Time;
+class VideoMode;
 
 namespace priv
 {
+class CursorImpl;
+
 ////////////////////////////////////////////////////////////
 /// \brief Abstract base class for OS-specific window implementation
 ///
@@ -373,14 +371,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::queue<Event>                                m_events;             //!< Queue of available events
-    priv::UniquePtr<JoystickStatesImpl>              m_joystickStatesImpl; //!< Previous state of the joysticks (PImpl)
-    EnumArray<Sensor::Type, Vector3f, Sensor::Count> m_sensorValue;        //!< Previous value of the sensors
-    float m_joystickThreshold{0.1f}; //!< Joystick threshold (minimum motion for "move" event to be generated)
-    EnumArray<Joystick::Axis, float, Joystick::AxisCount>
-        m_previousAxes[Joystick::Count]{}; //!< Position of each axis last time a move event triggered, in range [-100, 100]
-    std::optional<Vector2u> m_minimumSize; //!< Minimum window size
-    std::optional<Vector2u> m_maximumSize; //!< Maximum window size
+    struct Impl;
+    priv::InPlacePImpl<Impl, 512> m_impl; //!< Implementation details
 };
 
 } // namespace priv

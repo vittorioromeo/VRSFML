@@ -25,7 +25,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Window/CursorImpl.hpp>
 #include <SFML/Window/JoystickImpl.hpp>
+#include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/Win32/WindowImplWin32.hpp>
 #include <SFML/Window/WindowEnums.hpp>
 
