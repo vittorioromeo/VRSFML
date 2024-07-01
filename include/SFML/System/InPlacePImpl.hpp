@@ -11,6 +11,9 @@
 #define SFML_PRIV_LAUNDER ::std::launder
 #endif
 
+// NOLINTNEXTLINE(bugprone-macro-parentheses)
+#define SFML_PRIV_LAUNDER_CAST(type, buffer) SFML_PRIV_LAUNDER(reinterpret_cast<type>(buffer))
+
 
 namespace sf::priv
 {
@@ -29,37 +32,25 @@ class InPlacePImpl
 private:
     alignas(MaxAlignT) char m_buffer[BufferSize];
 
-    template <typename U>
-    [[nodiscard, gnu::always_inline]] U& as() noexcept
-    {
-        return *SFML_PRIV_LAUNDER(reinterpret_cast<U*>(m_buffer));
-    }
-
-    template <typename U>
-    [[nodiscard, gnu::always_inline]] const U& as() const noexcept
-    {
-        return *SFML_PRIV_LAUNDER(reinterpret_cast<U*>(m_buffer));
-    }
-
 public:
     [[nodiscard, gnu::always_inline]] T* operator->() noexcept
     {
-        return &as<T>();
+        return SFML_PRIV_LAUNDER_CAST(T*, m_buffer);
     }
 
     [[nodiscard, gnu::always_inline]] const T* operator->() const noexcept
     {
-        return &as<const T>();
+        return SFML_PRIV_LAUNDER_CAST(const T*, m_buffer);
     }
 
     [[nodiscard, gnu::always_inline]] T& operator*() noexcept
     {
-        return as<T>();
+        return *SFML_PRIV_LAUNDER_CAST(T*, m_buffer);
     }
 
     [[nodiscard, gnu::always_inline]] const T& operator*() const noexcept
     {
-        return as<const T>();
+        return *SFML_PRIV_LAUNDER_CAST(const T*, m_buffer);
     }
 
     template <typename... Args>
@@ -67,45 +58,43 @@ public:
     [[nodiscard, gnu::always_inline]] explicit InPlacePImpl(Args&&... args)
     {
         static_assert(sizeof(T) <= BufferSize);
-        static_assert(alignof(T) <= alignof(MaxAlignT));
-
         new (m_buffer) T(static_cast<Args&&>(args)...);
     }
 
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[nodiscard, gnu::always_inline]] InPlacePImpl(const InPlacePImpl& rhs)
     {
-        new (m_buffer) T(rhs.as<const T>());
+        new (m_buffer) T(*SFML_PRIV_LAUNDER_CAST(const T*, rhs.m_buffer));
     }
 
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[nodiscard, gnu::always_inline]] InPlacePImpl(InPlacePImpl&& rhs) noexcept
     {
-        new (m_buffer) T(static_cast<T&&>(rhs.as<T>()));
+        new (m_buffer) T(static_cast<T&&>(*SFML_PRIV_LAUNDER_CAST(T*, rhs.m_buffer)));
     }
 
+    // NOLINTNEXTLINE(bugprone-unhandled-self-assignment)
     [[gnu::always_inline]] InPlacePImpl& operator=(const InPlacePImpl& rhs)
     {
-        if (&rhs != this)
-            as<T>() = rhs.as<const T>();
-
+        // Rely on the inner type for self-assignment check.
+        *SFML_PRIV_LAUNDER_CAST(T*, m_buffer) = *SFML_PRIV_LAUNDER_CAST(const T*, rhs.m_buffer);
         return *this;
     }
 
     [[gnu::always_inline]] InPlacePImpl& operator=(InPlacePImpl&& rhs) noexcept
     {
-        if (&rhs != this)
-            as<T>() = static_cast<T&&>(rhs.as<T>());
-
+        // Rely on the inner type for self-assignment check.
+        *SFML_PRIV_LAUNDER_CAST(T*, m_buffer) = static_cast<T&&>(*SFML_PRIV_LAUNDER_CAST(T*, rhs.m_buffer));
         return *this;
     }
 
     [[gnu::always_inline]] ~InPlacePImpl()
     {
-        as<T>().~T();
+        SFML_PRIV_LAUNDER_CAST(T*, m_buffer)->~T();
     }
 };
 
 } // namespace sf::priv
 
+#undef SFML_PRIV_LAUNDER_CAST
 #undef SFML_PRIV_LAUNDER
