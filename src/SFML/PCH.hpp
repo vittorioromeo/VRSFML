@@ -47,6 +47,7 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InPlacePImpl.hpp>
 #include <SFML/System/Macros.hpp>
+#include <SFML/System/MathUtils.hpp>
 #include <SFML/System/String.hpp>
 #include <SFML/System/Time.hpp>
 #include <SFML/System/UniquePtr.hpp>
@@ -67,6 +68,10 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+
+#ifdef SFML_BUILD_EXAMPLES
+#include <random>
+#endif // SFML_BUILD_EXAMPLES
 
 #ifdef SFML_BUILD_TEST_SUITE
 #include <doctest/parts/doctest_fwd.h>

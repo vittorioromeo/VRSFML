@@ -39,12 +39,12 @@
 
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
+#include <SFML/System/MathUtils.hpp>
 
 #include <mutex>
 #include <unordered_map>
 
 #include <cassert>
-#include <cmath>
 #include <cstddef>
 
 
@@ -282,8 +282,8 @@ IntRect RenderTarget::getViewport(const View& view) const
     const auto [width, height] = Vector2f(getSize());
     const FloatRect& viewport  = view.getViewport();
 
-    return IntRect(Rect<long>({std::lround(width * viewport.position.x), std::lround(height * viewport.position.y)},
-                              {std::lround(width * viewport.size.x), std::lround(height * viewport.size.y)}));
+    return IntRect(Rect<long>({priv::lround(width * viewport.position.x), priv::lround(height * viewport.position.y)},
+                              {priv::lround(width * viewport.size.x), priv::lround(height * viewport.size.y)}));
 }
 
 
@@ -293,8 +293,8 @@ IntRect RenderTarget::getScissor(const View& view) const
     const auto [width, height] = Vector2f(getSize());
     const FloatRect& scissor   = view.getScissor();
 
-    return IntRect(Rect<long>({std::lround(width * scissor.position.x), std::lround(height * scissor.position.y)},
-                              {std::lround(width * scissor.size.x), std::lround(height * scissor.size.y)}));
+    return IntRect(Rect<long>({priv::lround(width * scissor.position.x), priv::lround(height * scissor.position.y)},
+                              {priv::lround(width * scissor.size.x), priv::lround(height * scissor.size.y)}));
 }
 
 

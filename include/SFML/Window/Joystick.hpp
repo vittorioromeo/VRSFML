@@ -31,6 +31,7 @@
 
 #include <SFML/System/String.hpp>
 
+
 ////////////////////////////////////////////////////////////
 /// \brief Give access to the real-time state of the joysticks
 ///

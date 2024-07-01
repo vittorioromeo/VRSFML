@@ -27,8 +27,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/Export.hpp>
-
 #include <SFML/System/Macros.hpp>
 
 
@@ -41,12 +39,14 @@ template <typename T>
     return a < b ? a : b;
 }
 
+////////////////////////////////////////////////////////////
 template <typename T>
 [[nodiscard, gnu::always_inline]] constexpr const T& max(const T& a, const T& b) noexcept
 {
     return a < b ? b : a;
 }
 
+////////////////////////////////////////////////////////////
 template <typename Iter, typename TargetIter>
 [[gnu::always_inline]] constexpr TargetIter copy(Iter rangeBegin, Iter rangeEnd, TargetIter targetIter)
 {
@@ -56,6 +56,7 @@ template <typename Iter, typename TargetIter>
     return targetIter;
 }
 
+////////////////////////////////////////////////////////////
 template <typename T, typename Vector>
 [[gnu::always_inline]] inline void appendRangeIntoVector(const T* rangeBegin, const T* rangeEnd, Vector& target)
 {
@@ -67,6 +68,7 @@ template <typename T, typename Vector>
         target.push_back(*rangeBegin);
 }
 
+////////////////////////////////////////////////////////////
 template <typename Iter, typename T>
 [[gnu::always_inline]] constexpr Iter find(Iter rangeBegin, Iter rangeEnd, const T& target)
 {
@@ -77,6 +79,7 @@ template <typename Iter, typename T>
     return rangeEnd;
 }
 
+////////////////////////////////////////////////////////////
 template <typename Iter, typename Predicate>
 [[gnu::always_inline]] constexpr Iter findIf(Iter rangeBegin, Iter rangeEnd, Predicate&& predicate)
 {
@@ -87,6 +90,7 @@ template <typename Iter, typename Predicate>
     return rangeEnd;
 }
 
+////////////////////////////////////////////////////////////
 template <typename Iter, typename Predicate>
 [[gnu::always_inline]] constexpr bool anyOf(Iter rangeBegin, Iter rangeEnd, Predicate&& predicate)
 {
@@ -97,6 +101,7 @@ template <typename Iter, typename Predicate>
     return false;
 }
 
+////////////////////////////////////////////////////////////
 template <typename T>
 [[nodiscard, gnu::always_inline]] constexpr const T& clamp(const T& value, const T& minValue, const T& maxValue)
 {
@@ -109,12 +114,14 @@ template <typename T>
     return value;
 }
 
+////////////////////////////////////////////////////////////
 template <typename T, decltype(sizeof(int)) N>
 [[nodiscard, gnu::always_inline]] constexpr decltype(sizeof(int)) getArraySize(const T (&)[N])
 {
     return N;
 }
 
+////////////////////////////////////////////////////////////
 template <typename T>
 class BackInserter
 {
@@ -157,6 +164,7 @@ public:
     }
 };
 
+////////////////////////////////////////////////////////////
 template <typename T, typename U = T>
 [[nodiscard, gnu::always_inline]] inline constexpr T exchange(T& obj, U&& newVal)
 {

@@ -27,7 +27,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Transformable.hpp>
 
-#include <cmath>
+#include <SFML/System/MathUtils.hpp>
 
 
 namespace sf
@@ -129,8 +129,8 @@ const Transform& Transformable::getTransform() const
     if (m_transformNeedUpdate)
     {
         const float angle  = -m_rotation.asRadians();
-        const float cosine = std::cos(angle);
-        const float sine   = std::sin(angle);
+        const float cosine = priv::cos(angle);
+        const float sine   = priv::sin(angle);
         const float sxc    = m_scale.x * cosine;
         const float syc    = m_scale.y * cosine;
         const float sxs    = m_scale.x * sine;

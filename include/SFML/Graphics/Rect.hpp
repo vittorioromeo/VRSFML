@@ -31,8 +31,6 @@
 
 #include <SFML/System/Vector2.hpp>
 
-#include <optional>
-
 
 namespace sf
 {
@@ -93,18 +91,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] SFML_GRAPHICS_API constexpr bool contains(const Vector2<T>& point) const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Check the intersection between two rectangles
-    ///
-    /// \param rectangle Rectangle to test
-    ///
-    /// \return Intersection rectangle if intersecting, std::nullopt otherwise
-    ///
-    /// \see contains
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_GRAPHICS_API constexpr std::optional<Rect<T>> findIntersection(const Rect<T>& rectangle) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the position of the center of the rectangle
@@ -215,7 +201,7 @@ extern template class sf::Rect<unsigned int>;
 /// bool b2 = r2.contains({3, 1}); // false
 ///
 /// // Test the intersection between r1 and r2
-/// std::optional<sf::IntRect> result = r1.findIntersection(r2);
+/// std::optional<sf::IntRect> result = sf::findIntersection(r1, r2);
 /// // result.has_value() == true
 /// // result.value() == sf::IntRect({4, 2}, {16, 3})
 /// \endcode

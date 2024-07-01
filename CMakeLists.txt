@@ -215,10 +215,17 @@ if(SFML_ENABLE_SANITIZERS)
     string(APPEND CMAKE_CXX_FLAGS " -fno-omit-frame-pointer -fno-sanitize-recover=all -fsanitize=undefined")
 endif()
 
+if(SFML_BUILD_EXAMPLES)
+    add_definitions(-DSFML_BUILD_EXAMPLES)
+endif()
+
 if(SFML_BUILD_TEST_SUITE)
     # this definition is used in the PCH file to speed up compilation of tests
     # `add_definitions` must be called before `add_subdirectory`
     add_definitions(-DSFML_BUILD_TEST_SUITE)
+    # add_definitions(-DDOCTEST_CONFIG_NO_INCLUDE_IOSTREAM=1)
+    add_definitions(-DDOCTEST_CONFIG_SUPER_FAST_ASSERTS=1)
+
     set(SFML_ENABLE_STDLIB_ASSERTIONS ON)
 endif()
 

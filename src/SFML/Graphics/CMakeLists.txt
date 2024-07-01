@@ -25,6 +25,8 @@ set(SRC
     ${SRCROOT}/Rect.cpp
     ${INCROOT}/Rect.hpp
     ${INCROOT}/Rect.inl
+    ${INCROOT}/RectUtils.hpp
+    ${INCROOT}/RectUtils.inl
     ${SRCROOT}/RenderStates.cpp
     ${INCROOT}/RenderStates.hpp
     ${SRCROOT}/RenderTexture.cpp

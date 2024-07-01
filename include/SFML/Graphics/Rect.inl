@@ -29,6 +29,7 @@
 
 #include <SFML/System/AlgorithmUtils.hpp>
 
+
 namespace sf
 {
 ////////////////////////////////////////////////////////////
@@ -64,41 +65,6 @@ constexpr bool Rect<T>::contains(const Vector2<T>& point) const
     const T maxY = priv::max(position.y, static_cast<T>(position.y + size.y));
 
     return (point.x >= minX) && (point.x < maxX) && (point.y >= minY) && (point.y < maxY);
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-constexpr std::optional<Rect<T>> Rect<T>::findIntersection(const Rect<T>& rectangle) const
-{
-    // Rectangles with negative dimensions are allowed, so we must handle them correctly
-
-    // Compute the min and max of the first rectangle on both axes
-    const T r1MinX = priv::min(position.x, static_cast<T>(position.x + size.x));
-    const T r1MaxX = priv::max(position.x, static_cast<T>(position.x + size.x));
-    const T r1MinY = priv::min(position.y, static_cast<T>(position.y + size.y));
-    const T r1MaxY = priv::max(position.y, static_cast<T>(position.y + size.y));
-
-    // Compute the min and max of the second rectangle on both axes
-    const T r2MinX = priv::min(rectangle.position.x, static_cast<T>(rectangle.position.x + rectangle.size.x));
-    const T r2MaxX = priv::max(rectangle.position.x, static_cast<T>(rectangle.position.x + rectangle.size.x));
-    const T r2MinY = priv::min(rectangle.position.y, static_cast<T>(rectangle.position.y + rectangle.size.y));
-    const T r2MaxY = priv::max(rectangle.position.y, static_cast<T>(rectangle.position.y + rectangle.size.y));
-
-    // Compute the intersection boundaries
-    const T interLeft   = priv::max(r1MinX, r2MinX);
-    const T interTop    = priv::max(r1MinY, r2MinY);
-    const T interRight  = priv::min(r1MaxX, r2MaxX);
-    const T interBottom = priv::min(r1MaxY, r2MaxY);
-
-    // If the intersection is valid (positive non zero area), then there is an intersection
-    if ((interLeft < interRight) && (interTop < interBottom))
-    {
-        return std::make_optional<Rect<T>>(Vector2<T>{interLeft, interTop},
-                                           Vector2<T>{interRight - interLeft, interBottom - interTop});
-    }
-
-    return std::nullopt;
 }
 
 
