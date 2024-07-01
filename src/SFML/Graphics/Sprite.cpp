@@ -27,7 +27,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Sprite.hpp>
 
-#include <cmath>
+#include <SFML/System/MathUtils.hpp>
 
 
 namespace sf
@@ -93,7 +93,7 @@ void Sprite::updateVertices()
     const auto [position, size] = FloatRect(m_textureRect);
 
     // Absolute value is used to support negative texture rect sizes
-    const Vector2f absSize(std::abs(size.x), std::abs(size.y));
+    const Vector2f absSize(priv::fabs(size.x), priv::fabs(size.y));
 
     // Update positions
     m_vertices[0].position = {0.f, 0.f};

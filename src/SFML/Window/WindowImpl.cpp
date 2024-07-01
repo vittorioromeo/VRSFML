@@ -31,14 +31,13 @@
 #include <SFML/Window/SensorManager.hpp>
 #include <SFML/Window/WindowImpl.hpp>
 
+#include <SFML/System/MathUtils.hpp>
 #include <SFML/System/Sleep.hpp>
 #include <SFML/System/Time.hpp>
 #include <SFML/System/TimeChronoUtil.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
 #include <chrono>
-
-#include <cmath>
 
 #if defined(SFML_SYSTEM_WINDOWS)
 
@@ -287,7 +286,7 @@ void WindowImpl::processJoystickEvents()
 
             const float prevPos = m_previousAxes[i][axis];
             const float currPos = m_joystickStatesImpl->states[i].axes[axis];
-            if (std::abs(currPos - prevPos) >= m_joystickThreshold)
+            if (priv::fabs(currPos - prevPos) >= m_joystickThreshold)
             {
                 pushEvent(Event::JoystickMoved{i, axis, currPos});
                 m_previousAxes[i][axis] = currPos;

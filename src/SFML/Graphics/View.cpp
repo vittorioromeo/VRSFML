@@ -27,8 +27,9 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/View.hpp>
 
+#include <SFML/System/MathUtils.hpp>
+
 #include <cassert>
-#include <cmath>
 
 
 namespace sf
@@ -159,8 +160,8 @@ const Transform& View::getTransform() const
     {
         // Rotation components
         const float angle  = m_rotation.asRadians();
-        const float cosine = std::cos(angle);
-        const float sine   = std::sin(angle);
+        const float cosine = priv::cos(angle);
+        const float sine   = priv::sin(angle);
         const float tx     = -m_center.x * cosine - m_center.y * sine + m_center.x;
         const float ty     = m_center.x * sine - m_center.y * cosine + m_center.y;
 

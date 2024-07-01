@@ -22,10 +22,10 @@
 //
 ////////////////////////////////////////////////////////////
 
+#include <SFML/System/MathUtils.hpp>
 #include <SFML/System/Vector3.hpp>
 
 #include <cassert>
-#include <cmath>
 
 
 namespace
@@ -63,7 +63,7 @@ T Vector3<T>::length() const
     static_assert(isVec3FloatingPoint<T>, "Vector3::length() is only supported for floating point types");
 
     // don't use std::hypot because of slow performance
-    return std::sqrt(x * x + y * y + z * z);
+    return priv::sqrt(x * x + y * y + z * z);
 }
 
 } // namespace sf

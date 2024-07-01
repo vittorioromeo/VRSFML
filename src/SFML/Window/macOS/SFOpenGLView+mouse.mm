@@ -31,10 +31,10 @@
 #include <SFML/Window/macOS/WindowImplCocoa.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
+#include <SFML/System/MathUtils.hpp>
 
-#include <algorithm>
+#include <optional>
 
-#include <cmath>
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
@@ -373,13 +373,13 @@
                 if (m_deltaXBuffer <= 0)
                     rawPos.x += deltaX / factor;
                 else
-                    m_deltaXBuffer -= std::abs(deltaX / factorBuffer);
+                    m_deltaXBuffer -= priv::fabs(deltaX / factorBuffer);
 
                 // Rinse and repeat for Y.
                 if (m_deltaYBuffer <= 0)
                     rawPos.y -= deltaY / factor;
                 else
-                    m_deltaYBuffer -= std::abs(deltaY / factorBuffer);
+                    m_deltaYBuffer -= priv::fabs(deltaY / factorBuffer);
             }
         }
 
@@ -395,8 +395,8 @@
         // by the direction of the x and y axis.
 
         // Increase X and Y buffer with the distance of the projection
-        m_deltaXBuffer += std::abs(rawPos.x - oldPos.x);
-        m_deltaYBuffer += std::abs(rawPos.y - oldPos.y);
+        m_deltaXBuffer += priv::fabs(rawPos.x - oldPos.x);
+        m_deltaYBuffer += priv::fabs(rawPos.y - oldPos.y);
     }
 
     NSPoint loc = [self convertPoint:rawPos fromView:nil];

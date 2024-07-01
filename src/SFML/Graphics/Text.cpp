@@ -34,8 +34,8 @@
 #include <SFML/Graphics/Vertex.hpp>
 
 #include <SFML/System/Macros.hpp>
+#include <SFML/System/MathUtils.hpp>
 
-#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -53,8 +53,8 @@ void addLine(std::vector<sf::Vertex>& vertices,
              float                    thickness,
              float                    outlineThickness = 0)
 {
-    const float top    = std::floor(lineTop + offset - (thickness / 2) + 0.5f);
-    const float bottom = top + std::floor(thickness + 0.5f);
+    const float top    = sf::priv::floor(lineTop + offset - (thickness / 2) + 0.5f);
+    const float bottom = top + sf::priv::floor(thickness + 0.5f);
 
     const sf::Vertex vertexData[] = {{{-outlineThickness, top - outlineThickness}, color, {1.0f, 1.0f}},
                                      {{lineLength + outlineThickness, top - outlineThickness}, color, {1.0f, 1.0f}},
@@ -585,7 +585,7 @@ void Text::ensureGeometryUpdate() const
     // If we're using outline, update the current bounds
     if (m_outlineThickness != 0)
     {
-        const float outline = std::abs(std::ceil(m_outlineThickness));
+        const float outline = priv::fabs(priv::ceil(m_outlineThickness));
         minX -= outline;
         maxX += outline;
         minY -= outline;

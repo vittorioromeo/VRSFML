@@ -52,6 +52,7 @@ set(SRC
     ${INCROOT}/AlgorithmUtils.hpp
     ${SRCROOT}/AlgorithmUtils.cpp
     ${INCROOT}/Macros.hpp
+    ${INCROOT}/MathUtils.hpp
 )
 
 if(SFML_ENABLE_PCH)

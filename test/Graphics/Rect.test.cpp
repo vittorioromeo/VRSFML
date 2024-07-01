@@ -1,4 +1,5 @@
 #include <SFML/Graphics/Rect.hpp>
+#include <SFML/Graphics/RectUtils.hpp>
 
 #include <SFML/System/Vector2.hpp>
 
@@ -66,12 +67,12 @@ TEMPLATE_TEST_CASE("[Graphics] sf::Rect", "", int, float)
         constexpr sf::Rect<TestType> rectangle({0, 0}, {10, 10});
         constexpr sf::Rect<TestType> intersectingRectangle({5, 5}, {10, 10});
 
-        constexpr auto intersectionResult = rectangle.findIntersection(intersectingRectangle);
+        constexpr auto intersectionResult = sf::findIntersection(rectangle, intersectingRectangle);
         STATIC_REQUIRE(intersectionResult.has_value());
         STATIC_CHECK(*intersectionResult == sf::Rect<TestType>({5, 5}, {5, 5}));
 
         constexpr sf::Rect<TestType> nonIntersectingRectangle({-5, -5}, {5, 5});
-        STATIC_CHECK_FALSE(rectangle.findIntersection(nonIntersectingRectangle).has_value());
+        STATIC_CHECK_FALSE(sf::findIntersection(rectangle, nonIntersectingRectangle).has_value());
     }
 
     SECTION("getCenter()")

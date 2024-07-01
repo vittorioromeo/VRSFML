@@ -3,7 +3,6 @@ include(FetchContent)
 add_subdirectory(install)
 set_target_warnings(test-sfml-install)
 
-set(DOCTEST_CONFIG_SUPER_FAST_ASSERTS ON CACHE BOOL "")
 set(DOCTEST_NO_INSTALL ON CACHE BOOL "")
 
 FetchContent_Declare(doctest

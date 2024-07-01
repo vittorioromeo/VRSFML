@@ -35,6 +35,7 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InputStream.hpp>
 #include <SFML/System/Macros.hpp>
+#include <SFML/System/MathUtils.hpp>
 #include <SFML/System/PathUtils.hpp>
 
 #include <ft2build.h>
@@ -49,7 +50,6 @@
 #include <vector>
 
 #include <cassert>
-#include <cmath>
 #include <cstring>
 
 
@@ -442,7 +442,7 @@ float Font::getKerning(std::uint32_t first, std::uint32_t second, unsigned int c
 
         // Combine kerning with compensation deltas and return the X advance
         // Flooring is required as we use FT_KERNING_UNFITTED flag which is not quantized in 64 based grid
-        return std::floor((secondLsbDelta - firstRsbDelta + static_cast<float>(kerning.x) + 32) / float{1 << 6});
+        return priv::floor((secondLsbDelta - firstRsbDelta + static_cast<float>(kerning.x) + 32) / float{1 << 6});
     }
 
     // Invalid font

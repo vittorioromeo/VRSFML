@@ -33,6 +33,7 @@
 
 #include <SFML/Window/GlResource.hpp>
 
+#include <SFML/System/InPlacePImpl.hpp>
 #include <SFML/System/PassKey.hpp>
 
 #include <filesystem>

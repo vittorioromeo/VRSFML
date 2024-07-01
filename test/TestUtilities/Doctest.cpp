@@ -1,6 +1,7 @@
+#include <SFML/System/MathUtils.hpp>
+
 #include <Doctest.hpp>
 
-#include <cmath>
 
 namespace doctest::Matchers
 {
@@ -12,7 +13,7 @@ bool operator==(float value, const WithinRel& withinRel)
 
 bool operator==(float value, const WithinAbs& withinAbs)
 {
-    return std::abs(value) == WithinRel{withinAbs.target, withinAbs.epsilon};
+    return sf::priv::fabs(value) == WithinRel{withinAbs.target, withinAbs.epsilon};
 }
 
 } // namespace doctest::Matchers
