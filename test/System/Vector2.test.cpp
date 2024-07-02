@@ -350,9 +350,9 @@ TEMPLATE_TEST_CASE("[System] sf::Vector2", "", int, float)
 
     SECTION("Move and rotate by")
     {
-        CHECK(sf::Vector2f{}.rotatedBy(-158.9902_deg) == sf::Vector2f{}.movedAndRotatedBy(0.f, -158.9902_deg));
+        CHECK(sf::Vector2f{}.rotatedBy(-158.9902_deg) == sf::Vector2f{}.movedTowards(0.f, -158.9902_deg));
 
         constexpr sf::Vector2f v(2.4f, 3.0f);
-        CHECK(v + sf::Vector2f(10.f, -158.9902_deg) == v.movedAndRotatedBy(10.f, -158.9902_deg));
+        CHECK(v + sf::Vector2f(10.f, -158.9902_deg) == v.movedTowards(10.f, -158.9902_deg));
     }
 }
