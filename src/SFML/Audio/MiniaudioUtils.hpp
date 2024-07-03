@@ -28,6 +28,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/AudioDevice.hpp>
+#include <SFML/Audio/AudioResource.hpp>
 #include <SFML/Audio/EffectProcessor.hpp>
 #include <SFML/Audio/SoundChannel.hpp>
 #include <SFML/Audio/SoundSource.hpp>
@@ -73,10 +74,11 @@ struct SavedSettings
     float          outerGain{0.f};
 };
 
-struct SoundBase
+struct SoundBase : public AudioResource
 {
     SoundBase(const ma_data_source_vtable& dataSourceVTable, AudioDevice::ResourceEntry::Func reinitializeFunc);
     ~SoundBase();
+
     void initialize(ma_sound_end_proc endCallback);
     void deinitialize();
     void processEffect(const float** framesIn, ma_uint32& frameCountIn, float** framesOut, ma_uint32& frameCountOut) const;

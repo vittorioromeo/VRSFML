@@ -34,84 +34,84 @@ namespace sf
 ////////////////////////////////////////////////////////////
 void Listener::setGlobalVolume(float volume)
 {
-    priv::AudioDevice::setGlobalVolume(volume);
+    getAudioDevice().setGlobalVolume(volume);
 }
 
 
 ////////////////////////////////////////////////////////////
 float Listener::getGlobalVolume()
 {
-    return priv::AudioDevice::getGlobalVolume();
+    return getAudioDevice().getGlobalVolume();
 }
 
 
 ////////////////////////////////////////////////////////////
 void Listener::setPosition(const Vector3f& position)
 {
-    priv::AudioDevice::setPosition(position);
+    getAudioDevice().setPosition(position);
 }
 
 
 ////////////////////////////////////////////////////////////
 Vector3f Listener::getPosition()
 {
-    return priv::AudioDevice::getPosition();
+    return getAudioDevice().getPosition();
 }
 
 
 ////////////////////////////////////////////////////////////
 void Listener::setDirection(const Vector3f& direction)
 {
-    priv::AudioDevice::setDirection(direction);
+    getAudioDevice().setDirection(direction);
 }
 
 
 ////////////////////////////////////////////////////////////
 Vector3f Listener::getDirection()
 {
-    return priv::AudioDevice::getDirection();
+    return getAudioDevice().getDirection();
 }
 
 
 ////////////////////////////////////////////////////////////
 void Listener::setVelocity(const Vector3f& velocity)
 {
-    priv::AudioDevice::setVelocity(velocity);
+    getAudioDevice().setVelocity(velocity);
 }
 
 
 ////////////////////////////////////////////////////////////
 Vector3f Listener::getVelocity()
 {
-    return priv::AudioDevice::getVelocity();
+    return getAudioDevice().getVelocity();
 }
 
 
 ////////////////////////////////////////////////////////////
 void Listener::setCone(const Listener::Cone& cone)
 {
-    priv::AudioDevice::setCone(cone);
+    getAudioDevice().setCone(cone);
 }
 
 
 ////////////////////////////////////////////////////////////
 Listener::Cone Listener::getCone()
 {
-    return priv::AudioDevice::getCone();
+    return getAudioDevice().getCone();
 }
 
 
 ////////////////////////////////////////////////////////////
 void Listener::setUpVector(const Vector3f& upVector)
 {
-    priv::AudioDevice::setUpVector(upVector);
+    getAudioDevice().setUpVector(upVector);
 }
 
 
 ////////////////////////////////////////////////////////////
 Vector3f Listener::getUpVector()
 {
-    return priv::AudioDevice::getUpVector();
+    return getAudioDevice().getUpVector();
 }
 
 } // namespace sf

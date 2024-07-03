@@ -90,10 +90,13 @@ private:
 class Surround : public Effect
 {
 public:
-    explicit Surround(sf::Music&& music) : Effect("Surround / Attenuation"), m_music(std::move(music))
+    explicit Surround(sf::Listener& listener, sf::Music&& music) :
+    Effect("Surround / Attenuation"),
+    m_listener(listener),
+    m_music(std::move(music))
     {
-        m_listener.setPosition({(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f});
-        m_listener.setFillColor(sf::Color::Red);
+        m_listenerShape.setPosition({(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f});
+        m_listenerShape.setFillColor(sf::Color::Red);
 
         // Set the music to loop
         m_music.setLoop(true);
@@ -110,7 +113,7 @@ public:
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
-        target.draw(m_listener, /* texture */ nullptr, states);
+        target.draw(m_listenerShape, /* texture */ nullptr, states);
 
         states.transform = sf::Transform::Identity;
         states.transform.translate(m_position);
@@ -121,7 +124,7 @@ public:
     void start() override
     {
         // Synchronize listener audio position with graphical position
-        sf::Listener::setPosition({m_listener.getPosition().x, m_listener.getPosition().y, 0.f});
+        m_listener.setPosition({m_listener.getPosition().x, m_listener.getPosition().y, 0.f});
 
         m_music.play();
     }
@@ -132,7 +135,8 @@ public:
     }
 
 private:
-    sf::CircleShape m_listener{20.f};
+    sf::Listener&   m_listener;
+    sf::CircleShape m_listenerShape{20.f};
     sf::CircleShape m_soundShape{20.f};
     sf::Vector2f    m_position;
     sf::Music       m_music;
@@ -145,8 +149,9 @@ private:
 class PitchVolume : public Effect
 {
 public:
-    explicit PitchVolume(const sf::Font& font, sf::Music&& music) :
+    explicit PitchVolume(sf::Listener& listener, const sf::Font& font, sf::Music&& music) :
     Effect("Pitch / Volume"),
+    m_listener(listener),
     m_pitchText(font, "Pitch: " + std::to_string(m_pitch)),
     m_volumeText(font, "Volume: " + std::to_string(m_volume)),
     m_music(std::move(music))
@@ -189,7 +194,7 @@ public:
     {
         // We set the listener position back to the default
         // so that the music is right on top of the listener
-        sf::Listener::setPosition({0.f, 0.f, 0.f});
+        m_listener.setPosition({0.f, 0.f, 0.f});
 
         m_music.play();
     }
@@ -200,11 +205,12 @@ public:
     }
 
 private:
-    float     m_pitch{1.f};
-    float     m_volume{100.f};
-    sf::Text  m_pitchText;
-    sf::Text  m_volumeText;
-    sf::Music m_music;
+    sf::Listener& m_listener;
+    float         m_pitch{1.f};
+    float         m_volume{100.f};
+    sf::Text      m_pitchText;
+    sf::Text      m_volumeText;
+    sf::Music     m_music;
 };
 
 
@@ -214,8 +220,9 @@ private:
 class Attenuation : public Effect
 {
 public:
-    explicit Attenuation(const sf::Font& font, sf::Music&& music) :
+    explicit Attenuation(sf::Listener& listener, const sf::Font& font, sf::Music&& music) :
     Effect("Attenuation"),
+    m_listener(listener),
     m_text(font,
            "Attenuation factor dampens full volume of sound while within inner cone based on distance to "
            "listener.\nCone outer gain determines volume of sound while outside outer cone.\nWhen within outer cone, "
@@ -223,8 +230,8 @@ public:
            18),
     m_music(std::move(music))
     {
-        m_listener.setPosition({(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f + 100.f});
-        m_listener.setFillColor(sf::Color::Red);
+        m_listenerShape.setPosition({(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f + 100.f});
+        m_listenerShape.setFillColor(sf::Color::Red);
 
         m_soundShape.setFillColor(sf::Color::Magenta);
 
@@ -288,14 +295,14 @@ public:
         target.draw(m_soundConeOuter, /* texture */ nullptr, statesCopy);
         target.draw(m_soundConeInner, /* texture */ nullptr, statesCopy);
         target.draw(m_soundShape, /* texture */ nullptr, statesCopy);
-        target.draw(m_listener, /* texture */ nullptr, states);
+        target.draw(m_listenerShape, /* texture */ nullptr, states);
         target.draw(m_text, states);
     }
 
     void start() override
     {
         // Synchronize listener audio position with graphical position
-        sf::Listener::setPosition({m_listener.getPosition().x, m_listener.getPosition().y, 0.f});
+        m_listener.setPosition({m_listener.getPosition().x, m_listener.getPosition().y, 0.f});
 
         m_music.play();
     }
@@ -306,7 +313,8 @@ public:
     }
 
 private:
-    sf::CircleShape m_listener{20.f};
+    sf::Listener&   m_listener;
+    sf::CircleShape m_listenerShape{20.f};
     sf::CircleShape m_soundShape{20.f};
     sf::ConvexShape m_soundConeOuter;
     sf::ConvexShape m_soundConeInner;
@@ -324,8 +332,9 @@ private:
 class Tone : public sf::SoundStream, public Effect
 {
 public:
-    explicit Tone(const sf::Font& font) :
+    explicit Tone(sf::Listener& listener, const sf::Font& font) :
     Effect("Tone Generator"),
+    m_listener(listener),
     m_instruction(font, "Press up and down arrows to change the current wave type"),
     m_currentType(font, "Wave Type: Triangle"),
     m_currentAmplitude(font, "Amplitude: 0.05"),
@@ -360,7 +369,7 @@ public:
     {
         // We set the listener position back to the default
         // so that the tone is right on top of the listener
-        sf::Listener::setPosition({0.f, 0.f, 0.f});
+        m_listener.setPosition({0.f, 0.f, 0.f});
 
         play();
     }
@@ -467,6 +476,8 @@ private:
     static constexpr std::size_t  chunkSize{sampleRate / 100};
     static constexpr float        timePerSample{1.f / float{sampleRate}};
 
+    sf::Listener& m_listener;
+
     std::vector<std::int16_t> m_sampleBuffer = std::vector<std::int16_t>(chunkSize, 0);
     Type                      m_type{Type::Triangle};
     float                     m_amplitude{0.05f};
@@ -486,13 +497,14 @@ private:
 class Doppler : public sf::SoundStream, public Effect
 {
 public:
-    explicit Doppler(const sf::Font& font) :
+    explicit Doppler(sf::Listener& listener, const sf::Font& font) :
     Effect("Doppler Shift"),
+    m_listener(listener),
     m_currentVelocity(font, "Velocity: " + std::to_string(m_velocity)),
     m_currentFactor(font, "Doppler Factor: " + std::to_string(m_factor))
     {
-        m_listener.setPosition({(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f});
-        m_listener.setFillColor(sf::Color::Red);
+        m_listenerShape.setPosition({(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f});
+        m_listenerShape.setFillColor(sf::Color::Red);
 
         m_position.y = (windowHeight - 20.f) / 2.f - 40.f;
 
@@ -526,7 +538,7 @@ public:
         statesCopy.transform = sf::Transform::Identity;
         statesCopy.transform.translate(m_position - sf::Vector2f({20.f, 0.f}));
 
-        target.draw(m_listener, /* texture */ nullptr, states);
+        target.draw(m_listenerShape, /* texture */ nullptr, states);
         target.draw(m_soundShape, /* texture */ nullptr, statesCopy);
         target.draw(m_currentVelocity, states);
         target.draw(m_currentFactor, states);
@@ -535,7 +547,7 @@ public:
     void start() override
     {
         // Synchronize listener audio position with graphical position
-        sf::Listener::setPosition({m_listener.getPosition().x, m_listener.getPosition().y, 0.f});
+        m_listener.setPosition({m_listener.getPosition().x, m_listener.getPosition().y, 0.f});
 
         play();
     }
@@ -573,6 +585,8 @@ private:
     static constexpr std::size_t  chunkSize{sampleRate / 100};
     static constexpr float        timePerSample{1.f / float{sampleRate}};
 
+    sf::Listener& m_listener;
+
     std::vector<std::int16_t> m_sampleBuffer = std::vector<std::int16_t>(chunkSize, 0);
     float                     m_amplitude{0.05f};
     float                     m_frequency{220};
@@ -580,7 +594,7 @@ private:
 
     float           m_velocity{0.f};
     float           m_factor{1.f};
-    sf::CircleShape m_listener{20.f};
+    sf::CircleShape m_listenerShape{20.f};
     sf::CircleShape m_soundShape{20.f};
     sf::Vector2f    m_position;
     sf::Text        m_currentVelocity;
@@ -602,7 +616,7 @@ public:
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
-        target.draw(m_listener, /* texture */ nullptr, states);
+        target.draw(m_listenerShape, /* texture */ nullptr, states);
 
         states.transform = sf::Transform::Identity;
         states.transform.translate(m_position);
@@ -615,7 +629,7 @@ public:
     void start() override
     {
         // Synchronize listener audio position with graphical position
-        sf::Listener::setPosition({m_listener.getPosition().x, m_listener.getPosition().y, 0.f});
+        m_listener.setPosition({m_listener.getPosition().x, m_listener.getPosition().y, 0.f});
 
         m_music.play();
     }
@@ -626,14 +640,15 @@ public:
     }
 
 protected:
-    explicit Processing(const sf::Font& font, sf::Music&& music, std::string name) :
+    explicit Processing(sf::Listener& listener, const sf::Font& font, sf::Music&& music, std::string name) :
     Effect(std::move(name)),
     m_music(std::move(music)),
+    m_listener(listener),
     m_enabledText(font, "Processing: Enabled"),
     m_instructions(font, "Press Space to enable/disable processing")
     {
-        m_listener.setPosition({(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f});
-        m_listener.setFillColor(sf::Color::Red);
+        m_listenerShape.setPosition({(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f});
+        m_listenerShape.setFillColor(sf::Color::Red);
 
         m_enabledText.setPosition({windowWidth / 2.f - 120.f, windowHeight * 3.f / 4.f - 50.f});
         m_instructions.setPosition({windowWidth / 2.f - 250.f, windowHeight * 3.f / 4.f});
@@ -661,7 +676,8 @@ private:
         m_enabledText.setString(*m_enabled ? "Processing: Enabled" : "Processing: Disabled");
     }
 
-    sf::CircleShape       m_listener{20.f};
+    sf::Listener&         m_listener;
+    sf::CircleShape       m_listenerShape{20.f};
     sf::CircleShape       m_soundShape{20.f};
     sf::Vector2f          m_position;
     std::shared_ptr<bool> m_enabled{std::make_shared<bool>(true)};
@@ -755,8 +771,8 @@ protected:
 ////////////////////////////////////////////////////////////
 struct HighPassFilter : BiquadFilter
 {
-    explicit HighPassFilter(const sf::Font& font, sf::Music&& music) :
-    BiquadFilter(font, std::move(music), "High-pass Filter")
+    explicit HighPassFilter(sf::Listener& listener, const sf::Font& font, sf::Music&& music) :
+    BiquadFilter(listener, font, std::move(music), "High-pass Filter")
     {
         static constexpr auto cutoffFrequency = 2000.f;
 
@@ -780,8 +796,8 @@ struct HighPassFilter : BiquadFilter
 ////////////////////////////////////////////////////////////
 struct LowPassFilter : BiquadFilter
 {
-    explicit LowPassFilter(const sf::Font& font, sf::Music&& music) :
-    BiquadFilter(font, std::move(music), "Low-pass Filter")
+    explicit LowPassFilter(sf::Listener& listener, const sf::Font& font, sf::Music&& music) :
+    BiquadFilter(listener, font, std::move(music), "Low-pass Filter")
     {
         static constexpr auto cutoffFrequency = 500.f;
 
@@ -805,7 +821,8 @@ struct LowPassFilter : BiquadFilter
 ////////////////////////////////////////////////////////////
 struct Echo : Processing
 {
-    explicit Echo(const sf::Font& font, sf::Music&& music) : Processing(font, std::move(music), "Echo")
+    explicit Echo(sf::Listener& listener, const sf::Font& font, sf::Music&& music) :
+    Processing(listener, font, std::move(music), "Echo")
     {
         static constexpr auto delay = 0.2f;
         static constexpr auto decay = 0.75f;
@@ -866,7 +883,8 @@ struct Echo : Processing
 class Reverb : public Processing
 {
 public:
-    explicit Reverb(const sf::Font& font, sf::Music&& music) : Processing(font, std::move(music), "Reverb")
+    explicit Reverb(sf::Listener& listener, const sf::Font& font, sf::Music&& music) :
+    Processing(listener, font, std::move(music), "Reverb")
     {
         static constexpr auto sustain = 0.7f; // [0.f; 1.f]
 
@@ -1038,16 +1056,20 @@ int main()
     // Helper function to open a new instance of the music file
     const auto openMusic = [&] { return sf::Music::openFromFile(musicPath).value(); };
 
+    // Create the playback device and listener
+    sf::PlaybackDevice playbackDevice;
+    sf::Listener       listener;
+
     // Create the effects
-    Surround       surroundEffect(openMusic());
-    PitchVolume    pitchVolumeEffect(font, openMusic());
-    Attenuation    attenuationEffect(font, openMusic());
-    Tone           toneEffect(font);
-    Doppler        dopplerEffect(font);
-    HighPassFilter highPassFilterEffect(font, openMusic());
-    LowPassFilter  lowPassFilterEffect(font, openMusic());
-    Echo           echoEffect(font, openMusic());
-    Reverb         reverbEffect(font, openMusic());
+    Surround       surroundEffect(listener, openMusic());
+    PitchVolume    pitchVolumeEffect(listener, font, openMusic());
+    Attenuation    attenuationEffect(listener, font, openMusic());
+    Tone           toneEffect(listener, font);
+    Doppler        dopplerEffect(listener, font);
+    HighPassFilter highPassFilterEffect(listener, font, openMusic());
+    LowPassFilter  lowPassFilterEffect(listener, font, openMusic());
+    Echo           echoEffect(listener, font, openMusic());
+    Reverb         reverbEffect(listener, font, openMusic());
 
     const std::array<Effect*, 9> effects{&surroundEffect,
                                          &pitchVolumeEffect,
@@ -1080,10 +1102,10 @@ int main()
     instructions.setFillColor(sf::Color(80, 80, 80));
 
     // Create the playback device text
-    auto     playbackDeviceName = sf::PlaybackDevice::getDevice();
-    sf::Text playbackDevice(font, "Current playback device: " + playbackDeviceName.value_or("None"), 20);
-    playbackDevice.setPosition({10.f, 566.f});
-    playbackDevice.setFillColor(sf::Color(80, 80, 80));
+    auto     playbackDeviceName = playbackDevice.getDevice();
+    sf::Text playbackDeviceText(font, "Current playback device: " + playbackDeviceName.value_or("None"), 20);
+    playbackDeviceText.setPosition({10.f, 566.f});
+    playbackDeviceText.setFillColor(sf::Color(80, 80, 80));
 
     // Create the playback device instructions text
     sf::Text playbackDeviceInstructions(font, "Press F1 to change device", 20);
@@ -1152,8 +1174,8 @@ int main()
                     {
                         // We need to query the list every time we want to change
                         // since new devices could have been added in the mean time
-                        const auto devices       = sf::PlaybackDevice::getAvailableDevices();
-                        const auto currentDevice = sf::PlaybackDevice::getDevice();
+                        const auto devices       = playbackDevice.getAvailableDevices();
+                        const auto currentDevice = playbackDevice.getDevice();
                         auto       next          = currentDevice;
 
                         for (auto iter = devices.begin(); iter != devices.end(); ++iter)
@@ -1168,11 +1190,12 @@ int main()
 
                         if (next)
                         {
-                            if (!sf::PlaybackDevice::setDevice(*next))
+                            if (!playbackDevice.setDevice(*next))
                                 std::cerr << "Failed to set the playback device to: " << *next << std::endl;
 
-                            playbackDeviceName = sf::PlaybackDevice::getDevice();
-                            playbackDevice.setString("Current playback device: " + playbackDeviceName.value_or("None"));
+                            playbackDeviceName = playbackDevice.getDevice();
+                            playbackDeviceText.setString("Current playback device: " + playbackDeviceName.value_or("Non"
+                                                                                                                   "e"));
                         }
 
                         break;
@@ -1201,7 +1224,7 @@ int main()
         window.draw(textBackground, textBackgroundTexture);
         window.draw(instructions);
         window.draw(description);
-        window.draw(playbackDevice);
+        window.draw(playbackDeviceText);
         window.draw(playbackDeviceInstructions);
 
         // Finally, display the rendered frame on screen
