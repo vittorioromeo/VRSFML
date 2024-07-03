@@ -30,6 +30,7 @@
 #include <filesystem>
 #include <iostream>
 #include <limits>
+#include <string_view>
 #include <vector>
 
 #include <cmath>
@@ -1113,9 +1114,16 @@ int main()
     instructions.setPosition({280.f, 544.f});
     instructions.setFillColor(sf::Color(80, 80, 80));
 
+    // Utility functions
+    const auto getCurrentDeviceName = [&]() -> std::string
+    {
+        return playbackDevice.getCurrentDevice().has_value()
+                   ? std::string{playbackDevice.getCurrentDevice()->getName()}
+                   : std::string{"None"};
+    };
+
     // Create the playback device text
-    auto     playbackDeviceName = playbackDevice.getDevice();
-    sf::Text playbackDeviceText(font, "Current playback device: " + playbackDeviceName.value_or("None"), 20);
+    sf::Text playbackDeviceText(font, "Current playback device: " + getCurrentDeviceName(), 20);
     playbackDeviceText.setPosition({10.f, 566.f});
     playbackDeviceText.setFillColor(sf::Color(80, 80, 80));
 
@@ -1187,7 +1195,7 @@ int main()
                         // We need to query the list every time we want to change
                         // since new devices could have been added in the mean time
                         const auto devices       = playbackDevice.getAvailableDevices();
-                        const auto currentDevice = playbackDevice.getDevice();
+                        const auto currentDevice = playbackDevice.getCurrentDevice();
                         auto       next          = currentDevice;
 
                         for (auto iter = devices.begin(); iter != devices.end(); ++iter)
@@ -1202,12 +1210,10 @@ int main()
 
                         if (next)
                         {
-                            if (!playbackDevice.setDevice(*next))
-                                std::cerr << "Failed to set the playback device to: " << *next << std::endl;
+                            if (!playbackDevice.setCurrentDevice(*next))
+                                std::cerr << "Failed to set the playback device to: " << next->getName() << std::endl;
 
-                            playbackDeviceName = playbackDevice.getDevice();
-                            playbackDeviceText.setString("Current playback device: " + playbackDeviceName.value_or("Non"
-                                                                                                                   "e"));
+                            playbackDeviceText.setString("Current playback device: " + getCurrentDeviceName());
                         }
 
                         break;
