@@ -78,7 +78,7 @@ public:
     /// \return The audio engine
     ///
     ////////////////////////////////////////////////////////////
-    static ma_engine* getEngine();
+    ma_engine* getEngine();
 
     ////////////////////////////////////////////////////////////
     /// \brief Reinitialize the audio engine and device
@@ -90,7 +90,7 @@ public:
     /// \return True if reinitialization was successful, false otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static bool reinitialize();
+    [[nodiscard]] bool reinitialize();
 
     struct DeviceEntry
     {
@@ -110,7 +110,7 @@ public:
     /// \return A vector of device entries containing the names and IDs of all available audio playback devices
     ///
     ////////////////////////////////////////////////////////////
-    static std::vector<DeviceEntry> getAvailableDevices();
+    std::vector<DeviceEntry> getAvailableDevices();
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the audio playback device
@@ -130,7 +130,7 @@ public:
     /// \see getAvailableDevices, getDefaultDevice
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static bool setDevice(const std::string& name);
+    [[nodiscard]] bool setDevice(const std::string& name);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the name of the current audio playback device
@@ -138,7 +138,15 @@ public:
     /// \return The name of the current audio playback device or `std::nullopt` if there is none
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<std::string> getDevice();
+    [[nodiscard]] std::optional<std::string> getDevice();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the name of the default audio playback device
+    ///
+    /// \return The name of the default audio playback device or `std::nullopt` if there is none
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] std::optional<std::string> getDefaultDevice();
 
     struct ResourceEntry
     {
@@ -168,9 +176,9 @@ public:
     /// \see unregisterResource
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static ResourceEntryIndex registerResource(void*               resource,
-                                                             ResourceEntry::Func deinitializeFunc,
-                                                             ResourceEntry::Func reinitializeFunc);
+    [[nodiscard]] ResourceEntryIndex registerResource(void*               resource,
+                                                      ResourceEntry::Func deinitializeFunc,
+                                                      ResourceEntry::Func reinitializeFunc);
 
     ////////////////////////////////////////////////////////////
     /// \brief Unregister an audio resource
@@ -180,7 +188,7 @@ public:
     /// \see registerResource
     ///
     ////////////////////////////////////////////////////////////
-    static void unregisterResource(ResourceEntryIndex resourceEntryIndex);
+    void unregisterResource(ResourceEntryIndex resourceEntryIndex);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the global volume of all the sounds and musics
@@ -194,7 +202,7 @@ public:
     /// \see getGlobalVolume
     ///
     ////////////////////////////////////////////////////////////
-    static void setGlobalVolume(float volume);
+    void setGlobalVolume(float volume);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current value of the global volume
@@ -204,7 +212,7 @@ public:
     /// \see setGlobalVolume
     ///
     ////////////////////////////////////////////////////////////
-    static float getGlobalVolume();
+    float getGlobalVolume();
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the position of the listener in the scene
@@ -216,7 +224,7 @@ public:
     /// \see getPosition, setDirection
     ///
     ////////////////////////////////////////////////////////////
-    static void setPosition(const Vector3f& position);
+    void setPosition(const Vector3f& position);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current position of the listener in the scene
@@ -226,7 +234,7 @@ public:
     /// \see setPosition
     ///
     ////////////////////////////////////////////////////////////
-    static Vector3f getPosition();
+    Vector3f getPosition();
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the forward vector of the listener in the scene
@@ -243,7 +251,7 @@ public:
     /// \see getDirection, setUpVector, setPosition
     ///
     ////////////////////////////////////////////////////////////
-    static void setDirection(const Vector3f& direction);
+    void setDirection(const Vector3f& direction);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current forward vector of the listener in the scene
@@ -253,7 +261,7 @@ public:
     /// \see setDirection
     ///
     ////////////////////////////////////////////////////////////
-    static Vector3f getDirection();
+    Vector3f getDirection();
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the velocity of the listener in the scene
@@ -265,7 +273,7 @@ public:
     /// \see getVelocity, getDirection, setUpVector, setPosition
     ///
     ////////////////////////////////////////////////////////////
-    static void setVelocity(const Vector3f& velocity);
+    void setVelocity(const Vector3f& velocity);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current forward vector of the listener in the scene
@@ -275,7 +283,7 @@ public:
     /// \see setVelocity
     ///
     ////////////////////////////////////////////////////////////
-    static Vector3f getVelocity();
+    Vector3f getVelocity();
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the cone properties of the listener in the audio scene
@@ -288,7 +296,7 @@ public:
     /// \see getCone
     ///
     ////////////////////////////////////////////////////////////
-    static void setCone(const Listener::Cone& cone);
+    void setCone(const Listener::Cone& cone);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the cone properties of the listener in the audio scene
@@ -298,7 +306,7 @@ public:
     /// \see setCone
     ///
     ////////////////////////////////////////////////////////////
-    static Listener::Cone getCone();
+    Listener::Cone getCone();
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the upward vector of the listener in the scene
@@ -315,7 +323,7 @@ public:
     /// \see getUpVector, setDirection, setPosition
     ///
     ////////////////////////////////////////////////////////////
-    static void setUpVector(const Vector3f& upVector);
+    void setUpVector(const Vector3f& upVector);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current upward vector of the listener in the scene
@@ -325,7 +333,7 @@ public:
     /// \see setUpVector
     ///
     ////////////////////////////////////////////////////////////
-    static Vector3f getUpVector();
+    Vector3f getUpVector();
 
 private:
     ////////////////////////////////////////////////////////////
@@ -349,14 +357,6 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     struct ListenerProperties;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the listener properties
-    ///
-    /// \return The listener properties
-    ///
-    ////////////////////////////////////////////////////////////
-    static ListenerProperties& getListenerProperties();
 
     ////////////////////////////////////////////////////////////
     // Member data

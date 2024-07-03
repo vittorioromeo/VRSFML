@@ -31,6 +31,8 @@
 #include <mutex>
 #include <optional>
 
+#include <cassert>
+
 
 namespace
 {
@@ -81,6 +83,26 @@ AudioResource::AudioResource(const AudioResource&) : AudioResource{}
 ////////////////////////////////////////////////////////////
 AudioResource::AudioResource(AudioResource&&) noexcept : AudioResource{}
 {
+}
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] priv::AudioDevice& AudioResource::getAudioDevice()
+{
+    auto& [mutex, device, referenceCounter] = getDeviceState();
+    const std::lock_guard guard{mutex};
+
+    assert(referenceCounter > 0u);
+    return *device;
+}
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] const priv::AudioDevice& AudioResource::getAudioDevice() const
+{
+    auto& [mutex, device, referenceCounter] = getDeviceState();
+    const std::lock_guard guard{mutex};
+
+    assert(referenceCounter > 0u);
+    return *device;
 }
 
 } // namespace sf

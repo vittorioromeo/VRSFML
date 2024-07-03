@@ -109,7 +109,6 @@ ClipboardImpl::~ClipboardImpl()
 ClipboardImpl& ClipboardImpl::getInstance()
 {
     static ClipboardImpl instance;
-
     return instance;
 }
 

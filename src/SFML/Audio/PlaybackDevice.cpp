@@ -31,12 +31,12 @@
 #include <SFML/System/AlgorithmUtils.hpp>
 
 
-namespace sf::PlaybackDevice
+namespace sf
 {
 ////////////////////////////////////////////////////////////
-std::vector<std::string> getAvailableDevices()
+std::vector<std::string> PlaybackDevice::getAvailableDevices()
 {
-    const auto devices = priv::AudioDevice::getAvailableDevices();
+    const auto devices = getAudioDevice().getAvailableDevices();
 
     std::vector<std::string> deviceNameList;
     deviceNameList.reserve(devices.size());
@@ -49,23 +49,17 @@ std::vector<std::string> getAvailableDevices()
 
 
 ////////////////////////////////////////////////////////////
-std::optional<std::string> getDefaultDevice()
+std::optional<std::string> PlaybackDevice::getDefaultDevice()
 {
-    for (const auto& device : priv::AudioDevice::getAvailableDevices())
-    {
-        if (device.isDefault)
-            return std::make_optional(device.name);
-    }
-
-    return std::nullopt;
+    return getAudioDevice().getDefaultDevice();
 }
 
 
 ////////////////////////////////////////////////////////////
-bool setDevice(const std::string& name)
+bool PlaybackDevice::setDevice(const std::string& name)
 {
     // Perform a sanity check to make sure the user isn't passing us a non-existant device name
-    if (const auto& availableDevices = priv::AudioDevice::getAvailableDevices();
+    if (const auto& availableDevices = getAudioDevice().getAvailableDevices();
         !priv::anyOf(availableDevices.begin(),
                      availableDevices.end(),
                      [&](const priv::AudioDevice::DeviceEntry& deviceEntry) { return deviceEntry.name == name; }))
@@ -73,14 +67,14 @@ bool setDevice(const std::string& name)
         return false;
     }
 
-    return priv::AudioDevice::setDevice(name);
+    return getAudioDevice().setDevice(name);
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<std::string> getDevice()
+std::optional<std::string> PlaybackDevice::getDevice()
 {
-    return priv::AudioDevice::getDevice();
+    return getAudioDevice().getDevice();
 }
 
-} // namespace sf::PlaybackDevice
+} // namespace sf
