@@ -29,6 +29,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
+#include <SFML/System/LifetimeDependee.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
 #include <optional>
@@ -139,18 +140,25 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] SFML_AUDIO_API std::optional<std::string> getDevice();
 
-
 private:
     priv::UniquePtr<priv::AudioDevice> m_audioDevice;
 
     // TODO
+    using SoundBase = priv::MiniaudioUtils::SoundBase;
+
     friend Listener;
-    friend priv::MiniaudioUtils::SoundBase;
     friend Sound;
+    friend SoundBase;
     friend SoundStream;
 
     [[nodiscard]] priv::AudioDevice&       asAudioDevice() noexcept;
     [[nodiscard]] const priv::AudioDevice& asAudioDevice() const noexcept;
+
+    ////////////////////////////////////////////////////////////
+    // Lifetime tracking
+    ////////////////////////////////////////////////////////////
+    SFML_DEFINE_LIFETIME_DEPENDEE(PlaybackDevice, Listener);
+    SFML_DEFINE_LIFETIME_DEPENDEE(PlaybackDevice, SoundBase);
 };
 
 } // namespace sf

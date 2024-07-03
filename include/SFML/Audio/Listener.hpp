@@ -32,6 +32,7 @@
 #include <SFML/Audio/PlaybackDevice.hpp>
 
 #include <SFML/System/Angle.hpp>
+#include <SFML/System/LifetimeDependant.hpp>
 #include <SFML/System/Vector3.hpp>
 
 namespace sf
@@ -50,7 +51,7 @@ public:
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    explicit Listener(sf::PlaybackDevice& playbackDevice);
+    explicit Listener(PlaybackDevice& playbackDevice);
 
     ////////////////////////////////////////////////////////////
     /// \brief Structure defining the properties of a directional cone
@@ -228,7 +229,12 @@ public:
     [[nodiscard]] const sf::PlaybackDevice& getPlaybackDevice() const;
 
 private:
-    sf::PlaybackDevice& m_playbackDevice;
+    sf::PlaybackDevice* m_playbackDevice;
+
+    ////////////////////////////////////////////////////////////
+    // Lifetime tracking
+    ////////////////////////////////////////////////////////////
+    SFML_DEFINE_LIFETIME_DEPENDANT(PlaybackDevice);
 };
 
 } // namespace sf

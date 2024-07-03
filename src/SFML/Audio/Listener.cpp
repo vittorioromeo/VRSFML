@@ -32,106 +32,107 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-Listener::Listener(sf::PlaybackDevice& playbackDevice) : m_playbackDevice(playbackDevice)
+Listener::Listener(PlaybackDevice& playbackDevice) : m_playbackDevice(&playbackDevice)
 {
+    SFML_UPDATE_LIFETIME_DEPENDANT(PlaybackDevice, Listener, m_playbackDevice);
 }
 
 
 ////////////////////////////////////////////////////////////
 void Listener::setGlobalVolume(float volume)
 {
-    m_playbackDevice.asAudioDevice().setGlobalVolume(volume);
+    m_playbackDevice->asAudioDevice().setGlobalVolume(volume);
 }
 
 
 ////////////////////////////////////////////////////////////
 float Listener::getGlobalVolume()
 {
-    return m_playbackDevice.asAudioDevice().getGlobalVolume();
+    return m_playbackDevice->asAudioDevice().getGlobalVolume();
 }
 
 
 ////////////////////////////////////////////////////////////
 void Listener::setPosition(const Vector3f& position)
 {
-    m_playbackDevice.asAudioDevice().setPosition(position);
+    m_playbackDevice->asAudioDevice().setPosition(position);
 }
 
 
 ////////////////////////////////////////////////////////////
 Vector3f Listener::getPosition()
 {
-    return m_playbackDevice.asAudioDevice().getPosition();
+    return m_playbackDevice->asAudioDevice().getPosition();
 }
 
 
 ////////////////////////////////////////////////////////////
 void Listener::setDirection(const Vector3f& direction)
 {
-    m_playbackDevice.asAudioDevice().setDirection(direction);
+    m_playbackDevice->asAudioDevice().setDirection(direction);
 }
 
 
 ////////////////////////////////////////////////////////////
 Vector3f Listener::getDirection()
 {
-    return m_playbackDevice.asAudioDevice().getDirection();
+    return m_playbackDevice->asAudioDevice().getDirection();
 }
 
 
 ////////////////////////////////////////////////////////////
 void Listener::setVelocity(const Vector3f& velocity)
 {
-    m_playbackDevice.asAudioDevice().setVelocity(velocity);
+    m_playbackDevice->asAudioDevice().setVelocity(velocity);
 }
 
 
 ////////////////////////////////////////////////////////////
 Vector3f Listener::getVelocity()
 {
-    return m_playbackDevice.asAudioDevice().getVelocity();
+    return m_playbackDevice->asAudioDevice().getVelocity();
 }
 
 
 ////////////////////////////////////////////////////////////
 void Listener::setCone(const Listener::Cone& cone)
 {
-    m_playbackDevice.asAudioDevice().setCone(cone);
+    m_playbackDevice->asAudioDevice().setCone(cone);
 }
 
 
 ////////////////////////////////////////////////////////////
 Listener::Cone Listener::getCone()
 {
-    return m_playbackDevice.asAudioDevice().getCone();
+    return m_playbackDevice->asAudioDevice().getCone();
 }
 
 
 ////////////////////////////////////////////////////////////
 void Listener::setUpVector(const Vector3f& upVector)
 {
-    m_playbackDevice.asAudioDevice().setUpVector(upVector);
+    m_playbackDevice->asAudioDevice().setUpVector(upVector);
 }
 
 
 ////////////////////////////////////////////////////////////
 Vector3f Listener::getUpVector()
 {
-    return m_playbackDevice.asAudioDevice().getUpVector();
+    return m_playbackDevice->asAudioDevice().getUpVector();
 }
 
 
 ////////////////////////////////////////////////////////////
 sf::PlaybackDevice& Listener::getPlaybackDevice()
 {
-    return m_playbackDevice;
+    return *m_playbackDevice;
 }
 
 
 ////////////////////////////////////////////////////////////
 const sf::PlaybackDevice& Listener::getPlaybackDevice() const
 {
-    return m_playbackDevice;
+    return *m_playbackDevice;
 }
 
 } // namespace sf

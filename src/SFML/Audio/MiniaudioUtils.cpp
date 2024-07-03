@@ -109,11 +109,11 @@ void applySettings(ma_sound& sound, const sf::priv::MiniaudioUtils::SavedSetting
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-MiniaudioUtils::SoundBase::SoundBase(priv::AudioDevice&               theAudioDevice,
+MiniaudioUtils::SoundBase::SoundBase(PlaybackDevice&                  thePlaybackDevice,
                                      const ma_data_source_vtable&     dataSourceVTable,
                                      AudioDevice::ResourceEntry::Func reinitializeFunc) :
 dataSourceBase{}, // must be first member!
-audioDevice(theAudioDevice)
+playbackDevice(&thePlaybackDevice)
 {
     // Set this object up as a miniaudio data source
     ma_data_source_config config = ma_data_source_config_init();
@@ -122,15 +122,17 @@ audioDevice(theAudioDevice)
     if (const ma_result result = ma_data_source_init(&config, &dataSourceBase); result != MA_SUCCESS)
         priv::err() << "Failed to initialize audio data source: " << ma_result_description(result) << priv::errEndl;
 
-    resourceEntryIndex = audioDevice
+    resourceEntryIndex = playbackDevice->asAudioDevice()
                              .registerResource(this, [](void* ptr) { static_cast<SoundBase*>(ptr)->deinitialize(); }, reinitializeFunc);
+
+    SFML_UPDATE_LIFETIME_DEPENDANT(PlaybackDevice, SoundBase, playbackDevice);
 }
 
 
 ////////////////////////////////////////////////////////////
 MiniaudioUtils::SoundBase::~SoundBase()
 {
-    audioDevice.unregisterResource(resourceEntryIndex);
+    playbackDevice->asAudioDevice().unregisterResource(resourceEntryIndex);
     ma_sound_uninit(&sound);
     ma_node_uninit(&effectNode, nullptr);
     ma_data_source_uninit(&dataSourceBase);
@@ -141,7 +143,7 @@ MiniaudioUtils::SoundBase::~SoundBase()
 bool MiniaudioUtils::SoundBase::initialize(ma_sound_end_proc endCallback)
 {
     // Get the engine
-    ma_engine* engine = audioDevice.getEngine();
+    ma_engine* engine = playbackDevice->asAudioDevice().getEngine();
     assert(engine != nullptr);
 
     // Initialize the sound
@@ -235,7 +237,7 @@ void MiniaudioUtils::SoundBase::processEffect(const float** framesIn,
 ////////////////////////////////////////////////////////////
 void MiniaudioUtils::SoundBase::connectEffect(bool connect)
 {
-    ma_engine* engine = audioDevice.getEngine();
+    ma_engine* engine = playbackDevice->asAudioDevice().getEngine();
 
     if (engine == nullptr)
     {
