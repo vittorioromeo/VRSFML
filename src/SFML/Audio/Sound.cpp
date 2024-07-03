@@ -54,8 +54,8 @@ namespace sf
 {
 struct Sound::Impl : priv::MiniaudioUtils::SoundBase
 {
-    explicit Impl(priv::AudioDevice& audioDevice) :
-    SoundBase(audioDevice, vtable, [](void* ptr) { static_cast<Impl*>(ptr)->initialize(); })
+    explicit Impl(PlaybackDevice& playbackDevice) :
+    SoundBase(playbackDevice, vtable, [](void* ptr) { static_cast<Impl*>(ptr)->initialize(); })
     {
         // Initialize sound structure and set default settings
         initialize();
@@ -200,8 +200,7 @@ struct Sound::Impl : priv::MiniaudioUtils::SoundBase
 
 
 ////////////////////////////////////////////////////////////
-Sound::Sound(PlaybackDevice& playbackDevice, const SoundBuffer& buffer) :
-m_impl(priv::makeUnique<Impl>(playbackDevice.asAudioDevice()))
+Sound::Sound(PlaybackDevice& playbackDevice, const SoundBuffer& buffer) : m_impl(priv::makeUnique<Impl>(playbackDevice))
 {
     setBuffer(buffer);
 
@@ -211,7 +210,7 @@ m_impl(priv::makeUnique<Impl>(playbackDevice.asAudioDevice()))
 
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(readability-redundant-member-init)
-Sound::Sound(const Sound& copy) : SoundSource(copy), m_impl(priv::makeUnique<Impl>(copy.m_impl->audioDevice))
+Sound::Sound(const Sound& copy) : SoundSource(copy), m_impl(priv::makeUnique<Impl>(*copy.m_impl->playbackDevice))
 {
     SoundSource::operator=(copy);
 

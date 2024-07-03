@@ -47,8 +47,8 @@ namespace sf
 {
 struct SoundStream::Impl : priv::MiniaudioUtils::SoundBase
 {
-    Impl(priv::AudioDevice& audioDevice, SoundStream* ownerPtr) :
-    SoundBase(audioDevice, vtable, [](void* ptr) { static_cast<Impl*>(ptr)->initialize(); }),
+    Impl(PlaybackDevice& playbackDevice, SoundStream* ownerPtr) :
+    SoundBase(playbackDevice, vtable, [](void* ptr) { static_cast<Impl*>(ptr)->initialize(); }),
     owner(ownerPtr)
     {
         // Initialize sound structure and set default settings
@@ -229,8 +229,7 @@ struct SoundStream::Impl : priv::MiniaudioUtils::SoundBase
 
 
 ////////////////////////////////////////////////////////////
-SoundStream::SoundStream(PlaybackDevice& playbackDevice) :
-m_impl(priv::makeUnique<Impl>(playbackDevice.asAudioDevice(), this))
+SoundStream::SoundStream(PlaybackDevice& playbackDevice) : m_impl(priv::makeUnique<Impl>(playbackDevice, this))
 {
 }
 

@@ -33,6 +33,7 @@
 #include <SFML/Audio/SoundSource.hpp>
 
 #include <SFML/System/Angle.hpp>
+#include <SFML/System/LifetimeDependant.hpp>
 
 #include <miniaudio.h>
 
@@ -46,6 +47,7 @@
 namespace sf
 {
 class Time;
+class PlaybackDevice;
 
 namespace priv::MiniaudioUtils
 {
@@ -75,7 +77,7 @@ struct SavedSettings
 
 struct SoundBase
 {
-    SoundBase(priv::AudioDevice&               theAudioDevice,
+    SoundBase(PlaybackDevice&                  thePlaybackDevice,
               const ma_data_source_vtable&     dataSourceVTable,
               AudioDevice::ResourceEntry::Func reinitializeFunc);
 
@@ -99,7 +101,7 @@ struct SoundBase
 
     ma_data_source_base dataSourceBase{}; //!< The struct that makes this object a miniaudio data source (must be first member)
 
-    priv::AudioDevice& audioDevice;
+    PlaybackDevice* playbackDevice;
 
     ma_node_vtable effectNodeVTable{};       //!< Vtable of the effect node
     EffectNode     effectNode;               //!< The engine node that performs effect processing
@@ -109,6 +111,11 @@ struct SoundBase
     EffectProcessor     effectProcessor;                      //!< The effect processor
     priv::AudioDevice::ResourceEntryIndex resourceEntryIndex; //!< Index of the resource entry registered with the AudioDevice
     priv::MiniaudioUtils::SavedSettings savedSettings; //!< Saved settings used to restore ma_sound state in case we need to recreate it
+
+    ////////////////////////////////////////////////////////////
+    // Lifetime tracking
+    ////////////////////////////////////////////////////////////
+    SFML_DEFINE_LIFETIME_DEPENDANT(PlaybackDevice);
 };
 
 [[nodiscard]] ma_channel   soundChannelToMiniaudioChannel(SoundChannel soundChannel);
