@@ -43,6 +43,7 @@
 ////////////////////////////////////////////////////////////
 
 struct ma_engine;
+struct ma_context;
 
 
 namespace sf::priv
@@ -74,7 +75,7 @@ public:
     /// \return The audio engine
     ///
     ////////////////////////////////////////////////////////////
-    ma_engine* getEngine();
+    ma_engine& getEngine();
 
     ////////////////////////////////////////////////////////////
     /// \brief Reinitialize the audio engine and device
@@ -86,7 +87,7 @@ public:
     /// \return True if reinitialization was successful, false otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool reinitialize();
+    [[nodiscard]] bool reinitialize(ma_context& context);
 
     struct DeviceEntry
     {
@@ -338,7 +339,7 @@ private:
     /// \return True if initialization was successful, false if it failed
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool initialize();
+    [[nodiscard]] bool initialize(ma_context& context);
 
 public:
     ////////////////////////////////////////////////////////////
