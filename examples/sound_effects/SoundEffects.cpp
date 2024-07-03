@@ -124,7 +124,7 @@ public:
     void start() override
     {
         // Synchronize listener audio position with graphical position
-        m_listener.setPosition({m_listener.getPosition().x, m_listener.getPosition().y, 0.f});
+        m_listener.setPosition({m_listenerShape.getPosition().x, m_listenerShape.getPosition().y, 0.f});
 
         m_music.play();
     }
@@ -302,7 +302,7 @@ public:
     void start() override
     {
         // Synchronize listener audio position with graphical position
-        m_listener.setPosition({m_listener.getPosition().x, m_listener.getPosition().y, 0.f});
+        m_listener.setPosition({m_listenerShape.getPosition().x, m_listenerShape.getPosition().y, 0.f});
 
         m_music.play();
     }
@@ -547,7 +547,7 @@ public:
     void start() override
     {
         // Synchronize listener audio position with graphical position
-        m_listener.setPosition({m_listener.getPosition().x, m_listener.getPosition().y, 0.f});
+        m_listener.setPosition({m_listenerShape.getPosition().x, m_listenerShape.getPosition().y, 0.f});
 
         play();
     }
@@ -629,7 +629,7 @@ public:
     void start() override
     {
         // Synchronize listener audio position with graphical position
-        m_listener.setPosition({m_listener.getPosition().x, m_listener.getPosition().y, 0.f});
+        m_listener.setPosition({m_listenerShape.getPosition().x, m_listenerShape.getPosition().y, 0.f});
 
         m_music.play();
     }
