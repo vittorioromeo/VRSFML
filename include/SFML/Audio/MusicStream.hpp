@@ -49,7 +49,7 @@ class MusicStream : public SoundStream
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Structure defining a time range using the template type
+    /// \brief Structure template defining a time range
     ///
     ////////////////////////////////////////////////////////////
     template <typename T>
@@ -59,14 +59,14 @@ public:
         T length{}; //!< The length of the time range
     };
 
-    // Define the relevant Span types
+    // Define the relevant `Span` types
     using TimeSpan = Span<Time>;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO
+    /// \brief Construct a music stream from a playback device and music source
     ///
     ////////////////////////////////////////////////////////////
-    explicit MusicStream(PlaybackDevice& playbackDevice, MusicSource& music);
+    explicit MusicStream(PlaybackDevice& playbackDevice, MusicSource& musicSource);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -87,16 +87,16 @@ public:
     MusicStream& operator=(MusicStream&&) noexcept;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the positions of the of the sound's looping sequence
+    /// \brief Get the positions of the of the music's looping sequence
     ///
-    /// \return Loop Time position class.
+    /// \return `TimeSpan` containing looping sequence positions
     ///
-    /// \warning Since setLoopPoints() performs some adjustments on the
+    /// \warning Since `setLoopPoints()` performs some adjustments on the
     /// provided values and rounds them to internal samples, a call to
-    /// getLoopPoints() is not guaranteed to return the same times passed
-    /// into a previous call to setLoopPoints(). However, it is guaranteed
+    /// `getLoopPoints()` is not guaranteed to return the same times passed
+    /// into a previous call to `setLoopPoints()`. However, it is guaranteed
     /// to return times that will map to the valid internal samples of
-    /// this music stream if they are later passed to setLoopPoints().
+    /// this music stream if they are later passed to `setLoopPoints()`.
     ///
     /// \see setLoopPoints
     ///
@@ -104,18 +104,18 @@ public:
     [[nodiscard]] TimeSpan getLoopPoints() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Sets the beginning and duration of the sound's looping sequence using sf::Time
+    /// \brief Sets the beginning and duration of the sound's looping sequence using `TimeSpan`
     ///
-    /// setLoopPoints() allows for specifying the beginning offset and the duration of the loop such that, when the music
+    /// `setLoopPoints()` allows for specifying the beginning offset and the duration of the loop such that, when the music
     /// is enabled for looping, it will seamlessly seek to the beginning whenever it
-    /// encounters the end of the duration. Valid ranges for timePoints.offset and timePoints.length are
-    /// [0, Dur) and (0, Dur-offset] respectively, where Dur is the value returned by getDuration().
+    /// encounters the end of the duration. Valid ranges for `timePoints.offset` and `timePoints.length` are
+    /// `[0, Dur)` and `(0, Dur-offset]` respectively, where Dur is the value returned by `getDuration()`.
     /// Note that the EOF "loop point" from the end to the beginning of the stream is still honored,
     /// in case the caller seeks to a point after the end of the loop range. This function can be
     /// safely called at any point after a stream is opened, and will be applied to a playing sound
     /// without affecting the current playing offset.
     ///
-    /// \warning Setting the loop points while the stream's status is Paused
+    /// \warning Setting the loop points while the stream's status is `Paused`
     /// will set its status to Stopped. The playing offset will be unaffected.
     ///
     /// \param timePoints The definition of the loop. Can be any time points within the sound's length
