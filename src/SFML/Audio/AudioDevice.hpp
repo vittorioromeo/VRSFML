@@ -27,6 +27,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Audio/AudioContext.hpp"
+
 #include <SFML/Audio/AudioDeviceHandle.hpp>
 #include <SFML/Audio/Listener.hpp>
 
@@ -45,6 +47,12 @@
 struct ma_engine;
 struct ma_context;
 
+namespace sf
+{
+class AudioContext;
+class PlaybackDevice;
+} // namespace sf
+
 
 namespace sf::priv
 {
@@ -61,7 +69,7 @@ public:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    AudioDevice();
+    AudioDevice(PlaybackDevice& playbackDevice, AudioContext& audioContext, const AudioDeviceHandle& deviceHandle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -77,17 +85,7 @@ public:
     ////////////////////////////////////////////////////////////
     ma_engine& getEngine();
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Reinitialize the audio engine and device
-    ///
-    /// Calling this function will reinitialize the audio engine
-    /// and device using the currently selected device name as
-    /// returned by sf::PlaybackDevice::getDevice.
-    ///
-    /// \return True if reinitialization was successful, false otherwise
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool reinitialize(ma_context& context);
+    void transferResourcesTo(AudioDevice& other);
 
     struct DeviceEntry
     {
@@ -95,65 +93,20 @@ public:
         bool              isDefault{};
     };
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Get a list of all available audio playback devices
-    ///
-    /// This function returns a vector of device entries,
-    /// containing the names and IDs of all available audio
-    /// playback devices. Additionally, if applicable, one entry
-    /// will be marked as the default device as reported by the
-    /// operating system.
-    ///
-    /// \return A vector of device entries containing the names and IDs of all available audio playback devices
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::vector<DeviceEntry> getAvailableDevices();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Set the audio playback device
-    ///
-    /// This function sets the audio playback device to the device
-    /// with the given \a handle. It can be called on the fly (i.e:
-    /// while sounds are playing).
-    ///
-    /// If there are sounds playing when the audio playback
-    /// device is switched, the sounds will continue playing
-    /// uninterrupted on the new audio playback device.
-    ///
-    /// \param handle The handle of the audio playback device
-    ///
-    /// \return True, if it was able to set the requested device
-    ///
-    /// \see getAvailableDevices, getDefaultDevice
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool setCurrentDevice(const AudioDeviceHandle& handle);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the handle of the current audio playback device
-    ///
-    /// \return The handle of the current audio playback device or `std::nullopt` if there is none
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] const std::optional<AudioDeviceHandle>& getCurrentDevice() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the handle of the default audio playback device
-    ///
-    /// \return The handle of the default audio playback device or `std::nullopt` if there is none
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::optional<AudioDeviceHandle> getDefaultDevice();
+    using ResourceEntryIndex = std::size_t;
 
     struct ResourceEntry
     {
-        using Func = void (*)(void*);
-        void* resource{};
-        Func  deinitializeFunc{};
-        Func  reinitializeFunc{};
-    };
+        using InitFunc     = void (*)(void*);
+        using TransferFunc = void (*)(void*, PlaybackDevice&, ResourceEntryIndex);
 
-    using ResourceEntryIndex = std::size_t;
+        void* resource{};
+
+        InitFunc deinitializeFunc{};
+        InitFunc reinitializeFunc{};
+
+        TransferFunc transferFunc{};
+    };
 
     ////////////////////////////////////////////////////////////
     /// \brief Register an audio resource
@@ -173,9 +126,10 @@ public:
     /// \see unregisterResource
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] ResourceEntryIndex registerResource(void*               resource,
-                                                      ResourceEntry::Func deinitializeFunc,
-                                                      ResourceEntry::Func reinitializeFunc);
+    [[nodiscard]] ResourceEntryIndex registerResource(void*                       resource,
+                                                      ResourceEntry::InitFunc     deinitializeFunc,
+                                                      ResourceEntry::InitFunc     reinitializeFunc,
+                                                      ResourceEntry::TransferFunc transferFunc);
 
     ////////////////////////////////////////////////////////////
     /// \brief Unregister an audio resource
@@ -339,7 +293,7 @@ private:
     /// \return True if initialization was successful, false if it failed
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool initialize(ma_context& context);
+    [[nodiscard]] bool initialize(ma_context& context, const AudioDeviceHandle& selectedDeviceHandle);
 
 public:
     ////////////////////////////////////////////////////////////

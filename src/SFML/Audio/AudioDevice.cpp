@@ -25,7 +25,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Audio/AudioContext.hpp>
 #include <SFML/Audio/AudioDevice.hpp>
+#include <SFML/Audio/AudioDeviceHandle.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
@@ -57,32 +59,6 @@ struct AudioDevice::ListenerProperties
 
 namespace
 {
-////////////////////////////////////////////////////////////
-template <typename F>
-[[nodiscard]] bool forAllMADeviceInfos(ma_context& maContext, F&& func)
-{
-    std::vector<ma_device_info> maDeviceInfoVector; // Use a single local variable for NRVO
-
-    ma_device_info* maDeviceInfosPtr{};
-    ma_uint32       maDeviceInfoCount{};
-
-    // Get the playback devices
-    if (const ma_result result = ma_context_get_devices(&maContext, &maDeviceInfosPtr, &maDeviceInfoCount, nullptr, nullptr);
-        result != MA_SUCCESS)
-    {
-        err() << "Failed to get audio playback devices: " << ma_result_description(result) << errEndl;
-        return false; // Empty device entry impl vector
-    }
-
-    maDeviceInfoVector.reserve(maDeviceInfoCount);
-
-    for (ma_uint32 i = 0u; i < maDeviceInfoCount; ++i)
-        func(maDeviceInfosPtr[i]);
-
-    return true;
-}
-
-
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool updateMiniaudioEnginePropertiesFromListenerProperties(
     ma_engine&                             engine,
@@ -124,129 +100,6 @@ template <typename F>
 }
 
 } // namespace
-
-
-////////////////////////////////////////////////////////////
-class MiniaudioGlobals
-{
-private:
-    std::optional<ma_log>     m_maLog;     //!< miniaudio log (one per program)
-    std::optional<ma_context> m_maContext; //!< miniaudio context (one per program)
-
-    static void maLogCallback(void*, ma_uint32 level, const char* message)
-    {
-        if (level <= MA_LOG_LEVEL_WARNING)
-            err() << "miniaudio " << ma_log_level_to_string(level) << ": " << message << errFlush;
-    }
-
-    [[nodiscard]] static std::optional<ma_log> tryCreateMALog()
-    {
-        std::optional<ma_log> log; // Use a single local variable for NRVO
-        log.emplace();
-
-        // Create the log
-        if (const ma_result result = ma_log_init(nullptr, &*log); result != MA_SUCCESS)
-        {
-            err() << "Failed to initialize the audio log: " << ma_result_description(result) << errEndl;
-
-            log.reset();
-            return log; // Empty optional
-        }
-
-        // Register our logging callback to output any warning/error messages
-        if (const ma_result result = ma_log_register_callback(&*log, ma_log_callback_init(&maLogCallback, nullptr));
-            result != MA_SUCCESS)
-        {
-            err() << "Failed to register audio log callback: " << ma_result_description(result) << errEndl;
-
-            log.reset();
-            return log; // Empty optional
-        }
-
-        assert(log.has_value());
-        return log;
-    }
-
-    [[nodiscard]] static std::optional<ma_context> tryCreateMAContext(ma_log& maLog)
-    {
-        std::optional<ma_context> context; // Use a single local variable for NRVO
-        context.emplace();
-
-        // Create the context
-        auto contextConfig = ma_context_config_init();
-        contextConfig.pLog = &maLog;
-
-        ma_uint32 deviceCount = 0;
-
-        const ma_backend  nullBackend = ma_backend_null;
-        const ma_backend* backendLists[2]{nullptr, &nullBackend};
-
-        for (const auto* backendList : backendLists)
-        {
-            // We can set backendCount to 1 since it is ignored when backends is set to nullptr
-            if (const ma_result result = ma_context_init(backendList, 1, &contextConfig, &*context); result != MA_SUCCESS)
-            {
-                err() << "Failed to initialize the audio playback context: " << ma_result_description(result) << errEndl;
-
-                context.reset();
-                return context; // Empty optional
-            }
-
-            // Count the playback devices
-            if (const ma_result result = ma_context_get_devices(&*context, nullptr, &deviceCount, nullptr, nullptr);
-                result != MA_SUCCESS)
-            {
-                err() << "Failed to get audio playback devices: " << ma_result_description(result) << errEndl;
-
-                context.reset();
-                return context; // Empty optional
-            }
-
-            // Check if there are audio playback devices available on the system
-            if (deviceCount > 0)
-                break;
-
-            // Warn if no devices were found using the default backend list
-            if (backendList == nullptr)
-                err() << "No audio playback devices available on the system" << errEndl;
-
-            // Clean up the context if we didn't find any devices (TODO: why?)
-            ma_context_uninit(&*context);
-        }
-
-        // If the NULL audio backend also doesn't provide a device we give up
-        if (deviceCount == 0)
-        {
-            context.reset();
-            return context; // Empty optional
-        }
-
-        assert(context.has_value());
-        return context;
-    }
-
-public:
-    explicit MiniaudioGlobals() : m_maLog(tryCreateMALog()), m_maContext(tryCreateMAContext(*m_maLog))
-    {
-        if (m_maContext->backend == ma_backend_null)
-            err() << "Using NULL audio backend for playback" << errEndl;
-    }
-
-    ~MiniaudioGlobals()
-    {
-        if (m_maContext.has_value())
-            ma_context_uninit(&*m_maContext);
-
-        if (m_maLog.has_value())
-            ma_log_uninit(&*m_maLog);
-    }
-
-    [[nodiscard]] ma_context& getMAContext()
-    {
-        assert(m_maContext.has_value());
-        return *m_maContext;
-    }
-};
 
 
 ////////////////////////////////////////////////////////////
@@ -353,39 +206,30 @@ public:
 ////////////////////////////////////////////////////////////
 struct AudioDevice::Impl
 {
-    MiniaudioGlobals                    maGlobals;
+    PlaybackDevice*                     playbackDevice;
+    AudioContext*                       audioContext;
     std::optional<MiniaudioPerHWDevice> maPerHWDevice;
 
     std::vector<std::optional<ResourceEntry>> resources;      //!< Registered resources
     std::mutex                                resourcesMutex; //!< The mutex guarding the registered resources
 
-    ListenerProperties               listenerProperties;  // !< TODO
-    std::optional<AudioDeviceHandle> currentDeviceHandle; // !< TODO
+    ListenerProperties               listenerProperties; // !< TODO
+    std::optional<AudioDeviceHandle> deviceHandle;       // !< TODO
 
-    // Update the current device string from the the device we just initialized
-    void updateCurrentDeviceHandle(ma_device& maDevice)
+    explicit Impl(PlaybackDevice& thePlaybackDevice, AudioContext& theAudioContext, AudioDeviceHandle theDeviceHandle) :
+    playbackDevice(&thePlaybackDevice),
+    audioContext(&theAudioContext),
+    deviceHandle(theDeviceHandle)
     {
-        ma_device_info maDeviceInfo;
-
-        if (const ma_result result = ma_device_get_info(&maDevice, ma_device_type_playback, &maDeviceInfo);
-            result != MA_SUCCESS)
-        {
-            err() << "Failed to get name of audio playback device: " << ma_result_description(result) << errEndl;
-
-            currentDeviceHandle = std::nullopt;
-        }
-        else
-        {
-            currentDeviceHandle = AudioDeviceHandle{PassKey<AudioDevice>{}, &maDeviceInfo};
-        }
     }
 };
 
 
 ////////////////////////////////////////////////////////////
-AudioDevice::AudioDevice()
+AudioDevice::AudioDevice(PlaybackDevice& playbackDevice, AudioContext& audioContext, const AudioDeviceHandle& deviceHandle) :
+m_impl(playbackDevice, audioContext, deviceHandle)
 {
-    if (!initialize(m_impl->maGlobals.getMAContext())) // TODO: pass to ctor
+    if (!initialize(m_impl->audioContext->getMAContext(), deviceHandle))
         err() << "Failed to initialize audio device or engine" << errEndl;
 }
 
@@ -402,83 +246,44 @@ ma_engine& AudioDevice::getEngine()
 
 
 ////////////////////////////////////////////////////////////
-bool AudioDevice::reinitialize(ma_context& context)
+void AudioDevice::transferResourcesTo(AudioDevice& other)
 {
-    const std::lock_guard lock(m_impl->resourcesMutex);
+    std::vector<ResourceEntryIndex> toUnregister;
 
-    // Deinitialize all audio resources
-    for (const auto& entry : m_impl->resources)
-        if (entry.has_value())
+    {
+        const std::lock_guard lock(m_impl->resourcesMutex);
+
+        // Deinitialize all audio resources from self
+        for (ResourceEntryIndex i = 0; i < m_impl->resources.size(); ++i)
+        {
+            std::optional<ResourceEntry>& entry = m_impl->resources[i];
+            if (!entry.has_value())
+                continue;
+
+            toUnregister.push_back(i);
             entry->deinitializeFunc(entry->resource);
 
-    // Destroy the old device and engine
-    m_impl->maPerHWDevice.reset();
+            const ResourceEntryIndex otherEntryIndex = other.registerResource(entry->resource,
+                                                                              entry->deinitializeFunc,
+                                                                              entry->reinitializeFunc,
+                                                                              entry->transferFunc);
 
-    // Create the new objects
-    const bool result = initialize(context);
-
-    // Reinitialize all audio resources
-    for (const auto& entry : m_impl->resources)
-        if (entry.has_value())
+            entry->transferFunc(entry->resource, *other.m_impl->playbackDevice, otherEntryIndex);
             entry->reinitializeFunc(entry->resource);
-
-    return result;
-}
-
-
-////////////////////////////////////////////////////////////
-std::vector<AudioDevice::DeviceEntry> AudioDevice::getAvailableDevices()
-{
-    std::vector<AudioDevice::DeviceEntry> result;
-
-    const bool success = forAllMADeviceInfos(m_impl->maGlobals.getMAContext(),
-                                             [&](const ma_device_info& maDeviceInfo)
-                                             {
-                                                 result.push_back({AudioDeviceHandle{PassKey<AudioDevice>{}, &maDeviceInfo},
-                                                                   static_cast<bool>(maDeviceInfo.isDefault)});
-                                             });
-
-    if (!success)
-    {
-        return result; // Empty vector
+        }
     }
 
-    return result; // Might be empty or not
+    for (ResourceEntryIndex i : toUnregister)
+        unregisterResource(i);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool AudioDevice::setCurrentDevice(const AudioDeviceHandle& handle)
-{
-    m_impl->currentDeviceHandle = handle;
-    return reinitialize(m_impl->maGlobals.getMAContext());
-}
-
-
-////////////////////////////////////////////////////////////
-const std::optional<AudioDeviceHandle>& AudioDevice::getCurrentDevice() const
-{
-    return m_impl->currentDeviceHandle;
-}
-
-
-////////////////////////////////////////////////////////////
-std::optional<AudioDeviceHandle> AudioDevice::getDefaultDevice()
-{
-    for (const auto& [name, isDefault] : getAvailableDevices())
-    {
-        if (isDefault)
-            return std::make_optional(name);
-    }
-
-    return std::nullopt;
-}
-
-
-////////////////////////////////////////////////////////////
-AudioDevice::ResourceEntryIndex AudioDevice::registerResource(void*               resource,
-                                                              ResourceEntry::Func deinitializeFunc,
-                                                              ResourceEntry::Func reinitializeFunc)
+AudioDevice::ResourceEntryIndex AudioDevice::registerResource(
+    void*                       resource,
+    ResourceEntry::InitFunc     deinitializeFunc,
+    ResourceEntry::InitFunc     reinitializeFunc,
+    ResourceEntry::TransferFunc transferFunc)
 {
     // There should always be an AudioDevice instance when registerResource is called
     const std::lock_guard lock(m_impl->resourcesMutex);
@@ -489,7 +294,7 @@ AudioDevice::ResourceEntryIndex AudioDevice::registerResource(void*             
         if (!resources[i].has_value())
             return i;
 
-    resources.emplace_back(ResourceEntry{resource, deinitializeFunc, reinitializeFunc});
+    resources.emplace_back(std::in_place, resource, deinitializeFunc, reinitializeFunc, transferFunc);
     return resources.size() - 1;
 }
 
@@ -619,39 +424,17 @@ Vector3f AudioDevice::getUpVector() const
 
 
 ////////////////////////////////////////////////////////////
-bool AudioDevice::initialize(ma_context& maContext)
+bool AudioDevice::initialize(ma_context& maContext, const AudioDeviceHandle& selectedDeviceHandle)
 {
-    std::optional<AudioDeviceHandle> selectedDeviceHandle = m_impl->currentDeviceHandle;
-
-    if (!selectedDeviceHandle.has_value())
-        selectedDeviceHandle = getDefaultDevice();
-
-    const std::optional<ma_device_id> deviceId = [&]
-    {
-        std::optional<ma_device_id> result; // Use a single local variable for NRVO
-
-        const bool success = forAllMADeviceInfos(maContext,
-                                                 [&](const ma_device_info& maDeviceInfo)
-                                                 {
-                                                     if (AudioDeviceHandle{PassKey<AudioDevice>{}, &maDeviceInfo} ==
-                                                         selectedDeviceHandle)
-                                                         result = maDeviceInfo.id;
-                                                 });
-
-        if (!success)
-        {
-            return result; // Empty optional
-        }
-
-        return result; // Might be empty or not
-    }();
+    ma_device_info deviceInfo;
+    selectedDeviceHandle.copyMADeviceInfoInto(&deviceInfo);
 
     // Create the device and engine
-    m_impl->maPerHWDevice.emplace(maContext, deviceId);
+    m_impl->maPerHWDevice.emplace(maContext, deviceInfo.id);
     if (!m_impl->maPerHWDevice.has_value())
         return false;
 
-    m_impl->updateCurrentDeviceHandle(m_impl->maPerHWDevice->getMADevice());
+    //  m_impl->updateCurrentDeviceHandle(m_impl->maPerHWDevice->getMADevice());
 
     if (!updateMiniaudioEnginePropertiesFromListenerProperties(m_impl->maPerHWDevice->getMAEngine(), m_impl->listenerProperties))
     {

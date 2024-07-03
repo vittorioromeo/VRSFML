@@ -36,7 +36,10 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-PlaybackDevice::PlaybackDevice() : m_audioDevice(priv::makeUnique<priv::AudioDevice>())
+PlaybackDevice::PlaybackDevice(AudioContext& audioContext, const AudioDeviceHandle& deviceHandle) :
+m_audioContext(&audioContext),
+m_deviceHandle(deviceHandle),
+m_audioDevice(priv::makeUnique<priv::AudioDevice>(*this, audioContext, deviceHandle))
 {
 }
 
@@ -46,47 +49,27 @@ PlaybackDevice::~PlaybackDevice() = default;
 
 
 ////////////////////////////////////////////////////////////
-std::vector<AudioDeviceHandle> PlaybackDevice::getAvailableDevices()
+PlaybackDevice::PlaybackDevice(PlaybackDevice&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
+PlaybackDevice& PlaybackDevice::operator=(PlaybackDevice&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
+void PlaybackDevice::transferResourcesTo(PlaybackDevice& other)
 {
-    const std::vector<priv::AudioDevice::DeviceEntry> deviceEntries = m_audioDevice->getAvailableDevices();
+    if (&other == this)
+        return;
 
-    std::vector<AudioDeviceHandle> deviceHandles;
-    deviceHandles.reserve(deviceEntries.size());
-
-    for (const priv::AudioDevice::DeviceEntry& deviceEntry : deviceEntries)
-        deviceHandles.emplace_back(deviceEntry.handle);
-
-    return deviceHandles;
+    asAudioDevice().transferResourcesTo(other.asAudioDevice());
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<AudioDeviceHandle> PlaybackDevice::getDefaultDevice()
+[[nodiscard]] const AudioDeviceHandle& PlaybackDevice::getDeviceHandle() const
 {
-    return m_audioDevice->getDefaultDevice();
-}
-
-
-////////////////////////////////////////////////////////////
-bool PlaybackDevice::setCurrentDevice(const AudioDeviceHandle& handle)
-{
-    // Perform a sanity check to make sure the user isn't passing us a non-existant device handle
-    if (const auto& availableDevices = m_audioDevice->getAvailableDevices();
-        !priv::anyOf(availableDevices.begin(),
-                     availableDevices.end(),
-                     [&](const priv::AudioDevice::DeviceEntry& deviceEntry) { return deviceEntry.handle == handle; }))
-    {
-        return false;
-    }
-
-    return m_audioDevice->setCurrentDevice(handle);
-}
-
-
-////////////////////////////////////////////////////////////
-std::optional<AudioDeviceHandle> PlaybackDevice::getCurrentDevice()
-{
-    return m_audioDevice->getCurrentDevice();
+    return m_deviceHandle;
 }
 
 

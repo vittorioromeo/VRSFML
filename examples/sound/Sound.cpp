@@ -1,6 +1,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Audio/AudioDeviceHandle.hpp"
+
+#include <SFML/Audio/AudioContext.hpp>
 #include <SFML/Audio/MusicSource.hpp>
 #include <SFML/Audio/MusicStream.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
@@ -90,7 +93,9 @@ void playMusic(sf::PlaybackDevice& playbackDevice, const std::filesystem::path& 
 int main()
 {
     // TODO
-    sf::PlaybackDevice playbackDevice;
+    auto audioContext        = sf::AudioContext::create().value();
+    auto defaultDeviceHandle = audioContext.getDefaultDevice().value();
+    auto playbackDevice      = sf::PlaybackDevice(audioContext, defaultDeviceHandle);
 
     // Play a sound
     playSound(playbackDevice);

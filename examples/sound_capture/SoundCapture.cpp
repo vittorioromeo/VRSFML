@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Audio/AudioContext.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
 #include <SFML/Audio/Sound.hpp>
 #include <SFML/Audio/SoundBuffer.hpp>
@@ -23,11 +24,19 @@
 ////////////////////////////////////////////////////////////
 int main()
 {
+    // Create the audio context
+    std::optional audioContext = sf::AudioContext::create();
+    if (!audioContext.has_value())
+    {
+        std::cerr << "Failure to create audio context" << std::endl;
+        return EXIT_FAILURE;
+    }
+
     // Check that the device can capture audio
     if (!sf::SoundRecorder::isAvailable())
     {
         std::cout << "Sorry, audio capture is not supported by your system" << std::endl;
-        return EXIT_SUCCESS;
+        return EXIT_FAILURE;
     }
 
     // List the available capture devices
@@ -113,7 +122,7 @@ int main()
     else
     {
         // TODO:
-        sf::PlaybackDevice playbackDevice;
+        sf::PlaybackDevice playbackDevice(*audioContext, audioContext->getDefaultDevice().value());
 
         // Create a sound instance and play it
         sf::Sound sound(playbackDevice, buffer);

@@ -29,11 +29,20 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
-#include <SFML/System/InPlacePImpl.hpp>
+#include <SFML/Audio/AudioDeviceHandle.hpp>
+
 #include <SFML/System/PassKey.hpp>
+#include <SFML/System/UniquePtr.hpp>
 
-#include <string_view>
+#include <optional>
+#include <vector>
 
+
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+
+struct ma_context;
 
 namespace sf::priv
 {
@@ -43,73 +52,91 @@ class AudioDevice;
 
 namespace sf
 {
-class AudioContext;
-class PlaybackDevice;
-class SoundRecorder;
-
 ////////////////////////////////////////////////////////////
-class [[nodiscard]] AudioDeviceHandle
+/// \brief TODO
+///
+////////////////////////////////////////////////////////////
+class SFML_AUDIO_API [[nodiscard]] AudioContext
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
+    /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] AudioDeviceHandle();
+    SFML_AUDIO_API static std::optional<AudioContext> create();
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    ~AudioDeviceHandle();
+    SFML_AUDIO_API ~AudioContext();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Copy constructor
+    /// \brief Deleted copy constructor
     ///
     ////////////////////////////////////////////////////////////
-    AudioDeviceHandle(const AudioDeviceHandle& rhs);
+    SFML_AUDIO_API AudioContext(const AudioContext& rhs) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    SFML_AUDIO_API AudioContext& operator=(const AudioContext& rhs) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    AudioDeviceHandle(AudioDeviceHandle&& rhs) noexcept;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Copy assignment
-    ///
-    ////////////////////////////////////////////////////////////
-    AudioDeviceHandle& operator=(const AudioDeviceHandle& rhs);
+    SFML_AUDIO_API AudioContext(AudioContext&& rhs) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment
     ///
     ////////////////////////////////////////////////////////////
-    AudioDeviceHandle& operator=(AudioDeviceHandle&& rhs) noexcept;
+    SFML_AUDIO_API AudioContext& operator=(AudioContext&& rhs) noexcept;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO
+    /// \brief Get a list of the names of all available audio playback devices
+    ///
+    /// This function returns a vector of strings containing
+    /// the names of all available audio playback devices.
+    ///
+    /// If the operating system reports multiple devices with
+    /// the same name, a number will be appended to the name
+    /// of all subsequent devices to distinguish them from each
+    /// other. This guarantees that every entry returned by this
+    /// function will represent a unique device.
+    ///
+    /// For example, if the operating system reports multiple
+    /// devices with the name "Sound Card", the entries returned
+    /// would be:
+    ///   - Sound Card
+    ///   - Sound Card 2
+    ///   - Sound Card 3
+    ///   - ...
+    ///
+    /// The default device, if one is marked as such, will be
+    /// placed at the beginning of the vector.
+    ///
+    /// If no devices are available, this function will return
+    /// an empty vector.
+    ///
+    /// \return A vector containing the device handles or an empty vector if no devices are available
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string_view getName() const;
+    [[nodiscard]] SFML_AUDIO_API std::vector<AudioDeviceHandle> getAvailableDevices();
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO
+    /// \brief Get the name of the default audio playback device
+    ///
+    /// This function returns the name of the default audio
+    /// playback device. If none is available, an empty string
+    /// is returned.
+    ///
+    /// \return The handle to the default audio playback device
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isDefault() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO
-    ///
-    ////////////////////////////////////////////////////////////
-    friend bool operator==(const AudioDeviceHandle& lhs, const AudioDeviceHandle& rhs);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO
-    ///
-    ////////////////////////////////////////////////////////////
-    friend bool operator!=(const AudioDeviceHandle& lhs, const AudioDeviceHandle& rhs);
+    [[nodiscard]] SFML_AUDIO_API std::optional<AudioDeviceHandle> getDefaultDevice();
 
 private:
     friend priv::AudioDevice;
@@ -118,54 +145,31 @@ private:
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit AudioDeviceHandle(const void* maDeviceInfo);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO
-    ///
-    ////////////////////////////////////////////////////////////
-    void copyMADeviceInfoInto(void* maDeviceInfo) const;
+    [[nodiscard]] SFML_AUDIO_API ma_context& getMAContext() const;
 
 public:
     ////////////////////////////////////////////////////////////
     /// \private
     ///
-    /// \brief TODO
+    /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit AudioDeviceHandle(priv::PassKey<AudioContext>&&, const void* maDeviceInfo);
-
-    ////////////////////////////////////////////////////////////
-    /// \private
-    ///
-    /// \brief TODO
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit AudioDeviceHandle(priv::PassKey<SoundRecorder>&&, const void* maDeviceInfo);
-
-    ////////////////////////////////////////////////////////////
-    /// \private
-    ///
-    /// \brief TODO
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit AudioDeviceHandle(priv::PassKey<priv::AudioDevice>&&, const void* maDeviceInfo);
+    [[nodiscard]] SFML_AUDIO_API explicit AudioContext(priv::PassKey<AudioContext>&&);
 
 private:
     struct Impl;
-    priv::InPlacePImpl<Impl, 2048> m_impl;
+    priv::UniquePtr<Impl> m_impl; // Needs address stability
 };
 
-////////////////////////////////////////////////////////////
-/// \brief TODO
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] bool operator==(const AudioDeviceHandle& lhs, const AudioDeviceHandle& rhs);
-
-////////////////////////////////////////////////////////////
-/// \brief TODO
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] bool operator!=(const AudioDeviceHandle& lhs, const AudioDeviceHandle& rhs);
-
 } // namespace sf
+
+
+////////////////////////////////////////////////////////////
+/// \class sf::AudioContext
+/// \ingroup audio
+///
+/// TODO
+///
+/// \see TODO
+///
+////////////////////////////////////////////////////////////

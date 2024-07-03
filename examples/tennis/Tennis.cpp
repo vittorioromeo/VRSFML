@@ -10,6 +10,7 @@
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
+#include <SFML/Audio/AudioContext.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
 #include <SFML/Audio/Sound.hpp>
 #include <SFML/Audio/SoundBuffer.hpp>
@@ -25,6 +26,7 @@
 #include <SFML/System/Vector2.hpp>
 
 #include <filesystem>
+#include <iostream>
 #include <random>
 #include <string>
 
@@ -67,8 +69,10 @@ int main()
                             sf::Style::Titlebar | sf::Style::Close);
     window.setVerticalSyncEnabled(true);
 
-    // TODO:
-    sf::PlaybackDevice playbackDevice;
+    // TODO
+    auto audioContext        = sf::AudioContext::create().value();
+    auto defaultDeviceHandle = audioContext.getDefaultDevice().value();
+    auto playbackDevice      = sf::PlaybackDevice(audioContext, defaultDeviceHandle);
 
     // Load the sounds used in the game
     const auto ballSoundBuffer = sf::SoundBuffer::loadFromFile(resourcesDir() / "ball.wav").value();
