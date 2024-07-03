@@ -71,10 +71,6 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Get the audio engine
     ///
-    /// There should only be a single instance of AudioDevice.
-    /// As long as an AudioResource exists, this function should
-    /// always return a valid pointer to the audio engine.
-    ///
     /// \return The audio engine
     ///
     ////////////////////////////////////////////////////////////
@@ -110,7 +106,7 @@ public:
     /// \return A vector of device entries containing the names and IDs of all available audio playback devices
     ///
     ////////////////////////////////////////////////////////////
-    std::vector<DeviceEntry> getAvailableDevices();
+    [[nodiscard]] std::vector<DeviceEntry> getAvailableDevices();
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the audio playback device
@@ -138,7 +134,7 @@ public:
     /// \return The name of the current audio playback device or `std::nullopt` if there is none
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::optional<std::string> getDevice();
+    [[nodiscard]] const std::optional<std::string>& getDevice() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the name of the default audio playback device
@@ -212,7 +208,7 @@ public:
     /// \see setGlobalVolume
     ///
     ////////////////////////////////////////////////////////////
-    float getGlobalVolume();
+    [[nodiscard]] float getGlobalVolume() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the position of the listener in the scene
@@ -234,7 +230,7 @@ public:
     /// \see setPosition
     ///
     ////////////////////////////////////////////////////////////
-    Vector3f getPosition();
+    [[nodiscard]] Vector3f getPosition() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the forward vector of the listener in the scene
@@ -261,7 +257,7 @@ public:
     /// \see setDirection
     ///
     ////////////////////////////////////////////////////////////
-    Vector3f getDirection();
+    [[nodiscard]] Vector3f getDirection() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the velocity of the listener in the scene
@@ -283,7 +279,7 @@ public:
     /// \see setVelocity
     ///
     ////////////////////////////////////////////////////////////
-    Vector3f getVelocity();
+    [[nodiscard]] Vector3f getVelocity() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the cone properties of the listener in the audio scene
@@ -306,7 +302,7 @@ public:
     /// \see setCone
     ///
     ////////////////////////////////////////////////////////////
-    Listener::Cone getCone();
+    [[nodiscard]] Listener::Cone getCone() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the upward vector of the listener in the scene
@@ -333,7 +329,7 @@ public:
     /// \see setUpVector
     ///
     ////////////////////////////////////////////////////////////
-    Vector3f getUpVector();
+    [[nodiscard]] Vector3f getUpVector() const;
 
 private:
     ////////////////////////////////////////////////////////////
@@ -344,20 +340,14 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool initialize();
 
-    ////////////////////////////////////////////////////////////
-    /// \brief This function makes sure the instance pointer is initialized before using it
-    ///
-    /// \return The instance pointer
-    ///
-    ////////////////////////////////////////////////////////////
-    static AudioDevice*& getInstance();
-
+public:
     ////////////////////////////////////////////////////////////
     /// \brief Structure holding listener properties
     ///
     ////////////////////////////////////////////////////////////
     struct ListenerProperties;
 
+private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////

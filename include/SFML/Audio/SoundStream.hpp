@@ -43,6 +43,7 @@
 
 namespace sf
 {
+class PlaybackDevice;
 struct EffectProcessor;
 class Time;
 
@@ -226,7 +227,7 @@ protected:
     /// This constructor is only meant to be called by derived classes.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SoundStream();
+    [[nodiscard]] explicit SoundStream(PlaybackDevice& playbackDevice);
 
     ////////////////////////////////////////////////////////////
     /// \brief Define the audio stream parameters

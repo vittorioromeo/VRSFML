@@ -29,19 +29,45 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
-#include <SFML/Audio/AudioResource.hpp>
+#include <SFML/System/UniquePtr.hpp>
 
 #include <optional>
 #include <string>
 #include <vector>
 
 
+namespace sf::priv
+{
+class AudioDevice;
+} // namespace sf::priv
+
+namespace sf::priv::MiniaudioUtils
+{
+struct SoundBase;
+} // namespace sf::priv::MiniaudioUtils
+
 namespace sf
 {
+class Listener;
+class Sound;
+class SoundStream;
+
 ////////////////////////////////////////////////////////////
-class PlaybackDevice : public AudioResource
+class PlaybackDevice
 {
 public:
+    ////////////////////////////////////////////////////////////
+    /// \brief Default constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    explicit PlaybackDevice();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Destructor
+    ///
+    ////////////////////////////////////////////////////////////
+    ~PlaybackDevice();
+
     ////////////////////////////////////////////////////////////
     /// \brief Get a list of the names of all available audio playback devices
     ///
@@ -112,6 +138,19 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] SFML_AUDIO_API std::optional<std::string> getDevice();
+
+
+private:
+    priv::UniquePtr<priv::AudioDevice> m_audioDevice;
+
+    // TODO
+    friend Listener;
+    friend priv::MiniaudioUtils::SoundBase;
+    friend Sound;
+    friend SoundStream;
+
+    [[nodiscard]] priv::AudioDevice&       asAudioDevice() noexcept;
+    [[nodiscard]] const priv::AudioDevice& asAudioDevice() const noexcept;
 };
 
 } // namespace sf

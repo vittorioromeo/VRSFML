@@ -28,7 +28,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/AudioDevice.hpp>
-#include <SFML/Audio/AudioResource.hpp>
 #include <SFML/Audio/EffectProcessor.hpp>
 #include <SFML/Audio/SoundChannel.hpp>
 #include <SFML/Audio/SoundSource.hpp>
@@ -74,13 +73,17 @@ struct SavedSettings
     float          outerGain{0.f};
 };
 
-struct SoundBase : public AudioResource
+struct SoundBase
 {
-    SoundBase(const ma_data_source_vtable& dataSourceVTable, AudioDevice::ResourceEntry::Func reinitializeFunc);
+    SoundBase(priv::AudioDevice&               theAudioDevice,
+              const ma_data_source_vtable&     dataSourceVTable,
+              AudioDevice::ResourceEntry::Func reinitializeFunc);
+
     ~SoundBase();
 
-    void initialize(ma_sound_end_proc endCallback);
-    void deinitialize();
+    [[nodiscard]] bool initialize(ma_sound_end_proc endCallback);
+    void               deinitialize();
+
     void processEffect(const float** framesIn, ma_uint32& frameCountIn, float** framesOut, ma_uint32& frameCountOut) const;
     void connectEffect(bool connect);
 
@@ -95,6 +98,9 @@ struct SoundBase : public AudioResource
     };
 
     ma_data_source_base dataSourceBase{}; //!< The struct that makes this object a miniaudio data source (must be first member)
+
+    priv::AudioDevice& audioDevice;
+
     ma_node_vtable effectNodeVTable{};       //!< Vtable of the effect node
     EffectNode     effectNode;               //!< The engine node that performs effect processing
     std::vector<ma_channel> soundChannelMap; //!< The map of position in sample frame to sound channel (miniaudio channels)

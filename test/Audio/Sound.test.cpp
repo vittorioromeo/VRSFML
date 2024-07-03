@@ -1,3 +1,4 @@
+#include <SFML/Audio/PlaybackDevice.hpp>
 #include <SFML/Audio/Sound.hpp>
 
 // Other 1st party headers
@@ -16,6 +17,8 @@
 
 TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
 {
+    sf::PlaybackDevice playbackDevice;
+
     SECTION("Type traits")
     {
         STATIC_CHECK(!std::is_constructible_v<sf::Sound, sf::SoundBuffer&&>);
@@ -33,7 +36,7 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("Construction")
     {
-        const sf::Sound sound(soundBuffer);
+        const sf::Sound sound(playbackDevice, soundBuffer);
         CHECK(&sound.getBuffer() == &soundBuffer);
         CHECK(!sound.getLoop());
         CHECK(sound.getPlayingOffset() == sf::Time::Zero);
@@ -42,7 +45,7 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("Copy semantics")
     {
-        const sf::Sound sound(soundBuffer);
+        const sf::Sound sound(playbackDevice, soundBuffer);
 
         SECTION("Construction")
         {
@@ -56,7 +59,7 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
         SECTION("Assignment")
         {
             const sf::SoundBuffer otherSoundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
-            sf::Sound             soundCopy(otherSoundBuffer);
+            sf::Sound             soundCopy(playbackDevice, otherSoundBuffer);
             soundCopy = sound;
             CHECK(&soundCopy.getBuffer() == &soundBuffer);
             CHECK(!soundCopy.getLoop());
@@ -68,21 +71,21 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
     SECTION("Set/get buffer")
     {
         const sf::SoundBuffer otherSoundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
-        sf::Sound             sound(soundBuffer);
+        sf::Sound             sound(playbackDevice, soundBuffer);
         sound.setBuffer(otherSoundBuffer);
         CHECK(&sound.getBuffer() == &otherSoundBuffer);
     }
 
     SECTION("Set/get loop")
     {
-        sf::Sound sound(soundBuffer);
+        sf::Sound sound(playbackDevice, soundBuffer);
         sound.setLoop(true);
         CHECK(sound.getLoop());
     }
 
     SECTION("Set/get playing offset")
     {
-        sf::Sound sound(soundBuffer);
+        sf::Sound sound(playbackDevice, soundBuffer);
         sound.setPlayingOffset(sf::seconds(10));
         CHECK(sound.getPlayingOffset() == sf::seconds(10));
     }
@@ -92,10 +95,10 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
     {
         SECTION("Return local from function")
         {
-            const auto badFunction = []
+            const auto badFunction = [&playbackDevice]
             {
                 const auto localSoundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
-                return sf::Sound(localSoundBuffer);
+                return sf::Sound(playbackDevice, localSoundBuffer);
             };
 
             const sf::priv::LifetimeDependee::TestingModeGuard guard;
@@ -110,15 +113,21 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
         {
             struct BadStruct
             {
-                sf::SoundBuffer memberSoundBuffer{sf::SoundBuffer::loadFromFile("Audio/ding.flac").value()};
-                sf::Sound       membeSound{memberSoundBuffer};
+                explicit BadStruct(sf::PlaybackDevice& playbackDevice) :
+                memberSoundBuffer{sf::SoundBuffer::loadFromFile("Audio/ding.flac").value()},
+                memberSound{playbackDevice, memberSoundBuffer}
+                {
+                }
+
+                sf::SoundBuffer memberSoundBuffer;
+                sf::Sound       memberSound;
             };
 
             const sf::priv::LifetimeDependee::TestingModeGuard guard;
             CHECK(!guard.fatalErrorTriggered());
 
             std::optional<BadStruct> badStruct0;
-            badStruct0.emplace();
+            badStruct0.emplace(playbackDevice);
             CHECK(!guard.fatalErrorTriggered());
 
             const BadStruct badStruct1 = SFML_MOVE(badStruct0.value());

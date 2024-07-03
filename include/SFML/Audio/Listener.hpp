@@ -29,21 +29,29 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
-#include <SFML/Audio/AudioResource.hpp>
+#include <SFML/Audio/PlaybackDevice.hpp>
 
 #include <SFML/System/Angle.hpp>
 #include <SFML/System/Vector3.hpp>
 
 namespace sf
 {
+class PlaybackDevice;
+
 ////////////////////////////////////////////////////////////
 /// \brief The audio listener is the point in the scene
 ///        from where all the sounds are heard
 ///
 ////////////////////////////////////////////////////////////
-class Listener : public AudioResource
+class Listener
 {
 public:
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    explicit Listener(sf::PlaybackDevice& playbackDevice);
+
     ////////////////////////////////////////////////////////////
     /// \brief Structure defining the properties of a directional cone
     ///
@@ -206,6 +214,9 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] SFML_AUDIO_API Vector3f getUpVector();
+
+private:
+    sf::PlaybackDevice& m_playbackDevice;
 };
 
 } // namespace sf

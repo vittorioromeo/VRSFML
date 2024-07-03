@@ -32,86 +32,92 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
+Listener::Listener(sf::PlaybackDevice& playbackDevice) : m_playbackDevice(playbackDevice)
+{
+}
+
+
+////////////////////////////////////////////////////////////
 void Listener::setGlobalVolume(float volume)
 {
-    getAudioDevice().setGlobalVolume(volume);
+    m_playbackDevice.asAudioDevice().setGlobalVolume(volume);
 }
 
 
 ////////////////////////////////////////////////////////////
 float Listener::getGlobalVolume()
 {
-    return getAudioDevice().getGlobalVolume();
+    return m_playbackDevice.asAudioDevice().getGlobalVolume();
 }
 
 
 ////////////////////////////////////////////////////////////
 void Listener::setPosition(const Vector3f& position)
 {
-    getAudioDevice().setPosition(position);
+    m_playbackDevice.asAudioDevice().setPosition(position);
 }
 
 
 ////////////////////////////////////////////////////////////
 Vector3f Listener::getPosition()
 {
-    return getAudioDevice().getPosition();
+    return m_playbackDevice.asAudioDevice().getPosition();
 }
 
 
 ////////////////////////////////////////////////////////////
 void Listener::setDirection(const Vector3f& direction)
 {
-    getAudioDevice().setDirection(direction);
+    m_playbackDevice.asAudioDevice().setDirection(direction);
 }
 
 
 ////////////////////////////////////////////////////////////
 Vector3f Listener::getDirection()
 {
-    return getAudioDevice().getDirection();
+    return m_playbackDevice.asAudioDevice().getDirection();
 }
 
 
 ////////////////////////////////////////////////////////////
 void Listener::setVelocity(const Vector3f& velocity)
 {
-    getAudioDevice().setVelocity(velocity);
+    m_playbackDevice.asAudioDevice().setVelocity(velocity);
 }
 
 
 ////////////////////////////////////////////////////////////
 Vector3f Listener::getVelocity()
 {
-    return getAudioDevice().getVelocity();
+    return m_playbackDevice.asAudioDevice().getVelocity();
 }
 
 
 ////////////////////////////////////////////////////////////
 void Listener::setCone(const Listener::Cone& cone)
 {
-    getAudioDevice().setCone(cone);
+    m_playbackDevice.asAudioDevice().setCone(cone);
 }
 
 
 ////////////////////////////////////////////////////////////
 Listener::Cone Listener::getCone()
 {
-    return getAudioDevice().getCone();
+    return m_playbackDevice.asAudioDevice().getCone();
 }
 
 
 ////////////////////////////////////////////////////////////
 void Listener::setUpVector(const Vector3f& upVector)
 {
-    getAudioDevice().setUpVector(upVector);
+    m_playbackDevice.asAudioDevice().setUpVector(upVector);
 }
 
 
 ////////////////////////////////////////////////////////////
 Vector3f Listener::getUpVector()
 {
-    return getAudioDevice().getUpVector();
+    return m_playbackDevice.asAudioDevice().getUpVector();
 }
 
 } // namespace sf

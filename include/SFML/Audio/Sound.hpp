@@ -41,6 +41,7 @@ namespace sf
 {
 class Time;
 class SoundBuffer;
+class PlaybackDevice;
 struct EffectProcessor;
 
 ////////////////////////////////////////////////////////////
@@ -56,7 +57,7 @@ public:
     /// \param buffer Sound buffer containing the audio data to play with the sound
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Sound(const SoundBuffer& buffer);
+    [[nodiscard]] explicit Sound(PlaybackDevice& playbackDevice, const SoundBuffer& buffer);
 
     ////////////////////////////////////////////////////////////
     /// \brief Disallow construction from a temporary sound buffer
