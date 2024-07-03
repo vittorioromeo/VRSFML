@@ -20,6 +20,7 @@
 #include <SFML/Graphics/Text.hpp>
 
 #include <SFML/Audio/Music.hpp>
+#include <SFML/Audio/MusicStream.hpp> // TODO
 
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/VideoMode.hpp>
