@@ -1,4 +1,5 @@
 #include <SFML/Audio/Music.hpp>
+#include <SFML/Audio/MusicStream.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
 
 // Other 1st party headers
