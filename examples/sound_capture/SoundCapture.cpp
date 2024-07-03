@@ -1,11 +1,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Audio/PlaybackDevice.hpp>
 #include <SFML/Audio/Sound.hpp>
 #include <SFML/Audio/SoundBuffer.hpp>
 #include <SFML/Audio/SoundBufferRecorder.hpp>
 #include <SFML/Audio/SoundRecorder.hpp>
-#include <SFML/Audio/PlaybackDevice.hpp>
 
 #include <SFML/System/Sleep.hpp>
 #include <SFML/System/Time.hpp>
@@ -36,7 +36,7 @@ int main()
     std::cout << "Available capture devices:\n" << std::endl;
 
     for (auto i = 0u; i < devices.size(); ++i)
-        std::cout << i << ": " << devices[i] << '\n';
+        std::cout << i << ": " << devices[i].getName() << '\n';
 
     std::cout << std::endl;
 
@@ -67,7 +67,7 @@ int main()
     // Here we'll use an integrated custom recorder, which saves the captured data into a SoundBuffer
     sf::SoundBufferRecorder recorder;
 
-    if (!recorder.setDevice(devices[deviceIndex]))
+    if (!recorder.setCurrentDevice(devices[deviceIndex]))
     {
         std::cerr << "Failed to set the capture device" << std::endl;
         return EXIT_FAILURE;

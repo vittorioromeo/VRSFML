@@ -29,11 +29,12 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
+#include <SFML/Audio/AudioDeviceHandle.hpp>
+
 #include <SFML/System/LifetimeDependee.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
 #include <optional>
-#include <string>
 #include <vector>
 
 
@@ -95,10 +96,10 @@ public:
     /// If no devices are available, this function will return
     /// an empty vector.
     ///
-    /// \return A vector of strings containing the device names or an empty vector if no devices are available
+    /// \return A vector containing the device handles or an empty vector if no devices are available
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_AUDIO_API std::vector<std::string> getAvailableDevices();
+    [[nodiscard]] SFML_AUDIO_API std::vector<AudioDeviceHandle> getAvailableDevices();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the name of the default audio playback device
@@ -107,10 +108,10 @@ public:
     /// playback device. If none is available, an empty string
     /// is returned.
     ///
-    /// \return The name of the default audio playback device
+    /// \return The handle to the default audio playback device
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_AUDIO_API std::optional<std::string> getDefaultDevice();
+    [[nodiscard]] SFML_AUDIO_API std::optional<AudioDeviceHandle> getDefaultDevice();
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the audio playback device
@@ -123,22 +124,22 @@ public:
     /// device is switched, the sounds will continue playing
     /// uninterrupted on the new audio playback device.
     ///
-    /// \param name The name of the audio playback device
+    /// \param handle The handle to the audio playback device
     ///
     /// \return True, if it was able to set the requested device
     ///
     /// \see getAvailableDevices, getDefaultDevice
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_AUDIO_API bool setDevice(const std::string& name);
+    [[nodiscard]] SFML_AUDIO_API bool setCurrentDevice(const AudioDeviceHandle& handle);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the name of the current audio playback device
+    /// \brief Get the handle to the current audio playback device
     ///
-    /// \return The name of the current audio playback device or std::nullopt if there is none
+    /// \return The handle to the current audio playback device or std::nullopt if there is none
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_AUDIO_API std::optional<std::string> getDevice();
+    [[nodiscard]] SFML_AUDIO_API std::optional<AudioDeviceHandle> getCurrentDevice();
 
 private:
     priv::UniquePtr<priv::AudioDevice> m_audioDevice;

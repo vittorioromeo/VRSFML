@@ -26,6 +26,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/AudioDevice.hpp>
+#include <SFML/Audio/AudioDeviceHandle.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
@@ -45,47 +46,47 @@ PlaybackDevice::~PlaybackDevice() = default;
 
 
 ////////////////////////////////////////////////////////////
-std::vector<std::string> PlaybackDevice::getAvailableDevices()
+std::vector<AudioDeviceHandle> PlaybackDevice::getAvailableDevices()
 {
-    const auto devices = m_audioDevice->getAvailableDevices();
+    const std::vector<priv::AudioDevice::DeviceEntry> deviceEntries = m_audioDevice->getAvailableDevices();
 
-    std::vector<std::string> deviceNameList;
-    deviceNameList.reserve(devices.size());
+    std::vector<AudioDeviceHandle> deviceHandles;
+    deviceHandles.reserve(deviceEntries.size());
 
-    for (const auto& device : devices)
-        deviceNameList.emplace_back(device.name);
+    for (const priv::AudioDevice::DeviceEntry& deviceEntry : deviceEntries)
+        deviceHandles.emplace_back(deviceEntry.handle);
 
-    return deviceNameList;
+    return deviceHandles;
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<std::string> PlaybackDevice::getDefaultDevice()
+std::optional<AudioDeviceHandle> PlaybackDevice::getDefaultDevice()
 {
     return m_audioDevice->getDefaultDevice();
 }
 
 
 ////////////////////////////////////////////////////////////
-bool PlaybackDevice::setDevice(const std::string& name)
+bool PlaybackDevice::setCurrentDevice(const AudioDeviceHandle& handle)
 {
-    // Perform a sanity check to make sure the user isn't passing us a non-existant device name
+    // Perform a sanity check to make sure the user isn't passing us a non-existant device handle
     if (const auto& availableDevices = m_audioDevice->getAvailableDevices();
         !priv::anyOf(availableDevices.begin(),
                      availableDevices.end(),
-                     [&](const priv::AudioDevice::DeviceEntry& deviceEntry) { return deviceEntry.name == name; }))
+                     [&](const priv::AudioDevice::DeviceEntry& deviceEntry) { return deviceEntry.handle == handle; }))
     {
         return false;
     }
 
-    return m_audioDevice->setDevice(name);
+    return m_audioDevice->setCurrentDevice(handle);
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<std::string> PlaybackDevice::getDevice()
+std::optional<AudioDeviceHandle> PlaybackDevice::getCurrentDevice()
 {
-    return m_audioDevice->getDevice();
+    return m_audioDevice->getCurrentDevice();
 }
 
 

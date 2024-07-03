@@ -27,12 +27,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Audio/AudioDeviceHandle.hpp>
 #include <SFML/Audio/Listener.hpp>
 
 #include <SFML/System/InPlacePImpl.hpp>
 
 #include <optional>
-#include <string>
 #include <vector>
 
 #include <cstddef>
@@ -91,8 +91,8 @@ public:
 
     struct DeviceEntry
     {
-        std::string name;
-        bool        isDefault{};
+        AudioDeviceHandle handle;
+        bool              isDefault{};
     };
 
     ////////////////////////////////////////////////////////////
@@ -113,37 +113,37 @@ public:
     /// \brief Set the audio playback device
     ///
     /// This function sets the audio playback device to the device
-    /// with the given \a name. It can be called on the fly (i.e:
+    /// with the given \a handle. It can be called on the fly (i.e:
     /// while sounds are playing).
     ///
     /// If there are sounds playing when the audio playback
     /// device is switched, the sounds will continue playing
     /// uninterrupted on the new audio playback device.
     ///
-    /// \param name The name of the audio playback device
+    /// \param handle The handle of the audio playback device
     ///
     /// \return True, if it was able to set the requested device
     ///
     /// \see getAvailableDevices, getDefaultDevice
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool setDevice(const std::string& name);
+    [[nodiscard]] bool setCurrentDevice(const AudioDeviceHandle& handle);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the name of the current audio playback device
+    /// \brief Get the handle of the current audio playback device
     ///
-    /// \return The name of the current audio playback device or `std::nullopt` if there is none
+    /// \return The handle of the current audio playback device or `std::nullopt` if there is none
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const std::optional<std::string>& getDevice() const;
+    [[nodiscard]] const std::optional<AudioDeviceHandle>& getCurrentDevice() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the name of the default audio playback device
+    /// \brief Get the handle of the default audio playback device
     ///
-    /// \return The name of the default audio playback device or `std::nullopt` if there is none
+    /// \return The handle of the default audio playback device or `std::nullopt` if there is none
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::optional<std::string> getDefaultDevice();
+    [[nodiscard]] std::optional<AudioDeviceHandle> getDefaultDevice();
 
     struct ResourceEntry
     {

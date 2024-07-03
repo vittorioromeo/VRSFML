@@ -29,11 +29,11 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
+#include <SFML/Audio/AudioDeviceHandle.hpp>
 #include <SFML/Audio/SoundChannel.hpp>
 
 #include <SFML/System/UniquePtr.hpp>
 
-#include <string>
 #include <vector>
 
 #include <cstddef>
@@ -91,7 +91,7 @@ public:
     /// the rest of the program while the capture runs.
     /// Please note that only one capture can happen at the same time.
     /// You can select which capture device will be used by passing
-    /// the name to the setDevice() method. If none was selected
+    /// the name to the setCurrentDevice() method. If none was selected
     /// before, the default capture device will be used. You can get a
     /// list of the names of all available capture devices by calling
     /// getAvailableDevices().
@@ -126,52 +126,52 @@ public:
     [[nodiscard]] unsigned int getSampleRate() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get a list of the names of all available audio capture devices
+    /// \brief Get all handles to available audio capture devices
     ///
     /// This function returns a vector of strings, containing
     /// the names of all available audio capture devices.
     ///
-    /// \return A vector of strings containing the names
+    /// \return A vector containing the handles
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::vector<std::string> getAvailableDevices();
+    [[nodiscard]] static std::vector<AudioDeviceHandle> getAvailableDevices();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the name of the default audio capture device
+    /// \brief Get the handle of the default audio capture device
     ///
     /// This function returns the name of the default audio
     /// capture device. If none is available, an empty string
     /// is returned.
     ///
-    /// \return The name of the default audio capture device
+    /// \return The handle of the default audio capture device
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::string getDefaultDevice();
+    [[nodiscard]] static AudioDeviceHandle getDefaultDevice();
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the audio capture device
     ///
     /// This function sets the audio capture device to the device
-    /// with the given \a name. It can be called on the fly (i.e:
+    /// with the given \a handle. It can be called on the fly (i.e:
     /// while recording). If you do so while recording and
     /// opening the device fails, it stops the recording.
     ///
-    /// \param name The name of the audio capture device
+    /// \param handle The handle of the audio capture device
     ///
     /// \return True, if it was able to set the requested device
     ///
     /// \see getAvailableDevices, getDefaultDevice
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool setDevice(const std::string& name);
+    [[nodiscard]] bool setCurrentDevice(const AudioDeviceHandle& handle);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the name of the current audio capture device
+    /// \brief Get the handle of the current audio capture device
     ///
-    /// \return The name of the current audio capture device
+    /// \return The handle of the current audio capture device
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const std::string& getDevice() const;
+    [[nodiscard]] const AudioDeviceHandle& getCurrentDevice() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the channel count of the audio capture device
@@ -320,7 +320,7 @@ private:
 /// computer (for example: microphone, external soundcard, webcam mic, ...)
 /// you can get a list of all available devices through the
 /// getAvailableDevices() function. You can then select a device
-/// by calling setDevice() with the appropriate device. Otherwise
+/// by calling setCurrentDevice() with the appropriate device. Otherwise
 /// the default capturing device will be used.
 ///
 /// By default the recording is in 16-bit mono. Using the
