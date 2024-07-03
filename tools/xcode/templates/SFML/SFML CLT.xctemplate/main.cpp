@@ -20,7 +20,7 @@
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Text.hpp>
 
-#include <SFML/Audio/Music.hpp>
+#include <SFML/Audio/MusicSource.hpp>
 #include <SFML/Audio/MusicStream.hpp> // TODO
 
 #include <SFML/Window/Event.hpp>
@@ -45,7 +45,7 @@ int main()
     text.setFillColor(sf::Color::Black);
 
     // Load a music to play
-    sf::Music music;
+    sf::MusicSource music;
     if (!music.openFromFile("doodle_pop.ogg"))
     {
         return EXIT_FAILURE;

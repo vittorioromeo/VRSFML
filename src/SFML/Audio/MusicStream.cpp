@@ -26,7 +26,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/InputSoundFile.hpp>
-#include <SFML/Audio/Music.hpp>
+#include <SFML/Audio/MusicSource.hpp>
 #include <SFML/Audio/MusicStream.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
@@ -68,37 +68,37 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct MusicStream::Impl
 {
-    Music*                    music;    //!< The music source
-    std::vector<std::int16_t> samples;  //!< Temporary buffer of samples
-    std::recursive_mutex      mutex;    //!< Mutex protecting the data
-    Span<std::uint64_t>       loopSpan; //!< Loop Range Specifier
+    MusicSource*              musicSource; //!< The music source
+    std::vector<std::int16_t> samples;     //!< Temporary buffer of samples
+    std::recursive_mutex      mutex;       //!< Mutex protecting the data
+    Span<std::uint64_t>       loopSpan;    //!< Loop Range Specifier
 
-    explicit Impl(Music& theMusic) :
-    music(&theMusic),
+    explicit Impl(MusicSource& theMusic) :
+    musicSource(&theMusic),
 
     // Resize the internal buffer so that it can contain 1 second of audio samples
-    samples(music->getSampleRate() * music->getChannelCount()),
+    samples(musicSource->getSampleRate() * musicSource->getChannelCount()),
 
-    // Compute the music positions
-    loopSpan{0u, music->m_file->getSampleCount()}
+    // Compute the music source positions
+    loopSpan{0u, musicSource->m_file->getSampleCount()}
     {
     }
 
     [[nodiscard]] InputSoundFile& getFile() const noexcept
     {
-        return *music->m_file;
+        return *musicSource->m_file;
     }
 };
 
 
 ////////////////////////////////////////////////////////////
-MusicStream::MusicStream(PlaybackDevice& playbackDevice, Music& music) :
+MusicStream::MusicStream(PlaybackDevice& playbackDevice, MusicSource& musicSource) :
 SoundStream(playbackDevice),
-m_impl(priv::makeUnique<Impl>(music))
+m_impl(priv::makeUnique<Impl>(musicSource))
 {
-    SoundStream::initialize(music.getChannelCount(), music.getSampleRate(), music.getChannelMap());
+    SoundStream::initialize(musicSource.getChannelCount(), musicSource.getSampleRate(), musicSource.getChannelMap());
 
-    SFML_UPDATE_LIFETIME_DEPENDANT(Music, MusicStream, m_impl->music);
+    SFML_UPDATE_LIFETIME_DEPENDANT(Music, MusicStream, m_impl->musicSource);
 }
 
 

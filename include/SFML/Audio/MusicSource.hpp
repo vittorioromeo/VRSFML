@@ -55,26 +55,26 @@ class MusicStream;
 /// \brief Audio file used as a source for `sf::MusicStream`
 ///
 ////////////////////////////////////////////////////////////
-class SFML_AUDIO_API Music
+class SFML_AUDIO_API MusicSource
 {
 public:
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    ~Music();
+    ~MusicSource();
 
     ////////////////////////////////////////////////////////////
     /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    Music(Music&&) noexcept;
+    MusicSource(MusicSource&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment
     ///
     ////////////////////////////////////////////////////////////
-    Music& operator=(Music&&) noexcept;
+    MusicSource& operator=(MusicSource&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a music source from an audio file
@@ -87,18 +87,18 @@ public:
     ///
     /// \warning Since the music is not loaded at once but rather
     /// streamed continuously, the file must remain accessible until
-    /// the `sf::Music` object loads a new music or is destroyed
+    /// the `sf::MusicSource` object loads a new music or is destroyed
     /// and until all active `sf::MusicStream` objects linked to this
-    /// `sf::Music` instance are destroyed.
+    /// `sf::MusicSource` instance are destroyed.
     ///
     /// \param filename Path of the music file to open
     ///
-    /// \return Music if loading succeeded, `std::nullopt` if it failed
+    /// \return Music source if loading succeeded, `std::nullopt` if it failed
     ///
     /// \see openFromMemory, openFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Music> openFromFile(const std::filesystem::path& filename);
+    [[nodiscard]] static std::optional<MusicSource> openFromFile(const std::filesystem::path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a music from an audio file in memory
@@ -111,20 +111,20 @@ public:
     ///
     /// \warning Since the music is not loaded at once but rather streamed
     /// continuously, the \a data buffer must remain accessible until
-    /// the `sf::Music` object loads a new music or is destroyed
+    /// the `sf::MusicSource` object loads a new music or is destroyed
     /// and until all active `sf::MusicStream` objects linked to this
-    /// `sf::Music` instance are destroyed. You can't deallocate the buffer
+    /// `sf::MusicSource` instance are destroyed. You can't deallocate the buffer
     /// right after calling this function.
     ///
     /// \param data        Pointer to the file data in memory
     /// \param sizeInBytes Size of the data to load, in bytes
     ///
-    /// \return Music if loading succeeded, `std::nullopt` if it failed
+    /// \return Music source if loading succeeded, `std::nullopt` if it failed
     ///
     /// \see openFromFile, openFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Music> openFromMemory(const void* data, std::size_t sizeInBytes);
+    [[nodiscard]] static std::optional<MusicSource> openFromMemory(const void* data, std::size_t sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a music from an audio file in a custom stream
@@ -137,23 +137,23 @@ public:
     ///
     /// \warning Since the music is not loaded at once but rather
     /// streamed continuously, the \a stream must remain accessible
-    /// until the `sf::Music` object loads a new music or is destroyed
+    /// until the `sf::MusicSource` object loads a new music or is destroyed
     /// and until all active `sf::MusicStream` objects linked to this
-    /// `sf::Music` instance are destroyed.
+    /// `sf::MusicSource` instance are destroyed.
     ///
     /// \param stream Source stream to read from
     ///
-    /// \return Music if loading succeeded, `std::nullopt` if it failed
+    /// \return Music source if loading succeeded, `std::nullopt` if it failed
     ///
     /// \see openFromFile, openFromMemory
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Music> openFromStream(InputStream& stream);
+    [[nodiscard]] static std::optional<MusicSource> openFromStream(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the total duration of the music
     ///
-    /// \return Music duration
+    /// \return MusicSource duration
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Time getDuration() const;
@@ -209,8 +209,8 @@ private:
     /// \brief Try opening the music file from an optional input sound file
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Music> tryOpenFromInputSoundFile(std::optional<InputSoundFile>&& optFile,
-                                                                        const char*                     errorContext);
+    [[nodiscard]] static std::optional<MusicSource> tryOpenFromInputSoundFile(std::optional<InputSoundFile>&& optFile,
+                                                                              const char* errorContext);
 
 public:
     ////////////////////////////////////////////////////////////
@@ -219,7 +219,7 @@ public:
     /// \brief Initialize the internal state after loading a new music
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Music(priv::PassKey<Music>&&, InputSoundFile&& file);
+    [[nodiscard]] explicit MusicSource(priv::PassKey<MusicSource>&&, InputSoundFile&& file);
 
 private:
     friend MusicStream;
@@ -232,14 +232,14 @@ private:
     ////////////////////////////////////////////////////////////
     // Lifetime tracking
     ////////////////////////////////////////////////////////////
-    SFML_DEFINE_LIFETIME_DEPENDEE(Music, MusicStream);
+    SFML_DEFINE_LIFETIME_DEPENDEE(MusicSource, MusicStream);
 };
 
 } // namespace sf
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::Music
+/// \class sf::MusicSource
 /// \ingroup audio
 ///
 /// Musics are sounds that are streamed rather than completely
@@ -249,22 +249,22 @@ private:
 /// you avoid saturating the memory and have almost no loading delay.
 /// This implies that the underlying resource (file, stream or
 /// memory buffer) must remain valid for the lifetime of the
-/// sf::Music object.
+/// sf::MusicSource object.
 ///
-/// Apart from that, a `sf::Music` has almost the same features as
+/// Apart from that, a `sf::MusicSource` has almost the same features as
 /// the `sf::SoundBuffer` / `sf::Sound` pair: you can play/pause/stop
 /// it (via `sf::MusicStream`), request its parameters (channels, sample
 /// rate), change the way it is played (pitch, volume, 3D position, ...),
 /// etc.
 ///
-/// A `sf::MusicStream` created via `sf::Music` is played in its own thread
+/// A `sf::MusicStream` created via `sf::MusicSource` is played in its own thread
 /// in order not to block the rest of the program. This means that you can
 /// leave the music stream alone after calling play(), it will manage itself.
 ///
 /// Usage example:
 /// \code
 /// // Open a music from an audio file
-/// auto music = sf::Music::openFromFile("music.ogg").value();
+/// auto music = sf::MusicSource::openFromFile("music.ogg").value();
 ///
 /// // Create a music stream
 /// sf::PlaybackDevice playbackDevice;

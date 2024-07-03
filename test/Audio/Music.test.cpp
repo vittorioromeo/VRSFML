@@ -1,4 +1,4 @@
-#include <SFML/Audio/Music.hpp>
+#include <SFML/Audio/MusicSource.hpp>
 #include <SFML/Audio/MusicStream.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
 
@@ -15,17 +15,17 @@
 #include <thread>
 #include <type_traits>
 
-TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
+TEST_CASE("[Audio] sf::MusicSource" * doctest::skip(skipAudioDeviceTests))
 {
     sf::PlaybackDevice playbackDevice;
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!std::is_copy_constructible_v<sf::Music>);
-        STATIC_CHECK(!std::is_copy_assignable_v<sf::Music>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Music>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Music>);
-        STATIC_CHECK(!std::has_virtual_destructor_v<sf::Music>);
+        STATIC_CHECK(!std::is_copy_constructible_v<sf::MusicSource>);
+        STATIC_CHECK(!std::is_copy_assignable_v<sf::MusicSource>);
+        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::MusicSource>);
+        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::MusicSource>);
+        STATIC_CHECK(!std::has_virtual_destructor_v<sf::MusicSource>);
 
         STATIC_CHECK(!std::is_copy_constructible_v<sf::MusicStream>);
         STATIC_CHECK(!std::is_copy_assignable_v<sf::MusicStream>);
@@ -49,15 +49,15 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
     {
         SECTION("Invalid file")
         {
-            CHECK(!sf::Music::openFromFile("does/not/exist.wav"));
+            CHECK(!sf::MusicSource::openFromFile("does/not/exist.wav"));
         }
 
         SECTION("Valid file")
         {
-            auto music = sf::Music::openFromFile("Audio/ding.mp3").value();
-            CHECK(static_cast<const sf::Music&>(music).getDuration() == sf::microseconds(1990884));
-            CHECK(static_cast<const sf::Music&>(music).getChannelCount() == 1);
-            CHECK(static_cast<const sf::Music&>(music).getSampleRate() == 44100);
+            auto music = sf::MusicSource::openFromFile("Audio/ding.mp3").value();
+            CHECK(static_cast<const sf::MusicSource&>(music).getDuration() == sf::microseconds(1990884));
+            CHECK(static_cast<const sf::MusicSource&>(music).getChannelCount() == 1);
+            CHECK(static_cast<const sf::MusicSource&>(music).getSampleRate() == 44100);
 
             auto musicStream = music.createStream(playbackDevice);
 
@@ -76,17 +76,17 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
 
         SECTION("Invalid buffer")
         {
-            CHECK(!sf::Music::openFromMemory(memory.data(), memory.size()));
+            CHECK(!sf::MusicSource::openFromMemory(memory.data(), memory.size()));
         }
 
         SECTION("Valid buffer")
         {
             memory = loadIntoMemory("Audio/ding.flac");
 
-            auto music = sf::Music::openFromMemory(memory.data(), memory.size()).value();
-            CHECK(static_cast<const sf::Music&>(music).getDuration() == sf::microseconds(1990884));
-            CHECK(static_cast<const sf::Music&>(music).getChannelCount() == 1);
-            CHECK(static_cast<const sf::Music&>(music).getSampleRate() == 44100);
+            auto music = sf::MusicSource::openFromMemory(memory.data(), memory.size()).value();
+            CHECK(static_cast<const sf::MusicSource&>(music).getDuration() == sf::microseconds(1990884));
+            CHECK(static_cast<const sf::MusicSource&>(music).getChannelCount() == 1);
+            CHECK(static_cast<const sf::MusicSource&>(music).getSampleRate() == 44100);
 
             auto musicStream = music.createStream(playbackDevice);
 
@@ -102,10 +102,10 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
     SECTION("openFromStream()")
     {
         auto stream = sf::FileInputStream::open("Audio/doodle_pop.ogg").value();
-        auto music  = sf::Music::openFromStream(stream).value();
-        CHECK(static_cast<const sf::Music&>(music).getDuration() == sf::microseconds(24002176));
-        CHECK(static_cast<const sf::Music&>(music).getChannelCount() == 2);
-        CHECK(static_cast<const sf::Music&>(music).getSampleRate() == 44100);
+        auto music  = sf::MusicSource::openFromStream(stream).value();
+        CHECK(static_cast<const sf::MusicSource&>(music).getDuration() == sf::microseconds(24002176));
+        CHECK(static_cast<const sf::MusicSource&>(music).getChannelCount() == 2);
+        CHECK(static_cast<const sf::MusicSource&>(music).getSampleRate() == 44100);
 
         auto musicStream = music.createStream(playbackDevice);
 
@@ -119,7 +119,7 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("play/pause/stop")
     {
-        auto music       = sf::Music::openFromFile("Audio/ding.mp3").value();
+        auto music       = sf::MusicSource::openFromFile("Audio/ding.mp3").value();
         auto musicStream = music.createStream(playbackDevice);
 
         // Wait for background thread to start
@@ -143,7 +143,7 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("setLoopPoints()")
     {
-        auto music       = sf::Music::openFromFile("Audio/killdeer.wav").value();
+        auto music       = sf::MusicSource::openFromFile("Audio/killdeer.wav").value();
         auto musicStream = music.createStream(playbackDevice);
 
         musicStream.setLoopPoints({sf::seconds(1), sf::seconds(2)});

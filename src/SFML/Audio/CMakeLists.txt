@@ -11,8 +11,8 @@ set(SRC
     ${SRCROOT}/Miniaudio.cpp
     ${SRCROOT}/MiniaudioUtils.hpp
     ${SRCROOT}/MiniaudioUtils.cpp
-    ${SRCROOT}/Music.cpp
-    ${INCROOT}/Music.hpp
+    ${SRCROOT}/MusicSource.cpp
+    ${INCROOT}/MusicSource.hpp
     ${SRCROOT}/MusicStream.cpp
     ${INCROOT}/MusicStream.hpp
     ${SRCROOT}/PlaybackDevice.cpp

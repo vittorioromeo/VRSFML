@@ -284,9 +284,9 @@ private:
 ///
 /// This class decodes audio samples from a sound file. It is
 /// used internally by higher-level classes such as sf::SoundBuffer
-/// and sf::Music, but can also be useful if you want to process
+/// and sf::MusicSource, but can also be useful if you want to process
 /// or analyze audio files without playing them, or if you want to
-/// implement your own version of sf::Music with more specific
+/// implement your own version of sf::MusicSource with more specific
 /// features.
 ///
 /// Usage example:

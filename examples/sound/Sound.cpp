@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/Music.hpp>
+#include <SFML/Audio/MusicSource.hpp>
 #include <SFML/Audio/MusicStream.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
 #include <SFML/Audio/Sound.hpp>
@@ -53,7 +53,7 @@ void playSound(sf::PlaybackDevice& playbackDevice)
 void playMusic(sf::PlaybackDevice& playbackDevice, const std::filesystem::path& filename)
 {
     // Load an ogg music file
-    auto music = sf::Music::openFromFile("resources" / filename).value();
+    auto music = sf::MusicSource::openFromFile("resources" / filename).value();
 
     // Display music information
     std::cout << filename << ":" << '\n'
