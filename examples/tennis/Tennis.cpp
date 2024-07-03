@@ -10,6 +10,7 @@
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
+#include <SFML/Audio/PlaybackDevice.hpp>
 #include <SFML/Audio/Sound.hpp>
 #include <SFML/Audio/SoundBuffer.hpp>
 
@@ -66,9 +67,12 @@ int main()
                             sf::Style::Titlebar | sf::Style::Close);
     window.setVerticalSyncEnabled(true);
 
+    // TODO:
+    sf::PlaybackDevice playbackDevice;
+
     // Load the sounds used in the game
     const auto ballSoundBuffer = sf::SoundBuffer::loadFromFile(resourcesDir() / "ball.wav").value();
-    sf::Sound  ballSound(ballSoundBuffer);
+    sf::Sound  ballSound(playbackDevice, ballSoundBuffer);
 
     // Create the SFML logo texture:
     const auto sfmlLogoTexture = sf::Texture::loadFromFile(resourcesDir() / "sfml_logo.png").value();

@@ -47,8 +47,8 @@ namespace sf
 {
 struct SoundStream::Impl : priv::MiniaudioUtils::SoundBase
 {
-    Impl(SoundStream* ownerPtr) :
-    SoundBase(vtable, [](void* ptr) { static_cast<Impl*>(ptr)->initialize(); }),
+    Impl(priv::AudioDevice& audioDevice, SoundStream* ownerPtr) :
+    SoundBase(audioDevice, vtable, [](void* ptr) { static_cast<Impl*>(ptr)->initialize(); }),
     owner(ownerPtr)
     {
         // Initialize sound structure and set default settings
@@ -57,7 +57,10 @@ struct SoundStream::Impl : priv::MiniaudioUtils::SoundBase
 
     void initialize()
     {
-        SoundBase::initialize(onEnd);
+        if (!SoundBase::initialize(onEnd))
+        {
+            priv::err() << "Failed to initialize SoundStream::Impl" << priv::errEndl;
+        }
 
         // Because we are providing a custom data source, we have to provide the channel map ourselves
         if (!channelMap.empty())
@@ -211,7 +214,8 @@ struct SoundStream::Impl : priv::MiniaudioUtils::SoundBase
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    static constexpr ma_data_source_vtable vtable{read, seek, getFormat, getCursor, getLength, setLooping, /* flags */ 0};
+    static inline constexpr ma_data_source_vtable vtable{read, seek, getFormat, getCursor, getLength, setLooping, /* flags */ 0};
+
     SoundStream*              owner;                //!< Owning SoundStream object
     std::vector<std::int16_t> sampleBuffer;         //!< Our temporary sample buffer
     std::size_t               sampleBufferCursor{}; //!< The current read position in the temporary sample buffer
@@ -225,7 +229,8 @@ struct SoundStream::Impl : priv::MiniaudioUtils::SoundBase
 
 
 ////////////////////////////////////////////////////////////
-SoundStream::SoundStream() : m_impl(priv::makeUnique<Impl>(this))
+SoundStream::SoundStream(PlaybackDevice& playbackDevice) :
+m_impl(priv::makeUnique<Impl>(playbackDevice.asAudioDevice(), this))
 {
 }
 

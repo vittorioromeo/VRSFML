@@ -4763,7 +4763,7 @@ static void ma_thread_wait__posix(ma_thread* pThread)
 static ma_result ma_mutex_init__posix(ma_mutex* pMutex)
 {
     int result;
-    
+
     if (pMutex == NULL) {
         return MA_INVALID_ARGS;
     }

@@ -5,6 +5,7 @@
 #include <SFML/Audio/SoundBuffer.hpp>
 #include <SFML/Audio/SoundBufferRecorder.hpp>
 #include <SFML/Audio/SoundRecorder.hpp>
+#include <SFML/Audio/PlaybackDevice.hpp>
 
 #include <SFML/System/Sleep.hpp>
 #include <SFML/System/Time.hpp>
@@ -111,8 +112,11 @@ int main()
     }
     else
     {
+        // TODO:
+        sf::PlaybackDevice playbackDevice;
+
         // Create a sound instance and play it
-        sf::Sound sound(buffer);
+        sf::Sound sound(playbackDevice, buffer);
         sound.play();
 
         // Wait until finished

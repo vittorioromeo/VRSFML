@@ -44,6 +44,7 @@
 namespace sf
 {
 class Time;
+class PlaybackDevice;
 class InputStream;
 class InputSoundFile;
 
@@ -105,7 +106,8 @@ public:
     /// \see openFromMemory, openFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Music> openFromFile(const std::filesystem::path& filename);
+    [[nodiscard]] static std::optional<Music> openFromFile(PlaybackDevice&              playbackDevice,
+                                                           const std::filesystem::path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a music from an audio file in memory
@@ -128,7 +130,9 @@ public:
     /// \see openFromFile, openFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Music> openFromMemory(const void* data, std::size_t sizeInBytes);
+    [[nodiscard]] static std::optional<Music> openFromMemory(PlaybackDevice& playbackDevice,
+                                                             const void*     data,
+                                                             std::size_t     sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a music from an audio file in a custom stream
@@ -149,7 +153,7 @@ public:
     /// \see openFromFile, openFromMemory
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Music> openFromStream(InputStream& stream);
+    [[nodiscard]] static std::optional<Music> openFromStream(PlaybackDevice& playbackDevice, InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the total duration of the music
@@ -237,7 +241,8 @@ private:
     /// \brief Try opening the music file from an optional input sound file
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Music> tryOpenFromInputSoundFile(std::optional<InputSoundFile>&& optFile,
+    [[nodiscard]] static std::optional<Music> tryOpenFromInputSoundFile(PlaybackDevice&                 playbackDevice,
+                                                                        std::optional<InputSoundFile>&& optFile,
                                                                         const char*                     errorContext);
 
 public:
@@ -247,7 +252,7 @@ public:
     /// \brief Initialize the internal state after loading a new music
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Music(priv::PassKey<Music>&&, InputSoundFile&& file);
+    [[nodiscard]] explicit Music(priv::PassKey<Music>&&, PlaybackDevice& playbackDevice, InputSoundFile&& file);
 
 private:
     ////////////////////////////////////////////////////////////

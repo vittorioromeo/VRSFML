@@ -1,6 +1,6 @@
-#include "SFML/System/Time.hpp"
-
 #include <SFML/Network/IpAddress.hpp>
+
+#include <SFML/System/Time.hpp>
 
 #include <Doctest.hpp>
 

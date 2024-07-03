@@ -27,6 +27,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/EffectProcessor.hpp>
 #include <SFML/Audio/MiniaudioUtils.hpp>
+#include <SFML/Audio/PlaybackDevice.hpp>
 #include <SFML/Audio/Sound.hpp>
 #include <SFML/Audio/SoundBuffer.hpp>
 
@@ -44,11 +45,17 @@
 #include <cstring>
 
 
+namespace sf::priv
+{
+class AudioDevice;
+} // namespace sf::priv
+
 namespace sf
 {
 struct Sound::Impl : priv::MiniaudioUtils::SoundBase
 {
-    Impl() : SoundBase(vtable, [](void* ptr) { static_cast<Impl*>(ptr)->initialize(); })
+    explicit Impl(priv::AudioDevice& audioDevice) :
+    SoundBase(audioDevice, vtable, [](void* ptr) { static_cast<Impl*>(ptr)->initialize(); })
     {
         // Initialize sound structure and set default settings
         initialize();
@@ -56,7 +63,10 @@ struct Sound::Impl : priv::MiniaudioUtils::SoundBase
 
     void initialize()
     {
-        SoundBase::initialize(onEnd);
+        if (!SoundBase::initialize(onEnd))
+        {
+            priv::err() << "Failed to initialize Sound::Impl" << priv::errEndl;
+        }
 
         // Because we are providing a custom data source, we have to provide the channel map ourselves
         if (buffer && !buffer->getChannelMap().empty())
@@ -181,15 +191,17 @@ struct Sound::Impl : priv::MiniaudioUtils::SoundBase
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    static constexpr ma_data_source_vtable vtable{read, seek, getFormat, getCursor, getLength, setLooping, 0};
-    std::size_t                            cursor{};  //!< The current playing position
-    bool                                   looping{}; //!< True if we are looping the sound
-    const SoundBuffer*                     buffer{};  //!< Sound buffer bound to the source
+    static inline constexpr ma_data_source_vtable vtable{read, seek, getFormat, getCursor, getLength, setLooping, 0};
+
+    std::size_t        cursor{};  //!< The current playing position
+    bool               looping{}; //!< True if we are looping the sound
+    const SoundBuffer* buffer{};  //!< Sound buffer bound to the source
 };
 
 
 ////////////////////////////////////////////////////////////
-Sound::Sound(const SoundBuffer& buffer) : m_impl(priv::makeUnique<Impl>())
+Sound::Sound(PlaybackDevice& playbackDevice, const SoundBuffer& buffer) :
+m_impl(priv::makeUnique<Impl>(playbackDevice.asAudioDevice()))
 {
     setBuffer(buffer);
 
@@ -199,7 +211,7 @@ Sound::Sound(const SoundBuffer& buffer) : m_impl(priv::makeUnique<Impl>())
 
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(readability-redundant-member-init)
-Sound::Sound(const Sound& copy) : SoundSource(copy), m_impl(priv::makeUnique<Impl>())
+Sound::Sound(const Sound& copy) : SoundSource(copy), m_impl(priv::makeUnique<Impl>(copy.m_impl->audioDevice))
 {
     SoundSource::operator=(copy);
 

@@ -79,7 +79,9 @@ Music& Music::operator=(Music&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Music> Music::tryOpenFromInputSoundFile(std::optional<InputSoundFile>&& optFile, const char* errorContext)
+std::optional<Music> Music::tryOpenFromInputSoundFile(PlaybackDevice&                 playbackDevice,
+                                                      std::optional<InputSoundFile>&& optFile,
+                                                      const char*                     errorContext)
 {
     if (!optFile.has_value())
     {
@@ -87,28 +89,28 @@ std::optional<Music> Music::tryOpenFromInputSoundFile(std::optional<InputSoundFi
         return std::nullopt;
     }
 
-    return std::make_optional<Music>(priv::PassKey<Music>{}, SFML_MOVE(*optFile));
+    return std::make_optional<Music>(priv::PassKey<Music>{}, playbackDevice, SFML_MOVE(*optFile));
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Music> Music::openFromFile(const std::filesystem::path& filename)
+std::optional<Music> Music::openFromFile(PlaybackDevice& playbackDevice, const std::filesystem::path& filename)
 {
-    return tryOpenFromInputSoundFile(InputSoundFile::openFromFile(filename), "file");
+    return tryOpenFromInputSoundFile(playbackDevice, InputSoundFile::openFromFile(filename), "file");
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Music> Music::openFromMemory(const void* data, std::size_t sizeInBytes)
+std::optional<Music> Music::openFromMemory(PlaybackDevice& playbackDevice, const void* data, std::size_t sizeInBytes)
 {
-    return tryOpenFromInputSoundFile(InputSoundFile::openFromMemory(data, sizeInBytes), "memory");
+    return tryOpenFromInputSoundFile(playbackDevice, InputSoundFile::openFromMemory(data, sizeInBytes), "memory");
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Music> Music::openFromStream(InputStream& stream)
+std::optional<Music> Music::openFromStream(PlaybackDevice& playbackDevice, InputStream& stream)
 {
-    return tryOpenFromInputSoundFile(InputSoundFile::openFromStream(stream), "stream");
+    return tryOpenFromInputSoundFile(playbackDevice, InputSoundFile::openFromStream(stream), "stream");
 }
 
 
@@ -247,7 +249,9 @@ std::optional<std::uint64_t> Music::onLoop()
 
 
 ////////////////////////////////////////////////////////////
-Music::Music(priv::PassKey<Music>&&, InputSoundFile&& file) : m_impl(priv::makeUnique<Impl>(SFML_MOVE(file)))
+Music::Music(priv::PassKey<Music>&&, PlaybackDevice& playbackDevice, InputSoundFile&& file) :
+SoundStream(playbackDevice),
+m_impl(priv::makeUnique<Impl>(SFML_MOVE(file)))
 {
     // Initialize the stream
     SoundStream::initialize(m_impl->file.getChannelCount(), m_impl->file.getSampleRate(), m_impl->file.getChannelMap());

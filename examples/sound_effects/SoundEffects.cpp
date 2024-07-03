@@ -16,6 +16,7 @@
 #include <SFML/Audio/Listener.hpp>
 #include <SFML/Audio/Music.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
+#include <SFML/Audio/SoundStream.hpp>
 
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Keyboard.hpp>
@@ -332,7 +333,8 @@ private:
 class Tone : public sf::SoundStream, public Effect
 {
 public:
-    explicit Tone(sf::Listener& listener, const sf::Font& font) :
+    explicit Tone(sf::PlaybackDevice& playbackDevice, sf::Listener& listener, const sf::Font& font) :
+    sf::SoundStream(playbackDevice),
     Effect("Tone Generator"),
     m_listener(listener),
     m_instruction(font, "Press up and down arrows to change the current wave type"),
@@ -497,7 +499,8 @@ private:
 class Doppler : public sf::SoundStream, public Effect
 {
 public:
-    explicit Doppler(sf::Listener& listener, const sf::Font& font) :
+    explicit Doppler(sf::PlaybackDevice& playbackDevice, sf::Listener& listener, const sf::Font& font) :
+    sf::SoundStream(playbackDevice),
     Effect("Doppler Shift"),
     m_listener(listener),
     m_currentVelocity(font, "Velocity: " + std::to_string(m_velocity)),
@@ -1053,19 +1056,19 @@ int main()
         return EXIT_FAILURE;
     }
 
-    // Helper function to open a new instance of the music file
-    const auto openMusic = [&] { return sf::Music::openFromFile(musicPath).value(); };
-
     // Create the playback device and listener
     sf::PlaybackDevice playbackDevice;
-    sf::Listener       listener;
+    sf::Listener       listener(playbackDevice);
+
+    // Helper function to open a new instance of the music file
+    const auto openMusic = [&] { return sf::Music::openFromFile(playbackDevice, musicPath).value(); };
 
     // Create the effects
     Surround       surroundEffect(listener, openMusic());
     PitchVolume    pitchVolumeEffect(listener, font, openMusic());
     Attenuation    attenuationEffect(listener, font, openMusic());
-    Tone           toneEffect(listener, font);
-    Doppler        dopplerEffect(listener, font);
+    Tone           toneEffect(playbackDevice, listener, font);
+    Doppler        dopplerEffect(playbackDevice, listener, font);
     HighPassFilter highPassFilterEffect(listener, font, openMusic());
     LowPassFilter  lowPassFilterEffect(listener, font, openMusic());
     Echo           echoEffect(listener, font, openMusic());

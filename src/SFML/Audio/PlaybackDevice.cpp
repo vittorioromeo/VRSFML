@@ -29,14 +29,25 @@
 #include <SFML/Audio/PlaybackDevice.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
+#include <SFML/System/UniquePtr.hpp>
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
+PlaybackDevice::PlaybackDevice() : m_audioDevice(priv::makeUnique<priv::AudioDevice>())
+{
+}
+
+
+////////////////////////////////////////////////////////////
+PlaybackDevice::~PlaybackDevice() = default;
+
+
+////////////////////////////////////////////////////////////
 std::vector<std::string> PlaybackDevice::getAvailableDevices()
 {
-    const auto devices = getAudioDevice().getAvailableDevices();
+    const auto devices = m_audioDevice->getAvailableDevices();
 
     std::vector<std::string> deviceNameList;
     deviceNameList.reserve(devices.size());
@@ -51,7 +62,7 @@ std::vector<std::string> PlaybackDevice::getAvailableDevices()
 ////////////////////////////////////////////////////////////
 std::optional<std::string> PlaybackDevice::getDefaultDevice()
 {
-    return getAudioDevice().getDefaultDevice();
+    return m_audioDevice->getDefaultDevice();
 }
 
 
@@ -59,7 +70,7 @@ std::optional<std::string> PlaybackDevice::getDefaultDevice()
 bool PlaybackDevice::setDevice(const std::string& name)
 {
     // Perform a sanity check to make sure the user isn't passing us a non-existant device name
-    if (const auto& availableDevices = getAudioDevice().getAvailableDevices();
+    if (const auto& availableDevices = m_audioDevice->getAvailableDevices();
         !priv::anyOf(availableDevices.begin(),
                      availableDevices.end(),
                      [&](const priv::AudioDevice::DeviceEntry& deviceEntry) { return deviceEntry.name == name; }))
@@ -67,14 +78,28 @@ bool PlaybackDevice::setDevice(const std::string& name)
         return false;
     }
 
-    return getAudioDevice().setDevice(name);
+    return m_audioDevice->setDevice(name);
 }
 
 
 ////////////////////////////////////////////////////////////
 std::optional<std::string> PlaybackDevice::getDevice()
 {
-    return getAudioDevice().getDevice();
+    return m_audioDevice->getDevice();
+}
+
+
+// TODO
+[[nodiscard]] priv::AudioDevice& PlaybackDevice::asAudioDevice() noexcept
+{
+    assert(m_audioDevice != nullptr);
+    return *m_audioDevice;
+}
+
+[[nodiscard]] const priv::AudioDevice& PlaybackDevice::asAudioDevice() const noexcept
+{
+    assert(m_audioDevice != nullptr);
+    return *m_audioDevice;
 }
 
 } // namespace sf

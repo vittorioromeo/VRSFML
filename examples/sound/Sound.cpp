@@ -1,7 +1,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/Music.hpp>
+#include <SFML/Audio/Music.hpp>(
+#include <SFML/Audio/PlaybackDevice.hpp>
 #include <SFML/Audio/Sound.hpp>
 #include <SFML/Audio/SoundBuffer.hpp>
 
@@ -15,7 +16,7 @@
 /// Play a sound
 ///
 ////////////////////////////////////////////////////////////
-void playSound()
+void playSound(sf::PlaybackDevice& playbackDevice)
 {
     // Load a sound buffer from a wav file
     const auto buffer = sf::SoundBuffer::loadFromFile("resources/killdeer.wav").value();
@@ -27,7 +28,7 @@ void playSound()
               << " " << buffer.getChannelCount() << " channels" << '\n';
 
     // Create a sound instance and play it
-    sf::Sound sound(buffer);
+    sf::Sound sound(playbackDevice, buffer);
     sound.play();
 
     // Loop while the sound is playing
@@ -48,10 +49,10 @@ void playSound()
 /// Play a music
 ///
 ////////////////////////////////////////////////////////////
-void playMusic(const std::filesystem::path& filename)
+void playMusic(sf::PlaybackDevice& playbackDevice, const std::filesystem::path& filename)
 {
     // Load an ogg music file
-    auto music = sf::Music::openFromFile("resources" / filename).value();
+    auto music = sf::Music::openFromFile(playbackDevice, "resources" / filename).value();
 
     // Display music information
     std::cout << filename << ":" << '\n'
@@ -84,17 +85,20 @@ void playMusic(const std::filesystem::path& filename)
 ////////////////////////////////////////////////////////////
 int main()
 {
+    // TODO
+    sf::PlaybackDevice playbackDevice;
+
     // Play a sound
-    playSound();
+    playSound(playbackDevice);
 
     // Play music from an ogg file
-    playMusic("doodle_pop.ogg");
+    playMusic(playbackDevice, "doodle_pop.ogg");
 
     // Play music from a flac file
-    playMusic("ding.flac");
+    playMusic(playbackDevice, "ding.flac");
 
     // Play music from a mp3 file
-    playMusic("ding.mp3");
+    playMusic(playbackDevice, "ding.mp3");
 
     // Wait until the user presses 'enter' key
     std::cout << "Press enter to exit..." << std::endl;

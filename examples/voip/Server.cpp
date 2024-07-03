@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Audio/PlaybackDevice.hpp>
 #include <SFML/Audio/SoundStream.hpp>
 
 #include <SFML/Network/Packet.hpp>
@@ -35,7 +36,7 @@ public:
     /// Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    NetworkAudioStream()
+    NetworkAudioStream(sf::PlaybackDevice& playbackDevice) : sf::SoundStream(playbackDevice)
     {
         // Set the sound parameters
         initialize(1, 44100, {sf::SoundChannel::Mono});
@@ -180,8 +181,10 @@ private:
 ////////////////////////////////////////////////////////////
 void doServer(unsigned short port)
 {
+    sf::PlaybackDevice playbackDevice;
+
     // Build an audio stream to play sound data as it is received through the network
-    NetworkAudioStream audioStream;
+    NetworkAudioStream audioStream(playbackDevice);
     audioStream.start(port);
 
     // Loop until the sound playback is finished

@@ -109,8 +109,11 @@ void applySettings(ma_sound& sound, const sf::priv::MiniaudioUtils::SavedSetting
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-MiniaudioUtils::SoundBase::SoundBase(const ma_data_source_vtable&     dataSourceVTable,
-                                     AudioDevice::ResourceEntry::Func reinitializeFunc)
+MiniaudioUtils::SoundBase::SoundBase(priv::AudioDevice&               theAudioDevice,
+                                     const ma_data_source_vtable&     dataSourceVTable,
+                                     AudioDevice::ResourceEntry::Func reinitializeFunc) :
+dataSourceBase{}, // must be first member!
+audioDevice(theAudioDevice)
 {
     // Set this object up as a miniaudio data source
     ma_data_source_config config = ma_data_source_config_init();
@@ -119,7 +122,7 @@ MiniaudioUtils::SoundBase::SoundBase(const ma_data_source_vtable&     dataSource
     if (const ma_result result = ma_data_source_init(&config, &dataSourceBase); result != MA_SUCCESS)
         priv::err() << "Failed to initialize audio data source: " << ma_result_description(result) << priv::errEndl;
 
-    resourceEntryIndex = getAudioDevice()
+    resourceEntryIndex = audioDevice
                              .registerResource(this, [](void* ptr) { static_cast<SoundBase*>(ptr)->deinitialize(); }, reinitializeFunc);
 }
 
@@ -127,7 +130,7 @@ MiniaudioUtils::SoundBase::SoundBase(const ma_data_source_vtable&     dataSource
 ////////////////////////////////////////////////////////////
 MiniaudioUtils::SoundBase::~SoundBase()
 {
-    getAudioDevice().unregisterResource(resourceEntryIndex);
+    audioDevice.unregisterResource(resourceEntryIndex);
     ma_sound_uninit(&sound);
     ma_node_uninit(&effectNode, nullptr);
     ma_data_source_uninit(&dataSourceBase);
@@ -135,17 +138,13 @@ MiniaudioUtils::SoundBase::~SoundBase()
 
 
 ////////////////////////////////////////////////////////////
-void MiniaudioUtils::SoundBase::initialize(ma_sound_end_proc endCallback)
+bool MiniaudioUtils::SoundBase::initialize(ma_sound_end_proc endCallback)
 {
+    // Get the engine
+    ma_engine* engine = audioDevice.getEngine();
+    assert(engine != nullptr);
+
     // Initialize the sound
-    auto* engine = getAudioDevice().getEngine();
-
-    if (engine == nullptr)
-    {
-        priv::err() << "Failed to initialize sound: No engine available" << priv::errEndl;
-        return;
-    }
-
     ma_sound_config soundConfig;
 
     soundConfig                      = ma_sound_config_init();
@@ -156,7 +155,8 @@ void MiniaudioUtils::SoundBase::initialize(ma_sound_end_proc endCallback)
     if (const ma_result result = ma_sound_init_ex(engine, &soundConfig, &sound); result != MA_SUCCESS)
     {
         priv::err() << "Failed to initialize sound: " << ma_result_description(result) << priv::errEndl;
-        return;
+        std::abort();
+        return false;
     }
 
     // Initialize the custom effect node
@@ -178,7 +178,7 @@ void MiniaudioUtils::SoundBase::initialize(ma_sound_end_proc endCallback)
         result != MA_SUCCESS)
     {
         priv::err() << "Failed to initialize effect node: " << ma_result_description(result) << priv::errEndl;
-        return;
+        return false;
     }
 
     effectNode.impl         = this;
@@ -188,6 +188,7 @@ void MiniaudioUtils::SoundBase::initialize(ma_sound_end_proc endCallback)
     connectEffect(bool{effectProcessor});
 
     applySettings(sound, savedSettings);
+    return true;
 }
 
 
@@ -234,7 +235,7 @@ void MiniaudioUtils::SoundBase::processEffect(const float** framesIn,
 ////////////////////////////////////////////////////////////
 void MiniaudioUtils::SoundBase::connectEffect(bool connect)
 {
-    auto* engine = getAudioDevice().getEngine();
+    ma_engine* engine = audioDevice.getEngine();
 
     if (engine == nullptr)
     {
