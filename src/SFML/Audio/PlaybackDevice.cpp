@@ -89,13 +89,15 @@ std::optional<std::string> PlaybackDevice::getDevice()
 }
 
 
-// TODO
+////////////////////////////////////////////////////////////
 [[nodiscard]] priv::AudioDevice& PlaybackDevice::asAudioDevice() noexcept
 {
     assert(m_audioDevice != nullptr);
     return *m_audioDevice;
 }
 
+
+////////////////////////////////////////////////////////////
 [[nodiscard]] const priv::AudioDevice& PlaybackDevice::asAudioDevice() const noexcept
 {
     assert(m_audioDevice != nullptr);
