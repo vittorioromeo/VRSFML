@@ -26,7 +26,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/InputSoundFile.hpp>
-#include <SFML/Audio/Music.hpp>
+#include <SFML/Audio/MusicSource.hpp>
 #include <SFML/Audio/MusicStream.hpp>
 
 #include <SFML/System/Err.hpp>
@@ -37,19 +37,19 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-Music::~Music() = default;
+MusicSource::~MusicSource() = default;
 
 
 ////////////////////////////////////////////////////////////
-Music::Music(Music&&) noexcept = default;
+MusicSource::MusicSource(MusicSource&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-Music& Music::operator=(Music&&) noexcept = default;
+MusicSource& MusicSource::operator=(MusicSource&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Music> Music::tryOpenFromInputSoundFile(std::optional<InputSoundFile>&& optFile, const char* errorContext)
+std::optional<MusicSource> MusicSource::tryOpenFromInputSoundFile(std::optional<InputSoundFile>&& optFile, const char* errorContext)
 {
     if (!optFile.has_value())
     {
@@ -57,75 +57,75 @@ std::optional<Music> Music::tryOpenFromInputSoundFile(std::optional<InputSoundFi
         return std::nullopt;
     }
 
-    return std::make_optional<Music>(priv::PassKey<Music>{}, SFML_MOVE(*optFile));
+    return std::make_optional<MusicSource>(priv::PassKey<MusicSource>{}, SFML_MOVE(*optFile));
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Music> Music::openFromFile(const std::filesystem::path& filename)
+std::optional<MusicSource> MusicSource::openFromFile(const std::filesystem::path& filename)
 {
     return tryOpenFromInputSoundFile(InputSoundFile::openFromFile(filename), "file");
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Music> Music::openFromMemory(const void* data, std::size_t sizeInBytes)
+std::optional<MusicSource> MusicSource::openFromMemory(const void* data, std::size_t sizeInBytes)
 {
     return tryOpenFromInputSoundFile(InputSoundFile::openFromMemory(data, sizeInBytes), "memory");
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Music> Music::openFromStream(InputStream& stream)
+std::optional<MusicSource> MusicSource::openFromStream(InputStream& stream)
 {
     return tryOpenFromInputSoundFile(InputSoundFile::openFromStream(stream), "stream");
 }
 
 
 ////////////////////////////////////////////////////////////
-Time Music::getDuration() const
+Time MusicSource::getDuration() const
 {
     return m_file->getDuration();
 }
 
 
 ////////////////////////////////////////////////////////////
-unsigned int Music::getChannelCount() const
+unsigned int MusicSource::getChannelCount() const
 {
     return m_file->getChannelCount();
 }
 
 
 ////////////////////////////////////////////////////////////
-unsigned int Music::getSampleRate() const
+unsigned int MusicSource::getSampleRate() const
 {
     return m_file->getSampleRate();
 }
 
 
 ////////////////////////////////////////////////////////////
-std::vector<SoundChannel> Music::getChannelMap() const
+std::vector<SoundChannel> MusicSource::getChannelMap() const
 {
     return m_file->getChannelMap();
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] std::uint64_t Music::getSampleCount() const
+[[nodiscard]] std::uint64_t MusicSource::getSampleCount() const
 {
     return m_file->getSampleCount();
 }
 
 
 ////////////////////////////////////////////////////////////
-MusicStream Music::createStream(PlaybackDevice& playbackDevice)
+MusicStream MusicSource::createStream(PlaybackDevice& playbackDevice)
 {
     return MusicStream{playbackDevice, *this};
 }
 
 
 ////////////////////////////////////////////////////////////
-Music::Music(priv::PassKey<Music>&&, InputSoundFile&& file) : m_file(SFML_MOVE(file))
+MusicSource::MusicSource(priv::PassKey<MusicSource>&&, InputSoundFile&& file) : m_file(SFML_MOVE(file))
 {
 }
 

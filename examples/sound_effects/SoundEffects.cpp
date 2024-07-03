@@ -14,7 +14,7 @@
 
 #include <SFML/Audio/EffectProcessor.hpp>
 #include <SFML/Audio/Listener.hpp>
-#include <SFML/Audio/Music.hpp>
+#include <SFML/Audio/MusicSource.hpp>
 #include <SFML/Audio/MusicStream.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
 #include <SFML/Audio/SoundStream.hpp>
@@ -92,7 +92,7 @@ private:
 class Surround : public Effect
 {
 public:
-    explicit Surround(sf::Listener& listener, sf::Music&& music) :
+    explicit Surround(sf::Listener& listener, sf::MusicSource&& music) :
     Effect("Surround / Attenuation"),
     m_listener(listener),
     m_music(std::move(music)),
@@ -142,7 +142,7 @@ private:
     sf::CircleShape m_listenerShape{20.f};
     sf::CircleShape m_soundShape{20.f};
     sf::Vector2f    m_position;
-    sf::Music       m_music;
+    sf::MusicSource m_music;
     sf::MusicStream m_musicStream;
 };
 
@@ -153,7 +153,7 @@ private:
 class PitchVolume : public Effect
 {
 public:
-    explicit PitchVolume(sf::Listener& listener, const sf::Font& font, sf::Music&& music) :
+    explicit PitchVolume(sf::Listener& listener, const sf::Font& font, sf::MusicSource&& music) :
     Effect("Pitch / Volume"),
     m_listener(listener),
     m_pitchText(font, "Pitch: " + std::to_string(m_pitch)),
@@ -215,7 +215,7 @@ private:
     float           m_volume{100.f};
     sf::Text        m_pitchText;
     sf::Text        m_volumeText;
-    sf::Music       m_music;
+    sf::MusicSource m_music;
     sf::MusicStream m_musicStream;
 };
 
@@ -226,7 +226,7 @@ private:
 class Attenuation : public Effect
 {
 public:
-    explicit Attenuation(sf::Listener& listener, const sf::Font& font, sf::Music&& music) :
+    explicit Attenuation(sf::Listener& listener, const sf::Font& font, sf::MusicSource&& music) :
     Effect("Attenuation"),
     m_listener(listener),
     m_text(font,
@@ -327,7 +327,7 @@ private:
     sf::ConvexShape m_soundConeInner;
     sf::Text        m_text;
     sf::Vector2f    m_position;
-    sf::Music       m_music;
+    sf::MusicSource m_music;
     sf::MusicStream m_musicStream;
 
     float m_attenuation{0.01f};
@@ -650,7 +650,7 @@ public:
     }
 
 protected:
-    explicit Processing(sf::Listener& listener, const sf::Font& font, sf::Music&& music, std::string name) :
+    explicit Processing(sf::Listener& listener, const sf::Font& font, sf::MusicSource&& music, std::string name) :
     Effect(std::move(name)),
     m_listener(listener),
     m_music(std::move(music)),
@@ -677,7 +677,7 @@ protected:
     }
 
     sf::Listener&   m_listener;
-    sf::Music       m_music;
+    sf::MusicSource m_music;
     sf::MusicStream m_musicStream;
 
 private:
@@ -728,9 +728,9 @@ protected:
         };
 
         // We use a mutable lambda to tie the lifetime of the state and coefficients to the lambda itself
-        // This is necessary since the Echo object will be destroyed before the Music object
-        // While the Music object exists, it is possible that the audio engine will try to call
-        // this lambda hence we need to always have usable coefficients and state until the Music and the
+        // This is necessary since the Echo object will be destroyed before the music object
+        // While the music object exists, it is possible that the audio engine will try to call
+        // this lambda hence we need to always have usable coefficients and state until the music and the
         // associated lambda are destroyed
         m_musicStream.setEffectProcessor(
             [coefficients,
@@ -783,7 +783,7 @@ protected:
 ////////////////////////////////////////////////////////////
 struct HighPassFilter : BiquadFilter
 {
-    explicit HighPassFilter(sf::Listener& listener, const sf::Font& font, sf::Music&& music) :
+    explicit HighPassFilter(sf::Listener& listener, const sf::Font& font, sf::MusicSource&& music) :
     BiquadFilter(listener, font, std::move(music), "High-pass Filter")
     {
         static constexpr auto cutoffFrequency = 2000.f;
@@ -808,7 +808,7 @@ struct HighPassFilter : BiquadFilter
 ////////////////////////////////////////////////////////////
 struct LowPassFilter : BiquadFilter
 {
-    explicit LowPassFilter(sf::Listener& listener, const sf::Font& font, sf::Music&& music) :
+    explicit LowPassFilter(sf::Listener& listener, const sf::Font& font, sf::MusicSource&& music) :
     BiquadFilter(listener, font, std::move(music), "Low-pass Filter")
     {
         static constexpr auto cutoffFrequency = 500.f;
@@ -833,7 +833,7 @@ struct LowPassFilter : BiquadFilter
 ////////////////////////////////////////////////////////////
 struct Echo : Processing
 {
-    explicit Echo(sf::Listener& listener, const sf::Font& font, sf::Music&& music) :
+    explicit Echo(sf::Listener& listener, const sf::Font& font, sf::MusicSource&& music) :
     Processing(listener, font, std::move(music), "Echo")
     {
         static constexpr auto delay = 0.2f;
@@ -845,9 +845,9 @@ struct Echo : Processing
         const auto delayInFrames = static_cast<unsigned int>(static_cast<float>(sampleRate) * delay);
 
         // We use a mutable lambda to tie the lifetime of the state to the lambda itself
-        // This is necessary since the Echo object will be destroyed before the Music object
-        // While the Music object exists, it is possible that the audio engine will try to call
-        // this lambda hence we need to always have a usable state until the Music and the
+        // This is necessary since the Echo object will be destroyed before the music object
+        // While the music object exists, it is possible that the audio engine will try to call
+        // this lambda hence we need to always have a usable state until the music and the
         // associated lambda are destroyed
         m_musicStream.setEffectProcessor(
             [delayInFrames,
@@ -895,15 +895,15 @@ struct Echo : Processing
 class Reverb : public Processing
 {
 public:
-    explicit Reverb(sf::Listener& listener, const sf::Font& font, sf::Music&& music) :
+    explicit Reverb(sf::Listener& listener, const sf::Font& font, sf::MusicSource&& music) :
     Processing(listener, font, std::move(music), "Reverb")
     {
         static constexpr auto sustain = 0.7f; // [0.f; 1.f]
 
         // We use a mutable lambda to tie the lifetime of the state to the lambda itself
-        // This is necessary since the Echo object will be destroyed before the Music object
-        // While the Music object exists, it is possible that the audio engine will try to call
-        // this lambda hence we need to always have a usable state until the Music and the
+        // This is necessary since the Echo object will be destroyed before the music object
+        // While the music object exists, it is possible that the audio engine will try to call
+        // this lambda hence we need to always have a usable state until the music and the
         // associated lambda are destroyed
         m_musicStream.setEffectProcessor(
             [sampleRate = m_music.getSampleRate(),
@@ -1070,7 +1070,7 @@ int main()
     sf::Listener       listener(playbackDevice);
 
     // Helper function to open a new instance of the music file
-    const auto openMusic = [&] { return sf::Music::openFromFile(musicPath).value(); };
+    const auto openMusic = [&] { return sf::MusicSource::openFromFile(musicPath).value(); };
 
     // Create the effects
     Surround       surroundEffect(listener, openMusic());

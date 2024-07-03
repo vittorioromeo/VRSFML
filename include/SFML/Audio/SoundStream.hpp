@@ -324,7 +324,7 @@ private:
 ///
 /// sf::SoundStream is a base class that doesn't care about the
 /// stream source, which is left to the derived class. SFML provides
-/// a built-in specialization for big files (see sf::Music).
+/// a built-in specialization for big files (see sf::MusicSource).
 /// No network stream source is provided, but you can write your own
 /// by combining this class with the network module.
 ///
@@ -383,6 +383,6 @@ private:
 /// stream.play();
 /// \endcode
 ///
-/// \see sf::Music
+/// \see sf::MusicSource
 ///
 ////////////////////////////////////////////////////////////

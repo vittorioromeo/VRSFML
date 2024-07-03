@@ -171,7 +171,7 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.6.0
 -   Allow explicitly closing `sf::InputSoundFile` (#1516)
 -   Replace use of auto_ptr for future-proofing (#1546)
 -   Adjustable processing interval in `sf::SoundStream` (#1517, #1666)
--   Fix `sf::Music` sometimes failing to loop after seeking (#1707)
+-   Fix `sf::MusicSource` sometimes failing to loop after seeking (#1707)
 -   Add MP3 decoding support (#1232, #1796, #1851)
 
 **Bugfixes**
@@ -330,7 +330,7 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.5.0
 
 **Features**
 
--   Added loop point support to `sf::Music` (#177, #629)
+-   Added loop point support to `sf::MusicSource` (#177, #629)
 -   Added support for the extensible PCM wave file format (#1296)
 -   [iOS] Enable audio module (#1338)
 

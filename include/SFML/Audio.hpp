@@ -30,7 +30,7 @@
 
 #include <SFML/Audio/InputSoundFile.hpp>
 #include <SFML/Audio/Listener.hpp>
-#include <SFML/Audio/Music.hpp>
+#include <SFML/Audio/MusicSource.hpp>
 #include <SFML/Audio/MusicStream.hpp>
 #include <SFML/Audio/OutputSoundFile.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>

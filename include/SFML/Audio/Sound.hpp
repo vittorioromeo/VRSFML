@@ -271,7 +271,7 @@ private:
 /// sf::Sound is perfect for playing short sounds that can
 /// fit in memory and require no latency, like foot steps or
 /// gun shots. For longer sounds, like background musics
-/// or long speeches, rather see sf::Music (which is based
+/// or long speeches, rather see sf::MusicSource (which is based
 /// on streaming).
 ///
 /// In order to work, a sound must be given a buffer of audio
@@ -288,6 +288,6 @@ private:
 /// sound.play();
 /// \endcode
 ///
-/// \see sf::SoundBuffer, sf::Music
+/// \see sf::SoundBuffer, sf::MusicSource
 ///
 ////////////////////////////////////////////////////////////
