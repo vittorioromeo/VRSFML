@@ -94,22 +94,23 @@ public:
     explicit Surround(sf::Listener& listener, sf::Music&& music) :
     Effect("Surround / Attenuation"),
     m_listener(listener),
-    m_music(std::move(music))
+    m_music(std::move(music)),
+    m_musicStream(m_listener.getPlaybackDevice(), m_music)
     {
         m_listenerShape.setPosition({(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f});
         m_listenerShape.setFillColor(sf::Color::Red);
 
         // Set the music to loop
-        m_music.setLoop(true);
+        m_musicStream.setLoop(true);
 
         // Set attenuation to a nice value
-        m_music.setAttenuation(0.04f);
+        m_musicStream.setAttenuation(0.04f);
     }
 
     void update(float /*time*/, float x, float y) override
     {
         m_position = {windowWidth * x - 10.f, windowHeight * y - 10.f};
-        m_music.setPosition({m_position.x, m_position.y, 0.f});
+        m_musicStream.setPosition({m_position.x, m_position.y, 0.f});
     }
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
@@ -127,12 +128,12 @@ public:
         // Synchronize listener audio position with graphical position
         m_listener.setPosition({m_listenerShape.getPosition().x, m_listenerShape.getPosition().y, 0.f});
 
-        m_music.play();
+        m_musicStream.play();
     }
 
     void stop() override
     {
-        m_music.stop();
+        m_musicStream.stop();
     }
 
 private:
@@ -141,6 +142,7 @@ private:
     sf::CircleShape m_soundShape{20.f};
     sf::Vector2f    m_position;
     sf::Music       m_music;
+    sf::MusicStream m_musicStream;
 };
 
 
@@ -155,19 +157,20 @@ public:
     m_listener(listener),
     m_pitchText(font, "Pitch: " + std::to_string(m_pitch)),
     m_volumeText(font, "Volume: " + std::to_string(m_volume)),
-    m_music(std::move(music))
+    m_music(std::move(music)),
+    m_musicStream(m_listener.getPlaybackDevice(), m_music)
     {
         // Set the music to loop
-        m_music.setLoop(true);
+        m_musicStream.setLoop(true);
 
         // We don't care about attenuation in this effect
-        m_music.setAttenuation(0.f);
+        m_musicStream.setAttenuation(0.f);
 
         // Set initial pitch
-        m_music.setPitch(m_pitch);
+        m_musicStream.setPitch(m_pitch);
 
         // Set initial volume
-        m_music.setVolume(m_volume);
+        m_musicStream.setVolume(m_volume);
 
         m_pitchText.setPosition({windowWidth / 2.f - 120.f, windowHeight / 2.f - 80.f});
         m_volumeText.setPosition({windowWidth / 2.f - 120.f, windowHeight / 2.f - 30.f});
@@ -178,8 +181,8 @@ public:
         m_pitch  = std::clamp(2.f * x, 0.f, 2.f);
         m_volume = std::clamp(100.f * (1.f - y), 0.f, 100.f);
 
-        m_music.setPitch(m_pitch);
-        m_music.setVolume(m_volume);
+        m_musicStream.setPitch(m_pitch);
+        m_musicStream.setVolume(m_volume);
 
         m_pitchText.setString("Pitch: " + std::to_string(m_pitch));
         m_volumeText.setString("Volume: " + std::to_string(m_volume));
@@ -197,21 +200,22 @@ public:
         // so that the music is right on top of the listener
         m_listener.setPosition({0.f, 0.f, 0.f});
 
-        m_music.play();
+        m_musicStream.play();
     }
 
     void stop() override
     {
-        m_music.stop();
+        m_musicStream.stop();
     }
 
 private:
-    sf::Listener& m_listener;
-    float         m_pitch{1.f};
-    float         m_volume{100.f};
-    sf::Text      m_pitchText;
-    sf::Text      m_volumeText;
-    sf::Music     m_music;
+    sf::Listener&   m_listener;
+    float           m_pitch{1.f};
+    float           m_volume{100.f};
+    sf::Text        m_pitchText;
+    sf::Text        m_volumeText;
+    sf::Music       m_music;
+    sf::MusicStream m_musicStream;
 };
 
 
@@ -229,7 +233,8 @@ public:
            "listener.\nCone outer gain determines volume of sound while outside outer cone.\nWhen within outer cone, "
            "volume is linearly interpolated between inner and outer volumes.",
            18),
-    m_music(std::move(music))
+    m_music(std::move(music)),
+    m_musicStream(m_listener.getPlaybackDevice(), m_music)
     {
         m_listenerShape.setPosition({(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f + 100.f});
         m_listenerShape.setFillColor(sf::Color::Red);
@@ -266,16 +271,16 @@ public:
         makeCone(m_soundConeInner, innerConeAngle);
 
         // Set the music to loop
-        m_music.setLoop(true);
+        m_musicStream.setLoop(true);
 
         // Set attenuation factor
-        m_music.setAttenuation(m_attenuation);
+        m_musicStream.setAttenuation(m_attenuation);
 
         // Set direction to face "downwards"
-        m_music.setDirection({0.f, 1.f, 0.f});
+        m_musicStream.setDirection({0.f, 1.f, 0.f});
 
         // Set cone
-        m_music.setCone({innerConeAngle, outerConeAngle, 0.f});
+        m_musicStream.setCone({innerConeAngle, outerConeAngle, 0.f});
 
         m_text.setPosition({20.f, 20.f});
     }
@@ -283,7 +288,7 @@ public:
     void update(float /*time*/, float x, float y) override
     {
         m_position = {windowWidth * x - 10.f, windowHeight * y - 10.f};
-        m_music.setPosition({m_position.x, m_position.y, 0.f});
+        m_musicStream.setPosition({m_position.x, m_position.y, 0.f});
     }
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
@@ -305,12 +310,12 @@ public:
         // Synchronize listener audio position with graphical position
         m_listener.setPosition({m_listenerShape.getPosition().x, m_listenerShape.getPosition().y, 0.f});
 
-        m_music.play();
+        m_musicStream.play();
     }
 
     void stop() override
     {
-        m_music.stop();
+        m_musicStream.stop();
     }
 
 private:
@@ -322,6 +327,7 @@ private:
     sf::Text        m_text;
     sf::Vector2f    m_position;
     sf::Music       m_music;
+    sf::MusicStream m_musicStream;
 
     float m_attenuation{0.01f};
 };
@@ -614,7 +620,7 @@ public:
     void update([[maybe_unused]] float time, float x, float y) override
     {
         m_position = {windowWidth * x - 10.f, windowHeight * y - 10.f};
-        m_music.setPosition({m_position.x, m_position.y, 0.f});
+        m_musicStream.setPosition({m_position.x, m_position.y, 0.f});
     }
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
@@ -634,19 +640,20 @@ public:
         // Synchronize listener audio position with graphical position
         m_listener.setPosition({m_listenerShape.getPosition().x, m_listenerShape.getPosition().y, 0.f});
 
-        m_music.play();
+        m_musicStream.play();
     }
 
     void stop() override
     {
-        m_music.stop();
+        m_musicStream.stop();
     }
 
 protected:
     explicit Processing(sf::Listener& listener, const sf::Font& font, sf::Music&& music, std::string name) :
     Effect(std::move(name)),
-    m_music(std::move(music)),
     m_listener(listener),
+    m_music(std::move(music)),
+    m_musicStream(m_listener.getPlaybackDevice(), m_music),
     m_enabledText(font, "Processing: Enabled"),
     m_instructions(font, "Press Space to enable/disable processing")
     {
@@ -657,10 +664,10 @@ protected:
         m_instructions.setPosition({windowWidth / 2.f - 250.f, windowHeight * 3.f / 4.f});
 
         // Set the music to loop
-        m_music.setLoop(true);
+        m_musicStream.setLoop(true);
 
         // Set attenuation to a nice value
-        m_music.setAttenuation(0.0f);
+        m_musicStream.setAttenuation(0.0f);
     }
 
     const std::shared_ptr<bool>& getEnabled() const
@@ -668,7 +675,9 @@ protected:
         return m_enabled;
     }
 
-    sf::Music m_music;
+    sf::Listener&   m_listener;
+    sf::Music       m_music;
+    sf::MusicStream m_musicStream;
 
 private:
     void handleKey(sf::Keyboard::Key key) override
@@ -679,7 +688,6 @@ private:
         m_enabledText.setString(*m_enabled ? "Processing: Enabled" : "Processing: Disabled");
     }
 
-    sf::Listener&         m_listener;
     sf::CircleShape       m_listenerShape{20.f};
     sf::CircleShape       m_soundShape{20.f};
     sf::Vector2f          m_position;
@@ -723,7 +731,7 @@ protected:
         // While the Music object exists, it is possible that the audio engine will try to call
         // this lambda hence we need to always have usable coefficients and state until the Music and the
         // associated lambda are destroyed
-        m_music.setEffectProcessor(
+        m_musicStream.setEffectProcessor(
             [coefficients,
              enabled = getEnabled(),
              state   = std::vector<State>()](const float*  inputFrames,
@@ -840,7 +848,7 @@ struct Echo : Processing
         // While the Music object exists, it is possible that the audio engine will try to call
         // this lambda hence we need to always have a usable state until the Music and the
         // associated lambda are destroyed
-        m_music.setEffectProcessor(
+        m_musicStream.setEffectProcessor(
             [delayInFrames,
              enabled = getEnabled(),
              buffer  = std::vector<float>(),
@@ -896,7 +904,7 @@ public:
         // While the Music object exists, it is possible that the audio engine will try to call
         // this lambda hence we need to always have a usable state until the Music and the
         // associated lambda are destroyed
-        m_music.setEffectProcessor(
+        m_musicStream.setEffectProcessor(
             [sampleRate = m_music.getSampleRate(),
              filters    = std::vector<ReverbFilter<float>>(),
              enabled    = getEnabled()](const float*  inputFrames,
@@ -1061,7 +1069,7 @@ int main()
     sf::Listener       listener(playbackDevice);
 
     // Helper function to open a new instance of the music file
-    const auto openMusic = [&] { return sf::Music::openFromFile(playbackDevice, musicPath).value(); };
+    const auto openMusic = [&] { return sf::Music::openFromFile(musicPath).value(); };
 
     // Create the effects
     Surround       surroundEffect(listener, openMusic());

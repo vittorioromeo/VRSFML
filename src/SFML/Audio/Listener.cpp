@@ -120,4 +120,18 @@ Vector3f Listener::getUpVector()
     return m_playbackDevice.asAudioDevice().getUpVector();
 }
 
+
+////////////////////////////////////////////////////////////
+sf::PlaybackDevice& Listener::getPlaybackDevice()
+{
+    return m_playbackDevice;
+}
+
+
+////////////////////////////////////////////////////////////
+const sf::PlaybackDevice& Listener::getPlaybackDevice() const
+{
+    return m_playbackDevice;
+}
+
 } // namespace sf

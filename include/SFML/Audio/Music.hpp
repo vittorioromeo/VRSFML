@@ -47,33 +47,20 @@ class Time;
 class PlaybackDevice;
 class InputStream;
 class InputSoundFile;
+class MusicStream;
 
 ////////////////////////////////////////////////////////////
 /// \brief Streamed music played from an audio file
 ///
 ////////////////////////////////////////////////////////////
-class SFML_AUDIO_API Music : public SoundStream
+class SFML_AUDIO_API Music
 {
 public:
-    ////////////////////////////////////////////////////////////
-    /// \brief Structure defining a time range using the template type
-    ///
-    ////////////////////////////////////////////////////////////
-    template <typename T>
-    struct [[nodiscard]] Span
-    {
-        T offset{}; //!< The beginning offset of the time range
-        T length{}; //!< The length of the time range
-    };
-
-    // Define the relevant Span types
-    using TimeSpan = Span<Time>;
-
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    ~Music() override;
+    ~Music();
 
     ////////////////////////////////////////////////////////////
     /// \brief Move constructor
@@ -106,8 +93,7 @@ public:
     /// \see openFromMemory, openFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Music> openFromFile(PlaybackDevice&              playbackDevice,
-                                                           const std::filesystem::path& filename);
+    [[nodiscard]] static std::optional<Music> openFromFile(const std::filesystem::path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a music from an audio file in memory
@@ -130,9 +116,7 @@ public:
     /// \see openFromFile, openFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Music> openFromMemory(PlaybackDevice& playbackDevice,
-                                                             const void*     data,
-                                                             std::size_t     sizeInBytes);
+    [[nodiscard]] static std::optional<Music> openFromMemory(const void* data, std::size_t sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a music from an audio file in a custom stream
@@ -153,7 +137,7 @@ public:
     /// \see openFromFile, openFromMemory
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Music> openFromStream(PlaybackDevice& playbackDevice, InputStream& stream);
+    [[nodiscard]] static std::optional<Music> openFromStream(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the total duration of the music
@@ -162,6 +146,120 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Time getDuration() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Return the number of channels of the stream
+    ///
+    /// 1 channel means a mono sound, 2 means stereo, etc.
+    ///
+    /// \return Number of channels
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] unsigned int getChannelCount() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the stream sample rate of the stream
+    ///
+    /// The sample rate is the number of audio samples played per
+    /// second. The higher, the better the quality.
+    ///
+    /// \return Sample rate, in number of samples per second
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] unsigned int getSampleRate() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the map of position in sample frame to sound channel
+    ///
+    /// This is used to map a sample in the sample stream to a
+    /// position during spatialisation.
+    ///
+    /// \return Map of position in sample frame to sound channel
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] std::vector<SoundChannel> getChannelMap() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the total number of audio samples in the source file
+    ///
+    /// \return Number of samples
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] std::uint64_t getSampleCount() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] MusicStream createStream(PlaybackDevice& playbackDevice);
+
+private:
+    ////////////////////////////////////////////////////////////
+    /// \brief Try opening the music file from an optional input sound file
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static std::optional<Music> tryOpenFromInputSoundFile(std::optional<InputSoundFile>&& optFile,
+                                                                        const char*                     errorContext);
+
+public:
+    ////////////////////////////////////////////////////////////
+    /// \private
+    ///
+    /// \brief Initialize the internal state after loading a new music
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] explicit Music(priv::PassKey<Music>&&, InputSoundFile&& file);
+
+private:
+    ////////////////////////////////////////////////////////////
+    // Member data
+    ////////////////////////////////////////////////////////////
+    friend MusicStream;
+
+    struct Impl;
+    priv::UniquePtr<Impl> m_impl; //!< Implementation details
+};
+
+class MusicStream : public SoundStream
+{
+public:
+    ////////////////////////////////////////////////////////////
+    /// \brief Structure defining a time range using the template type
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename T>
+    struct [[nodiscard]] Span
+    {
+        T offset{}; //!< The beginning offset of the time range
+        T length{}; //!< The length of the time range
+    };
+
+    // Define the relevant Span types
+    using TimeSpan = Span<Time>;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    explicit MusicStream(PlaybackDevice& playbackDevice, Music& music);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Destructor
+    ///
+    ////////////////////////////////////////////////////////////
+    ~MusicStream() override;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    MusicStream(MusicStream&&) noexcept;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    MusicStream& operator=(MusicStream&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the positions of the of the sound's looping sequence
@@ -238,48 +336,10 @@ protected:
 
 private:
     ////////////////////////////////////////////////////////////
-    /// \brief Try opening the music file from an optional input sound file
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Music> tryOpenFromInputSoundFile(PlaybackDevice&                 playbackDevice,
-                                                                        std::optional<InputSoundFile>&& optFile,
-                                                                        const char*                     errorContext);
-
-public:
-    ////////////////////////////////////////////////////////////
-    /// \private
-    ///
-    /// \brief Initialize the internal state after loading a new music
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Music(priv::PassKey<Music>&&, PlaybackDevice& playbackDevice, InputSoundFile&& file);
-
-private:
-    ////////////////////////////////////////////////////////////
-    /// \brief Helper to convert an sf::Time to a sample position
-    ///
-    /// \param position Time to convert to samples
-    ///
-    /// \return The number of samples elapsed at the given time
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::uint64_t timeToSamples(Time position) const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Helper to convert a sample position to an sf::Time
-    ///
-    /// \param samples Sample count to convert to Time
-    ///
-    /// \return The Time position of the given sample
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] Time samplesToTime(std::uint64_t samples) const;
-
-    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    priv::UniquePtr<Impl> m_impl; //!< Implementation details
+    priv::UniquePtr<Impl> m_impl;
 };
 
 } // namespace sf
