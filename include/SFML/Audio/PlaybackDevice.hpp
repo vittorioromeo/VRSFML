@@ -34,9 +34,6 @@
 #include <SFML/System/LifetimeDependee.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
-#include <optional>
-#include <vector>
-
 
 namespace sf::priv
 {
@@ -50,6 +47,7 @@ struct SoundBase;
 
 namespace sf
 {
+class AudioContext;
 class Listener;
 class Sound;
 class SoundStream;
@@ -62,7 +60,7 @@ public:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    explicit PlaybackDevice();
+    explicit PlaybackDevice(AudioContext& audioContext, const AudioDeviceHandle& deviceHandle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -71,77 +69,32 @@ public:
     ~PlaybackDevice();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get a list of the names of all available audio playback devices
-    ///
-    /// This function returns a vector of strings containing
-    /// the names of all available audio playback devices.
-    ///
-    /// If the operating system reports multiple devices with
-    /// the same name, a number will be appended to the name
-    /// of all subsequent devices to distinguish them from each
-    /// other. This guarantees that every entry returned by this
-    /// function will represent a unique device.
-    ///
-    /// For example, if the operating system reports multiple
-    /// devices with the name "Sound Card", the entries returned
-    /// would be:
-    ///   - Sound Card
-    ///   - Sound Card 2
-    ///   - Sound Card 3
-    ///   - ...
-    ///
-    /// The default device, if one is marked as such, will be
-    /// placed at the beginning of the vector.
-    ///
-    /// If no devices are available, this function will return
-    /// an empty vector.
-    ///
-    /// \return A vector containing the device handles or an empty vector if no devices are available
+    /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_AUDIO_API std::vector<AudioDeviceHandle> getAvailableDevices();
+    PlaybackDevice(PlaybackDevice&&) noexcept;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the name of the default audio playback device
-    ///
-    /// This function returns the name of the default audio
-    /// playback device. If none is available, an empty string
-    /// is returned.
-    ///
-    /// \return The handle to the default audio playback device
+    /// \brief Move assignment
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_AUDIO_API std::optional<AudioDeviceHandle> getDefaultDevice();
+    PlaybackDevice& operator=(PlaybackDevice&&) noexcept;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the audio playback device
-    ///
-    /// This function sets the audio playback device to the device
-    /// with the given \a name. It can be called on the fly (i.e:
-    /// while sounds are playing).
-    ///
-    /// If there are sounds playing when the audio playback
-    /// device is switched, the sounds will continue playing
-    /// uninterrupted on the new audio playback device.
-    ///
-    /// \param handle The handle to the audio playback device
-    ///
-    /// \return True, if it was able to set the requested device
-    ///
-    /// \see getAvailableDevices, getDefaultDevice
+    /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_AUDIO_API bool setCurrentDevice(const AudioDeviceHandle& handle);
+    void transferResourcesTo(PlaybackDevice& other);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the handle to the current audio playback device
-    ///
-    /// \return The handle to the current audio playback device or std::nullopt if there is none
+    /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_AUDIO_API std::optional<AudioDeviceHandle> getCurrentDevice();
+    [[nodiscard]] const AudioDeviceHandle& getDeviceHandle() const;
 
 private:
+    AudioContext*                      m_audioContext;
+    AudioDeviceHandle                  m_deviceHandle;
     priv::UniquePtr<priv::AudioDevice> m_audioDevice;
 
     // TODO

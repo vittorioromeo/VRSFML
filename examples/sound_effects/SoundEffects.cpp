@@ -12,6 +12,8 @@
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/Transform.hpp>
 
+#include <SFML/Audio/AudioContext.hpp>
+#include <SFML/Audio/AudioDeviceHandle.hpp>
 #include <SFML/Audio/EffectProcessor.hpp>
 #include <SFML/Audio/Listener.hpp>
 #include <SFML/Audio/MusicSource.hpp>
@@ -30,7 +32,6 @@
 #include <filesystem>
 #include <iostream>
 #include <limits>
-#include <string_view>
 #include <vector>
 
 #include <cmath>
@@ -1066,9 +1067,30 @@ int main()
         return EXIT_FAILURE;
     }
 
+
     // Create the playback device and listener
-    sf::PlaybackDevice playbackDevice;
-    sf::Listener       listener(playbackDevice);
+    // TODO
+    auto                               audioContext          = sf::AudioContext::create().value();
+    std::vector<sf::AudioDeviceHandle> playbackDeviceHandles = audioContext.getAvailableDevices();
+
+    std::size_t currentPlaybackDeviceIndex = 0;
+
+    std::vector<sf::PlaybackDevice> playbackDevices;
+    playbackDevices.reserve(playbackDeviceHandles.size());
+
+    for (const sf::AudioDeviceHandle& deviceHandle : playbackDeviceHandles)
+    {
+        playbackDevices.emplace_back(audioContext, deviceHandle);
+
+        if (deviceHandle.isDefault())
+            currentPlaybackDeviceIndex = playbackDevices.size() - 1;
+    }
+
+    const auto getCurrentPlaybackDevice = [&]() -> sf::PlaybackDevice&
+    { return playbackDevices.at(currentPlaybackDeviceIndex); };
+
+    // TODO
+    sf::Listener listener(getCurrentPlaybackDevice());
 
     // Helper function to open a new instance of the music file
     const auto openMusic = [&] { return sf::MusicSource::openFromFile(musicPath).value(); };
@@ -1077,8 +1099,8 @@ int main()
     Surround       surroundEffect(listener, openMusic());
     PitchVolume    pitchVolumeEffect(listener, font, openMusic());
     Attenuation    attenuationEffect(listener, font, openMusic());
-    Tone           toneEffect(playbackDevice, listener, font);
-    Doppler        dopplerEffect(playbackDevice, listener, font);
+    Tone           toneEffect(getCurrentPlaybackDevice(), listener, font);
+    Doppler        dopplerEffect(getCurrentPlaybackDevice(), listener, font);
     HighPassFilter highPassFilterEffect(listener, font, openMusic());
     LowPassFilter  lowPassFilterEffect(listener, font, openMusic());
     Echo           echoEffect(listener, font, openMusic());
@@ -1115,12 +1137,7 @@ int main()
     instructions.setFillColor(sf::Color(80, 80, 80));
 
     // Utility functions
-    const auto getCurrentDeviceName = [&]() -> std::string
-    {
-        return playbackDevice.getCurrentDevice().has_value()
-                   ? std::string{playbackDevice.getCurrentDevice()->getName()}
-                   : std::string{"None"};
-    };
+    const auto getCurrentDeviceName = [&] { return std::string{getCurrentPlaybackDevice().getDeviceHandle().getName()}; };
 
     // Create the playback device text
     sf::Text playbackDeviceText(font, "Current playback device: " + getCurrentDeviceName(), 20);
@@ -1192,29 +1209,17 @@ int main()
                     // F1 key: change playback device
                     case sf::Keyboard::Key::F1:
                     {
+                        // TODO:
                         // We need to query the list every time we want to change
                         // since new devices could have been added in the mean time
-                        const auto devices       = playbackDevice.getAvailableDevices();
-                        const auto currentDevice = playbackDevice.getCurrentDevice();
-                        auto       next          = currentDevice;
 
-                        for (auto iter = devices.begin(); iter != devices.end(); ++iter)
-                        {
-                            if (*iter == currentDevice)
-                            {
-                                const auto nextIter = std::next(iter);
-                                next                = (nextIter == devices.end()) ? devices.front() : *nextIter;
-                                break;
-                            }
-                        }
+                        const std::size_t newPlaybackDeviceIndex = (currentPlaybackDeviceIndex + 1) % playbackDevices.size();
+                        sf::PlaybackDevice& newPlaybackDevice = playbackDevices.at(newPlaybackDeviceIndex);
 
-                        if (next)
-                        {
-                            if (!playbackDevice.setCurrentDevice(*next))
-                                std::cerr << "Failed to set the playback device to: " << next->getName() << std::endl;
+                        getCurrentPlaybackDevice().transferResourcesTo(newPlaybackDevice);
+                        currentPlaybackDeviceIndex = newPlaybackDeviceIndex;
 
-                            playbackDeviceText.setString("Current playback device: " + getCurrentDeviceName());
-                        }
+                        playbackDeviceText.setString("Current playback device: " + getCurrentDeviceName());
 
                         break;
                     }

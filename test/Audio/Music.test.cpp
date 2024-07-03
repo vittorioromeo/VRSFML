@@ -1,3 +1,4 @@
+#include <SFML/Audio/AudioContext.hpp>
 #include <SFML/Audio/MusicSource.hpp>
 #include <SFML/Audio/MusicStream.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
@@ -17,7 +18,9 @@
 
 TEST_CASE("[Audio] sf::MusicSource" * doctest::skip(skipAudioDeviceTests))
 {
-    sf::PlaybackDevice playbackDevice;
+    auto audioContext        = sf::AudioContext::create().value();
+    auto defaultDeviceHandle = audioContext.getDefaultDevice().value();
+    auto playbackDevice      = sf::PlaybackDevice(audioContext, defaultDeviceHandle);
 
     SECTION("Type traits")
     {

@@ -49,6 +49,20 @@ m_impl(*static_cast<const ma_device_info*>(maDeviceInfo))
 
 
 ////////////////////////////////////////////////////////////
+void AudioDeviceHandle::copyMADeviceInfoInto(void* maDeviceInfo) const
+{
+    (*static_cast<ma_device_info*>(maDeviceInfo)) = m_impl->maDeviceInfo;
+}
+
+
+////////////////////////////////////////////////////////////
+AudioDeviceHandle::AudioDeviceHandle(priv::PassKey<AudioContext>&&, const void* maDeviceInfo) :
+AudioDeviceHandle{maDeviceInfo}
+{
+}
+
+
+////////////////////////////////////////////////////////////
 AudioDeviceHandle::AudioDeviceHandle(priv::PassKey<SoundRecorder>&&, const void* maDeviceInfo) :
 AudioDeviceHandle{maDeviceInfo}
 {
@@ -86,6 +100,13 @@ AudioDeviceHandle& AudioDeviceHandle::operator=(AudioDeviceHandle&& rhs) noexcep
 [[nodiscard]] std::string_view AudioDeviceHandle::getName() const
 {
     return m_impl->maDeviceInfo.name;
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] bool AudioDeviceHandle::isDefault() const
+{
+    return static_cast<bool>(m_impl->maDeviceInfo.isDefault);
 }
 
 

@@ -79,7 +79,7 @@ struct SoundBase
 {
     SoundBase(PlaybackDevice&                  thePlaybackDevice,
               const ma_data_source_vtable&     dataSourceVTable,
-              AudioDevice::ResourceEntry::Func reinitializeFunc);
+              AudioDevice::ResourceEntry::InitFunc reinitializeFunc);
 
     ~SoundBase();
 

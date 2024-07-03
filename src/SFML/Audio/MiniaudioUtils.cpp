@@ -27,6 +27,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/AudioDevice.hpp>
 #include <SFML/Audio/MiniaudioUtils.hpp>
+#include <SFML/Audio/PlaybackDevice.hpp>
 #include <SFML/Audio/SoundChannel.hpp>
 
 #include <SFML/System/Err.hpp>
@@ -109,9 +110,9 @@ void applySettings(ma_sound& sound, const sf::priv::MiniaudioUtils::SavedSetting
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-MiniaudioUtils::SoundBase::SoundBase(PlaybackDevice&                  thePlaybackDevice,
-                                     const ma_data_source_vtable&     dataSourceVTable,
-                                     AudioDevice::ResourceEntry::Func reinitializeFunc) :
+MiniaudioUtils::SoundBase::SoundBase(PlaybackDevice&                      thePlaybackDevice,
+                                     const ma_data_source_vtable&         dataSourceVTable,
+                                     AudioDevice::ResourceEntry::InitFunc reinitializeFunc) :
 dataSourceBase{}, // must be first member!
 playbackDevice(&thePlaybackDevice)
 {
@@ -122,8 +123,15 @@ playbackDevice(&thePlaybackDevice)
     if (const ma_result result = ma_data_source_init(&config, &dataSourceBase); result != MA_SUCCESS)
         priv::err() << "Failed to initialize audio data source: " << ma_result_description(result) << priv::errEndl;
 
-    resourceEntryIndex = playbackDevice->asAudioDevice()
-                             .registerResource(this, [](void* ptr) { static_cast<SoundBase*>(ptr)->deinitialize(); }, reinitializeFunc);
+    resourceEntryIndex = playbackDevice->asAudioDevice().registerResource(
+        this,
+        [](void* ptr) { static_cast<SoundBase*>(ptr)->deinitialize(); },
+        reinitializeFunc,
+        [](void* ptr, PlaybackDevice& newPlaybackDevice, priv::AudioDevice::ResourceEntryIndex newIndex)
+        {
+            static_cast<SoundBase*>(ptr)->playbackDevice     = &newPlaybackDevice;
+            static_cast<SoundBase*>(ptr)->resourceEntryIndex = newIndex;
+        });
 
     SFML_UPDATE_LIFETIME_DEPENDANT(PlaybackDevice, SoundBase, playbackDevice);
 }

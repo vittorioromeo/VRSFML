@@ -266,7 +266,7 @@ private:
 /// // Open a music from an audio file
 /// auto music = sf::MusicSource::openFromFile("music.ogg").value();
 ///
-/// // Create a music stream
+/// // Create a music stream TODO
 /// sf::PlaybackDevice playbackDevice;
 /// auto musicStream = music.createStream(playbackDevice);
 ///
