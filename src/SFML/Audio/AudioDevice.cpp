@@ -32,6 +32,7 @@
 
 #include <algorithm>
 #include <array>
+#include <iostream>
 #include <ostream>
 #include <unordered_map>
 
@@ -59,6 +60,8 @@ std::optional<std::string>& getCurrentDevice()
 ////////////////////////////////////////////////////////////
 AudioDevice::AudioDevice()
 {
+    std::cout << "AudioDevice()\n";
+
     // Ensure we only ever have a single AudioDevice instance
     assert(getInstance() == nullptr);
     getInstance() = this;
@@ -143,6 +146,8 @@ AudioDevice::AudioDevice()
 ////////////////////////////////////////////////////////////
 AudioDevice::~AudioDevice()
 {
+    std::cout << "AudioDevice::~AudioDevice()\n";
+
     // Destroy the engine
     if (m_engine)
         ma_engine_uninit(&*m_engine);
@@ -306,6 +311,8 @@ AudioDevice::ResourceEntryIter AudioDevice::registerResource(void*              
 ////////////////////////////////////////////////////////////
 void AudioDevice::unregisterResource(AudioDevice::ResourceEntryIter resourceEntry)
 {
+    std::cout << "AudioDevice::unregisterResource(...)\n";
+
     // There should always be an AudioDevice instance when unregisterResource is called
     auto* instance = getInstance();
     assert(instance && "AudioDevice instance should exist when calling AudioDevice::unregisterResource");

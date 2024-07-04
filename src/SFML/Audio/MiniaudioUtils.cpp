@@ -34,6 +34,7 @@
 
 #include <miniaudio.h>
 
+#include <iostream>
 #include <ostream>
 
 #include <cassert>
@@ -121,16 +122,16 @@ MiniaudioUtils::SoundBase::SoundBase(const ma_data_source_vtable&     dataSource
     if (const ma_result result = ma_data_source_init(&config, &dataSourceBase); result != MA_SUCCESS)
         err() << "Failed to initialize audio data source: " << ma_result_description(result) << std::endl;
 
-    resourceEntryIter = priv::AudioDevice::registerResource(
-        this,
-        [](void* ptr) { static_cast<SoundBase*>(ptr)->deinitialize(); },
-        reinitializeFunc);
+    resourceEntryIter = priv::AudioDevice::
+        registerResource(this, [](void* ptr) { static_cast<SoundBase*>(ptr)->deinitialize(); }, reinitializeFunc);
 }
 
 
 ////////////////////////////////////////////////////////////
 MiniaudioUtils::SoundBase::~SoundBase()
 {
+    std::cout << "MiniaudioUtils::SoundBase::~SoundBase()\n";
+
     priv::AudioDevice::unregisterResource(resourceEntryIter);
     ma_sound_uninit(&sound);
     ma_node_uninit(&effectNode, nullptr);
