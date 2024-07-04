@@ -2,6 +2,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/AudioContext.hpp>
+#include <SFML/Audio/CaptureDeviceHandle.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
 #include <SFML/Audio/Sound.hpp>
 #include <SFML/Audio/SoundBuffer.hpp>
@@ -40,7 +41,7 @@ int main()
     }
 
     // List the available capture devices
-    auto devices = sf::SoundRecorder::getAvailableDevices();
+    auto devices = sf::SoundRecorder::getAvailableCaptureDeviceHandles();
 
     std::cout << "Available capture devices:\n" << std::endl;
 
@@ -122,11 +123,11 @@ int main()
     else
     {
         // TODO:
-        sf::PlaybackDevice playbackDevice(*audioContext, audioContext->getDefaultDevice().value());
+        sf::PlaybackDevice playbackDevice(*audioContext, audioContext->getDefaultPlaybackDeviceHandle().value());
 
         // Create a sound instance and play it
-        sf::Sound sound(playbackDevice, buffer);
-        sound.play();
+        sf::Sound sound(buffer);
+        sound.play(playbackDevice);
 
         // Wait until finished
         while (sound.getStatus() == sf::Sound::Status::Playing)

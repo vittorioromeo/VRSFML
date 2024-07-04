@@ -118,9 +118,9 @@ std::vector<SoundChannel> MusicSource::getChannelMap() const
 
 
 ////////////////////////////////////////////////////////////
-MusicStream MusicSource::createStream(PlaybackDevice& playbackDevice)
+MusicStream MusicSource::createStream()
 {
-    return MusicStream{playbackDevice, *this};
+    return MusicStream{*this};
 }
 
 

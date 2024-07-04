@@ -26,7 +26,6 @@
 #include <SFML/System/Vector2.hpp>
 
 #include <filesystem>
-#include <iostream>
 #include <random>
 #include <string>
 
@@ -71,12 +70,12 @@ int main()
 
     // TODO
     auto audioContext        = sf::AudioContext::create().value();
-    auto defaultDeviceHandle = audioContext.getDefaultDevice().value();
+    auto defaultDeviceHandle = audioContext.getDefaultPlaybackDeviceHandle().value();
     auto playbackDevice      = sf::PlaybackDevice(audioContext, defaultDeviceHandle);
 
     // Load the sounds used in the game
     const auto ballSoundBuffer = sf::SoundBuffer::loadFromFile(resourcesDir() / "ball.wav").value();
-    sf::Sound  ballSound(playbackDevice, ballSoundBuffer);
+    sf::Sound  ballSound(ballSoundBuffer);
 
     // Create the SFML logo texture:
     const auto sfmlLogoTexture = sf::Texture::loadFromFile(resourcesDir() / "sfml_logo.png").value();
@@ -244,13 +243,13 @@ int main()
             }
             if (ball.getPosition().y - ballRadius < 0.f)
             {
-                ballSound.play();
+                ballSound.play(playbackDevice);
                 ballAngle = -ballAngle;
                 ball.setPosition({ball.getPosition().x, ballRadius + 0.1f});
             }
             if (ball.getPosition().y + ballRadius > gameHeight)
             {
-                ballSound.play();
+                ballSound.play(playbackDevice);
                 ballAngle = -ballAngle;
                 ball.setPosition({ball.getPosition().x, gameHeight - ballRadius - 0.1f});
             }
@@ -269,7 +268,7 @@ int main()
                 else
                     ballAngle = sf::degrees(180) - ballAngle - sf::degrees(dist(rng));
 
-                ballSound.play();
+                ballSound.play(playbackDevice);
                 ball.setPosition({leftPaddle.getPosition().x + ballRadius + paddleSize.x / 2 + 0.1f, ball.getPosition().y});
             }
 
@@ -284,7 +283,7 @@ int main()
                 else
                     ballAngle = sf::degrees(180) - ballAngle - sf::degrees(dist(rng));
 
-                ballSound.play();
+                ballSound.play(playbackDevice);
                 ball.setPosition({rightPaddle.getPosition().x - ballRadius - paddleSize.x / 2 - 0.1f, ball.getPosition().y});
             }
         }

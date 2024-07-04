@@ -27,7 +27,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/AudioContext.hpp>
 #include <SFML/Audio/AudioDevice.hpp>
-#include <SFML/Audio/AudioDeviceHandle.hpp>
+#include <SFML/Audio/PlaybackDeviceHandle.hpp>
 
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Macros.hpp>
@@ -194,9 +194,9 @@ std::optional<AudioContext> AudioContext::create()
 
 
 ////////////////////////////////////////////////////////////
-std::vector<AudioDeviceHandle> AudioContext::getAvailableDevices()
+std::vector<PlaybackDeviceHandle> AudioContext::getAvailablePlaybackDeviceHandles()
 {
-    std::vector<AudioDeviceHandle> deviceHandles; // Use a single local variable for NRVO
+    std::vector<PlaybackDeviceHandle> deviceHandles; // Use a single local variable for NRVO
 
     ma_device_info* maDeviceInfosPtr{};
     ma_uint32       maDeviceInfoCount{};
@@ -219,9 +219,9 @@ std::vector<AudioDeviceHandle> AudioContext::getAvailableDevices()
 
 
 ////////////////////////////////////////////////////////////
-std::optional<AudioDeviceHandle> AudioContext::getDefaultDevice()
+std::optional<PlaybackDeviceHandle> AudioContext::getDefaultPlaybackDeviceHandle()
 {
-    for (const AudioDeviceHandle& deviceHandle : getAvailableDevices())
+    for (const PlaybackDeviceHandle& deviceHandle : getAvailablePlaybackDeviceHandles())
         if (deviceHandle.isDefault())
             return std::make_optional(deviceHandle);
 

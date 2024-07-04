@@ -26,8 +26,8 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/AudioDevice.hpp>
-#include <SFML/Audio/AudioDeviceHandle.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
+#include <SFML/Audio/PlaybackDeviceHandle.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/UniquePtr.hpp>
@@ -36,7 +36,7 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-PlaybackDevice::PlaybackDevice(AudioContext& audioContext, const AudioDeviceHandle& deviceHandle) :
+PlaybackDevice::PlaybackDevice(AudioContext& audioContext, const PlaybackDeviceHandle& deviceHandle) :
 m_audioContext(&audioContext),
 m_deviceHandle(deviceHandle),
 m_audioDevice(priv::makeUnique<priv::AudioDevice>(*this, audioContext, deviceHandle))
@@ -67,9 +67,16 @@ void PlaybackDevice::transferResourcesTo(PlaybackDevice& other)
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] const AudioDeviceHandle& PlaybackDevice::getDeviceHandle() const
+[[nodiscard]] const PlaybackDeviceHandle& PlaybackDevice::getDeviceHandle() const
 {
     return m_deviceHandle;
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] bool PlaybackDevice::updateListener(const Listener& listener)
+{
+    return asAudioDevice().updateFromListener(listener);
 }
 
 

@@ -37,7 +37,7 @@ public:
     /// Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    NetworkAudioStream(sf::PlaybackDevice& playbackDevice) : sf::SoundStream(playbackDevice)
+    NetworkAudioStream()
     {
         // Set the sound parameters
         initialize(1, 44100, {sf::SoundChannel::Mono});
@@ -47,7 +47,7 @@ public:
     /// Run the server, stream audio data from the client
     ///
     ////////////////////////////////////////////////////////////
-    void start(unsigned short port)
+    void start(sf::PlaybackDevice& playbackDevice, unsigned short port)
     {
         if (!m_hasFinished)
         {
@@ -62,7 +62,7 @@ public:
             std::cout << "Client connected: " << m_client.getRemoteAddress().value() << std::endl;
 
             // Start playback
-            play();
+            play(playbackDevice);
 
             // Start receiving audio data
             receiveLoop();
@@ -70,7 +70,7 @@ public:
         else
         {
             // Start playback
-            play();
+            play(playbackDevice);
         }
     }
 
@@ -184,12 +184,12 @@ void doServer(unsigned short port)
 {
     // TODO
     auto audioContext        = sf::AudioContext::create().value();
-    auto defaultDeviceHandle = audioContext.getDefaultDevice().value();
+    auto defaultDeviceHandle = audioContext.getDefaultPlaybackDeviceHandle().value();
     auto playbackDevice      = sf::PlaybackDevice(audioContext, defaultDeviceHandle);
 
     // Build an audio stream to play sound data as it is received through the network
-    NetworkAudioStream audioStream(playbackDevice);
-    audioStream.start(port);
+    NetworkAudioStream audioStream;
+    audioStream.start(playbackDevice, port);
 
     // Loop until the sound playback is finished
     while (audioStream.getStatus() != sf::SoundStream::Status::Stopped)
@@ -205,7 +205,7 @@ void doServer(unsigned short port)
     std::cin.ignore(10000, '\n');
 
     // Replay the sound (just to make sure replaying the received data is OK)
-    audioStream.play();
+    audioStream.play(playbackDevice);
 
     // Loop until the sound playback is finished
     while (audioStream.getStatus() != sf::SoundStream::Status::Stopped)

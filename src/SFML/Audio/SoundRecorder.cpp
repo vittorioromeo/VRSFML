@@ -25,7 +25,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/AudioDeviceHandle.hpp>
+#include <SFML/Audio/CaptureDeviceHandle.hpp>
 #include <SFML/Audio/SoundRecorder.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
@@ -75,12 +75,12 @@ struct SoundRecorder::Impl
             return false;
 
         // Find the device by its name
-        auto devices = getAvailableDevices();
+        auto devices = getAvailableCaptureDeviceHandles();
 
         const auto iter = priv::findIf(devices.begin(),
                                        devices.end(),
                                        [this](const ma_device_info& maDeviceInfo) {
-                                           return AudioDeviceHandle{priv::PassKey<SoundRecorder>{}, &maDeviceInfo} ==
+                                           return CaptureDeviceHandle{priv::PassKey<SoundRecorder>{}, &maDeviceInfo} ==
                                                   deviceHandle;
                                        });
 
@@ -116,7 +116,7 @@ struct SoundRecorder::Impl
         return true;
     }
 
-    static std::vector<ma_device_info> getAvailableDevices()
+    static std::vector<ma_device_info> getAvailableCaptureDeviceHandles()
     {
         std::vector<ma_device_info> deviceList;
 
@@ -153,14 +153,14 @@ struct SoundRecorder::Impl
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    SoundRecorder* const      owner;                            //!< Owning SoundRecorder object
-    std::optional<ma_log>     log;                              //!< The miniaudio log
-    std::optional<ma_context> context;                          //!< The miniaudio context
-    std::optional<ma_device>  captureDevice;                    //!< The miniaudio capture device
-    AudioDeviceHandle         deviceHandle{getDefaultDevice()}; //!< Name of the audio capture device
-    unsigned int              channelCount{1};                  //!< Number of recording channels
-    unsigned int              sampleRate{44100};                //!< Sample rate
-    std::vector<std::int16_t> samples;                          //!< Buffer to store captured samples
+    SoundRecorder* const      owner;                                         //!< Owning SoundRecorder object
+    std::optional<ma_log>     log;                                           //!< The miniaudio log
+    std::optional<ma_context> context;                                       //!< The miniaudio context
+    std::optional<ma_device>  captureDevice;                                 //!< The miniaudio capture device
+    CaptureDeviceHandle       deviceHandle{getDefaultCaptureDeviceHandle()}; //!< Name of the audio capture device
+    unsigned int              channelCount{1};                               //!< Number of recording channels
+    unsigned int              sampleRate{44100};                             //!< Sample rate
+    std::vector<std::int16_t> samples;                                       //!< Buffer to store captured samples
     std::vector<SoundChannel> channelMap{SoundChannel::Mono}; //!< The map of position in sample frame to sound channel
 };
 
@@ -356,12 +356,12 @@ unsigned int SoundRecorder::getSampleRate() const
 
 
 ////////////////////////////////////////////////////////////
-std::vector<AudioDeviceHandle> SoundRecorder::getAvailableDevices()
+std::vector<CaptureDeviceHandle> SoundRecorder::getAvailableCaptureDeviceHandles()
 {
     // Convert the internal miniaudio device list into a name-only list
-    const std::vector<ma_device_info> maDeviceInfos = Impl::getAvailableDevices();
+    const std::vector<ma_device_info> maDeviceInfos = Impl::getAvailableCaptureDeviceHandles();
 
-    std::vector<AudioDeviceHandle> deviceHandleList;
+    std::vector<CaptureDeviceHandle> deviceHandleList;
     deviceHandleList.reserve(maDeviceInfos.size());
 
     for (const ma_device_info& maDeviceInfo : maDeviceInfos)
@@ -372,22 +372,22 @@ std::vector<AudioDeviceHandle> SoundRecorder::getAvailableDevices()
 
 
 ////////////////////////////////////////////////////////////
-AudioDeviceHandle SoundRecorder::getDefaultDevice()
+CaptureDeviceHandle SoundRecorder::getDefaultCaptureDeviceHandle()
 {
-    const std::vector<ma_device_info> maDeviceInfos = Impl::getAvailableDevices();
+    const std::vector<ma_device_info> maDeviceInfos = Impl::getAvailableCaptureDeviceHandles();
 
     for (const ma_device_info& maDeviceInfo : maDeviceInfos)
     {
         if (maDeviceInfo.isDefault)
-            return AudioDeviceHandle{priv::PassKey<SoundRecorder>{}, &maDeviceInfo};
+            return CaptureDeviceHandle{priv::PassKey<SoundRecorder>{}, &maDeviceInfo};
     }
 
-    return AudioDeviceHandle{priv::PassKey<SoundRecorder>{}, nullptr};
+    return CaptureDeviceHandle{priv::PassKey<SoundRecorder>{}, nullptr};
 }
 
 
 ////////////////////////////////////////////////////////////
-bool SoundRecorder::setCurrentDevice(const AudioDeviceHandle& handle)
+bool SoundRecorder::setCurrentDevice(const CaptureDeviceHandle& handle)
 {
     // Store the device name and re-initialize if necessary
     if (m_impl->deviceHandle != handle)
@@ -403,7 +403,7 @@ bool SoundRecorder::setCurrentDevice(const AudioDeviceHandle& handle)
 
 
 ////////////////////////////////////////////////////////////
-const AudioDeviceHandle& SoundRecorder::getCurrentDevice() const
+const CaptureDeviceHandle& SoundRecorder::getCurrentDevice() const
 {
     return m_impl->deviceHandle;
 }

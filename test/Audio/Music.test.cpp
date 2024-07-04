@@ -19,7 +19,7 @@
 TEST_CASE("[Audio] sf::MusicSource" * doctest::skip(skipAudioDeviceTests))
 {
     auto audioContext        = sf::AudioContext::create().value();
-    auto defaultDeviceHandle = audioContext.getDefaultDevice().value();
+    auto defaultDeviceHandle = audioContext.getDefaultPlaybackDeviceHandle().value();
     auto playbackDevice      = sf::PlaybackDevice(audioContext, defaultDeviceHandle);
 
     SECTION("Type traits")
@@ -62,7 +62,7 @@ TEST_CASE("[Audio] sf::MusicSource" * doctest::skip(skipAudioDeviceTests))
             CHECK(static_cast<const sf::MusicSource&>(music).getChannelCount() == 1);
             CHECK(static_cast<const sf::MusicSource&>(music).getSampleRate() == 44100);
 
-            auto musicStream = music.createStream(playbackDevice);
+            auto musicStream = music.createStream();
 
             const auto [offset, length] = musicStream.getLoopPoints();
             CHECK(offset == sf::Time::Zero);
@@ -91,7 +91,7 @@ TEST_CASE("[Audio] sf::MusicSource" * doctest::skip(skipAudioDeviceTests))
             CHECK(static_cast<const sf::MusicSource&>(music).getChannelCount() == 1);
             CHECK(static_cast<const sf::MusicSource&>(music).getSampleRate() == 44100);
 
-            auto musicStream = music.createStream(playbackDevice);
+            auto musicStream = music.createStream();
 
             const auto [offset, length] = musicStream.getLoopPoints();
             CHECK(offset == sf::Time::Zero);
@@ -110,7 +110,7 @@ TEST_CASE("[Audio] sf::MusicSource" * doctest::skip(skipAudioDeviceTests))
         CHECK(static_cast<const sf::MusicSource&>(music).getChannelCount() == 2);
         CHECK(static_cast<const sf::MusicSource&>(music).getSampleRate() == 44100);
 
-        auto musicStream = music.createStream(playbackDevice);
+        auto musicStream = music.createStream();
 
         const auto [offset, length] = musicStream.getLoopPoints();
         CHECK(offset == sf::Time::Zero);
@@ -123,10 +123,10 @@ TEST_CASE("[Audio] sf::MusicSource" * doctest::skip(skipAudioDeviceTests))
     SECTION("play/pause/stop")
     {
         auto music       = sf::MusicSource::openFromFile("Audio/ding.mp3").value();
-        auto musicStream = music.createStream(playbackDevice);
+        auto musicStream = music.createStream();
 
         // Wait for background thread to start
-        musicStream.play();
+        musicStream.play(playbackDevice);
         while (musicStream.getStatus() == sf::MusicStream::Status::Stopped)
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         CHECK(musicStream.getStatus() == sf::MusicStream::Status::Playing);
@@ -147,7 +147,7 @@ TEST_CASE("[Audio] sf::MusicSource" * doctest::skip(skipAudioDeviceTests))
     SECTION("setLoopPoints()")
     {
         auto music       = sf::MusicSource::openFromFile("Audio/killdeer.wav").value();
-        auto musicStream = music.createStream(playbackDevice);
+        auto musicStream = music.createStream();
 
         musicStream.setLoopPoints({sf::seconds(1), sf::seconds(2)});
         CHECK(musicStream.getChannelCount() == 1);

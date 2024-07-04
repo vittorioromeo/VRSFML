@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
-#include <SFML/Audio/AudioDeviceHandle.hpp>
+#include <SFML/Audio/PlaybackDeviceHandle.hpp>
 
 #include <SFML/System/LifetimeDependee.hpp>
 #include <SFML/System/UniquePtr.hpp>
@@ -60,7 +60,7 @@ public:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    explicit PlaybackDevice(AudioContext& audioContext, const AudioDeviceHandle& deviceHandle);
+    explicit PlaybackDevice(AudioContext& audioContext, const PlaybackDeviceHandle& deviceHandle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -90,11 +90,17 @@ public:
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const AudioDeviceHandle& getDeviceHandle() const;
+    [[nodiscard]] const PlaybackDeviceHandle& getDeviceHandle() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool updateListener(const Listener& listener);
 
 private:
     AudioContext*                      m_audioContext;
-    AudioDeviceHandle                  m_deviceHandle;
+    PlaybackDeviceHandle               m_deviceHandle;
     priv::UniquePtr<priv::AudioDevice> m_audioDevice;
 
     // TODO
@@ -111,7 +117,6 @@ private:
     ////////////////////////////////////////////////////////////
     // Lifetime tracking
     ////////////////////////////////////////////////////////////
-    SFML_DEFINE_LIFETIME_DEPENDEE(PlaybackDevice, Listener);
     SFML_DEFINE_LIFETIME_DEPENDEE(PlaybackDevice, SoundBase);
 };
 

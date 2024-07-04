@@ -35,18 +35,27 @@
 #include <string_view>
 
 
-namespace sf::priv
-{
-class AudioDevice;
-} // namespace sf::priv
-
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
 
 namespace sf
 {
 class AudioContext;
 class PlaybackDevice;
 class SoundRecorder;
+class PlaybackDeviceHandle;
+class CaptureDeviceHandle;
+} // namespace sf
 
+namespace sf::priv
+{
+class AudioDevice;
+} // namespace sf::priv
+
+
+namespace sf::priv
+{
 ////////////////////////////////////////////////////////////
 class [[nodiscard]] AudioDeviceHandle
 {
@@ -112,7 +121,9 @@ public:
     friend bool operator!=(const AudioDeviceHandle& lhs, const AudioDeviceHandle& rhs);
 
 private:
-    friend priv::AudioDevice;
+    friend AudioDevice;
+    friend CaptureDeviceHandle;
+    friend PlaybackDeviceHandle;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO
@@ -133,7 +144,7 @@ public:
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit AudioDeviceHandle(priv::PassKey<AudioContext>&&, const void* maDeviceInfo);
+    [[nodiscard]] explicit AudioDeviceHandle(PassKey<AudioContext>&&, const void* maDeviceInfo);
 
     ////////////////////////////////////////////////////////////
     /// \private
@@ -141,7 +152,7 @@ public:
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit AudioDeviceHandle(priv::PassKey<SoundRecorder>&&, const void* maDeviceInfo);
+    [[nodiscard]] explicit AudioDeviceHandle(PassKey<SoundRecorder>&&, const void* maDeviceInfo);
 
     ////////////////////////////////////////////////////////////
     /// \private
@@ -149,11 +160,11 @@ public:
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit AudioDeviceHandle(priv::PassKey<priv::AudioDevice>&&, const void* maDeviceInfo);
+    [[nodiscard]] explicit AudioDeviceHandle(PassKey<AudioDevice>&&, const void* maDeviceInfo);
 
 private:
     struct Impl;
-    priv::InPlacePImpl<Impl, 2048> m_impl;
+    InPlacePImpl<Impl, 2048> m_impl;
 };
 
 ////////////////////////////////////////////////////////////
@@ -168,4 +179,4 @@ private:
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool operator!=(const AudioDeviceHandle& lhs, const AudioDeviceHandle& rhs);
 
-} // namespace sf
+} // namespace sf::priv

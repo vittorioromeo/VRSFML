@@ -92,9 +92,7 @@ struct MusicStream::Impl
 
 
 ////////////////////////////////////////////////////////////
-MusicStream::MusicStream(PlaybackDevice& playbackDevice, MusicSource& musicSource) :
-SoundStream(playbackDevice),
-m_impl(priv::makeUnique<Impl>(musicSource))
+MusicStream::MusicStream(MusicSource& musicSource) : m_impl(priv::makeUnique<Impl>(musicSource))
 {
     SoundStream::initialize(musicSource.getChannelCount(), musicSource.getSampleRate(), musicSource.getChannelMap());
 
@@ -246,7 +244,9 @@ void MusicStream::setLoopPoints(TimeSpan timePoints)
 
     // Resume
     if (oldStatus == Status::Playing)
-        play();
+    {
+        // play(); // TODO
+    }
 }
 
 } // namespace sf

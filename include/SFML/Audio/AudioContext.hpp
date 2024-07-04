@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
-#include <SFML/Audio/AudioDeviceHandle.hpp>
+#include <SFML/Audio/PlaybackDeviceHandle.hpp>
 
 #include <SFML/System/PassKey.hpp>
 #include <SFML/System/UniquePtr.hpp>
@@ -124,7 +124,7 @@ public:
     /// \return A vector containing the device handles or an empty vector if no devices are available
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_AUDIO_API std::vector<AudioDeviceHandle> getAvailableDevices();
+    [[nodiscard]] SFML_AUDIO_API std::vector<PlaybackDeviceHandle> getAvailablePlaybackDeviceHandles();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the name of the default audio playback device
@@ -136,7 +136,7 @@ public:
     /// \return The handle to the default audio playback device
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_AUDIO_API std::optional<AudioDeviceHandle> getDefaultDevice();
+    [[nodiscard]] SFML_AUDIO_API std::optional<PlaybackDeviceHandle> getDefaultPlaybackDeviceHandle();
 
 private:
     friend priv::AudioDevice;

@@ -9,6 +9,8 @@ set(SRC
     ${SRCROOT}/AudioDevice.hpp
     ${INCROOT}/AudioDeviceHandle.hpp
     ${SRCROOT}/AudioDeviceHandle.cpp
+    ${INCROOT}/PlaybackDeviceHandle.hpp
+    ${INCROOT}/CaptureDeviceHandle.hpp
     ${INCROOT}/Export.hpp
     ${SRCROOT}/Listener.cpp
     ${INCROOT}/Listener.hpp
