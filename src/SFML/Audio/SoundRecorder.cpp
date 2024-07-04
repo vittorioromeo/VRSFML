@@ -84,9 +84,11 @@ bool SoundRecorder::start(CaptureDevice& captureDevice, unsigned int sampleRate)
     m_lastCaptureDevice = &captureDevice;
     // TODO: lifetime tracking
 
-    captureDevice.setProcessSamplesFunc(
-        [](void* userData, const std::int16_t* samples, std::size_t sampleCount)
-        { return static_cast<SoundRecorder*>(userData)->onProcessSamples(samples, sampleCount); });
+    captureDevice.setProcessSamplesFunc(this,
+                                        [](void* userData, const std::int16_t* samples, std::size_t sampleCount) {
+                                            return static_cast<SoundRecorder*>(userData)->onProcessSamples(samples,
+                                                                                                           sampleCount);
+                                        });
 
     return true;
 }
@@ -95,17 +97,18 @@ bool SoundRecorder::start(CaptureDevice& captureDevice, unsigned int sampleRate)
 ////////////////////////////////////////////////////////////
 bool SoundRecorder::stop()
 {
-    assert(m_lastCaptureDevice != nullptr && "Attempted to stop an already stopped sound recorder");
+    if (m_lastCaptureDevice == nullptr) // Already stopped
+        return true;
 
     auto* const savedCaptureDevice = m_lastCaptureDevice;
+    m_lastCaptureDevice            = nullptr;
 
-    m_lastCaptureDevice->setProcessSamplesFunc(nullptr);
-    m_lastCaptureDevice = nullptr;
+    savedCaptureDevice->setProcessSamplesFunc(nullptr, nullptr);
 
-    if (!m_lastCaptureDevice->isDeviceInitialized() || !m_lastCaptureDevice->isDeviceStarted())
+    if (!savedCaptureDevice->isDeviceInitialized() || !savedCaptureDevice->isDeviceStarted())
         return false;
 
-    if (!m_lastCaptureDevice->stopDevice())
+    if (!savedCaptureDevice->stopDevice())
     {
         priv::err() << "Failed to stop sound recorder" << priv::errEndl;
         return false;

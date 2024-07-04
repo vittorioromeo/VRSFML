@@ -25,6 +25,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Audio/SoundRecorder.hpp"
+
 #include <SFML/Audio/AudioContext.hpp>
 #include <SFML/Audio/CaptureDevice.hpp>
 #include <SFML/Audio/CaptureDeviceHandle.hpp>
@@ -55,7 +57,8 @@ struct CaptureDevice::Impl
 
         // Notify the derived class of the availability of new samples
         assert(impl.processSamplesFunc != nullptr && "processSamplesFunc callback not registered in capture device");
-        if (impl.processSamplesFunc(nullptr, impl.samples.data(), impl.samples.size()))
+        assert(impl.processSamplesFuncUserData != nullptr && "processSamplesFunc callback user data is null");
+        if (impl.processSamplesFunc(impl.processSamplesFuncUserData, impl.samples.data(), impl.samples.size()))
             return;
 
         // If the derived class wants to stop, stop the capture
@@ -74,15 +77,16 @@ struct CaptureDevice::Impl
 
     ~Impl()
     {
-        if (ma_device_get_state(&maDevice) != ma_device_state_uninitialized)
-            ma_device_uninit(&maDevice);
+        deinitialize();
+    }
+
+    void deinitialize()
+    {
+        ma_device_uninit(&maDevice);
     }
 
     [[nodiscard]] bool initialize()
     {
-        if (ma_device_get_state(&maDevice) != ma_device_state_uninitialized)
-            ma_device_uninit(&maDevice);
-
         ma_device_config captureDeviceConfig = ma_device_config_init(ma_device_type_capture);
         captureDeviceConfig.dataCallback     = maDeviceDataCallback;
         captureDeviceConfig.pUserData        = this;
@@ -113,9 +117,22 @@ struct CaptureDevice::Impl
     ma_uint32                 sampleRate{44100u};             //!< Sample rate
     std::vector<std::int16_t> samples;                        //!< Buffer to store captured samples
     std::vector<SoundChannel> channelMap{SoundChannel::Mono}; //!< The map of position in sample frame to sound channel
-    ProcessSamplesFunc        processSamplesFunc{};           //!< TODO
-    ma_device                 maDevice;                       //!< miniaudio capture device (one per hardware device)
+    SoundRecorder*            processSamplesFuncUserData{nullptr}; //!< TODO
+    ProcessSamplesFunc        processSamplesFunc{};                //!< TODO
+    ma_device                 maDevice; //!< miniaudio capture device (one per hardware device)
 };
+
+
+////////////////////////////////////////////////////////////
+std::optional<CaptureDevice> CaptureDevice::createDefault(AudioContext& audioContext)
+{
+    std::optional defaultCaptureDeviceHandle = audioContext.getDefaultCaptureDeviceHandle();
+
+    if (!defaultCaptureDeviceHandle.has_value())
+        return std::nullopt;
+
+    return std::make_optional<CaptureDevice>(audioContext, *defaultCaptureDeviceHandle);
+}
 
 
 ////////////////////////////////////////////////////////////
@@ -132,6 +149,9 @@ m_impl(priv::makeUnique<Impl>(audioContext, playbackDeviceHandle))
 ////////////////////////////////////////////////////////////
 CaptureDevice::~CaptureDevice()
 {
+    if (m_impl == nullptr) // Could be moved
+        return;
+
     assert(!ma_device_is_started(&m_impl->maDevice) &&
            "The miniaudio capture device must be stopped before destroying the capture device");
 }
@@ -160,6 +180,7 @@ bool CaptureDevice::setSampleRate(unsigned int sampleRate)
     {
         m_impl->sampleRate = sampleRate;
 
+        m_impl->deinitialize();
         if (!m_impl->initialize())
         {
             priv::err() << "Failed to set audio capture device sample rate to " << sampleRate << priv::errEndl;
@@ -239,6 +260,8 @@ bool CaptureDevice::setChannelCount(unsigned int channelCount)
         return true;
 
     m_impl->channelCount = channelCount;
+
+    m_impl->deinitialize();
     if (!m_impl->initialize())
     {
         priv::err() << "Failed to set audio capture device channel count to " << channelCount << priv::errEndl;
@@ -274,9 +297,10 @@ const std::vector<SoundChannel>& CaptureDevice::getChannelMap() const
 
 
 ////////////////////////////////////////////////////////////
-void CaptureDevice::setProcessSamplesFunc(ProcessSamplesFunc processSamplesFunc)
+void CaptureDevice::setProcessSamplesFunc(SoundRecorder* soundRecorder, ProcessSamplesFunc processSamplesFunc)
 {
-    m_impl->processSamplesFunc = processSamplesFunc;
+    m_impl->processSamplesFuncUserData = soundRecorder;
+    m_impl->processSamplesFunc         = processSamplesFunc;
 }
 
 } // namespace sf

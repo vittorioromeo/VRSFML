@@ -349,7 +349,8 @@ private:
 /// music.setLoop(true);           // make it loop
 ///
 /// // Create an audio context and get the default playback device
-/// auto [audioContext, playbackDevice] = sf::AudioUtils::createContextAndDefaultPlaybackDevice().value();
+/// auto audioContext = sf::AudioContext::create().value();
+/// auto playbackDevice = sf::PlaybackDevice::createDefault(audioContext).value();
 ///
 /// // Play it
 /// music.play(playbackDevice);

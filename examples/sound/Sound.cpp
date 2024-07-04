@@ -2,7 +2,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/AudioContext.hpp>
-#include <SFML/Audio/AudioUtils.hpp>
 #include <SFML/Audio/Music.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
 #include <SFML/Audio/PlaybackDeviceHandle.hpp>
@@ -81,15 +80,14 @@ void playMusic(sf::PlaybackDevice& playbackDevice, const std::filesystem::path& 
 
 
 ////////////////////////////////////////////////////////////
-/// Entry point of application
-///
-/// \return Application exit code
+/// Main
 ///
 ////////////////////////////////////////////////////////////
 int main()
 {
     // Create an audio context and get the default playback device
-    auto [audioContext, playbackDevice] = sf::AudioUtils::createContextAndDefaultPlaybackDevice().value();
+    auto audioContext   = sf::AudioContext::create().value();
+    auto playbackDevice = sf::PlaybackDevice::createDefault(audioContext).value();
 
     // Play a sound
     playSound(playbackDevice);

@@ -39,6 +39,7 @@
 #include <miniaudio.h>
 
 #include <mutex>
+#include <optional>
 #include <vector>
 
 #include <cassert>
@@ -69,9 +70,7 @@ struct PlaybackDevice::Impl
     ~Impl()
     {
         ma_engine_uninit(&maEngine);
-
-        if (ma_device_get_state(&maDevice) != ma_device_state_uninitialized)
-            ma_device_uninit(&maDevice);
+        ma_device_uninit(&maDevice);
     }
 
     [[nodiscard]] bool initialize()
@@ -125,6 +124,18 @@ struct PlaybackDevice::Impl
 
 
 ////////////////////////////////////////////////////////////
+std::optional<PlaybackDevice> PlaybackDevice::createDefault(AudioContext& audioContext)
+{
+    std::optional defaultPlaybackDeviceHandle = audioContext.getDefaultPlaybackDeviceHandle();
+
+    if (!defaultPlaybackDeviceHandle.has_value())
+        return std::nullopt;
+
+    return std::make_optional<PlaybackDevice>(audioContext, *defaultPlaybackDeviceHandle);
+}
+
+
+////////////////////////////////////////////////////////////
 PlaybackDevice::PlaybackDevice(AudioContext& audioContext, const PlaybackDeviceHandle& playbackDeviceHandle) :
 m_impl(priv::makeUnique<Impl>(audioContext, playbackDeviceHandle))
 {
@@ -136,15 +147,11 @@ m_impl(priv::makeUnique<Impl>(audioContext, playbackDeviceHandle))
 
 
 ////////////////////////////////////////////////////////////
-PlaybackDevice::~PlaybackDevice()
-{
-    assert(!ma_device_is_started(&m_impl->maDevice) &&
-           "The miniaudio playback device must be stopped before destroying the capture device.");
-}
+PlaybackDevice::~PlaybackDevice() = default;
 
 
 ////////////////////////////////////////////////////////////
-PlaybackDevice::PlaybackDevice(PlaybackDevice&&) noexcept = default;
+PlaybackDevice::PlaybackDevice(PlaybackDevice&& rhs) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////

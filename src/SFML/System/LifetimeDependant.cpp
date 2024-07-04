@@ -57,8 +57,9 @@ LifetimeDependant::LifetimeDependant(const LifetimeDependant& rhs) noexcept : Li
 
 
 ////////////////////////////////////////////////////////////
-LifetimeDependant::LifetimeDependant(LifetimeDependant&& rhs) noexcept : LifetimeDependant(rhs.m_dependee)
+LifetimeDependant::LifetimeDependant(LifetimeDependant&& rhs) noexcept : m_dependee(rhs.m_dependee)
 {
+    rhs.m_dependee = nullptr;
 }
 
 
@@ -78,7 +79,10 @@ LifetimeDependant& LifetimeDependant::operator=(const LifetimeDependant& rhs) no
 ////////////////////////////////////////////////////////////
 LifetimeDependant& LifetimeDependant::operator=(LifetimeDependant&& rhs) noexcept
 {
-    return (*this = rhs);
+    m_dependee     = rhs.m_dependee;
+    rhs.m_dependee = nullptr;
+
+    return *this;
 }
 
 
@@ -105,7 +109,6 @@ void LifetimeDependant::subSelfAsDependant()
     if (m_dependee != nullptr && !LifetimeDependee::TestingModeGuard::fatalErrorTriggered())
         m_dependee->subDependant();
 }
-
 
 } // namespace sf::priv
 
