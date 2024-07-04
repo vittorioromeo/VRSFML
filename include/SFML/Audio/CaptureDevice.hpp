@@ -34,6 +34,7 @@
 #include <SFML/System/LifetimeDependant.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
+#include <optional>
 #include <vector>
 
 #include <cstddef>
@@ -50,6 +51,12 @@ class SoundRecorder;
 class CaptureDevice
 {
 public:
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static std::optional<CaptureDevice> createDefault(AudioContext& audioContext);
+
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
@@ -170,7 +177,7 @@ private:
     ////////////////////////////////////////////////////////////
     using ProcessSamplesFunc = bool (*)(void* userData, const std::int16_t* samples, std::size_t sampleCount);
 
-    void setProcessSamplesFunc(ProcessSamplesFunc processSamplesFunc);
+    void setProcessSamplesFunc(SoundRecorder* soundRecorder, ProcessSamplesFunc processSamplesFunc);
 
     struct Impl;
     priv::UniquePtr<Impl> m_impl;

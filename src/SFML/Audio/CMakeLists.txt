@@ -7,8 +7,6 @@ set(SRC
     ${SRCROOT}/AudioContext.cpp
     ${INCROOT}/AudioDeviceHandle.hpp
     ${SRCROOT}/AudioDeviceHandle.cpp
-    ${INCROOT}/AudioUtils.hpp
-    ${SRCROOT}/AudioUtils.cpp
     ${SRCROOT}/CaptureDevice.cpp
     ${INCROOT}/CaptureDevice.hpp
     ${INCROOT}/CaptureDeviceHandle.hpp

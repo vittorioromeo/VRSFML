@@ -35,6 +35,8 @@
 #include <SFML/System/LifetimeDependee.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
+#include <optional>
+
 
 namespace sf::priv::MiniaudioUtils
 {
@@ -53,10 +55,16 @@ class PlaybackDevice
 {
 public:
     ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static std::optional<PlaybackDevice> createDefault(AudioContext& audioContext);
+
+    ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    explicit PlaybackDevice(AudioContext& audioContext, const PlaybackDeviceHandle& deviceHandle);
+    [[nodiscard]] explicit PlaybackDevice(AudioContext& audioContext, const PlaybackDeviceHandle& deviceHandle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -105,7 +113,7 @@ private:
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    struct ResourceEntry
+    struct [[nodiscard]] ResourceEntry
     {
         using InitFunc     = void (*)(void*);
         using TransferFunc = void (*)(void*, PlaybackDevice&, ResourceEntryIndex);

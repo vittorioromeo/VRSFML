@@ -19,9 +19,7 @@ std::ostream& operator<<(std::ostream& stream, const sf::Ftp::Response& response
 
 
 ////////////////////////////////////////////////////////////
-/// Entry point of application
-///
-/// \return Application exit code
+/// Main
 ///
 ////////////////////////////////////////////////////////////
 int main()
