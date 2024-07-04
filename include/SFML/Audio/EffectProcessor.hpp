@@ -119,6 +119,7 @@ namespace sf
 struct SFML_AUDIO_API [[nodiscard]] EffectProcessor : priv::EffectProcessorImpl
 {
     using priv::EffectProcessorImpl::EffectProcessorImpl;
+    // TODO: pimpl?
 };
 
 // NOLINTEND(readability-make-member-function-const)

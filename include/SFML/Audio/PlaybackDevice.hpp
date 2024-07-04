@@ -99,7 +99,7 @@ public:
     [[nodiscard]] bool updateListener(const Listener& listener);
 
 private:
-    AudioContext*                      m_audioContext;
+    AudioContext*                      m_audioContext; // TODO: unused
     PlaybackDeviceHandle               m_deviceHandle;
     priv::UniquePtr<priv::AudioDevice> m_audioDevice;
 
