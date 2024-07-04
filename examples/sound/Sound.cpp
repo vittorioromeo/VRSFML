@@ -1,12 +1,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Audio/AudioDeviceHandle.hpp"
-
 #include <SFML/Audio/AudioContext.hpp>
 #include <SFML/Audio/MusicSource.hpp>
 #include <SFML/Audio/MusicStream.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
+#include <SFML/Audio/PlaybackDeviceHandle.hpp>
 #include <SFML/Audio/Sound.hpp>
 #include <SFML/Audio/SoundBuffer.hpp>
 
@@ -32,8 +31,8 @@ void playSound(sf::PlaybackDevice& playbackDevice)
               << " " << buffer.getChannelCount() << " channels" << '\n';
 
     // Create a sound instance and play it
-    sf::Sound sound(playbackDevice, buffer);
-    sound.play();
+    sf::Sound sound(buffer);
+    sound.play(playbackDevice);
 
     // Loop while the sound is playing
     while (sound.getStatus() == sf::Sound::Status::Playing)
@@ -65,10 +64,10 @@ void playMusic(sf::PlaybackDevice& playbackDevice, const std::filesystem::path& 
               << " " << music.getChannelCount() << " channels" << '\n';
 
     // TODO
-    auto musicStream = music.createStream(playbackDevice);
+    auto musicStream = music.createStream();
 
     // Play it
-    musicStream.play();
+    musicStream.play(playbackDevice);
 
     // Loop while the music is playing
     while (musicStream.getStatus() == sf::MusicStream::Status::Playing)
@@ -94,7 +93,7 @@ int main()
 {
     // TODO
     auto audioContext        = sf::AudioContext::create().value();
-    auto defaultDeviceHandle = audioContext.getDefaultDevice().value();
+    auto defaultDeviceHandle = audioContext.getDefaultPlaybackDeviceHandle().value();
     auto playbackDevice      = sf::PlaybackDevice(audioContext, defaultDeviceHandle);
 
     // Play a sound

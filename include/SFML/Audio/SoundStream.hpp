@@ -94,7 +94,7 @@ public:
     /// \see pause, stop
     ///
     ////////////////////////////////////////////////////////////
-    void play() override;
+    void play(sf::PlaybackDevice& playbackDevice) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Pause the audio stream
@@ -167,12 +167,12 @@ public:
     /// when the stream is stopped has no effect, since playing
     /// the stream would reset its position.
     ///
-    /// \param timeOffset New playing position, from the beginning of the stream
+    /// \param playingOffset New playing position, from the beginning of the stream
     ///
     /// \see getPlayingOffset
     ///
     ////////////////////////////////////////////////////////////
-    void setPlayingOffset(Time timeOffset);
+    void setPlayingOffset(Time playingOffset) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current playing position of the stream
@@ -182,32 +182,7 @@ public:
     /// \see setPlayingOffset
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Time getPlayingOffset() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Set whether or not the stream should loop after reaching the end
-    ///
-    /// If set, the stream will restart from beginning after
-    /// reaching the end and so on, until it is stopped or
-    /// setLoop(false) is called.
-    /// The default looping state for streams is false.
-    ///
-    /// \param loop True to play in loop, false to play once
-    ///
-    /// \see getLoop
-    ///
-    ////////////////////////////////////////////////////////////
-    void setLoop(bool loop);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Tell whether or not the stream is in loop mode
-    ///
-    /// \return True if the stream is looping, false otherwise
-    ///
-    /// \see setLoop
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool getLoop() const;
+    [[nodiscard]] Time getPlayingOffset() const override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the effect processor to be applied to the sound
@@ -227,7 +202,7 @@ protected:
     /// This constructor is only meant to be called by derived classes.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit SoundStream(PlaybackDevice& playbackDevice);
+    [[nodiscard]] explicit SoundStream();
 
     ////////////////////////////////////////////////////////////
     /// \brief Define the audio stream parameters

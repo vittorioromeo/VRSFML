@@ -19,7 +19,7 @@
 TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
 {
     auto audioContext        = sf::AudioContext::create().value();
-    auto defaultDeviceHandle = audioContext.getDefaultDevice().value();
+    auto defaultDeviceHandle = audioContext.getDefaultPlaybackDeviceHandle().value();
     auto playbackDevice      = sf::PlaybackDevice(audioContext, defaultDeviceHandle);
 
     SECTION("Type traits")
@@ -29,9 +29,9 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
         STATIC_CHECK(std::is_copy_constructible_v<sf::Sound>);
         STATIC_CHECK(std::is_copy_assignable_v<sf::Sound>);
         STATIC_CHECK(std::is_move_constructible_v<sf::Sound>);
-        STATIC_CHECK(!std::is_nothrow_move_constructible_v<sf::Sound>);
+        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Sound>);
         STATIC_CHECK(std::is_move_assignable_v<sf::Sound>);
-        STATIC_CHECK(!std::is_nothrow_move_assignable_v<sf::Sound>);
+        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Sound>);
         STATIC_CHECK(std::has_virtual_destructor_v<sf::Sound>);
     }
 
@@ -39,7 +39,7 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("Construction")
     {
-        const sf::Sound sound(playbackDevice, soundBuffer);
+        const sf::Sound sound(soundBuffer);
         CHECK(&sound.getBuffer() == &soundBuffer);
         CHECK(!sound.getLoop());
         CHECK(sound.getPlayingOffset() == sf::Time::Zero);
@@ -48,7 +48,7 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("Copy semantics")
     {
-        const sf::Sound sound(playbackDevice, soundBuffer);
+        const sf::Sound sound(soundBuffer);
 
         SECTION("Construction")
         {
@@ -62,7 +62,7 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
         SECTION("Assignment")
         {
             const sf::SoundBuffer otherSoundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
-            sf::Sound             soundCopy(playbackDevice, otherSoundBuffer);
+            sf::Sound             soundCopy(otherSoundBuffer);
             soundCopy = sound;
             CHECK(&soundCopy.getBuffer() == &soundBuffer);
             CHECK(!soundCopy.getLoop());
@@ -74,21 +74,21 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
     SECTION("Set/get buffer")
     {
         const sf::SoundBuffer otherSoundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
-        sf::Sound             sound(playbackDevice, soundBuffer);
+        sf::Sound             sound(soundBuffer);
         sound.setBuffer(otherSoundBuffer);
         CHECK(&sound.getBuffer() == &otherSoundBuffer);
     }
 
     SECTION("Set/get loop")
     {
-        sf::Sound sound(playbackDevice, soundBuffer);
+        sf::Sound sound(soundBuffer);
         sound.setLoop(true);
         CHECK(sound.getLoop());
     }
 
     SECTION("Set/get playing offset")
     {
-        sf::Sound sound(playbackDevice, soundBuffer);
+        sf::Sound sound(soundBuffer);
         sound.setPlayingOffset(sf::seconds(10));
         CHECK(sound.getPlayingOffset() == sf::seconds(10));
     }
@@ -98,10 +98,10 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
     {
         SECTION("Return local from function")
         {
-            const auto badFunction = [&playbackDevice]
+            const auto badFunction = []
             {
                 const auto localSoundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
-                return sf::Sound(playbackDevice, localSoundBuffer);
+                return sf::Sound(localSoundBuffer);
             };
 
             const sf::priv::LifetimeDependee::TestingModeGuard guard;
@@ -116,9 +116,9 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
         {
             struct BadStruct
             {
-                explicit BadStruct(sf::PlaybackDevice& playbackDevice) :
+                explicit BadStruct() :
                 memberSoundBuffer{sf::SoundBuffer::loadFromFile("Audio/ding.flac").value()},
-                memberSound{playbackDevice, memberSoundBuffer}
+                memberSound{memberSoundBuffer}
                 {
                 }
 
@@ -130,7 +130,7 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
             CHECK(!guard.fatalErrorTriggered());
 
             std::optional<BadStruct> badStruct0;
-            badStruct0.emplace(playbackDevice);
+            badStruct0.emplace();
             CHECK(!guard.fatalErrorTriggered());
 
             const BadStruct badStruct1 = SFML_MOVE(badStruct0.value());

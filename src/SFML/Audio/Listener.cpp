@@ -25,114 +25,96 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/AudioDevice.hpp>
 #include <SFML/Audio/Listener.hpp>
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-Listener::Listener(PlaybackDevice& playbackDevice) : m_playbackDevice(&playbackDevice)
+Listener::Listener() = default;
+
+
+////////////////////////////////////////////////////////////
+void Listener::setVolume(float volume)
 {
-    SFML_UPDATE_LIFETIME_DEPENDANT(PlaybackDevice, Listener, m_playbackDevice);
+    m_volume = volume;
 }
 
 
 ////////////////////////////////////////////////////////////
-void Listener::setGlobalVolume(float volume)
+float Listener::getVolume() const
 {
-    m_playbackDevice->asAudioDevice().setGlobalVolume(volume);
-}
-
-
-////////////////////////////////////////////////////////////
-float Listener::getGlobalVolume()
-{
-    return m_playbackDevice->asAudioDevice().getGlobalVolume();
+    return m_volume;
 }
 
 
 ////////////////////////////////////////////////////////////
 void Listener::setPosition(const Vector3f& position)
 {
-    m_playbackDevice->asAudioDevice().setPosition(position);
+    m_position = position;
 }
 
 
 ////////////////////////////////////////////////////////////
-Vector3f Listener::getPosition()
+Vector3f Listener::getPosition() const
 {
-    return m_playbackDevice->asAudioDevice().getPosition();
+    return m_position;
 }
 
 
 ////////////////////////////////////////////////////////////
 void Listener::setDirection(const Vector3f& direction)
 {
-    m_playbackDevice->asAudioDevice().setDirection(direction);
+    m_direction = direction;
 }
 
 
 ////////////////////////////////////////////////////////////
-Vector3f Listener::getDirection()
+Vector3f Listener::getDirection() const
 {
-    return m_playbackDevice->asAudioDevice().getDirection();
+    return m_direction;
 }
 
 
 ////////////////////////////////////////////////////////////
 void Listener::setVelocity(const Vector3f& velocity)
 {
-    m_playbackDevice->asAudioDevice().setVelocity(velocity);
+    m_velocity = velocity;
 }
 
 
 ////////////////////////////////////////////////////////////
-Vector3f Listener::getVelocity()
+Vector3f Listener::getVelocity() const
 {
-    return m_playbackDevice->asAudioDevice().getVelocity();
+    return m_velocity;
 }
 
 
 ////////////////////////////////////////////////////////////
 void Listener::setCone(const Listener::Cone& cone)
 {
-    m_playbackDevice->asAudioDevice().setCone(cone);
+    m_cone = cone;
 }
 
 
 ////////////////////////////////////////////////////////////
-Listener::Cone Listener::getCone()
+Listener::Cone Listener::getCone() const
 {
-    return m_playbackDevice->asAudioDevice().getCone();
+    return m_cone;
 }
 
 
 ////////////////////////////////////////////////////////////
 void Listener::setUpVector(const Vector3f& upVector)
 {
-    m_playbackDevice->asAudioDevice().setUpVector(upVector);
+    m_upVector = upVector;
 }
 
 
 ////////////////////////////////////////////////////////////
-Vector3f Listener::getUpVector()
+Vector3f Listener::getUpVector() const
 {
-    return m_playbackDevice->asAudioDevice().getUpVector();
-}
-
-
-////////////////////////////////////////////////////////////
-sf::PlaybackDevice& Listener::getPlaybackDevice()
-{
-    return *m_playbackDevice;
-}
-
-
-////////////////////////////////////////////////////////////
-const sf::PlaybackDevice& Listener::getPlaybackDevice() const
-{
-    return *m_playbackDevice;
+    return m_upVector;
 }
 
 } // namespace sf

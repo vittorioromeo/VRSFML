@@ -29,16 +29,11 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
-#include <SFML/Audio/PlaybackDevice.hpp>
-
 #include <SFML/System/Angle.hpp>
-#include <SFML/System/LifetimeDependant.hpp>
 #include <SFML/System/Vector3.hpp>
 
 namespace sf
 {
-class PlaybackDevice;
-
 ////////////////////////////////////////////////////////////
 /// \brief The audio listener is the point in the scene
 ///        from where all the sounds are heard
@@ -51,7 +46,7 @@ public:
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    explicit Listener(PlaybackDevice& playbackDevice);
+    explicit Listener();
 
     ////////////////////////////////////////////////////////////
     /// \brief Structure defining the properties of a directional cone
@@ -64,7 +59,7 @@ public:
     /// angle to the outer angle.
     ///
     ////////////////////////////////////////////////////////////
-    struct Cone
+    struct [[nodiscard]] Cone
     {
         Angle innerAngle;  //!< Inner angle
         Angle outerAngle;  //!< Outer angle
@@ -80,20 +75,20 @@ public:
     ///
     /// \param volume New global volume, in the range [0, 100]
     ///
-    /// \see getGlobalVolume
+    /// \see getVolume
     ///
     ////////////////////////////////////////////////////////////
-    SFML_AUDIO_API void setGlobalVolume(float volume);
+    SFML_AUDIO_API void setVolume(float volume);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current value of the global volume
     ///
     /// \return Current global volume, in the range [0, 100]
     ///
-    /// \see setGlobalVolume
+    /// \see setVolume
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_AUDIO_API float getGlobalVolume();
+    [[nodiscard]] SFML_AUDIO_API float getVolume() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the position of the listener in the scene
@@ -115,7 +110,7 @@ public:
     /// \see setPosition
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_AUDIO_API Vector3f getPosition();
+    [[nodiscard]] SFML_AUDIO_API Vector3f getPosition() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the forward vector of the listener in the scene
@@ -142,7 +137,7 @@ public:
     /// \see setDirection
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_AUDIO_API Vector3f getDirection();
+    [[nodiscard]] SFML_AUDIO_API Vector3f getDirection() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the velocity of the listener in the scene
@@ -164,7 +159,7 @@ public:
     /// \see setVelocity
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_AUDIO_API Vector3f getVelocity();
+    [[nodiscard]] SFML_AUDIO_API Vector3f getVelocity() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the cone properties of the listener in the audio scene
@@ -187,7 +182,7 @@ public:
     /// \see setCone
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_AUDIO_API Listener::Cone getCone();
+    [[nodiscard]] SFML_AUDIO_API Listener::Cone getCone() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the upward vector of the listener in the scene
@@ -214,27 +209,15 @@ public:
     /// \see setUpVector
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_AUDIO_API Vector3f getUpVector();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::PlaybackDevice& getPlaybackDevice();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] const sf::PlaybackDevice& getPlaybackDevice() const;
+    [[nodiscard]] SFML_AUDIO_API Vector3f getUpVector() const;
 
 private:
-    sf::PlaybackDevice* m_playbackDevice;
-
-    ////////////////////////////////////////////////////////////
-    // Lifetime tracking
-    ////////////////////////////////////////////////////////////
-    SFML_DEFINE_LIFETIME_DEPENDANT(PlaybackDevice);
+    float          m_volume{100.f};
+    Vector3f       m_position{0, 0, 0};
+    Vector3f       m_direction{0, 0, -1};
+    Vector3f       m_velocity{0, 0, 0};
+    Listener::Cone m_cone{degrees(360.f), degrees(360.f), 1};
+    Vector3f       m_upVector{0, 1, 0};
 };
 
 } // namespace sf
@@ -262,7 +245,7 @@ private:
 /// sf::Listener::setDirection({1, 0, 0});
 ///
 /// // Reduce the global volume
-/// sf::Listener::setGlobalVolume(50);
+/// sf::Listener::setVolume(50);
 /// \endcode
 ///
 ////////////////////////////////////////////////////////////

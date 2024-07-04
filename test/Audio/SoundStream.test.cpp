@@ -16,9 +16,7 @@ namespace
 class TestSoundStream : public sf::SoundStream
 {
 public:
-    explicit TestSoundStream(sf::PlaybackDevice& playbackDevice) : sf::SoundStream(playbackDevice)
-    {
-    }
+    explicit TestSoundStream() = default;
 
 protected:
     [[nodiscard]] bool onGetData(Chunk& /* data */) override
@@ -35,7 +33,7 @@ protected:
 TEST_CASE("[Audio] sf::SoundStream" * doctest::skip(skipAudioDeviceTests))
 {
     auto audioContext        = sf::AudioContext::create().value();
-    auto defaultDeviceHandle = audioContext.getDefaultDevice().value();
+    auto defaultDeviceHandle = audioContext.getDefaultPlaybackDeviceHandle().value();
     auto playbackDevice      = sf::PlaybackDevice(audioContext, defaultDeviceHandle);
 
     SECTION("Type traits")
@@ -57,7 +55,7 @@ TEST_CASE("[Audio] sf::SoundStream" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("Construction")
     {
-        const TestSoundStream testSoundStream(playbackDevice);
+        const TestSoundStream testSoundStream;
         CHECK(testSoundStream.getChannelCount() == 0);
         CHECK(testSoundStream.getSampleRate() == 0);
         CHECK(testSoundStream.getStatus() == sf::SoundStream::Status::Stopped);
@@ -67,14 +65,14 @@ TEST_CASE("[Audio] sf::SoundStream" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("Set/get playing offset")
     {
-        TestSoundStream testSoundStream(playbackDevice);
+        TestSoundStream testSoundStream;
         testSoundStream.setPlayingOffset(sf::milliseconds(100));
         CHECK(testSoundStream.getPlayingOffset() == sf::milliseconds(0));
     }
 
     SECTION("Set/get loop")
     {
-        TestSoundStream testSoundStream(playbackDevice);
+        TestSoundStream testSoundStream;
         testSoundStream.setLoop(true);
         CHECK(testSoundStream.getLoop());
     }

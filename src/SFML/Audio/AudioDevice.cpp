@@ -27,8 +27,9 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/AudioContext.hpp>
 #include <SFML/Audio/AudioDevice.hpp>
-#include <SFML/Audio/AudioDeviceHandle.hpp>
+#include <SFML/Audio/Listener.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
+#include <SFML/Audio/PlaybackDeviceHandle.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
@@ -45,63 +46,6 @@
 
 namespace sf::priv
 {
-////////////////////////////////////////////////////////////
-struct AudioDevice::ListenerProperties
-{
-    float          volume{100.f};
-    Vector3f       position{0, 0, 0};
-    Vector3f       direction{0, 0, -1};
-    Vector3f       velocity{0, 0, 0};
-    Listener::Cone cone{degrees(360.f), degrees(360.f), 1};
-    Vector3f       upVector{0, 1, 0};
-};
-
-
-namespace
-{
-////////////////////////////////////////////////////////////
-[[nodiscard]] bool updateMiniaudioEnginePropertiesFromListenerProperties(
-    ma_engine&                             engine,
-    const AudioDevice::ListenerProperties& listenerProperties)
-{
-    // Set master volume, position, velocity, cone and world up vector
-    if (const ma_result result = ma_device_set_master_volume(ma_engine_get_device(&engine), listenerProperties.volume * 0.01f);
-        result != MA_SUCCESS)
-    {
-        err() << "Failed to set audio device master volume: " << ma_result_description(result) << errEndl;
-        return false;
-    }
-
-    ma_engine_listener_set_position(&engine,
-                                    0,
-                                    listenerProperties.position.x,
-                                    listenerProperties.position.y,
-                                    listenerProperties.position.z);
-
-    ma_engine_listener_set_velocity(&engine,
-                                    0,
-                                    listenerProperties.velocity.x,
-                                    listenerProperties.velocity.y,
-                                    listenerProperties.velocity.z);
-
-    ma_engine_listener_set_cone(&engine,
-                                0,
-                                listenerProperties.cone.innerAngle.asRadians(),
-                                listenerProperties.cone.outerAngle.asRadians(),
-                                listenerProperties.cone.outerGain);
-
-    ma_engine_listener_set_world_up(&engine,
-                                    0,
-                                    listenerProperties.upVector.x,
-                                    listenerProperties.upVector.y,
-                                    listenerProperties.upVector.z);
-
-    return true;
-}
-
-} // namespace
-
-
 ////////////////////////////////////////////////////////////
 class MiniaudioPerHWDevice
 {
@@ -213,10 +157,9 @@ struct AudioDevice::Impl
     std::vector<std::optional<ResourceEntry>> resources;      //!< Registered resources
     std::mutex                                resourcesMutex; //!< The mutex guarding the registered resources
 
-    ListenerProperties               listenerProperties; // !< TODO
-    std::optional<AudioDeviceHandle> deviceHandle;       // !< TODO
+    std::optional<PlaybackDeviceHandle> deviceHandle; // !< TODO
 
-    explicit Impl(PlaybackDevice& thePlaybackDevice, AudioContext& theAudioContext, AudioDeviceHandle theDeviceHandle) :
+    explicit Impl(PlaybackDevice& thePlaybackDevice, AudioContext& theAudioContext, PlaybackDeviceHandle theDeviceHandle) :
     playbackDevice(&thePlaybackDevice),
     audioContext(&theAudioContext),
     deviceHandle(theDeviceHandle)
@@ -226,11 +169,27 @@ struct AudioDevice::Impl
 
 
 ////////////////////////////////////////////////////////////
-AudioDevice::AudioDevice(PlaybackDevice& playbackDevice, AudioContext& audioContext, const AudioDeviceHandle& deviceHandle) :
+AudioDevice::AudioDevice(PlaybackDevice& playbackDevice, AudioContext& audioContext, const PlaybackDeviceHandle& deviceHandle) :
 m_impl(playbackDevice, audioContext, deviceHandle)
 {
-    if (!initialize(m_impl->audioContext->getMAContext(), deviceHandle))
+    ma_device_info deviceInfo;
+    deviceHandle.copyMADeviceInfoInto(&deviceInfo);
+
+    // Create the device and engine
+    m_impl->maPerHWDevice.emplace(m_impl->audioContext->getMAContext(), deviceInfo.id);
+    if (!m_impl->maPerHWDevice.has_value())
+    {
         err() << "Failed to initialize audio device or engine" << errEndl;
+    }
+
+    // TODO
+    // Update properties from listener
+    /*
+    if (!updateFromListener(m_impl->maPerHWDevice->getMAEngine(), m_impl->listenerProperties))
+    {
+        err() << "Failed to update properties from listener" << errEndl;
+    }
+    */
 }
 
 
@@ -279,6 +238,48 @@ void AudioDevice::transferResourcesTo(AudioDevice& other)
 
 
 ////////////////////////////////////////////////////////////
+[[nodiscard]] bool AudioDevice::updateFromListener(const Listener& listener)
+{
+    ma_engine& engine = m_impl->maPerHWDevice->getMAEngine();
+
+    // Set master volume, position, velocity, cone and world up vector
+    if (const ma_result result = ma_device_set_master_volume(ma_engine_get_device(&engine), listener.getVolume() * 0.01f);
+        result != MA_SUCCESS)
+    {
+        err() << "Failed to set audio device master volume: " << ma_result_description(result) << errEndl;
+        return false;
+    }
+
+    ma_engine_listener_set_position(&engine,
+                                    0,
+                                    listener.getPosition().x,
+                                    listener.getPosition().y,
+                                    listener.getPosition().z);
+
+    ma_engine_listener_set_velocity(&engine,
+                                    0,
+                                    listener.getVelocity().x,
+                                    listener.getVelocity().y,
+                                    listener.getVelocity().z);
+
+    const auto& cone = listener.getCone();
+    ma_engine_listener_set_cone(&engine,
+                                0,
+                                clamp(cone.innerAngle, Angle::Zero, degrees(360.f)).asRadians(),
+                                clamp(cone.outerAngle, Angle::Zero, degrees(360.f)).asRadians(),
+                                cone.outerGain);
+
+    ma_engine_listener_set_world_up(&engine,
+                                    0,
+                                    listener.getUpVector().x,
+                                    listener.getUpVector().y,
+                                    listener.getUpVector().z);
+
+    return true;
+}
+
+
+////////////////////////////////////////////////////////////
 AudioDevice::ResourceEntryIndex AudioDevice::registerResource(
     void*                       resource,
     ResourceEntry::InitFunc     deinitializeFunc,
@@ -311,138 +312,6 @@ void AudioDevice::unregisterResource(AudioDevice::ResourceEntryIndex resourceEnt
     assert(it->has_value() && "Attempted to unregister previously erased audio resource");
 
     resources.erase(it);
-}
-
-
-////////////////////////////////////////////////////////////
-void AudioDevice::setGlobalVolume(float volume)
-{
-    // Store the volume in case no audio device exists yet (TODO)
-    m_impl->listenerProperties.volume = volume;
-
-    if (const ma_result result = ma_device_set_master_volume(ma_engine_get_device(&m_impl->maPerHWDevice->getMAEngine()),
-                                                             volume * 0.01f);
-        result != MA_SUCCESS)
-        err() << "Failed to set audio device master volume: " << ma_result_description(result) << errEndl;
-}
-
-
-////////////////////////////////////////////////////////////
-float AudioDevice::getGlobalVolume() const
-{
-    return m_impl->listenerProperties.volume;
-}
-
-
-////////////////////////////////////////////////////////////
-void AudioDevice::setPosition(const Vector3f& position)
-{
-    // Store the position in case no audio device exists yet (TODO)
-    m_impl->listenerProperties.position = position;
-
-    ma_engine_listener_set_position(&m_impl->maPerHWDevice->getMAEngine(), 0, position.x, position.y, position.z);
-}
-
-
-////////////////////////////////////////////////////////////
-Vector3f AudioDevice::getPosition() const
-{
-    return m_impl->listenerProperties.position;
-}
-
-
-////////////////////////////////////////////////////////////
-void AudioDevice::setDirection(const Vector3f& direction)
-{
-    // Store the direction in case no audio device exists yet (TODO)
-    m_impl->listenerProperties.direction = direction;
-
-    ma_engine_listener_set_direction(&m_impl->maPerHWDevice->getMAEngine(), 0, direction.x, direction.y, direction.z);
-}
-
-
-////////////////////////////////////////////////////////////
-Vector3f AudioDevice::getDirection() const
-{
-    return m_impl->listenerProperties.direction;
-}
-
-
-////////////////////////////////////////////////////////////
-void AudioDevice::setVelocity(const Vector3f& velocity)
-{
-    // Store the velocity in case no audio device exists yet (TODO)
-    m_impl->listenerProperties.velocity = velocity;
-
-    ma_engine_listener_set_velocity(&m_impl->maPerHWDevice->getMAEngine(), 0, velocity.x, velocity.y, velocity.z);
-}
-
-
-////////////////////////////////////////////////////////////
-Vector3f AudioDevice::getVelocity() const
-{
-    return m_impl->listenerProperties.velocity;
-}
-
-
-////////////////////////////////////////////////////////////
-void AudioDevice::setCone(const Listener::Cone& cone)
-{
-    // Store the cone in case no audio device exists yet (TODO)
-    m_impl->listenerProperties.cone = cone;
-
-    ma_engine_listener_set_cone(&m_impl->maPerHWDevice->getMAEngine(),
-                                0,
-                                clamp(cone.innerAngle, Angle::Zero, degrees(360.f)).asRadians(),
-                                clamp(cone.outerAngle, Angle::Zero, degrees(360.f)).asRadians(),
-                                cone.outerGain);
-}
-
-
-////////////////////////////////////////////////////////////
-Listener::Cone AudioDevice::getCone() const
-{
-    return m_impl->listenerProperties.cone;
-}
-
-
-////////////////////////////////////////////////////////////
-void AudioDevice::setUpVector(const Vector3f& upVector)
-{
-    // Store the up vector in case no audio device exists yet (TODO)
-    m_impl->listenerProperties.upVector = upVector;
-
-    ma_engine_listener_set_world_up(&m_impl->maPerHWDevice->getMAEngine(), 0, upVector.x, upVector.y, upVector.z);
-}
-
-
-////////////////////////////////////////////////////////////
-Vector3f AudioDevice::getUpVector() const
-{
-    return m_impl->listenerProperties.upVector;
-}
-
-
-////////////////////////////////////////////////////////////
-bool AudioDevice::initialize(ma_context& maContext, const AudioDeviceHandle& selectedDeviceHandle)
-{
-    ma_device_info deviceInfo;
-    selectedDeviceHandle.copyMADeviceInfoInto(&deviceInfo);
-
-    // Create the device and engine
-    m_impl->maPerHWDevice.emplace(maContext, deviceInfo.id);
-    if (!m_impl->maPerHWDevice.has_value())
-        return false;
-
-    //  m_impl->updateCurrentDeviceHandle(m_impl->maPerHWDevice->getMADevice());
-
-    if (!updateMiniaudioEnginePropertiesFromListenerProperties(m_impl->maPerHWDevice->getMAEngine(), m_impl->listenerProperties))
-    {
-        // NOLINTNEXTLINE(readability-simplify-boolean-expr)
-        return false;
-    }
-
-    return true;
 }
 
 } // namespace sf::priv

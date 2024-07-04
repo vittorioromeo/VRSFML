@@ -1,3 +1,5 @@
+#include "SFML/Audio/PlaybackDevice.hpp"
+
 #include <SFML/Audio/SoundSource.hpp>
 
 #include <Doctest.hpp>
@@ -11,7 +13,7 @@ namespace
 {
 class SoundSource : public sf::SoundSource
 {
-    void play() override
+    void play(sf::PlaybackDevice&) override
     {
     }
 

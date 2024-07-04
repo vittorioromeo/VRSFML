@@ -133,7 +133,7 @@ playbackDevice(&thePlaybackDevice)
             static_cast<SoundBase*>(ptr)->resourceEntryIndex = newIndex;
         });
 
-    SFML_UPDATE_LIFETIME_DEPENDANT(PlaybackDevice, SoundBase, playbackDevice);
+    //  SFML_UPDATE_LIFETIME_DEPENDANT(PlaybackDevice, SoundBase, playbackDevice);
 }
 
 

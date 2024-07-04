@@ -25,8 +25,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Audio/SoundSource.hpp"
+
 #include <SFML/Audio/EffectProcessor.hpp>
 #include <SFML/Audio/MiniaudioUtils.hpp>
+#include <SFML/Audio/PlaybackDevice.hpp>
 #include <SFML/Audio/SoundStream.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
@@ -37,7 +40,6 @@
 
 #include <miniaudio.h>
 
-#include <iostream>
 #include <vector>
 
 #include <cassert>
@@ -46,39 +48,32 @@
 
 namespace sf
 {
-struct SoundStream::Impl : priv::MiniaudioUtils::SoundBase
+struct SoundStream::Impl
 {
-    Impl(PlaybackDevice& playbackDevice, SoundStream* ownerPtr) :
-    SoundBase(playbackDevice, vtable, [](void* ptr) { static_cast<Impl*>(ptr)->initialize(); }),
-    owner(ownerPtr)
+    explicit Impl(SoundStream* theOwner) : owner(theOwner)
     {
-        // Initialize sound structure and set default settings
-        initialize();
     }
 
     void initialize()
     {
-        if (!SoundBase::initialize(onEnd))
-        {
+        assert(soundBase.has_value());
+
+        if (!soundBase->initialize(onEnd))
             priv::err() << "Failed to initialize SoundStream::Impl" << priv::errEndl;
-        }
 
         // Because we are providing a custom data source, we have to provide the channel map ourselves
-        if (!channelMap.empty())
+        if (channelMap.empty())
         {
-            soundChannelMap.clear();
-
-            for (const SoundChannel channel : channelMap)
-            {
-                soundChannelMap.push_back(priv::MiniaudioUtils::soundChannelToMiniaudioChannel(channel));
-            }
-
-            sound.engineNode.spatializer.pChannelMapIn = soundChannelMap.data();
+            soundBase->sound.engineNode.spatializer.pChannelMapIn = nullptr;
+            return;
         }
-        else
-        {
-            sound.engineNode.spatializer.pChannelMapIn = nullptr;
-        }
+
+        soundBase->soundChannelMap.clear();
+
+        for (const SoundChannel channel : channelMap)
+            soundBase->soundChannelMap.push_back(priv::MiniaudioUtils::soundChannelToMiniaudioChannel(channel));
+
+        soundBase->sound.engineNode.spatializer.pChannelMapIn = soundBase->soundChannelMap.data();
     }
 
     static void onEnd(void* userData, ma_sound* soundPtr)
@@ -94,15 +89,14 @@ struct SoundStream::Impl : priv::MiniaudioUtils::SoundBase
 
     static ma_result read(ma_data_source* dataSource, void* framesOut, ma_uint64 frameCount, ma_uint64* framesRead)
     {
-        auto& impl  = *static_cast<Impl*>(dataSource);
-        auto* owner = impl.owner;
+        auto& impl = *static_cast<Impl*>(dataSource);
 
         // Try to fill our buffer with new samples if the source is still willing to stream data
         if (impl.sampleBuffer.empty() && impl.streaming)
         {
             Chunk chunk;
 
-            impl.streaming = owner->onGetData(chunk);
+            impl.streaming = impl.owner->onGetData(chunk);
 
             if (chunk.samples && chunk.sampleCount)
             {
@@ -133,9 +127,9 @@ struct SoundStream::Impl : priv::MiniaudioUtils::SoundBase
                 impl.sampleBufferCursor = 0;
 
                 // If we are looping and at the end of the loop, set the cursor back to the beginning of the loop
-                if (!impl.streaming && impl.loop)
+                if (!impl.streaming && impl.owner->getLoop())
                 {
-                    if (const auto seekPositionAfterLoop = owner->onLoop())
+                    if (const auto seekPositionAfterLoop = impl.owner->onLoop())
                     {
                         impl.streaming        = true;
                         impl.samplesProcessed = *seekPositionAfterLoop;
@@ -153,23 +147,18 @@ struct SoundStream::Impl : priv::MiniaudioUtils::SoundBase
 
     static ma_result seek(ma_data_source* dataSource, ma_uint64 frameIndex)
     {
-        auto& impl  = *static_cast<Impl*>(dataSource);
-        auto* owner = impl.owner;
+        auto& impl = *static_cast<Impl*>(dataSource);
 
         impl.streaming = true;
         impl.sampleBuffer.clear();
         impl.sampleBufferCursor = 0;
         impl.samplesProcessed   = frameIndex * impl.channelCount;
 
-        if (impl.sampleRate != 0)
-        {
-            owner->onSeek(seconds(static_cast<float>(frameIndex) / static_cast<float>(impl.sampleRate)));
-        }
-        else
-        {
-            owner->onSeek(Time::Zero);
-        }
+        const Time offset = impl.sampleRate == 0
+                                ? Time::Zero
+                                : seconds(static_cast<float>(frameIndex) / static_cast<float>(impl.sampleRate));
 
+        impl.owner->onSeek(offset);
         return MA_SUCCESS;
     }
 
@@ -205,10 +194,8 @@ struct SoundStream::Impl : priv::MiniaudioUtils::SoundBase
         return MA_NOT_IMPLEMENTED;
     }
 
-    static ma_result setLooping(ma_data_source* dataSource, ma_bool32 looping)
+    static ma_result setLooping(ma_data_source* /* dataSource */, ma_bool32 /* looping */)
     {
-        static_cast<Impl*>(dataSource)->loop = (looping == MA_TRUE);
-
         return MA_SUCCESS;
     }
 
@@ -217,20 +204,22 @@ struct SoundStream::Impl : priv::MiniaudioUtils::SoundBase
     ////////////////////////////////////////////////////////////
     static inline constexpr ma_data_source_vtable vtable{read, seek, getFormat, getCursor, getLength, setLooping, /* flags */ 0};
 
-    SoundStream*              owner;                //!< Owning SoundStream object
+    std::optional<priv::MiniaudioUtils::SoundBase> soundBase; //!< Sound base, needs to be first member
+
+    SoundStream*              owner;                //!< Owning `SoundStream` object
     std::vector<std::int16_t> sampleBuffer;         //!< Our temporary sample buffer
     std::size_t               sampleBufferCursor{}; //!< The current read position in the temporary sample buffer
     std::uint64_t             samplesProcessed{};   //!< Number of samples processed since beginning of the stream
     unsigned int              channelCount{};       //!< Number of channels (1 = mono, 2 = stereo, ...)
     unsigned int              sampleRate{};         //!< Frequency (samples / second)
     std::vector<SoundChannel> channelMap;           //!< The map of position in sample frame to sound channel
-    bool                      loop{};               //!< Loop flag (true to loop, false to play once)
     bool                      streaming{true};      //!< True if we are still streaming samples from the source
+    SoundSource::Status       status{SoundSource::Status::Stopped}; //!< The status
 };
 
 
 ////////////////////////////////////////////////////////////
-SoundStream::SoundStream(PlaybackDevice& playbackDevice) : m_impl(priv::makeUnique<Impl>(playbackDevice, this))
+SoundStream::SoundStream() : m_impl(priv::makeUnique<Impl>(this))
 {
 }
 
@@ -270,18 +259,37 @@ void SoundStream::initialize(unsigned int channelCount, unsigned int sampleRate,
     m_impl->channelMap       = channelMap;
     m_impl->samplesProcessed = 0;
 
-    m_impl->deinitialize();
-    m_impl->initialize();
+    if (m_impl->soundBase.has_value())
+    {
+        m_impl->soundBase->deinitialize();
+        m_impl->initialize();
+
+        assert(m_impl->soundBase.has_value());
+        applyStoredSettings(&m_impl->soundBase->sound);
+        setEffectProcessor(getEffectProcessor());
+        setPlayingOffset(getPlayingOffset());
+    }
 }
 
 
 ////////////////////////////////////////////////////////////
-void SoundStream::play()
+void SoundStream::play(sf::PlaybackDevice& playbackDevice)
 {
+    if (!m_impl->soundBase.has_value())
+    {
+        m_impl->soundBase.emplace(playbackDevice, Impl::vtable, [](void* ptr) { static_cast<Impl*>(ptr)->initialize(); });
+        m_impl->initialize();
+
+        assert(m_impl->soundBase.has_value());
+        applyStoredSettings(&m_impl->soundBase->sound);
+        setEffectProcessor(getEffectProcessor());
+        setPlayingOffset(getPlayingOffset());
+    }
+
     if (m_impl->status == Status::Playing)
         setPlayingOffset(Time::Zero);
 
-    if (const ma_result result = ma_sound_start(&m_impl->sound); result != MA_SUCCESS)
+    if (const ma_result result = ma_sound_start(&m_impl->soundBase->sound); result != MA_SUCCESS)
     {
         priv::err() << "Failed to start playing sound: " << ma_result_description(result) << priv::errEndl;
     }
@@ -295,30 +303,34 @@ void SoundStream::play()
 ////////////////////////////////////////////////////////////
 void SoundStream::pause()
 {
-    if (const ma_result result = ma_sound_stop(&m_impl->sound); result != MA_SUCCESS)
+    if (!m_impl->soundBase.has_value())
+        return;
+
+    if (const ma_result result = ma_sound_stop(&m_impl->soundBase->sound); result != MA_SUCCESS)
     {
         priv::err() << "Failed to stop playing sound: " << ma_result_description(result) << priv::errEndl;
+        return;
     }
-    else
-    {
-        if (m_impl->status == Status::Playing)
-            m_impl->status = Status::Paused;
-    }
+
+    if (m_impl->status == Status::Playing)
+        m_impl->status = Status::Paused;
 }
 
 
 ////////////////////////////////////////////////////////////
 void SoundStream::stop()
 {
-    if (const ma_result result = ma_sound_stop(&m_impl->sound); result != MA_SUCCESS)
+    if (!m_impl->soundBase.has_value())
+        return;
+
+    if (const ma_result result = ma_sound_stop(&m_impl->soundBase->sound); result != MA_SUCCESS)
     {
         priv::err() << "Failed to stop playing sound: " << ma_result_description(result) << priv::errEndl;
+        return;
     }
-    else
-    {
-        setPlayingOffset(Time::Zero);
-        m_impl->status = Status::Stopped;
-    }
+
+    setPlayingOffset(Time::Zero);
+    m_impl->status = Status::Stopped;
 }
 
 
@@ -351,15 +363,20 @@ SoundStream::Status SoundStream::getStatus() const
 
 
 ////////////////////////////////////////////////////////////
-void SoundStream::setPlayingOffset(Time timeOffset)
+void SoundStream::setPlayingOffset(Time playingOffset)
 {
+    SoundSource::setPlayingOffset(playingOffset);
+
+    if (!m_impl->soundBase.has_value())
+        return;
+
     if (m_impl->sampleRate == 0)
         return;
 
-    if (m_impl->sound.pDataSource == nullptr || m_impl->sound.engineNode.pEngine == nullptr)
+    if (m_impl->soundBase->sound.pDataSource == nullptr || m_impl->soundBase->sound.engineNode.pEngine == nullptr)
         return;
 
-    const auto frameIndex = priv::MiniaudioUtils::getFrameIndex(m_impl->sound, timeOffset);
+    const auto frameIndex = priv::MiniaudioUtils::getFrameIndex(m_impl->soundBase->sound, playingOffset);
 
     m_impl->streaming = true;
     m_impl->sampleBuffer.clear();
@@ -376,29 +393,20 @@ Time SoundStream::getPlayingOffset() const
     if (m_impl->channelCount == 0 || m_impl->sampleRate == 0)
         return Time{};
 
-    return priv::MiniaudioUtils::getPlayingOffset(m_impl->sound);
-}
-
-
-////////////////////////////////////////////////////////////
-void SoundStream::setLoop(bool loop)
-{
-    ma_sound_set_looping(&m_impl->sound, loop ? MA_TRUE : MA_FALSE);
-}
-
-
-////////////////////////////////////////////////////////////
-bool SoundStream::getLoop() const
-{
-    return ma_sound_is_looping(&m_impl->sound) == MA_TRUE;
+    return SoundSource::getPlayingOffset();
 }
 
 
 ////////////////////////////////////////////////////////////
 void SoundStream::setEffectProcessor(EffectProcessor effectProcessor)
 {
-    m_impl->effectProcessor = SFML_MOVE(effectProcessor);
-    m_impl->connectEffect(bool{m_impl->effectProcessor});
+    SoundSource::setEffectProcessor(effectProcessor);
+
+    if (!m_impl->soundBase.has_value())
+        return;
+
+    m_impl->soundBase->effectProcessor = SFML_MOVE(effectProcessor);
+    m_impl->soundBase->connectEffect(bool{m_impl->soundBase->effectProcessor});
 }
 
 
@@ -413,7 +421,10 @@ std::optional<std::uint64_t> SoundStream::onLoop()
 ////////////////////////////////////////////////////////////
 void* SoundStream::getSound() const
 {
-    return &m_impl->sound;
+    if (!m_impl->soundBase.has_value())
+        return nullptr;
+
+    return &m_impl->soundBase->sound;
 }
 
 } // namespace sf

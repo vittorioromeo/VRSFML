@@ -29,15 +29,18 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
+#include <SFML/Audio/EffectProcessor.hpp>
+#include <SFML/Audio/Listener.hpp>
+
 #include <SFML/System/Angle.hpp>
+#include <SFML/System/Time.hpp>
 #include <SFML/System/Vector3.hpp>
 
 
 namespace sf
 {
-struct EffectProcessor;
+class PlaybackDevice;
 
-// NOLINTBEGIN(readability-make-member-function-const)
 ////////////////////////////////////////////////////////////
 /// \brief Base class defining a sound's properties
 ///
@@ -67,12 +70,7 @@ public:
     /// listener moves from the inner angle to the outer angle.
     ///
     ////////////////////////////////////////////////////////////
-    struct [[nodiscard]] Cone
-    {
-        Angle innerAngle;  //!< Inner angle
-        Angle outerAngle;  //!< Outer angle
-        float outerGain{}; //!< Outer gain
-    };
+    using Cone = Listener::Cone;
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy constructor
@@ -353,6 +351,36 @@ public:
     virtual void setEffectProcessor(EffectProcessor effectProcessor);
 
     ////////////////////////////////////////////////////////////
+    /// \brief Set whether or not the sound should loop after reaching the end
+    ///
+    /// If set, the sound will restart from beginning after
+    /// reaching the end and so on, until it is stopped or
+    /// setLoop(false) is called.
+    /// The default looping state for sound is false.
+    ///
+    /// \param loop True to play in loop, false to play once
+    ///
+    /// \see getLoop
+    ///
+    ////////////////////////////////////////////////////////////
+    void setLoop(bool loop);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Change the current playing position of the sound
+    ///
+    /// The playing position can be changed when the sound is
+    /// either paused or playing. Changing the playing position
+    /// when the sound is stopped has no effect, since playing
+    /// the sound would reset its position.
+    ///
+    /// \param playingOffset New playing position, from the beginning of the sound
+    ///
+    /// \see getPlayingOffset
+    ///
+    ////////////////////////////////////////////////////////////
+    virtual void setPlayingOffset(Time playingOffset);
+
+    ////////////////////////////////////////////////////////////
     /// \brief Get the pitch of the sound
     ///
     /// \return Pitch of the sound
@@ -514,6 +542,36 @@ public:
     [[nodiscard]] float getAttenuation() const;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Get the effect processor of the sound
+    ///
+    /// \return Effect processor of the sound
+    ///
+    /// \see setEffectProcessor
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] EffectProcessor getEffectProcessor() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Tell whether or not the sound is in loop mode
+    ///
+    /// \return True if the sound is looping, false otherwise
+    ///
+    /// \see setLoop
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool getLoop() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the current playing position of the sound
+    ///
+    /// \return Current playing position, from the beginning of the sound
+    ///
+    /// \see setPlayingOffset
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] virtual Time getPlayingOffset() const;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Overload of assignment operator
     ///
     /// \param right Instance to assign
@@ -533,7 +591,7 @@ public:
     /// \see pause, stop
     ///
     ////////////////////////////////////////////////////////////
-    virtual void play() = 0;
+    virtual void play(sf::PlaybackDevice& playbackDevice) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Pause the sound source
@@ -575,6 +633,12 @@ protected:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] SoundSource() = default;
 
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    void applyStoredSettings(void* soundPtr) const;
+
 private:
     ////////////////////////////////////////////////////////////
     /// \brief Get the sound object
@@ -583,9 +647,28 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] virtual void* getSound() const = 0;
+
+    float           m_pitch{1.f};
+    float           m_pan{0.f};
+    float           m_volume{100.f};
+    bool            m_spatializationEnabled{true};
+    Vector3f        m_position;
+    Vector3f        m_direction;
+    Cone            m_cone{radians(6.283185f), radians(6.283185f), 0.0f};
+    Vector3f        m_velocity;
+    float           m_dopplerFactor{1.f};
+    float           m_directionalAttenuationFactor{1.f};
+    bool            m_relativeToListener{false};
+    float           m_minDistance{1.f};
+    float           m_maxDistance{3.402823466e+38F};
+    float           m_minGain{0.f};
+    float           m_maxGain{1.f};
+    float           m_attenuation{1.f};
+    EffectProcessor m_effectProcessor{};
+    bool            m_loop{false};
+    Time            m_playingOffset;
 };
 
-// NOLINTEND(readability-make-member-function-const)
 } // namespace sf
 
 

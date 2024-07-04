@@ -66,7 +66,7 @@ public:
     /// \brief Construct a music stream from a playback device and music source
     ///
     ////////////////////////////////////////////////////////////
-    explicit MusicStream(PlaybackDevice& playbackDevice, MusicSource& musicSource);
+    explicit MusicStream(MusicSource& musicSource);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor

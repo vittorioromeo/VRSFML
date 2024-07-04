@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
-#include <SFML/Audio/AudioDeviceHandle.hpp>
+#include <SFML/Audio/PlaybackDeviceHandle.hpp>
 #include <SFML/Audio/SoundChannel.hpp>
 
 #include <SFML/System/UniquePtr.hpp>
@@ -134,7 +134,7 @@ public:
     /// \return A vector containing the handles
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::vector<AudioDeviceHandle> getAvailableDevices();
+    [[nodiscard]] static std::vector<CaptureDeviceHandle> getAvailableCaptureDeviceHandles();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the handle of the default audio capture device
@@ -146,7 +146,7 @@ public:
     /// \return The handle of the default audio capture device
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static AudioDeviceHandle getDefaultDevice();
+    [[nodiscard]] static CaptureDeviceHandle getDefaultCaptureDeviceHandle();
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the audio capture device
@@ -163,7 +163,7 @@ public:
     /// \see getAvailableDevices, getDefaultDevice
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool setCurrentDevice(const AudioDeviceHandle& handle);
+    [[nodiscard]] bool setCurrentDevice(const CaptureDeviceHandle& handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the handle of the current audio capture device
@@ -171,7 +171,7 @@ public:
     /// \return The handle of the current audio capture device
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const AudioDeviceHandle& getCurrentDevice() const;
+    [[nodiscard]] const CaptureDeviceHandle& getCurrentDevice() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the channel count of the audio capture device

@@ -25,14 +25,14 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/AudioDeviceHandle.hpp>
+#include <SFML/Audio/PlaybackDeviceHandle.hpp>
 
 #include <miniaudio.h>
 
 #include <cstring>
 
 
-namespace sf
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 struct AudioDeviceHandle::Impl
@@ -125,4 +125,4 @@ bool operator!=(const AudioDeviceHandle& lhs, const AudioDeviceHandle& rhs)
     return !(lhs == rhs);
 }
 
-} // namespace sf
+} // namespace sf::priv

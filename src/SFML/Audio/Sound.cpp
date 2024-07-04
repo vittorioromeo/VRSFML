@@ -30,6 +30,7 @@
 #include <SFML/Audio/PlaybackDevice.hpp>
 #include <SFML/Audio/Sound.hpp>
 #include <SFML/Audio/SoundBuffer.hpp>
+#include <SFML/Audio/SoundSource.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
@@ -52,38 +53,32 @@ class AudioDevice;
 
 namespace sf
 {
-struct Sound::Impl : priv::MiniaudioUtils::SoundBase
+struct Sound::Impl
 {
-    explicit Impl(PlaybackDevice& playbackDevice) :
-    SoundBase(playbackDevice, vtable, [](void* ptr) { static_cast<Impl*>(ptr)->initialize(); })
+    explicit Impl(Sound* theOwner) : owner(theOwner)
     {
-        // Initialize sound structure and set default settings
-        initialize();
     }
 
     void initialize()
     {
-        if (!SoundBase::initialize(onEnd))
-        {
+        assert(soundBase.has_value());
+
+        if (!soundBase->initialize(onEnd))
             priv::err() << "Failed to initialize Sound::Impl" << priv::errEndl;
-        }
 
         // Because we are providing a custom data source, we have to provide the channel map ourselves
-        if (buffer && !buffer->getChannelMap().empty())
+        if (buffer == nullptr || buffer->getChannelMap().empty())
         {
-            soundChannelMap.clear();
-
-            for (const SoundChannel channel : buffer->getChannelMap())
-            {
-                soundChannelMap.push_back(priv::MiniaudioUtils::soundChannelToMiniaudioChannel(channel));
-            }
-
-            sound.engineNode.spatializer.pChannelMapIn = soundChannelMap.data();
+            soundBase->sound.engineNode.spatializer.pChannelMapIn = nullptr;
+            return;
         }
-        else
-        {
-            sound.engineNode.spatializer.pChannelMapIn = nullptr;
-        }
+
+        soundBase->soundChannelMap.clear();
+
+        for (const SoundChannel channel : buffer->getChannelMap())
+            soundBase->soundChannelMap.push_back(priv::MiniaudioUtils::soundChannelToMiniaudioChannel(channel));
+
+        soundBase->sound.engineNode.spatializer.pChannelMapIn = soundBase->soundChannelMap.data();
     }
 
     static void onEnd(void* userData, ma_sound* soundPtr)
@@ -117,7 +112,7 @@ struct Sound::Impl : priv::MiniaudioUtils::SoundBase
         impl.cursor += static_cast<std::size_t>(sampleCount);
 
         // If we are looping and at the end of the sound, set the cursor back to the start
-        if (impl.looping && (impl.cursor >= buffer->getSampleCount()))
+        if (impl.owner->getLoop() && (impl.cursor >= buffer->getSampleCount()))
             impl.cursor = 0;
 
         return MA_SUCCESS;
@@ -180,11 +175,8 @@ struct Sound::Impl : priv::MiniaudioUtils::SoundBase
         return MA_SUCCESS;
     }
 
-    static ma_result setLooping(ma_data_source* dataSource, ma_bool32 looping)
+    static ma_result setLooping(ma_data_source* /* dataSource */, ma_bool32 /* looping */)
     {
-        auto& impl   = *static_cast<Impl*>(dataSource);
-        impl.looping = (looping == MA_TRUE);
-
         return MA_SUCCESS;
     }
 
@@ -193,14 +185,16 @@ struct Sound::Impl : priv::MiniaudioUtils::SoundBase
     ////////////////////////////////////////////////////////////
     static inline constexpr ma_data_source_vtable vtable{read, seek, getFormat, getCursor, getLength, setLooping, 0};
 
-    std::size_t        cursor{};  //!< The current playing position
-    bool               looping{}; //!< True if we are looping the sound
-    const SoundBuffer* buffer{};  //!< Sound buffer bound to the source
+    std::optional<priv::MiniaudioUtils::SoundBase> soundBase; //!< Sound base, needs to be first member
+    Sound*                                         owner;     //!< Owning `Sound` object
+    std::size_t                                    cursor{};  //!< The current playing position
+    const SoundBuffer*                             buffer{};  //!< Sound buffer bound to the source
+    SoundSource::Status                            status{SoundSource::Status::Stopped}; //!< The status
 };
 
 
 ////////////////////////////////////////////////////////////
-Sound::Sound(PlaybackDevice& playbackDevice, const SoundBuffer& buffer) : m_impl(priv::makeUnique<Impl>(playbackDevice))
+Sound::Sound(const SoundBuffer& buffer) : m_impl(priv::makeUnique<Impl>(this))
 {
     setBuffer(buffer);
 
@@ -210,15 +204,67 @@ Sound::Sound(PlaybackDevice& playbackDevice, const SoundBuffer& buffer) : m_impl
 
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(readability-redundant-member-init)
-Sound::Sound(const Sound& copy) : SoundSource(copy), m_impl(priv::makeUnique<Impl>(*copy.m_impl->playbackDevice))
+Sound::Sound(const Sound& rhs) : SoundSource(rhs), m_impl(priv::makeUnique<Impl>(this))
 {
-    SoundSource::operator=(copy);
+    SoundSource::operator=(rhs);
 
-    if (copy.m_impl->buffer)
-        setBuffer(*copy.m_impl->buffer);
-    setLoop(copy.getLoop());
+    if (rhs.m_impl->buffer)
+        setBuffer(*rhs.m_impl->buffer);
 
     SFML_UPDATE_LIFETIME_DEPENDANT(SoundBuffer, Sound, m_impl->buffer);
+}
+
+
+////////////////////////////////////////////////////////////
+Sound& Sound::operator=(const Sound& rhs)
+{
+    // Here we don't use the copy-and-swap idiom, because it would mess up
+    // the list of sound instances contained in the buffers
+
+    // Handle self-assignment here, as no copy-and-swap idiom is being used
+    if (this == &rhs)
+        return *this;
+
+    // Delegate to base class, which copies all the sound attributes
+    SoundSource::operator=(rhs);
+
+    // Detach the sound instance from the previous buffer (if any)
+    if (m_impl->buffer)
+    {
+        stop();
+
+        m_impl->buffer->detachSound(this);
+        m_impl->buffer = nullptr;
+    }
+
+    // Copy the remaining sound attributes
+    if (rhs.m_impl->buffer)
+        setBuffer(*rhs.m_impl->buffer);
+
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+Sound::Sound(Sound&& rhs) noexcept : m_impl(SFML_MOVE(rhs.m_impl))
+{
+    // Update self-referential owner pointer.
+    m_impl->owner = this;
+}
+
+
+////////////////////////////////////////////////////////////
+Sound& Sound::operator=(Sound&& rhs) noexcept
+{
+    if (this != &rhs)
+    {
+        m_impl = SFML_MOVE(rhs.m_impl);
+
+        // Update self-referential owner pointer.
+        m_impl->owner = this;
+    }
+
+    return *this;
 }
 
 
@@ -226,55 +272,70 @@ Sound::Sound(const Sound& copy) : SoundSource(copy), m_impl(priv::makeUnique<Imp
 Sound::~Sound()
 {
     stop();
+
     if (m_impl->buffer)
         m_impl->buffer->detachSound(this);
 }
 
 
 ////////////////////////////////////////////////////////////
-void Sound::play()
+void Sound::play(sf::PlaybackDevice& playbackDevice)
 {
+    if (!m_impl->soundBase.has_value())
+    {
+        m_impl->soundBase.emplace(playbackDevice, Impl::vtable, [](void* ptr) { static_cast<Impl*>(ptr)->initialize(); });
+        m_impl->initialize();
+
+        assert(m_impl->soundBase.has_value());
+        applyStoredSettings(&m_impl->soundBase->sound);
+        setEffectProcessor(getEffectProcessor());
+        setPlayingOffset(getPlayingOffset());
+    }
+
     if (m_impl->status == Status::Playing)
         setPlayingOffset(Time::Zero);
 
-    if (const ma_result result = ma_sound_start(&m_impl->sound); result != MA_SUCCESS)
+    if (const ma_result result = ma_sound_start(&m_impl->soundBase->sound); result != MA_SUCCESS)
     {
         priv::err() << "Failed to start playing sound: " << ma_result_description(result) << priv::errEndl;
+        return;
     }
-    else
-    {
-        m_impl->status = Status::Playing;
-    }
+
+    m_impl->status = Status::Playing;
 }
 
 
 ////////////////////////////////////////////////////////////
 void Sound::pause()
 {
-    if (const ma_result result = ma_sound_stop(&m_impl->sound); result != MA_SUCCESS)
+    if (!m_impl->soundBase.has_value())
+        return;
+
+    if (const ma_result result = ma_sound_stop(&m_impl->soundBase->sound); result != MA_SUCCESS)
     {
         priv::err() << "Failed to stop playing sound: " << ma_result_description(result) << priv::errEndl;
+        return;
     }
-    else
-    {
-        if (m_impl->status == Status::Playing)
-            m_impl->status = Status::Paused;
-    }
+
+    if (m_impl->status == Status::Playing)
+        m_impl->status = Status::Paused;
 }
 
 
 ////////////////////////////////////////////////////////////
 void Sound::stop()
 {
-    if (const ma_result result = ma_sound_stop(&m_impl->sound); result != MA_SUCCESS)
+    if (!m_impl->soundBase.has_value())
+        return;
+
+    if (const ma_result result = ma_sound_stop(&m_impl->soundBase->sound); result != MA_SUCCESS)
     {
         priv::err() << "Failed to stop playing sound: " << ma_result_description(result) << priv::errEndl;
+        return;
     }
-    else
-    {
-        setPlayingOffset(Time::Zero);
-        m_impl->status = Status::Stopped;
-    }
+
+    setPlayingOffset(Time::Zero);
+    m_impl->status = Status::Stopped;
 }
 
 
@@ -295,27 +356,32 @@ void Sound::setBuffer(const SoundBuffer& buffer)
     m_impl->buffer = &buffer;
     m_impl->buffer->attachSound(this);
 
-    m_impl->deinitialize();
-    m_impl->initialize();
+    if (m_impl->soundBase.has_value())
+    {
+        m_impl->soundBase->deinitialize();
+        m_impl->initialize();
+
+        assert(m_impl->soundBase.has_value());
+        applyStoredSettings(&m_impl->soundBase->sound);
+        setEffectProcessor(getEffectProcessor());
+        setPlayingOffset(getPlayingOffset());
+    }
 
     SFML_UPDATE_LIFETIME_DEPENDANT(SoundBuffer, Sound, m_impl->buffer);
 }
 
-
 ////////////////////////////////////////////////////////////
-void Sound::setLoop(bool loop)
+void Sound::setPlayingOffset(Time playingOffset)
 {
-    ma_sound_set_looping(&m_impl->sound, loop ? MA_TRUE : MA_FALSE);
-}
+    SoundSource::setPlayingOffset(playingOffset);
 
-
-////////////////////////////////////////////////////////////
-void Sound::setPlayingOffset(Time timeOffset)
-{
-    if (m_impl->sound.pDataSource == nullptr || m_impl->sound.engineNode.pEngine == nullptr)
+    if (!m_impl->soundBase.has_value())
         return;
 
-    const auto frameIndex = priv::MiniaudioUtils::getFrameIndex(m_impl->sound, timeOffset);
+    if (m_impl->soundBase->sound.pDataSource == nullptr || m_impl->soundBase->sound.engineNode.pEngine == nullptr)
+        return;
+
+    const auto frameIndex = priv::MiniaudioUtils::getFrameIndex(m_impl->soundBase->sound, playingOffset);
 
     if (m_impl->buffer)
         m_impl->cursor = static_cast<std::size_t>(frameIndex * m_impl->buffer->getChannelCount());
@@ -325,8 +391,13 @@ void Sound::setPlayingOffset(Time timeOffset)
 ////////////////////////////////////////////////////////////
 void Sound::setEffectProcessor(EffectProcessor effectProcessor)
 {
-    m_impl->effectProcessor = SFML_MOVE(effectProcessor);
-    m_impl->connectEffect(bool{m_impl->effectProcessor});
+    SoundSource::setEffectProcessor(effectProcessor);
+
+    if (!m_impl->soundBase.has_value())
+        return;
+
+    m_impl->soundBase->effectProcessor = effectProcessor;
+    m_impl->soundBase->connectEffect(bool{m_impl->soundBase->effectProcessor});
 }
 
 
@@ -339,19 +410,12 @@ const SoundBuffer& Sound::getBuffer() const
 
 
 ////////////////////////////////////////////////////////////
-bool Sound::getLoop() const
-{
-    return ma_sound_is_looping(&m_impl->sound) == MA_TRUE;
-}
-
-
-////////////////////////////////////////////////////////////
 Time Sound::getPlayingOffset() const
 {
     if (!m_impl->buffer || m_impl->buffer->getChannelCount() == 0 || m_impl->buffer->getSampleRate() == 0)
         return Time{};
 
-    return priv::MiniaudioUtils::getPlayingOffset(m_impl->sound);
+    return SoundSource::getPlayingOffset();
 }
 
 
@@ -359,36 +423,6 @@ Time Sound::getPlayingOffset() const
 Sound::Status Sound::getStatus() const
 {
     return m_impl->status;
-}
-
-
-////////////////////////////////////////////////////////////
-Sound& Sound::operator=(const Sound& right)
-{
-    // Here we don't use the copy-and-swap idiom, because it would mess up
-    // the list of sound instances contained in the buffers
-
-    // Handle self-assignment here, as no copy-and-swap idiom is being used
-    if (this == &right)
-        return *this;
-
-    // Delegate to base class, which copies all the sound attributes
-    SoundSource::operator=(right);
-
-    // Detach the sound instance from the previous buffer (if any)
-    if (m_impl->buffer)
-    {
-        stop();
-        m_impl->buffer->detachSound(this);
-        m_impl->buffer = nullptr;
-    }
-
-    // Copy the remaining sound attributes
-    if (right.m_impl->buffer)
-        setBuffer(*right.m_impl->buffer);
-    setLoop(right.getLoop());
-
-    return *this;
 }
 
 
@@ -410,7 +444,10 @@ void Sound::detachBuffer()
 ////////////////////////////////////////////////////////////
 void* Sound::getSound() const
 {
-    return &m_impl->sound;
+    if (!m_impl->soundBase.has_value())
+        return nullptr;
+
+    return &m_impl->soundBase->sound;
 }
 
 } // namespace sf

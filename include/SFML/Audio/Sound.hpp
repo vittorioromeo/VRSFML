@@ -57,7 +57,7 @@ public:
     /// \param buffer Sound buffer containing the audio data to play with the sound
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Sound(PlaybackDevice& playbackDevice, const SoundBuffer& buffer);
+    [[nodiscard]] explicit Sound(const SoundBuffer& buffer);
 
     ////////////////////////////////////////////////////////////
     /// \brief Disallow construction from a temporary sound buffer
@@ -68,10 +68,26 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Copy constructor
     ///
-    /// \param copy Instance to copy
+    ////////////////////////////////////////////////////////////
+    Sound(const Sound& rhs);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Copy assignment
     ///
     ////////////////////////////////////////////////////////////
-    Sound(const Sound& copy);
+    Sound& operator=(const Sound& rhs);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    Sound(Sound&& rhs) noexcept;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    Sound& operator=(Sound&& rhs) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -91,7 +107,7 @@ public:
     /// \see pause, stop
     ///
     ////////////////////////////////////////////////////////////
-    void play() override;
+    void play(sf::PlaybackDevice&) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Pause the sound
@@ -137,21 +153,6 @@ public:
     void setBuffer(const SoundBuffer&& buffer) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set whether or not the sound should loop after reaching the end
-    ///
-    /// If set, the sound will restart from beginning after
-    /// reaching the end and so on, until it is stopped or
-    /// setLoop(false) is called.
-    /// The default looping state for sound is false.
-    ///
-    /// \param loop True to play in loop, false to play once
-    ///
-    /// \see getLoop
-    ///
-    ////////////////////////////////////////////////////////////
-    void setLoop(bool loop);
-
-    ////////////////////////////////////////////////////////////
     /// \brief Change the current playing position of the sound
     ///
     /// The playing position can be changed when the sound is
@@ -159,12 +160,12 @@ public:
     /// when the sound is stopped has no effect, since playing
     /// the sound will reset its position.
     ///
-    /// \param timeOffset New playing position, from the beginning of the sound
+    /// \param playingOffset New playing position, from the beginning of the sound
     ///
     /// \see getPlayingOffset
     ///
     ////////////////////////////////////////////////////////////
-    void setPlayingOffset(Time timeOffset);
+    void setPlayingOffset(Time playingOffset) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the effect processor to be applied to the sound
@@ -186,16 +187,6 @@ public:
     [[nodiscard]] const SoundBuffer& getBuffer() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Tell whether or not the sound is in loop mode
-    ///
-    /// \return True if the sound is looping, false otherwise
-    ///
-    /// \see setLoop
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool getLoop() const;
-
-    ////////////////////////////////////////////////////////////
     /// \brief Get the current playing position of the sound
     ///
     /// \return Current playing position, from the beginning of the sound
@@ -203,7 +194,7 @@ public:
     /// \see setPlayingOffset
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Time getPlayingOffset() const;
+    [[nodiscard]] Time getPlayingOffset() const override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current status of the sound (stopped, paused, playing)
@@ -212,16 +203,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Status getStatus() const override;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Overload of assignment operator
-    ///
-    /// \param right Instance to assign
-    ///
-    /// \return Reference to self
-    ///
-    ////////////////////////////////////////////////////////////
-    Sound& operator=(const Sound& right);
 
 private:
     friend class SoundBuffer;
@@ -247,7 +228,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    const priv::UniquePtr<Impl> m_impl; //!< Implementation details
+    priv::UniquePtr<Impl> m_impl; //!< Implementation details
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking

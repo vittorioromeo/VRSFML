@@ -202,7 +202,7 @@ public:
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] MusicStream createStream(PlaybackDevice& playbackDevice);
+    [[nodiscard]] MusicStream createStream();
 
 private:
     ////////////////////////////////////////////////////////////
@@ -268,7 +268,7 @@ private:
 ///
 /// // Create a music stream TODO
 /// sf::PlaybackDevice playbackDevice;
-/// auto musicStream = music.createStream(playbackDevice);
+/// auto musicStream = music.createStream();
 ///
 /// // Change some parameters
 /// musicStream.setPosition({0, 1, 10}); // change its 3D position
@@ -277,7 +277,7 @@ private:
 /// musicStream.setLoop(true);           // make it loop
 ///
 /// // Play it
-/// musicStream.play();
+/// musicStream.play(playbackDevice);
 /// \endcode
 ///
 /// \see sf::Sound, sf::MusicStream
