@@ -29,153 +29,156 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
-#include <SFML/System/InPlacePImpl.hpp>
-#include <SFML/System/PassKey.hpp>
+#include <SFML/Audio/SoundChannel.hpp>
 
-#include <string_view>
+#include <SFML/System/LifetimeDependant.hpp>
+#include <SFML/System/UniquePtr.hpp>
+
+#include <vector>
+
+#include <cstddef>
+#include <cstdint>
 
 
-////////////////////////////////////////////////////////////
-// Forward declarations
-////////////////////////////////////////////////////////////
 namespace sf
 {
 class AudioContext;
-class PlaybackDevice;
-class CaptureDevice;
-class SoundRecorder;
-class PlaybackDeviceHandle;
 class CaptureDeviceHandle;
-} // namespace sf
+class SoundRecorder;
 
-
-namespace sf::priv
-{
 ////////////////////////////////////////////////////////////
-class [[nodiscard]] AudioDeviceHandle
+class CaptureDevice
 {
 public:
+    ////////////////////////////////////////////////////////////
+    /// \brief Default constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    explicit CaptureDevice(AudioContext& audioContext, const CaptureDeviceHandle& deviceHandle);
+
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    ~AudioDeviceHandle();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Copy constructor
-    ///
-    ////////////////////////////////////////////////////////////
-    AudioDeviceHandle(const AudioDeviceHandle& rhs);
+    ~CaptureDevice();
 
     ////////////////////////////////////////////////////////////
     /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    AudioDeviceHandle(AudioDeviceHandle&& rhs) noexcept;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Copy assignment
-    ///
-    ////////////////////////////////////////////////////////////
-    AudioDeviceHandle& operator=(const AudioDeviceHandle& rhs);
+    CaptureDevice(CaptureDevice&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment
     ///
     ////////////////////////////////////////////////////////////
-    AudioDeviceHandle& operator=(AudioDeviceHandle&& rhs) noexcept;
+    CaptureDevice& operator=(CaptureDevice&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string_view getName() const;
+    [[nodiscard]] const CaptureDeviceHandle& getDeviceHandle() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isDefault() const;
+    [[nodiscard]] bool setSampleRate(unsigned int sampleRate);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO
+    /// \brief Get the sample rate
+    ///
+    /// The sample rate defines the number of audio samples
+    /// captured per second. The higher, the better the quality
+    /// (for example, 44100 samples/sec is CD quality).
+    ///
+    /// \return Sample rate, in samples per second
     ///
     ////////////////////////////////////////////////////////////
-    friend bool operator==(const AudioDeviceHandle& lhs, const AudioDeviceHandle& rhs);
+    [[nodiscard]] unsigned int getSampleRate() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO
+    /// \brief Set the channel count of the audio capture device
+    ///
+    /// This method allows you to specify the number of channels
+    /// used for recording. Currently only 16-bit mono and
+    /// 16-bit stereo are supported.
+    ///
+    /// \param channelCount Number of channels. Currently only
+    ///                     mono (1) and stereo (2) are supported.
+    ///
+    /// \see getChannelCount
     ///
     ////////////////////////////////////////////////////////////
-    friend bool operator!=(const AudioDeviceHandle& lhs, const AudioDeviceHandle& rhs);
+    [[nodiscard]] bool setChannelCount(unsigned int channelCount);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the number of channels used by this recorder
+    ///
+    /// Currently only mono and stereo are supported, so the
+    /// value is either 1 (for mono) or 2 (for stereo).
+    ///
+    /// \return Number of channels
+    ///
+    /// \see setChannelCount
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] unsigned int getChannelCount() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the map of position in sample frame to sound channel
+    ///
+    /// This is used to map a sample in the sample stream to a
+    /// position during spatialisation.
+    ///
+    /// \return Map of position in sample frame to sound channel
+    ///
+    ////////////////////////////////////////////////////////////
+    const std::vector<SoundChannel>& getChannelMap() const;
 
 private:
-    friend PlaybackDevice;
-    friend PlaybackDeviceHandle;
-    friend CaptureDevice;
-    friend CaptureDeviceHandle;
     friend SoundRecorder;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit AudioDeviceHandle(const void* maDeviceInfo);
+    [[nodiscard]] bool isDeviceInitialized() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const void* getMADeviceInfo() const;
+    [[nodiscard]] bool isDeviceStarted() const;
 
-public:
     ////////////////////////////////////////////////////////////
-    /// \private
-    ///
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit AudioDeviceHandle(PassKey<AudioContext>&&, const void* maDeviceInfo);
+    [[nodiscard]] bool startDevice() const;
 
     ////////////////////////////////////////////////////////////
-    /// \private
-    ///
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit AudioDeviceHandle(PassKey<SoundRecorder>&&, const void* maDeviceInfo);
+    [[nodiscard]] bool stopDevice() const;
 
     ////////////////////////////////////////////////////////////
-    /// \private
-    ///
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit AudioDeviceHandle(PassKey<PlaybackDevice>&&, const void* maDeviceInfo);
+    using ProcessSamplesFunc = bool (*)(void* userData, const std::int16_t* samples, std::size_t sampleCount);
 
-    ////////////////////////////////////////////////////////////
-    /// \private
-    ///
-    /// \brief TODO
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit AudioDeviceHandle(PassKey<CaptureDevice>&&, const void* maDeviceInfo);
+    void setProcessSamplesFunc(ProcessSamplesFunc processSamplesFunc);
 
-private:
     struct Impl;
-    InPlacePImpl<Impl, 2048> m_impl;
+    priv::UniquePtr<Impl> m_impl;
+
+    ////////////////////////////////////////////////////////////
+    // Lifetime tracking
+    ////////////////////////////////////////////////////////////
+    SFML_DEFINE_LIFETIME_DEPENDANT(AudioContext);
 };
 
-////////////////////////////////////////////////////////////
-/// \brief TODO
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] bool operator==(const AudioDeviceHandle& lhs, const AudioDeviceHandle& rhs);
-
-////////////////////////////////////////////////////////////
-/// \brief TODO
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] bool operator!=(const AudioDeviceHandle& lhs, const AudioDeviceHandle& rhs);
-
-} // namespace sf::priv
+} // namespace sf

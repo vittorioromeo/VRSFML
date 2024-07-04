@@ -46,11 +46,6 @@
 #include <cstring>
 
 
-namespace sf::priv
-{
-class AudioDevice;
-} // namespace sf::priv
-
 namespace sf
 {
 struct Sound::Impl
@@ -279,7 +274,7 @@ Sound::~Sound()
 
 
 ////////////////////////////////////////////////////////////
-void Sound::play(sf::PlaybackDevice& playbackDevice)
+void Sound::play(PlaybackDevice& playbackDevice)
 {
     if (!m_impl->soundBase.has_value())
     {

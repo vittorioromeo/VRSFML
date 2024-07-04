@@ -26,8 +26,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/InputSoundFile.hpp>
-#include <SFML/Audio/MusicSource.hpp>
-#include <SFML/Audio/MusicStream.hpp>
+#include <SFML/Audio/Music.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
@@ -66,42 +65,35 @@ namespace
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-struct MusicStream::Impl
+struct Music::Impl
 {
-    MusicSource*              musicSource; //!< The music source
-    std::vector<std::int16_t> samples;     //!< Temporary buffer of samples
-    std::recursive_mutex      mutex;       //!< Mutex protecting the data
-    Span<std::uint64_t>       loopSpan;    //!< Loop Range Specifier
+    InputSoundFile            file;     //!< Input sound file
+    std::vector<std::int16_t> samples;  //!< Temporary buffer of samples
+    std::recursive_mutex      mutex;    //!< Mutex protecting the data
+    Span<std::uint64_t>       loopSpan; //!< Loop Range Specifier
 
-    explicit Impl(MusicSource& theMusic) :
-    musicSource(&theMusic),
+    explicit Impl(InputSoundFile&& theFile) :
+    file(SFML_MOVE(theFile)),
 
     // Resize the internal buffer so that it can contain 1 second of audio samples
-    samples(musicSource->getSampleRate() * musicSource->getChannelCount()),
+    samples(file.getSampleRate() * file.getChannelCount()),
 
     // Compute the music source positions
-    loopSpan{0u, musicSource->m_file->getSampleCount()}
+    loopSpan{0u, file.getSampleCount()}
     {
-    }
-
-    [[nodiscard]] InputSoundFile& getFile() const noexcept
-    {
-        return *musicSource->m_file;
     }
 };
 
 
 ////////////////////////////////////////////////////////////
-MusicStream::MusicStream(MusicSource& musicSource) : m_impl(priv::makeUnique<Impl>(musicSource))
+Music::Music(priv::PassKey<Music>&&, InputSoundFile&& file) : m_impl(priv::makeUnique<Impl>(SFML_MOVE(file)))
 {
-    SoundStream::initialize(musicSource.getChannelCount(), musicSource.getSampleRate(), musicSource.getChannelMap());
-
-    SFML_UPDATE_LIFETIME_DEPENDANT(Music, MusicStream, m_impl->musicSource);
+    SoundStream::initialize(m_impl->file.getChannelCount(), m_impl->file.getSampleRate(), m_impl->file.getChannelMap());
 }
 
 
 ////////////////////////////////////////////////////////////
-MusicStream::~MusicStream()
+Music::~Music()
 {
     // We must stop before destroying the file
     if (m_impl != nullptr)
@@ -112,20 +104,89 @@ MusicStream::~MusicStream()
 
 
 ////////////////////////////////////////////////////////////
-MusicStream::MusicStream(MusicStream&&) noexcept = default;
+Music::Music(Music&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-MusicStream& MusicStream::operator=(MusicStream&&) noexcept = default;
+Music& Music::operator=(Music&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-bool MusicStream::onGetData(SoundStream::Chunk& data)
+std::optional<Music> Music::tryOpenFromInputSoundFile(std::optional<InputSoundFile>&& optFile, const char* errorContext)
+{
+    if (!optFile.has_value())
+    {
+        priv::err() << "Failed to open music from " << errorContext << priv::errEndl;
+        return std::nullopt;
+    }
+
+    return std::make_optional<Music>(priv::PassKey<Music>{}, SFML_MOVE(*optFile));
+}
+
+
+////////////////////////////////////////////////////////////
+std::optional<Music> Music::openFromFile(const std::filesystem::path& filename)
+{
+    return tryOpenFromInputSoundFile(InputSoundFile::openFromFile(filename), "file");
+}
+
+
+////////////////////////////////////////////////////////////
+std::optional<Music> Music::openFromMemory(const void* data, std::size_t sizeInBytes)
+{
+    return tryOpenFromInputSoundFile(InputSoundFile::openFromMemory(data, sizeInBytes), "memory");
+}
+
+
+////////////////////////////////////////////////////////////
+std::optional<Music> Music::openFromStream(InputStream& stream)
+{
+    return tryOpenFromInputSoundFile(InputSoundFile::openFromStream(stream), "stream");
+}
+
+
+////////////////////////////////////////////////////////////
+Time Music::getDuration() const
+{
+    return m_impl->file.getDuration();
+}
+
+
+////////////////////////////////////////////////////////////
+unsigned int Music::getChannelCount() const
+{
+    return m_impl->file.getChannelCount();
+}
+
+
+////////////////////////////////////////////////////////////
+unsigned int Music::getSampleRate() const
+{
+    return m_impl->file.getSampleRate();
+}
+
+
+////////////////////////////////////////////////////////////
+std::vector<SoundChannel> Music::getChannelMap() const
+{
+    return m_impl->file.getChannelMap();
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] std::uint64_t Music::getSampleCount() const
+{
+    return m_impl->file.getSampleCount();
+}
+
+
+////////////////////////////////////////////////////////////
+bool Music::onGetData(SoundStream::Chunk& data)
 {
     const std::lock_guard lock(m_impl->mutex);
 
     std::size_t         toFill        = m_impl->samples.size();
-    std::uint64_t       currentOffset = m_impl->getFile().getSampleOffset();
+    std::uint64_t       currentOffset = m_impl->file.getSampleOffset();
     const std::uint64_t loopEnd       = m_impl->loopSpan.offset + m_impl->loopSpan.length;
 
     // If the loop end is enabled and imminent, request less data.
@@ -136,42 +197,42 @@ bool MusicStream::onGetData(SoundStream::Chunk& data)
 
     // Fill the chunk parameters
     data.samples     = m_impl->samples.data();
-    data.sampleCount = static_cast<std::size_t>(m_impl->getFile().read(m_impl->samples.data(), toFill));
+    data.sampleCount = static_cast<std::size_t>(m_impl->file.read(m_impl->samples.data(), toFill));
     currentOffset += data.sampleCount;
 
     // Check if we have stopped obtaining samples or reached either the EOF or the loop end point
-    return (data.sampleCount != 0) && (currentOffset < m_impl->getFile().getSampleCount()) &&
+    return (data.sampleCount != 0) && (currentOffset < m_impl->file.getSampleCount()) &&
            (currentOffset != loopEnd || m_impl->loopSpan.length == 0);
 }
 
 
 ////////////////////////////////////////////////////////////
-void MusicStream::onSeek(Time timeOffset)
+void Music::onSeek(Time timeOffset)
 {
     const std::lock_guard lock(m_impl->mutex);
-    m_impl->getFile().seek(timeOffset);
+    m_impl->file.seek(timeOffset);
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<std::uint64_t> MusicStream::onLoop()
+std::optional<std::uint64_t> Music::onLoop()
 {
     // Called by underlying SoundStream so we can determine where to loop.
     const std::lock_guard lock(m_impl->mutex);
-    const std::uint64_t   currentOffset = m_impl->getFile().getSampleOffset();
+    const std::uint64_t   currentOffset = m_impl->file.getSampleOffset();
 
     if (getLoop() && (m_impl->loopSpan.length != 0) && (currentOffset == m_impl->loopSpan.offset + m_impl->loopSpan.length))
     {
         // Looping is enabled, and either we're at the loop end, or we're at the EOF
         // when it's equivalent to the loop end (loop end takes priority). Send us to loop begin
-        m_impl->getFile().seek(m_impl->loopSpan.offset);
-        return m_impl->getFile().getSampleOffset();
+        m_impl->file.seek(m_impl->loopSpan.offset);
+        return m_impl->file.getSampleOffset();
     }
 
-    if (getLoop() && (currentOffset >= m_impl->getFile().getSampleCount()))
+    if (getLoop() && (currentOffset >= m_impl->file.getSampleCount()))
     {
         // If we're at the EOF, reset to 0
-        m_impl->getFile().seek(0);
+        m_impl->file.seek(0);
         return 0;
     }
 
@@ -180,7 +241,7 @@ std::optional<std::uint64_t> MusicStream::onLoop()
 
 
 ////////////////////////////////////////////////////////////
-MusicStream::TimeSpan MusicStream::getLoopPoints() const
+Music::TimeSpan Music::getLoopPoints() const
 {
     return TimeSpan{samplesToTime(getSampleRate(), getChannelCount(), m_impl->loopSpan.offset),
                     samplesToTime(getSampleRate(), getChannelCount(), m_impl->loopSpan.length)};
@@ -188,13 +249,13 @@ MusicStream::TimeSpan MusicStream::getLoopPoints() const
 
 
 ////////////////////////////////////////////////////////////
-void MusicStream::setLoopPoints(TimeSpan timePoints)
+void Music::setLoopPoints(TimeSpan timePoints)
 {
     Span<std::uint64_t> samplePoints{timeToSamples(getSampleRate(), getChannelCount(), timePoints.offset),
                                      timeToSamples(getSampleRate(), getChannelCount(), timePoints.length)};
 
     // Check our state. This averts a divide-by-zero. GetChannelCount() is cheap enough to use often
-    if (getChannelCount() == 0 || m_impl->getFile().getSampleCount() == 0)
+    if (getChannelCount() == 0 || m_impl->file.getSampleCount() == 0)
     {
         priv::err() << "Music is not in a valid state to assign Loop Points." << priv::errEndl;
         return;
@@ -207,7 +268,7 @@ void MusicStream::setLoopPoints(TimeSpan timePoints)
     samplePoints.length -= (samplePoints.length % getChannelCount());
 
     // Validate
-    if (samplePoints.offset >= m_impl->getFile().getSampleCount())
+    if (samplePoints.offset >= m_impl->file.getSampleCount())
     {
         priv::err() << "LoopPoints offset val must be in range [0, Duration)." << priv::errEndl;
         return;
@@ -220,7 +281,7 @@ void MusicStream::setLoopPoints(TimeSpan timePoints)
     }
 
     // Clamp End Point
-    samplePoints.length = priv::min(samplePoints.length, m_impl->getFile().getSampleCount() - samplePoints.offset);
+    samplePoints.length = priv::min(samplePoints.length, m_impl->file.getSampleCount() - samplePoints.offset);
 
     // If this change has no effect, we can return without touching anything
     if (samplePoints.offset == m_impl->loopSpan.offset && samplePoints.length == m_impl->loopSpan.length)
@@ -245,7 +306,8 @@ void MusicStream::setLoopPoints(TimeSpan timePoints)
     // Resume
     if (oldStatus == Status::Playing)
     {
-        // play(); // TODO
+        assert(m_lastPlaybackDevice != nullptr);
+        play(*m_lastPlaybackDevice);
     }
 }
 

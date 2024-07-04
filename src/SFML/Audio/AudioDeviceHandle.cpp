@@ -49,9 +49,9 @@ m_impl(*static_cast<const ma_device_info*>(maDeviceInfo))
 
 
 ////////////////////////////////////////////////////////////
-void AudioDeviceHandle::copyMADeviceInfoInto(void* maDeviceInfo) const
+const void* AudioDeviceHandle::getMADeviceInfo() const
 {
-    (*static_cast<ma_device_info*>(maDeviceInfo)) = m_impl->maDeviceInfo;
+    return &m_impl->maDeviceInfo;
 }
 
 
@@ -70,7 +70,14 @@ AudioDeviceHandle{maDeviceInfo}
 
 
 ////////////////////////////////////////////////////////////
-AudioDeviceHandle::AudioDeviceHandle(priv::PassKey<priv::AudioDevice>&&, const void* maDeviceInfo) :
+AudioDeviceHandle::AudioDeviceHandle(priv::PassKey<PlaybackDevice>&&, const void* maDeviceInfo) :
+AudioDeviceHandle{maDeviceInfo}
+{
+}
+
+
+////////////////////////////////////////////////////////////
+AudioDeviceHandle::AudioDeviceHandle(priv::PassKey<CaptureDevice>&&, const void* maDeviceInfo) :
 AudioDeviceHandle{maDeviceInfo}
 {
 }

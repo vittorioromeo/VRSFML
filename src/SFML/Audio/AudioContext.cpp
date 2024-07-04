@@ -26,7 +26,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/AudioContext.hpp>
-#include <SFML/Audio/AudioDevice.hpp>
+#include <SFML/Audio/CaptureDeviceHandle.hpp>
 #include <SFML/Audio/PlaybackDeviceHandle.hpp>
 
 #include <SFML/System/Err.hpp>
@@ -151,6 +151,7 @@ template <typename F>
     return true;
 }
 
+
 } // namespace
 
 
@@ -194,18 +195,19 @@ std::optional<AudioContext> AudioContext::create()
 
 
 ////////////////////////////////////////////////////////////
-std::vector<PlaybackDeviceHandle> AudioContext::getAvailablePlaybackDeviceHandles()
+template <typename THandle, typename F>
+std::vector<THandle> AudioContext::getAvailableDeviceHandles(const char* type, F&& fMAContextGetDevices)
 {
-    std::vector<PlaybackDeviceHandle> deviceHandles; // Use a single local variable for NRVO
+    std::vector<THandle> deviceHandles; // Use a single local variable for NRVO
 
     ma_device_info* maDeviceInfosPtr{};
     ma_uint32       maDeviceInfoCount{};
 
-    // Get the playback devices
-    if (const ma_result result = ma_context_get_devices(&m_impl->maContext, &maDeviceInfosPtr, &maDeviceInfoCount, nullptr, nullptr);
+    // Get the Capture devices
+    if (const ma_result result = fMAContextGetDevices(&m_impl->maContext, &maDeviceInfosPtr, &maDeviceInfoCount);
         result != MA_SUCCESS)
     {
-        priv::err() << "Failed to get audio playback devices: " << ma_result_description(result) << priv::errEndl;
+        priv::err() << "Failed to get audio " << type << " devices: " << ma_result_description(result) << priv::errEndl;
         return deviceHandles; // Empty device handle vector
     }
 
@@ -215,6 +217,16 @@ std::vector<PlaybackDeviceHandle> AudioContext::getAvailablePlaybackDeviceHandle
         deviceHandles.emplace_back(priv::PassKey<AudioContext>{}, &maDeviceInfosPtr[i]);
 
     return deviceHandles;
+}
+
+
+////////////////////////////////////////////////////////////
+std::vector<PlaybackDeviceHandle> AudioContext::getAvailablePlaybackDeviceHandles()
+{
+    return getAvailableDeviceHandles<PlaybackDeviceHandle> //
+        ("playback",
+         [](ma_context* maContext, ma_device_info** maDeviceInfosPtr, ma_uint32* maDeviceInfoCount)
+         { return ma_context_get_devices(maContext, maDeviceInfosPtr, maDeviceInfoCount, nullptr, nullptr); });
 }
 
 
@@ -230,9 +242,30 @@ std::optional<PlaybackDeviceHandle> AudioContext::getDefaultPlaybackDeviceHandle
 
 
 ////////////////////////////////////////////////////////////
-ma_context& AudioContext::getMAContext() const
+std::vector<CaptureDeviceHandle> AudioContext::getAvailableCaptureDeviceHandles()
 {
-    return m_impl->maContext;
+    return getAvailableDeviceHandles<CaptureDeviceHandle> //
+        ("capture",
+         [](ma_context* maContext, ma_device_info** maDeviceInfosPtr, ma_uint32* maDeviceInfoCount)
+         { return ma_context_get_devices(maContext, nullptr, nullptr, maDeviceInfosPtr, maDeviceInfoCount); });
+}
+
+
+////////////////////////////////////////////////////////////
+std::optional<CaptureDeviceHandle> AudioContext::getDefaultCaptureDeviceHandle()
+{
+    for (const CaptureDeviceHandle& deviceHandle : getAvailableCaptureDeviceHandles())
+        if (deviceHandle.isDefault())
+            return std::make_optional(deviceHandle);
+
+    return std::nullopt;
+}
+
+
+////////////////////////////////////////////////////////////
+void* AudioContext::getMAContext() const
+{
+    return &m_impl->maContext;
 }
 
 

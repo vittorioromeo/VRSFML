@@ -1,6 +1,6 @@
 #include <SFML/Audio/AudioContext.hpp>
-#include <SFML/Audio/MusicSource.hpp>
-#include <SFML/Audio/MusicStream.hpp>
+#include <SFML/Audio/AudioUtils.hpp>
+#include <SFML/Audio/Music.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
 
 // Other 1st party headers
@@ -16,34 +16,32 @@
 #include <thread>
 #include <type_traits>
 
-TEST_CASE("[Audio] sf::MusicSource" * doctest::skip(skipAudioDeviceTests))
+TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
 {
-    auto audioContext        = sf::AudioContext::create().value();
-    auto defaultDeviceHandle = audioContext.getDefaultPlaybackDeviceHandle().value();
-    auto playbackDevice      = sf::PlaybackDevice(audioContext, defaultDeviceHandle);
+    auto [audioContext, playbackDevice] = sf::AudioUtils::createContextAndDefaultPlaybackDevice().value();
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!std::is_copy_constructible_v<sf::MusicSource>);
-        STATIC_CHECK(!std::is_copy_assignable_v<sf::MusicSource>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::MusicSource>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::MusicSource>);
-        STATIC_CHECK(!std::has_virtual_destructor_v<sf::MusicSource>);
+        STATIC_CHECK(!std::is_copy_constructible_v<sf::Music>);
+        STATIC_CHECK(!std::is_copy_assignable_v<sf::Music>);
+        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Music>);
+        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Music>);
+        STATIC_CHECK(std::has_virtual_destructor_v<sf::Music>);
 
-        STATIC_CHECK(!std::is_copy_constructible_v<sf::MusicStream>);
-        STATIC_CHECK(!std::is_copy_assignable_v<sf::MusicStream>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::MusicStream>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::MusicStream>);
-        STATIC_CHECK(std::has_virtual_destructor_v<sf::MusicStream>);
+        STATIC_CHECK(!std::is_copy_constructible_v<sf::Music>);
+        STATIC_CHECK(!std::is_copy_assignable_v<sf::Music>);
+        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Music>);
+        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Music>);
+        STATIC_CHECK(std::has_virtual_destructor_v<sf::Music>);
     }
 
     SECTION("Span")
     {
-        const sf::MusicStream::Span<float> span;
+        const sf::Music::Span<float> span;
         CHECK(span.offset == 0);
         CHECK(span.length == 0);
 
-        const sf::MusicStream::TimeSpan timeSpan;
+        const sf::Music::TimeSpan timeSpan;
         CHECK(timeSpan.offset == sf::Time::Zero);
         CHECK(timeSpan.length == sf::Time::Zero);
     }
@@ -52,24 +50,22 @@ TEST_CASE("[Audio] sf::MusicSource" * doctest::skip(skipAudioDeviceTests))
     {
         SECTION("Invalid file")
         {
-            CHECK(!sf::MusicSource::openFromFile("does/not/exist.wav"));
+            CHECK(!sf::Music::openFromFile("does/not/exist.wav"));
         }
 
         SECTION("Valid file")
         {
-            auto music = sf::MusicSource::openFromFile("Audio/ding.mp3").value();
-            CHECK(static_cast<const sf::MusicSource&>(music).getDuration() == sf::microseconds(1990884));
-            CHECK(static_cast<const sf::MusicSource&>(music).getChannelCount() == 1);
-            CHECK(static_cast<const sf::MusicSource&>(music).getSampleRate() == 44100);
+            auto music = sf::Music::openFromFile("Audio/ding.mp3").value();
+            CHECK(static_cast<const sf::Music&>(music).getDuration() == sf::microseconds(1990884));
+            CHECK(static_cast<const sf::Music&>(music).getChannelCount() == 1);
+            CHECK(static_cast<const sf::Music&>(music).getSampleRate() == 44100);
 
-            auto musicStream = music.createStream();
-
-            const auto [offset, length] = musicStream.getLoopPoints();
+            const auto [offset, length] = music.getLoopPoints();
             CHECK(offset == sf::Time::Zero);
             CHECK(length == sf::microseconds(1990884));
-            CHECK(musicStream.getStatus() == sf::MusicStream::Status::Stopped);
-            CHECK(musicStream.getPlayingOffset() == sf::Time::Zero);
-            CHECK(!musicStream.getLoop());
+            CHECK(music.getStatus() == sf::Music::Status::Stopped);
+            CHECK(music.getPlayingOffset() == sf::Time::Zero);
+            CHECK(!music.getLoop());
         }
     }
 
@@ -79,85 +75,77 @@ TEST_CASE("[Audio] sf::MusicSource" * doctest::skip(skipAudioDeviceTests))
 
         SECTION("Invalid buffer")
         {
-            CHECK(!sf::MusicSource::openFromMemory(memory.data(), memory.size()));
+            CHECK(!sf::Music::openFromMemory(memory.data(), memory.size()));
         }
 
         SECTION("Valid buffer")
         {
             memory = loadIntoMemory("Audio/ding.flac");
 
-            auto music = sf::MusicSource::openFromMemory(memory.data(), memory.size()).value();
-            CHECK(static_cast<const sf::MusicSource&>(music).getDuration() == sf::microseconds(1990884));
-            CHECK(static_cast<const sf::MusicSource&>(music).getChannelCount() == 1);
-            CHECK(static_cast<const sf::MusicSource&>(music).getSampleRate() == 44100);
+            auto music = sf::Music::openFromMemory(memory.data(), memory.size()).value();
+            CHECK(static_cast<const sf::Music&>(music).getDuration() == sf::microseconds(1990884));
+            CHECK(static_cast<const sf::Music&>(music).getChannelCount() == 1);
+            CHECK(static_cast<const sf::Music&>(music).getSampleRate() == 44100);
 
-            auto musicStream = music.createStream();
-
-            const auto [offset, length] = musicStream.getLoopPoints();
+            const auto [offset, length] = music.getLoopPoints();
             CHECK(offset == sf::Time::Zero);
             CHECK(length == sf::microseconds(1990884));
-            CHECK(musicStream.getStatus() == sf::MusicStream::Status::Stopped);
-            CHECK(musicStream.getPlayingOffset() == sf::Time::Zero);
-            CHECK(!musicStream.getLoop());
+            CHECK(music.getStatus() == sf::Music::Status::Stopped);
+            CHECK(music.getPlayingOffset() == sf::Time::Zero);
+            CHECK(!music.getLoop());
         }
     }
 
     SECTION("openFromStream()")
     {
         auto stream = sf::FileInputStream::open("Audio/doodle_pop.ogg").value();
-        auto music  = sf::MusicSource::openFromStream(stream).value();
-        CHECK(static_cast<const sf::MusicSource&>(music).getDuration() == sf::microseconds(24002176));
-        CHECK(static_cast<const sf::MusicSource&>(music).getChannelCount() == 2);
-        CHECK(static_cast<const sf::MusicSource&>(music).getSampleRate() == 44100);
+        auto music  = sf::Music::openFromStream(stream).value();
+        CHECK(static_cast<const sf::Music&>(music).getDuration() == sf::microseconds(24002176));
+        CHECK(static_cast<const sf::Music&>(music).getChannelCount() == 2);
+        CHECK(static_cast<const sf::Music&>(music).getSampleRate() == 44100);
 
-        auto musicStream = music.createStream();
-
-        const auto [offset, length] = musicStream.getLoopPoints();
+        const auto [offset, length] = music.getLoopPoints();
         CHECK(offset == sf::Time::Zero);
         CHECK(length == sf::microseconds(24002176));
-        CHECK(musicStream.getStatus() == sf::MusicStream::Status::Stopped);
-        CHECK(musicStream.getPlayingOffset() == sf::Time::Zero);
-        CHECK(!musicStream.getLoop());
+        CHECK(music.getStatus() == sf::Music::Status::Stopped);
+        CHECK(music.getPlayingOffset() == sf::Time::Zero);
+        CHECK(!music.getLoop());
     }
 
     SECTION("play/pause/stop")
     {
-        auto music       = sf::MusicSource::openFromFile("Audio/ding.mp3").value();
-        auto musicStream = music.createStream();
-
+        auto music = sf::Music::openFromFile("Audio/ding.mp3").value();
         // Wait for background thread to start
-        musicStream.play(playbackDevice);
-        while (musicStream.getStatus() == sf::MusicStream::Status::Stopped)
+        music.play(playbackDevice);
+        while (music.getStatus() == sf::Music::Status::Stopped)
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        CHECK(musicStream.getStatus() == sf::MusicStream::Status::Playing);
+        CHECK(music.getStatus() == sf::Music::Status::Playing);
 
         // Wait for background thread to pause
-        musicStream.pause();
-        while (musicStream.getStatus() == sf::MusicStream::Status::Playing)
+        music.pause();
+        while (music.getStatus() == sf::Music::Status::Playing)
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        CHECK(musicStream.getStatus() == sf::MusicStream::Status::Paused);
+        CHECK(music.getStatus() == sf::Music::Status::Paused);
 
         // Wait for background thread to stop
-        musicStream.stop();
-        while (musicStream.getStatus() == sf::MusicStream::Status::Paused)
+        music.stop();
+        while (music.getStatus() == sf::Music::Status::Paused)
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        CHECK(musicStream.getStatus() == sf::MusicStream::Status::Stopped);
+        CHECK(music.getStatus() == sf::Music::Status::Stopped);
     }
 
     SECTION("setLoopPoints()")
     {
-        auto music       = sf::MusicSource::openFromFile("Audio/killdeer.wav").value();
-        auto musicStream = music.createStream();
+        auto music = sf::Music::openFromFile("Audio/killdeer.wav").value();
+        music.setLoopPoints({sf::seconds(1), sf::seconds(2)});
+        CHECK(music.getChannelCount() == 1);
+        CHECK(music.getSampleRate() == 22050);
 
-        musicStream.setLoopPoints({sf::seconds(1), sf::seconds(2)});
-        CHECK(musicStream.getChannelCount() == 1);
-        CHECK(musicStream.getSampleRate() == 22050);
-
-        const auto [offset, length] = musicStream.getLoopPoints();
+        const auto [offset, length] = music.getLoopPoints();
         CHECK(offset == sf::seconds(1));
         CHECK(length == sf::seconds(2));
-        CHECK(musicStream.getStatus() == sf::MusicStream::Status::Stopped);
-        CHECK(musicStream.getPlayingOffset() == sf::Time::Zero);
-        CHECK(!musicStream.getLoop());
+        CHECK(music.getStatus() == sf::Music::Status::Stopped);
+        CHECK(music.getPlayingOffset() == sf::Time::Zero);
+        CHECK(!music.getLoop());
     }
 }

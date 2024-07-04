@@ -273,8 +273,10 @@ void SoundStream::initialize(unsigned int channelCount, unsigned int sampleRate,
 
 
 ////////////////////////////////////////////////////////////
-void SoundStream::play(sf::PlaybackDevice& playbackDevice)
+void SoundStream::play(PlaybackDevice& playbackDevice)
 {
+    m_lastPlaybackDevice = &playbackDevice;
+
     if (!m_impl->soundBase.has_value())
     {
         m_impl->soundBase.emplace(playbackDevice, Impl::vtable, [](void* ptr) { static_cast<Impl*>(ptr)->initialize(); });
@@ -292,11 +294,10 @@ void SoundStream::play(sf::PlaybackDevice& playbackDevice)
     if (const ma_result result = ma_sound_start(&m_impl->soundBase->sound); result != MA_SUCCESS)
     {
         priv::err() << "Failed to start playing sound: " << ma_result_description(result) << priv::errEndl;
+        return;
     }
-    else
-    {
-        m_impl->status = Status::Playing;
-    }
+
+    m_impl->status = Status::Playing;
 }
 
 

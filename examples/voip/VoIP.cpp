@@ -1,6 +1,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Audio/AudioContext.hpp>
+#include <SFML/Audio/AudioUtils.hpp>
+#include <SFML/Audio/PlaybackDevice.hpp>
+
 #include <iostream>
 
 
@@ -8,8 +12,8 @@
 // Function prototypes
 // (I'm too lazy to put them into separate headers...)
 ////////////////////////////////////////////////////////////
-void doClient(unsigned short port);
-void doServer(unsigned short port);
+void doClient(sf::CaptureDevice& captureDevice, unsigned short port);
+void doServer(sf::PlaybackDevice& playbackDevice, unsigned short port);
 
 
 ////////////////////////////////////////////////////////////
@@ -20,6 +24,9 @@ void doServer(unsigned short port);
 ////////////////////////////////////////////////////////////
 int main()
 {
+    // Create an audio context and get the default playback device
+    auto [audioContext, playbackDevice, captureDevice] = sf::AudioUtils::createContextAndDefaultDevices().value();
+
     // Choose a random port for opening sockets (ports < 1024 are reserved)
     const unsigned short port = 2435;
 
@@ -31,12 +38,12 @@ int main()
     if (who == 's')
     {
         // Run as a server
-        doServer(port);
+        doServer(playbackDevice, port);
     }
     else
     {
         // Run as a client
-        doClient(port);
+        doClient(captureDevice, port);
     }
 
     // Wait until the user presses 'enter' key

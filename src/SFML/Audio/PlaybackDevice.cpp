@@ -25,26 +25,122 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/AudioDevice.hpp>
+#include <SFML/Audio/AudioContext.hpp>
+#include <SFML/Audio/Listener.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
 #include <SFML/Audio/PlaybackDeviceHandle.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
+#include <SFML/System/Err.hpp>
+#include <SFML/System/LifetimeDependant.hpp>
 #include <SFML/System/UniquePtr.hpp>
+#include <SFML/System/Vector3.hpp>
+
+#include <miniaudio.h>
+
+#include <mutex>
+#include <vector>
+
+#include <cassert>
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-PlaybackDevice::PlaybackDevice(AudioContext& audioContext, const PlaybackDeviceHandle& deviceHandle) :
-m_deviceHandle(deviceHandle),
-m_audioDevice(priv::makeUnique<priv::AudioDevice>(*this, audioContext, deviceHandle))
+struct PlaybackDevice::Impl
 {
+    static void maDeviceDataCallback(ma_device* maDevice, void* output, const void*, ma_uint32 frameCount)
+    {
+        ma_engine& maEngine = *static_cast<ma_engine*>(maDevice->pUserData);
+
+        if (const ma_result result = ma_engine_read_pcm_frames(&maEngine, output, frameCount, nullptr); result != MA_SUCCESS)
+            priv::err() << "Failed to read PCM frames from audio engine: " << ma_result_description(result) << priv::errEndl;
+    }
+
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+    explicit Impl(AudioContext& theAudioContext,
+                  // NOLINTNEXTLINE(modernize-pass-by-value)
+                  const PlaybackDeviceHandle& playbackDeviceHandle) :
+    audioContext(&theAudioContext),
+    playbackDeviceHandle(playbackDeviceHandle)
+    {
+    }
+
+    ~Impl()
+    {
+        ma_engine_uninit(&maEngine);
+
+        if (ma_device_get_state(&maDevice) != ma_device_state_uninitialized)
+            ma_device_uninit(&maDevice);
+    }
+
+    [[nodiscard]] bool initialize()
+    {
+        auto& maContext = *static_cast<ma_context*>(audioContext->getMAContext());
+
+        // Initialize miniaudio device
+        {
+            ma_device_config maDeviceConfig = ma_device_config_init(ma_device_type_playback);
+
+            maDeviceConfig.dataCallback    = &maDeviceDataCallback;
+            maDeviceConfig.pUserData       = &maEngine;
+            maDeviceConfig.playback.format = ma_format_f32;
+            maDeviceConfig.playback
+                .pDeviceID = &static_cast<const ma_device_info*>(playbackDeviceHandle.getMADeviceInfo())->id;
+
+            if (const ma_result result = ma_device_init(&maContext, &maDeviceConfig, &maDevice); result != MA_SUCCESS)
+            {
+                priv::err() << "Failed to initialize the audio device: " << ma_result_description(result) << priv::errEndl;
+                return false;
+            }
+        }
+
+        // Initialize miniaudio engine
+        {
+            ma_engine_config engineConfig = ma_engine_config_init();
+
+            engineConfig.pContext      = &maContext;
+            engineConfig.pDevice       = &maDevice;
+            engineConfig.listenerCount = 1;
+
+            if (const ma_result result = ma_engine_init(&engineConfig, &maEngine); result != MA_SUCCESS)
+            {
+                priv::err() << "Failed to initialize the audio engine: " << ma_result_description(result) << priv::errEndl;
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    AudioContext*        audioContext;         //!< TODO
+    PlaybackDeviceHandle playbackDeviceHandle; //!< TODO
+
+    std::vector<ResourceEntry> resources;      //!< Registered resources
+    std::mutex                 resourcesMutex; //!< The mutex guarding the registered resources
+
+    ma_device maDevice; //!< miniaudio playback device (one per hardware device)
+    ma_engine maEngine; //!< miniaudio engine          (one per hardware device, for effects/spatialisation)
+};
+
+
+////////////////////////////////////////////////////////////
+PlaybackDevice::PlaybackDevice(AudioContext& audioContext, const PlaybackDeviceHandle& playbackDeviceHandle) :
+m_impl(priv::makeUnique<Impl>(audioContext, playbackDeviceHandle))
+{
+    if (!m_impl->initialize())
+        priv::err() << "Failed to initialize the playback device" << priv::errEndl;
+
+    SFML_UPDATE_LIFETIME_DEPENDANT(AudioContext, PlaybackDevice, m_impl->audioContext);
 }
 
 
 ////////////////////////////////////////////////////////////
-PlaybackDevice::~PlaybackDevice() = default;
+PlaybackDevice::~PlaybackDevice()
+{
+    assert(!ma_device_is_started(&m_impl->maDevice) &&
+           "The miniaudio playback device must be stopped before destroying the capture device.");
+}
 
 
 ////////////////////////////////////////////////////////////
@@ -61,37 +157,126 @@ void PlaybackDevice::transferResourcesTo(PlaybackDevice& other)
     if (&other == this)
         return;
 
-    asAudioDevice().transferResourcesTo(other.asAudioDevice());
+    const std::lock_guard lock(m_impl->resourcesMutex);
+
+    // Deinitialize all audio resources from self
+    for (ResourceEntry& entry : m_impl->resources)
+    {
+        // Skip inactive resources
+        if (entry.resource == nullptr)
+            continue;
+
+        entry.deinitializeFunc(entry.resource);
+
+        const ResourceEntryIndex otherEntryIndex = other.registerResource(entry.resource,
+                                                                          entry.deinitializeFunc,
+                                                                          entry.reinitializeFunc,
+                                                                          entry.transferFunc);
+
+        entry.transferFunc(entry.resource, other, otherEntryIndex);
+        entry.reinitializeFunc(entry.resource);
+
+        // Mark resource as inactive (can be recycled)
+        entry.resource = nullptr;
+    }
 }
 
 
 ////////////////////////////////////////////////////////////
 [[nodiscard]] const PlaybackDeviceHandle& PlaybackDevice::getDeviceHandle() const
 {
-    return m_deviceHandle;
+    return m_impl->playbackDeviceHandle;
 }
 
 
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool PlaybackDevice::updateListener(const Listener& listener)
 {
-    return asAudioDevice().updateFromListener(listener);
+    ma_engine* engine = &m_impl->maEngine;
+
+    // Set master volume, position, velocity, cone and world up vector
+    if (const ma_result result = ma_device_set_master_volume(ma_engine_get_device(engine), listener.getVolume() * 0.01f);
+        result != MA_SUCCESS)
+    {
+        priv::err() << "Failed to set audio device master volume: " << ma_result_description(result) << priv::errEndl;
+        return false;
+    }
+
+    ma_engine_listener_set_position(engine,
+                                    0,
+                                    listener.getPosition().x,
+                                    listener.getPosition().y,
+                                    listener.getPosition().z);
+
+    ma_engine_listener_set_velocity(engine,
+                                    0,
+                                    listener.getVelocity().x,
+                                    listener.getVelocity().y,
+                                    listener.getVelocity().z);
+
+    const auto& cone = listener.getCone();
+    ma_engine_listener_set_cone(engine,
+                                0,
+                                priv::clamp(cone.innerAngle, Angle::Zero, degrees(360.f)).asRadians(),
+                                priv::clamp(cone.outerAngle, Angle::Zero, degrees(360.f)).asRadians(),
+                                cone.outerGain);
+
+    ma_engine_listener_set_world_up(engine,
+                                    0,
+                                    listener.getUpVector().x,
+                                    listener.getUpVector().y,
+                                    listener.getUpVector().z);
+
+    return true;
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] priv::AudioDevice& PlaybackDevice::asAudioDevice() noexcept
+PlaybackDevice::ResourceEntryIndex PlaybackDevice::registerResource(
+    void*                       resource,
+    ResourceEntry::InitFunc     deinitializeFunc,
+    ResourceEntry::InitFunc     reinitializeFunc,
+    ResourceEntry::TransferFunc transferFunc)
 {
-    assert(m_audioDevice != nullptr);
-    return *m_audioDevice;
+    const std::lock_guard lock(m_impl->resourcesMutex);
+
+    for (ResourceEntryIndex i = 0; i < m_impl->resources.size(); ++i)
+    {
+        // Skip active resources
+        if (m_impl->resources[i].resource != nullptr)
+            continue;
+
+        // Reuse first inactive recyclable resource
+        m_impl->resources[i] = {resource, deinitializeFunc, reinitializeFunc, transferFunc};
+        return i;
+    }
+
+    // Add a new resource slot
+    m_impl->resources.emplace_back(resource, deinitializeFunc, reinitializeFunc, transferFunc);
+    return m_impl->resources.size() - 1;
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] const priv::AudioDevice& PlaybackDevice::asAudioDevice() const noexcept
+void PlaybackDevice::unregisterResource(ResourceEntryIndex resourceEntryIndex)
 {
-    assert(m_audioDevice != nullptr);
-    return *m_audioDevice;
+    const std::lock_guard lock(m_impl->resourcesMutex);
+
+    assert(m_impl->resources.size() > resourceEntryIndex && //
+           "Attempted to unregister audio resource with invalid index");
+
+    assert(m_impl->resources[resourceEntryIndex].resource != nullptr && //
+           "Attempted to unregister previously erased audio resource");
+
+    // Mark resource as inactive (can be recycled)
+    m_impl->resources[resourceEntryIndex].resource = nullptr;
+}
+
+
+////////////////////////////////////////////////////////////
+void* PlaybackDevice::getMAEngine() const
+{
+    return &m_impl->maEngine;
 }
 
 } // namespace sf

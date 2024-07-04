@@ -81,7 +81,7 @@ protected:
     /// \return True to start the capture, or false to abort it
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool onStart() override;
+    [[nodiscard]] bool onStart(CaptureDevice& captureDevice) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Process a new chunk of recorded samples
@@ -98,7 +98,7 @@ protected:
     /// \brief Stop capturing audio data
     ///
     ////////////////////////////////////////////////////////////
-    void onStop() override;
+    [[nodiscard]] bool onStop(CaptureDevice& captureDevice) override;
 
 private:
     ////////////////////////////////////////////////////////////

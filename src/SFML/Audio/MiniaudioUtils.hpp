@@ -27,8 +27,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/AudioDevice.hpp>
 #include <SFML/Audio/EffectProcessor.hpp>
+#include <SFML/Audio/PlaybackDevice.hpp>
 #include <SFML/Audio/SoundChannel.hpp>
 #include <SFML/Audio/SoundSource.hpp>
 
@@ -43,13 +43,14 @@
 ////////////////////////////////////////////////////////////
 // Forward declarations
 ////////////////////////////////////////////////////////////
-
 namespace sf
 {
 class Time;
 class PlaybackDevice;
+} // namespace sf
 
-namespace priv::MiniaudioUtils
+
+namespace sf::priv::MiniaudioUtils
 {
 struct SavedSettings
 {
@@ -77,9 +78,9 @@ struct SavedSettings
 
 struct SoundBase
 {
-    SoundBase(PlaybackDevice&                  thePlaybackDevice,
-              const ma_data_source_vtable&     dataSourceVTable,
-              AudioDevice::ResourceEntry::InitFunc reinitializeFunc);
+    SoundBase(PlaybackDevice&                         thePlaybackDevice,
+              const ma_data_source_vtable&            dataSourceVTable,
+              PlaybackDevice::ResourceEntry::InitFunc reinitializeFunc);
 
     ~SoundBase();
 
@@ -106,9 +107,9 @@ struct SoundBase
     ma_node_vtable effectNodeVTable{};       //!< Vtable of the effect node
     EffectNode     effectNode;               //!< The engine node that performs effect processing
     std::vector<ma_channel> soundChannelMap; //!< The map of position in sample frame to sound channel (miniaudio channels)
-    ma_sound            sound{};             //!< The sound
-    EffectProcessor     effectProcessor;                      //!< The effect processor
-    priv::AudioDevice::ResourceEntryIndex resourceEntryIndex; //!< Index of the resource entry registered with the AudioDevice
+    ma_sound        sound{};                 //!< The sound
+    EffectProcessor effectProcessor;         //!< The effect processor
+    PlaybackDevice::ResourceEntryIndex resourceEntryIndex; //!< Index of the resource entry registered with the PlaybackDevice
     priv::MiniaudioUtils::SavedSettings savedSettings; //!< Saved settings used to restore ma_sound state in case we need to recreate it
 
     ////////////////////////////////////////////////////////////
@@ -122,5 +123,4 @@ struct SoundBase
 [[nodiscard]] Time         getPlayingOffset(ma_sound& sound);
 [[nodiscard]] ma_uint64    getFrameIndex(ma_sound& sound, Time timeOffset);
 
-} // namespace priv::MiniaudioUtils
-} // namespace sf
+} // namespace sf::priv::MiniaudioUtils

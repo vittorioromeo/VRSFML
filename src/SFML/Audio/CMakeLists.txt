@@ -5,11 +5,12 @@ set(SRCROOT ${PROJECT_SOURCE_DIR}/src/SFML/Audio)
 set(SRC
     ${INCROOT}/AudioContext.hpp
     ${SRCROOT}/AudioContext.cpp
-    ${SRCROOT}/AudioDevice.cpp
-    ${SRCROOT}/AudioDevice.hpp
     ${INCROOT}/AudioDeviceHandle.hpp
     ${SRCROOT}/AudioDeviceHandle.cpp
-    ${INCROOT}/PlaybackDeviceHandle.hpp
+    ${INCROOT}/AudioUtils.hpp
+    ${SRCROOT}/AudioUtils.cpp
+    ${SRCROOT}/CaptureDevice.cpp
+    ${INCROOT}/CaptureDevice.hpp
     ${INCROOT}/CaptureDeviceHandle.hpp
     ${INCROOT}/Export.hpp
     ${SRCROOT}/Listener.cpp
@@ -17,12 +18,11 @@ set(SRC
     ${SRCROOT}/Miniaudio.cpp
     ${SRCROOT}/MiniaudioUtils.hpp
     ${SRCROOT}/MiniaudioUtils.cpp
-    ${SRCROOT}/MusicSource.cpp
-    ${INCROOT}/MusicSource.hpp
-    ${SRCROOT}/MusicStream.cpp
-    ${INCROOT}/MusicStream.hpp
+    ${INCROOT}/Music.hpp
+    ${SRCROOT}/Music.cpp
     ${SRCROOT}/PlaybackDevice.cpp
     ${INCROOT}/PlaybackDevice.hpp
+    ${INCROOT}/PlaybackDeviceHandle.hpp
     ${SRCROOT}/Sound.cpp
     ${INCROOT}/Sound.hpp
     ${SRCROOT}/SoundBuffer.cpp

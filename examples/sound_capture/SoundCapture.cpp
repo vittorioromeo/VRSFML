@@ -2,6 +2,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/AudioContext.hpp>
+#include <SFML/Audio/CaptureDevice.hpp>
 #include <SFML/Audio/CaptureDeviceHandle.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
 #include <SFML/Audio/Sound.hpp>
@@ -33,35 +34,37 @@ int main()
         return EXIT_FAILURE;
     }
 
-    // Check that the device can capture audio
-    if (!sf::SoundRecorder::isAvailable())
+    // Get the available capture devices
+    auto deviceHandles = audioContext->getAvailableCaptureDeviceHandles();
+
+    // Check if any device can capture audio
+    if (deviceHandles.empty())
     {
-        std::cout << "Sorry, audio capture is not supported by your system" << std::endl;
+        std::cerr << "Sorry, audio capture is not supported by your system" << std::endl;
         return EXIT_FAILURE;
     }
 
-    // List the available capture devices
-    auto devices = sf::SoundRecorder::getAvailableCaptureDeviceHandles();
+    // List the available capture device handles
+    std::cout << "Available capture devices:\n\n";
 
-    std::cout << "Available capture devices:\n" << std::endl;
+    for (std::size_t i = 0u; i < deviceHandles.size(); ++i)
+        std::cout << i << ": " << deviceHandles[i].getName() << '\n';
 
-    for (auto i = 0u; i < devices.size(); ++i)
-        std::cout << i << ": " << devices[i].getName() << '\n';
-
-    std::cout << std::endl;
-
-    std::size_t deviceIndex = 0;
+    std::cout << '\n';
 
     // Choose the capture device
-    if (devices.size() > 1)
+    std::size_t deviceIndex = 0;
+
+    if (deviceHandles.size() > 1)
     {
-        deviceIndex = devices.size();
-        std::cout << "Please choose the capture device to use [0-" << devices.size() - 1 << "]: ";
+        deviceIndex = deviceHandles.size();
+        std::cout << "Please choose the capture device to use [0-" << deviceHandles.size() - 1 << "]: ";
+
         do
         {
             std::cin >> deviceIndex;
             std::cin.ignore(10000, '\n');
-        } while (deviceIndex >= devices.size());
+        } while (deviceIndex >= deviceHandles.size());
     }
 
     // Choose the sample rate
@@ -74,17 +77,15 @@ int main()
     std::cout << "Press enter to start recording audio";
     std::cin.ignore(10000, '\n');
 
-    // Here we'll use an integrated custom recorder, which saves the captured data into a SoundBuffer
+    // Here we'll use an integrated custom recorder, which saves the captured data into a sound buffer
     sf::SoundBufferRecorder recorder;
 
-    if (!recorder.setCurrentDevice(devices[deviceIndex]))
-    {
-        std::cerr << "Failed to set the capture device" << std::endl;
-        return EXIT_FAILURE;
-    }
+    // Create the capture device
+    const sf::CaptureDeviceHandle chosenHandle = deviceHandles[deviceIndex];
+    sf::CaptureDevice             captureDevice(*audioContext, chosenHandle);
 
     // Audio capture is done in a separate thread, so we can block the main thread while it is capturing
-    if (!recorder.start(sampleRate))
+    if (!recorder.start(captureDevice, sampleRate))
     {
         std::cerr << "Failed to start recorder" << std::endl;
         return EXIT_FAILURE;
@@ -92,7 +93,9 @@ int main()
 
     std::cout << "Recording... press enter to stop";
     std::cin.ignore(10000, '\n');
-    recorder.stop();
+
+    if (!recorder.stop())
+        std::cerr << "Failed to stop sound buffer recorder" << std::endl;
 
     // Get the buffer containing the captured data
     const sf::SoundBuffer& buffer = recorder.getBuffer();
@@ -101,7 +104,7 @@ int main()
     std::cout << "Sound information:" << '\n'
               << " " << buffer.getDuration().asSeconds() << " seconds" << '\n'
               << " " << buffer.getSampleRate() << " samples / seconds" << '\n'
-              << " " << buffer.getChannelCount() << " channels" << std::endl;
+              << " " << buffer.getChannelCount() << " channels" << '\n';
 
     // Choose what to do with the recorded sound data
     char choice = 0;
@@ -142,7 +145,7 @@ int main()
     }
 
     // Finished!
-    std::cout << '\n' << "Done!" << std::endl;
+    std::cout << '\n' << "Done!\n";
 
     // Wait until the user presses 'enter' key
     std::cout << "Press enter to exit..." << std::endl;

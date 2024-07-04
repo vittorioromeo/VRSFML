@@ -2,6 +2,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/AudioContext.hpp>
+#include <SFML/Audio/AudioUtils.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
 #include <SFML/Audio/SoundStream.hpp>
 
@@ -180,13 +181,8 @@ private:
 /// a connected client
 ///
 ////////////////////////////////////////////////////////////
-void doServer(unsigned short port)
+void doServer(sf::PlaybackDevice& playbackDevice, unsigned short port)
 {
-    // TODO
-    auto audioContext        = sf::AudioContext::create().value();
-    auto defaultDeviceHandle = audioContext.getDefaultPlaybackDeviceHandle().value();
-    auto playbackDevice      = sf::PlaybackDevice(audioContext, defaultDeviceHandle);
-
     // Build an audio stream to play sound data as it is received through the network
     NetworkAudioStream audioStream;
     audioStream.start(playbackDevice, port);
