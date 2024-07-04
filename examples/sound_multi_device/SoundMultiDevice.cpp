@@ -53,7 +53,7 @@ int main()
     for (std::size_t i = 0u; i < playbackDevices.size(); ++i)
         sources[i % 4]->play(playbackDevices[i]);
 
-    // Keep program alive while sounds are playing
+    // Keep program alive while sounds are playing and display spinning icon
     const char  messageIcons[]{'-', '\\', '|', '/'};
     std::size_t messageIconIndex = 0u;
 
