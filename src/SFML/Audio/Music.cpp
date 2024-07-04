@@ -32,6 +32,7 @@
 #include <SFML/System/Time.hpp>
 
 #include <algorithm>
+#include <iostream>
 #include <mutex>
 #include <ostream>
 
@@ -62,6 +63,8 @@ struct Music::Impl
 ////////////////////////////////////////////////////////////
 Music::~Music()
 {
+    std::cout << "Music::~Music()\n";
+
     // We must stop before destroying the file
     if (m_impl != nullptr)
     {
@@ -95,6 +98,7 @@ std::optional<Music> Music::tryOpenFromInputSoundFile(std::optional<InputSoundFi
 ////////////////////////////////////////////////////////////
 std::optional<Music> Music::openFromFile(const std::filesystem::path& filename)
 {
+    std::cout << "Music::openFromFile(...)\n";
     return tryOpenFromInputSoundFile(InputSoundFile::openFromFile(filename), "file");
 }
 
@@ -250,6 +254,8 @@ std::optional<std::uint64_t> Music::onLoop()
 ////////////////////////////////////////////////////////////
 Music::Music(InputSoundFile&& file) : m_impl(std::make_unique<Impl>(std::move(file)))
 {
+    std::cout << "Music::Music(...)\n";
+
     // Initialize the stream
     SoundStream::initialize(m_impl->file.getChannelCount(), m_impl->file.getSampleRate(), m_impl->file.getChannelMap());
 }

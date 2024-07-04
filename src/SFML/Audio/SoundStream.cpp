@@ -39,6 +39,7 @@
 
 #include <cassert>
 #include <cstring>
+#include <iostream>
 
 
 namespace sf
@@ -51,6 +52,12 @@ struct SoundStream::Impl : priv::MiniaudioUtils::SoundBase
     {
         // Initialize sound structure and set default settings
         initialize();
+    }
+
+    ~Impl()
+    {
+
+        std::cout << "~SoundStream::Impl()\n";
     }
 
     void initialize()

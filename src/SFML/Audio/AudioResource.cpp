@@ -28,6 +28,7 @@
 #include <SFML/Audio/AudioDevice.hpp>
 #include <SFML/Audio/AudioResource.hpp>
 
+#include <iostream>
 #include <mutex>
 #include <optional>
 
@@ -40,6 +41,16 @@ struct DeviceState
     std::mutex                           mutex;
     std::optional<sf::priv::AudioDevice> device;
     unsigned int                         referenceCounter{};
+
+    DeviceState()
+    {
+        std::cout << "DeviceState::DeviceState()\n";
+    }
+
+    ~DeviceState()
+    {
+        std::cout << "DeviceState::~DeviceState()\n";
+    }
 };
 
 ////////////////////////////////////////////////////////////
@@ -59,6 +70,8 @@ AudioResource::AudioResource()
     auto& [mutex, device, referenceCounter] = getDeviceState();
     const std::lock_guard guard{mutex};
 
+    std::cout << "AudioResource::AudioResource() | rc = " << referenceCounter + 1 << "\n";
+
     if (referenceCounter++ == 0u)
         device.emplace();
 }
@@ -68,6 +81,8 @@ AudioResource::~AudioResource()
 {
     auto& [mutex, device, referenceCounter] = getDeviceState();
     const std::lock_guard guard{mutex};
+
+    std::cout << "~AudioResource() | rc = " << referenceCounter - 1 << "\n";
 
     if (--referenceCounter == 0u)
         device.reset();
