@@ -25,13 +25,18 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Audio/CaptureDevice.hpp>
 #include <SFML/Audio/SoundBuffer.hpp>
 #include <SFML/Audio/SoundBufferRecorder.hpp>
+#include <SFML/Audio/SoundRecorder.hpp>
 
 #include <SFML/System/Err.hpp>
 
 #include <optional>
 #include <vector>
+
+#include <cassert>
+#include <cstring>
 
 
 namespace sf
@@ -51,13 +56,13 @@ SoundBufferRecorder::SoundBufferRecorder() = default;
 ////////////////////////////////////////////////////////////
 SoundBufferRecorder::~SoundBufferRecorder()
 {
-    // Make sure to stop the recording thread
-    stop();
+    if (!stop())
+        priv::err() << "Failed to stop sound buffer recorder on destruction" << priv::errEndl;
 }
 
 
 ////////////////////////////////////////////////////////////
-bool SoundBufferRecorder::onStart()
+bool SoundBufferRecorder::onStart(CaptureDevice&)
 {
     m_impl->samples.clear();
     m_impl->buffer.reset();
@@ -69,27 +74,34 @@ bool SoundBufferRecorder::onStart()
 ////////////////////////////////////////////////////////////
 bool SoundBufferRecorder::onProcessSamples(const std::int16_t* samples, std::size_t sampleCount)
 {
-    for (const std::int16_t* p = samples; p != p + sampleCount; ++p)
-        m_impl->samples.push_back(*p);
+    const std::size_t oldSize = m_impl->samples.size();
+    m_impl->samples.resize(oldSize + sampleCount);
+
+    std::memcpy(m_impl->samples.data() + oldSize, samples, sampleCount * sizeof(std::int16_t));
 
     return true;
 }
 
 
 ////////////////////////////////////////////////////////////
-void SoundBufferRecorder::onStop()
+bool SoundBufferRecorder::onStop(CaptureDevice& captureDevice)
 {
     if (m_impl->samples.empty())
-        return;
+        return true;
 
     m_impl->buffer = sf::SoundBuffer::loadFromSamples(m_impl->samples.data(),
                                                       m_impl->samples.size(),
-                                                      getChannelCount(),
-                                                      getSampleRate(),
-                                                      getChannelMap());
+                                                      captureDevice.getChannelCount(),
+                                                      captureDevice.getSampleRate(),
+                                                      captureDevice.getChannelMap());
 
     if (!m_impl->buffer)
+    {
         priv::err() << "Failed to stop capturing audio data" << priv::errEndl;
+        return false;
+    }
+
+    return true;
 }
 
 

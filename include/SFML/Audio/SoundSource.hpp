@@ -591,7 +591,7 @@ public:
     /// \see pause, stop
     ///
     ////////////////////////////////////////////////////////////
-    virtual void play(sf::PlaybackDevice& playbackDevice) = 0;
+    virtual void play(PlaybackDevice& playbackDevice) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Pause the sound source

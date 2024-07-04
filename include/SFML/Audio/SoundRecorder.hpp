@@ -29,12 +29,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
-#include <SFML/Audio/PlaybackDeviceHandle.hpp>
 #include <SFML/Audio/SoundChannel.hpp>
-
-#include <SFML/System/UniquePtr.hpp>
-
-#include <vector>
 
 #include <cstddef>
 #include <cstdint>
@@ -42,6 +37,7 @@
 
 namespace sf
 {
+class CaptureDevice;
 class Time;
 
 ////////////////////////////////////////////////////////////
@@ -103,7 +99,7 @@ public:
     /// \see stop, getAvailableDevices
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool start(unsigned int sampleRate = 44100);
+    [[nodiscard]] bool start(CaptureDevice& captureDevice, unsigned int sampleRate = 44100);
 
     ////////////////////////////////////////////////////////////
     /// \brief Stop the capture
@@ -111,119 +107,8 @@ public:
     /// \see start
     ///
     ////////////////////////////////////////////////////////////
-    void stop();
+    [[nodiscard]] bool stop();
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the sample rate
-    ///
-    /// The sample rate defines the number of audio samples
-    /// captured per second. The higher, the better the quality
-    /// (for example, 44100 samples/sec is CD quality).
-    ///
-    /// \return Sample rate, in samples per second
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] unsigned int getSampleRate() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get all handles to available audio capture devices
-    ///
-    /// This function returns a vector of strings, containing
-    /// the names of all available audio capture devices.
-    ///
-    /// \return A vector containing the handles
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::vector<CaptureDeviceHandle> getAvailableCaptureDeviceHandles();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the handle of the default audio capture device
-    ///
-    /// This function returns the name of the default audio
-    /// capture device. If none is available, an empty string
-    /// is returned.
-    ///
-    /// \return The handle of the default audio capture device
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static CaptureDeviceHandle getDefaultCaptureDeviceHandle();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Set the audio capture device
-    ///
-    /// This function sets the audio capture device to the device
-    /// with the given \a handle. It can be called on the fly (i.e:
-    /// while recording). If you do so while recording and
-    /// opening the device fails, it stops the recording.
-    ///
-    /// \param handle The handle of the audio capture device
-    ///
-    /// \return True, if it was able to set the requested device
-    ///
-    /// \see getAvailableDevices, getDefaultDevice
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool setCurrentDevice(const CaptureDeviceHandle& handle);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the handle of the current audio capture device
-    ///
-    /// \return The handle of the current audio capture device
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] const CaptureDeviceHandle& getCurrentDevice() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Set the channel count of the audio capture device
-    ///
-    /// This method allows you to specify the number of channels
-    /// used for recording. Currently only 16-bit mono and
-    /// 16-bit stereo are supported.
-    ///
-    /// \param channelCount Number of channels. Currently only
-    ///                     mono (1) and stereo (2) are supported.
-    ///
-    /// \see getChannelCount
-    ///
-    ////////////////////////////////////////////////////////////
-    void setChannelCount(unsigned int channelCount);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the number of channels used by this recorder
-    ///
-    /// Currently only mono and stereo are supported, so the
-    /// value is either 1 (for mono) or 2 (for stereo).
-    ///
-    /// \return Number of channels
-    ///
-    /// \see setChannelCount
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] unsigned int getChannelCount() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the map of position in sample frame to sound channel
-    ///
-    /// This is used to map a sample in the sample stream to a
-    /// position during spatialisation.
-    ///
-    /// \return Map of position in sample frame to sound channel
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] const std::vector<SoundChannel>& getChannelMap() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Check if the system supports audio capture
-    ///
-    /// This function should always be called before using
-    /// the audio capture features. If it returns false, then
-    /// any attempt to use sf::SoundRecorder or one of its derived
-    /// classes will fail.
-    ///
-    /// \return True if audio capture is supported, false otherwise
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static bool isAvailable();
 
 protected:
     ////////////////////////////////////////////////////////////
@@ -232,7 +117,7 @@ protected:
     /// This constructor is only meant to be called by derived classes.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SoundRecorder();
+    [[nodiscard]] explicit SoundRecorder();
 
     ////////////////////////////////////////////////////////////
     /// \brief Start capturing audio data
@@ -245,7 +130,7 @@ protected:
     /// \return True to start the capture, or false to abort it
     ///
     ////////////////////////////////////////////////////////////
-    virtual bool onStart();
+    [[nodiscard]] virtual bool onStart(CaptureDevice& captureDevice);
 
     ////////////////////////////////////////////////////////////
     /// \brief Process a new chunk of recorded samples
@@ -272,14 +157,13 @@ protected:
     /// implementation does nothing.
     ///
     ////////////////////////////////////////////////////////////
-    virtual void onStop();
+    [[nodiscard]] virtual bool onStop(CaptureDevice& captureDevice);
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    struct Impl;
-    priv::UniquePtr<Impl> m_impl; //!< Implementation details
+    CaptureDevice* m_lastCaptureDevice{};
 };
 
 } // namespace sf

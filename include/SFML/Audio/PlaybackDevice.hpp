@@ -31,14 +31,10 @@
 
 #include <SFML/Audio/PlaybackDeviceHandle.hpp>
 
+#include <SFML/System/LifetimeDependant.hpp>
 #include <SFML/System/LifetimeDependee.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
-
-namespace sf::priv
-{
-class AudioDevice;
-} // namespace sf::priv
 
 namespace sf::priv::MiniaudioUtils
 {
@@ -99,8 +95,49 @@ public:
     [[nodiscard]] bool updateListener(const Listener& listener);
 
 private:
-    PlaybackDeviceHandle               m_deviceHandle;
-    priv::UniquePtr<priv::AudioDevice> m_audioDevice;
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    using ResourceEntryIndex = std::size_t;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    struct ResourceEntry
+    {
+        using InitFunc     = void (*)(void*);
+        using TransferFunc = void (*)(void*, PlaybackDevice&, ResourceEntryIndex);
+
+        void* resource{};
+
+        InitFunc deinitializeFunc{};
+        InitFunc reinitializeFunc{};
+
+        TransferFunc transferFunc{};
+    };
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] ResourceEntryIndex registerResource(void*                       resource,
+                                                      ResourceEntry::InitFunc     deinitializeFunc,
+                                                      ResourceEntry::InitFunc     reinitializeFunc,
+                                                      ResourceEntry::TransferFunc transferFunc);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    void unregisterResource(ResourceEntryIndex resourceEntryIndex);
+
+    [[nodiscard]] void* getMAEngine() const;
+
+
+    struct Impl;
+    priv::UniquePtr<Impl> m_impl;
 
     // TODO
     using SoundBase = priv::MiniaudioUtils::SoundBase;
@@ -110,12 +147,10 @@ private:
     friend SoundBase;
     friend SoundStream;
 
-    [[nodiscard]] priv::AudioDevice&       asAudioDevice() noexcept;
-    [[nodiscard]] const priv::AudioDevice& asAudioDevice() const noexcept;
-
     ////////////////////////////////////////////////////////////
     // Lifetime tracking
     ////////////////////////////////////////////////////////////
+    SFML_DEFINE_LIFETIME_DEPENDANT(AudioContext);
     SFML_DEFINE_LIFETIME_DEPENDEE(PlaybackDevice, SoundBase);
 };
 

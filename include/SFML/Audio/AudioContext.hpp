@@ -29,8 +29,10 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
+#include <SFML/Audio/CaptureDeviceHandle.hpp>
 #include <SFML/Audio/PlaybackDeviceHandle.hpp>
 
+#include <SFML/System/LifetimeDependee.hpp>
 #include <SFML/System/PassKey.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
@@ -41,13 +43,12 @@
 ////////////////////////////////////////////////////////////
 // Forward declarations
 ////////////////////////////////////////////////////////////
-
-struct ma_context;
-
-namespace sf::priv
+namespace sf
 {
-class AudioDevice;
-} // namespace sf::priv
+class PlaybackDevice;
+class CaptureDevice;
+class SoundRecorder;
+} // namespace sf
 
 
 namespace sf
@@ -60,7 +61,7 @@ class SFML_AUDIO_API [[nodiscard]] AudioContext
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief TODO
+    /// \brief Create a new audio context
     ///
     ////////////////////////////////////////////////////////////
     SFML_AUDIO_API static std::optional<AudioContext> create();
@@ -96,27 +97,10 @@ public:
     SFML_AUDIO_API AudioContext& operator=(AudioContext&& rhs) noexcept;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get a list of the names of all available audio playback devices
+    /// \brief Get a list of handles to all available audio playback devices
     ///
     /// This function returns a vector of strings containing
-    /// the names of all available audio playback devices.
-    ///
-    /// If the operating system reports multiple devices with
-    /// the same name, a number will be appended to the name
-    /// of all subsequent devices to distinguish them from each
-    /// other. This guarantees that every entry returned by this
-    /// function will represent a unique device.
-    ///
-    /// For example, if the operating system reports multiple
-    /// devices with the name "Sound Card", the entries returned
-    /// would be:
-    ///   - Sound Card
-    ///   - Sound Card 2
-    ///   - Sound Card 3
-    ///   - ...
-    ///
-    /// The default device, if one is marked as such, will be
-    /// placed at the beginning of the vector.
+    /// handles to all available audio playback devices.
     ///
     /// If no devices are available, this function will return
     /// an empty vector.
@@ -127,25 +111,60 @@ public:
     [[nodiscard]] SFML_AUDIO_API std::vector<PlaybackDeviceHandle> getAvailablePlaybackDeviceHandles();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the name of the default audio playback device
+    /// \brief Get a handle to the default audio playback device
     ///
-    /// This function returns the name of the default audio
-    /// playback device. If none is available, an empty string
-    /// is returned.
+    /// This function returns a handle to the default audio
+    /// playback device. If none is available, `std::nullopt` is
+    /// returned instead.
     ///
     /// \return The handle to the default audio playback device
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] SFML_AUDIO_API std::optional<PlaybackDeviceHandle> getDefaultPlaybackDeviceHandle();
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Get a list of handles to all available audio capture devices
+    ///
+    /// This function returns a vector of strings containing
+    /// handles to all available audio capture devices.
+    ///
+    /// If no devices are available, this function will return
+    /// an empty vector.
+    ///
+    /// \return A vector containing the device handles or an empty vector if no devices are available
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] SFML_AUDIO_API std::vector<CaptureDeviceHandle> getAvailableCaptureDeviceHandles();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get a handle to the default audio capture device
+    ///
+    /// This function returns a handle to the default audio
+    /// capture device. If none is available, `std::nullopt` is
+    /// returned instead.
+    ///
+    /// \return The handle to the default audio capture device
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] SFML_AUDIO_API std::optional<CaptureDeviceHandle> getDefaultCaptureDeviceHandle();
+
 private:
-    friend priv::AudioDevice;
+    friend PlaybackDevice;
+    friend CaptureDevice;
+    friend SoundRecorder;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_AUDIO_API ma_context& getMAContext() const;
+    [[nodiscard]] SFML_AUDIO_API void* getMAContext() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename THandle, typename F>
+    std::vector<THandle> getAvailableDeviceHandles(const char* type, F&& fMAContextGetDevices);
 
 public:
     ////////////////////////////////////////////////////////////
@@ -159,6 +178,12 @@ public:
 private:
     struct Impl;
     priv::UniquePtr<Impl> m_impl; // Needs address stability
+
+    ////////////////////////////////////////////////////////////
+    // Lifetime tracking
+    ////////////////////////////////////////////////////////////
+    SFML_DEFINE_LIFETIME_DEPENDEE(AudioContext, PlaybackDevice);
+    SFML_DEFINE_LIFETIME_DEPENDEE(AudioContext, CaptureDevice);
 };
 
 } // namespace sf

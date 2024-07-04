@@ -2,8 +2,8 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/AudioContext.hpp>
-#include <SFML/Audio/MusicSource.hpp>
-#include <SFML/Audio/MusicStream.hpp>
+#include <SFML/Audio/AudioUtils.hpp>
+#include <SFML/Audio/Music.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
 #include <SFML/Audio/PlaybackDeviceHandle.hpp>
 #include <SFML/Audio/Sound.hpp>
@@ -55,7 +55,7 @@ void playSound(sf::PlaybackDevice& playbackDevice)
 void playMusic(sf::PlaybackDevice& playbackDevice, const std::filesystem::path& filename)
 {
     // Load an ogg music file
-    auto music = sf::MusicSource::openFromFile("resources" / filename).value();
+    auto music = sf::Music::openFromFile("resources" / filename).value();
 
     // Display music information
     std::cout << filename << ":" << '\n'
@@ -63,20 +63,17 @@ void playMusic(sf::PlaybackDevice& playbackDevice, const std::filesystem::path& 
               << " " << music.getSampleRate() << " samples / sec" << '\n'
               << " " << music.getChannelCount() << " channels" << '\n';
 
-    // TODO
-    auto musicStream = music.createStream();
-
     // Play it
-    musicStream.play(playbackDevice);
+    music.play(playbackDevice);
 
     // Loop while the music is playing
-    while (musicStream.getStatus() == sf::MusicStream::Status::Playing)
+    while (music.getStatus() == sf::Music::Status::Playing)
     {
         // Leave some CPU time for other processes
         sf::sleep(sf::milliseconds(100));
 
         // Display the playing position
-        std::cout << "\rPlaying... " << musicStream.getPlayingOffset().asSeconds() << " sec        " << std::flush;
+        std::cout << "\rPlaying... " << music.getPlayingOffset().asSeconds() << " sec        " << std::flush;
     }
 
     std::cout << '\n' << std::endl;
@@ -91,10 +88,8 @@ void playMusic(sf::PlaybackDevice& playbackDevice, const std::filesystem::path& 
 ////////////////////////////////////////////////////////////
 int main()
 {
-    // TODO
-    auto audioContext        = sf::AudioContext::create().value();
-    auto defaultDeviceHandle = audioContext.getDefaultPlaybackDeviceHandle().value();
-    auto playbackDevice      = sf::PlaybackDevice(audioContext, defaultDeviceHandle);
+    // Create an audio context and get the default playback device
+    auto [audioContext, playbackDevice] = sf::AudioUtils::createContextAndDefaultPlaybackDevice().value();
 
     // Play a sound
     playSound(playbackDevice);

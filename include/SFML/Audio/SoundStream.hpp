@@ -94,7 +94,7 @@ public:
     /// \see pause, stop
     ///
     ////////////////////////////////////////////////////////////
-    void play(sf::PlaybackDevice& playbackDevice) override;
+    void play(PlaybackDevice& playbackDevice) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Pause the audio stream
@@ -263,6 +263,11 @@ protected:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] virtual std::optional<std::uint64_t> onLoop();
 
+    ////////////////////////////////////////////////////////////
+    // Member data
+    ////////////////////////////////////////////////////////////
+    PlaybackDevice* m_lastPlaybackDevice{nullptr}; //!< Last used playback device
+
 private:
     ////////////////////////////////////////////////////////////
     /// \brief Get the sound object
@@ -299,7 +304,7 @@ private:
 ///
 /// sf::SoundStream is a base class that doesn't care about the
 /// stream source, which is left to the derived class. SFML provides
-/// a built-in specialization for big files (see sf::MusicSource).
+/// a built-in specialization for big files (see sf::Music).
 /// No network stream source is provided, but you can write your own
 /// by combining this class with the network module.
 ///
@@ -358,6 +363,6 @@ private:
 /// stream.play();
 /// \endcode
 ///
-/// \see sf::MusicSource
+/// \see sf::Music
 ///
 ////////////////////////////////////////////////////////////

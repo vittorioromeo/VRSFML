@@ -11,6 +11,7 @@
 #include <SFML/Graphics/Texture.hpp>
 
 #include <SFML/Audio/AudioContext.hpp>
+#include <SFML/Audio/AudioUtils.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
 #include <SFML/Audio/Sound.hpp>
 #include <SFML/Audio/SoundBuffer.hpp>
@@ -68,10 +69,8 @@ int main()
                             sf::Style::Titlebar | sf::Style::Close);
     window.setVerticalSyncEnabled(true);
 
-    // TODO
-    auto audioContext        = sf::AudioContext::create().value();
-    auto defaultDeviceHandle = audioContext.getDefaultPlaybackDeviceHandle().value();
-    auto playbackDevice      = sf::PlaybackDevice(audioContext, defaultDeviceHandle);
+    // Create an audio context and get the default playback device
+    auto [audioContext, playbackDevice] = sf::AudioUtils::createContextAndDefaultPlaybackDevice().value();
 
     // Load the sounds used in the game
     const auto ballSoundBuffer = sf::SoundBuffer::loadFromFile(resourcesDir() / "ball.wav").value();

@@ -29,7 +29,7 @@
 ///     sf::Text text(font, "Hello SFML", 50);
 ///
 ///     // Load a music to play
-///     auto music = sf::MusicSource::openFromFile("nice_music.ogg").value();
+///     auto music = sf::Music::openFromFile("nice_music.ogg").value();
 ///
 ///     // Play the music
 ///     music.play();

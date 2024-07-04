@@ -145,7 +145,7 @@ public:
 /// const auto texture = sf::Texture::loadFromStream(stream).value();
 ///
 /// // musics...
-/// sf::MusicSource music;
+/// sf::Music music;
 /// ZipStream stream("resources.zip");
 ///
 /// if (!stream.open("musics/msc.ogg"))
