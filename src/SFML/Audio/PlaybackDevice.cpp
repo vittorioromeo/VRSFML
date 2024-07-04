@@ -37,7 +37,6 @@ namespace sf
 {
 ////////////////////////////////////////////////////////////
 PlaybackDevice::PlaybackDevice(AudioContext& audioContext, const PlaybackDeviceHandle& deviceHandle) :
-m_audioContext(&audioContext),
 m_deviceHandle(deviceHandle),
 m_audioDevice(priv::makeUnique<priv::AudioDevice>(*this, audioContext, deviceHandle))
 {

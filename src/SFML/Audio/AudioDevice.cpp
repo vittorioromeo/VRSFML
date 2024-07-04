@@ -46,103 +46,75 @@
 
 namespace sf::priv
 {
+namespace
+{
+////////////////////////////////////////////////////////////
+void maDeviceDataCallback(ma_device* device, void* output, const void*, ma_uint32 frameCount)
+{
+    ma_engine& maEngine = *static_cast<ma_engine*>(device->pUserData);
+
+    if (const ma_result result = ma_engine_read_pcm_frames(&maEngine, output, frameCount, nullptr); result != MA_SUCCESS)
+        err() << "Failed to read PCM frames from audio engine: " << ma_result_description(result) << errEndl;
+}
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] bool tryCreateMADevice(ma_device& maDevice, ma_context& maContext, ma_engine& maEngine, const ma_device_id& deviceId)
+{
+    ma_device_config maDeviceConfig   = ma_device_config_init(ma_device_type_playback);
+    maDeviceConfig.dataCallback       = &maDeviceDataCallback;
+    maDeviceConfig.pUserData          = &maEngine;
+    maDeviceConfig.playback.format    = ma_format_f32;
+    maDeviceConfig.playback.pDeviceID = &deviceId;
+
+    if (const ma_result result = ma_device_init(&maContext, &maDeviceConfig, &maDevice); result != MA_SUCCESS)
+    {
+        err() << "Failed to initialize the audio playback device: " << ma_result_description(result) << errEndl;
+        return false;
+    }
+
+    return true;
+}
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] bool tryCreateMAEngine(ma_engine& maEngine, ma_context& maContext, ma_device& maDevice)
+{
+    auto engineConfig          = ma_engine_config_init();
+    engineConfig.pContext      = &maContext;
+    engineConfig.pDevice       = &maDevice;
+    engineConfig.listenerCount = 1;
+
+    if (const ma_result result = ma_engine_init(&engineConfig, &maEngine); result != MA_SUCCESS)
+    {
+        err() << "Failed to initialize the audio engine: " << ma_result_description(result) << errEndl;
+        return false;
+    }
+
+    return true;
+}
+} // namespace
+
 ////////////////////////////////////////////////////////////
 class MiniaudioPerHWDevice
 {
 private:
-    std::optional<ma_device> m_maDevice; //!< miniaudio playback device (one per device)
-    std::optional<ma_engine> m_maEngine; //!< miniaudio engine (one per device, for effects/spatialisation)
-
-    static void maDeviceDataCallback(ma_device* device, void* output, const void*, ma_uint32 frameCount)
-    {
-        auto& impl = *static_cast<MiniaudioPerHWDevice*>(device->pUserData);
-
-        if (impl.m_maEngine.has_value())
-        {
-            if (const ma_result result = ma_engine_read_pcm_frames(&*impl.m_maEngine, output, frameCount, nullptr);
-                result != MA_SUCCESS)
-            {
-                err() << "Failed to read PCM frames from audio engine: " << ma_result_description(result) << errEndl;
-            }
-        }
-    }
-
-    [[nodiscard]] static std::optional<ma_device> tryCreateMADevice(ma_context&                       maContext,
-                                                                    MiniaudioPerHWDevice&             self,
-                                                                    const std::optional<ma_device_id> deviceId)
-    {
-        ma_device_config maDeviceConfig   = ma_device_config_init(ma_device_type_playback);
-        maDeviceConfig.dataCallback       = &maDeviceDataCallback;
-        maDeviceConfig.pUserData          = &self;
-        maDeviceConfig.playback.format    = ma_format_f32;
-        maDeviceConfig.playback.pDeviceID = deviceId ? &*deviceId : nullptr;
-
-        std::optional<ma_device> device; // Use a single local variable for NRVO
-        device.emplace();
-
-        if (const ma_result result = ma_device_init(&maContext, &maDeviceConfig, &*device); result != MA_SUCCESS)
-        {
-            // TODO:
-            // currentDeviceHandle = std::nullopt;
-
-            err() << "Failed to initialize the audio playback device: " << ma_result_description(result) << errEndl;
-
-            device.reset();
-            return device; // Empty optional
-        }
-
-        assert(device.has_value());
-        return device;
-    }
-
-    [[nodiscard]] static std::optional<ma_engine> tryCreateMAEngine(ma_context& maContext, ma_device& maDevice)
-    {
-        auto engineConfig          = ma_engine_config_init();
-        engineConfig.pContext      = &maContext;
-        engineConfig.pDevice       = &maDevice;
-        engineConfig.listenerCount = 1;
-
-        std::optional<ma_engine> engine; // Use a single local variable for NRVO
-        engine.emplace();
-
-        if (const ma_result result = ma_engine_init(&engineConfig, &*engine); result != MA_SUCCESS)
-        {
-            err() << "Failed to initialize the audio engine: " << ma_result_description(result) << errEndl;
-
-            engine.reset();
-            return engine; // Empty optional
-        }
-
-        assert(engine.has_value());
-        return engine;
-    }
+    ma_device m_maDevice; //!< miniaudio playback device (one per device)
+    ma_engine m_maEngine; //!< miniaudio engine (one per device, for effects/spatialisation)
 
 public:
-    explicit MiniaudioPerHWDevice(ma_context& maContext, const std::optional<ma_device_id> deviceId) :
-    m_maDevice(tryCreateMADevice(maContext, *this, deviceId)),
-    m_maEngine(tryCreateMAEngine(maContext, *m_maDevice))
-    {
-    }
-
     ~MiniaudioPerHWDevice()
     {
-        if (m_maEngine.has_value())
-            ma_engine_uninit(&*m_maEngine);
-
-        if (m_maDevice.has_value())
-            ma_device_uninit(&*m_maDevice);
+        ma_engine_uninit(&m_maEngine);
+        ma_device_uninit(&m_maDevice);
     }
 
     [[nodiscard]] ma_device& getMADevice()
     {
-        assert(m_maDevice.has_value());
-        return *m_maDevice;
+        return m_maDevice;
     }
 
     [[nodiscard]] ma_engine& getMAEngine()
     {
-        assert(m_maEngine.has_value());
-        return *m_maEngine;
+        return m_maEngine;
     }
 };
 
@@ -150,46 +122,56 @@ public:
 ////////////////////////////////////////////////////////////
 struct AudioDevice::Impl
 {
-    PlaybackDevice*                     playbackDevice;
-    AudioContext*                       audioContext;
-    std::optional<MiniaudioPerHWDevice> maPerHWDevice;
-
+    PlaybackDevice*                           playbackDevice; // !< TODO
+    ma_context&                               maContext;      // !< TODO
+    std::optional<PlaybackDeviceHandle>       deviceHandle;   // !< TODO
+    std::optional<MiniaudioPerHWDevice>       maPerHWDevice;
     std::vector<std::optional<ResourceEntry>> resources;      //!< Registered resources
     std::mutex                                resourcesMutex; //!< The mutex guarding the registered resources
 
-    std::optional<PlaybackDeviceHandle> deviceHandle; // !< TODO
 
-    explicit Impl(PlaybackDevice& thePlaybackDevice, AudioContext& theAudioContext, PlaybackDeviceHandle theDeviceHandle) :
+    explicit Impl(PlaybackDevice&      thePlaybackDevice,
+                  AudioContext&        theAudioContext,
+                  PlaybackDeviceHandle theDeviceHandle,
+                  const ma_device_id&  maDeviceId) :
     playbackDevice(&thePlaybackDevice),
-    audioContext(&theAudioContext),
+    maContext(theAudioContext.getMAContext()),
     deviceHandle(theDeviceHandle)
     {
+        maPerHWDevice.emplace();
+
+        if (!tryCreateMADevice(maPerHWDevice->getMADevice(), maContext, maPerHWDevice->getMAEngine(), maDeviceId))
+        {
+            err() << "Failed to initialize audio device " << errEndl;
+            maPerHWDevice.reset();
+            return;
+        }
+
+        if (!tryCreateMAEngine(maPerHWDevice->getMAEngine(), maContext, maPerHWDevice->getMADevice()))
+        {
+            err() << "Failed to initialize audio engine " << errEndl;
+            maPerHWDevice.reset();
+            return;
+        }
     }
 };
 
 
 ////////////////////////////////////////////////////////////
 AudioDevice::AudioDevice(PlaybackDevice& playbackDevice, AudioContext& audioContext, const PlaybackDeviceHandle& deviceHandle) :
-m_impl(playbackDevice, audioContext, deviceHandle)
+m_impl(playbackDevice,
+       audioContext,
+       deviceHandle,
+       [&]() -> ma_device_id
+       {
+           ma_device_info deviceInfo;
+           deviceHandle.copyMADeviceInfoInto(&deviceInfo);
+           return deviceInfo.id;
+       }())
 {
-    ma_device_info deviceInfo;
-    deviceHandle.copyMADeviceInfoInto(&deviceInfo);
-
     // Create the device and engine
-    m_impl->maPerHWDevice.emplace(m_impl->audioContext->getMAContext(), deviceInfo.id);
     if (!m_impl->maPerHWDevice.has_value())
-    {
         err() << "Failed to initialize audio device or engine" << errEndl;
-    }
-
-    // TODO
-    // Update properties from listener
-    /*
-    if (!updateFromListener(m_impl->maPerHWDevice->getMAEngine(), m_impl->listenerProperties))
-    {
-        err() << "Failed to update properties from listener" << errEndl;
-    }
-    */
 }
 
 
@@ -286,7 +268,6 @@ AudioDevice::ResourceEntryIndex AudioDevice::registerResource(
     ResourceEntry::InitFunc     reinitializeFunc,
     ResourceEntry::TransferFunc transferFunc)
 {
-    // There should always be an AudioDevice instance when registerResource is called
     const std::lock_guard lock(m_impl->resourcesMutex);
 
     auto& resources = m_impl->resources;
@@ -303,7 +284,6 @@ AudioDevice::ResourceEntryIndex AudioDevice::registerResource(
 ////////////////////////////////////////////////////////////
 void AudioDevice::unregisterResource(AudioDevice::ResourceEntryIndex resourceEntryIndex)
 {
-    // There should always be an AudioDevice instance when unregisterResource is called
     const std::lock_guard lock(m_impl->resourcesMutex);
 
     auto& resources = m_impl->resources;
