@@ -36,7 +36,6 @@
 #include <SFML/System/InPlacePImpl.hpp>
 #include <SFML/System/PassKey.hpp>
 
-
 #include <optional>
 #include <string_view>
 
@@ -86,6 +85,12 @@ public:
     ////////////////////////////////////////////////////////////
     // NOLINTNEXTLINE(readability-identifier-naming)
     static inline CurrentTextureType CurrentTexture;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    using UniformLocation = int;
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -316,13 +321,19 @@ public:
                                                               InputStream& fragmentShaderStream);
 
     ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] std::optional<UniformLocation> getUniformLocation(std::string_view uniformName);
+
+    ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p float uniform
     ///
     /// \param name Name of the uniform variable in GLSL
     /// \param x    Value of the float scalar
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(std::string_view name, float x);
+    void setUniform(UniformLocation location, float x);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p vec2 uniform
@@ -331,7 +342,7 @@ public:
     /// \param vector Value of the vec2 vector
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(std::string_view name, const Glsl::Vec2& vector);
+    void setUniform(UniformLocation location, const Glsl::Vec2& vector);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p vec3 uniform
@@ -340,7 +351,7 @@ public:
     /// \param vector Value of the vec3 vector
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(std::string_view name, const Glsl::Vec3& vector);
+    void setUniform(UniformLocation location, const Glsl::Vec3& vector);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p vec4 uniform
@@ -358,7 +369,7 @@ public:
     /// \param vector Value of the vec4 vector
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(std::string_view name, const Glsl::Vec4& vector);
+    void setUniform(UniformLocation location, const Glsl::Vec4& vector);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p int uniform
@@ -367,7 +378,7 @@ public:
     /// \param x    Value of the int scalar
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(std::string_view name, int x);
+    void setUniform(UniformLocation location, int x);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p ivec2 uniform
@@ -376,7 +387,7 @@ public:
     /// \param vector Value of the ivec2 vector
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(std::string_view name, const Glsl::Ivec2& vector);
+    void setUniform(UniformLocation location, const Glsl::Ivec2& vector);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p ivec3 uniform
@@ -385,7 +396,7 @@ public:
     /// \param vector Value of the ivec3 vector
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(std::string_view name, const Glsl::Ivec3& vector);
+    void setUniform(UniformLocation location, const Glsl::Ivec3& vector);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p ivec4 uniform
@@ -402,7 +413,7 @@ public:
     /// \param vector Value of the ivec4 vector
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(std::string_view name, const Glsl::Ivec4& vector);
+    void setUniform(UniformLocation location, const Glsl::Ivec4& vector);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p bool uniform
@@ -411,7 +422,7 @@ public:
     /// \param x    Value of the bool scalar
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(std::string_view name, bool x);
+    void setUniform(UniformLocation location, bool x);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p bvec2 uniform
@@ -420,7 +431,7 @@ public:
     /// \param vector Value of the bvec2 vector
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(std::string_view name, const Glsl::Bvec2& vector);
+    void setUniform(UniformLocation location, const Glsl::Bvec2& vector);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p bvec3 uniform
@@ -429,7 +440,7 @@ public:
     /// \param vector Value of the bvec3 vector
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(std::string_view name, const Glsl::Bvec3& vector);
+    void setUniform(UniformLocation location, const Glsl::Bvec3& vector);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p bvec4 uniform
@@ -438,7 +449,7 @@ public:
     /// \param vector Value of the bvec4 vector
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(std::string_view name, const Glsl::Bvec4& vector);
+    void setUniform(UniformLocation location, const Glsl::Bvec4& vector);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p mat3 matrix
@@ -447,7 +458,7 @@ public:
     /// \param matrix Value of the mat3 matrix
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(std::string_view name, const Glsl::Mat3& matrix);
+    void setUniform(UniformLocation location, const Glsl::Mat3& matrix);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p mat4 matrix
@@ -456,7 +467,7 @@ public:
     /// \param matrix Value of the mat4 matrix
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(std::string_view name, const Glsl::Mat4& matrix);
+    void setUniform(UniformLocation location, const Glsl::Mat4& matrix);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify a texture as \p sampler2D uniform
@@ -488,13 +499,13 @@ public:
     /// \param texture Texture to assign
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(std::string_view name, const Texture& texture);
+    [[nodiscard]] bool setUniform(UniformLocation location, const Texture& texture);
 
     ////////////////////////////////////////////////////////////
     /// \brief Disallow setting from a temporary texture
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(std::string_view name, const Texture&& texture) = delete;
+    void setUniform(UniformLocation location, const Texture&& texture) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify current texture as \p sampler2D uniform
@@ -517,7 +528,7 @@ public:
     /// \param name Name of the texture in the shader
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(std::string_view name, CurrentTextureType);
+    void setUniform(UniformLocation location, CurrentTextureType);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify values for \p float[] array uniform
@@ -527,7 +538,7 @@ public:
     /// \param length      Number of elements in the array
     ///
     ////////////////////////////////////////////////////////////
-    void setUniformArray(std::string_view name, const float* scalarArray, std::size_t length);
+    void setUniformArray(UniformLocation location, const float* scalarArray, std::size_t length);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify values for \p vec2[] array uniform
@@ -537,7 +548,7 @@ public:
     /// \param length      Number of elements in the array
     ///
     ////////////////////////////////////////////////////////////
-    void setUniformArray(std::string_view name, const Glsl::Vec2* vectorArray, std::size_t length);
+    void setUniformArray(UniformLocation location, const Glsl::Vec2* vectorArray, std::size_t length);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify values for \p vec3[] array uniform
@@ -547,7 +558,7 @@ public:
     /// \param length      Number of elements in the array
     ///
     ////////////////////////////////////////////////////////////
-    void setUniformArray(std::string_view name, const Glsl::Vec3* vectorArray, std::size_t length);
+    void setUniformArray(UniformLocation location, const Glsl::Vec3* vectorArray, std::size_t length);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify values for \p vec4[] array uniform
@@ -557,7 +568,7 @@ public:
     /// \param length      Number of elements in the array
     ///
     ////////////////////////////////////////////////////////////
-    void setUniformArray(std::string_view name, const Glsl::Vec4* vectorArray, std::size_t length);
+    void setUniformArray(UniformLocation location, const Glsl::Vec4* vectorArray, std::size_t length);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify values for \p mat3[] array uniform
@@ -567,7 +578,7 @@ public:
     /// \param length      Number of elements in the array
     ///
     ////////////////////////////////////////////////////////////
-    void setUniformArray(std::string_view name, const Glsl::Mat3* matrixArray, std::size_t length);
+    void setUniformArray(UniformLocation location, const Glsl::Mat3* matrixArray, std::size_t length);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify values for \p mat4[] array uniform
@@ -577,7 +588,7 @@ public:
     /// \param length      Number of elements in the array
     ///
     ////////////////////////////////////////////////////////////
-    void setUniformArray(std::string_view name, const Glsl::Mat4* matrixArray, std::size_t length);
+    void setUniformArray(UniformLocation location, const Glsl::Mat4* matrixArray, std::size_t length);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO Specify value for \p float uniform
@@ -586,7 +597,7 @@ public:
     /// \param x    Value of the float scalar
     ///
     ////////////////////////////////////////////////////////////
-    void setUniformUnsafe(std::string_view name, float x);
+    void setUniformUnsafe(UniformLocation location, float x);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO Specify value for \p vec2 uniform
@@ -595,7 +606,7 @@ public:
     /// \param vector Value of the vec2 vector
     ///
     ////////////////////////////////////////////////////////////
-    void setUniformUnsafe(std::string_view name, const Glsl::Vec2& vector);
+    void setUniformUnsafe(UniformLocation location, const Glsl::Vec2& vector);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO Specify value for \p vec3 uniform
@@ -604,7 +615,7 @@ public:
     /// \param vector Value of the vec3 vector
     ///
     ////////////////////////////////////////////////////////////
-    void setUniformUnsafe(std::string_view name, const Glsl::Vec3& vector);
+    void setUniformUnsafe(UniformLocation location, const Glsl::Vec3& vector);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO Specify value for \p vec4 uniform
@@ -622,7 +633,7 @@ public:
     /// \param vector Value of the vec4 vector
     ///
     ////////////////////////////////////////////////////////////
-    void setUniformUnsafe(std::string_view name, const Glsl::Vec4& vector);
+    void setUniformUnsafe(UniformLocation location, const Glsl::Vec4& vector);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO Specify value for \p int uniform
@@ -631,7 +642,7 @@ public:
     /// \param x    Value of the int scalar
     ///
     ////////////////////////////////////////////////////////////
-    void setUniformUnsafe(std::string_view name, int x);
+    void setUniformUnsafe(UniformLocation location, int x);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO Specify value for \p ivec2 uniform
@@ -640,7 +651,7 @@ public:
     /// \param vector Value of the ivec2 vector
     ///
     ////////////////////////////////////////////////////////////
-    void setUniformUnsafe(std::string_view name, const Glsl::Ivec2& vector);
+    void setUniformUnsafe(UniformLocation location, const Glsl::Ivec2& vector);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO Specify value for \p ivec3 uniform
@@ -649,7 +660,7 @@ public:
     /// \param vector Value of the ivec3 vector
     ///
     ////////////////////////////////////////////////////////////
-    void setUniformUnsafe(std::string_view name, const Glsl::Ivec3& vector);
+    void setUniformUnsafe(UniformLocation location, const Glsl::Ivec3& vector);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO Specify value for \p ivec4 uniform
@@ -666,7 +677,7 @@ public:
     /// \param vector Value of the ivec4 vector
     ///
     ////////////////////////////////////////////////////////////
-    void setUniformUnsafe(std::string_view name, const Glsl::Ivec4& vector);
+    void setUniformUnsafe(UniformLocation location, const Glsl::Ivec4& vector);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the underlying OpenGL handle of the shader.
@@ -777,16 +788,7 @@ private:
     /// \return Location ID of the uniform, or -1 if not found
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] int getUniformLocation(std::string_view name);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief RAII object to save and restore the program
-    ///        binding while uniforms are being set
-    ///
-    /// Implementation is private in the .cpp file.
-    ///
-    ////////////////////////////////////////////////////////////
-    struct [[nodiscard]] UniformBinder;
+    [[nodiscard]] int getUniformLocationImpl(std::string_view uniformName);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO RAII object to save and restore the program
@@ -795,7 +797,16 @@ private:
     /// Implementation is private in the .cpp file.
     ///
     ////////////////////////////////////////////////////////////
-    struct [[nodiscard]] UnsafeUniformBinder;
+    class [[nodiscard]] UnsafeUniformBinder;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief RAII object to save and restore the program
+    ///        binding while uniforms are being set
+    ///
+    /// Implementation is private in the .cpp file.
+    ///
+    ////////////////////////////////////////////////////////////
+    class [[nodiscard]] UniformBinder;
 
     ////////////////////////////////////////////////////////////
     // Member data

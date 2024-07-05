@@ -253,7 +253,10 @@ int main()
                         bufferUploadPending = false;
                     }
 
-                    terrainShader->setUniform("lightFactor", lightFactor);
+                    static const sf::Shader::UniformLocation
+                        ulLightFactor = terrainShader->getUniformLocation("lightFactor").value();
+
+                    terrainShader->setUniform(ulLightFactor, lightFactor);
                     window.draw(terrain, terrainStates);
                 }
             }

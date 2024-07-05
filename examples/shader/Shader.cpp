@@ -33,6 +33,7 @@
 #include <cstdint>
 #include <cstdlib>
 
+
 namespace
 {
 std::random_device rd;
@@ -59,14 +60,16 @@ class Pixelate : public Effect
 public:
     explicit Pixelate(sf::Texture&& texture, sf::Shader&& shader) :
     m_texture(std::move(texture)),
-    m_shader(std::move(shader))
+    m_shader(std::move(shader)),
+    m_ulTexture(m_shader.getUniformLocation("texture").value()),
+    m_ulPixelThreshold(m_shader.getUniformLocation("pixel_threshold").value())
     {
-        m_shader.setUniform("texture", sf::Shader::CurrentTexture);
+        m_shader.setUniform(m_ulTexture, sf::Shader::CurrentTexture);
     }
 
     void update(float /* time */, float x, float y) override
     {
-        m_shader.setUniform("pixel_threshold", (x + y) / 30);
+        m_shader.setUniform(m_ulPixelThreshold, (x + y) / 30);
     }
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
@@ -76,8 +79,10 @@ public:
     }
 
 private:
-    sf::Texture m_texture;
-    sf::Shader  m_shader;
+    sf::Texture                 m_texture;
+    sf::Shader                  m_shader;
+    sf::Shader::UniformLocation m_ulTexture;
+    sf::Shader::UniformLocation m_ulPixelThreshold;
 };
 
 
@@ -89,9 +94,9 @@ class WaveBlur : public Effect
 public:
     void update(float time, float x, float y) override
     {
-        m_shader.setUniform("wave_phase", time);
-        m_shader.setUniform("wave_amplitude", sf::Vector2f(x * 40, y * 40));
-        m_shader.setUniform("blur_radius", (x + y) * 0.008f);
+        m_shader.setUniform(m_ulWavePhase, time);
+        m_shader.setUniform(m_ulWaveAmplitude, sf::Vector2f(x * 40, y * 40));
+        m_shader.setUniform(m_ulBlurRadius, (x + y) * 0.008f);
     }
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
@@ -121,14 +126,20 @@ public:
            "Duis erat eros, porta in accumsan in, blandit quis sem.\n"
            "In hac habitasse platea dictumst. Etiam fringilla est id odio dapibus sit amet semper dui laoreet.\n",
            22),
-    m_shader(std::move(shader))
+    m_shader(std::move(shader)),
+    m_ulWavePhase(m_shader.getUniformLocation("wave_phase").value()),
+    m_ulWaveAmplitude(m_shader.getUniformLocation("wave_amplitude").value()),
+    m_ulBlurRadius(m_shader.getUniformLocation("blur_radius").value())
     {
         m_text.setPosition({30.f, 20.f});
     }
 
 private:
-    sf::Text   m_text;
-    sf::Shader m_shader;
+    sf::Text                    m_text;
+    sf::Shader                  m_shader;
+    sf::Shader::UniformLocation m_ulWavePhase;
+    sf::Shader::UniformLocation m_ulWaveAmplitude;
+    sf::Shader::UniformLocation m_ulBlurRadius;
 };
 
 
@@ -142,10 +153,10 @@ public:
     {
         const float radius = 200 + std::cos(time) * 150;
 
-        m_shader.setUniform("storm_position", sf::Vector2f(x * 800, y * 600));
-        m_shader.setUniform("storm_inner_radius", radius / 3);
-        m_shader.setUniform("storm_total_radius", radius);
-        m_shader.setUniform("blink_alpha", 0.5f + std::cos(time * 3) * 0.25f);
+        m_shader.setUniform(m_ulStormPosition, sf::Vector2f(x * 800, y * 600));
+        m_shader.setUniform(m_ulStormInnerRadius, radius / 3);
+        m_shader.setUniform(m_ulStormTotalRadius, radius);
+        m_shader.setUniform(m_ulBlinkAlpha, 0.5f + std::cos(time * 3) * 0.25f);
     }
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
@@ -154,7 +165,12 @@ public:
         target.draw(m_points, sf::PrimitiveType::Points, states);
     }
 
-    explicit StormBlink(sf::Shader&& shader) : m_shader(std::move(shader))
+    explicit StormBlink(sf::Shader&& shader) :
+    m_shader(std::move(shader)),
+    m_ulStormPosition(m_shader.getUniformLocation("storm_position").value()),
+    m_ulStormInnerRadius(m_shader.getUniformLocation("storm_inner_radius").value()),
+    m_ulStormTotalRadius(m_shader.getUniformLocation("storm_total_radius").value()),
+    m_ulBlinkAlpha(m_shader.getUniformLocation("blink_alpha").value())
     {
         std::uniform_real_distribution<float>        xDistribution(0, 800);
         std::uniform_real_distribution<float>        yDistribution(0, 600);
@@ -175,8 +191,12 @@ public:
     }
 
 private:
-    std::vector<sf::Vertex> m_points;
-    sf::Shader              m_shader;
+    std::vector<sf::Vertex>     m_points;
+    sf::Shader                  m_shader;
+    sf::Shader::UniformLocation m_ulStormPosition;
+    sf::Shader::UniformLocation m_ulStormInnerRadius;
+    sf::Shader::UniformLocation m_ulStormTotalRadius;
+    sf::Shader::UniformLocation m_ulBlinkAlpha;
 };
 
 
@@ -188,7 +208,7 @@ class Edge : public Effect
 public:
     void update(float time, float x, float y) override
     {
-        m_shader.setUniform("edge_threshold", 1 - (x + y) / 2);
+        m_shader.setUniform(m_ulEdgeThreshold, 1 - (x + y) / 2);
 
         // Render the updated scene to the off-screen surface
         m_surface.clear(sf::Color::White);
@@ -226,15 +246,17 @@ public:
     m_surface(std::move(surface)),
     m_backgroundTexture(std::move(backgroundTexture)),
     m_entityTexture(std::move(entityTexture)),
-    m_shader(std::move(shader))
+    m_shader(std::move(shader)),
+    m_ulEdgeThreshold(m_shader.getUniformLocation("edge_threshold").value())
     {
     }
 
 private:
-    sf::RenderTexture m_surface;
-    sf::Texture       m_backgroundTexture;
-    sf::Texture       m_entityTexture;
-    sf::Shader        m_shader;
+    sf::RenderTexture           m_surface;
+    sf::Texture                 m_backgroundTexture;
+    sf::Texture                 m_entityTexture;
+    sf::Shader                  m_shader;
+    sf::Shader::UniformLocation m_ulEdgeThreshold;
 };
 
 
@@ -259,7 +281,7 @@ public:
         const float size = 25 + std::abs(y) * 50;
 
         // Update the shader parameter
-        m_shader.setUniform("size", sf::Vector2f{size, size});
+        m_shader.setUniform(m_ulSize, sf::Vector2f{size, size});
     }
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
@@ -276,6 +298,7 @@ public:
     explicit Geometry(sf::Texture&& logoTexture, sf::Shader&& shader) :
     m_logoTexture(std::move(logoTexture)),
     m_shader(std::move(shader)),
+    m_ulSize(m_shader.getUniformLocation("size").value()),
     m_pointCloud(10000)
     {
         // Move the points in the point cloud to random positions
@@ -288,10 +311,11 @@ public:
     }
 
 private:
-    sf::Texture             m_logoTexture;
-    sf::Transform           m_transform;
-    sf::Shader              m_shader;
-    std::vector<sf::Vertex> m_pointCloud;
+    sf::Texture                 m_logoTexture;
+    sf::Transform               m_transform;
+    sf::Shader                  m_shader;
+    sf::Shader::UniformLocation m_ulSize;
+    std::vector<sf::Vertex>     m_pointCloud;
 };
 
 
@@ -357,7 +381,7 @@ std::optional<Edge> tryLoadEdge()
     if (!shader.has_value())
         return std::nullopt;
 
-    shader->setUniform("texture", sf::Shader::CurrentTexture);
+    shader->setUniform(shader->getUniformLocation("texture").value(), sf::Shader::CurrentTexture);
 
     return std::make_optional<Edge>(std::move(*surface),
                                     std::move(*backgroundTexture),
@@ -385,10 +409,10 @@ std::optional<Geometry> tryLoadGeometry()
     if (!shader.has_value())
         return std::nullopt;
 
-    shader->setUniform("texture", sf::Shader::CurrentTexture);
+    shader->setUniform(shader->getUniformLocation("texture").value(), sf::Shader::CurrentTexture);
 
     // Set the render resolution (used for proper scaling)
-    shader->setUniform("resolution", sf::Vector2f(800, 600));
+    shader->setUniform(shader->getUniformLocation("resolution").value(), sf::Vector2f(800, 600));
 
     return std::make_optional<Geometry>(std::move(*logoTexture), std::move(*shader));
 }
