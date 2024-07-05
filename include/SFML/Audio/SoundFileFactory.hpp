@@ -31,14 +31,13 @@
 
 #include <SFML/System/UniquePtr.hpp>
 
-#include <filesystem>
-
 #include <cstddef>
 
 
 namespace sf
 {
 class InputStream;
+class Path;
 class SoundFileReader;
 class SoundFileWriter;
 
@@ -109,7 +108,7 @@ public:
     /// \see createReaderFromMemory, createReaderFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static priv::UniquePtr<SoundFileReader> createReaderFromFilename(const std::filesystem::path& filename);
+    [[nodiscard]] static priv::UniquePtr<SoundFileReader> createReaderFromFilename(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Instantiate the right codec for the given file in memory
@@ -144,7 +143,7 @@ public:
     /// \return A new sound file writer that can write given file, or null if no writer can handle it
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static priv::UniquePtr<SoundFileWriter> createWriterFromFilename(const std::filesystem::path& filename);
+    [[nodiscard]] static priv::UniquePtr<SoundFileWriter> createWriterFromFilename(const Path& filename);
 
 private:
     ////////////////////////////////////////////////////////////
@@ -154,7 +153,7 @@ private:
     using CreateFnPtr = priv::UniquePtr<T> (*)();
 
     using ReaderCheckFnPtr = bool (*)(InputStream&);
-    using WriterCheckFnPtr = bool (*)(const std::filesystem::path&);
+    using WriterCheckFnPtr = bool (*)(const Path&);
 
     ////////////////////////////////////////////////////////////
     // Static member functions

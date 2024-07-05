@@ -26,8 +26,8 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Err.hpp>
+#include <SFML/System/Path.hpp>
 
-#include <filesystem>
 #include <iostream>
 #include <mutex>
 #include <ostream>
@@ -201,7 +201,7 @@ template ErrStream::Guard& ErrStream::Guard::operator<< <const char* const>(cons
 template ErrStream::Guard& ErrStream::Guard::operator<< <int>(const int&);
 template ErrStream::Guard& ErrStream::Guard::operator<< <long>(const long&);
 template ErrStream::Guard& ErrStream::Guard::operator<< <short*>(short* const&);
-template ErrStream::Guard& ErrStream::Guard::operator<< <std::filesystem::path>(const std::filesystem::path&);
+template ErrStream::Guard& ErrStream::Guard::operator<< <Path>(const Path&);
 template ErrStream::Guard& ErrStream::Guard::operator<< <std::string_view>(const std::string_view&);
 template ErrStream::Guard& ErrStream::Guard::operator<< <std::string>(const std::string&);
 template ErrStream::Guard& ErrStream::Guard::operator<< <unsigned int>(const unsigned int&);

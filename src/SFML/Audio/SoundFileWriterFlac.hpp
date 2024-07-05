@@ -31,10 +31,15 @@
 
 #include <SFML/System/InPlacePImpl.hpp>
 
-#include <filesystem>
 #include <vector>
 
 #include <cstdint>
+
+
+namespace sf
+{
+class Path;
+} // namespace sf
 
 
 namespace sf::priv
@@ -66,7 +71,7 @@ public:
     /// \return True if the file can be written by this writer
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static bool check(const std::filesystem::path& filename);
+    [[nodiscard]] static bool check(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a sound file for writing
@@ -79,7 +84,7 @@ public:
     /// \return True if the file was successfully opened
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool open(const std::filesystem::path&     filename,
+    [[nodiscard]] bool open(const Path&                      filename,
                             unsigned int                     sampleRate,
                             unsigned int                     channelCount,
                             const std::vector<SoundChannel>& channelMap) override;

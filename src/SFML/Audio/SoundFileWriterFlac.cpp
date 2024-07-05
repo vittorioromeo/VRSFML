@@ -29,11 +29,13 @@
 
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
+#include <SFML/System/Path.hpp>
 #include <SFML/System/PathUtils.hpp>
 #include <SFML/System/StringUtils.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
 #include <FLAC/stream_encoder.h>
+
 
 namespace sf::priv
 {
@@ -68,14 +70,14 @@ void SoundFileWriterFlac::Impl::FlacStreamEncoderDeleter::operator()(FLAC__Strea
 
 
 ////////////////////////////////////////////////////////////
-bool SoundFileWriterFlac::check(const std::filesystem::path& filename)
+bool SoundFileWriterFlac::check(const Path& filename)
 {
     return priv::toLower(filename.extension().string()) == ".flac";
 }
 
 
 ////////////////////////////////////////////////////////////
-bool SoundFileWriterFlac::open(const std::filesystem::path&     filename,
+bool SoundFileWriterFlac::open(const Path&                      filename,
                                unsigned int                     sampleRate,
                                unsigned int                     channelCount,
                                const std::vector<SoundChannel>& channelMap)

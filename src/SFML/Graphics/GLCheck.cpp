@@ -30,7 +30,7 @@
 
 #include <SFML/System/Err.hpp>
 
-#include <filesystem>
+#include <SFML/System/Path.hpp>
 #include <string_view>
 
 
@@ -101,7 +101,7 @@ void glCheckError(std::string_view file, unsigned int line, std::string_view exp
         }
 
         // Log the error
-        priv::err() << "An internal OpenGL call failed in " << std::filesystem::path{file}.filename() << "(" << line << ")."
+        priv::err() << "An internal OpenGL call failed in " << Path{file}.filename() << "(" << line << ")."
                     << "\nExpression:\n   " << expression << "\nError description:\n   " << error << "\n   "
                     << description << '\n'
                     << priv::errEndl;

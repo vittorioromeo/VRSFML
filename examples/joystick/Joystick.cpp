@@ -10,6 +10,8 @@
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/VideoMode.hpp>
 
+#include <SFML/System/Path.hpp>
+
 #include <algorithm>
 #include <array>
 #include <sstream>

@@ -54,7 +54,7 @@
 #include <array>
 #include <bitset>
 #include <fcntl.h>
-#include <filesystem>
+#include <SFML/System/Path.hpp>
 #include <libgen.h>
 #include <mutex>
 #include <string>
@@ -119,7 +119,7 @@ Bool checkEvent(::Display*, XEvent* event, XPointer userData)
 }
 
 // Find the name of the current executable
-std::filesystem::path findExecutableName()
+Path findExecutableName()
 {
     // We use /proc/self/cmdline to get the command line
     // the user used to invoke this instance of the application

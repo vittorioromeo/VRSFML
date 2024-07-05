@@ -47,6 +47,8 @@ set(SRC
     ${INCROOT}/InPlacePImpl.hpp
     ${SRCROOT}/StringUtils.hpp
     ${SRCROOT}/StringUtils.cpp
+    ${INCROOT}/Path.hpp
+    ${SRCROOT}/Path.cpp
     ${SRCROOT}/PathUtils.hpp
     ${SRCROOT}/PathUtils.cpp
     ${INCROOT}/AlgorithmUtils.hpp

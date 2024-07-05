@@ -35,7 +35,6 @@
 #include <SFML/System/LifetimeDependee.hpp>
 #include <SFML/System/PassKey.hpp>
 
-#include <filesystem>
 #include <optional>
 #include <vector>
 
@@ -47,6 +46,7 @@ namespace sf
 {
 class InputSoundFile;
 class InputStream;
+class Path;
 class Sound;
 class Time;
 
@@ -84,7 +84,7 @@ public:
     /// \see loadFromMemory, loadFromStream, loadFromSamples, saveToFile
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<SoundBuffer> loadFromFile(const std::filesystem::path& filename);
+    [[nodiscard]] static std::optional<SoundBuffer> loadFromFile(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the sound buffer from a file in memory
@@ -153,7 +153,7 @@ public:
     /// \see loadFromFile, loadFromMemory, loadFromSamples
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool saveToFile(const std::filesystem::path& filename) const;
+    [[nodiscard]] bool saveToFile(const Path& filename) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the array of audio samples stored in the buffer

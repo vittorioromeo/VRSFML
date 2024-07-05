@@ -29,13 +29,18 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Export.hpp>
 
-#include <filesystem>
 #include <string>
+
+
+namespace sf
+{
+class Path;
+} // namespace sf
 
 
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_SYSTEM_API std::string formatDebugPathInfo(const std::filesystem::path& path);
+[[nodiscard]] SFML_SYSTEM_API std::string formatDebugPathInfo(const Path& path);
 
 } // namespace sf::priv

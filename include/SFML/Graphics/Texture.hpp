@@ -38,7 +38,6 @@
 #include <SFML/System/PassKey.hpp>
 #include <SFML/System/Vector2.hpp>
 
-#include <filesystem>
 #include <optional>
 
 #include <cstddef>
@@ -49,6 +48,7 @@ namespace sf
 {
 class InputStream;
 class Window;
+class Path;
 class Image;
 class Sprite;
 class Shape;
@@ -128,9 +128,7 @@ public:
     /// \see loadFromMemory, loadFromStream, loadFromImage
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Texture> loadFromFile(const std::filesystem::path& filename,
-                                                             bool                         sRgb = false,
-                                                             const IntRect&               area = {});
+    [[nodiscard]] static std::optional<Texture> loadFromFile(const Path& filename, bool sRgb = false, const IntRect& area = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the texture from a file in memory

@@ -35,6 +35,7 @@
 #include <SFML/System/InputStream.hpp>
 #include <SFML/System/Macros.hpp>
 #include <SFML/System/MemoryInputStream.hpp>
+#include <SFML/System/Path.hpp>
 #include <SFML/System/PathUtils.hpp>
 #include <SFML/System/Time.hpp>
 
@@ -77,7 +78,7 @@ void InputSoundFile::StreamDeleter::operator()(InputStream* ptr) const
 
 
 ////////////////////////////////////////////////////////////
-std::optional<InputSoundFile> InputSoundFile::openFromFile(const std::filesystem::path& filename)
+std::optional<InputSoundFile> InputSoundFile::openFromFile(const Path& filename)
 {
     // Find a suitable reader for the file type
     auto reader = SoundFileFactory::createReaderFromFilename(filename);

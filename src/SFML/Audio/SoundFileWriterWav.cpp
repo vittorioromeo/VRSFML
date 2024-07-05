@@ -29,6 +29,7 @@
 
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
+#include <SFML/System/Path.hpp>
 #include <SFML/System/PathUtils.hpp>
 #include <SFML/System/StringUtils.hpp>
 
@@ -81,7 +82,7 @@ struct SoundFileWriterWav::Impl
 
 
 ////////////////////////////////////////////////////////////
-bool SoundFileWriterWav::check(const std::filesystem::path& filename)
+bool SoundFileWriterWav::check(const Path& filename)
 {
     return priv::toLower(filename.extension().string()) == ".wav";
 }
@@ -99,7 +100,7 @@ SoundFileWriterWav::~SoundFileWriterWav()
 
 
 ////////////////////////////////////////////////////////////
-bool SoundFileWriterWav::open(const std::filesystem::path&     filename,
+bool SoundFileWriterWav::open(const Path&                      filename,
                               unsigned int                     sampleRate,
                               unsigned int                     channelCount,
                               const std::vector<SoundChannel>& channelMap)

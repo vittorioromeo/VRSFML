@@ -13,7 +13,7 @@
 #include <StringifyOptionalUtil.hpp>
 #include <SystemUtil.hpp>
 
-#include <filesystem>
+#include <SFML/System/Path.hpp>
 #include <optional>
 #include <type_traits>
 
@@ -46,12 +46,12 @@ struct NoopSoundFileReader : sf::SoundFileReader
 
 struct NoopSoundFileWriter : sf::SoundFileWriter
 {
-    static bool check(const std::filesystem::path&)
+    static bool check(const sf::Path&)
     {
         return false;
     }
 
-    bool open(const std::filesystem::path&, unsigned int, unsigned int, const std::vector<sf::SoundChannel>&) override
+    bool open(const sf::Path&, unsigned int, unsigned int, const std::vector<sf::SoundChannel>&) override
     {
         return false;
     }

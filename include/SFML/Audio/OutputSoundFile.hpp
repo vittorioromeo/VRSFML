@@ -34,7 +34,6 @@
 #include <SFML/System/PassKey.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
-#include <filesystem>
 #include <optional>
 #include <vector>
 
@@ -43,6 +42,7 @@
 
 namespace sf
 {
+class Path;
 class SoundFileWriter;
 
 ////////////////////////////////////////////////////////////
@@ -84,7 +84,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static std::optional<OutputSoundFile> openFromFile(
-        const std::filesystem::path&     filename,
+        const Path&                      filename,
         unsigned int                     sampleRate,
         unsigned int                     channelCount,
         const std::vector<SoundChannel>& channelMap);

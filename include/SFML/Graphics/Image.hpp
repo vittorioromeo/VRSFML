@@ -35,7 +35,6 @@
 #include <SFML/System/PassKey.hpp>
 #include <SFML/System/Vector2.hpp>
 
-#include <filesystem>
 #include <optional>
 #include <string_view>
 #include <vector>
@@ -47,6 +46,7 @@
 namespace sf
 {
 class InputStream;
+class Path;
 
 ////////////////////////////////////////////////////////////
 /// \brief Class for loading, manipulating and saving images
@@ -93,7 +93,7 @@ public:
     /// \see loadFromMemory, loadFromStream, saveToFile
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Image> loadFromFile(const std::filesystem::path& filename);
+    [[nodiscard]] static std::optional<Image> loadFromFile(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the image from a file in memory
@@ -145,7 +145,7 @@ public:
     /// \see create, loadFromFile, loadFromMemory
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool saveToFile(const std::filesystem::path& filename) const;
+    [[nodiscard]] bool saveToFile(const Path& filename) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Save the image to a buffer in memory

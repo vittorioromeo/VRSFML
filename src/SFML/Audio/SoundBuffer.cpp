@@ -32,6 +32,7 @@
 
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Macros.hpp>
+#include <SFML/System/Path.hpp>
 #include <SFML/System/Time.hpp>
 
 #include <optional>
@@ -91,7 +92,7 @@ SoundBuffer::~SoundBuffer()
 
 
 ////////////////////////////////////////////////////////////
-std::optional<SoundBuffer> SoundBuffer::loadFromFile(const std::filesystem::path& filename)
+std::optional<SoundBuffer> SoundBuffer::loadFromFile(const Path& filename)
 {
     if (auto file = InputSoundFile::openFromFile(filename))
         return initialize(*file);
@@ -167,7 +168,7 @@ std::optional<SoundBuffer> SoundBuffer::loadFromSamples(
 
 
 ////////////////////////////////////////////////////////////
-bool SoundBuffer::saveToFile(const std::filesystem::path& filename) const
+bool SoundBuffer::saveToFile(const Path& filename) const
 {
     // Create the sound file in write mode
     if (auto file = OutputSoundFile::openFromFile(filename, getSampleRate(), getChannelCount(), getChannelMap()))

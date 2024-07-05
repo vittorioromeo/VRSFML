@@ -35,8 +35,6 @@
 #include <SFML/System/PassKey.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
-#include <filesystem>
-
 #include <cstdio>
 
 #ifdef SFML_SYSTEM_ANDROID
@@ -49,6 +47,8 @@ class SFML_SYSTEM_API ResourceStream;
 
 namespace sf
 {
+class Path;
+
 ////////////////////////////////////////////////////////////
 /// \brief Implementation of input stream based on a file
 ///
@@ -94,7 +94,7 @@ public:
     /// \return File input stream on success, `std::nullopt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<FileInputStream> open(const std::filesystem::path& filename);
+    [[nodiscard]] static std::optional<FileInputStream> open(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Read data from the stream

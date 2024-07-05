@@ -29,6 +29,7 @@
 
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
+#include <SFML/System/Path.hpp>
 #include <SFML/System/PathUtils.hpp>
 #include <SFML/System/StringUtils.hpp>
 
@@ -55,7 +56,7 @@ struct SoundFileWriterOgg::Impl
 
 
 ////////////////////////////////////////////////////////////
-bool SoundFileWriterOgg::check(const std::filesystem::path& filename)
+bool SoundFileWriterOgg::check(const Path& filename)
 {
     return priv::toLower(filename.extension().string()) == ".ogg";
 }
@@ -73,7 +74,7 @@ SoundFileWriterOgg::~SoundFileWriterOgg()
 
 
 ////////////////////////////////////////////////////////////
-bool SoundFileWriterOgg::open(const std::filesystem::path&     filename,
+bool SoundFileWriterOgg::open(const Path&                      filename,
                               unsigned int                     sampleRate,
                               unsigned int                     channelCount,
                               const std::vector<SoundChannel>& channelMap)

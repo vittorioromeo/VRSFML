@@ -25,7 +25,7 @@
 #include <SFML/System/Time.hpp>
 #include <SFML/System/Vector2.hpp>
 
-#include <filesystem>
+#include <SFML/System/Path.hpp>
 #include <random>
 #include <string>
 
@@ -36,7 +36,7 @@
 #include <SFML/Main.hpp>
 #endif
 
-std::filesystem::path resourcesDir()
+sf::Path resourcesDir()
 {
 #ifdef SFML_SYSTEM_IOS
     return "";

@@ -24,14 +24,15 @@
 #include <SFML/Window/Keyboard.hpp>
 
 #include <SFML/System/Clock.hpp>
+#include <SFML/System/Path.hpp>
 #include <SFML/System/Time.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #include <algorithm>
 #include <array>
-#include <filesystem>
 #include <iostream>
 #include <limits>
+#include <memory>
 #include <vector>
 
 #include <cmath>
@@ -45,7 +46,7 @@ constexpr auto windowHeight = 600u;
 constexpr auto pi           = 3.14159265359f;
 constexpr auto sqrt2        = 2.0f * 0.707106781186547524401f;
 
-std::filesystem::path resourcesDir()
+sf::Path resourcesDir()
 {
 #ifdef SFML_SYSTEM_IOS
     return "";
@@ -1067,7 +1068,7 @@ int main()
 
     // Exit early if music file not found
     const auto musicPath = resourcesDir() / "doodle_pop.ogg";
-    if (!std::filesystem::exists(musicPath))
+    if (!musicPath.exists())
     {
         std::cerr << "Music file '" << musicPath << "' not found, aborting" << std::endl;
         return EXIT_FAILURE;

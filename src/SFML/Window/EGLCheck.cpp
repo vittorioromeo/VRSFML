@@ -32,7 +32,7 @@
 
 #include <glad/egl.h>
 
-#include <filesystem>
+#include <SFML/System/Path.hpp>
 #include <string_view>
 
 
@@ -163,7 +163,7 @@ void eglCheckError(std::string_view file, unsigned int line, std::string_view ex
         }
 
         // Log the error
-        priv::err() << "An internal EGL call failed in " << std::filesystem::path{file}.filename() << " (" << line << ") : "
+        priv::err() << "An internal EGL call failed in " << Path{file}.filename() << " (" << line << ") : "
                     << "\nExpression:\n   " << expression << "\nError description:\n   " << error << "\n   "
                     << description << '\n'
                     << priv::errEndl;
