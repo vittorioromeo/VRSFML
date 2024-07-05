@@ -227,7 +227,7 @@ struct Shader::Impl
     }
 
     Impl(Impl&& rhs) noexcept :
-    shaderProgram(priv::exchange(rhs.shaderProgram, 0U)),
+    shaderProgram(priv::exchange(rhs.shaderProgram, 0u)),
     currentTexture(priv::exchange(rhs.currentTexture, -1)),
     textures(SFML_MOVE(rhs.textures)),
     uniforms(SFML_MOVE(rhs.uniforms))
@@ -374,7 +374,7 @@ Shader& Shader::operator=(Shader&& right) noexcept
     }
 
     // Move the contents of right.
-    m_impl->shaderProgram  = priv::exchange(right.m_impl->shaderProgram, 0U);
+    m_impl->shaderProgram  = priv::exchange(right.m_impl->shaderProgram, 0u);
     m_impl->currentTexture = priv::exchange(right.m_impl->currentTexture, -1);
     m_impl->textures       = SFML_MOVE(right.m_impl->textures);
     m_impl->uniforms       = SFML_MOVE(right.m_impl->uniforms);
