@@ -648,6 +648,7 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] virtual void* getSound() const = 0;
 
+    // TODO: pretty much the same as SavedSettings -- is this necessary at all?
     float           m_pitch{1.f};
     float           m_pan{0.f};
     float           m_volume{100.f};

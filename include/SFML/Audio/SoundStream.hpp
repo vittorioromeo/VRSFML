@@ -43,8 +43,8 @@
 
 namespace sf
 {
+class EffectProcessor;
 class PlaybackDevice;
-struct EffectProcessor;
 class Time;
 
 ////////////////////////////////////////////////////////////
@@ -266,6 +266,7 @@ protected:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
+    // TODO: probably needs to go in SoundBase to support transferring
     PlaybackDevice* m_lastPlaybackDevice{nullptr}; //!< Last used playback device
 
 private:

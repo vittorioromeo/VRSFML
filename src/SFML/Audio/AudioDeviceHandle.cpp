@@ -63,13 +63,6 @@ AudioDeviceHandle{maDeviceInfo}
 
 
 ////////////////////////////////////////////////////////////
-AudioDeviceHandle::AudioDeviceHandle(priv::PassKey<SoundRecorder>&&, const void* maDeviceInfo) :
-AudioDeviceHandle{maDeviceInfo}
-{
-}
-
-
-////////////////////////////////////////////////////////////
 AudioDeviceHandle::AudioDeviceHandle(priv::PassKey<PlaybackDevice>&&, const void* maDeviceInfo) :
 AudioDeviceHandle{maDeviceInfo}
 {
@@ -120,7 +113,9 @@ AudioDeviceHandle& AudioDeviceHandle::operator=(AudioDeviceHandle&& rhs) noexcep
 ////////////////////////////////////////////////////////////
 bool operator==(const AudioDeviceHandle& lhs, const AudioDeviceHandle& rhs)
 {
-    // TODO:
+    // The approach below seems fine:
+    // https://github.com/mackron/miniaudio/issues/866
+
     // NOLINTNEXTLINE(bugprone-suspicious-memory-comparison)
     return std::memcmp(&lhs.m_impl->maDeviceInfo.id, &rhs.m_impl->maDeviceInfo.id, sizeof(ma_device_id)) == 0;
 }

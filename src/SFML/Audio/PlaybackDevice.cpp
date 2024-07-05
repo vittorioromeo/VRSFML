@@ -112,14 +112,14 @@ struct PlaybackDevice::Impl
         return true;
     }
 
-    AudioContext*        audioContext;         //!< TODO
-    PlaybackDeviceHandle playbackDeviceHandle; //!< TODO
+    AudioContext*        audioContext; //!< The audio context (used to get the MA context and for lifetime tracking)
+    PlaybackDeviceHandle playbackDeviceHandle; //!< Playback device handle, can be retieved from the playback device
 
     std::vector<ResourceEntry> resources;      //!< Registered resources
     std::mutex                 resourcesMutex; //!< The mutex guarding the registered resources
 
     ma_device maDevice; //!< miniaudio playback device (one per hardware device)
-    ma_engine maEngine; //!< miniaudio engine          (one per hardware device, for effects/spatialisation)
+    ma_engine maEngine; //!< miniaudio engine (one per hardware device, for effects/spatialisation)
 };
 
 

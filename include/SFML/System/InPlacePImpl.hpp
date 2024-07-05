@@ -18,7 +18,7 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-struct MaxAlignT
+struct MaxAlignTInPlacePImpl
 {
     alignas(alignof(long long)) long long a;
     alignas(alignof(long double)) long double b;
@@ -30,7 +30,7 @@ template <typename T, decltype(sizeof(int)) BufferSize>
 class InPlacePImpl
 {
 private:
-    alignas(MaxAlignT) char m_buffer[BufferSize];
+    alignas(MaxAlignTInPlacePImpl) char m_buffer[BufferSize];
 
 public:
     [[nodiscard, gnu::always_inline]] T* operator->() noexcept

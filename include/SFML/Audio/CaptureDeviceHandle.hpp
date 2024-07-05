@@ -35,9 +35,12 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-class CaptureDeviceHandle : public priv::AudioDeviceHandle
+class CaptureDevice;
+
+////////////////////////////////////////////////////////////
+class CaptureDeviceHandle : public priv::StronglyTypedDeviceHandle<CaptureDevice>
 {
-    using priv::AudioDeviceHandle::AudioDeviceHandle;
+    using priv::StronglyTypedDeviceHandle<CaptureDevice>::StronglyTypedDeviceHandle;
 };
 
 } // namespace sf

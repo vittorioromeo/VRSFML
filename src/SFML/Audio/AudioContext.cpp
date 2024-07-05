@@ -152,7 +152,6 @@ template <typename F>
     return true;
 }
 
-
 } // namespace
 
 
