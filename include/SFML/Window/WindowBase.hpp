@@ -92,6 +92,8 @@ public:
                              std::uint32_t style = Style::Default,
                              State         state = State::Windowed);
 
+    [[nodiscard]] WindowBase(VideoMode mode, const char* title, std::uint32_t style = Style::Default, State state = State::Windowed);
+
     ////////////////////////////////////////////////////////////
     /// \brief Construct a new window
     ///
@@ -104,6 +106,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] WindowBase(VideoMode mode, const String& title, State state);
+    [[nodiscard]] WindowBase(VideoMode mode, const char* title, State state);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control
@@ -316,6 +319,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void setTitle(const String& title);
+    void setTitle(const char* title);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the window's icon

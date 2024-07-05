@@ -10,6 +10,7 @@
 #include <SFML/Window/VideoMode.hpp>
 
 #include <SFML/System/Path.hpp>
+#include <SFML/System/String.hpp>
 
 #include <string>
 #include <vector>

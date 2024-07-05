@@ -38,12 +38,15 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Sleep.hpp>
 #include <SFML/System/String.hpp>
+#include <SFML/System/StringUtfUtils.hpp>
 #include <SFML/System/Time.hpp>
 #include <SFML/System/Utf.hpp>
 
 #include <X11/Xlibint.h>
 #undef min // Defined by `Xlibint.h`, conflicts with standard headers
 #undef max // Defined by `Xlibint.h`, conflicts with standard headers
+
+#include <SFML/System/Path.hpp>
 
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
@@ -54,7 +57,6 @@
 #include <array>
 #include <bitset>
 #include <fcntl.h>
-#include <SFML/System/Path.hpp>
 #include <libgen.h>
 #include <mutex>
 #include <string>
@@ -279,7 +281,7 @@ bool ewmhSupported()
         // length to build a proper string
         const char* begin = reinterpret_cast<const char*>(data);
         const char* end   = begin + numItems;
-        windowManagerName = sf::String::fromUtf8(begin, end);
+        windowManagerName = sf::StringUtfUtils::fromUtf8(begin, end);
     }
 
     if (result == Success)

@@ -39,7 +39,7 @@ namespace sf
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-class Rect
+class [[nodiscard]] Rect
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -49,7 +49,7 @@ public:
     /// Rect({0, 0}, {0, 0})).
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_GRAPHICS_API constexpr Rect();
+    [[nodiscard, gnu::always_inline]] SFML_GRAPHICS_API constexpr Rect();
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the rectangle from position and size
@@ -61,7 +61,7 @@ public:
     /// \param size     Size of the rectangle
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_GRAPHICS_API constexpr Rect(const Vector2<T>& position, const Vector2<T>& size);
+    [[nodiscard, gnu::always_inline]] SFML_GRAPHICS_API constexpr Rect(const Vector2<T>& position, const Vector2<T>& size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the rectangle from another type of rectangle
@@ -75,7 +75,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename U>
-    [[nodiscard]] SFML_GRAPHICS_API constexpr explicit Rect(const Rect<U>& rectangle);
+    [[nodiscard, gnu::always_inline]] SFML_GRAPHICS_API constexpr explicit Rect(const Rect<U>& rectangle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Check if a point is inside the rectangle's area
@@ -98,7 +98,7 @@ public:
     /// \return Center of rectangle
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr Vector2<T> getCenter() const;
+    [[nodiscard, gnu::always_inline]] constexpr Vector2<T> getCenter() const;
 
     ////////////////////////////////////////////////////////////
     // Member data
@@ -120,7 +120,7 @@ public:
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard]] constexpr bool operator==(const Rect<T>& lhs, const Rect<T>& rhs);
+[[nodiscard, gnu::always_inline]] constexpr bool operator==(const Rect<T>& lhs, const Rect<T>& rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Rect
@@ -135,11 +135,18 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard]] constexpr bool operator!=(const Rect<T>& lhs, const Rect<T>& rhs);
+[[nodiscard, gnu::always_inline]] constexpr bool operator!=(const Rect<T>& lhs, const Rect<T>& rhs);
 
 // Create type aliases for the most common types
-using IntRect   = Rect<int>;
-using FloatRect = Rect<float>;
+struct IntRect : Rect<int>
+{
+    using Rect<int>::Rect;
+};
+
+struct FloatRect : Rect<float>
+{
+    using Rect<float>::Rect;
+};
 
 } // namespace sf
 

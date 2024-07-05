@@ -31,6 +31,7 @@
 
 #include <SFML/System/Vector3.hpp>
 
+
 ////////////////////////////////////////////////////////////
 /// \brief Give access to the real-time state of the sensors
 ///

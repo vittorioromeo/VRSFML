@@ -30,6 +30,7 @@
 
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Err.hpp>
+#include <SFML/System/StringUtfUtils.hpp>
 #include <SFML/System/Time.hpp>
 
 #include <X11/Xatom.h>
@@ -245,7 +246,7 @@ void ClipboardImpl::processEvent(XEvent& windowEvent)
                     // Only copy the data if the format is what we expect
                     if ((type == m_utf8String) && (format == 8))
                     {
-                        m_clipboardContents = String::fromUtf8(data, data + items);
+                        m_clipboardContents = StringUtfUtils::fromUtf8(data, data + items);
                     }
                     else if ((type == XA_STRING) && (format == 8))
                     {

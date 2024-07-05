@@ -22,13 +22,44 @@
 //
 ////////////////////////////////////////////////////////////
 
-#pragma once
-
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/RemoveRef.hpp>
+#include <SFML/System/AlgorithmUtils.hpp>
+#include <SFML/System/String.hpp>
+#include <SFML/System/StringUtfUtils.hpp> // NOLINT(misc-header-include-cycle)
+#include <SFML/System/Utf.hpp>
 
 
-#define SFML_MOVE(...)    static_cast<typename ::sf::priv::RemoveRef<decltype(__VA_ARGS__)>::type&&>(__VA_ARGS__)
-#define SFML_FORWARD(...) static_cast<decltype(__VA_ARGS__)&&>(__VA_ARGS__)
+namespace sf
+{
+////////////////////////////////////////////////////////////
+template <typename T>
+String StringUtfUtils::fromUtf8(T begin, T end)
+{
+    String string;
+    Utf8::toUtf32(begin, end, priv::BackInserter(string.m_string));
+    return string;
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+String StringUtfUtils::fromUtf16(T begin, T end)
+{
+    String string;
+    Utf16::toUtf32(begin, end, priv::BackInserter(string.m_string));
+    return string;
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+String StringUtfUtils::fromUtf32(T begin, T end)
+{
+    String string;
+    string.m_string.assign(begin, end);
+    return string;
+}
+
+} // namespace sf

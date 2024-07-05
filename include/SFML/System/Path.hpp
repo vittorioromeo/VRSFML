@@ -60,7 +60,7 @@ public:
     [[nodiscard]] Path filename() const;
     [[nodiscard]] Path extension() const;
 
-    [[nodiscard]] const wchar_t* c_str() const;
+    [[nodiscard]] const wchar_t* c_str() const; // TODO: support other platforms
     [[nodiscard]] std::string    string() const;
 
     [[nodiscard]] operator std::string() const;

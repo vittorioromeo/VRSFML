@@ -1,4 +1,5 @@
 #include <SFML/Graphics/RenderTarget.hpp>
+#include <SFML/Graphics/View.hpp>
 
 #include <Doctest.hpp>
 
@@ -13,7 +14,7 @@ public:
     RenderTarget() = default;
 
 private:
-    sf::Vector2u getSize() const override
+    [[nodiscard]] sf::Vector2u getSize() const override
     {
         return {640, 480};
     }

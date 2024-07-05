@@ -27,6 +27,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/GLCheck.hpp>
 #include <SFML/Graphics/GLExtensions.hpp>
+#include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Vertex.hpp>
 #include <SFML/Graphics/VertexBuffer.hpp>

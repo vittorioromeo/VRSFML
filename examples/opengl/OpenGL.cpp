@@ -6,6 +6,7 @@
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/View.hpp>
 
 #include <SFML/Window/Context.hpp>
 #include <SFML/Window/ContextSettings.hpp>
@@ -15,10 +16,10 @@
 #include <SFML/Window/VideoMode.hpp>
 
 #include <SFML/System/Clock.hpp>
+#include <SFML/System/Path.hpp>
 #include <SFML/System/Time.hpp>
 
 #include <array>
-#include <SFML/System/Path.hpp>
 #include <iostream>
 
 #include <cstdlib>

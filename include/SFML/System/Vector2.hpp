@@ -268,7 +268,7 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector2<T>& operator+=(Vector2<T>& left, const Vector2<T>& right);
+[[gnu::always_inline]] constexpr Vector2<T>& operator+=(Vector2<T>& left, const Vector2<T>& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -284,7 +284,7 @@ constexpr Vector2<T>& operator+=(Vector2<T>& left, const Vector2<T>& right);
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector2<T>& operator-=(Vector2<T>& left, const Vector2<T>& right);
+[[gnu::always_inline]] constexpr Vector2<T>& operator-=(Vector2<T>& left, const Vector2<T>& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -352,7 +352,7 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector2<T>& operator*=(Vector2<T>& left, T right);
+[[gnu::always_inline]] constexpr Vector2<T>& operator*=(Vector2<T>& left, T right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -381,7 +381,7 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector2<T>& operator/=(Vector2<T>& left, T right);
+[[gnu::always_inline]] constexpr Vector2<T>& operator/=(Vector2<T>& left, T right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2

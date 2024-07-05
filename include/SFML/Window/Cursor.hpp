@@ -37,12 +37,13 @@
 
 #include <cstdint>
 
+
 namespace sf
 {
 namespace priv
 {
 class CursorImpl;
-}
+} // namespace priv
 
 ////////////////////////////////////////////////////////////
 /// \brief Cursor defines the appearance of a system cursor

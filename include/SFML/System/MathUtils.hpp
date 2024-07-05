@@ -27,6 +27,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/System/IsSame.hpp>
+
+
 #if __has_builtin(__builtin_fabs) && __has_builtin(__builtin_fabsf) && __has_builtin(__builtin_fabsl) &&       \
     __has_builtin(__builtin_atan2) && __has_builtin(__builtin_atan2f) && __has_builtin(__builtin_atan2l) &&    \
     __has_builtin(__builtin_ceil) && __has_builtin(__builtin_ceilf) && __has_builtin(__builtin_ceill) &&       \
@@ -37,27 +40,6 @@
     __has_builtin(__builtin_sqrt) && __has_builtin(__builtin_sqrtf) && __has_builtin(__builtin_sqrtl)
 
 #define SFML_PRIV_HAS_MATH_BUILTINS 1
-
-#endif
-
-#if __has_builtin(__is_same)
-
-#define SFML_PRIV_IS_SAME(a, b) __is_same(a, b)
-
-#else
-
-namespace sf::priv
-{
-
-template <typename, typename>
-inline constexpr bool isSameType = false;
-
-template <typename T>
-inline constexpr bool isSameType<T, T> = true;
-
-#define SFML_PRIV_IS_SAME(a, b) ::sf::priv::isSameType<a, b>
-
-} // namespace sf::priv
 
 #endif
 

@@ -38,7 +38,7 @@ using ContextDestroyCallback = void (*)(void*);
 /// \brief Base class for classes that require an OpenGL context
 ///
 ////////////////////////////////////////////////////////////
-class SFML_WINDOW_API GlResource
+class [[nodiscard]] SFML_WINDOW_API GlResource
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -102,7 +102,7 @@ protected:
     /// \brief RAII helper class to temporarily lock an available context for use
     ///
     ////////////////////////////////////////////////////////////
-    class SFML_WINDOW_API TransientContextLock
+    class [[nodiscard]] SFML_WINDOW_API TransientContextLock
     {
     public:
         ////////////////////////////////////////////////////////////

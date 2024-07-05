@@ -23,6 +23,7 @@ set(SRC
     ${SRCROOT}/InputImpl.hpp
     ${INCROOT}/Joystick.hpp
     ${SRCROOT}/Joystick.cpp
+    ${INCROOT}/JoystickAxis.hpp
     ${SRCROOT}/JoystickImpl.hpp
     ${SRCROOT}/JoystickManager.cpp
     ${SRCROOT}/JoystickManager.hpp

@@ -30,7 +30,6 @@
 #include <SFML/Graphics/Export.hpp>
 
 #include <SFML/Graphics/PrimitiveType.hpp>
-#include <SFML/Graphics/RenderStates.hpp>
 
 #include <SFML/Window/GlResource.hpp>
 
@@ -40,6 +39,7 @@
 namespace sf
 {
 class RenderTarget;
+struct RenderStates;
 struct Vertex;
 
 ////////////////////////////////////////////////////////////

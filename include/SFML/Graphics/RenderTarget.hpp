@@ -29,43 +29,45 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Export.hpp>
 
-#include <SFML/Graphics/BlendMode.hpp>
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/CoordinateType.hpp>
 #include <SFML/Graphics/PrimitiveType.hpp>
-#include <SFML/Graphics/Rect.hpp>
-#include <SFML/Graphics/StencilMode.hpp>
-#include <SFML/Graphics/Vertex.hpp>
-#include <SFML/Graphics/View.hpp>
+#include <SFML/Graphics/RenderStates.hpp>
 
+#include <SFML/System/InPlacePImpl.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #include <cstddef>
-#include <cstdint>
 
 
 namespace sf
 {
-struct RenderStates;
 class Shader;
 class Shape;
 class Sprite;
 class Texture;
 class Transform;
 class VertexBuffer;
+class View;
+struct BlendMode;
+struct IntRect;
+struct RenderStates;
+struct StencilMode;
+struct StencilValue;
+struct Vertex;
 
 ////////////////////////////////////////////////////////////
 /// \brief Base class for all render targets (window, texture, ...)
 ///
 ////////////////////////////////////////////////////////////
-class SFML_GRAPHICS_API RenderTarget
+class [[nodiscard]] SFML_GRAPHICS_API RenderTarget
 {
 public:
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    virtual ~RenderTarget() = default;
+    virtual ~RenderTarget();
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy constructor
@@ -83,13 +85,13 @@ public:
     /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    RenderTarget(RenderTarget&&) noexcept = default;
+    RenderTarget(RenderTarget&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment
     ///
     ////////////////////////////////////////////////////////////
-    RenderTarget& operator=(RenderTarget&&) noexcept = default;
+    RenderTarget& operator=(RenderTarget&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Clear the entire target with a single color
@@ -524,7 +526,7 @@ protected:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] RenderTarget() = default;
+    [[nodiscard]] explicit RenderTarget();
 
     ////////////////////////////////////////////////////////////
     /// \brief Performs the common initialization step after creation
@@ -617,32 +619,10 @@ private:
     void cleanupDraw(const RenderStates& states);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Render states cache
-    ///
-    ////////////////////////////////////////////////////////////
-    struct [[nodiscard]] StatesCache
-    {
-        bool           enable{};                //!< Is the cache enabled?
-        bool           glStatesSet{};           //!< Are our internal GL states set yet?
-        bool           viewChanged{};           //!< Has the current view changed since last draw?
-        bool           scissorEnabled{};        //!< Is scissor testing enabled?
-        bool           stencilEnabled{};        //!< Is stencil testing enabled?
-        BlendMode      lastBlendMode;           //!< Cached blending mode
-        StencilMode    lastStencilMode;         //!< Cached stencil
-        std::uint64_t  lastTextureId{};         //!< Cached texture
-        CoordinateType lastCoordinateType{};    //!< Texture coordinate type
-        bool           texCoordsArrayEnabled{}; //!< Is GL_TEXTURE_COORD_ARRAY client state enabled?
-        bool           useVertexCache{};        //!< Did we previously use the vertex cache?
-        Vertex         vertexCache[4]{};        //!< Pre-transformed vertices cache
-    };
-
-    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    View          m_defaultView; //!< Default view
-    View          m_view;        //!< Current view
-    StatesCache   m_cache{};     //!< Render states cache
-    std::uint64_t m_id{};        //!< Unique number that identifies the RenderTarget
+    struct Impl;
+    priv::InPlacePImpl<Impl, 768> m_impl; //!< Implementation details
 };
 
 } // namespace sf

@@ -262,6 +262,13 @@ struct Shader::Impl
 
 
 ////////////////////////////////////////////////////////////
+Shader::UniformLocation::UniformLocation(int location) : m_value(location)
+{
+    assert(m_value != -1);
+}
+
+
+////////////////////////////////////////////////////////////
 class [[nodiscard]] Shader::UnsafeUniformBinder
 {
 public:
@@ -269,21 +276,16 @@ public:
     /// \brief Constructor: set up state before uniform is set
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] explicit UnsafeUniformBinder(Shader& shader, UniformLocation location) :
+    [[nodiscard, gnu::always_inline]] explicit UnsafeUniformBinder(Shader& shader) :
     m_currentProgram(castToGlHandle(shader.m_impl->shaderProgram))
     {
-        assert(location != -1);
-
-        if (!m_currentProgram)
+        if (!m_currentProgram) // TODO: assert?
             return;
 
         // Enable program object
         glCheck(m_savedProgram = GLEXT_glGetHandle(GLEXT_GL_PROGRAM_OBJECT));
         if (m_currentProgram != m_savedProgram)
             glCheck(GLEXT_glUseProgramObject(m_currentProgram));
-
-        // Store uniform location for further use outside constructor
-        m_location = location;
     }
 
     ////////////////////////////////////////////////////////////
@@ -309,29 +311,9 @@ public:
     ////////////////////////////////////////////////////////////
     UnsafeUniformBinder& operator=(const UnsafeUniformBinder&) = delete;
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Check if location is valid
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] bool hasLocation() const
-    {
-        return m_location != -1;
-    }
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Uniform location
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] GLint getLocation() const
-    {
-        assert(hasLocation());
-        return m_location;
-    }
-
 private:
-    GLEXT_GLhandle m_currentProgram; //!< Handle to the program object of the modified `sf::Shader instance
+    GLEXT_GLhandle m_currentProgram; //!< Handle to the program object of the modified `sf::Shader` instance
     GLEXT_GLhandle m_savedProgram{}; //!< Handle to the previously active program object
-    GLint          m_location{-1};   //!< Uniform location, used by the surrounding `sf::Shader code
 };
 
 
@@ -616,71 +598,75 @@ std::optional<Shader> Shader::loadFromStream(InputStream& vertexShaderStream,
 ////////////////////////////////////////////////////////////
 std::optional<Shader::UniformLocation> Shader::getUniformLocation(std::string_view uniformName)
 {
-    const UniformLocation uniformLocation = getUniformLocationImpl(uniformName);
-    return (uniformLocation == -1) ? std::nullopt : std::make_optional<UniformLocation>(uniformLocation);
+    const int location = getUniformLocationImpl(uniformName);
+    if (location == -1)
+        return std::nullopt;
+
+    return UniformLocation{location};
 }
-
-
-////////////////////////////////////////////////////////////
-#define SFML_PRIV_SET_UNIFORM_IMPL(binderType, uniformLocation, glFunc, ...) \
-    assert(uniformLocation != -1);                                           \
-    const binderType binder(*this, uniformLocation);                         \
-    glCheck(glFunc(binder.getLocation(), __VA_ARGS__));
 
 
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, float x)
 {
-    SFML_PRIV_SET_UNIFORM_IMPL(UniformBinder, location, GLEXT_glUniform1f, x);
+    const UniformBinder binder{*this};
+    glCheck(GLEXT_glUniform1f(location.m_value, x));
 }
 
 
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, const Glsl::Vec2& v)
 {
-    SFML_PRIV_SET_UNIFORM_IMPL(UniformBinder, location, GLEXT_glUniform2f, v.x, v.y);
+    const UniformBinder binder{*this};
+    glCheck(GLEXT_glUniform2f(location.m_value, v.x, v.y));
 }
 
 
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, const Glsl::Vec3& v)
 {
-    SFML_PRIV_SET_UNIFORM_IMPL(UniformBinder, location, GLEXT_glUniform3f, v.x, v.y, v.z);
+    const UniformBinder binder{*this};
+    glCheck(GLEXT_glUniform3f(location.m_value, v.x, v.y, v.z));
 }
 
 
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, const Glsl::Vec4& v)
 {
-    SFML_PRIV_SET_UNIFORM_IMPL(UniformBinder, location, GLEXT_glUniform4f, v.x, v.y, v.z, v.w);
+    const UniformBinder binder{*this};
+    glCheck(GLEXT_glUniform4f(location.m_value, v.x, v.y, v.z, v.w));
 }
 
 
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, int x)
 {
-    SFML_PRIV_SET_UNIFORM_IMPL(UniformBinder, location, GLEXT_glUniform1i, x);
+    const UniformBinder binder{*this};
+    glCheck(GLEXT_glUniform1i(location.m_value, x));
 }
 
 
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, const Glsl::Ivec2& v)
 {
-    SFML_PRIV_SET_UNIFORM_IMPL(UniformBinder, location, GLEXT_glUniform2i, v.x, v.y);
+    const UniformBinder binder{*this};
+    glCheck(GLEXT_glUniform2i(location.m_value, v.x, v.y));
 }
 
 
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, const Glsl::Ivec3& v)
 {
-    SFML_PRIV_SET_UNIFORM_IMPL(UniformBinder, location, GLEXT_glUniform3i, v.x, v.y, v.z);
+    const UniformBinder binder{*this};
+    glCheck(GLEXT_glUniform3i(location.m_value, v.x, v.y, v.z));
 }
 
 
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, const Glsl::Ivec4& v)
 {
-    SFML_PRIV_SET_UNIFORM_IMPL(UniformBinder, location, GLEXT_glUniform4i, v.x, v.y, v.z, v.w);
+    const UniformBinder binder{*this};
+    glCheck(GLEXT_glUniform4i(location.m_value, v.x, v.y, v.z, v.w));
 }
 
 
@@ -715,27 +701,28 @@ void Shader::setUniform(UniformLocation location, const Glsl::Bvec4& v)
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, const Glsl::Mat3& matrix)
 {
-    SFML_PRIV_SET_UNIFORM_IMPL(UniformBinder, location, GLEXT_glUniformMatrix3fv, 1, GL_FALSE, matrix.array);
+    const UniformBinder binder{*this};
+    glCheck(GLEXT_glUniformMatrix3fv(location.m_value, 1, GL_FALSE, matrix.array));
 }
 
 
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, const Glsl::Mat4& matrix)
 {
-    SFML_PRIV_SET_UNIFORM_IMPL(UniformBinder, location, GLEXT_glUniformMatrix4fv, 1, GL_FALSE, matrix.array);
+    const UniformBinder binder{*this};
+    glCheck(GLEXT_glUniformMatrix4fv(location.m_value, 1, GL_FALSE, matrix.array));
 }
 
 
 ////////////////////////////////////////////////////////////
 bool Shader::setUniform(UniformLocation location, const Texture& texture)
 {
-    assert(location != -1);
     assert(m_impl->shaderProgram);
 
     const TransientContextLock lock;
 
     // Store the location -> texture mapping
-    if (const auto it = m_impl->textures.find(location); it != m_impl->textures.end())
+    if (const auto it = m_impl->textures.find(location.m_value); it != m_impl->textures.end())
     {
         // Location already used, just replace the texture
         it->second = &texture;
@@ -745,13 +732,13 @@ bool Shader::setUniform(UniformLocation location, const Texture& texture)
     // New entry, make sure there are enough texture units
     if (m_impl->textures.size() + 1 >= getMaxTextureUnits())
     {
-        priv::err() << "Impossible to use texture \"" << location << '"'
+        priv::err() << "Impossible to use texture \"" << location.m_value << '"'
                     << " for shader: all available texture units are used" << priv::errEndl;
 
         return false;
     }
 
-    m_impl->textures[location] = &texture;
+    m_impl->textures[location.m_value] = &texture;
     return true;
 }
 
@@ -759,44 +746,47 @@ bool Shader::setUniform(UniformLocation location, const Texture& texture)
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, CurrentTextureType)
 {
-    assert(location != -1);
     assert(m_impl->shaderProgram);
 
     const TransientContextLock lock;
 
     // Find the location of the variable in the shader
-    m_impl->currentTexture = location;
+    m_impl->currentTexture = location.m_value;
 }
 
 
 ////////////////////////////////////////////////////////////
 void Shader::setUniformArray(UniformLocation location, const float* scalarArray, std::size_t length)
 {
-    SFML_PRIV_SET_UNIFORM_IMPL(UniformBinder, location, GLEXT_glUniform1fv, static_cast<GLsizei>(length), scalarArray);
+    const UniformBinder binder{*this};
+    glCheck(GLEXT_glUniform1fv(location.m_value, static_cast<GLsizei>(length), scalarArray));
 }
 
 
 ////////////////////////////////////////////////////////////
 void Shader::setUniformArray(UniformLocation location, const Glsl::Vec2* vectorArray, std::size_t length)
 {
-    std::vector<float> contiguous = flatten(vectorArray, length);
-    SFML_PRIV_SET_UNIFORM_IMPL(UniformBinder, location, GLEXT_glUniform2fv, static_cast<GLsizei>(length), contiguous.data());
+    std::vector<float>  contiguous = flatten(vectorArray, length);
+    const UniformBinder binder{*this};
+    glCheck(GLEXT_glUniform2fv(location.m_value, static_cast<GLsizei>(length), contiguous.data()));
 }
 
 
 ////////////////////////////////////////////////////////////
 void Shader::setUniformArray(UniformLocation location, const Glsl::Vec3* vectorArray, std::size_t length)
 {
-    std::vector<float> contiguous = flatten(vectorArray, length);
-    SFML_PRIV_SET_UNIFORM_IMPL(UniformBinder, location, GLEXT_glUniform3fv, static_cast<GLsizei>(length), contiguous.data());
+    std::vector<float>  contiguous = flatten(vectorArray, length);
+    const UniformBinder binder{*this};
+    glCheck(GLEXT_glUniform3fv(location.m_value, static_cast<GLsizei>(length), contiguous.data()));
 }
 
 
 ////////////////////////////////////////////////////////////
 void Shader::setUniformArray(UniformLocation location, const Glsl::Vec4* vectorArray, std::size_t length)
 {
-    std::vector<float> contiguous = flatten(vectorArray, length);
-    SFML_PRIV_SET_UNIFORM_IMPL(UniformBinder, location, GLEXT_glUniform4fv, static_cast<GLsizei>(length), contiguous.data());
+    std::vector<float>  contiguous = flatten(vectorArray, length);
+    const UniformBinder binder{*this};
+    glCheck(GLEXT_glUniform4fv(location.m_value, static_cast<GLsizei>(length), contiguous.data()));
 }
 
 
@@ -809,12 +799,8 @@ void Shader::setUniformArray(UniformLocation location, const Glsl::Mat3* matrixA
     for (std::size_t i = 0; i < length; ++i)
         priv::copyMatrix(matrixArray[i].array, matrixSize, &contiguous[matrixSize * i]);
 
-    SFML_PRIV_SET_UNIFORM_IMPL(UniformBinder,
-                               location,
-                               GLEXT_glUniformMatrix3fv,
-                               static_cast<GLsizei>(length),
-                               GL_FALSE,
-                               contiguous.data());
+    const UniformBinder binder{*this};
+    glCheck(GLEXT_glUniformMatrix3fv(location.m_value, static_cast<GLsizei>(length), GL_FALSE, contiguous.data()));
 }
 
 
@@ -827,68 +813,72 @@ void Shader::setUniformArray(UniformLocation location, const Glsl::Mat4* matrixA
     for (std::size_t i = 0; i < length; ++i)
         priv::copyMatrix(matrixArray[i].array, matrixSize, &contiguous[matrixSize * i]);
 
-    SFML_PRIV_SET_UNIFORM_IMPL(UniformBinder,
-                               location,
-                               GLEXT_glUniformMatrix4fv,
-                               static_cast<GLsizei>(length),
-                               GL_FALSE,
-                               contiguous.data());
+    const UniformBinder binder{*this};
+    glCheck(GLEXT_glUniformMatrix4fv(location.m_value, static_cast<GLsizei>(length), GL_FALSE, contiguous.data()));
 }
 
 
 ////////////////////////////////////////////////////////////
 void Shader::setUniformUnsafe(UniformLocation location, float x)
 {
-    SFML_PRIV_SET_UNIFORM_IMPL(UnsafeUniformBinder, location, GLEXT_glUniform1f, x);
+    const UnsafeUniformBinder binder{*this};
+    glCheck(GLEXT_glUniform1f(location.m_value, x));
 }
 
 
 ////////////////////////////////////////////////////////////
 void Shader::setUniformUnsafe(UniformLocation location, const Glsl::Vec2& v)
 {
-    SFML_PRIV_SET_UNIFORM_IMPL(UnsafeUniformBinder, location, GLEXT_glUniform2f, v.x, v.y);
+    const UnsafeUniformBinder binder{*this};
+    glCheck(GLEXT_glUniform2f(location.m_value, v.x, v.y));
 }
 
 
 ////////////////////////////////////////////////////////////
 void Shader::setUniformUnsafe(UniformLocation location, const Glsl::Vec3& v)
 {
-    SFML_PRIV_SET_UNIFORM_IMPL(UnsafeUniformBinder, location, GLEXT_glUniform3f, v.x, v.y, v.z);
+    const UnsafeUniformBinder binder{*this};
+    glCheck(GLEXT_glUniform3f(location.m_value, v.x, v.y, v.z));
 }
 
 
 ////////////////////////////////////////////////////////////
 void Shader::setUniformUnsafe(UniformLocation location, const Glsl::Vec4& v)
 {
-    SFML_PRIV_SET_UNIFORM_IMPL(UnsafeUniformBinder, location, GLEXT_glUniform4f, v.x, v.y, v.z, v.w);
+    const UnsafeUniformBinder binder{*this};
+    glCheck(GLEXT_glUniform4f(location.m_value, v.x, v.y, v.z, v.w));
 }
 
 
 ////////////////////////////////////////////////////////////
 void Shader::setUniformUnsafe(UniformLocation location, int x)
 {
-    SFML_PRIV_SET_UNIFORM_IMPL(UnsafeUniformBinder, location, GLEXT_glUniform1i, x);
+    const UnsafeUniformBinder binder{*this};
+    glCheck(GLEXT_glUniform1i(location.m_value, x));
 }
 
 
 ////////////////////////////////////////////////////////////
 void Shader::setUniformUnsafe(UniformLocation location, const Glsl::Ivec2& v)
 {
-    SFML_PRIV_SET_UNIFORM_IMPL(UnsafeUniformBinder, location, GLEXT_glUniform2i, v.x, v.y);
+    const UnsafeUniformBinder binder{*this};
+    glCheck(GLEXT_glUniform2i(location.m_value, v.x, v.y));
 }
 
 
 ////////////////////////////////////////////////////////////
 void Shader::setUniformUnsafe(UniformLocation location, const Glsl::Ivec3& v)
 {
-    SFML_PRIV_SET_UNIFORM_IMPL(UnsafeUniformBinder, location, GLEXT_glUniform3i, v.x, v.y, v.z);
+    const UnsafeUniformBinder binder{*this};
+    glCheck(GLEXT_glUniform3i(location.m_value, v.x, v.y, v.z));
 }
 
 
 ////////////////////////////////////////////////////////////
 void Shader::setUniformUnsafe(UniformLocation location, const Glsl::Ivec4& v)
 {
-    SFML_PRIV_SET_UNIFORM_IMPL(UnsafeUniformBinder, location, GLEXT_glUniform4i, v.x, v.y, v.z, v.w);
+    const UnsafeUniformBinder binder{*this};
+    glCheck(GLEXT_glUniform4i(location.m_value, v.x, v.y, v.z, v.w));
 }
 
 

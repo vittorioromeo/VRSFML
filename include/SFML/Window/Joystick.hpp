@@ -29,6 +29,8 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/Export.hpp>
 
+#include <SFML/Window/JoystickAxis.hpp>
+
 #include <SFML/System/String.hpp>
 
 
@@ -47,22 +49,6 @@ static constexpr unsigned int Count{8};        //!< Maximum number of supported 
 static constexpr unsigned int ButtonCount{32}; //!< Maximum number of supported buttons
 static constexpr unsigned int AxisCount{8};    //!< Maximum number of supported axes
 // NOLINTEND(readability-identifier-naming)
-
-////////////////////////////////////////////////////////////
-/// \brief Axes supported by SFML joysticks
-///
-////////////////////////////////////////////////////////////
-enum class Axis
-{
-    X,    //!< The X axis
-    Y,    //!< The Y axis
-    Z,    //!< The Z axis
-    R,    //!< The R axis
-    U,    //!< The U axis
-    V,    //!< The V axis
-    PovX, //!< The X axis of the point-of-view hat
-    PovY  //!< The Y axis of the point-of-view hat
-};
 
 ////////////////////////////////////////////////////////////
 /// \brief Structure holding a joystick's identification

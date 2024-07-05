@@ -44,7 +44,7 @@ namespace sf
 namespace priv
 {
 class GlContext;
-}
+} // namespace priv
 
 struct ContextSettings;
 

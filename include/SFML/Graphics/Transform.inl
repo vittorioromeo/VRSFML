@@ -27,6 +27,8 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Transform.hpp> // NOLINT(misc-header-include-cycle)
 
+#include <SFML/System/SizeT.hpp>
+
 
 namespace sf
 {
@@ -107,7 +109,7 @@ constexpr FloatRect Transform::transformRect(const FloatRect& rectangle) const
     Vector2f pmin = points[0];
     Vector2f pmax = points[0];
 
-    for (decltype(sizeof(int)) i = 1; i < 4; ++i)
+    for (priv::SizeT i = 1; i < 4; ++i)
     {
         // clang-format off
         if      (points[i].x < pmin.x) pmin.x = points[i].x;

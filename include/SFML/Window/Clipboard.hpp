@@ -68,6 +68,7 @@ namespace Clipboard
 ///
 ////////////////////////////////////////////////////////////
 SFML_WINDOW_API void setString(const String& text);
+
 } // namespace Clipboard
 
 } // namespace sf
