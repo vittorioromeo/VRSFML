@@ -28,6 +28,7 @@
 #include <SFML/System/Vector2.hpp>
 
 #include <algorithm>
+#include <array>
 #include <filesystem>
 #include <iostream>
 #include <limits>

@@ -43,7 +43,6 @@ namespace sf
 class AudioContext;
 class PlaybackDevice;
 class CaptureDevice;
-class SoundRecorder;
 class PlaybackDeviceHandle;
 class CaptureDeviceHandle;
 } // namespace sf
@@ -109,12 +108,11 @@ public:
     ////////////////////////////////////////////////////////////
     friend bool operator!=(const AudioDeviceHandle& lhs, const AudioDeviceHandle& rhs);
 
-private:
+protected:
     friend PlaybackDevice;
     friend PlaybackDeviceHandle;
     friend CaptureDevice;
     friend CaptureDeviceHandle;
-    friend SoundRecorder;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO
@@ -136,14 +134,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit AudioDeviceHandle(PassKey<AudioContext>&&, const void* maDeviceInfo);
-
-    ////////////////////////////////////////////////////////////
-    /// \private
-    ///
-    /// \brief TODO
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit AudioDeviceHandle(PassKey<SoundRecorder>&&, const void* maDeviceInfo);
 
     ////////////////////////////////////////////////////////////
     /// \private
@@ -177,5 +167,32 @@ private:
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool operator!=(const AudioDeviceHandle& lhs, const AudioDeviceHandle& rhs);
+
+////////////////////////////////////////////////////////////
+template <typename T>
+class StronglyTypedDeviceHandle : private AudioDeviceHandle
+{
+    friend T;
+
+    using AudioDeviceHandle::AudioDeviceHandle;
+
+public:
+    using AudioDeviceHandle::getName;
+    using AudioDeviceHandle::isDefault;
+    using AudioDeviceHandle::operator=;
+
+    [[nodiscard]] friend bool operator==(const StronglyTypedDeviceHandle& lhs, const StronglyTypedDeviceHandle& rhs)
+    {
+        return static_cast<const AudioDeviceHandle&>(lhs) == static_cast<const AudioDeviceHandle>(rhs);
+    }
+
+    [[nodiscard]] friend bool operator!=(const StronglyTypedDeviceHandle& lhs, const StronglyTypedDeviceHandle& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
+private:
+    using AudioDeviceHandle::getMADeviceInfo;
+};
 
 } // namespace sf::priv

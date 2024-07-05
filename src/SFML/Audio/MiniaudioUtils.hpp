@@ -37,7 +37,9 @@
 
 #include <miniaudio.h>
 
-#include <limits>
+#include <vector>
+
+#include <cfloat>
 
 
 ////////////////////////////////////////////////////////////
@@ -65,7 +67,7 @@ struct SavedSettings
     float          dopplerFactor{1.f};
     ma_positioning positioning{ma_positioning_absolute};
     float          minDistance{1.f};
-    float          maxDistance{std::numeric_limits<float>::max()};
+    float          maxDistance{FLT_MAX};
     float          minGain{0.f};
     float          maxGain{1.f};
     float          rollOff{1.f};

@@ -29,15 +29,17 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
-#include <functional>
+#include <SFML/System/FixedFunction.hpp>
 
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-using EffectProcessorImpl = std::function<
-    void(const float* inputFrames, unsigned int& inputFrameCount, float* outputFrames, unsigned int& outputFrameCount, unsigned int frameChannelCount)>;
+using EffectProcessorImpl = priv::FixedFunction<
+    void(const float* inputFrames, unsigned int& inputFrameCount, float* outputFrames, unsigned int& outputFrameCount, unsigned int frameChannelCount),
+    128>;
 
 } // namespace sf::priv
+
 
 namespace sf
 {
@@ -116,13 +118,12 @@ namespace sf
 /// occur.
 ///
 ////////////////////////////////////////////////////////////
-struct SFML_AUDIO_API [[nodiscard]] EffectProcessor : priv::EffectProcessorImpl
+class SFML_AUDIO_API [[nodiscard]] EffectProcessor : public priv::EffectProcessorImpl
 {
+public:
     using priv::EffectProcessorImpl::EffectProcessorImpl;
-    // TODO: pimpl?
 };
 
-// NOLINTEND(readability-make-member-function-const)
 } // namespace sf
 
 

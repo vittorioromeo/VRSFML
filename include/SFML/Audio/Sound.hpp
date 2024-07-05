@@ -39,10 +39,10 @@
 
 namespace sf
 {
-class Time;
-class SoundBuffer;
+class EffectProcessor;
 class PlaybackDevice;
-struct EffectProcessor;
+class SoundBuffer;
+class Time;
 
 ////////////////////////////////////////////////////////////
 /// \brief Regular sound that can be played in the audio environment

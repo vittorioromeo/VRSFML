@@ -25,15 +25,10 @@
 int main()
 {
     // Create the audio context
-    std::optional audioContext = sf::AudioContext::create();
-    if (!audioContext.has_value())
-    {
-        std::cerr << "Failure to create audio context" << std::endl;
-        return EXIT_FAILURE;
-    }
+    auto audioContext = sf::AudioContext::create().value();
 
     // Get the available capture devices
-    auto deviceHandles = audioContext->getAvailableCaptureDeviceHandles();
+    auto deviceHandles = audioContext.getAvailableCaptureDeviceHandles();
 
     // Check if any device can capture audio
     if (deviceHandles.empty())
@@ -79,8 +74,7 @@ int main()
     sf::SoundBufferRecorder recorder;
 
     // Create the capture device
-    const sf::CaptureDeviceHandle chosenHandle = deviceHandles[deviceIndex];
-    sf::CaptureDevice             captureDevice(*audioContext, chosenHandle);
+    sf::CaptureDevice captureDevice(audioContext, deviceHandles[deviceIndex]);
 
     // Audio capture is done in a separate thread, so we can block the main thread while it is capturing
     if (!recorder.start(captureDevice, sampleRate))
@@ -123,8 +117,8 @@ int main()
     }
     else
     {
-        // TODO:
-        sf::PlaybackDevice playbackDevice(*audioContext, audioContext->getDefaultPlaybackDeviceHandle().value());
+        // Create the default playback device
+        auto playbackDevice = sf::PlaybackDevice::createDefault(audioContext).value();
 
         // Create a sound instance and play it
         sf::Sound sound(buffer);

@@ -47,7 +47,6 @@ namespace sf
 {
 class PlaybackDevice;
 class CaptureDevice;
-class SoundRecorder;
 } // namespace sf
 
 
@@ -151,7 +150,6 @@ public:
 private:
     friend PlaybackDevice;
     friend CaptureDevice;
-    friend SoundRecorder;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO
