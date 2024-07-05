@@ -45,10 +45,10 @@
 
 namespace sf
 {
-class Time;
-class Sound;
 class InputSoundFile;
 class InputStream;
+class Sound;
+class Time;
 
 ////////////////////////////////////////////////////////////
 /// \brief Storage for audio samples defining a sound
@@ -243,7 +243,7 @@ public:
     SoundBuffer& operator=(const SoundBuffer& right);
 
 private:
-    friend class Sound;
+    friend Sound;
 
 public:
     ////////////////////////////////////////////////////////////

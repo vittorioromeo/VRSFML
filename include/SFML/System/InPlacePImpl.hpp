@@ -18,6 +18,30 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
+struct PlacementNewDummy
+{
+};
+
+} // namespace sf::priv
+
+
+////////////////////////////////////////////////////////////
+inline void* operator new(decltype(sizeof(int)), sf::priv::PlacementNewDummy, void* ptr)
+{
+    return ptr;
+}
+
+////////////////////////////////////////////////////////////
+inline void operator delete(void*, sf::priv::PlacementNewDummy, void*) noexcept
+{
+}
+
+#define SFML_PRIV_PLACEMENT_NEW(...) ::new (::sf::priv::PlacementNewDummy{}, __VA_ARGS__)
+
+
+namespace sf::priv
+{
+////////////////////////////////////////////////////////////
 struct MaxAlignTInPlacePImpl
 {
     alignas(alignof(long long)) long long a;
@@ -58,19 +82,19 @@ public:
     [[nodiscard, gnu::always_inline]] explicit InPlacePImpl(Args&&... args)
     {
         static_assert(sizeof(T) <= BufferSize);
-        new (m_buffer) T(static_cast<Args&&>(args)...);
+        SFML_PRIV_PLACEMENT_NEW(m_buffer) T(static_cast<Args&&>(args)...);
     }
 
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[nodiscard, gnu::always_inline]] InPlacePImpl(const InPlacePImpl& rhs)
     {
-        new (m_buffer) T(*SFML_PRIV_LAUNDER_CAST(const T*, rhs.m_buffer));
+        SFML_PRIV_PLACEMENT_NEW(m_buffer) T(*SFML_PRIV_LAUNDER_CAST(const T*, rhs.m_buffer));
     }
 
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[nodiscard, gnu::always_inline]] InPlacePImpl(InPlacePImpl&& rhs) noexcept
     {
-        new (m_buffer) T(static_cast<T&&>(*SFML_PRIV_LAUNDER_CAST(T*, rhs.m_buffer)));
+        SFML_PRIV_PLACEMENT_NEW(m_buffer) T(static_cast<T&&>(*SFML_PRIV_LAUNDER_CAST(T*, rhs.m_buffer)));
     }
 
     // NOLINTNEXTLINE(bugprone-unhandled-self-assignment)
@@ -98,3 +122,4 @@ public:
 
 #undef SFML_PRIV_LAUNDER_CAST
 #undef SFML_PRIV_LAUNDER
+#undef SFML_PRIV_PLACEMENT_NEW

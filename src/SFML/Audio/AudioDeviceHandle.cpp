@@ -97,7 +97,7 @@ AudioDeviceHandle& AudioDeviceHandle::operator=(AudioDeviceHandle&& rhs) noexcep
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] std::string_view AudioDeviceHandle::getName() const
+[[nodiscard]] const char* AudioDeviceHandle::getName() const
 {
     return m_impl->maDeviceInfo.name;
 }

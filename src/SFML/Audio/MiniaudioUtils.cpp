@@ -103,6 +103,7 @@ void applySettings(ma_sound& sound, const sf::priv::MiniaudioUtils::SavedSetting
         ma_sound_stop(&sound);
     }
 }
+
 } // namespace
 
 
@@ -120,7 +121,7 @@ playbackDevice(&thePlaybackDevice)
     config.vtable                = &dataSourceVTable;
 
     if (const ma_result result = ma_data_source_init(&config, &dataSourceBase); result != MA_SUCCESS)
-        priv::err() << "Failed to initialize audio data source: " << ma_result_description(result) << priv::errEndl;
+        err() << "Failed to initialize audio data source: " << ma_result_description(result) << errEndl;
 
     resourceEntryIndex = playbackDevice->registerResource(
         this,
@@ -132,6 +133,7 @@ playbackDevice(&thePlaybackDevice)
             static_cast<SoundBase*>(ptr)->resourceEntryIndex = newIndex;
         });
 
+    // TODO:
     //  SFML_UPDATE_LIFETIME_DEPENDANT(PlaybackDevice, SoundBase, playbackDevice);
 }
 
@@ -140,6 +142,7 @@ playbackDevice(&thePlaybackDevice)
 MiniaudioUtils::SoundBase::~SoundBase()
 {
     playbackDevice->unregisterResource(resourceEntryIndex);
+
     ma_sound_uninit(&sound);
     ma_node_uninit(&effectNode, nullptr);
     ma_data_source_uninit(&dataSourceBase);
@@ -162,8 +165,7 @@ bool MiniaudioUtils::SoundBase::initialize(ma_sound_end_proc endCallback)
 
     if (const ma_result result = ma_sound_init_ex(engine, &soundConfig, &sound); result != MA_SUCCESS)
     {
-        priv::err() << "Failed to initialize sound: " << ma_result_description(result) << priv::errEndl;
-        std::abort();
+        err() << "Failed to initialize sound: " << ma_result_description(result) << errEndl;
         return false;
     }
 
@@ -185,7 +187,7 @@ bool MiniaudioUtils::SoundBase::initialize(ma_sound_end_proc endCallback)
     if (const ma_result result = ma_node_init(ma_engine_get_node_graph(engine), &nodeConfig, nullptr, &effectNode);
         result != MA_SUCCESS)
     {
-        priv::err() << "Failed to initialize effect node: " << ma_result_description(result) << priv::errEndl;
+        err() << "Failed to initialize effect node: " << ma_result_description(result) << errEndl;
         return false;
     }
 
@@ -204,6 +206,7 @@ bool MiniaudioUtils::SoundBase::initialize(ma_sound_end_proc endCallback)
 void MiniaudioUtils::SoundBase::deinitialize()
 {
     savedSettings = saveSettings(sound);
+
     ma_sound_uninit(&sound);
     ma_node_uninit(&effectNode, nullptr);
 }
@@ -251,8 +254,7 @@ void MiniaudioUtils::SoundBase::connectEffect(bool connect)
         if (const ma_result result = ma_node_attach_output_bus(&effectNode, 0, ma_engine_get_endpoint(engine), 0);
             result != MA_SUCCESS)
         {
-            priv::err() << "Failed to attach effect node output to endpoint: " << ma_result_description(result)
-                        << priv::errEndl;
+            err() << "Failed to attach effect node output to endpoint: " << ma_result_description(result) << errEndl;
             return;
         }
     }
@@ -261,8 +263,7 @@ void MiniaudioUtils::SoundBase::connectEffect(bool connect)
         // Detach the custom effect node output from our engine endpoint
         if (const ma_result result = ma_node_detach_output_bus(&effectNode, 0); result != MA_SUCCESS)
         {
-            priv::err() << "Failed to detach effect node output from endpoint: " << ma_result_description(result)
-                        << priv::errEndl;
+            err() << "Failed to detach effect node output from endpoint: " << ma_result_description(result) << errEndl;
             return;
         }
     }
@@ -271,8 +272,7 @@ void MiniaudioUtils::SoundBase::connectEffect(bool connect)
     if (const ma_result result = ma_node_attach_output_bus(&sound, 0, connect ? &effectNode : ma_engine_get_endpoint(engine), 0);
         result != MA_SUCCESS)
     {
-        priv::err() << "Failed to attach sound node output to effect node: " << ma_result_description(result)
-                    << priv::errEndl;
+        err() << "Failed to attach sound node output to effect node: " << ma_result_description(result) << errEndl;
         return;
     }
 }
@@ -283,44 +283,28 @@ ma_channel MiniaudioUtils::soundChannelToMiniaudioChannel(SoundChannel soundChan
 {
     switch (soundChannel)
     {
-        case SoundChannel::Unspecified:
-            return MA_CHANNEL_NONE;
-        case SoundChannel::Mono:
-            return MA_CHANNEL_MONO;
-        case SoundChannel::FrontLeft:
-            return MA_CHANNEL_FRONT_LEFT;
-        case SoundChannel::FrontRight:
-            return MA_CHANNEL_FRONT_RIGHT;
-        case SoundChannel::FrontCenter:
-            return MA_CHANNEL_FRONT_CENTER;
-        case SoundChannel::FrontLeftOfCenter:
-            return MA_CHANNEL_FRONT_LEFT_CENTER;
-        case SoundChannel::FrontRightOfCenter:
-            return MA_CHANNEL_FRONT_RIGHT_CENTER;
-        case SoundChannel::LowFrequencyEffects:
-            return MA_CHANNEL_LFE;
-        case SoundChannel::BackLeft:
-            return MA_CHANNEL_BACK_LEFT;
-        case SoundChannel::BackRight:
-            return MA_CHANNEL_BACK_RIGHT;
-        case SoundChannel::BackCenter:
-            return MA_CHANNEL_BACK_CENTER;
-        case SoundChannel::SideLeft:
-            return MA_CHANNEL_SIDE_LEFT;
-        case SoundChannel::SideRight:
-            return MA_CHANNEL_SIDE_RIGHT;
-        case SoundChannel::TopCenter:
-            return MA_CHANNEL_TOP_CENTER;
-        case SoundChannel::TopFrontLeft:
-            return MA_CHANNEL_TOP_FRONT_LEFT;
-        case SoundChannel::TopFrontRight:
-            return MA_CHANNEL_TOP_FRONT_RIGHT;
-        case SoundChannel::TopFrontCenter:
-            return MA_CHANNEL_TOP_FRONT_CENTER;
-        case SoundChannel::TopBackLeft:
-            return MA_CHANNEL_TOP_BACK_LEFT;
-        case SoundChannel::TopBackRight:
-            return MA_CHANNEL_TOP_BACK_RIGHT;
+            // clang-format off
+        case SoundChannel::Unspecified:         return MA_CHANNEL_NONE;
+        case SoundChannel::Mono:                return MA_CHANNEL_MONO;
+        case SoundChannel::FrontLeft:           return MA_CHANNEL_FRONT_LEFT;
+        case SoundChannel::FrontRight:          return MA_CHANNEL_FRONT_RIGHT;
+        case SoundChannel::FrontCenter:         return MA_CHANNEL_FRONT_CENTER;
+        case SoundChannel::FrontLeftOfCenter:   return MA_CHANNEL_FRONT_LEFT_CENTER;
+        case SoundChannel::FrontRightOfCenter:  return MA_CHANNEL_FRONT_RIGHT_CENTER;
+        case SoundChannel::LowFrequencyEffects: return MA_CHANNEL_LFE;
+        case SoundChannel::BackLeft:            return MA_CHANNEL_BACK_LEFT;
+        case SoundChannel::BackRight:           return MA_CHANNEL_BACK_RIGHT;
+        case SoundChannel::BackCenter:          return MA_CHANNEL_BACK_CENTER;
+        case SoundChannel::SideLeft:            return MA_CHANNEL_SIDE_LEFT;
+        case SoundChannel::SideRight:           return MA_CHANNEL_SIDE_RIGHT;
+        case SoundChannel::TopCenter:           return MA_CHANNEL_TOP_CENTER;
+        case SoundChannel::TopFrontLeft:        return MA_CHANNEL_TOP_FRONT_LEFT;
+        case SoundChannel::TopFrontRight:       return MA_CHANNEL_TOP_FRONT_RIGHT;
+        case SoundChannel::TopFrontCenter:      return MA_CHANNEL_TOP_FRONT_CENTER;
+        case SoundChannel::TopBackLeft:         return MA_CHANNEL_TOP_BACK_LEFT;
+        case SoundChannel::TopBackRight:        return MA_CHANNEL_TOP_BACK_RIGHT;
+            // clang-format on
+
         default:
             assert(soundChannel == SoundChannel::TopBackCenter);
             return MA_CHANNEL_TOP_BACK_CENTER;
@@ -333,44 +317,28 @@ SoundChannel MiniaudioUtils::miniaudioChannelToSoundChannel(ma_channel soundChan
 {
     switch (soundChannel)
     {
-        case MA_CHANNEL_NONE:
-            return SoundChannel::Unspecified;
-        case MA_CHANNEL_MONO:
-            return SoundChannel::Mono;
-        case MA_CHANNEL_FRONT_LEFT:
-            return SoundChannel::FrontLeft;
-        case MA_CHANNEL_FRONT_RIGHT:
-            return SoundChannel::FrontRight;
-        case MA_CHANNEL_FRONT_CENTER:
-            return SoundChannel::FrontCenter;
-        case MA_CHANNEL_FRONT_LEFT_CENTER:
-            return SoundChannel::FrontLeftOfCenter;
-        case MA_CHANNEL_FRONT_RIGHT_CENTER:
-            return SoundChannel::FrontRightOfCenter;
-        case MA_CHANNEL_LFE:
-            return SoundChannel::LowFrequencyEffects;
-        case MA_CHANNEL_BACK_LEFT:
-            return SoundChannel::BackLeft;
-        case MA_CHANNEL_BACK_RIGHT:
-            return SoundChannel::BackRight;
-        case MA_CHANNEL_BACK_CENTER:
-            return SoundChannel::BackCenter;
-        case MA_CHANNEL_SIDE_LEFT:
-            return SoundChannel::SideLeft;
-        case MA_CHANNEL_SIDE_RIGHT:
-            return SoundChannel::SideRight;
-        case MA_CHANNEL_TOP_CENTER:
-            return SoundChannel::TopCenter;
-        case MA_CHANNEL_TOP_FRONT_LEFT:
-            return SoundChannel::TopFrontLeft;
-        case MA_CHANNEL_TOP_FRONT_RIGHT:
-            return SoundChannel::TopFrontRight;
-        case MA_CHANNEL_TOP_FRONT_CENTER:
-            return SoundChannel::TopFrontCenter;
-        case MA_CHANNEL_TOP_BACK_LEFT:
-            return SoundChannel::TopBackLeft;
-        case MA_CHANNEL_TOP_BACK_RIGHT:
-            return SoundChannel::TopBackRight;
+            // clang-format off
+        case MA_CHANNEL_NONE:               return SoundChannel::Unspecified;
+        case MA_CHANNEL_MONO:               return SoundChannel::Mono;
+        case MA_CHANNEL_FRONT_LEFT:         return SoundChannel::FrontLeft;
+        case MA_CHANNEL_FRONT_RIGHT:        return SoundChannel::FrontRight;
+        case MA_CHANNEL_FRONT_CENTER:       return SoundChannel::FrontCenter;
+        case MA_CHANNEL_FRONT_LEFT_CENTER:  return SoundChannel::FrontLeftOfCenter;
+        case MA_CHANNEL_FRONT_RIGHT_CENTER: return SoundChannel::FrontRightOfCenter;
+        case MA_CHANNEL_LFE:                return SoundChannel::LowFrequencyEffects;
+        case MA_CHANNEL_BACK_LEFT:          return SoundChannel::BackLeft;
+        case MA_CHANNEL_BACK_RIGHT:         return SoundChannel::BackRight;
+        case MA_CHANNEL_BACK_CENTER:        return SoundChannel::BackCenter;
+        case MA_CHANNEL_SIDE_LEFT:          return SoundChannel::SideLeft;
+        case MA_CHANNEL_SIDE_RIGHT:         return SoundChannel::SideRight;
+        case MA_CHANNEL_TOP_CENTER:         return SoundChannel::TopCenter;
+        case MA_CHANNEL_TOP_FRONT_LEFT:     return SoundChannel::TopFrontLeft;
+        case MA_CHANNEL_TOP_FRONT_RIGHT:    return SoundChannel::TopFrontRight;
+        case MA_CHANNEL_TOP_FRONT_CENTER:   return SoundChannel::TopFrontCenter;
+        case MA_CHANNEL_TOP_BACK_LEFT:      return SoundChannel::TopBackLeft;
+        case MA_CHANNEL_TOP_BACK_RIGHT:     return SoundChannel::TopBackRight;
+            // clang-format on
+
         default:
             assert(soundChannel == MA_CHANNEL_TOP_BACK_CENTER);
             return SoundChannel::TopBackCenter;
@@ -385,7 +353,7 @@ Time MiniaudioUtils::getPlayingOffset(ma_sound& sound)
 
     if (const ma_result result = ma_sound_get_cursor_in_seconds(&sound, &cursor); result != MA_SUCCESS)
     {
-        priv::err() << "Failed to get sound cursor: " << ma_result_description(result) << priv::errEndl;
+        err() << "Failed to get sound cursor: " << ma_result_description(result) << errEndl;
         return Time{};
     }
 
@@ -400,12 +368,12 @@ ma_uint64 MiniaudioUtils::getFrameIndex(ma_sound& sound, Time timeOffset)
 
     if (const ma_result result = ma_sound_get_data_format(&sound, nullptr, nullptr, &sampleRate, nullptr, 0);
         result != MA_SUCCESS)
-        priv::err() << "Failed to get sound data format: " << ma_result_description(result) << priv::errEndl;
+        err() << "Failed to get sound data format: " << ma_result_description(result) << errEndl;
 
     const auto frameIndex = static_cast<ma_uint64>(timeOffset.asSeconds() * static_cast<float>(sampleRate));
 
     if (const ma_result result = ma_sound_seek_to_pcm_frame(&sound, frameIndex); result != MA_SUCCESS)
-        priv::err() << "Failed to seek sound to pcm frame: " << ma_result_description(result) << priv::errEndl;
+        err() << "Failed to seek sound to pcm frame: " << ma_result_description(result) << errEndl;
 
     return frameIndex;
 }

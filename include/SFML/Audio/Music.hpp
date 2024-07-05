@@ -308,7 +308,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    priv::UniquePtr<Impl> m_impl;
+    priv::UniquePtr<Impl> m_impl; //!< Implementation details
 };
 
 } // namespace sf

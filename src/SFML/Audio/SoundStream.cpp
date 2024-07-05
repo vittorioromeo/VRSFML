@@ -25,8 +25,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Audio/SoundSource.hpp"
-
 #include <SFML/Audio/EffectProcessor.hpp>
 #include <SFML/Audio/MiniaudioUtils.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>

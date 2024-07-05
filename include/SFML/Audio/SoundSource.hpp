@@ -651,12 +651,12 @@ private:
     // TODO: pretty much the same as SavedSettings -- is this necessary at all?
     float           m_pitch{1.f};
     float           m_pan{0.f};
-    float           m_volume{100.f};
+    float           m_volume{1.f};
     bool            m_spatializationEnabled{true};
-    Vector3f        m_position;
-    Vector3f        m_direction;
+    Vector3f        m_position{0.f, 0.f, 0.f};
+    Vector3f        m_direction{0.f, 0.f, -1.f};
     Cone            m_cone{radians(6.283185f), radians(6.283185f), 0.0f};
-    Vector3f        m_velocity;
+    Vector3f        m_velocity{0.f, 0.f, 0.f};
     float           m_dopplerFactor{1.f};
     float           m_directionalAttenuationFactor{1.f};
     bool            m_relativeToListener{false};
