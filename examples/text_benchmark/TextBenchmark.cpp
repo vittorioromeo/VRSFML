@@ -3,6 +3,7 @@
 #include <SFML/Graphics/Text.hpp>
 
 #include <SFML/System/Path.hpp>
+#include <SFML/System/String.hpp>
 
 #include <cstdlib>
 

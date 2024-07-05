@@ -28,6 +28,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Macros.hpp>
+#include <SFML/System/SizeT.hpp>
 
 
 namespace sf::priv
@@ -39,12 +40,14 @@ template <typename T>
     return a < b ? a : b;
 }
 
+
 ////////////////////////////////////////////////////////////
 template <typename T>
 [[nodiscard, gnu::always_inline]] constexpr const T& max(const T& a, const T& b) noexcept
 {
     return a < b ? b : a;
 }
+
 
 ////////////////////////////////////////////////////////////
 template <typename Iter, typename TargetIter>
@@ -56,17 +59,17 @@ template <typename Iter, typename TargetIter>
     return targetIter;
 }
 
+
 ////////////////////////////////////////////////////////////
 template <typename T, typename Vector>
 [[gnu::always_inline]] inline void appendRangeIntoVector(const T* rangeBegin, const T* rangeEnd, Vector& target)
 {
-    using SizeT = decltype(sizeof(int));
-
     target.reserve(target.size() + static_cast<SizeT>(rangeEnd - rangeBegin));
 
     for (; rangeBegin != rangeEnd; ++rangeBegin)
         target.push_back(*rangeBegin);
 }
+
 
 ////////////////////////////////////////////////////////////
 template <typename Iter, typename T>
@@ -79,6 +82,7 @@ template <typename Iter, typename T>
     return rangeEnd;
 }
 
+
 ////////////////////////////////////////////////////////////
 template <typename Iter, typename Predicate>
 [[gnu::always_inline]] constexpr Iter findIf(Iter rangeBegin, Iter rangeEnd, Predicate&& predicate)
@@ -90,6 +94,7 @@ template <typename Iter, typename Predicate>
     return rangeEnd;
 }
 
+
 ////////////////////////////////////////////////////////////
 template <typename Iter, typename Predicate>
 [[gnu::always_inline]] constexpr bool anyOf(Iter rangeBegin, Iter rangeEnd, Predicate&& predicate)
@@ -100,6 +105,7 @@ template <typename Iter, typename Predicate>
 
     return false;
 }
+
 
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -114,12 +120,14 @@ template <typename T>
     return value;
 }
 
+
 ////////////////////////////////////////////////////////////
-template <typename T, decltype(sizeof(int)) N>
-[[nodiscard, gnu::always_inline]] constexpr decltype(sizeof(int)) getArraySize(const T (&)[N])
+template <typename T, SizeT N>
+[[nodiscard, gnu::always_inline]] constexpr SizeT getArraySize(const T (&)[N])
 {
     return N;
 }
+
 
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -158,11 +166,12 @@ public:
         return *this;
     }
 
-    [[gnu::always_inline]] BackInserter operator++(int)
+    [[nodiscard, gnu::always_inline]] BackInserter operator++(int)
     {
         return *this;
     }
 };
+
 
 ////////////////////////////////////////////////////////////
 template <typename T, typename U = T>

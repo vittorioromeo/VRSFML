@@ -28,6 +28,7 @@
 #include <SFML/Window/iOS/ClipboardImpl.hpp>
 
 #include <SFML/System/String.hpp>
+#include <SFML/System/StringUtfUtils.hpp>
 
 #import <UIKit/UIKit.h>
 
@@ -45,7 +46,7 @@ String ClipboardImpl::getString()
         const char*      utf8   = [data cStringUsingEncoding:NSUTF8StringEncoding];
         const NSUInteger length = [data lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
 
-        return String::fromUtf8(utf8, utf8 + length);
+        return StringUtfUtils::fromUtf8(utf8, utf8 + length);
     }
 
     return {};

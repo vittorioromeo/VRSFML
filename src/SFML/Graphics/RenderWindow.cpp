@@ -33,6 +33,8 @@
 
 #include <SFML/Window/VideoMode.hpp>
 
+#include <SFML/System/String.hpp>
+
 
 namespace sf
 {
@@ -45,10 +47,24 @@ RenderWindow::RenderWindow(VideoMode mode, const String& title, std::uint32_t st
 
 
 ////////////////////////////////////////////////////////////
+RenderWindow::RenderWindow(VideoMode mode, const char* title, std::uint32_t style, State state, const ContextSettings& settings) :
+RenderWindow(mode, String(title), style, state, settings)
+{
+}
+
+
+////////////////////////////////////////////////////////////
 RenderWindow::RenderWindow(VideoMode mode, const String& title, State state, const ContextSettings& settings)
 {
     // Don't call the base class constructor because it contains virtual function calls
     Window::create(mode, title, sf::Style::Default, state, settings);
+}
+
+
+////////////////////////////////////////////////////////////
+RenderWindow::RenderWindow(VideoMode mode, const char* title, State state, const ContextSettings& settings) :
+RenderWindow(mode, String(title), state, settings)
+{
 }
 
 

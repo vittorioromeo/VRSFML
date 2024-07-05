@@ -90,7 +90,14 @@ public:
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    using UniformLocation = int;
+    class [[nodiscard]] UniformLocation
+    {
+        friend Shader;
+
+    private:
+        [[nodiscard]] explicit UniformLocation(int location);
+        int m_value;
+    };
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor

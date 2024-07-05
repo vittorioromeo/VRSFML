@@ -83,6 +83,12 @@ public:
                          State                  state    = State::Windowed,
                          const ContextSettings& settings = ContextSettings());
 
+    [[nodiscard]] Window(VideoMode              mode,
+                         const char*            title,
+                         std::uint32_t          style    = Style::Default,
+                         State                  state    = State::Windowed,
+                         const ContextSettings& settings = ContextSettings());
+
     ////////////////////////////////////////////////////////////
     /// \brief Construct a new window
     ///
@@ -101,6 +107,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Window(VideoMode mode, const String& title, State state, const ContextSettings& settings = ContextSettings());
+    [[nodiscard]] Window(VideoMode mode, const char* title, State state, const ContextSettings& settings = ContextSettings());
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control

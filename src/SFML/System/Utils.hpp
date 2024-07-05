@@ -29,6 +29,8 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Export.hpp>
 
+#include <SFML/System/SizeT.hpp>
+
 
 namespace sf::priv
 {
@@ -38,8 +40,6 @@ namespace sf::priv
 template <typename IntegerType, typename... Bytes>
 [[nodiscard]] constexpr IntegerType byteSequenceToInteger(Bytes... byte)
 {
-    using SizeT = decltype(sizeof(int));
-
     static_assert(sizeof(IntegerType) >= sizeof...(Bytes), "IntegerType not large enough to contain bytes");
 
     IntegerType integer = 0;

@@ -4,57 +4,21 @@
 
 #pragma once
 
-#if __has_builtin(__builtin_launder)
-#define SFML_PRIV_LAUNDER __builtin_launder
-#else
-#include <new>
-#define SFML_PRIV_LAUNDER ::std::launder
-#endif
-
-// NOLINTNEXTLINE(bugprone-macro-parentheses)
-#define SFML_PRIV_LAUNDER_CAST(type, buffer) SFML_PRIV_LAUNDER(reinterpret_cast<type>(buffer))
+#include <SFML/System/Launder.hpp>
+#include <SFML/System/MaxAlignT.hpp>
+#include <SFML/System/PlacementNew.hpp>
+#include <SFML/System/SizeT.hpp>
 
 
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-struct PlacementNewDummy
-{
-};
-
-} // namespace sf::priv
-
-
-////////////////////////////////////////////////////////////
-inline void* operator new(decltype(sizeof(int)), sf::priv::PlacementNewDummy, void* ptr)
-{
-    return ptr;
-}
-
-////////////////////////////////////////////////////////////
-inline void operator delete(void*, sf::priv::PlacementNewDummy, void*) noexcept
-{
-}
-
-#define SFML_PRIV_PLACEMENT_NEW(...) ::new (::sf::priv::PlacementNewDummy{}, __VA_ARGS__)
-
-
-namespace sf::priv
-{
-////////////////////////////////////////////////////////////
-struct MaxAlignTInPlacePImpl
-{
-    alignas(alignof(long long)) long long a;
-    alignas(alignof(long double)) long double b;
-};
-
-////////////////////////////////////////////////////////////
-template <typename T, decltype(sizeof(int)) BufferSize>
+template <typename T, SizeT BufferSize>
 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 class InPlacePImpl
 {
 private:
-    alignas(MaxAlignTInPlacePImpl) char m_buffer[BufferSize];
+    alignas(MaxAlignT) char m_buffer[BufferSize];
 
 public:
     [[nodiscard, gnu::always_inline]] T* operator->() noexcept
@@ -119,7 +83,3 @@ public:
 };
 
 } // namespace sf::priv
-
-#undef SFML_PRIV_LAUNDER_CAST
-#undef SFML_PRIV_LAUNDER
-#undef SFML_PRIV_PLACEMENT_NEW

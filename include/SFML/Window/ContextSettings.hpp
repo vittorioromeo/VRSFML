@@ -24,9 +24,13 @@
 
 #pragma once
 
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
 #include <SFML/Config.hpp>
 
 #include <cstdint>
+
 
 namespace sf
 {
@@ -41,7 +45,7 @@ struct ContextSettings
     /// \brief Enumeration of the context attribute flags
     ///
     ////////////////////////////////////////////////////////////
-    enum Attribute
+    enum Attribute : std::uint32_t
     {
         Default = 0,      //!< Non-debug, compatibility context (this and the core attribute are mutually exclusive)
         Core    = 1 << 0, //!< Core attribute

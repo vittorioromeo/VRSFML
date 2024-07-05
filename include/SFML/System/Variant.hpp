@@ -2,11 +2,16 @@
 
 // NOLINTBEGIN
 
+#include "IsSame.hpp"
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow"
 
+#include <SFML/System/IsSame.hpp>
+#include <SFML/System/PlacementNew.hpp>
+#include <SFML/System/SizeT.hpp>
+
 #include <cassert>
-#include <cstdint> // TODO: remove dependency?
+
 
 // From:
 // https://github.com/redorav/crstl/blob/master/include/crstl/utility/placement_new.h
@@ -14,24 +19,12 @@
 namespace sfvr::impl
 {
 
-using sz_t = decltype(sizeof(int));
-
-struct placement_new_dummy
-{
-};
+using sz_t = sf::priv::SizeT;
 
 } // namespace sfvr::impl
 
-inline void* operator new(sfvr::impl::sz_t, sfvr::impl::placement_new_dummy, void* ptr)
-{
-    return ptr;
-}
 
-inline void operator delete(void*, sfvr::impl::placement_new_dummy, void*) noexcept
-{
-}
-
-#define TINYVARIANT_PLACEMENT_NEW(...) ::new (::sfvr::impl::placement_new_dummy{}, __VA_ARGS__)
+#define TINYVARIANT_PLACEMENT_NEW SFML_PRIV_PLACEMENT_NEW
 
 #if ((__GNUC__ >= 10) || defined(__clang__)) && !defined(_MSC_VER)
 #define TINYVARIANT_SUPPORTS_HAS_BUILTIN
@@ -64,29 +57,6 @@ namespace sfvr::impl
 
 template <typename T>
 T&& declval();
-
-/*
-template <typename...>
-struct common_type_between;
-
-template <typename T>
-struct common_type_between<T>
-{
-    using type = T;
-};
-
-template <typename T>
-struct common_type_between<T, T>
-{
-    using type = T;
-};
-
-template <typename T, typename U, typename... Rest>
-struct common_type_between<T, U, Rest...>
-{
-    using type = typename common_type_between<decltype(true ? declval<T>() : declval<U>()), Rest...>::type;
-};
-*/
 
 #ifdef TINYVARIANT_USE_STD_INDEX_SEQUENCE
 
@@ -129,16 +99,6 @@ using index_sequence_up_to = std::make_index_sequence<N>;
 
 #endif
 
-#if !__has_builtin(__is_same)
-
-template <typename, typename>
-inline constexpr bool is_same_type = false;
-
-template <typename T>
-inline constexpr bool is_same_type<T, T> = true;
-
-#endif
-
 template <auto X, auto... Xs>
 [[nodiscard, gnu::always_inline]] consteval auto variadic_max() noexcept
 {
@@ -156,32 +116,6 @@ template <auto X, auto... Xs>
     return result;
 }
 
-template <sz_t N>
-[[nodiscard, gnu::always_inline]] consteval auto smallest_int_type_for() noexcept
-{
-    if constexpr (N <= UINT8_MAX)
-    {
-        return std::uint8_t{};
-    }
-    else if constexpr (N <= UINT16_MAX)
-    {
-        return std::uint16_t{};
-    }
-    else if constexpr (N <= UINT32_MAX)
-    {
-        return std::uint32_t{};
-    }
-    else if constexpr (N <= UINT64_MAX)
-    {
-        return std::uint64_t{};
-    }
-    else
-    {
-        struct fail;
-        return fail{};
-    }
-}
-
 enum : sz_t
 {
     bad_index = static_cast<sz_t>(-1)
@@ -190,11 +124,7 @@ enum : sz_t
 template <typename T, typename... Ts>
 [[nodiscard, gnu::always_inline]] consteval sz_t index_of() noexcept
 {
-#if !__has_builtin(__is_same)
-    constexpr bool matches[]{is_same_type<T, Ts>...};
-#else
-    constexpr bool matches[]{__is_same(T, Ts)...};
-#endif
+    constexpr bool matches[]{SFML_PRIV_IS_SAME(T, Ts)...};
 
     for (sz_t i = 0; i < sizeof...(Ts); ++i)
     {
@@ -364,7 +294,7 @@ private:
         max_size      = impl::variadic_max<sizeof(Alternatives)...>()
     };
 
-    using index_type = decltype(impl::smallest_int_type_for<type_count>());
+    using index_type = unsigned char; // Support up to 255 alternatives
 
     template <impl::sz_t I>
     using nth_type = impl::type_at<I, Alternatives...>;

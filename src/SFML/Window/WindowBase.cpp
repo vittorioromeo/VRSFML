@@ -37,6 +37,7 @@
 
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
+#include <SFML/System/String.hpp>
 
 #include <vector>
 
@@ -59,9 +60,22 @@ WindowBase::WindowBase(VideoMode mode, const String& title, std::uint32_t style,
 
 
 ////////////////////////////////////////////////////////////
+WindowBase::WindowBase(VideoMode mode, const char* title, std::uint32_t style, State state) :
+WindowBase(mode, String(title), style, state)
+{
+}
+
+
+////////////////////////////////////////////////////////////
 WindowBase::WindowBase(VideoMode mode, const String& title, State state)
 {
     WindowBase::create(mode, title, Style::Default, state);
+}
+
+
+////////////////////////////////////////////////////////////
+WindowBase::WindowBase(VideoMode mode, const char* title, State state) : WindowBase(mode, String(title), state)
+{
 }
 
 
@@ -266,6 +280,13 @@ void WindowBase::setTitle(const String& title)
 {
     if (m_impl)
         m_impl->setTitle(title);
+}
+
+
+////////////////////////////////////////////////////////////
+void WindowBase::setTitle(const char* title)
+{
+    setTitle(String(title));
 }
 
 

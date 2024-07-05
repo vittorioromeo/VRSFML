@@ -34,8 +34,6 @@
 #include <SFML/System/LifetimeDependant.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
-#include <cstdlib>
-
 
 namespace sf
 {

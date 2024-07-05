@@ -31,6 +31,7 @@
 
 #include <SFML/System/LifetimeDependant.hpp>
 #include <SFML/System/LifetimeDependee.hpp>
+#include <SFML/System/SizeT.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
 #include <optional>
@@ -110,7 +111,7 @@ private:
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    using ResourceEntryIndex = decltype(sizeof(int)); // TODO: replace all of these with some header
+    using ResourceEntryIndex = priv::SizeT;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO

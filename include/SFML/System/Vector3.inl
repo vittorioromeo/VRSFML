@@ -101,6 +101,7 @@ constexpr Vector3<T> Vector3<T>::cwiseDiv(const Vector3<T>& rhs) const
     assert(rhs.x != 0 && "Vector3::cwiseDiv() cannot divide by 0 (x coordinate)");
     assert(rhs.y != 0 && "Vector3::cwiseDiv() cannot divide by 0 (y coordinate)");
     assert(rhs.z != 0 && "Vector3::cwiseDiv() cannot divide by 0 (z coordinate)");
+
     return Vector3<T>(x / rhs.x, y / rhs.y, z / rhs.z);
 }
 
@@ -186,6 +187,7 @@ template <typename T>
 constexpr Vector3<T> operator/(const Vector3<T>& left, T right)
 {
     assert(right != 0 && "Vector3::operator/ cannot divide by 0");
+
     return Vector3<T>(left.x / right, left.y / right, left.z / right);
 }
 
@@ -195,6 +197,7 @@ template <typename T>
 constexpr Vector3<T>& operator/=(Vector3<T>& left, T right)
 {
     assert(right != 0 && "Vector3::operator/= cannot divide by 0");
+
     left.x /= right;
     left.y /= right;
     left.z /= right;

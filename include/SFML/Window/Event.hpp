@@ -29,13 +29,15 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Config.hpp>
 
-#include <SFML/Window/Joystick.hpp>
+#include <SFML/Window/JoystickAxis.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/Mouse.hpp>
 #include <SFML/Window/Sensor.hpp>
 
 #include <SFML/System/Variant.hpp>
 #include <SFML/System/Vector2.hpp>
+
+#include <cstdint>
 
 
 namespace sf

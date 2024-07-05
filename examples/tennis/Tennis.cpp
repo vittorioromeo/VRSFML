@@ -9,6 +9,7 @@
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/View.hpp>
 
 #include <SFML/Audio/AudioContext.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
@@ -22,10 +23,11 @@
 
 #include <SFML/System/Angle.hpp>
 #include <SFML/System/Clock.hpp>
+#include <SFML/System/Path.hpp>
+#include <SFML/System/String.hpp>
 #include <SFML/System/Time.hpp>
 #include <SFML/System/Vector2.hpp>
 
-#include <SFML/System/Path.hpp>
 #include <random>
 #include <string>
 

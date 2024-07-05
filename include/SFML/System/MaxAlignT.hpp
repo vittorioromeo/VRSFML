@@ -24,11 +24,13 @@
 
 #pragma once
 
+namespace sf::priv
+{
 ////////////////////////////////////////////////////////////
-// Headers
-////////////////////////////////////////////////////////////
-#include <SFML/System/RemoveRef.hpp>
+struct MaxAlignT
+{
+    alignas(alignof(long long)) long long a;
+    alignas(alignof(long double)) long double b;
+};
 
-
-#define SFML_MOVE(...)    static_cast<typename ::sf::priv::RemoveRef<decltype(__VA_ARGS__)>::type&&>(__VA_ARGS__)
-#define SFML_FORWARD(...) static_cast<decltype(__VA_ARGS__)&&>(__VA_ARGS__)
+} // namespace sf::priv

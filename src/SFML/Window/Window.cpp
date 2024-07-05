@@ -33,6 +33,7 @@
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Sleep.hpp>
+#include <SFML/System/String.hpp>
 #include <SFML/System/Time.hpp>
 
 
@@ -60,9 +61,23 @@ Window()
 
 
 ////////////////////////////////////////////////////////////
+Window::Window(VideoMode mode, const char* title, std::uint32_t style, State state, const ContextSettings& settings) :
+Window(mode, String(title), style, state, settings)
+{
+}
+
+
+////////////////////////////////////////////////////////////
 Window::Window(VideoMode mode, const String& title, State state, const ContextSettings& settings) : Window()
 {
     Window::create(mode, title, sf::Style::Default, state, settings);
+}
+
+
+////////////////////////////////////////////////////////////
+Window::Window(VideoMode mode, const char* title, State state, const ContextSettings& settings) :
+Window(mode, String(title), state, settings)
+{
 }
 
 

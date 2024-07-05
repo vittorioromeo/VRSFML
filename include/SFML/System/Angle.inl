@@ -41,6 +41,7 @@ inline constexpr float tau = pi * 2.f;
 [[nodiscard]] constexpr float positiveRemainder(float a, float b)
 {
     assert(b > 0.f && "Cannot calculate remainder with non-positive divisor");
+
     const float val = a - static_cast<float>(static_cast<int>(a / b)) * b;
     return val >= 0.f ? val : val + b;
 }

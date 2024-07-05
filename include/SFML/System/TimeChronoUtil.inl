@@ -29,8 +29,6 @@
 
 #include <chrono>
 
-#include <cassert>
-
 
 namespace sf
 {

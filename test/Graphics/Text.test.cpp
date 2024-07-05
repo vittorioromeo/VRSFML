@@ -1,11 +1,13 @@
 #include <SFML/Graphics/Text.hpp>
 
 // Other 1st party headers
+#include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/Font.hpp>
 
 #include <SFML/System/LifetimeDependee.hpp>
 #include <SFML/System/Macros.hpp>
 #include <SFML/System/Path.hpp>
+#include <SFML/System/String.hpp>
 
 #include <Doctest.hpp>
 

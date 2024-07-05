@@ -30,19 +30,15 @@
 #include <SFML/System/Export.hpp>
 
 #include <SFML/System/Macros.hpp>
+#include <SFML/System/MaxAlignT.hpp>
+#include <SFML/System/RemoveRef.hpp>
+#include <SFML/System/SizeT.hpp>
 
 #include <cassert>
 
 
 namespace sf::priv
 {
-////////////////////////////////////////////////////////////
-struct MaxAlignTFixedFunction
-{
-    alignas(alignof(long long)) long long a;
-    alignas(alignof(long double)) long double b;
-};
-
 ////////////////////////////////////////////////////////////
 template <typename>
 inline constexpr bool isRvalueRef = false;
@@ -54,14 +50,14 @@ inline constexpr bool isRvalueRef<T&&> = true;
 /// \brief TODO
 ///
 ////////////////////////////////////////////////////////////
-template <typename TSignature, decltype(sizeof(int)) TStorageSize>
+template <typename TSignature, SizeT TStorageSize>
 class FixedFunction;
 
 ////////////////////////////////////////////////////////////
 /// \brief TODO
 ///
 ////////////////////////////////////////////////////////////
-template <typename TReturn, typename... Ts, decltype(sizeof(int)) TStorageSize>
+template <typename TReturn, typename... Ts, SizeT TStorageSize>
 class FixedFunction<TReturn(Ts...), TStorageSize>
 {
 private:
@@ -80,7 +76,7 @@ private:
 
     union
     {
-        alignas(MaxAlignTFixedFunction) char objStorage[TStorageSize];
+        alignas(MaxAlignT) char objStorage[TStorageSize];
         FnPtrType functionPtr;
     };
 

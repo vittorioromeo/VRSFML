@@ -17,7 +17,8 @@ set(SRC
     ${INCROOT}/Sleep.hpp
     ${SRCROOT}/String.cpp
     ${INCROOT}/String.hpp
-    ${INCROOT}/String.inl
+    ${INCROOT}/StringUtfUtils.hpp
+    ${INCROOT}/StringUtfUtils.inl
     ${INCROOT}/Time.hpp
     ${INCROOT}/Time.inl
     ${INCROOT}/TimeChronoUtil.hpp
@@ -55,6 +56,13 @@ set(SRC
     ${SRCROOT}/AlgorithmUtils.cpp
     ${INCROOT}/Macros.hpp
     ${INCROOT}/MathUtils.hpp
+    ${INCROOT}/Launder.hpp
+    ${INCROOT}/PlacementNew.hpp
+    ${INCROOT}/SizeT.hpp
+    ${INCROOT}/FixedFunction.hpp
+    ${INCROOT}/IsSame.hpp
+    ${INCROOT}/RemoveRef.hpp
+    ${INCROOT}/MaxAlignT.hpp
 )
 
 if(SFML_ENABLE_PCH)

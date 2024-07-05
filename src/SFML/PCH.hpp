@@ -60,17 +60,19 @@
 #include <mutex>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <vector>
 
 #include <cassert>
-#include <cmath>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
 
 #ifdef SFML_BUILD_EXAMPLES
 #include <random>
+
+#include <cmath>
 #endif // SFML_BUILD_EXAMPLES
 
 #ifdef SFML_BUILD_TEST_SUITE

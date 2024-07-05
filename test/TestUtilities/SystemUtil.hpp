@@ -16,6 +16,8 @@ class Angle;
 class String;
 class Time;
 
+struct FloatRect;
+
 template <typename>
 class Vector2;
 
@@ -60,6 +62,7 @@ bool operator==(const float& lhs, const Approx<float>& rhs);
 bool operator==(const sf::Vector2<float>& lhs, const Approx<sf::Vector2<float>>& rhs);
 bool operator==(const sf::Vector3<float>& lhs, const Approx<sf::Vector3<float>>& rhs);
 bool operator==(const sf::Angle& lhs, const Approx<sf::Angle>& rhs);
+bool operator==(const sf::FloatRect& lhs, const Approx<sf::FloatRect>& rhs);
 
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const Approx<T>& approx);

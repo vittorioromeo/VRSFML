@@ -27,8 +27,34 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/RemoveRef.hpp>
+#include <SFML/Window/Export.hpp>
 
 
-#define SFML_MOVE(...)    static_cast<typename ::sf::priv::RemoveRef<decltype(__VA_ARGS__)>::type&&>(__VA_ARGS__)
-#define SFML_FORWARD(...) static_cast<decltype(__VA_ARGS__)&&>(__VA_ARGS__)
+namespace sf::Joystick
+{
+////////////////////////////////////////////////////////////
+/// \brief Axes supported by SFML joysticks
+///
+////////////////////////////////////////////////////////////
+enum class Axis
+{
+    X,    //!< The X axis
+    Y,    //!< The Y axis
+    Z,    //!< The Z axis
+    R,    //!< The R axis
+    U,    //!< The U axis
+    V,    //!< The V axis
+    PovX, //!< The X axis of the point-of-view hat
+    PovY  //!< The Y axis of the point-of-view hat
+};
+
+} // namespace sf::Joystick
+
+
+////////////////////////////////////////////////////////////
+/// \namespace sf::Joystick
+/// \ingroup window
+///
+/// TODO
+///
+////////////////////////////////////////////////////////////

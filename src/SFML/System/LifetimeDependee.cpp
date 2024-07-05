@@ -31,6 +31,7 @@
 #include <SFML/System/Export.hpp>
 
 #include <SFML/System/Err.hpp>
+#include <SFML/System/Launder.hpp>
 #include <SFML/System/LifetimeDependee.hpp>
 
 #include <atomic>
@@ -39,13 +40,6 @@
 #include <cassert>
 #include <cctype>
 #include <cstdlib>
-
-#if __has_builtin(__builtin_launder)
-#define SFML_PRIV_LAUNDER __builtin_launder
-#else
-#include <new>
-#define SFML_PRIV_LAUNDER ::std::launder
-#endif
 
 
 using AtomicUInt = std::atomic<unsigned int>;
@@ -60,7 +54,7 @@ std::atomic<bool> lifetimeTrackingFatalErrorTriggered{false};
 
 [[gnu::always_inline]] inline AtomicUInt& asAtomicUInt(char* ptr)
 {
-    return *SFML_PRIV_LAUNDER(reinterpret_cast<AtomicUInt*>(ptr));
+    return *SFML_PRIV_LAUNDER_CAST(AtomicUInt*, ptr);
 }
 
 } // namespace
@@ -220,10 +214,8 @@ LifetimeDependee::~LifetimeDependee()
     priv::err() << "Another possible cause of this error is storing both a " << dependeeNameLower << " and a "
                 << dependantNameLower
                 << " together in a data structure (e.g., `class`, `struct`, container, pair, etc...), and then moving "
-                   "that "
-                   "data structure (i.e., returning it from a function, or using `std::move`) -- the internal "
-                   "references "
-                   "between the "
+                   "that data structure (i.e., returning it from a function, or using `std::move`) -- the internal "
+                   "references between the "
                 << dependeeNameLower << " and " << dependantNameLower
                 << " will not be updated, resulting in the same lifetime issue.\n\n";
 

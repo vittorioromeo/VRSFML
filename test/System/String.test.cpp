@@ -1,4 +1,5 @@
 #include <SFML/System/String.hpp>
+#include <SFML/System/StringUtfUtils.hpp>
 
 #include <Doctest.hpp>
 
@@ -367,7 +368,7 @@ TEST_CASE("[System] sf::String")
         SECTION("Nominal")
         {
             constexpr std::array<std::uint8_t, 4> characters{'w', 'x', 'y', 'z'};
-            const sf::String                      string = sf::String::fromUtf8(characters.begin(), characters.end());
+            const sf::String string = sf::StringUtfUtils::fromUtf8(characters.begin(), characters.end());
             CHECK(std::string(string) == "wxyz"s);
             CHECK(std::wstring(string) == L"wxyz"s);
             CHECK(string.toAnsiString() == "wxyz"s);
@@ -383,8 +384,8 @@ TEST_CASE("[System] sf::String")
         SECTION("Insufficient input")
         {
             constexpr std::array<std::uint8_t, 1> characters{251};
-            const sf::String                      string = sf::String::fromUtf8(characters.begin(), characters.end());
-            constexpr char32_t                    defaultReplacementCharacter = 0;
+            const sf::String   string = sf::StringUtfUtils::fromUtf8(characters.begin(), characters.end());
+            constexpr char32_t defaultReplacementCharacter = 0;
             CHECK(string.getSize() == 1);
             CHECK(string[0] == defaultReplacementCharacter);
         }
@@ -393,7 +394,7 @@ TEST_CASE("[System] sf::String")
     SECTION("fromUtf16()")
     {
         constexpr std::array<std::uint16_t, 4> characters{0xF1, 'x', 'y', 'z'};
-        const sf::String                       string = sf::String::fromUtf16(characters.begin(), characters.end());
+        const sf::String string = sf::StringUtfUtils::fromUtf16(characters.begin(), characters.end());
         CHECK(std::string(string) == select("\xF1xyz"s, "\0xyz"s));
         CHECK(std::wstring(string) == L"\xF1xyz"s);
         CHECK(string.toAnsiString() == select("\xF1xyz"s, "\0xyz"s));
@@ -409,7 +410,7 @@ TEST_CASE("[System] sf::String")
     SECTION("fromUtf32()")
     {
         constexpr std::array<std::uint32_t, 4> characters{'w', 0x104321, 'y', 'z'};
-        const sf::String                       string = sf::String::fromUtf32(characters.begin(), characters.end());
+        const sf::String string = sf::StringUtfUtils::fromUtf32(characters.begin(), characters.end());
         CHECK(std::string(string) == "w\0yz"s);
         CHECK(std::wstring(string) == select(L"wyz"s, L"w\U00104321yz"s));
         CHECK(string.toAnsiString() == "w\0yz"s);

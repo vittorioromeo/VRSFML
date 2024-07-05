@@ -6,22 +6,8 @@
 
 #include <cassert>
 
-#if __has_builtin(__is_base_of)
-namespace sf::priv
-{
+#if !__has_builtin(__is_base_of)
 
-template <typename B, typename D>
-struct IsBaseOf
-{
-    enum
-    {
-        value = __is_base_of(B, D)
-    };
-};
-
-} // namespace sf::priv
-
-#else
 #include <type_traits>
 
 namespace sf::priv
@@ -29,6 +15,7 @@ namespace sf::priv
 template <typename B, typename D>
 using IsBaseOf = std::is_base_of<B, D>;
 }
+
 #endif
 
 namespace sf::priv
@@ -93,9 +80,9 @@ public:
     template <typename U,
               typename UDeleter,
 #if __has_builtin(__is_base_of)
-              typename = EnableIf<IsBaseOf<T, U>::value>
-#else
               typename = EnableIf<__is_base_of(T, U)>
+#else
+              typename = EnableIf<IsBaseOf<T, U>::value>
 #endif
               >
     [[nodiscard, gnu::always_inline]] UniquePtr(UniquePtr<U, UDeleter>&& rhs) noexcept :
@@ -108,9 +95,9 @@ public:
     template <typename U,
               typename UDeleter,
 #if __has_builtin(__is_base_of)
-              typename = EnableIf<IsBaseOf<T, U>::value>
-#else
               typename = EnableIf<__is_base_of(T, U)>
+#else
+              typename = EnableIf<IsBaseOf<T, U>::value>
 #endif
               >
     [[gnu::always_inline]] UniquePtr& operator=(UniquePtr<U, UDeleter>&& rhs) noexcept

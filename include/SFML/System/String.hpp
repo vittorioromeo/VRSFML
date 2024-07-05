@@ -38,6 +38,8 @@
 
 namespace sf
 {
+class StringUtfUtils;
+
 ////////////////////////////////////////////////////////////
 /// \brief Character traits for std::uint8_t
 ///
@@ -83,8 +85,10 @@ using U8String = std::basic_string<std::uint8_t, U8StringCharTraits>;
 ///        conversions between types and encodings
 ///
 ////////////////////////////////////////////////////////////
-class SFML_SYSTEM_API String
+class [[nodiscard]] SFML_SYSTEM_API String
 {
+    friend StringUtfUtils;
+
 public:
     ////////////////////////////////////////////////////////////
     // Types
@@ -106,7 +110,7 @@ public:
     /// This constructor creates an empty string.
     ///
     ////////////////////////////////////////////////////////////
-    String() = default;
+    [[nodiscard]] String() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from a single ANSI character and a locale
@@ -118,7 +122,7 @@ public:
     /// \param locale   Locale to use for conversion
     ///
     ////////////////////////////////////////////////////////////
-    String(char ansiChar, const std::locale& locale = {});
+    [[nodiscard]] String(char ansiChar, const std::locale& locale = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from single wide character
@@ -126,7 +130,7 @@ public:
     /// \param wideChar Wide character to convert
     ///
     ////////////////////////////////////////////////////////////
-    String(wchar_t wideChar);
+    [[nodiscard]] String(wchar_t wideChar);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from single UTF-32 character
@@ -134,7 +138,7 @@ public:
     /// \param utf32Char UTF-32 character to convert
     ///
     ////////////////////////////////////////////////////////////
-    String(char32_t utf32Char);
+    [[nodiscard]] String(char32_t utf32Char);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from a null-terminated C-style ANSI string and a locale
@@ -146,7 +150,7 @@ public:
     /// \param locale     Locale to use for conversion
     ///
     ////////////////////////////////////////////////////////////
-    String(const char* ansiString, const std::locale& locale = {});
+    [[nodiscard]] String(const char* ansiString, const std::locale& locale = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from an ANSI string and a locale
@@ -158,7 +162,7 @@ public:
     /// \param locale     Locale to use for conversion
     ///
     ////////////////////////////////////////////////////////////
-    String(const std::string& ansiString, const std::locale& locale = {});
+    [[nodiscard]] String(const std::string& ansiString, const std::locale& locale = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from null-terminated C-style wide string
@@ -166,7 +170,7 @@ public:
     /// \param wideString Wide string to convert
     ///
     ////////////////////////////////////////////////////////////
-    String(const wchar_t* wideString);
+    [[nodiscard]] String(const wchar_t* wideString);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from a wide string
@@ -174,7 +178,7 @@ public:
     /// \param wideString Wide string to convert
     ///
     ////////////////////////////////////////////////////////////
-    String(const std::wstring& wideString);
+    [[nodiscard]] String(const std::wstring& wideString);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from a null-terminated C-style UTF-32 string
@@ -182,7 +186,7 @@ public:
     /// \param utf32String UTF-32 string to assign
     ///
     ////////////////////////////////////////////////////////////
-    String(const char32_t* utf32String);
+    [[nodiscard]] String(const char32_t* utf32String);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from an UTF-32 string
@@ -190,53 +194,7 @@ public:
     /// \param utf32String UTF-32 string to assign
     ///
     ////////////////////////////////////////////////////////////
-    String(std::u32string utf32String);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Create a new sf::String from a UTF-8 encoded string
-    ///
-    /// \param begin Forward iterator to the beginning of the UTF-8 sequence
-    /// \param end   Forward iterator to the end of the UTF-8 sequence
-    ///
-    /// \return A sf::String containing the source string
-    ///
-    /// \see fromUtf16, fromUtf32
-    ///
-    ////////////////////////////////////////////////////////////
-    template <typename T>
-    [[nodiscard]] static String fromUtf8(T begin, T end);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Create a new sf::String from a UTF-16 encoded string
-    ///
-    /// \param begin Forward iterator to the beginning of the UTF-16 sequence
-    /// \param end   Forward iterator to the end of the UTF-16 sequence
-    ///
-    /// \return A sf::String containing the source string
-    ///
-    /// \see fromUtf8, fromUtf32
-    ///
-    ////////////////////////////////////////////////////////////
-    template <typename T>
-    [[nodiscard]] static String fromUtf16(T begin, T end);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Create a new sf::String from a UTF-32 encoded string
-    ///
-    /// This function is provided for consistency, it is equivalent to
-    /// using the constructors that takes a const char32_t* or
-    /// a std::u32string.
-    ///
-    /// \param begin Forward iterator to the beginning of the UTF-32 sequence
-    /// \param end   Forward iterator to the end of the UTF-32 sequence
-    ///
-    /// \return A sf::String containing the source string
-    ///
-    /// \see fromUtf8, fromUtf16
-    ///
-    ////////////////////////////////////////////////////////////
-    template <typename T>
-    [[nodiscard]] static String fromUtf32(T begin, T end);
+    [[nodiscard]] String(std::u32string utf32String);
 
     ////////////////////////////////////////////////////////////
     /// \brief Implicit conversion operator to std::string (ANSI string)
@@ -636,8 +594,6 @@ private:
 [[nodiscard]] SFML_SYSTEM_API String operator+(const String& left, const String& right);
 
 } // namespace sf
-
-#include <SFML/System/String.inl>
 
 
 ////////////////////////////////////////////////////////////
