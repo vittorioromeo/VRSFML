@@ -3,6 +3,7 @@
 // Other 1st party headers
 #include <SFML/System/FileInputStream.hpp>
 #include <SFML/System/Macros.hpp>
+#include <SFML/System/Path.hpp>
 
 #include <Doctest.hpp>
 

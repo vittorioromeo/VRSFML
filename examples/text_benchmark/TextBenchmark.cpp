@@ -2,6 +2,8 @@
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/Graphics/Text.hpp>
 
+#include <SFML/System/Path.hpp>
+
 #include <cstdlib>
 
 int main()

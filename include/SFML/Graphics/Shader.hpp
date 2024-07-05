@@ -36,7 +36,7 @@
 #include <SFML/System/InPlacePImpl.hpp>
 #include <SFML/System/PassKey.hpp>
 
-#include <filesystem>
+
 #include <optional>
 #include <string_view>
 
@@ -46,6 +46,7 @@
 namespace sf
 {
 class InputStream;
+class Path;
 class Texture;
 
 ////////////////////////////////////////////////////////////
@@ -135,7 +136,7 @@ public:
     /// \see loadFromMemory, loadFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Shader> loadFromFile(const std::filesystem::path& filename, Type type);
+    [[nodiscard]] static std::optional<Shader> loadFromFile(const Path& filename, Type type);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load both the vertex and fragment shaders from files
@@ -156,8 +157,8 @@ public:
     /// \see loadFromMemory, loadFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Shader> loadFromFile(const std::filesystem::path& vertexShaderFilename,
-                                                            const std::filesystem::path& fragmentShaderFilename);
+    [[nodiscard]] static std::optional<Shader> loadFromFile(const Path& vertexShaderFilename,
+                                                            const Path& fragmentShaderFilename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the vertex, geometry and fragment shaders from files
@@ -179,9 +180,9 @@ public:
     /// \see loadFromMemory, loadFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Shader> loadFromFile(const std::filesystem::path& vertexShaderFilename,
-                                                            const std::filesystem::path& geometryShaderFilename,
-                                                            const std::filesystem::path& fragmentShaderFilename);
+    [[nodiscard]] static std::optional<Shader> loadFromFile(const Path& vertexShaderFilename,
+                                                            const Path& geometryShaderFilename,
+                                                            const Path& fragmentShaderFilename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the vertex, geometry or fragment shader from a source code in memory

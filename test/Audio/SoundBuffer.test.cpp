@@ -2,6 +2,7 @@
 
 // Other 1st party headers
 #include <SFML/System/FileInputStream.hpp>
+#include <SFML/System/Path.hpp>
 #include <SFML/System/Time.hpp>
 
 #include <Doctest.hpp>
@@ -102,7 +103,7 @@ TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("saveToFile()")
     {
-        const auto filename = std::filesystem::temp_directory_path() / "ding.flac";
+        const auto filename = sf::Path::tempDirectoryPath() / "ding.flac";
 
         {
             const auto soundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
@@ -116,6 +117,6 @@ TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
         CHECK(soundBuffer.getChannelCount() == 1);
         CHECK(soundBuffer.getDuration() == sf::microseconds(1990884));
 
-        CHECK(std::filesystem::remove(filename));
+        CHECK(filename.remove());
     }
 }

@@ -35,6 +35,7 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InputStream.hpp>
 #include <SFML/System/Macros.hpp>
+#include <SFML/System/Path.hpp>
 #include <SFML/System/PathUtils.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <SFML/System/Vector3.hpp>
@@ -98,8 +99,7 @@ struct [[nodiscard]] BufferSlice
 };
 
 // Read the contents of a file into an array of char
-[[nodiscard]] std::optional<BufferSlice> appendFileContentsToVector(const std::filesystem::path& filename,
-                                                                    std::vector<char>&           buffer)
+[[nodiscard]] std::optional<BufferSlice> appendFileContentsToVector(const sf::Path& filename, std::vector<char>& buffer)
 {
     std::ifstream file(filename, std::ios_base::binary);
 
@@ -409,7 +409,7 @@ Shader& Shader::operator=(Shader&& right) noexcept
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Shader> Shader::loadFromFile(const std::filesystem::path& filename, Type type)
+std::optional<Shader> Shader::loadFromFile(const Path& filename, Type type)
 {
     // Prepare thread-local buffer
     std::vector<char>& buffer = getThreadLocalCharBuffer();
@@ -437,8 +437,7 @@ std::optional<Shader> Shader::loadFromFile(const std::filesystem::path& filename
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Shader> Shader::loadFromFile(const std::filesystem::path& vertexShaderFilename,
-                                           const std::filesystem::path& fragmentShaderFilename)
+std::optional<Shader> Shader::loadFromFile(const Path& vertexShaderFilename, const Path& fragmentShaderFilename)
 {
     // Prepare thread-local buffer
     std::vector<char>& buffer = getThreadLocalCharBuffer();
@@ -468,9 +467,9 @@ std::optional<Shader> Shader::loadFromFile(const std::filesystem::path& vertexSh
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Shader> Shader::loadFromFile(const std::filesystem::path& vertexShaderFilename,
-                                           const std::filesystem::path& geometryShaderFilename,
-                                           const std::filesystem::path& fragmentShaderFilename)
+std::optional<Shader> Shader::loadFromFile(const Path& vertexShaderFilename,
+                                           const Path& geometryShaderFilename,
+                                           const Path& fragmentShaderFilename)
 {
     // Prepare thread-local buffer
     std::vector<char>& buffer = getThreadLocalCharBuffer();
@@ -1226,24 +1225,23 @@ Shader& Shader::operator=(Shader&& right) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Shader> Shader::loadFromFile(const std::filesystem::path& /* filename */, Type /* type */)
+std::optional<Shader> Shader::loadFromFile(const Path& /* filename */, Type /* type */)
 {
     return std::nullopt;
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Shader> Shader::loadFromFile(const std::filesystem::path& /* vertexShaderFilename */,
-                                           const std::filesystem::path& /* fragmentShaderFilename */)
+std::optional<Shader> Shader::loadFromFile(const Path& /* vertexShaderFilename */, const Path& /* fragmentShaderFilename */)
 {
     return std::nullopt;
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Shader> Shader::loadFromFile(const std::filesystem::path& /* vertexShaderFilename */,
-                                           const std::filesystem::path& /* geometryShaderFilename */,
-                                           const std::filesystem::path& /* fragmentShaderFilename */)
+std::optional<Shader> Shader::loadFromFile(const Path& /* vertexShaderFilename */,
+                                           const Path& /* geometryShaderFilename */,
+                                           const Path& /* fragmentShaderFilename */)
 {
     return std::nullopt;
 }

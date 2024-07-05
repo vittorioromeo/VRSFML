@@ -31,9 +31,9 @@
 
 #include <SFML/Network/TcpSocket.hpp>
 
+#include <SFML/System/Path.hpp>
 #include <SFML/System/Time.hpp>
 
-#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -201,13 +201,13 @@ public:
         /// \return Directory name
         ///
         ////////////////////////////////////////////////////////////
-        [[nodiscard]] const std::filesystem::path& getDirectory() const;
+        [[nodiscard]] const Path& getDirectory() const;
 
     private:
         ////////////////////////////////////////////////////////////
         // Member data
         ////////////////////////////////////////////////////////////
-        std::filesystem::path m_directory; //!< Directory extracted from the response message
+        Path m_directory; //!< Directory extracted from the response message
     };
 
 
@@ -438,7 +438,7 @@ public:
     /// \see deleteFile
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Response renameFile(const std::filesystem::path& file, const std::filesystem::path& newName);
+    [[nodiscard]] Response renameFile(const Path& file, const Path& newName);
 
     ////////////////////////////////////////////////////////////
     /// \brief Remove an existing file
@@ -455,7 +455,7 @@ public:
     /// \see renameFile
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Response deleteFile(const std::filesystem::path& name);
+    [[nodiscard]] Response deleteFile(const Path& name);
 
     ////////////////////////////////////////////////////////////
     /// \brief Download a file from the server
@@ -477,9 +477,7 @@ public:
     /// \see upload
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Response download(const std::filesystem::path& remoteFile,
-                                    const std::filesystem::path& localPath,
-                                    TransferMode                 mode = TransferMode::Binary);
+    [[nodiscard]] Response download(const Path& remoteFile, const Path& localPath, TransferMode mode = TransferMode::Binary);
 
     ////////////////////////////////////////////////////////////
     /// \brief Upload a file to the server
@@ -502,10 +500,10 @@ public:
     /// \see download
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Response upload(const std::filesystem::path& localFile,
-                                  const std::filesystem::path& remotePath,
-                                  TransferMode                 mode   = TransferMode::Binary,
-                                  bool                         append = false);
+    [[nodiscard]] Response upload(const Path&  localFile,
+                                  const Path&  remotePath,
+                                  TransferMode mode   = TransferMode::Binary,
+                                  bool         append = false);
 
     ////////////////////////////////////////////////////////////
     /// \brief Send a command to the FTP server

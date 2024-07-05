@@ -34,7 +34,6 @@
 #include <SFML/System/PassKey.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
-#include <filesystem>
 #include <optional>
 #include <vector>
 
@@ -45,6 +44,7 @@
 namespace sf
 {
 class InputStream;
+class Path;
 class SoundFileReader;
 class Time;
 
@@ -89,7 +89,7 @@ public:
     /// \return Input sound file if the file was successfully opened, otherwise `std::nullopt`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<InputSoundFile> openFromFile(const std::filesystem::path& filename);
+    [[nodiscard]] static std::optional<InputSoundFile> openFromFile(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a sound file in memory for reading

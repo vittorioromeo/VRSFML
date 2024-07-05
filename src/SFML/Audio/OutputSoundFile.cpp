@@ -31,6 +31,7 @@
 
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Macros.hpp>
+#include <SFML/System/Path.hpp>
 
 #include <cassert>
 
@@ -51,7 +52,7 @@ OutputSoundFile& OutputSoundFile::operator=(OutputSoundFile&&) noexcept = defaul
 
 ////////////////////////////////////////////////////////////
 std::optional<OutputSoundFile> OutputSoundFile::openFromFile(
-    const std::filesystem::path&     filename,
+    const Path&                      filename,
     unsigned int                     sampleRate,
     unsigned int                     channelCount,
     const std::vector<SoundChannel>& channelMap)

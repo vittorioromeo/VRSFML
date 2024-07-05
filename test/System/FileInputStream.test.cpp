@@ -1,11 +1,11 @@
 #include <SFML/System/FileInputStream.hpp>
 #include <SFML/System/Macros.hpp>
+#include <SFML/System/Path.hpp>
 
 #include <Doctest.hpp>
 
 #include <StringifyOptionalUtil.hpp>
 
-#include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -16,14 +16,14 @@
 
 namespace
 {
-std::filesystem::path getTemporaryFilePath()
+sf::Path getTemporaryFilePath()
 {
     static int counter = 0;
 
     std::ostringstream oss;
     oss << "sfmltemp" << counter++ << ".tmp";
 
-    return std::filesystem::temp_directory_path() / oss.str();
+    return sf::Path::tempDirectoryPath() / oss.str();
 }
 
 class TemporaryFile
@@ -42,7 +42,7 @@ public:
     // Close and delete the generated file.
     ~TemporaryFile()
     {
-        [[maybe_unused]] const bool removed = std::filesystem::remove(m_path);
+        [[maybe_unused]] const bool removed = m_path.remove();
         assert(removed && "m_path failed to be removed from filesystem");
     }
 
@@ -52,13 +52,13 @@ public:
     TemporaryFile& operator=(const TemporaryFile&) = delete;
 
     // Return the randomly generated path.
-    [[nodiscard]] const std::filesystem::path& getPath() const
+    [[nodiscard]] const sf::Path& getPath() const
     {
         return m_path;
     }
 
 private:
-    std::filesystem::path m_path;
+    sf::Path m_path;
 };
 } // namespace
 

@@ -25,9 +25,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/System/Path.hpp>
 #include <SFML/System/PathUtils.hpp>
 
-#include <filesystem>
 #include <sstream>
 #include <string>
 
@@ -35,11 +35,11 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-std::string formatDebugPathInfo(const std::filesystem::path& path)
+std::string formatDebugPathInfo(const Path& path)
 {
     std::ostringstream oss;
-    oss << "    Provided path: " << path << '\n' //
-        << "    Absolute path: " << std::filesystem::absolute(path);
+    oss << "    Provided path: " << path << '\n'; // TODO
+//        << "    Absolute path: " << std::filesystem::absolute(path);
     return oss.str();
 }
 

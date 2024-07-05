@@ -27,7 +27,7 @@
 
 #import "NSString+stdstring.h"
 
-#include <filesystem>
+#include <SFML/System/Path.hpp>
 
 // These define are used for converting the color of the NSPopUpButton
 #define BLUE  @"Blue"
@@ -50,7 +50,7 @@ struct SFMLmainWindow
         text.setFillColor(sf::Color::White);
     }
 
-    std::filesystem::path resPath{[[[NSBundle mainBundle] resourcePath] tostdstring]};
+    sf::Path resPath{[[[NSBundle mainBundle] resourcePath] tostdstring]};
     sf::RenderWindow      renderWindow;
     sf::Font              font{sf::Font::openFromFile(resPath / "tuffy.ttf").value()};
     sf::Text              text{font};

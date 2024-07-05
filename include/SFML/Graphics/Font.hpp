@@ -36,7 +36,6 @@
 #include <SFML/System/PassKey.hpp>
 #include <SFML/System/Vector2.hpp>
 
-#include <filesystem>
 #include <optional>
 #include <string>
 
@@ -54,8 +53,9 @@ class ResourceStream;
 namespace sf
 {
 class InputStream;
-class Texture;
+class Path;
 class Text;
+class Texture;
 struct Glyph;
 
 ////////////////////////////////////////////////////////////
@@ -124,7 +124,7 @@ public:
     /// \see openFromMemory, openFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Font> openFromFile(const std::filesystem::path& filename);
+    [[nodiscard]] static std::optional<Font> openFromFile(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open the font from a file in memory

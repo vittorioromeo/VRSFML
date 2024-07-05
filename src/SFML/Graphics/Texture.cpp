@@ -37,6 +37,7 @@
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Macros.hpp>
+#include <SFML/System/Path.hpp>
 
 #include <atomic>
 
@@ -266,7 +267,7 @@ std::optional<Texture> Texture::create(const Vector2u& size, bool sRgb)
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Texture> Texture::loadFromFile(const std::filesystem::path& filename, bool sRgb, const IntRect& area)
+std::optional<Texture> Texture::loadFromFile(const Path& filename, bool sRgb, const IntRect& area)
 {
     if (const auto image = sf::Image::loadFromFile(filename))
         return loadFromImage(*image, sRgb, area);

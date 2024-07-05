@@ -35,7 +35,6 @@
 #include <SFML/System/PassKey.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
-#include <filesystem>
 #include <optional>
 #include <vector>
 
@@ -50,6 +49,7 @@ namespace sf
 {
 class InputSoundFile;
 class InputStream;
+class Path;
 class Time;
 } // namespace sf
 
@@ -99,7 +99,7 @@ public:
     /// \see openFromMemory, openFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Music> openFromFile(const std::filesystem::path& filename);
+    [[nodiscard]] static std::optional<Music> openFromFile(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a music from an audio file in memory

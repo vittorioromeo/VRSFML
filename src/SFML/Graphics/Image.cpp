@@ -31,6 +31,7 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InputStream.hpp>
 #include <SFML/System/Macros.hpp>
+#include <SFML/System/Path.hpp>
 #include <SFML/System/PathUtils.hpp>
 #include <SFML/System/StringUtils.hpp>
 #include <SFML/System/UniquePtr.hpp>
@@ -166,7 +167,7 @@ m_pixels(SFML_MOVE(pixels))
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Image> Image::loadFromFile(const std::filesystem::path& filename)
+std::optional<Image> Image::loadFromFile(const Path& filename)
 {
 #ifdef SFML_SYSTEM_ANDROID
 
@@ -267,7 +268,7 @@ std::optional<Image> Image::loadFromStream(InputStream& stream)
 
 
 ////////////////////////////////////////////////////////////
-bool Image::saveToFile(const std::filesystem::path& filename) const
+bool Image::saveToFile(const Path& filename) const
 {
     // Make sure the image is not empty
     if (!m_pixels.empty() && m_size.x > 0 && m_size.y > 0)
@@ -275,8 +276,8 @@ bool Image::saveToFile(const std::filesystem::path& filename) const
         // Deduce the image type from its extension
 
         // Extract the extension
-        const std::filesystem::path extension     = filename.extension();
-        const Vector2i              convertedSize = Vector2i(m_size);
+        const Path     extension     = filename.extension();
+        const Vector2i convertedSize = Vector2i(m_size);
 
         if (extension == ".bmp")
         {

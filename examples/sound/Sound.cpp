@@ -12,6 +12,7 @@
 #include <SFML/System/Time.hpp>
 
 #include <iostream>
+#include <SFML/System/Path.hpp>
 
 
 ////////////////////////////////////////////////////////////
@@ -51,7 +52,7 @@ void playSound(sf::PlaybackDevice& playbackDevice)
 /// Play a music
 ///
 ////////////////////////////////////////////////////////////
-void playMusic(sf::PlaybackDevice& playbackDevice, const std::filesystem::path& filename)
+void playMusic(sf::PlaybackDevice& playbackDevice, const sf::Path& filename)
 {
     // Load an ogg music file
     auto music = sf::Music::openFromFile("resources" / filename).value();

@@ -32,6 +32,7 @@
 #endif
 
 #include <SFML/System/Macros.hpp>
+#include <SFML/System/Path.hpp>
 
 #include <cassert>
 #include <cstddef>
@@ -58,7 +59,7 @@ FileInputStream& FileInputStream::operator=(FileInputStream&&) noexcept = defaul
 
 
 ////////////////////////////////////////////////////////////
-std::optional<FileInputStream> FileInputStream::open(const std::filesystem::path& filename)
+std::optional<FileInputStream> FileInputStream::open(const Path& filename)
 {
 #ifdef SFML_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)

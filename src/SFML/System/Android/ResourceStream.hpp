@@ -34,8 +34,13 @@
 
 #include <android/asset_manager.h>
 
-#include <filesystem>
 #include <string>
+
+
+namespace sf
+{
+class Path;
+} // namespace sf
 
 
 namespace sf::priv
@@ -53,7 +58,7 @@ public:
     /// \param filename Filename of the asset
     ///
     ////////////////////////////////////////////////////////////
-    ResourceStream(const std::filesystem::path& filename);
+    ResourceStream(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Read data from the asset

@@ -9,6 +9,8 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/VideoMode.hpp>
 
+#include <SFML/System/Path.hpp>
+
 #include <string>
 #include <vector>
 

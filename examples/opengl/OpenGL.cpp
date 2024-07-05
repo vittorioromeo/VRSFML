@@ -18,7 +18,7 @@
 #include <SFML/System/Time.hpp>
 
 #include <array>
-#include <filesystem>
+#include <SFML/System/Path.hpp>
 #include <iostream>
 
 #include <cstdlib>
@@ -34,7 +34,7 @@
 #define GL_SRGB8_ALPHA8 0x8C43
 #endif
 
-std::filesystem::path resourcesDir()
+sf::Path resourcesDir()
 {
 #ifdef SFML_SYSTEM_IOS
     return "";

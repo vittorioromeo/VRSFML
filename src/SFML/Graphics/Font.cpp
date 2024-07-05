@@ -36,6 +36,7 @@
 #include <SFML/System/InputStream.hpp>
 #include <SFML/System/Macros.hpp>
 #include <SFML/System/MathUtils.hpp>
+#include <SFML/System/Path.hpp>
 #include <SFML/System/PathUtils.hpp>
 
 #include <ft2build.h>
@@ -195,7 +196,7 @@ Font& Font::operator=(Font&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Font> Font::openFromFile(const std::filesystem::path& filename)
+std::optional<Font> Font::openFromFile(const Path& filename)
 {
 #ifndef SFML_SYSTEM_ANDROID
 

@@ -2,6 +2,7 @@
 
 // Other 1st party headers
 #include <SFML/System/FileInputStream.hpp>
+#include <SFML/System/Path.hpp>
 
 #include <Doctest.hpp>
 
@@ -211,7 +212,7 @@ TEST_CASE("[Graphics] sf::Image")
 
         SECTION("Successful save")
         {
-            auto filename = std::filesystem::temp_directory_path();
+            auto filename = sf::Path::tempDirectoryPath();
 
             SECTION("To .bmp")
             {
@@ -237,7 +238,7 @@ TEST_CASE("[Graphics] sf::Image")
             CHECK(loadedImage.getSize() == sf::Vector2u(256, 256));
             CHECK(loadedImage.getPixelsPtr() != nullptr);
 
-            CHECK(std::filesystem::remove(filename));
+            CHECK(filename.remove());
         }
     }
 

@@ -119,7 +119,7 @@ public:
 ///
 ///     ZipStream(const std::string& archive);
 ///
-///     [[nodiscard]] bool open(const std::filesystem::path& filename);
+///     [[nodiscard]] bool open(const Path& filename);
 ///
 ///     [[nodiscard]] std::optional<std::size_t> read(void* data, std::size_t size);
 ///

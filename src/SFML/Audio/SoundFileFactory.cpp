@@ -37,6 +37,7 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/FileInputStream.hpp>
 #include <SFML/System/MemoryInputStream.hpp>
+#include <SFML/System/Path.hpp>
 #include <SFML/System/PathUtils.hpp>
 
 #include <unordered_map>
@@ -49,7 +50,7 @@ template <typename T>
 using CreateFnPtr = sf::priv::UniquePtr<T> (*)();
 
 using ReaderCheckFnPtr = bool (*)(sf::InputStream&);
-using WriterCheckFnPtr = bool (*)(const std::filesystem::path&);
+using WriterCheckFnPtr = bool (*)(const sf::Path&);
 
 using ReaderFactoryMap = std::unordered_map<CreateFnPtr<sf::SoundFileReader>, ReaderCheckFnPtr>;
 using WriterFactoryMap = std::unordered_map<CreateFnPtr<sf::SoundFileWriter>, WriterCheckFnPtr>;
@@ -86,7 +87,7 @@ using WriterFactoryMap = std::unordered_map<CreateFnPtr<sf::SoundFileWriter>, Wr
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-priv::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromFilename(const std::filesystem::path& filename)
+priv::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromFilename(const Path& filename)
 {
     // Wrap the input file into a file stream
     auto stream = FileInputStream::open(filename);
@@ -165,7 +166,7 @@ priv::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromStream(InputS
 
 
 ////////////////////////////////////////////////////////////
-priv::UniquePtr<SoundFileWriter> SoundFileFactory::createWriterFromFilename(const std::filesystem::path& filename)
+priv::UniquePtr<SoundFileWriter> SoundFileFactory::createWriterFromFilename(const Path& filename)
 {
     // Test the filename in all the registered factories
     for (const auto& [fpCreate, fpCheck] : getWriterFactoryMap())

@@ -125,7 +125,7 @@ std::optional<Music> Music::tryOpenFromInputSoundFile(std::optional<InputSoundFi
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Music> Music::openFromFile(const std::filesystem::path& filename)
+std::optional<Music> Music::openFromFile(const Path& filename)
 {
     return tryOpenFromInputSoundFile(InputSoundFile::openFromFile(filename), "file");
 }

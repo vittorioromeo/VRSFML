@@ -31,6 +31,7 @@
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Macros.hpp>
+#include <SFML/System/Path.hpp>
 
 #include <fstream>
 #include <sstream>
@@ -120,7 +121,7 @@ Ftp::DirectoryResponse::DirectoryResponse(const Ftp::Response& response) : Ftp::
 
 
 ////////////////////////////////////////////////////////////
-const std::filesystem::path& Ftp::DirectoryResponse::getDirectory() const
+const Path& Ftp::DirectoryResponse::getDirectory() const
 {
     return m_directory;
 }
@@ -266,7 +267,7 @@ Ftp::Response Ftp::deleteDirectory(const std::string& name)
 
 
 ////////////////////////////////////////////////////////////
-Ftp::Response Ftp::renameFile(const std::filesystem::path& file, const std::filesystem::path& newName)
+Ftp::Response Ftp::renameFile(const Path& file, const Path& newName)
 {
     Response response = sendCommand("RNFR", file.string());
     if (response.isOk())
@@ -277,14 +278,14 @@ Ftp::Response Ftp::renameFile(const std::filesystem::path& file, const std::file
 
 
 ////////////////////////////////////////////////////////////
-Ftp::Response Ftp::deleteFile(const std::filesystem::path& name)
+Ftp::Response Ftp::deleteFile(const Path& name)
 {
     return sendCommand("DELE", name.string());
 }
 
 
 ////////////////////////////////////////////////////////////
-Ftp::Response Ftp::download(const std::filesystem::path& remoteFile, const std::filesystem::path& localPath, TransferMode mode)
+Ftp::Response Ftp::download(const Path& remoteFile, const Path& localPath, TransferMode mode)
 {
     // Open a data channel using the given transfer mode
     DataChannel data(*this);
@@ -300,8 +301,8 @@ Ftp::Response Ftp::download(const std::filesystem::path& remoteFile, const std::
         return response;
 
     // Create the file and truncate it if necessary
-    const std::filesystem::path filepath = localPath / remoteFile.filename();
-    std::ofstream               file(filepath, std::ios_base::binary | std::ios_base::trunc);
+    const Path    filepath = localPath / remoteFile.filename();
+    std::ofstream file(filepath, std::ios_base::binary | std::ios_base::trunc);
 
     if (!file)
     {
@@ -320,17 +321,15 @@ Ftp::Response Ftp::download(const std::filesystem::path& remoteFile, const std::
 
     // If the download was unsuccessful, delete the partial file
     if (!response.isOk())
-        std::filesystem::remove(filepath);
+        if (!filepath.remove())
+            priv::err() << "Failed to delete '" << filepath << '\'' << priv::errEndl;
 
     return response;
 }
 
 
 ////////////////////////////////////////////////////////////
-Ftp::Response Ftp::upload(const std::filesystem::path& localFile,
-                          const std::filesystem::path& remotePath,
-                          TransferMode                 mode,
-                          bool                         append)
+Ftp::Response Ftp::upload(const Path& localFile, const Path& remotePath, TransferMode mode, bool append)
 {
     Response response; //  Use a single local variable for NRVO
 
