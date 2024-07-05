@@ -44,9 +44,9 @@
 
 namespace sf
 {
-class Time;
 class InputStream;
 class SoundFileReader;
+class Time;
 
 ////////////////////////////////////////////////////////////
 /// \brief Provide read access to sound files

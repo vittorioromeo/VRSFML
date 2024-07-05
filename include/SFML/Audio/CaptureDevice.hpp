@@ -180,12 +180,12 @@ private:
     void setProcessSamplesFunc(SoundRecorder* soundRecorder, ProcessSamplesFunc processSamplesFunc);
 
     struct Impl;
-    priv::UniquePtr<Impl> m_impl;
+    priv::UniquePtr<Impl> m_impl; //!< Implementation details
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking
     ////////////////////////////////////////////////////////////
-    SFML_DEFINE_LIFETIME_DEPENDANT(AudioContext);
+    SFML_DEFINE_LIFETIME_DEPENDANT(AudioContext); // TODO: move inside impl?
 };
 
 } // namespace sf

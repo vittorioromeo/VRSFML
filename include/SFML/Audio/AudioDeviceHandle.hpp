@@ -32,8 +32,6 @@
 #include <SFML/System/InPlacePImpl.hpp>
 #include <SFML/System/PassKey.hpp>
 
-#include <string_view>
-
 
 ////////////////////////////////////////////////////////////
 // Forward declarations
@@ -88,7 +86,7 @@ public:
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string_view getName() const;
+    [[nodiscard]] const char* getName() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO
@@ -153,7 +151,7 @@ public:
 
 private:
     struct Impl;
-    InPlacePImpl<Impl, 2048> m_impl;
+    InPlacePImpl<Impl, 2048> m_impl; //!< Implementation details
 };
 
 ////////////////////////////////////////////////////////////

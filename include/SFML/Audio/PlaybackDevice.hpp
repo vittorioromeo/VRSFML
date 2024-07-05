@@ -29,8 +29,6 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
-#include <SFML/Audio/PlaybackDeviceHandle.hpp>
-
 #include <SFML/System/LifetimeDependant.hpp>
 #include <SFML/System/LifetimeDependee.hpp>
 #include <SFML/System/UniquePtr.hpp>
@@ -47,6 +45,7 @@ namespace sf
 {
 class AudioContext;
 class Listener;
+class PlaybackDeviceHandle;
 class Sound;
 class SoundStream;
 
@@ -103,11 +102,15 @@ public:
     [[nodiscard]] bool updateListener(const Listener& listener);
 
 private:
+    // TODO
+    using SoundBase = priv::MiniaudioUtils::SoundBase;
+    friend SoundBase;
+
     ////////////////////////////////////////////////////////////
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    using ResourceEntryIndex = std::size_t;
+    using ResourceEntryIndex = decltype(sizeof(int)); // TODO: replace all of these with some header
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO
@@ -141,19 +144,17 @@ private:
     ////////////////////////////////////////////////////////////
     void unregisterResource(ResourceEntryIndex resourceEntryIndex);
 
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] void* getMAEngine() const;
 
-
+    ////////////////////////////////////////////////////////////
+    // Member data
+    ////////////////////////////////////////////////////////////
     struct Impl;
-    priv::UniquePtr<Impl> m_impl;
-
-    // TODO
-    using SoundBase = priv::MiniaudioUtils::SoundBase;
-
-    friend Listener;
-    friend Sound;
-    friend SoundBase;
-    friend SoundStream;
+    priv::UniquePtr<Impl> m_impl; //!< Implementation details
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking

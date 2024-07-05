@@ -175,7 +175,7 @@ public:
 
 private:
     struct Impl;
-    priv::UniquePtr<Impl> m_impl; // Needs address stability
+    priv::UniquePtr<Impl> m_impl; //!< Implementation details (needs address stability)
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking

@@ -30,9 +30,7 @@
 #include <SFML/Audio/EffectProcessor.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
 #include <SFML/Audio/SoundChannel.hpp>
-#include <SFML/Audio/SoundSource.hpp>
 
-#include <SFML/System/Angle.hpp>
 #include <SFML/System/LifetimeDependant.hpp>
 
 #include <miniaudio.h>
@@ -48,7 +46,6 @@
 namespace sf
 {
 class Time;
-class PlaybackDevice;
 } // namespace sf
 
 
@@ -73,8 +70,8 @@ struct SavedSettings
     float          rollOff{1.f};
     ma_bool32      playing{MA_FALSE};
     ma_bool32      looping{MA_FALSE};
-    float          innerAngle{degrees(360.f).asRadians()};
-    float          outerAngle{degrees(360.f).asRadians()};
+    float          innerAngle{6.283185f}; // 360° in radians
+    float          outerAngle{6.283185f}; // 360° in radians
     float          outerGain{0.f};
 };
 
