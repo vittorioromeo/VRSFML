@@ -32,8 +32,6 @@
 
 namespace sf
 {
-using ContextDestroyCallback = void (*)(void*);
-
 ////////////////////////////////////////////////////////////
 /// \brief Base class for classes that require an OpenGL context
 ///
@@ -77,26 +75,6 @@ protected:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] GlResource();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Register an OpenGL object to be destroyed when its containing context is destroyed
-    ///
-    /// This is used for internal purposes in order to properly
-    /// clean up OpenGL resources that cannot be shared between
-    /// contexts.
-    ///
-    /// \param object Object to be destroyed when its containing context is destroyed
-    ///
-    ////////////////////////////////////////////////////////////
-    static void registerUnsharedGlObject(void* objectSharedPtr);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Unregister an OpenGL object from its containing context
-    ///
-    /// \param object Object to be unregistered
-    ///
-    ////////////////////////////////////////////////////////////
-    static void unregisterUnsharedGlObject(void* objectSharedPtr);
 
     ////////////////////////////////////////////////////////////
     /// \brief RAII helper class to temporarily lock an available context for use
