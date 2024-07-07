@@ -35,8 +35,6 @@
 #include <SFML/System/InPlacePImpl.hpp>
 #include <SFML/System/Vector2.hpp>
 
-#include <memory>
-
 #include <cstdint>
 
 
@@ -58,14 +56,6 @@ class GlContext
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Get a shared_ptr to the shared context
-    ///
-    /// \return shared_ptr to the shared context
-    ///
-    ////////////////////////////////////////////////////////////
-    static std::shared_ptr<void> getSharedContext();
-
-    ////////////////////////////////////////////////////////////
     /// \brief Register an OpenGL object to be destroyed when its containing context is destroyed
     ///
     /// This is used for internal purposes in order to properly
@@ -75,7 +65,7 @@ public:
     /// \param object Object to be destroyed when its containing context is destroyed
     ///
     ////////////////////////////////////////////////////////////
-    static void registerUnsharedGlObject(std::shared_ptr<void> object);
+    static void registerUnsharedGlObject(void* objectSharedPtr);
 
     ////////////////////////////////////////////////////////////
     /// \brief Unregister an OpenGL object from its containing context
@@ -83,7 +73,7 @@ public:
     /// \param object Object to be unregister
     ///
     ////////////////////////////////////////////////////////////
-    static void unregisterUnsharedGlObject(std::shared_ptr<void> object);
+    static void unregisterUnsharedGlObject(void* objectSharedPtr);
 
     ////////////////////////////////////////////////////////////
     /// \brief Acquires a context for short-term use on the current thread
@@ -248,7 +238,7 @@ protected:
     /// This constructor is meant for derived classes only.
     ///
     ////////////////////////////////////////////////////////////
-    GlContext();
+    explicit GlContext(const ContextSettings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Activate the context as the current target

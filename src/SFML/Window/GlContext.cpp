@@ -37,6 +37,7 @@
 #include <glad/gl.h>
 
 #include <atomic>
+#include <memory>
 #include <mutex>
 #include <optional>
 #include <string>
@@ -537,28 +538,33 @@ struct GlContext::Impl
 
 
 ////////////////////////////////////////////////////////////
-void GlContext::registerUnsharedGlObject(std::shared_ptr<void> object)
+void GlContext::registerUnsharedGlObject(void* objectSharedPtr)
 {
-    if (const std::lock_guard lock(Impl::getUnsharedGlObjectsMutex());
-        const auto            unsharedGlObjects = Impl::getWeakUnsharedGlObjects().lock())
-        unsharedGlObjects->emplace_back(Impl::UnsharedGlObject{GlContextImpl::CurrentContext::get().id, SFML_MOVE(object)});
+    const std::lock_guard lock(Impl::getUnsharedGlObjectsMutex());
+
+    if (const std::shared_ptr unsharedGlObjects = Impl::getWeakUnsharedGlObjects().lock())
+        unsharedGlObjects->emplace_back(GlContextImpl::CurrentContext::get().id,
+                                        SFML_MOVE(*static_cast<std::shared_ptr<void>*>(objectSharedPtr)));
 }
 
 
 ////////////////////////////////////////////////////////////
-void GlContext::unregisterUnsharedGlObject(std::shared_ptr<void> object)
+void GlContext::unregisterUnsharedGlObject(void* objectSharedPtr)
 {
-    if (const std::lock_guard lock(Impl::getUnsharedGlObjectsMutex());
-        const auto            unsharedGlObjects = Impl::getWeakUnsharedGlObjects().lock())
+    const std::lock_guard lock(Impl::getUnsharedGlObjectsMutex());
+
+    if (const std::shared_ptr unsharedGlObjects = Impl::getWeakUnsharedGlObjects().lock())
     {
+        const auto currentContextId = GlContextImpl::CurrentContext::get().id;
+
         // Find the object in unshared objects and remove it if its associated context is currently active
         // This will trigger the destructor of the object since shared_ptr
         // in unshared objects should be the only one existing
         const auto iter = priv::findIf(unsharedGlObjects->begin(),
                                        unsharedGlObjects->end(),
                                        [&](const Impl::UnsharedGlObject& obj) {
-                                           return (obj.object == object) &&
-                                                  (obj.contextId == GlContextImpl::CurrentContext::get().id);
+                                           return obj.contextId == currentContextId &&
+                                                  obj.object == *static_cast<std::shared_ptr<void>*>(objectSharedPtr);
                                        });
 
         if (iter != unsharedGlObjects->end())
@@ -573,21 +579,21 @@ void GlContext::acquireTransientContext()
     auto& currentContext = GlContextImpl::CurrentContext::get();
 
     // Fast path if we already have a context active on this thread
-    if (currentContext.id)
+    if (currentContext.id != 0)
     {
         ++currentContext.transientCount;
         return;
     }
 
     // If we don't already have a context active on this thread the count should be 0
-    assert(!currentContext.transientCount && "Transient count cannot be non-zero");
+    assert(currentContext.transientCount == 0 && "Transient count cannot be non-zero");
 
     // If currentContextId is not set, this must be the first
     // TransientContextLock on this thread, construct the state object
     TransientContext::get().emplace();
 
     // Make sure a context is active at this point
-    assert(currentContext.id && "Current context ID cannot be zero");
+    assert(currentContext.id != 0 && "Current context ID cannot be zero");
 }
 
 
@@ -597,10 +603,10 @@ void GlContext::releaseTransientContext()
     auto& currentContext = GlContextImpl::CurrentContext::get();
 
     // Make sure a context was left active after acquireTransientContext() was called
-    assert(currentContext.id && "Current context ID cannot be zero");
+    assert(currentContext.id != 0 && "Current context ID cannot be zero");
 
     // Fast path if we already had a context active on this thread before acquireTransientContext() was called
-    if (currentContext.transientCount)
+    if (currentContext.transientCount > 0)
     {
         --currentContext.transientCount;
         return;
@@ -867,7 +873,9 @@ bool GlContext::setActive(bool active)
 
 
 ////////////////////////////////////////////////////////////
-GlContext::GlContext() = default;
+GlContext::GlContext(const ContextSettings& settings) : m_settings(settings)
+{
+}
 
 
 ////////////////////////////////////////////////////////////

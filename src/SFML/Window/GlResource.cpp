@@ -60,20 +60,6 @@ GlResource::GlResource(GlResource&&) noexcept : GlResource{}
 
 
 ////////////////////////////////////////////////////////////
-void GlResource::registerUnsharedGlObject(void* objectSharedPtr)
-{
-    priv::GlContext::registerUnsharedGlObject(SFML_MOVE(*static_cast<std::shared_ptr<void>*>(objectSharedPtr)));
-}
-
-
-////////////////////////////////////////////////////////////
-void GlResource::unregisterUnsharedGlObject(void* objectSharedPtr)
-{
-    priv::GlContext::unregisterUnsharedGlObject(SFML_MOVE(*static_cast<std::shared_ptr<void>*>(objectSharedPtr)));
-}
-
-
-////////////////////////////////////////////////////////////
 GlResource::TransientContextLock::TransientContextLock()
 {
     priv::GlContext::acquireTransientContext();
