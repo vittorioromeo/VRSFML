@@ -40,9 +40,9 @@
 
 namespace sf
 {
-class GlResource;
 using GlFunctionPointer = void (*)();
 class Context;
+class GraphicsContext;
 } // namespace sf
 
 
@@ -269,7 +269,7 @@ protected:
     [[nodiscard]] virtual bool makeCurrent(bool current) = 0;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Notify unshared GlResources of context destruction
+    /// \brief Notify unshared resources of context destruction
     ///
     ////////////////////////////////////////////////////////////
     void cleanupUnsharedResources();
@@ -309,11 +309,11 @@ protected:
     ContextSettings m_settings; //!< Creation settings of the context
 
 private:
-    friend GlResource;
     friend Context;
+    friend GraphicsContext;
 
-    static void acquireSharedContext();
-    static void releaseSharedContext();
+    static GlContext& acquireSharedContext();
+    static void       releaseSharedContext();
 
     ////////////////////////////////////////////////////////////
     /// \brief Check whether the context is compatible with the requested settings

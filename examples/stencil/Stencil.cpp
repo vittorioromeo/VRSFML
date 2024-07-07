@@ -1,6 +1,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Window/GraphicsContext.hpp>
+
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
@@ -16,12 +18,17 @@
 ////////////////////////////////////////////////////////////
 int main()
 {
+    // Create the graphics context
+    sf::GraphicsContext graphicsContext;
+
     // Create the window of the application with a stencil buffer
-    sf::RenderWindow window(sf::VideoMode({600, 600}),
+    sf::RenderWindow window(graphicsContext,
+                            sf::VideoMode({600, 600}),
                             "SFML Stencil",
                             sf::Style::Titlebar | sf::Style::Close,
                             sf::State::Windowed,
                             sf::ContextSettings{0 /* depthBits */, 8 /* stencilBits */});
+
     window.setVerticalSyncEnabled(true);
 
     sf::RectangleShape red({500, 50});

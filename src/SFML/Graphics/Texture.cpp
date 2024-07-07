@@ -32,8 +32,9 @@
 #include <SFML/Graphics/TextureSaver.hpp>
 
 #include <SFML/Window/Context.hpp>
-#include <SFML/Window/Window.hpp>
+#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/TransientContextLock.hpp>
+#include <SFML/Window/Window.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
@@ -66,7 +67,13 @@ std::uint64_t getUniqueId() noexcept
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-Texture::Texture(priv::PassKey<Texture>&&, const Vector2u& size, const Vector2u& actualSize, unsigned int texture, bool sRgb) :
+Texture::Texture(priv::PassKey<Texture>&&,
+                 GraphicsContext& graphicsContext,
+                 const Vector2u&  size,
+                 const Vector2u&  actualSize,
+                 unsigned int     texture,
+                 bool             sRgb) :
+m_graphicsContext(&graphicsContext),
 m_size(size),
 m_actualSize(actualSize),
 m_texture(texture),
@@ -77,17 +84,17 @@ m_cacheId(TextureImpl::getUniqueId())
 
 
 ////////////////////////////////////////////////////////////
-Texture::Texture(const Texture& copy) :
-GlResource(copy),
-m_isSmooth(copy.m_isSmooth),
-m_sRgb(copy.m_sRgb),
-m_isRepeated(copy.m_isRepeated),
+Texture::Texture(const Texture& rhs) :
+m_graphicsContext(rhs.m_graphicsContext),
+m_isSmooth(rhs.m_isSmooth),
+m_sRgb(rhs.m_sRgb),
+m_isRepeated(rhs.m_isRepeated),
 m_cacheId(TextureImpl::getUniqueId())
 {
-    if (auto texture = create(copy.getSize(), copy.isSrgb()))
+    if (auto texture = create(*m_graphicsContext, rhs.getSize(), rhs.isSrgb()))
     {
         *this = SFML_MOVE(*texture);
-        update(copy);
+        update(rhs);
     }
     else
     {
@@ -158,7 +165,7 @@ Texture& Texture::operator=(Texture&& right) noexcept
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Texture> Texture::create(const Vector2u& size, bool sRgb)
+std::optional<Texture> Texture::create(GraphicsContext& graphicsContext, const Vector2u& size, bool sRgb)
 {
     std::optional<Texture> result; // Use a single local variable for NRVO
 
@@ -194,7 +201,7 @@ std::optional<Texture> Texture::create(const Vector2u& size, bool sRgb)
     assert(glTexture);
 
     // All the validity checks passed, we can store the new texture settings
-    result.emplace(priv::PassKey<Texture>{}, size, actualSize, glTexture, sRgb);
+    result.emplace(priv::PassKey<Texture>{}, graphicsContext, size, actualSize, glTexture, sRgb);
     Texture& texture = *result;
 
     // Make sure that the current texture binding will be preserved
@@ -268,10 +275,10 @@ std::optional<Texture> Texture::create(const Vector2u& size, bool sRgb)
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Texture> Texture::loadFromFile(const Path& filename, bool sRgb, const IntRect& area)
+std::optional<Texture> Texture::loadFromFile(GraphicsContext& graphicsContext, const Path& filename, bool sRgb, const IntRect& area)
 {
     if (const auto image = sf::Image::loadFromFile(filename))
-        return loadFromImage(*image, sRgb, area);
+        return loadFromImage(graphicsContext, *image, sRgb, area);
 
     priv::err() << "Failed to load texture from file" << priv::errEndl;
     return std::nullopt;
@@ -279,10 +286,15 @@ std::optional<Texture> Texture::loadFromFile(const Path& filename, bool sRgb, co
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Texture> Texture::loadFromMemory(const void* data, std::size_t size, bool sRgb, const IntRect& area)
+std::optional<Texture> Texture::loadFromMemory(
+    GraphicsContext& graphicsContext,
+    const void*      data,
+    std::size_t      size,
+    bool             sRgb,
+    const IntRect&   area)
 {
     if (const auto image = sf::Image::loadFromMemory(data, size))
-        return loadFromImage(*image, sRgb, area);
+        return loadFromImage(graphicsContext, *image, sRgb, area);
 
     priv::err() << "Failed to load texture from memory" << priv::errEndl;
     return std::nullopt;
@@ -290,10 +302,10 @@ std::optional<Texture> Texture::loadFromMemory(const void* data, std::size_t siz
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Texture> Texture::loadFromStream(InputStream& stream, bool sRgb, const IntRect& area)
+std::optional<Texture> Texture::loadFromStream(GraphicsContext& graphicsContext, InputStream& stream, bool sRgb, const IntRect& area)
 {
     if (const auto image = sf::Image::loadFromStream(stream))
-        return loadFromImage(*image, sRgb, area);
+        return loadFromImage(graphicsContext, *image, sRgb, area);
 
     priv::err() << "Failed to load texture from stream" << priv::errEndl;
     return std::nullopt;
@@ -301,7 +313,7 @@ std::optional<Texture> Texture::loadFromStream(InputStream& stream, bool sRgb, c
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Texture> Texture::loadFromImage(const Image& image, bool sRgb, const IntRect& area)
+std::optional<Texture> Texture::loadFromImage(GraphicsContext& graphicsContext, const Image& image, bool sRgb, const IntRect& area)
 {
     std::optional<Texture> result; // Use a single local variable for NRVO
 
@@ -313,7 +325,7 @@ std::optional<Texture> Texture::loadFromImage(const Image& image, bool sRgb, con
         ((area.position.x <= 0) && (area.position.y <= 0) && (area.size.x >= size.x) && (area.size.y >= size.y)))
     {
         // Load the entire image
-        if ((result = sf::Texture::create(image.getSize(), sRgb)))
+        if ((result = sf::Texture::create(graphicsContext, image.getSize(), sRgb)))
         {
             result->update(image);
             return result;
@@ -333,7 +345,7 @@ std::optional<Texture> Texture::loadFromImage(const Image& image, bool sRgb, con
     rectangle.size.y     = priv::min(rectangle.size.y, size.y - rectangle.position.y);
 
     // Create the texture and upload the pixels
-    if ((result = sf::Texture::create(rectangle.size.to<Vector2u>(), sRgb)))
+    if ((result = sf::Texture::create(graphicsContext, rectangle.size.to<Vector2u>(), sRgb)))
     {
         const priv::TransientContextLock lock;
 

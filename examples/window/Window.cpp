@@ -4,6 +4,7 @@
 #include <SFML/Window/Context.hpp>
 #include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/Event.hpp>
+#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/Window.hpp>
@@ -32,12 +33,20 @@
 ////////////////////////////////////////////////////////////
 int main()
 {
+    // Create the graphics context
+    sf::GraphicsContext graphicsContext;
+
     // Request a 24-bits depth buffer when creating the window
     sf::ContextSettings contextSettings;
     contextSettings.depthBits = 24;
 
     // Create the main window
-    sf::Window window(sf::VideoMode({640, 480}), "SFML window with OpenGL", sf::Style::Default, sf::State::Windowed, contextSettings);
+    sf::Window window(graphicsContext,
+                      sf::VideoMode({640, 480}),
+                      "SFML window with OpenGL",
+                      sf::Style::Default,
+                      sf::State::Windowed,
+                      contextSettings);
 
     // Make it the active window for OpenGL calls
     if (!window.setActive())

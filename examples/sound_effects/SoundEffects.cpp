@@ -1,6 +1,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Window/GraphicsContext.hpp>
+
 #include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics/ConvexShape.hpp>
 #include <SFML/Graphics/Font.hpp>
@@ -1058,10 +1060,15 @@ private:
 ////////////////////////////////////////////////////////////
 int main()
 {
+    // Create the graphics context
+    sf::GraphicsContext graphicsContext;
+
     // Create the main window
-    sf::RenderWindow window(sf::VideoMode({windowWidth, windowHeight}),
+    sf::RenderWindow window(graphicsContext,
+                            sf::VideoMode({windowWidth, windowHeight}),
                             "SFML Sound Effects",
                             sf::Style::Titlebar | sf::Style::Close);
+
     window.setVerticalSyncEnabled(true);
 
     // Load the application font and pass it to the Effect class
@@ -1129,7 +1136,9 @@ int main()
     effects[current]->start(getCurrentPlaybackDevice());
 
     // Create the messages background
-    const auto textBackgroundTexture = sf::Texture::loadFromFile(resourcesDir() / "text-background.png").value();
+    const auto textBackgroundTexture = sf::Texture::loadFromFile(graphicsContext, resourcesDir() / "text-background.png")
+                                           .value();
+
     sf::Sprite textBackground(textBackgroundTexture.getRect());
     textBackground.setPosition({0.f, 520.f});
     textBackground.setColor(sf::Color(255, 255, 255, 200));

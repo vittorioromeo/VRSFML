@@ -32,6 +32,7 @@
 #include <SFML/Window/Context.hpp>
 #include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/GlContext.hpp>
+#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/TransientContextLock.hpp>
 
 #include <SFML/System/Err.hpp>
@@ -66,9 +67,14 @@ struct RenderTextureImplFBO::Impl
         GLuint object{};
     };
 
+    explicit Impl(GraphicsContext& theGraphicsContext) : graphicsContext(&theGraphicsContext)
+    {
+    }
+
     using FrameBufferObjectMap = std::unordered_map<std::uint64_t, std::weak_ptr<FrameBufferObject>>;
 
-    FrameBufferObjectMap frameBuffers; //!< OpenGL frame buffer objects per context
+    GraphicsContext*     graphicsContext; //!< TODO
+    FrameBufferObjectMap frameBuffers;    //!< OpenGL frame buffer objects per context
     FrameBufferObjectMap multisampleFrameBuffers; //!< Optional per-context OpenGL frame buffer objects with multisample attachments
     unsigned int       depthStencilBuffer{}; //!< Optional depth/stencil buffer attached to the frame buffer
     unsigned int       colorBuffer{};        //!< Optional multisample color buffer attached to the frame buffer
@@ -83,7 +89,9 @@ struct RenderTextureImplFBO::Impl
 
 
 ////////////////////////////////////////////////////////////
-RenderTextureImplFBO::RenderTextureImplFBO() = default;
+RenderTextureImplFBO::RenderTextureImplFBO(GraphicsContext& graphicsContext) : m_impl(graphicsContext)
+{
+}
 
 
 ////////////////////////////////////////////////////////////
@@ -548,7 +556,7 @@ bool RenderTextureImplFBO::activate(bool active)
     if (!contextId)
     {
         if (!m_impl->context)
-            m_impl->context = makeUnique<Context>();
+            m_impl->context = makeUnique<Context>(*m_impl->graphicsContext);
 
         if (!m_impl->context->setActive(true))
         {

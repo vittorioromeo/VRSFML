@@ -1,3 +1,4 @@
+#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 
 // Other 1st party headers
@@ -13,6 +14,8 @@
 
 TEST_CASE("[Graphics] sf::Sprite" * doctest::skip(skipDisplayTests))
 {
+    sf::GraphicsContext graphicsContext;
+
     SECTION("Type traits")
     {
         STATIC_CHECK(std::is_copy_constructible_v<sf::Sprite>);
@@ -21,7 +24,7 @@ TEST_CASE("[Graphics] sf::Sprite" * doctest::skip(skipDisplayTests))
         STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Sprite>);
     }
 
-    const auto texture = sf::Texture::create({64, 64}).value();
+    const auto texture = sf::Texture::create(graphicsContext, {64, 64}).value();
 
     SECTION("Construction")
     {

@@ -1,3 +1,4 @@
+#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
 
 #include <Doctest.hpp>
@@ -10,6 +11,8 @@
 
 TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
 {
+    sf::GraphicsContext graphicsContext;
+
     SECTION("Type traits")
     {
         STATIC_CHECK(!std::is_default_constructible_v<sf::RenderTexture>);
@@ -21,12 +24,16 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
 
     SECTION("create()")
     {
-        CHECK(!sf::RenderTexture::create({1'000'000, 1'000'000}));
+        CHECK(!sf::RenderTexture::create(graphicsContext, {1'000'000, 1'000'000}));
 
-        CHECK(sf::RenderTexture::create({100, 100}, sf::ContextSettings{8 /* depthBits */, 0 /* stencilBits */}));
-        CHECK(sf::RenderTexture::create({100, 100}, sf::ContextSettings{0 /* depthBits */, 8 /* stencilBits */}));
+        CHECK(sf::RenderTexture::create(graphicsContext,
+                                        {100, 100},
+                                        sf::ContextSettings{8 /* depthBits */, 0 /* stencilBits */}));
+        CHECK(sf::RenderTexture::create(graphicsContext,
+                                        {100, 100},
+                                        sf::ContextSettings{0 /* depthBits */, 8 /* stencilBits */}));
 
-        const auto renderTexture = sf::RenderTexture::create({360, 480}).value();
+        const auto renderTexture = sf::RenderTexture::create(graphicsContext, {360, 480}).value();
         CHECK(renderTexture.getSize() == sf::Vector2u{360, 480});
         CHECK(!renderTexture.isSmooth());
         CHECK(!renderTexture.isRepeated());
@@ -47,27 +54,27 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
 
     SECTION("Set/get smooth")
     {
-        auto renderTexture = sf::RenderTexture::create({64, 64}).value();
+        auto renderTexture = sf::RenderTexture::create(graphicsContext, {64, 64}).value();
         renderTexture.setSmooth(true);
         CHECK(renderTexture.isSmooth());
     }
 
     SECTION("Set/get repeated")
     {
-        auto renderTexture = sf::RenderTexture::create({64, 64}).value();
+        auto renderTexture = sf::RenderTexture::create(graphicsContext, {64, 64}).value();
         renderTexture.setRepeated(true);
         CHECK(renderTexture.isRepeated());
     }
 
     SECTION("generateMipmap()")
     {
-        auto renderTexture = sf::RenderTexture::create({64, 64}).value();
+        auto renderTexture = sf::RenderTexture::create(graphicsContext, {64, 64}).value();
         CHECK(renderTexture.generateMipmap());
     }
 
     SECTION("setActive()")
     {
-        auto renderTexture = sf::RenderTexture::create({64, 64}).value();
+        auto renderTexture = sf::RenderTexture::create(graphicsContext, {64, 64}).value();
         CHECK(renderTexture.setActive());
         CHECK(renderTexture.setActive(false));
         CHECK(renderTexture.setActive(true));
@@ -75,7 +82,7 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
 
     SECTION("getTexture()")
     {
-        const auto renderTexture = sf::RenderTexture::create({64, 64}).value();
+        const auto renderTexture = sf::RenderTexture::create(graphicsContext, {64, 64}).value();
         CHECK(renderTexture.getTexture().getSize() == sf::Vector2u{64, 64});
     }
 }

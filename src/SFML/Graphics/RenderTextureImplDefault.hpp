@@ -29,8 +29,6 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/RenderTextureImpl.hpp>
 
-#include <SFML/Window/GlResource.hpp>
-
 #include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
 
@@ -38,6 +36,7 @@
 namespace sf
 {
 class Context;
+class GraphicsContext;
 struct ContextSettings;
 
 namespace priv
@@ -47,14 +46,14 @@ namespace priv
 ///        using an in-memory context
 ///
 ////////////////////////////////////////////////////////////
-class RenderTextureImplDefault : public RenderTextureImpl, private GlResource
+class RenderTextureImplDefault : public RenderTextureImpl
 {
 public:
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] RenderTextureImplDefault();
+    [[nodiscard]] RenderTextureImplDefault(GraphicsContext& graphicsContext);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -115,8 +114,9 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    priv::UniquePtr<Context> m_context; //!< P-Buffer based context
-    Vector2u                 m_size;    //!< Width and height of the P-Buffer
+    GraphicsContext*         m_graphicsContext; //!< TODO
+    priv::UniquePtr<Context> m_context;         //!< P-Buffer based context
+    Vector2u                 m_size;            //!< Width and height of the P-Buffer
 };
 
 } // namespace priv

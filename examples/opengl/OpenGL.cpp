@@ -13,6 +13,7 @@
 #include <SFML/Window/Context.hpp>
 #include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/Event.hpp>
+#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/Mouse.hpp>
 #include <SFML/Window/Touch.hpp>
 #include <SFML/Window/VideoMode.hpp>
@@ -55,6 +56,9 @@ int main()
     bool exit = false;
     bool sRgb = false;
 
+    // Create the graphics context
+    sf::GraphicsContext graphicsContext;
+
     while (!exit)
     {
         // Request a 24-bits depth buffer when creating the window
@@ -62,18 +66,23 @@ int main()
         contextSettings.depthBits   = 24;
         contextSettings.sRgbCapable = sRgb;
 
+
         // Create the main window
-        sf::RenderWindow window(sf::VideoMode({800, 600}),
+        sf::RenderWindow window(graphicsContext,
+                                sf::VideoMode({800, 600}),
                                 "SFML graphics with OpenGL",
                                 sf::Style::Default,
                                 sf::State::Windowed,
                                 contextSettings);
+
         window.setVerticalSyncEnabled(true);
         window.setMinimumSize(sf::Vector2u{400, 300});
         window.setMaximumSize(sf::Vector2u{1200, 900});
 
         // Create a sprite for the background
-        const auto       backgroundTexture = sf::Texture::loadFromFile(resourcesDir() / "background.jpg", sRgb).value();
+        const auto backgroundTexture = sf::Texture::loadFromFile(graphicsContext, resourcesDir() / "background.jpg", sRgb)
+                                           .value();
+
         const sf::Sprite background(backgroundTexture.getRect());
 
         // Create some text to draw on top of our OpenGL object
@@ -90,7 +99,7 @@ int main()
         mipmapInstructions.setPosition({200.f, 550.f});
 
         // Load a texture to apply to our 3D cube
-        auto texture = sf::Texture::loadFromFile(resourcesDir() / "logo.png").value();
+        auto texture = sf::Texture::loadFromFile(graphicsContext, resourcesDir() / "logo.png").value();
 
         // Attempt to generate a mipmap for our cube texture
         // We don't check the return value here since
@@ -236,7 +245,7 @@ int main()
                     if (mipmapEnabled)
                     {
                         // We simply reload the texture to disable mipmapping
-                        texture = sf::Texture::loadFromFile(resourcesDir() / "logo.png").value();
+                        texture = sf::Texture::loadFromFile(graphicsContext, resourcesDir() / "logo.png").value();
 
                         mipmapEnabled = false;
                     }

@@ -43,6 +43,8 @@
 
 namespace sf
 {
+class GraphicsContext;
+
 namespace priv
 {
 class RenderTextureImpl;
@@ -102,7 +104,9 @@ public:
     /// \return Render texture if creation has been successful, otherwise `std::nullopt`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<RenderTexture> create(const Vector2u& size, const ContextSettings& settings = {});
+    [[nodiscard]] static std::optional<RenderTexture> create(GraphicsContext&       graphicsContext,
+                                                             const Vector2u&        size,
+                                                             const ContextSettings& settings = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the maximum anti-aliasing level supported by the system
@@ -282,7 +286,7 @@ private:
 /// sf::RenderWindow window(sf::VideoMode({800, 600}), "SFML window");
 ///
 /// // Create a new render-texture
-/// auto renderTexture = sf::RenderTexture::create({500, 500}).value();
+/// auto renderTexture = sf::RenderTexture::create(graphicsContext, {500, 500}).value();
 ///
 /// // The main loop
 /// while (window.isOpen())

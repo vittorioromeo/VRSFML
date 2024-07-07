@@ -32,6 +32,7 @@
 #include <SFML/Graphics/Vertex.hpp>
 #include <SFML/Graphics/VertexBuffer.hpp>
 
+#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/TransientContextLock.hpp>
 
 #include <SFML/System/Err.hpp>
@@ -66,38 +67,51 @@ GLenum usageToGlEnum(sf::VertexBuffer::Usage usage)
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-VertexBuffer::VertexBuffer(PrimitiveType type) : m_primitiveType(type)
+VertexBuffer::VertexBuffer(GraphicsContext& graphicsContext) : m_graphicsContext(&graphicsContext)
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-VertexBuffer::VertexBuffer(Usage usage) : m_usage(usage)
+VertexBuffer::VertexBuffer(GraphicsContext& graphicsContext, PrimitiveType type) :
+m_graphicsContext(&graphicsContext),
+m_primitiveType(type)
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-VertexBuffer::VertexBuffer(PrimitiveType type, Usage usage) : m_primitiveType(type), m_usage(usage)
+VertexBuffer::VertexBuffer(GraphicsContext& graphicsContext, Usage usage) :
+m_graphicsContext(&graphicsContext),
+m_usage(usage)
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-VertexBuffer::VertexBuffer(const VertexBuffer& copy) :
-GlResource(copy),
-m_primitiveType(copy.m_primitiveType),
-m_usage(copy.m_usage)
+VertexBuffer::VertexBuffer(GraphicsContext& graphicsContext, PrimitiveType type, Usage usage) :
+m_graphicsContext(&graphicsContext),
+m_primitiveType(type),
+m_usage(usage)
 {
-    if (copy.m_buffer && copy.m_size)
+}
+
+
+////////////////////////////////////////////////////////////
+VertexBuffer::VertexBuffer(const VertexBuffer& rhs) :
+m_graphicsContext(rhs.m_graphicsContext),
+m_primitiveType(rhs.m_primitiveType),
+m_usage(rhs.m_usage)
+{
+    if (rhs.m_buffer && rhs.m_size)
     {
-        if (!create(copy.m_size))
+        if (!create(rhs.m_size))
         {
             priv::err() << "Could not create vertex buffer for copying" << priv::errEndl;
             return;
         }
 
-        if (!update(copy))
+        if (!update(rhs))
             priv::err() << "Could not copy vertex buffer" << priv::errEndl;
     }
 }
@@ -265,9 +279,9 @@ bool VertexBuffer::update([[maybe_unused]] const VertexBuffer& vertexBuffer)
 
 
 ////////////////////////////////////////////////////////////
-VertexBuffer& VertexBuffer::operator=(const VertexBuffer& right)
+VertexBuffer& VertexBuffer::operator=(const VertexBuffer& rhs)
 {
-    VertexBuffer temp(right);
+    VertexBuffer temp(rhs);
 
     swap(temp);
 

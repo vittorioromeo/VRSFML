@@ -1,3 +1,4 @@
+#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
@@ -11,9 +12,13 @@
 
 TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
 {
+    sf::GraphicsContext graphicsContext;
+
     SECTION("Stencil Tests")
     {
-        auto renderTexture = sf::RenderTexture::create({100, 100}, sf::ContextSettings{0 /* depthBits */, 8 /* stencilBits */})
+        auto renderTexture = sf::RenderTexture::create(graphicsContext,
+                                                       {100, 100},
+                                                       sf::ContextSettings{0 /* depthBits */, 8 /* stencilBits */})
                                  .value();
 
         renderTexture.clear(sf::Color::Red, 127);

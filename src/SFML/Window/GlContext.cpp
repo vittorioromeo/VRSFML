@@ -28,6 +28,7 @@
 #include <SFML/Window/Context.hpp>
 #include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/GlContext.hpp>
+#include <SFML/Window/GraphicsContext.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
@@ -407,7 +408,9 @@ struct [[nodiscard]] TransientContext
         else
         {
             // Create a Context object for temporary use
-            context.emplace();
+            // TODO
+            GraphicsContext graphicsContext;
+            context.emplace(graphicsContext);
         }
     }
 
@@ -649,11 +652,12 @@ UniquePtr<GlContext> GlContext::create(const ContextSettings& settings, const Wi
 
     const std::lock_guard lock(sharedContext.mutex);
 
+    // TODO: ?
     // If use_count is 2 (GlResource + sharedContext) we know that we are inside sf::Context or sf::Window
     // Only in this situation we allow the user to indirectly re-create the shared context as a core context
 
     // Check if we need to convert our shared context into a core context
-    if ((SharedContext::getUseCount() == 2) && (settings.attributeFlags & ContextSettings::Core) &&
+    if ((SharedContext::getUseCount() == 3) && (settings.attributeFlags & ContextSettings::Core) &&
         !(sharedContext.context->m_settings.attributeFlags & ContextSettings::Core))
     {
         // Re-create our shared context as a core context
@@ -711,11 +715,12 @@ UniquePtr<GlContext> GlContext::create(const ContextSettings& settings, const Ve
 
     const std::lock_guard lock(sharedContext.mutex);
 
+    // TODO: ?
     // If use_count is 2 (GlResource + sharedContext) we know that we are inside sf::Context or sf::Window
     // Only in this situation we allow the user to indirectly re-create the shared context as a core context
 
     // Check if we need to convert our shared context into a core context
-    if ((SharedContext::getUseCount() == 2) && (settings.attributeFlags & ContextSettings::Core) &&
+    if ((SharedContext::getUseCount() == 3) && (settings.attributeFlags & ContextSettings::Core) &&
         !(sharedContext.context->m_settings.attributeFlags & ContextSettings::Core))
     {
         // Re-create our shared context as a core context
@@ -863,7 +868,10 @@ bool GlContext::setActive(bool active)
 
         // Activate the context
         if (!makeCurrent(true))
+        {
+            err() << "makeCurrent(true) failure in GlContext::setActive" << errEndl;
             return false;
+        }
 
         // Set it as the new current context for this thread
         id  = m_impl->id;
@@ -882,7 +890,10 @@ bool GlContext::setActive(bool active)
 
         // Deactivate the context
         if (!makeCurrent(false))
+        {
+            err() << "makeCurrent(false) failure in GlContext::setActive" << errEndl;
             return false;
+        }
 
         id  = 0;
         ptr = nullptr;
@@ -978,9 +989,11 @@ void GlContext::cleanupUnsharedResources()
 
 
 ////////////////////////////////////////////////////////////
-void GlContext::acquireSharedContext()
+GlContext& GlContext::acquireSharedContext()
 {
-    SharedContext::acquire();
+    auto& ctx = SharedContext::acquire().context;
+    assert(ctx.has_value());
+    return *ctx;
 }
 
 

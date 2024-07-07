@@ -31,6 +31,7 @@
 #include <SFML/Graphics/Shader.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
+#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/TransientContextLock.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
@@ -244,16 +245,20 @@ struct Shader::Impl
     using TextureTable = std::unordered_map<int, const Texture*>;
     using UniformTable = std::unordered_map<std::string, int, StringHash, std::equal_to<>>;
 
-    unsigned int shaderProgram{};    //!< OpenGL identifier for the program
-    int          currentTexture{-1}; //!< Location of the current texture in the shader
-    TextureTable textures;           //!< Texture variables in the shader, mapped to their location
-    UniformTable uniforms;           //!< Parameters location cache
+    GraphicsContext* graphicsContext;
+    unsigned int     shaderProgram{};    //!< OpenGL identifier for the program
+    int              currentTexture{-1}; //!< Location of the current texture in the shader
+    TextureTable     textures;           //!< Texture variables in the shader, mapped to their location
+    UniformTable     uniforms;           //!< Parameters location cache
 
-    explicit Impl(unsigned int theShaderProgram) : shaderProgram(theShaderProgram)
+    explicit Impl(GraphicsContext& theGraphicsContext, unsigned int theShaderProgram) :
+    graphicsContext(&theGraphicsContext),
+    shaderProgram(theShaderProgram)
     {
     }
 
     Impl(Impl&& rhs) noexcept :
+    graphicsContext(rhs.graphicsContext),
     shaderProgram(priv::exchange(rhs.shaderProgram, 0u)),
     currentTexture(priv::exchange(rhs.currentTexture, -1)),
     textures(SFML_MOVE(rhs.textures)),
@@ -281,8 +286,7 @@ public:
     [[nodiscard, gnu::always_inline]] explicit UnsafeUniformBinder(Shader& shader) :
     m_currentProgram(castToGlHandle(shader.m_impl->shaderProgram))
     {
-        if (!m_currentProgram) // TODO: assert?
-            return;
+        assert(m_currentProgram != 0);
 
         // Enable program object
         glCheck(m_savedProgram = GLEXT_glGetHandle(GLEXT_GL_PROGRAM_OBJECT));
@@ -369,7 +373,7 @@ Shader& Shader::operator=(Shader&& right) noexcept
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Shader> Shader::loadFromFile(const Path& filename, Type type)
+std::optional<Shader> Shader::loadFromFile(GraphicsContext& graphicsContext, const Path& filename, Type type)
 {
     // Prepare thread-local buffer
     std::vector<char>& buffer = getThreadLocalCharBuffer();
@@ -387,17 +391,19 @@ std::optional<Shader> Shader::loadFromFile(const Path& filename, Type type)
 
     // Compile the shader program
     if (type == Type::Vertex)
-        return compile(shaderView, {}, {});
+        return compile(graphicsContext, shaderView, {}, {});
 
     if (type == Type::Geometry)
-        return compile({}, shaderView, {});
+        return compile(graphicsContext, {}, shaderView, {});
 
-    return compile({}, {}, shaderView);
+    return compile(graphicsContext, {}, {}, shaderView);
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Shader> Shader::loadFromFile(const Path& vertexShaderFilename, const Path& fragmentShaderFilename)
+std::optional<Shader> Shader::loadFromFile(GraphicsContext& graphicsContext,
+                                           const Path&      vertexShaderFilename,
+                                           const Path&      fragmentShaderFilename)
 {
     // Prepare thread-local buffer
     std::vector<char>& buffer = getThreadLocalCharBuffer();
@@ -422,14 +428,15 @@ std::optional<Shader> Shader::loadFromFile(const Path& vertexShaderFilename, con
     }
 
     // Compile the shader program
-    return compile(vertexShaderSlice->toView(buffer), {}, fragmentShaderSlice->toView(buffer));
+    return compile(graphicsContext, vertexShaderSlice->toView(buffer), {}, fragmentShaderSlice->toView(buffer));
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Shader> Shader::loadFromFile(const Path& vertexShaderFilename,
-                                           const Path& geometryShaderFilename,
-                                           const Path& fragmentShaderFilename)
+std::optional<Shader> Shader::loadFromFile(GraphicsContext& graphicsContext,
+                                           const Path&      vertexShaderFilename,
+                                           const Path&      geometryShaderFilename,
+                                           const Path&      fragmentShaderFilename)
 {
     // Prepare thread-local buffer
     std::vector<char>& buffer = getThreadLocalCharBuffer();
@@ -463,46 +470,50 @@ std::optional<Shader> Shader::loadFromFile(const Path& vertexShaderFilename,
     }
 
     // Compile the shader program
-    return compile(vertexShaderSlice->toView(buffer),
+    return compile(graphicsContext,
+                   vertexShaderSlice->toView(buffer),
                    geometryShaderSlice->toView(buffer),
                    fragmentShaderSlice->toView(buffer));
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Shader> Shader::loadFromMemory(std::string_view shader, Type type)
+std::optional<Shader> Shader::loadFromMemory(GraphicsContext& graphicsContext, std::string_view shader, Type type)
 {
     // Compile the shader program
     if (type == Type::Vertex)
-        return compile(shader, {}, {});
+        return compile(graphicsContext, shader, {}, {});
 
     if (type == Type::Geometry)
-        return compile({}, shader, {});
+        return compile(graphicsContext, {}, shader, {});
 
-    return compile({}, {}, shader);
+    return compile(graphicsContext, {}, {}, shader);
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Shader> Shader::loadFromMemory(std::string_view vertexShader, std::string_view fragmentShader)
+std::optional<Shader> Shader::loadFromMemory(GraphicsContext& graphicsContext,
+                                             std::string_view vertexShader,
+                                             std::string_view fragmentShader)
 {
     // Compile the shader program
-    return compile(vertexShader, {}, fragmentShader);
+    return compile(graphicsContext, vertexShader, {}, fragmentShader);
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Shader> Shader::loadFromMemory(std::string_view vertexShader,
+std::optional<Shader> Shader::loadFromMemory(GraphicsContext& graphicsContext,
+                                             std::string_view vertexShader,
                                              std::string_view geometryShader,
                                              std::string_view fragmentShader)
 {
     // Compile the shader program
-    return compile(vertexShader, geometryShader, fragmentShader);
+    return compile(graphicsContext, vertexShader, geometryShader, fragmentShader);
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Shader> Shader::loadFromStream(InputStream& stream, Type type)
+std::optional<Shader> Shader::loadFromStream(GraphicsContext& graphicsContext, InputStream& stream, Type type)
 {
     // Prepare thread-local buffer
     std::vector<char>& buffer = getThreadLocalCharBuffer();
@@ -520,17 +531,19 @@ std::optional<Shader> Shader::loadFromStream(InputStream& stream, Type type)
 
     // Compile the shader program
     if (type == Type::Vertex)
-        return compile(shaderView, {}, {});
+        return compile(graphicsContext, shaderView, {}, {});
 
     if (type == Type::Geometry)
-        return compile({}, shaderView, {});
+        return compile(graphicsContext, {}, shaderView, {});
 
-    return compile({}, {}, shaderView);
+    return compile(graphicsContext, {}, {}, shaderView);
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Shader> Shader::loadFromStream(InputStream& vertexShaderStream, InputStream& fragmentShaderStream)
+std::optional<Shader> Shader::loadFromStream(GraphicsContext& graphicsContext,
+                                             InputStream&     vertexShaderStream,
+                                             InputStream&     fragmentShaderStream)
 {
     // Prepare thread-local buffer
     std::vector<char>& buffer = getThreadLocalCharBuffer();
@@ -553,14 +566,15 @@ std::optional<Shader> Shader::loadFromStream(InputStream& vertexShaderStream, In
     }
 
     // Compile the shader program
-    return compile(vertexShaderSlice->toView(buffer), {}, fragmentShaderSlice->toView(buffer));
+    return compile(graphicsContext, vertexShaderSlice->toView(buffer), {}, fragmentShaderSlice->toView(buffer));
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Shader> Shader::loadFromStream(InputStream& vertexShaderStream,
-                                             InputStream& geometryShaderStream,
-                                             InputStream& fragmentShaderStream)
+std::optional<Shader> Shader::loadFromStream(GraphicsContext& graphicsContext,
+                                             InputStream&     vertexShaderStream,
+                                             InputStream&     geometryShaderStream,
+                                             InputStream&     fragmentShaderStream)
 {
     // Prepare thread-local buffer
     std::vector<char>& buffer = getThreadLocalCharBuffer();
@@ -591,7 +605,8 @@ std::optional<Shader> Shader::loadFromStream(InputStream& vertexShaderStream,
     }
 
     // Compile the shader program
-    return compile(vertexShaderSlice->toView(buffer),
+    return compile(graphicsContext,
+                   vertexShaderSlice->toView(buffer),
                    geometryShaderSlice->toView(buffer),
                    fragmentShaderSlice->toView(buffer));
 }
@@ -892,7 +907,7 @@ unsigned int Shader::getNativeHandle() const
 
 
 ////////////////////////////////////////////////////////////
-void Shader::bind(const Shader* shader)
+void Shader::bind() const
 {
     const priv::TransientContextLock lock;
 
@@ -905,7 +920,7 @@ void Shader::bind(const Shader* shader)
         return;
     }
 
-    if (shader == nullptr || shader->m_impl->shaderProgram == 0)
+    if (m_impl->shaderProgram == 0)
     {
         // Bind no shader
         glCheck(GLEXT_glUseProgramObject({}));
@@ -913,14 +928,23 @@ void Shader::bind(const Shader* shader)
     }
 
     // Enable the program
-    glCheck(GLEXT_glUseProgramObject(castToGlHandle(shader->m_impl->shaderProgram)));
+    glCheck(GLEXT_glUseProgramObject(castToGlHandle(m_impl->shaderProgram)));
 
     // Bind the textures
-    shader->bindTextures();
+    bindTextures();
 
     // Bind the current texture
-    if (shader->m_impl->currentTexture != -1)
-        glCheck(GLEXT_glUniform1i(shader->m_impl->currentTexture, 0));
+    if (m_impl->currentTexture != -1)
+        glCheck(GLEXT_glUniform1i(m_impl->currentTexture, 0));
+}
+
+
+void Shader::unbind()
+{
+    const priv::TransientContextLock lock;
+
+    // Bind no shader
+    glCheck(GLEXT_glUseProgramObject({}));
 }
 
 
@@ -956,13 +980,15 @@ bool Shader::isGeometryAvailable()
 
 
 ////////////////////////////////////////////////////////////
-Shader::Shader(priv::PassKey<Shader>&&, unsigned int shaderProgram) : m_impl(shaderProgram)
+Shader::Shader(priv::PassKey<Shader>&&, GraphicsContext& graphicsContext, unsigned int shaderProgram) :
+m_impl(graphicsContext, shaderProgram)
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Shader> Shader::compile(std::string_view vertexShaderCode,
+std::optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
+                                      std::string_view vertexShaderCode,
                                       std::string_view geometryShaderCode,
                                       std::string_view fragmentShaderCode)
 {
@@ -1098,7 +1124,7 @@ std::optional<Shader> Shader::compile(std::string_view vertexShaderCode,
     // in all contexts immediately (solves problems in multi-threaded apps)
     glCheck(glFlush());
 
-    return std::make_optional<Shader>(priv::PassKey<Shader>{}, castFromGlHandle(shaderProgram));
+    return std::make_optional<Shader>(priv::PassKey<Shader>{}, graphicsContext, castFromGlHandle(shaderProgram));
 }
 
 

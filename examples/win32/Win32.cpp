@@ -5,6 +5,8 @@
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
+#include <SFML/Window/GraphicsContext.hpp>
+
 #include <SFML/System/Angle.hpp>
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Path.hpp>
@@ -94,7 +96,7 @@ int main()
     button = CreateWindow(TEXT("BUTTON"), TEXT("Quit"), WS_CHILD | WS_VISIBLE, 560, 440, 80, 40, window, nullptr, instance, nullptr);
 
     // Let's create two SFML views
-    HWND             view1 = CreateWindow(TEXT("STATIC"),
+    HWND view1 = CreateWindow(TEXT("STATIC"),
                               nullptr,
                               WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS,
                               20,
@@ -105,7 +107,7 @@ int main()
                               nullptr,
                               instance,
                               nullptr);
-    HWND             view2 = CreateWindow(TEXT("STATIC"),
+    HWND view2 = CreateWindow(TEXT("STATIC"),
                               nullptr,
                               WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS,
                               340,
@@ -116,12 +118,15 @@ int main()
                               nullptr,
                               instance,
                               nullptr);
-    sf::RenderWindow sfmlView1(view1);
-    sf::RenderWindow sfmlView2(view2);
+
+    sf::GraphicsContext graphicsContext;
+
+    sf::RenderWindow sfmlView1(graphicsContext, view1);
+    sf::RenderWindow sfmlView2(graphicsContext, view2);
 
     // Load some textures to display
-    const auto texture1 = sf::Texture::loadFromFile("resources/image1.jpg").value();
-    const auto texture2 = sf::Texture::loadFromFile("resources/image2.jpg").value();
+    const auto texture1 = sf::Texture::loadFromFile(graphicsContext, "resources/image1.jpg").value();
+    const auto texture2 = sf::Texture::loadFromFile(graphicsContext, "resources/image2.jpg").value();
     sf::Sprite sprite1(texture1.getRect());
     sf::Sprite sprite2(texture2.getRect());
     sprite1.setOrigin(texture1.getSize().to<sf::Vector2f>() / 2.f);

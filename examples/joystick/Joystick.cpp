@@ -1,6 +1,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Window/GraphicsContext.hpp>
+
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Text.hpp>
@@ -98,8 +100,11 @@ void updateValues(unsigned int index)
 ////////////////////////////////////////////////////////////
 int main()
 {
+    // Create the graphics context
+    sf::GraphicsContext graphicsContext;
+
     // Create the window of the application
-    sf::RenderWindow window(sf::VideoMode({400, 775}), "Joystick", sf::Style::Close);
+    sf::RenderWindow window(graphicsContext, sf::VideoMode({400, 775}), "Joystick", sf::Style::Close);
     window.setVerticalSyncEnabled(true);
 
     // Open the text font

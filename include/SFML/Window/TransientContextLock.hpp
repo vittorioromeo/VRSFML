@@ -30,6 +30,12 @@
 #include <SFML/Window/Export.hpp>
 
 
+namespace sf
+{
+class GraphicsContext;
+} // namespace sf
+
+
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////

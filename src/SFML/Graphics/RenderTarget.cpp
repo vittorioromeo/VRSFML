@@ -885,7 +885,10 @@ void RenderTarget::applyTexture(const Texture* texture, CoordinateType coordinat
 ////////////////////////////////////////////////////////////
 void RenderTarget::applyShader(const Shader* shader)
 {
-    Shader::bind(shader);
+    if (shader != nullptr)
+        shader->bind();
+    else
+        Shader::unbind();
 }
 
 

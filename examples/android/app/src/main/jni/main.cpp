@@ -1,3 +1,5 @@
+#include <SFML/Window/GraphicsContext.hpp>
+
 #include <SFML/Graphics.hpp>
 
 #include <SFML/Audio.hpp>
@@ -81,16 +83,19 @@ int vibrate(sf::Time duration)
 // ('vibrate()' in this example; undefine 'USE_JNI' above to disable it)
 int main(int argc, char* argv[])
 {
+    // Create the graphics context
+    sf::GraphicsContext graphicsContext;
+
     sf::VideoMode screen(sf::VideoMode::getDesktopMode());
 
-    sf::RenderWindow window(screen, "");
+    sf::RenderWindow window(graphicsContext, screen, "");
     window.setFramerateLimit(30);
 
-    const auto texture = sf::Texture::loadFromFile("image.png").value();
+    const auto texture = sf::Texture::loadFromFile(graphicsContext, "image.png").value();
 
-    sf::Sprite image(texture);
-    image.setPosition(sf::Vector2f(screen.size) / 2.f);
-    image.setOrigin(sf::Vector2f(texture.getSize()) / 2.f);
+    sf::Sprite image(texture.getRect());
+    image.setPosition(screen.size.to<sf::Vector2f>() / 2.f);
+    image.setOrigin(texture.getSize().to<sf::Vector2f>() / 2.f);
 
     const auto font = sf::Font::openFromFile("tuffy.ttf").value();
 
@@ -121,7 +126,7 @@ int main(int argc, char* argv[])
 
             if (const auto* resized = event->getIf<sf::Event::Resized>())
             {
-                const auto size = sf::Vector2f(resized->size);
+                const auto size = resized->size.to<sf::Vector2f>();
                 view.setSize(size);
                 view.setCenter(size / 2.f);
                 window.setView(view);
@@ -148,7 +153,7 @@ int main(int argc, char* argv[])
             {
                 if (touchBegan->finger == 0)
                 {
-                    image.setPosition(sf::Vector2f(touchBegan->position));
+                    image.setPosition(touchBegan->position.to<sf::Vector2f>());
 #if defined(USE_JNI)
                     vibrate(sf::milliseconds(10));
 #endif

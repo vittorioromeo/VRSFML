@@ -1,6 +1,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Window/GraphicsContext.hpp>
+
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
@@ -22,8 +24,15 @@
 ////////////////////////////////////////////////////////////
 int main()
 {
+    // Create the graphics context
+    sf::GraphicsContext graphicsContext;
+
     // Create the main window
-    sf::RenderWindow window(sf::VideoMode({800u, 600u}), "SFML Raw Mouse Input", sf::Style::Titlebar | sf::Style::Close);
+    sf::RenderWindow window(graphicsContext,
+                            sf::VideoMode({800u, 600u}),
+                            "SFML Raw Mouse Input",
+                            sf::Style::Titlebar | sf::Style::Close);
+
     window.setVerticalSyncEnabled(true);
 
     // Open the application font and pass it to the Effect class
