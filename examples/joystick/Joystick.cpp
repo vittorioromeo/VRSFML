@@ -1,13 +1,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/GraphicsContext.hpp>
-
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Text.hpp>
 
 #include <SFML/Window/Event.hpp>
+#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/Joystick.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/VideoMode.hpp>
@@ -108,7 +107,7 @@ int main()
     window.setVerticalSyncEnabled(true);
 
     // Open the text font
-    const auto font = sf::Font::openFromFile("resources/tuffy.ttf").value();
+    const auto font = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf").value();
 
     // Set up our string conversion parameters
     sstr.precision(2);

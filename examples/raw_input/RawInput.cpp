@@ -1,14 +1,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/GraphicsContext.hpp>
-
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Text.hpp>
 
 #include <SFML/Window/Event.hpp>
+#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/VideoMode.hpp>
 
 #include <SFML/System/Path.hpp>
@@ -36,7 +35,7 @@ int main()
     window.setVerticalSyncEnabled(true);
 
     // Open the application font and pass it to the Effect class
-    const auto font = sf::Font::openFromFile("resources/tuffy.ttf").value();
+    const auto font = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf").value();
 
     // Create the mouse position text
     sf::Text mousePosition(font, "", 20);

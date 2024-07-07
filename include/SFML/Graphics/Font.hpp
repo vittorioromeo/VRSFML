@@ -124,7 +124,7 @@ public:
     /// \see openFromMemory, openFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Font> openFromFile(const Path& filename);
+    [[nodiscard]] static std::optional<Font> openFromFile(GraphicsContext& graphicsContext, const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open the font from a file in memory
@@ -144,7 +144,9 @@ public:
     /// \see openFromFile, openFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Font> openFromMemory(const void* data, std::size_t sizeInBytes);
+    [[nodiscard]] static std::optional<Font> openFromMemory(GraphicsContext& graphicsContext,
+                                                            const void*      data,
+                                                            std::size_t      sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open the font from a custom stream
@@ -163,7 +165,7 @@ public:
     /// \see openFromFile, openFromMemory
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Font> openFromStream(InputStream& stream);
+    [[nodiscard]] static std::optional<Font> openFromStream(GraphicsContext& graphicsContext, InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the font information
@@ -342,7 +344,7 @@ private:
     /// \return The glyphs page corresponding to \a characterSize
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Page& loadPage(unsigned int characterSize) const;
+    [[nodiscard]] Page& loadPage(GraphicsContext& graphicsContext, unsigned int characterSize) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Load a new glyph and store it in the cache
@@ -390,7 +392,10 @@ public:
     /// \brief Create a font from font handles and a family name
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Font(priv::PassKey<Font>&&, void* fontHandlesSharedPtr, std::string&& familyName);
+    [[nodiscard]] Font(priv::PassKey<Font>&&,
+                       GraphicsContext& graphicsContext,
+                       void*            fontHandlesSharedPtr,
+                       std::string&&    familyName);
 
 private:
     ////////////////////////////////////////////////////////////

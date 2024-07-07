@@ -1,8 +1,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/GraphicsContext.hpp>
-
 #include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics/ConvexShape.hpp>
 #include <SFML/Graphics/Font.hpp>
@@ -23,6 +21,7 @@
 #include <SFML/Audio/SoundStream.hpp>
 
 #include <SFML/Window/Event.hpp>
+#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/Keyboard.hpp>
 
 #include <SFML/System/Clock.hpp>
@@ -1072,7 +1071,7 @@ int main()
     window.setVerticalSyncEnabled(true);
 
     // Load the application font and pass it to the Effect class
-    const auto font = sf::Font::openFromFile(resourcesDir() / "tuffy.ttf").value();
+    const auto font = sf::Font::openFromFile(graphicsContext, resourcesDir() / "tuffy.ttf").value();
 
     // Exit early if music file not found
     const auto musicPath = resourcesDir() / "doodle_pop.ogg";

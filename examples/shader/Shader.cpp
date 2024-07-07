@@ -444,7 +444,7 @@ int main()
     window.setVerticalSyncEnabled(true);
 
     // Open the application font
-    const auto font = sf::Font::openFromFile("resources/tuffy.ttf").value();
+    const auto font = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf").value();
 
     // Create the effects
     std::optional pixelateEffect   = tryLoadPixelate(graphicsContext);

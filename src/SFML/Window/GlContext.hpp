@@ -35,6 +35,8 @@
 #include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
 
+#include <mutex>
+
 #include <cstdint>
 
 
@@ -152,7 +154,7 @@ public:
     /// \return Address of the OpenGL function, 0 on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static GlFunctionPointer getFunction(GraphicsContext& graphicsContext, const char* name);
+    [[nodiscard]] static GlFunctionPointer getFunction(std::recursive_mutex& graphicsContextMutex, const char* name);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the currently active context
@@ -223,7 +225,7 @@ public:
     /// \return True if operation was successful, false otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool setActive(GraphicsContext& graphicsContext, bool active);
+    [[nodiscard]] bool setActive(std::recursive_mutex& graphicsContextMutex, bool active);
 
     ////////////////////////////////////////////////////////////
     /// \brief Display what has been rendered to the context so far
@@ -249,7 +251,7 @@ public:
     /// \param requestedSettings Requested settings during context creation
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool initialize(GraphicsContext& graphicsContext, const ContextSettings& requestedSettings);
+    [[nodiscard]] bool initialize(std::recursive_mutex& graphicsContextMutex, const ContextSettings& requestedSettings);
 
 protected:
     ////////////////////////////////////////////////////////////
@@ -275,7 +277,7 @@ protected:
     /// \brief Notify unshared resources of context destruction
     ///
     ////////////////////////////////////////////////////////////
-    void cleanupUnsharedResources(GraphicsContext& graphicsContext);
+    void cleanupUnsharedResources(std::recursive_mutex& graphicsContextMutex);
 
     ////////////////////////////////////////////////////////////
     /// \brief Evaluate a pixel format configuration

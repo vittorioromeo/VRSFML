@@ -117,8 +117,12 @@ namespace sf::priv
 }
 
 ////////////////////////////////////////////////////////////
-WglContext::WglContext(WglContext* shared, ContextSettings& settings, const SurfaceData& surfaceData) :
+WglContext::WglContext(std::recursive_mutex& graphicsContextMutex,
+                       WglContext*           shared,
+                       ContextSettings&      settings,
+                       const SurfaceData&    surfaceData) :
 GlContext(settings),
+m_graphicsContextMutex(&graphicsContextMutex),
 // Create the rendering surface from the owner window
 m_surfaceData(surfaceData),
 m_context(createContext(m_settings, m_surfaceData, shared))
@@ -135,21 +139,29 @@ m_context(createContext(m_settings, m_surfaceData, shared))
 
 
 ////////////////////////////////////////////////////////////
-WglContext::WglContext(WglContext* shared, ContextSettings settings, const WindowImpl& owner, unsigned int bitsPerPixel) :
-WglContext(shared, settings, createSurface(settings, owner.getNativeHandle(), bitsPerPixel))
+WglContext::WglContext(std::recursive_mutex& graphicsContextMutex,
+                       WglContext*           shared,
+                       ContextSettings       settings,
+                       const WindowImpl&     owner,
+                       unsigned int          bitsPerPixel) :
+WglContext(graphicsContextMutex, shared, settings, createSurface(settings, owner.getNativeHandle(), bitsPerPixel))
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-WglContext::WglContext(WglContext* shared, ContextSettings settings, const Vector2u& size) :
-WglContext(shared, settings, createSurface(settings, shared, size, VideoMode::getDesktopMode().bitsPerPixel))
+WglContext::WglContext(std::recursive_mutex& graphicsContextMutex,
+                       WglContext*           shared,
+                       ContextSettings       settings,
+                       const Vector2u&       size) :
+WglContext(graphicsContextMutex, shared, settings, createSurface(settings, shared, size, VideoMode::getDesktopMode().bitsPerPixel))
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-WglContext::WglContext(WglContext* shared) : WglContext(shared, ContextSettings{}, {1u, 1u})
+WglContext::WglContext(std::recursive_mutex& graphicsContextMutex, WglContext* shared) :
+WglContext(graphicsContextMutex, shared, ContextSettings{}, {1u, 1u})
 {
 }
 
@@ -158,7 +170,7 @@ WglContext::WglContext(WglContext* shared) : WglContext(shared, ContextSettings{
 WglContext::~WglContext()
 {
     // Notify unshared OpenGL resources of context destruction
-    cleanupUnsharedResources();
+    cleanupUnsharedResources(*m_graphicsContextMutex);
 
     // Destroy the OpenGL context
     if (m_context)
@@ -192,7 +204,6 @@ WglContext::~WglContext()
 ////////////////////////////////////////////////////////////
 GlFunctionPointer WglContext::getFunction(const char* name)
 {
-    // If we are using the generic GDI implementation, skip to loading directly from OpenGL32.dll since it doesn't support extensions
     auto address = reinterpret_cast<GlFunctionPointer>(wglGetProcAddress(reinterpret_cast<LPCSTR>(name)));
 
     if (address)

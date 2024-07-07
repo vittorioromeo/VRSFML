@@ -18,6 +18,7 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Text.hpp>
+#include <SFML/Graphics/Texture.hpp>
 
 #include <SFML/Audio/Music.hpp>
 
@@ -46,7 +47,7 @@ int main()
     sf::Sprite sprite(texture.getRect());
 
     // Create a graphical text to display
-    const auto font = sf::Font::openFromFile(resourcePath() / "tuffy.ttf").value();
+    const auto font = sf::Font::openFromFile(graphicsContext, resourcePath() / "tuffy.ttf").value();
     sf::Text   text(font, "Hello SFML", 50);
     text.setFillColor(sf::Color::Black);
 

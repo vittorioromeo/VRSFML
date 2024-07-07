@@ -166,7 +166,7 @@ struct SharedContext
     /// \brief Constructor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit SharedContext() = default;
+    [[nodiscard]] SharedContext() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Initialize shared context
@@ -176,13 +176,14 @@ struct SharedContext
     {
         const std::lock_guard lock(mutex);
 
-        context.emplace(nullptr);
-        if (!context->initialize(ContextSettings{}))
+        context.emplace(mutex, nullptr);
+
+        if (!context->initialize(mutex, ContextSettings{}))
             priv::err() << "Could not initialize context in SharedContext::initalize()" << priv::errEndl;
 
         loadExtensions();
 
-        if (!context->setActive(false))
+        if (!context->setActive(mutex, false))
             priv::err() << "Could not disable context in SharedContext::initalize()" << priv::errEndl;
     }
 
@@ -192,9 +193,10 @@ struct SharedContext
     ////////////////////////////////////////////////////////////
     void loadExtensions()
     {
-        auto glGetErrorFunc    = reinterpret_cast<glGetErrorFuncType>(priv::GlContext::getFunction("glGetError"));
-        auto glGetIntegervFunc = reinterpret_cast<glGetIntegervFuncType>(priv::GlContext::getFunction("glGetIntegerv"));
-        auto glGetStringFunc   = reinterpret_cast<glGetStringFuncType>(priv::GlContext::getFunction("glGetString"));
+        auto glGetErrorFunc = reinterpret_cast<glGetErrorFuncType>(priv::GlContext::getFunction(mutex, "glGetError"));
+        auto glGetIntegervFunc = reinterpret_cast<glGetIntegervFuncType>(
+            priv::GlContext::getFunction(mutex, "glGetIntegerv"));
+        auto glGetStringFunc = reinterpret_cast<glGetStringFuncType>(priv::GlContext::getFunction(mutex, "glGetString"));
 
         if (!glGetErrorFunc || !glGetIntegervFunc || !glGetStringFunc)
             return;
@@ -203,7 +205,8 @@ struct SharedContext
         int majorVersion = 0;
         glGetIntegervFunc(GL_MAJOR_VERSION, &majorVersion);
 
-        auto glGetStringiFunc = reinterpret_cast<glGetStringiFuncType>(priv::GlContext::getFunction("glGetStringi"));
+        auto glGetStringiFunc = reinterpret_cast<glGetStringiFuncType>(
+            priv::GlContext::getFunction(mutex, "glGetStringi"));
 
         if (glGetErrorFunc() == GL_INVALID_ENUM || !majorVersion || !glGetStringiFunc)
         {
@@ -266,7 +269,7 @@ struct SharedContext
 ////////////////////////////////////////////////////////////
 struct GraphicsContext::Impl
 {
-    SharedContext sharedContext{};
+    SharedContext sharedContext;
 };
 
 
@@ -285,7 +288,7 @@ GraphicsContext::~GraphicsContext() = default;
 bool GraphicsContext::setActive(bool active)
 {
     assert(m_impl->sharedContext.context.has_value());
-    return m_impl->sharedContext.context->setActive(active);
+    return m_impl->sharedContext.context->setActive(m_impl->sharedContext.mutex, active);
 }
 
 
@@ -306,7 +309,7 @@ std::recursive_mutex& GraphicsContext::getMutex()
 ////////////////////////////////////////////////////////////
 void GraphicsContext::makeContextType(priv::UniquePtr<priv::GlContext>& target)
 {
-    target = priv::makeUnique<ContextType>(m_impl->sharedContext.context.value());
+    target = priv::makeUnique<ContextType>(getMutex(), &m_impl->sharedContext.context.value());
 }
 
 
@@ -316,7 +319,7 @@ void GraphicsContext::makeContextType(priv::UniquePtr<priv::GlContext>& target,
                                       const priv::WindowImpl&           owner,
                                       unsigned int                      bitsPerPixel)
 {
-    target = priv::makeUnique<ContextType>(m_impl->sharedContext.context.value(), settings, owner, bitsPerPixel);
+    target = priv::makeUnique<ContextType>(getMutex(), &m_impl->sharedContext.context.value(), settings, owner, bitsPerPixel);
 }
 
 
@@ -325,7 +328,7 @@ void GraphicsContext::makeContextType(priv::UniquePtr<priv::GlContext>& target,
                                       const ContextSettings&            settings,
                                       const Vector2u&                   size)
 {
-    target = priv::makeUnique<ContextType>(m_impl->sharedContext.context.value(), settings, size);
+    target = priv::makeUnique<ContextType>(getMutex(), &m_impl->sharedContext.context.value(), settings, size);
 }
 
 

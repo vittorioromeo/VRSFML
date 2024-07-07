@@ -116,7 +116,7 @@ int main()
 
     window.setVerticalSyncEnabled(true);
 
-    const auto font = sf::Font::openFromFile("resources/tuffy.ttf").value();
+    const auto font = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf").value();
 
     // Create all of our graphics resources
     sf::Text                  hudText(font);

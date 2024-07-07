@@ -33,9 +33,11 @@
 
 #include <glad/wgl.h>
 
+#include <mutex>
 
 namespace sf
 {
+class GraphicsContext;
 struct ContextSettings;
 
 namespace priv
@@ -55,7 +57,7 @@ public:
     /// \param shared Context to share the new one with (can be a null pointer)
     ///
     ////////////////////////////////////////////////////////////
-    WglContext(WglContext* shared);
+    WglContext(std::recursive_mutex& graphicsContextMutex, WglContext* shared);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context attached to a window
@@ -66,7 +68,11 @@ public:
     /// \param bitsPerPixel Pixel depth, in bits per pixel
     ///
     ////////////////////////////////////////////////////////////
-    WglContext(WglContext* shared, ContextSettings settings, const WindowImpl& owner, unsigned int bitsPerPixel);
+    WglContext(std::recursive_mutex& graphicsContextMutex,
+               WglContext*           shared,
+               ContextSettings       settings,
+               const WindowImpl&     owner,
+               unsigned int          bitsPerPixel);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context that embeds its own rendering target
@@ -76,7 +82,7 @@ public:
     /// \param size     Back buffer width and height, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    WglContext(WglContext* shared, ContextSettings settings, const Vector2u& size);
+    WglContext(std::recursive_mutex& graphicsContextMutex, WglContext* shared, ContextSettings settings, const Vector2u& size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -159,7 +165,10 @@ private:
     /// \param settings Creation parameters
     ///
     ////////////////////////////////////////////////////////////
-    WglContext(WglContext* shared, ContextSettings& settings, const SurfaceData& surfaceData);
+    WglContext(std::recursive_mutex& graphicsContextMutex,
+               WglContext*           shared,
+               ContextSettings&      settings,
+               const SurfaceData&    surfaceData);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the pixel format of the device context
@@ -208,9 +217,9 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-
-    SurfaceData m_surfaceData;
-    HGLRC       m_context{}; //!< OpenGL context
+    std::recursive_mutex* m_graphicsContextMutex;
+    SurfaceData           m_surfaceData;
+    HGLRC                 m_context{}; //!< OpenGL context
 };
 
 } // namespace priv

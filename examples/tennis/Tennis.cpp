@@ -112,7 +112,7 @@ int main()
     ball.setOrigin({ballRadius / 2.f, ballRadius / 2.f});
 
     // Open the text font
-    const auto font = sf::Font::openFromFile(resourcesDir() / "tuffy.ttf").value();
+    const auto font = sf::Font::openFromFile(graphicsContext, resourcesDir() / "tuffy.ttf").value();
 
     // Initialize the pause message
     sf::Text pauseMessage(font);
