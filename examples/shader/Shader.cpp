@@ -413,7 +413,7 @@ std::optional<Geometry> tryLoadGeometry()
     shader->setUniform(shader->getUniformLocation("texture").value(), sf::Shader::CurrentTexture);
 
     // Set the render resolution (used for proper scaling)
-    shader->setUniform(shader->getUniformLocation("resolution").value(), sf::Vector2f(800, 600));
+    shader->setUniform(shader->getUniformLocation("resolution").value(), sf::Vector2f{800, 600});
 
     return std::make_optional<Geometry>(std::move(*logoTexture), std::move(*shader));
 }
@@ -541,7 +541,7 @@ int main()
         if (Effect* currentEffect = effects[current])
         {
             // Update the current example
-            const auto [x, y] = sf::Vector2f(sf::Mouse::getPosition(window)).cwiseDiv(sf::Vector2f(window.getSize()));
+            const auto [x, y] = sf::Mouse::getPosition(window).to<sf::Vector2f>().cwiseDiv(window.getSize().to<sf::Vector2f>());
             currentEffect->update(clock.getElapsedTime().asSeconds(), x, y);
 
             // Clear the window

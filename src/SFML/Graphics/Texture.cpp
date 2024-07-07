@@ -305,7 +305,7 @@ std::optional<Texture> Texture::loadFromImage(const Image& image, bool sRgb, con
     std::optional<Texture> result; // Use a single local variable for NRVO
 
     // Retrieve the image size
-    const auto size = Vector2i(image.getSize());
+    const auto size = image.getSize().to<Vector2i>();
 
     // Load the entire image if the source area is either empty or contains the whole image
     if (area.size.x == 0 || (area.size.y == 0) ||
@@ -332,7 +332,7 @@ std::optional<Texture> Texture::loadFromImage(const Image& image, bool sRgb, con
     rectangle.size.y     = priv::min(rectangle.size.y, size.y - rectangle.position.y);
 
     // Create the texture and upload the pixels
-    if ((result = sf::Texture::create(Vector2u(rectangle.size), sRgb)))
+    if ((result = sf::Texture::create(rectangle.size.to<Vector2u>(), sRgb)))
     {
         const TransientContextLock lock;
 
@@ -966,7 +966,7 @@ unsigned int Texture::getNativeHandle() const
 ////////////////////////////////////////////////////////////
 IntRect Texture::getRect() const
 {
-    return {{0, 0}, Vector2i(getSize())};
+    return {{0, 0}, getSize().to<Vector2i>()};
 }
 
 

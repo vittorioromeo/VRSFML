@@ -34,36 +34,6 @@ namespace sf
 {
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector3<T>::Vector3() = default;
-
-
-////////////////////////////////////////////////////////////
-#if defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wshadow"
-#endif
-template <typename T>
-constexpr Vector3<T>::Vector3(T x, T y, T z) : x(x), y(y), z(z)
-{
-}
-#if defined(__GNUC__)
-#pragma GCC diagnostic pop
-#endif
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-template <typename U>
-constexpr Vector3<T>::Vector3(const Vector3<U>& vector) :
-x(static_cast<T>(vector.x)),
-y(static_cast<T>(vector.y)),
-z(static_cast<T>(vector.z))
-{
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
 constexpr T Vector3<T>::lengthSq() const
 {
     return dot(*this);
@@ -103,6 +73,16 @@ constexpr Vector3<T> Vector3<T>::cwiseDiv(const Vector3<T>& rhs) const
     assert(rhs.z != 0 && "Vector3::cwiseDiv() cannot divide by 0 (z coordinate)");
 
     return Vector3<T>(x / rhs.x, y / rhs.y, z / rhs.z);
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+template <typename U>
+constexpr U Vector3<T>::to() const
+{
+    using ValueType = decltype(U{}.x);
+    return Vector3<ValueType>{static_cast<ValueType>(x), static_cast<ValueType>(y), static_cast<ValueType>(z)};
 }
 
 

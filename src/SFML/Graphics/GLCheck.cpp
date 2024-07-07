@@ -29,8 +29,8 @@
 #include <SFML/Graphics/GLExtensions.hpp>
 
 #include <SFML/System/Err.hpp>
-
 #include <SFML/System/Path.hpp>
+
 #include <string_view>
 
 

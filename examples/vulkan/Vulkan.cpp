@@ -2417,10 +2417,10 @@ public:
         matrixRotateZ(model, sf::degrees(elapsed * 109.0f));
 
         // Translate the model based on the mouse position
-        const sf::Vector2f mousePosition = sf::Vector2f(sf::Mouse::getPosition(window));
-        const sf::Vector2f windowSize    = sf::Vector2f(window.getSize());
-        const float        x             = std::clamp(mousePosition.x * 2.f / windowSize.x - 1.f, -1.0f, 1.0f) * 2.0f;
-        const float        y             = std::clamp(-mousePosition.y * 2.f / windowSize.y + 1.f, -1.0f, 1.0f) * 1.5f;
+        const auto  mousePosition = sf::Mouse::getPosition(window).to<sf::Vector2f>();
+        const auto  windowSize    = window.getSize().to<sf::Vector2f>();
+        const float x             = std::clamp(mousePosition.x * 2.f / windowSize.x - 1.f, -1.0f, 1.0f) * 2.0f;
+        const float y             = std::clamp(-mousePosition.y * 2.f / windowSize.y + 1.f, -1.0f, 1.0f) * 1.5f;
 
         model[3][0] -= x;
         model[3][2] += y;

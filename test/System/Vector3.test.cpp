@@ -14,6 +14,11 @@ TEMPLATE_TEST_CASE("[System] sf::Vector3", "", int, float)
         STATIC_CHECK(std::is_copy_assignable_v<sf::Vector3<TestType>>);
         STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Vector3<TestType>>);
         STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Vector3<TestType>>);
+
+        STATIC_CHECK(std::is_aggregate_v<sf::Vector3<TestType>>);
+        STATIC_CHECK(std::is_trivially_copyable_v<sf::Vector3<TestType>>);
+        STATIC_CHECK(std::is_trivially_destructible_v<sf::Vector3<TestType>>);
+        STATIC_CHECK(std::is_trivially_assignable_v<sf::Vector3<TestType>, sf::Vector3<TestType>>);
     }
 
     SECTION("Construction")
@@ -37,7 +42,7 @@ TEMPLATE_TEST_CASE("[System] sf::Vector3", "", int, float)
         SECTION("Conversion constructor")
         {
             constexpr sf::Vector3f sourceVector(1.0f, 2.0f, 3.0f);
-            constexpr sf::Vector3i vector(sourceVector);
+            constexpr auto         vector = sourceVector.to<sf::Vector3i>();
 
             STATIC_CHECK(vector.x == static_cast<int>(sourceVector.x));
             STATIC_CHECK(vector.y == static_cast<int>(sourceVector.y));

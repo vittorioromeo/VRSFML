@@ -80,6 +80,7 @@ set(SYSTEM_SRC
     System/Err.test.cpp
     System/FileInputStream.test.cpp
     System/MemoryInputStream.test.cpp
+    System/Rect.test.cpp
     System/Sleep.test.cpp
     System/String.test.cpp
     System/Time.test.cpp
@@ -120,7 +121,6 @@ set(GRAPHICS_SRC
     Graphics/Glsl.test.cpp
     Graphics/Glyph.test.cpp
     Graphics/Image.test.cpp
-    Graphics/Rect.test.cpp
     Graphics/RectangleShape.test.cpp
     Graphics/Render.test.cpp
     Graphics/RenderStates.test.cpp

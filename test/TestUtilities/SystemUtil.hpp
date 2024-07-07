@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <SFML/System/Rect.hpp>
+
 #include <SFML/System/UniquePtr.hpp>
 
 #include <iosfwd>
@@ -15,8 +17,6 @@ namespace sf
 class Angle;
 class String;
 class Time;
-
-struct FloatRect;
 
 template <typename>
 class Vector2;

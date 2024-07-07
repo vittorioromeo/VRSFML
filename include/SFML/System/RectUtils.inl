@@ -25,9 +25,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/RectUtils.hpp> // NOLINT(misc-header-include-cycle)
-
 #include <SFML/System/AlgorithmUtils.hpp>
+#include <SFML/System/RectUtils.hpp> // NOLINT(misc-header-include-cycle)
 
 
 namespace sf

@@ -49,6 +49,7 @@
 #include <SFML/System/Macros.hpp>
 #include <SFML/System/MathUtils.hpp>
 #include <SFML/System/Path.hpp>
+#include <SFML/System/Rect.hpp>
 #include <SFML/System/String.hpp>
 #include <SFML/System/Time.hpp>
 #include <SFML/System/UniquePtr.hpp>

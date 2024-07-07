@@ -43,7 +43,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
         {
             const sf::WindowBase windowBase(sf::VideoMode({360, 240}), "WindowBase Tests");
             CHECK(windowBase.isOpen());
-            CHECK(windowBase.getSize() == sf::Vector2u(360, 240));
+            CHECK(windowBase.getSize() == sf::Vector2u{360, 240});
             CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
         }
 
@@ -51,7 +51,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
         {
             const sf::WindowBase windowBase(sf::VideoMode({360, 240}), "WindowBase Tests", sf::Style::Resize);
             CHECK(windowBase.isOpen());
-            CHECK(windowBase.getSize() == sf::Vector2u(360, 240));
+            CHECK(windowBase.getSize() == sf::Vector2u{360, 240});
             CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
         }
 
@@ -59,7 +59,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
         {
             const sf::WindowBase windowBase(sf::VideoMode({360, 240}), "WindowBase Tests", sf::Style::Resize, sf::State::Windowed);
             CHECK(windowBase.isOpen());
-            CHECK(windowBase.getSize() == sf::Vector2u(360, 240));
+            CHECK(windowBase.getSize() == sf::Vector2u{360, 240});
             CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
         }
 
@@ -67,7 +67,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
         {
             const sf::WindowBase windowBase(sf::VideoMode({360, 240}), "WindowBase Tests", sf::State::Windowed);
             CHECK(windowBase.isOpen());
-            CHECK(windowBase.getSize() == sf::Vector2u(360, 240));
+            CHECK(windowBase.getSize() == sf::Vector2u{360, 240});
             CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
         }
     }
@@ -80,7 +80,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
         {
             windowBase.create(sf::VideoMode({240, 360}), "WindowBase Tests");
             CHECK(windowBase.isOpen());
-            CHECK(windowBase.getSize() == sf::Vector2u(240, 360));
+            CHECK(windowBase.getSize() == sf::Vector2u{240, 360});
             CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
         }
 
@@ -88,7 +88,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
         {
             windowBase.create(sf::VideoMode({240, 360}), "WindowBase Tests", sf::Style::Resize);
             CHECK(windowBase.isOpen());
-            CHECK(windowBase.getSize() == sf::Vector2u(240, 360));
+            CHECK(windowBase.getSize() == sf::Vector2u{240, 360});
             CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
         }
 
@@ -96,7 +96,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
         {
             windowBase.create(sf::VideoMode({240, 360}), "WindowBase Tests", sf::Style::Resize, sf::State::Windowed);
             CHECK(windowBase.isOpen());
-            CHECK(windowBase.getSize() == sf::Vector2u(240, 360));
+            CHECK(windowBase.getSize() == sf::Vector2u{240, 360});
             CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
         }
     }
@@ -164,39 +164,39 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
         {
             sf::WindowBase windowBase(sf::VideoMode({360, 240}), "WindowBase Tests");
             windowBase.setSize({128, 256});
-            CHECK(windowBase.getSize() == sf::Vector2u(128, 256));
+            CHECK(windowBase.getSize() == sf::Vector2u{128, 256});
         }
 
         SECTION("Minimum size")
         {
             sf::WindowBase windowBase(sf::VideoMode({360, 240}), "WindowBase Tests");
-            windowBase.setMinimumSize(sf::Vector2u(128, 256));
+            windowBase.setMinimumSize(sf::Vector2u{128, 256});
             windowBase.setSize({100, 100});
-            CHECK(windowBase.getSize() == sf::Vector2u(128, 256));
+            CHECK(windowBase.getSize() == sf::Vector2u{128, 256});
         }
 
         SECTION("Maximum size")
         {
             sf::WindowBase windowBase(sf::VideoMode({360, 240}), "WindowBase Tests");
-            windowBase.setMaximumSize(sf::Vector2u(128, 256));
+            windowBase.setMaximumSize(sf::Vector2u{128, 256});
             windowBase.setSize({400, 400});
-            CHECK(windowBase.getSize() == sf::Vector2u(128, 256));
+            CHECK(windowBase.getSize() == sf::Vector2u{128, 256});
         }
     }
 
     SECTION("setMinimumSize()")
     {
         sf::WindowBase windowBase(sf::VideoMode({100, 100}), "WindowBase Tests", sf::Style::Default ^ sf::Style::Resize);
-        windowBase.setMinimumSize(sf::Vector2u(200, 300));
-        CHECK(windowBase.getSize() == sf::Vector2u(200, 300));
-        windowBase.setMaximumSize(sf::Vector2u(200, 300));
+        windowBase.setMinimumSize(sf::Vector2u{200, 300});
+        CHECK(windowBase.getSize() == sf::Vector2u{200, 300});
+        windowBase.setMaximumSize(sf::Vector2u{200, 300});
     }
 
     SECTION("setMinimumSize()")
     {
         sf::WindowBase windowBase(sf::VideoMode({400, 400}), "WindowBase Tests", sf::Style::Default ^ sf::Style::Resize);
-        windowBase.setMaximumSize(sf::Vector2u(200, 300));
-        CHECK(windowBase.getSize() == sf::Vector2u(200, 300));
-        windowBase.setMinimumSize(sf::Vector2u(200, 300));
+        windowBase.setMaximumSize(sf::Vector2u{200, 300});
+        CHECK(windowBase.getSize() == sf::Vector2u{200, 300});
+        windowBase.setMinimumSize(sf::Vector2u{200, 300});
     }
 }

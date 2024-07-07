@@ -35,6 +35,7 @@
 #include <SFML/Graphics/RenderStates.hpp>
 
 #include <SFML/System/InPlacePImpl.hpp>
+#include <SFML/System/Rect.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #include <cstddef>
@@ -50,7 +51,6 @@ class Transform;
 class VertexBuffer;
 class View;
 struct BlendMode;
-struct IntRect;
 struct RenderStates;
 struct StencilMode;
 struct StencilValue;

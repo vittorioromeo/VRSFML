@@ -50,33 +50,6 @@ namespace sf
 {
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector2<T>::Vector2() = default;
-
-
-////////////////////////////////////////////////////////////
-#if defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wshadow"
-#endif
-template <typename T>
-constexpr Vector2<T>::Vector2(T x, T y) : x(x), y(y)
-{
-}
-#if defined(__GNUC__)
-#pragma GCC diagnostic pop
-#endif
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-template <typename U>
-constexpr Vector2<T>::Vector2(const Vector2<U>& vector) : x(static_cast<T>(vector.x)), y(static_cast<T>(vector.y))
-{
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
 constexpr T Vector2<T>::lengthSq() const
 {
     return dot(*this);
@@ -296,7 +269,7 @@ constexpr Vector2<T> Vector2<T>::movedTowards(T r, Angle phi) const
 {
     static_assert(priv::isVec2FloatingPoint<T>, "Vector2::movedTowards() is only supported for floating point types");
 
-    return *this + Vector2<T>(r, phi);
+    return *this + Vector2<T>::fromAngle(r, phi);
 }
 
 ////////////////////////////////////////////////////////////
@@ -312,11 +285,10 @@ constexpr Vector2<T> Vector2<T>::projectedOnto(const Vector2<T>& axis) const
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector2<T>::Vector2(T r, Angle phi) :
-x(r * static_cast<T>(priv::cos(phi.asRadians()))),
-y(r * static_cast<T>(priv::sin(phi.asRadians())))
+constexpr Vector2<T> Vector2<T>::fromAngle(T r, Angle phi)
 {
     static_assert(priv::isVec2FloatingPoint<T>, "Vector2::Vector2(T, Angle) is only supported for floating point types");
+    return {r * static_cast<T>(priv::cos(phi.asRadians())), r * static_cast<T>(priv::sin(phi.asRadians()))};
 }
 
 
@@ -328,6 +300,16 @@ constexpr T Vector2<T>::length() const
 
     // don't use std::hypot because of slow performance
     return priv::sqrt(x * x + y * y);
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+template <typename U>
+constexpr U Vector2<T>::to() const
+{
+    using ValueType = decltype(U{}.x);
+    return Vector2<ValueType>{static_cast<ValueType>(x), static_cast<ValueType>(y)};
 }
 
 

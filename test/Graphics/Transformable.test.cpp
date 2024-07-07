@@ -19,10 +19,10 @@ TEST_CASE("[Graphics] sf::Transformable")
     SECTION("Construction")
     {
         const sf::Transformable transformable;
-        CHECK(transformable.getPosition() == sf::Vector2f(0, 0));
+        CHECK(transformable.getPosition() == sf::Vector2f{0, 0});
         CHECK(transformable.getRotation() == sf::Angle::Zero);
-        CHECK(transformable.getScale() == sf::Vector2f(1, 1));
-        CHECK(transformable.getOrigin() == sf::Vector2f(0, 0));
+        CHECK(transformable.getScale() == sf::Vector2f{1, 1});
+        CHECK(transformable.getOrigin() == sf::Vector2f{0, 0});
         CHECK(transformable.getTransform() == sf::Transform());
         CHECK(transformable.getInverseTransform() == sf::Transform());
     }
@@ -32,7 +32,7 @@ TEST_CASE("[Graphics] sf::Transformable")
         sf::Transformable transformable;
 
         transformable.setPosition({3, 4});
-        CHECK(transformable.getPosition() == sf::Vector2f(3, 4));
+        CHECK(transformable.getPosition() == sf::Vector2f{3, 4});
 
         transformable.setRotation(sf::degrees(3.14f));
         CHECK(transformable.getRotation() == Approx(sf::degrees(3.14f)));
@@ -42,10 +42,10 @@ TEST_CASE("[Graphics] sf::Transformable")
         CHECK(transformable.getRotation() == Approx(sf::degrees(288)));
 
         transformable.setScale({5, 6});
-        CHECK(transformable.getScale() == sf::Vector2f(5, 6));
+        CHECK(transformable.getScale() == sf::Vector2f{5, 6});
 
         transformable.setOrigin({7, 8});
-        CHECK(transformable.getOrigin() == sf::Vector2f(7, 8));
+        CHECK(transformable.getOrigin() == sf::Vector2f{7, 8});
 
         sf::Transform transform;
         transform.translate(transformable.getPosition() - transformable.getOrigin());
@@ -91,9 +91,9 @@ TEST_CASE("[Graphics] sf::Transformable")
     SECTION("move()")
     {
         sf::Transformable transformable;
-        CHECK(transformable.getPosition() == sf::Vector2f(0, 0));
+        CHECK(transformable.getPosition() == sf::Vector2f{0, 0});
         transformable.move({9, 10});
-        CHECK(transformable.getPosition() == sf::Vector2f(9, 10));
+        CHECK(transformable.getPosition() == sf::Vector2f{9, 10});
         transformable.move({-15, 2});
         CHECK(transformable.getPosition() == sf::Vector2f(-6, 12));
     }
@@ -117,11 +117,11 @@ TEST_CASE("[Graphics] sf::Transformable")
     SECTION("scale()")
     {
         sf::Transformable transformable;
-        CHECK(transformable.getScale() == sf::Vector2f(1, 1));
+        CHECK(transformable.getScale() == sf::Vector2f{1, 1});
         transformable.scale({2, 3});
-        CHECK(transformable.getScale() == sf::Vector2f(2, 3));
+        CHECK(transformable.getScale() == sf::Vector2f{2, 3});
         transformable.scale({2, 1});
-        CHECK(transformable.getScale() == sf::Vector2f(4, 3));
+        CHECK(transformable.getScale() == sf::Vector2f{4, 3});
         transformable.scale({-1, -1});
         CHECK(transformable.getScale() == sf::Vector2f(-4, -3));
     }

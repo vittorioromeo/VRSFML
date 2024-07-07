@@ -21,8 +21,8 @@ TEST_CASE("[Graphics] sf::View")
         SECTION("Default constructor")
         {
             const sf::View view;
-            CHECK(view.getCenter() == sf::Vector2f(500, 500));
-            CHECK(view.getSize() == sf::Vector2f(1000, 1000));
+            CHECK(view.getCenter() == sf::Vector2f{500, 500});
+            CHECK(view.getSize() == sf::Vector2f{1000, 1000});
             CHECK(view.getRotation() == sf::Angle::Zero);
             CHECK(view.getViewport() == sf::FloatRect({0, 0}, {1, 1}));
             CHECK(view.getScissor() == sf::FloatRect({0, 0}, {1, 1}));
@@ -33,8 +33,8 @@ TEST_CASE("[Graphics] sf::View")
         SECTION("Rectangle constructor")
         {
             const sf::View view(sf::FloatRect({10, 20}, {400, 600}));
-            CHECK(view.getCenter() == sf::Vector2f(210, 320));
-            CHECK(view.getSize() == sf::Vector2f(400, 600));
+            CHECK(view.getCenter() == sf::Vector2f{210, 320});
+            CHECK(view.getSize() == sf::Vector2f{400, 600});
             CHECK(view.getRotation() == sf::Angle::Zero);
             CHECK(view.getViewport() == sf::FloatRect({0, 0}, {1, 1}));
             CHECK(view.getScissor() == sf::FloatRect({0, 0}, {1, 1}));
@@ -45,8 +45,8 @@ TEST_CASE("[Graphics] sf::View")
         SECTION("Center + size constructor")
         {
             const sf::View view({520, 960}, {1080, 1920});
-            CHECK(view.getCenter() == sf::Vector2f(520, 960));
-            CHECK(view.getSize() == sf::Vector2f(1080, 1920));
+            CHECK(view.getCenter() == sf::Vector2f{520, 960});
+            CHECK(view.getSize() == sf::Vector2f{1080, 1920});
             CHECK(view.getRotation() == sf::Angle::Zero);
             CHECK(view.getViewport() == sf::FloatRect({0, 0}, {1, 1}));
             CHECK(view.getScissor() == sf::FloatRect({0, 0}, {1, 1}));
@@ -68,7 +68,7 @@ TEST_CASE("[Graphics] sf::View")
     {
         sf::View view;
         view.setSize({600, 900});
-        CHECK(view.getSize() == sf::Vector2f(600, 900));
+        CHECK(view.getSize() == sf::Vector2f{600, 900});
         CHECK(view.getTransform() == Approx(sf::Transform(0.00333333f, 0, -1.66667f, 0, -0.00222222f, 1.11111f, 0, 0, 1)));
         CHECK(view.getInverseTransform() == Approx(sf::Transform(300, 0, 500, 0, -450, 500, 0, 0, 1)));
     }
@@ -113,7 +113,7 @@ TEST_CASE("[Graphics] sf::View")
         sf::View view;
         view.setCenter({25, 25});
         view.move({15, 25});
-        CHECK(view.getCenter() == sf::Vector2f(40, 50));
+        CHECK(view.getCenter() == sf::Vector2f{40, 50});
         CHECK(view.getTransform() == Approx(sf::Transform(0.002f, 0, -0.08f, 0, -0.002f, 0.1f, 0, 0, 1)));
         CHECK(view.getInverseTransform() == Approx(sf::Transform(500, 0, 40, 0, -500, 50, 0, 0, 1)));
     }
@@ -134,7 +134,7 @@ TEST_CASE("[Graphics] sf::View")
         sf::View view;
         view.setSize({25, 25});
         view.zoom(4);
-        CHECK(view.getSize() == sf::Vector2f(100, 100));
+        CHECK(view.getSize() == sf::Vector2f{100, 100});
         CHECK(view.getTransform() == Approx(sf::Transform(0.02f, 0, -10, 0, -0.02f, 10, 0, 0, 1)));
         CHECK(view.getInverseTransform() == Approx(sf::Transform(50, 0, 500, 0, -50, 500, 0, 0, 1)));
     }

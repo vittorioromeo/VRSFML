@@ -22,8 +22,8 @@ TEST_CASE("[Graphics] sf::CircleShape")
         CHECK(circle.getRadius() == 0.f);
         CHECK(circle.getPointCount() == 30);
         for (std::size_t i = 0; i < circle.getPointCount(); ++i)
-            CHECK(circle.getPoint(i) == sf::Vector2f(0, 0));
-        CHECK(circle.getGeometricCenter() == sf::Vector2f(0, 0));
+            CHECK(circle.getPoint(i) == sf::Vector2f{0, 0});
+        CHECK(circle.getGeometricCenter() == sf::Vector2f{0, 0});
     }
 
     SECTION("Radius constructor")
@@ -31,7 +31,7 @@ TEST_CASE("[Graphics] sf::CircleShape")
         const sf::CircleShape circle(15.f);
         CHECK(circle.getRadius() == 15.f);
         CHECK(circle.getPointCount() == 30);
-        CHECK(circle.getPoint(0) == Approx(sf::Vector2f(15, 0)));
+        CHECK(circle.getPoint(0) == Approx(sf::Vector2f{15, 0}));
         CHECK(circle.getPoint(1) == Approx(sf::Vector2f(18.118675232f, 0.327785492f)));
         CHECK(circle.getPoint(2) == Approx(sf::Vector2f(21.101049423f, 1.296817780f)));
         CHECK(circle.getPoint(3) == Approx(sf::Vector2f(23.816780090f, 2.864745140f)));

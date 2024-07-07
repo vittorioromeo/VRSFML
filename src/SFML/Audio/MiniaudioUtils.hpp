@@ -109,7 +109,7 @@ struct SoundBase
     ma_sound        sound{};                 //!< The sound
     EffectProcessor effectProcessor;         //!< The effect processor
     PlaybackDevice::ResourceEntryIndex resourceEntryIndex; //!< Index of the resource entry registered with the PlaybackDevice
-    priv::MiniaudioUtils::SavedSettings savedSettings; //!< Saved settings used to restore ma_sound state in case we need to recreate it
+    MiniaudioUtils::SavedSettings savedSettings; //!< Saved settings used to restore ma_sound state in case we need to recreate it
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking

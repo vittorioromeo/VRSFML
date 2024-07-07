@@ -167,7 +167,7 @@ SFML_WINDOW_API void setPosition(const Vector2i& position, const WindowBase& rel
 /// sf::Vector2i position = sf::Mouse::getPosition();
 ///
 /// // set mouse position relative to a window
-/// sf::Mouse::setPosition(sf::Vector2i(100, 200), window);
+/// sf::Mouse::setPosition(sf::Vector2i{100, 200}, window);
 /// \endcode
 ///
 /// \see sf::Joystick, sf::Keyboard, sf::Touch

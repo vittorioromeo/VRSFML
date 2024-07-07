@@ -33,6 +33,7 @@
 
 #include <SFML/System/InPlacePImpl.hpp>
 #include <SFML/System/LifetimeDependant.hpp>
+#include <SFML/System/Rect.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #include <cstddef>
@@ -45,7 +46,6 @@ class Color;
 class Font;
 class RenderTarget;
 class String;
-struct FloatRect;
 struct RenderStates;
 
 ////////////////////////////////////////////////////////////

@@ -29,7 +29,6 @@
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/Glyph.hpp>
 #include <SFML/Graphics/PrimitiveType.hpp>
-#include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Text.hpp>
@@ -38,6 +37,7 @@
 
 #include <SFML/System/Macros.hpp>
 #include <SFML/System/MathUtils.hpp>
+#include <SFML/System/Rect.hpp>
 #include <SFML/System/String.hpp>
 
 #include <vector>
@@ -86,8 +86,8 @@ void addGlyphQuad(std::vector<sf::Vertex>& vertices,
     const sf::Vector2f p1 = glyph.bounds.position - padding;
     const sf::Vector2f p2 = glyph.bounds.position + glyph.bounds.size + padding;
 
-    const auto uv1 = sf::Vector2f(glyph.textureRect.position) - padding;
-    const auto uv2 = sf::Vector2f(glyph.textureRect.position + glyph.textureRect.size) + padding;
+    const auto uv1 = glyph.textureRect.position.to<sf::Vector2f>() - padding;
+    const auto uv2 = (glyph.textureRect.position + glyph.textureRect.size).to<sf::Vector2f>() + padding;
 
     const sf::Vertex vertexData[] = {{position + sf::Vector2f(p1.x - italicShear * p1.y, p1.y), color, {uv1.x, uv1.y}},
                                      {position + sf::Vector2f(p2.x - italicShear * p1.y, p1.y), color, {uv2.x, uv1.y}},
@@ -623,14 +623,14 @@ void Text::ensureGeometryUpdate() const
             const Glyph& glyph = m_impl->font->getGlyph(curChar, m_impl->characterSize, isBold, m_impl->outlineThickness);
 
             // Add the outline glyph to the vertices
-            addGlyphQuad(m_impl->vertices, currOutlineIndex, Vector2f(x, y), m_impl->outlineColor, glyph, italicShear);
+            addGlyphQuad(m_impl->vertices, currOutlineIndex, Vector2f{x, y}, m_impl->outlineColor, glyph, italicShear);
         }
 
         // Extract the current glyph's description
         const Glyph& glyph = m_impl->font->getGlyph(curChar, m_impl->characterSize, isBold);
 
         // Add the glyph to the vertices
-        addGlyphQuad(m_impl->vertices, currFillIndex, Vector2f(x, y), m_impl->fillColor, glyph, italicShear);
+        addGlyphQuad(m_impl->vertices, currFillIndex, Vector2f{x, y}, m_impl->fillColor, glyph, italicShear);
 
         // Update the current bounds
         const Vector2f p1 = glyph.bounds.position;
@@ -664,8 +664,8 @@ void Text::ensureGeometryUpdate() const
         addLines(strikeThroughOffset);
 
     // Update the bounding rectangle
-    m_impl->bounds.position = Vector2f(minX, minY);
-    m_impl->bounds.size     = Vector2f(maxX, maxY) - Vector2f(minX, minY);
+    m_impl->bounds.position = Vector2f{minX, minY};
+    m_impl->bounds.size     = Vector2f{maxX, maxY} - Vector2f{minX, minY};
 }
 
 } // namespace sf

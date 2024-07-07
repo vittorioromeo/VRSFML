@@ -131,7 +131,7 @@ private:
 /// Usage example:
 /// \code
 /// sf::RectangleShape rectangle;
-/// rectangle.setSize(sf::Vector2f(100, 50));
+/// rectangle.setSize(sf::Vector2f{100, 50});
 /// rectangle.setOutlineColor(sf::Color::Red);
 /// rectangle.setOutlineThickness(5);
 /// rectangle.setPosition({10, 20});

@@ -39,7 +39,7 @@ std::string formatDebugPathInfo(const Path& path)
 {
     std::ostringstream oss;
     oss << "    Provided path: " << path << '\n'; // TODO
-//        << "    Absolute path: " << std::filesystem::absolute(path);
+                                                  //        << "    Absolute path: " << std::filesystem::absolute(path);
     return oss.str();
 }
 

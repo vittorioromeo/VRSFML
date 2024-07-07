@@ -663,7 +663,7 @@ priv::UniquePtr<GlContext> GlContext::create(const ContextSettings& settings, co
                                              settings.minorVersion,
                                              settings.attributeFlags};
 
-        sharedContext.context.emplace(nullptr, sharedSettings, Vector2u(1, 1));
+        sharedContext.context.emplace(nullptr, sharedSettings, Vector2u{1, 1});
         sharedContext.context->initialize(sharedSettings);
 
         // Reload our extensions vector
@@ -714,7 +714,7 @@ priv::UniquePtr<GlContext> GlContext::create(const ContextSettings& settings, co
                                              settings.minorVersion,
                                              settings.attributeFlags};
 
-        sharedContext.context.emplace(nullptr, sharedSettings, Vector2u(1, 1));
+        sharedContext.context.emplace(nullptr, sharedSettings, Vector2u{1, 1});
         sharedContext.context->initialize(sharedSettings);
 
         // Reload our extensions vector

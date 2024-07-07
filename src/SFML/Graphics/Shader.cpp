@@ -680,14 +680,14 @@ void Shader::setUniform(UniformLocation location, bool x)
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, const Glsl::Bvec2& v)
 {
-    return setUniform(location, Glsl::Ivec2(v));
+    return setUniform(location, v.to<Glsl::Ivec2>());
 }
 
 
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, const Glsl::Bvec3& v)
 {
-    return setUniform(location, Glsl::Ivec3(v));
+    return setUniform(location, v.to<Glsl::Ivec3>());
 }
 
 

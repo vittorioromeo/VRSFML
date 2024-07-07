@@ -34,13 +34,13 @@ TEST_CASE("[Graphics] sf::RenderTarget")
     SECTION("Construction")
     {
         const RenderTarget renderTarget;
-        CHECK(renderTarget.getView().getCenter() == sf::Vector2f(500, 500));
-        CHECK(renderTarget.getView().getSize() == sf::Vector2f(1000, 1000));
+        CHECK(renderTarget.getView().getCenter() == sf::Vector2f{500, 500});
+        CHECK(renderTarget.getView().getSize() == sf::Vector2f{1000, 1000});
         CHECK(renderTarget.getView().getRotation() == sf::Angle::Zero);
         CHECK(renderTarget.getView().getViewport() == sf::FloatRect({0, 0}, {1, 1}));
         CHECK(renderTarget.getView().getTransform() == sf::Transform(.002f, 0, -1, 0, -.002f, 1, 0, 0, 1));
-        CHECK(renderTarget.getDefaultView().getCenter() == sf::Vector2f(500, 500));
-        CHECK(renderTarget.getDefaultView().getSize() == sf::Vector2f(1000, 1000));
+        CHECK(renderTarget.getDefaultView().getCenter() == sf::Vector2f{500, 500});
+        CHECK(renderTarget.getDefaultView().getSize() == sf::Vector2f{1000, 1000});
         CHECK(renderTarget.getDefaultView().getRotation() == sf::Angle::Zero);
         CHECK(renderTarget.getDefaultView().getViewport() == sf::FloatRect({0, 0}, {1, 1}));
         CHECK(renderTarget.getDefaultView().getTransform() == sf::Transform(.002f, 0, -1, 0, -.002f, 1, 0, 0, 1));
@@ -51,8 +51,8 @@ TEST_CASE("[Graphics] sf::RenderTarget")
     {
         RenderTarget renderTarget;
         renderTarget.setView({{1, 2}, {3, 4}});
-        CHECK(renderTarget.getView().getCenter() == sf::Vector2f(1, 2));
-        CHECK(renderTarget.getView().getSize() == sf::Vector2f(3, 4));
+        CHECK(renderTarget.getView().getCenter() == sf::Vector2f{1, 2});
+        CHECK(renderTarget.getView().getSize() == sf::Vector2f{3, 4});
     }
 
     SECTION("setActive()")
@@ -141,8 +141,8 @@ TEST_CASE("[Graphics] sf::RenderTarget")
         RenderTarget renderTarget;
         renderTarget.setView(view);
         CHECK(renderTarget.mapCoordsToPixel({0, 0}) == sf::Vector2i(-1, 0));
-        CHECK(renderTarget.mapCoordsToPixel({320, 0}) == sf::Vector2i(100, 0));
+        CHECK(renderTarget.mapCoordsToPixel({320, 0}) == sf::Vector2i{100, 0});
         CHECK(renderTarget.mapCoordsToPixel({0, 480}) == sf::Vector2i(-1, 57));
-        CHECK(renderTarget.mapCoordsToPixel({640, 480}) == sf::Vector2i(203, 57));
+        CHECK(renderTarget.mapCoordsToPixel({640, 480}) == sf::Vector2i{203, 57});
     }
 }

@@ -27,9 +27,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Export.hpp>
+#include <SFML/System/Export.hpp>
 
-#include <SFML/Graphics/Rect.hpp>
+#include <SFML/System/Rect.hpp>
 
 #include <optional>
 
@@ -47,12 +47,12 @@ namespace sf
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard]] SFML_GRAPHICS_API constexpr std::optional<Rect<T>> findIntersection(const Rect<T>& rect0, const Rect<T>& rect1);
+[[nodiscard]] SFML_SYSTEM_API constexpr std::optional<Rect<T>> findIntersection(const Rect<T>& rect0, const Rect<T>& rect1);
 
 } // namespace sf
 
 
-#include <SFML/Graphics/RectUtils.inl>
+#include <SFML/System/RectUtils.inl>
 
 
 ////////////////////////////////////////////////////////////

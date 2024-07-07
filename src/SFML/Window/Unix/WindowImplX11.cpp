@@ -508,7 +508,7 @@ m_cursorGrabbed(m_fullscreen)
     else
     {
         const Vector2i displaySize(DisplayWidth(m_display.get(), m_screen), DisplayHeight(m_display.get(), m_screen));
-        windowPosition = displaySize - Vector2i(mode.size) / 2;
+        windowPosition = displaySize - mode.size.to<Vector2i>() / 2;
     }
 
     const unsigned int width  = mode.size.x;
@@ -796,7 +796,7 @@ void WindowImplX11::processEvents()
     }
 
     // Process clipboard window events
-    priv::ClipboardImpl::processEvents();
+    ClipboardImpl::processEvents();
 }
 
 
@@ -886,7 +886,7 @@ Vector2u WindowImplX11::getSize() const
 {
     XWindowAttributes attributes;
     XGetWindowAttributes(m_display.get(), m_window, &attributes);
-    return Vector2u(Vector2i(attributes.width, attributes.height));
+    return Vector2i(attributes.width, attributes.height).to<Vector2u>();
 }
 
 

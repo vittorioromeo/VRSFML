@@ -31,18 +31,18 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
     {
         SECTION("Style, state, and settings")
         {
-            const sf::RenderWindow window(sf::VideoMode(sf::Vector2u(256, 256), 24),
+            const sf::RenderWindow window(sf::VideoMode(sf::Vector2u{256, 256}, 24),
                                           "Window Title",
                                           sf::Style::Default,
                                           sf::State::Windowed,
                                           sf::ContextSettings{});
             CHECK(window.isOpen());
-            CHECK(window.getSize() == sf::Vector2u(256, 256));
+            CHECK(window.getSize() == sf::Vector2u{256, 256});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
             CHECK(window.getSettings().attributeFlags == sf::ContextSettings::Default);
             CHECK(!window.isSrgb());
-            CHECK(window.getView().getCenter() == sf::Vector2f(128, 128));
-            CHECK(window.getView().getSize() == sf::Vector2f(256, 256));
+            CHECK(window.getView().getCenter() == sf::Vector2f{128, 128});
+            CHECK(window.getView().getSize() == sf::Vector2f{256, 256});
             CHECK(window.getView().getRotation() == sf::Angle::Zero);
             CHECK(window.getView().getViewport() == sf::FloatRect({0, 0}, {1, 1}));
             CHECK(window.getView().getTransform() == sf::Transform(0.0078125f, 0, -1, 0, -0.0078125f, 1, 0, 0, 1));
@@ -50,17 +50,17 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 
         SECTION("State and settings")
         {
-            const sf::RenderWindow window(sf::VideoMode(sf::Vector2u(240, 300), 24),
+            const sf::RenderWindow window(sf::VideoMode(sf::Vector2u{240, 300}, 24),
                                           "Window Title",
                                           sf::State::Windowed,
                                           sf::ContextSettings{});
             CHECK(window.isOpen());
-            CHECK(window.getSize() == sf::Vector2u(240, 300));
+            CHECK(window.getSize() == sf::Vector2u{240, 300});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
             CHECK(window.getSettings().attributeFlags == sf::ContextSettings::Default);
             CHECK(!window.isSrgb());
-            CHECK(window.getView().getCenter() == sf::Vector2f(120, 150));
-            CHECK(window.getView().getSize() == sf::Vector2f(240, 300));
+            CHECK(window.getView().getCenter() == sf::Vector2f{120, 150});
+            CHECK(window.getView().getSize() == sf::Vector2f{240, 300});
             CHECK(window.getView().getRotation() == sf::Angle::Zero);
             CHECK(window.getView().getViewport() == sf::FloatRect({0, 0}, {1, 1}));
             CHECK(window.getView().getTransform() ==
@@ -70,25 +70,25 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 
     SECTION("Clear")
     {
-        sf::RenderWindow window(sf::VideoMode(sf::Vector2u(256, 256), 24),
+        sf::RenderWindow window(sf::VideoMode(sf::Vector2u{256, 256}, 24),
                                 "Window Title",
                                 sf::Style::Default,
                                 sf::State::Windowed,
                                 sf::ContextSettings{});
-        REQUIRE(window.getSize() == sf::Vector2u(256, 256));
+        REQUIRE(window.getSize() == sf::Vector2u{256, 256});
 
         auto texture = sf::Texture::create(window.getSize()).value();
 
         window.clear(sf::Color::Red);
         texture.update(window);
-        CHECK(texture.copyToImage().getPixel(sf::Vector2u(64, 64)) == sf::Color::Red);
+        CHECK(texture.copyToImage().getPixel(sf::Vector2u{64, 64}) == sf::Color::Red);
 
         window.clear(sf::Color::Green);
         texture.update(window);
-        CHECK(texture.copyToImage().getPixel(sf::Vector2u(128, 128)) == sf::Color::Green);
+        CHECK(texture.copyToImage().getPixel(sf::Vector2u{128, 128}) == sf::Color::Green);
 
         window.clear(sf::Color::Blue);
         texture.update(window);
-        CHECK(texture.copyToImage().getPixel(sf::Vector2u(196, 196)) == sf::Color::Blue);
+        CHECK(texture.copyToImage().getPixel(sf::Vector2u{196, 196}) == sf::Color::Blue);
     }
 }

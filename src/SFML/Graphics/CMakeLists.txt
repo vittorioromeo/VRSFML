@@ -22,11 +22,6 @@ set(SRC
     ${SRCROOT}/Image.cpp
     ${INCROOT}/Image.hpp
     ${INCROOT}/PrimitiveType.hpp
-    ${SRCROOT}/Rect.cpp
-    ${INCROOT}/Rect.hpp
-    ${INCROOT}/Rect.inl
-    ${INCROOT}/RectUtils.hpp
-    ${INCROOT}/RectUtils.inl
     ${SRCROOT}/RenderStates.cpp
     ${INCROOT}/RenderStates.hpp
     ${SRCROOT}/RenderTexture.cpp

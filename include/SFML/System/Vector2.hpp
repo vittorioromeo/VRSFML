@@ -45,37 +45,6 @@ class Vector2
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// Creates a Vector2(0, 0).
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] inline constexpr Vector2();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct the vector from cartesian coordinates
-    ///
-    /// \param x X coordinate
-    /// \param y Y coordinate
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] inline constexpr Vector2(T x, T y);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct the vector from another type of vector
-    ///
-    /// This constructor doesn't replace the copy constructor,
-    /// it's called only when U != T.
-    /// A call to this constructor will fail to compile if U
-    /// is not convertible to T.
-    ///
-    /// \param vector Vector to convert
-    ///
-    ////////////////////////////////////////////////////////////
-    template <typename U>
-    [[nodiscard, gnu::always_inline]] inline constexpr explicit Vector2(const Vector2<U>& vector);
-
-    ////////////////////////////////////////////////////////////
     /// \brief Construct the vector from polar coordinates <i><b>(floating-point)</b></i>
     ///
     /// \param r   Length of vector (can be negative)
@@ -89,7 +58,7 @@ public:
     /// * Vector2(r, phi) == Vector2(r, phi + n * 360_deg)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] inline constexpr Vector2(T r, Angle phi);
+    [[nodiscard, gnu::always_inline]] static inline constexpr Vector2 fromAngle(T r, Angle phi);
 
     ////////////////////////////////////////////////////////////
     /// \brief Length of the vector <i><b>(floating-point)</b></i>.
@@ -219,6 +188,12 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] inline constexpr Vector2 cwiseDiv(const Vector2& rhs) const;
 
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename U>
+    [[nodiscard, gnu::always_inline]] inline constexpr U to() const;
 
     ////////////////////////////////////////////////////////////
     // Member data

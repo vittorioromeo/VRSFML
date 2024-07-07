@@ -266,7 +266,7 @@ void Shape::updateFillColors()
 ////////////////////////////////////////////////////////////
 void Shape::updateTexCoords()
 {
-    const FloatRect convertedTextureRect(m_impl->textureRect);
+    const auto convertedTextureRect = m_impl->textureRect.to<FloatRect>();
 
     // Make sure not to divide by zero when the points are aligned on a vertical or horizontal line
     const Vector2f safeInsideSize(m_impl->insideBounds.size.x > 0 ? m_impl->insideBounds.size.x : 1.f,
