@@ -31,6 +31,8 @@
 #include <SFML/Graphics/Shader.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
+#include <SFML/Window/TransientContextLock.hpp>
+
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InputStream.hpp>
@@ -318,7 +320,7 @@ private:
 
 
 ////////////////////////////////////////////////////////////
-class [[nodiscard]] Shader::UniformBinder : public TransientContextLock, public UnsafeUniformBinder
+class [[nodiscard]] Shader::UniformBinder : public priv::TransientContextLock, public UnsafeUniformBinder
 {
     using UnsafeUniformBinder::UnsafeUniformBinder;
 };
@@ -327,7 +329,7 @@ class [[nodiscard]] Shader::UniformBinder : public TransientContextLock, public 
 ////////////////////////////////////////////////////////////
 Shader::~Shader()
 {
-    const TransientContextLock lock;
+    const priv::TransientContextLock lock;
 
     // Destroy effect program
     if (m_impl->shaderProgram)
@@ -351,7 +353,7 @@ Shader& Shader::operator=(Shader&& right) noexcept
     // Explicit scope for RAII
     {
         // Destroy effect program
-        const TransientContextLock lock;
+        const priv::TransientContextLock lock;
         assert(m_impl->shaderProgram);
         glCheck(GLEXT_glDeleteObject(castToGlHandle(m_impl->shaderProgram)));
     }
@@ -719,7 +721,7 @@ bool Shader::setUniform(UniformLocation location, const Texture& texture)
 {
     assert(m_impl->shaderProgram);
 
-    const TransientContextLock lock;
+    const priv::TransientContextLock lock;
 
     // Store the location -> texture mapping
     if (const auto it = m_impl->textures.find(location.m_value); it != m_impl->textures.end())
@@ -748,7 +750,7 @@ void Shader::setUniform(UniformLocation location, CurrentTextureType)
 {
     assert(m_impl->shaderProgram);
 
-    const TransientContextLock lock;
+    const priv::TransientContextLock lock;
 
     // Find the location of the variable in the shader
     m_impl->currentTexture = location.m_value;
@@ -892,7 +894,7 @@ unsigned int Shader::getNativeHandle() const
 ////////////////////////////////////////////////////////////
 void Shader::bind(const Shader* shader)
 {
-    const TransientContextLock lock;
+    const priv::TransientContextLock lock;
 
     // Make sure that we can use shaders
     if (!isAvailable())
@@ -927,7 +929,7 @@ bool Shader::isAvailable()
 {
     static const bool available = []
     {
-        const TransientContextLock contextLock;
+        const priv::TransientContextLock lock;
         priv::ensureExtensionsInit();
 
         return GLEXT_multitexture && GLEXT_shading_language_100 && GLEXT_shader_objects && GLEXT_vertex_shader &&
@@ -943,7 +945,7 @@ bool Shader::isGeometryAvailable()
 {
     static const bool available = []
     {
-        const TransientContextLock contextLock;
+        const priv::TransientContextLock lock;
         priv::ensureExtensionsInit();
 
         return isAvailable() && (GLEXT_geometry_shader4 || GLEXT_GL_VERSION_3_2);
@@ -964,7 +966,7 @@ std::optional<Shader> Shader::compile(std::string_view vertexShaderCode,
                                       std::string_view geometryShaderCode,
                                       std::string_view fragmentShaderCode)
 {
-    const TransientContextLock lock;
+    const priv::TransientContextLock lock;
 
     // First make sure that we can use shaders
     if (!isAvailable())

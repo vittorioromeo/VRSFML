@@ -33,7 +33,7 @@ TEST_CASE("[Window] sf::Context" * doctest::skip(skipDisplayTests))
         const sf::Context context;
         CHECK(context.getSettings().majorVersion > 0);
         CHECK(sf::Context::getActiveContext() == &context);
-        CHECK(sf::Context::getActiveContextId() != 0);
+        CHECK(sf::Context::hasActiveContext());
     }
 
     SECTION("Move semantics")
@@ -46,7 +46,7 @@ TEST_CASE("[Window] sf::Context" * doctest::skip(skipDisplayTests))
                 const sf::Context context(SFML_MOVE(movedContext));
                 CHECK(context.getSettings().majorVersion > 0);
                 CHECK(sf::Context::getActiveContext() == &context);
-                CHECK(sf::Context::getActiveContextId() != 0);
+                CHECK(sf::Context::hasActiveContext());
             }
 
             SECTION("From inactive context")
@@ -54,12 +54,12 @@ TEST_CASE("[Window] sf::Context" * doctest::skip(skipDisplayTests))
                 sf::Context movedContext;
                 CHECK(movedContext.setActive(false));
                 CHECK(sf::Context::getActiveContext() == nullptr);
-                CHECK(sf::Context::getActiveContextId() == 0);
+                CHECK(!sf::Context::hasActiveContext());
 
                 const sf::Context context(SFML_MOVE(movedContext));
                 CHECK(context.getSettings().majorVersion > 0);
                 CHECK(sf::Context::getActiveContext() == nullptr);
-                CHECK(sf::Context::getActiveContextId() == 0);
+                CHECK(!sf::Context::hasActiveContext());
             }
         }
 
@@ -71,12 +71,12 @@ TEST_CASE("[Window] sf::Context" * doctest::skip(skipDisplayTests))
                 sf::Context context;
                 CHECK(movedContext.setActive(true));
                 CHECK(sf::Context::getActiveContext() == &movedContext);
-                CHECK(sf::Context::getActiveContextId() != 0);
+                CHECK(sf::Context::hasActiveContext());
 
                 context = SFML_MOVE(movedContext);
                 CHECK(context.getSettings().majorVersion > 0);
                 CHECK(sf::Context::getActiveContext() == &context);
-                CHECK(sf::Context::getActiveContextId() != 0);
+                CHECK(sf::Context::hasActiveContext());
             }
 
             SECTION("From inactive context")
@@ -84,13 +84,13 @@ TEST_CASE("[Window] sf::Context" * doctest::skip(skipDisplayTests))
                 sf::Context movedContext;
                 CHECK(movedContext.setActive(false));
                 CHECK(sf::Context::getActiveContext() == nullptr);
-                CHECK(sf::Context::getActiveContextId() == 0);
+                CHECK(!sf::Context::hasActiveContext());
 
                 sf::Context context;
                 context = SFML_MOVE(movedContext);
                 CHECK(context.getSettings().majorVersion > 0);
                 CHECK(sf::Context::getActiveContext() == nullptr);
-                CHECK(sf::Context::getActiveContextId() == 0);
+                CHECK(!sf::Context::hasActiveContext());
             }
         }
     }
@@ -103,7 +103,7 @@ TEST_CASE("[Window] sf::Context" * doctest::skip(skipDisplayTests))
         // Set inactive
         CHECK(context.setActive(false));
         CHECK(sf::Context::getActiveContext() == nullptr);
-        CHECK(sf::Context::getActiveContextId() == 0);
+        CHECK(!sf::Context::hasActiveContext());
 
         // Set active
         CHECK(context.setActive(true));
@@ -130,17 +130,17 @@ TEST_CASE("[Window] sf::Context" * doctest::skip(skipDisplayTests))
     SECTION("getActiveContext()/getActiveContextId()")
     {
         CHECK(sf::Context::getActiveContext() == nullptr);
-        CHECK(sf::Context::getActiveContextId() == 0);
+        CHECK(!sf::Context::hasActiveContext());
 
         {
             const sf::Context context;
             CHECK(context.getSettings().majorVersion > 0);
             CHECK(sf::Context::getActiveContext() == &context);
-            CHECK(sf::Context::getActiveContextId() != 0);
+            CHECK(sf::Context::hasActiveContext());
         }
 
         CHECK(sf::Context::getActiveContext() == nullptr);
-        CHECK(sf::Context::getActiveContextId() == 0);
+        CHECK(!sf::Context::hasActiveContext());
     }
 
     SECTION("Version String")

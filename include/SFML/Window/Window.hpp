@@ -44,7 +44,7 @@ namespace sf
 /// \brief Window that serves as a target for OpenGL rendering
 ///
 ////////////////////////////////////////////////////////////
-class SFML_WINDOW_API Window : public WindowBase, GlResource
+class SFML_WINDOW_API Window : public WindowBase, private GlResource
 {
 public:
     ////////////////////////////////////////////////////////////

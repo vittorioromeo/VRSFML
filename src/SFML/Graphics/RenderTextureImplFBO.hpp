@@ -47,7 +47,7 @@ namespace priv
 ///        FrameBuffer Object OpenGL extension
 ///
 ////////////////////////////////////////////////////////////
-class RenderTextureImplFBO : public RenderTextureImpl, GlResource
+class RenderTextureImplFBO : public RenderTextureImpl, private GlResource
 {
 public:
     ////////////////////////////////////////////////////////////

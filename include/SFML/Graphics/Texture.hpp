@@ -57,7 +57,7 @@ class Shape;
 /// \brief Image living on the graphics card that can be used for drawing
 ///
 ////////////////////////////////////////////////////////////
-class SFML_GRAPHICS_API Texture : GlResource
+class SFML_GRAPHICS_API Texture : private GlResource
 {
 public:
     ////////////////////////////////////////////////////////////

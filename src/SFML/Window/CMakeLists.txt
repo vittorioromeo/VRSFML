@@ -17,6 +17,8 @@ set(SRC
     ${SRCROOT}/GlContext.hpp
     ${SRCROOT}/GlResource.cpp
     ${INCROOT}/GlResource.hpp
+    ${SRCROOT}/TransientContextLock.cpp
+    ${INCROOT}/TransientContextLock.hpp
     ${INCROOT}/ContextSettings.hpp
     ${INCROOT}/Event.hpp
     ${INCROOT}/Event.inl

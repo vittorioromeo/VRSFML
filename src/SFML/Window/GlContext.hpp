@@ -29,10 +29,10 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Config.hpp>
 
-#include <SFML/Window/Context.hpp>
 #include <SFML/Window/ContextSettings.hpp>
 
 #include <SFML/System/InPlacePImpl.hpp>
+#include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #include <cstdint>
@@ -41,7 +41,8 @@
 namespace sf
 {
 class GlResource;
-}
+using GlFunctionPointer = void (*)();
+} // namespace sf
 
 
 namespace sf::priv
@@ -52,7 +53,7 @@ class WindowImpl;
 /// \brief Abstract class representing an OpenGL context
 ///
 ////////////////////////////////////////////////////////////
-class GlContext
+class [[nodiscard]] GlContext
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -96,7 +97,7 @@ public:
     /// \return Pointer to the created context
     ///
     ////////////////////////////////////////////////////////////
-    static priv::UniquePtr<GlContext> create();
+    [[nodiscard]] static priv::UniquePtr<GlContext> create();
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context attached to a window
@@ -111,7 +112,9 @@ public:
     /// \return Pointer to the created context
     ///
     ////////////////////////////////////////////////////////////
-    static priv::UniquePtr<GlContext> create(const ContextSettings& settings, const WindowImpl& owner, unsigned int bitsPerPixel);
+    [[nodiscard]] static priv::UniquePtr<GlContext> create(const ContextSettings& settings,
+                                                           const WindowImpl&      owner,
+                                                           unsigned int           bitsPerPixel);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context that embeds its own rendering target
@@ -125,7 +128,7 @@ public:
     /// \return Pointer to the created context
     ///
     ////////////////////////////////////////////////////////////
-    static priv::UniquePtr<GlContext> create(const ContextSettings& settings, const Vector2u& size);
+    [[nodiscard]] static priv::UniquePtr<GlContext> create(const ContextSettings& settings, const Vector2u& size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Check whether a given OpenGL extension is available
@@ -135,7 +138,7 @@ public:
     /// \return True if available, false if unavailable
     ///
     ////////////////////////////////////////////////////////////
-    static bool isExtensionAvailable(std::string_view name);
+    [[nodiscard]] static bool isExtensionAvailable(const char* name);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the address of an OpenGL function
@@ -145,7 +148,7 @@ public:
     /// \return Address of the OpenGL function, 0 on failure
     ///
     ////////////////////////////////////////////////////////////
-    static GlFunctionPointer getFunction(const char* name);
+    [[nodiscard]] static GlFunctionPointer getFunction(const char* name);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the currently active context
@@ -153,7 +156,7 @@ public:
     /// \return The currently active context or a null pointer if none is active
     ///
     ////////////////////////////////////////////////////////////
-    static const GlContext* getActiveContext();
+    [[nodiscard]] static const GlContext* getActiveContext();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the currently active context's ID
@@ -164,7 +167,13 @@ public:
     /// \return The active context's ID or 0 if no context is currently active
     ///
     ////////////////////////////////////////////////////////////
-    static std::uint64_t getActiveContextId();
+    [[nodiscard]] static std::uint64_t getActiveContextId();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool hasActiveContext();
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -210,7 +219,7 @@ public:
     /// \return True if operation was successful, false otherwise
     ///
     ////////////////////////////////////////////////////////////
-    bool setActive(bool active);
+    [[nodiscard]] bool setActive(bool active);
 
     ////////////////////////////////////////////////////////////
     /// \brief Display what has been rendered to the context so far
@@ -238,7 +247,7 @@ protected:
     /// This constructor is meant for derived classes only.
     ///
     ////////////////////////////////////////////////////////////
-    explicit GlContext(const ContextSettings& settings);
+    [[nodiscard]] explicit GlContext(const ContextSettings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Activate the context as the current target
@@ -249,7 +258,7 @@ protected:
     /// \return True on success, false if any error happened
     ///
     ////////////////////////////////////////////////////////////
-    virtual bool makeCurrent(bool current) = 0;
+    [[nodiscard]] virtual bool makeCurrent(bool current) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Notify unshared GlResources of context destruction
@@ -305,7 +314,7 @@ private:
     /// \param requestedSettings Requested settings during context creation
     ///
     ////////////////////////////////////////////////////////////
-    void initialize(const ContextSettings& requestedSettings);
+    [[nodiscard]] bool initialize(const ContextSettings& requestedSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Check whether the context is compatible with the requested settings

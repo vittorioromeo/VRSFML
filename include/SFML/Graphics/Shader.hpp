@@ -52,7 +52,7 @@ class Texture;
 /// \brief Shader class (vertex, geometry and fragment)
 ///
 ////////////////////////////////////////////////////////////
-class SFML_GRAPHICS_API Shader : GlResource
+class SFML_GRAPHICS_API Shader : private GlResource
 {
 public:
     ////////////////////////////////////////////////////////////
