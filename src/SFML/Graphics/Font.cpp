@@ -748,7 +748,8 @@ IntRect Font::findGlyphRect(GraphicsContext& graphicsContext, Page& page, const 
         {
             // Not enough space: resize the texture if possible
             const Vector2u textureSize = page.texture.getSize();
-            if ((textureSize.x * 2 <= Texture::getMaximumSize()) && (textureSize.y * 2 <= Texture::getMaximumSize()))
+            if ((textureSize.x * 2 <= Texture::getMaximumSize(graphicsContext)) &&
+                (textureSize.y * 2 <= Texture::getMaximumSize(graphicsContext)))
             {
                 // Make the texture 2 times bigger
                 auto newTexture = sf::Texture::create(graphicsContext, textureSize * 2u);

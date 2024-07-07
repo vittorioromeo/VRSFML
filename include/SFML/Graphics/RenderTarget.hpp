@@ -43,6 +43,7 @@
 
 namespace sf
 {
+class GraphicsContext;
 class Shader;
 class Shape;
 class Sprite;
@@ -526,7 +527,7 @@ protected:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit RenderTarget();
+    [[nodiscard]] explicit RenderTarget(GraphicsContext& graphicsContext);
 
     ////////////////////////////////////////////////////////////
     /// \brief Performs the common initialization step after creation

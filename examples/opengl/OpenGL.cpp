@@ -117,7 +117,10 @@ int main()
 #ifdef SFML_OPENGL_ES
         gladLoadGLES1(sf::Context::getFunction);
 #else
-        gladLoadGL(sf::Context::getFunction);
+        static sf::GraphicsContext* gcPtr;
+        gcPtr = &graphicsContext;
+
+        gladLoadGL([](const char* name) { return sf::Context::getFunction(*gcPtr, name); });
 #endif
 
         // Enable Z-buffer read and write
@@ -147,7 +150,7 @@ int main()
 
         // Bind the texture
         glEnable(GL_TEXTURE_2D);
-        sf::Texture::bind(&texture);
+        sf::Texture::bind(graphicsContext, &texture);
 
         // Define a 3D cube (6 faces made of 2 triangles composed by 3 vertices)
         // clang-format off

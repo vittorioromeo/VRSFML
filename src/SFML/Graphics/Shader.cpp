@@ -326,14 +326,19 @@ private:
 ////////////////////////////////////////////////////////////
 class [[nodiscard]] Shader::UniformBinder : public priv::TransientContextLock, public UnsafeUniformBinder
 {
-    using UnsafeUniformBinder::UnsafeUniformBinder;
+public:
+    [[nodiscard, gnu::always_inline]] explicit UniformBinder(Shader& shader) :
+    priv::TransientContextLock(*shader.m_impl->graphicsContext),
+    UnsafeUniformBinder(shader)
+    {
+    }
 };
 
 
 ////////////////////////////////////////////////////////////
 Shader::~Shader()
 {
-    const priv::TransientContextLock lock;
+    const priv::TransientContextLock lock(*m_impl->graphicsContext);
 
     // Destroy effect program
     if (m_impl->shaderProgram)
@@ -357,7 +362,7 @@ Shader& Shader::operator=(Shader&& right) noexcept
     // Explicit scope for RAII
     {
         // Destroy effect program
-        const priv::TransientContextLock lock;
+        const priv::TransientContextLock lock(*m_impl->graphicsContext);
         assert(m_impl->shaderProgram);
         glCheck(GLEXT_glDeleteObject(castToGlHandle(m_impl->shaderProgram)));
     }
@@ -736,7 +741,7 @@ bool Shader::setUniform(UniformLocation location, const Texture& texture)
 {
     assert(m_impl->shaderProgram);
 
-    const priv::TransientContextLock lock;
+    const priv::TransientContextLock lock(*m_impl->graphicsContext);
 
     // Store the location -> texture mapping
     if (const auto it = m_impl->textures.find(location.m_value); it != m_impl->textures.end())
@@ -765,7 +770,7 @@ void Shader::setUniform(UniformLocation location, CurrentTextureType)
 {
     assert(m_impl->shaderProgram);
 
-    const priv::TransientContextLock lock;
+    const priv::TransientContextLock lock(*m_impl->graphicsContext);
 
     // Find the location of the variable in the shader
     m_impl->currentTexture = location.m_value;
@@ -909,13 +914,14 @@ unsigned int Shader::getNativeHandle() const
 ////////////////////////////////////////////////////////////
 void Shader::bind() const
 {
-    const priv::TransientContextLock lock;
+    const priv::TransientContextLock lock(*m_impl->graphicsContext);
 
     // Make sure that we can use shaders
-    if (!isAvailable())
+    if (!isAvailable(*m_impl->graphicsContext))
     {
         priv::err() << "Failed to bind or unbind shader: your system doesn't support shaders "
-                    << "(you should test Shader::isAvailable() before trying to use the Shader class)" << priv::errEndl;
+                    << "(you should test Shader::isAvailable(graphicsContext) before trying to use the Shader class)"
+                    << priv::errEndl;
 
         return;
     }
@@ -939,9 +945,9 @@ void Shader::bind() const
 }
 
 
-void Shader::unbind()
+void Shader::unbind(GraphicsContext& graphicsContext)
 {
-    const priv::TransientContextLock lock;
+    const priv::TransientContextLock lock(graphicsContext);
 
     // Bind no shader
     glCheck(GLEXT_glUseProgramObject({}));
@@ -949,12 +955,12 @@ void Shader::unbind()
 
 
 ////////////////////////////////////////////////////////////
-bool Shader::isAvailable()
+bool Shader::isAvailable(GraphicsContext& graphicsContext)
 {
-    static const bool available = []
+    static const bool available = [&graphicsContext]
     {
-        const priv::TransientContextLock lock;
-        priv::ensureExtensionsInit();
+        const priv::TransientContextLock lock(graphicsContext);
+        priv::ensureExtensionsInit(graphicsContext);
 
         return GLEXT_multitexture && GLEXT_shading_language_100 && GLEXT_shader_objects && GLEXT_vertex_shader &&
                GLEXT_fragment_shader;
@@ -965,14 +971,14 @@ bool Shader::isAvailable()
 
 
 ////////////////////////////////////////////////////////////
-bool Shader::isGeometryAvailable()
+bool Shader::isGeometryAvailable(GraphicsContext& graphicsContext)
 {
-    static const bool available = []
+    static const bool available = [&graphicsContext]
     {
-        const priv::TransientContextLock lock;
-        priv::ensureExtensionsInit();
+        const priv::TransientContextLock lock(graphicsContext);
+        priv::ensureExtensionsInit(graphicsContext);
 
-        return isAvailable() && (GLEXT_geometry_shader4 || GLEXT_GL_VERSION_3_2);
+        return isAvailable(graphicsContext) && (GLEXT_geometry_shader4 || GLEXT_GL_VERSION_3_2);
     }();
 
     return available;
@@ -992,10 +998,10 @@ std::optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
                                       std::string_view geometryShaderCode,
                                       std::string_view fragmentShaderCode)
 {
-    const priv::TransientContextLock lock;
+    const priv::TransientContextLock lock(graphicsContext);
 
     // First make sure that we can use shaders
-    if (!isAvailable())
+    if (!isAvailable(graphicsContext))
     {
         priv::err() << "Failed to create a shader: your system doesn't support shaders "
                     << "(you should test Shader::isAvailable() before trying to use the Shader class)" << priv::errEndl;
@@ -1004,7 +1010,7 @@ std::optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
     }
 
     // Make sure we can use geometry shaders
-    if (geometryShaderCode.data() && !isGeometryAvailable())
+    if (geometryShaderCode.data() && !isGeometryAvailable(graphicsContext))
     {
         priv::err() << "Failed to create a shader: your system doesn't support geometry shaders "
                     << "(you should test Shader::isGeometryAvailable() before trying to use geometry shaders)"
@@ -1137,7 +1143,7 @@ void Shader::bindTextures() const
         const auto index = static_cast<GLsizei>(i + 1);
         glCheck(GLEXT_glUniform1i(it->first, index));
         glCheck(GLEXT_glActiveTexture(GLEXT_GL_TEXTURE0 + static_cast<GLenum>(index)));
-        Texture::bind(it->second);
+        Texture::bind(*m_impl->graphicsContext, it->second);
         ++it;
     }
 
@@ -1403,7 +1409,7 @@ void Shader::bind(const Shader* /* shader */)
 
 
 ////////////////////////////////////////////////////////////
-bool Shader::isAvailable()
+bool Shader::isAvailable(graphicsContext)
 {
     return false;
 }

@@ -27,6 +27,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Window/GraphicsContext.hpp"
+
 #include <SFML/Config.hpp>
 
 #include <glad/gl.h>
@@ -399,6 +401,13 @@ inline int SF_GL_OES_vertex_buffer_object = 1;
 #define GLEXT_GL_VERSION_4_5 SF_GLAD_GL_VERSION_4_5
 #define GLEXT_GL_VERSION_4_6 SF_GLAD_GL_VERSION_4_6
 
+
+namespace sf
+{
+class GraphicsContext;
+} // namespace sf
+
+
 namespace sf::priv
 {
 
@@ -406,6 +415,6 @@ namespace sf::priv
 /// \brief Make sure that extensions are initialized
 ///
 ////////////////////////////////////////////////////////////
-void ensureExtensionsInit();
+void ensureExtensionsInit(GraphicsContext& graphicsContext);
 
 } // namespace sf::priv

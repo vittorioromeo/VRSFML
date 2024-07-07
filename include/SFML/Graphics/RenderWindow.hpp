@@ -223,7 +223,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    unsigned int m_defaultFrameBuffer{}; //!< Framebuffer to bind when targeting this window
+    GraphicsContext* m_graphicsContext;      //!< TODO
+    unsigned int     m_defaultFrameBuffer{}; //!< Framebuffer to bind when targeting this window
 };
 
 } // namespace sf

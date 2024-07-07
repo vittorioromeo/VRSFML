@@ -67,7 +67,7 @@ public:
     /// \return True if FBO render textures are supported
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static bool isAvailable();
+    [[nodiscard]] static bool isAvailable(GraphicsContext& graphicsContext);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the maximum anti-aliasing level supported by the system
@@ -75,7 +75,7 @@ public:
     /// \return The maximum anti-aliasing level supported by the system
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static unsigned int getMaximumAntialiasingLevel();
+    [[nodiscard]] static unsigned int getMaximumAntialiasingLevel(GraphicsContext& graphicsContext);
 
     ////////////////////////////////////////////////////////////
     /// \brief Unbind the currently bound FBO

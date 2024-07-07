@@ -90,7 +90,7 @@ Context& Context::operator=(Context&& rhs) noexcept
 ////////////////////////////////////////////////////////////
 bool Context::setActive(bool active)
 {
-    if (!m_context->setActive(active))
+    if (!m_context->setActive(*m_graphicsContext, active))
         return false;
 
     if (active)
@@ -137,16 +137,16 @@ bool Context::hasActiveContext()
 
 
 ////////////////////////////////////////////////////////////
-bool Context::isExtensionAvailable(const char* name)
+bool Context::isExtensionAvailable(GraphicsContext& graphicsContext, const char* name)
 {
-    return priv::GlContext::isExtensionAvailable(name);
+    return priv::GlContext::isExtensionAvailable(graphicsContext, name);
 }
 
 
 ////////////////////////////////////////////////////////////
-GlFunctionPointer Context::getFunction(const char* name)
+GlFunctionPointer Context::getFunction(GraphicsContext& graphicsContext, const char* name)
 {
-    return priv::GlContext::getFunction(name);
+    return priv::GlContext::getFunction(graphicsContext, name);
 }
 
 

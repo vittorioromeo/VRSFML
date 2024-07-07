@@ -36,9 +36,9 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-TransientContextLock::TransientContextLock()
+TransientContextLock::TransientContextLock(GraphicsContext& graphicsContext)
 {
-    priv::GlContext::acquireTransientContext();
+    priv::GlContext::acquireTransientContext(graphicsContext);
 }
 
 

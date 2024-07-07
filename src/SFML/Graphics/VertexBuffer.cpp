@@ -122,7 +122,7 @@ VertexBuffer::~VertexBuffer()
 {
     if (m_buffer)
     {
-        const priv::TransientContextLock lock;
+        const priv::TransientContextLock lock(*m_graphicsContext);
 
         glCheck(GLEXT_glDeleteBuffers(1, &m_buffer));
     }
@@ -132,10 +132,10 @@ VertexBuffer::~VertexBuffer()
 ////////////////////////////////////////////////////////////
 bool VertexBuffer::create(std::size_t vertexCount)
 {
-    if (!isAvailable())
+    if (!isAvailable(*m_graphicsContext))
         return false;
 
-    const priv::TransientContextLock lock;
+    const priv::TransientContextLock lock(*m_graphicsContext);
 
     if (!m_buffer)
         glCheck(GLEXT_glGenBuffers(1, &m_buffer));
@@ -186,7 +186,7 @@ bool VertexBuffer::update(const Vertex* vertices, std::size_t vertexCount, unsig
     if (offset && (offset + vertexCount > m_size))
         return false;
 
-    const priv::TransientContextLock lock;
+    const priv::TransientContextLock lock(*m_graphicsContext);
 
     glCheck(GLEXT_glBindBuffer(GLEXT_GL_ARRAY_BUFFER, m_buffer));
 
@@ -224,10 +224,10 @@ bool VertexBuffer::update([[maybe_unused]] const VertexBuffer& vertexBuffer)
     if (!m_buffer || !vertexBuffer.m_buffer)
         return false;
 
-    const priv::TransientContextLock lock;
+    const priv::TransientContextLock lock(*m_graphicsContext);
 
     // Make sure that extensions are initialized
-    priv::ensureExtensionsInit();
+    priv::ensureExtensionsInit(*m_graphicsContext);
 
     if (GLEXT_copy_buffer)
     {
@@ -307,12 +307,12 @@ unsigned int VertexBuffer::getNativeHandle() const
 
 
 ////////////////////////////////////////////////////////////
-void VertexBuffer::bind(const VertexBuffer* vertexBuffer)
+void VertexBuffer::bind(GraphicsContext& graphicsContext, const VertexBuffer* vertexBuffer)
 {
-    if (!isAvailable())
+    if (!isAvailable(graphicsContext))
         return;
 
-    const priv::TransientContextLock lock;
+    const priv::TransientContextLock lock(graphicsContext);
 
     glCheck(GLEXT_glBindBuffer(GLEXT_GL_ARRAY_BUFFER, vertexBuffer ? vertexBuffer->m_buffer : 0));
 }
@@ -347,14 +347,14 @@ VertexBuffer::Usage VertexBuffer::getUsage() const
 
 
 ////////////////////////////////////////////////////////////
-bool VertexBuffer::isAvailable()
+bool VertexBuffer::isAvailable(GraphicsContext& graphicsContext)
 {
-    static const bool available = []
+    static const bool available = [&graphicsContext]
     {
-        const priv::TransientContextLock lock;
+        const priv::TransientContextLock lock(graphicsContext);
 
         // Make sure that extensions are initialized
-        priv::ensureExtensionsInit();
+        priv::ensureExtensionsInit(graphicsContext);
 
         return GLEXT_vertex_buffer_object != 0;
     }();

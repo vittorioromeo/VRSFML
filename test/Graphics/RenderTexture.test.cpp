@@ -49,7 +49,7 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
 
     SECTION("getMaximumAntialiasingLevel()")
     {
-        CHECK(sf::RenderTexture::getMaximumAntialiasingLevel() <= 64);
+        CHECK(sf::RenderTexture::getMaximumAntialiasingLevel(graphicsContext) <= 64);
     }
 
     SECTION("Set/get smooth")

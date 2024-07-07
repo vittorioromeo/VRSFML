@@ -29,15 +29,23 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/Export.hpp>
 
+#include <SFML/System/UniquePtr.hpp>
+#include <SFML/System/Vector2.hpp>
+
+#include <mutex>
+
 
 namespace sf::priv
 {
 class GlContext;
+class WindowImpl;
 } // namespace sf::priv
 
 
 namespace sf
 {
+struct ContextSettings;
+
 ////////////////////////////////////////////////////////////
 class [[nodiscard]] GraphicsContext
 {
@@ -60,8 +68,22 @@ public:
 
     [[nodiscard]] Guard lock();
 
+    [[nodiscard]] std::recursive_mutex& getMutex();
+
+    void makeContextType(priv::UniquePtr<priv::GlContext>& target);
+
+    void makeContextType(priv::UniquePtr<priv::GlContext>& target,
+                         const ContextSettings&            settings,
+                         const priv::WindowImpl&           owner,
+                         unsigned int                      bitsPerPixel);
+
+    void makeContextType(priv::UniquePtr<priv::GlContext>& target, const ContextSettings& settings, const Vector2u& size);
+
+    [[nodiscard]] bool isExtensionAvailable(const char* name);
+
 private:
-    priv::GlContext& m_glContext;
+    struct Impl;
+    priv::UniquePtr<Impl> m_impl;
 };
 
 } // namespace sf

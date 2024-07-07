@@ -141,7 +141,7 @@ int main()
     std::vector<sf::Vertex> terrainStagingBuffer;
 
     // Set up our graphics resources and set the status text accordingly
-    if (!sf::VertexBuffer::isAvailable() || !sf::Shader::isAvailable())
+    if (!sf::VertexBuffer::isAvailable(graphicsContext) || !sf::Shader::isAvailable(graphicsContext))
     {
         statusText.setString("Shaders and/or Vertex Buffers Unsupported");
     }

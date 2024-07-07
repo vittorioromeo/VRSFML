@@ -1,5 +1,6 @@
-#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Graphics/VertexBuffer.hpp>
+
+#include <SFML/Window/GraphicsContext.hpp>
 
 // Other 1st party headers
 #include <SFML/Graphics/Vertex.hpp>
@@ -27,7 +28,7 @@ TEST_CASE("[Graphics] sf::VertexBuffer", "[.display]")
     }
 
     // Skip tests if vertex buffers aren't available
-    if (!sf::VertexBuffer::isAvailable())
+    if (!sf::VertexBuffer::isAvailable(graphicsContext))
         return;
 
     SECTION("Construction")

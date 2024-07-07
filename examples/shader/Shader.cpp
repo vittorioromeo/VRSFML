@@ -394,7 +394,7 @@ std::optional<Edge> tryLoadEdge(sf::GraphicsContext& graphicsContext)
 std::optional<Geometry> tryLoadGeometry(sf::GraphicsContext& graphicsContext)
 {
     // Check if geometry shaders are supported
-    if (!sf::Shader::isGeometryAvailable())
+    if (!sf::Shader::isGeometryAvailable(graphicsContext))
         return std::nullopt;
 
     // Load the logo texture
@@ -433,7 +433,7 @@ int main()
     sf::GraphicsContext graphicsContext;
 
     // Exit early if shaders are not available
-    if (!sf::Shader::isAvailable())
+    if (!sf::Shader::isAvailable(graphicsContext))
     {
         std::cerr << "Shaders not supported on current system, aborting" << std::endl;
         return EXIT_FAILURE;

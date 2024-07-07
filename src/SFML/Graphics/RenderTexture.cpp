@@ -25,6 +25,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/Graphics/RenderTextureImplDefault.hpp>
 #include <SFML/Graphics/RenderTextureImplFBO.hpp>
@@ -65,13 +66,13 @@ std::optional<RenderTexture> RenderTexture::create(GraphicsContext&       graphi
         return result; // Empty optional
     }
 
-    auto& renderTexture = result.emplace(priv::PassKey<RenderTexture>{}, SFML_MOVE(*texture));
+    auto& renderTexture = result.emplace(priv::PassKey<RenderTexture>{}, graphicsContext, SFML_MOVE(*texture));
 
     // We disable smoothing by default for render textures
     renderTexture.setSmooth(false);
 
     // Create the implementation
-    if (priv::RenderTextureImplFBO::isAvailable())
+    if (priv::RenderTextureImplFBO::isAvailable(graphicsContext))
     {
         // Use frame-buffer object (FBO)
         renderTexture.m_impl = priv::makeUnique<priv::RenderTextureImplFBO>(graphicsContext);
@@ -101,11 +102,11 @@ std::optional<RenderTexture> RenderTexture::create(GraphicsContext&       graphi
 
 
 ////////////////////////////////////////////////////////////
-unsigned int RenderTexture::getMaximumAntialiasingLevel()
+unsigned int RenderTexture::getMaximumAntialiasingLevel(GraphicsContext& graphicsContext)
 {
-    if (priv::RenderTextureImplFBO::isAvailable())
+    if (priv::RenderTextureImplFBO::isAvailable(graphicsContext))
     {
-        return priv::RenderTextureImplFBO::getMaximumAntialiasingLevel();
+        return priv::RenderTextureImplFBO::getMaximumAntialiasingLevel(graphicsContext);
     }
 
     return priv::RenderTextureImplDefault::getMaximumAntialiasingLevel();
@@ -161,7 +162,7 @@ bool RenderTexture::setActive(bool active)
 ////////////////////////////////////////////////////////////
 void RenderTexture::display()
 {
-    if (priv::RenderTextureImplFBO::isAvailable())
+    if (priv::RenderTextureImplFBO::isAvailable(*m_graphicsContext))
     {
         // Perform a RenderTarget-only activation if we are using FBOs
         if (!RenderTarget::setActive())
@@ -203,7 +204,10 @@ const Texture& RenderTexture::getTexture() const
 
 
 ////////////////////////////////////////////////////////////
-RenderTexture::RenderTexture(priv::PassKey<RenderTexture>&&, Texture&& texture) : m_texture(SFML_MOVE(texture))
+RenderTexture::RenderTexture(priv::PassKey<RenderTexture>&&, GraphicsContext& graphicsContext, Texture&& texture) :
+RenderTarget(graphicsContext),
+m_graphicsContext(&graphicsContext),
+m_texture(SFML_MOVE(texture))
 {
 }
 
