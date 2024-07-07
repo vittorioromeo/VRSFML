@@ -50,7 +50,7 @@ struct RenderTextureImplFBO::Impl
 {
     struct [[nodiscard]] FrameBufferObject
     {
-        [[nodiscard]] FrameBufferObject()
+        [[nodiscard]] explicit FrameBufferObject()
         {
             // Create the framebuffer object
             glCheck(GLEXT_glGenFramebuffers(1, &object));
@@ -69,15 +69,15 @@ struct RenderTextureImplFBO::Impl
 
     FrameBufferObjectMap frameBuffers; //!< OpenGL frame buffer objects per context
     FrameBufferObjectMap multisampleFrameBuffers; //!< Optional per-context OpenGL frame buffer objects with multisample attachments
-    unsigned int             depthStencilBuffer{}; //!< Optional depth/stencil buffer attached to the frame buffer
-    unsigned int             colorBuffer{};        //!< Optional multisample color buffer attached to the frame buffer
-    Vector2u                 size;                 //!< Width and height of the attachments
-    priv::UniquePtr<Context> context;              //!< Backup OpenGL context, used when none already exist
-    unsigned int             textureId{};          //!< The ID of the texture to attach to the FBO
-    bool                     multisample{};        //!< Whether we have to create a multisample frame buffer as well
-    bool                     depth{};              //!< Whether we have depth attachment
-    bool                     stencil{};            //!< Whether we have stencil attachment
-    bool                     sRgb{};               //!< Whether we need to encode drawn pixels into sRGB color space
+    unsigned int       depthStencilBuffer{}; //!< Optional depth/stencil buffer attached to the frame buffer
+    unsigned int       colorBuffer{};        //!< Optional multisample color buffer attached to the frame buffer
+    Vector2u           size;                 //!< Width and height of the attachments
+    UniquePtr<Context> context;              //!< Backup OpenGL context, used when none already exist
+    unsigned int       textureId{};          //!< The ID of the texture to attach to the FBO
+    bool               multisample{};        //!< Whether we have to create a multisample frame buffer as well
+    bool               depth{};              //!< Whether we have depth attachment
+    bool               stencil{};            //!< Whether we have stencil attachment
+    bool               sRgb{};               //!< Whether we need to encode drawn pixels into sRGB color space
 };
 
 
@@ -107,11 +107,11 @@ RenderTextureImplFBO::~RenderTextureImplFBO()
     // Unregister FBOs with the contexts if they haven't already been destroyed
     for (auto& entry : m_impl->frameBuffers)
         if (std::shared_ptr<void> frameBuffer = entry.second.lock())
-            priv::GlContext::registerUnsharedGlObject(&frameBuffer);
+            GlContext::registerUnsharedGlObject(&frameBuffer);
 
     for (auto& entry : m_impl->multisampleFrameBuffers)
         if (std::shared_ptr<void> multisampleFrameBuffer = entry.second.lock())
-            priv::GlContext::registerUnsharedGlObject(&multisampleFrameBuffer);
+            GlContext::registerUnsharedGlObject(&multisampleFrameBuffer);
 }
 
 
@@ -179,9 +179,8 @@ bool RenderTextureImplFBO::create(const Vector2u& size, unsigned int textureId, 
 
             if (settings.antialiasingLevel > static_cast<unsigned int>(samples))
             {
-                priv::err() << "Impossible to create render texture (unsupported anti-aliasing level)"
-                            << " Requested: " << settings.antialiasingLevel << " Maximum supported: " << samples
-                            << priv::errEndl;
+                err() << "Impossible to create render texture (unsupported anti-aliasing level)"
+                      << " Requested: " << settings.antialiasingLevel << " Maximum supported: " << samples << errEndl;
                 return false;
             }
         }
@@ -195,8 +194,7 @@ bool RenderTextureImplFBO::create(const Vector2u& size, unsigned int textureId, 
             {
                 if (!GLEXT_packed_depth_stencil)
                 {
-                    priv::err() << "Impossible to create render texture (combined depth/stencil buffer not supported)"
-                                << priv::errEndl;
+                    err() << "Impossible to create render texture (combined depth/stencil buffer not supported)" << errEndl;
                     return false;
                 }
 
@@ -205,9 +203,9 @@ bool RenderTextureImplFBO::create(const Vector2u& size, unsigned int textureId, 
                 m_impl->depthStencilBuffer = depthStencil;
                 if (!m_impl->depthStencilBuffer)
                 {
-                    priv::err() << "Impossible to create render texture (failed to create the attached depth/stencil "
-                                   "buffer)"
-                                << priv::errEndl;
+                    err() << "Impossible to create render texture (failed to create the attached depth/stencil "
+                             "buffer)"
+                          << errEndl;
                     return false;
                 }
                 glCheck(GLEXT_glBindRenderbuffer(GLEXT_GL_RENDERBUFFER, m_impl->depthStencilBuffer));
@@ -226,8 +224,7 @@ bool RenderTextureImplFBO::create(const Vector2u& size, unsigned int textureId, 
                 m_impl->depthStencilBuffer = depthStencil;
                 if (!m_impl->depthStencilBuffer)
                 {
-                    priv::err() << "Impossible to create render texture (failed to create the attached depth buffer)"
-                                << priv::errEndl;
+                    err() << "Impossible to create render texture (failed to create the attached depth buffer)" << errEndl;
                     return false;
                 }
                 glCheck(GLEXT_glBindRenderbuffer(GLEXT_GL_RENDERBUFFER, m_impl->depthStencilBuffer));
@@ -246,8 +243,8 @@ bool RenderTextureImplFBO::create(const Vector2u& size, unsigned int textureId, 
                 m_impl->depthStencilBuffer = depthStencil;
                 if (!m_impl->depthStencilBuffer)
                 {
-                    priv::err() << "Impossible to create render texture (failed to create the attached stencil buffer)"
-                                << priv::errEndl;
+                    err() << "Impossible to create render texture (failed to create the attached stencil buffer)"
+                          << errEndl;
                     return false;
                 }
                 glCheck(GLEXT_glBindRenderbuffer(GLEXT_GL_RENDERBUFFER, m_impl->depthStencilBuffer));
@@ -271,9 +268,9 @@ bool RenderTextureImplFBO::create(const Vector2u& size, unsigned int textureId, 
             m_impl->colorBuffer = color;
             if (!m_impl->colorBuffer)
             {
-                priv::err() << "Impossible to create render texture (failed to create the attached multisample color "
-                               "buffer)"
-                            << priv::errEndl;
+                err() << "Impossible to create render texture (failed to create the attached multisample color "
+                         "buffer)"
+                      << errEndl;
                 return false;
             }
             glCheck(GLEXT_glBindRenderbuffer(GLEXT_GL_RENDERBUFFER, m_impl->colorBuffer));
@@ -291,9 +288,9 @@ bool RenderTextureImplFBO::create(const Vector2u& size, unsigned int textureId, 
                 m_impl->depthStencilBuffer = depthStencil;
                 if (!m_impl->depthStencilBuffer)
                 {
-                    priv::err() << "Impossible to create render texture (failed to create the attached multisample "
-                                   "depth/stencil buffer)"
-                                << priv::errEndl;
+                    err() << "Impossible to create render texture (failed to create the attached multisample "
+                             "depth/stencil buffer)"
+                          << errEndl;
                     return false;
                 }
                 glCheck(GLEXT_glBindRenderbuffer(GLEXT_GL_RENDERBUFFER, m_impl->depthStencilBuffer));
@@ -313,10 +310,10 @@ bool RenderTextureImplFBO::create(const Vector2u& size, unsigned int textureId, 
                 m_impl->depthStencilBuffer = depthStencil;
                 if (!m_impl->depthStencilBuffer)
                 {
-                    priv::err() << "Impossible to create render texture (failed to create the attached multisample "
-                                   "depth "
-                                   "buffer)"
-                                << priv::errEndl;
+                    err() << "Impossible to create render texture (failed to create the attached multisample "
+                             "depth "
+                             "buffer)"
+                          << errEndl;
                     return false;
                 }
                 glCheck(GLEXT_glBindRenderbuffer(GLEXT_GL_RENDERBUFFER, m_impl->depthStencilBuffer));
@@ -336,9 +333,9 @@ bool RenderTextureImplFBO::create(const Vector2u& size, unsigned int textureId, 
                 m_impl->depthStencilBuffer = depthStencil;
                 if (!m_impl->depthStencilBuffer)
                 {
-                    priv::err() << "Impossible to create render texture (failed to create the attached multisample "
-                                   "stencil buffer)"
-                                << priv::errEndl;
+                    err() << "Impossible to create render texture (failed to create the attached multisample "
+                             "stencil buffer)"
+                          << errEndl;
                     return false;
                 }
                 glCheck(GLEXT_glBindRenderbuffer(GLEXT_GL_RENDERBUFFER, m_impl->depthStencilBuffer));
@@ -358,8 +355,7 @@ bool RenderTextureImplFBO::create(const Vector2u& size, unsigned int textureId, 
 
             m_impl->multisample = false;
 
-            priv::err() << "Impossible to create render texture (failed to create the multisample render buffers)"
-                        << priv::errEndl;
+            err() << "Impossible to create render texture (failed to create the multisample render buffers)" << errEndl;
             return false;
 
 #endif // SFML_OPENGL_ES
@@ -420,7 +416,7 @@ bool RenderTextureImplFBO::createFrameBuffer()
 
     if (!frameBuffer->object)
     {
-        priv::err() << "Impossible to create render texture (failed to create the frame buffer object)" << priv::errEndl;
+        err() << "Impossible to create render texture (failed to create the frame buffer object)" << errEndl;
         return false;
     }
     glCheck(GLEXT_glBindFramebuffer(GLEXT_GL_FRAMEBUFFER, frameBuffer->object));
@@ -455,8 +451,7 @@ bool RenderTextureImplFBO::createFrameBuffer()
     if (status != GLEXT_GL_FRAMEBUFFER_COMPLETE)
     {
         glCheck(GLEXT_glBindFramebuffer(GLEXT_GL_FRAMEBUFFER, 0));
-        priv::err() << "Impossible to create render texture (failed to link the target texture to the frame buffer)"
-                    << priv::errEndl;
+        err() << "Impossible to create render texture (failed to link the target texture to the frame buffer)" << errEndl;
         return false;
     }
 
@@ -465,7 +460,7 @@ bool RenderTextureImplFBO::createFrameBuffer()
 
     // Register the object with the current context so it is automatically destroyed
     std::shared_ptr<void> voidFrameBuffer = SFML_MOVE(frameBuffer);
-    priv::GlContext::registerUnsharedGlObject(&voidFrameBuffer);
+    GlContext::registerUnsharedGlObject(&voidFrameBuffer);
 
 #ifndef SFML_OPENGL_ES
 
@@ -476,8 +471,8 @@ bool RenderTextureImplFBO::createFrameBuffer()
 
         if (!multisampleFrameBuffer->object)
         {
-            priv::err() << "Impossible to create render texture (failed to create the multisample frame buffer object)"
-                        << priv::errEndl;
+            err() << "Impossible to create render texture (failed to create the multisample frame buffer object)"
+                  << errEndl;
             return false;
         }
         glCheck(GLEXT_glBindFramebuffer(GLEXT_GL_FRAMEBUFFER, multisampleFrameBuffer->object));
@@ -514,10 +509,10 @@ bool RenderTextureImplFBO::createFrameBuffer()
         if (status != GLEXT_GL_FRAMEBUFFER_COMPLETE)
         {
             glCheck(GLEXT_glBindFramebuffer(GLEXT_GL_FRAMEBUFFER, 0));
-            priv::err() << "Impossible to create render texture (failed to link the render buffers to the multisample "
-                           "frame "
-                           "buffer)"
-                        << priv::errEndl;
+            err() << "Impossible to create render texture (failed to link the render buffers to the multisample "
+                     "frame "
+                     "buffer)"
+                  << errEndl;
             return false;
         }
 
@@ -526,7 +521,7 @@ bool RenderTextureImplFBO::createFrameBuffer()
 
         // Register the object with the current context so it is automatically destroyed
         std::shared_ptr<void> voidMultisampleFrameBuffer = SFML_MOVE(multisampleFrameBuffer);
-        priv::GlContext::registerUnsharedGlObject(&voidMultisampleFrameBuffer);
+        GlContext::registerUnsharedGlObject(&voidMultisampleFrameBuffer);
     }
 
 #endif
@@ -552,11 +547,11 @@ bool RenderTextureImplFBO::activate(bool active)
     if (!contextId)
     {
         if (!m_impl->context)
-            m_impl->context = priv::makeUnique<Context>();
+            m_impl->context = makeUnique<Context>();
 
         if (!m_impl->context->setActive(true))
         {
-            priv::err() << "Failed to set context as active during render texture activation" << priv::errEndl;
+            err() << "Failed to set context as active during render texture activation" << errEndl;
             return false;
         }
 
@@ -564,7 +559,7 @@ bool RenderTextureImplFBO::activate(bool active)
 
         if (!contextId)
         {
-            priv::err() << "Impossible to activate render texture (failed to create backup context)" << priv::errEndl;
+            err() << "Impossible to activate render texture (failed to create backup context)" << errEndl;
             return false;
         }
     }
