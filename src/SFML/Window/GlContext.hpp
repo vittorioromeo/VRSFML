@@ -240,6 +240,13 @@ public:
     ////////////////////////////////////////////////////////////
     virtual void setVerticalSyncEnabled(bool enabled) = 0;
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Perform various initializations after the context construction
+    /// \param requestedSettings Requested settings during context creation
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool initialize(const ContextSettings& requestedSettings);
+
 protected:
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
@@ -303,18 +310,8 @@ protected:
 private:
     friend GlResource;
 
-    struct TransientContext;
-    struct SharedContext;
-
     static void acquireSharedContext();
     static void releaseSharedContext();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Perform various initializations after the context construction
-    /// \param requestedSettings Requested settings during context creation
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool initialize(const ContextSettings& requestedSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Check whether the context is compatible with the requested settings
