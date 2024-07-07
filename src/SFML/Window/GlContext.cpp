@@ -194,18 +194,22 @@ private:
 
 namespace sf::priv
 {
+namespace
+{
 // This structure contains all the state necessary to
 // track SharedContext usage
-struct GlContext::SharedContext
+struct SharedContext
 {
-    struct SharedContextState;
-
     ////////////////////////////////////////////////////////////
     /// \brief Constructor
     ///
     ////////////////////////////////////////////////////////////
-    SharedContext() = default;
+    [[nodiscard]] explicit SharedContext() = default;
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Initialize shared context
+    ///
+    ////////////////////////////////////////////////////////////
     void initialize()
     {
         const std::lock_guard lock(mutex);
@@ -226,9 +230,9 @@ struct GlContext::SharedContext
     ////////////////////////////////////////////////////////////
     void loadExtensions()
     {
-        auto glGetErrorFunc    = reinterpret_cast<glGetErrorFuncType>(getFunction("glGetError"));
-        auto glGetIntegervFunc = reinterpret_cast<glGetIntegervFuncType>(getFunction("glGetIntegerv"));
-        auto glGetStringFunc   = reinterpret_cast<glGetStringFuncType>(getFunction("glGetString"));
+        auto glGetErrorFunc    = reinterpret_cast<glGetErrorFuncType>(GlContext::getFunction("glGetError"));
+        auto glGetIntegervFunc = reinterpret_cast<glGetIntegervFuncType>(GlContext::getFunction("glGetIntegerv"));
+        auto glGetStringFunc   = reinterpret_cast<glGetStringFuncType>(GlContext::getFunction("glGetString"));
 
         if (!glGetErrorFunc || !glGetIntegervFunc || !glGetStringFunc)
             return;
@@ -237,7 +241,7 @@ struct GlContext::SharedContext
         int majorVersion = 0;
         glGetIntegervFunc(GL_MAJOR_VERSION, &majorVersion);
 
-        auto glGetStringiFunc = reinterpret_cast<glGetStringiFuncType>(getFunction("glGetStringi"));
+        auto glGetStringiFunc = reinterpret_cast<glGetStringiFuncType>(GlContext::getFunction("glGetStringi"));
 
         if (glGetErrorFunc() == GL_INVALID_ENUM || !majorVersion || !glGetStringiFunc)
         {
@@ -280,12 +284,10 @@ struct GlContext::SharedContext
         }
     }
 
-    static SharedContextState& getSharedContextState();
-
-    static SharedContext& acquireSharedContext();
-    static void           releaseSharedContext();
-    static std::size_t    getSharedContextUseCount();
-    static SharedContext* getSharedContextIfAvailable();
+    static SharedContext&               acquireSharedContext();
+    static void                         releaseSharedContext();
+    [[nodiscard]] static std::size_t    getSharedContextUseCount();
+    [[nodiscard]] static SharedContext* getSharedContextIfAvailable();
 
     // AMD drivers have issues with internal synchronization
     // We need to make sure that no operating system context
@@ -303,16 +305,16 @@ struct GlContext::SharedContext
 
 
 ////////////////////////////////////////////////////////////
-struct GlContext::SharedContext::SharedContextState
+struct [[nodiscard]] SharedContextState
 {
-    std::recursive_mutex                              mutex;
-    std::optional<sf::priv::GlContext::SharedContext> sharedContext;
-    unsigned int                                      referenceCounter{};
+    std::recursive_mutex         mutex;
+    std::optional<SharedContext> sharedContext;
+    unsigned int                 referenceCounter{};
 };
 
 
 ////////////////////////////////////////////////////////////
-GlContext::SharedContext::SharedContextState& GlContext::SharedContext::getSharedContextState()
+[[nodiscard]] SharedContextState& getSharedContextState()
 {
     static SharedContextState sharedContextState;
     return sharedContextState;
@@ -320,7 +322,7 @@ GlContext::SharedContext::SharedContextState& GlContext::SharedContext::getShare
 
 
 ////////////////////////////////////////////////////////////
-GlContext::SharedContext& GlContext::SharedContext::acquireSharedContext()
+SharedContext& SharedContext::acquireSharedContext()
 {
     auto& [mutex, sharedContext, referenceCounter] = getSharedContextState();
     const std::lock_guard guard{mutex};
@@ -339,7 +341,7 @@ GlContext::SharedContext& GlContext::SharedContext::acquireSharedContext()
 
 
 ////////////////////////////////////////////////////////////
-void GlContext::SharedContext::releaseSharedContext()
+void SharedContext::releaseSharedContext()
 {
     auto& [mutex, sharedContext, referenceCounter] = getSharedContextState();
     const std::lock_guard guard{mutex};
@@ -352,7 +354,7 @@ void GlContext::SharedContext::releaseSharedContext()
 
 
 ////////////////////////////////////////////////////////////
-std::size_t GlContext::SharedContext::getSharedContextUseCount()
+std::size_t SharedContext::getSharedContextUseCount()
 {
     auto& [mutex, sharedContext, referenceCounter] = getSharedContextState();
     const std::lock_guard guard{mutex};
@@ -362,7 +364,7 @@ std::size_t GlContext::SharedContext::getSharedContextUseCount()
 
 
 ////////////////////////////////////////////////////////////
-GlContext::SharedContext* GlContext::SharedContext::getSharedContextIfAvailable()
+SharedContext* SharedContext::getSharedContextIfAvailable()
 {
     auto& [mutex, sharedContext, referenceCounter] = getSharedContextState();
     const std::lock_guard guard{mutex};
@@ -378,19 +380,21 @@ GlContext::SharedContext* GlContext::SharedContext::getSharedContextIfAvailable(
 }
 
 
+////////////////////////////////////////////////////////////
 // This structure contains all the state necessary to
 // track TransientContext usage
-struct GlContext::TransientContext
+////////////////////////////////////////////////////////////
+struct [[nodiscard]] TransientContext
 {
     ////////////////////////////////////////////////////////////
     /// \brief Constructor
     ///
     ////////////////////////////////////////////////////////////
-    TransientContext()
+    [[nodiscard]] explicit TransientContext()
     {
         // TransientContext should never be created if there is
         // already a context active on the current thread
-        assert(!hasActiveContext() && "Another context is active on the current thread");
+        assert(!GlContext::hasActiveContext() && "Another context is active on the current thread");
 
         // Lock ourselves so we don't create a new object if one doesn't already exist
         sharedContext = SharedContext::getSharedContextIfAvailable();
@@ -475,6 +479,8 @@ struct GlContext::TransientContext
     std::unique_lock<std::recursive_mutex> sharedContextLock;
     SharedContext*                         sharedContext;
 };
+
+} // namespace
 
 
 // This structure contains all the implementation data we
