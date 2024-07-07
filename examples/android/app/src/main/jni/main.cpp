@@ -1,5 +1,3 @@
-#include <SFML/Window/GraphicsContext.hpp>
-
 #include <SFML/Graphics.hpp>
 
 #include <SFML/Audio.hpp>
@@ -7,6 +5,7 @@
 #include <SFML/Network.hpp>
 
 #include <SFML/Window.hpp>
+#include <SFML/Window/GraphicsContext.hpp>
 
 #include <SFML/System.hpp>
 
@@ -97,7 +96,7 @@ int main(int argc, char* argv[])
     image.setPosition(screen.size.to<sf::Vector2f>() / 2.f);
     image.setOrigin(texture.getSize().to<sf::Vector2f>() / 2.f);
 
-    const auto font = sf::Font::openFromFile("tuffy.ttf").value();
+    const auto font = sf::Font::openFromFile(graphicsContext, "tuffy.ttf").value();
 
     sf::Text text(font, "Tap anywhere to move the logo.", 64);
     text.setFillColor(sf::Color::Black);

@@ -1,5 +1,7 @@
 #include <SFML/Graphics/Text.hpp>
 
+#include <SFML/Window/GraphicsContext.hpp>
+
 // Other 1st party headers
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/Font.hpp>
@@ -19,6 +21,8 @@
 
 TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
 {
+    sf::GraphicsContext graphicsContext;
+
     SECTION("Type traits")
     {
         STATIC_CHECK(!std::is_constructible_v<sf::Text, sf::Font&&, sf::String, unsigned int>);
@@ -29,7 +33,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
         STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Text>);
     }
 
-    const auto font = sf::Font::openFromFile("Graphics/tuffy.ttf").value();
+    const auto font = sf::Font::openFromFile(graphicsContext, "Graphics/tuffy.ttf").value();
 
     SECTION("Construction")
     {
@@ -95,7 +99,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
     SECTION("Set/get font")
     {
         sf::Text   text(font);
-        const auto otherFont = sf::Font::openFromFile("Graphics/tuffy.ttf").value();
+        const auto otherFont = sf::Font::openFromFile(graphicsContext, "Graphics/tuffy.ttf").value();
         text.setFont(otherFont);
         CHECK(&text.getFont() == &otherFont);
     }
@@ -197,9 +201,9 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
     {
         SECTION("Return local from function")
         {
-            const auto badFunction = []
+            const auto badFunction = [&graphicsContext]
             {
-                const auto localFont = sf::Font::openFromFile("Graphics/tuffy.ttf").value();
+                const auto localFont = sf::Font::openFromFile(graphicsContext, "Graphics/tuffy.ttf").value();
                 return sf::Text(localFont);
             };
 
@@ -215,15 +219,21 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
         {
             struct BadStruct
             {
-                sf::Font memberFont{sf::Font::openFromFile("Graphics/tuffy.ttf").value()};
-                sf::Text memberText{memberFont};
+                BadStruct(sf::GraphicsContext& graphicsContext) :
+                memberFont{sf::Font::openFromFile(graphicsContext, "Graphics/tuffy.ttf").value()},
+                memberText{memberFont}
+                {
+                }
+
+                sf::Font memberFont;
+                sf::Text memberText;
             };
 
             const sf::priv::LifetimeDependee::TestingModeGuard guard;
             CHECK(!guard.fatalErrorTriggered());
 
             std::optional<BadStruct> badStruct0;
-            badStruct0.emplace();
+            badStruct0.emplace(graphicsContext);
             CHECK(!guard.fatalErrorTriggered());
 
             const BadStruct badStruct1 = SFML_MOVE(badStruct0.value());

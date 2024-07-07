@@ -1,7 +1,8 @@
 #include <SFML/Graphics/Font.hpp>
-#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/Graphics/Text.hpp>
+
+#include <SFML/Window/GraphicsContext.hpp>
 
 #include <SFML/System/Path.hpp>
 #include <SFML/System/String.hpp>
@@ -12,7 +13,7 @@ int main()
 {
     sf::GraphicsContext graphicsContext;
 
-    const auto       font         = sf::Font::openFromFile("resources/tuffy.ttf").value();
+    const auto       font         = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf").value();
     const sf::String textContents = "abcdefghilmnopqrstuvz\nabcdefghilmnopqrstuvz\nabcdefghilmnopqrstuvz\n";
 
     auto text          = sf::Text(font, textContents);

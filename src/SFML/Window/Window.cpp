@@ -26,6 +26,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/GlContext.hpp>
+#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/Window.hpp>
 #include <SFML/Window/WindowImpl.hpp>
@@ -210,7 +211,7 @@ bool Window::setActive(bool active) const
 {
     if (m_commonImpl->context)
     {
-        if (m_commonImpl->context->setActive(*m_commonImpl->graphicsContext, active))
+        if (m_commonImpl->context->setActive(m_commonImpl->graphicsContext->getMutex(), active))
         {
             return true;
         }

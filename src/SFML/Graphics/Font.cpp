@@ -156,12 +156,17 @@ struct Font::FontHandles
 ////////////////////////////////////////////////////////////
 struct Font::Impl
 {
+    explicit Impl(GraphicsContext& theGraphicsContext) : graphicsContext(&theGraphicsContext)
+    {
+    }
+
     using PageTable = std::unordered_map<unsigned int, Page>; //!< Table mapping a character size to its page (texture)
 
-    std::shared_ptr<FontHandles> fontHandles;    //!< Shared information about the internal font instance
-    bool                         isSmooth{true}; //!< Status of the smooth filter
-    Info                         info;           //!< Information about the font
-    mutable PageTable            pages;          //!< Table containing the glyphs pages by character size
+    GraphicsContext*             graphicsContext; //!< TODO
+    std::shared_ptr<FontHandles> fontHandles;     //!< Shared information about the internal font instance
+    bool                         isSmooth{true};  //!< Status of the smooth filter
+    Info                         info;            //!< Information about the font
+    mutable PageTable            pages;           //!< Table containing the glyphs pages by character size
     mutable std::vector<std::uint8_t> pixelBuffer; //!< Pixel buffer holding a glyph's pixels before being written to the texture
 #ifdef SFML_SYSTEM_ANDROID
     priv::UniquePtr<priv::ResourceStream> m_stream; //!< Asset file streamer (if loaded from file)
@@ -170,7 +175,8 @@ struct Font::Impl
 
 
 ////////////////////////////////////////////////////////////
-Font::Font(priv::PassKey<Font>&&, void* fontHandlesSharedPtr, std::string&& familyName)
+Font::Font(priv::PassKey<Font>&&, GraphicsContext& graphicsContext, void* fontHandlesSharedPtr, std::string&& familyName) :
+m_impl(graphicsContext)
 {
     m_impl->fontHandles = SFML_MOVE(*static_cast<std::shared_ptr<FontHandles>*>(fontHandlesSharedPtr));
     m_impl->info.family = SFML_MOVE(familyName);
@@ -198,7 +204,7 @@ Font& Font::operator=(Font&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Font> Font::openFromFile(const Path& filename)
+std::optional<Font> Font::openFromFile(GraphicsContext& graphicsContext, const Path& filename)
 {
 #ifndef SFML_SYSTEM_ANDROID
 
@@ -241,6 +247,7 @@ std::optional<Font> Font::openFromFile(const Path& filename)
     }
 
     return std::make_optional<Font>(priv::PassKey<Font>{},
+                                    graphicsContext,
                                     &fontHandles,
                                     std::string(face->family_name ? face->family_name : ""));
 
@@ -257,7 +264,7 @@ std::optional<Font> Font::openFromFile(const Path& filename)
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Font> Font::openFromMemory(const void* data, std::size_t sizeInBytes)
+std::optional<Font> Font::openFromMemory(GraphicsContext& graphicsContext, const void* data, std::size_t sizeInBytes)
 {
     auto fontHandles = std::make_shared<FontHandles>();
 
@@ -298,13 +305,14 @@ std::optional<Font> Font::openFromMemory(const void* data, std::size_t sizeInByt
     }
 
     return std::make_optional<Font>(priv::PassKey<Font>{},
+                                    graphicsContext,
                                     &fontHandles,
                                     std::string(face->family_name ? face->family_name : ""));
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Font> Font::openFromStream(InputStream& stream)
+std::optional<Font> Font::openFromStream(GraphicsContext& graphicsContext, InputStream& stream)
 {
     auto fontHandles = std::make_shared<FontHandles>();
 
@@ -362,6 +370,7 @@ std::optional<Font> Font::openFromStream(InputStream& stream)
     }
 
     return std::make_optional<Font>(priv::PassKey<Font>{},
+                                    graphicsContext,
                                     &fontHandles,
                                     std::string(face->family_name ? face->family_name : ""));
 }
@@ -388,7 +397,7 @@ const Glyph& Font::getGlyph(std::uint32_t codePoint, unsigned int characterSize,
     assert(m_impl->fontHandles);
 
     // Get the page corresponding to the character size
-    Page::GlyphTable& glyphs = loadPage(characterSize).glyphs;
+    Page::GlyphTable& glyphs = loadPage(*m_impl->graphicsContext, characterSize).glyphs;
 
     // Build the key by combining the glyph index (based on code point), bold flag, and outline thickness
     const std::uint64_t key = combine(outlineThickness, bold, getCharIndex(codePoint));
@@ -512,7 +521,7 @@ float Font::getUnderlineThickness(unsigned int characterSize) const
 ////////////////////////////////////////////////////////////
 const Texture& Font::getTexture(unsigned int characterSize) const
 {
-    return loadPage(characterSize).texture;
+    return loadPage(*m_impl->graphicsContext, characterSize).texture;
 }
 
 ////////////////////////////////////////////////////////////
@@ -537,12 +546,12 @@ bool Font::isSmooth() const
 
 
 ////////////////////////////////////////////////////////////
-Font::Page& Font::loadPage(unsigned int characterSize) const
+Font::Page& Font::loadPage(GraphicsContext& graphicsContext, unsigned int characterSize) const
 {
     if (const auto it = m_impl->pages.find(characterSize); it != m_impl->pages.end())
         return it->second;
-    GraphicsContext graphicsContext; // TODO
-    auto            page = Page::create(graphicsContext, m_impl->isSmooth);
+
+    auto page = Page::create(graphicsContext, m_impl->isSmooth);
     assert(page && "Font::loadPage() Failed to load page");
     return m_impl->pages.emplace(characterSize, SFML_MOVE(*page)).first->second;
 }
@@ -635,11 +644,10 @@ Glyph Font::loadGlyph(std::uint32_t codePoint, unsigned int characterSize, bool 
         size += 2u * Vector2u{padding, padding};
 
         // Get the glyphs page corresponding to the character size
-        Page& page = loadPage(characterSize);
+        Page& page = loadPage(*m_impl->graphicsContext, characterSize);
 
         // Find a good position for the new glyph into the texture
-        GraphicsContext graphicsContext; // TODO
-        glyph.textureRect = findGlyphRect(graphicsContext, page, size);
+        glyph.textureRect = findGlyphRect(*m_impl->graphicsContext, page, size);
 
         // Make sure the texture data is positioned in the center
         // of the allocated texture rectangle
