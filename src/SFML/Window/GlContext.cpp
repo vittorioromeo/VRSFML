@@ -290,6 +290,7 @@ struct SharedContext
 
     [[nodiscard]] static std::size_t    getUseCount();
     [[nodiscard]] static SharedContext* getIfAvailable();
+    [[nodiscard]] static SharedContext& getAssumeAvailable();
 
     // AMD drivers have issues with internal synchronization
     // We need to make sure that no operating system context
@@ -383,6 +384,19 @@ SharedContext* SharedContext::getIfAvailable()
 
 
 ////////////////////////////////////////////////////////////
+SharedContext& SharedContext::getAssumeAvailable()
+{
+    auto& [mutex, sharedContext, referenceCounter] = getSharedContextState();
+    const std::lock_guard guard{mutex};
+
+    assert(referenceCounter > 0u);
+    assert(sharedContext.has_value());
+
+    return *sharedContext;
+}
+
+
+////////////////////////////////////////////////////////////
 // This structure contains all the state necessary to
 // track TransientContext usage
 ////////////////////////////////////////////////////////////
@@ -402,8 +416,6 @@ struct [[nodiscard]] TransientContext
             sharedContextLock = std::unique_lock(sharedContext->mutex);
             if (!sharedContext->context->setActive(true))
                 err() << "Error enabling shared context in TransientContext()" << errEndl;
-
-            SharedContext::acquire();
         }
         else
         {
@@ -421,8 +433,6 @@ struct [[nodiscard]] TransientContext
         {
             if (!sharedContext->context->setActive(false))
                 err() << "Error disabling shared context in ~TransientContext()" << errEndl;
-
-            SharedContext::release();
         }
     }
 
@@ -611,10 +621,10 @@ void GlContext::releaseTransientContext()
 
 
 ////////////////////////////////////////////////////////////
-UniquePtr<GlContext> GlContext::create()
+UniquePtr<GlContext> GlContext::create(GraphicsContext& graphicsContext)
 {
     // Make sure that there's an active context (context creation may need extensions, and thus a valid context)
-    auto& sharedContext = SharedContext::acquire();
+    auto& sharedContext = SharedContext::getAssumeAvailable();
 
     const std::lock_guard lock(sharedContext.mutex);
 
@@ -638,17 +648,18 @@ UniquePtr<GlContext> GlContext::create()
         return nullptr;
     }
 
-    SharedContext::release();
-
     return context;
 }
 
 
 ////////////////////////////////////////////////////////////
-UniquePtr<GlContext> GlContext::create(const ContextSettings& settings, const WindowImpl& owner, unsigned int bitsPerPixel)
+UniquePtr<GlContext> GlContext::create(GraphicsContext&       graphicsContext,
+                                       const ContextSettings& settings,
+                                       const WindowImpl&      owner,
+                                       unsigned int           bitsPerPixel)
 {
     // Make sure that there's an active context (context creation may need extensions, and thus a valid context)
-    auto& sharedContext = SharedContext::acquire();
+    auto& sharedContext = SharedContext::getAssumeAvailable();
 
     const std::lock_guard lock(sharedContext.mutex);
 
@@ -657,7 +668,7 @@ UniquePtr<GlContext> GlContext::create(const ContextSettings& settings, const Wi
     // Only in this situation we allow the user to indirectly re-create the shared context as a core context
 
     // Check if we need to convert our shared context into a core context
-    if ((SharedContext::getUseCount() == 3) && (settings.attributeFlags & ContextSettings::Core) &&
+    if ((SharedContext::getUseCount() == 2) && (settings.attributeFlags & ContextSettings::Core) &&
         !(sharedContext.context->m_settings.attributeFlags & ContextSettings::Core))
     {
         // Re-create our shared context as a core context
@@ -701,17 +712,15 @@ UniquePtr<GlContext> GlContext::create(const ContextSettings& settings, const Wi
 
     context->checkSettings(settings);
 
-    SharedContext::release();
-
     return context;
 }
 
 
 ////////////////////////////////////////////////////////////
-UniquePtr<GlContext> GlContext::create(const ContextSettings& settings, const Vector2u& size)
+UniquePtr<GlContext> GlContext::create(GraphicsContext& graphicsContext, const ContextSettings& settings, const Vector2u& size)
 {
     // Make sure that there's an active context (context creation may need extensions, and thus a valid context)
-    auto& sharedContext = SharedContext::acquire();
+    auto& sharedContext = SharedContext::getAssumeAvailable();
 
     const std::lock_guard lock(sharedContext.mutex);
 
@@ -720,7 +729,7 @@ UniquePtr<GlContext> GlContext::create(const ContextSettings& settings, const Ve
     // Only in this situation we allow the user to indirectly re-create the shared context as a core context
 
     // Check if we need to convert our shared context into a core context
-    if ((SharedContext::getUseCount() == 3) && (settings.attributeFlags & ContextSettings::Core) &&
+    if ((SharedContext::getUseCount() == 2) && (settings.attributeFlags & ContextSettings::Core) &&
         !(sharedContext.context->m_settings.attributeFlags & ContextSettings::Core))
     {
         // Re-create our shared context as a core context
@@ -762,8 +771,6 @@ UniquePtr<GlContext> GlContext::create(const ContextSettings& settings, const Ve
 
     context->checkSettings(settings);
 
-    SharedContext::release();
-
     return context;
 }
 
@@ -773,12 +780,10 @@ bool GlContext::isExtensionAvailable(const char* name)
 {
     // If this function is called before any context is available,
     // the shared context will be created for the duration of this call
-    auto& sharedContext = SharedContext::acquire();
+    auto& sharedContext = SharedContext::getAssumeAvailable();
 
     const bool result = find(sharedContext.extensions.begin(), sharedContext.extensions.end(), name) !=
                         sharedContext.extensions.end();
-
-    SharedContext::release();
 
     return result;
 }

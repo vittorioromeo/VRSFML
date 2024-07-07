@@ -98,7 +98,7 @@ public:
     /// \return Pointer to the created context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static priv::UniquePtr<GlContext> create();
+    [[nodiscard]] static priv::UniquePtr<GlContext> create(GraphicsContext& graphicsContext);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context attached to a window
@@ -113,7 +113,8 @@ public:
     /// \return Pointer to the created context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static priv::UniquePtr<GlContext> create(const ContextSettings& settings,
+    [[nodiscard]] static priv::UniquePtr<GlContext> create(GraphicsContext&       graphicsContext,
+                                                           const ContextSettings& settings,
                                                            const WindowImpl&      owner,
                                                            unsigned int           bitsPerPixel);
 
@@ -129,7 +130,9 @@ public:
     /// \return Pointer to the created context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static priv::UniquePtr<GlContext> create(const ContextSettings& settings, const Vector2u& size);
+    [[nodiscard]] static priv::UniquePtr<GlContext> create(GraphicsContext&       graphicsContext,
+                                                           const ContextSettings& settings,
+                                                           const Vector2u&        size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Check whether a given OpenGL extension is available
