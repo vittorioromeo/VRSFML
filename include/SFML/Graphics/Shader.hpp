@@ -729,7 +729,7 @@ public:
     ////////////////////////////////////////////////////////////
     void bind() const;
 
-    static void unbind();
+    static void unbind(GraphicsContext& graphicsContext);
 
     ////////////////////////////////////////////////////////////
     /// \brief Tell whether or not the system supports shaders
@@ -741,7 +741,7 @@ public:
     /// \return True if shaders are supported, false otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static bool isAvailable();
+    [[nodiscard]] static bool isAvailable(GraphicsContext& graphicsContext);
 
     ////////////////////////////////////////////////////////////
     /// \brief Tell whether or not the system supports geometry shaders
@@ -760,7 +760,7 @@ public:
     /// \return True if geometry shaders are supported, false otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static bool isGeometryAvailable();
+    [[nodiscard]] static bool isGeometryAvailable(GraphicsContext& graphicsContext);
 
     ////////////////////////////////////////////////////////////
     /// \private

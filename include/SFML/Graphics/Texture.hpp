@@ -549,7 +549,9 @@ public:
     /// \param coordinateType Type of texture coordinates to use
     ///
     ////////////////////////////////////////////////////////////
-    static void bind(const Texture* texture, CoordinateType coordinateType = CoordinateType::Normalized);
+    static void bind(GraphicsContext& graphicsContext,
+                     const Texture*   texture,
+                     CoordinateType   coordinateType = CoordinateType::Normalized);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the maximum texture size allowed
@@ -561,7 +563,7 @@ public:
     /// \return Maximum size allowed for textures, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static unsigned int getMaximumSize();
+    [[nodiscard]] static unsigned int getMaximumSize(GraphicsContext& graphicsContext);
 
 private:
     friend class Text;

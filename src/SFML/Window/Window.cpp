@@ -210,7 +210,7 @@ bool Window::setActive(bool active) const
 {
     if (m_commonImpl->context)
     {
-        if (m_commonImpl->context->setActive(active))
+        if (m_commonImpl->context->setActive(*m_commonImpl->graphicsContext, active))
         {
             return true;
         }

@@ -60,7 +60,7 @@ public:
     /// The constructor creates and activates the context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Context(GraphicsContext&);
+    [[nodiscard]] Context(GraphicsContext& graphicsContext);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -124,7 +124,7 @@ public:
     /// \return True if available, false if unavailable
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static bool isExtensionAvailable(const char* name);
+    [[nodiscard]] static bool isExtensionAvailable(GraphicsContext& graphicsContext, const char* name);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the address of an OpenGL function
@@ -137,7 +137,7 @@ public:
     /// \return Address of the OpenGL function, 0 on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static GlFunctionPointer getFunction(const char* name);
+    [[nodiscard]] static GlFunctionPointer getFunction(GraphicsContext& graphicsContext, const char* name);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the currently active context

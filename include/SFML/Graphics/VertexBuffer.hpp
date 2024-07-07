@@ -314,7 +314,7 @@ public:
     /// \param vertexBuffer Pointer to the vertex buffer to bind, can be null to use no vertex buffer
     ///
     ////////////////////////////////////////////////////////////
-    static void bind(const VertexBuffer* vertexBuffer);
+    static void bind(GraphicsContext& graphicsContext, const VertexBuffer* vertexBuffer);
 
     ////////////////////////////////////////////////////////////
     /// \brief Tell whether or not the system supports vertex buffers
@@ -326,9 +326,11 @@ public:
     /// \return True if vertex buffers are supported, false otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static bool isAvailable();
+    [[nodiscard]] static bool isAvailable(GraphicsContext& graphicsContext);
 
 private:
+    friend RenderTarget;
+
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////

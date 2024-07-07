@@ -97,7 +97,7 @@ RenderTextureImplFBO::RenderTextureImplFBO(GraphicsContext& graphicsContext) : m
 ////////////////////////////////////////////////////////////
 RenderTextureImplFBO::~RenderTextureImplFBO()
 {
-    const TransientContextLock lock;
+    const TransientContextLock lock(*m_impl->graphicsContext);
 
     // Destroy the color buffer
     if (m_impl->colorBuffer)
@@ -125,19 +125,19 @@ RenderTextureImplFBO::~RenderTextureImplFBO()
 
 
 ////////////////////////////////////////////////////////////
-bool RenderTextureImplFBO::isAvailable()
+bool RenderTextureImplFBO::isAvailable(GraphicsContext& graphicsContext)
 {
-    const TransientContextLock lock;
+    const TransientContextLock lock(graphicsContext);
 
     // Make sure that extensions are initialized
-    ensureExtensionsInit();
+    ensureExtensionsInit(graphicsContext);
 
     return GLEXT_framebuffer_object != 0;
 }
 
 
 ////////////////////////////////////////////////////////////
-unsigned int RenderTextureImplFBO::getMaximumAntialiasingLevel()
+unsigned int RenderTextureImplFBO::getMaximumAntialiasingLevel(GraphicsContext& graphicsContext)
 {
 #ifdef SFML_OPENGL_ES
 
@@ -145,7 +145,7 @@ unsigned int RenderTextureImplFBO::getMaximumAntialiasingLevel()
 
 #else
 
-    const TransientContextLock lock;
+    const TransientContextLock lock(graphicsContext);
     GLint                      samples = 0;
     glCheck(glGetIntegerv(GLEXT_GL_MAX_SAMPLES, &samples));
     return static_cast<unsigned int>(samples);
@@ -168,10 +168,10 @@ bool RenderTextureImplFBO::create(const Vector2u& size, unsigned int textureId, 
     m_impl->size = size;
 
     {
-        const TransientContextLock lock;
+        const TransientContextLock lock(*m_impl->graphicsContext);
 
         // Make sure that extensions are initialized
-        ensureExtensionsInit();
+        ensureExtensionsInit(*m_impl->graphicsContext);
 
         if (settings.antialiasingLevel && !(GLEXT_framebuffer_multisample && GLEXT_framebuffer_blit))
             return false;
@@ -190,6 +190,7 @@ bool RenderTextureImplFBO::create(const Vector2u& size, unsigned int textureId, 
             {
                 err() << "Impossible to create render texture (unsupported anti-aliasing level)"
                       << " Requested: " << settings.antialiasingLevel << " Maximum supported: " << samples << errEndl;
+
                 return false;
             }
         }

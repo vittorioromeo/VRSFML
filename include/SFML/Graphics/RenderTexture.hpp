@@ -114,7 +114,7 @@ public:
     /// \return The maximum anti-aliasing level supported by the system
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static unsigned int getMaximumAntialiasingLevel();
+    [[nodiscard]] static unsigned int getMaximumAntialiasingLevel(GraphicsContext& graphicsContext);
 
     ////////////////////////////////////////////////////////////
     /// \brief Enable or disable texture smoothing
@@ -250,14 +250,15 @@ public:
     /// \brief Construct from texture
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit RenderTexture(priv::PassKey<RenderTexture>&&, Texture&& texture);
+    [[nodiscard]] explicit RenderTexture(priv::PassKey<RenderTexture>&&, GraphicsContext& graphicsContext, Texture&& texture);
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    priv::UniquePtr<priv::RenderTextureImpl> m_impl;    //!< Platform/hardware specific implementation
-    Texture                                  m_texture; //!< Target texture to draw on
+    GraphicsContext*                         m_graphicsContext; //!< TODO
+    priv::UniquePtr<priv::RenderTextureImpl> m_impl;            //!< Platform/hardware specific implementation
+    Texture                                  m_texture;         //!< Target texture to draw on
 };
 
 } // namespace sf

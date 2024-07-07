@@ -81,7 +81,7 @@ public:
     /// \brief Acquires a context for short-term use on the current thread
     ///
     ////////////////////////////////////////////////////////////
-    static void acquireTransientContext();
+    static void acquireTransientContext(GraphicsContext& graphicsContext);
 
     ////////////////////////////////////////////////////////////
     /// \brief Releases a context after short-term use on the current thread
@@ -142,7 +142,7 @@ public:
     /// \return True if available, false if unavailable
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static bool isExtensionAvailable(const char* name);
+    [[nodiscard]] static bool isExtensionAvailable(GraphicsContext& graphicsContext, const char* name);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the address of an OpenGL function
@@ -152,7 +152,7 @@ public:
     /// \return Address of the OpenGL function, 0 on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static GlFunctionPointer getFunction(const char* name);
+    [[nodiscard]] static GlFunctionPointer getFunction(GraphicsContext& graphicsContext, const char* name);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the currently active context
@@ -223,7 +223,7 @@ public:
     /// \return True if operation was successful, false otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool setActive(bool active);
+    [[nodiscard]] bool setActive(GraphicsContext& graphicsContext, bool active);
 
     ////////////////////////////////////////////////////////////
     /// \brief Display what has been rendered to the context so far
@@ -249,7 +249,7 @@ public:
     /// \param requestedSettings Requested settings during context creation
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool initialize(const ContextSettings& requestedSettings);
+    [[nodiscard]] bool initialize(GraphicsContext& graphicsContext, const ContextSettings& requestedSettings);
 
 protected:
     ////////////////////////////////////////////////////////////
@@ -275,7 +275,7 @@ protected:
     /// \brief Notify unshared resources of context destruction
     ///
     ////////////////////////////////////////////////////////////
-    void cleanupUnsharedResources();
+    void cleanupUnsharedResources(GraphicsContext& graphicsContext);
 
     ////////////////////////////////////////////////////////////
     /// \brief Evaluate a pixel format configuration
@@ -314,9 +314,6 @@ protected:
 private:
     friend Context;
     friend GraphicsContext;
-
-    static GlContext& acquireSharedContext();
-    static void       releaseSharedContext();
 
     ////////////////////////////////////////////////////////////
     /// \brief Check whether the context is compatible with the requested settings

@@ -40,6 +40,7 @@
 #include <SFML/Graphics/View.hpp>
 
 #include <SFML/Window/Context.hpp>
+#include <SFML/Window/GraphicsContext.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
@@ -229,15 +230,22 @@ struct [[nodiscard]] StatesCache
 ////////////////////////////////////////////////////////////
 struct RenderTarget::Impl
 {
-    View          defaultView; //!< Default view
-    View          view;        //!< Current view
-    StatesCache   cache{};     //!< Render states cache
-    std::uint64_t id{};        //!< Unique number that identifies the RenderTarget
+    explicit Impl(GraphicsContext& theGraphicsContext) : graphicsContext(&theGraphicsContext)
+    {
+    }
+
+    GraphicsContext* graphicsContext; //!< TODO
+    View             defaultView;     //!< Default view
+    View             view;            //!< Current view
+    StatesCache      cache{};         //!< Render states cache
+    std::uint64_t    id{};            //!< Unique number that identifies the RenderTarget
 };
 
 
 ////////////////////////////////////////////////////////////
-RenderTarget::RenderTarget() = default;
+RenderTarget::RenderTarget(GraphicsContext& graphicsContext) : m_impl(graphicsContext)
+{
+}
 
 
 ////////////////////////////////////////////////////////////
@@ -493,7 +501,7 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, const RenderStates& st
 void RenderTarget::draw(const VertexBuffer& vertexBuffer, std::size_t firstVertex, std::size_t vertexCount, const RenderStates& states)
 {
     // VertexBuffer not supported?
-    if (!VertexBuffer::isAvailable())
+    if (!VertexBuffer::isAvailable(*m_impl->graphicsContext))
     {
         priv::err() << "sf::VertexBuffer is not available, drawing skipped" << priv::errEndl;
         return;
@@ -515,7 +523,7 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, std::size_t firstVerte
         setupDraw(false, states);
 
         // Bind vertex buffer
-        VertexBuffer::bind(&vertexBuffer);
+        VertexBuffer::bind(*m_impl->graphicsContext, &vertexBuffer);
 
         // Always enable texture coordinates
         if (!m_impl->cache.enable || !m_impl->cache.texCoordsArrayEnabled)
@@ -528,7 +536,7 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, std::size_t firstVerte
         drawPrimitives(vertexBuffer.getPrimitiveType(), firstVertex, vertexCount);
 
         // Unbind vertex buffer
-        VertexBuffer::bind(nullptr);
+        VertexBuffer::bind(*vertexBuffer.m_graphicsContext, nullptr);
 
         cleanupDraw(states);
 
@@ -641,8 +649,8 @@ void RenderTarget::popGLStates()
 void RenderTarget::resetGLStates()
 {
     // Check here to make sure a context change does not happen after activate(true)
-    const bool shaderAvailable       = Shader::isAvailable();
-    const bool vertexBufferAvailable = VertexBuffer::isAvailable();
+    const bool shaderAvailable       = Shader::isAvailable(*m_impl->graphicsContext);
+    const bool vertexBufferAvailable = VertexBuffer::isAvailable(*m_impl->graphicsContext);
 
 // Workaround for states not being properly reset on
 // macOS unless a context switch really takes place
@@ -656,7 +664,7 @@ void RenderTarget::resetGLStates()
     if (RenderTargetImpl::isActive(m_impl->id) || setActive(true))
     {
         // Make sure that extensions are initialized
-        priv::ensureExtensionsInit();
+        priv::ensureExtensionsInit(*m_impl->graphicsContext);
 
         // Make sure that the texture unit which is active is the number 0
         if (GLEXT_multitexture)
@@ -692,7 +700,7 @@ void RenderTarget::resetGLStates()
             applyShader(nullptr);
 
         if (vertexBufferAvailable)
-            glCheck(VertexBuffer::bind(nullptr));
+            glCheck(VertexBuffer::bind(*m_impl->graphicsContext, nullptr));
 
         m_impl->cache.texCoordsArrayEnabled = true;
 
@@ -875,7 +883,7 @@ void RenderTarget::applyTransform(const Transform& transform)
 ////////////////////////////////////////////////////////////
 void RenderTarget::applyTexture(const Texture* texture, CoordinateType coordinateType)
 {
-    Texture::bind(texture, coordinateType);
+    Texture::bind(*m_impl->graphicsContext, texture, coordinateType);
 
     m_impl->cache.lastTextureId      = texture ? texture->m_cacheId : 0;
     m_impl->cache.lastCoordinateType = coordinateType;
@@ -888,7 +896,7 @@ void RenderTarget::applyShader(const Shader* shader)
     if (shader != nullptr)
         shader->bind();
     else
-        Shader::unbind();
+        Shader::unbind(*m_impl->graphicsContext);
 }
 
 

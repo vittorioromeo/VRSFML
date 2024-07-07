@@ -286,6 +286,6 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
 
     SECTION("Get Maximum Size")
     {
-        CHECK(sf::Texture::getMaximumSize() > 0);
+        CHECK(sf::Texture::getMaximumSize(graphicsContext) > 0);
     }
 }

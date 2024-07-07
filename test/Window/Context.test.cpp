@@ -1,6 +1,5 @@
-#include <SFML/Window/GraphicsContext.hpp>
-
 #include <SFML/Window/Context.hpp>
+#include <SFML/Window/GraphicsContext.hpp>
 
 // Other 1st party headers
 #include <SFML/Window/ContextSettings.hpp>
@@ -153,7 +152,8 @@ TEST_CASE("[Window] sf::Context" * doctest::skip(skipDisplayTests))
         CHECK(context.setActive(true));
 
         using glGetStringFuncType  = const char*(GLAPI*)(unsigned int);
-        const auto glGetStringFunc = reinterpret_cast<glGetStringFuncType>(sf::Context::getFunction("glGetString"));
+        const auto glGetStringFunc = reinterpret_cast<glGetStringFuncType>(
+            sf::Context::getFunction(graphicsContext, "glGetString"));
         REQUIRE(glGetStringFunc);
 
         constexpr unsigned int glVendor   = 0x1F00;
@@ -175,18 +175,18 @@ TEST_CASE("[Window] sf::Context" * doctest::skip(skipDisplayTests))
 
     SECTION("isExtensionAvailable()")
     {
-        CHECK(!sf::Context::isExtensionAvailable("2024-04-01"));
-        CHECK(!sf::Context::isExtensionAvailable("let's assume this extension does not exist"));
+        CHECK(!sf::Context::isExtensionAvailable(graphicsContext, "2024-04-01"));
+        CHECK(!sf::Context::isExtensionAvailable(graphicsContext, "let's assume this extension does not exist"));
     }
 
     SECTION("getFunction()")
     {
         const sf::Context context(graphicsContext); // Windows requires an active context to use getFunction
-        CHECK(sf::Context::getFunction("glEnable"));
-        CHECK(sf::Context::getFunction("glGetError"));
-        CHECK(sf::Context::getFunction("glGetIntegerv"));
-        CHECK(sf::Context::getFunction("glGetString"));
-        CHECK(sf::Context::getFunction("glGetStringi"));
-        CHECK(sf::Context::getFunction("glIsEnabled"));
+        CHECK(sf::Context::getFunction(graphicsContext, "glEnable"));
+        CHECK(sf::Context::getFunction(graphicsContext, "glGetError"));
+        CHECK(sf::Context::getFunction(graphicsContext, "glGetIntegerv"));
+        CHECK(sf::Context::getFunction(graphicsContext, "glGetString"));
+        CHECK(sf::Context::getFunction(graphicsContext, "glGetStringi"));
+        CHECK(sf::Context::getFunction(graphicsContext, "glIsEnabled"));
     }
 }

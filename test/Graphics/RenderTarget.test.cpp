@@ -1,6 +1,8 @@
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/View.hpp>
 
+#include <SFML/Window/GraphicsContext.hpp>
+
 #include <Doctest.hpp>
 
 #include <GraphicsUtil.hpp>
@@ -11,7 +13,9 @@
 class RenderTarget : public sf::RenderTarget
 {
 public:
-    RenderTarget() = default;
+    RenderTarget(sf::GraphicsContext& graphicsContext) : sf::RenderTarget(graphicsContext)
+    {
+    }
 
 private:
     [[nodiscard]] sf::Vector2u getSize() const override
@@ -22,6 +26,8 @@ private:
 
 TEST_CASE("[Graphics] sf::RenderTarget")
 {
+    sf::GraphicsContext graphicsContext;
+
     SECTION("Type traits")
     {
         STATIC_CHECK(!std::is_constructible_v<sf::RenderTarget>);
@@ -33,7 +39,7 @@ TEST_CASE("[Graphics] sf::RenderTarget")
 
     SECTION("Construction")
     {
-        const RenderTarget renderTarget;
+        const RenderTarget renderTarget(graphicsContext);
         CHECK(renderTarget.getView().getCenter() == sf::Vector2f{500, 500});
         CHECK(renderTarget.getView().getSize() == sf::Vector2f{1000, 1000});
         CHECK(renderTarget.getView().getRotation() == sf::Angle::Zero);
@@ -49,7 +55,7 @@ TEST_CASE("[Graphics] sf::RenderTarget")
 
     SECTION("Set/get view")
     {
-        RenderTarget renderTarget;
+        RenderTarget renderTarget(graphicsContext);
         renderTarget.setView({{1, 2}, {3, 4}});
         CHECK(renderTarget.getView().getCenter() == sf::Vector2f{1, 2});
         CHECK(renderTarget.getView().getSize() == sf::Vector2f{3, 4});
@@ -57,7 +63,7 @@ TEST_CASE("[Graphics] sf::RenderTarget")
 
     SECTION("setActive()")
     {
-        RenderTarget renderTarget;
+        RenderTarget renderTarget(graphicsContext);
         CHECK(renderTarget.setActive());
         CHECK(renderTarget.setActive(false));
         CHECK(renderTarget.setActive(true));
@@ -72,7 +78,7 @@ TEST_CASE("[Graphics] sf::RenderTarget")
 
     SECTION("getViewport(const View&)")
     {
-        const RenderTarget renderTarget;
+        const RenderTarget renderTarget(graphicsContext);
         CHECK(renderTarget.getViewport(makeView(sf::FloatRect({0, 0}, {1, 1}))) == sf::IntRect({0, 0}, {640, 480}));
         CHECK(renderTarget.getViewport(makeView(sf::FloatRect({1, 1}, {.5f, .25f}))) ==
               sf::IntRect({640, 480}, {320, 120}));
@@ -82,7 +88,7 @@ TEST_CASE("[Graphics] sf::RenderTarget")
 
     SECTION("getScissor(const View&)")
     {
-        const RenderTarget renderTarget;
+        const RenderTarget renderTarget(graphicsContext);
         CHECK(renderTarget.getScissor(makeView(sf::FloatRect({0, 0}, {1, 1}))) == sf::IntRect({0, 0}, {640, 480}));
         CHECK(renderTarget.getScissor(makeView(sf::FloatRect({1, 1}, {.5f, .25f}))) == sf::IntRect({0, 0}, {640, 480}));
         CHECK(renderTarget.getScissor(makeView(sf::FloatRect({.5f, .5f}, {.25f, .75f}))) ==
@@ -94,7 +100,7 @@ TEST_CASE("[Graphics] sf::RenderTarget")
         sf::View view;
         view.move({5, 5});
         view.setViewport(sf::FloatRect({0, 0}, {.5f, 1}));
-        RenderTarget renderTarget;
+        RenderTarget renderTarget(graphicsContext);
         renderTarget.setView(view);
         const auto [x1, y1] = renderTarget.mapPixelToCoords({0, 0});
         CHECK_THAT(x1, Catch::Matchers::WithinRel(5, 1e-4));
@@ -112,7 +118,7 @@ TEST_CASE("[Graphics] sf::RenderTarget")
         sf::View view;
         view.move({5, 5});
         view.setViewport(sf::FloatRect({.5f, .5f}, {.5f, 1}));
-        const RenderTarget renderTarget;
+        const RenderTarget renderTarget(graphicsContext);
         const auto [x1, y1] = renderTarget.mapPixelToCoords({0, 0}, view);
         CHECK_THAT(x1, Catch::Matchers::WithinRel(-995, 1e-5));
         CHECK_THAT(y1, Catch::Matchers::WithinRel(-495, 1e-5));
@@ -126,7 +132,7 @@ TEST_CASE("[Graphics] sf::RenderTarget")
         sf::View view;
         view.move({5, 5});
         view.setViewport(sf::FloatRect({.25f, 0}, {1, 1}));
-        RenderTarget renderTarget;
+        RenderTarget renderTarget(graphicsContext);
         renderTarget.setView(view);
         CHECK(renderTarget.mapCoordsToPixel({0, 0}) == sf::Vector2i(156, -2));
         CHECK(renderTarget.mapCoordsToPixel({-500, 0}) == sf::Vector2i(-163, -2));
@@ -138,7 +144,7 @@ TEST_CASE("[Graphics] sf::RenderTarget")
         sf::View view;
         view.move({5, 5});
         view.setViewport(sf::FloatRect({0, 0}, {.5, .25f}));
-        RenderTarget renderTarget;
+        RenderTarget renderTarget(graphicsContext);
         renderTarget.setView(view);
         CHECK(renderTarget.mapCoordsToPixel({0, 0}) == sf::Vector2i(-1, 0));
         CHECK(renderTarget.mapCoordsToPixel({320, 0}) == sf::Vector2i{100, 0});

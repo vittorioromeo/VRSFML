@@ -59,7 +59,10 @@ int main()
 #ifdef SFML_OPENGL_ES
     gladLoadGLES1(sf::Context::getFunction);
 #else
-    gladLoadGL(sf::Context::getFunction);
+    static sf::GraphicsContext* gcPtr;
+    gcPtr = &graphicsContext;
+
+    gladLoadGL([](const char* name) { return sf::Context::getFunction(*gcPtr, name); });
 #endif
 
     // Set the color and depth clear values

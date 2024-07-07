@@ -49,7 +49,7 @@ public:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] TransientContextLock();
+    [[nodiscard]] TransientContextLock(GraphicsContext& graphicsContext);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
