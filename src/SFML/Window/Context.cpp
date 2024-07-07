@@ -110,7 +110,7 @@ const Context* Context::getActiveContext()
     using ContextImpl::currentContext;
 
     // We have to check that the last activated sf::Context is still active (a RenderTarget activation may have deactivated it)
-    if (currentContext && currentContext->m_context.get() == priv::GlContext::getActiveContext())
+    if (currentContext != nullptr && currentContext->m_context.get() == priv::GlContext::getActiveContext())
         return currentContext;
 
     return nullptr;
@@ -125,7 +125,14 @@ std::uint64_t Context::getActiveContextId()
 
 
 ////////////////////////////////////////////////////////////
-bool Context::isExtensionAvailable(std::string_view name)
+bool Context::hasActiveContext()
+{
+    return priv::GlContext::hasActiveContext();
+}
+
+
+////////////////////////////////////////////////////////////
+bool Context::isExtensionAvailable(const char* name)
 {
     return priv::GlContext::isExtensionAvailable(name);
 }

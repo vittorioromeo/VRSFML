@@ -26,36 +26,24 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/GlContext.hpp>
-#include <SFML/Window/GlResource.hpp>
+#include <SFML/Window/TransientContextLock.hpp>
 
 #include <SFML/System/Macros.hpp>
 
 
-namespace sf
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-GlResource::GlResource()
+TransientContextLock::TransientContextLock()
 {
-    priv::GlContext::acquireSharedContext();
+    priv::GlContext::acquireTransientContext();
 }
 
 
 ////////////////////////////////////////////////////////////
-GlResource::~GlResource()
+TransientContextLock::~TransientContextLock()
 {
-    priv::GlContext::releaseSharedContext();
+    priv::GlContext::releaseTransientContext();
 }
 
-
-////////////////////////////////////////////////////////////
-GlResource::GlResource(const GlResource&) : GlResource{}
-{
-}
-
-
-////////////////////////////////////////////////////////////
-GlResource::GlResource(GlResource&&) noexcept : GlResource{}
-{
-}
-
-} // namespace sf
+} // namespace sf::priv

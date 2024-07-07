@@ -47,7 +47,7 @@ namespace priv
 ///        using an in-memory context
 ///
 ////////////////////////////////////////////////////////////
-class RenderTextureImplDefault : public RenderTextureImpl, GlResource
+class RenderTextureImplDefault : public RenderTextureImpl, private GlResource
 {
 public:
     ////////////////////////////////////////////////////////////

@@ -32,6 +32,8 @@
 #include <SFML/Graphics/Vertex.hpp>
 #include <SFML/Graphics/VertexBuffer.hpp>
 
+#include <SFML/Window/TransientContextLock.hpp>
+
 #include <SFML/System/Err.hpp>
 
 #include <utility>
@@ -106,7 +108,7 @@ VertexBuffer::~VertexBuffer()
 {
     if (m_buffer)
     {
-        const TransientContextLock contextLock;
+        const priv::TransientContextLock lock;
 
         glCheck(GLEXT_glDeleteBuffers(1, &m_buffer));
     }
@@ -119,7 +121,7 @@ bool VertexBuffer::create(std::size_t vertexCount)
     if (!isAvailable())
         return false;
 
-    const TransientContextLock contextLock;
+    const priv::TransientContextLock lock;
 
     if (!m_buffer)
         glCheck(GLEXT_glGenBuffers(1, &m_buffer));
@@ -170,7 +172,7 @@ bool VertexBuffer::update(const Vertex* vertices, std::size_t vertexCount, unsig
     if (offset && (offset + vertexCount > m_size))
         return false;
 
-    const TransientContextLock contextLock;
+    const priv::TransientContextLock lock;
 
     glCheck(GLEXT_glBindBuffer(GLEXT_GL_ARRAY_BUFFER, m_buffer));
 
@@ -208,7 +210,7 @@ bool VertexBuffer::update([[maybe_unused]] const VertexBuffer& vertexBuffer)
     if (!m_buffer || !vertexBuffer.m_buffer)
         return false;
 
-    const TransientContextLock contextLock;
+    const priv::TransientContextLock lock;
 
     // Make sure that extensions are initialized
     priv::ensureExtensionsInit();
@@ -296,7 +298,7 @@ void VertexBuffer::bind(const VertexBuffer* vertexBuffer)
     if (!isAvailable())
         return;
 
-    const TransientContextLock lock;
+    const priv::TransientContextLock lock;
 
     glCheck(GLEXT_glBindBuffer(GLEXT_GL_ARRAY_BUFFER, vertexBuffer ? vertexBuffer->m_buffer : 0));
 }
@@ -335,7 +337,7 @@ bool VertexBuffer::isAvailable()
 {
     static const bool available = []
     {
-        const TransientContextLock contextLock;
+        const priv::TransientContextLock lock;
 
         // Make sure that extensions are initialized
         priv::ensureExtensionsInit();

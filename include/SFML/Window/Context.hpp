@@ -34,8 +34,6 @@
 #include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
 
-#include <string_view>
-
 #include <cstdint>
 
 
@@ -54,7 +52,7 @@ using GlFunctionPointer = void (*)();
 /// \brief Class holding a valid drawing context
 ///
 ////////////////////////////////////////////////////////////
-class SFML_WINDOW_API Context : GlResource
+class SFML_WINDOW_API Context : private GlResource
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -127,7 +125,7 @@ public:
     /// \return True if available, false if unavailable
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static bool isExtensionAvailable(std::string_view name);
+    [[nodiscard]] static bool isExtensionAvailable(const char* name);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the address of an OpenGL function
@@ -164,6 +162,12 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static std::uint64_t getActiveContextId();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool hasActiveContext();
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a in-memory context

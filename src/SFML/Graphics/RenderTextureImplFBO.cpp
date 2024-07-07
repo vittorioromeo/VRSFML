@@ -32,6 +32,7 @@
 #include <SFML/Window/Context.hpp>
 #include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/GlContext.hpp>
+#include <SFML/Window/TransientContextLock.hpp>
 
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Macros.hpp>
@@ -88,7 +89,7 @@ RenderTextureImplFBO::RenderTextureImplFBO() = default;
 ////////////////////////////////////////////////////////////
 RenderTextureImplFBO::~RenderTextureImplFBO()
 {
-    const TransientContextLock contextLock;
+    const TransientContextLock lock;
 
     // Destroy the color buffer
     if (m_impl->colorBuffer)
@@ -366,7 +367,7 @@ bool RenderTextureImplFBO::create(const Vector2u& size, unsigned int textureId, 
     m_impl->textureId = textureId;
 
     // We can't create an FBO now if there is no active context
-    if (!Context::getActiveContextId())
+    if (!Context::hasActiveContext())
         return true;
 
 #ifndef SFML_OPENGL_ES

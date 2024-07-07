@@ -33,6 +33,7 @@
 
 #include <SFML/Window/Context.hpp>
 #include <SFML/Window/Window.hpp>
+#include <SFML/Window/TransientContextLock.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
@@ -101,7 +102,7 @@ Texture::~Texture()
     // Destroy the OpenGL texture
     if (m_texture)
     {
-        const TransientContextLock lock;
+        const priv::TransientContextLock lock;
 
         const GLuint texture = m_texture;
         glCheck(glDeleteTextures(1, &texture));
@@ -135,7 +136,7 @@ Texture& Texture::operator=(Texture&& right) noexcept
     // Destroy the OpenGL texture
     if (m_texture)
     {
-        const TransientContextLock lock;
+        const priv::TransientContextLock lock;
 
         const GLuint texture = m_texture;
         glCheck(glDeleteTextures(1, &texture));
@@ -168,7 +169,7 @@ std::optional<Texture> Texture::create(const Vector2u& size, bool sRgb)
         return result; // Empty optional
     }
 
-    const TransientContextLock lock;
+    const priv::TransientContextLock lock;
 
     // Make sure that extensions are initialized
     priv::ensureExtensionsInit();
@@ -334,7 +335,7 @@ std::optional<Texture> Texture::loadFromImage(const Image& image, bool sRgb, con
     // Create the texture and upload the pixels
     if ((result = sf::Texture::create(rectangle.size.to<Vector2u>(), sRgb)))
     {
-        const TransientContextLock lock;
+        const priv::TransientContextLock lock;
 
         // Make sure that the current texture binding will be preserved
         const priv::TextureSaver save;
@@ -374,7 +375,7 @@ Image Texture::copyToImage() const
     // Easy case: empty texture
     assert(m_texture && "Texture::copyToImage Cannot copy empty texture to image");
 
-    const TransientContextLock lock;
+    const priv::TransientContextLock lock;
 
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
@@ -483,7 +484,7 @@ void Texture::update(const std::uint8_t* pixels, const Vector2u& size, const Vec
 
     if (pixels && m_texture)
     {
-        const TransientContextLock lock;
+        const priv::TransientContextLock lock;
 
         // Make sure that the current texture binding will be preserved
         const priv::TextureSaver save;
@@ -531,7 +532,7 @@ void Texture::update(const Texture& texture, const Vector2u& dest)
 #ifndef SFML_OPENGL_ES
 
     {
-        const TransientContextLock lock;
+        const priv::TransientContextLock lock;
 
         // Make sure that extensions are initialized
         priv::ensureExtensionsInit();
@@ -539,7 +540,7 @@ void Texture::update(const Texture& texture, const Vector2u& dest)
 
     if (GLEXT_framebuffer_object && GLEXT_framebuffer_blit)
     {
-        const TransientContextLock lock;
+        const priv::TransientContextLock lock;
 
         // Save the current bindings so we can restore them after we are done
         GLint readFramebuffer = 0;
@@ -672,7 +673,7 @@ void Texture::update(const Window& window, const Vector2u& dest)
 
     if (m_texture && window.setActive(true))
     {
-        const TransientContextLock lock;
+        const priv::TransientContextLock lock;
 
         // Make sure that the current texture binding will be preserved
         const priv::TextureSaver save;
@@ -708,7 +709,7 @@ void Texture::setSmooth(bool smooth)
 
         if (m_texture)
         {
-            const TransientContextLock lock;
+            const priv::TransientContextLock lock;
 
             // Make sure that the current texture binding will be preserved
             const priv::TextureSaver save;
@@ -754,7 +755,7 @@ void Texture::setRepeated(bool repeated)
 
         if (m_texture)
         {
-            const TransientContextLock lock;
+            const priv::TransientContextLock lock;
 
             // Make sure that the current texture binding will be preserved
             const priv::TextureSaver save;
@@ -803,7 +804,7 @@ bool Texture::generateMipmap()
     if (!m_texture)
         return false;
 
-    const TransientContextLock lock;
+    const priv::TransientContextLock lock;
 
     // Make sure that extensions are initialized
     priv::ensureExtensionsInit();
@@ -832,7 +833,7 @@ void Texture::invalidateMipmap()
     if (!m_hasMipmap)
         return;
 
-    const TransientContextLock lock;
+    const priv::TransientContextLock lock;
 
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
@@ -847,7 +848,7 @@ void Texture::invalidateMipmap()
 ////////////////////////////////////////////////////////////
 void Texture::bind(const Texture* texture, CoordinateType coordinateType)
 {
-    const TransientContextLock lock;
+    const priv::TransientContextLock lock;
 
     if (texture && texture->m_texture)
     {
@@ -913,7 +914,7 @@ unsigned int Texture::getMaximumSize()
 {
     static const unsigned int size = []
     {
-        const TransientContextLock transientLock;
+        const priv::TransientContextLock lock;
 
         GLint value = 0;
 
