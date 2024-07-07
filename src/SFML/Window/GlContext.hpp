@@ -42,6 +42,7 @@ namespace sf
 {
 class GlResource;
 using GlFunctionPointer = void (*)();
+class Context;
 } // namespace sf
 
 
@@ -309,6 +310,7 @@ protected:
 
 private:
     friend GlResource;
+    friend Context;
 
     static void acquireSharedContext();
     static void releaseSharedContext();
