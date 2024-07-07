@@ -44,6 +44,8 @@ class WindowImpl;
 
 namespace sf
 {
+using GlFunctionPointer = void (*)();
+
 struct ContextSettings;
 
 ////////////////////////////////////////////////////////////
@@ -70,16 +72,17 @@ public:
 
     [[nodiscard]] std::recursive_mutex& getMutex();
 
-    void makeContextType(priv::UniquePtr<priv::GlContext>& target);
+    [[nodiscard]] priv::UniquePtr<priv::GlContext> makeContextType();
 
-    void makeContextType(priv::UniquePtr<priv::GlContext>& target,
-                         const ContextSettings&            settings,
-                         const priv::WindowImpl&           owner,
-                         unsigned int                      bitsPerPixel);
+    [[nodiscard]] priv::UniquePtr<priv::GlContext> makeContextType(const ContextSettings&  settings,
+                                                                   const priv::WindowImpl& owner,
+                                                                   unsigned int            bitsPerPixel);
 
-    void makeContextType(priv::UniquePtr<priv::GlContext>& target, const ContextSettings& settings, const Vector2u& size);
+    [[nodiscard]] priv::UniquePtr<priv::GlContext> makeContextType(const ContextSettings& settings, const Vector2u& size);
 
     [[nodiscard]] bool isExtensionAvailable(const char* name);
+
+    [[nodiscard]] GlFunctionPointer getFunction(const char* name);
 
 private:
     struct Impl;

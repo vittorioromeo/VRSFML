@@ -90,7 +90,7 @@ Context& Context::operator=(Context&& rhs) noexcept
 ////////////////////////////////////////////////////////////
 bool Context::setActive(bool active)
 {
-    if (!m_context->setActive(m_graphicsContext->getMutex(), active))
+    if (!m_context->setActive(active))
         return false;
 
     if (active)
@@ -146,7 +146,7 @@ bool Context::isExtensionAvailable(GraphicsContext& graphicsContext, const char*
 ////////////////////////////////////////////////////////////
 GlFunctionPointer Context::getFunction(GraphicsContext& graphicsContext, const char* name)
 {
-    return priv::GlContext::getFunction(graphicsContext.getMutex(), name);
+    return graphicsContext.getFunction(name);
 }
 
 

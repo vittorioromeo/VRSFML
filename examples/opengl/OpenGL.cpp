@@ -1,8 +1,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/System/Vector2.hpp"
-
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Sprite.hpp>
@@ -21,6 +19,7 @@
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Path.hpp>
 #include <SFML/System/Time.hpp>
+#include <SFML/System/Vector2.hpp>
 
 #include <array>
 #include <iostream>
