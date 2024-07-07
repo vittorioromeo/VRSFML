@@ -1,10 +1,10 @@
-#include "SFML/Window/GraphicsContext.hpp"
-
 #include <SFML/Graphics.hpp>
 
 #include <SFML/Audio.hpp>
 
 #include <SFML/Network.hpp>
+
+#include <SFML/Window/GraphicsContext.hpp>
 
 // Instantiate some types from each module to test for linker issues. This program is not meant be ran.
 int main()

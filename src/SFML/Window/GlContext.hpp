@@ -35,8 +35,6 @@
 #include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
 
-#include <mutex>
-
 #include <cstdint>
 
 
@@ -147,16 +145,6 @@ public:
     [[nodiscard]] static bool isExtensionAvailable(GraphicsContext& graphicsContext, const char* name);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the address of an OpenGL function
-    ///
-    /// \param name Name of the function to get the address of
-    ///
-    /// \return Address of the OpenGL function, 0 on failure
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static GlFunctionPointer getFunction(std::recursive_mutex& graphicsContextMutex, const char* name);
-
-    ////////////////////////////////////////////////////////////
     /// \brief Get the currently active context
     ///
     /// \return The currently active context or a null pointer if none is active
@@ -225,7 +213,7 @@ public:
     /// \return True if operation was successful, false otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool setActive(std::recursive_mutex& graphicsContextMutex, bool active);
+    [[nodiscard]] bool setActive(bool active);
 
     ////////////////////////////////////////////////////////////
     /// \brief Display what has been rendered to the context so far
@@ -251,7 +239,7 @@ public:
     /// \param requestedSettings Requested settings during context creation
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool initialize(std::recursive_mutex& graphicsContextMutex, const ContextSettings& requestedSettings);
+    [[nodiscard]] bool initialize(const ContextSettings& requestedSettings);
 
 protected:
     ////////////////////////////////////////////////////////////
@@ -277,7 +265,7 @@ protected:
     /// \brief Notify unshared resources of context destruction
     ///
     ////////////////////////////////////////////////////////////
-    void cleanupUnsharedResources(std::recursive_mutex& graphicsContextMutex);
+    void cleanupUnsharedResources();
 
     ////////////////////////////////////////////////////////////
     /// \brief Evaluate a pixel format configuration
