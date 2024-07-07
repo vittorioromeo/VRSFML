@@ -153,14 +153,14 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
     {
         sf::Text text(font, "\tabcdefghijklmnopqrstuvwxyz \n");
         text.setPosition({120, 240});
-        CHECK(text.findCharacterPos(0) == sf::Vector2f(120, 240));
-        CHECK(text.findCharacterPos(1) == sf::Vector2f(156, 240));
-        CHECK(text.findCharacterPos(2) == sf::Vector2f(170, 240));
-        CHECK(text.findCharacterPos(3) == sf::Vector2f(185, 240));
-        CHECK(text.findCharacterPos(4) == sf::Vector2f(198, 240));
+        CHECK(text.findCharacterPos(0) == sf::Vector2f{120, 240});
+        CHECK(text.findCharacterPos(1) == sf::Vector2f{156, 240});
+        CHECK(text.findCharacterPos(2) == sf::Vector2f{170, 240});
+        CHECK(text.findCharacterPos(3) == sf::Vector2f{185, 240});
+        CHECK(text.findCharacterPos(4) == sf::Vector2f{198, 240});
 
         // Indices that are too large are capped at maximum valid index
-        CHECK(text.findCharacterPos(1'000) == sf::Vector2f(120, 277));
+        CHECK(text.findCharacterPos(1'000) == sf::Vector2f{120, 277});
     }
 
     SECTION("Get bounds")

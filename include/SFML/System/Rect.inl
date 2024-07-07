@@ -25,33 +25,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Rect.hpp> // NOLINT(misc-header-include-cycle)
-
 #include <SFML/System/AlgorithmUtils.hpp>
+#include <SFML/System/Rect.hpp> // NOLINT(misc-header-include-cycle)
 
 
 namespace sf
 {
-////////////////////////////////////////////////////////////
-template <typename T>
-constexpr Rect<T>::Rect() = default;
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-constexpr Rect<T>::Rect(const Vector2<T>& thePosition, const Vector2<T>& theSize) : position(thePosition), size(theSize)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-template <typename U>
-constexpr Rect<T>::Rect(const Rect<U>& rectangle) : position(rectangle.position), size(rectangle.size)
-{
-}
-
-
 ////////////////////////////////////////////////////////////
 template <typename T>
 constexpr bool Rect<T>::contains(const Vector2<T>& point) const
@@ -73,6 +52,16 @@ template <typename T>
 constexpr Vector2<T> Rect<T>::getCenter() const
 {
     return position + size / T{2};
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+template <typename U>
+constexpr U Rect<T>::to() const
+{
+    using ValueType = decltype(U{}.position.x);
+    return Rect<ValueType>{position.template to<Vector2<ValueType>>(), size.template to<Vector2<ValueType>>()};
 }
 
 

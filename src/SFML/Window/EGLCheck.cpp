@@ -29,10 +29,10 @@
 #include <SFML/Window/EGLCheck.hpp>
 
 #include <SFML/System/Err.hpp>
+#include <SFML/System/Path.hpp>
 
 #include <glad/egl.h>
 
-#include <SFML/System/Path.hpp>
 #include <string_view>
 
 

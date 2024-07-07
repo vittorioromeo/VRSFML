@@ -36,8 +36,6 @@
 #include <SFML/Graphics/Glyph.hpp>
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/PrimitiveType.hpp>
-#include <SFML/Graphics/Rect.hpp>
-#include <SFML/Graphics/RectUtils.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
@@ -56,6 +54,9 @@
 #include <SFML/Graphics/View.hpp>
 
 #include <SFML/Window.hpp>
+
+#include <SFML/System/Rect.hpp>
+#include <SFML/System/RectUtils.hpp>
 
 
 ////////////////////////////////////////////////////////////

@@ -214,7 +214,7 @@ void WindowBase::setSize(const Vector2u& size)
 
     // Constrain requested size within minimum and maximum bounds
     const auto minimumSize = m_impl->getMinimumSize().value_or(Vector2u());
-    const auto maximumSize = m_impl->getMaximumSize().value_or(Vector2u(UINT_MAX, UINT_MAX));
+    const auto maximumSize = m_impl->getMaximumSize().value_or(Vector2u{UINT_MAX, UINT_MAX});
 
     const auto width  = priv::clamp(size.x, minimumSize.x, maximumSize.x);
     const auto height = priv::clamp(size.y, minimumSize.y, maximumSize.y);

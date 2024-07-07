@@ -1,7 +1,7 @@
 #include <SFML/Graphics/Shape.hpp>
 
 // Other 1st party headers
-#include <SFML/Graphics/Rect.hpp>
+#include <SFML/System/Rect.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
 #include <Doctest.hpp>

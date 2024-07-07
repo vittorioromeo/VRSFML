@@ -28,6 +28,7 @@
 #include <SFML/Window/JoystickImpl.hpp>
 
 #include <SFML/System/Err.hpp>
+#include <SFML/System/UniquePtr.hpp>
 
 #include <fcntl.h>
 #include <libudev.h>
@@ -42,8 +43,34 @@
 
 namespace
 {
-udev*         udevContext = nullptr;
-udev_monitor* udevMonitor = nullptr;
+struct UdevDeleter
+{
+    void operator()(udev_device* device) const
+    {
+        udev_device_unref(device);
+    }
+
+    void operator()(udev_monitor* monitor) const
+    {
+        udev_monitor_unref(monitor);
+    }
+
+    void operator()(udev_enumerate* enumerate) const
+    {
+        udev_enumerate_unref(enumerate);
+    }
+
+    void operator()(udev* context) const
+    {
+        udev_unref(context);
+    }
+};
+
+template <typename T>
+using UdevPtr = sf::priv::UniquePtr<T, UdevDeleter>;
+
+UdevPtr<udev>         udevContext;
+UdevPtr<udev_monitor> udevMonitor;
 
 struct JoystickRecord
 {
@@ -180,7 +207,7 @@ void updatePluggedList(udev_device* udevDevice = nullptr)
     for (JoystickRecord& record : joystickList)
         record.plugged = false;
 
-    udev_enumerate* udevEnumerator = udev_enumerate_new(udevContext);
+    const auto udevEnumerator = UdevPtr<udev_enumerate>(udev_enumerate_new(udevContext.get()));
 
     if (!udevEnumerator)
     {
@@ -188,36 +215,30 @@ void updatePluggedList(udev_device* udevDevice = nullptr)
         return;
     }
 
-    int result = 0;
-
-    result = udev_enumerate_add_match_subsystem(udevEnumerator, "input");
-
-    if (result < 0)
+    if (udev_enumerate_add_match_subsystem(udevEnumerator.get(), "input") < 0)
     {
         sf::priv::err() << "Error while adding udev enumerator match" << sf::priv::errEndl;
         return;
     }
 
-    result = udev_enumerate_scan_devices(udevEnumerator);
-
-    if (result < 0)
+    if (udev_enumerate_scan_devices(udevEnumerator.get()) < 0)
     {
         sf::priv::err() << "Error while enumerating udev devices" << sf::priv::errEndl;
         return;
     }
 
-    udev_list_entry* devices = udev_enumerate_get_list_entry(udevEnumerator);
+    udev_list_entry* devices = udev_enumerate_get_list_entry(udevEnumerator.get());
     udev_list_entry* device  = nullptr;
 
     udev_list_entry_foreach(device, devices)
     {
-        const char*  syspath       = udev_list_entry_get_name(device);
-        udev_device* newUdevDevice = udev_device_new_from_syspath(udevContext, syspath);
+        const char* syspath       = udev_list_entry_get_name(device);
+        const auto  newUdevDevice = UdevPtr<udev_device>(udev_device_new_from_syspath(udevContext.get(), syspath));
 
-        if (newUdevDevice && isJoystick(newUdevDevice))
+        if (newUdevDevice && isJoystick(newUdevDevice.get()))
         {
             // Since isJoystick returned true, this has to succeed
-            const char* devnode = udev_device_get_devnode(newUdevDevice);
+            const char* devnode = udev_device_get_devnode(newUdevDevice.get());
 
             JoystickList::iterator recordIt;
 
@@ -242,17 +263,13 @@ void updatePluggedList(udev_device* udevDevice = nullptr)
                 joystickList.push_back(newRecord);
             }
         }
-
-        udev_device_unref(newUdevDevice);
     }
-
-    udev_enumerate_unref(udevEnumerator);
 }
 
 bool hasMonitorEvent()
 {
     // This will not fail since we make sure udevMonitor is valid
-    const int monitorFd = udev_monitor_get_fd(udevMonitor);
+    const int monitorFd = udev_monitor_get_fd(udevMonitor.get());
 
     pollfd fds{monitorFd, POLLIN, 0};
 
@@ -315,7 +332,8 @@ unsigned int getJoystickVendorId(unsigned int index)
         return 0;
     }
 
-    udev_device* udevDevice = udev_device_new_from_syspath(udevContext, joystickList[index].systemPath.c_str());
+    const auto udevDevice = UdevPtr<udev_device>(
+        udev_device_new_from_syspath(udevContext.get(), joystickList[index].systemPath.c_str()));
 
     if (!udevDevice)
     {
@@ -323,23 +341,12 @@ unsigned int getJoystickVendorId(unsigned int index)
         return 0;
     }
 
-    unsigned int id = 0;
-
     // First try using udev
-    id = getUdevAttributeUint(udevDevice, "ID_VENDOR_ID");
-
-    if (id)
-    {
-        udev_device_unref(udevDevice);
+    if (const unsigned int id = getUdevAttributeUint(udevDevice.get(), "ID_VENDOR_ID"))
         return id;
-    }
 
     // Fall back to using USB attribute
-    id = getUsbAttributeUint(udevDevice, "idVendor");
-
-    udev_device_unref(udevDevice);
-
-    if (id)
+    if (const unsigned int id = getUsbAttributeUint(udevDevice.get(), "idVendor"))
         return id;
 
     sf::priv::err() << "Failed to get vendor ID of joystick " << joystickList[index].deviceNode << sf::priv::errEndl;
@@ -356,7 +363,8 @@ unsigned int getJoystickProductId(unsigned int index)
         return 0;
     }
 
-    udev_device* udevDevice = udev_device_new_from_syspath(udevContext, joystickList[index].systemPath.c_str());
+    const auto udevDevice = UdevPtr<udev_device>(
+        udev_device_new_from_syspath(udevContext.get(), joystickList[index].systemPath.c_str()));
 
     if (!udevDevice)
     {
@@ -364,23 +372,12 @@ unsigned int getJoystickProductId(unsigned int index)
         return 0;
     }
 
-    unsigned int id = 0;
-
     // First try using udev
-    id = getUdevAttributeUint(udevDevice, "ID_MODEL_ID");
-
-    if (id)
-    {
-        udev_device_unref(udevDevice);
+    if (const unsigned int id = getUdevAttributeUint(udevDevice.get(), "ID_MODEL_ID"))
         return id;
-    }
 
     // Fall back to using USB attribute
-    id = getUsbAttributeUint(udevDevice, "idProduct");
-
-    udev_device_unref(udevDevice);
-
-    if (id)
+    if (const unsigned int id = getUsbAttributeUint(udevDevice.get(), "idProduct"))
         return id;
 
     sf::priv::err() << "Failed to get product ID of joystick " << joystickList[index].deviceNode << sf::priv::errEndl;
@@ -411,16 +408,12 @@ std::string getJoystickName(unsigned int index)
     // Fall back to manual USB chain walk via udev
     if (udevContext)
     {
-        udev_device* udevDevice = udev_device_new_from_syspath(udevContext, joystickList[index].systemPath.c_str());
+        const auto udevDevice = UdevPtr<udev_device>(
+            udev_device_new_from_syspath(udevContext.get(), joystickList[index].systemPath.c_str()));
 
         if (udevDevice)
-        {
-            const char* product = getUsbAttribute(udevDevice, "product");
-            udev_device_unref(udevDevice);
-
-            if (product)
+            if (const char* product = getUsbAttribute(udevDevice.get(), "product"))
                 return {product};
-        }
     }
 
     sf::priv::err() << "Unable to get name for joystick " << devnode << sf::priv::errEndl;
@@ -435,7 +428,7 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 void JoystickImpl::initialize()
 {
-    udevContext = udev_new();
+    udevContext = UdevPtr<udev>(udev_new());
 
     if (!udevContext)
     {
@@ -443,7 +436,7 @@ void JoystickImpl::initialize()
         return;
     }
 
-    udevMonitor = udev_monitor_new_from_netlink(udevContext, "udev");
+    udevMonitor = UdevPtr<udev_monitor>(udev_monitor_new_from_netlink(udevContext.get(), "udev"));
 
     if (!udevMonitor)
     {
@@ -452,7 +445,7 @@ void JoystickImpl::initialize()
     }
     else
     {
-        int error = udev_monitor_filter_add_match_subsystem_devtype(udevMonitor, "input", nullptr);
+        int error = udev_monitor_filter_add_match_subsystem_devtype(udevMonitor.get(), "input", nullptr);
 
         if (error < 0)
         {
@@ -460,12 +453,11 @@ void JoystickImpl::initialize()
                            "notified: "
                         << error << priv::errEndl;
 
-            udev_monitor_unref(udevMonitor);
-            udevMonitor = nullptr;
+            udevMonitor.reset();
         }
         else
         {
-            error = udev_monitor_enable_receiving(udevMonitor);
+            error = udev_monitor_enable_receiving(udevMonitor.get());
 
             if (error < 0)
             {
@@ -473,8 +465,7 @@ void JoystickImpl::initialize()
                                "notified: "
                             << error << priv::errEndl;
 
-                udev_monitor_unref(udevMonitor);
-                udevMonitor = nullptr;
+                udevMonitor.reset();
             }
         }
     }
@@ -488,18 +479,10 @@ void JoystickImpl::initialize()
 void JoystickImpl::cleanup()
 {
     // Unreference the udev monitor to destroy it
-    if (udevMonitor)
-    {
-        udev_monitor_unref(udevMonitor);
-        udevMonitor = nullptr;
-    }
+    udevMonitor.reset();
 
     // Unreference the udev context to destroy it
-    if (udevContext)
-    {
-        udev_unref(udevContext);
-        udevContext = nullptr;
-    }
+    udevContext.reset();
 }
 
 
@@ -515,14 +498,11 @@ bool JoystickImpl::isConnected(unsigned int index)
     else if (hasMonitorEvent())
     {
         // Check if new joysticks were added/removed since last update
-        udev_device* udevDevice = udev_monitor_receive_device(udevMonitor);
+        const auto udevDevice = UdevPtr<udev_device>(udev_monitor_receive_device(udevMonitor.get()));
 
         // If we can get the specific device, we check that,
         // otherwise just do a full scan if udevDevice == nullptr
-        updatePluggedList(udevDevice);
-
-        if (udevDevice)
-            udev_device_unref(udevDevice);
+        updatePluggedList(udevDevice.get());
     }
 
     if (index >= joystickList.size())

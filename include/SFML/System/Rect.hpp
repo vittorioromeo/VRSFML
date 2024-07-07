@@ -27,7 +27,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Export.hpp>
+#include <SFML/System/Export.hpp>
 
 #include <SFML/System/Vector2.hpp>
 
@@ -43,41 +43,6 @@ class [[nodiscard]] Rect
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// Creates an empty rectangle (it is equivalent to calling
-    /// Rect({0, 0}, {0, 0})).
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] SFML_GRAPHICS_API constexpr Rect();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct the rectangle from position and size
-    ///
-    /// Be careful, the last parameter is the size,
-    /// not the bottom-right corner!
-    ///
-    /// \param position Position of the top-left corner of the rectangle
-    /// \param size     Size of the rectangle
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] SFML_GRAPHICS_API constexpr Rect(const Vector2<T>& position, const Vector2<T>& size);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct the rectangle from another type of rectangle
-    ///
-    /// This constructor doesn't replace the copy constructor,
-    /// it's called only when U != T.
-    /// A call to this constructor will fail to compile if U
-    /// is not convertible to T.
-    ///
-    /// \param rectangle Rectangle to convert
-    ///
-    ////////////////////////////////////////////////////////////
-    template <typename U>
-    [[nodiscard, gnu::always_inline]] SFML_GRAPHICS_API constexpr explicit Rect(const Rect<U>& rectangle);
-
-    ////////////////////////////////////////////////////////////
     /// \brief Check if a point is inside the rectangle's area
     ///
     /// This check is non-inclusive. If the point lies on the
@@ -90,7 +55,7 @@ public:
     /// \see findIntersection
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_GRAPHICS_API constexpr bool contains(const Vector2<T>& point) const;
+    [[nodiscard]] SFML_SYSTEM_API constexpr bool contains(const Vector2<T>& point) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the position of the center of the rectangle
@@ -99,6 +64,13 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr Vector2<T> getCenter() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename U>
+    [[nodiscard, gnu::always_inline]] inline constexpr U to() const;
 
     ////////////////////////////////////////////////////////////
     // Member data
@@ -138,19 +110,12 @@ template <typename T>
 [[nodiscard, gnu::always_inline]] constexpr bool operator!=(const Rect<T>& lhs, const Rect<T>& rhs);
 
 // Create type aliases for the most common types
-struct IntRect : Rect<int>
-{
-    using Rect<int>::Rect;
-};
-
-struct FloatRect : Rect<float>
-{
-    using Rect<float>::Rect;
-};
+using IntRect   = Rect<int>;
+using FloatRect = Rect<float>;
 
 } // namespace sf
 
-#include <SFML/Graphics/Rect.inl>
+#include <SFML/System/Rect.inl>
 
 
 ////////////////////////////////////////////////////////////

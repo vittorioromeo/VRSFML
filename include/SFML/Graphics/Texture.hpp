@@ -30,12 +30,12 @@
 #include <SFML/Graphics/Export.hpp>
 
 #include <SFML/Graphics/CoordinateType.hpp>
-#include <SFML/Graphics/Rect.hpp>
 
 #include <SFML/Window/GlResource.hpp>
 
 #include <SFML/System/LifetimeDependee.hpp>
 #include <SFML/System/PassKey.hpp>
+#include <SFML/System/Rect.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #include <optional>

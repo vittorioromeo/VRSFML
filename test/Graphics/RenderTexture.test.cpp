@@ -27,13 +27,13 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
         CHECK(sf::RenderTexture::create({100, 100}, sf::ContextSettings{0 /* depthBits */, 8 /* stencilBits */}));
 
         const auto renderTexture = sf::RenderTexture::create({360, 480}).value();
-        CHECK(renderTexture.getSize() == sf::Vector2u(360, 480));
+        CHECK(renderTexture.getSize() == sf::Vector2u{360, 480});
         CHECK(!renderTexture.isSmooth());
         CHECK(!renderTexture.isRepeated());
         CHECK(!renderTexture.isSrgb());
 
         const auto& texture = renderTexture.getTexture();
-        CHECK(texture.getSize() == sf::Vector2u(360, 480));
+        CHECK(texture.getSize() == sf::Vector2u{360, 480});
         CHECK(!texture.isSmooth());
         CHECK(!texture.isSrgb());
         CHECK(!texture.isRepeated());
@@ -76,6 +76,6 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
     SECTION("getTexture()")
     {
         const auto renderTexture = sf::RenderTexture::create({64, 64}).value();
-        CHECK(renderTexture.getTexture().getSize() == sf::Vector2u(64, 64));
+        CHECK(renderTexture.getTexture().getSize() == sf::Vector2u{64, 64});
     }
 }

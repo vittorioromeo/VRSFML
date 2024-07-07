@@ -154,9 +154,9 @@ private:
 /// \code
 /// sf::ConvexShape polygon;
 /// polygon.setPointCount(3);
-/// polygon.setPoint(0, sf::Vector2f(0, 0));
-/// polygon.setPoint(1, sf::Vector2f(0, 10));
-/// polygon.setPoint(2, sf::Vector2f(25, 5));
+/// polygon.setPoint(0, sf::Vector2f{0, 0});
+/// polygon.setPoint(1, sf::Vector2f{0, 10});
+/// polygon.setPoint(2, sf::Vector2f{25, 5});
 /// polygon.setOutlineColor(sf::Color::Red);
 /// polygon.setOutlineThickness(5);
 /// polygon.setPosition({10, 20});

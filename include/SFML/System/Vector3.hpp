@@ -39,38 +39,6 @@ class Vector3
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// Creates a Vector3(0, 0, 0).
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] SFML_API_EXPORT constexpr Vector3();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct the vector from its coordinates
-    ///
-    /// \param x X coordinate
-    /// \param y Y coordinate
-    /// \param z Z coordinate
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] SFML_API_EXPORT constexpr Vector3(T x, T y, T z);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct the vector from another type of vector
-    ///
-    /// This constructor doesn't replace the copy constructor,
-    /// it's called only when U != T.
-    /// A call to this constructor will fail to compile if U
-    /// is not convertible to T.
-    ///
-    /// \param vector Vector to convert
-    ///
-    ////////////////////////////////////////////////////////////
-    template <typename U>
-    [[nodiscard, gnu::always_inline]] SFML_API_EXPORT constexpr explicit Vector3(const Vector3<U>& vector);
-
-    ////////////////////////////////////////////////////////////
     /// \brief Length of the vector <i><b>(floating-point)</b></i>.
     ///
     /// If you are not interested in the actual length, but only in comparisons, consider using lengthSq().
@@ -128,6 +96,13 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] SFML_API_EXPORT constexpr Vector3 cwiseDiv(const Vector3& rhs) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename U>
+    [[nodiscard, gnu::always_inline]] inline constexpr U to() const;
 
     ////////////////////////////////////////////////////////////
     // Member data

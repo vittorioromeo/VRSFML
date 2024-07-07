@@ -90,7 +90,7 @@ public:
                                const ContextSettings& settings = ContextSettings());
 
     [[nodiscard]] RenderWindow(VideoMode              mode,
-                               const char*          title,
+                               const char*            title,
                                std::uint32_t          style    = Style::Default,
                                State                  state    = State::Windowed,
                                const ContextSettings& settings = ContextSettings());
@@ -118,7 +118,7 @@ public:
                                const ContextSettings& settings = ContextSettings());
 
     [[nodiscard]] RenderWindow(VideoMode              mode,
-                               const char*          title,
+                               const char*            title,
                                State                  state,
                                const ContextSettings& settings = ContextSettings());
 

@@ -23,21 +23,21 @@ TEST_CASE("[Window] sf::VideoMode" * doctest::skip(skipDisplayTests))
         SECTION("Default constructor")
         {
             const sf::VideoMode videoMode;
-            CHECK(videoMode.size == sf::Vector2u(0, 0));
+            CHECK(videoMode.size == sf::Vector2u{0, 0});
             CHECK(videoMode.bitsPerPixel == 0);
         }
 
         SECTION("Width, height constructor")
         {
             const sf::VideoMode videoMode({800, 600});
-            CHECK(videoMode.size == sf::Vector2u(800, 600));
+            CHECK(videoMode.size == sf::Vector2u{800, 600});
             CHECK(videoMode.bitsPerPixel == 32);
         }
 
         SECTION("Width, height, bit depth constructor")
         {
             const sf::VideoMode videoMode({800, 600}, 24);
-            CHECK(videoMode.size == sf::Vector2u(800, 600));
+            CHECK(videoMode.size == sf::Vector2u{800, 600});
             CHECK(videoMode.bitsPerPixel == 24);
         }
     }

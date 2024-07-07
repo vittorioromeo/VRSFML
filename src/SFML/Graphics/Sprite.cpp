@@ -90,7 +90,7 @@ FloatRect Sprite::getGlobalBounds() const
 ////////////////////////////////////////////////////////////
 void Sprite::updateVertices()
 {
-    const auto [position, size] = FloatRect(m_textureRect);
+    const auto [position, size] = m_textureRect.to<FloatRect>();
 
     // Absolute value is used to support negative texture rect sizes
     const Vector2f absSize(priv::fabs(size.x), priv::fabs(size.y));

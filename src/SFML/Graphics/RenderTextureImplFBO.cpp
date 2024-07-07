@@ -106,7 +106,7 @@ bool RenderTextureImplFBO::isAvailable()
     const TransientContextLock lock;
 
     // Make sure that extensions are initialized
-    priv::ensureExtensionsInit();
+    ensureExtensionsInit();
 
     return GLEXT_framebuffer_object != 0;
 }
@@ -147,7 +147,7 @@ bool RenderTextureImplFBO::create(const Vector2u& size, unsigned int textureId, 
         const TransientContextLock lock;
 
         // Make sure that extensions are initialized
-        priv::ensureExtensionsInit();
+        ensureExtensionsInit();
 
         if (settings.antialiasingLevel && !(GLEXT_framebuffer_multisample && GLEXT_framebuffer_blit))
             return false;

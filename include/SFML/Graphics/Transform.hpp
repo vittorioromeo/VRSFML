@@ -29,8 +29,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Export.hpp>
 
-#include <SFML/Graphics/Rect.hpp>
-
+#include <SFML/System/Rect.hpp>
 #include <SFML/System/Vector2.hpp>
 
 
@@ -156,7 +155,7 @@ public:
     /// can be chained.
     /// \code
     /// sf::Transform transform;
-    /// transform.translate(sf::Vector2f(100, 200)).rotate(sf::degrees(45));
+    /// transform.translate(sf::Vector2f{100, 200}).rotate(sf::degrees(45));
     /// \endcode
     ///
     /// \param offset Translation offset to apply
@@ -199,7 +198,7 @@ public:
     /// can be chained.
     /// \code
     /// sf::Transform transform;
-    /// transform.rotate(sf::degrees(90), sf::Vector2f(8, 3)).translate(sf::Vector2f(50, 20));
+    /// transform.rotate(sf::degrees(90), sf::Vector2f{8, 3}).translate(sf::Vector2f{50, 20});
     /// \endcode
     ///
     /// \param angle Rotation angle
@@ -219,7 +218,7 @@ public:
     /// can be chained.
     /// \code
     /// sf::Transform transform;
-    /// transform.scale(sf::Vector2f(2, 1)).rotate(sf::degrees(45));
+    /// transform.scale(sf::Vector2f{2, 1}).rotate(sf::degrees(45));
     /// \endcode
     ///
     /// \param factors Scaling factors
@@ -243,7 +242,7 @@ public:
     /// can be chained.
     /// \code
     /// sf::Transform transform;
-    /// transform.scale(sf::Vector2f(2, 1), sf::Vector2f(8, 3)).rotate(45);
+    /// transform.scale(sf::Vector2f{2, 1}, sf::Vector2f{8, 3}).rotate(45);
     /// \endcode
     ///
     /// \param factors Scaling factors

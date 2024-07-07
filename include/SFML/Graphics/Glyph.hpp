@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Export.hpp>
 
-#include <SFML/Graphics/Rect.hpp>
+#include <SFML/System/Rect.hpp>
 
 
 namespace sf

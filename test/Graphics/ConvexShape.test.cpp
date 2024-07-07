@@ -30,7 +30,7 @@ TEST_CASE("[Graphics] sf::ConvexShape")
         const sf::ConvexShape convex(15);
         CHECK(convex.getPointCount() == 15);
         for (std::size_t i = 0; i < convex.getPointCount(); ++i)
-            CHECK(convex.getPoint(i) == sf::Vector2f(0, 0));
+            CHECK(convex.getPoint(i) == sf::Vector2f{0, 0});
     }
 
     SECTION("Set point count")
@@ -39,7 +39,7 @@ TEST_CASE("[Graphics] sf::ConvexShape")
         convex.setPointCount(42);
         CHECK(convex.getPointCount() == 42);
         for (std::size_t i = 0; i < convex.getPointCount(); ++i)
-            CHECK(convex.getPoint(i) == sf::Vector2f(0, 0));
+            CHECK(convex.getPoint(i) == sf::Vector2f{0, 0});
     }
 
     SECTION("Set point")
@@ -47,7 +47,7 @@ TEST_CASE("[Graphics] sf::ConvexShape")
         sf::ConvexShape convex;
         convex.setPointCount(1);
         convex.setPoint(0, {3, 4});
-        CHECK(convex.getPoint(0) == sf::Vector2f(3, 4));
+        CHECK(convex.getPoint(0) == sf::Vector2f{3, 4});
     }
 
     SECTION(

@@ -83,7 +83,7 @@ int main()
 
     // Create the left paddle
     sf::RectangleShape leftPaddle;
-    leftPaddle.setSize(paddleSize - sf::Vector2f(3, 3));
+    leftPaddle.setSize(paddleSize - sf::Vector2f{3, 3});
     leftPaddle.setOutlineThickness(3);
     leftPaddle.setOutlineColor(sf::Color::Black);
     leftPaddle.setFillColor(sf::Color(100, 100, 200));
@@ -91,7 +91,7 @@ int main()
 
     // Create the right paddle
     sf::RectangleShape rightPaddle;
-    rightPaddle.setSize(paddleSize - sf::Vector2f(3, 3));
+    rightPaddle.setSize(paddleSize - sf::Vector2f{3, 3});
     rightPaddle.setOutlineThickness(3);
     rightPaddle.setOutlineColor(sf::Color::Black);
     rightPaddle.setFillColor(sf::Color(200, 100, 100));
@@ -221,7 +221,7 @@ int main()
             }
 
             // Move the ball
-            ball.move({ballSpeed * deltaTime, ballAngle});
+            ball.move(sf::Vector2f::fromAngle(ballSpeed * deltaTime, ballAngle));
 
 #ifdef SFML_SYSTEM_IOS
             const std::string inputString = "Touch the screen to restart.";

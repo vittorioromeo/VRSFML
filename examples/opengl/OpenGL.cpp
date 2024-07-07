@@ -1,6 +1,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/System/Vector2.hpp"
+
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Sprite.hpp>
@@ -67,8 +69,8 @@ int main()
                                 sf::State::Windowed,
                                 contextSettings);
         window.setVerticalSyncEnabled(true);
-        window.setMinimumSize(sf::Vector2u(400, 300));
-        window.setMaximumSize(sf::Vector2u(1200, 900));
+        window.setMinimumSize(sf::Vector2u{400, 300});
+        window.setMaximumSize(sf::Vector2u{1200, 900});
 
         // Create a sprite for the background
         const auto       backgroundTexture = sf::Texture::loadFromFile(resourcesDir() / "background.jpg", sRgb).value();
@@ -284,8 +286,8 @@ int main()
                     }
 
                     sf::View view;
-                    view.setSize(sf::Vector2f(textureSize));
-                    view.setCenter(sf::Vector2f(textureSize) / 2.f);
+                    view.setSize(textureSize.to<sf::Vector2f>());
+                    view.setCenter(textureSize.to<sf::Vector2f>() / 2.f);
                     window.setView(view);
                 }
             }

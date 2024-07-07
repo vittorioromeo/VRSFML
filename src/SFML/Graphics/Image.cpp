@@ -188,7 +188,7 @@ std::optional<Image> Image::loadFromFile(const Path& filename)
     if (ptr)
     {
         return std::make_optional<Image>(priv::PassKey<Image>{},
-                                         Vector2u(Vector2i(width, height)),
+                                         Vector2i{width, height}.to<Vector2u>(),
                                          std::vector<std::uint8_t>{ptr.get(), ptr.get() + width * height * 4});
     }
 
@@ -218,7 +218,7 @@ std::optional<Image> Image::loadFromMemory(const void* data, std::size_t size)
         if (ptr)
         {
             return std::make_optional<Image>(priv::PassKey<Image>{},
-                                             Vector2u(Vector2i(width, height)),
+                                             Vector2i{width, height}.to<Vector2u>(),
                                              std::vector<std::uint8_t>{ptr.get(), ptr.get() + width * height * 4});
         }
 
@@ -257,7 +257,7 @@ std::optional<Image> Image::loadFromStream(InputStream& stream)
     if (ptr)
     {
         return std::make_optional<Image>(priv::PassKey<Image>{},
-                                         Vector2u(Vector2i(width, height)),
+                                         Vector2i{width, height}.to<Vector2u>(),
                                          std::vector<std::uint8_t>{ptr.get(), ptr.get() + width * height * 4});
     }
 
@@ -276,8 +276,8 @@ bool Image::saveToFile(const Path& filename) const
         // Deduce the image type from its extension
 
         // Extract the extension
-        const Path     extension     = filename.extension();
-        const Vector2i convertedSize = Vector2i(m_size);
+        const Path extension     = filename.extension();
+        const auto convertedSize = m_size.to<Vector2i>();
 
         if (extension == ".bmp")
         {
@@ -328,7 +328,7 @@ std::optional<std::vector<std::uint8_t>> Image::saveToMemory(std::string_view fo
 
     // Choose function based on format
     const std::string specified     = priv::toLower(std::string(format));
-    const Vector2i    convertedSize = Vector2i(m_size);
+    const auto        convertedSize = m_size.to<Vector2i>();
 
     if (specified == "bmp")
     {
@@ -396,7 +396,7 @@ void Image::createMaskFromColor(const Color& color, std::uint8_t alpha)
     if (sourceRect.position.x < 0 || sourceRect.position.y < 0 || sourceRect.size.x < 0 || sourceRect.size.y < 0)
         return false;
 
-    Rect<unsigned int> srcRect(sourceRect);
+    auto srcRect = sourceRect.to<Rect<unsigned int>>();
 
     // Use the whole source image as srcRect if the provided source rectangle is empty
     if (srcRect.size.x == 0 || srcRect.size.y == 0)

@@ -1,11 +1,10 @@
-#include <SFML/Graphics/Rect.hpp>
-#include <SFML/Graphics/RectUtils.hpp>
-
+#include <SFML/System/Rect.hpp>
+#include <SFML/System/RectUtils.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #include <Doctest.hpp>
 
-#include <GraphicsUtil.hpp>
+#include <SystemUtil.hpp>
 
 #include <type_traits>
 
@@ -17,6 +16,16 @@ TEMPLATE_TEST_CASE("[Graphics] sf::Rect", "", int, float)
         STATIC_CHECK(std::is_copy_assignable_v<sf::Rect<TestType>>);
         STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Rect<TestType>>);
         STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Rect<TestType>>);
+
+        STATIC_CHECK(std::is_aggregate_v<sf::Rect<TestType>>);
+        STATIC_CHECK(std::is_trivially_copyable_v<sf::Rect<TestType>>);
+        STATIC_CHECK(std::is_trivially_destructible_v<sf::Rect<TestType>>);
+        STATIC_CHECK(std::is_trivially_assignable_v<sf::Rect<TestType>, sf::Rect<TestType>>);
+
+        STATIC_CHECK(std::is_aggregate_v<sf::FloatRect>);
+        STATIC_CHECK(std::is_trivially_copyable_v<sf::FloatRect>);
+        STATIC_CHECK(std::is_trivially_destructible_v<sf::FloatRect>);
+        STATIC_CHECK(std::is_trivially_assignable_v<sf::FloatRect, sf::FloatRect>);
     }
 
     SECTION("Construction")
@@ -40,11 +49,11 @@ TEMPLATE_TEST_CASE("[Graphics] sf::Rect", "", int, float)
 
         SECTION("Conversion constructor")
         {
-            constexpr sf::FloatRect sourceRectangle({1.0f, 2.0f}, {3.0f, 4.0f});
-            constexpr sf::IntRect   rectangle(sourceRectangle);
+            constexpr sf::FloatRect sourceRectangle{{1.0f, 2.0f}, {3.0f, 4.0f}};
+            constexpr auto          rectangle = sourceRectangle.to<sf::IntRect>();
 
-            STATIC_CHECK(rectangle.position == sf::Vector2i(1, 2));
-            STATIC_CHECK(rectangle.size == sf::Vector2i(3, 4));
+            STATIC_CHECK(rectangle.position == sf::Vector2i{1, 2});
+            STATIC_CHECK(rectangle.size == sf::Vector2i{3, 4});
         }
     }
 

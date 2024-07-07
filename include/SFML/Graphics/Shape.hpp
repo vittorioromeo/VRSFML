@@ -30,10 +30,10 @@
 #include <SFML/Graphics/Export.hpp>
 
 #include <SFML/Graphics/Color.hpp>
-#include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/Transformable.hpp>
 
 #include <SFML/System/InPlacePImpl.hpp>
+#include <SFML/System/Rect.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #include <cstddef>

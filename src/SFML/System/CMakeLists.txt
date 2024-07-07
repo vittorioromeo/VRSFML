@@ -63,6 +63,11 @@ set(SRC
     ${INCROOT}/IsSame.hpp
     ${INCROOT}/RemoveRef.hpp
     ${INCROOT}/MaxAlignT.hpp
+    ${SRCROOT}/Rect.cpp
+    ${INCROOT}/Rect.hpp
+    ${INCROOT}/Rect.inl
+    ${INCROOT}/RectUtils.hpp
+    ${INCROOT}/RectUtils.inl
 )
 
 if(SFML_ENABLE_PCH)

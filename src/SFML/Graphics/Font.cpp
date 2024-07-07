@@ -630,7 +630,7 @@ Glyph Font::loadGlyph(std::uint32_t codePoint, unsigned int characterSize, bool 
         // pollute them with pixels from neighbors
         const unsigned int padding = 2;
 
-        size += 2u * Vector2u(padding, padding);
+        size += 2u * Vector2u{padding, padding};
 
         // Get the glyphs page corresponding to the character size
         Page& page = loadPage(characterSize);
@@ -640,12 +640,12 @@ Glyph Font::loadGlyph(std::uint32_t codePoint, unsigned int characterSize, bool 
 
         // Make sure the texture data is positioned in the center
         // of the allocated texture rectangle
-        glyph.textureRect.position += Vector2i(padding, padding);
-        glyph.textureRect.size -= 2 * Vector2i(padding, padding);
+        glyph.textureRect.position += Vector2i{padding, padding};
+        glyph.textureRect.size -= 2 * Vector2i{padding, padding};
 
         // Compute the glyph's bounding box
-        glyph.bounds.position = Vector2f(Vector2i(bitmapGlyph->left, -bitmapGlyph->top));
-        glyph.bounds.size     = Vector2f(Vector2u(bitmap.width, bitmap.rows));
+        glyph.bounds.position = Vector2i(bitmapGlyph->left, -bitmapGlyph->top).to<Vector2f>();
+        glyph.bounds.size     = Vector2u(bitmap.width, bitmap.rows).to<Vector2f>();
 
         // Resize the pixel buffer to the new size and fill it with transparent white pixels
         m_impl->pixelBuffer.resize(static_cast<std::size_t>(size.x) * static_cast<std::size_t>(size.y) * 4);
@@ -695,8 +695,8 @@ Glyph Font::loadGlyph(std::uint32_t codePoint, unsigned int characterSize, bool 
         }
 
         // Write the pixels to the texture
-        const auto dest       = Vector2u(glyph.textureRect.position) - Vector2u(padding, padding);
-        const auto updateSize = Vector2u(glyph.textureRect.size) + 2u * Vector2u(padding, padding);
+        const auto dest       = glyph.textureRect.position.to<Vector2u>() - Vector2u{padding, padding};
+        const auto updateSize = glyph.textureRect.size.to<Vector2u>() + 2u * Vector2u{padding, padding};
         page.texture.update(m_impl->pixelBuffer.data(), updateSize, dest);
     }
 

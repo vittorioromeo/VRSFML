@@ -1,6 +1,6 @@
 #include <SFML/Graphics/BlendMode.hpp>
 #include <SFML/Graphics/Color.hpp>
-#include <SFML/Graphics/Rect.hpp>
+#include <SFML/System/Rect.hpp>
 #include <SFML/Graphics/StencilMode.hpp>
 #include <SFML/Graphics/Transform.hpp>
 

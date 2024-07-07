@@ -28,7 +28,6 @@
 #include <SFML/Graphics/BlendMode.hpp>
 #include <SFML/Graphics/GLCheck.hpp>
 #include <SFML/Graphics/GLExtensions.hpp>
-#include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Shader.hpp>
@@ -45,6 +44,7 @@
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/MathUtils.hpp>
+#include <SFML/System/Rect.hpp>
 
 #include <mutex>
 #include <unordered_map>
@@ -332,22 +332,24 @@ const View& RenderTarget::getDefaultView() const
 ////////////////////////////////////////////////////////////
 IntRect RenderTarget::getViewport(const View& view) const
 {
-    const auto [width, height] = Vector2f(getSize());
+    const auto [width, height] = getSize().to<Vector2f>();
     const FloatRect& viewport  = view.getViewport();
 
-    return IntRect(Rect<long>({priv::lround(width * viewport.position.x), priv::lround(height * viewport.position.y)},
-                              {priv::lround(width * viewport.size.x), priv::lround(height * viewport.size.y)}));
+    return Rect<long>({priv::lround(width * viewport.position.x), priv::lround(height * viewport.position.y)},
+                      {priv::lround(width * viewport.size.x), priv::lround(height * viewport.size.y)})
+        .to<IntRect>();
 }
 
 
 ////////////////////////////////////////////////////////////
 IntRect RenderTarget::getScissor(const View& view) const
 {
-    const auto [width, height] = Vector2f(getSize());
+    const auto [width, height] = getSize().to<Vector2f>();
     const FloatRect& scissor   = view.getScissor();
 
-    return IntRect(Rect<long>({priv::lround(width * scissor.position.x), priv::lround(height * scissor.position.y)},
-                              {priv::lround(width * scissor.size.x), priv::lround(height * scissor.size.y)}));
+    return Rect<long>({priv::lround(width * scissor.position.x), priv::lround(height * scissor.position.y)},
+                      {priv::lround(width * scissor.size.x), priv::lround(height * scissor.size.y)})
+        .to<IntRect>();
 }
 
 
@@ -362,9 +364,9 @@ Vector2f RenderTarget::mapPixelToCoords(const Vector2i& point) const
 Vector2f RenderTarget::mapPixelToCoords(const Vector2i& point, const View& view) const
 {
     // First, convert from viewport coordinates to homogeneous coordinates
-    const FloatRect viewport   = FloatRect(getViewport(view));
-    const Vector2f  normalized = Vector2f(-1, 1) +
-                                Vector2f(2, -2).cwiseMul(Vector2f(point) - viewport.position).cwiseDiv(viewport.size);
+    const auto     viewport   = getViewport(view).to<FloatRect>();
+    const Vector2f normalized = Vector2f(-1, 1) +
+                                Vector2f(2, -2).cwiseMul(point.to<Vector2f>() - viewport.position).cwiseDiv(viewport.size);
 
     // Then transform by the inverse of the view matrix
     return view.getInverseTransform().transformPoint(normalized);
@@ -385,9 +387,9 @@ Vector2i RenderTarget::mapCoordsToPixel(const Vector2f& point, const View& view)
     const Vector2f normalized = view.getTransform().transformPoint(point);
 
     // Then convert to viewport coordinates
-    const FloatRect viewport = FloatRect(getViewport(view));
-    return Vector2i((normalized.cwiseMul({1, -1}) + sf::Vector2f(1, 1)).cwiseDiv({2, 2}).cwiseMul(viewport.size) +
-                    viewport.position);
+    const auto viewport = getViewport(view).to<FloatRect>();
+    return ((normalized.cwiseMul({1, -1}) + sf::Vector2f{1, 1}).cwiseDiv({2, 2}).cwiseMul(viewport.size) + viewport.position)
+        .to<Vector2i>();
 }
 
 
@@ -715,7 +717,7 @@ const RenderStates& RenderTarget::getDefaultRenderStates()
 void RenderTarget::initialize()
 {
     // Setup the default and current views
-    m_impl->defaultView = View(FloatRect({0, 0}, Vector2f(getSize())));
+    m_impl->defaultView = View(FloatRect({0, 0}, getSize().to<Vector2f>()));
     m_impl->view        = m_impl->defaultView;
 
     // Set GL states only on first draw, so that we don't pollute user's states

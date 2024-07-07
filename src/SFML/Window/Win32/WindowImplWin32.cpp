@@ -187,7 +187,7 @@ m_cursorGrabbed(m_fullscreen)
     HDC       screenDC   = GetDC(nullptr);
     const int left       = (GetDeviceCaps(screenDC, HORZRES) - static_cast<int>(mode.size.x)) / 2;
     const int top        = (GetDeviceCaps(screenDC, VERTRES) - static_cast<int>(mode.size.y)) / 2;
-    auto [width, height] = Vector2i(mode.size);
+    auto [width, height] = mode.size.to<Vector2i>();
     ReleaseDC(nullptr, screenDC);
 
     // Choose the window style according to the Style parameter
@@ -347,7 +347,7 @@ Vector2u WindowImplWin32::getSize() const
     RECT rect;
     GetClientRect(m_handle, &rect);
 
-    return Vector2u(Vector2<LONG>(rect.right - rect.left, rect.bottom - rect.top));
+    return Vector2<LONG>(rect.right - rect.left, rect.bottom - rect.top).to<Vector2u>();
 }
 
 

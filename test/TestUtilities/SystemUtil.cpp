@@ -1,4 +1,4 @@
-#include <SFML/Graphics/Rect.hpp>
+#include <SFML/System/Rect.hpp>
 
 #include <SFML/System/Angle.hpp>
 #include <SFML/System/String.hpp>
@@ -103,4 +103,3 @@ template std::ostream& operator<<(std::ostream&, const Approx<sf::Vector3<float>
 template std::ostream& operator<<(std::ostream&, const Approx<sf::Transform>&);
 template std::ostream& operator<<(std::ostream&, const Approx<sf::Rect<float>>&);
 template std::ostream& operator<<(std::ostream&, const Approx<sf::Angle>&);
-template std::ostream& operator<<(std::ostream&, const Approx<sf::FloatRect>&);

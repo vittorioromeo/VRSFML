@@ -59,7 +59,7 @@ TEST_CASE("[Window] sf::Event")
             CHECK(event.is<sf::Event::Resized>());
             CHECK(event.getIf<sf::Event::Resized>());
             const auto& resized = *event.getIf<sf::Event::Resized>();
-            CHECK(resized.size == sf::Vector2u(1, 2));
+            CHECK(resized.size == sf::Vector2u{1, 2});
         }
     }
 
@@ -73,7 +73,7 @@ TEST_CASE("[Window] sf::Event")
         CHECK(event.is<sf::Event::Resized>());
         CHECK(event.getIf<sf::Event::Resized>());
         const auto& resized = *event.getIf<sf::Event::Resized>();
-        CHECK(resized.size == sf::Vector2u(1, 2));
+        CHECK(resized.size == sf::Vector2u{1, 2});
 
         event = sf::Event::FocusLost{};
         CHECK(event.is<sf::Event::FocusLost>());
@@ -117,33 +117,33 @@ TEST_CASE("[Window] sf::Event")
         const auto& mouseWheelScrolled = *event.getIf<sf::Event::MouseWheelScrolled>();
         CHECK(mouseWheelScrolled.wheel == sf::Mouse::Wheel::Horizontal);
         CHECK(mouseWheelScrolled.delta == 3.14f);
-        CHECK(mouseWheelScrolled.position == sf::Vector2i(4, 5));
+        CHECK(mouseWheelScrolled.position == sf::Vector2i{4, 5});
 
         event = sf::Event::MouseButtonPressed{sf::Mouse::Button::Middle, {6, 7}};
         CHECK(event.is<sf::Event::MouseButtonPressed>());
         CHECK(event.getIf<sf::Event::MouseButtonPressed>());
         const auto& mouseButtonPressed = *event.getIf<sf::Event::MouseButtonPressed>();
         CHECK(mouseButtonPressed.button == sf::Mouse::Button::Middle);
-        CHECK(mouseButtonPressed.position == sf::Vector2i(6, 7));
+        CHECK(mouseButtonPressed.position == sf::Vector2i{6, 7});
 
         event = sf::Event::MouseButtonReleased{sf::Mouse::Button::Extra1, {8, 9}};
         CHECK(event.is<sf::Event::MouseButtonReleased>());
         CHECK(event.getIf<sf::Event::MouseButtonReleased>());
         const auto& mouseButtonReleased = *event.getIf<sf::Event::MouseButtonReleased>();
         CHECK(mouseButtonReleased.button == sf::Mouse::Button::Extra1);
-        CHECK(mouseButtonReleased.position == sf::Vector2i(8, 9));
+        CHECK(mouseButtonReleased.position == sf::Vector2i{8, 9});
 
         event = sf::Event::MouseMoved{{4, 2}};
         CHECK(event.is<sf::Event::MouseMoved>());
         CHECK(event.getIf<sf::Event::MouseMoved>());
         const auto& mouseMoved = *event.getIf<sf::Event::MouseMoved>();
-        CHECK(mouseMoved.position == sf::Vector2i(4, 2));
+        CHECK(mouseMoved.position == sf::Vector2i{4, 2});
 
         event = sf::Event::MouseMovedRaw{{3, 7}};
         CHECK(event.is<sf::Event::MouseMovedRaw>());
         CHECK(event.getIf<sf::Event::MouseMovedRaw>());
         const auto& mouseMovedRaw = *event.getIf<sf::Event::MouseMovedRaw>();
-        CHECK(mouseMovedRaw.delta == sf::Vector2i(3, 7));
+        CHECK(mouseMovedRaw.delta == sf::Vector2i{3, 7});
 
         event = sf::Event::MouseEntered{};
         CHECK(event.is<sf::Event::MouseEntered>());
@@ -192,21 +192,21 @@ TEST_CASE("[Window] sf::Event")
         CHECK(event.getIf<sf::Event::TouchBegan>());
         const auto& touchBegan = *event.getIf<sf::Event::TouchBegan>();
         CHECK(touchBegan.finger == 99);
-        CHECK(touchBegan.position == sf::Vector2i(98, 97));
+        CHECK(touchBegan.position == sf::Vector2i{98, 97});
 
         event = sf::Event::TouchMoved{96, {95, 94}};
         CHECK(event.is<sf::Event::TouchMoved>());
         CHECK(event.getIf<sf::Event::TouchMoved>());
         const auto& touchMoved = *event.getIf<sf::Event::TouchMoved>();
         CHECK(touchMoved.finger == 96);
-        CHECK(touchMoved.position == sf::Vector2i(95, 94));
+        CHECK(touchMoved.position == sf::Vector2i{95, 94});
 
         event = sf::Event::TouchEnded{93, {92, 91}};
         CHECK(event.is<sf::Event::TouchEnded>());
         CHECK(event.getIf<sf::Event::TouchEnded>());
         const auto& touchEnded = *event.getIf<sf::Event::TouchEnded>();
         CHECK(touchEnded.finger == 93);
-        CHECK(touchEnded.position == sf::Vector2i(92, 91));
+        CHECK(touchEnded.position == sf::Vector2i{92, 91});
 
         event = sf::Event::SensorChanged{sf::Sensor::Type::Gravity, {1.2f, 3.4f, 5.6f}};
         CHECK(event.is<sf::Event::SensorChanged>());

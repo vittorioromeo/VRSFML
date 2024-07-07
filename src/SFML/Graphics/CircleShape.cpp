@@ -38,7 +38,7 @@ sf::Vector2f computeCirclePoint(std::size_t index, std::size_t pointCount, float
     const sf::Angle angle = static_cast<float>(index) / static_cast<float>(pointCount) * sf::degrees(360.f) -
                             sf::degrees(90.f);
 
-    return sf::Vector2f(radius, radius) + sf::Vector2f(radius, angle);
+    return sf::Vector2f{radius, radius}.movedTowards(radius, angle);
 }
 
 } // namespace

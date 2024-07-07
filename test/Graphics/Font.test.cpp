@@ -50,7 +50,7 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
             CHECK(font.getUnderlinePosition(36) == Approx(2.20312f));
             CHECK(font.getUnderlineThickness(48) == Approx(1.17188f));
             const auto& texture = font.getTexture(10);
-            CHECK(texture.getSize() == sf::Vector2u(128, 128));
+            CHECK(texture.getSize() == sf::Vector2u{128, 128});
             CHECK(texture.isSmooth());
             CHECK(!texture.isSrgb());
             CHECK(!texture.isRepeated());
@@ -87,7 +87,7 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
             CHECK(font.getUnderlinePosition(36) == Approx(2.20312f));
             CHECK(font.getUnderlineThickness(48) == Approx(1.17188f));
             const auto& texture = font.getTexture(10);
-            CHECK(texture.getSize() == sf::Vector2u(128, 128));
+            CHECK(texture.getSize() == sf::Vector2u{128, 128});
             CHECK(texture.isSmooth());
             CHECK(!texture.isSrgb());
             CHECK(!texture.isRepeated());
@@ -115,7 +115,7 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
         CHECK(font.getUnderlinePosition(36) == Approx(2.20312f));
         CHECK(font.getUnderlineThickness(48) == Approx(1.17188f));
         const auto& texture = font.getTexture(10);
-        CHECK(texture.getSize() == sf::Vector2u(128, 128));
+        CHECK(texture.getSize() == sf::Vector2u{128, 128});
         CHECK(texture.isSmooth());
         CHECK(!texture.isSrgb());
         CHECK(!texture.isRepeated());
