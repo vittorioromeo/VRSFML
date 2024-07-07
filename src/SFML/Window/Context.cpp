@@ -48,7 +48,7 @@ namespace sf
 ////////////////////////////////////////////////////////////
 Context::Context(GraphicsContext& graphicsContext) :
 m_graphicsContext(&graphicsContext),
-m_context(priv::GlContext::create())
+m_context(priv::GlContext::create(graphicsContext))
 {
     if (!setActive(true))
         priv::err() << "Failed to set context as active during construction" << priv::errEndl;
@@ -153,7 +153,7 @@ GlFunctionPointer Context::getFunction(const char* name)
 ////////////////////////////////////////////////////////////
 Context::Context(GraphicsContext& graphicsContext, const ContextSettings& settings, const Vector2u& size) :
 m_graphicsContext(&graphicsContext),
-m_context(priv::GlContext::create(settings, size))
+m_context(priv::GlContext::create(graphicsContext, settings, size))
 {
     if (!setActive(true))
         priv::err() << "Failed to set context as active during construction" << priv::errEndl;
