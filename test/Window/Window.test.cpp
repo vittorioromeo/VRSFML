@@ -1,3 +1,4 @@
+#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/Window.hpp>
 
 // Other 1st party headers
@@ -14,6 +15,8 @@
 
 TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 {
+    sf::GraphicsContext graphicsContext;
+
     SECTION("Type traits")
     {
         STATIC_CHECK(std::has_virtual_destructor_v<sf::Window>);
@@ -27,7 +30,7 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
     {
         SECTION("Default constructor")
         {
-            const sf::Window window;
+            const sf::Window window(graphicsContext);
             CHECK(!window.isOpen());
             CHECK(window.getPosition() == sf::Vector2i());
             CHECK(window.getSize() == sf::Vector2u());
@@ -44,7 +47,7 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
         SECTION("Mode and title constructor")
         {
-            const sf::Window window(sf::VideoMode({360, 240}), "Window Tests");
+            const sf::Window window(graphicsContext, sf::VideoMode({360, 240}), "Window Tests");
             CHECK(window.isOpen());
             CHECK(window.getSize() == sf::Vector2u{360, 240});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
@@ -53,7 +56,7 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
         SECTION("Mode, title, and style constructor")
         {
-            const sf::Window window(sf::VideoMode({360, 240}), "Window Tests", sf::Style::Resize);
+            const sf::Window window(graphicsContext, sf::VideoMode({360, 240}), "Window Tests", sf::Style::Resize);
             CHECK(window.isOpen());
             CHECK(window.getSize() == sf::Vector2u{360, 240});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
@@ -62,7 +65,8 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
         SECTION("Mode, title, style, and state constructor")
         {
-            const sf::Window window(sf::VideoMode({360, 240}), "Window Tests", sf::Style::Resize, sf::State::Windowed);
+            const sf::Window
+                window(graphicsContext, sf::VideoMode({360, 240}), "Window Tests", sf::Style::Resize, sf::State::Windowed);
             CHECK(window.isOpen());
             CHECK(window.getSize() == sf::Vector2u{360, 240});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
@@ -71,7 +75,8 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
         SECTION("Mode, title, style, state, and context settings constructor")
         {
-            const sf::Window window(sf::VideoMode({360, 240}),
+            const sf::Window window(graphicsContext,
+                                    sf::VideoMode({360, 240}),
                                     "Window Tests",
                                     sf::Style::Resize,
                                     sf::State::Windowed,
@@ -86,7 +91,7 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
         SECTION("Mode, title, and state")
         {
-            const sf::Window window(sf::VideoMode({360, 240}), "Window Tests", sf::State::Windowed);
+            const sf::Window window(graphicsContext, sf::VideoMode({360, 240}), "Window Tests", sf::State::Windowed);
             CHECK(window.isOpen());
             CHECK(window.getSize() == sf::Vector2u{360, 240});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
@@ -95,7 +100,8 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
         SECTION("Mode, title, state, and context settings constructor")
         {
-            const sf::Window window(sf::VideoMode({360, 240}),
+            const sf::Window window(graphicsContext,
+                                    sf::VideoMode({360, 240}),
                                     "Window Tests",
                                     sf::State::Windowed,
                                     sf::ContextSettings{/* depthBits*/ 1, /* stencilBits */ 1, /* antialiasingLevel */ 1});
@@ -110,7 +116,7 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
     SECTION("create()")
     {
-        sf::Window window;
+        sf::Window window(graphicsContext);
 
         SECTION("Mode and title")
         {

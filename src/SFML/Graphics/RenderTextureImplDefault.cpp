@@ -39,7 +39,10 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-RenderTextureImplDefault::RenderTextureImplDefault() = default;
+RenderTextureImplDefault::RenderTextureImplDefault(GraphicsContext& graphicsContext) :
+m_graphicsContext(&graphicsContext)
+{
+}
 
 
 ////////////////////////////////////////////////////////////
@@ -63,7 +66,7 @@ bool RenderTextureImplDefault::create(const Vector2u& size, unsigned int, const 
     m_size = size;
 
     // Create the in-memory OpenGL context
-    m_context = priv::makeUnique<Context>(settings, size);
+    m_context = priv::makeUnique<Context>(*m_graphicsContext, settings, size);
 
     return true;
 }

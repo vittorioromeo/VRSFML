@@ -17,6 +17,7 @@
 #include <SFML/Audio/SoundBuffer.hpp>
 
 #include <SFML/Window/Event.hpp>
+#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/Touch.hpp>
 #include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/WindowEnums.hpp>
@@ -62,10 +63,15 @@ int main()
     const sf::Vector2f paddleSize(25, 100);
     const float        ballRadius = 10.f;
 
+    // Create the graphics context
+    sf::GraphicsContext graphicsContext;
+
     // Create the window of the application
-    sf::RenderWindow window(sf::VideoMode({static_cast<unsigned int>(gameWidth), static_cast<unsigned int>(gameHeight)}, 32),
+    sf::RenderWindow window(graphicsContext,
+                            sf::VideoMode({static_cast<unsigned int>(gameWidth), static_cast<unsigned int>(gameHeight)}, 32),
                             "SFML Tennis",
                             sf::Style::Titlebar | sf::Style::Close);
+
     window.setVerticalSyncEnabled(true);
 
     // Create an audio context and get the default playback device
@@ -77,7 +83,7 @@ int main()
     sf::Sound  ballSound(ballSoundBuffer);
 
     // Create the SFML logo texture:
-    const auto sfmlLogoTexture = sf::Texture::loadFromFile(resourcesDir() / "sfml_logo.png").value();
+    const auto sfmlLogoTexture = sf::Texture::loadFromFile(graphicsContext, resourcesDir() / "sfml_logo.png").value();
     sf::Sprite sfmlLogo(sfmlLogoTexture.getRect());
     sfmlLogo.setPosition({170.f, 50.f});
 

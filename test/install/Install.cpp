@@ -1,3 +1,5 @@
+#include "SFML/Window/GraphicsContext.hpp"
+
 #include <SFML/Graphics.hpp>
 
 #include <SFML/Audio.hpp>
@@ -11,10 +13,13 @@ int main()
     // TODO:
     // [[maybe_unused]] const sf::SoundBufferRecorder soundBufferRecorder;
 
+    // Create the graphics context
+    sf::GraphicsContext graphicsContext;
+
     // Graphics
     [[maybe_unused]] const sf::Color          color;
     [[maybe_unused]] const sf::IntRect        rect;
-    [[maybe_unused]] const sf::RenderWindow   renderWindow;
+    [[maybe_unused]] const sf::RenderWindow   renderWindow(graphicsContext);
     [[maybe_unused]] const sf::RectangleShape rectangleShape;
     [[maybe_unused]] const sf::Vertex         vertex;
 
@@ -30,7 +35,7 @@ int main()
     [[maybe_unused]] const sf::Time   time;
 
     // Window
-    [[maybe_unused]] const sf::Context   context;
+    [[maybe_unused]] const sf::Context   context(graphicsContext);
     [[maybe_unused]] const sf::VideoMode videoMode;
-    [[maybe_unused]] const sf::Window    window;
+    [[maybe_unused]] const sf::Window    window(graphicsContext);
 }

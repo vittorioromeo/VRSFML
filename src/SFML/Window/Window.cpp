@@ -42,6 +42,11 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct Window::Window::CommonImpl
 {
+    explicit CommonImpl(GraphicsContext& theGraphicsContext) : graphicsContext(&theGraphicsContext)
+    {
+    }
+
+    GraphicsContext*                 graphicsContext;
     priv::UniquePtr<priv::GlContext> context;        //!< Platform-specific implementation of the OpenGL context
     Clock                            clock;          //!< Clock for measuring the elapsed time between frames
     Time                             frameTimeLimit; //!< Current framerate limit
@@ -49,40 +54,54 @@ struct Window::Window::CommonImpl
 
 
 ////////////////////////////////////////////////////////////
-Window::Window() = default;
+Window::Window(GraphicsContext& graphicsContext) : m_commonImpl(graphicsContext)
+{
+}
 
 
 ////////////////////////////////////////////////////////////
-Window::Window(VideoMode mode, const String& title, std::uint32_t style, State state, const ContextSettings& settings) :
-Window()
+Window::Window(GraphicsContext&       graphicsContext,
+               VideoMode              mode,
+               const String&          title,
+               std::uint32_t          style,
+               State                  state,
+               const ContextSettings& settings) :
+Window(graphicsContext)
 {
     Window::create(mode, title, style, state, settings);
 }
 
 
 ////////////////////////////////////////////////////////////
-Window::Window(VideoMode mode, const char* title, std::uint32_t style, State state, const ContextSettings& settings) :
-Window(mode, String(title), style, state, settings)
+Window::Window(GraphicsContext&       graphicsContext,
+               VideoMode              mode,
+               const char*            title,
+               std::uint32_t          style,
+               State                  state,
+               const ContextSettings& settings) :
+Window(graphicsContext, mode, String(title), style, state, settings)
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-Window::Window(VideoMode mode, const String& title, State state, const ContextSettings& settings) : Window()
+Window::Window(GraphicsContext& graphicsContext, VideoMode mode, const String& title, State state, const ContextSettings& settings) :
+Window(graphicsContext)
 {
     Window::create(mode, title, sf::Style::Default, state, settings);
 }
 
 
 ////////////////////////////////////////////////////////////
-Window::Window(VideoMode mode, const char* title, State state, const ContextSettings& settings) :
-Window(mode, String(title), state, settings)
+Window::Window(GraphicsContext& graphicsContext, VideoMode mode, const char* title, State state, const ContextSettings& settings) :
+Window(graphicsContext, mode, String(title), state, settings)
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-Window::Window(WindowHandle handle, const ContextSettings& settings) : Window()
+Window::Window(GraphicsContext& graphicsContext, WindowHandle handle, const ContextSettings& settings) :
+Window(graphicsContext)
 {
     Window::create(handle, settings);
 }

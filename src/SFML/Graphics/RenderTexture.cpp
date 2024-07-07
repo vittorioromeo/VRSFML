@@ -29,6 +29,8 @@
 #include <SFML/Graphics/RenderTextureImplDefault.hpp>
 #include <SFML/Graphics/RenderTextureImplFBO.hpp>
 
+#include <SFML/Window/GraphicsContext.hpp>
+
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Macros.hpp>
 #include <SFML/System/UniquePtr.hpp>
@@ -49,12 +51,14 @@ RenderTexture& RenderTexture::operator=(RenderTexture&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-std::optional<RenderTexture> RenderTexture::create(const Vector2u& size, const ContextSettings& settings)
+std::optional<RenderTexture> RenderTexture::create(GraphicsContext&       graphicsContext,
+                                                   const Vector2u&        size,
+                                                   const ContextSettings& settings)
 {
     std::optional<RenderTexture> result; // Use a single local variable for NRVO
 
     // Create the texture
-    auto texture = sf::Texture::create(size, settings.sRgbCapable);
+    auto texture = sf::Texture::create(graphicsContext, size, settings.sRgbCapable);
     if (!texture)
     {
         priv::err() << "Impossible to create render texture (failed to create the target texture)" << priv::errEndl;
@@ -70,7 +74,7 @@ std::optional<RenderTexture> RenderTexture::create(const Vector2u& size, const C
     if (priv::RenderTextureImplFBO::isAvailable())
     {
         // Use frame-buffer object (FBO)
-        renderTexture.m_impl = priv::makeUnique<priv::RenderTextureImplFBO>();
+        renderTexture.m_impl = priv::makeUnique<priv::RenderTextureImplFBO>(graphicsContext);
 
         // Mark the texture as being a framebuffer object attachment
         renderTexture.m_texture.m_fboAttachment = true;
@@ -78,7 +82,7 @@ std::optional<RenderTexture> RenderTexture::create(const Vector2u& size, const C
     else
     {
         // Use default implementation
-        renderTexture.m_impl = priv::makeUnique<priv::RenderTextureImplDefault>();
+        renderTexture.m_impl = priv::makeUnique<priv::RenderTextureImplDefault>(graphicsContext);
     }
 
     // Initialize the render texture

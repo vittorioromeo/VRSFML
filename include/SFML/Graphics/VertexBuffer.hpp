@@ -31,13 +31,12 @@
 
 #include <SFML/Graphics/PrimitiveType.hpp>
 
-#include <SFML/Window/GlResource.hpp>
-
 #include <cstddef>
 
 
 namespace sf
 {
+class GraphicsContext;
 class RenderTarget;
 struct RenderStates;
 struct Vertex;
@@ -46,7 +45,7 @@ struct Vertex;
 /// \brief Vertex buffer storage for one or more 2D primitives
 ///
 ////////////////////////////////////////////////////////////
-class SFML_GRAPHICS_API VertexBuffer : private GlResource
+class SFML_GRAPHICS_API VertexBuffer
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -72,7 +71,7 @@ public:
     /// Creates an empty vertex buffer.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] VertexBuffer() = default;
+    [[nodiscard]] explicit VertexBuffer(GraphicsContext& graphicsContext);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a VertexBuffer with a specific PrimitiveType
@@ -82,7 +81,7 @@ public:
     /// \param type Type of primitive
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit VertexBuffer(PrimitiveType type);
+    [[nodiscard]] explicit VertexBuffer(GraphicsContext& graphicsContext, PrimitiveType type);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a VertexBuffer with a specific usage specifier
@@ -92,7 +91,7 @@ public:
     /// \param usage Usage specifier
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit VertexBuffer(Usage usage);
+    [[nodiscard]] explicit VertexBuffer(GraphicsContext& graphicsContext, Usage usage);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a VertexBuffer with a specific PrimitiveType and usage specifier
@@ -104,15 +103,15 @@ public:
     /// \param usage Usage specifier
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] VertexBuffer(PrimitiveType type, Usage usage);
+    [[nodiscard]] explicit VertexBuffer(GraphicsContext& graphicsContext, PrimitiveType type, Usage usage);
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy constructor
     ///
-    /// \param copy instance to copy
+    /// \param rhs instance to copy
     ///
     ////////////////////////////////////////////////////////////
-    VertexBuffer(const VertexBuffer& copy);
+    VertexBuffer(const VertexBuffer& rhs);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -212,12 +211,12 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Overload of assignment operator
     ///
-    /// \param right Instance to assign
+    /// \param rhs Instance to assign
     ///
     /// \return Reference to self
     ///
     ////////////////////////////////////////////////////////////
-    VertexBuffer& operator=(const VertexBuffer& right);
+    VertexBuffer& operator=(const VertexBuffer& rhs);
 
     ////////////////////////////////////////////////////////////
     /// \brief Swap the contents of this vertex buffer with those of another
@@ -333,10 +332,11 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    unsigned int  m_buffer{};                             //!< Internal buffer identifier
-    std::size_t   m_size{};                               //!< Size in Vertices of the currently allocated buffer
-    PrimitiveType m_primitiveType{PrimitiveType::Points}; //!< Type of primitives to draw
-    Usage         m_usage{Usage::Stream};                 //!< How this vertex buffer is to be used
+    GraphicsContext* m_graphicsContext;                      //!< TODO
+    unsigned int     m_buffer{};                             //!< Internal buffer identifier
+    std::size_t      m_size{};                               //!< Size in Vertices of the currently allocated buffer
+    PrimitiveType    m_primitiveType{PrimitiveType::Points}; //!< Type of primitives to draw
+    Usage            m_usage{Usage::Stream};                 //!< How this vertex buffer is to be used
 };
 
 ////////////////////////////////////////////////////////////

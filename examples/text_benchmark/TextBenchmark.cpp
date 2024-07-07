@@ -1,4 +1,5 @@
 #include <SFML/Graphics/Font.hpp>
+#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/Graphics/Text.hpp>
 
@@ -9,11 +10,13 @@
 
 int main()
 {
+    sf::GraphicsContext graphicsContext;
+
     const auto       font         = sf::Font::openFromFile("resources/tuffy.ttf").value();
     const sf::String textContents = "abcdefghilmnopqrstuvz\nabcdefghilmnopqrstuvz\nabcdefghilmnopqrstuvz\n";
 
     auto text          = sf::Text(font, textContents);
-    auto renderTexture = sf::RenderTexture::create({1680, 1050}).value();
+    auto renderTexture = sf::RenderTexture::create(graphicsContext, {1680, 1050}).value();
 
     renderTexture.clear();
 

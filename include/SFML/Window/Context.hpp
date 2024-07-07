@@ -29,8 +29,6 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/Export.hpp>
 
-#include <SFML/Window/GlResource.hpp>
-
 #include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
 
@@ -44,6 +42,7 @@ namespace priv
 class GlContext;
 } // namespace priv
 
+class GraphicsContext;
 struct ContextSettings;
 
 using GlFunctionPointer = void (*)();
@@ -52,7 +51,7 @@ using GlFunctionPointer = void (*)();
 /// \brief Class holding a valid drawing context
 ///
 ////////////////////////////////////////////////////////////
-class SFML_WINDOW_API Context : private GlResource
+class SFML_WINDOW_API Context
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -61,7 +60,7 @@ public:
     /// The constructor creates and activates the context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Context();
+    [[nodiscard]] Context(GraphicsContext&);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -87,13 +86,13 @@ public:
     /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    Context(Context&& context) noexcept;
+    Context(Context&& rhs) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment
     ///
     ////////////////////////////////////////////////////////////
-    Context& operator=(Context&& context) noexcept;
+    Context& operator=(Context&& rhs) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Activate or deactivate explicitly the context
@@ -179,13 +178,14 @@ public:
     /// \param size     Back buffer size
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Context(const ContextSettings& settings, const Vector2u& size);
+    [[nodiscard]] Context(GraphicsContext&, const ContextSettings& settings, const Vector2u& size);
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    priv::UniquePtr<priv::GlContext> m_context; //!< Internal OpenGL context
+    GraphicsContext*                 m_graphicsContext; //!< TODO
+    priv::UniquePtr<priv::GlContext> m_context;         //!< Internal OpenGL context
 };
 
 } // namespace sf

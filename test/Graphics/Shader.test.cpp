@@ -1,6 +1,8 @@
 #include <SFML/Graphics/Shader.hpp>
 
 // Other 1st party headers
+#include <SFML/Window/GraphicsContext.hpp>
+
 #include <SFML/System/FileInputStream.hpp>
 #include <SFML/System/Macros.hpp>
 #include <SFML/System/Path.hpp>
@@ -121,6 +123,8 @@ constexpr bool skipShaderFullTest  = true;
 
 TEST_CASE("[Graphics] sf::Shader (Dummy Implementation)" * doctest::skip(skipShaderDummyTest))
 {
+    sf::GraphicsContext graphicsContext;
+
     SECTION("Available")
     {
         CHECK_FALSE(sf::Shader::isAvailable());
@@ -129,16 +133,18 @@ TEST_CASE("[Graphics] sf::Shader (Dummy Implementation)" * doctest::skip(skipSha
 
     SECTION("loadFromMemory()")
     {
-        CHECK_FALSE(sf::Shader::loadFromMemory(vertexSource, sf::Shader::Type::Vertex).has_value());
-        CHECK_FALSE(sf::Shader::loadFromMemory(geometrySource, sf::Shader::Type::Geometry).has_value());
-        CHECK_FALSE(sf::Shader::loadFromMemory(fragmentSource, sf::Shader::Type::Fragment).has_value());
-        CHECK_FALSE(sf::Shader::loadFromMemory(vertexSource, fragmentSource).has_value());
-        CHECK_FALSE(sf::Shader::loadFromMemory(vertexSource, geometrySource, fragmentSource).has_value());
+        CHECK_FALSE(sf::Shader::loadFromMemory(graphicsContext, vertexSource, sf::Shader::Type::Vertex).has_value());
+        CHECK_FALSE(sf::Shader::loadFromMemory(graphicsContext, geometrySource, sf::Shader::Type::Geometry).has_value());
+        CHECK_FALSE(sf::Shader::loadFromMemory(graphicsContext, fragmentSource, sf::Shader::Type::Fragment).has_value());
+        CHECK_FALSE(sf::Shader::loadFromMemory(graphicsContext, vertexSource, fragmentSource).has_value());
+        CHECK_FALSE(sf::Shader::loadFromMemory(graphicsContext, vertexSource, geometrySource, fragmentSource).has_value());
     }
 }
 
 TEST_CASE("[Graphics] sf::Shader" * doctest::skip(skipShaderFullTest))
 {
+    sf::GraphicsContext graphicsContext;
+
     SECTION("Type traits")
     {
         STATIC_CHECK(!std::is_default_constructible_v<sf::Shader>);
@@ -152,16 +158,19 @@ TEST_CASE("[Graphics] sf::Shader" * doctest::skip(skipShaderFullTest))
     {
         SECTION("Construction")
         {
-            sf::Shader movedShader = sf::Shader::loadFromFile("Graphics/shader.vert", sf::Shader::Type::Vertex).value();
+            sf::Shader movedShader = sf::Shader::loadFromFile(graphicsContext, "Graphics/shader.vert", sf::Shader::Type::Vertex)
+                                         .value();
             const sf::Shader shader = SFML_MOVE(movedShader);
             CHECK(shader.getNativeHandle() != 0);
         }
 
         SECTION("Assignment")
         {
-            sf::Shader movedShader = sf::Shader::loadFromFile("Graphics/shader.vert", sf::Shader::Type::Vertex).value();
-            sf::Shader shader = sf::Shader::loadFromFile("Graphics/shader.frag", sf::Shader::Type::Fragment).value();
-            shader            = SFML_MOVE(movedShader);
+            sf::Shader movedShader = sf::Shader::loadFromFile(graphicsContext, "Graphics/shader.vert", sf::Shader::Type::Vertex)
+                                         .value();
+            sf::Shader shader = sf::Shader::loadFromFile(graphicsContext, "Graphics/shader.frag", sf::Shader::Type::Fragment)
+                                    .value();
+            shader = SFML_MOVE(movedShader);
             CHECK(shader.getNativeHandle() != 0);
         }
     }
@@ -170,14 +179,16 @@ TEST_CASE("[Graphics] sf::Shader" * doctest::skip(skipShaderFullTest))
     {
         SECTION("One shader")
         {
-            CHECK(!sf::Shader::loadFromFile("does-not-exist.vert", sf::Shader::Type::Vertex));
+            CHECK(!sf::Shader::loadFromFile(graphicsContext, "does-not-exist.vert", sf::Shader::Type::Vertex));
 
-            const auto vertexShader = sf::Shader::loadFromFile("Graphics/shader.vert", sf::Shader::Type::Vertex);
+            const auto vertexShader = sf::Shader::loadFromFile(graphicsContext, "Graphics/shader.vert", sf::Shader::Type::Vertex);
             CHECK(vertexShader.has_value() == sf::Shader::isAvailable());
             if (vertexShader)
                 CHECK(static_cast<bool>(vertexShader->getNativeHandle()) == sf::Shader::isAvailable());
 
-            const auto fragmentShader = sf::Shader::loadFromFile("Graphics/shader.frag", sf::Shader::Type::Fragment);
+            const auto fragmentShader = sf::Shader::loadFromFile(graphicsContext,
+                                                                 "Graphics/shader.frag",
+                                                                 sf::Shader::Type::Fragment);
             CHECK(fragmentShader.has_value() == sf::Shader::isAvailable());
             if (fragmentShader)
                 CHECK(static_cast<bool>(fragmentShader->getNativeHandle()) == sf::Shader::isAvailable());
@@ -185,10 +196,12 @@ TEST_CASE("[Graphics] sf::Shader" * doctest::skip(skipShaderFullTest))
 
         SECTION("Two shaders")
         {
-            CHECK(!sf::Shader::loadFromFile("does-not-exist.vert", "Graphics/shader.frag"));
-            CHECK(!sf::Shader::loadFromFile("Graphics/shader.vert", "does-not-exist.frag"));
+            CHECK(!sf::Shader::loadFromFile(graphicsContext, "does-not-exist.vert", "Graphics/shader.frag"));
+            CHECK(!sf::Shader::loadFromFile(graphicsContext, "Graphics/shader.vert", "does-not-exist.frag"));
 
-            const auto shader = sf::Shader::loadFromFile("Graphics/shader.vert", "Graphics/shader.frag");
+            const auto shader = sf::Shader::loadFromFile(graphicsContext,
+                                                         "Graphics/shader.vert",
+                                                         "Graphics/shader.frag");
             CHECK(shader.has_value() == sf::Shader::isAvailable());
             if (shader)
                 CHECK(static_cast<bool>(shader->getNativeHandle()) == sf::Shader::isAvailable());
@@ -196,11 +209,21 @@ TEST_CASE("[Graphics] sf::Shader" * doctest::skip(skipShaderFullTest))
 
         SECTION("Three shaders")
         {
-            CHECK(!sf::Shader::loadFromFile("does-not-exist.vert", "Graphics/shader.geom", "Graphics/shader.frag"));
-            CHECK(!sf::Shader::loadFromFile("Graphics/shader.vert", "does-not-exist.geom", "Graphics/shader.frag"));
-            CHECK(!sf::Shader::loadFromFile("Graphics/shader.vert", "Graphics/shader.geom", "does-not-exist.frag"));
+            CHECK(!sf::Shader::loadFromFile(graphicsContext,
+                                            "does-not-exist.vert",
+                                            "Graphics/shader.geom",
+                                            "Graphics/shader.frag"));
+            CHECK(!sf::Shader::loadFromFile(graphicsContext,
+                                            "Graphics/shader.vert",
+                                            "does-not-exist.geom",
+                                            "Graphics/shader.frag"));
+            CHECK(!sf::Shader::loadFromFile(graphicsContext,
+                                            "Graphics/shader.vert",
+                                            "Graphics/shader.geom",
+                                            "does-not-exist.frag"));
 
-            const auto shader = sf::Shader::loadFromFile("Graphics/shader.vert",
+            const auto shader = sf::Shader::loadFromFile(graphicsContext,
+                                                         "Graphics/shader.vert",
                                                          "Graphics/shader.geom",
                                                          "Graphics/shader.frag");
             CHECK(shader.has_value() == sf::Shader::isGeometryAvailable());
@@ -211,13 +234,15 @@ TEST_CASE("[Graphics] sf::Shader" * doctest::skip(skipShaderFullTest))
 
     SECTION("loadFromMemory()")
     {
-        CHECK(sf::Shader::loadFromMemory(vertexSource, sf::Shader::Type::Vertex).has_value() == sf::Shader::isAvailable());
-        CHECK(!sf::Shader::loadFromMemory(geometrySource, sf::Shader::Type::Geometry));
-        CHECK(sf::Shader::loadFromMemory(fragmentSource, sf::Shader::Type::Fragment).has_value() ==
+        CHECK(sf::Shader::loadFromMemory(graphicsContext, vertexSource, sf::Shader::Type::Vertex).has_value() ==
               sf::Shader::isAvailable());
-        CHECK(sf::Shader::loadFromMemory(vertexSource, fragmentSource).has_value() == sf::Shader::isAvailable());
+        CHECK(!sf::Shader::loadFromMemory(graphicsContext, geometrySource, sf::Shader::Type::Geometry));
+        CHECK(sf::Shader::loadFromMemory(graphicsContext, fragmentSource, sf::Shader::Type::Fragment).has_value() ==
+              sf::Shader::isAvailable());
+        CHECK(sf::Shader::loadFromMemory(graphicsContext, vertexSource, fragmentSource).has_value() ==
+              sf::Shader::isAvailable());
 
-        const auto shader = sf::Shader::loadFromMemory(vertexSource, geometrySource, fragmentSource);
+        const auto shader = sf::Shader::loadFromMemory(graphicsContext, vertexSource, geometrySource, fragmentSource);
         CHECK(shader.has_value() == sf::Shader::isGeometryAvailable());
         if (shader)
             CHECK(static_cast<bool>(shader->getNativeHandle()) == sf::Shader::isAvailable());
@@ -233,28 +258,32 @@ TEST_CASE("[Graphics] sf::Shader" * doctest::skip(skipShaderFullTest))
 
         SECTION("One shader")
         {
-            CHECK(!sf::Shader::loadFromStream(emptyStream, sf::Shader::Type::Vertex));
-            CHECK(sf::Shader::loadFromStream(vertexShaderStream, sf::Shader::Type::Vertex).has_value() ==
+            CHECK(!sf::Shader::loadFromStream(graphicsContext, emptyStream, sf::Shader::Type::Vertex));
+            CHECK(sf::Shader::loadFromStream(graphicsContext, vertexShaderStream, sf::Shader::Type::Vertex).has_value() ==
                   sf::Shader::isAvailable());
-            CHECK(sf::Shader::loadFromStream(fragmentShaderStream, sf::Shader::Type::Fragment).has_value() ==
+            CHECK(sf::Shader::loadFromStream(graphicsContext, fragmentShaderStream, sf::Shader::Type::Fragment).has_value() ==
                   sf::Shader::isAvailable());
         }
 
         SECTION("Two shaders")
         {
-            CHECK(!sf::Shader::loadFromStream(emptyStream, fragmentShaderStream));
-            CHECK(!sf::Shader::loadFromStream(vertexShaderStream, emptyStream));
-            CHECK(sf::Shader::loadFromStream(vertexShaderStream, fragmentShaderStream).has_value() ==
+            CHECK(!sf::Shader::loadFromStream(graphicsContext, emptyStream, fragmentShaderStream));
+            CHECK(!sf::Shader::loadFromStream(graphicsContext, vertexShaderStream, emptyStream));
+            CHECK(sf::Shader::loadFromStream(graphicsContext, vertexShaderStream, fragmentShaderStream).has_value() ==
                   sf::Shader::isAvailable());
         }
 
         SECTION("Three shaders")
         {
-            CHECK(!sf::Shader::loadFromStream(emptyStream, geometryShaderStream, fragmentShaderStream));
-            CHECK(!sf::Shader::loadFromStream(vertexShaderStream, emptyStream, fragmentShaderStream));
-            CHECK(!sf::Shader::loadFromStream(vertexShaderStream, geometryShaderStream, emptyStream));
+            CHECK(!sf::Shader::loadFromStream(graphicsContext, emptyStream, geometryShaderStream, fragmentShaderStream));
+            CHECK(!sf::Shader::loadFromStream(graphicsContext, vertexShaderStream, emptyStream, fragmentShaderStream));
+            CHECK(!sf::Shader::loadFromStream(graphicsContext, vertexShaderStream, geometryShaderStream, emptyStream));
 
-            const auto shader = sf::Shader::loadFromStream(vertexShaderStream, geometryShaderStream, fragmentShaderStream);
+            const auto shader = sf::Shader::loadFromStream(graphicsContext,
+                                                           vertexShaderStream,
+                                                           geometryShaderStream,
+                                                           fragmentShaderStream);
+
             CHECK(shader.has_value() == sf::Shader::isGeometryAvailable());
             if (shader)
                 CHECK(static_cast<bool>(shader->getNativeHandle()) == sf::Shader::isGeometryAvailable());

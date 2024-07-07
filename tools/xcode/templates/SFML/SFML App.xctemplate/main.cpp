@@ -22,22 +22,27 @@
 #include <SFML/Audio/Music.hpp>
 
 #include <SFML/Window/Event.hpp>
+#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/VideoMode.hpp>
 
 // Here is a small helper for you! Have a look.
 #include "ResourcePath.hpp"
 
+
 int main()
 {
+    // Create the graphics context
+    sf::GraphicsContext graphicsContext;
+
     // Create the main window
-    sf::RenderWindow window(sf::VideoMode({800, 600}), "SFML window");
+    sf::RenderWindow window(graphicsContext, sf::VideoMode({800, 600}), "SFML window");
 
     // Set the Icon
     const auto icon = sf::Image::loadFromFile(resourcePath() / "icon.png").value();
     window.setIcon(icon);
 
     // Load a sprite to display
-    const auto texture = sf::Texture::loadFromFile(resourcePath() / "background.jpg").value();
+    const auto texture = sf::Texture::loadFromFile(graphicsContext, resourcePath() / "background.jpg").value();
     sf::Sprite sprite(texture.getRect());
 
     // Create a graphical text to display

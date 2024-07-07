@@ -29,6 +29,8 @@
 #include <SFML/Graphics/Glyph.hpp>
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/Texture.hpp>
+
+#include <SFML/Window/GraphicsContext.hpp>
 #ifdef SFML_SYSTEM_ANDROID
 #include <SFML/System/Android/ResourceStream.hpp>
 #endif
@@ -109,7 +111,7 @@ struct Font::Page
 
     using GlyphTable = std::unordered_map<std::uint64_t, Glyph>; //!< Table mapping a codepoint to its glyph
 
-    [[nodiscard]] static std::optional<Page> create(bool smooth);
+    [[nodiscard]] static std::optional<Page> create(GraphicsContext& graphicsContext, bool smooth);
     explicit Page(Texture&& texture);
 
     GlyphTable       glyphs;     //!< Table mapping code points to their corresponding glyph
@@ -539,8 +541,8 @@ Font::Page& Font::loadPage(unsigned int characterSize) const
 {
     if (const auto it = m_impl->pages.find(characterSize); it != m_impl->pages.end())
         return it->second;
-
-    auto page = Page::create(m_impl->isSmooth);
+    GraphicsContext graphicsContext; // TODO
+    auto            page = Page::create(graphicsContext, m_impl->isSmooth);
     assert(page && "Font::loadPage() Failed to load page");
     return m_impl->pages.emplace(characterSize, SFML_MOVE(*page)).first->second;
 }
@@ -636,7 +638,8 @@ Glyph Font::loadGlyph(std::uint32_t codePoint, unsigned int characterSize, bool 
         Page& page = loadPage(characterSize);
 
         // Find a good position for the new glyph into the texture
-        glyph.textureRect = findGlyphRect(page, size);
+        GraphicsContext graphicsContext; // TODO
+        glyph.textureRect = findGlyphRect(graphicsContext, page, size);
 
         // Make sure the texture data is positioned in the center
         // of the allocated texture rectangle
@@ -709,7 +712,7 @@ Glyph Font::loadGlyph(std::uint32_t codePoint, unsigned int characterSize, bool 
 
 
 ////////////////////////////////////////////////////////////
-IntRect Font::findGlyphRect(Page& page, const Vector2u& size) const
+IntRect Font::findGlyphRect(GraphicsContext& graphicsContext, Page& page, const Vector2u& size) const
 {
     // Find the line that fits well the glyph
     Page::Row* row       = nullptr;
@@ -748,7 +751,7 @@ IntRect Font::findGlyphRect(Page& page, const Vector2u& size) const
             if ((textureSize.x * 2 <= Texture::getMaximumSize()) && (textureSize.y * 2 <= Texture::getMaximumSize()))
             {
                 // Make the texture 2 times bigger
-                auto newTexture = sf::Texture::create(textureSize * 2u);
+                auto newTexture = sf::Texture::create(graphicsContext, textureSize * 2u);
                 if (!newTexture)
                 {
                     priv::err() << "Failed to create new page texture" << priv::errEndl;
@@ -826,7 +829,7 @@ bool Font::setCurrentSize(unsigned int characterSize) const
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Font::Page> Font::Page::create(bool smooth)
+std::optional<Font::Page> Font::Page::create(GraphicsContext& graphicsContext, bool smooth)
 {
     // Make sure that the texture is initialized by default
     Image image({128, 128}, Color::Transparent);
@@ -837,7 +840,7 @@ std::optional<Font::Page> Font::Page::create(bool smooth)
             image.setPixel({x, y}, Color::White);
 
     // Create the texture
-    auto texture = sf::Texture::loadFromImage(image);
+    auto texture = sf::Texture::loadFromImage(graphicsContext, image);
     if (!texture)
     {
         priv::err() << "Failed to load font page texture" << priv::errEndl;

@@ -44,6 +44,7 @@
 
 namespace sf
 {
+class GraphicsContext;
 class Image;
 class String;
 
@@ -61,7 +62,7 @@ public:
     /// use the other constructors or call create() to do so.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] RenderWindow() = default;
+    [[nodiscard]] RenderWindow(GraphicsContext& graphicsContext);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a new window
@@ -83,13 +84,15 @@ public:
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] RenderWindow(VideoMode              mode,
+    [[nodiscard]] RenderWindow(GraphicsContext&       graphicsContext,
+                               VideoMode              mode,
                                const String&          title,
                                std::uint32_t          style    = Style::Default,
                                State                  state    = State::Windowed,
                                const ContextSettings& settings = ContextSettings());
 
-    [[nodiscard]] RenderWindow(VideoMode              mode,
+    [[nodiscard]] RenderWindow(GraphicsContext&       graphicsContext,
+                               VideoMode              mode,
                                const char*            title,
                                std::uint32_t          style    = Style::Default,
                                State                  state    = State::Windowed,
@@ -112,12 +115,14 @@ public:
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] RenderWindow(VideoMode              mode,
+    [[nodiscard]] RenderWindow(GraphicsContext&       graphicsContext,
+                               VideoMode              mode,
                                const String&          title,
                                State                  state,
                                const ContextSettings& settings = ContextSettings());
 
-    [[nodiscard]] RenderWindow(VideoMode              mode,
+    [[nodiscard]] RenderWindow(GraphicsContext&       graphicsContext,
+                               VideoMode              mode,
                                const char*            title,
                                State                  state,
                                const ContextSettings& settings = ContextSettings());
@@ -138,7 +143,9 @@ public:
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit RenderWindow(WindowHandle handle, const ContextSettings& settings = ContextSettings());
+    [[nodiscard]] explicit RenderWindow(GraphicsContext&       graphicsContext,
+                                        WindowHandle           handle,
+                                        const ContextSettings& settings = ContextSettings());
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the size of the rendering region of the window

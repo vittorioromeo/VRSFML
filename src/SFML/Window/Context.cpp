@@ -27,6 +27,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/Context.hpp>
 #include <SFML/Window/GlContext.hpp>
+#include <SFML/Window/GraphicsContext.hpp>
 
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Macros.hpp>
@@ -45,7 +46,9 @@ thread_local sf::Context* currentContext(nullptr);
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-Context::Context() : m_context(priv::GlContext::create())
+Context::Context(GraphicsContext& graphicsContext) :
+m_graphicsContext(&graphicsContext),
+m_context(priv::GlContext::create())
 {
     if (!setActive(true))
         priv::err() << "Failed to set context as active during construction" << priv::errEndl;
@@ -61,21 +64,23 @@ Context::~Context()
 
 
 ////////////////////////////////////////////////////////////
-Context::Context(Context&& context) noexcept : m_context(SFML_MOVE(context.m_context))
+Context::Context(Context&& rhs) noexcept : m_graphicsContext(rhs.m_graphicsContext), m_context(SFML_MOVE(rhs.m_context))
 {
-    if (&context == ContextImpl::currentContext)
+    if (&rhs == ContextImpl::currentContext)
         ContextImpl::currentContext = this;
 }
 
 
 ////////////////////////////////////////////////////////////
-Context& Context::operator=(Context&& context) noexcept
+Context& Context::operator=(Context&& rhs) noexcept
 {
-    if (this == &context)
+    if (this == &rhs)
         return *this;
 
-    m_context = SFML_MOVE(context.m_context);
-    if (&context == ContextImpl::currentContext)
+    m_graphicsContext = rhs.m_graphicsContext;
+    m_context         = SFML_MOVE(rhs.m_context);
+
+    if (&rhs == ContextImpl::currentContext)
         ContextImpl::currentContext = this;
 
     return *this;
@@ -146,7 +151,8 @@ GlFunctionPointer Context::getFunction(const char* name)
 
 
 ////////////////////////////////////////////////////////////
-Context::Context(const ContextSettings& settings, const Vector2u& size) :
+Context::Context(GraphicsContext& graphicsContext, const ContextSettings& settings, const Vector2u& size) :
+m_graphicsContext(&graphicsContext),
 m_context(priv::GlContext::create(settings, size))
 {
     if (!setActive(true))

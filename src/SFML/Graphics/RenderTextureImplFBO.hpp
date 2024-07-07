@@ -29,8 +29,6 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/RenderTextureImpl.hpp>
 
-#include <SFML/Window/GlResource.hpp>
-
 #include <SFML/System/InPlacePImpl.hpp>
 #include <SFML/System/Vector2.hpp>
 
@@ -38,6 +36,7 @@
 namespace sf
 {
 class Context;
+class GraphicsContext;
 struct ContextSettings;
 
 namespace priv
@@ -47,14 +46,14 @@ namespace priv
 ///        FrameBuffer Object OpenGL extension
 ///
 ////////////////////////////////////////////////////////////
-class RenderTextureImplFBO : public RenderTextureImpl, private GlResource
+class RenderTextureImplFBO : public RenderTextureImpl
 {
 public:
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] RenderTextureImplFBO();
+    [[nodiscard]] RenderTextureImplFBO(GraphicsContext& graphicsContext);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor

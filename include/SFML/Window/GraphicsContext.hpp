@@ -22,40 +22,55 @@
 //
 ////////////////////////////////////////////////////////////
 
+#pragma once
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/GlContext.hpp>
-#include <SFML/Window/GlResource.hpp>
+#include <SFML/Window/Export.hpp>
 
-#include <SFML/System/Macros.hpp>
+
+namespace sf::priv
+{
+class GlContext;
+} // namespace sf::priv
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-GlResource::GlResource()
+class [[nodiscard]] GraphicsContext
 {
-    priv::GlContext::acquireSharedContext();
-}
+public:
+    [[nodiscard]] explicit GraphicsContext();
 
+    ~GraphicsContext();
 
-////////////////////////////////////////////////////////////
-GlResource::~GlResource()
-{
-    priv::GlContext::releaseSharedContext();
-}
+    [[nodiscard]] bool setActive(bool active);
 
+    class Guard
+    {
+    public:
+        [[nodiscard]] explicit Guard(GraphicsContext& parent);
+        ~Guard();
 
-////////////////////////////////////////////////////////////
-GlResource::GlResource(const GlResource&) : GlResource{}
-{
-}
+    private:
+        GraphicsContext& m_parent;
+    };
 
+    [[nodiscard]] Guard lock();
 
-////////////////////////////////////////////////////////////
-GlResource::GlResource(GlResource&&) noexcept : GlResource{}
-{
-}
+private:
+    priv::GlContext& m_glContext;
+};
 
 } // namespace sf
+
+
+////////////////////////////////////////////////////////////
+/// \class sf::GraphicsContext
+/// \ingroup graphics
+///
+/// TODO
+///
+////////////////////////////////////////////////////////////

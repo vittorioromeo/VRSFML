@@ -11,6 +11,7 @@
 #include <SFML/Graphics/VertexBuffer.hpp>
 
 #include <SFML/Window/Event.hpp>
+#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/VideoMode.hpp>
 
@@ -104,8 +105,15 @@ void generateTerrain(sf::Vertex* vertexBuffer);
 ////////////////////////////////////////////////////////////
 int main()
 {
+    // Create the graphics context
+    sf::GraphicsContext graphicsContext;
+
     // Create the window of the application
-    sf::RenderWindow window(sf::VideoMode({windowWidth, windowHeight}), "SFML Island", sf::Style::Titlebar | sf::Style::Close);
+    sf::RenderWindow window(graphicsContext,
+                            sf::VideoMode({windowWidth, windowHeight}),
+                            "SFML Island",
+                            sf::Style::Titlebar | sf::Style::Close);
+
     window.setVerticalSyncEnabled(true);
 
     const auto font = sf::Font::openFromFile("resources/tuffy.ttf").value();
@@ -115,7 +123,7 @@ int main()
     sf::Text                  statusText(font);
     std::optional<sf::Shader> terrainShader;
     sf::RenderStates          terrainStates;
-    sf::VertexBuffer          terrain(sf::PrimitiveType::Triangles, sf::VertexBuffer::Usage::Static);
+    sf::VertexBuffer          terrain(graphicsContext, sf::PrimitiveType::Triangles, sf::VertexBuffer::Usage::Static);
 
     // Set up our text drawables
     statusText.setCharacterSize(28);
@@ -137,7 +145,9 @@ int main()
     {
         statusText.setString("Shaders and/or Vertex Buffers Unsupported");
     }
-    else if (!(terrainShader = sf::Shader::loadFromFile("resources/terrain.vert", "resources/terrain.frag")))
+    else if (!(terrainShader = sf::Shader::loadFromFile(graphicsContext,
+                                                        "resources/terrain.vert",
+                                                        "resources/terrain.frag")))
     {
         statusText.setString("Failed to load shader program");
     }

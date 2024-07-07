@@ -31,8 +31,6 @@
 
 #include <SFML/Graphics/CoordinateType.hpp>
 
-#include <SFML/Window/GlResource.hpp>
-
 #include <SFML/System/LifetimeDependee.hpp>
 #include <SFML/System/PassKey.hpp>
 #include <SFML/System/Rect.hpp>
@@ -46,18 +44,19 @@
 
 namespace sf
 {
-class InputStream;
-class Window;
-class Path;
+class GraphicsContext;
 class Image;
-class Sprite;
+class InputStream;
+class Path;
 class Shape;
+class Sprite;
+class Window;
 
 ////////////////////////////////////////////////////////////
 /// \brief Image living on the graphics card that can be used for drawing
 ///
 ////////////////////////////////////////////////////////////
-class SFML_GRAPHICS_API Texture : private GlResource
+class SFML_GRAPHICS_API Texture
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -72,7 +71,7 @@ public:
     /// \param copy instance to copy
     ///
     ////////////////////////////////////////////////////////////
-    Texture(const Texture& copy);
+    Texture(const Texture& rhs);
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy assignment operator
@@ -103,7 +102,7 @@ public:
     /// \return Texture if creation was successful, otherwise `std::nullopt`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Texture> create(const Vector2u& size, bool sRgb = false);
+    [[nodiscard]] static std::optional<Texture> create(GraphicsContext& graphicsContext, const Vector2u& size, bool sRgb = false);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the texture from a file on disk
@@ -128,7 +127,10 @@ public:
     /// \see loadFromMemory, loadFromStream, loadFromImage
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Texture> loadFromFile(const Path& filename, bool sRgb = false, const IntRect& area = {});
+    [[nodiscard]] static std::optional<Texture> loadFromFile(GraphicsContext& graphicsContext,
+                                                             const Path&      filename,
+                                                             bool             sRgb = false,
+                                                             const IntRect&   area = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the texture from a file in memory
@@ -155,10 +157,11 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static std::optional<Texture> loadFromMemory(
-        const void*    data,
-        std::size_t    size,
-        bool           sRgb = false,
-        const IntRect& area = {});
+        GraphicsContext& graphicsContext,
+        const void*      data,
+        std::size_t      size,
+        bool             sRgb = false,
+        const IntRect&   area = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the texture from a custom stream
@@ -183,7 +186,11 @@ public:
     /// \see loadFromFile, loadFromMemory, loadFromImage
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Texture> loadFromStream(InputStream& stream, bool sRgb = false, const IntRect& area = {});
+    [[nodiscard]] static std::optional<Texture> loadFromStream(
+        GraphicsContext& graphicsContext,
+        InputStream&     stream,
+        bool             sRgb = false,
+        const IntRect&   area = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the texture from an image
@@ -208,7 +215,11 @@ public:
     /// \see loadFromFile, loadFromMemory
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Texture> loadFromImage(const Image& image, bool sRgb = false, const IntRect& area = {});
+    [[nodiscard]] static std::optional<Texture> loadFromImage(
+        GraphicsContext& graphicsContext,
+        const Image&     image,
+        bool             sRgb = false,
+        const IntRect&   area = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the texture
@@ -567,10 +578,11 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Texture(priv::PassKey<Texture>&&,
-                          const Vector2u& size,
-                          const Vector2u& actualSize,
-                          unsigned int    texture,
-                          bool            sRgb);
+                          GraphicsContext& graphicsContext,
+                          const Vector2u&  size,
+                          const Vector2u&  actualSize,
+                          unsigned int     texture,
+                          bool             sRgb);
 
 private:
     ////////////////////////////////////////////////////////////
@@ -600,16 +612,17 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2u      m_size;            //!< Public texture size
-    Vector2u      m_actualSize;      //!< Actual texture size (can be greater than public size because of padding)
-    unsigned int  m_texture{};       //!< Internal texture identifier
-    bool          m_isSmooth{};      //!< Status of the smooth filter
-    bool          m_sRgb{};          //!< Should the texture source be converted from sRGB?
-    bool          m_isRepeated{};    //!< Is the texture in repeat mode?
-    mutable bool  m_pixelsFlipped{}; //!< To work around the inconsistency in Y orientation
-    bool          m_fboAttachment{}; //!< Is this texture owned by a framebuffer object?
-    bool          m_hasMipmap{};     //!< Has the mipmap been generated?
-    std::uint64_t m_cacheId;         //!< Unique number that identifies the texture to the render target's cache
+    GraphicsContext* m_graphicsContext; //!< TODO
+    Vector2u         m_size;            //!< Public texture size
+    Vector2u         m_actualSize;      //!< Actual texture size (can be greater than public size because of padding)
+    unsigned int     m_texture{};       //!< Internal texture identifier
+    bool             m_isSmooth{};      //!< Status of the smooth filter
+    bool             m_sRgb{};          //!< Should the texture source be converted from sRGB?
+    bool             m_isRepeated{};    //!< Is the texture in repeat mode?
+    mutable bool     m_pixelsFlipped{}; //!< To work around the inconsistency in Y orientation
+    bool             m_fboAttachment{}; //!< Is this texture owned by a framebuffer object?
+    bool             m_hasMipmap{};     //!< Has the mipmap been generated?
+    std::uint64_t    m_cacheId;         //!< Unique number that identifies the texture to the render target's cache
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking

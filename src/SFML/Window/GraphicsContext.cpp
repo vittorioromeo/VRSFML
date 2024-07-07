@@ -25,27 +25,56 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Window/Export.hpp>
+
 #include <SFML/Window/GlContext.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
-#include <SFML/Window/TransientContextLock.hpp>
 
 #include <SFML/System/Err.hpp>
-#include <SFML/System/Macros.hpp>
 
 
-namespace sf::priv
+namespace sf
 {
 ////////////////////////////////////////////////////////////
-TransientContextLock::TransientContextLock()
+GraphicsContext::GraphicsContext() : m_glContext(priv::GlContext::acquireSharedContext())
 {
-    priv::GlContext::acquireTransientContext();
 }
 
 
 ////////////////////////////////////////////////////////////
-TransientContextLock::~TransientContextLock()
+GraphicsContext::~GraphicsContext()
 {
-    priv::GlContext::releaseTransientContext();
+    priv::GlContext::releaseSharedContext();
 }
 
-} // namespace sf::priv
+
+////////////////////////////////////////////////////////////
+bool GraphicsContext::setActive(bool active)
+{
+    return m_glContext.setActive(active);
+}
+
+
+////////////////////////////////////////////////////////////
+GraphicsContext::Guard GraphicsContext::lock()
+{
+    return Guard{*this};
+}
+
+
+////////////////////////////////////////////////////////////
+GraphicsContext::Guard::Guard(GraphicsContext& parent) : m_parent(parent)
+{
+    if (!m_parent.setActive(true))
+        priv::err() << "Failed to activate transient context 2" << priv::errEndl;
+}
+
+
+////////////////////////////////////////////////////////////
+GraphicsContext::Guard::~Guard()
+{
+    if (!m_parent.setActive(false))
+        priv::err() << "Failed to deactivate transient context 2" << priv::errEndl;
+}
+
+} // namespace sf

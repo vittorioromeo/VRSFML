@@ -15,8 +15,6 @@ set(SRC
     ${INCROOT}/Export.hpp
     ${SRCROOT}/GlContext.cpp
     ${SRCROOT}/GlContext.hpp
-    ${SRCROOT}/GlResource.cpp
-    ${INCROOT}/GlResource.hpp
     ${SRCROOT}/TransientContextLock.cpp
     ${INCROOT}/TransientContextLock.hpp
     ${INCROOT}/ContextSettings.hpp
@@ -54,6 +52,8 @@ set(SRC
     ${INCROOT}/WindowHandle.hpp
     ${SRCROOT}/WindowImpl.cpp
     ${SRCROOT}/WindowImpl.hpp
+    ${SRCROOT}/GraphicsContext.cpp
+    ${INCROOT}/GraphicsContext.hpp
 )
 source_group("" FILES ${SRC})
 

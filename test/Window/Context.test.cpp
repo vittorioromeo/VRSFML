@@ -1,3 +1,5 @@
+#include <SFML/Window/GraphicsContext.hpp>
+
 #include <SFML/Window/Context.hpp>
 
 // Other 1st party headers
@@ -20,6 +22,8 @@
 
 TEST_CASE("[Window] sf::Context" * doctest::skip(skipDisplayTests))
 {
+    sf::GraphicsContext graphicsContext;
+
     SECTION("Type traits")
     {
         STATIC_CHECK(!std::is_copy_constructible_v<sf::Context>);
@@ -30,7 +34,7 @@ TEST_CASE("[Window] sf::Context" * doctest::skip(skipDisplayTests))
 
     SECTION("Construction")
     {
-        const sf::Context context;
+        const sf::Context context(graphicsContext);
         CHECK(context.getSettings().majorVersion > 0);
         CHECK(sf::Context::getActiveContext() == &context);
         CHECK(sf::Context::hasActiveContext());
@@ -42,7 +46,7 @@ TEST_CASE("[Window] sf::Context" * doctest::skip(skipDisplayTests))
         {
             SECTION("From active context")
             {
-                sf::Context       movedContext;
+                sf::Context       movedContext(graphicsContext);
                 const sf::Context context(SFML_MOVE(movedContext));
                 CHECK(context.getSettings().majorVersion > 0);
                 CHECK(sf::Context::getActiveContext() == &context);
@@ -51,7 +55,7 @@ TEST_CASE("[Window] sf::Context" * doctest::skip(skipDisplayTests))
 
             SECTION("From inactive context")
             {
-                sf::Context movedContext;
+                sf::Context movedContext(graphicsContext);
                 CHECK(movedContext.setActive(false));
                 CHECK(sf::Context::getActiveContext() == nullptr);
                 CHECK(!sf::Context::hasActiveContext());
@@ -67,8 +71,8 @@ TEST_CASE("[Window] sf::Context" * doctest::skip(skipDisplayTests))
         {
             SECTION("From active context")
             {
-                sf::Context movedContext;
-                sf::Context context;
+                sf::Context movedContext(graphicsContext);
+                sf::Context context(graphicsContext);
                 CHECK(movedContext.setActive(true));
                 CHECK(sf::Context::getActiveContext() == &movedContext);
                 CHECK(sf::Context::hasActiveContext());
@@ -81,12 +85,12 @@ TEST_CASE("[Window] sf::Context" * doctest::skip(skipDisplayTests))
 
             SECTION("From inactive context")
             {
-                sf::Context movedContext;
+                sf::Context movedContext(graphicsContext);
                 CHECK(movedContext.setActive(false));
                 CHECK(sf::Context::getActiveContext() == nullptr);
                 CHECK(!sf::Context::hasActiveContext());
 
-                sf::Context context;
+                sf::Context context(graphicsContext);
                 context = SFML_MOVE(movedContext);
                 CHECK(context.getSettings().majorVersion > 0);
                 CHECK(sf::Context::getActiveContext() == nullptr);
@@ -97,7 +101,7 @@ TEST_CASE("[Window] sf::Context" * doctest::skip(skipDisplayTests))
 
     SECTION("setActive()")
     {
-        sf::Context context;
+        sf::Context context(graphicsContext);
         const auto  contextId = sf::Context::getActiveContextId();
 
         // Set inactive
@@ -111,7 +115,7 @@ TEST_CASE("[Window] sf::Context" * doctest::skip(skipDisplayTests))
         CHECK(sf::Context::getActiveContextId() == contextId);
 
         // Create new context which becomes active automatically
-        const sf::Context newContext;
+        const sf::Context newContext(graphicsContext);
         CHECK(sf::Context::getActiveContext() == &newContext);
         const auto newContextId = sf::Context::getActiveContextId();
         CHECK(newContextId != 0);
@@ -133,7 +137,7 @@ TEST_CASE("[Window] sf::Context" * doctest::skip(skipDisplayTests))
         CHECK(!sf::Context::hasActiveContext());
 
         {
-            const sf::Context context;
+            const sf::Context context(graphicsContext);
             CHECK(context.getSettings().majorVersion > 0);
             CHECK(sf::Context::getActiveContext() == &context);
             CHECK(sf::Context::hasActiveContext());
@@ -145,7 +149,7 @@ TEST_CASE("[Window] sf::Context" * doctest::skip(skipDisplayTests))
 
     SECTION("Version String")
     {
-        sf::Context context;
+        sf::Context context(graphicsContext);
         CHECK(context.setActive(true));
 
         using glGetStringFuncType  = const char*(GLAPI*)(unsigned int);
@@ -177,7 +181,7 @@ TEST_CASE("[Window] sf::Context" * doctest::skip(skipDisplayTests))
 
     SECTION("getFunction()")
     {
-        const sf::Context context; // Windows requires an active context to use getFunction
+        const sf::Context context(graphicsContext); // Windows requires an active context to use getFunction
         CHECK(sf::Context::getFunction("glEnable"));
         CHECK(sf::Context::getFunction("glGetError"));
         CHECK(sf::Context::getFunction("glGetIntegerv"));
