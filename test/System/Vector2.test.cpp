@@ -19,6 +19,8 @@ TEMPLATE_TEST_CASE("[System] sf::Vector2", "", int, float)
         STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Vector2<TestType>>);
         STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Vector2<TestType>>);
 
+        STATIC_CHECK(!std::is_trivial_v<sf::Vector2<TestType>>); // because of member initializers
+        STATIC_CHECK(std::is_standard_layout_v<sf::Vector2<TestType>>);
         STATIC_CHECK(std::is_aggregate_v<sf::Vector2<TestType>>);
         STATIC_CHECK(std::is_trivially_copyable_v<sf::Vector2<TestType>>);
         STATIC_CHECK(std::is_trivially_destructible_v<sf::Vector2<TestType>>);
