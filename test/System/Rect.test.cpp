@@ -17,15 +17,12 @@ TEMPLATE_TEST_CASE("[Graphics] sf::Rect", "", int, float)
         STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Rect<TestType>>);
         STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Rect<TestType>>);
 
+        STATIC_CHECK(!std::is_trivial_v<sf::Rect<TestType>>); // because of member initializers
+        STATIC_CHECK(std::is_standard_layout_v<sf::Rect<TestType>>);
         STATIC_CHECK(std::is_aggregate_v<sf::Rect<TestType>>);
         STATIC_CHECK(std::is_trivially_copyable_v<sf::Rect<TestType>>);
         STATIC_CHECK(std::is_trivially_destructible_v<sf::Rect<TestType>>);
         STATIC_CHECK(std::is_trivially_assignable_v<sf::Rect<TestType>, sf::Rect<TestType>>);
-
-        STATIC_CHECK(std::is_aggregate_v<sf::FloatRect>);
-        STATIC_CHECK(std::is_trivially_copyable_v<sf::FloatRect>);
-        STATIC_CHECK(std::is_trivially_destructible_v<sf::FloatRect>);
-        STATIC_CHECK(std::is_trivially_assignable_v<sf::FloatRect, sf::FloatRect>);
     }
 
     SECTION("Construction")
