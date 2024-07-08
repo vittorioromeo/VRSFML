@@ -42,13 +42,13 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-struct Window::Window::CommonImpl
+struct Window::Window::Impl
 {
     priv::UniquePtr<priv::GlContext> context;        //!< Platform-specific implementation of the OpenGL context
     Clock                            clock;          //!< Clock for measuring the elapsed time between frames
     Time                             frameTimeLimit; //!< Current framerate limit
 
-    explicit CommonImpl(priv::UniquePtr<priv::GlContext>&& theContext) : context(SFML_MOVE(theContext))
+    explicit Impl(priv::UniquePtr<priv::GlContext>&& theContext) : context(SFML_MOVE(theContext))
     {
     }
 };
@@ -62,9 +62,11 @@ Window::Window(GraphicsContext&       graphicsContext,
                State                  state,
                const ContextSettings& settings) :
 WindowBase(priv::WindowImpl::create(mode, title, style, state, settings)),
-m_commonImpl(priv::GlContext::create(graphicsContext, settings, *m_impl, mode.bitsPerPixel))
+m_impl(priv::GlContext::create(graphicsContext, settings, *WindowBase::m_impl, mode.bitsPerPixel))
 {
     // Perform common initializations
+    assert(m_impl->context);
+
     // Setup default behaviors (to get a consistent behavior across different implementations)
     setVerticalSyncEnabled(false);
     setFramerateLimit(0);
@@ -85,9 +87,11 @@ Window(graphicsContext, mode, title, sf::Style::Default, state, settings)
 ////////////////////////////////////////////////////////////
 Window::Window(GraphicsContext& graphicsContext, WindowHandle handle, const ContextSettings& settings) :
 WindowBase(handle),
-m_commonImpl(priv::GlContext::create(graphicsContext, settings, *m_impl, VideoMode::getDesktopMode().bitsPerPixel))
+m_impl(priv::GlContext::create(graphicsContext, settings, *WindowBase::m_impl, VideoMode::getDesktopMode().bitsPerPixel))
 {
     // Perform common initializations
+    assert(m_impl->context);
+
     // Setup default behaviors (to get a consistent behavior across different implementations)
     setVerticalSyncEnabled(false);
     setFramerateLimit(0);
@@ -132,9 +136,8 @@ Window& Window::operator=(Window&&) noexcept = default;
 ////////////////////////////////////////////////////////////
 const ContextSettings& Window::getSettings() const
 {
-    static constexpr ContextSettings empty{/* depthBits */ 0, /* stencilBits */ 0, /* antialiasingLevel */ 0};
-
-    return m_commonImpl->context ? m_commonImpl->context->getSettings() : empty;
+    assert(m_impl->context != nullptr);
+    return m_impl->context->getSettings();
 }
 
 
@@ -142,31 +145,26 @@ const ContextSettings& Window::getSettings() const
 void Window::setVerticalSyncEnabled(bool enabled)
 {
     if (setActive())
-        m_commonImpl->context->setVerticalSyncEnabled(enabled);
+        m_impl->context->setVerticalSyncEnabled(enabled);
 }
 
 
 ////////////////////////////////////////////////////////////
 void Window::setFramerateLimit(unsigned int limit)
 {
-    m_commonImpl->frameTimeLimit = limit > 0 ? seconds(1.f / static_cast<float>(limit)) : Time::Zero;
+    m_impl->frameTimeLimit = limit > 0 ? seconds(1.f / static_cast<float>(limit)) : Time::Zero;
 }
 
 
 ////////////////////////////////////////////////////////////
 bool Window::setActive(bool active) const
 {
-    if (m_commonImpl->context)
-    {
-        if (m_commonImpl->context->setActive(active))
-        {
-            return true;
-        }
+    assert(m_impl->context != nullptr);
 
-        priv::err() << "Failed to activate the window's context" << priv::errEndl;
-        return false;
-    }
+    if (m_impl->context->setActive(active))
+        return true;
 
+    priv::err() << "Failed to activate the window's context" << priv::errEndl;
     return false;
 }
 
@@ -176,13 +174,13 @@ void Window::display()
 {
     // Display the backbuffer on screen
     if (setActive())
-        m_commonImpl->context->display();
+        m_impl->context->display();
 
     // Limit the framerate if needed
-    if (m_commonImpl->frameTimeLimit != Time::Zero)
+    if (m_impl->frameTimeLimit != Time::Zero)
     {
-        sleep(m_commonImpl->frameTimeLimit - m_commonImpl->clock.getElapsedTime());
-        m_commonImpl->clock.restart();
+        sleep(m_impl->frameTimeLimit - m_impl->clock.getElapsedTime());
+        m_impl->clock.restart();
     }
 }
 
