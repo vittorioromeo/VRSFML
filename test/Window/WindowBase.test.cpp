@@ -29,20 +29,9 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 
     SECTION("Construction")
     {
-        SECTION("Default constructor")
-        {
-            const sf::WindowBase windowBase;
-            CHECK(!windowBase.isOpen());
-            CHECK(windowBase.getPosition() == sf::Vector2i());
-            CHECK(windowBase.getSize() == sf::Vector2u());
-            CHECK(!windowBase.hasFocus());
-            CHECK(windowBase.getNativeHandle() == sf::WindowHandle());
-        }
-
         SECTION("Mode and title constructor")
         {
             const sf::WindowBase windowBase(sf::VideoMode({360, 240}), "WindowBase Tests");
-            CHECK(windowBase.isOpen());
             CHECK(windowBase.getSize() == sf::Vector2u{360, 240});
             CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
         }
@@ -50,7 +39,6 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
         SECTION("Mode, title, and style constructor")
         {
             const sf::WindowBase windowBase(sf::VideoMode({360, 240}), "WindowBase Tests", sf::Style::Resize);
-            CHECK(windowBase.isOpen());
             CHECK(windowBase.getSize() == sf::Vector2u{360, 240});
             CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
         }
@@ -58,7 +46,6 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
         SECTION("Mode, title, style, and state constructor")
         {
             const sf::WindowBase windowBase(sf::VideoMode({360, 240}), "WindowBase Tests", sf::Style::Resize, sf::State::Windowed);
-            CHECK(windowBase.isOpen());
             CHECK(windowBase.getSize() == sf::Vector2u{360, 240});
             CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
         }
@@ -66,65 +53,13 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
         SECTION("Mode, title, and state constructor")
         {
             const sf::WindowBase windowBase(sf::VideoMode({360, 240}), "WindowBase Tests", sf::State::Windowed);
-            CHECK(windowBase.isOpen());
             CHECK(windowBase.getSize() == sf::Vector2u{360, 240});
             CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
         }
     }
 
-    SECTION("create()")
-    {
-        sf::WindowBase windowBase;
-
-        SECTION("Mode and title")
-        {
-            windowBase.create(sf::VideoMode({240, 360}), "WindowBase Tests");
-            CHECK(windowBase.isOpen());
-            CHECK(windowBase.getSize() == sf::Vector2u{240, 360});
-            CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
-        }
-
-        SECTION("Mode, title, and style")
-        {
-            windowBase.create(sf::VideoMode({240, 360}), "WindowBase Tests", sf::Style::Resize);
-            CHECK(windowBase.isOpen());
-            CHECK(windowBase.getSize() == sf::Vector2u{240, 360});
-            CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
-        }
-
-        SECTION("Mode, title, style, and state")
-        {
-            windowBase.create(sf::VideoMode({240, 360}), "WindowBase Tests", sf::Style::Resize, sf::State::Windowed);
-            CHECK(windowBase.isOpen());
-            CHECK(windowBase.getSize() == sf::Vector2u{240, 360});
-            CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
-        }
-    }
-
-    SECTION("close()")
-    {
-        sf::WindowBase windowBase(sf::VideoMode({360, 240}), "WindowBase Tests");
-        windowBase.close();
-        CHECK(!windowBase.isOpen());
-    }
-
-    SECTION("pollEvent()")
-    {
-        SECTION("Uninitialized window")
-        {
-            sf::WindowBase windowBase;
-            CHECK(!windowBase.pollEvent());
-        }
-    }
-
     SECTION("waitEvent()")
     {
-        SECTION("Uninitialized window")
-        {
-            sf::WindowBase windowBase;
-            CHECK(!windowBase.waitEvent());
-        }
-
         SECTION("Initialized window")
         {
             sf::WindowBase windowBase(sf::VideoMode({360, 240}), "WindowBase Tests");
@@ -146,7 +81,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 
     SECTION("Set/get position")
     {
-        sf::WindowBase windowBase;
+        sf::WindowBase windowBase(sf::VideoMode({360, 240}), "WindowBase Tests");
         windowBase.setPosition({12, 34});
         CHECK(windowBase.getPosition() == sf::Vector2i());
     }
@@ -155,7 +90,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
     {
         SECTION("Uninitialized window")
         {
-            sf::WindowBase windowBase;
+            sf::WindowBase windowBase(sf::VideoMode({360, 240}), "WindowBase Tests");
             windowBase.setSize({128, 256});
             CHECK(windowBase.getSize() == sf::Vector2u());
         }

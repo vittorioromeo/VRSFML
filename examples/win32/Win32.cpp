@@ -121,56 +121,54 @@ int main()
 
     sf::GraphicsContext graphicsContext;
 
-    sf::RenderWindow sfmlView1(graphicsContext, view1);
-    sf::RenderWindow sfmlView2(graphicsContext, view2);
-
-    // Load some textures to display
-    const auto texture1 = sf::Texture::loadFromFile(graphicsContext, "resources/image1.jpg").value();
-    const auto texture2 = sf::Texture::loadFromFile(graphicsContext, "resources/image2.jpg").value();
-    sf::Sprite sprite1(texture1.getRect());
-    sf::Sprite sprite2(texture2.getRect());
-    sprite1.setOrigin(texture1.getSize().to<sf::Vector2f>() / 2.f);
-    sprite1.setPosition(sprite1.getOrigin());
-
-    // Create a clock for measuring elapsed time
-    const sf::Clock clock;
-
-    // Loop until a WM_QUIT message is received
-    MSG message;
-    message.message = static_cast<UINT>(~WM_QUIT);
-    while (message.message != WM_QUIT)
     {
-        if (PeekMessage(&message, nullptr, 0, 0, PM_REMOVE))
+        sf::RenderWindow sfmlView1(graphicsContext, view1);
+        sf::RenderWindow sfmlView2(graphicsContext, view2);
+
+        // Load some textures to display
+        const auto texture1 = sf::Texture::loadFromFile(graphicsContext, "resources/image1.jpg").value();
+        const auto texture2 = sf::Texture::loadFromFile(graphicsContext, "resources/image2.jpg").value();
+        sf::Sprite sprite1(texture1.getRect());
+        sf::Sprite sprite2(texture2.getRect());
+        sprite1.setOrigin(texture1.getSize().to<sf::Vector2f>() / 2.f);
+        sprite1.setPosition(sprite1.getOrigin());
+
+        // Create a clock for measuring elapsed time
+        const sf::Clock clock;
+
+        // Loop until a WM_QUIT message is received
+        MSG message;
+        message.message = static_cast<UINT>(~WM_QUIT);
+        while (message.message != WM_QUIT)
         {
-            // If a message was waiting in the message queue, process it
-            TranslateMessage(&message);
-            DispatchMessage(&message);
-        }
-        else
-        {
-            const float time = clock.getElapsedTime().asSeconds();
+            if (PeekMessage(&message, nullptr, 0, 0, PM_REMOVE))
+            {
+                // If a message was waiting in the message queue, process it
+                TranslateMessage(&message);
+                DispatchMessage(&message);
+            }
+            else
+            {
+                const float time = clock.getElapsedTime().asSeconds();
 
-            // Clear views
-            sfmlView1.clear();
-            sfmlView2.clear();
+                // Clear views
+                sfmlView1.clear();
+                sfmlView2.clear();
 
-            // Draw sprite 1 on view 1
-            sprite1.setRotation(sf::degrees(time * 100));
-            sfmlView1.draw(sprite1, texture1);
+                // Draw sprite 1 on view 1
+                sprite1.setRotation(sf::degrees(time * 100));
+                sfmlView1.draw(sprite1, texture1);
 
-            // Draw sprite 2 on view 2
-            sprite2.setPosition({std::cos(time) * 100.f, 0.f});
-            sfmlView2.draw(sprite2, texture2);
+                // Draw sprite 2 on view 2
+                sprite2.setPosition({std::cos(time) * 100.f, 0.f});
+                sfmlView2.draw(sprite2, texture2);
 
-            // Display each view on screen
-            sfmlView1.display();
-            sfmlView2.display();
+                // Display each view on screen
+                sfmlView1.display();
+                sfmlView2.display();
+            }
         }
     }
-
-    // Close our SFML views before destroying the underlying window
-    sfmlView1.close();
-    sfmlView2.close();
 
     // Destroy the main window (all its child controls will be destroyed)
     DestroyWindow(window);

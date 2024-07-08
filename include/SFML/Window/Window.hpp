@@ -49,15 +49,6 @@ class SFML_WINDOW_API Window : public WindowBase
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// This constructor doesn't actually create the window,
-    /// use the other constructors or call create() to do so.
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] Window(GraphicsContext& graphicsContext);
-
-    ////////////////////////////////////////////////////////////
     /// \brief Construct a new window
     ///
     /// This constructor creates the window with the size and pixel
@@ -78,19 +69,19 @@ public:
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Window(GraphicsContext&       graphicsContext,
-                         VideoMode              mode,
-                         const String&          title,
-                         std::uint32_t          style    = Style::Default,
-                         State                  state    = State::Windowed,
-                         const ContextSettings& settings = ContextSettings());
+    [[nodiscard]] explicit Window(GraphicsContext&       graphicsContext,
+                                  VideoMode              mode,
+                                  const String&          title,
+                                  std::uint32_t          style    = Style::Default,
+                                  State                  state    = State::Windowed,
+                                  const ContextSettings& settings = ContextSettings());
 
-    [[nodiscard]] Window(GraphicsContext&       graphicsContext,
-                         VideoMode              mode,
-                         const char*            title,
-                         std::uint32_t          style    = Style::Default,
-                         State                  state    = State::Windowed,
-                         const ContextSettings& settings = ContextSettings());
+    [[nodiscard]] explicit Window(GraphicsContext&       graphicsContext,
+                                  VideoMode              mode,
+                                  const char*            title,
+                                  std::uint32_t          style    = Style::Default,
+                                  State                  state    = State::Windowed,
+                                  const ContextSettings& settings = ContextSettings());
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a new window
@@ -109,17 +100,17 @@ public:
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Window(GraphicsContext&       graphicsContext,
-                         VideoMode              mode,
-                         const String&          title,
-                         State                  state,
-                         const ContextSettings& settings = ContextSettings());
+    [[nodiscard]] explicit Window(GraphicsContext&       graphicsContext,
+                                  VideoMode              mode,
+                                  const String&          title,
+                                  State                  state,
+                                  const ContextSettings& settings = ContextSettings());
 
-    [[nodiscard]] Window(GraphicsContext&       graphicsContext,
-                         VideoMode              mode,
-                         const char*            title,
-                         State                  state,
-                         const ContextSettings& settings = ContextSettings());
+    [[nodiscard]] explicit Window(GraphicsContext&       graphicsContext,
+                                  VideoMode              mode,
+                                  const char*            title,
+                                  State                  state,
+                                  const ContextSettings& settings = ContextSettings());
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control
@@ -170,82 +161,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     Window& operator=(Window&&) noexcept;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Create (or recreate) the window
-    ///
-    /// If the window was already created, it closes it first.
-    /// If \a state is State::Fullscreen, then \a mode must be
-    /// a valid video mode.
-    ///
-    /// \param mode     Video mode to use (defines the width, height and depth of the rendering area of the window)
-    /// \param title    Title of the window
-    /// \param style    %Window style, a bitwise OR combination of sf::Style enumerators
-    /// \param state    %Window state
-    ///
-    ////////////////////////////////////////////////////////////
-    void create(VideoMode mode, const String& title, std::uint32_t style = Style::Default, State state = State::Windowed) override;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Create (or recreate) the window
-    ///
-    /// If the window was already created, it closes it first.
-    /// If \a state is State::Fullscreen, then \a mode must be
-    /// a valid video mode.
-    ///
-    /// The last parameter is an optional structure specifying
-    /// advanced OpenGL context settings such as antialiasing,
-    /// depth-buffer bits, etc.
-    ///
-    /// \param mode     Video mode to use (defines the width, height and depth of the rendering area of the window)
-    /// \param title    Title of the window
-    /// \param style    %Window style, a bitwise OR combination of sf::Style enumerators
-    /// \param state    %Window state
-    /// \param settings Additional settings for the underlying OpenGL context
-    ///
-    ////////////////////////////////////////////////////////////
-    virtual void create(VideoMode mode, const String& title, std::uint32_t style, State state, const ContextSettings& settings);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Create (or recreate) the window from an existing control
-    ///
-    /// Use this function if you want to create an OpenGL
-    /// rendering area into an already existing control.
-    /// If the window was already created, it closes it first.
-    ///
-    /// \param handle   Platform-specific handle of the control
-    ///
-    ////////////////////////////////////////////////////////////
-    void create(WindowHandle handle) override;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Create (or recreate) the window from an existing control
-    ///
-    /// Use this function if you want to create an OpenGL
-    /// rendering area into an already existing control.
-    /// If the window was already created, it closes it first.
-    ///
-    /// The second parameter is an optional structure specifying
-    /// advanced OpenGL context settings such as antialiasing,
-    /// depth-buffer bits, etc.
-    ///
-    /// \param handle   Platform-specific handle of the control
-    /// \param settings Additional settings for the underlying OpenGL context
-    ///
-    ////////////////////////////////////////////////////////////
-    virtual void create(WindowHandle handle, const ContextSettings& settings);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Close the window and destroy all the attached resources
-    ///
-    /// After calling this function, the sf::Window instance remains
-    /// valid and you can call create() to recreate the window.
-    /// All other functions such as pollEvent() or display() will
-    /// still work (i.e. you don't have to test isOpen() every time),
-    /// and will have no effect on closed windows.
-    ///
-    ////////////////////////////////////////////////////////////
-    void close() override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the settings of the OpenGL context of the window
@@ -322,12 +237,6 @@ public:
 
 private:
     ////////////////////////////////////////////////////////////
-    /// \brief Perform some common internal initializations
-    ///
-    ////////////////////////////////////////////////////////////
-    void initialize();
-
-    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     struct CommonImpl;
@@ -380,17 +289,14 @@ private:
 /// window.setFramerateLimit(60);
 ///
 /// // The main loop - ends as soon as the window is closed
-/// while (window.isOpen())
+/// while (true)
 /// {
 ///    // Event processing
 ///    while (const std::optional event = window.pollEvent())
 ///    {
 ///        // Request for closing the window
 ///        if (event->is<sf::Event::Closed>())
-///        {
-///            window.close();
-///            break;
-///        }
+///            return 0; // break out of both loops
 ///    }
 ///
 ///    // Activate the window for OpenGL rendering

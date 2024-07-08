@@ -198,7 +198,7 @@ int main()
     std::ostringstream osstr;
     sf::Clock          clock;
 
-    while (window.isOpen())
+    while (true)
     {
         // Handle events
         while (const std::optional event = window.pollEvent())
@@ -208,8 +208,7 @@ int main()
                 (event->is<sf::Event::KeyPressed>() &&
                  event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape))
             {
-                window.close();
-                break;
+                return EXIT_SUCCESS;
             }
 
             // Arrow key pressed:

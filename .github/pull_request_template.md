@@ -37,15 +37,12 @@ int main()
     sf::RenderWindow window(sf::VideoMode({1280, 720}), "Minimal, complete and verifiable example");
     window.setFramerateLimit(60);
 
-    while (window.isOpen())
+    while (true)
     {
         while (const std::optional event = window.pollEvent())
         {
             if (event->is<sf::Event::Closed>())
-            {
-                window.close();
-                break;
-            }
+                return 0;
         }
 
         window.clear();

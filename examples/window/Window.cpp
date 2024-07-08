@@ -40,7 +40,7 @@ int main()
     sf::ContextSettings contextSettings;
     contextSettings.depthBits = 24;
 
-    // Create the main window
+    // Create the main window (becomes active OpenGL context on construction)
     sf::Window window(graphicsContext,
                       sf::VideoMode({640, 480}),
                       "SFML window with OpenGL",
@@ -48,17 +48,11 @@ int main()
                       sf::State::Windowed,
                       contextSettings);
 
-    // Make it the active window for OpenGL calls
-    if (!window.setActive())
-    {
-        std::cerr << "Failed to set the window as active" << std::endl;
-        return EXIT_FAILURE;
-    }
-
     // Load OpenGL or OpenGL ES entry points using glad
 #ifdef SFML_OPENGL_ES
     gladLoadGLES1(sf::Context::getFunction);
 #else
+    // TODO: garbage
     static sf::GraphicsContext* gcPtr;
     gcPtr = &graphicsContext;
 
@@ -157,7 +151,7 @@ int main()
     const sf::Clock clock;
 
     // Start the game loop
-    while (window.isOpen())
+    while (true)
     {
         // Process events
         while (const std::optional event = window.pollEvent())
@@ -167,8 +161,7 @@ int main()
                 (event->is<sf::Event::KeyPressed>() &&
                  event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape))
             {
-                window.close();
-                break;
+                return EXIT_SUCCESS;
             }
 
             // Resize event: adjust the viewport

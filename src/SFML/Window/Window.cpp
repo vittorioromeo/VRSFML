@@ -33,6 +33,7 @@
 
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Err.hpp>
+#include <SFML/System/Macros.hpp>
 #include <SFML/System/Sleep.hpp>
 #include <SFML/System/String.hpp>
 #include <SFML/System/Time.hpp>
@@ -43,21 +44,14 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct Window::Window::CommonImpl
 {
-    explicit CommonImpl(GraphicsContext& theGraphicsContext) : graphicsContext(&theGraphicsContext)
-    {
-    }
-
-    GraphicsContext*                 graphicsContext;
     priv::UniquePtr<priv::GlContext> context;        //!< Platform-specific implementation of the OpenGL context
     Clock                            clock;          //!< Clock for measuring the elapsed time between frames
     Time                             frameTimeLimit; //!< Current framerate limit
+
+    explicit CommonImpl(priv::UniquePtr<priv::GlContext>&& theContext) : context(SFML_MOVE(theContext))
+    {
+    }
 };
-
-
-////////////////////////////////////////////////////////////
-Window::Window(GraphicsContext& graphicsContext) : m_commonImpl(graphicsContext)
-{
-}
 
 
 ////////////////////////////////////////////////////////////
@@ -67,9 +61,40 @@ Window::Window(GraphicsContext&       graphicsContext,
                std::uint32_t          style,
                State                  state,
                const ContextSettings& settings) :
-Window(graphicsContext)
+WindowBase(priv::WindowImpl::create(mode, title, style, state, settings)),
+m_commonImpl(priv::GlContext::create(graphicsContext, settings, *m_impl, mode.bitsPerPixel))
 {
-    Window::create(mode, title, style, state, settings);
+    // Perform common initializations
+    // Setup default behaviors (to get a consistent behavior across different implementations)
+    setVerticalSyncEnabled(false);
+    setFramerateLimit(0);
+
+    // Activate the window
+    if (!setActive())
+        priv::err() << "Failed to set window as active during initialization" << priv::errEndl;
+}
+
+
+////////////////////////////////////////////////////////////
+Window::Window(GraphicsContext& graphicsContext, VideoMode mode, const String& title, State state, const ContextSettings& settings) :
+Window(graphicsContext, mode, title, sf::Style::Default, state, settings)
+{
+}
+
+
+////////////////////////////////////////////////////////////
+Window::Window(GraphicsContext& graphicsContext, WindowHandle handle, const ContextSettings& settings) :
+WindowBase(handle),
+m_commonImpl(priv::GlContext::create(graphicsContext, settings, *m_impl, VideoMode::getDesktopMode().bitsPerPixel))
+{
+    // Perform common initializations
+    // Setup default behaviors (to get a consistent behavior across different implementations)
+    setVerticalSyncEnabled(false);
+    setFramerateLimit(0);
+
+    // Activate the window
+    if (!setActive())
+        priv::err() << "Failed to set window as active during initialization" << priv::errEndl;
 }
 
 
@@ -86,25 +111,9 @@ Window(graphicsContext, mode, String(title), style, state, settings)
 
 
 ////////////////////////////////////////////////////////////
-Window::Window(GraphicsContext& graphicsContext, VideoMode mode, const String& title, State state, const ContextSettings& settings) :
-Window(graphicsContext)
-{
-    Window::create(mode, title, sf::Style::Default, state, settings);
-}
-
-
-////////////////////////////////////////////////////////////
 Window::Window(GraphicsContext& graphicsContext, VideoMode mode, const char* title, State state, const ContextSettings& settings) :
 Window(graphicsContext, mode, String(title), state, settings)
 {
-}
-
-
-////////////////////////////////////////////////////////////
-Window::Window(GraphicsContext& graphicsContext, WindowHandle handle, const ContextSettings& settings) :
-Window(graphicsContext)
-{
-    Window::create(handle, settings);
 }
 
 
@@ -118,68 +127,6 @@ Window::Window(Window&&) noexcept = default;
 
 ////////////////////////////////////////////////////////////
 Window& Window::operator=(Window&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
-void Window::create(VideoMode mode, const String& title, std::uint32_t style, State state)
-{
-    Window::create(mode, title, style, state, ContextSettings{});
-}
-
-
-////////////////////////////////////////////////////////////
-void Window::create(VideoMode mode, const String& title, std::uint32_t style, State state, const ContextSettings& settings)
-{
-    // Delegate to base class for creation logic
-    WindowBase::create(mode, style, state);
-
-    // Recreate the window implementation
-    m_impl = priv::WindowImpl::create(mode, title, style, state, settings);
-
-    // Recreate the context
-    m_commonImpl->context = priv::GlContext::create(*m_commonImpl->graphicsContext, settings, *m_impl, mode.bitsPerPixel);
-
-    // Perform common initializations
-    initialize();
-}
-
-
-////////////////////////////////////////////////////////////
-void Window::create(WindowHandle handle)
-{
-    Window::create(handle, ContextSettings{});
-}
-
-
-////////////////////////////////////////////////////////////
-void Window::create(WindowHandle handle, const ContextSettings& settings)
-{
-    // Destroy the previous window implementation
-    close();
-
-    // Recreate the window implementation
-    WindowBase::create(handle);
-
-    // Recreate the context
-    m_commonImpl->context = priv::GlContext::create(*m_commonImpl->graphicsContext,
-                                                    settings,
-                                                    *m_impl,
-                                                    VideoMode::getDesktopMode().bitsPerPixel);
-
-    // Perform common initializations
-    initialize();
-}
-
-
-////////////////////////////////////////////////////////////
-void Window::close()
-{
-    // Delete the context
-    m_commonImpl->context.reset();
-
-    // Close the base window
-    WindowBase::close();
-}
 
 
 ////////////////////////////////////////////////////////////
@@ -237,26 +184,6 @@ void Window::display()
         sleep(m_commonImpl->frameTimeLimit - m_commonImpl->clock.getElapsedTime());
         m_commonImpl->clock.restart();
     }
-}
-
-
-////////////////////////////////////////////////////////////
-void Window::initialize()
-{
-    // Setup default behaviors (to get a consistent behavior across different implementations)
-    setVerticalSyncEnabled(false);
-    setFramerateLimit(0);
-
-    // Reset frame time
-    m_commonImpl->clock.restart();
-
-    // Activate the window
-    if (!setActive())
-    {
-        priv::err() << "Failed to set window as active during initialization" << priv::errEndl;
-    }
-
-    WindowBase::initialize();
 }
 
 } // namespace sf

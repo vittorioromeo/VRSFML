@@ -256,9 +256,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    GraphicsContext*                         m_graphicsContext; //!< TODO
-    priv::UniquePtr<priv::RenderTextureImpl> m_impl;            //!< Platform/hardware specific implementation
-    Texture                                  m_texture;         //!< Target texture to draw on
+    priv::UniquePtr<priv::RenderTextureImpl> m_impl;    //!< Platform/hardware specific implementation
+    Texture                                  m_texture; //!< Target texture to draw on
 };
 
 } // namespace sf
@@ -290,7 +289,7 @@ private:
 /// auto renderTexture = sf::RenderTexture::create(graphicsContext, {500, 500}).value();
 ///
 /// // The main loop
-/// while (window.isOpen())
+/// while (true)
 /// {
 ///    // Event processing
 ///    // ...

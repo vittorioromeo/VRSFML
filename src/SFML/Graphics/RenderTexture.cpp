@@ -162,7 +162,7 @@ bool RenderTexture::setActive(bool active)
 ////////////////////////////////////////////////////////////
 void RenderTexture::display()
 {
-    if (priv::RenderTextureImplFBO::isAvailable(*m_graphicsContext))
+    if (priv::RenderTextureImplFBO::isAvailable(getGraphicsContext()))
     {
         // Perform a RenderTarget-only activation if we are using FBOs
         if (!RenderTarget::setActive())
@@ -206,7 +206,6 @@ const Texture& RenderTexture::getTexture() const
 ////////////////////////////////////////////////////////////
 RenderTexture::RenderTexture(priv::PassKey<RenderTexture>&&, GraphicsContext& graphicsContext, Texture&& texture) :
 RenderTarget(graphicsContext),
-m_graphicsContext(&graphicsContext),
 m_texture(SFML_MOVE(texture))
 {
 }

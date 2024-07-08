@@ -39,27 +39,25 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-RenderWindow::RenderWindow(GraphicsContext& graphicsContext) :
-Window(graphicsContext),
-RenderTarget(graphicsContext),
-m_graphicsContext(&graphicsContext)
-{
-}
-
-
-////////////////////////////////////////////////////////////
 RenderWindow::RenderWindow(GraphicsContext&       graphicsContext,
                            VideoMode              mode,
                            const String&          title,
                            std::uint32_t          style,
                            State                  state,
                            const ContextSettings& settings) :
-Window(graphicsContext),
-RenderTarget(graphicsContext),
-m_graphicsContext(&graphicsContext)
+Window(graphicsContext, mode, title, style, state, settings),
+RenderTarget(graphicsContext)
 {
-    // Don't call the base class constructor because it contains virtual function calls
-    Window::create(mode, title, style, state, settings);
+    // TODO: repetition
+    if (priv::RenderTextureImplFBO::isAvailable(getGraphicsContext()))
+    {
+        // Retrieve the framebuffer ID we have to bind when targeting the window for rendering
+        // We assume that this window's context is still active at this point
+        glCheck(glGetIntegerv(GLEXT_GL_FRAMEBUFFER_BINDING, reinterpret_cast<GLint*>(&m_defaultFrameBuffer)));
+    }
+
+    // Just initialize the render target part
+    RenderTarget::initialize();
 }
 
 
@@ -81,12 +79,8 @@ RenderWindow::RenderWindow(GraphicsContext&       graphicsContext,
                            const String&          title,
                            State                  state,
                            const ContextSettings& settings) :
-Window(graphicsContext),
-RenderTarget(graphicsContext),
-m_graphicsContext(&graphicsContext)
+RenderWindow(graphicsContext, mode, title, sf::Style::Default, state, settings)
 {
-    // Don't call the base class constructor because it contains virtual function calls
-    Window::create(mode, title, sf::Style::Default, state, settings);
 }
 
 
@@ -103,12 +97,19 @@ RenderWindow(graphicsContext, mode, String(title), state, settings)
 
 ////////////////////////////////////////////////////////////
 RenderWindow::RenderWindow(GraphicsContext& graphicsContext, WindowHandle handle, const ContextSettings& settings) :
-Window(graphicsContext),
-RenderTarget(graphicsContext),
-m_graphicsContext(&graphicsContext)
+Window(graphicsContext, handle, settings),
+RenderTarget(graphicsContext)
 {
-    // Don't call the base class constructor because it contains virtual function calls
-    Window::create(handle, settings);
+    // TODO: repetition
+    if (priv::RenderTextureImplFBO::isAvailable(getGraphicsContext()))
+    {
+        // Retrieve the framebuffer ID we have to bind when targeting the window for rendering
+        // We assume that this window's context is still active at this point
+        glCheck(glGetIntegerv(GLEXT_GL_FRAMEBUFFER_BINDING, reinterpret_cast<GLint*>(&m_defaultFrameBuffer)));
+    }
+
+    // Just initialize the render target part
+    RenderTarget::initialize();
 }
 
 
@@ -144,29 +145,13 @@ bool RenderWindow::setActive(bool active)
 
     // If FBOs are available, make sure none are bound when we
     // try to draw to the default framebuffer of the RenderWindow
-    if (active && result && priv::RenderTextureImplFBO::isAvailable(*m_graphicsContext))
+    if (active && result && priv::RenderTextureImplFBO::isAvailable(getGraphicsContext()))
     {
         glCheck(GLEXT_glBindFramebuffer(GLEXT_GL_FRAMEBUFFER, m_defaultFrameBuffer));
-
         return true;
     }
 
     return result;
-}
-
-
-////////////////////////////////////////////////////////////
-void RenderWindow::onCreate()
-{
-    if (priv::RenderTextureImplFBO::isAvailable(*m_graphicsContext))
-    {
-        // Retrieve the framebuffer ID we have to bind when targeting the window for rendering
-        // We assume that this window's context is still active at this point
-        glCheck(glGetIntegerv(GLEXT_GL_FRAMEBUFFER_BINDING, reinterpret_cast<GLint*>(&m_defaultFrameBuffer)));
-    }
-
-    // Just initialize the render target part
-    RenderTarget::initialize();
 }
 
 

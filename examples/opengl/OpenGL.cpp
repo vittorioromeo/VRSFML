@@ -24,6 +24,7 @@
 #include <array>
 #include <iostream>
 
+#include <cstddef>
 #include <cstdlib>
 
 #define GLAD_GL_IMPLEMENTATION
@@ -46,37 +47,157 @@ sf::Path resourcesDir()
 #endif
 }
 
+std::optional<sf::RenderWindow> recreateWindow(sf::GraphicsContext&       graphicsContext,
+                                               const sf::ContextSettings& contextSettings,
+                                               sf::Texture&               texture)
+{
+    // Create the main window
+    std::optional<sf::RenderWindow> window(std::in_place,
+                                           graphicsContext,
+                                           sf::VideoMode({800, 600}),
+                                           "SFML graphics with OpenGL",
+                                           sf::Style::Default,
+                                           sf::State::Windowed,
+                                           contextSettings);
+
+    window->setVerticalSyncEnabled(true);
+    window->setMinimumSize(sf::Vector2u{400, 300});
+    window->setMaximumSize(sf::Vector2u{1200, 900});
+
+    // Make the window the active window for OpenGL calls
+    if (!window->setActive(true))
+    {
+        std::cerr << "Failed to set window to active" << std::endl;
+        return std::nullopt;
+    }
+
+
+    // Load OpenGL or OpenGL ES entry points using glad
+#ifdef SFML_OPENGL_ES
+    gladLoadGLES1(sf::Context::getFunction);
+#else
+    // TODO: garbage
+    static sf::GraphicsContext* gcPtr;
+    gcPtr = &graphicsContext;
+
+    gladLoadGL([](const char* name) { return sf::Context::getFunction(*gcPtr, name); });
+#endif
+
+    // Enable Z-buffer read and write
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
+#ifdef SFML_OPENGL_ES
+    glClearDepthf(1.f);
+#else
+    glClearDepth(1.f);
+#endif
+
+    // Disable lighting
+    glDisable(GL_LIGHTING);
+
+    // Configure the viewport (the same size as the window)
+    glViewport(0, 0, static_cast<GLsizei>(window->getSize().x), static_cast<GLsizei>(window->getSize().y));
+
+    // Setup a perspective projection
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    const GLfloat ratio = static_cast<float>(window->getSize().x) / static_cast<float>(window->getSize().y);
+#ifdef SFML_OPENGL_ES
+    glFrustumf(-ratio, ratio, -1.f, 1.f, 1.f, 500.f);
+#else
+    glFrustum(-ratio, ratio, -1.f, 1.f, 1.f, 500.f);
+#endif
+
+    // Bind the texture
+    glEnable(GL_TEXTURE_2D);
+    sf::Texture::bind(graphicsContext, &texture);
+
+    // Define a 3D cube (6 faces made of 2 triangles composed by 3 vertices)
+    // clang-format off
+    static constexpr std::array<GLfloat, 180> cube =
+    {
+        // positions    // texture coordinates
+        -20, -20, -20,  0, 0,
+        -20,  20, -20,  1, 0,
+        -20, -20,  20,  0, 1,
+        -20, -20,  20,  0, 1,
+        -20,  20, -20,  1, 0,
+        -20,  20,  20,  1, 1,
+
+         20, -20, -20,  0, 0,
+         20,  20, -20,  1, 0,
+         20, -20,  20,  0, 1,
+         20, -20,  20,  0, 1,
+         20,  20, -20,  1, 0,
+         20,  20,  20,  1, 1,
+
+        -20, -20, -20,  0, 0,
+         20, -20, -20,  1, 0,
+        -20, -20,  20,  0, 1,
+        -20, -20,  20,  0, 1,
+         20, -20, -20,  1, 0,
+         20, -20,  20,  1, 1,
+
+        -20,  20, -20,  0, 0,
+         20,  20, -20,  1, 0,
+        -20,  20,  20,  0, 1,
+        -20,  20,  20,  0, 1,
+         20,  20, -20,  1, 0,
+         20,  20,  20,  1, 1,
+
+        -20, -20, -20,  0, 0,
+         20, -20, -20,  1, 0,
+        -20,  20, -20,  0, 1,
+        -20,  20, -20,  0, 1,
+         20, -20, -20,  1, 0,
+         20,  20, -20,  1, 1,
+
+        -20, -20,  20,  0, 0,
+         20, -20,  20,  1, 0,
+        -20,  20,  20,  0, 1,
+        -20,  20,  20,  0, 1,
+         20, -20,  20,  1, 0,
+         20,  20,  20,  1, 1
+    };
+    // clang-format on
+
+    // Enable position and texture coordinates vertex components
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    glVertexPointer(3, GL_FLOAT, 5 * sizeof(GLfloat), cube.data());
+    glTexCoordPointer(2, GL_FLOAT, 5 * sizeof(GLfloat), cube.data() + 3);
+
+    // Disable normal and color vertex components
+    glDisableClientState(GL_NORMAL_ARRAY);
+    glDisableClientState(GL_COLOR_ARRAY);
+
+    // Make the window no longer the active window for OpenGL calls
+    if (!window->setActive(false))
+    {
+        std::cerr << "Failed to set window to inactive" << std::endl;
+        return std::nullopt;
+    }
+
+    return window;
+}
+
 ////////////////////////////////////////////////////////////
 /// Main
 ///
 ////////////////////////////////////////////////////////////
 int main()
 {
-    bool exit = false;
     bool sRgb = false;
 
     // Create the graphics context
     sf::GraphicsContext graphicsContext;
 
-    while (!exit)
+    while (true)
     {
         // Request a 24-bits depth buffer when creating the window
         sf::ContextSettings contextSettings;
         contextSettings.depthBits   = 24;
         contextSettings.sRgbCapable = sRgb;
-
-
-        // Create the main window
-        sf::RenderWindow window(graphicsContext,
-                                sf::VideoMode({800, 600}),
-                                "SFML graphics with OpenGL",
-                                sf::Style::Default,
-                                sf::State::Windowed,
-                                contextSettings);
-
-        window.setVerticalSyncEnabled(true);
-        window.setMinimumSize(sf::Vector2u{400, 300});
-        window.setMaximumSize(sf::Vector2u{1200, 900});
 
         // Create a sprite for the background
         const auto backgroundTexture = sf::Texture::loadFromFile(graphicsContext, resourcesDir() / "background.jpg", sRgb)
@@ -88,7 +209,7 @@ int main()
         const auto font = sf::Font::openFromFile(graphicsContext, resourcesDir() / "tuffy.ttf").value();
 
         sf::Text text(font, "SFML / OpenGL demo");
-        sf::Text sRgbInstructions(font, "Press space to toggle sRGB conversion");
+        sf::Text sRgbInstructions(font, "Press space to toggle sRGB conversion (off)");
         sf::Text mipmapInstructions(font, "Press return to toggle mipmapping");
         text.setFillColor(sf::Color(255, 255, 255, 170));
         sRgbInstructions.setFillColor(sf::Color(255, 255, 255, 170));
@@ -105,117 +226,10 @@ int main()
         // mipmapping is purely optional in this example
         (void)texture.generateMipmap();
 
-        // Make the window the active window for OpenGL calls
-        if (!window.setActive(true))
-        {
-            std::cerr << "Failed to set window to active" << std::endl;
+        // Create the main window
+        std::optional<sf::RenderWindow> window = recreateWindow(graphicsContext, contextSettings, texture);
+        if (!window.has_value())
             return EXIT_FAILURE;
-        }
-
-        // Load OpenGL or OpenGL ES entry points using glad
-#ifdef SFML_OPENGL_ES
-        gladLoadGLES1(sf::Context::getFunction);
-#else
-        static sf::GraphicsContext* gcPtr;
-        gcPtr = &graphicsContext;
-
-        gladLoadGL([](const char* name) { return sf::Context::getFunction(*gcPtr, name); });
-#endif
-
-        // Enable Z-buffer read and write
-        glEnable(GL_DEPTH_TEST);
-        glDepthMask(GL_TRUE);
-#ifdef SFML_OPENGL_ES
-        glClearDepthf(1.f);
-#else
-        glClearDepth(1.f);
-#endif
-
-        // Disable lighting
-        glDisable(GL_LIGHTING);
-
-        // Configure the viewport (the same size as the window)
-        glViewport(0, 0, static_cast<GLsizei>(window.getSize().x), static_cast<GLsizei>(window.getSize().y));
-
-        // Setup a perspective projection
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        const GLfloat ratio = static_cast<float>(window.getSize().x) / static_cast<float>(window.getSize().y);
-#ifdef SFML_OPENGL_ES
-        glFrustumf(-ratio, ratio, -1.f, 1.f, 1.f, 500.f);
-#else
-        glFrustum(-ratio, ratio, -1.f, 1.f, 1.f, 500.f);
-#endif
-
-        // Bind the texture
-        glEnable(GL_TEXTURE_2D);
-        sf::Texture::bind(graphicsContext, &texture);
-
-        // Define a 3D cube (6 faces made of 2 triangles composed by 3 vertices)
-        // clang-format off
-        constexpr std::array<GLfloat, 180> cube =
-        {
-            // positions    // texture coordinates
-            -20, -20, -20,  0, 0,
-            -20,  20, -20,  1, 0,
-            -20, -20,  20,  0, 1,
-            -20, -20,  20,  0, 1,
-            -20,  20, -20,  1, 0,
-            -20,  20,  20,  1, 1,
-
-             20, -20, -20,  0, 0,
-             20,  20, -20,  1, 0,
-             20, -20,  20,  0, 1,
-             20, -20,  20,  0, 1,
-             20,  20, -20,  1, 0,
-             20,  20,  20,  1, 1,
-
-            -20, -20, -20,  0, 0,
-             20, -20, -20,  1, 0,
-            -20, -20,  20,  0, 1,
-            -20, -20,  20,  0, 1,
-             20, -20, -20,  1, 0,
-             20, -20,  20,  1, 1,
-
-            -20,  20, -20,  0, 0,
-             20,  20, -20,  1, 0,
-            -20,  20,  20,  0, 1,
-            -20,  20,  20,  0, 1,
-             20,  20, -20,  1, 0,
-             20,  20,  20,  1, 1,
-
-            -20, -20, -20,  0, 0,
-             20, -20, -20,  1, 0,
-            -20,  20, -20,  0, 1,
-            -20,  20, -20,  0, 1,
-             20, -20, -20,  1, 0,
-             20,  20, -20,  1, 1,
-
-            -20, -20,  20,  0, 0,
-             20, -20,  20,  1, 0,
-            -20,  20,  20,  0, 1,
-            -20,  20,  20,  0, 1,
-             20, -20,  20,  1, 0,
-             20,  20,  20,  1, 1
-        };
-        // clang-format on
-
-        // Enable position and texture coordinates vertex components
-        glEnableClientState(GL_VERTEX_ARRAY);
-        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-        glVertexPointer(3, GL_FLOAT, 5 * sizeof(GLfloat), cube.data());
-        glTexCoordPointer(2, GL_FLOAT, 5 * sizeof(GLfloat), cube.data() + 3);
-
-        // Disable normal and color vertex components
-        glDisableClientState(GL_NORMAL_ARRAY);
-        glDisableClientState(GL_COLOR_ARRAY);
-
-        // Make the window no longer the active window for OpenGL calls
-        if (!window.setActive(false))
-        {
-            std::cerr << "Failed to set window to inactive" << std::endl;
-            return EXIT_FAILURE;
-        }
 
         // Create a clock for measuring the time elapsed
         const sf::Clock clock;
@@ -224,19 +238,17 @@ int main()
         bool mipmapEnabled = true;
 
         // Start game loop
-        while (window.isOpen())
+        while (true)
         {
             // Process events
-            while (const std::optional event = window.pollEvent())
+            while (const std::optional event = window->pollEvent())
             {
                 // Window closed or escape key pressed: exit
                 if (event->is<sf::Event::Closed>() ||
                     (event->is<sf::Event::KeyPressed>() &&
                      event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape))
                 {
-                    exit = true;
-                    window.close();
-                    break;
+                    return EXIT_SUCCESS;
                 }
 
                 // Return key: toggle mipmapping
@@ -262,7 +274,11 @@ int main()
                     keyPressed && keyPressed->code == sf::Keyboard::Key::Space)
                 {
                     sRgb = !sRgb;
-                    window.close();
+
+                    sRgbInstructions.setString(sRgb ? "Press space to toggle sRGB conversion (on)"
+                                                    : "Press space to toggle sRGB conversion (off)");
+
+                    window.reset();
                     break;
                 }
 
@@ -272,7 +288,7 @@ int main()
                     const sf::Vector2u textureSize = backgroundTexture.getSize();
 
                     // Make the window the active window for OpenGL calls
-                    if (!window.setActive(true))
+                    if (!window->setActive(true))
                     {
                         std::cerr << "Failed to set window to active" << std::endl;
                         return EXIT_FAILURE;
@@ -290,7 +306,7 @@ int main()
 #endif
 
                     // Make the window no longer the active window for OpenGL calls
-                    if (!window.setActive(false))
+                    if (!window->setActive(false))
                     {
                         std::cerr << "Failed to set window to inactive" << std::endl;
                         return EXIT_FAILURE;
@@ -299,22 +315,22 @@ int main()
                     sf::View view;
                     view.setSize(textureSize.to<sf::Vector2f>());
                     view.setCenter(textureSize.to<sf::Vector2f>() / 2.f);
-                    window.setView(view);
+                    window->setView(view);
                 }
             }
 
-            // Draw the background
-            window.pushGLStates();
-            window.draw(background, backgroundTexture);
-            window.popGLStates();
-
-            // Make the window the active window for OpenGL calls
-            if (!window.setActive(true))
+            if (!window.has_value()) // re-create the window
             {
-                // On failure, try re-creating the window, as it is intentionally
-                // closed when changing color space.
-                continue;
+                window = recreateWindow(graphicsContext, contextSettings, texture);
+
+                if (!window.has_value())
+                    return EXIT_FAILURE;
             }
+
+            // Draw the background
+            window->pushGLStates();
+            window->draw(background, backgroundTexture);
+            window->popGLStates();
 
             // Clear the depth buffer
             glClear(GL_DEPTH_BUFFER_BIT);
@@ -325,11 +341,11 @@ int main()
 #ifdef SFML_SYSTEM_IOS
             pos = sf::Touch::getPosition(0);
 #else
-            pos = sf::Mouse::getPosition(window);
+            pos = sf::Mouse::getPosition(*window);
 #endif
 
-            const float x = static_cast<float>(pos.x) * 200.f / static_cast<float>(window.getSize().x) - 100.f;
-            const float y = -static_cast<float>(pos.y) * 200.f / static_cast<float>(window.getSize().y) + 100.f;
+            const float x = static_cast<float>(pos.x) * 200.f / static_cast<float>(window->getSize().x) - 100.f;
+            const float y = -static_cast<float>(pos.y) * 200.f / static_cast<float>(window->getSize().y) + 100.f;
 
             // Apply some transformations
             glMatrixMode(GL_MODELVIEW);
@@ -343,21 +359,21 @@ int main()
             glDrawArrays(GL_TRIANGLES, 0, 36);
 
             // Make the window no longer the active window for OpenGL calls
-            if (!window.setActive(false))
+            if (!window->setActive(false))
             {
                 std::cerr << "Failed to set window to inactive" << std::endl;
                 return EXIT_FAILURE;
             }
 
             // Draw some text on top of our OpenGL object
-            window.pushGLStates();
-            window.draw(text);
-            window.draw(sRgbInstructions);
-            window.draw(mipmapInstructions);
-            window.popGLStates();
+            window->pushGLStates();
+            window->draw(text);
+            window->draw(sRgbInstructions);
+            window->draw(mipmapInstructions);
+            window->popGLStates();
 
             // Finally, display the rendered frame on screen
-            window.display();
+            window->display();
         }
     }
 

@@ -2552,7 +2552,7 @@ public:
         const sf::Clock clock;
 
         // Start game loop
-        while (window.isOpen())
+        while (true)
         {
             // Process events
             while (const std::optional event = window.pollEvent())
@@ -2562,8 +2562,7 @@ public:
                     (event->is<sf::Event::KeyPressed>() &&
                      event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape))
                 {
-                    window.close();
-                    break;
+                    return;
                 }
 
                 // Re-create the swapchain when the window is resized
@@ -2571,8 +2570,7 @@ public:
                     swapchainOutOfDate = true;
             }
 
-            // Check that window was not closed before drawing to it
-            if (vulkanAvailable && window.isOpen())
+            if (vulkanAvailable)
             {
                 // Update the uniform buffer (matrices)
                 updateUniformBuffer(clock.getElapsedTime().asSeconds());

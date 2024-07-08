@@ -439,10 +439,6 @@ int main()
         return EXIT_FAILURE;
     }
 
-    // Create the main window
-    sf::RenderWindow window(graphicsContext, sf::VideoMode({800, 600}), "SFML Shader", sf::Style::Titlebar | sf::Style::Close);
-    window.setVerticalSyncEnabled(true);
-
     // Open the application font
     const auto font = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf").value();
 
@@ -453,6 +449,7 @@ int main()
     std::optional edgeEffect       = tryLoadEdge(graphicsContext);
     std::optional geometryEffect   = tryLoadGeometry(graphicsContext);
 
+    // TODO: this will go away with `sf::Optional<T>`
     const auto optionalToPtr = [&](auto& effect) -> Effect* { return effect.has_value() ? &*effect : nullptr; };
 
     const std::array<Effect*, 5> effects{optionalToPtr(pixelateEffect),
@@ -487,31 +484,29 @@ int main()
     instructions.setOutlineThickness(3.f);
     instructions.setOutlineColor(sf::Color::Red);
 
+    // Create the main window
+    sf::RenderWindow window(graphicsContext, sf::VideoMode({800, 600}), "SFML Shader", sf::Style::Titlebar | sf::Style::Close);
+    window.setVerticalSyncEnabled(true);
+
     // Start the game loop
     const sf::Clock clock;
-    while (window.isOpen())
+    while (true)
     {
         // Process events
         while (const std::optional event = window.pollEvent())
         {
-            // Close window: exit
-            if (event->is<sf::Event::Closed>())
+            // Window closed or escape key pressed: exit
+            if (event->is<sf::Event::Closed>() ||
+                (event->is<sf::Event::KeyPressed>() &&
+                 event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape))
             {
-                window.close();
-                break;
+                return EXIT_SUCCESS;
             }
 
             if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
             {
                 switch (keyPressed->code)
                 {
-                    // Escape key: exit
-                    case sf::Keyboard::Key::Escape:
-                    {
-                        window.close();
-                        break;
-                    }
-
                     // Left arrow key: previous shader
                     case sf::Keyboard::Key::Left:
                     {

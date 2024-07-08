@@ -410,10 +410,7 @@ SFML_PRIV_EVENTS_X_MACRO(SFML_PRIV_EVENT_X_EXTERN_TEMPLATE_GETIF, SFML_PRIV_EVEN
 ///     if (event->is<sf::Event::Closed>() ||
 ///         (event->is<sf::Event::KeyPressed>() &&
 ///          event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape))
-///     {
-///         window.close();
-///         break;
-///     }
+///         return 0; // break out of both event and main loops
 ///
 ///     // The window was resized
 ///     if (const auto* resized = event->getIf<sf::Event::Resized>())

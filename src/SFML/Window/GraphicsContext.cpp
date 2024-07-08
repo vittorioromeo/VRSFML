@@ -152,6 +152,8 @@ struct GraphicsContext::Impl
 ////////////////////////////////////////////////////////////
 GraphicsContext::GraphicsContext() : m_impl(priv::makeUnique<Impl>())
 {
+    if (!setActive(true))
+        priv::err() << "Failed to enable graphics context in GraphicsContext()" << priv::errEndl;
 }
 
 

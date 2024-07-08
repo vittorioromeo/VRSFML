@@ -16,6 +16,8 @@
 #include <string>
 #include <vector>
 
+#include <cstdlib>
+
 
 ////////////////////////////////////////////////////////////
 /// Main
@@ -48,14 +50,13 @@ int main()
 
     std::vector<std::string> log;
 
-    while (window.isOpen())
+    while (true)
     {
         while (const std::optional event = window.pollEvent())
         {
             if (event->is<sf::Event::Closed>())
             {
-                window.close();
-                break;
+                return EXIT_SUCCESS;
             }
 
             static const auto vec2ToString = [](const sf::Vector2i& vec2)

@@ -35,17 +35,14 @@
 ///     music.play();
 ///
 ///     // Start the game loop
-///     while (window.isOpen())
+///     while (true)
 ///     {
 ///         // Process events
 ///         while (const std::optional event = window.pollEvent())
 ///         {
 ///             // Close window: exit
 ///             if (event->is<sf::Event::Closed>())
-///             {
-///                 window.close();
-///                 break;
-///             }
+///                 return 0;
 ///         }
 ///
 ///         // Clear screen
