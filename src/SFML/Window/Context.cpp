@@ -48,7 +48,7 @@ namespace sf
 ////////////////////////////////////////////////////////////
 Context::Context(GraphicsContext& graphicsContext) :
 m_graphicsContext(&graphicsContext),
-m_context(priv::GlContext::create(graphicsContext))
+m_context(graphicsContext.createGlContext())
 {
     if (!setActive(true))
         priv::err() << "Failed to set context as active during construction" << priv::errEndl;
@@ -115,7 +115,7 @@ const Context* Context::getActiveContext()
     using ContextImpl::currentContext;
 
     // We have to check that the last activated sf::Context is still active (a RenderTarget activation may have deactivated it)
-    if (currentContext != nullptr && currentContext->m_context.get() == priv::GlContext::getActiveContext())
+    if (currentContext != nullptr && currentContext->m_context.get() == GraphicsContext::getActiveContext())
         return currentContext;
 
     return nullptr;
@@ -125,14 +125,14 @@ const Context* Context::getActiveContext()
 ////////////////////////////////////////////////////////////
 std::uint64_t Context::getActiveContextId()
 {
-    return priv::GlContext::getActiveContextId();
+    return GraphicsContext::getActiveContextId();
 }
 
 
 ////////////////////////////////////////////////////////////
 bool Context::hasActiveContext()
 {
-    return priv::GlContext::hasActiveContext();
+    return GraphicsContext::hasActiveContext();
 }
 
 
@@ -153,7 +153,7 @@ GlFunctionPointer Context::getFunction(GraphicsContext& graphicsContext, const c
 ////////////////////////////////////////////////////////////
 Context::Context(GraphicsContext& graphicsContext, const ContextSettings& settings, const Vector2u& size) :
 m_graphicsContext(&graphicsContext),
-m_context(priv::GlContext::create(graphicsContext, settings, size))
+m_context(graphicsContext.createGlContext(settings, size))
 {
     if (!setActive(true))
         priv::err() << "Failed to set context as active during construction" << priv::errEndl;

@@ -61,7 +61,7 @@ Window::Window(GraphicsContext&       graphicsContext,
                TWindowBaseArg&&       windowBaseArg,
                unsigned int           bitsPerPixel) :
 WindowBase(SFML_FORWARD(windowBaseArg)),
-m_impl(priv::GlContext::create(graphicsContext, settings, *WindowBase::m_impl, bitsPerPixel))
+m_impl(graphicsContext.createGlContext(settings, *WindowBase::m_impl, bitsPerPixel))
 {
     // Perform common initializations
     assert(m_impl->context);

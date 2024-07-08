@@ -38,14 +38,14 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 TransientContextLock::TransientContextLock(GraphicsContext& graphicsContext)
 {
-    priv::GlContext::acquireTransientContext(graphicsContext);
+    graphicsContext.acquireTransientContext();
 }
 
 
 ////////////////////////////////////////////////////////////
 TransientContextLock::~TransientContextLock()
 {
-    priv::GlContext::releaseTransientContext();
+    GraphicsContext::releaseTransientContext();
 }
 
 } // namespace sf::priv
