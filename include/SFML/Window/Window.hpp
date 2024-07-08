@@ -239,8 +239,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    struct CommonImpl;
-    priv::InPlacePImpl<CommonImpl, 128> m_commonImpl; //!< Implementation details
+    struct Impl;
+    priv::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
 };
 
 } // namespace sf
