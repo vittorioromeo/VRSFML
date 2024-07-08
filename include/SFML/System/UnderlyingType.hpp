@@ -24,38 +24,37 @@
 
 #pragma once
 
-#include <SFML/System/Macros.hpp>
+#if __has_builtin(__underlying_type)
 
-#include <cstdint>
+#define SFML_PRIV_UNDERLYING_TYPE(...) __underlying_type(__VA_ARGS__)
 
-namespace sf
+#else
+
+#include <type_traits>
+
+namespace sf::priv
 {
-////////////////////////////////////////////////////////////
-/// \ingroup window
-/// \brief Enumeration of the window styles
-///
-////////////////////////////////////////////////////////////
-enum class [[nodiscard]] Style : std::uint32_t
-{
-    None     = 0,      //!< No border / title bar (this flag and all others are mutually exclusive)
-    Titlebar = 1 << 0, //!< Title bar + fixed border
-    Resize   = 1 << 1, //!< Title bar + resizable border + maximize button
-    Close    = 1 << 2, //!< Title bar + close button
 
-    Default = Titlebar | Resize | Close //!< Default window style
+template <typename T>
+struct RemoveRef
+{
+    using type = T;
 };
 
-SFML_PRIV_DEFINE_ENUM_CLASS_BITWISE_OPERATORS(Style);
-
-////////////////////////////////////////////////////////////
-/// \ingroup window
-/// \brief Enumeration of the window states
-///
-////////////////////////////////////////////////////////////
-enum class [[nodiscard]] State
+template <typename T>
+struct RemoveRef<T&>
 {
-    Windowed,  //!< Floating window
-    Fullscreen //!< Fullscreen window
+    using type = T;
 };
 
-} // namespace sf
+template <typename T>
+struct RemoveRef<T&&>
+{
+    using type = T;
+};
+
+} // namespace sf::priv
+
+#define SFML_PRIV_UNDERLYING_TYPE(...) typename ::std::underlying_type<__VA_ARGS__>::type
+
+#endif

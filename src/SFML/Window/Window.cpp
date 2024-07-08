@@ -55,14 +55,13 @@ struct Window::Window::Impl
 
 
 ////////////////////////////////////////////////////////////
+template <typename TWindowBaseArg>
 Window::Window(GraphicsContext&       graphicsContext,
-               VideoMode              mode,
-               const String&          title,
-               std::uint32_t          style,
-               State                  state,
-               const ContextSettings& settings) :
-WindowBase(priv::WindowImpl::create(mode, title, style, state, settings)),
-m_impl(priv::GlContext::create(graphicsContext, settings, *WindowBase::m_impl, mode.bitsPerPixel))
+               const ContextSettings& settings,
+               TWindowBaseArg&&       windowBaseArg,
+               unsigned int           bitsPerPixel) :
+WindowBase(SFML_FORWARD(windowBaseArg)),
+m_impl(priv::GlContext::create(graphicsContext, settings, *WindowBase::m_impl, bitsPerPixel))
 {
     // Perform common initializations
     assert(m_impl->context);
@@ -74,6 +73,18 @@ m_impl(priv::GlContext::create(graphicsContext, settings, *WindowBase::m_impl, m
     // Activate the window
     if (!setActive())
         priv::err() << "Failed to set window as active during initialization" << priv::errEndl;
+}
+
+
+////////////////////////////////////////////////////////////
+Window::Window(GraphicsContext&       graphicsContext,
+               VideoMode              mode,
+               const String&          title,
+               Style                  style,
+               State                  state,
+               const ContextSettings& settings) :
+Window(graphicsContext, settings, priv::WindowImpl::create(mode, title, style, state, settings), mode.bitsPerPixel)
+{
 }
 
 
@@ -86,19 +97,8 @@ Window(graphicsContext, mode, title, sf::Style::Default, state, settings)
 
 ////////////////////////////////////////////////////////////
 Window::Window(GraphicsContext& graphicsContext, WindowHandle handle, const ContextSettings& settings) :
-WindowBase(handle),
-m_impl(priv::GlContext::create(graphicsContext, settings, *WindowBase::m_impl, VideoMode::getDesktopMode().bitsPerPixel))
+Window(graphicsContext, settings, handle, VideoMode::getDesktopMode().bitsPerPixel)
 {
-    // Perform common initializations
-    assert(m_impl->context);
-
-    // Setup default behaviors (to get a consistent behavior across different implementations)
-    setVerticalSyncEnabled(false);
-    setFramerateLimit(0);
-
-    // Activate the window
-    if (!setActive())
-        priv::err() << "Failed to set window as active during initialization" << priv::errEndl;
 }
 
 
@@ -106,7 +106,7 @@ m_impl(priv::GlContext::create(graphicsContext, settings, *WindowBase::m_impl, V
 Window::Window(GraphicsContext&       graphicsContext,
                VideoMode              mode,
                const char*            title,
-               std::uint32_t          style,
+               Style                  style,
                State                  state,
                const ContextSettings& settings) :
 Window(graphicsContext, mode, String(title), style, state, settings)

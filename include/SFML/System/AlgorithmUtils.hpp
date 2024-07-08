@@ -35,7 +35,7 @@ namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline]] constexpr const T& min(const T& a, const T& b) noexcept
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T& min(const T& a, const T& b) noexcept
 {
     return a < b ? a : b;
 }
@@ -43,7 +43,7 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline]] constexpr const T& max(const T& a, const T& b) noexcept
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T& max(const T& a, const T& b) noexcept
 {
     return a < b ? b : a;
 }
@@ -73,7 +73,7 @@ template <typename T, typename Vector>
 
 ////////////////////////////////////////////////////////////
 template <typename Iter, typename T>
-[[gnu::always_inline]] constexpr Iter find(Iter rangeBegin, Iter rangeEnd, const T& target)
+[[gnu::always_inline, gnu::pure]] constexpr Iter find(Iter rangeBegin, Iter rangeEnd, const T& target)
 {
     for (; rangeBegin != rangeEnd; ++rangeBegin)
         if (*rangeBegin == target)
@@ -85,7 +85,7 @@ template <typename Iter, typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename Iter, typename Predicate>
-[[gnu::always_inline]] constexpr Iter findIf(Iter rangeBegin, Iter rangeEnd, Predicate&& predicate)
+[[gnu::always_inline, gnu::pure]] constexpr Iter findIf(Iter rangeBegin, Iter rangeEnd, Predicate&& predicate)
 {
     for (; rangeBegin != rangeEnd; ++rangeBegin)
         if (predicate(*rangeBegin))
@@ -97,7 +97,7 @@ template <typename Iter, typename Predicate>
 
 ////////////////////////////////////////////////////////////
 template <typename Iter, typename Predicate>
-[[gnu::always_inline]] constexpr bool anyOf(Iter rangeBegin, Iter rangeEnd, Predicate&& predicate)
+[[gnu::always_inline, gnu::pure]] constexpr bool anyOf(Iter rangeBegin, Iter rangeEnd, Predicate&& predicate)
 {
     for (; rangeBegin != rangeEnd; ++rangeBegin)
         if (predicate(*rangeBegin))
@@ -109,7 +109,7 @@ template <typename Iter, typename Predicate>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline]] constexpr const T& clamp(const T& value, const T& minValue, const T& maxValue)
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T& clamp(const T& value, const T& minValue, const T& maxValue)
 {
     if (value < minValue)
         return minValue;
@@ -123,7 +123,7 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T, SizeT N>
-[[nodiscard, gnu::always_inline]] constexpr SizeT getArraySize(const T (&)[N])
+[[nodiscard, gnu::always_inline, gnu::const]] constexpr SizeT getArraySize(const T (&)[N])
 {
     return N;
 }
@@ -156,17 +156,17 @@ public:
         return *this;
     }
 
-    [[nodiscard, gnu::always_inline]] BackInserter& operator*()
+    [[nodiscard, gnu::always_inline, gnu::pure]] BackInserter& operator*()
     {
         return *this;
     }
 
-    [[gnu::always_inline]] BackInserter& operator++()
+    [[gnu::always_inline, gnu::pure]] BackInserter& operator++()
     {
         return *this;
     }
 
-    [[nodiscard, gnu::always_inline]] BackInserter operator++(int)
+    [[nodiscard, gnu::always_inline, gnu::pure]] BackInserter operator++(int)
     {
         return *this;
     }

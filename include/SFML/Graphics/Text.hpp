@@ -59,7 +59,7 @@ public:
     /// \brief Enumeration of the string drawing styles
     ///
     ////////////////////////////////////////////////////////////
-    enum [[nodiscard]] Style
+    enum class [[nodiscard]] Style
     {
         Regular       = 0,      //!< Regular characters, no style
         Bold          = 1 << 0, //!< Bold characters
@@ -224,15 +224,15 @@ public:
     /// \brief Set the text's style
     ///
     /// You can pass a combination of one or more styles, for
-    /// example sf::Text::Bold | sf::Text::Italic.
-    /// The default style is sf::Text::Regular.
+    /// example sf::Text::Style::Bold | sf::Text::Style::Italic.
+    /// The default style is sf::Text::Style::Regular.
     ///
     /// \param style New style
     ///
     /// \see getStyle
     ///
     ////////////////////////////////////////////////////////////
-    void setStyle(std::uint32_t style);
+    void setStyle(Text::Style style);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the fill color of the text
@@ -345,7 +345,7 @@ public:
     /// \see setStyle
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::uint32_t getStyle() const;
+    [[nodiscard]] Style getStyle() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the fill color of the text
@@ -453,6 +453,8 @@ private:
     SFML_DEFINE_LIFETIME_DEPENDANT(Font);
 };
 
+SFML_PRIV_DEFINE_ENUM_CLASS_BITWISE_OPERATORS(Text::Style);
+
 } // namespace sf
 
 
@@ -499,7 +501,7 @@ private:
 /// // Create a text
 /// sf::Text text(font, "hello");
 /// text.setCharacterSize(30);
-/// text.setStyle(sf::Text::Bold);
+/// text.setStyle(sf::Text::Style::Bold);
 /// text.setFillColor(sf::Color::Red);
 ///
 /// // Draw it

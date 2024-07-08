@@ -132,7 +132,7 @@ WindowImplCocoa::WindowImplCocoa(WindowHandle handle)
 
 
 ////////////////////////////////////////////////////////////
-WindowImplCocoa::WindowImplCocoa(VideoMode mode, const String& title, std::uint32_t style, State state, const ContextSettings& /*settings*/)
+WindowImplCocoa::WindowImplCocoa(VideoMode mode, const String& title, Style style, State state, const ContextSettings& /*settings*/)
 {
     const AutoreleasePool pool;
     // Transform the app process.

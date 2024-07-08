@@ -373,7 +373,7 @@ void EglContext::updateSettings()
 {
     m_settings.majorVersion      = 1;
     m_settings.minorVersion      = 1;
-    m_settings.attributeFlags    = ContextSettings::Default;
+    m_settings.attributeFlags    = ContextSettings::Attribute::Default;
     m_settings.depthBits         = 0;
     m_settings.stencilBits       = 0;
     m_settings.antialiasingLevel = 0;

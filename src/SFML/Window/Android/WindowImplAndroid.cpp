@@ -58,7 +58,7 @@ WindowImplAndroid::WindowImplAndroid(WindowHandle /* handle */)
 ////////////////////////////////////////////////////////////
 WindowImplAndroid::WindowImplAndroid(VideoMode mode,
                                      const String& /* title */,
-                                     std::uint32_t /* style */,
+                                     Style /* style */,
                                      State state,
                                      const ContextSettings& /* settings */) :
 m_size(mode.size)

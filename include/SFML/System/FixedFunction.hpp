@@ -97,7 +97,7 @@ public:
     // NOLINTNEXTLINE(bugprone-forwarding-reference-overload)
     [[nodiscard]] FixedFunction(TFFwd&& f) noexcept : FixedFunction()
     {
-        using UnrefType = typename RemoveRef<TFFwd>::type;
+        using UnrefType = SFML_PRIV_REMOVE_REFERENCE(TFFwd);
         static_assert(sizeof(UnrefType) < TStorageSize);
 
         // NOLINTNEXTLINE(readability-non-const-parameter)

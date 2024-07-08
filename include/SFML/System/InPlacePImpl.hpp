@@ -21,22 +21,22 @@ private:
     alignas(MaxAlignT) char m_buffer[BufferSize];
 
 public:
-    [[nodiscard, gnu::always_inline]] T* operator->() noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] T* operator->() noexcept
     {
         return SFML_PRIV_LAUNDER_CAST(T*, m_buffer);
     }
 
-    [[nodiscard, gnu::always_inline]] const T* operator->() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] const T* operator->() const noexcept
     {
         return SFML_PRIV_LAUNDER_CAST(const T*, m_buffer);
     }
 
-    [[nodiscard, gnu::always_inline]] T& operator*() noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] T& operator*() noexcept
     {
         return *SFML_PRIV_LAUNDER_CAST(T*, m_buffer);
     }
 
-    [[nodiscard, gnu::always_inline]] const T& operator*() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] const T& operator*() const noexcept
     {
         return *SFML_PRIV_LAUNDER_CAST(const T*, m_buffer);
     }

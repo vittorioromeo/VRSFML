@@ -812,7 +812,7 @@ void DRMContext::updateSettings()
 
     m_settings.majorVersion   = 1;
     m_settings.minorVersion   = 1;
-    m_settings.attributeFlags = ContextSettings::Default;
+    m_settings.attributeFlags = ContextSettings::Attribute::Default;
 }
 
 

@@ -18,13 +18,13 @@ struct PNewMarker
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline void* operator new(sf::priv::SizeT, sf::priv::PNewMarker, void* ptr)
+[[nodiscard, gnu::always_inline, gnu::const]] inline void* operator new(sf::priv::SizeT, sf::priv::PNewMarker, void* ptr)
 {
     return ptr;
 }
 
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] inline void operator delete(void*, sf::priv::PNewMarker, void*) noexcept
+[[gnu::always_inline, gnu::const]] inline void operator delete(void*, sf::priv::PNewMarker, void*) noexcept
 {
 }
 

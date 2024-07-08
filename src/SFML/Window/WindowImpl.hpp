@@ -30,11 +30,9 @@
 #include <SFML/Config.hpp>
 
 #include <SFML/Window/Event.hpp>
-#include <SFML/Window/Vulkan.hpp>
 #include <SFML/Window/WindowEnums.hpp>
 #include <SFML/Window/WindowHandle.hpp>
 
-#include <SFML/System/EnumArray.hpp>
 #include <SFML/System/InPlacePImpl.hpp>
 #include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
@@ -51,6 +49,11 @@ struct ContextSettings;
 class String;
 class Time;
 class VideoMode;
+
+namespace Vulkan
+{
+struct VulkanSurfaceData;
+} // namespace Vulkan
 
 namespace priv
 {
@@ -77,7 +80,7 @@ public:
     ////////////////////////////////////////////////////////////
     static priv::UniquePtr<WindowImpl> create(VideoMode              mode,
                                               const String&          title,
-                                              std::uint32_t          style,
+                                              Style                  style,
                                               State                  state,
                                               const ContextSettings& settings);
 
@@ -300,7 +303,7 @@ public:
     /// \return True if surface creation was successful, false otherwise
     ///
     ////////////////////////////////////////////////////////////
-    bool createVulkanSurface(const VkInstance& instance, VkSurfaceKHR& surface, const VkAllocationCallbacks* allocator) const;
+    [[nodiscard]] bool createVulkanSurface(const Vulkan::VulkanSurfaceData& vulkanSurfaceData) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the fullscreen window

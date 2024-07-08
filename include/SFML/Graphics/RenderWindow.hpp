@@ -78,14 +78,14 @@ public:
     [[nodiscard]] RenderWindow(GraphicsContext&       graphicsContext,
                                VideoMode              mode,
                                const String&          title,
-                               std::uint32_t          style    = Style::Default,
+                               Style                  style    = Style::Default,
                                State                  state    = State::Windowed,
                                const ContextSettings& settings = ContextSettings());
 
     [[nodiscard]] RenderWindow(GraphicsContext&       graphicsContext,
                                VideoMode              mode,
                                const char*            title,
-                               std::uint32_t          style    = Style::Default,
+                               Style                  style    = Style::Default,
                                State                  state    = State::Windowed,
                                const ContextSettings& settings = ContextSettings());
 

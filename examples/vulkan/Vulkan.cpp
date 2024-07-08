@@ -566,7 +566,7 @@ public:
     // Setup the SFML window Vulkan rendering surface
     void setupSurface()
     {
-        if (!window.createVulkanSurface(instance, surface))
+        if (!window.createVulkanSurface(sf::Vulkan::VulkanSurfaceData{instance, surface}))
             vulkanAvailable = false;
     }
 

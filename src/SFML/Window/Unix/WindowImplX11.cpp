@@ -485,7 +485,7 @@ WindowImplX11::WindowImplX11(WindowHandle handle) : m_isExternal(true)
 
 
 ////////////////////////////////////////////////////////////
-WindowImplX11::WindowImplX11(VideoMode mode, const String& title, std::uint32_t style, State state, const ContextSettings& settings) :
+WindowImplX11::WindowImplX11(VideoMode mode, const String& title, Style style, State state, const ContextSettings& settings) :
 m_fullscreen(state == State::Fullscreen),
 m_cursorGrabbed(m_fullscreen)
 {
@@ -605,17 +605,19 @@ m_cursorGrabbed(m_fullscreen)
                 unsigned long state{};
             } hints;
 
-            if (style & Style::Titlebar)
+            if (!!(style & Style::Titlebar))
             {
                 hints.decorations |= MWM_DECOR_BORDER | MWM_DECOR_TITLE | MWM_DECOR_MINIMIZE | MWM_DECOR_MENU;
                 hints.functions |= MWM_FUNC_MOVE | MWM_FUNC_MINIMIZE;
             }
-            if (style & Style::Resize)
+
+            if (!!(style & Style::Resize))
             {
                 hints.decorations |= MWM_DECOR_MAXIMIZE | MWM_DECOR_RESIZEH;
                 hints.functions |= MWM_FUNC_MAXIMIZE | MWM_FUNC_RESIZE;
             }
-            if (style & Style::Close)
+
+            if (!!(style & Style::Close))
             {
                 hints.decorations |= 0;
                 hints.functions |= MWM_FUNC_CLOSE;

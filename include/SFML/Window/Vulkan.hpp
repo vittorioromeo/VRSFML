@@ -63,6 +63,26 @@ using VulkanFunctionPointer = void (*)();
 namespace Vulkan
 {
 ////////////////////////////////////////////////////////////
+/// \brief TODO
+///
+///
+struct VulkanSurfaceData
+{
+    explicit VulkanSurfaceData(const VkInstance&            theInstance,
+                               VkSurfaceKHR&                theSurface,
+                               const VkAllocationCallbacks* theAllocator = nullptr) :
+    instance{theInstance},
+    surface{theSurface},
+    allocator{theAllocator}
+    {
+    }
+
+    const VkInstance&            instance;
+    VkSurfaceKHR&                surface;
+    const VkAllocationCallbacks* allocator;
+};
+
+////////////////////////////////////////////////////////////
 /// \brief Tell whether or not the system supports Vulkan
 ///
 /// This function should always be called before using

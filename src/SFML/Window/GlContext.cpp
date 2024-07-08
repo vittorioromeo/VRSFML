@@ -339,8 +339,8 @@ UniquePtr<GlContext> GlContext::create(GraphicsContext&       graphicsContext,
     // Only in this situation we allow the user to indirectly re-create the shared context as a core context
 
     // // Check if we need to convert our shared context into a core context
-    // if ((SharedContext::getUseCount() == 2) && (settings.attributeFlags & ContextSettings::Core) &&
-    //     !(sharedContext.context->m_settings.attributeFlags & ContextSettings::Core))
+    // if ((SharedContext::getUseCount() == 2) && (settings.attributeFlags & ContextSettings::Attribute::Core) &&
+    //     !(sharedContext.context->m_settings.attributeFlags & ContextSettings::Attribute::Core))
     // {
     //     // Re-create our shared context as a core context
     //     const ContextSettings sharedSettings{/* depthBits */ 0,
@@ -395,8 +395,8 @@ UniquePtr<GlContext> GlContext::create(GraphicsContext& graphicsContext, const C
     // Only in this situation we allow the user to indirectly re-create the shared context as a core context
 
     // Check if we need to convert our shared context into a core context
-    // if ((SharedContext::getUseCount() == 2) && (settings.attributeFlags & ContextSettings::Core) &&
-    //     !(sharedContext.context->m_settings.attributeFlags & ContextSettings::Core))
+    // if ((SharedContext::getUseCount() == 2) && (settings.attributeFlags & ContextSettings::Attribute::Core) &&
+    //     !(sharedContext.context->m_settings.attributeFlags & ContextSettings::Attribute::Core))
     // {
     //     // Re-create our shared context as a core context
     //     const ContextSettings sharedSettings{/* depthBits */ 0,
@@ -717,7 +717,7 @@ bool GlContext::initialize(const ContextSettings& requestedSettings)
     // states that it will not be a compatibility profile context regardless of the requested
     // profile unless ARB_compatibility is present.
 
-    m_settings.attributeFlags = ContextSettings::Default;
+    m_settings.attributeFlags = ContextSettings::Attribute::Default;
 
     if (m_settings.majorVersion >= 3)
     {
@@ -726,11 +726,11 @@ bool GlContext::initialize(const ContextSettings& requestedSettings)
         glGetIntegervFunc(GL_CONTEXT_FLAGS, &flags);
 
         if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
-            m_settings.attributeFlags |= ContextSettings::Debug;
+            m_settings.attributeFlags |= ContextSettings::Attribute::Debug;
 
         if ((m_settings.majorVersion == 3) && (m_settings.minorVersion == 1))
         {
-            m_settings.attributeFlags |= ContextSettings::Core;
+            m_settings.attributeFlags |= ContextSettings::Attribute::Core;
 
             auto glGetStringiFunc = reinterpret_cast<glGetStringiFuncType>(ContextType::getFunction("glGetStringi"));
 
@@ -745,7 +745,7 @@ bool GlContext::initialize(const ContextSettings& requestedSettings)
 
                     if (std::strstr(extensionString, "GL_ARB_compatibility"))
                     {
-                        m_settings.attributeFlags &= ~static_cast<std::uint32_t>(ContextSettings::Core);
+                        m_settings.attributeFlags &= ~ContextSettings::Attribute::Core;
                         break;
                     }
                 }
@@ -758,7 +758,7 @@ bool GlContext::initialize(const ContextSettings& requestedSettings)
             glGetIntegervFunc(GL_CONTEXT_PROFILE_MASK, &profile);
 
             if (profile & GL_CONTEXT_CORE_PROFILE_BIT)
-                m_settings.attributeFlags |= ContextSettings::Core;
+                m_settings.attributeFlags |= ContextSettings::Attribute::Core;
         }
     }
 
@@ -808,15 +808,17 @@ void GlContext::checkSettings(const ContextSettings& requestedSettings) const
         err() << "Warning: The created OpenGL context does not fully meet the settings that were requested" << '\n'
               << "Requested: version = " << requestedSettings.majorVersion << "." << requestedSettings.minorVersion
               << " ; depth bits = " << requestedSettings.depthBits << " ; stencil bits = " << requestedSettings.stencilBits
-              << " ; AA level = " << requestedSettings.antialiasingLevel << std::boolalpha
-              << " ; core = " << ((requestedSettings.attributeFlags & ContextSettings::Core) != 0)
-              << " ; debug = " << ((requestedSettings.attributeFlags & ContextSettings::Debug) != 0)
+              << " ; AA level = " << requestedSettings.antialiasingLevel << std::boolalpha << " ; core = "
+              << ((requestedSettings.attributeFlags & ContextSettings::Attribute::Core) != ContextSettings::Attribute{0u})
+              << " ; debug = "
+              << ((requestedSettings.attributeFlags & ContextSettings::Attribute::Debug) != ContextSettings::Attribute{0u})
               << " ; sRGB = " << requestedSettings.sRgbCapable << std::noboolalpha << '\n'
               << "Created: version = " << m_settings.majorVersion << "." << m_settings.minorVersion
               << " ; depth bits = " << m_settings.depthBits << " ; stencil bits = " << m_settings.stencilBits
-              << " ; AA level = " << m_settings.antialiasingLevel << std::boolalpha
-              << " ; core = " << ((m_settings.attributeFlags & ContextSettings::Core) != 0)
-              << " ; debug = " << ((m_settings.attributeFlags & ContextSettings::Debug) != 0)
+              << " ; AA level = " << m_settings.antialiasingLevel << std::boolalpha << " ; core = "
+              << ((m_settings.attributeFlags & ContextSettings::Attribute::Core) != ContextSettings::Attribute{0u})
+              << " ; debug = "
+              << ((m_settings.attributeFlags & ContextSettings::Attribute::Debug) != ContextSettings::Attribute{0u})
               << " ; sRGB = " << m_settings.sRgbCapable << std::noboolalpha << errEndl;
     }
 }

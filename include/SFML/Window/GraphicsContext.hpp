@@ -32,7 +32,7 @@
 #include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
 
-#include <mutex>
+#include <mutex> // TODO: expensive at compile-time
 
 
 namespace sf::priv
@@ -70,7 +70,7 @@ public:
 
     [[nodiscard]] Guard lock();
 
-    [[nodiscard]] std::recursive_mutex& getMutex();
+    [[nodiscard]] std::recursive_mutex& getMutex(); // TODO: needed?
 
     [[nodiscard]] priv::UniquePtr<priv::GlContext> makeContextType();
 

@@ -110,7 +110,7 @@ public:
         return *this;
     }
 
-    [[nodiscard, gnu::always_inline]] T* get() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] T* get() const noexcept
     {
         return m_ptr;
     }
@@ -127,27 +127,27 @@ public:
         return m_ptr;
     }
 
-    [[nodiscard, gnu::always_inline]] explicit operator bool() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] explicit operator bool() const noexcept
     {
         return m_ptr != nullptr;
     }
 
-    [[nodiscard, gnu::always_inline]] bool operator==(const T* ptr) const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] bool operator==(const T* ptr) const noexcept
     {
         return m_ptr == ptr;
     }
 
-    [[nodiscard, gnu::always_inline]] bool operator!=(const T* ptr) const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] bool operator!=(const T* ptr) const noexcept
     {
         return m_ptr != ptr;
     }
 
-    [[nodiscard, gnu::always_inline]] bool operator==(decltype(nullptr)) const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] bool operator==(decltype(nullptr)) const noexcept
     {
         return m_ptr == nullptr;
     }
 
-    [[nodiscard, gnu::always_inline]] bool operator!=(decltype(nullptr)) const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] bool operator!=(decltype(nullptr)) const noexcept
     {
         return m_ptr != nullptr;
     }
@@ -164,7 +164,7 @@ public:
 };
 
 template <typename T, typename... Ts>
-[[nodiscard, gnu::always_inline]] inline UniquePtr<T> makeUnique(Ts&&... xs)
+[[nodiscard, gnu::always_inline, gnu::pure]] inline UniquePtr<T> makeUnique(Ts&&... xs)
 {
     return UniquePtr<T>{new T{static_cast<Ts&&>(xs)...}};
 }

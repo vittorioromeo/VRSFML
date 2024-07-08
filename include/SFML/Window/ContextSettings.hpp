@@ -29,6 +29,8 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Config.hpp>
 
+#include <SFML/System/Macros.hpp>
+
 #include <cstdint>
 
 
@@ -45,25 +47,26 @@ struct ContextSettings
     /// \brief Enumeration of the context attribute flags
     ///
     ////////////////////////////////////////////////////////////
-    enum Attribute : std::uint32_t
+    enum class [[nodiscard]] Attribute : std::uint32_t
     {
         Default = 0,      //!< Non-debug, compatibility context (this and the core attribute are mutually exclusive)
         Core    = 1 << 0, //!< Core attribute
         Debug   = 1 << 2  //!< Debug attribute
     };
 
-
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    unsigned int  depthBits{};                        //!< Bits of the depth buffer
-    unsigned int  stencilBits{};                      //!< Bits of the stencil buffer
-    unsigned int  antialiasingLevel{};                //!< Level of antialiasing
-    unsigned int  majorVersion{1};                    //!< Major number of the context version to create
-    unsigned int  minorVersion{1};                    //!< Minor number of the context version to create
-    std::uint32_t attributeFlags{Attribute::Default}; //!< The attribute flags to create the context with
-    bool          sRgbCapable{};                      //!< Whether the context framebuffer is sRGB capable
+    unsigned int depthBits{};                        //!< Bits of the depth buffer
+    unsigned int stencilBits{};                      //!< Bits of the stencil buffer
+    unsigned int antialiasingLevel{};                //!< Level of antialiasing
+    unsigned int majorVersion{1};                    //!< Major number of the context version to create
+    unsigned int minorVersion{1};                    //!< Minor number of the context version to create
+    Attribute    attributeFlags{Attribute::Default}; //!< The attribute flags to create the context with
+    bool         sRgbCapable{};                      //!< Whether the context framebuffer is sRGB capable
 };
+
+SFML_PRIV_DEFINE_ENUM_CLASS_BITWISE_OPERATORS(ContextSettings::Attribute);
 
 } // namespace sf
 
