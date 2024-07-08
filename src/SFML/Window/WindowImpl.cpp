@@ -36,6 +36,7 @@
 #include <SFML/Window/WindowImpl.hpp>
 
 #include <SFML/System/EnumArray.hpp>
+#include <SFML/System/Err.hpp>
 #include <SFML/System/Macros.hpp>
 #include <SFML/System/MathUtils.hpp>
 #include <SFML/System/Sleep.hpp>
@@ -120,7 +121,7 @@ struct WindowImpl::JoystickStatesImpl
 struct WindowImpl::Impl
 {
     std::queue<Event>                                events;             //!< Queue of available events
-    priv::UniquePtr<JoystickStatesImpl>              joystickStatesImpl; //!< Previous state of the joysticks (PImpl)
+    UniquePtr<JoystickStatesImpl>                    joystickStatesImpl; //!< Previous state of the joysticks (PImpl)
     EnumArray<Sensor::Type, Vector3f, Sensor::Count> sensorValue;        //!< Previous value of the sensors
     float joystickThreshold{0.1f}; //!< Joystick threshold (minimum motion for "move" event to be generated)
     EnumArray<Joystick::Axis, float, Joystick::AxisCount>
@@ -128,7 +129,7 @@ struct WindowImpl::Impl
     std::optional<Vector2u> minimumSize; //!< Minimum window size
     std::optional<Vector2u> maximumSize; //!< Maximum window size
 
-    explicit Impl(priv::UniquePtr<JoystickStatesImpl>&& theJoystickStatesImpl) :
+    explicit Impl(UniquePtr<JoystickStatesImpl>&& theJoystickStatesImpl) :
     joystickStatesImpl(SFML_MOVE(theJoystickStatesImpl))
     {
     }
@@ -136,21 +137,62 @@ struct WindowImpl::Impl
 
 
 ////////////////////////////////////////////////////////////
-priv::UniquePtr<WindowImpl> WindowImpl::create(VideoMode mode, const String& title, Style style, State state, const ContextSettings& settings)
+UniquePtr<WindowImpl> WindowImpl::create(VideoMode mode, const String& title, Style style, State state, const ContextSettings& settings)
 {
-    return priv::makeUnique<WindowImplType>(mode, title, style, state, settings);
+    // Fullscreen style requires some tests
+    if (state == State::Fullscreen)
+    {
+        // Make sure there's not already a fullscreen window (only one is allowed)
+        if (WindowImplImpl::fullscreenWindow != nullptr)
+        {
+            err() << "Creating two fullscreen windows is not allowed, switching to windowed mode" << errEndl;
+            state = State::Windowed;
+        }
+        else
+        {
+            // Make sure that the chosen video mode is compatible
+            if (!mode.isValid())
+            {
+                err() << "The requested video mode is not available, switching to a valid mode" << errEndl;
+
+                assert(!VideoMode::getFullscreenModes().empty() && "No video modes available");
+                mode = VideoMode::getFullscreenModes()[0];
+
+                err() << "  VideoMode: { size: { " << mode.size.x << ", " << mode.size.y
+                      << " }, bitsPerPixel: " << mode.bitsPerPixel << " }" << errEndl;
+            }
+        }
+    }
+
+// Check validity of style according to the underlying platform
+#if defined(SFML_SYSTEM_IOS) || defined(SFML_SYSTEM_ANDROID)
+    if (state == State::Fullscreen)
+        style &= ~static_cast<std::uint32_t>(Style::Titlebar);
+    else
+        style |= Style::Titlebar;
+#else
+    if (!!(style & Style::Close) || !!(style & Style::Resize))
+        style |= Style::Titlebar;
+#endif
+
+    auto windowImpl = makeUnique<WindowImplType>(mode, title, style, state, settings);
+
+    if (state == State::Fullscreen)
+        WindowImplImpl::fullscreenWindow = windowImpl.get();
+
+    return windowImpl;
 }
 
 
 ////////////////////////////////////////////////////////////
-priv::UniquePtr<WindowImpl> WindowImpl::create(WindowHandle handle)
+UniquePtr<WindowImpl> WindowImpl::create(WindowHandle handle)
 {
-    return priv::makeUnique<WindowImplType>(handle);
+    return makeUnique<WindowImplType>(handle);
 }
 
 
 ////////////////////////////////////////////////////////////
-WindowImpl::WindowImpl() : m_impl(priv::makeUnique<JoystickStatesImpl>())
+WindowImpl::WindowImpl() : m_impl(makeUnique<JoystickStatesImpl>())
 {
     // Get the initial joystick states
     JoystickManager::getInstance().update();
@@ -383,18 +425,5 @@ bool WindowImpl::createVulkanSurface([[maybe_unused]] const Vulkan::VulkanSurfac
 #endif
 }
 
-
-////////////////////////////////////////////////////////////
-const WindowImpl* WindowImpl::getFullscreenWindow() const
-{
-    return WindowImplImpl::fullscreenWindow;
-}
-
-
-////////////////////////////////////////////////////////////
-void WindowImpl::setFullscreenWindow() const
-{
-    WindowImplImpl::fullscreenWindow = this;
-}
 
 } // namespace sf::priv
