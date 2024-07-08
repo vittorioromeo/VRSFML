@@ -78,63 +78,6 @@ public:
     static void unregisterUnsharedGlObject(void* objectSharedPtr);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Acquires a context for short-term use on the current thread
-    ///
-    ////////////////////////////////////////////////////////////
-    static void acquireTransientContext(GraphicsContext& graphicsContext);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Releases a context after short-term use on the current thread
-    ///
-    ////////////////////////////////////////////////////////////
-    static void releaseTransientContext();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Create a new context, not associated to a window
-    ///
-    /// This function automatically chooses the specialized class
-    /// to use according to the OS.
-    ///
-    /// \return Pointer to the created context
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static priv::UniquePtr<GlContext> create(GraphicsContext& graphicsContext);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Create a new context attached to a window
-    ///
-    /// This function automatically chooses the specialized class
-    /// to use according to the OS.
-    ///
-    /// \param settings     Creation parameters
-    /// \param owner        Pointer to the owner window
-    /// \param bitsPerPixel Pixel depth (in bits per pixel)
-    ///
-    /// \return Pointer to the created context
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static priv::UniquePtr<GlContext> create(GraphicsContext&       graphicsContext,
-                                                           const ContextSettings& settings,
-                                                           const WindowImpl&      owner,
-                                                           unsigned int           bitsPerPixel);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Create a new context that embeds its own rendering target
-    ///
-    /// This function automatically chooses the specialized class
-    /// to use according to the OS.
-    ///
-    /// \param settings Creation parameters
-    /// \param size     Back buffer width and height
-    ///
-    /// \return Pointer to the created context
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static priv::UniquePtr<GlContext> create(GraphicsContext&       graphicsContext,
-                                                           const ContextSettings& settings,
-                                                           const Vector2u&        size);
-
-    ////////////////////////////////////////////////////////////
     /// \brief Check whether a given OpenGL extension is available
     ///
     /// \param name Name of the extension to check for
@@ -144,30 +87,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static bool isExtensionAvailable(GraphicsContext& graphicsContext, const char* name);
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the currently active context
-    ///
-    /// \return The currently active context or a null pointer if none is active
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static const GlContext* getActiveContext();
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the currently active context's ID
-    ///
-    /// The context ID is used to identify contexts when
-    /// managing unshareable OpenGL resources.
-    ///
-    /// \return The active context's ID or 0 if no context is currently active
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::uint64_t getActiveContextId();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static bool hasActiveContext();
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor

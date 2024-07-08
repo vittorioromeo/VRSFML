@@ -29,10 +29,13 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/Export.hpp>
 
+#include <SFML/Window/Context.hpp>
+
 #include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
 
-#include <mutex> // TODO: expensive at compile-time
+#include <mutex>    // TODO: expensive at compile-time
+#include <optional> // TODO: expensive at compile-time
 
 
 namespace sf::priv
@@ -52,6 +55,61 @@ struct ContextSettings;
 class [[nodiscard]] GraphicsContext
 {
 public:
+    // TODO: private
+    ////////////////////////////////////////////////////////////
+    // This structure contains all the state necessary to
+    // track TransientContext usage
+    ////////////////////////////////////////////////////////////
+    struct [[nodiscard]] TransientContext
+    {
+        ////////////////////////////////////////////////////////////
+        [[nodiscard]] explicit TransientContext(GraphicsContext& theGraphicsContext);
+
+        ////////////////////////////////////////////////////////////
+        ~TransientContext();
+
+        ////////////////////////////////////////////////////////////
+        TransientContext(const TransientContext&)            = delete;
+        TransientContext& operator=(const TransientContext&) = delete;
+
+        ////////////////////////////////////////////////////////////
+        TransientContext(TransientContext&&)            = delete;
+        TransientContext& operator=(TransientContext&&) = delete;
+
+        ////////////////////////////////////////////////////////////
+        /// \brief Get the thread local TransientContext
+        ///
+        /// This per-thread variable tracks if and how a transient
+        /// context is currently being used on the current thread
+        ///
+        /// \return The thread local TransientContext
+        ///
+        ////////////////////////////////////////////////////////////
+        static std::optional<TransientContext>& get();
+
+        ///////////////////////////////////////////////////////////
+        // Member data
+        ////////////////////////////////////////////////////////////
+        GraphicsContext&                       graphicsContext;
+        std::optional<sf::Context>             context;
+        std::unique_lock<std::recursive_mutex> sharedContextLock;
+    };
+
+    // TODO: private
+    struct CurrentContext
+    {
+        std::uint64_t        id{};
+        sf::priv::GlContext* ptr{};
+        unsigned int         transientCount{};
+
+        // This per-thread variable holds the current context information for each thread
+        static CurrentContext& get();
+
+    private:
+        // Private constructor to prevent CurrentContext from being constructed outside of get()
+        CurrentContext();
+    };
+
     [[nodiscard]] explicit GraphicsContext();
 
     ~GraphicsContext();
@@ -70,19 +128,89 @@ public:
 
     [[nodiscard]] Guard lock();
 
-    [[nodiscard]] std::recursive_mutex& getMutex(); // TODO: needed?
+    ////////////////////////////////////////////////////////////
+    /// \brief Create a new context, not associated to a window
+    ///
+    /// This function automatically chooses the specialized class
+    /// to use according to the OS.
+    ///
+    /// \return Pointer to the created context
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] priv::UniquePtr<priv::GlContext> createGlContext();
 
-    [[nodiscard]] priv::UniquePtr<priv::GlContext> makeContextType();
-
-    [[nodiscard]] priv::UniquePtr<priv::GlContext> makeContextType(const ContextSettings&  settings,
+    ////////////////////////////////////////////////////////////
+    /// \brief Create a new context attached to a window
+    ///
+    /// This function automatically chooses the specialized class
+    /// to use according to the OS.
+    ///
+    /// \param settings     Creation parameters
+    /// \param owner        Pointer to the owner window
+    /// \param bitsPerPixel Pixel depth (in bits per pixel)
+    ///
+    /// \return Pointer to the created context
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] priv::UniquePtr<priv::GlContext> createGlContext(const ContextSettings&  settings,
                                                                    const priv::WindowImpl& owner,
                                                                    unsigned int            bitsPerPixel);
 
-    [[nodiscard]] priv::UniquePtr<priv::GlContext> makeContextType(const ContextSettings& settings, const Vector2u& size);
+    ////////////////////////////////////////////////////////////
+    /// \brief Create a new context that embeds its own rendering target
+    ///
+    /// This function automatically chooses the specialized class
+    /// to use according to the OS.
+    ///
+    /// \param settings Creation parameters
+    /// \param size     Back buffer width and height
+    ///
+    /// \return Pointer to the created context
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] priv::UniquePtr<priv::GlContext> createGlContext(const ContextSettings& settings, const Vector2u& size);
 
     [[nodiscard]] bool isExtensionAvailable(const char* name);
 
     [[nodiscard]] GlFunctionPointer getFunction(const char* name);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Acquires a context for short-term use on the current thread
+    ///
+    ////////////////////////////////////////////////////////////
+    void acquireTransientContext();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Releases a context after short-term use on the current thread
+    ///
+    ////////////////////////////////////////////////////////////
+    static void releaseTransientContext();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the currently active context
+    ///
+    /// \return The currently active context or a null pointer if none is active
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static const priv::GlContext* getActiveContext();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the currently active context's ID
+    ///
+    /// The context ID is used to identify contexts when
+    /// managing unshareable OpenGL resources.
+    ///
+    /// \return The active context's ID or 0 if no context is currently active
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static std::uint64_t getActiveContextId();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool hasActiveContext();
+
 
 private:
     struct Impl;
