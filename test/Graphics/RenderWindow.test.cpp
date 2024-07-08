@@ -23,7 +23,7 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(std::has_virtual_destructor_v<sf::RenderWindow>);
+        STATIC_CHECK(std::has_virtual_destructor_v<sf::RenderWindow>); // because of RenderTarget, not WindowBase
         STATIC_CHECK(!std::is_copy_constructible_v<sf::RenderWindow>);
         STATIC_CHECK(!std::is_copy_assignable_v<sf::RenderWindow>);
         STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::RenderWindow>);

@@ -31,7 +31,9 @@
 #include <SFML/Graphics/RenderTextureImplFBO.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 
+#include <SFML/Window/Event.hpp>
 #include <SFML/Window/VideoMode.hpp>
+#include <SFML/Window/WindowBase.hpp>
 
 #include <SFML/System/String.hpp>
 
@@ -152,6 +154,38 @@ bool RenderWindow::setActive(bool active)
     }
 
     return result;
+}
+
+
+////////////////////////////////////////////////////////////
+std::optional<Event> RenderWindow::filterEvent(std::optional<Event> event)
+{
+    if (event.has_value() && event->getIf<Event::Resized>())
+        onResize();
+
+    return event;
+}
+
+
+////////////////////////////////////////////////////////////
+std::optional<Event> RenderWindow::pollEvent()
+{
+    return filterEvent(WindowBase::pollEvent());
+}
+
+
+////////////////////////////////////////////////////////////
+std::optional<Event> RenderWindow::waitEvent(Time timeout)
+{
+    return filterEvent(WindowBase::waitEvent(timeout));
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderWindow::setSize(const Vector2u& size)
+{
+    WindowBase::setSize(size);
+    onResize();
 }
 
 

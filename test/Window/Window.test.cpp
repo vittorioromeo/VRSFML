@@ -19,7 +19,7 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(std::has_virtual_destructor_v<sf::Window>);
+        STATIC_CHECK(!std::has_virtual_destructor_v<sf::Window>);
         STATIC_CHECK(!std::is_copy_constructible_v<sf::Window>);
         STATIC_CHECK(!std::is_copy_assignable_v<sf::Window>);
         STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Window>);
