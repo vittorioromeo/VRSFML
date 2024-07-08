@@ -35,6 +35,7 @@
 #include <SFML/System/PathUtils.hpp>
 #include <SFML/System/StringUtils.hpp>
 #include <SFML/System/UniquePtr.hpp>
+
 #ifdef SFML_SYSTEM_ANDROID
 #include <SFML/System/Android/Activity.hpp>
 #include <SFML/System/Android/ResourceStream.hpp>
@@ -45,6 +46,7 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
 
+#include <algorithm>
 #include <string>
 
 #include <cassert>
