@@ -52,7 +52,7 @@ namespace
 std::atomic<bool> lifetimeTrackingTestingModfe{false};
 std::atomic<bool> lifetimeTrackingFatalErrorTriggered{false};
 
-[[gnu::always_inline]] inline AtomicUInt& asAtomicUInt(char* ptr)
+[[gnu::always_inline, gnu::const]] inline AtomicUInt& asAtomicUInt(char* ptr)
 {
     return *SFML_PRIV_LAUNDER_CAST(AtomicUInt*, ptr);
 }

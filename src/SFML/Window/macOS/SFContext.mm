@@ -218,7 +218,7 @@ void SFContext::createContext(SFContext* shared, unsigned int bitsPerPixel, cons
 
     if (legacy)
     {
-        m_settings.attributeFlags &= ~static_cast<unsigned int>(ContextSettings::Core);
+        m_settings.attributeFlags &= ~static_cast<unsigned int>(ContextSettings::Attribute::Core);
         m_settings.majorVersion = 2;
         m_settings.minorVersion = 1;
         attrs.push_back(NSOpenGLPFAOpenGLProfile);
@@ -226,10 +226,10 @@ void SFContext::createContext(SFContext* shared, unsigned int bitsPerPixel, cons
     }
     else
     {
-        if (!(m_settings.attributeFlags & ContextSettings::Core))
+        if (!(m_settings.attributeFlags & ContextSettings::Attribute::Core))
         {
             priv::err() << "Warning. Compatibility profile not supported on this platform." << priv::errEndl;
-            m_settings.attributeFlags |= ContextSettings::Core;
+            m_settings.attributeFlags |= ContextSettings::Attribute::Core;
         }
         m_settings.majorVersion = 3;
         m_settings.minorVersion = 2;
@@ -237,10 +237,10 @@ void SFContext::createContext(SFContext* shared, unsigned int bitsPerPixel, cons
         attrs.push_back(NSOpenGLProfileVersion3_2Core);
     }
 
-    if (m_settings.attributeFlags & ContextSettings::Debug)
+    if (!!(m_settings.attributeFlags & ContextSettings::Attribute::Debug))
     {
         priv::err() << "Warning. OpenGL debugging not supported on this platform." << priv::errEndl;
-        m_settings.attributeFlags &= ~static_cast<unsigned int>(ContextSettings::Debug);
+        m_settings.attributeFlags &= ~static_cast<unsigned int>(ContextSettings::Attribute::Debug);
     }
 
     attrs.push_back(static_cast<NSOpenGLPixelFormatAttribute>(0)); // end of array

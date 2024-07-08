@@ -47,11 +47,7 @@ WindowImplUIKit::WindowImplUIKit(WindowHandle /* handle */)
 
 
 ////////////////////////////////////////////////////////////
-WindowImplUIKit::WindowImplUIKit(VideoMode mode,
-                                 const String& /* title */,
-                                 std::uint32_t style,
-                                 State         state,
-                                 const ContextSettings& /* settings */)
+WindowImplUIKit::WindowImplUIKit(VideoMode mode, const String& /* title */, Style style, State state, const ContextSettings& /* settings */)
 {
     m_backingScale = static_cast<float>([SFAppDelegate getInstance].backingScaleFactor);
 

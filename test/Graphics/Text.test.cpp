@@ -45,7 +45,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             CHECK(text.getCharacterSize() == 30);
             CHECK(text.getLetterSpacing() == 1.f);
             CHECK(text.getLineSpacing() == 1.f);
-            CHECK(text.getStyle() == sf::Text::Regular);
+            CHECK(text.getStyle() == sf::Text::Style::Regular);
             CHECK(text.getFillColor() == sf::Color::White);
             CHECK(text.getOutlineColor() == sf::Color::Black);
             CHECK(text.getOutlineThickness() == 0);
@@ -62,7 +62,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             CHECK(text.getCharacterSize() == 30);
             CHECK(text.getLetterSpacing() == 1.f);
             CHECK(text.getLineSpacing() == 1.f);
-            CHECK(text.getStyle() == sf::Text::Regular);
+            CHECK(text.getStyle() == sf::Text::Style::Regular);
             CHECK(text.getFillColor() == sf::Color::White);
             CHECK(text.getOutlineColor() == sf::Color::Black);
             CHECK(text.getOutlineThickness() == 0);
@@ -79,7 +79,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             CHECK(text.getCharacterSize() == 24);
             CHECK(text.getLetterSpacing() == 1.f);
             CHECK(text.getLineSpacing() == 1.f);
-            CHECK(text.getStyle() == sf::Text::Regular);
+            CHECK(text.getStyle() == sf::Text::Style::Regular);
             CHECK(text.getFillColor() == sf::Color::White);
             CHECK(text.getOutlineColor() == sf::Color::Black);
             CHECK(text.getOutlineThickness() == 0);
@@ -128,8 +128,8 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
     SECTION("Set/get style")
     {
         sf::Text text(font);
-        text.setStyle(sf::Text::Bold | sf::Text::Italic);
-        CHECK(text.getStyle() == (sf::Text::Bold | sf::Text::Italic));
+        text.setStyle(sf::Text::Style::Bold | sf::Text::Style::Italic);
+        CHECK(text.getStyle() == (sf::Text::Style::Bold | sf::Text::Style::Italic));
     }
 
     SECTION("Set/get fill color")
@@ -176,14 +176,14 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
 
         SECTION("Add underline")
         {
-            text.setStyle(sf::Text::Underlined);
+            text.setStyle(sf::Text::Style::Underlined);
             CHECK(text.getLocalBounds() == sf::FloatRect({1, 5}, {33, 13}));
             CHECK(text.getGlobalBounds() == sf::FloatRect({101, 205}, {33, 13}));
         }
 
         SECTION("Add strikethrough")
         {
-            text.setStyle(sf::Text::StrikeThrough);
+            text.setStyle(sf::Text::Style::StrikeThrough);
             CHECK(text.getLocalBounds() == sf::FloatRect({1, 5}, {33, 13}));
             CHECK(text.getGlobalBounds() == sf::FloatRect({101, 205}, {33, 13}));
         }

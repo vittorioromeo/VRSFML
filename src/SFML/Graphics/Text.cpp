@@ -113,7 +113,7 @@ struct Text::Impl
     unsigned int                characterSize{30};          //!< Base size of characters, in pixels
     float                       letterSpacingFactor{1.f};   //!< Spacing factor between letters
     float                       lineSpacingFactor{1.f};     //!< Spacing factor between lines
-    std::uint32_t               style{Regular};             //!< Text style (see Style enum)
+    Style                       style{Style::Regular};      //!< Text style (see Style enum)
     Color                       fillColor{Color::White};    //!< Text fill color
     Color                       outlineColor{Color::Black}; //!< Text outline color
     float                       outlineThickness{0.f};      //!< Thickness of the text's outline
@@ -228,7 +228,7 @@ void Text::setLineSpacing(float spacingFactor)
 
 
 ////////////////////////////////////////////////////////////
-void Text::setStyle(std::uint32_t style)
+void Text::setStyle(Text::Style style)
 {
     if (m_impl->style == style)
         return;
@@ -321,7 +321,7 @@ float Text::getLineSpacing() const
 
 
 ////////////////////////////////////////////////////////////
-std::uint32_t Text::getStyle() const
+Text::Style Text::getStyle() const
 {
     return m_impl->style;
 }
@@ -355,7 +355,7 @@ Vector2f Text::findCharacterPos(std::size_t index) const
     index = priv::min(index, m_impl->string.getSize());
 
     // Precompute the variables needed by the algorithm
-    const bool  isBold          = m_impl->style & Bold;
+    const bool  isBold          = !!(m_impl->style & Style::Bold);
     float       whitespaceWidth = m_impl->font->getGlyph(U' ', m_impl->characterSize, isBold).advance;
     const float letterSpacing   = (whitespaceWidth / 3.f) * (m_impl->letterSpacingFactor - 1.f);
     whitespaceWidth += letterSpacing;
@@ -450,10 +450,10 @@ void Text::ensureGeometryUpdate() const
         return;
 
     // Compute values related to the text style
-    const bool  isBold             = m_impl->style & Bold;
-    const bool  isUnderlined       = m_impl->style & Underlined;
-    const bool  isStrikeThrough    = m_impl->style & StrikeThrough;
-    const float italicShear        = (m_impl->style & Italic) ? degrees(12).asRadians() : 0.f;
+    const bool  isBold             = !!(m_impl->style & Style::Bold);
+    const bool  isUnderlined       = !!(m_impl->style & Style::Underlined);
+    const bool  isStrikeThrough    = !!(m_impl->style & Style::StrikeThrough);
+    const float italicShear        = !!(m_impl->style & Style::Italic) ? degrees(12).asRadians() : 0.f;
     const float underlineOffset    = m_impl->font->getUnderlinePosition(m_impl->characterSize);
     const float underlineThickness = m_impl->font->getUnderlineThickness(m_impl->characterSize);
 

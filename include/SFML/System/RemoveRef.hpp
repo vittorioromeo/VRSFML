@@ -24,6 +24,12 @@
 
 #pragma once
 
+#if __has_builtin(__remove_reference)
+
+#define SFML_PRIV_REMOVE_REFERENCE(...) __remove_reference(__VA_ARGS__)
+
+#else
+
 namespace sf::priv
 {
 
@@ -46,3 +52,7 @@ struct RemoveRef<T&&>
 };
 
 } // namespace sf::priv
+
+#define SFML_PRIV_REMOVE_REFERENCE(...) typename ::sf::priv::RemoveRef<__VA_ARGS__>::type
+
+#endif

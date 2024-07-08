@@ -34,12 +34,15 @@
 
 #include <SFML/System/InPlacePImpl.hpp>
 
-#include <cstdint>
-
 
 namespace sf
 {
 class GraphicsContext;
+
+namespace priv
+{
+class WindowImpl;
+} // namespace priv
 
 ////////////////////////////////////////////////////////////
 /// \brief Window that serves as a target for OpenGL rendering
@@ -72,14 +75,14 @@ public:
     [[nodiscard]] explicit Window(GraphicsContext&       graphicsContext,
                                   VideoMode              mode,
                                   const String&          title,
-                                  std::uint32_t          style    = Style::Default,
+                                  Style                  style    = Style::Default,
                                   State                  state    = State::Windowed,
                                   const ContextSettings& settings = ContextSettings());
 
     [[nodiscard]] explicit Window(GraphicsContext&       graphicsContext,
                                   VideoMode              mode,
                                   const char*            title,
-                                  std::uint32_t          style    = Style::Default,
+                                  Style                  style    = Style::Default,
                                   State                  state    = State::Windowed,
                                   const ContextSettings& settings = ContextSettings());
 
@@ -236,6 +239,16 @@ public:
     void display();
 
 private:
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename TWindowBaseArg>
+    [[nodiscard]] explicit Window(GraphicsContext&       graphicsContext,
+                                  const ContextSettings& settings,
+                                  TWindowBaseArg&&       windowBaseArg,
+                                  unsigned int           bitsPerPixel);
+
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////

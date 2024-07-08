@@ -55,7 +55,7 @@ public:
     /// \see asRadians
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] inline constexpr float asDegrees() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr float asDegrees() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the angle's value in radians
@@ -65,7 +65,7 @@ public:
     /// \see asDegrees
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] inline constexpr float asRadians() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr float asRadians() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Wrap to a range such that -180° <= angle < 180°
@@ -98,7 +98,7 @@ public:
     /// \see wrapUnsigned
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] inline constexpr Angle wrapSigned() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle wrapSigned() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Wrap to a range such that 0° <= angle < 360°
@@ -131,7 +131,7 @@ public:
     /// \see wrapSigned
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] inline constexpr Angle wrapUnsigned() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle wrapUnsigned() const;
 
     ////////////////////////////////////////////////////////////
     // Static member data
@@ -170,7 +170,7 @@ private:
 /// \see radians
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline constexpr Angle degrees(float angle);
+[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle degrees(float angle);
 
 ////////////////////////////////////////////////////////////
 /// \brief Construct an angle value from a number of radians
@@ -182,7 +182,7 @@ private:
 /// \see degrees
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline constexpr Angle radians(float angle);
+[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle radians(float angle);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
@@ -195,7 +195,7 @@ private:
 /// \return True if both angle values are equal
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline constexpr bool operator==(Angle left, Angle right);
+[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr bool operator==(Angle left, Angle right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
@@ -208,7 +208,7 @@ private:
 /// \return True if both angle values are different
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline constexpr bool operator!=(Angle left, Angle right);
+[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr bool operator!=(Angle left, Angle right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
@@ -221,7 +221,7 @@ private:
 /// \return True if \a left is less than \a right
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline constexpr bool operator<(Angle left, Angle right);
+[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr bool operator<(Angle left, Angle right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
@@ -234,7 +234,7 @@ private:
 /// \return True if \a left is greater than \a right
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline constexpr bool operator>(Angle left, Angle right);
+[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr bool operator>(Angle left, Angle right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
@@ -247,7 +247,7 @@ private:
 /// \return True if \a left is less than or equal to \a right
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline constexpr bool operator<=(Angle left, Angle right);
+[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr bool operator<=(Angle left, Angle right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
@@ -260,7 +260,7 @@ private:
 /// \return True if \a left is greater than or equal to \a right
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline constexpr bool operator>=(Angle left, Angle right);
+[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr bool operator>=(Angle left, Angle right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
@@ -273,7 +273,7 @@ private:
 /// \return Negative of the angle value
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline constexpr Angle operator-(Angle right);
+[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle operator-(Angle right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
@@ -285,7 +285,7 @@ private:
 /// \return Sum of the two angle values
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline constexpr Angle operator+(Angle left, Angle right);
+[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle operator+(Angle left, Angle right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
@@ -297,7 +297,7 @@ private:
 /// \return Sum of the two angle values
 ///
 ////////////////////////////////////////////////////////////
-constexpr Angle& operator+=(Angle& left, Angle right);
+[[gnu::always_inline]] constexpr Angle& operator+=(Angle& left, Angle right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
@@ -309,7 +309,7 @@ constexpr Angle& operator+=(Angle& left, Angle right);
 /// \return Difference of the two angle values
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline constexpr Angle operator-(Angle left, Angle right);
+[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle operator-(Angle left, Angle right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
@@ -321,7 +321,7 @@ constexpr Angle& operator+=(Angle& left, Angle right);
 /// \return Difference of the two angle values
 ///
 ////////////////////////////////////////////////////////////
-constexpr Angle& operator-=(Angle& left, Angle right);
+[[gnu::always_inline]] constexpr Angle& operator-=(Angle& left, Angle right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
@@ -333,7 +333,7 @@ constexpr Angle& operator-=(Angle& left, Angle right);
 /// \return \a left multiplied by \a right
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline constexpr Angle operator*(Angle left, float right);
+[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle operator*(Angle left, float right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
@@ -345,7 +345,7 @@ constexpr Angle& operator-=(Angle& left, Angle right);
 /// \return \a left multiplied by \a right
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline constexpr Angle operator*(float left, Angle right);
+[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle operator*(float left, Angle right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
@@ -357,7 +357,7 @@ constexpr Angle& operator-=(Angle& left, Angle right);
 /// \return \a left multiplied by \a right
 ///
 ////////////////////////////////////////////////////////////
-constexpr Angle& operator*=(Angle& left, float right);
+[[gnu::always_inline]] constexpr Angle& operator*=(Angle& left, float right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
@@ -369,7 +369,7 @@ constexpr Angle& operator*=(Angle& left, float right);
 /// \return \a left divided by \a right
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline constexpr Angle operator/(Angle left, float right);
+[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle operator/(Angle left, float right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
@@ -381,7 +381,7 @@ constexpr Angle& operator*=(Angle& left, float right);
 /// \return \a left divided by \a right
 ///
 ////////////////////////////////////////////////////////////
-constexpr Angle& operator/=(Angle& left, float right);
+[[gnu::always_inline]] constexpr Angle& operator/=(Angle& left, float right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
@@ -393,7 +393,7 @@ constexpr Angle& operator/=(Angle& left, float right);
 /// \return \a left divided by \a right
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline constexpr float operator/(Angle left, Angle right);
+[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr float operator/(Angle left, Angle right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
@@ -413,7 +413,7 @@ constexpr Angle& operator/=(Angle& left, float right);
 /// \return \a left modulo \a right
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline constexpr Angle operator%(Angle left, Angle right);
+[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle operator%(Angle left, Angle right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
@@ -425,7 +425,7 @@ constexpr Angle& operator/=(Angle& left, float right);
 /// \return \a left modulo \a right
 ///
 ////////////////////////////////////////////////////////////
-constexpr Angle& operator%=(Angle& left, Angle right);
+[[gnu::always_inline]] constexpr Angle& operator%=(Angle& left, Angle right);
 
 namespace Literals
 {
@@ -439,7 +439,7 @@ namespace Literals
 /// \return \a Angle
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline constexpr Angle operator""_deg(long double angle);
+[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle operator""_deg(long double angle);
 
 ////////////////////////////////////////////////////////////
 /// \relates sf::Angle
@@ -450,7 +450,7 @@ namespace Literals
 /// \return \a Angle
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline constexpr Angle operator""_deg(unsigned long long int angle);
+[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle operator""_deg(unsigned long long int angle);
 
 ////////////////////////////////////////////////////////////
 /// \relates sf::Angle
@@ -461,7 +461,7 @@ namespace Literals
 /// \return \a Angle
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline constexpr Angle operator""_rad(long double angle);
+[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle operator""_rad(long double angle);
 
 ////////////////////////////////////////////////////////////
 /// \relates sf::Angle
@@ -472,7 +472,7 @@ namespace Literals
 /// \return \a Angle
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline constexpr Angle operator""_rad(unsigned long long int angle);
+[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle operator""_rad(unsigned long long int angle);
 
 } // namespace Literals
 } // namespace sf

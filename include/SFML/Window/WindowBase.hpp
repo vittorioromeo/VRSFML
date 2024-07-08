@@ -29,7 +29,6 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/Export.hpp>
 
-#include <SFML/Window/Vulkan.hpp>
 #include <SFML/Window/WindowEnums.hpp>
 #include <SFML/Window/WindowHandle.hpp>
 
@@ -51,7 +50,12 @@ class VideoMode;
 namespace priv
 {
 class WindowImpl;
-}
+} // namespace priv
+
+namespace Vulkan
+{
+struct VulkanSurfaceData;
+} // namespace Vulkan
 
 class Event;
 
@@ -62,8 +66,6 @@ class Event;
 class SFML_WINDOW_API WindowBase
 {
 public:
-    [[nodiscard]] WindowBase(priv::UniquePtr<priv::WindowImpl>&& impl);
-
     ////////////////////////////////////////////////////////////
     /// \brief Construct a new window
     ///
@@ -80,12 +82,12 @@ public:
     /// \param state %Window state
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] WindowBase(VideoMode     mode,
-                             const String& title,
-                             std::uint32_t style = Style::Default,
-                             State         state = State::Windowed);
+    [[nodiscard]] explicit WindowBase(VideoMode     mode,
+                                      const String& title,
+                                      Style         style = Style::Default,
+                                      State         state = State::Windowed);
 
-    [[nodiscard]] WindowBase(VideoMode mode, const char* title, std::uint32_t style = Style::Default, State state = State::Windowed);
+    [[nodiscard]] explicit WindowBase(VideoMode mode, const char* title, Style style = Style::Default, State state = State::Windowed);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a new window
@@ -98,8 +100,8 @@ public:
     /// \param state %Window state
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] WindowBase(VideoMode mode, const String& title, State state);
-    [[nodiscard]] WindowBase(VideoMode mode, const char* title, State state);
+    [[nodiscard]] explicit WindowBase(VideoMode mode, const String& title, State state);
+    [[nodiscard]] explicit WindowBase(VideoMode mode, const char* title, State state);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control
@@ -417,12 +419,16 @@ public:
     /// \return True if surface creation was successful, false otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool createVulkanSurface(const VkInstance&            instance,
-                                           VkSurfaceKHR&                surface,
-                                           const VkAllocationCallbacks* allocator = nullptr);
+    [[nodiscard]] bool createVulkanSurface(const Vulkan::VulkanSurfaceData& vulkanSurfaceData);
 
 private:
     friend class Window;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] explicit WindowBase(priv::UniquePtr<priv::WindowImpl>&& impl);
 
     ////////////////////////////////////////////////////////////
     /// \brief Processes an event before it is sent to the user

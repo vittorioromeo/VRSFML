@@ -40,7 +40,7 @@
 #include <SFML/System/Macros.hpp>
 #include <SFML/System/String.hpp>
 
-#include <vector>
+#include <optional>
 
 #include <cassert>
 #include <climits>
@@ -59,14 +59,11 @@ WindowBase::WindowBase(priv::UniquePtr<priv::WindowImpl>&& impl) : m_impl(SFML_M
 
     // Get and cache the initial size of the window
     m_size = m_impl->getSize();
-
-    // Notify the derived class
-    // TODO
 }
 
 
 ////////////////////////////////////////////////////////////
-WindowBase::WindowBase(VideoMode mode, const String& title, std::uint32_t style, State state) :
+WindowBase::WindowBase(VideoMode mode, const String& title, Style style, State state) :
 WindowBase(priv::WindowImpl::create(mode,
                                     title,
                                     style,
@@ -76,7 +73,7 @@ WindowBase(priv::WindowImpl::create(mode,
                                                     /* antialiasingLevel */ 0,
                                                     /* majorVersion */ 0,
                                                     /* minorVersion */ 0,
-                                                    /* attributeFlags */ 0xFFFFFFFF,
+                                                    /* attributeFlags */ ContextSettings::Attribute{0xFFFFFFFFu},
                                                     /* sRgbCapable */ false}))
 {
     // Fullscreen style requires some tests
@@ -112,7 +109,7 @@ WindowBase(priv::WindowImpl::create(mode,
     else
         style |= Style::Titlebar;
 #else
-    if ((style & Style::Close) || (style & Style::Resize))
+    if (!!(style & Style::Close) || !!(style & Style::Resize))
         style |= Style::Titlebar;
 #endif
 }
@@ -132,7 +129,7 @@ WindowBase::WindowBase(WindowHandle handle) : WindowBase(priv::WindowImpl::creat
 
 
 ////////////////////////////////////////////////////////////
-WindowBase::WindowBase(VideoMode mode, const char* title, std::uint32_t style, State state) :
+WindowBase::WindowBase(VideoMode mode, const char* title, Style style, State state) :
 WindowBase(mode, String(title), style, state)
 {
 }
@@ -194,8 +191,6 @@ Vector2u WindowBase::getSize() const
 ////////////////////////////////////////////////////////////
 void WindowBase::setSize(const Vector2u& size)
 {
-    assert(m_impl != nullptr);
-
     // Constrain requested size within minimum and maximum bounds
     const auto minimumSize = m_impl->getMinimumSize().value_or(Vector2u());
     const auto maximumSize = m_impl->getMaximumSize().value_or(Vector2u{UINT_MAX, UINT_MAX});
@@ -218,9 +213,7 @@ void WindowBase::setSize(const Vector2u& size)
 ////////////////////////////////////////////////////////////
 void WindowBase::setMinimumSize(const std::optional<Vector2u>& minimumSize)
 {
-    assert(m_impl != nullptr);
-
-    [[maybe_unused]] const auto validateMinimumSize = [this, minimumSize]
+    [[maybe_unused]] const auto validateMinimumSize = [&]
     {
         if (!minimumSize.has_value() || !m_impl->getMaximumSize().has_value())
             return true;
@@ -238,9 +231,7 @@ void WindowBase::setMinimumSize(const std::optional<Vector2u>& minimumSize)
 ////////////////////////////////////////////////////////////
 void WindowBase::setMaximumSize(const std::optional<Vector2u>& maximumSize)
 {
-    assert(m_impl != nullptr);
-
-    [[maybe_unused]] const auto validateMaxiumSize = [this, maximumSize]
+    [[maybe_unused]] const auto validateMaxiumSize = [&]
     {
         if (!maximumSize.has_value() || !m_impl->getMinimumSize().has_value())
             return true;
@@ -339,9 +330,9 @@ WindowHandle WindowBase::getNativeHandle() const
 
 
 ////////////////////////////////////////////////////////////
-bool WindowBase::createVulkanSurface(const VkInstance& instance, VkSurfaceKHR& surface, const VkAllocationCallbacks* allocator)
+bool WindowBase::createVulkanSurface(const Vulkan::VulkanSurfaceData& vulkanSurfaceData)
 {
-    return m_impl->createVulkanSurface(instance, surface, allocator);
+    return m_impl->createVulkanSurface(vulkanSurfaceData);
 }
 
 

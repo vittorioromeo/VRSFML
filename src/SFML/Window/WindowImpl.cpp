@@ -35,6 +35,7 @@
 #include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/WindowImpl.hpp>
 
+#include <SFML/System/EnumArray.hpp>
 #include <SFML/System/Macros.hpp>
 #include <SFML/System/MathUtils.hpp>
 #include <SFML/System/Sleep.hpp>
@@ -135,12 +136,7 @@ struct WindowImpl::Impl
 
 
 ////////////////////////////////////////////////////////////
-priv::UniquePtr<WindowImpl> WindowImpl::create(
-    VideoMode              mode,
-    const String&          title,
-    std::uint32_t          style,
-    State                  state,
-    const ContextSettings& settings)
+priv::UniquePtr<WindowImpl> WindowImpl::create(VideoMode mode, const String& title, Style style, State state, const ContextSettings& settings)
 {
     return priv::makeUnique<WindowImplType>(mode, title, style, state, settings);
 }
@@ -371,17 +367,18 @@ void WindowImpl::populateEventQueue()
 
 
 ////////////////////////////////////////////////////////////
-bool WindowImpl::createVulkanSurface([[maybe_unused]] const VkInstance&            instance,
-                                     [[maybe_unused]] VkSurfaceKHR&                surface,
-                                     [[maybe_unused]] const VkAllocationCallbacks* allocator) const
+bool WindowImpl::createVulkanSurface([[maybe_unused]] const Vulkan::VulkanSurfaceData& vulkanSurfaceData) const
 {
-#if defined(SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE)
+#ifdef SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
 
     return false;
 
 #else
 
-    return VulkanImpl::createVulkanSurface(instance, getNativeHandle(), surface, allocator);
+    return VulkanImpl::createVulkanSurface(vulkanSurfaceData.instance,
+                                           getNativeHandle(),
+                                           vulkanSurfaceData.surface,
+                                           vulkanSurfaceData.allocator);
 
 #endif
 }

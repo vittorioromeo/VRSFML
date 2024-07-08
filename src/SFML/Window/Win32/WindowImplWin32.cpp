@@ -167,11 +167,7 @@ WindowImplWin32::WindowImplWin32(WindowHandle handle) : m_handle(handle)
 
 
 ////////////////////////////////////////////////////////////
-WindowImplWin32::WindowImplWin32(VideoMode     mode,
-                                 const String& title,
-                                 std::uint32_t style,
-                                 State         state,
-                                 const ContextSettings& /*settings*/) :
+WindowImplWin32::WindowImplWin32(VideoMode mode, const String& title, Style style, State state, const ContextSettings& /*settings*/) :
 m_lastSize(mode.size),
 m_fullscreen(state == State::Fullscreen),
 m_cursorGrabbed(m_fullscreen)
@@ -198,11 +194,11 @@ m_cursorGrabbed(m_fullscreen)
     }
     else
     {
-        if (style & Style::Titlebar)
+        if (!!(style & Style::Titlebar))
             win32Style |= WS_CAPTION | WS_MINIMIZEBOX;
-        if (style & Style::Resize)
+        if (!!(style & Style::Resize))
             win32Style |= WS_THICKFRAME | WS_MAXIMIZEBOX;
-        if (style & Style::Close)
+        if (!!(style & Style::Close))
             win32Style |= WS_SYSMENU;
     }
 

@@ -44,7 +44,7 @@ namespace sf
 RenderWindow::RenderWindow(GraphicsContext&       graphicsContext,
                            VideoMode              mode,
                            const String&          title,
-                           std::uint32_t          style,
+                           Style                  style,
                            State                  state,
                            const ContextSettings& settings) :
 Window(graphicsContext, mode, title, style, state, settings),
@@ -67,7 +67,7 @@ RenderTarget(graphicsContext)
 RenderWindow::RenderWindow(GraphicsContext&       graphicsContext,
                            VideoMode              mode,
                            const char*            title,
-                           std::uint32_t          style,
+                           Style                  style,
                            State                  state,
                            const ContextSettings& settings) :
 RenderWindow(graphicsContext, mode, String(title), style, state, settings)

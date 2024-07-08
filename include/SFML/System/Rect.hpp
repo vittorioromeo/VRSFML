@@ -63,14 +63,14 @@ public:
     /// \return Center of rectangle
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr Vector2<T> getCenter() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector2<T> getCenter() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
     template <typename U>
-    [[nodiscard, gnu::always_inline]] inline constexpr U to() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr U to() const;
 
     ////////////////////////////////////////////////////////////
     // Member data
@@ -92,7 +92,7 @@ public:
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline]] constexpr bool operator==(const Rect<T>& lhs, const Rect<T>& rhs);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator==(const Rect<T>& lhs, const Rect<T>& rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Rect
@@ -107,7 +107,7 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline]] constexpr bool operator!=(const Rect<T>& lhs, const Rect<T>& rhs);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator!=(const Rect<T>& lhs, const Rect<T>& rhs);
 
 // Create type aliases for the most common types
 using IntRect   = Rect<int>;
