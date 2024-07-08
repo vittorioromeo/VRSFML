@@ -36,7 +36,6 @@
 #include <SFML/Window/WindowImpl.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
-#include <SFML/System/Err.hpp>
 #include <SFML/System/Macros.hpp>
 #include <SFML/System/String.hpp>
 
@@ -76,42 +75,6 @@ WindowBase(priv::WindowImpl::create(mode,
                                                     /* attributeFlags */ ContextSettings::Attribute{0xFFFFFFFFu},
                                                     /* sRgbCapable */ false}))
 {
-    // Fullscreen style requires some tests
-    if (state == State::Fullscreen)
-    {
-        // Make sure there's not already a fullscreen window (only one is allowed)
-        if (m_impl->getFullscreenWindow())
-        {
-            priv::err() << "Creating two fullscreen windows is not allowed, switching to windowed mode" << priv::errEndl;
-            state = State::Windowed;
-        }
-        else
-        {
-            // Make sure that the chosen video mode is compatible
-            if (!mode.isValid())
-            {
-                priv::err() << "The requested video mode is not available, switching to a valid mode" << priv::errEndl;
-                assert(!VideoMode::getFullscreenModes().empty() && "No video modes available");
-                mode = VideoMode::getFullscreenModes()[0];
-                priv::err() << "  VideoMode: { size: { " << mode.size.x << ", " << mode.size.y
-                            << " }, bitsPerPixel: " << mode.bitsPerPixel << " }" << priv::errEndl;
-            }
-
-            // Update the fullscreen window
-            m_impl->setFullscreenWindow();
-        }
-    }
-
-// Check validity of style according to the underlying platform
-#if defined(SFML_SYSTEM_IOS) || defined(SFML_SYSTEM_ANDROID)
-    if (state == State::Fullscreen)
-        style &= ~static_cast<std::uint32_t>(Style::Titlebar);
-    else
-        style |= Style::Titlebar;
-#else
-    if (!!(style & Style::Close) || !!(style & Style::Resize))
-        style |= Style::Titlebar;
-#endif
 }
 
 
