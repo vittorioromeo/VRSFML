@@ -48,6 +48,7 @@
 #include <SFML/System/InPlacePImpl.hpp>
 #include <SFML/System/Macros.hpp>
 #include <SFML/System/MathUtils.hpp>
+#include <SFML/System/Optional.hpp>
 #include <SFML/System/Path.hpp>
 #include <SFML/System/Rect.hpp>
 #include <SFML/System/String.hpp>
@@ -59,7 +60,6 @@
 #include <chrono>
 #include <memory>
 #include <mutex>
-#include <optional>
 #include <string>
 #include <string_view>
 #include <unordered_map>

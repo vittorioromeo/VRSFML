@@ -30,6 +30,7 @@
 #include <SFML/System/Path.hpp>
 
 #include <filesystem>
+#include <string>
 
 
 namespace
@@ -64,21 +65,23 @@ Path::Path() = default;
 
 
 ////////////////////////////////////////////////////////////
-Path::Path(const char* path) : m_impl(path)
+template <typename T>
+Path::Path(const T& source) : m_impl(source)
 {
 }
+
+template Path::Path(const std::string&);
+template Path::Path(const std::basic_string<wchar_t>&);
 
 
 ////////////////////////////////////////////////////////////
-Path::Path(const std::string& path) : m_impl(path)
+template <typename T>
+Path::Path(const T* source) : m_impl(source)
 {
 }
 
-
-////////////////////////////////////////////////////////////
-Path::Path(std::string_view path) : m_impl(path)
-{
-}
+template Path::Path(const char*);
+template Path::Path(const wchar_t*);
 
 
 ////////////////////////////////////////////////////////////
@@ -129,17 +132,17 @@ const wchar_t* Path::c_str() const
 
 
 ////////////////////////////////////////////////////////////
-std::string Path::string() const
-{
-    return m_impl->fsPath.string();
-}
+// std::string Path::string() const
+// {
+//     return m_impl->fsPath.string();
+// }
 
 
 ////////////////////////////////////////////////////////////
-Path::operator std::string() const
-{
-    return m_impl->fsPath.string();
-}
+// Path::operator std::string() const
+// {
+//     return m_impl->fsPath.string();
+// }
 
 
 ////////////////////////////////////////////////////////////
@@ -184,46 +187,44 @@ std::ostream& operator<<(std::ostream& os, const Path& path)
     return os << path.m_impl->fsPath;
 }
 
-
-////////////////////////////////////////////////////////////
-bool operator==(const Path& path, const char* str)
+template <typename T>
+T Path::to() const
 {
-    return path.m_impl->fsPath == str;
+    return m_impl->fsPath.string();
 }
 
+template std::string Path::to<std::string>() const;
 
-////////////////////////////////////////////////////////////
-bool operator!=(const Path& path, const char* str)
+template <typename T>
+bool Path::operator==(const T* str) const
 {
-    return path.m_impl->fsPath != str;
+    return m_impl->fsPath == std::filesystem::path(str);
 }
 
-
-////////////////////////////////////////////////////////////
-bool operator==(const Path& path, std::string_view str)
+template <typename T>
+bool Path::operator!=(const T* str) const
 {
-    return path.m_impl->fsPath == str;
+    return m_impl->fsPath != std::filesystem::path(str);
 }
 
-
-////////////////////////////////////////////////////////////
-bool operator!=(const Path& path, std::string_view str)
+template <typename T>
+bool Path::operator==(const T& str) const
 {
-    return path.m_impl->fsPath != str;
+    return m_impl->fsPath == std::filesystem::path(str);
 }
 
-
-////////////////////////////////////////////////////////////
-bool operator==(const Path& path, const std::string& str)
+template <typename T>
+bool Path::operator!=(const T& str) const
 {
-    return path.m_impl->fsPath == str;
+    return m_impl->fsPath != std::filesystem::path(str);
 }
 
+template bool Path::operator== <char>(const char*) const;
+template bool Path::operator== <wchar_t>(const wchar_t*) const;
+template bool Path::operator== <std::string>(const std::string&) const;
 
-////////////////////////////////////////////////////////////
-bool operator!=(const Path& path, const std::string& str)
-{
-    return path.m_impl->fsPath != str;
-}
+template bool Path::operator!= <char>(const char*) const;
+template bool Path::operator!= <wchar_t>(const wchar_t*) const;
+template bool Path::operator!= <std::string>(const std::string&) const;
 
 } // namespace sf

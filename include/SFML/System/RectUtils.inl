@@ -33,7 +33,7 @@ namespace sf
 {
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr std::optional<Rect<T>> findIntersection(const Rect<T>& rect0, const Rect<T>& rect1)
+sf::Optional<Rect<T>> findIntersection(const Rect<T>& rect0, const Rect<T>& rect1)
 {
     // Rectangles with negative dimensions are allowed, so we must handle them correctly
 
@@ -58,11 +58,11 @@ constexpr std::optional<Rect<T>> findIntersection(const Rect<T>& rect0, const Re
     // If the intersection is valid (positive non zero area), then there is an intersection
     if ((interLeft < interRight) && (interTop < interBottom))
     {
-        return std::make_optional<Rect<T>>(Vector2<T>{interLeft, interTop},
-                                           Vector2<T>{interRight - interLeft, interBottom - interTop});
+        return sf::makeOptional<Rect<T>>(Vector2<T>{interLeft, interTop},
+                                         Vector2<T>{interRight - interLeft, interBottom - interTop});
     }
 
-    return std::nullopt;
+    return sf::nullOpt;
 }
 
 } // namespace sf

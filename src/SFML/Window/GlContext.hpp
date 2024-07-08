@@ -88,7 +88,6 @@ public:
     [[nodiscard]] static bool isExtensionAvailable(GraphicsContext& graphicsContext, const char* name);
 
 
-
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///

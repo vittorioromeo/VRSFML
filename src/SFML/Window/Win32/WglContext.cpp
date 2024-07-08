@@ -591,7 +591,7 @@ WglContext::SurfaceData WglContext::createSurface(ContextSettings& settings,
                                                   unsigned int     bitsPerPixel)
 {
     // If pbuffers are not available we use a hidden window as the off-screen surface to draw to
-    const auto createHiddenWindow = [](ContextSettings& settings, const Vector2u& size, unsigned int bitsPerPixel) -> SurfaceData
+    const auto createHiddenWindow = [](ContextSettings& xSettings, const Vector2u& xSize, unsigned int xBitsPerPixel) -> SurfaceData
     {
         // We can't create a memory DC, the resulting context wouldn't be compatible
         // with other contexts and thus wglShareLists would always fail
@@ -602,8 +602,8 @@ WglContext::SurfaceData WglContext::createSurface(ContextSettings& settings,
                                                 WS_POPUP | WS_DISABLED,
                                                 0,
                                                 0,
-                                                static_cast<int>(size.x),
-                                                static_cast<int>(size.y),
+                                                static_cast<int>(xSize.x),
+                                                static_cast<int>(xSize.y),
                                                 nullptr,
                                                 nullptr,
                                                 GetModuleHandle(nullptr),
@@ -615,10 +615,10 @@ WglContext::SurfaceData WglContext::createSurface(ContextSettings& settings,
         const HDC deviceContextHandle = GetDC(windowHandle);
 
         // Set the pixel format of the device context
-        setDevicePixelFormat(settings, deviceContextHandle, bitsPerPixel);
+        setDevicePixelFormat(xSettings, deviceContextHandle, xBitsPerPixel);
 
         // Update context settings from the selected pixel format
-        updateSettingsFromPixelFormat(settings, deviceContextHandle);
+        updateSettingsFromPixelFormat(xSettings, deviceContextHandle);
 
         return SurfaceData{.window = windowHandle, .pbuffer = {}, .deviceContext = deviceContextHandle, .ownsWindow = true};
     };
@@ -686,36 +686,36 @@ WglContext::SurfaceData WglContext::createSurface(ContextSettings& settings, HWN
 HGLRC WglContext::createContext(ContextSettings& settings, const SurfaceData& surfaceData, WglContext* shared)
 {
     const auto createContextViaAttributes =
-        [](ContextSettings&           settings,
-           const SurfaceData&         surfaceData,
-           WglContext*                shared,
+        [](ContextSettings&           xSettings,
+           const SurfaceData&         xSurfaceData,
+           WglContext*                xShared,
            HGLRC                      sharedContext,
            ContextSettings::Attribute originalAttributeFlags) -> HGLRC
     {
         HGLRC result{};
 
         // Create the OpenGL context -- first try using wglCreateContextAttribsARB
-        while (!result && settings.majorVersion)
+        while (!result && xSettings.majorVersion)
         {
             std::vector<int> attributes;
 
             // Check if the user requested a specific context version (anything > 1.1)
-            if ((settings.majorVersion > 1) || ((settings.majorVersion == 1) && (settings.minorVersion > 1)))
+            if ((xSettings.majorVersion > 1) || ((xSettings.majorVersion == 1) && (xSettings.minorVersion > 1)))
             {
                 attributes.push_back(WGL_CONTEXT_MAJOR_VERSION_ARB);
-                attributes.push_back(static_cast<int>(settings.majorVersion));
+                attributes.push_back(static_cast<int>(xSettings.majorVersion));
                 attributes.push_back(WGL_CONTEXT_MINOR_VERSION_ARB);
-                attributes.push_back(static_cast<int>(settings.minorVersion));
+                attributes.push_back(static_cast<int>(xSettings.minorVersion));
             }
 
             // Check if setting the profile is supported
             if (SF_GLAD_WGL_ARB_create_context_profile)
             {
-                const int profile = !!(settings.attributeFlags & ContextSettings::Attribute::Core)
+                const int profile = !!(xSettings.attributeFlags & ContextSettings::Attribute::Core)
                                         ? WGL_CONTEXT_CORE_PROFILE_BIT_ARB
                                         : WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
 
-                const int debug = !!(settings.attributeFlags & ContextSettings::Attribute::Debug)
+                const int debug = !!(xSettings.attributeFlags & ContextSettings::Attribute::Debug)
                                       ? WGL_CONTEXT_DEBUG_BIT_ARB
                                       : 0;
 
@@ -726,12 +726,12 @@ HGLRC WglContext::createContext(ContextSettings& settings, const SurfaceData& su
             }
             else
             {
-                if (!!(settings.attributeFlags & ContextSettings::Attribute::Core) ||
-                    !!(settings.attributeFlags & ContextSettings::Attribute::Debug))
+                if (!!(xSettings.attributeFlags & ContextSettings::Attribute::Core) ||
+                    !!(xSettings.attributeFlags & ContextSettings::Attribute::Debug))
                     priv::err() << "Selecting a profile during context creation is not supported,"
                                 << "disabling compatibility and debug" << priv::errEndl;
 
-                settings.attributeFlags = ContextSettings::Attribute::Default;
+                xSettings.attributeFlags = ContextSettings::Attribute::Default;
             }
 
             // Append the terminating 0
@@ -743,7 +743,7 @@ HGLRC WglContext::createContext(ContextSettings& settings, const SurfaceData& su
                 static std::recursive_mutex mutex;
                 const std::lock_guard       lock(mutex);
 
-                if (wglMakeCurrent(shared->m_surfaceData.deviceContext, nullptr) == FALSE)
+                if (wglMakeCurrent(xShared->m_surfaceData.deviceContext, nullptr) == FALSE)
                 {
                     priv::err() << "Failed to deactivate shared context before sharing: "
                                 << getErrorString(GetLastError()).toAnsiString() << priv::errEndl;
@@ -753,7 +753,7 @@ HGLRC WglContext::createContext(ContextSettings& settings, const SurfaceData& su
             }
 
             // Create the context
-            result = wglCreateContextAttribsARB(surfaceData.deviceContext, sharedContext, attributes.data());
+            result = wglCreateContextAttribsARB(xSurfaceData.deviceContext, sharedContext, attributes.data());
 
             if (result)
                 return result;
@@ -761,24 +761,24 @@ HGLRC WglContext::createContext(ContextSettings& settings, const SurfaceData& su
             // If we couldn't create the context, first try disabling flags,
             // then lower the version number and try again -- stop at 0.0
             // Invalid version numbers will be generated by this algorithm (like 3.9), but we really don't care
-            if (settings.attributeFlags != ContextSettings::Attribute::Default)
+            if (xSettings.attributeFlags != ContextSettings::Attribute::Default)
             {
-                settings.attributeFlags = ContextSettings::Attribute::Default;
+                xSettings.attributeFlags = ContextSettings::Attribute::Default;
             }
-            else if (settings.minorVersion > 0)
+            else if (xSettings.minorVersion > 0)
             {
                 // If the minor version is not 0, we decrease it and try again
-                --settings.minorVersion;
+                --xSettings.minorVersion;
 
-                settings.attributeFlags = originalAttributeFlags;
+                xSettings.attributeFlags = originalAttributeFlags;
             }
             else
             {
                 // If the minor version is 0, we decrease the major version
-                --settings.majorVersion;
-                settings.minorVersion = 9;
+                --xSettings.majorVersion;
+                xSettings.minorVersion = 9;
 
-                settings.attributeFlags = originalAttributeFlags;
+                xSettings.attributeFlags = originalAttributeFlags;
             }
         }
 

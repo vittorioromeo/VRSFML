@@ -11,7 +11,7 @@
 #include <SFML/Network/TcpSocket.hpp>
 
 #include <iostream>
-#include <optional>
+#include <SFML/System/Optional.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -128,12 +128,12 @@ void doClient(sf::CaptureDevice& captureDevice, unsigned short port)
     }
 
     // Ask for server address
-    std::optional<sf::IpAddress> server;
+    sf::Optional<sf::IpAddress> server;
     do
     {
         std::cout << "Type address or name of the server to connect to: ";
         std::cin >> server;
-    } while (!server.has_value());
+    } while (!server.hasValue());
 
     // Create an instance of our custom recorder
     NetworkRecorder recorder(server.value(), port);

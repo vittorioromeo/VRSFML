@@ -34,6 +34,7 @@
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Macros.hpp>
+#include <SFML/System/Optional.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
 #include <glad/gl.h>
@@ -41,7 +42,6 @@
 #include <atomic>
 #include <memory>
 #include <mutex>
-#include <optional>
 #include <vector>
 
 #include <cassert>

@@ -123,10 +123,10 @@ struct Text::Impl
     mutable bool                geometryNeedUpdate{};       //!< Does the geometry need to be recomputed?
     mutable std::uint64_t       fontTextureId{};            //!< The font texture id
 
-    explicit Impl(const Font& font, String string, unsigned int characterSize) :
-    font(&font),
-    string(SFML_MOVE(string)),
-    characterSize(characterSize)
+    explicit Impl(const Font& theFont, String theString, unsigned int theCharacterSize) :
+    font(&theFont),
+    string(SFML_MOVE(theString)),
+    characterSize(theCharacterSize)
     {
     }
 };

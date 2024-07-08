@@ -33,13 +33,13 @@
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/LifetimeDependant.hpp>
+#include <SFML/System/Optional.hpp>
 #include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector3.hpp>
 
 #include <miniaudio.h>
 
 #include <mutex>
-#include <optional>
 #include <vector>
 
 #include <cassert>
@@ -61,9 +61,9 @@ struct PlaybackDevice::Impl
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     explicit Impl(AudioContext& theAudioContext,
                   // NOLINTNEXTLINE(modernize-pass-by-value)
-                  const PlaybackDeviceHandle& playbackDeviceHandle) :
+                  const PlaybackDeviceHandle& thePlaybackDeviceHandle) :
     audioContext(&theAudioContext),
-    playbackDeviceHandle(playbackDeviceHandle)
+    playbackDeviceHandle(thePlaybackDeviceHandle)
     {
     }
 
@@ -124,14 +124,14 @@ struct PlaybackDevice::Impl
 
 
 ////////////////////////////////////////////////////////////
-std::optional<PlaybackDevice> PlaybackDevice::createDefault(AudioContext& audioContext)
+sf::Optional<PlaybackDevice> PlaybackDevice::createDefault(AudioContext& audioContext)
 {
-    std::optional defaultPlaybackDeviceHandle = audioContext.getDefaultPlaybackDeviceHandle();
+    sf::Optional defaultPlaybackDeviceHandle = audioContext.getDefaultPlaybackDeviceHandle();
 
-    if (!defaultPlaybackDeviceHandle.has_value())
-        return std::nullopt;
+    if (!defaultPlaybackDeviceHandle.hasValue())
+        return sf::nullOpt;
 
-    return std::make_optional<PlaybackDevice>(audioContext, *defaultPlaybackDeviceHandle);
+    return sf::makeOptional<PlaybackDevice>(audioContext, *defaultPlaybackDeviceHandle);
 }
 
 

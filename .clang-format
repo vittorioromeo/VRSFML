@@ -114,7 +114,7 @@ IncludeCategories:
   - Priority: 9
     Regex: '^<(glad|gl|X11|jni|android|stb_|GLES2|vorbis|miniaudio|doctest|Doctest)'
   - Priority: 10
-    Regex: '^<(AudioUtil|SystemUtil|GraphicsUtil|WindowUtil|StringifyVectorUtil|StringifyOptionalUtil|StringifyStringUtil|StringifyArrayUtil|LoadIntoMemoryUtil)'
+    Regex: '^<(AudioUtil|SystemUtil|GraphicsUtil|WindowUtil|StringifyVectorUtil|StringifyOptionalUtil|StringifyPathUtil|StringifyStringUtil|StringifyArrayUtil|LoadIntoMemoryUtil)'
   - Priority: 11
     Regex: '^<([^c](.+)|coroutine|charconv|chrono|complex|concepts|condition_variable)>$'
   - Priority: 12

@@ -30,6 +30,7 @@
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InputStream.hpp>
+#include <SFML/System/Optional.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
 #include <FLAC/stream_decoder.h>
@@ -45,7 +46,7 @@ FLAC__StreamDecoderReadStatus streamRead(const FLAC__StreamDecoder*, FLAC__byte 
 {
     auto* data = static_cast<sf::priv::SoundFileReaderFlac::ClientData*>(clientData);
 
-    if (const std::optional count = data->stream->read(buffer, *bytes))
+    if (const sf::Optional count = data->stream->read(buffer, *bytes))
     {
         if (*count > 0)
         {
@@ -63,7 +64,7 @@ FLAC__StreamDecoderSeekStatus streamSeek(const FLAC__StreamDecoder*, FLAC__uint6
 {
     auto* data = static_cast<sf::priv::SoundFileReaderFlac::ClientData*>(clientData);
 
-    if (data->stream->seek(static_cast<std::size_t>(absoluteByteOffset)).has_value())
+    if (data->stream->seek(static_cast<std::size_t>(absoluteByteOffset)).hasValue())
         return FLAC__STREAM_DECODER_SEEK_STATUS_OK;
 
     return FLAC__STREAM_DECODER_SEEK_STATUS_ERROR;
@@ -73,7 +74,7 @@ FLAC__StreamDecoderTellStatus streamTell(const FLAC__StreamDecoder*, FLAC__uint6
 {
     auto* data = static_cast<sf::priv::SoundFileReaderFlac::ClientData*>(clientData);
 
-    if (const std::optional position = data->stream->tell())
+    if (const sf::Optional position = data->stream->tell())
     {
         *absoluteByteOffset = *position;
         return FLAC__STREAM_DECODER_TELL_STATUS_OK;
@@ -86,7 +87,7 @@ FLAC__StreamDecoderLengthStatus streamLength(const FLAC__StreamDecoder*, FLAC__u
 {
     auto* data = static_cast<sf::priv::SoundFileReaderFlac::ClientData*>(clientData);
 
-    if (const std::optional count = data->stream->getSize())
+    if (const sf::Optional count = data->stream->getSize())
     {
         *streamLength = *count;
         return FLAC__STREAM_DECODER_LENGTH_STATUS_OK;
@@ -305,14 +306,14 @@ bool SoundFileReaderFlac::check(InputStream& stream)
 
 
 ////////////////////////////////////////////////////////////
-std::optional<SoundFileReader::Info> SoundFileReaderFlac::open(InputStream& stream)
+sf::Optional<SoundFileReader::Info> SoundFileReaderFlac::open(InputStream& stream)
 {
     // Create the decoder
     m_impl->decoder.reset(FLAC__stream_decoder_new());
     if (!m_impl->decoder)
     {
         priv::err() << "Failed to open FLAC file (failed to allocate the decoder)" << priv::errEndl;
-        return std::nullopt;
+        return sf::nullOpt;
     }
 
     // Initialize the decoder with our callbacks
@@ -333,11 +334,11 @@ std::optional<SoundFileReader::Info> SoundFileReaderFlac::open(InputStream& stre
     {
         m_impl->decoder.reset();
         priv::err() << "Failed to open FLAC file (failed to read metadata)" << priv::errEndl;
-        return std::nullopt;
+        return sf::nullOpt;
     }
 
     // Retrieve the sound properties
-    return std::make_optional(m_impl->clientData.info); // was filled in the "metadata" callback
+    return sf::makeOptional(m_impl->clientData.info); // was filled in the "metadata" callback
 }
 
 

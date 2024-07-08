@@ -21,7 +21,7 @@ TEST_CASE("[Network] sf::TcpSocket")
     {
         const sf::TcpSocket tcpSocket;
         CHECK(tcpSocket.getLocalPort() == 0);
-        CHECK(!tcpSocket.getRemoteAddress().has_value());
+        CHECK(!tcpSocket.getRemoteAddress().hasValue());
         CHECK(tcpSocket.getRemotePort() == 0);
     }
 }

@@ -48,7 +48,7 @@ int main()
     while (true)
     {
         // Handle events
-        while (const std::optional event = window.pollEvent())
+        while (const sf::Optional event = window.pollEvent())
         {
             // Window closed: exit
             if (event->is<sf::Event::Closed>())

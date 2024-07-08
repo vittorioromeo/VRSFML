@@ -712,12 +712,12 @@ public:
 
             if ((queueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) && (surfaceSupported == VK_TRUE))
             {
-                queueFamilyIndex = static_cast<std::uint32_t>(i);
+                queueFamilyIndex.emplace(static_cast<std::uint32_t>(i));
                 break;
             }
         }
 
-        if (!queueFamilyIndex.has_value())
+        if (!queueFamilyIndex.hasValue())
         {
             vulkanAvailable = false;
             return;
@@ -2555,7 +2555,7 @@ public:
         while (true)
         {
             // Process events
-            while (const std::optional event = window.pollEvent())
+            while (const sf::Optional event = window.pollEvent())
             {
                 // Window closed or escape key pressed: exit
                 if (event->is<sf::Event::Closed>() ||
@@ -2595,7 +2595,7 @@ private:
     VkDebugReportCallbackEXT        debugReportCallback{};
     VkSurfaceKHR                    surface{};
     VkPhysicalDevice                gpu{};
-    std::optional<std::uint32_t>    queueFamilyIndex;
+    sf::Optional<std::uint32_t>     queueFamilyIndex;
     VkDevice                        device{};
     VkQueue                         queue{};
     VkSurfaceFormatKHR              swapchainFormat{};

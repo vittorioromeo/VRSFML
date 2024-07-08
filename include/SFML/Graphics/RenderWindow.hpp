@@ -200,13 +200,13 @@ public:
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::optional<Event> pollEvent();
+    [[nodiscard]] sf::Optional<Event> pollEvent();
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::optional<Event> waitEvent(Time timeout = Time::Zero);
+    [[nodiscard]] sf::Optional<Event> waitEvent(Time timeout = Time::Zero);
 
 private:
     ////////////////////////////////////////////////////////////
@@ -230,7 +230,7 @@ private:
     /// \param event Event to filter
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::optional<Event> filterEvent(std::optional<Event> event);
+    [[nodiscard]] sf::Optional<Event> filterEvent(sf::Optional<Event> event);
 
     ////////////////////////////////////////////////////////////
     // Member data
@@ -270,7 +270,7 @@ private:
 /// while (true)
 /// {
 ///    // Event processing
-///    while (const std::optional event = window.pollEvent())
+///    while (const sf::Optional event = window.pollEvent())
 ///    {
 ///        // Request for closing the window
 ///        if (event->is<sf::Event::Closed>())

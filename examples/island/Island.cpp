@@ -119,11 +119,11 @@ int main()
     const auto font = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf").value();
 
     // Create all of our graphics resources
-    sf::Text                  hudText(font);
-    sf::Text                  statusText(font);
-    std::optional<sf::Shader> terrainShader;
-    sf::RenderStates          terrainStates;
-    sf::VertexBuffer          terrain(graphicsContext, sf::PrimitiveType::Triangles, sf::VertexBuffer::Usage::Static);
+    sf::Text                 hudText(font);
+    sf::Text                 statusText(font);
+    sf::Optional<sf::Shader> terrainShader;
+    sf::RenderStates         terrainStates;
+    sf::VertexBuffer         terrain(graphicsContext, sf::PrimitiveType::Triangles, sf::VertexBuffer::Usage::Static);
 
     // Set up our text drawables
     statusText.setCharacterSize(28);
@@ -175,7 +175,7 @@ int main()
         statusText.setString("Generating Terrain...");
 
         // Set up the render states
-        terrainStates = sf::RenderStates(&*terrainShader);
+        terrainStates = sf::RenderStates(terrainShader.asPtr());
     }
 
     // Center the status text
@@ -201,7 +201,7 @@ int main()
     while (true)
     {
         // Handle events
-        while (const std::optional event = window.pollEvent())
+        while (const sf::Optional event = window.pollEvent())
         {
             // Window closed or escape key pressed: exit
             if (event->is<sf::Event::Closed>() ||
@@ -212,7 +212,7 @@ int main()
             }
 
             // Arrow key pressed:
-            if (terrainShader.has_value() && event->is<sf::Event::KeyPressed>())
+            if (terrainShader.hasValue() && event->is<sf::Event::KeyPressed>())
             {
                 switch (event->getIf<sf::Event::KeyPressed>()->code)
                 {
@@ -242,7 +242,7 @@ int main()
 
         window.draw(statusText);
 
-        if (terrainShader.has_value())
+        if (terrainShader.hasValue())
         {
             {
                 const std::lock_guard lock(workQueueMutex);

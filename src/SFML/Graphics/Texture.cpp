@@ -166,9 +166,9 @@ Texture& Texture::operator=(Texture&& right) noexcept
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Texture> Texture::create(GraphicsContext& graphicsContext, const Vector2u& size, bool sRgb)
+sf::Optional<Texture> Texture::create(GraphicsContext& graphicsContext, const Vector2u& size, bool sRgb)
 {
-    std::optional<Texture> result; // Use a single local variable for NRVO
+    sf::Optional<Texture> result; // Use a single local variable for NRVO
 
     // Check if texture parameters are valid before creating it
     if ((size.x == 0) || (size.y == 0))
@@ -276,18 +276,18 @@ std::optional<Texture> Texture::create(GraphicsContext& graphicsContext, const V
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Texture> Texture::loadFromFile(GraphicsContext& graphicsContext, const Path& filename, bool sRgb, const IntRect& area)
+sf::Optional<Texture> Texture::loadFromFile(GraphicsContext& graphicsContext, const Path& filename, bool sRgb, const IntRect& area)
 {
     if (const auto image = sf::Image::loadFromFile(filename))
         return loadFromImage(graphicsContext, *image, sRgb, area);
 
     priv::err() << "Failed to load texture from file" << priv::errEndl;
-    return std::nullopt;
+    return sf::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Texture> Texture::loadFromMemory(
+sf::Optional<Texture> Texture::loadFromMemory(
     GraphicsContext& graphicsContext,
     const void*      data,
     std::size_t      size,
@@ -298,25 +298,25 @@ std::optional<Texture> Texture::loadFromMemory(
         return loadFromImage(graphicsContext, *image, sRgb, area);
 
     priv::err() << "Failed to load texture from memory" << priv::errEndl;
-    return std::nullopt;
+    return sf::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Texture> Texture::loadFromStream(GraphicsContext& graphicsContext, InputStream& stream, bool sRgb, const IntRect& area)
+sf::Optional<Texture> Texture::loadFromStream(GraphicsContext& graphicsContext, InputStream& stream, bool sRgb, const IntRect& area)
 {
     if (const auto image = sf::Image::loadFromStream(stream))
         return loadFromImage(graphicsContext, *image, sRgb, area);
 
     priv::err() << "Failed to load texture from stream" << priv::errEndl;
-    return std::nullopt;
+    return sf::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Texture> Texture::loadFromImage(GraphicsContext& graphicsContext, const Image& image, bool sRgb, const IntRect& area)
+sf::Optional<Texture> Texture::loadFromImage(GraphicsContext& graphicsContext, const Image& image, bool sRgb, const IntRect& area)
 {
-    std::optional<Texture> result; // Use a single local variable for NRVO
+    sf::Optional<Texture> result; // Use a single local variable for NRVO
 
     // Retrieve the image size
     const auto size = image.getSize().to<Vector2i>();

@@ -94,7 +94,7 @@ struct CaptureDevice::Impl
         captureDeviceConfig.capture.format   = ma_format_s16;
         captureDeviceConfig.sampleRate       = sampleRate;
 
-        if (const auto result = ma_device_init(&*static_cast<ma_context*>(audioContext->getMAContext()),
+        if (const auto result = ma_device_init(static_cast<ma_context*>(audioContext->getMAContext()),
                                                &captureDeviceConfig,
                                                &maDevice);
             result != MA_SUCCESS)
@@ -124,14 +124,14 @@ struct CaptureDevice::Impl
 
 
 ////////////////////////////////////////////////////////////
-std::optional<CaptureDevice> CaptureDevice::createDefault(AudioContext& audioContext)
+sf::Optional<CaptureDevice> CaptureDevice::createDefault(AudioContext& audioContext)
 {
-    std::optional defaultCaptureDeviceHandle = audioContext.getDefaultCaptureDeviceHandle();
+    sf::Optional defaultCaptureDeviceHandle = audioContext.getDefaultCaptureDeviceHandle();
 
-    if (!defaultCaptureDeviceHandle.has_value())
-        return std::nullopt;
+    if (!defaultCaptureDeviceHandle.hasValue())
+        return sf::nullOpt;
 
-    return std::make_optional<CaptureDevice>(audioContext, *defaultCaptureDeviceHandle);
+    return sf::makeOptional<CaptureDevice>(audioContext, *defaultCaptureDeviceHandle);
 }
 
 

@@ -66,36 +66,36 @@ public:
     /// \param data Buffer where the asset data is copied
     /// \param size Number of bytes read
     ///
-    /// \return The number of bytes actually read, or `std::nullopt` on error
+    /// \return The number of bytes actually read, or `sf::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    std::optional<std::size_t> read(void* data, std::size_t size) override;
+    sf::Optional<std::size_t> read(void* data, std::size_t size) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current reading position in the asset file
     ///
     /// \param position The position to seek to, from the beginning
     ///
-    /// \return The position actually sought to, or `std::nullopt` on error
+    /// \return The position actually sought to, or `sf::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    std::optional<std::size_t> seek(std::size_t position) override;
+    sf::Optional<std::size_t> seek(std::size_t position) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current reading position in the asset file
     ///
-    /// \return The current position, or `std::nullopt` on error.
+    /// \return The current position, or `sf::nullOpt` on error.
     ///
     ////////////////////////////////////////////////////////////
-    std::optional<std::size_t> tell() override;
+    sf::Optional<std::size_t> tell() override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the asset file
     ///
-    /// \return The total number of bytes available in the asset, or `std::nullopt` on error
+    /// \return The total number of bytes available in the asset, or `sf::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    std::optional<std::size_t> getSize() override;
+    sf::Optional<std::size_t> getSize() override;
 
 private:
     ////////////////////////////////////////////////////////////

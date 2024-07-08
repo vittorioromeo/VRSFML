@@ -26,6 +26,8 @@
 
 #include <SFML/System/Export.hpp>
 
+#include <SFML/System/Vector2.hpp>
+
 
 namespace sf
 {
@@ -44,7 +46,7 @@ public:
     /// If you are not interested in the actual length, but only in comparisons, consider using lengthSq().
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] SFML_SYSTEM_API T length() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] SFML_SYSTEM_API constexpr T length() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Square of vector's length.
@@ -60,7 +62,7 @@ public:
     /// \pre \c *this is no zero vector.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] SFML_SYSTEM_API Vector3 normalized() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] SFML_SYSTEM_API constexpr Vector3 normalized() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Dot product of two 3D vectors.

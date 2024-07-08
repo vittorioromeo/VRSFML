@@ -25,13 +25,37 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/Vector3.hpp> // NOLINT(misc-header-include-cycle)
+#include <SFML/System/IsFloatingPoint.hpp>
+#include <SFML/System/MathUtils.hpp>
+#include <SFML/System/Vector3.hpp> // NOLINTNEXTLINE(misc-header-include-cycle)
 
 #include <cassert>
 
 
 namespace sf
 {
+////////////////////////////////////////////////////////////
+template <typename T>
+constexpr Vector3<T> Vector3<T>::normalized() const
+{
+    static_assert(priv::isFloatingPoint<T>, "Vector3::normalized() is only supported for floating point types");
+
+    assert(*this != Vector3<T>() && "Vector3::normalized() cannot normalize a zero vector");
+    return (*this) / length();
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+constexpr T Vector3<T>::length() const
+{
+    static_assert(priv::isFloatingPoint<T>, "Vector3::length() is only supported for floating point types");
+
+    // don't use std::hypot because of slow performance
+    return priv::sqrt(x * x + y * y + z * z);
+}
+
+
 ////////////////////////////////////////////////////////////
 template <typename T>
 constexpr T Vector3<T>::lengthSq() const

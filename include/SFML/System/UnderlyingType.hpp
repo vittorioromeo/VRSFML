@@ -32,29 +32,6 @@
 
 #include <type_traits>
 
-namespace sf::priv
-{
-
-template <typename T>
-struct RemoveRef
-{
-    using type = T;
-};
-
-template <typename T>
-struct RemoveRef<T&>
-{
-    using type = T;
-};
-
-template <typename T>
-struct RemoveRef<T&&>
-{
-    using type = T;
-};
-
-} // namespace sf::priv
-
 #define SFML_PRIV_UNDERLYING_TYPE(...) typename ::std::underlying_type<__VA_ARGS__>::type
 
 #endif

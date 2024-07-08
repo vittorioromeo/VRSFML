@@ -37,6 +37,7 @@ add_library(sfml-test-main STATIC
     TestUtilities/AudioUtil.cpp
     TestUtilities/StringifyArrayUtil.hpp
     TestUtilities/StringifyOptionalUtil.hpp
+    TestUtilities/StringifyPathUtil.hpp
     TestUtilities/StringifyStringUtil.hpp
     TestUtilities/StringifyVectorUtil.hpp
 )

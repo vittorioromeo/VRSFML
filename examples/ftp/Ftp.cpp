@@ -4,8 +4,9 @@
 #include <SFML/Network/Ftp.hpp>
 #include <SFML/Network/IpAddress.hpp>
 
+#include <SFML/System/Optional.hpp>
+
 #include <iostream>
-#include <optional>
 
 
 ////////////////////////////////////////////////////////////
@@ -25,12 +26,12 @@ std::ostream& operator<<(std::ostream& stream, const sf::Ftp::Response& response
 int main()
 {
     // Choose the server address
-    std::optional<sf::IpAddress> address;
+    sf::Optional<sf::IpAddress> address;
     do
     {
         std::cout << "Enter the FTP server address: ";
         std::cin >> address;
-    } while (!address.has_value());
+    } while (!address.hasValue());
 
     // Connect to the server
     sf::Ftp                 server;
@@ -91,7 +92,8 @@ int main()
             {
                 // Print the current server directory
                 const sf::Ftp::DirectoryResponse response = server.getWorkingDirectory();
-                std::cout << response << '\n' << "Current directory is " << response.getDirectory() << std::endl;
+                std::cout << response << '\n'
+                          << "Current directory is " << response.getDirectory().to<std::string>() << std::endl;
                 break;
             }
 

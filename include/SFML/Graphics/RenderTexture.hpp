@@ -34,11 +34,10 @@
 
 #include <SFML/Window/ContextSettings.hpp>
 
+#include <SFML/System/Optional.hpp>
 #include <SFML/System/PassKey.hpp>
 #include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
-
-#include <optional>
 
 
 namespace sf
@@ -101,12 +100,12 @@ public:
     /// \param size     Width and height of the render-texture
     /// \param settings Additional settings for the underlying OpenGL texture and context
     ///
-    /// \return Render texture if creation has been successful, otherwise `std::nullopt`
+    /// \return Render texture if creation has been successful, otherwise `sf::nullOpt`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<RenderTexture> create(GraphicsContext&       graphicsContext,
-                                                             const Vector2u&        size,
-                                                             const ContextSettings& settings = {});
+    [[nodiscard]] static sf::Optional<RenderTexture> create(GraphicsContext&       graphicsContext,
+                                                            const Vector2u&        size,
+                                                            const ContextSettings& settings = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the maximum anti-aliasing level supported by the system

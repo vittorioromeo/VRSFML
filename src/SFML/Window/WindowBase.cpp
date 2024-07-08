@@ -37,9 +37,8 @@
 
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Macros.hpp>
+#include <SFML/System/Optional.hpp>
 #include <SFML/System/String.hpp>
-
-#include <optional>
 
 #include <cassert>
 #include <climits>
@@ -117,14 +116,14 @@ WindowBase& WindowBase::operator=(WindowBase&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Event> WindowBase::pollEvent()
+sf::Optional<Event> WindowBase::pollEvent()
 {
     return filterEvent(m_impl->pollEvent());
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Event> WindowBase::waitEvent(Time timeout)
+sf::Optional<Event> WindowBase::waitEvent(Time timeout)
 {
     return filterEvent(m_impl->waitEvent(timeout));
 }
@@ -155,8 +154,8 @@ Vector2u WindowBase::getSize() const
 void WindowBase::setSize(const Vector2u& size)
 {
     // Constrain requested size within minimum and maximum bounds
-    const auto minimumSize = m_impl->getMinimumSize().value_or(Vector2u());
-    const auto maximumSize = m_impl->getMaximumSize().value_or(Vector2u{UINT_MAX, UINT_MAX});
+    const auto minimumSize = m_impl->getMinimumSize().valueOr(Vector2u());
+    const auto maximumSize = m_impl->getMaximumSize().valueOr(Vector2u{UINT_MAX, UINT_MAX});
 
     const auto width  = priv::clamp(size.x, minimumSize.x, maximumSize.x);
     const auto height = priv::clamp(size.y, minimumSize.y, maximumSize.y);
@@ -174,11 +173,11 @@ void WindowBase::setSize(const Vector2u& size)
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::setMinimumSize(const std::optional<Vector2u>& minimumSize)
+void WindowBase::setMinimumSize(const sf::Optional<Vector2u>& minimumSize)
 {
     [[maybe_unused]] const auto validateMinimumSize = [&]
     {
-        if (!minimumSize.has_value() || !m_impl->getMaximumSize().has_value())
+        if (!minimumSize.hasValue() || !m_impl->getMaximumSize().hasValue())
             return true;
 
         return minimumSize->x <= m_impl->getMaximumSize()->x && minimumSize->y <= m_impl->getMaximumSize()->y;
@@ -192,11 +191,11 @@ void WindowBase::setMinimumSize(const std::optional<Vector2u>& minimumSize)
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::setMaximumSize(const std::optional<Vector2u>& maximumSize)
+void WindowBase::setMaximumSize(const sf::Optional<Vector2u>& maximumSize)
 {
     [[maybe_unused]] const auto validateMaxiumSize = [&]
     {
-        if (!maximumSize.has_value() || !m_impl->getMinimumSize().has_value())
+        if (!maximumSize.hasValue() || !m_impl->getMinimumSize().hasValue())
             return true;
         return maximumSize->x >= m_impl->getMinimumSize()->x && maximumSize->y >= m_impl->getMinimumSize()->y;
     };
@@ -300,10 +299,10 @@ bool WindowBase::createVulkanSurface(const Vulkan::VulkanSurfaceData& vulkanSurf
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Event> WindowBase::filterEvent(std::optional<Event> event)
+sf::Optional<Event> WindowBase::filterEvent(sf::Optional<Event> event)
 {
     // Cache the new size if needed
-    if (event.has_value() && event->getIf<Event::Resized>())
+    if (event.hasValue() && event->getIf<Event::Resized>())
         m_size = event->getIf<Event::Resized>()->size;
 
     return event;

@@ -32,9 +32,9 @@
 #include <SFML/Audio/SoundChannel.hpp>
 
 #include <SFML/System/LifetimeDependant.hpp>
+#include <SFML/System/Optional.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
-#include <optional>
 #include <vector>
 
 #include <cstddef>
@@ -55,7 +55,7 @@ public:
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<CaptureDevice> createDefault(AudioContext& audioContext);
+    [[nodiscard]] static sf::Optional<CaptureDevice> createDefault(AudioContext& audioContext);
 
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor

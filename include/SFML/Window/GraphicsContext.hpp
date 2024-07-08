@@ -31,11 +31,10 @@
 
 #include <SFML/Window/Context.hpp>
 
+#include <SFML/System/InPlacePImpl.hpp>
+#include <SFML/System/Optional.hpp>
 #include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
-
-#include <mutex>    // TODO: expensive at compile-time
-#include <optional> // TODO: expensive at compile-time
 
 
 namespace sf::priv
@@ -85,14 +84,13 @@ public:
         /// \return The thread local TransientContext
         ///
         ////////////////////////////////////////////////////////////
-        static std::optional<TransientContext>& get();
+        static sf::Optional<TransientContext>& get();
 
         ///////////////////////////////////////////////////////////
         // Member data
         ////////////////////////////////////////////////////////////
-        GraphicsContext&                       graphicsContext;
-        std::optional<sf::Context>             context;
-        std::unique_lock<std::recursive_mutex> sharedContextLock;
+        struct Impl;
+        priv::InPlacePImpl<Impl, 64> impl;
     };
 
     // TODO: private

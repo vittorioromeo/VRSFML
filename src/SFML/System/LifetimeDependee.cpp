@@ -33,6 +33,7 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Launder.hpp>
 #include <SFML/System/LifetimeDependee.hpp>
+#include <SFML/System/PlacementNew.hpp>
 
 #include <atomic>
 #include <string>
@@ -89,7 +90,7 @@ LifetimeDependee::LifetimeDependee(const char* dependeeName, const char* dependa
 m_dependeeName(dependeeName),
 m_dependantName(dependantName)
 {
-    new (m_dependantCount) AtomicUInt(0u);
+    SFML_PRIV_PLACEMENT_NEW(m_dependantCount) AtomicUInt(0u);
 }
 
 
@@ -107,7 +108,8 @@ LifetimeDependee::LifetimeDependee(LifetimeDependee&& rhs) noexcept :
 m_dependeeName(rhs.m_dependeeName),
 m_dependantName(rhs.m_dependantName)
 {
-    new (m_dependantCount) AtomicUInt(asAtomicUInt(rhs.m_dependantCount).load(std::memory_order_relaxed));
+    SFML_PRIV_PLACEMENT_NEW(m_dependantCount)
+    AtomicUInt(asAtomicUInt(rhs.m_dependantCount).load(std::memory_order_relaxed));
 
     // Intentionally not resetting `rhs.m_dependantCount` here, as we want to get a fatal error
     // if it wasn't `0u` when the move occurred.

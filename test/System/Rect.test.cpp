@@ -73,12 +73,12 @@ TEMPLATE_TEST_CASE("[Graphics] sf::Rect", "", int, float)
         constexpr sf::Rect<TestType> rectangle({0, 0}, {10, 10});
         constexpr sf::Rect<TestType> intersectingRectangle({5, 5}, {10, 10});
 
-        constexpr auto intersectionResult = sf::findIntersection(rectangle, intersectingRectangle);
-        STATIC_REQUIRE(intersectionResult.has_value());
-        STATIC_CHECK(*intersectionResult == sf::Rect<TestType>({5, 5}, {5, 5}));
+        const auto intersectionResult = sf::findIntersection(rectangle, intersectingRectangle);
+        REQUIRE(intersectionResult.hasValue());
+        assert(*intersectionResult == sf::Rect<TestType>({5, 5}, {5, 5}));
 
         constexpr sf::Rect<TestType> nonIntersectingRectangle({-5, -5}, {5, 5});
-        STATIC_CHECK_FALSE(sf::findIntersection(rectangle, nonIntersectingRectangle).has_value());
+        CHECK_FALSE(sf::findIntersection(rectangle, nonIntersectingRectangle).hasValue());
     }
 
     SECTION("getCenter()")

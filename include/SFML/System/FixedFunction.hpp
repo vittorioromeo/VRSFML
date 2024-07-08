@@ -31,6 +31,7 @@
 
 #include <SFML/System/Macros.hpp>
 #include <SFML/System/MaxAlignT.hpp>
+#include <SFML/System/PlacementNew.hpp>
 #include <SFML/System/RemoveRef.hpp>
 #include <SFML/System/SizeT.hpp>
 
@@ -115,12 +116,12 @@ public:
             else if (operation == Operation::MoveConstruct)
             {
                 assert(o != nullptr);
-                new (s) UnrefType(SFML_MOVE(*static_cast<UnrefType*>(o)));
+                SFML_PRIV_PLACEMENT_NEW(s) UnrefType(SFML_MOVE(*static_cast<UnrefType*>(o)));
             }
             else if (operation == Operation::CopyConstruct)
             {
                 assert(o != nullptr);
-                new (s) UnrefType(*static_cast<const UnrefType*>(o));
+                SFML_PRIV_PLACEMENT_NEW(s) UnrefType(*static_cast<const UnrefType*>(o));
             }
             else
             {

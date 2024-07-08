@@ -14,7 +14,7 @@
 #include <AudioUtil.hpp>
 #include <SystemUtil.hpp>
 
-#include <optional>
+#include <SFML/System/Optional.hpp>
 #include <type_traits>
 
 TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
@@ -129,7 +129,7 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
             const sf::priv::LifetimeDependee::TestingModeGuard guard;
             CHECK(!guard.fatalErrorTriggered());
 
-            std::optional<BadStruct> badStruct0;
+            sf::Optional<BadStruct> badStruct0;
             badStruct0.emplace();
             CHECK(!guard.fatalErrorTriggered());
 

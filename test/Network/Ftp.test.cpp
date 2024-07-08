@@ -2,6 +2,7 @@
 
 #include <Doctest.hpp>
 
+#include <StringifyPathUtil.hpp>
 #include <StringifyVectorUtil.hpp>
 
 #include <type_traits>

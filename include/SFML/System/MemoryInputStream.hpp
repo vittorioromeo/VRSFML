@@ -63,36 +63,36 @@ public:
     /// \param data Buffer where to copy the read data
     /// \param size Desired number of bytes to read
     ///
-    /// \return The number of bytes actually read, or `std::nullopt` on error
+    /// \return The number of bytes actually read, or `sf::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::optional<std::size_t> read(void* data, std::size_t size) override;
+    [[nodiscard]] sf::Optional<std::size_t> read(void* data, std::size_t size) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current reading position
     ///
     /// \param position The position to seek to, from the beginning
     ///
-    /// \return The position actually sought to, or `std::nullopt` on error
+    /// \return The position actually sought to, or `sf::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::optional<std::size_t> seek(std::size_t position) override;
+    [[nodiscard]] sf::Optional<std::size_t> seek(std::size_t position) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current reading position in the stream
     ///
-    /// \return The current position, or `std::nullopt` on error.
+    /// \return The current position, or `sf::nullOpt` on error.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::optional<std::size_t> tell() override;
+    [[nodiscard]] sf::Optional<std::size_t> tell() override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the stream
     ///
-    /// \return The total number of bytes available in the stream, or `std::nullopt` on error
+    /// \return The total number of bytes available in the stream, or `sf::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::optional<std::size_t> getSize() override;
+    [[nodiscard]] sf::Optional<std::size_t> getSize() override;
 
 private:
     ////////////////////////////////////////////////////////////

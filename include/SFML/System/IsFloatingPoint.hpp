@@ -22,24 +22,19 @@
 //
 ////////////////////////////////////////////////////////////
 
-#include <SFML/System/Vector3.hpp>
-
+#pragma once
 
 ////////////////////////////////////////////////////////////
-// Explicit instantiation definitions
+// Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/System/IsSame.hpp>
 
-template class sf::Vector3<float>;
-template class sf::Vector3<double>;
-template class sf::Vector3<long double>;
 
-#define SFML_INSTANTIATE_VECTOR3_INTEGRAL_MEMBER_FUNCTIONS(type)                      \
-    template type              sf::Vector3<type>::lengthSq() const;                   \
-    template type              sf::Vector3<type>::dot(const Vector3& rhs) const;      \
-    template sf::Vector3<type> sf::Vector3<type>::cross(const Vector3& rhs) const;    \
-    template sf::Vector3<type> sf::Vector3<type>::cwiseMul(const Vector3& rhs) const; \
-    template sf::Vector3<type> sf::Vector3<type>::cwiseDiv(const Vector3& rhs) const;
+namespace sf::priv
+{
 
-SFML_INSTANTIATE_VECTOR3_INTEGRAL_MEMBER_FUNCTIONS(bool)
-SFML_INSTANTIATE_VECTOR3_INTEGRAL_MEMBER_FUNCTIONS(int)
-SFML_INSTANTIATE_VECTOR3_INTEGRAL_MEMBER_FUNCTIONS(unsigned int)
+template <typename T>
+inline constexpr bool isFloatingPoint = SFML_PRIV_IS_SAME(T, float) || SFML_PRIV_IS_SAME(T, double) ||
+                                        SFML_PRIV_IS_SAME(T, long double);
+
+} // namespace sf::priv

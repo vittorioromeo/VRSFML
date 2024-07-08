@@ -32,9 +32,9 @@
 #include <SFML/Graphics/Glsl.hpp>
 
 #include <SFML/System/InPlacePImpl.hpp>
+#include <SFML/System/Optional.hpp>
 #include <SFML/System/PassKey.hpp>
 
-#include <optional>
 #include <string_view>
 
 #include <cstddef>
@@ -142,12 +142,12 @@ public:
     /// \param filename Path of the vertex, geometry or fragment shader file to load
     /// \param type     Type of shader (vertex, geometry or fragment)
     ///
-    /// \return Shader if loading succeeded, `std::nullopt` if it failed
+    /// \return Shader if loading succeeded, `sf::nullOpt` if it failed
     ///
     /// \see loadFromMemory, loadFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Shader> loadFromFile(GraphicsContext& graphicsContext, const Path& filename, Type type);
+    [[nodiscard]] static sf::Optional<Shader> loadFromFile(GraphicsContext& graphicsContext, const Path& filename, Type type);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load both the vertex and fragment shaders from files
@@ -163,14 +163,14 @@ public:
     /// \param vertexShaderFilename   Path of the vertex shader file to load
     /// \param fragmentShaderFilename Path of the fragment shader file to load
     ///
-    /// \return Shader if loading succeeded, `std::nullopt` if it failed
+    /// \return Shader if loading succeeded, `sf::nullOpt` if it failed
     ///
     /// \see loadFromMemory, loadFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Shader> loadFromFile(GraphicsContext& graphicsContext,
-                                                            const Path&      vertexShaderFilename,
-                                                            const Path&      fragmentShaderFilename);
+    [[nodiscard]] static sf::Optional<Shader> loadFromFile(GraphicsContext& graphicsContext,
+                                                           const Path&      vertexShaderFilename,
+                                                           const Path&      fragmentShaderFilename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the vertex, geometry and fragment shaders from files
@@ -187,15 +187,15 @@ public:
     /// \param geometryShaderFilename Path of the geometry shader file to load
     /// \param fragmentShaderFilename Path of the fragment shader file to load
     ///
-    /// \return Shader if loading succeeded, `std::nullopt` if it failed
+    /// \return Shader if loading succeeded, `sf::nullOpt` if it failed
     ///
     /// \see loadFromMemory, loadFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Shader> loadFromFile(GraphicsContext& graphicsContext,
-                                                            const Path&      vertexShaderFilename,
-                                                            const Path&      geometryShaderFilename,
-                                                            const Path&      fragmentShaderFilename);
+    [[nodiscard]] static sf::Optional<Shader> loadFromFile(GraphicsContext& graphicsContext,
+                                                           const Path&      vertexShaderFilename,
+                                                           const Path&      geometryShaderFilename,
+                                                           const Path&      fragmentShaderFilename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the vertex, geometry or fragment shader from a source code in memory
@@ -210,12 +210,12 @@ public:
     /// \param shader String containing the source code of the shader
     /// \param type   Type of shader (vertex, geometry or fragment)
     ///
-    /// \return Shader if loading succeeded, `std::nullopt` if it failed
+    /// \return Shader if loading succeeded, `sf::nullOpt` if it failed
     ///
     /// \see loadFromFile, loadFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Shader> loadFromMemory(GraphicsContext& graphicsContext, std::string_view shader, Type type);
+    [[nodiscard]] static sf::Optional<Shader> loadFromMemory(GraphicsContext& graphicsContext, std::string_view shader, Type type);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load both the vertex and fragment shaders from source codes in memory
@@ -231,14 +231,14 @@ public:
     /// \param vertexShader   String containing the source code of the vertex shader
     /// \param fragmentShader String containing the source code of the fragment shader
     ///
-    /// \return Shader if loading succeeded, `std::nullopt` if it failed
+    /// \return Shader if loading succeeded, `sf::nullOpt` if it failed
     ///
     /// \see loadFromFile, loadFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Shader> loadFromMemory(GraphicsContext& graphicsContext,
-                                                              std::string_view vertexShader,
-                                                              std::string_view fragmentShader);
+    [[nodiscard]] static sf::Optional<Shader> loadFromMemory(GraphicsContext& graphicsContext,
+                                                             std::string_view vertexShader,
+                                                             std::string_view fragmentShader);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the vertex, geometry and fragment shaders from source codes in memory
@@ -255,16 +255,15 @@ public:
     /// \param geometryShader String containing the source code of the geometry shader
     /// \param fragmentShader String containing the source code of the fragment shader
     ///
-    /// \return Shader if loading succeeded, `std::nullopt` if it failed
+    /// \return Shader if loading succeeded, `sf::nullOpt` if it failed
     ///
     /// \see loadFromFile, loadFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Shader> loadFromMemory(
-        GraphicsContext& graphicsContext,
-        std::string_view vertexShader,
-        std::string_view geometryShader,
-        std::string_view fragmentShader);
+    [[nodiscard]] static sf::Optional<Shader> loadFromMemory(GraphicsContext& graphicsContext,
+                                                             std::string_view vertexShader,
+                                                             std::string_view geometryShader,
+                                                             std::string_view fragmentShader);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the vertex, geometry or fragment shader from a custom stream
@@ -279,12 +278,12 @@ public:
     /// \param stream Source stream to read from
     /// \param type   Type of shader (vertex, geometry or fragment)
     ///
-    /// \return Shader if loading succeeded, `std::nullopt` if it failed
+    /// \return Shader if loading succeeded, `sf::nullOpt` if it failed
     ///
     /// \see loadFromFile, loadFromMemory
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Shader> loadFromStream(GraphicsContext& graphicsContext, InputStream& stream, Type type);
+    [[nodiscard]] static sf::Optional<Shader> loadFromStream(GraphicsContext& graphicsContext, InputStream& stream, Type type);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load both the vertex and fragment shaders from custom streams
@@ -300,14 +299,14 @@ public:
     /// \param vertexShaderStream   Source stream to read the vertex shader from
     /// \param fragmentShaderStream Source stream to read the fragment shader from
     ///
-    /// \return Shader if loading succeeded, `std::nullopt` if it failed
+    /// \return Shader if loading succeeded, `sf::nullOpt` if it failed
     ///
     /// \see loadFromFile, loadFromMemory
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Shader> loadFromStream(GraphicsContext& graphicsContext,
-                                                              InputStream&     vertexShaderStream,
-                                                              InputStream&     fragmentShaderStream);
+    [[nodiscard]] static sf::Optional<Shader> loadFromStream(GraphicsContext& graphicsContext,
+                                                             InputStream&     vertexShaderStream,
+                                                             InputStream&     fragmentShaderStream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the vertex, geometry and fragment shaders from custom streams
@@ -324,22 +323,21 @@ public:
     /// \param geometryShaderStream Source stream to read the geometry shader from
     /// \param fragmentShaderStream Source stream to read the fragment shader from
     ///
-    /// \return Shader if loading succeeded, `std::nullopt` if it failed
+    /// \return Shader if loading succeeded, `sf::nullOpt` if it failed
     ///
     /// \see loadFromFile, loadFromMemory
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Shader> loadFromStream(
-        GraphicsContext& graphicsContext,
-        InputStream&     vertexShaderStream,
-        InputStream&     geometryShaderStream,
-        InputStream&     fragmentShaderStream);
+    [[nodiscard]] static sf::Optional<Shader> loadFromStream(GraphicsContext& graphicsContext,
+                                                             InputStream&     vertexShaderStream,
+                                                             InputStream&     geometryShaderStream,
+                                                             InputStream&     fragmentShaderStream);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::optional<UniformLocation> getUniformLocation(std::string_view uniformName);
+    [[nodiscard]] sf::Optional<UniformLocation> getUniformLocation(std::string_view uniformName);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p float uniform
@@ -781,13 +779,13 @@ private:
     /// \param geometryShaderCode Source code of the geometry shader
     /// \param fragmentShaderCode Source code of the fragment shader
     ///
-    /// \return Shader on success, `std::nullopt` if any error happened
+    /// \return Shader on success, `sf::nullOpt` if any error happened
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Shader> compile(GraphicsContext& graphicsContext,
-                                                       std::string_view vertexShaderCode,
-                                                       std::string_view geometryShaderCode,
-                                                       std::string_view fragmentShaderCode);
+    [[nodiscard]] static sf::Optional<Shader> compile(GraphicsContext& graphicsContext,
+                                                      std::string_view vertexShaderCode,
+                                                      std::string_view geometryShaderCode,
+                                                      std::string_view fragmentShaderCode);
 
     ////////////////////////////////////////////////////////////
     /// \brief Bind all the textures used by the shader

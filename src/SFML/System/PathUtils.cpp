@@ -38,8 +38,8 @@ namespace sf::priv
 std::string formatDebugPathInfo(const Path& path)
 {
     std::ostringstream oss;
-    oss << "    Provided path: " << path << '\n'; // TODO
-                                                  //        << "    Absolute path: " << std::filesystem::absolute(path);
+    oss << "    Provided path: " << path.to<std::string>() << '\n'; // TODO
+        //        << "    Absolute path: " << std::filesystem::absolute(path);
     return oss.str();
 }
 

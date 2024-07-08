@@ -26,6 +26,8 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/System/FileInputStream.hpp>
+#include <SFML/System/Optional.hpp>
+
 #ifdef SFML_SYSTEM_ANDROID
 #include <SFML/System/Android/Activity.hpp>
 #include <SFML/System/Android/ResourceStream.hpp>
@@ -59,15 +61,15 @@ FileInputStream& FileInputStream::operator=(FileInputStream&&) noexcept = defaul
 
 
 ////////////////////////////////////////////////////////////
-std::optional<FileInputStream> FileInputStream::open(const Path& filename)
+sf::Optional<FileInputStream> FileInputStream::open(const Path& filename)
 {
 #ifdef SFML_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
     {
         auto androidFile = priv::makeUnique<priv::ResourceStream>(filename);
-        if (androidFile->tell().has_value())
-            return std::make_optional<FileInputStream>(priv::PassKey<FileInputStream>{}, SFML_MOVE(androidFile));
-        return std::nullopt;
+        if (androidFile->tell().hasValue())
+            return sf::makeOptional<FileInputStream>(priv::PassKey<FileInputStream>{}, SFML_MOVE(androidFile));
+        return sf::nullOpt;
     }
 #endif
 
@@ -76,14 +78,14 @@ std::optional<FileInputStream> FileInputStream::open(const Path& filename)
 #else
     if (auto file = priv::UniquePtr<std::FILE, FileCloser>(std::fopen(filename.c_str(), "rb")))
 #endif
-        return std::make_optional<FileInputStream>(priv::PassKey<FileInputStream>{}, SFML_MOVE(file));
+        return sf::makeOptional<FileInputStream>(priv::PassKey<FileInputStream>{}, SFML_MOVE(file));
 
-    return std::nullopt;
+    return sf::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<std::size_t> FileInputStream::read(void* data, std::size_t size)
+sf::Optional<std::size_t> FileInputStream::read(void* data, std::size_t size)
 {
 #ifdef SFML_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
@@ -94,12 +96,12 @@ std::optional<std::size_t> FileInputStream::read(void* data, std::size_t size)
 #endif
 
     assert(m_file);
-    return std::fread(data, 1, size, m_file.get());
+    return sf::makeOptional(std::fread(data, 1, size, m_file.get()));
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<std::size_t> FileInputStream::seek(std::size_t position)
+sf::Optional<std::size_t> FileInputStream::seek(std::size_t position)
 {
 #ifdef SFML_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
@@ -112,14 +114,14 @@ std::optional<std::size_t> FileInputStream::seek(std::size_t position)
     assert(m_file);
 
     if (std::fseek(m_file.get(), static_cast<long>(position), SEEK_SET))
-        return std::nullopt;
+        return sf::nullOpt;
 
     return tell();
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<std::size_t> FileInputStream::tell()
+sf::Optional<std::size_t> FileInputStream::tell()
 {
 #ifdef SFML_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
@@ -132,12 +134,12 @@ std::optional<std::size_t> FileInputStream::tell()
     assert(m_file);
 
     const auto position = std::ftell(m_file.get());
-    return position < 0 ? std::nullopt : std::optional<std::size_t>(position);
+    return position < 0 ? sf::nullOpt : sf::makeOptional(static_cast<std::size_t>(position));
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<std::size_t> FileInputStream::getSize()
+sf::Optional<std::size_t> FileInputStream::getSize()
 {
 #ifdef SFML_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
@@ -152,9 +154,9 @@ std::optional<std::size_t> FileInputStream::getSize()
     const auto position = tell().value();
     std::fseek(m_file.get(), 0, SEEK_END);
 
-    std::optional<std::size_t> size = tell(); // Use a single local variable for NRVO
+    sf::Optional<std::size_t> size = tell(); // Use a single local variable for NRVO
 
-    if (!seek(position).has_value())
+    if (!seek(position).hasValue())
     {
         size.reset();
         return size; // Empty optional

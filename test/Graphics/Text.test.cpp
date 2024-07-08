@@ -16,7 +16,7 @@
 #include <GraphicsUtil.hpp>
 #include <WindowUtil.hpp>
 
-#include <optional>
+#include <SFML/System/Optional.hpp>
 #include <type_traits>
 
 TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
@@ -232,7 +232,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             const sf::priv::LifetimeDependee::TestingModeGuard guard;
             CHECK(!guard.fatalErrorTriggered());
 
-            std::optional<BadStruct> badStruct0;
+            sf::Optional<BadStruct> badStruct0;
             badStruct0.emplace(graphicsContext);
             CHECK(!guard.fatalErrorTriggered());
 

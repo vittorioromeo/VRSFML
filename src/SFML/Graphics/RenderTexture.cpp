@@ -52,15 +52,15 @@ RenderTexture& RenderTexture::operator=(RenderTexture&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-std::optional<RenderTexture> RenderTexture::create(GraphicsContext&       graphicsContext,
-                                                   const Vector2u&        size,
-                                                   const ContextSettings& settings)
+sf::Optional<RenderTexture> RenderTexture::create(GraphicsContext&       graphicsContext,
+                                                  const Vector2u&        size,
+                                                  const ContextSettings& settings)
 {
-    std::optional<RenderTexture> result; // Use a single local variable for NRVO
+    sf::Optional<RenderTexture> result; // Use a single local variable for NRVO
 
     // Create the texture
     auto texture = sf::Texture::create(graphicsContext, size, settings.sRgbCapable);
-    if (!texture)
+    if (!texture.hasValue())
     {
         priv::err() << "Impossible to create render texture (failed to create the target texture)" << priv::errEndl;
         return result; // Empty optional

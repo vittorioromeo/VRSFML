@@ -47,34 +47,34 @@ ResourceStream::ResourceStream(const Path& filename)
 
 
 ////////////////////////////////////////////////////////////
-std::optional<std::size_t> ResourceStream::read(void* data, std::size_t size)
+sf::Optional<std::size_t> ResourceStream::read(void* data, std::size_t size)
 {
     const auto numBytesRead = AAsset_read(m_file.get(), data, size);
     if (numBytesRead < 0)
-        return std::nullopt;
+        return sf::nullOpt;
     return numBytesRead;
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<std::size_t> ResourceStream::seek(std::size_t position)
+sf::Optional<std::size_t> ResourceStream::seek(std::size_t position)
 {
     const auto newPosition = AAsset_seek(m_file.get(), static_cast<off_t>(position), SEEK_SET);
     if (newPosition < 0)
-        return std::nullopt;
+        return sf::nullOpt;
     return newPosition;
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<std::size_t> ResourceStream::tell()
+sf::Optional<std::size_t> ResourceStream::tell()
 {
     return getSize().value() - static_cast<std::size_t>(AAsset_getRemainingLength(m_file.get()));
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<std::size_t> ResourceStream::getSize()
+sf::Optional<std::size_t> ResourceStream::getSize()
 {
     return AAsset_getLength(m_file.get());
 }

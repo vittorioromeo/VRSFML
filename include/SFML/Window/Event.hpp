@@ -404,7 +404,7 @@ SFML_PRIV_EVENTS_X_MACRO(SFML_PRIV_EVENT_X_EXTERN_TEMPLATE_GETIF, SFML_PRIV_EVEN
 /// without actually reading any of the corresponding event data.
 ///
 /// \code
-/// while (const std::optional event = window.pollEvent())
+/// while (const sf::Optional event = window.pollEvent())
 /// {
 ///     // Window closed or escape key pressed: exit
 ///     if (event->is<sf::Event::Closed>() ||

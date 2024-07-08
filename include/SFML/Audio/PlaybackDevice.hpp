@@ -31,10 +31,9 @@
 
 #include <SFML/System/LifetimeDependant.hpp>
 #include <SFML/System/LifetimeDependee.hpp>
+#include <SFML/System/Optional.hpp>
 #include <SFML/System/SizeT.hpp>
 #include <SFML/System/UniquePtr.hpp>
-
-#include <optional>
 
 
 namespace sf::priv::MiniaudioUtils
@@ -58,7 +57,7 @@ public:
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<PlaybackDevice> createDefault(AudioContext& audioContext);
+    [[nodiscard]] static sf::Optional<PlaybackDevice> createDefault(AudioContext& audioContext);
 
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor

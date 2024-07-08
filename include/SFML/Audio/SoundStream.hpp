@@ -32,9 +32,9 @@
 #include <SFML/Audio/SoundChannel.hpp>
 #include <SFML/Audio/SoundSource.hpp>
 
+#include <SFML/System/Optional.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
-#include <optional>
 #include <vector>
 
 #include <cstddef>
@@ -258,10 +258,10 @@ protected:
     /// allow implementation of custom loop points. Otherwise,
     /// it just calls onSeek(Time::Zero) and returns 0.
     ///
-    /// \return The seek position after looping (or std::nullopt if there's no loop)
+    /// \return The seek position after looping (or sf::nullOpt if there's no loop)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual std::optional<std::uint64_t> onLoop();
+    [[nodiscard]] virtual sf::Optional<std::uint64_t> onLoop();
 
     ////////////////////////////////////////////////////////////
     // Member data

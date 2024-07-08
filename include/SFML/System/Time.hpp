@@ -47,13 +47,13 @@ public:
     /// Sets the time value to zero.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] explicit constexpr Time();
+    [[nodiscard, gnu::always_inline]] explicit constexpr Time();
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from microseconds
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] explicit constexpr Time(std::int64_t microseconds);
+    [[nodiscard, gnu::always_inline]] explicit constexpr Time(std::int64_t microseconds);
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the time value as a number of seconds

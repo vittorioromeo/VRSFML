@@ -113,7 +113,7 @@ int main(int argc, char* argv[])
 
     while (true)
     {
-        while (const std::optional event = active ? window.pollEvent() : window.waitEvent())
+        while (const sf::Optional event = active ? window.pollEvent() : window.waitEvent())
         {
             // Window closed or escape key pressed: exit
             if (event->is<sf::Event::Closed>() ||

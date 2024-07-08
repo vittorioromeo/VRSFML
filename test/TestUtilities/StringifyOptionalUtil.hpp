@@ -2,15 +2,15 @@
 
 #include <doctest/parts/doctest_fwd.h>
 
-#include <optional>
+#include <SFML/System/Optional.hpp>
 
 namespace doctest
 {
 
 template <typename T>
-struct StringMaker<std::optional<T>>
+struct StringMaker<sf::Optional<T>>
 {
-    static doctest::String convert(const std::optional<T>&)
+    static doctest::String convert(const sf::Optional<T>&)
     {
         return ""; // TODO
     }

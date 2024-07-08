@@ -105,7 +105,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
         SECTION("Minimum size")
         {
             sf::WindowBase windowBase(sf::VideoMode({360, 240}), "WindowBase Tests");
-            windowBase.setMinimumSize(sf::Vector2u{128, 256});
+            windowBase.setMinimumSize(sf::makeOptional(sf::Vector2u{128, 256}));
             windowBase.setSize({100, 100});
             CHECK(windowBase.getSize() == sf::Vector2u{128, 256});
         }
@@ -113,7 +113,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
         SECTION("Maximum size")
         {
             sf::WindowBase windowBase(sf::VideoMode({360, 240}), "WindowBase Tests");
-            windowBase.setMaximumSize(sf::Vector2u{128, 256});
+            windowBase.setMaximumSize(sf::makeOptional(sf::Vector2u{128, 256}));
             windowBase.setSize({400, 400});
             CHECK(windowBase.getSize() == sf::Vector2u{128, 256});
         }
@@ -122,16 +122,16 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
     SECTION("setMinimumSize()")
     {
         sf::WindowBase windowBase(sf::VideoMode({100, 100}), "WindowBase Tests", sf::Style::Default ^ sf::Style::Resize);
-        windowBase.setMinimumSize(sf::Vector2u{200, 300});
+        windowBase.setMinimumSize(sf::makeOptional(sf::Vector2u{200, 300}));
         CHECK(windowBase.getSize() == sf::Vector2u{200, 300});
-        windowBase.setMaximumSize(sf::Vector2u{200, 300});
+        windowBase.setMaximumSize(sf::makeOptional(sf::Vector2u{200, 300}));
     }
 
     SECTION("setMinimumSize()")
     {
         sf::WindowBase windowBase(sf::VideoMode({400, 400}), "WindowBase Tests", sf::Style::Default ^ sf::Style::Resize);
-        windowBase.setMaximumSize(sf::Vector2u{200, 300});
+        windowBase.setMaximumSize(sf::makeOptional(sf::Vector2u{200, 300}));
         CHECK(windowBase.getSize() == sf::Vector2u{200, 300});
-        windowBase.setMinimumSize(sf::Vector2u{200, 300});
+        windowBase.setMinimumSize(sf::makeOptional(sf::Vector2u{200, 300}));
     }
 }

@@ -15,7 +15,7 @@
 
 #include <iostream>
 #include <mutex>
-#include <optional>
+#include <SFML/System/Optional.hpp>
 #include <vector>
 
 #include <cstdint>

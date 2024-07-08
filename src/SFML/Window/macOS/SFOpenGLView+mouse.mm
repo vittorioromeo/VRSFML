@@ -33,7 +33,7 @@
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/MathUtils.hpp>
 
-#include <optional>
+#include <SFML/System/Optional.hpp>
 
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -135,7 +135,7 @@
 ////////////////////////////////////////////////////////
 - (void)handleMouseDown:(NSEvent*)theEvent
 {
-    const std::optional<sf::Mouse::Button> button = [SFOpenGLView mouseButtonFromEvent:theEvent];
+    const sf::Optional<sf::Mouse::Button> button = [SFOpenGLView mouseButtonFromEvent:theEvent];
 
     if (m_requester != nil)
     {
@@ -180,7 +180,7 @@
 ////////////////////////////////////////////////////////////
 - (void)handleMouseUp:(NSEvent*)theEvent
 {
-    const std::optional<sf::Mouse::Button> button = [SFOpenGLView mouseButtonFromEvent:theEvent];
+    const sf::Optional<sf::Mouse::Button> button = [SFOpenGLView mouseButtonFromEvent:theEvent];
 
     if (m_requester != nil)
     {
@@ -410,7 +410,7 @@
 
 
 ////////////////////////////////////////////////////////
-+ (std::optional<sf::Mouse::Button>)mouseButtonFromEvent:(NSEvent*)event
++ (sf::Optional<sf::Mouse::Button>)mouseButtonFromEvent:(NSEvent*)event
 {
     switch ([event buttonNumber])
     {
@@ -425,7 +425,7 @@
         case 4:
             return sf::Mouse::Button::Extra2;
         default:
-            return std::nullopt; // Never happens! (hopefully)
+            return sf::nullOpt; // Never happens! (hopefully)
     }
 }
 

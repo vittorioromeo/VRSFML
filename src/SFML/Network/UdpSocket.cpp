@@ -133,15 +133,15 @@ Socket::Status UdpSocket::send(const void* data, std::size_t size, const IpAddre
 
 
 ////////////////////////////////////////////////////////////
-Socket::Status UdpSocket::receive(void*                     data,
-                                  std::size_t               size,
-                                  std::size_t&              received,
-                                  std::optional<IpAddress>& remoteAddress,
-                                  unsigned short&           remotePort)
+Socket::Status UdpSocket::receive(void*                    data,
+                                  std::size_t              size,
+                                  std::size_t&             received,
+                                  sf::Optional<IpAddress>& remoteAddress,
+                                  unsigned short&          remotePort)
 {
     // First clear the variables to fill
     received      = 0;
-    remoteAddress = std::nullopt;
+    remoteAddress = sf::nullOpt;
     remotePort    = 0;
 
     // Check the destination buffer
@@ -172,9 +172,9 @@ Socket::Status UdpSocket::receive(void*                     data,
         return priv::SocketImpl::getErrorStatus();
 
     // Fill the sender information
-    received      = static_cast<std::size_t>(sizeReceived);
-    remoteAddress = IpAddress(ntohl(address.sin_addr.s_addr));
-    remotePort    = ntohs(address.sin_port);
+    received = static_cast<std::size_t>(sizeReceived);
+    remoteAddress.emplace(ntohl(address.sin_addr.s_addr));
+    remotePort = ntohs(address.sin_port);
 
     return Status::Done;
 }
@@ -201,7 +201,7 @@ Socket::Status UdpSocket::send(Packet& packet, const IpAddress& remoteAddress, u
 
 
 ////////////////////////////////////////////////////////////
-Socket::Status UdpSocket::receive(Packet& packet, std::optional<IpAddress>& remoteAddress, unsigned short& remotePort)
+Socket::Status UdpSocket::receive(Packet& packet, sf::Optional<IpAddress>& remoteAddress, unsigned short& remotePort)
 {
     // See the detailed comment in send(Packet) above.
 

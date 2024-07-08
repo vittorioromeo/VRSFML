@@ -31,11 +31,11 @@
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/EnumArray.hpp>
 #include <SFML/System/Err.hpp>
+#include <SFML/System/Optional.hpp>
 
 #include <fcntl.h>
 #include <linux/input.h>
 #include <mutex>
-#include <optional>
 #include <queue>
 #include <sstream>
 #include <sys/stat.h>
@@ -53,9 +53,9 @@ namespace
 {
 struct TouchSlot
 {
-    std::optional<unsigned int> oldId;
-    std::optional<unsigned int> id;
-    sf::Vector2i                pos;
+    sf::Optional<unsigned int> oldId;
+    sf::Optional<unsigned int> id;
+    sf::Vector2i               pos;
 };
 
 std::recursive_mutex inputMutex; // threadsafe? maybe...
@@ -167,7 +167,7 @@ void initFileDescriptors()
     std::atexit(uninitFileDescriptors);
 }
 
-std::optional<sf::Mouse::Button> toMouseButton(int code)
+sf::Optional<sf::Mouse::Button> toMouseButton(int code)
 {
     switch (code)
     {
@@ -183,7 +183,7 @@ std::optional<sf::Mouse::Button> toMouseButton(int code)
             return sf::Mouse::Button::Extra2;
 
         default:
-            return std::nullopt;
+            return sf::nullOpt;
     }
 }
 
@@ -331,9 +331,9 @@ void processSlots()
         }
         else
         {
-            if (slot.oldId.has_value())
+            if (slot.oldId.hasValue())
                 pushEvent(sf::Event::TouchEnded{*slot.oldId, slot.pos});
-            if (slot.id.has_value())
+            if (slot.id.hasValue())
                 pushEvent(sf::Event::TouchBegan{*slot.id, slot.pos});
 
             slot.oldId = slot.id;
@@ -341,7 +341,7 @@ void processSlots()
     }
 }
 
-std::optional<sf::Event> eventProcess()
+sf::Optional<sf::Event> eventProcess()
 {
     const std::lock_guard lock(inputMutex);
 
@@ -371,7 +371,7 @@ std::optional<sf::Event> eventProcess()
         {
             if (inputEvent.type == EV_KEY)
             {
-                if (const std::optional<sf::Mouse::Button> mb = toMouseButton(inputEvent.code))
+                if (const sf::Optional<sf::Mouse::Button> mb = toMouseButton(inputEvent.code))
                 {
                     mouseMap[*mb] = inputEvent.value;
 
@@ -454,7 +454,7 @@ std::optional<sf::Event> eventProcess()
                         touchFd     = fileDescriptor;
                         break;
                     case ABS_MT_TRACKING_ID:
-                        atSlot(currentSlot).id = inputEvent.value >= 0 ? std::optional(inputEvent.value) : std::nullopt;
+                        atSlot(currentSlot).id = inputEvent.value >= 0 ? sf::Optional(inputEvent.value) : sf::nullOpt;
                         touchFd                = fileDescriptor;
                         break;
                     case ABS_MT_POSITION_X:
@@ -529,13 +529,13 @@ std::optional<sf::Event> eventProcess()
     }
 
     // No events available
-    return std::nullopt;
+    return sf::nullOpt;
 }
 
 // assumes inputMutex is locked
 void update()
 {
-    while (const std::optional event = eventProcess())
+    while (const sf::Optional event = eventProcess())
         pushEvent(*event);
 }
 } // namespace
@@ -669,19 +669,19 @@ Vector2i getTouchPosition(unsigned int finger, const WindowBase& /*relativeTo*/)
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Event> checkEvent()
+sf::Optional<Event> checkEvent()
 {
     const std::lock_guard lock(inputMutex);
 
     if (!eventQueue.empty())
     {
-        auto event = std::make_optional(eventQueue.front());
+        auto event = sf::makeOptional(eventQueue.front());
         eventQueue.pop();
 
         return event;
     }
 
-    if (const std::optional event = eventProcess())
+    if (const sf::Optional event = eventProcess())
     {
         return event;
     }
@@ -691,13 +691,13 @@ std::optional<Event> checkEvent()
     // sure of a good way to handle generating multiple events at once.)
     if (!eventQueue.empty())
     {
-        auto event = std::make_optional(eventQueue.front());
+        auto event = sf::makeOptional(eventQueue.front());
         eventQueue.pop();
 
         return event;
     }
 
-    return std::nullopt;
+    return sf::nullOpt;
 }
 
 
