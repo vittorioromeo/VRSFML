@@ -115,7 +115,7 @@ public:
     /// Closes the window and frees all the resources attached to it.
     ///
     ////////////////////////////////////////////////////////////
-    virtual ~WindowBase();
+    ~WindowBase();
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy constructor
@@ -421,16 +421,6 @@ public:
                                            VkSurfaceKHR&                surface,
                                            const VkAllocationCallbacks* allocator = nullptr);
 
-protected:
-    ////////////////////////////////////////////////////////////
-    /// \brief Function called after the window has been resized
-    ///
-    /// This function is called so that derived classes can
-    /// perform custom actions when the size of the window changes.
-    ///
-    ////////////////////////////////////////////////////////////
-    virtual void onResize();
-
 private:
     friend class Window;
 
@@ -446,7 +436,7 @@ private:
     /// \param event Event to filter
     ///
     ////////////////////////////////////////////////////////////
-    void filterEvent(const Event& event);
+    [[nodiscard]] std::optional<Event> filterEvent(std::optional<Event> event);
 
     ////////////////////////////////////////////////////////////
     // Member data
@@ -485,7 +475,7 @@ private:
 ///    {
 ///        // Request for closing the window
 ///        if (event->is<sf::Event::Closed>())
-///            return 0; // break out of both loops
+///        return 0; // break out of both loops
 ///    }
 ///
 ///    // Do things with the window here...

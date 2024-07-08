@@ -136,7 +136,7 @@ public:
     /// Closes the window and frees all the resources attached to it.
     ///
     ////////////////////////////////////////////////////////////
-    ~Window() override;
+    ~Window();
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy constructor

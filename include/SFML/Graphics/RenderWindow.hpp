@@ -36,7 +36,7 @@
 #include <SFML/Window/Window.hpp>
 #include <SFML/Window/WindowEnums.hpp>
 #include <SFML/Window/WindowHandle.hpp>
-\
+
 #include <SFML/System/Vector2.hpp>
 
 #include <cstdint>
@@ -190,7 +190,25 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool setActive(bool active = true) override;
 
-protected:
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    void setSize(const Vector2u& size);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] std::optional<Event> pollEvent();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] std::optional<Event> waitEvent(Time timeout = Time::Zero);
+
+private:
     ////////////////////////////////////////////////////////////
     /// \brief Function called after the window has been resized
     ///
@@ -198,9 +216,22 @@ protected:
     /// perform custom actions when the size of the window changes.
     ///
     ////////////////////////////////////////////////////////////
-    void onResize() override;
+    void onResize();
 
-private:
+    ////////////////////////////////////////////////////////////
+    /// \brief Processes an event before it is sent to the user
+    ///
+    /// This function is called every time an event is received
+    /// from the internal window (through pollEvent or waitEvent).
+    /// It filters out unwanted events, and performs whatever internal
+    /// stuff the window needs before the event is returned to the
+    /// user.
+    ///
+    /// \param event Event to filter
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] std::optional<Event> filterEvent(std::optional<Event> event);
+
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////

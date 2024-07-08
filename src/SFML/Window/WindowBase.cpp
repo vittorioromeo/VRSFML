@@ -159,31 +159,21 @@ WindowBase& WindowBase::operator=(WindowBase&&) noexcept = default;
 ////////////////////////////////////////////////////////////
 std::optional<Event> WindowBase::pollEvent()
 {
-    std::optional<sf::Event> event = m_impl->pollEvent();
-
-    if (event.has_value())
-        filterEvent(*event);
-
-    return event;
+    return filterEvent(m_impl->pollEvent());
 }
 
 
 ////////////////////////////////////////////////////////////
 std::optional<Event> WindowBase::waitEvent(Time timeout)
 {
-    std::optional<sf::Event> event = m_impl->waitEvent(timeout);
-
-    if (event.has_value())
-        filterEvent(*event);
-
-    return event;
+    return filterEvent(m_impl->waitEvent(timeout));
 }
 
 
 ////////////////////////////////////////////////////////////
 Vector2i WindowBase::getPosition() const
 {
-    return m_impl ? m_impl->getPosition() : Vector2i();
+    return m_impl->getPosition();
 }
 
 
@@ -222,9 +212,6 @@ void WindowBase::setSize(const Vector2u& size)
 
     // Cache the new size
     m_size = clampedSize;
-
-    // Notify the derived class
-    onResize();
 }
 
 
@@ -340,43 +327,32 @@ void WindowBase::requestFocus()
 ////////////////////////////////////////////////////////////
 bool WindowBase::hasFocus() const
 {
-    return m_impl && m_impl->hasFocus();
+    return m_impl->hasFocus();
 }
 
 
 ////////////////////////////////////////////////////////////
 WindowHandle WindowBase::getNativeHandle() const
 {
-    return m_impl ? m_impl->getNativeHandle() : WindowHandle{};
+    return m_impl->getNativeHandle();
 }
 
 
 ////////////////////////////////////////////////////////////
 bool WindowBase::createVulkanSurface(const VkInstance& instance, VkSurfaceKHR& surface, const VkAllocationCallbacks* allocator)
 {
-    return m_impl ? m_impl->createVulkanSurface(instance, surface, allocator) : false;
+    return m_impl->createVulkanSurface(instance, surface, allocator);
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::onResize()
+std::optional<Event> WindowBase::filterEvent(std::optional<Event> event)
 {
-    // Nothing by default
-}
+    // Cache the new size if needed
+    if (event.has_value() && event->getIf<Event::Resized>())
+        m_size = event->getIf<Event::Resized>()->size;
 
-
-////////////////////////////////////////////////////////////
-void WindowBase::filterEvent(const Event& event)
-{
-    // Notify resize events to the derived class
-    if (const auto* resized = event.getIf<Event::Resized>())
-    {
-        // Cache the new size
-        m_size = resized->size;
-
-        // Notify the derived class
-        onResize();
-    }
+    return event;
 }
 
 } // namespace sf
