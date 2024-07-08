@@ -62,14 +62,7 @@ class Event;
 class SFML_WINDOW_API WindowBase
 {
 public:
-    ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// This constructor doesn't actually create the window,
-    /// use the other constructors or call create() to do so.
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] WindowBase();
+    [[nodiscard]] WindowBase(priv::UniquePtr<priv::WindowImpl>&& impl);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a new window
@@ -147,53 +140,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     WindowBase& operator=(WindowBase&&) noexcept;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Create (or recreate) the window
-    ///
-    /// If the window was already created, it closes it first.
-    /// If \a state is State::Fullscreen, then \a mode must be
-    /// a valid video mode.
-    ///
-    /// \param mode  Video mode to use (defines the width, height and depth of the rendering area of the window)
-    /// \param title Title of the window
-    /// \param style %Window style, a bitwise OR combination of sf::Style enumerators
-    /// \param state %Window state
-    ///
-    ////////////////////////////////////////////////////////////
-    virtual void create(VideoMode mode, const String& title, std::uint32_t style = Style::Default, State state = State::Windowed);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Create (or recreate) the window from an existing control
-    ///
-    /// \param handle Platform-specific handle of the control
-    ///
-    ////////////////////////////////////////////////////////////
-    virtual void create(WindowHandle handle);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Close the window and destroy all the attached resources
-    ///
-    /// After calling this function, the sf::Window instance remains
-    /// valid and you can call create() to recreate the window.
-    /// All other functions such as pollEvent() or display() will
-    /// still work (i.e. you don't have to test isOpen() every time),
-    /// and will have no effect on closed windows.
-    ///
-    ////////////////////////////////////////////////////////////
-    virtual void close();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Tell whether or not the window is open
-    ///
-    /// This function returns whether or not the window exists.
-    /// Note that a hidden window (setVisible(false)) is open
-    /// (therefore this function would return true).
-    ///
-    /// \return True if the window is open, false if it has been closed
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isOpen() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Pop the next event from the front of the FIFO event queue, if any, and return it
@@ -477,16 +423,6 @@ public:
 
 protected:
     ////////////////////////////////////////////////////////////
-    /// \brief Function called after the window has been created
-    ///
-    /// This function is called so that derived classes can
-    /// perform their own specific initialization as soon as
-    /// the window is created.
-    ///
-    ////////////////////////////////////////////////////////////
-    virtual void onCreate();
-
-    ////////////////////////////////////////////////////////////
     /// \brief Function called after the window has been resized
     ///
     /// This function is called so that derived classes can
@@ -497,19 +433,6 @@ protected:
 
 private:
     friend class Window;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Create (or recreate) the window
-    ///
-    /// Implementation detail for sharing underlying implementation
-    /// with sf::Window
-    ///
-    /// \param mode  Video mode to use (defines the width, height and depth of the rendering area of the window)
-    /// \param style %Window style, a bitwise OR combination of sf::Style enumerators
-    /// \param state %Window state
-    ///
-    ////////////////////////////////////////////////////////////
-    void create(VideoMode mode, std::uint32_t& style, State& state);
 
     ////////////////////////////////////////////////////////////
     /// \brief Processes an event before it is sent to the user
@@ -524,12 +447,6 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     void filterEvent(const Event& event);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Perform some common internal initializations
-    ///
-    ////////////////////////////////////////////////////////////
-    void initialize();
 
     ////////////////////////////////////////////////////////////
     // Member data
@@ -561,17 +478,14 @@ private:
 /// sf::WindowBase window(sf::VideoMode({800, 600}), "SFML window");
 ///
 /// // The main loop - ends as soon as the window is closed
-/// while (window.isOpen())
+/// while (true)
 /// {
 ///    // Event processing
 ///    while (const std::optional event = window.pollEvent())
 ///    {
 ///        // Request for closing the window
 ///        if (event->is<sf::Event::Closed>())
-///        {
-///            window.close();
-///            break;
-///        }
+///            return 0; // break out of both loops
 ///    }
 ///
 ///    // Do things with the window here...

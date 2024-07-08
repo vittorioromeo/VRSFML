@@ -36,7 +36,7 @@
 #include <SFML/Window/Window.hpp>
 #include <SFML/Window/WindowEnums.hpp>
 #include <SFML/Window/WindowHandle.hpp>
-
+\
 #include <SFML/System/Vector2.hpp>
 
 #include <cstdint>
@@ -55,15 +55,6 @@ class String;
 class SFML_GRAPHICS_API RenderWindow : public Window, public RenderTarget
 {
 public:
-    ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// This constructor doesn't actually create the window,
-    /// use the other constructors or call create() to do so.
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] RenderWindow(GraphicsContext& graphicsContext);
-
     ////////////////////////////////////////////////////////////
     /// \brief Construct a new window
     ///
@@ -201,16 +192,6 @@ public:
 
 protected:
     ////////////////////////////////////////////////////////////
-    /// \brief Function called after the window has been created
-    ///
-    /// This function is called so that derived classes can
-    /// perform their own specific initialization as soon as
-    /// the window is created.
-    ///
-    ////////////////////////////////////////////////////////////
-    void onCreate() override;
-
-    ////////////////////////////////////////////////////////////
     /// \brief Function called after the window has been resized
     ///
     /// This function is called so that derived classes can
@@ -223,8 +204,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    GraphicsContext* m_graphicsContext;      //!< TODO
-    unsigned int     m_defaultFrameBuffer{}; //!< Framebuffer to bind when targeting this window
+    unsigned int m_defaultFrameBuffer{}; //!< Framebuffer to bind when targeting this window
 };
 
 } // namespace sf
@@ -256,17 +236,14 @@ private:
 /// window.setFramerateLimit(60);
 ///
 /// // The main loop - ends as soon as the window is closed
-/// while (window.isOpen())
+/// while (true)
 /// {
 ///    // Event processing
 ///    while (const std::optional event = window.pollEvent())
 ///    {
 ///        // Request for closing the window
 ///        if (event->is<sf::Event::Closed>())
-///        {
-///            window.close();
-///            break;
-///        }
+///            return 0; // break out of both loops
 ///    }
 ///
 ///    // Clear the whole window before rendering a new frame
@@ -302,7 +279,7 @@ private:
 /// ...
 ///
 /// // Start the rendering loop
-/// while (window.isOpen())
+/// while (true)
 /// {
 ///     // Process events
 ///     ...

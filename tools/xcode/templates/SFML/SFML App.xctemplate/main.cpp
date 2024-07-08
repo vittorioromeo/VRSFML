@@ -26,6 +26,8 @@
 #include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/VideoMode.hpp>
 
+#include <cstdlib>
+
 // Here is a small helper for you! Have a look.
 #include "ResourcePath.hpp"
 
@@ -62,7 +64,7 @@ int main()
     music.play();
 
     // Start the game loop
-    while (window.isOpen())
+    while (true)
     {
         // Process events
         while (const std::optional event = window.pollEvent())
@@ -72,8 +74,7 @@ int main()
                 (event->is<sf::Event::KeyPressed>() &&
                  event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape))
             {
-                window.close();
-                break;
+                return EXIT_SUCCESS;
             }
         }
 

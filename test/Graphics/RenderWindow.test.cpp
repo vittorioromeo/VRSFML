@@ -40,7 +40,6 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
                                           sf::Style::Default,
                                           sf::State::Windowed,
                                           sf::ContextSettings{});
-            CHECK(window.isOpen());
             CHECK(window.getSize() == sf::Vector2u{256, 256});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
             CHECK(window.getSettings().attributeFlags == sf::ContextSettings::Default);
@@ -59,7 +58,6 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
                                           "Window Title",
                                           sf::State::Windowed,
                                           sf::ContextSettings{});
-            CHECK(window.isOpen());
             CHECK(window.getSize() == sf::Vector2u{240, 300});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
             CHECK(window.getSettings().attributeFlags == sf::ContextSettings::Default);

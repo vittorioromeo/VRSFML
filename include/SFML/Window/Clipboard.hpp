@@ -95,10 +95,7 @@ SFML_WINDOW_API void setString(const String& text);
 /// while (const std::optional event = window.pollEvent())
 /// {
 ///     if (event->is<sf::Event::Closed>())
-///     {
-///         window.close();
-///         break;
-///     }
+///         return 0; // break out of both event and main loops
 ///
 ///     if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
 ///     {

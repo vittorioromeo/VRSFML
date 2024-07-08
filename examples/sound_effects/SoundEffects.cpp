@@ -1167,29 +1167,23 @@ int main()
 
     // Start the game loop
     const sf::Clock clock;
-    while (window.isOpen())
+    while (true)
     {
         // Process events
         while (const std::optional event = window.pollEvent())
         {
-            // Close window: exit
-            if (event->is<sf::Event::Closed>())
+            // Window closed or escape key pressed: exit
+            if (event->is<sf::Event::Closed>() ||
+                (event->is<sf::Event::KeyPressed>() &&
+                 event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape))
             {
-                window.close();
-                break;
+                return EXIT_SUCCESS;
             }
 
             if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
             {
                 switch (keyPressed->code)
                 {
-                    // Escape key: exit
-                    case sf::Keyboard::Key::Escape:
-                    {
-                        window.close();
-                        break;
-                    }
-
                     // Left arrow key: previous effect
                     case sf::Keyboard::Key::Left:
                     {

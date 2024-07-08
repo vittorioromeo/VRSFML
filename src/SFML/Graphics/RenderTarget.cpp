@@ -738,6 +738,13 @@ void RenderTarget::initialize()
 
 
 ////////////////////////////////////////////////////////////
+GraphicsContext& RenderTarget::getGraphicsContext()
+{
+    return *m_impl->graphicsContext;
+}
+
+
+////////////////////////////////////////////////////////////
 void RenderTarget::applyCurrentView()
 {
     // Set the viewport

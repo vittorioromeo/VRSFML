@@ -1,13 +1,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/GraphicsContext.hpp>
-
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 
 #include <SFML/Window/Event.hpp>
+#include <SFML/Window/GraphicsContext.hpp>
 
 #include <cstdlib>
 
@@ -46,7 +45,7 @@ int main()
     blue.setPosition({550, 470});
     blue.setRotation(sf::degrees(180));
 
-    while (window.isOpen())
+    while (true)
     {
         // Handle events
         while (const std::optional event = window.pollEvent())
@@ -54,8 +53,7 @@ int main()
             // Window closed: exit
             if (event->is<sf::Event::Closed>())
             {
-                window.close();
-                break;
+                return EXIT_SUCCESS;
             }
         }
 

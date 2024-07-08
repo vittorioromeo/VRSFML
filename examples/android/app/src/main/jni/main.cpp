@@ -111,16 +111,16 @@ int main(int argc, char* argv[])
     // work, but keep battery life in mind.
     bool active = true;
 
-    while (window.isOpen())
+    while (true)
     {
         while (const std::optional event = active ? window.pollEvent() : window.waitEvent())
         {
+            // Window closed or escape key pressed: exit
             if (event->is<sf::Event::Closed>() ||
                 (event->is<sf::Event::KeyPressed>() &&
                  event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape))
             {
-                window.close();
-                break;
+                return EXIT_SUCCESS;
             }
 
             if (const auto* resized = event->getIf<sf::Event::Resized>())
