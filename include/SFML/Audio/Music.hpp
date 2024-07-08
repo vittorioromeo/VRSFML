@@ -32,10 +32,10 @@
 #include <SFML/Audio/SoundChannel.hpp>
 #include <SFML/Audio/SoundStream.hpp>
 
+#include <SFML/System/Optional.hpp>
 #include <SFML/System/PassKey.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
-#include <optional>
 #include <vector>
 
 #include <cstddef>
@@ -94,12 +94,12 @@ public:
     ///
     /// \param filename Path of the music file to open
     ///
-    /// \return Music source if loading succeeded, `std::nullopt` if it failed
+    /// \return Music source if loading succeeded, `sf::nullOpt` if it failed
     ///
     /// \see openFromMemory, openFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Music> openFromFile(const Path& filename);
+    [[nodiscard]] static sf::Optional<Music> openFromFile(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a music from an audio file in memory
@@ -120,12 +120,12 @@ public:
     /// \param data        Pointer to the file data in memory
     /// \param sizeInBytes Size of the data to load, in bytes
     ///
-    /// \return Music source if loading succeeded, `std::nullopt` if it failed
+    /// \return Music source if loading succeeded, `sf::nullOpt` if it failed
     ///
     /// \see openFromFile, openFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Music> openFromMemory(const void* data, std::size_t sizeInBytes);
+    [[nodiscard]] static sf::Optional<Music> openFromMemory(const void* data, std::size_t sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a music from an audio file in a custom stream
@@ -144,12 +144,12 @@ public:
     ///
     /// \param stream Source stream to read from
     ///
-    /// \return Music source if loading succeeded, `std::nullopt` if it failed
+    /// \return Music source if loading succeeded, `sf::nullOpt` if it failed
     ///
     /// \see openFromFile, openFromMemory
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Music> openFromStream(InputStream& stream);
+    [[nodiscard]] static sf::Optional<Music> openFromStream(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the total duration of the music
@@ -204,8 +204,8 @@ private:
     /// \brief Try opening the music file from an optional input sound file
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Music> tryOpenFromInputSoundFile(std::optional<InputSoundFile>&& optFile,
-                                                                        const char*                     errorContext);
+    [[nodiscard]] static sf::Optional<Music> tryOpenFromInputSoundFile(sf::Optional<InputSoundFile>&& optFile,
+                                                                       const char*                    errorContext);
 
 public:
     ////////////////////////////////////////////////////////////
@@ -298,10 +298,10 @@ protected:
     /// the seek position for a loop. We then determine whether we are looping on a
     /// loop point or the end-of-file, perform the seek, and return the new position.
     ///
-    /// \return The seek position after looping (or std::nullopt if there's no loop)
+    /// \return The seek position after looping (or sf::nullOpt if there's no loop)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::optional<std::uint64_t> onLoop() override;
+    [[nodiscard]] sf::Optional<std::uint64_t> onLoop() override;
 
 private:
     ////////////////////////////////////////////////////////////

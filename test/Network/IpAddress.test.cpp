@@ -26,7 +26,7 @@ TEST_CASE("[Network] sf::IpAddress")
         SECTION("static 'create' function")
         {
             const auto ipAddress = sf::IpAddress::resolve("203.0.113.2"sv);
-            REQUIRE(ipAddress.has_value());
+            REQUIRE(ipAddress.hasValue());
             CHECK(ipAddress->toString() == "203.0.113.2"s);
             CHECK(ipAddress->toInteger() == 0xCB007102);
             CHECK(*ipAddress != sf::IpAddress::Any);
@@ -34,25 +34,25 @@ TEST_CASE("[Network] sf::IpAddress")
             CHECK(*ipAddress != sf::IpAddress::LocalHost);
 
             const auto broadcast = sf::IpAddress::resolve("255.255.255.255"sv);
-            REQUIRE(broadcast.has_value());
+            REQUIRE(broadcast.hasValue());
             CHECK(broadcast->toString() == "255.255.255.255"s);
             CHECK(broadcast->toInteger() == 0xFFFFFFFF);
             CHECK(*broadcast == sf::IpAddress::Broadcast);
 
             const auto any = sf::IpAddress::resolve("0.0.0.0"sv);
-            REQUIRE(any.has_value());
+            REQUIRE(any.hasValue());
             CHECK(any->toString() == "0.0.0.0"s);
             CHECK(any->toInteger() == 0x00000000);
             CHECK(*any == sf::IpAddress::Any);
 
             const auto localHost = sf::IpAddress::resolve("localhost"s);
-            REQUIRE(localHost.has_value());
+            REQUIRE(localHost.hasValue());
             CHECK(localHost->toString() == "127.0.0.1"s);
             CHECK(localHost->toInteger() == 0x7F000001);
             CHECK(*localHost == sf::IpAddress::LocalHost);
 
-            CHECK(!sf::IpAddress::resolve("255.255.255.256"s).has_value());
-            CHECK(!sf::IpAddress::resolve("").has_value());
+            CHECK(!sf::IpAddress::resolve("255.255.255.256"s).hasValue());
+            CHECK(!sf::IpAddress::resolve("").hasValue());
         }
 
         SECTION("Byte constructor")
@@ -74,16 +74,16 @@ TEST_CASE("[Network] sf::IpAddress")
     {
         SECTION("getLocalAddress")
         {
-            const std::optional<sf::IpAddress> ipAddress = sf::IpAddress::getLocalAddress();
-            REQUIRE(ipAddress.has_value());
+            const sf::Optional<sf::IpAddress> ipAddress = sf::IpAddress::getLocalAddress();
+            REQUIRE(ipAddress.hasValue());
             CHECK(ipAddress->toString() != "0.0.0.0");
             CHECK(ipAddress->toInteger() != 0);
         }
 
         SECTION("getPublicAddress")
         {
-            const std::optional<sf::IpAddress> ipAddress = sf::IpAddress::getPublicAddress(sf::milliseconds(250));
-            if (ipAddress.has_value())
+            const sf::Optional<sf::IpAddress> ipAddress = sf::IpAddress::getPublicAddress(sf::milliseconds(250));
+            if (ipAddress.hasValue())
             {
                 CHECK(ipAddress->toString() != "0.0.0.0");
                 CHECK(ipAddress->toInteger() != 0);
@@ -165,19 +165,19 @@ TEST_CASE("[Network] sf::IpAddress")
 
         SECTION("operator>>")
         {
-            std::optional<sf::IpAddress> ipAddress;
+            sf::Optional<sf::IpAddress> ipAddress;
             std::istringstream("198.51.100.4") >> ipAddress;
-            REQUIRE(ipAddress.has_value());
+            REQUIRE(ipAddress.hasValue());
             CHECK(ipAddress->toString() == "198.51.100.4"s);
             CHECK(ipAddress->toInteger() == 0xC6336404);
 
             std::istringstream("203.0.113.72") >> ipAddress;
-            REQUIRE(ipAddress.has_value());
+            REQUIRE(ipAddress.hasValue());
             CHECK(ipAddress->toString() == "203.0.113.72"s);
             CHECK(ipAddress->toInteger() == 0xCB007148);
 
             std::istringstream("") >> ipAddress;
-            CHECK(!ipAddress.has_value());
+            CHECK(!ipAddress.hasValue());
         }
 
         SECTION("operator<<")

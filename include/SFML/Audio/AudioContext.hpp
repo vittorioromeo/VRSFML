@@ -33,10 +33,10 @@
 #include <SFML/Audio/PlaybackDeviceHandle.hpp>
 
 #include <SFML/System/LifetimeDependee.hpp>
+#include <SFML/System/Optional.hpp>
 #include <SFML/System/PassKey.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
-#include <optional>
 #include <vector>
 
 
@@ -63,7 +63,7 @@ public:
     /// \brief Create a new audio context
     ///
     ////////////////////////////////////////////////////////////
-    SFML_AUDIO_API static std::optional<AudioContext> create();
+    SFML_AUDIO_API static sf::Optional<AudioContext> create();
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -113,13 +113,13 @@ public:
     /// \brief Get a handle to the default audio playback device
     ///
     /// This function returns a handle to the default audio
-    /// playback device. If none is available, `std::nullopt` is
+    /// playback device. If none is available, `sf::nullOpt` is
     /// returned instead.
     ///
     /// \return The handle to the default audio playback device
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_AUDIO_API std::optional<PlaybackDeviceHandle> getDefaultPlaybackDeviceHandle();
+    [[nodiscard]] SFML_AUDIO_API sf::Optional<PlaybackDeviceHandle> getDefaultPlaybackDeviceHandle();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a list of handles to all available audio capture devices
@@ -139,13 +139,13 @@ public:
     /// \brief Get a handle to the default audio capture device
     ///
     /// This function returns a handle to the default audio
-    /// capture device. If none is available, `std::nullopt` is
+    /// capture device. If none is available, `sf::nullOpt` is
     /// returned instead.
     ///
     /// \return The handle to the default audio capture device
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_AUDIO_API std::optional<CaptureDeviceHandle> getDefaultCaptureDeviceHandle();
+    [[nodiscard]] SFML_AUDIO_API sf::Optional<CaptureDeviceHandle> getDefaultCaptureDeviceHandle();
 
 private:
     friend PlaybackDevice;

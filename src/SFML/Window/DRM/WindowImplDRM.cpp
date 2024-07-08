@@ -46,7 +46,7 @@ namespace InputImpl
 /// \return False if event queue is empty
 ///
 ////////////////////////////////////////////////////////////
-std::optional<Event> checkEvent();
+sf::Optional<Event> checkEvent();
 
 ////////////////////////////////////////////////////////////
 /// \brief Backup terminal configuration and disable console feedback
@@ -122,13 +122,13 @@ void WindowImplDRM::setSize(const Vector2u& /*size*/)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplDRM::setMinimumSize(const std::optional<Vector2u>& /* minimumSize */)
+void WindowImplDRM::setMinimumSize(const sf::Optional<Vector2u>& /* minimumSize */)
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplDRM::setMaximumSize(const std::optional<Vector2u>& /* maximumSize */)
+void WindowImplDRM::setMaximumSize(const sf::Optional<Vector2u>& /* maximumSize */)
 {
 }
 
@@ -190,7 +190,7 @@ bool WindowImplDRM::hasFocus() const
 
 void WindowImplDRM::processEvents()
 {
-    while (const std::optional event = InputImpl::checkEvent())
+    while (const sf::Optional event = InputImpl::checkEvent())
         pushEvent(*event);
 }
 

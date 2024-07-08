@@ -62,7 +62,7 @@ namespace
 unsigned long read(FT_Stream rec, unsigned long offset, unsigned char* buffer, unsigned long count)
 {
     auto* stream = static_cast<sf::InputStream*>(rec->descriptor.pointer);
-    if (stream->seek(offset) == offset)
+    if (sf::Optional seekResult = stream->seek(offset); seekResult.hasValue() && *seekResult == offset)
     {
         if (count > 0)
             return static_cast<unsigned long>(stream->read(reinterpret_cast<char*>(buffer), count).value());
@@ -111,7 +111,7 @@ struct Font::Page
 
     using GlyphTable = std::unordered_map<std::uint64_t, Glyph>; //!< Table mapping a codepoint to its glyph
 
-    [[nodiscard]] static std::optional<Page> create(GraphicsContext& graphicsContext, bool smooth);
+    [[nodiscard]] static sf::Optional<Page> create(GraphicsContext& graphicsContext, bool smooth);
     explicit Page(Texture&& texture);
 
     GlyphTable       glyphs;     //!< Table mapping code points to their corresponding glyph
@@ -204,7 +204,7 @@ Font& Font::operator=(Font&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Font> Font::openFromFile(GraphicsContext& graphicsContext, const Path& filename)
+sf::Optional<Font> Font::openFromFile(GraphicsContext& graphicsContext, const Path& filename)
 {
 #ifndef SFML_SYSTEM_ANDROID
 
@@ -217,16 +217,16 @@ std::optional<Font> Font::openFromFile(GraphicsContext& graphicsContext, const P
     {
         priv::err() << "Failed to load font (failed to initialize FreeType)\n"
                     << priv::formatDebugPathInfo(filename) << priv::errEndl;
-        return std::nullopt;
+        return sf::nullOpt;
     }
 
     // Load the new font face from the specified file
     FT_Face face = nullptr;
-    if (FT_New_Face(fontHandles->library, filename.string().c_str(), 0, &face) != 0)
+    if (FT_New_Face(fontHandles->library, filename.to<std::string>().c_str(), 0, &face) != 0)
     {
         priv::err() << "Failed to load font (failed to create the font face)\n"
                     << priv::formatDebugPathInfo(filename) << priv::errEndl;
-        return std::nullopt;
+        return sf::nullOpt;
     }
     fontHandles->face = face;
 
@@ -235,7 +235,7 @@ std::optional<Font> Font::openFromFile(GraphicsContext& graphicsContext, const P
     {
         priv::err() << "Failed to load font (failed to create the stroker)\n"
                     << priv::formatDebugPathInfo(filename) << priv::errEndl;
-        return std::nullopt;
+        return sf::nullOpt;
     }
 
     // Select the unicode character map
@@ -243,13 +243,13 @@ std::optional<Font> Font::openFromFile(GraphicsContext& graphicsContext, const P
     {
         priv::err() << "Failed to load font (failed to set the Unicode character set)\n"
                     << priv::formatDebugPathInfo(filename) << priv::errEndl;
-        return std::nullopt;
+        return sf::nullOpt;
     }
 
-    return std::make_optional<Font>(priv::PassKey<Font>{},
-                                    graphicsContext,
-                                    &fontHandles,
-                                    std::string(face->family_name ? face->family_name : ""));
+    return sf::makeOptional<Font>(priv::PassKey<Font>{},
+                                  graphicsContext,
+                                  &fontHandles,
+                                  std::string(face->family_name ? face->family_name : ""));
 
 #else
 
@@ -264,7 +264,7 @@ std::optional<Font> Font::openFromFile(GraphicsContext& graphicsContext, const P
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Font> Font::openFromMemory(GraphicsContext& graphicsContext, const void* data, std::size_t sizeInBytes)
+sf::Optional<Font> Font::openFromMemory(GraphicsContext& graphicsContext, const void* data, std::size_t sizeInBytes)
 {
     auto fontHandles = std::make_shared<FontHandles>();
 
@@ -274,7 +274,7 @@ std::optional<Font> Font::openFromMemory(GraphicsContext& graphicsContext, const
     if (FT_Init_FreeType(&fontHandles->library) != 0)
     {
         priv::err() << "Failed to load font from memory (failed to initialize FreeType)" << priv::errEndl;
-        return std::nullopt;
+        return sf::nullOpt;
     }
 
     // Load the new font face from the specified file
@@ -286,7 +286,7 @@ std::optional<Font> Font::openFromMemory(GraphicsContext& graphicsContext, const
                            &face) != 0)
     {
         priv::err() << "Failed to load font from memory (failed to create the font face)" << priv::errEndl;
-        return std::nullopt;
+        return sf::nullOpt;
     }
     fontHandles->face = face;
 
@@ -294,25 +294,25 @@ std::optional<Font> Font::openFromMemory(GraphicsContext& graphicsContext, const
     if (FT_Stroker_New(fontHandles->library, &fontHandles->stroker) != 0)
     {
         priv::err() << "Failed to load font from memory (failed to create the stroker)" << priv::errEndl;
-        return std::nullopt;
+        return sf::nullOpt;
     }
 
     // Select the Unicode character map
     if (FT_Select_Charmap(face, FT_ENCODING_UNICODE) != 0)
     {
         priv::err() << "Failed to load font from memory (failed to set the Unicode character set)" << priv::errEndl;
-        return std::nullopt;
+        return sf::nullOpt;
     }
 
-    return std::make_optional<Font>(priv::PassKey<Font>{},
-                                    graphicsContext,
-                                    &fontHandles,
-                                    std::string(face->family_name ? face->family_name : ""));
+    return sf::makeOptional<Font>(priv::PassKey<Font>{},
+                                  graphicsContext,
+                                  &fontHandles,
+                                  std::string(face->family_name ? face->family_name : ""));
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Font> Font::openFromStream(GraphicsContext& graphicsContext, InputStream& stream)
+sf::Optional<Font> Font::openFromStream(GraphicsContext& graphicsContext, InputStream& stream)
 {
     auto fontHandles = std::make_shared<FontHandles>();
 
@@ -322,14 +322,14 @@ std::optional<Font> Font::openFromStream(GraphicsContext& graphicsContext, Input
     if (FT_Init_FreeType(&fontHandles->library) != 0)
     {
         priv::err() << "Failed to load font from stream (failed to initialize FreeType)" << priv::errEndl;
-        return std::nullopt;
+        return sf::nullOpt;
     }
 
     // Make sure that the stream's reading position is at the beginning
-    if (!stream.seek(0).has_value())
+    if (!stream.seek(0).hasValue())
     {
         priv::err() << "Failed to seek font stream" << priv::errEndl;
-        return std::nullopt;
+        return sf::nullOpt;
     }
 
     // Prepare a wrapper for our stream, that we'll pass to FreeType callbacks
@@ -351,7 +351,7 @@ std::optional<Font> Font::openFromStream(GraphicsContext& graphicsContext, Input
     if (FT_Open_Face(fontHandles->library, &args, 0, &face) != 0)
     {
         priv::err() << "Failed to load font from stream (failed to create the font face)" << priv::errEndl;
-        return std::nullopt;
+        return sf::nullOpt;
     }
     fontHandles->face = face;
 
@@ -359,20 +359,20 @@ std::optional<Font> Font::openFromStream(GraphicsContext& graphicsContext, Input
     if (FT_Stroker_New(fontHandles->library, &fontHandles->stroker) != 0)
     {
         priv::err() << "Failed to load font from stream (failed to create the stroker)" << priv::errEndl;
-        return std::nullopt;
+        return sf::nullOpt;
     }
 
     // Select the Unicode character map
     if (FT_Select_Charmap(face, FT_ENCODING_UNICODE) != 0)
     {
         priv::err() << "Failed to load font from stream (failed to set the Unicode character set)" << priv::errEndl;
-        return std::nullopt;
+        return sf::nullOpt;
     }
 
-    return std::make_optional<Font>(priv::PassKey<Font>{},
-                                    graphicsContext,
-                                    &fontHandles,
-                                    std::string(face->family_name ? face->family_name : ""));
+    return sf::makeOptional<Font>(priv::PassKey<Font>{},
+                                  graphicsContext,
+                                  &fontHandles,
+                                  std::string(face->family_name ? face->family_name : ""));
 }
 
 
@@ -553,6 +553,7 @@ Font::Page& Font::loadPage(GraphicsContext& graphicsContext, unsigned int charac
 
     auto page = Page::create(graphicsContext, m_impl->isSmooth);
     assert(page && "Font::loadPage() Failed to load page");
+
     return m_impl->pages.emplace(characterSize, SFML_MOVE(*page)).first->second;
 }
 
@@ -838,7 +839,7 @@ bool Font::setCurrentSize(unsigned int characterSize) const
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Font::Page> Font::Page::create(GraphicsContext& graphicsContext, bool smooth)
+sf::Optional<Font::Page> Font::Page::create(GraphicsContext& graphicsContext, bool smooth)
 {
     // Make sure that the texture is initialized by default
     Image image({128, 128}, Color::Transparent);
@@ -850,14 +851,14 @@ std::optional<Font::Page> Font::Page::create(GraphicsContext& graphicsContext, b
 
     // Create the texture
     auto texture = sf::Texture::loadFromImage(graphicsContext, image);
-    if (!texture)
+    if (!texture.hasValue())
     {
         priv::err() << "Failed to load font page texture" << priv::errEndl;
-        return std::nullopt;
+        return sf::nullOpt;
     }
 
     texture->setSmooth(smooth);
-    return std::make_optional<Page>(SFML_MOVE(*texture));
+    return sf::makeOptional<Page>(SFML_MOVE(*texture));
 }
 
 

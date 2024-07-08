@@ -41,7 +41,7 @@ namespace
 std::size_t read(void* ptr, std::size_t size, std::size_t nmemb, void* data)
 {
     auto* stream = static_cast<sf::InputStream*>(data);
-    return stream->read(ptr, size * nmemb).value_or(-1);
+    return stream->read(ptr, size * nmemb).valueOr(static_cast<std::size_t>(-1));
 }
 
 int seek(void* data, ogg_int64_t signedOffset, int whence)
@@ -58,14 +58,14 @@ int seek(void* data, ogg_int64_t signedOffset, int whence)
         case SEEK_END:
             offset = stream->getSize().value() - offset;
     }
-    const std::optional position = stream->seek(offset);
+    const sf::Optional position = stream->seek(offset);
     return position ? static_cast<int>(*position) : -1;
 }
 
 long tell(void* data)
 {
-    auto*               stream   = static_cast<sf::InputStream*>(data);
-    const std::optional position = stream->tell();
+    auto*              stream   = static_cast<sf::InputStream*>(data);
+    const sf::Optional position = stream->tell();
     return position ? static_cast<long>(*position) : -1;
 }
 
@@ -108,9 +108,9 @@ SoundFileReaderOgg::~SoundFileReaderOgg()
 
 
 ////////////////////////////////////////////////////////////
-std::optional<SoundFileReader::Info> SoundFileReaderOgg::open(InputStream& stream)
+sf::Optional<SoundFileReader::Info> SoundFileReaderOgg::open(InputStream& stream)
 {
-    std::optional<Info> result; // Use a single local variable for NRVO
+    sf::Optional<Info> result; // Use a single local variable for NRVO
 
     // Open the Vorbis stream
     const int status = ov_open_callbacks(&stream, &m_impl->vorbis, nullptr, 0, callbacks);

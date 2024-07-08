@@ -158,9 +158,9 @@ bool RenderWindow::setActive(bool active)
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Event> RenderWindow::filterEvent(std::optional<Event> event)
+sf::Optional<Event> RenderWindow::filterEvent(sf::Optional<Event> event)
 {
-    if (event.has_value() && event->getIf<Event::Resized>())
+    if (event.hasValue() && event->getIf<Event::Resized>())
         onResize();
 
     return event;
@@ -168,14 +168,14 @@ std::optional<Event> RenderWindow::filterEvent(std::optional<Event> event)
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Event> RenderWindow::pollEvent()
+sf::Optional<Event> RenderWindow::pollEvent()
 {
     return filterEvent(WindowBase::pollEvent());
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Event> RenderWindow::waitEvent(Time timeout)
+sf::Optional<Event> RenderWindow::waitEvent(Time timeout)
 {
     return filterEvent(WindowBase::waitEvent(timeout));
 }

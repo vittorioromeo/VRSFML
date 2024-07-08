@@ -32,8 +32,6 @@
 #include <SFML/System/InPlacePImpl.hpp>
 
 #include <iosfwd>
-#include <string>
-#include <string_view>
 
 
 namespace sf
@@ -42,12 +40,23 @@ namespace sf
 class [[nodiscard]] Path
 {
 public:
+    using value_type = wchar_t;
+    // using string_type = std::basic_string<value_type>;
+
     [[nodiscard]] static Path tempDirectoryPath();
 
-    [[nodiscard]] Path();
-    [[nodiscard]] Path(const char* path);
-    [[nodiscard]] Path(const std::string& path);
-    [[nodiscard]] Path(std::string_view path);
+    [[nodiscard]] explicit Path();
+
+    template <typename T>
+    [[nodiscard]] Path(const T& source);
+
+    template <typename T>
+    [[nodiscard]] Path(const T* source);
+
+    // [[nodiscard]] Path(const value_type* str);
+    // [[nodiscard]] Path(const string_type& str);
+    // [[nodiscard]] Path(const char* str);
+    // [[nodiscard]] Path(const std::string& str);
 
     ~Path();
 
@@ -60,10 +69,13 @@ public:
     [[nodiscard]] Path filename() const;
     [[nodiscard]] Path extension() const;
 
-    [[nodiscard]] const wchar_t* c_str() const; // TODO: support other platforms
-    [[nodiscard]] std::string    string() const;
+    [[nodiscard]] const value_type* c_str() const; // TODO: support other platforms
+    // [[nodiscard]] std::string       string() const;
 
-    [[nodiscard]] operator std::string() const;
+    // [[nodiscard]] operator std::string() const;
+
+    template <typename T>
+    T to() const;
 
     [[nodiscard]] bool remove() const;
     [[nodiscard]] bool empty() const;
@@ -74,14 +86,17 @@ public:
     friend Path          operator/(const Path& lhs, const Path& rhs);
     friend std::ostream& operator<<(std::ostream& os, const Path& path);
 
-    friend bool operator==(const Path& path, const char* str);
-    friend bool operator!=(const Path& path, const char* str);
+    template <typename T>
+    bool operator==(const T* str) const;
 
-    friend bool operator==(const Path& path, std::string_view str);
-    friend bool operator!=(const Path& path, std::string_view str);
+    template <typename T>
+    bool operator!=(const T* str) const;
 
-    friend bool operator==(const Path& path, const std::string& str);
-    friend bool operator!=(const Path& path, const std::string& str);
+    template <typename T>
+    bool operator==(const T& str) const;
+
+    template <typename T>
+    bool operator!=(const T& str) const;
 
 private:
     [[nodiscard]] Path(int, const void* fsPath);

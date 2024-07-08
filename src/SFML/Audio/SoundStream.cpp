@@ -33,6 +33,7 @@
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Macros.hpp>
+#include <SFML/System/Optional.hpp>
 #include <SFML/System/Sleep.hpp>
 #include <SFML/System/Time.hpp>
 
@@ -54,7 +55,7 @@ struct SoundStream::Impl
 
     void initialize()
     {
-        assert(soundBase.has_value());
+        assert(soundBase.hasValue());
 
         if (!soundBase->initialize(onEnd))
             priv::err() << "Failed to initialize SoundStream::Impl" << priv::errEndl;
@@ -202,7 +203,7 @@ struct SoundStream::Impl
     ////////////////////////////////////////////////////////////
     static inline constexpr ma_data_source_vtable vtable{read, seek, getFormat, getCursor, getLength, setLooping, /* flags */ 0};
 
-    std::optional<priv::MiniaudioUtils::SoundBase> soundBase; //!< Sound base, needs to be first member
+    sf::Optional<priv::MiniaudioUtils::SoundBase> soundBase; //!< Sound base, needs to be first member
 
     SoundStream*              owner;                //!< Owning `SoundStream` object
     std::vector<std::int16_t> sampleBuffer;         //!< Our temporary sample buffer
@@ -257,12 +258,12 @@ void SoundStream::initialize(unsigned int channelCount, unsigned int sampleRate,
     m_impl->channelMap       = channelMap;
     m_impl->samplesProcessed = 0;
 
-    if (m_impl->soundBase.has_value())
+    if (m_impl->soundBase.hasValue())
     {
         m_impl->soundBase->deinitialize();
         m_impl->initialize();
 
-        assert(m_impl->soundBase.has_value());
+        assert(m_impl->soundBase.hasValue());
         applyStoredSettings(&m_impl->soundBase->sound);
         setEffectProcessor(getEffectProcessor());
         setPlayingOffset(getPlayingOffset());
@@ -275,12 +276,12 @@ void SoundStream::play(PlaybackDevice& playbackDevice)
 {
     m_lastPlaybackDevice = &playbackDevice;
 
-    if (!m_impl->soundBase.has_value())
+    if (!m_impl->soundBase.hasValue())
     {
         m_impl->soundBase.emplace(playbackDevice, Impl::vtable, [](void* ptr) { static_cast<Impl*>(ptr)->initialize(); });
         m_impl->initialize();
 
-        assert(m_impl->soundBase.has_value());
+        assert(m_impl->soundBase.hasValue());
         applyStoredSettings(&m_impl->soundBase->sound);
         setEffectProcessor(getEffectProcessor());
         setPlayingOffset(getPlayingOffset());
@@ -302,7 +303,7 @@ void SoundStream::play(PlaybackDevice& playbackDevice)
 ////////////////////////////////////////////////////////////
 void SoundStream::pause()
 {
-    if (!m_impl->soundBase.has_value())
+    if (!m_impl->soundBase.hasValue())
         return;
 
     if (const ma_result result = ma_sound_stop(&m_impl->soundBase->sound); result != MA_SUCCESS)
@@ -319,7 +320,7 @@ void SoundStream::pause()
 ////////////////////////////////////////////////////////////
 void SoundStream::stop()
 {
-    if (!m_impl->soundBase.has_value())
+    if (!m_impl->soundBase.hasValue())
         return;
 
     if (const ma_result result = ma_sound_stop(&m_impl->soundBase->sound); result != MA_SUCCESS)
@@ -366,7 +367,7 @@ void SoundStream::setPlayingOffset(Time playingOffset)
 {
     SoundSource::setPlayingOffset(playingOffset);
 
-    if (!m_impl->soundBase.has_value())
+    if (!m_impl->soundBase.hasValue())
         return;
 
     if (m_impl->sampleRate == 0)
@@ -401,7 +402,7 @@ void SoundStream::setEffectProcessor(EffectProcessor effectProcessor)
 {
     SoundSource::setEffectProcessor(effectProcessor);
 
-    if (!m_impl->soundBase.has_value())
+    if (!m_impl->soundBase.hasValue())
         return;
 
     m_impl->soundBase->effectProcessor = SFML_MOVE(effectProcessor);
@@ -410,17 +411,17 @@ void SoundStream::setEffectProcessor(EffectProcessor effectProcessor)
 
 
 ////////////////////////////////////////////////////////////
-std::optional<std::uint64_t> SoundStream::onLoop()
+sf::Optional<std::uint64_t> SoundStream::onLoop()
 {
     onSeek(Time::Zero);
-    return 0;
+    return sf::makeOptional(std::uint64_t{0});
 }
 
 
 ////////////////////////////////////////////////////////////
 void* SoundStream::getSound() const
 {
-    if (!m_impl->soundBase.has_value())
+    if (!m_impl->soundBase.hasValue())
         return nullptr;
 
     return &m_impl->soundBase->sound;

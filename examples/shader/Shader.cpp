@@ -20,13 +20,13 @@
 #include <SFML/Window/VideoMode.hpp>
 
 #include <SFML/System/Clock.hpp>
+#include <SFML/System/Optional.hpp>
 #include <SFML/System/Path.hpp>
 #include <SFML/System/String.hpp>
 #include <SFML/System/Time.hpp>
 
 #include <array>
 #include <iostream>
-#include <optional>
 #include <random>
 #include <string>
 #include <vector>
@@ -324,83 +324,83 @@ private:
 ////////////////////////////////////////////////////////////
 // Effect loading factory functions
 ////////////////////////////////////////////////////////////
-std::optional<Pixelate> tryLoadPixelate(sf::GraphicsContext& graphicsContext)
+sf::Optional<Pixelate> tryLoadPixelate(sf::GraphicsContext& graphicsContext)
 {
     auto texture = sf::Texture::loadFromFile(graphicsContext, "resources/background.jpg");
-    if (!texture.has_value())
-        return std::nullopt;
+    if (!texture.hasValue())
+        return sf::nullOpt;
 
     auto shader = sf::Shader::loadFromFile(graphicsContext, "resources/pixelate.frag", sf::Shader::Type::Fragment);
-    if (!shader.has_value())
-        return std::nullopt;
+    if (!shader.hasValue())
+        return sf::nullOpt;
 
-    return std::make_optional<Pixelate>(std::move(*texture), std::move(*shader));
+    return sf::makeOptional<Pixelate>(std::move(*texture), std::move(*shader));
 }
 
-std::optional<WaveBlur> tryLoadWaveBlur(sf::GraphicsContext& graphicsContext, const sf::Font& font)
+sf::Optional<WaveBlur> tryLoadWaveBlur(sf::GraphicsContext& graphicsContext, const sf::Font& font)
 {
     auto shader = sf::Shader::loadFromFile(graphicsContext, "resources/wave.vert", "resources/blur.frag");
-    if (!shader.has_value())
-        return std::nullopt;
+    if (!shader.hasValue())
+        return sf::nullOpt;
 
-    return std::make_optional<WaveBlur>(font, std::move(*shader));
+    return sf::makeOptional<WaveBlur>(font, std::move(*shader));
 }
 
-std::optional<StormBlink> tryLoadStormBlink(sf::GraphicsContext& graphicsContext)
+sf::Optional<StormBlink> tryLoadStormBlink(sf::GraphicsContext& graphicsContext)
 {
     auto shader = sf::Shader::loadFromFile(graphicsContext, "resources/storm.vert", "resources/blink.frag");
-    if (!shader.has_value())
-        return std::nullopt;
+    if (!shader.hasValue())
+        return sf::nullOpt;
 
-    return std::make_optional<StormBlink>(std::move(*shader));
+    return sf::makeOptional<StormBlink>(std::move(*shader));
 }
 
-std::optional<Edge> tryLoadEdge(sf::GraphicsContext& graphicsContext)
+sf::Optional<Edge> tryLoadEdge(sf::GraphicsContext& graphicsContext)
 {
     // Create the off-screen surface
     auto surface = sf::RenderTexture::create(graphicsContext, {800, 600});
-    if (!surface.has_value())
-        return std::nullopt;
+    if (!surface.hasValue())
+        return sf::nullOpt;
 
     surface->setSmooth(true);
 
     // Load the background texture
     auto backgroundTexture = sf::Texture::loadFromFile(graphicsContext, "resources/sfml.png");
-    if (!backgroundTexture.has_value())
-        return std::nullopt;
+    if (!backgroundTexture.hasValue())
+        return sf::nullOpt;
 
     backgroundTexture->setSmooth(true);
 
     // Load the entity texture
     auto entityTexture = sf::Texture::loadFromFile(graphicsContext, "resources/devices.png");
-    if (!entityTexture.has_value())
-        return std::nullopt;
+    if (!entityTexture.hasValue())
+        return sf::nullOpt;
 
     entityTexture->setSmooth(true);
 
     // Load the shader
     auto shader = sf::Shader::loadFromFile(graphicsContext, "resources/edge.frag", sf::Shader::Type::Fragment);
-    if (!shader.has_value())
-        return std::nullopt;
+    if (!shader.hasValue())
+        return sf::nullOpt;
 
     shader->setUniform(shader->getUniformLocation("texture").value(), sf::Shader::CurrentTexture);
 
-    return std::make_optional<Edge>(std::move(*surface),
-                                    std::move(*backgroundTexture),
-                                    std::move(*entityTexture),
-                                    std::move(*shader));
+    return sf::makeOptional<Edge>(std::move(*surface),
+                                  std::move(*backgroundTexture),
+                                  std::move(*entityTexture),
+                                  std::move(*shader));
 }
 
-std::optional<Geometry> tryLoadGeometry(sf::GraphicsContext& graphicsContext)
+sf::Optional<Geometry> tryLoadGeometry(sf::GraphicsContext& graphicsContext)
 {
     // Check if geometry shaders are supported
     if (!sf::Shader::isGeometryAvailable(graphicsContext))
-        return std::nullopt;
+        return sf::nullOpt;
 
     // Load the logo texture
     auto logoTexture = sf::Texture::loadFromFile(graphicsContext, "resources/logo.png");
-    if (!logoTexture.has_value())
-        return std::nullopt;
+    if (!logoTexture.hasValue())
+        return sf::nullOpt;
 
     logoTexture->setSmooth(true);
 
@@ -409,15 +409,15 @@ std::optional<Geometry> tryLoadGeometry(sf::GraphicsContext& graphicsContext)
                                            "resources/billboard.vert",
                                            "resources/billboard.geom",
                                            "resources/billboard.frag");
-    if (!shader.has_value())
-        return std::nullopt;
+    if (!shader.hasValue())
+        return sf::nullOpt;
 
     shader->setUniform(shader->getUniformLocation("texture").value(), sf::Shader::CurrentTexture);
 
     // Set the render resolution (used for proper scaling)
     shader->setUniform(shader->getUniformLocation("resolution").value(), sf::Vector2f{800, 600});
 
-    return std::make_optional<Geometry>(std::move(*logoTexture), std::move(*shader));
+    return sf::makeOptional<Geometry>(std::move(*logoTexture), std::move(*shader));
 }
 
 } // namespace
@@ -443,20 +443,17 @@ int main()
     const auto font = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf").value();
 
     // Create the effects
-    std::optional pixelateEffect   = tryLoadPixelate(graphicsContext);
-    std::optional waveBlurEffect   = tryLoadWaveBlur(graphicsContext, font);
-    std::optional stormBlinkEffect = tryLoadStormBlink(graphicsContext);
-    std::optional edgeEffect       = tryLoadEdge(graphicsContext);
-    std::optional geometryEffect   = tryLoadGeometry(graphicsContext);
+    sf::Optional pixelateEffect   = tryLoadPixelate(graphicsContext);
+    sf::Optional waveBlurEffect   = tryLoadWaveBlur(graphicsContext, font);
+    sf::Optional stormBlinkEffect = tryLoadStormBlink(graphicsContext);
+    sf::Optional edgeEffect       = tryLoadEdge(graphicsContext);
+    sf::Optional geometryEffect   = tryLoadGeometry(graphicsContext);
 
-    // TODO: this will go away with `sf::Optional<T>`
-    const auto optionalToPtr = [&](auto& effect) -> Effect* { return effect.has_value() ? &*effect : nullptr; };
-
-    const std::array<Effect*, 5> effects{optionalToPtr(pixelateEffect),
-                                         optionalToPtr(waveBlurEffect),
-                                         optionalToPtr(stormBlinkEffect),
-                                         optionalToPtr(edgeEffect),
-                                         optionalToPtr(geometryEffect)};
+    const std::array<Effect*, 5> effects{pixelateEffect.asPtr(),
+                                         waveBlurEffect.asPtr(),
+                                         stormBlinkEffect.asPtr(),
+                                         edgeEffect.asPtr(),
+                                         geometryEffect.asPtr()};
 
     const std::array<std::string, 5>
         effectNames{"Pixelate", "Wave + Blur", "Storm + Blink", "Edge Post-effect", "Geometry Shader Billboards"};
@@ -493,7 +490,7 @@ int main()
     while (true)
     {
         // Process events
-        while (const std::optional event = window.pollEvent())
+        while (const sf::Optional event = window.pollEvent())
         {
             // Window closed or escape key pressed: exit
             if (event->is<sf::Event::Closed>() ||
@@ -546,7 +543,7 @@ int main()
             currentEffect->update(clock.getElapsedTime().asSeconds(), x, y);
 
             // Clear the window
-            window.clear(currentEffect == &*edgeEffect ? sf::Color::White : sf::Color(50, 50, 50));
+            window.clear(currentEffect == edgeEffect.asPtr() ? sf::Color::White : sf::Color(50, 50, 50));
 
             // Draw the current example
             window.draw(*currentEffect);

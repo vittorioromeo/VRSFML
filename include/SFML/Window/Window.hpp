@@ -305,7 +305,7 @@ private:
 /// while (true)
 /// {
 ///    // Event processing
-///    while (const std::optional event = window.pollEvent())
+///    while (const sf::Optional event = window.pollEvent())
 ///    {
 ///        // Request for closing the window
 ///        if (event->is<sf::Event::Closed>())

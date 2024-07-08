@@ -386,7 +386,7 @@ void WindowImplCocoa::setSize(const Vector2u& size)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplCocoa::setMinimumSize(const std::optional<Vector2u>& minimumSize)
+void WindowImplCocoa::setMinimumSize(const sf::Optional<Vector2u>& minimumSize)
 {
     WindowImpl::setMinimumSize(minimumSize);
     const AutoreleasePool pool;
@@ -396,7 +396,7 @@ void WindowImplCocoa::setMinimumSize(const std::optional<Vector2u>& minimumSize)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplCocoa::setMaximumSize(const std::optional<Vector2u>& maximumSize)
+void WindowImplCocoa::setMaximumSize(const sf::Optional<Vector2u>& maximumSize)
 {
     WindowImpl::setMaximumSize(maximumSize);
     const AutoreleasePool pool;

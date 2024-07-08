@@ -34,11 +34,10 @@
 #include <SFML/Window/WindowHandle.hpp>
 
 #include <SFML/System/InPlacePImpl.hpp>
+#include <SFML/System/Optional.hpp>
 #include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <SFML/System/Vector3.hpp>
-
-#include <optional>
 
 #include <cstdint>
 
@@ -129,10 +128,10 @@ public:
     ///
     /// \param timeout Maximum time to wait (`Time::Zero` for infinite)
     ///
-    /// \return The event on success, `std::nullopt` otherwise
+    /// \return The event on success, `sf::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::optional<Event> waitEvent(Time timeout);
+    [[nodiscard]] sf::Optional<Event> waitEvent(Time timeout);
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the next window event, if available
@@ -140,10 +139,10 @@ public:
     /// If there's no event available, this function calls the
     /// window's internal event processing function.
     ///
-    /// \return The event if available, `std::nullopt` otherwise
+    /// \return The event if available, `sf::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::optional<Event> pollEvent();
+    [[nodiscard]] sf::Optional<Event> pollEvent();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the OS-specific handle of the window
@@ -167,7 +166,7 @@ public:
     /// \return Minimum size
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::optional<Vector2u> getMinimumSize() const;
+    [[nodiscard]] sf::Optional<Vector2u> getMinimumSize() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the maximum window rendering region size
@@ -175,7 +174,7 @@ public:
     /// \return Maximum size
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::optional<Vector2u> getMaximumSize() const;
+    [[nodiscard]] sf::Optional<Vector2u> getMaximumSize() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the position of the window on screen
@@ -204,22 +203,22 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Set the minimum window rendering region size
     ///
-    /// Pass std::nullopt to unset the minimum size
+    /// Pass sf::nullOpt to unset the minimum size
     ///
     /// \param minimumSize New minimum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    virtual void setMinimumSize(const std::optional<Vector2u>& minimumSize);
+    virtual void setMinimumSize(const sf::Optional<Vector2u>& minimumSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the maximum window rendering region size
     ///
-    /// Pass std::nullopt to unset the maximum size
+    /// Pass sf::nullOpt to unset the maximum size
     ///
     /// \param maximumSize New maximum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    virtual void setMaximumSize(const std::optional<Vector2u>& maximumSize);
+    virtual void setMaximumSize(const sf::Optional<Vector2u>& maximumSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the title of the window
@@ -334,10 +333,10 @@ private:
     struct JoystickStatesImpl;
 
     ////////////////////////////////////////////////////////////
-    /// \return First event of the queue if available, `std::nullopt` otherwise
+    /// \return First event of the queue if available, `sf::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::optional<Event> popEvent();
+    [[nodiscard]] sf::Optional<Event> popEvent();
 
     ////////////////////////////////////////////////////////////
     /// \brief Read the joysticks state and generate the appropriate events

@@ -54,14 +54,14 @@ Cursor& Cursor::operator=(Cursor&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Cursor> Cursor::loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vector2u hotspot)
+sf::Optional<Cursor> Cursor::loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vector2u hotspot)
 {
-    std::optional<Cursor> cursor; // Use a single local variable for NRVO
+    sf::Optional<Cursor> cursor; // Use a single local variable for NRVO
 
     if ((pixels == nullptr) || (size.x == 0) || (size.y == 0))
         return cursor;
 
-    cursor = std::make_optional<Cursor>(priv::PassKey<Cursor>{});
+    cursor = sf::makeOptional<Cursor>(priv::PassKey<Cursor>{});
     if (!cursor->m_impl->loadFromPixels(pixels, size, hotspot))
     {
         priv::err() << "Failed to load cursor from pixels (invalid arguments)" << priv::errEndl;
@@ -81,9 +81,9 @@ std::optional<Cursor> Cursor::loadFromPixels(const std::uint8_t* pixels, Vector2
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Cursor> Cursor::loadFromSystem(Type type)
+sf::Optional<Cursor> Cursor::loadFromSystem(Type type)
 {
-    auto cursor = std::make_optional<Cursor>(priv::PassKey<Cursor>{}); // Use a single local variable for NRVO
+    auto cursor = sf::makeOptional<Cursor>(priv::PassKey<Cursor>{}); // Use a single local variable for NRVO
 
     if (!cursor->m_impl->loadFromSystem(type))
     {

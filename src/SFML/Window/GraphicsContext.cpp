@@ -35,12 +35,12 @@
 
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
+#include <SFML/System/Optional.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
 #include <glad/gl.h>
 
 #include <mutex>
-#include <optional>
 #include <string>
 #include <vector>
 
@@ -108,7 +108,7 @@ namespace
 struct SharedContext
 {
     [[nodiscard]] SharedContext(const std::lock_guard<std::recursive_mutex>&) :
-    context{std::in_place, nullptr},
+    context{sf::inPlace, nullptr},
     extensions{[&]
                {
                    if (!context->initialize(ContextSettings{}))
@@ -128,7 +128,7 @@ struct SharedContext
     // from being locked on multiple threads
 
     // The hidden, inactive context that will be shared with all other contexts
-    std::optional<ContextType> context;
+    sf::Optional<ContextType> context;
 
     // Supported OpenGL extensions
     const std::vector<std::string> extensions;
@@ -150,16 +150,29 @@ struct GraphicsContext::Impl
 
 
 ////////////////////////////////////////////////////////////
-GraphicsContext::TransientContext::TransientContext(GraphicsContext& theGraphicsContext) :
-graphicsContext(theGraphicsContext),
-sharedContextLock(graphicsContext.m_impl->mutex)
+struct GraphicsContext::TransientContext::Impl
+{
+    [[nodiscard]] explicit Impl(GraphicsContext& theGraphicsContext) :
+    graphicsContext(theGraphicsContext),
+    sharedContextLock(graphicsContext.m_impl->mutex)
+    {
+    }
+
+    GraphicsContext&                       graphicsContext;
+    sf::Optional<sf::Context>              context;
+    std::unique_lock<std::recursive_mutex> sharedContextLock;
+};
+
+
+////////////////////////////////////////////////////////////
+GraphicsContext::TransientContext::TransientContext(GraphicsContext& theGraphicsContext) : impl(theGraphicsContext)
 {
     // TransientContext should never be created if there is
     // already a context active on the current thread
     assert(!hasActiveContext() && "Another context is active on the current thread");
 
     // Lock the shared context for temporary use
-    if (!graphicsContext.setActive(true))
+    if (!impl->graphicsContext.setActive(true))
         priv::err() << "Error enabling shared context in TransientContext()" << priv::errEndl;
 }
 
@@ -167,16 +180,16 @@ sharedContextLock(graphicsContext.m_impl->mutex)
 ////////////////////////////////////////////////////////////
 GraphicsContext::TransientContext::~TransientContext()
 {
-    if (!graphicsContext.setActive(false))
+    if (!impl->graphicsContext.setActive(false))
         priv::err() << "Error disabling shared context in ~TransientContext()" << priv::errEndl;
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<GraphicsContext::TransientContext>& GraphicsContext::TransientContext::get()
+sf::Optional<GraphicsContext::TransientContext>& GraphicsContext::TransientContext::get()
 {
     // TODO: to member of graphicscontext?
-    thread_local std::optional<TransientContext> transientContext;
+    thread_local sf::Optional<TransientContext> transientContext;
     return transientContext;
 }
 
@@ -211,7 +224,7 @@ void GraphicsContext::acquireTransientContext()
 
     // If currentContextId is not set, this must be the first
     // TransientContextLock on this thread, construct the state object
-    assert(!TransientContext::get().has_value());
+    assert(!TransientContext::get().hasValue());
     TransientContext::get().emplace(*this);
 
     // Make sure a context is active at this point
@@ -236,7 +249,7 @@ void GraphicsContext::releaseTransientContext()
 
     // If currentContextId is set and currentContextTransientCount is 0,
     // this is the last TransientContextLock that is released, destroy the state object
-    assert(TransientContext::get().has_value());
+    assert(TransientContext::get().hasValue());
     TransientContext::get().reset();
 }
 
@@ -277,7 +290,7 @@ GraphicsContext::~GraphicsContext() = default;
 ////////////////////////////////////////////////////////////
 bool GraphicsContext::setActive(bool active)
 {
-    assert(m_impl->sharedContext.context.has_value());
+    assert(m_impl->sharedContext.context.hasValue());
     return m_impl->sharedContext.context->setActive(active);
 }
 

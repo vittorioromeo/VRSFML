@@ -147,14 +147,14 @@ void WindowImplUIKit::setSize(const Vector2u& size)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplUIKit::setMinimumSize(const std::optional<Vector2u>& /* minimumSize */)
+void WindowImplUIKit::setMinimumSize(const sf::Optional<Vector2u>& /* minimumSize */)
 {
     // Not applicable
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplUIKit::setMaximumSize(const std::optional<Vector2u>& /* maximumSize */)
+void WindowImplUIKit::setMaximumSize(const sf::Optional<Vector2u>& /* maximumSize */)
 {
     // Not applicable
 }

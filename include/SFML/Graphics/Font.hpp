@@ -31,11 +31,11 @@
 
 #include <SFML/System/InPlacePImpl.hpp>
 #include <SFML/System/LifetimeDependee.hpp>
+#include <SFML/System/Optional.hpp>
 #include <SFML/System/PassKey.hpp>
 #include <SFML/System/Rect.hpp>
 #include <SFML/System/Vector2.hpp>
 
-#include <optional>
 #include <string>
 
 #include <cstddef>
@@ -119,12 +119,12 @@ public:
     ///
     /// \param filename Path of the font file to load
     ///
-    /// \return Font if opening succeeded, `std::nullopt` if it failed
+    /// \return Font if opening succeeded, `sf::nullOpt` if it failed
     ///
     /// \see openFromMemory, openFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Font> openFromFile(GraphicsContext& graphicsContext, const Path& filename);
+    [[nodiscard]] static sf::Optional<Font> openFromFile(GraphicsContext& graphicsContext, const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open the font from a file in memory
@@ -139,14 +139,14 @@ public:
     /// \param data        Pointer to the file data in memory
     /// \param sizeInBytes Size of the data to load, in bytes
     ///
-    /// \return Font if opening succeeded, `std::nullopt` if it failed
+    /// \return Font if opening succeeded, `sf::nullOpt` if it failed
     ///
     /// \see openFromFile, openFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Font> openFromMemory(GraphicsContext& graphicsContext,
-                                                            const void*      data,
-                                                            std::size_t      sizeInBytes);
+    [[nodiscard]] static sf::Optional<Font> openFromMemory(GraphicsContext& graphicsContext,
+                                                           const void*      data,
+                                                           std::size_t      sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open the font from a custom stream
@@ -160,12 +160,12 @@ public:
     ///
     /// \param stream Source stream to read from
     ///
-    /// \return Font if opening succeeded, `std::nullopt` if it failed
+    /// \return Font if opening succeeded, `sf::nullOpt` if it failed
     ///
     /// \see openFromFile, openFromMemory
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Font> openFromStream(GraphicsContext& graphicsContext, InputStream& stream);
+    [[nodiscard]] static sf::Optional<Font> openFromStream(GraphicsContext& graphicsContext, InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the font information

@@ -2,7 +2,6 @@
 
 // NOLINTBEGIN
 
-#include "IsSame.hpp"
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow"
 

@@ -67,15 +67,15 @@ namespace
 [[nodiscard]] std::size_t readCallback(void* ptr, std::size_t size, void* data)
 {
     auto* stream = static_cast<sf::InputStream*>(data);
-    return stream->read(ptr, size).value_or(-1);
+    return stream->read(ptr, size).valueOr(static_cast<std::size_t>(-1));
 }
 
 
 ////////////////////////////////////////////////////////////
 [[nodiscard]] int seekCallback(std::uint64_t offset, void* data)
 {
-    auto*               stream   = static_cast<sf::InputStream*>(data);
-    const std::optional position = stream->seek(static_cast<std::size_t>(offset));
+    auto*              stream   = static_cast<sf::InputStream*>(data);
+    const sf::Optional position = stream->seek(static_cast<std::size_t>(offset));
     return position ? 0 : -1;
 }
 
@@ -106,7 +106,8 @@ bool SoundFileReaderMp3::check(InputStream& stream)
 {
     std::uint8_t header[10];
 
-    if (stream.read(header, sizeof(header)) != sizeof(header))
+    if (sf::Optional readResult = stream.read(header, sizeof(header));
+        !readResult.hasValue() || *readResult != sizeof(header))
         return false;
 
     if (hasValidId3Tag(header))
@@ -135,13 +136,13 @@ SoundFileReaderMp3::~SoundFileReaderMp3()
 
 
 ////////////////////////////////////////////////////////////
-std::optional<SoundFileReader::Info> SoundFileReaderMp3::open(InputStream& stream)
+sf::Optional<SoundFileReader::Info> SoundFileReaderMp3::open(InputStream& stream)
 {
     // Init IO callbacks
     m_impl->io.read_data = &stream;
     m_impl->io.seek_data = &stream;
 
-    std::optional<Info> result; // Use a single local variable for NRVO
+    sf::Optional<Info> result; // Use a single local variable for NRVO
 
     // Init mp3 decoder
     mp3dec_ex_open_cb(&m_impl->decoder, &m_impl->io, MP3D_SEEK_TO_SAMPLE);

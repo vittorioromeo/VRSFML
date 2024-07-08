@@ -805,17 +805,17 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
             // We override the returned information to remove the default limit
             // (the OS doesn't allow windows bigger than the desktop by default)
 
-            const auto maximumSize = contentSizeToWindowSize(getMaximumSize().value_or(Vector2u(50'000, 50'000)));
+            const auto maximumSize = contentSizeToWindowSize(getMaximumSize().valueOr(Vector2u(50'000, 50'000)));
 
             MINMAXINFO& minMaxInfo      = *reinterpret_cast<PMINMAXINFO>(lParam);
             minMaxInfo.ptMaxTrackSize.x = maximumSize.x;
             minMaxInfo.ptMaxTrackSize.y = maximumSize.y;
-            if (getMaximumSize().has_value())
+            if (getMaximumSize().hasValue())
             {
                 minMaxInfo.ptMaxSize.x = maximumSize.x;
                 minMaxInfo.ptMaxSize.y = maximumSize.y;
             }
-            if (getMinimumSize().has_value())
+            if (getMinimumSize().hasValue())
             {
                 const auto minimumSize      = contentSizeToWindowSize(getMinimumSize().value());
                 minMaxInfo.ptMinTrackSize.x = minimumSize.x;
@@ -1141,7 +1141,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
             if (pos.flags & SWP_NOSIZE)
                 break;
 
-            if (!getMaximumSize().has_value())
+            if (!getMaximumSize().hasValue())
                 break;
             const auto maximumSize = contentSizeToWindowSize(getMaximumSize().value());
 

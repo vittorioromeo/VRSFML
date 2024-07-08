@@ -101,7 +101,7 @@ priv::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromFilename(cons
     // Test the filename in all the registered factories
     for (const auto& [fpCreate, fpCheck] : getReaderFactoryMap())
     {
-        if (!stream->seek(0).has_value())
+        if (!stream->seek(0).hasValue())
         {
             priv::err() << "Failed to seek sound stream" << priv::errEndl;
             return nullptr;
@@ -127,7 +127,7 @@ priv::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromMemory(const 
     // Test the stream for all the registered factories
     for (const auto& [fpCreate, fpCheck] : getReaderFactoryMap())
     {
-        if (!stream.seek(0).has_value())
+        if (!stream.seek(0).hasValue())
         {
             priv::err() << "Failed to seek sound stream" << priv::errEndl;
             return nullptr;
@@ -149,7 +149,7 @@ priv::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromStream(InputS
     // Test the stream for all the registered factories
     for (const auto& [fpCreate, fpCheck] : getReaderFactoryMap())
     {
-        if (!stream.seek(0).has_value())
+        if (!stream.seek(0).hasValue())
         {
             priv::err() << "Failed to seek sound stream" << priv::errEndl;
             return nullptr;

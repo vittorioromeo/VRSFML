@@ -31,9 +31,9 @@
 
 #include <SFML/Network/Socket.hpp>
 
+#include <SFML/System/Optional.hpp>
 #include <SFML/System/Time.hpp>
 
-#include <optional>
 #include <vector>
 
 #include <cstddef>
@@ -82,7 +82,7 @@ public:
     /// \see getRemotePort
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::optional<IpAddress> getRemoteAddress() const;
+    [[nodiscard]] sf::Optional<IpAddress> getRemoteAddress() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the port of the connected peer to which

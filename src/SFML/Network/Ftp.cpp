@@ -269,9 +269,9 @@ Ftp::Response Ftp::deleteDirectory(const std::string& name)
 ////////////////////////////////////////////////////////////
 Ftp::Response Ftp::renameFile(const Path& file, const Path& newName)
 {
-    Response response = sendCommand("RNFR", file.string());
+    Response response = sendCommand("RNFR", file.to<std::string>());
     if (response.isOk())
-        response = sendCommand("RNTO", newName.string());
+        response = sendCommand("RNTO", newName.to<std::string>());
 
     return response;
 }
@@ -280,7 +280,7 @@ Ftp::Response Ftp::renameFile(const Path& file, const Path& newName)
 ////////////////////////////////////////////////////////////
 Ftp::Response Ftp::deleteFile(const Path& name)
 {
-    return sendCommand("DELE", name.string());
+    return sendCommand("DELE", name.to<std::string>());
 }
 
 
@@ -295,14 +295,14 @@ Ftp::Response Ftp::download(const Path& remoteFile, const Path& localPath, Trans
         return response;
 
     // Tell the server to start the transfer
-    response = sendCommand("RETR", remoteFile.string());
+    response = sendCommand("RETR", remoteFile.to<std::string>());
 
     if (!response.isOk())
         return response;
 
     // Create the file and truncate it if necessary
     const Path    filepath = localPath / remoteFile.filename();
-    std::ofstream file(filepath, std::ios_base::binary | std::ios_base::trunc);
+    std::ofstream file(filepath.to<std::string>(), std::ios_base::binary | std::ios_base::trunc);
 
     if (!file)
     {
@@ -334,7 +334,7 @@ Ftp::Response Ftp::upload(const Path& localFile, const Path& remotePath, Transfe
     Response response; //  Use a single local variable for NRVO
 
     // Get the contents of the file to send
-    std::ifstream file(localFile, std::ios_base::binary);
+    std::ifstream file(localFile.to<std::string>(), std::ios_base::binary);
     if (!file)
     {
         response = Response(Response::Status::InvalidFile);
@@ -349,7 +349,7 @@ Ftp::Response Ftp::upload(const Path& localFile, const Path& remotePath, Transfe
         return response;
 
     // Tell the server to start the transfer
-    response = sendCommand(append ? "APPE" : "STOR", (remotePath / localFile.filename()).string());
+    response = sendCommand(append ? "APPE" : "STOR", (remotePath / localFile.filename()).to<std::string>());
 
     if (!response.isOk())
         return response;

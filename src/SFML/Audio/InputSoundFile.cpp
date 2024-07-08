@@ -78,14 +78,14 @@ void InputSoundFile::StreamDeleter::operator()(InputStream* ptr) const
 
 
 ////////////////////////////////////////////////////////////
-std::optional<InputSoundFile> InputSoundFile::openFromFile(const Path& filename)
+sf::Optional<InputSoundFile> InputSoundFile::openFromFile(const Path& filename)
 {
     // Find a suitable reader for the file type
     auto reader = SoundFileFactory::createReaderFromFilename(filename);
     if (!reader)
     {
         // Error message generated in called function.
-        return std::nullopt;
+        return sf::nullOpt;
     }
 
     // Open the file
@@ -95,7 +95,7 @@ std::optional<InputSoundFile> InputSoundFile::openFromFile(const Path& filename)
         priv::err() << "Failed to open input sound file from file (couldn't open file input stream)\n"
                     << priv::formatDebugPathInfo(filename) << priv::errEndl;
 
-        return std::nullopt;
+        return sf::nullOpt;
     }
 
     // Wrap the file into a stream
@@ -108,27 +108,27 @@ std::optional<InputSoundFile> InputSoundFile::openFromFile(const Path& filename)
         priv::err() << "Failed to open input sound file from file (reader open failure)\n"
                     << priv::formatDebugPathInfo(filename) << priv::errEndl;
 
-        return std::nullopt;
+        return sf::nullOpt;
     }
 
-    return std::make_optional<InputSoundFile>(priv::PassKey<InputSoundFile>{},
-                                              SFML_MOVE(reader),
-                                              SFML_MOVE(file),
-                                              info->sampleCount,
-                                              info->sampleRate,
-                                              SFML_MOVE(info->channelMap));
+    return sf::makeOptional<InputSoundFile>(priv::PassKey<InputSoundFile>{},
+                                            SFML_MOVE(reader),
+                                            SFML_MOVE(file),
+                                            info->sampleCount,
+                                            info->sampleRate,
+                                            SFML_MOVE(info->channelMap));
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<InputSoundFile> InputSoundFile::openFromMemory(const void* data, std::size_t sizeInBytes)
+sf::Optional<InputSoundFile> InputSoundFile::openFromMemory(const void* data, std::size_t sizeInBytes)
 {
     // Find a suitable reader for the file type
     auto reader = SoundFileFactory::createReaderFromMemory(data, sizeInBytes);
     if (!reader)
     {
         // Error message generated in called function.
-        return std::nullopt;
+        return sf::nullOpt;
     }
 
     // Wrap the memory file into a stream
@@ -139,34 +139,34 @@ std::optional<InputSoundFile> InputSoundFile::openFromMemory(const void* data, s
     if (!info)
     {
         priv::err() << "Failed to open input sound file from memory (reader open failure)" << priv::errEndl;
-        return std::nullopt;
+        return sf::nullOpt;
     }
 
-    return std::make_optional<InputSoundFile>(priv::PassKey<InputSoundFile>{},
-                                              SFML_MOVE(reader),
-                                              SFML_MOVE(memory),
-                                              info->sampleCount,
-                                              info->sampleRate,
-                                              SFML_MOVE(info->channelMap));
+    return sf::makeOptional<InputSoundFile>(priv::PassKey<InputSoundFile>{},
+                                            SFML_MOVE(reader),
+                                            SFML_MOVE(memory),
+                                            info->sampleCount,
+                                            info->sampleRate,
+                                            SFML_MOVE(info->channelMap));
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<InputSoundFile> InputSoundFile::openFromStream(InputStream& stream)
+sf::Optional<InputSoundFile> InputSoundFile::openFromStream(InputStream& stream)
 {
     // Find a suitable reader for the file type
     auto reader = SoundFileFactory::createReaderFromStream(stream);
     if (!reader)
     {
         // Error message generated in called function.
-        return std::nullopt;
+        return sf::nullOpt;
     }
 
     // Don't forget to reset the stream to its beginning before re-opening it
-    if (stream.seek(0) != 0)
+    if (const sf::Optional seekResult = stream.seek(0); !seekResult.hasValue() || *seekResult != 0)
     {
         priv::err() << "Failed to open sound file from stream (cannot restart stream)" << priv::errEndl;
-        return std::nullopt;
+        return sf::nullOpt;
     }
 
     // Pass the stream to the reader
@@ -174,15 +174,15 @@ std::optional<InputSoundFile> InputSoundFile::openFromStream(InputStream& stream
     if (!info)
     {
         priv::err() << "Failed to open input sound file from stream (reader open failure)" << priv::errEndl;
-        return std::nullopt;
+        return sf::nullOpt;
     }
 
-    return std::make_optional<InputSoundFile>(priv::PassKey<InputSoundFile>{},
-                                              SFML_MOVE(reader),
-                                              priv::UniquePtr<InputStream, StreamDeleter>{&stream, false},
-                                              info->sampleCount,
-                                              info->sampleRate,
-                                              SFML_MOVE(info->channelMap));
+    return sf::makeOptional<InputSoundFile>(priv::PassKey<InputSoundFile>{},
+                                            SFML_MOVE(reader),
+                                            priv::UniquePtr<InputStream, StreamDeleter>{&stream, false},
+                                            info->sampleCount,
+                                            info->sampleRate,
+                                            SFML_MOVE(info->channelMap));
 }
 
 

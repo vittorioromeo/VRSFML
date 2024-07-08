@@ -45,29 +45,29 @@ const IpAddress IpAddress::Broadcast(255, 255, 255, 255);
 
 
 ////////////////////////////////////////////////////////////
-std::optional<IpAddress> IpAddress::resolve(std::string_view address)
+sf::Optional<IpAddress> IpAddress::resolve(std::string_view address)
 {
     using namespace std::string_view_literals;
 
     if (address.empty())
     {
         // Not generating en error message here as resolution failure is a valid outcome.
-        return std::nullopt;
+        return sf::nullOpt;
     }
 
     if (address == "255.255.255.255"sv)
     {
         // The broadcast address needs to be handled explicitly,
         // because it is also the value returned by inet_addr on error
-        return std::make_optional(Broadcast);
+        return sf::makeOptional(Broadcast);
     }
 
     if (address == "0.0.0.0"sv)
-        return std::make_optional(Any);
+        return sf::makeOptional(Any);
 
     // Try to convert the address as a byte representation ("xxx.xxx.xxx.xxx")
     if (const std::uint32_t ip = inet_addr(address.data()); ip != INADDR_NONE)
-        return std::make_optional<IpAddress>(ntohl(ip));
+        return sf::makeOptional<IpAddress>(ntohl(ip));
 
     // Not a valid address, try to convert it as a host name
     addrinfo hints{}; // Zero-initialize
@@ -82,11 +82,11 @@ std::optional<IpAddress> IpAddress::resolve(std::string_view address)
         const std::uint32_t ip = sin.sin_addr.s_addr;
         freeaddrinfo(result);
 
-        return std::make_optional<IpAddress>(ntohl(ip));
+        return sf::makeOptional<IpAddress>(ntohl(ip));
     }
 
     // Not generating en error message here as resolution failure is a valid outcome.
-    return std::nullopt;
+    return sf::nullOpt;
 }
 
 
@@ -121,7 +121,7 @@ std::uint32_t IpAddress::toInteger() const
 
 
 ////////////////////////////////////////////////////////////
-std::optional<IpAddress> IpAddress::getLocalAddress()
+sf::Optional<IpAddress> IpAddress::getLocalAddress()
 {
     // The method here is to connect a UDP socket to anyone (here to localhost),
     // and get the local socket address with the getsockname function.
@@ -132,7 +132,7 @@ std::optional<IpAddress> IpAddress::getLocalAddress()
     if (sock == priv::SocketImpl::invalidSocket())
     {
         priv::err() << "Failed to retrieve local address (invalid socket)" << priv::errEndl;
-        return std::nullopt;
+        return sf::nullOpt;
     }
 
     // Connect the socket to localhost on any port
@@ -142,7 +142,7 @@ std::optional<IpAddress> IpAddress::getLocalAddress()
         priv::SocketImpl::close(sock);
 
         priv::err() << "Failed to retrieve local address (socket connection failure)" << priv::errEndl;
-        return std::nullopt;
+        return sf::nullOpt;
     }
 
     // Get the local address of the socket connection
@@ -152,19 +152,19 @@ std::optional<IpAddress> IpAddress::getLocalAddress()
         priv::SocketImpl::close(sock);
 
         priv::err() << "Failed to retrieve local address (socket local address retrieval failure)" << priv::errEndl;
-        return std::nullopt;
+        return sf::nullOpt;
     }
 
     // Close the socket
     priv::SocketImpl::close(sock);
 
     // Finally build the IP address
-    return std::make_optional<IpAddress>(ntohl(address.sin_addr.s_addr));
+    return sf::makeOptional<IpAddress>(ntohl(address.sin_addr.s_addr));
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<IpAddress> IpAddress::getPublicAddress(Time timeout)
+sf::Optional<IpAddress> IpAddress::getPublicAddress(Time timeout)
 {
     // The trick here is more complicated, because the only way
     // to get our public IP address is to get it from a distant computer.
@@ -184,7 +184,7 @@ std::optional<IpAddress> IpAddress::getPublicAddress(Time timeout)
     priv::err() << "Failed to retrieve public address from external IP resolution server (HTTP response status "
                 << static_cast<int>(status) << ")" << priv::errEndl;
 
-    return std::nullopt;
+    return sf::nullOpt;
 }
 
 
@@ -231,7 +231,7 @@ bool operator>=(const IpAddress& left, const IpAddress& right)
 
 
 ////////////////////////////////////////////////////////////
-std::istream& operator>>(std::istream& stream, std::optional<IpAddress>& address)
+std::istream& operator>>(std::istream& stream, sf::Optional<IpAddress>& address)
 {
     std::string str;
     stream >> str;

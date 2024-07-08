@@ -31,10 +31,10 @@
 
 #include <SFML/Audio/SoundChannel.hpp>
 
+#include <SFML/System/Optional.hpp>
 #include <SFML/System/PassKey.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
-#include <optional>
 #include <vector>
 
 #include <cstddef>
@@ -86,10 +86,10 @@ public:
     ///
     /// \param filename Path of the sound file to load
     ///
-    /// \return Input sound file if the file was successfully opened, otherwise `std::nullopt`
+    /// \return Input sound file if the file was successfully opened, otherwise `sf::nullOpt`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<InputSoundFile> openFromFile(const Path& filename);
+    [[nodiscard]] static sf::Optional<InputSoundFile> openFromFile(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a sound file in memory for reading
@@ -100,10 +100,10 @@ public:
     /// \param data        Pointer to the file data in memory
     /// \param sizeInBytes Size of the data to load, in bytes
     ///
-    /// \return Input sound file if the file was successfully opened, otherwise `std::nullopt`
+    /// \return Input sound file if the file was successfully opened, otherwise `sf::nullOpt`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<InputSoundFile> openFromMemory(const void* data, std::size_t sizeInBytes);
+    [[nodiscard]] static sf::Optional<InputSoundFile> openFromMemory(const void* data, std::size_t sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a sound file from a custom stream for reading
@@ -113,10 +113,10 @@ public:
     ///
     /// \param stream Source stream to read from
     ///
-    /// \return Input sound file if the file was successfully opened, otherwise `std::nullopt`
+    /// \return Input sound file if the file was successfully opened, otherwise `sf::nullOpt`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<InputSoundFile> openFromStream(InputStream& stream);
+    [[nodiscard]] static sf::Optional<InputSoundFile> openFromStream(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the total number of audio samples in the file

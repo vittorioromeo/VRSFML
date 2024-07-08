@@ -47,28 +47,28 @@ sf::Path resourcesDir()
 #endif
 }
 
-std::optional<sf::RenderWindow> recreateWindow(sf::GraphicsContext&       graphicsContext,
-                                               const sf::ContextSettings& contextSettings,
-                                               sf::Texture&               texture)
+sf::Optional<sf::RenderWindow> recreateWindow(sf::GraphicsContext&       graphicsContext,
+                                              const sf::ContextSettings& contextSettings,
+                                              sf::Texture&               texture)
 {
     // Create the main window
-    std::optional<sf::RenderWindow> window(std::in_place,
-                                           graphicsContext,
-                                           sf::VideoMode({800, 600}),
-                                           "SFML graphics with OpenGL",
-                                           sf::Style::Default,
-                                           sf::State::Windowed,
-                                           contextSettings);
+    sf::Optional<sf::RenderWindow> window(sf::inPlace,
+                                          graphicsContext,
+                                          sf::VideoMode({800, 600}),
+                                          "SFML graphics with OpenGL",
+                                          sf::Style::Default,
+                                          sf::State::Windowed,
+                                          contextSettings);
 
     window->setVerticalSyncEnabled(true);
-    window->setMinimumSize(sf::Vector2u{400, 300});
-    window->setMaximumSize(sf::Vector2u{1200, 900});
+    window->setMinimumSize(sf::makeOptional(sf::Vector2u{400, 300}));
+    window->setMaximumSize(sf::makeOptional(sf::Vector2u{1200, 900}));
 
     // Make the window the active window for OpenGL calls
     if (!window->setActive(true))
     {
         std::cerr << "Failed to set window to active" << std::endl;
-        return std::nullopt;
+        return sf::nullOpt;
     }
 
 
@@ -175,7 +175,7 @@ std::optional<sf::RenderWindow> recreateWindow(sf::GraphicsContext&       graphi
     if (!window->setActive(false))
     {
         std::cerr << "Failed to set window to inactive" << std::endl;
-        return std::nullopt;
+        return sf::nullOpt;
     }
 
     return window;
@@ -227,8 +227,8 @@ int main()
         (void)texture.generateMipmap();
 
         // Create the main window
-        std::optional<sf::RenderWindow> window = recreateWindow(graphicsContext, contextSettings, texture);
-        if (!window.has_value())
+        sf::Optional<sf::RenderWindow> window = recreateWindow(graphicsContext, contextSettings, texture);
+        if (!window.hasValue())
             return EXIT_FAILURE;
 
         // Create a clock for measuring the time elapsed
@@ -241,7 +241,7 @@ int main()
         while (true)
         {
             // Process events
-            while (const std::optional event = window->pollEvent())
+            while (const sf::Optional event = window->pollEvent())
             {
                 // Window closed or escape key pressed: exit
                 if (event->is<sf::Event::Closed>() ||
@@ -319,11 +319,11 @@ int main()
                 }
             }
 
-            if (!window.has_value()) // re-create the window
+            if (!window.hasValue()) // re-create the window
             {
                 window = recreateWindow(graphicsContext, contextSettings, texture);
 
-                if (!window.has_value())
+                if (!window.hasValue())
                     return EXIT_FAILURE;
             }
 

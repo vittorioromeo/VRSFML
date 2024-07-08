@@ -61,13 +61,16 @@ set(SRC
     ${INCROOT}/SizeT.hpp
     ${INCROOT}/FixedFunction.hpp
     ${INCROOT}/IsSame.hpp
+    ${INCROOT}/IsFloatingPoint.hpp
     ${INCROOT}/RemoveRef.hpp
+    ${INCROOT}/RemoveCVRef.hpp
     ${INCROOT}/MaxAlignT.hpp
     ${SRCROOT}/Rect.cpp
     ${INCROOT}/Rect.hpp
     ${INCROOT}/Rect.inl
     ${INCROOT}/RectUtils.hpp
     ${INCROOT}/RectUtils.inl
+    ${INCROOT}/Optional.hpp
 )
 
 if(SFML_ENABLE_PCH)

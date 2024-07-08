@@ -30,8 +30,7 @@
 #include <SFML/Audio/SoundFileReader.hpp>
 
 #include <SFML/System/InPlacePImpl.hpp>
-
-#include <optional>
+#include <SFML/System/Optional.hpp>
 
 #include <cstdint>
 
@@ -75,7 +74,7 @@ public:
     /// \return Properties of the loaded sound if the file was successfully opened
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::optional<Info> open(InputStream& stream) override;
+    [[nodiscard]] sf::Optional<Info> open(InputStream& stream) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current read position to the given sample offset

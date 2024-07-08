@@ -24,9 +24,9 @@
 
 #pragma once
 
-#if __has_builtin(__remove_reference)
+#if __has_builtin(__remove_cvref)
 
-#define SFML_PRIV_REMOVE_REFERENCE(...) __remove_reference(__VA_ARGS__)
+#define SFML_PRIV_REMOVE_CVREF(...) __remove_cvref(__VA_ARGS__)
 
 #else
 
@@ -34,13 +34,22 @@ namespace sf::priv
 {
 
 // clang-format off
-template <typename T> struct RemoveReference      { using type = T; };
-template <typename T> struct RemoveReference<T&>  { using type = T; };
-template <typename T> struct RemoveReference<T&&> { using type = T; };
+template <typename T> struct RemoveCVRef                     { using type = T; };
+template <typename T> struct RemoveCVRef<T&>                 { using type = T; };
+template <typename T> struct RemoveCVRef<T&&>                { using type = T; };
+template <typename T> struct RemoveCVRef<const T>            { using type = T; };
+template <typename T> struct RemoveCVRef<const T&>           { using type = T; };
+template <typename T> struct RemoveCVRef<const T&&>          { using type = T; };
+template <typename T> struct RemoveCVRef<volatile T>         { using type = T; };
+template <typename T> struct RemoveCVRef<volatile T&>        { using type = T; };
+template <typename T> struct RemoveCVRef<volatile T&&>       { using type = T; };
+template <typename T> struct RemoveCVRef<const volatile T>   { using type = T; };
+template <typename T> struct RemoveCVRef<const volatile T&>  { using type = T; };
+template <typename T> struct RemoveCVRef<const volatile T&&> { using type = T; };
 // clang-format on
 
 } // namespace sf::priv
 
-#define SFML_PRIV_REMOVE_REFERENCE(...) typename ::sf::priv::RemoveReference<__VA_ARGS__>::type
+#define SFML_PRIV_REMOVE_CVREF(...) typename ::sf::priv::RemoveCVRef<__VA_ARGS__>::type
 
 #endif

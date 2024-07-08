@@ -30,6 +30,7 @@
 
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
+#include <SFML/System/Optional.hpp>
 #include <SFML/System/Time.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
@@ -112,34 +113,34 @@ Music& Music::operator=(Music&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Music> Music::tryOpenFromInputSoundFile(std::optional<InputSoundFile>&& optFile, const char* errorContext)
+sf::Optional<Music> Music::tryOpenFromInputSoundFile(sf::Optional<InputSoundFile>&& optFile, const char* errorContext)
 {
-    if (!optFile.has_value())
+    if (!optFile.hasValue())
     {
         priv::err() << "Failed to open music from " << errorContext << priv::errEndl;
-        return std::nullopt;
+        return sf::nullOpt;
     }
 
-    return std::make_optional<Music>(priv::PassKey<Music>{}, SFML_MOVE(*optFile));
+    return sf::makeOptional<Music>(priv::PassKey<Music>{}, SFML_MOVE(*optFile));
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Music> Music::openFromFile(const Path& filename)
+sf::Optional<Music> Music::openFromFile(const Path& filename)
 {
     return tryOpenFromInputSoundFile(InputSoundFile::openFromFile(filename), "file");
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Music> Music::openFromMemory(const void* data, std::size_t sizeInBytes)
+sf::Optional<Music> Music::openFromMemory(const void* data, std::size_t sizeInBytes)
 {
     return tryOpenFromInputSoundFile(InputSoundFile::openFromMemory(data, sizeInBytes), "memory");
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Music> Music::openFromStream(InputStream& stream)
+sf::Optional<Music> Music::openFromStream(InputStream& stream)
 {
     return tryOpenFromInputSoundFile(InputSoundFile::openFromStream(stream), "stream");
 }
@@ -215,7 +216,7 @@ void Music::onSeek(Time timeOffset)
 
 
 ////////////////////////////////////////////////////////////
-std::optional<std::uint64_t> Music::onLoop()
+sf::Optional<std::uint64_t> Music::onLoop()
 {
     // Called by underlying SoundStream so we can determine where to loop.
     const std::lock_guard lock(m_impl->mutex);
@@ -226,17 +227,17 @@ std::optional<std::uint64_t> Music::onLoop()
         // Looping is enabled, and either we're at the loop end, or we're at the EOF
         // when it's equivalent to the loop end (loop end takes priority). Send us to loop begin
         m_impl->file.seek(m_impl->loopSpan.offset);
-        return m_impl->file.getSampleOffset();
+        return sf::makeOptional(m_impl->file.getSampleOffset());
     }
 
     if (getLoop() && (currentOffset >= m_impl->file.getSampleCount()))
     {
         // If we're at the EOF, reset to 0
         m_impl->file.seek(0);
-        return 0;
+        return sf::makeOptional(std::uint64_t{0});
     }
 
-    return std::nullopt;
+    return sf::nullOpt;
 }
 
 

@@ -7,14 +7,14 @@
 
 #include <SFML/System/FileInputStream.hpp>
 #include <SFML/System/InputStream.hpp>
+#include <SFML/System/Optional.hpp>
+#include <SFML/System/Path.hpp>
 
 #include <Doctest.hpp>
 
 #include <StringifyOptionalUtil.hpp>
 #include <SystemUtil.hpp>
 
-#include <SFML/System/Path.hpp>
-#include <optional>
 #include <type_traits>
 
 #include <cstdint>
@@ -29,9 +29,9 @@ struct NoopSoundFileReader : sf::SoundFileReader
         return false;
     }
 
-    std::optional<Info> open(sf::InputStream&) override
+    sf::Optional<Info> open(sf::InputStream&) override
     {
-        return {};
+        return sf::nullOpt;
     }
 
     void seek(std::uint64_t) override
@@ -113,7 +113,7 @@ TEST_CASE("[Audio] sf::SoundFileFactory")
 
     SECTION("createReaderFromStream()")
     {
-        std::optional<sf::FileInputStream> stream;
+        sf::Optional<sf::FileInputStream> stream;
 
         SECTION("flac")
         {

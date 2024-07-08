@@ -30,10 +30,9 @@
 #include <SFML/Window/Export.hpp>
 
 #include <SFML/System/InPlacePImpl.hpp>
+#include <SFML/System/Optional.hpp>
 #include <SFML/System/PassKey.hpp>
 #include <SFML/System/Vector2.hpp>
-
-#include <optional>
 
 #include <cstdint>
 
@@ -170,10 +169,10 @@ public:
     /// \param size     Width and height of the image
     /// \param hotspot  (x,y) location of the hotspot
     /// \return Cursor if the cursor was successfully loaded;
-    ///         `std::nullopt` otherwise
+    ///         `sf::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Cursor> loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vector2u hotspot);
+    [[nodiscard]] static sf::Optional<Cursor> loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vector2u hotspot);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a native system cursor
@@ -186,10 +185,10 @@ public:
     /// \param type Native system cursor type
     /// \return Cursor if and only if the corresponding cursor is
     ///         natively supported by the operating system;
-    ///         `std::nullopt` otherwise
+    ///         `sf::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Cursor> loadFromSystem(Type type);
+    [[nodiscard]] static sf::Optional<Cursor> loadFromSystem(Type type);
 
 private:
     friend class WindowBase;

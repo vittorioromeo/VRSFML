@@ -84,7 +84,7 @@ struct SoundFileWriterWav::Impl
 ////////////////////////////////////////////////////////////
 bool SoundFileWriterWav::check(const Path& filename)
 {
-    return priv::toLower(filename.extension().string()) == ".wav";
+    return priv::toLower(filename.extension().to<std::string>()) == ".wav";
 }
 
 
@@ -222,7 +222,7 @@ bool SoundFileWriterWav::open(const Path&                      filename,
     m_impl->channelCount = channelCount;
 
     // Open the file
-    m_impl->file.open(filename, std::ios::binary);
+    m_impl->file.open(filename.to<std::string>(), std::ios::binary);
     if (!m_impl->file)
     {
         priv::err() << "Failed to open WAV sound file for writing\n"

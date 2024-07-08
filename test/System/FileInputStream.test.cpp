@@ -32,7 +32,7 @@ public:
     // Create a temporary file with a randomly generated path, containing 'contents'.
     TemporaryFile(const std::string& contents) : m_path(getTemporaryFilePath())
     {
-        std::ofstream ofs(m_path);
+        std::ofstream ofs(m_path.to<std::string>());
         assert(ofs && "Stream encountered an error");
 
         ofs << contents;
@@ -84,9 +84,9 @@ TEST_CASE("[System] sf::FileInputStream")
         {
             auto                movedFileInputStream = sf::FileInputStream::open(temporaryFile.getPath()).value();
             sf::FileInputStream fileInputStream      = SFML_MOVE(movedFileInputStream);
-            CHECK(fileInputStream.read(buffer, 6) == 6);
-            CHECK(fileInputStream.tell() == 6);
-            CHECK(fileInputStream.getSize() == 11);
+            CHECK(fileInputStream.read(buffer, 6).value() == 6);
+            CHECK(fileInputStream.tell().value() == 6);
+            CHECK(fileInputStream.getSize().value() == 11);
             CHECK(std::string_view(buffer, 6) == "Hello "sv);
         }
 
@@ -96,9 +96,9 @@ TEST_CASE("[System] sf::FileInputStream")
             const TemporaryFile temporaryFile2("Hello world the sequel");
             auto                fileInputStream = sf::FileInputStream::open(temporaryFile2.getPath()).value();
             fileInputStream                     = SFML_MOVE(movedFileInputStream);
-            CHECK(fileInputStream.read(buffer, 6) == 6);
-            CHECK(fileInputStream.tell() == 6);
-            CHECK(fileInputStream.getSize() == 11);
+            CHECK(fileInputStream.read(buffer, 6).value() == 6);
+            CHECK(fileInputStream.tell().value() == 6);
+            CHECK(fileInputStream.getSize().value() == 11);
             CHECK(std::string_view(buffer, 6) == "Hello "sv);
         }
     }
@@ -106,11 +106,11 @@ TEST_CASE("[System] sf::FileInputStream")
     SECTION("Temporary file stream")
     {
         auto fileInputStream = sf::FileInputStream::open(temporaryFile.getPath()).value();
-        CHECK(fileInputStream.read(buffer, 5) == 5);
-        CHECK(fileInputStream.tell() == 5);
-        CHECK(fileInputStream.getSize() == 11);
+        CHECK(fileInputStream.read(buffer, 5).value() == 5);
+        CHECK(fileInputStream.tell().value() == 5);
+        CHECK(fileInputStream.getSize().value() == 11);
         CHECK(std::string_view(buffer, 5) == "Hello"sv);
-        CHECK(fileInputStream.seek(6) == 6);
-        CHECK(fileInputStream.tell() == 6);
+        CHECK(fileInputStream.seek(6).value() == 6);
+        CHECK(fileInputStream.tell().value() == 6);
     }
 }

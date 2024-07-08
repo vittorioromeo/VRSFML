@@ -38,7 +38,7 @@
 ///     while (true)
 ///     {
 ///         // Process events
-///         while (const std::optional event = window.pollEvent())
+///         while (const sf::Optional event = window.pollEvent())
 ///         {
 ///             // Close window: exit
 ///             if (event->is<sf::Event::Closed>())

@@ -78,7 +78,7 @@ unsigned short TcpSocket::getLocalPort() const
 
 
 ////////////////////////////////////////////////////////////
-std::optional<IpAddress> TcpSocket::getRemoteAddress() const
+sf::Optional<IpAddress> TcpSocket::getRemoteAddress() const
 {
     if (getNativeHandle() != priv::SocketImpl::invalidSocket())
     {
@@ -87,12 +87,12 @@ std::optional<IpAddress> TcpSocket::getRemoteAddress() const
         priv::SocketImpl::AddrLength size = sizeof(address);
         if (getpeername(getNativeHandle(), reinterpret_cast<sockaddr*>(&address), &size) != -1)
         {
-            return IpAddress(ntohl(address.sin_addr.s_addr));
+            return sf::makeOptional<IpAddress>(ntohl(address.sin_addr.s_addr));
         }
     }
 
     // We failed to retrieve the address
-    return std::nullopt;
+    return sf::nullOpt;
 }
 
 
@@ -181,7 +181,7 @@ Socket::Status TcpSocket::connect(const IpAddress& remoteAddress, unsigned short
         {
             // At this point the connection may have been either accepted or refused.
             // To know whether it's a success or a failure, we must check the address of the connected peer
-            if (getRemoteAddress().has_value())
+            if (getRemoteAddress().hasValue())
             {
                 // Connection accepted
                 status = Status::Done;

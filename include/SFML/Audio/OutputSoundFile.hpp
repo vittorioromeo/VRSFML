@@ -31,10 +31,10 @@
 
 #include <SFML/Audio/SoundChannel.hpp>
 
+#include <SFML/System/Optional.hpp>
 #include <SFML/System/PassKey.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
-#include <optional>
 #include <vector>
 
 #include <cstdint>
@@ -83,7 +83,7 @@ public:
     /// \return Output sound file if the file was successfully opened
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<OutputSoundFile> openFromFile(
+    [[nodiscard]] static sf::Optional<OutputSoundFile> openFromFile(
         const Path&                      filename,
         unsigned int                     sampleRate,
         unsigned int                     channelCount,

@@ -31,11 +31,11 @@
 
 #include <SFML/Graphics/Color.hpp>
 
+#include <SFML/System/Optional.hpp>
 #include <SFML/System/PassKey.hpp>
 #include <SFML/System/Rect.hpp>
 #include <SFML/System/Vector2.hpp>
 
-#include <optional>
 #include <string_view>
 #include <vector>
 
@@ -58,11 +58,13 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Construct the image and fill it with a unique color
     ///
+    /// If \a size is zero, the behavior is undefined.
+    ///
     /// \param size  Width and height of the image
     /// \param color Fill color
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Image(const Vector2u& size, const Color& color = Color::Black);
+    [[nodiscard]] explicit Image(const Vector2u& size, const Color& color = Color::Black); // TODO: to factory
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the image from an array of pixels
@@ -70,13 +72,13 @@ public:
     /// The \a pixel array is assumed to contain 32-bits RGBA pixels,
     /// and have the given \a width and \a height. If not, this is
     /// an undefined behavior.
-    /// If \a pixels is null, an empty image is created.
+    /// If \a pixels is null or \a size is zero, the behavior is undefined.
     ///
     /// \param size   Width and height of the image
     /// \param pixels Array of pixels to copy to the image
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Image(const Vector2u& size, const std::uint8_t* pixels);
+    [[nodiscard]] Image(const Vector2u& size, const std::uint8_t* pixels); // TODO: to factory
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the image from a file on disk
@@ -88,12 +90,12 @@ public:
     ///
     /// \param filename Path of the image file to load
     ///
-    /// \return Image if loading was successful, `std::nullopt` otherwise
+    /// \return Image if loading was successful, `sf::nullOpt` otherwise
     ///
     /// \see loadFromMemory, loadFromStream, saveToFile
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Image> loadFromFile(const Path& filename);
+    [[nodiscard]] static sf::Optional<Image> loadFromFile(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the image from a file in memory
@@ -106,12 +108,12 @@ public:
     /// \param data Pointer to the file data in memory
     /// \param size Size of the data to load, in bytes
     ///
-    /// \return Image if loading was successful, `std::nullopt` otherwise
+    /// \return Image if loading was successful, `sf::nullOpt` otherwise
     ///
     /// \see loadFromFile, loadFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Image> loadFromMemory(const void* data, std::size_t size);
+    [[nodiscard]] static sf::Optional<Image> loadFromMemory(const void* data, std::size_t size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the image from a custom stream
@@ -123,12 +125,12 @@ public:
     ///
     /// \param stream Source stream to read from
     ///
-    /// \return Image if loading was successful, `std::nullopt` otherwise
+    /// \return Image if loading was successful, `sf::nullOpt` otherwise
     ///
     /// \see loadFromFile, loadFromMemory
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Image> loadFromStream(InputStream& stream);
+    [[nodiscard]] static sf::Optional<Image> loadFromStream(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Save the image to a file on disk
@@ -158,12 +160,12 @@ public:
     /// \param format Encoding format to use
     ///
     /// \return Buffer with encoded data if saving was successful,
-    ///     otherwise std::nullopt
+    ///     otherwise sf::nullOpt
     ///
     /// \see create, loadFromFile, loadFromMemory, saveToFile
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::optional<std::vector<std::uint8_t>> saveToMemory(std::string_view format) const;
+    [[nodiscard]] sf::Optional<std::vector<std::uint8_t>> saveToMemory(std::string_view format) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size (width and height) of the image

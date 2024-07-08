@@ -58,7 +58,7 @@ struct SoundFileWriterOgg::Impl
 ////////////////////////////////////////////////////////////
 bool SoundFileWriterOgg::check(const Path& filename)
 {
-    return priv::toLower(filename.extension().string()) == ".ogg";
+    return priv::toLower(filename.extension().to<std::string>()) == ".ogg";
 }
 
 
@@ -171,7 +171,7 @@ bool SoundFileWriterOgg::open(const Path&                      filename,
     vorbis_analysis_init(&m_impl->state, &m_impl->vorbis);
 
     // Open the file after the vorbis setup is ok
-    m_impl->file.open(filename, std::ios::binary);
+    m_impl->file.open(filename.to<std::string>(), std::ios::binary);
     if (!m_impl->file)
     {
         priv::err() << "Failed to write ogg/vorbis file (cannot open file)\n"

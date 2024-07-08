@@ -56,7 +56,7 @@ struct Sound::Impl
 
     void initialize()
     {
-        assert(soundBase.has_value());
+        assert(soundBase.hasValue());
 
         if (!soundBase->initialize(onEnd))
             priv::err() << "Failed to initialize Sound::Impl" << priv::errEndl;
@@ -180,11 +180,11 @@ struct Sound::Impl
     ////////////////////////////////////////////////////////////
     static inline constexpr ma_data_source_vtable vtable{read, seek, getFormat, getCursor, getLength, setLooping, 0};
 
-    std::optional<priv::MiniaudioUtils::SoundBase> soundBase; //!< Sound base, needs to be first member
-    Sound*                                         owner;     //!< Owning `Sound` object
-    std::size_t                                    cursor{};  //!< The current playing position
-    const SoundBuffer*                             buffer{};  //!< Sound buffer bound to the source
-    SoundSource::Status                            status{SoundSource::Status::Stopped}; //!< The status
+    sf::Optional<priv::MiniaudioUtils::SoundBase> soundBase; //!< Sound base, needs to be first member
+    Sound*                                        owner;     //!< Owning `Sound` object
+    std::size_t                                   cursor{};  //!< The current playing position
+    const SoundBuffer*                            buffer{};  //!< Sound buffer bound to the source
+    SoundSource::Status                           status{SoundSource::Status::Stopped}; //!< The status
 };
 
 
@@ -203,7 +203,7 @@ Sound::Sound(const Sound& rhs) : SoundSource(rhs), m_impl(priv::makeUnique<Impl>
 {
     SoundSource::operator=(rhs);
 
-    if (rhs.m_impl->buffer)
+    if (rhs.m_impl->buffer != nullptr)
         setBuffer(*rhs.m_impl->buffer);
 
     SFML_UPDATE_LIFETIME_DEPENDANT(SoundBuffer, Sound, m_impl->buffer);
@@ -224,7 +224,7 @@ Sound& Sound::operator=(const Sound& rhs)
     SoundSource::operator=(rhs);
 
     // Detach the sound instance from the previous buffer (if any)
-    if (m_impl->buffer)
+    if (m_impl->buffer != nullptr)
     {
         stop();
 
@@ -233,7 +233,7 @@ Sound& Sound::operator=(const Sound& rhs)
     }
 
     // Copy the remaining sound attributes
-    if (rhs.m_impl->buffer)
+    if (rhs.m_impl->buffer != nullptr)
         setBuffer(*rhs.m_impl->buffer);
 
     return *this;
@@ -268,7 +268,7 @@ Sound::~Sound()
 {
     stop();
 
-    if (m_impl->buffer)
+    if (m_impl->buffer != nullptr)
         m_impl->buffer->detachSound(this);
 }
 
@@ -276,12 +276,12 @@ Sound::~Sound()
 ////////////////////////////////////////////////////////////
 void Sound::play(PlaybackDevice& playbackDevice)
 {
-    if (!m_impl->soundBase.has_value())
+    if (!m_impl->soundBase.hasValue())
     {
         m_impl->soundBase.emplace(playbackDevice, Impl::vtable, [](void* ptr) { static_cast<Impl*>(ptr)->initialize(); });
         m_impl->initialize();
 
-        assert(m_impl->soundBase.has_value());
+        assert(m_impl->soundBase.hasValue());
         applyStoredSettings(&m_impl->soundBase->sound);
         setEffectProcessor(getEffectProcessor());
         setPlayingOffset(getPlayingOffset());
@@ -303,7 +303,7 @@ void Sound::play(PlaybackDevice& playbackDevice)
 ////////////////////////////////////////////////////////////
 void Sound::pause()
 {
-    if (!m_impl->soundBase.has_value())
+    if (!m_impl->soundBase.hasValue())
         return;
 
     if (const ma_result result = ma_sound_stop(&m_impl->soundBase->sound); result != MA_SUCCESS)
@@ -320,7 +320,7 @@ void Sound::pause()
 ////////////////////////////////////////////////////////////
 void Sound::stop()
 {
-    if (!m_impl->soundBase.has_value())
+    if (!m_impl->soundBase.hasValue())
         return;
 
     if (const ma_result result = ma_sound_stop(&m_impl->soundBase->sound); result != MA_SUCCESS)
@@ -338,7 +338,7 @@ void Sound::stop()
 void Sound::setBuffer(const SoundBuffer& buffer)
 {
     // First detach from the previous buffer
-    if (m_impl->buffer)
+    if (m_impl->buffer != nullptr)
     {
         stop();
 
@@ -351,12 +351,12 @@ void Sound::setBuffer(const SoundBuffer& buffer)
     m_impl->buffer = &buffer;
     m_impl->buffer->attachSound(this);
 
-    if (m_impl->soundBase.has_value())
+    if (m_impl->soundBase.hasValue())
     {
         m_impl->soundBase->deinitialize();
         m_impl->initialize();
 
-        assert(m_impl->soundBase.has_value());
+        assert(m_impl->soundBase.hasValue());
         applyStoredSettings(&m_impl->soundBase->sound);
         setEffectProcessor(getEffectProcessor());
         setPlayingOffset(getPlayingOffset());
@@ -370,7 +370,7 @@ void Sound::setPlayingOffset(Time playingOffset)
 {
     SoundSource::setPlayingOffset(playingOffset);
 
-    if (!m_impl->soundBase.has_value())
+    if (!m_impl->soundBase.hasValue())
         return;
 
     if (m_impl->soundBase->sound.pDataSource == nullptr || m_impl->soundBase->sound.engineNode.pEngine == nullptr)
@@ -378,7 +378,7 @@ void Sound::setPlayingOffset(Time playingOffset)
 
     const auto frameIndex = priv::MiniaudioUtils::getFrameIndex(m_impl->soundBase->sound, playingOffset);
 
-    if (m_impl->buffer)
+    if (m_impl->buffer != nullptr)
         m_impl->cursor = static_cast<std::size_t>(frameIndex * m_impl->buffer->getChannelCount());
 }
 
@@ -388,7 +388,7 @@ void Sound::setEffectProcessor(EffectProcessor effectProcessor)
 {
     SoundSource::setEffectProcessor(effectProcessor);
 
-    if (!m_impl->soundBase.has_value())
+    if (!m_impl->soundBase.hasValue())
         return;
 
     m_impl->soundBase->effectProcessor = effectProcessor;
@@ -407,7 +407,7 @@ const SoundBuffer& Sound::getBuffer() const
 ////////////////////////////////////////////////////////////
 Time Sound::getPlayingOffset() const
 {
-    if (!m_impl->buffer || m_impl->buffer->getChannelCount() == 0 || m_impl->buffer->getSampleRate() == 0)
+    if (m_impl->buffer == nullptr || m_impl->buffer->getChannelCount() == 0 || m_impl->buffer->getSampleRate() == 0)
         return Time{};
 
     return SoundSource::getPlayingOffset();
@@ -428,7 +428,7 @@ void Sound::detachBuffer()
     stop();
 
     // Detach the buffer
-    if (m_impl->buffer)
+    if (m_impl->buffer != nullptr)
     {
         m_impl->buffer->detachSound(this);
         m_impl->buffer = nullptr;
@@ -439,7 +439,7 @@ void Sound::detachBuffer()
 ////////////////////////////////////////////////////////////
 void* Sound::getSound() const
 {
-    if (!m_impl->soundBase.has_value())
+    if (!m_impl->soundBase.hasValue())
         return nullptr;
 
     return &m_impl->soundBase->sound;

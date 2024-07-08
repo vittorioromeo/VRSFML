@@ -51,7 +51,7 @@ OutputSoundFile& OutputSoundFile::operator=(OutputSoundFile&&) noexcept = defaul
 
 
 ////////////////////////////////////////////////////////////
-std::optional<OutputSoundFile> OutputSoundFile::openFromFile(
+sf::Optional<OutputSoundFile> OutputSoundFile::openFromFile(
     const Path&                      filename,
     unsigned int                     sampleRate,
     unsigned int                     channelCount,
@@ -62,17 +62,17 @@ std::optional<OutputSoundFile> OutputSoundFile::openFromFile(
     if (!writer)
     {
         // Error message generated in called function.
-        return std::nullopt;
+        return sf::nullOpt;
     }
 
     // Pass the stream to the reader
     if (!writer->open(filename, sampleRate, channelCount, channelMap))
     {
         priv::err() << "Failed to open output sound file from file (writer open failure)" << priv::errEndl;
-        return std::nullopt;
+        return sf::nullOpt;
     }
 
-    return std::make_optional<OutputSoundFile>(priv::PassKey<OutputSoundFile>{}, SFML_MOVE(writer));
+    return sf::makeOptional<OutputSoundFile>(priv::PassKey<OutputSoundFile>{}, SFML_MOVE(writer));
 }
 
 

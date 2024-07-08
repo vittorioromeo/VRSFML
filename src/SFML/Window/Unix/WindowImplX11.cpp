@@ -653,7 +653,7 @@ m_cursorGrabbed(m_fullscreen)
     // The instance name should be something unique to this invocation
     // of the application but is rarely if ever used these days.
     // For simplicity, we retrieve it via the base executable name.
-    std::string       executableName = findExecutableName().string();
+    std::string       executableName = findExecutableName().to<std::string>();
     std::vector<char> windowInstance(executableName.size() + 1, 0);
     priv::copy(executableName.begin(), executableName.end(), windowInstance.begin());
     hint.res_name = windowInstance.data();
@@ -911,7 +911,7 @@ void WindowImplX11::setSize(const Vector2u& size)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplX11::setMinimumSize(const std::optional<Vector2u>& minimumSize)
+void WindowImplX11::setMinimumSize(const sf::Optional<Vector2u>& minimumSize)
 {
     WindowImpl::setMinimumSize(minimumSize);
     setWindowSizeConstraints();
@@ -919,7 +919,7 @@ void WindowImplX11::setMinimumSize(const std::optional<Vector2u>& minimumSize)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplX11::setMaximumSize(const std::optional<Vector2u>& maximumSize)
+void WindowImplX11::setMaximumSize(const sf::Optional<Vector2u>& maximumSize)
 {
     WindowImpl::setMaximumSize(maximumSize);
     setWindowSizeConstraints();

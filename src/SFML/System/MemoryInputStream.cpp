@@ -27,6 +27,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/MemoryInputStream.hpp>
+#include <SFML/System/Optional.hpp>
 
 #include <cassert>
 #include <cstring>
@@ -44,7 +45,7 @@ m_size(sizeInBytes)
 
 
 ////////////////////////////////////////////////////////////
-std::optional<std::size_t> MemoryInputStream::read(void* data, std::size_t size)
+sf::Optional<std::size_t> MemoryInputStream::read(void* data, std::size_t size)
 {
     const std::size_t count = priv::min(size, m_size - m_offset);
 
@@ -54,29 +55,29 @@ std::optional<std::size_t> MemoryInputStream::read(void* data, std::size_t size)
         m_offset += count;
     }
 
-    return count;
+    return sf::makeOptional(count);
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<std::size_t> MemoryInputStream::seek(std::size_t position)
+sf::Optional<std::size_t> MemoryInputStream::seek(std::size_t position)
 {
     m_offset = position < m_size ? position : m_size;
-    return m_offset;
+    return sf::makeOptional(m_offset);
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<std::size_t> MemoryInputStream::tell()
+sf::Optional<std::size_t> MemoryInputStream::tell()
 {
-    return m_offset;
+    return sf::makeOptional(m_offset);
 }
 
 
 ////////////////////////////////////////////////////////////
-std::optional<std::size_t> MemoryInputStream::getSize()
+sf::Optional<std::size_t> MemoryInputStream::getSize()
 {
-    return m_size;
+    return sf::makeOptional(m_size);
 }
 
 } // namespace sf
