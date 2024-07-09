@@ -412,28 +412,36 @@ int WindowImplAndroid::processKeyEvent(AInputEvent* inputEvent, ActivityStates& 
     const std::int32_t key     = AKeyEvent_getKeyCode(inputEvent);
     const std::int32_t metakey = AKeyEvent_getMetaState(inputEvent);
 
-    Event::KeyChanged keyChanged;
-    keyChanged.code    = androidKeyToSF(key);
-    keyChanged.alt     = metakey & AMETA_ALT_ON;
-    keyChanged.control = false;
-    keyChanged.shift   = metakey & AMETA_SHIFT_ON;
+    const auto forwardKeyEvent = [&](auto keyEvent)
+    {
+        keyEvent.code  = androidKeyToSF(key);
+        keyEvent.alt   = metakey & AMETA_ALT_ON;
+        keyEvent.shift = metakey & AMETA_SHIFT_ON;
+        forwardEvent(keyEvent);
+    };
 
     switch (action)
     {
         case AKEY_EVENT_ACTION_DOWN:
-            forwardEvent(Event::KeyPressed{keyChanged});
+        {
+            forwardKeyEvent(Event::KeyPressed{});
             return 1;
+        }
         case AKEY_EVENT_ACTION_UP:
-            forwardEvent(Event::KeyReleased{keyChanged});
+        {
+            forwardKeyEvent(Event::KeyReleased{});
 
             if (auto unicode = static_cast<std::uint32_t>(getUnicode(inputEvent)))
                 forwardEvent(Event::TextEntered{static_cast<std::uint32_t>(unicode)});
+
             return 1;
+        }
         case AKEY_EVENT_ACTION_MULTIPLE:
+        {
             // Since complex inputs don't get separate key down/up events
             // both have to be faked at once
-            forwardEvent(Event::KeyPressed{keyChanged});
-            forwardEvent(Event::KeyReleased{keyChanged});
+            forwardKeyEvent(Event::KeyPressed{});
+            forwardKeyEvent(Event::KeyReleased{});
 
             // This requires some special treatment, since this might represent
             // a repetition of key presses or a complete sequence
@@ -452,7 +460,9 @@ int WindowImplAndroid::processKeyEvent(AInputEvent* inputEvent, ActivityStates& 
                     forwardEvent(event);
                 return 1;
             }
+
             break;
+        }
     }
     return 0;
 }
