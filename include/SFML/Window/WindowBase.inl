@@ -32,10 +32,10 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-struct Delay
+struct DelayOverloadResolution
 {
     template <typename T>
-    Delay(T&&) // NOLINT(bugprone-forwarding-reference-overload)
+    explicit(false) DelayOverloadResolution(const T&)
     {
     }
 };
@@ -49,7 +49,7 @@ template <typename... Handlers>
 void WindowBase::pollAndHandleEvents(Handlers&&... handlers)
 {
     while (const sf::Optional event = pollEvent())
-        event->match(static_cast<Handlers&&>(handlers)..., []<int = 0>(const priv::Delay&) { /* ignore */ });
+        event->match(static_cast<Handlers&&>(handlers)..., [](const priv::DelayOverloadResolution&) { /* ignore */ });
 }
 
 } // namespace sf
