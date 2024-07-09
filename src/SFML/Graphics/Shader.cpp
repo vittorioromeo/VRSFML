@@ -934,6 +934,7 @@ void Shader::bind() const
     }
 
     // Enable the program
+    assert(glIsProgram(castToGlHandle(m_impl->shaderProgram)));
     glCheck(GLEXT_glUseProgramObject(castToGlHandle(m_impl->shaderProgram)));
 
     // Bind the textures
@@ -1021,7 +1022,8 @@ sf::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
 
     // Create the program
     GLEXT_GLhandle shaderProgram{};
-    glCheck(shaderProgram = GLEXT_glCreateProgramObject());
+    glCheck(shaderProgram = glCreateProgram());
+    assert(glIsProgram(shaderProgram));
 
     // Create the vertex shader if needed
     if (vertexShaderCode.data())

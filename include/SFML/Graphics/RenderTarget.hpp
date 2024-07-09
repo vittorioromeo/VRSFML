@@ -555,7 +555,7 @@ private:
     /// \brief Apply the current view
     ///
     ////////////////////////////////////////////////////////////
-    void applyCurrentView();
+    void applyCurrentView(const RenderStates& states);
 
     ////////////////////////////////////////////////////////////
     /// \brief Apply a new blending mode
@@ -579,7 +579,7 @@ private:
     /// \param transform Transform to apply
     ///
     ////////////////////////////////////////////////////////////
-    void applyTransform(const Transform& transform);
+    void applyTransform(const RenderStates& states);
 
     ////////////////////////////////////////////////////////////
     /// \brief Apply a new texture

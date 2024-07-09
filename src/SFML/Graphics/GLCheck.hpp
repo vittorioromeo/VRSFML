@@ -46,10 +46,19 @@ namespace sf::priv
         ::sf::priv::glCheckError(__FILE__, __LINE__, #expr); \
     } while (false)
 
+#define glCheckExpr(expr)                                    \
+    [&]                                                      \
+    {                                                        \
+        auto result = expr;                                  \
+        ::sf::priv::glCheckError(__FILE__, __LINE__, #expr); \
+        return result;                                       \
+    }()
+
 #else
 
 // Else, we don't add any overhead
-#define glCheck(expr) (expr)
+#define glCheck(expr)     (expr)
+#define glCheckExpr(expr) (expr)
 
 #endif
 

@@ -31,6 +31,8 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Path.hpp>
 
+#include <cassert>
+
 
 namespace sf::priv
 {
@@ -42,6 +44,8 @@ void glCheckError(const char* file, unsigned int line, const char* expression)
         err() << "An internal OpenGL call failed in " << Path{file}.filename() << "(" << line << ")."
               << "\nExpression:\n   " << expression << "\nError description:\n   " << error << "\n   " << description << '\n'
               << errEndl;
+
+        assert(false);
     };
 
     // Get the last error
