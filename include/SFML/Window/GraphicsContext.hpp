@@ -29,12 +29,12 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/Export.hpp>
 
-#include <SFML/Window/Context.hpp>
-
 #include <SFML/System/InPlacePImpl.hpp>
 #include <SFML/System/Optional.hpp>
 #include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
+
+#include <cstdint>
 
 
 namespace sf::priv
@@ -74,17 +74,6 @@ public:
         ////////////////////////////////////////////////////////////
         TransientContext(TransientContext&&)            = delete;
         TransientContext& operator=(TransientContext&&) = delete;
-
-        ////////////////////////////////////////////////////////////
-        /// \brief Get the thread local TransientContext
-        ///
-        /// This per-thread variable tracks if and how a transient
-        /// context is currently being used on the current thread
-        ///
-        /// \return The thread local TransientContext
-        ///
-        ////////////////////////////////////////////////////////////
-        static sf::Optional<TransientContext>& get();
 
         ///////////////////////////////////////////////////////////
         // Member data
@@ -168,8 +157,27 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] priv::UniquePtr<priv::GlContext> createGlContext(const ContextSettings& settings, const Vector2u& size);
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Check whether a given OpenGL extension is available
+    ///
+    /// \param name Name of the extension to check for
+    ///
+    /// \return True if available, false if unavailable
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isExtensionAvailable(const char* name);
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the address of an OpenGL function
+    ///
+    /// On Windows when not using OpenGL ES, a context must be
+    /// active for this function to succeed.
+    ///
+    /// \param name Name of the function to get the address of
+    ///
+    /// \return Address of the OpenGL function, 0 on failure
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] GlFunctionPointer getFunction(const char* name);
 
     ////////////////////////////////////////////////////////////
@@ -182,7 +190,7 @@ public:
     /// \brief Releases a context after short-term use on the current thread
     ///
     ////////////////////////////////////////////////////////////
-    static void releaseTransientContext();
+    void releaseTransientContext();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the currently active context

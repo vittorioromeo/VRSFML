@@ -29,7 +29,6 @@
 #include <SFML/Graphics/GLExtensions.hpp>
 #include <SFML/Graphics/RenderTextureImplFBO.hpp>
 
-#include <SFML/Window/Context.hpp>
 #include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/GlContext.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
@@ -76,15 +75,14 @@ struct RenderTextureImplFBO::Impl
     GraphicsContext*     graphicsContext; //!< TODO
     FrameBufferObjectMap frameBuffers;    //!< OpenGL frame buffer objects per context
     FrameBufferObjectMap multisampleFrameBuffers; //!< Optional per-context OpenGL frame buffer objects with multisample attachments
-    unsigned int       depthStencilBuffer{}; //!< Optional depth/stencil buffer attached to the frame buffer
-    unsigned int       colorBuffer{};        //!< Optional multisample color buffer attached to the frame buffer
-    Vector2u           size;                 //!< Width and height of the attachments
-    UniquePtr<Context> context;              //!< Backup OpenGL context, used when none already exist
-    unsigned int       textureId{};          //!< The ID of the texture to attach to the FBO
-    bool               multisample{};        //!< Whether we have to create a multisample frame buffer as well
-    bool               depth{};              //!< Whether we have depth attachment
-    bool               stencil{};            //!< Whether we have stencil attachment
-    bool               sRgb{};               //!< Whether we need to encode drawn pixels into sRGB color space
+    unsigned int depthStencilBuffer{}; //!< Optional depth/stencil buffer attached to the frame buffer
+    unsigned int colorBuffer{};        //!< Optional multisample color buffer attached to the frame buffer
+    Vector2u     size;                 //!< Width and height of the attachments
+    unsigned int textureId{};          //!< The ID of the texture to attach to the FBO
+    bool         multisample{};        //!< Whether we have to create a multisample frame buffer as well
+    bool         depth{};              //!< Whether we have depth attachment
+    bool         stencil{};            //!< Whether we have stencil attachment
+    bool         sRgb{};               //!< Whether we need to encode drawn pixels into sRGB color space
 };
 
 
@@ -376,7 +374,7 @@ bool RenderTextureImplFBO::create(const Vector2u& size, unsigned int textureId, 
     m_impl->textureId = textureId;
 
     // We can't create an FBO now if there is no active context
-    if (!Context::hasActiveContext())
+    if (!GraphicsContext::hasActiveContext())
         return true;
 
 #ifndef SFML_OPENGL_ES
@@ -466,7 +464,7 @@ bool RenderTextureImplFBO::createFrameBuffer()
     }
 
     // Insert the FBO into our map
-    m_impl->frameBuffers.emplace(Context::getActiveContextId(), frameBuffer);
+    m_impl->frameBuffers.emplace(GraphicsContext::getActiveContextId(), frameBuffer);
 
     // Register the object with the current context so it is automatically destroyed
     std::shared_ptr<void> voidFrameBuffer = SFML_MOVE(frameBuffer);
@@ -527,7 +525,7 @@ bool RenderTextureImplFBO::createFrameBuffer()
         }
 
         // Insert the FBO into our map
-        m_impl->multisampleFrameBuffers.emplace(Context::getActiveContextId(), multisampleFrameBuffer);
+        m_impl->multisampleFrameBuffers.emplace(GraphicsContext::getActiveContextId(), multisampleFrameBuffer);
 
         // Register the object with the current context so it is automatically destroyed
         std::shared_ptr<void> voidMultisampleFrameBuffer = SFML_MOVE(multisampleFrameBuffer);
@@ -550,8 +548,10 @@ bool RenderTextureImplFBO::activate(bool active)
         return true;
     }
 
-    std::uint64_t contextId = Context::getActiveContextId();
+    std::uint64_t contextId = GraphicsContext::getActiveContextId();
 
+    // TODO:
+    /*
     // In the odd case we have to activate and there is no active
     // context yet, we have to create one
     if (!contextId)
@@ -565,7 +565,7 @@ bool RenderTextureImplFBO::activate(bool active)
             return false;
         }
 
-        contextId = Context::getActiveContextId();
+        contextId = GraphicsContext::getActiveContextId();
 
         if (!contextId)
         {
@@ -573,6 +573,7 @@ bool RenderTextureImplFBO::activate(bool active)
             return false;
         }
     }
+*/
 
     // Lookup the FBO corresponding to the currently active context
     // If none is found, there is no FBO corresponding to the
@@ -634,7 +635,7 @@ void RenderTextureImplFBO::updateTexture(unsigned int)
     // are already available within the current context
     if (m_impl->multisample && m_impl->size.x && m_impl->size.y && activate(true))
     {
-        const std::uint64_t contextId = Context::getActiveContextId();
+        const std::uint64_t contextId = GraphicsContext::getActiveContextId();
 
         const auto frameBufferIt = m_impl->frameBuffers.find(contextId);
         const auto multisampleIt = m_impl->multisampleFrameBuffers.find(contextId);

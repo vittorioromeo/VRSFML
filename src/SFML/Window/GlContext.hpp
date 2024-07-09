@@ -35,13 +35,10 @@
 #include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
 
-#include <cstdint>
-
 
 namespace sf
 {
 using GlFunctionPointer = void (*)();
-class Context;
 class GraphicsContext;
 } // namespace sf
 
@@ -86,7 +83,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static bool isExtensionAvailable(GraphicsContext& graphicsContext, const char* name);
-
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -221,7 +217,6 @@ protected:
     ContextSettings m_settings; //!< Creation settings of the context
 
 private:
-    friend Context;
     friend GraphicsContext;
 
     ////////////////////////////////////////////////////////////

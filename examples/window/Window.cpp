@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Context.hpp>
+
 #include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
@@ -50,13 +50,13 @@ int main()
 
     // Load OpenGL or OpenGL ES entry points using glad
 #ifdef SFML_OPENGL_ES
-    gladLoadGLES1(sf::Context::getFunction);
+    gladLoadGLES1([](const char* name) { return gcPtr->getFunction(name); });
 #else
     // TODO: garbage
     static sf::GraphicsContext* gcPtr;
     gcPtr = &graphicsContext;
 
-    gladLoadGL([](const char* name) { return sf::Context::getFunction(*gcPtr, name); });
+    gladLoadGL([](const char* name) { return gcPtr->getFunction(name); });
 #endif
 
     // Set the color and depth clear values

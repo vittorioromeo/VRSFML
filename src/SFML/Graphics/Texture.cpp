@@ -31,7 +31,7 @@
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/TextureSaver.hpp>
 
-#include <SFML/Window/Context.hpp>
+
 #include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/TransientContextLock.hpp>
 #include <SFML/Window/Window.hpp>
@@ -209,7 +209,7 @@ sf::Optional<Texture> Texture::create(GraphicsContext& graphicsContext, const Ve
     const priv::TextureSaver save;
 
     static const bool textureEdgeClamp = GLEXT_texture_edge_clamp || GLEXT_GL_VERSION_1_2 ||
-                                         Context::isExtensionAvailable(graphicsContext, "GL_EXT_texture_edge_clamp");
+                                         graphicsContext.isExtensionAvailable("GL_EXT_texture_edge_clamp");
 
     if (!textureEdgeClamp)
     {

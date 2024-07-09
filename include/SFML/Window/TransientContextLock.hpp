@@ -41,7 +41,7 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 /// \brief RAII helper class to temporarily lock an available context for use
 ///
-////////////////////c////////////////////////////////////////
+////////////////////////////////////////////////////////////
 class [[nodiscard]] SFML_WINDOW_API TransientContextLock
 {
 public:
@@ -68,6 +68,9 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     TransientContextLock& operator=(const TransientContextLock&) = delete;
+
+private:
+    GraphicsContext& m_graphicsContext;
 };
 
 } // namespace sf::priv

@@ -39,11 +39,12 @@
 
 namespace sf
 {
-
+////////////////////////////////////////////////////////////
 inline constexpr struct InPlace
 {
 } inPlace;
 
+////////////////////////////////////////////////////////////
 inline constexpr struct NullOpt
 {
 } nullOpt;
@@ -262,14 +263,14 @@ public:
 
 
     //////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] explicit constexpr operator bool() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr explicit operator bool() const noexcept
     {
         return m_engaged;
     }
 
 
     //////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] T* operator->() & noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T* operator->() & noexcept
     {
         assert(m_engaged);
         return SFML_PRIV_LAUNDER_CAST(T*, m_buffer);
@@ -277,7 +278,7 @@ public:
 
 
     //////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] const T* operator->() const& noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T* operator->() const& noexcept
     {
         assert(m_engaged);
         return SFML_PRIV_LAUNDER_CAST(const T*, m_buffer);
@@ -285,7 +286,7 @@ public:
 
 
     //////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] T& operator*() & noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T& operator*() & noexcept
     {
         assert(m_engaged);
         return *SFML_PRIV_LAUNDER_CAST(T*, m_buffer);
@@ -293,7 +294,7 @@ public:
 
 
     //////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] const T& operator*() const& noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T& operator*() const& noexcept
     {
         assert(m_engaged);
         return *SFML_PRIV_LAUNDER_CAST(const T*, m_buffer);
@@ -301,7 +302,7 @@ public:
 
 
     //////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] T&& operator*() && noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T&& operator*() && noexcept
     {
         assert(m_engaged);
         return SFML_MOVE(*SFML_PRIV_LAUNDER_CAST(T*, m_buffer));
@@ -309,14 +310,14 @@ public:
 
 
     //////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] T* asPtr() noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T* asPtr() noexcept
     {
         return m_engaged ? SFML_PRIV_LAUNDER_CAST(T*, m_buffer) : nullptr;
     }
 
 
     //////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] const T* asPtr() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T* asPtr() const noexcept
     {
         return m_engaged ? SFML_PRIV_LAUNDER_CAST(const T*, m_buffer) : nullptr;
     }

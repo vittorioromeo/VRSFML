@@ -6,8 +6,6 @@ set(SRC
     ${INCROOT}/Clipboard.hpp
     ${SRCROOT}/Clipboard.cpp
     ${SRCROOT}/ClipboardImpl.hpp
-    ${SRCROOT}/Context.cpp
-    ${INCROOT}/Context.hpp
     ${SRCROOT}/Cursor.cpp
     ${INCROOT}/Cursor.hpp
     ${SRCROOT}/CursorImpl.hpp

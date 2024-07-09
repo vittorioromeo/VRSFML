@@ -8,7 +8,6 @@
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/View.hpp>
 
-#include <SFML/Window/Context.hpp>
 #include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
@@ -74,13 +73,13 @@ sf::Optional<sf::RenderWindow> recreateWindow(sf::GraphicsContext&       graphic
 
     // Load OpenGL or OpenGL ES entry points using glad
 #ifdef SFML_OPENGL_ES
-    gladLoadGLES1(sf::Context::getFunction);
+    gladLoadGLES1([](const char* name) { return gcPtr->getFunction(name); });
 #else
     // TODO: garbage
     static sf::GraphicsContext* gcPtr;
     gcPtr = &graphicsContext;
 
-    gladLoadGL([](const char* name) { return sf::Context::getFunction(*gcPtr, name); });
+    gladLoadGL([](const char* name) { return gcPtr->getFunction(name); });
 #endif
 
     // Enable Z-buffer read and write

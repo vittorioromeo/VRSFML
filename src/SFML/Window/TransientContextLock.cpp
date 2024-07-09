@@ -36,16 +36,16 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-TransientContextLock::TransientContextLock(GraphicsContext& graphicsContext)
+TransientContextLock::TransientContextLock(GraphicsContext& graphicsContext) : m_graphicsContext(graphicsContext)
 {
-    graphicsContext.acquireTransientContext();
+    m_graphicsContext.acquireTransientContext();
 }
 
 
 ////////////////////////////////////////////////////////////
 TransientContextLock::~TransientContextLock()
 {
-    GraphicsContext::releaseTransientContext();
+    m_graphicsContext.releaseTransientContext();
 }
 
 } // namespace sf::priv

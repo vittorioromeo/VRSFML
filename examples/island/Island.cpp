@@ -44,16 +44,16 @@
 namespace
 {
 // Width and height of the application window
-const unsigned int windowWidth  = 800;
-const unsigned int windowHeight = 600;
+constexpr unsigned int windowWidth  = 800;
+constexpr unsigned int windowHeight = 600;
 
 // Resolution of the generated terrain
-const unsigned int resolutionX = 800;
-const unsigned int resolutionY = 600;
+constexpr unsigned int resolutionX = 800;
+constexpr unsigned int resolutionY = 600;
 
 // Thread pool parameters
-const unsigned int threadCount = 4;
-const unsigned int blockCount  = 32;
+constexpr unsigned int threadCount = 4;
+constexpr unsigned int blockCount  = 32;
 
 struct WorkItem
 {
@@ -61,12 +61,29 @@ struct WorkItem
     unsigned int index{};
 };
 
-std::deque<WorkItem>     workQueue;
-std::vector<std::thread> threads;
-int                      pendingWorkCount    = 0;
-bool                     workPending         = true;
-bool                     bufferUploadPending = false;
-std::recursive_mutex     workQueueMutex;
+struct ThreadPool
+{
+    std::deque<WorkItem>     workQueue;
+    std::vector<std::thread> threads;
+    int                      pendingWorkCount    = 0;
+    bool                     workPending         = true;
+    bool                     bufferUploadPending = false;
+    std::recursive_mutex     workQueueMutex;
+
+    ~ThreadPool()
+    {
+        {
+            const std::lock_guard lock(workQueueMutex);
+            workPending = false;
+        }
+
+        while (!threads.empty())
+        {
+            threads.back().join();
+            threads.pop_back();
+        }
+    }
+};
 
 struct Setting
 {
@@ -95,8 +112,8 @@ float lightFactor   = 0.7f;
 
 
 // Forward declarations of the functions we define further down
-void threadFunction();
-void generateTerrain(sf::Vertex* vertexBuffer);
+void threadFunction(ThreadPool& threadPool);
+void generateTerrain(ThreadPool& threadPool, sf::Vertex* vertexBuffer);
 
 
 ////////////////////////////////////////////////////////////
@@ -140,6 +157,9 @@ int main()
     // Staging buffer for our terrain data that we will upload to our VertexBuffer
     std::vector<sf::Vertex> terrainStagingBuffer;
 
+    // Create a thread pool
+    ThreadPool threadPool;
+
     // Set up our graphics resources and set the status text accordingly
     if (!sf::VertexBuffer::isAvailable(graphicsContext) || !sf::Shader::isAvailable(graphicsContext))
     {
@@ -156,7 +176,7 @@ int main()
         // Start up our thread pool
         for (unsigned int i = 0; i < threadCount; ++i)
         {
-            threads.emplace_back(threadFunction);
+            threadPool.threads.emplace_back([&threadPool] { threadFunction(threadPool); });
         }
 
         // Create our VertexBuffer with enough space to hold all the terrain geometry
@@ -170,7 +190,7 @@ int main()
         terrainStagingBuffer.resize(resolutionX * resolutionY * 6);
 
         // Generate the initial terrain
-        generateTerrain(terrainStagingBuffer.data());
+        generateTerrain(threadPool, terrainStagingBuffer.data());
 
         statusText.setString("Generating Terrain...");
 
@@ -217,7 +237,7 @@ int main()
                 switch (event->getIf<sf::Event::KeyPressed>()->code)
                 {
                     case sf::Keyboard::Key::Enter:
-                        generateTerrain(terrainStagingBuffer.data());
+                        generateTerrain(threadPool, terrainStagingBuffer.data());
                         break;
                     case sf::Keyboard::Key::Down:
                         currentSetting = (currentSetting + 1) % settings.size();
@@ -245,13 +265,13 @@ int main()
         if (terrainShader.hasValue())
         {
             {
-                const std::lock_guard lock(workQueueMutex);
+                const std::lock_guard lock(threadPool.workQueueMutex);
 
                 // Don't bother updating/drawing the VertexBuffer while terrain is being regenerated
-                if (!pendingWorkCount)
+                if (!threadPool.pendingWorkCount)
                 {
                     // If there is new data pending to be uploaded to the VertexBuffer, do it now
-                    if (bufferUploadPending)
+                    if (threadPool.bufferUploadPending)
                     {
                         if (!terrain.update(terrainStagingBuffer.data()))
                         {
@@ -259,7 +279,7 @@ int main()
                             return EXIT_FAILURE;
                         }
 
-                        bufferUploadPending = false;
+                        threadPool.bufferUploadPending = false;
                     }
 
                     static const sf::Shader::UniformLocation
@@ -287,18 +307,6 @@ int main()
 
         // Display things on screen
         window.display();
-    }
-
-    // Shut down our thread pool
-    {
-        const std::lock_guard lock(workQueueMutex);
-        workPending = false;
-    }
-
-    while (!threads.empty())
-    {
-        threads.back().join();
-        threads.pop_back();
     }
 }
 
@@ -594,7 +602,7 @@ void processWorkItem(std::vector<sf::Vertex>& vertices, const WorkItem& workItem
 /// new threads whenever we need to regenerate the terrain.
 ///
 ////////////////////////////////////////////////////////////
-void threadFunction()
+void threadFunction(ThreadPool& threadPool)
 {
     const unsigned int rowBlockSize = (resolutionY / blockCount) + 1;
 
@@ -609,15 +617,15 @@ void threadFunction()
 
         // Check if there are new work items in the queue
         {
-            const std::lock_guard lock(workQueueMutex);
+            const std::lock_guard lock(threadPool.workQueueMutex);
 
-            if (!workPending)
+            if (!threadPool.workPending)
                 return;
 
-            if (!workQueue.empty())
+            if (!threadPool.workQueue.empty())
             {
-                workItem = workQueue.front();
-                workQueue.pop_front();
+                workItem = threadPool.workQueue.front();
+                threadPool.workQueue.pop_front();
             }
         }
 
@@ -632,9 +640,8 @@ void threadFunction()
         processWorkItem(vertices, workItem);
 
         {
-            const std::lock_guard lock(workQueueMutex);
-
-            --pendingWorkCount;
+            const std::lock_guard lock(threadPool.workQueueMutex);
+            --threadPool.pendingWorkCount;
         }
     }
 }
@@ -646,17 +653,17 @@ void threadFunction()
 /// and process.
 ///
 ////////////////////////////////////////////////////////////
-void generateTerrain(sf::Vertex* buffer)
+void generateTerrain(ThreadPool& threadPool, sf::Vertex* buffer)
 {
-    bufferUploadPending = true;
+    threadPool.bufferUploadPending = true;
 
     // Make sure the work queue is empty before queuing new work
     for (;;)
     {
         {
-            const std::lock_guard lock(workQueueMutex);
+            const std::lock_guard lock(threadPool.workQueueMutex);
 
-            if (workQueue.empty())
+            if (threadPool.workQueue.empty())
                 break;
         }
 
@@ -665,14 +672,14 @@ void generateTerrain(sf::Vertex* buffer)
 
     // Queue all the new work items
     {
-        const std::lock_guard lock(workQueueMutex);
+        const std::lock_guard lock(threadPool.workQueueMutex);
 
         for (unsigned int i = 0; i < blockCount; ++i)
         {
             const WorkItem workItem = {buffer, i};
-            workQueue.push_back(workItem);
+            threadPool.workQueue.push_back(workItem);
         }
 
-        pendingWorkCount = blockCount;
+        threadPool.pendingWorkCount = blockCount;
     }
 }

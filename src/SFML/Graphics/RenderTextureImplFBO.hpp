@@ -35,7 +35,6 @@
 
 namespace sf
 {
-class Context;
 class GraphicsContext;
 struct ContextSettings;
 

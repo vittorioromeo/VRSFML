@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Context.hpp>
+
 #include <SFML/Window/Window.hpp>
 
 #include <SFML/System/Angle.hpp>
@@ -239,9 +239,9 @@ int main()
     }
 
 #ifdef SFML_OPENGL_ES
-    gladLoadGLES1(sf::Context::getFunction);
+    gladLoadGLES1([](const char* name) { return gcPtr->getFunction(name); });
 #else
-    gladLoadGL(sf::Context::getFunction);
+    gladLoadGL([](const char* name) { return gcPtr->getFunction(name); });
 #endif
 
     // Initialize our views

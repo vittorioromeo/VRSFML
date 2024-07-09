@@ -27,7 +27,6 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/Export.hpp>
 
-#include <SFML/Window/Context.hpp>
 #include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/GlContext.hpp>
 #include <SFML/Window/GlContextTypeImpl.hpp>
@@ -144,8 +143,9 @@ struct GraphicsContext::Impl
     {
     }
 
-    std::recursive_mutex mutex;
-    SharedContext        sharedContext;
+    std::recursive_mutex           mutex;
+    SharedContext                  sharedContext;
+    sf::Optional<TransientContext> transientContext;
 };
 
 
@@ -159,7 +159,6 @@ struct GraphicsContext::TransientContext::Impl
     }
 
     GraphicsContext&                       graphicsContext;
-    sf::Optional<sf::Context>              context;
     std::unique_lock<std::recursive_mutex> sharedContextLock;
 };
 
@@ -182,15 +181,6 @@ GraphicsContext::TransientContext::~TransientContext()
 {
     if (!impl->graphicsContext.setActive(false))
         priv::err() << "Error disabling shared context in ~TransientContext()" << priv::errEndl;
-}
-
-
-////////////////////////////////////////////////////////////
-sf::Optional<GraphicsContext::TransientContext>& GraphicsContext::TransientContext::get()
-{
-    // TODO: to member of graphicscontext?
-    thread_local sf::Optional<TransientContext> transientContext;
-    return transientContext;
 }
 
 
@@ -219,13 +209,15 @@ void GraphicsContext::acquireTransientContext()
         return;
     }
 
+    assert(false); // TODO: do we ever get here...?
+
     // If we don't already have a context active on this thread the count should be 0
     assert(transientCount == 0 && "Transient count cannot be non-zero");
 
     // If currentContextId is not set, this must be the first
     // TransientContextLock on this thread, construct the state object
-    assert(!TransientContext::get().hasValue());
-    TransientContext::get().emplace(*this);
+    assert(!m_impl->transientContext.hasValue());
+    m_impl->transientContext.emplace(*this);
 
     // Make sure a context is active at this point
     assert(id != 0 && "Current context ID cannot be zero");
@@ -249,8 +241,8 @@ void GraphicsContext::releaseTransientContext()
 
     // If currentContextId is set and currentContextTransientCount is 0,
     // this is the last TransientContextLock that is released, destroy the state object
-    assert(TransientContext::get().hasValue());
-    TransientContext::get().reset();
+    assert(m_impl->transientContext.hasValue());
+    m_impl->transientContext.reset();
 }
 
 
