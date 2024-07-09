@@ -22,35 +22,37 @@
 //
 ////////////////////////////////////////////////////////////
 
-// Repeating isEventSubtype<T> allows for cleaner compiler errors.
-// It is not strictly necessary but it's useful nonetheless.
-// It works by ensuring that the code within the conditional is
-// only compiled when the condition is met. Otherwise you get
-// a static_assert failure in addition to the compiler failing
-// to compile the code within the compiletime conditional when
-// an incorrect template parameter is provided.
-
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Event.hpp> // NOLINT(misc-header-include-cycle)
+#include <SFML/Window/Win32/Utils.hpp>
+
+#include <SFML/System/String.hpp>
+#include <SFML/System/Win32/WindowsHeader.hpp>
+
+#include <string>
 
 
-namespace sf
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-template <typename Visitor>
-decltype(auto) Event::visit(Visitor&& visitor) const
+std::string getErrorString(DWORD error)
 {
-    return m_data.linear_visit(static_cast<Visitor&&>(visitor));
+    PTCHAR buffer = nullptr;
+    if (FormatMessage(FORMAT_MESSAGE_MAX_WIDTH_MASK | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+                      nullptr,
+                      error,
+                      0,
+                      reinterpret_cast<PTCHAR>(&buffer),
+                      0,
+                      nullptr) == 0)
+    {
+        return "Unknown error.";
+    }
+
+    const sf::String message = buffer;
+    LocalFree(buffer);
+    return message.toAnsiString();
 }
 
-
-////////////////////////////////////////////////////////////
-template <typename... Handlers>
-decltype(auto) Event::match(Handlers&&... handlers) const
-{
-    return m_data.linear_match(static_cast<Handlers&&>(handlers)...);
-}
-
-} // namespace sf
+} // namespace sf::priv

@@ -26,6 +26,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/JoystickImpl.hpp>
+#include <SFML/Window/Win32/Utils.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Clock.hpp>
@@ -114,25 +115,6 @@ ConnectionCache connectionCache[sf::Joystick::Count];
 // If true, will only update when WM_DEVICECHANGE message is received
 bool lazyUpdates = false;
 
-// Get a system error string from an error code
-std::string getErrorString(DWORD error)
-{
-    PTCHAR buffer = nullptr;
-
-    if (FormatMessage(FORMAT_MESSAGE_MAX_WIDTH_MASK | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-                      nullptr,
-                      error,
-                      0,
-                      reinterpret_cast<PTCHAR>(&buffer),
-                      0,
-                      nullptr) == 0)
-        return "Unknown error.";
-
-    const sf::String message = buffer;
-    LocalFree(buffer);
-    return message.toAnsiString();
-}
-
 // Get the joystick's name
 sf::String getDeviceName(unsigned int index, JOYCAPS caps)
 {
@@ -161,7 +143,7 @@ sf::String getDeviceName(unsigned int index, JOYCAPS caps)
         if (result != ERROR_SUCCESS)
         {
             sf::priv::err() << "Unable to open registry for joystick at index " << index << ": "
-                            << getErrorString(static_cast<DWORD>(result)) << sf::priv::errEndl;
+                            << sf::priv::getErrorString(static_cast<DWORD>(result)) << sf::priv::errEndl;
             return joystickDescription;
         }
     }
@@ -182,7 +164,8 @@ sf::String getDeviceName(unsigned int index, JOYCAPS caps)
     if (result != ERROR_SUCCESS)
     {
         sf::priv::err() << "Unable to query registry key for joystick at index " << index << ": "
-                        << getErrorString(static_cast<DWORD>(result)) << sf::priv::errEndl;
+                        << sf::priv::getErrorString(static_cast<DWORD>(result)) << sf::priv::errEndl;
+
         return joystickDescription;
     }
 
@@ -195,7 +178,8 @@ sf::String getDeviceName(unsigned int index, JOYCAPS caps)
     if (result != ERROR_SUCCESS)
     {
         sf::priv::err() << "Unable to open registry key for joystick at index " << index << ": "
-                        << getErrorString(static_cast<DWORD>(result)) << sf::priv::errEndl;
+                        << sf::priv::getErrorString(static_cast<DWORD>(result)) << sf::priv::errEndl;
+
         return joystickDescription;
     }
 
@@ -207,7 +191,8 @@ sf::String getDeviceName(unsigned int index, JOYCAPS caps)
     if (result != ERROR_SUCCESS)
     {
         sf::priv::err() << "Unable to query name for joystick at index " << index << ": "
-                        << getErrorString(static_cast<DWORD>(result)) << sf::priv::errEndl;
+                        << sf::priv::getErrorString(static_cast<DWORD>(result)) << sf::priv::errEndl;
+
         return joystickDescription;
     }
 

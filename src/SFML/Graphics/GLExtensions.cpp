@@ -27,7 +27,6 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/GLExtensions.hpp>
 
-
 #include <SFML/Window/GraphicsContext.hpp>
 
 #include <SFML/System/Err.hpp>

@@ -31,7 +31,6 @@
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/TextureSaver.hpp>
 
-
 #include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/TransientContextLock.hpp>
 #include <SFML/Window/Window.hpp>

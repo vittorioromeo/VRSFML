@@ -29,7 +29,6 @@
 ////////////////////////////////////////////////////////////
 
 #include <SFML/Window/Clipboard.hpp>
-
 #include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/Cursor.hpp>
 #include <SFML/Window/Event.hpp>

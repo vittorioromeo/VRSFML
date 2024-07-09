@@ -40,16 +40,12 @@ Context::Context(GraphicsContext& graphicsContext) :
 m_graphicsContext(&graphicsContext),
 m_context(graphicsContext.createGlContext())
 {
-    if (!setActive(true))
-        priv::err() << "Failed to set context as active during construction" << priv::errEndl;
 }
 
 
 ////////////////////////////////////////////////////////////
 Context::~Context()
 {
-    if (m_context && !setActive(false))
-        priv::err() << "Failed to set context as inactive during destruction" << priv::errEndl;
 }
 
 
@@ -73,7 +69,7 @@ Context& Context::operator=(Context&& rhs) noexcept
 
 
 ////////////////////////////////////////////////////////////
-bool Context::setActive(bool active)
+bool Context::setAct ive(bool active)
 {
     return m_context->setActive(active);
 }

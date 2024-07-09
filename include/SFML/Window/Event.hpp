@@ -313,7 +313,16 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename Visitor>
-    decltype(auto) visit(Visitor&& visitor);
+    decltype(auto) visit(Visitor&& visitor) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    /// \return TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename... Handlers>
+    decltype(auto) match(Handlers&&... handlers) const;
 
 private:
     // clang-format off
