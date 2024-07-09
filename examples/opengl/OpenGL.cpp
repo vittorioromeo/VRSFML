@@ -23,7 +23,6 @@
 #include <array>
 #include <iostream>
 
-#include <cstddef>
 #include <cstdlib>
 
 #define GLAD_GL_IMPLEMENTATION
@@ -60,8 +59,8 @@ sf::Optional<sf::RenderWindow> recreateWindow(sf::GraphicsContext&       graphic
                                           contextSettings);
 
     window->setVerticalSyncEnabled(true);
-    window->setMinimumSize(sf::makeOptional(sf::Vector2u{400, 300}));
-    window->setMaximumSize(sf::makeOptional(sf::Vector2u{1200, 900}));
+    window->setMinimumSize({400u, 300u});
+    window->setMaximumSize({1200u, 900u});
 
     // Make the window the active window for OpenGL calls
     if (!window->setActive(true))

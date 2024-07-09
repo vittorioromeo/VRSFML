@@ -105,7 +105,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
         SECTION("Minimum size")
         {
             sf::WindowBase windowBase(sf::VideoMode({360, 240}), "WindowBase Tests");
-            windowBase.setMinimumSize(sf::makeOptional(sf::Vector2u{128, 256}));
+            windowBase.setMinimumSize({128u, 256u});
             windowBase.setSize({100, 100});
             CHECK(windowBase.getSize() == sf::Vector2u{128, 256});
         }
@@ -113,7 +113,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
         SECTION("Maximum size")
         {
             sf::WindowBase windowBase(sf::VideoMode({360, 240}), "WindowBase Tests");
-            windowBase.setMaximumSize(sf::makeOptional(sf::Vector2u{128, 256}));
+            windowBase.setMaximumSize({128u, 256u});
             windowBase.setSize({400, 400});
             CHECK(windowBase.getSize() == sf::Vector2u{128, 256});
         }
@@ -122,16 +122,33 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
     SECTION("setMinimumSize()")
     {
         sf::WindowBase windowBase(sf::VideoMode({100, 100}), "WindowBase Tests", sf::Style::Default ^ sf::Style::Resize);
-        windowBase.setMinimumSize(sf::makeOptional(sf::Vector2u{200, 300}));
+        windowBase.setMinimumSize({200u, 300u});
         CHECK(windowBase.getSize() == sf::Vector2u{200, 300});
-        windowBase.setMaximumSize(sf::makeOptional(sf::Vector2u{200, 300}));
+        windowBase.setMaximumSize({200u, 300u});
     }
 
     SECTION("setMinimumSize()")
     {
         sf::WindowBase windowBase(sf::VideoMode({400, 400}), "WindowBase Tests", sf::Style::Default ^ sf::Style::Resize);
-        windowBase.setMaximumSize(sf::makeOptional(sf::Vector2u{200, 300}));
+        windowBase.setMaximumSize({200u, 300u});
         CHECK(windowBase.getSize() == sf::Vector2u{200, 300});
-        windowBase.setMinimumSize(sf::makeOptional(sf::Vector2u{200, 300}));
+        windowBase.setMinimumSize({200u, 300u});
+    }
+
+    SECTION("pollAndHandleEvents()")
+    {
+        sf::WindowBase windowBase(sf::VideoMode({360, 240}), "WindowBase Tests");
+
+        // Should compile if user provides nothing
+        windowBase.pollAndHandleEvents();
+
+        // Should compile if user provides only a specific handler
+        windowBase.pollAndHandleEvents([](const sf::Event::Closed&) {});
+
+        // Should compile if user provides only a catch-all
+        windowBase.pollAndHandleEvents([](const auto&) {});
+
+        // Should compile if user provides both a specific handler and a catch-all
+        windowBase.pollAndHandleEvents([](const sf::Event::Closed&) {}, [](const auto&) {});
     }
 }

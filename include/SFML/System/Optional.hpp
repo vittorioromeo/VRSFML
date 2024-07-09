@@ -86,7 +86,7 @@ public:
 
     //////////////////////////////////////////
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
-    [[nodiscard, gnu::always_inline]] constexpr Optional(const Optional& rhs) : m_engaged{rhs.m_engaged}
+    [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional(const Optional& rhs) : m_engaged{rhs.m_engaged}
     {
         if (m_engaged)
             SFML_PRIV_PLACEMENT_NEW(m_buffer) T(*SFML_PRIV_LAUNDER_CAST(const T*, rhs.m_buffer));
@@ -95,7 +95,8 @@ public:
 
     //////////////////////////////////////////
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
-    [[nodiscard, gnu::always_inline]] constexpr Optional(Optional&& rhs) noexcept : m_engaged{rhs.m_engaged}
+    [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional(Optional&& rhs) noexcept :
+    m_engaged{rhs.m_engaged}
     {
         if (m_engaged)
             SFML_PRIV_PLACEMENT_NEW(m_buffer) T(SFML_MOVE(*SFML_PRIV_LAUNDER_CAST(T*, rhs.m_buffer)));

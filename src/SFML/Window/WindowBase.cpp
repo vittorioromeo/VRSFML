@@ -173,19 +173,50 @@ void WindowBase::setSize(const Vector2u& size)
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::setMinimumSize(const sf::Optional<Vector2u>& minimumSize)
+void WindowBase::setMinimumSize(const Vector2u& minimumSize)
 {
     [[maybe_unused]] const auto validateMinimumSize = [&]
     {
-        if (!minimumSize.hasValue() || !m_impl->getMaximumSize().hasValue())
+        if (!m_impl->getMaximumSize().hasValue())
             return true;
 
-        return minimumSize->x <= m_impl->getMaximumSize()->x && minimumSize->y <= m_impl->getMaximumSize()->y;
+        return minimumSize.x <= m_impl->getMaximumSize()->x && minimumSize.y <= m_impl->getMaximumSize()->y;
     };
 
     assert(validateMinimumSize() && "Minimum size cannot be bigger than the maximum size along either axis");
 
-    m_impl->setMinimumSize(minimumSize);
+    m_impl->setMinimumSize(sf::makeOptional(minimumSize));
+    setSize(getSize());
+}
+
+
+////////////////////////////////////////////////////////////
+void WindowBase::setMinimumSize(const sf::Optional<Vector2u>& minimumSize)
+{
+    if (minimumSize.hasValue())
+        setMinimumSize(*minimumSize);
+    else
+    {
+        m_impl->setMinimumSize(sf::nullOpt);
+        setSize(getSize());
+    }
+}
+
+
+////////////////////////////////////////////////////////////
+void WindowBase::setMaximumSize(const Vector2u& maximumSize)
+{
+    [[maybe_unused]] const auto validateMaxiumSize = [&]
+    {
+        if (!!m_impl->getMinimumSize().hasValue())
+            return true;
+
+        return maximumSize.x >= m_impl->getMinimumSize()->x && maximumSize.y >= m_impl->getMinimumSize()->y;
+    };
+
+    assert(validateMaxiumSize() && "Maximum size cannot be smaller than the minimum size along either axis");
+
+    m_impl->setMaximumSize(sf::makeOptional(maximumSize));
     setSize(getSize());
 }
 
@@ -193,17 +224,13 @@ void WindowBase::setMinimumSize(const sf::Optional<Vector2u>& minimumSize)
 ////////////////////////////////////////////////////////////
 void WindowBase::setMaximumSize(const sf::Optional<Vector2u>& maximumSize)
 {
-    [[maybe_unused]] const auto validateMaxiumSize = [&]
+    if (maximumSize.hasValue())
+        setMinimumSize(*maximumSize);
+    else
     {
-        if (!maximumSize.hasValue() || !m_impl->getMinimumSize().hasValue())
-            return true;
-        return maximumSize->x >= m_impl->getMinimumSize()->x && maximumSize->y >= m_impl->getMinimumSize()->y;
-    };
-
-    assert(validateMaxiumSize() && "Maximum size cannot be smaller than the minimum size along either axis");
-
-    m_impl->setMaximumSize(maximumSize);
-    setSize(getSize());
+        m_impl->setMaximumSize(sf::nullOpt);
+        setSize(getSize());
+    }
 }
 
 

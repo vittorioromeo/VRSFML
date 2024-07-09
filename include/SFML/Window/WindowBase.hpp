@@ -323,6 +323,7 @@ public:
     /// \param minimumSize New minimum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
+    void setMinimumSize(const Vector2u& minimumSize);
     void setMinimumSize(const sf::Optional<Vector2u>& minimumSize);
 
     ////////////////////////////////////////////////////////////
@@ -333,6 +334,7 @@ public:
     /// \param maximumSize New maximum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
+    void setMaximumSize(const Vector2u& maximumSize);
     void setMaximumSize(const sf::Optional<Vector2u>& maximumSize);
 
     ////////////////////////////////////////////////////////////
