@@ -99,7 +99,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
     /// \param theShader Shader to use
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit RenderStates(const Shader* theShader);
+    [[nodiscard]] explicit RenderStates(Shader* theShader);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a set of render states with all its attributes
@@ -118,7 +118,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
         const Transform&   theTransform,
         CoordinateType     theCoordinateType,
         const Texture*     theTexture,
-        const Shader*      theShader);
+        Shader*            theShader);
 
     ////////////////////////////////////////////////////////////
     // Static member data
@@ -134,7 +134,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
     Transform      transform;                              //!< Transform
     CoordinateType coordinateType{CoordinateType::Pixels}; //!< Texture coordinate type
     const Texture* texture{};                              //!< Texture
-    const Shader*  shader{};                               //!< Shader
+    Shader*        shader{};                               //!< Shader
 };
 
 } // namespace sf

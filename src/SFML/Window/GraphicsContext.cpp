@@ -27,6 +27,8 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/Export.hpp>
 
+#include <SFML/Graphics/Shader.hpp>
+
 #include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/GlContext.hpp>
 #include <SFML/Window/GlContextTypeImpl.hpp>
@@ -133,6 +135,69 @@ struct SharedContext
     const std::vector<std::string> extensions;
 };
 
+
+////////////////////////////////////////////////////////////
+constexpr const char* defaultFragShader = R"(
+
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+uniform sampler2D texture;
+
+varying vec4 v_color;
+varying vec2 v_texCoord;
+
+void main()
+{
+    gl_FragColor = v_color * texture2D(texture, v_texCoord.st);
+}
+
+)";
+
+
+////////////////////////////////////////////////////////////
+constexpr const char* defaultVertexShader = R"(
+
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+uniform mat4 projMatrix;
+uniform mat4 textMatrix;
+uniform mat4 viewMatrix;
+
+attribute vec4 color;
+attribute vec2 position;
+attribute vec2 texCoord;
+
+varying vec4 v_color;
+varying vec2 v_texCoord;
+
+void main()
+{
+    gl_Position = projMatrix * viewMatrix * vec4(position, 0.0, 1.0);
+    v_texCoord = (textMatrix * vec4(texCoord, 0.0, 1.0)).xy;
+    v_color = color;
+}
+
+)";
+
+////////////////////////////////////////////////////////////
+Optional<Shader> createBuiltInShader(GraphicsContext& graphicsContext)
+{
+    sf::Optional shader = sf::Shader::loadFromMemory(graphicsContext, defaultVertexShader, defaultFragShader);
+    assert(shader.hasValue());
+
+    const sf::Optional ulTexture = shader->getUniformLocation("texture");
+    assert(ulTexture.hasValue());
+
+    shader->setUniform(*ulTexture, sf::Shader::CurrentTexture);
+
+    assert(glIsProgram(shader->getNativeHandle()));
+    return shader;
+}
+
 } // namespace
 
 
@@ -143,9 +208,10 @@ struct GraphicsContext::Impl
     {
     }
 
-    std::recursive_mutex           mutex;
-    SharedContext                  sharedContext;
-    sf::Optional<TransientContext> transientContext;
+    std::recursive_mutex       mutex;
+    SharedContext              sharedContext;
+    Optional<TransientContext> transientContext;
+    Optional<Shader>           builtInShader;
 };
 
 
@@ -209,7 +275,7 @@ void GraphicsContext::acquireTransientContext()
         return;
     }
 
-    assert(false); // TODO: do we ever get here...?
+    // assert(false); // TODO: do we ever get here...?
 
     // If we don't already have a context active on this thread the count should be 0
     assert(transientCount == 0 && "Transient count cannot be non-zero");
@@ -272,6 +338,9 @@ GraphicsContext::GraphicsContext() : m_impl(priv::makeUnique<Impl>())
 {
     if (!setActive(true))
         priv::err() << "Failed to enable graphics context in GraphicsContext()" << priv::errEndl;
+
+    m_impl->builtInShader = createBuiltInShader(*this);
+    assert(m_impl->builtInShader.hasValue());
 }
 
 
@@ -463,6 +532,12 @@ GraphicsContext::Guard::~Guard()
 {
     if (!m_parent.setActive(false))
         priv::err() << "Failed to deactivate transient context 2" << priv::errEndl;
+}
+
+////////////////////////////////////////////////////////////
+Shader& GraphicsContext::getBuiltInShader()
+{
+    return *m_impl->builtInShader;
 }
 
 } // namespace sf

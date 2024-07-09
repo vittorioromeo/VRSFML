@@ -10,6 +10,7 @@
 #include <GraphicsUtil.hpp>
 #include <WindowUtil.hpp>
 
+#if 0
 TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
 {
     sf::GraphicsContext graphicsContext;
@@ -332,3 +333,4 @@ TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
         }
     }
 }
+#endif

@@ -76,7 +76,7 @@ public:
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
-        states.shader = &m_shader;
+        states.shader = const_cast<sf::Shader*>(&m_shader);
         target.draw(sf::Sprite{m_texture.getRect()}, m_texture, states);
     }
 
@@ -103,7 +103,7 @@ public:
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
-        states.shader = &m_shader;
+        states.shader = const_cast<sf::Shader*>(&m_shader);
         target.draw(m_text, states);
     }
 
@@ -163,7 +163,7 @@ public:
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
-        states.shader = &m_shader;
+        states.shader = const_cast<sf::Shader*>(&m_shader);
         target.draw(m_points, sf::PrimitiveType::Points, states);
     }
 
@@ -240,7 +240,7 @@ public:
     {
         const sf::Texture& texture = m_surface.getTexture();
 
-        states.shader = &m_shader;
+        states.shader = const_cast<sf::Shader*>(&m_shader);
         target.draw(sf::Sprite{texture.getRect()}, texture, states);
     }
 
@@ -289,7 +289,7 @@ public:
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
         // Prepare the render state
-        states.shader    = &m_shader;
+        states.shader    = const_cast<sf::Shader*>(&m_shader);
         states.texture   = &m_logoTexture;
         states.transform = m_transform;
 
@@ -330,7 +330,7 @@ sf::Optional<Pixelate> tryLoadPixelate(sf::GraphicsContext& graphicsContext)
     if (!texture.hasValue())
         return sf::nullOpt;
 
-    auto shader = sf::Shader::loadFromFile(graphicsContext, "resources/pixelate.frag", sf::Shader::Type::Fragment);
+    auto shader = sf::Shader::loadFromFile(graphicsContext, "resources/billboard.vert", "resources/pixelate.frag");
     if (!shader.hasValue())
         return sf::nullOpt;
 
@@ -379,7 +379,7 @@ sf::Optional<Edge> tryLoadEdge(sf::GraphicsContext& graphicsContext)
     entityTexture->setSmooth(true);
 
     // Load the shader
-    auto shader = sf::Shader::loadFromFile(graphicsContext, "resources/edge.frag", sf::Shader::Type::Fragment);
+    auto shader = sf::Shader::loadFromFile(graphicsContext, "resources/billboard.vert", "resources/edge.frag");
     if (!shader.hasValue())
         return sf::nullOpt;
 
