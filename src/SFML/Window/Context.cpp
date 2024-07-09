@@ -25,23 +25,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Context.hpp>
+
 #include <SFML/Window/GlContext.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
 
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Macros.hpp>
 
-
-namespace
-{
-// A nested named namespace is used here to allow unity builds of SFML.
-namespace ContextImpl
-{
-// This per-thread variable holds the current context for each thread
-thread_local sf::Context* currentContext(nullptr);
-} // namespace ContextImpl
-} // namespace
 
 namespace sf
 {
@@ -66,8 +56,6 @@ Context::~Context()
 ////////////////////////////////////////////////////////////
 Context::Context(Context&& rhs) noexcept : m_graphicsContext(rhs.m_graphicsContext), m_context(SFML_MOVE(rhs.m_context))
 {
-    if (&rhs == ContextImpl::currentContext)
-        ContextImpl::currentContext = this;
 }
 
 
@@ -80,9 +68,6 @@ Context& Context::operator=(Context&& rhs) noexcept
     m_graphicsContext = rhs.m_graphicsContext;
     m_context         = SFML_MOVE(rhs.m_context);
 
-    if (&rhs == ContextImpl::currentContext)
-        ContextImpl::currentContext = this;
-
     return *this;
 }
 
@@ -90,15 +75,7 @@ Context& Context::operator=(Context&& rhs) noexcept
 ////////////////////////////////////////////////////////////
 bool Context::setActive(bool active)
 {
-    if (!m_context->setActive(active))
-        return false;
-
-    if (active)
-        ContextImpl::currentContext = this;
-    else if (this == ContextImpl::currentContext)
-        ContextImpl::currentContext = nullptr;
-
-    return true;
+    return m_context->setActive(active);
 }
 
 
@@ -106,47 +83,6 @@ bool Context::setActive(bool active)
 const ContextSettings& Context::getSettings() const
 {
     return m_context->getSettings();
-}
-
-
-////////////////////////////////////////////////////////////
-const Context* Context::getActiveContext()
-{
-    using ContextImpl::currentContext;
-
-    // We have to check that the last activated sf::Context is still active (a RenderTarget activation may have deactivated it)
-    if (currentContext != nullptr && currentContext->m_context.get() == GraphicsContext::getActiveContext())
-        return currentContext;
-
-    return nullptr;
-}
-
-
-////////////////////////////////////////////////////////////
-std::uint64_t Context::getActiveContextId()
-{
-    return GraphicsContext::getActiveContextId();
-}
-
-
-////////////////////////////////////////////////////////////
-bool Context::hasActiveContext()
-{
-    return GraphicsContext::hasActiveContext();
-}
-
-
-////////////////////////////////////////////////////////////
-bool Context::isExtensionAvailable(GraphicsContext& graphicsContext, const char* name)
-{
-    return priv::GlContext::isExtensionAvailable(graphicsContext, name);
-}
-
-
-////////////////////////////////////////////////////////////
-GlFunctionPointer Context::getFunction(GraphicsContext& graphicsContext, const char* name)
-{
-    return graphicsContext.getFunction(name);
 }
 
 

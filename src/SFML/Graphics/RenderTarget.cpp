@@ -39,7 +39,7 @@
 #include <SFML/Graphics/VertexBuffer.hpp>
 #include <SFML/Graphics/View.hpp>
 
-#include <SFML/Window/Context.hpp>
+
 #include <SFML/Window/GraphicsContext.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
@@ -88,7 +88,7 @@ ContextRenderTargetMap& getContextRenderTargetMap()
 // Check if a RenderTarget with the given ID is active in the current context
 bool isActive(std::uint64_t id)
 {
-    const auto it = getContextRenderTargetMap().find(sf::Context::getActiveContextId());
+    const auto it = getContextRenderTargetMap().find(sf::GraphicsContext::getActiveContextId());
     return (it != getContextRenderTargetMap().end()) && (it->second == id);
 }
 
@@ -561,7 +561,7 @@ bool RenderTarget::setActive(bool active)
     // Mark this RenderTarget as active or no longer active in the tracking map
     const std::lock_guard lock(RenderTargetImpl::getMutex());
 
-    const std::uint64_t contextId = Context::getActiveContextId();
+    const std::uint64_t contextId = GraphicsContext::getActiveContextId();
 
     using RenderTargetImpl::getContextRenderTargetMap;
     auto&      contextRenderTargetMap = getContextRenderTargetMap();

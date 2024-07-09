@@ -30,8 +30,9 @@
 #include <SFML/Graphics/RenderTextureImplDefault.hpp>
 #include <SFML/Graphics/TextureSaver.hpp>
 
-#include <SFML/Window/Context.hpp>
 #include <SFML/Window/ContextSettings.hpp>
+#include <SFML/Window/GlContext.hpp>
+#include <SFML/Window/GraphicsContext.hpp>
 
 #include <SFML/System/UniquePtr.hpp>
 
@@ -66,7 +67,7 @@ bool RenderTextureImplDefault::create(const Vector2u& size, unsigned int, const 
     m_size = size;
 
     // Create the in-memory OpenGL context
-    m_context = priv::makeUnique<Context>(*m_graphicsContext, settings, size);
+    m_context = m_graphicsContext->createGlContext(settings, size);
 
     return true;
 }

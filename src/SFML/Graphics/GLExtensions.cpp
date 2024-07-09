@@ -27,7 +27,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/GLExtensions.hpp>
 
-#include <SFML/Window/Context.hpp>
+
 #include <SFML/Window/GraphicsContext.hpp>
 
 #include <SFML/System/Err.hpp>
@@ -95,9 +95,9 @@ void ensureExtensionsInit(GraphicsContext& graphicsContext)
         gcPtr = &graphicsContext;
 
 #ifdef SFML_OPENGL_ES
-        gladLoadGLES1(Context::getFunction);
+        gladLoadGLES1([](const char* name) { return gcPtr->getFunction(name); });
 #else
-        gladLoadGL([](const char* name) { return Context::getFunction(*gcPtr, name); });
+        gladLoadGL([](const char* name) { return gcPtr->getFunction(name); });
 #endif
         // Some GL implementations don't fully follow extension specifications
         // and advertise support for extensions although not providing the

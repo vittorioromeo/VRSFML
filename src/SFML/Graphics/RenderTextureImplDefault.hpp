@@ -35,12 +35,13 @@
 
 namespace sf
 {
-class Context;
 class GraphicsContext;
 struct ContextSettings;
 
 namespace priv
 {
+class GlContext;
+
 ////////////////////////////////////////////////////////////
 /// \brief Default specialization of RenderTextureImpl,
 ///        using an in-memory context
@@ -114,9 +115,9 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    GraphicsContext*         m_graphicsContext; //!< TODO
-    priv::UniquePtr<Context> m_context;         //!< P-Buffer based context
-    Vector2u                 m_size;            //!< Width and height of the P-Buffer
+    GraphicsContext*                 m_graphicsContext; //!< TODO
+    priv::UniquePtr<priv::GlContext> m_context;         //!< P-Buffer based context
+    Vector2u                         m_size;            //!< Width and height of the P-Buffer
 };
 
 } // namespace priv
