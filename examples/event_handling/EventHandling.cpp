@@ -173,27 +173,24 @@ public:
     {
         // Overloaded visitation
         // A callable taking a concrete event type is provided per event type you want to handle
-        while (const sf::Optional event = m_window.pollEvent())
-        {
-            event->match([&](const sf::Event::Closed&) { m_mustClose = true; },
-                         [&](const sf::Event::KeyPressed& keyPress)
-                         {
-                             m_log.emplace_back("Key Pressed: " + sf::Keyboard::getDescription(keyPress.scancode));
+        m_window.pollAndHandleEvents([&](const sf::Event::Closed&) { m_mustClose = true; },
+                                     [&](const sf::Event::KeyPressed& keyPress)
+                                     {
+                                         m_log.emplace_back(
+                                             "Key Pressed: " + sf::Keyboard::getDescription(keyPress.scancode));
 
-                             // When the enter key is pressed, switch to the next handler type
-                             if (keyPress.code == sf::Keyboard::Key::Enter)
-                             {
-                                 m_handlerType = HandlerType::Generic;
-                                 m_handlerText.setString("Current Handler: Generic");
-                             }
-                         },
-                         [&](const sf::Event::MouseMoved& mouseMoved)
-                         { m_log.emplace_back("Mouse Moved: " + vec2ToString(mouseMoved.position)); },
-                         [&](const sf::Event::MouseButtonPressed&) { m_log.emplace_back("Mouse Pressed"); },
-                         [&](const sf::Event::TouchBegan& touchBegan)
-                         { m_log.emplace_back("Touch Began: " + vec2ToString(touchBegan.position)); },
-                         [&](const auto&) { /* ignore */ });
-        }
+                                         // When the enter key is pressed, switch to the next handler type
+                                         if (keyPress.code == sf::Keyboard::Key::Enter)
+                                         {
+                                             m_handlerType = HandlerType::Generic;
+                                             m_handlerText.setString("Current Handler: Generic");
+                                         }
+                                     },
+                                     [&](const sf::Event::MouseMoved& mouseMoved)
+                                     { m_log.emplace_back("Mouse Moved: " + vec2ToString(mouseMoved.position)); },
+                                     [&](const sf::Event::MouseButtonPressed&) { m_log.emplace_back("Mouse Pressed"); },
+                                     [&](const sf::Event::TouchBegan& touchBegan)
+                                     { m_log.emplace_back("Touch Began: " + vec2ToString(touchBegan.position)); });
 
         // To handle unhandled events, just add the following lambda to the set of handlers
         // [&](const auto&) { m_log.emplace_back("Other Event"); }
@@ -204,48 +201,45 @@ public:
     {
         // Generic visitation
         // A generic callable is provided that can differentiate by deduced event type
-        while (const sf::Optional event = m_window.pollEvent())
-        {
-            event->match(
-                [&](auto&& event)
+        m_window.pollAndHandleEvents(
+            [&](auto&& event)
+            {
+                // Remove reference and cv-qualifiers
+                using T = std::decay_t<decltype(event)>;
+
+                if constexpr (std::is_same_v<T, sf::Event::Closed>)
                 {
-                    // Remove reference and cv-qualifiers
-                    using T = std::decay_t<decltype(event)>;
+                    m_mustClose = true;
+                }
+                else if constexpr (std::is_same_v<T, sf::Event::KeyPressed>)
+                {
+                    m_log.emplace_back("Key Pressed: " + sf::Keyboard::getDescription(event.scancode));
 
-                    if constexpr (std::is_same_v<T, sf::Event::Closed>)
+                    // When the enter key is pressed, switch to the next handler type
+                    if (event.code == sf::Keyboard::Key::Enter)
                     {
-                        m_mustClose = true;
+                        m_handlerType = HandlerType::Forward;
+                        m_handlerText.setString("Current Handler: Forward");
                     }
-                    else if constexpr (std::is_same_v<T, sf::Event::KeyPressed>)
-                    {
-                        m_log.emplace_back("Key Pressed: " + sf::Keyboard::getDescription(event.scancode));
-
-                        // When the enter key is pressed, switch to the next handler type
-                        if (event.code == sf::Keyboard::Key::Enter)
-                        {
-                            m_handlerType = HandlerType::Forward;
-                            m_handlerText.setString("Current Handler: Forward");
-                        }
-                    }
-                    else if constexpr (std::is_same_v<T, sf::Event::MouseMoved>)
-                    {
-                        m_log.emplace_back("Mouse Moved: " + vec2ToString(event.position));
-                    }
-                    else if constexpr (std::is_same_v<T, sf::Event::MouseButtonPressed>)
-                    {
-                        m_log.emplace_back("Mouse Pressed");
-                    }
-                    else if constexpr (std::is_same_v<T, sf::Event::TouchBegan>)
-                    {
-                        m_log.emplace_back("Touch Began: " + vec2ToString(event.position));
-                    }
-                    else
-                    {
-                        // All unhandled events will end up here
-                        // m_log.emplace_back("Other Event");
-                    }
-                });
-        }
+                }
+                else if constexpr (std::is_same_v<T, sf::Event::MouseMoved>)
+                {
+                    m_log.emplace_back("Mouse Moved: " + vec2ToString(event.position));
+                }
+                else if constexpr (std::is_same_v<T, sf::Event::MouseButtonPressed>)
+                {
+                    m_log.emplace_back("Mouse Pressed");
+                }
+                else if constexpr (std::is_same_v<T, sf::Event::TouchBegan>)
+                {
+                    m_log.emplace_back("Touch Began: " + vec2ToString(event.position));
+                }
+                else
+                {
+                    // All unhandled events will end up here
+                    // m_log.emplace_back("Other Event");
+                }
+            });
     }
 
     ////////////////////////////////////////////////////////////
@@ -259,10 +253,7 @@ public:
         // If you don't want to provide an empty "catch-all" handler
         // you will have to make sure (e.g. via if constexpr) that this
         // lambda doesn't attempt to call a member function that doesn't exist
-        while (const sf::Optional event = m_window.pollEvent())
-        {
-            event->match([this](const auto& event) { handle(event); });
-        }
+        m_window.pollAndHandleEvents([this](const auto& event) { handle(event); });
     }
 
     ////////////////////////////////////////////////////////////

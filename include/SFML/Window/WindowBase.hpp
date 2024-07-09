@@ -159,7 +159,7 @@ public:
     ///
     /// \return The event, otherwise `sf::nullOpt` if no events are pending
     ///
-    /// \see waitEvent
+    /// \see waitEvent, pollAndHandleEvents
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::Optional<Event> pollEvent();
@@ -185,10 +185,88 @@ public:
     ///
     /// \return The event, otherwise `sf::nullOpt` on timeout or if window was closed
     ///
-    /// \see pollEvent
+    /// \see pollEvent, pollAndHandleEvents
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::Optional<Event> waitEvent(Time timeout = Time::Zero);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Handle all pending events
+    ///
+    /// This function is not blocking: if there's no pending event then
+    /// it will return without calling any of the handlers.
+    ///
+    /// This function can take a variadic list of event handlers that
+    /// each take a concrete event type as a single parameter. The event
+    /// handlers can be any kind of callable object that has an
+    /// operator() defined for a specific event type. Additionally a
+    /// generic callable can also be provided that will be invoked for
+    /// every event type. If both types of callables are provided, the
+    /// callables taking concrete event types will be prefered over the
+    /// generic callable by overload resolution. Generic callables can
+    /// be used to customize handler dispatching based on the deduced
+    /// type of the event and other information available at compile
+    /// time.
+    ///
+    /// Examples of callables:
+    /// - Lambda expressions: `[&](const sf::Event::KeyPressed) { ... }`
+    /// - Free functions: `void handler(const sf::Event::KeyPressed&) { ... }`
+    ///
+    /// \code
+    /// // Only provide handlers for concrete event types
+    /// window.pollAndHandleEvents(
+    ///     [&](const sf::Event::Closed&) { /* handle event */ },
+    ///     [&](const sf::Event::KeyPressed& keyPress) { /* handle event */ }
+    /// );
+    /// \endcode
+    /// \code
+    /// // Provide a generic event handler
+    /// window.pollAndHandleEvents(
+    ///     [&](const auto& event)
+    ///     {
+    ///         if constexpr (std::is_same_v<std::decay_t<decltype(event)>, sf::Event::Closed>)
+    ///         {
+    ///             // Handle Closed
+    ///             handleClosed();
+    ///         }
+    ///         else if constexpr (std::is_same_v<std::decay_t<decltype(event)>, sf::Event::KeyPressed>)
+    ///         {
+    ///             // Handle KeyPressed
+    ///             handleKeyPressed(event);
+    ///         }
+    ///         else
+    ///         {
+    ///             // Handle non-KeyPressed
+    ///             handleOtherEvents(event);
+    ///         }
+    ///     }
+    /// );
+    /// \endcode
+    /// \code
+    /// // Provide handlers for concrete types and fall back to generic handler
+    /// window.pollAndHandleEvents(
+    ///     [&](const sf::Event::Closed&) { /* handle event */ },
+    ///     [&](const sf::Event::KeyPressed& keyPress) { /* handle event */ },
+    ///     [&](const auto& event) { /* handle all other events */ }
+    /// );
+    /// \endcode
+    ///
+    /// Calling member functions is supported through lambda
+    /// expressions.
+    /// \code
+    /// // Provide a generic event handler
+    /// window.pollAndHandleEvents(
+    ///     [this](const auto& event) { handle(event); }
+    /// );
+    /// \endcode
+    ///
+    /// \param handlers A variadic list of callables that take a specific event as their only parameter
+    ///
+    /// \see waitEvent, pollEvent
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename... Handlers>
+    void pollAndHandleEvents(Handlers&&... handlers);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the position of the window
@@ -451,6 +529,8 @@ private:
 };
 
 } // namespace sf
+
+#include <SFML/Window/WindowBase.inl>
 
 ////////////////////////////////////////////////////////////
 /// \class sf::WindowBase
