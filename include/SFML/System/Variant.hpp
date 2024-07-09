@@ -245,6 +245,13 @@ static constexpr bool is_reference<T&> = true;
 template <typename T>
 static constexpr bool is_reference<T&&> = true;
 
+
+template <typename T>
+static constexpr bool is_void = false;
+
+template <>
+static constexpr bool is_void<void> = true;
+
 struct void_type
 {
 };
@@ -649,6 +656,10 @@ public:
             TINYVARIANT_DO_WITH_CURRENT_INDEX(I, ret = &(visitor(get_by_index<I>())));
             return static_cast<R>(*ret);
         }
+        else if constexpr (impl::is_void<R>)
+        {
+            TINYVARIANT_DO_WITH_CURRENT_INDEX(I, (visitor(get_by_index<I>())));
+        }
         else
         {
 #pragma GCC diagnostic push
@@ -671,6 +682,10 @@ public:
             impl::uncvref_t<R>* ret;
             TINYVARIANT_DO_WITH_CURRENT_INDEX(I, ret = &(visitor(get_by_index<I>())));
             return static_cast<R>(*ret);
+        }
+        else if constexpr (impl::is_void<R>)
+        {
+            TINYVARIANT_DO_WITH_CURRENT_INDEX(I, (visitor(get_by_index<I>())));
         }
         else
         {

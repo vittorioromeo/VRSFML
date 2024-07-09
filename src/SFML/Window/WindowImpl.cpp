@@ -425,5 +425,4 @@ bool WindowImpl::createVulkanSurface([[maybe_unused]] const Vulkan::VulkanSurfac
 #endif
 }
 
-
 } // namespace sf::priv

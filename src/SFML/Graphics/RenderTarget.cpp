@@ -39,7 +39,6 @@
 #include <SFML/Graphics/VertexBuffer.hpp>
 #include <SFML/Graphics/View.hpp>
 
-
 #include <SFML/Window/GraphicsContext.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
