@@ -37,19 +37,24 @@
 #include <cstdint>
 
 
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
 namespace sf::priv
 {
 class GlContext;
 class WindowImpl;
 } // namespace sf::priv
 
-
 namespace sf
 {
 using GlFunctionPointer = void (*)();
-
 struct ContextSettings;
+} // namespace sf
 
+
+namespace sf
+{
 ////////////////////////////////////////////////////////////
 class [[nodiscard]] GraphicsContext
 {
