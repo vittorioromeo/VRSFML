@@ -26,8 +26,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Angle.hpp> // NOLINT(misc-header-include-cycle)
-
-#include <cassert>
+#include <SFML/System/Assert.hpp>
 
 
 namespace sf::priv
@@ -40,7 +39,7 @@ inline constexpr float tau = pi * 2.f;
 ////////////////////////////////////////////////////////////
 [[nodiscard]] constexpr float positiveRemainder(float a, float b)
 {
-    assert(b > 0.f && "Cannot calculate remainder with non-positive divisor");
+    SFML_ASSERT(b > 0.f && "Cannot calculate remainder with non-positive divisor");
 
     const float val = a - static_cast<float>(static_cast<int>(a / b)) * b;
     return val >= 0.f ? val : val + b;
@@ -203,7 +202,7 @@ constexpr Angle& operator*=(Angle& left, float right)
 ////////////////////////////////////////////////////////////
 constexpr Angle operator/(Angle left, float right)
 {
-    assert(right != 0.f && "Angle::operator/ cannot divide by 0");
+    SFML_ASSERT(right != 0.f && "Angle::operator/ cannot divide by 0");
     return radians(left.asRadians() / right);
 }
 
@@ -211,7 +210,7 @@ constexpr Angle operator/(Angle left, float right)
 ////////////////////////////////////////////////////////////
 constexpr Angle& operator/=(Angle& left, float right)
 {
-    assert(right != 0.f && "Angle::operator/= cannot divide by 0");
+    SFML_ASSERT(right != 0.f && "Angle::operator/= cannot divide by 0");
     return left = left / right;
 }
 
@@ -219,7 +218,7 @@ constexpr Angle& operator/=(Angle& left, float right)
 ////////////////////////////////////////////////////////////
 constexpr float operator/(Angle left, Angle right)
 {
-    assert(right.asRadians() != 0.f && "Angle::operator/ cannot divide by 0");
+    SFML_ASSERT(right.asRadians() != 0.f && "Angle::operator/ cannot divide by 0");
     return left.asRadians() / right.asRadians();
 }
 
@@ -227,7 +226,7 @@ constexpr float operator/(Angle left, Angle right)
 ////////////////////////////////////////////////////////////
 constexpr Angle operator%(Angle left, Angle right)
 {
-    assert(right.asRadians() != 0.f && "Angle::operator% cannot modulus by 0");
+    SFML_ASSERT(right.asRadians() != 0.f && "Angle::operator% cannot modulus by 0");
     return radians(priv::positiveRemainder(left.asRadians(), right.asRadians()));
 }
 
@@ -235,7 +234,7 @@ constexpr Angle operator%(Angle left, Angle right)
 ////////////////////////////////////////////////////////////
 constexpr Angle& operator%=(Angle& left, Angle right)
 {
-    assert(right.asRadians() != 0.f && "Angle::operator%= cannot modulus by 0");
+    SFML_ASSERT(right.asRadians() != 0.f && "Angle::operator%= cannot modulus by 0");
     return left = left % right;
 }
 

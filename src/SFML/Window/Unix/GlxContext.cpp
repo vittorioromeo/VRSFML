@@ -360,14 +360,14 @@ XVisualInfo GlxContext::selectBestVisual(::Display* display, unsigned int bitsPe
 
             // Evaluate the visual
             const int color = red + green + blue + alpha;
-            const int score = evaluateFormat(bitsPerPixel,
-                                             settings,
-                                             color,
-                                             depth,
-                                             stencil,
-                                             multiSampling ? samples : 0,
-                                             accelerated,
-                                             sRgb == True);
+            const int score = GlContext::evaluateFormat(bitsPerPixel,
+                                                        settings,
+                                                        color,
+                                                        depth,
+                                                        stencil,
+                                                        multiSampling ? samples : 0,
+                                                        accelerated,
+                                                        sRgb == True);
 
             // If it's better than the current best, make it the new best
             if (score < bestScore)

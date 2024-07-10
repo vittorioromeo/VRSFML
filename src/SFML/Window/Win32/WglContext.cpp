@@ -27,18 +27,18 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/GlContext.hpp>
+#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/Win32/Utils.hpp>
 #include <SFML/Window/Win32/WglContext.hpp>
 #include <SFML/Window/WindowImpl.hpp>
 
+#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/String.hpp>
 
 #include <mutex>
 #include <vector>
-
-#include <cassert>
 
 // We check for this definition in order to avoid multiple definitions of GLAD
 // entities during unity builds of SFML.
@@ -97,15 +97,19 @@ void ensureExtensionsInit(HDC deviceContext)
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-WglContext::WglContext(WglContext* shared, ContextSettings& settings, const SurfaceData& surfaceData) :
-GlContext(settings),
+WglContext::WglContext(GraphicsContext&   graphicsContext,
+                       std::uint64_t      id,
+                       WglContext*        shared,
+                       ContextSettings&   settings,
+                       const SurfaceData& surfaceData) :
+GlContext(graphicsContext, id, settings),
 // Create the rendering surface from the owner window
 m_surfaceData(surfaceData),
 m_context(createContext(m_settings, m_surfaceData, shared))
 {
     WglContextImpl::ensureInit();
 
-    if (!shared && m_context)
+    if (shared == nullptr && m_context)
     {
         makeCurrent(true);
         WglContextImpl::ensureExtensionsInit(m_surfaceData.deviceContext);
@@ -115,21 +119,31 @@ m_context(createContext(m_settings, m_surfaceData, shared))
 
 
 ////////////////////////////////////////////////////////////
-WglContext::WglContext(WglContext* shared, ContextSettings settings, const WindowImpl& owner, unsigned int bitsPerPixel) :
-WglContext(shared, settings, createSurface(settings, owner.getNativeHandle(), bitsPerPixel))
+WglContext::WglContext(GraphicsContext&  graphicsContext,
+                       std::uint64_t     id,
+                       WglContext*       shared,
+                       ContextSettings   settings,
+                       const WindowImpl& owner,
+                       unsigned int      bitsPerPixel) :
+WglContext(graphicsContext, id, shared, settings, createSurface(settings, owner.getNativeHandle(), bitsPerPixel))
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-WglContext::WglContext(WglContext* shared, ContextSettings settings, const Vector2u& size) :
-WglContext(shared, settings, createSurface(settings, shared, size, VideoMode::getDesktopMode().bitsPerPixel))
+WglContext::WglContext(GraphicsContext& graphicsContext,
+                       std::uint64_t    id,
+                       WglContext*      shared,
+                       ContextSettings  settings,
+                       const Vector2u&  size) :
+WglContext(graphicsContext, id, shared, settings, createSurface(settings, shared, size, VideoMode::getDesktopMode().bitsPerPixel))
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-WglContext::WglContext(WglContext* shared) : WglContext(shared, ContextSettings{}, {1u, 1u})
+WglContext::WglContext(GraphicsContext& graphicsContext, std::uint64_t id, WglContext* shared) :
+WglContext(graphicsContext, id, shared, ContextSettings{}, {1u, 1u})
 {
 }
 
@@ -138,13 +152,13 @@ WglContext::WglContext(WglContext* shared) : WglContext(shared, ContextSettings{
 WglContext::~WglContext()
 {
     // Notify unshared OpenGL resources of context destruction
-    cleanupUnsharedResources();
+    m_graphicsContext.cleanupUnsharedResources();
 
     // Destroy the OpenGL context
     if (m_context)
     {
         const bool rc = wglMakeCurrent(m_surfaceData.deviceContext, nullptr);
-        assert(rc == TRUE);
+        SFML_ASSERT(rc == TRUE);
 
         wglDeleteContext(m_context);
     }
@@ -197,6 +211,7 @@ bool WglContext::makeCurrent(bool current)
     {
         err() << "Failed to " << (current ? "activate" : "deactivate")
               << " OpenGL context: " << getErrorString(GetLastError()) << errEndl;
+
         return false;
     }
 
@@ -367,14 +382,14 @@ int WglContext::selectBestPixelFormat(HDC deviceContext, unsigned int bitsPerPix
 
                 // Evaluate the current configuration
                 const int color = values[0] + values[1] + values[2] + values[3];
-                const int score = evaluateFormat(bitsPerPixel,
-                                                 settings,
-                                                 color,
-                                                 values[4],
-                                                 values[5],
-                                                 sampleValues[0] ? sampleValues[1] : 0,
-                                                 values[6] == WGL_FULL_ACCELERATION_ARB,
-                                                 sRgbCapableValue == TRUE);
+                const int score = GlContext::evaluateFormat(bitsPerPixel,
+                                                            settings,
+                                                            color,
+                                                            values[4],
+                                                            values[5],
+                                                            sampleValues[0] ? sampleValues[1] : 0,
+                                                            values[6] == WGL_FULL_ACCELERATION_ARB,
+                                                            sRgbCapableValue == TRUE);
 
                 // Keep it if it's better than the current best
                 if (score < bestScore)

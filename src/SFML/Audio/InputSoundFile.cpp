@@ -30,6 +30,7 @@
 #include <SFML/Audio/SoundFileReader.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
+#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/FileInputStream.hpp>
 #include <SFML/System/InputStream.hpp>
@@ -39,7 +40,6 @@
 #include <SFML/System/PathUtils.hpp>
 #include <SFML/System/Time.hpp>
 
-#include <cassert>
 #include <cstdint>
 
 
@@ -248,7 +248,7 @@ std::uint64_t InputSoundFile::getSampleOffset() const
 ////////////////////////////////////////////////////////////
 void InputSoundFile::seek(std::uint64_t sampleOffset)
 {
-    assert(m_reader);
+    SFML_ASSERT(m_reader);
 
     if (!m_channelMap.empty())
     {
@@ -270,7 +270,7 @@ void InputSoundFile::seek(Time timeOffset)
 ////////////////////////////////////////////////////////////
 std::uint64_t InputSoundFile::read(std::int16_t* samples, std::uint64_t maxCount)
 {
-    assert(m_reader);
+    SFML_ASSERT(m_reader);
 
     std::uint64_t readSamples = 0;
     if (samples && maxCount)

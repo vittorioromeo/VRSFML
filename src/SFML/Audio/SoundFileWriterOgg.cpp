@@ -28,6 +28,7 @@
 #include <SFML/Audio/SoundFileWriterOgg.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
+#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Path.hpp>
 #include <SFML/System/PathUtils.hpp>
@@ -37,8 +38,6 @@
 
 #include <fstream>
 #include <random>
-
-#include <cassert>
 
 
 namespace sf::priv
@@ -228,7 +227,7 @@ void SoundFileWriterOgg::write(const std::int16_t* samples, std::uint64_t count)
     {
         // Prepare a buffer to hold our samples
         float** buffer = vorbis_analysis_buffer(&m_impl->state, bufferSize);
-        assert(buffer && "Vorbis buffer failed to allocate");
+        SFML_ASSERT(buffer && "Vorbis buffer failed to allocate");
 
         // Write the samples to the buffer, converted to float and remapped to target channels
         for (int i = 0; i < std::min(frameCount, bufferSize); ++i)

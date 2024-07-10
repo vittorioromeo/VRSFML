@@ -307,7 +307,7 @@ void Music::setLoopPoints(TimeSpan timePoints)
     // Resume
     if (oldStatus == Status::Playing)
     {
-        assert(m_lastPlaybackDevice != nullptr);
+        SFML_ASSERT(m_lastPlaybackDevice != nullptr);
         play(*m_lastPlaybackDevice);
     }
 }

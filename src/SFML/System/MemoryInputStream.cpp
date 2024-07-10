@@ -26,10 +26,10 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/System/AlgorithmUtils.hpp>
+#include <SFML/System/Assert.hpp>
 #include <SFML/System/MemoryInputStream.hpp>
 #include <SFML/System/Optional.hpp>
 
-#include <cassert>
 #include <cstring>
 
 
@@ -40,7 +40,7 @@ MemoryInputStream::MemoryInputStream(const void* data, std::size_t sizeInBytes) 
 m_data(static_cast<const std::byte*>(data)),
 m_size(sizeInBytes)
 {
-    assert(m_data && "MemoryInputStream must be initialized with non-null data");
+    SFML_ASSERT(m_data && "MemoryInputStream must be initialized with non-null data");
 }
 
 

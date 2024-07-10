@@ -26,10 +26,10 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/GLCheck.hpp>
-#include <SFML/Graphics/GLExtensions.hpp>
 #include <SFML/Graphics/RenderTextureImplFBO.hpp>
 
 #include <SFML/Window/ContextSettings.hpp>
+#include <SFML/Window/GLExtensions.hpp>
 #include <SFML/Window/GlContext.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/TransientContextLock.hpp>
@@ -114,11 +114,11 @@ RenderTextureImplFBO::~RenderTextureImplFBO()
     // Unregister FBOs with the contexts if they haven't already been destroyed
     for (auto& entry : m_impl->frameBuffers)
         if (std::shared_ptr<void> frameBuffer = entry.second.lock())
-            GlContext::registerUnsharedGlObject(&frameBuffer);
+            m_impl->graphicsContext->unregisterUnsharedGlObject(&frameBuffer);
 
     for (auto& entry : m_impl->multisampleFrameBuffers)
         if (std::shared_ptr<void> multisampleFrameBuffer = entry.second.lock())
-            GlContext::registerUnsharedGlObject(&multisampleFrameBuffer);
+            m_impl->graphicsContext->unregisterUnsharedGlObject(&multisampleFrameBuffer);
 }
 
 
@@ -374,7 +374,7 @@ bool RenderTextureImplFBO::create(const Vector2u& size, unsigned int textureId, 
     m_impl->textureId = textureId;
 
     // We can't create an FBO now if there is no active context
-    if (!GraphicsContext::hasActiveContext())
+    if (!GraphicsContext::hasActiveThreadLocalGlContext())
         return true;
 
 #ifndef SFML_OPENGL_ES
@@ -464,11 +464,11 @@ bool RenderTextureImplFBO::createFrameBuffer()
     }
 
     // Insert the FBO into our map
-    m_impl->frameBuffers.emplace(GraphicsContext::getActiveContextId(), frameBuffer);
+    m_impl->frameBuffers.emplace(GraphicsContext::getActiveThreadLocalGlContextId(), frameBuffer);
 
     // Register the object with the current context so it is automatically destroyed
     std::shared_ptr<void> voidFrameBuffer = SFML_MOVE(frameBuffer);
-    GlContext::registerUnsharedGlObject(&voidFrameBuffer);
+    m_impl->graphicsContext->registerUnsharedGlObject(&voidFrameBuffer);
 
 #ifndef SFML_OPENGL_ES
 
@@ -525,11 +525,11 @@ bool RenderTextureImplFBO::createFrameBuffer()
         }
 
         // Insert the FBO into our map
-        m_impl->multisampleFrameBuffers.emplace(GraphicsContext::getActiveContextId(), multisampleFrameBuffer);
+        m_impl->multisampleFrameBuffers.emplace(GraphicsContext::getActiveThreadLocalGlContextId(), multisampleFrameBuffer);
 
         // Register the object with the current context so it is automatically destroyed
         std::shared_ptr<void> voidMultisampleFrameBuffer = SFML_MOVE(multisampleFrameBuffer);
-        GlContext::registerUnsharedGlObject(&voidMultisampleFrameBuffer);
+        m_impl->graphicsContext->registerUnsharedGlObject(&voidMultisampleFrameBuffer);
     }
 
 #endif
@@ -548,7 +548,7 @@ bool RenderTextureImplFBO::activate(bool active)
         return true;
     }
 
-    std::uint64_t contextId = GraphicsContext::getActiveContextId();
+    std::uint64_t contextId = GraphicsContext::getActiveThreadLocalGlContextId();
 
     // TODO:
     /*
@@ -565,7 +565,7 @@ bool RenderTextureImplFBO::activate(bool active)
             return false;
         }
 
-        contextId = GraphicsContext::getActiveContextId();
+        contextId = GraphicsContext::getActiveThreadLocalGlContextId();
 
         if (!contextId)
         {
@@ -635,7 +635,7 @@ void RenderTextureImplFBO::updateTexture(unsigned int)
     // are already available within the current context
     if (m_impl->multisample && m_impl->size.x && m_impl->size.y && activate(true))
     {
-        const std::uint64_t contextId = GraphicsContext::getActiveContextId();
+        const std::uint64_t contextId = GraphicsContext::getActiveThreadLocalGlContextId();
 
         const auto frameBufferIt = m_impl->frameBuffers.find(contextId);
         const auto multisampleIt = m_impl->multisampleFrameBuffers.find(contextId);

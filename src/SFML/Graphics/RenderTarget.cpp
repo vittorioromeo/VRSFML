@@ -27,7 +27,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/BlendMode.hpp>
 #include <SFML/Graphics/GLCheck.hpp>
-#include <SFML/Graphics/GLExtensions.hpp>
+#include <SFML/Window/GLExtensions.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Shader.hpp>
@@ -42,6 +42,7 @@
 #include <SFML/Window/GraphicsContext.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
+#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/MathUtils.hpp>
 #include <SFML/System/Rect.hpp>
@@ -49,7 +50,6 @@
 #include <mutex>
 #include <unordered_map>
 
-#include <cassert>
 #include <cstddef>
 #include <cstdint>
 
@@ -85,9 +85,9 @@ ContextRenderTargetMap& getContextRenderTargetMap()
 }
 
 // Check if a RenderTarget with the given ID is active in the current context
-bool isActive(std::uint64_t id)
+bool isActive(sf::GraphicsContext& graphicsContext, std::uint64_t id)
 {
-    const auto it = getContextRenderTargetMap().find(sf::GraphicsContext::getActiveContextId());
+    const auto it = getContextRenderTargetMap().find(graphicsContext.getActiveThreadLocalGlContextId());
     return (it != getContextRenderTargetMap().end()) && (it->second == id);
 }
 
@@ -112,7 +112,7 @@ std::uint32_t factorToGlConstant(sf::BlendMode::Factor blendFactor)
 
     sf::priv::err() << "Invalid value for sf::BlendMode::Factor! Fallback to sf::BlendMode::Factor::Zero."
                     << sf::priv::errEndl;
-    assert(false);
+    SFML_ASSERT(false);
     return GL_ZERO;
 }
 
@@ -173,7 +173,7 @@ std::uint32_t stencilOperationToGlConstant(sf::StencilUpdateOperation operation)
 
     sf::priv::err() << "Invalid value for sf::StencilUpdateOperation! Fallback to sf::StencilMode::Keep."
                     << sf::priv::errEndl;
-    assert(false);
+    SFML_ASSERT(false);
     return GL_KEEP;
 }
 
@@ -196,7 +196,7 @@ std::uint32_t stencilFunctionToGlConstant(sf::StencilComparison comparison)
     // clang-format on
 
     sf::priv::err() << "Invalid value for sf::StencilComparison! Fallback to sf::StencilMode::Always." << sf::priv::errEndl;
-    assert(false);
+    SFML_ASSERT(false);
     return GL_ALWAYS;
 }
 } // namespace RenderTargetImpl
@@ -262,7 +262,7 @@ RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
 ////////////////////////////////////////////////////////////
 void RenderTarget::clear(const Color& color)
 {
-    if (RenderTargetImpl::isActive(m_impl->id) || setActive(true))
+    if (RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) || setActive(true))
     {
         // Unbind texture to fix RenderTexture preventing clear
         applyTexture(nullptr);
@@ -280,7 +280,7 @@ void RenderTarget::clear(const Color& color)
 ////////////////////////////////////////////////////////////
 void RenderTarget::clearStencil(StencilValue stencilValue)
 {
-    if (RenderTargetImpl::isActive(m_impl->id) || setActive(true))
+    if (RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) || setActive(true))
     {
         // Unbind texture to fix RenderTexture preventing clear
         applyTexture(nullptr);
@@ -298,7 +298,7 @@ void RenderTarget::clearStencil(StencilValue stencilValue)
 ////////////////////////////////////////////////////////////
 void RenderTarget::clear(const Color& color, StencilValue stencilValue)
 {
-    if (RenderTargetImpl::isActive(m_impl->id) || setActive(true))
+    if (RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) || setActive(true))
     {
         // Unbind texture to fix RenderTexture preventing clear
         applyTexture(nullptr);
@@ -427,7 +427,7 @@ void RenderTarget::draw(const Vertex* vertices, std::size_t vertexCount, Primiti
     if (!vertices || (vertexCount == 0))
         return;
 
-    if (RenderTargetImpl::isActive(m_impl->id) || setActive(true))
+    if (RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) || setActive(true))
     {
         // Check if the vertex count is low enough so that we can pre-transform them
         const bool useVertexCache = (vertexCount <= priv::getArraySize(m_impl->cache.vertexCache));
@@ -517,7 +517,7 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, std::size_t firstVerte
     if (!vertexCount || !vertexBuffer.getNativeHandle())
         return;
 
-    if (RenderTargetImpl::isActive(m_impl->id) || setActive(true))
+    if (RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) || setActive(true))
     {
         setupDraw(false, states);
 
@@ -560,7 +560,7 @@ bool RenderTarget::setActive(bool active)
     // Mark this RenderTarget as active or no longer active in the tracking map
     const std::lock_guard lock(RenderTargetImpl::getMutex());
 
-    const std::uint64_t contextId = GraphicsContext::getActiveContextId();
+    const std::uint64_t contextId = m_impl->graphicsContext->getActiveThreadLocalGlContextId();
 
     using RenderTargetImpl::getContextRenderTargetMap;
     auto&      contextRenderTargetMap = getContextRenderTargetMap();
@@ -597,7 +597,7 @@ bool RenderTarget::setActive(bool active)
 ////////////////////////////////////////////////////////////
 void RenderTarget::pushGLStates()
 {
-    if (RenderTargetImpl::isActive(m_impl->id) || setActive(true))
+    if (RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) || setActive(true))
     {
 #ifdef SFML_DEBUG
         // make sure that the user didn't leave an unchecked OpenGL error
@@ -628,7 +628,7 @@ void RenderTarget::pushGLStates()
 ////////////////////////////////////////////////////////////
 void RenderTarget::popGLStates()
 {
-    if (RenderTargetImpl::isActive(m_impl->id) || setActive(true))
+    if (RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) || setActive(true))
     {
         glCheck(glMatrixMode(GL_PROJECTION));
         glCheck(glPopMatrix());
@@ -660,7 +660,7 @@ void RenderTarget::resetGLStates()
     }
 #endif
 
-    if (RenderTargetImpl::isActive(m_impl->id) || setActive(true))
+    if (RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) || setActive(true))
     {
         // Make sure that extensions are initialized
         priv::ensureExtensionsInit(*m_impl->graphicsContext);

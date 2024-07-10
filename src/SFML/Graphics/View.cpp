@@ -27,9 +27,8 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/View.hpp>
 
+#include <SFML/System/Assert.hpp>
 #include <SFML/System/MathUtils.hpp>
-
-#include <cassert>
 
 
 namespace sf
@@ -85,12 +84,14 @@ void View::setViewport(const FloatRect& viewport)
 ////////////////////////////////////////////////////////////
 void View::setScissor(const FloatRect& scissor)
 {
-    assert(scissor.position.x >= 0.0f && scissor.position.x <= 1.0f && "scissor.position.x must lie within [0, 1]");
-    assert(scissor.position.y >= 0.0f && scissor.position.y <= 1.0f && "scissor.position.y must lie within [0, 1]");
-    assert(scissor.size.x >= 0.0f && "scissor.size.x must lie within [0, 1]");
-    assert(scissor.size.y >= 0.0f && "scissor.size.y must lie within [0, 1]");
-    assert(scissor.position.x + scissor.size.x <= 1.0f && "scissor.position.x + scissor.size.x must lie within [0, 1]");
-    assert(scissor.position.y + scissor.size.y <= 1.0f && "scissor.position.y + scissor.size.y must lie within [0, 1]");
+    SFML_ASSERT(scissor.position.x >= 0.0f && scissor.position.x <= 1.0f && "scissor.position.x must lie within [0, 1]");
+    SFML_ASSERT(scissor.position.y >= 0.0f && scissor.position.y <= 1.0f && "scissor.position.y must lie within [0, 1]");
+    SFML_ASSERT(scissor.size.x >= 0.0f && "scissor.size.x must lie within [0, 1]");
+    SFML_ASSERT(scissor.size.y >= 0.0f && "scissor.size.y must lie within [0, 1]");
+    SFML_ASSERT(scissor.position.x + scissor.size.x <= 1.0f &&
+                "scissor.position.x + scissor.size.x must lie within [0, 1]");
+    SFML_ASSERT(scissor.position.y + scissor.size.y <= 1.0f &&
+                "scissor.position.y + scissor.size.y must lie within [0, 1]");
 
     m_scissor = scissor;
 }

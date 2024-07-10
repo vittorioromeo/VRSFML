@@ -26,7 +26,6 @@ namespace sf::priv
 class GlContext
 {
 public:
-    [[nodiscard]] bool                   setActive(bool active);
     [[nodiscard]] const ContextSettings& getSettings() const;
 };
 
@@ -34,21 +33,21 @@ public:
 
 struct TestContext
 {
-    TestContext(sf::GraphicsContext& graphicsContext) : context(graphicsContext.createGlContext())
+    TestContext(sf::GraphicsContext& theGraphicsContext) : glContext(theGraphicsContext.createGlContext())
     {
-        if (!context->setActive(true))
+        if (!setActive(true))
             sf::priv::err() << "Failed to set context as active during construction" << sf::priv::errEndl;
     }
 
     ~TestContext()
     {
-        if (context && !context->setActive(false))
+        if (glContext != nullptr && !setActive(false))
             sf::priv::err() << "Failed to set context as inactive during destruction" << sf::priv::errEndl;
     }
 
     [[nodiscard]] bool setActive(bool active) const
     {
-        return context->setActive(active);
+        return sf::GraphicsContext::setActiveThreadLocalGlContext(*glContext, active);
     }
 
     TestContext(const TestContext&) = delete;
@@ -61,10 +60,10 @@ struct TestContext
 
     [[nodiscard]] const sf::ContextSettings& getSettings() const
     {
-        return context->getSettings();
+        return glContext->getSettings();
     }
 
-    sf::priv::UniquePtr<sf::priv::GlContext> context;
+    sf::priv::UniquePtr<sf::priv::GlContext> glContext;
 };
 
 TEST_CASE("[Window] TestContext" * doctest::skip(skipDisplayTests))
@@ -83,8 +82,8 @@ TEST_CASE("[Window] TestContext" * doctest::skip(skipDisplayTests))
     {
         const TestContext context(graphicsContext);
         CHECK(context.getSettings().majorVersion > 0);
-        CHECK(graphicsContext.getActiveContext() == context.context.get());
-        CHECK(sf::GraphicsContext::hasActiveContext());
+        CHECK(sf::GraphicsContext::getActiveThreadLocalGlContext() == context.glContext.get());
+        CHECK(sf::GraphicsContext::hasActiveThreadLocalGlContext());
     }
 
     SECTION("Move semantics")
@@ -96,21 +95,21 @@ TEST_CASE("[Window] TestContext" * doctest::skip(skipDisplayTests))
                 TestContext       movedContext(graphicsContext);
                 const TestContext context(SFML_MOVE(movedContext));
                 CHECK(context.getSettings().majorVersion > 0);
-                CHECK(graphicsContext.getActiveContext() == context.context.get());
-                CHECK(sf::GraphicsContext::hasActiveContext());
+                CHECK(sf::GraphicsContext::getActiveThreadLocalGlContext() == context.glContext.get());
+                CHECK(sf::GraphicsContext::hasActiveThreadLocalGlContext());
             }
 
             SECTION("From inactive context")
             {
                 TestContext movedContext(graphicsContext);
                 CHECK(movedContext.setActive(false));
-                CHECK(graphicsContext.getActiveContext() == nullptr);
-                CHECK(!sf::GraphicsContext::hasActiveContext());
+                CHECK(sf::GraphicsContext::getActiveThreadLocalGlContext() == nullptr);
+                CHECK(!sf::GraphicsContext::hasActiveThreadLocalGlContext());
 
                 const TestContext context(SFML_MOVE(movedContext));
                 CHECK(context.getSettings().majorVersion > 0);
-                CHECK(graphicsContext.getActiveContext() == nullptr);
-                CHECK(!sf::GraphicsContext::hasActiveContext());
+                CHECK(sf::GraphicsContext::getActiveThreadLocalGlContext() == nullptr);
+                CHECK(!sf::GraphicsContext::hasActiveThreadLocalGlContext());
             }
         }
 
@@ -121,27 +120,27 @@ TEST_CASE("[Window] TestContext" * doctest::skip(skipDisplayTests))
                 TestContext movedContext(graphicsContext);
                 TestContext context(graphicsContext);
                 CHECK(movedContext.setActive(true));
-                CHECK(graphicsContext.getActiveContext() == movedContext.context.get());
-                CHECK(sf::GraphicsContext::hasActiveContext());
+                CHECK(sf::GraphicsContext::getActiveThreadLocalGlContext() == movedContext.glContext.get());
+                CHECK(sf::GraphicsContext::hasActiveThreadLocalGlContext());
 
                 context = SFML_MOVE(movedContext);
                 CHECK(context.getSettings().majorVersion > 0);
-                CHECK(graphicsContext.getActiveContext() == context.context.get());
-                CHECK(sf::GraphicsContext::hasActiveContext());
+                CHECK(sf::GraphicsContext::getActiveThreadLocalGlContext() == context.glContext.get());
+                CHECK(sf::GraphicsContext::hasActiveThreadLocalGlContext());
             }
 
             SECTION("From inactive context")
             {
                 TestContext movedContext(graphicsContext);
                 CHECK(movedContext.setActive(false));
-                CHECK(graphicsContext.getActiveContext() == nullptr);
-                CHECK(!sf::GraphicsContext::hasActiveContext());
+                CHECK(sf::GraphicsContext::getActiveThreadLocalGlContext() == nullptr);
+                CHECK(!sf::GraphicsContext::hasActiveThreadLocalGlContext());
 
                 TestContext context(graphicsContext);
                 context = SFML_MOVE(movedContext);
                 CHECK(context.getSettings().majorVersion > 0);
-                CHECK(graphicsContext.getActiveContext() == nullptr);
-                CHECK(!sf::GraphicsContext::hasActiveContext());
+                CHECK(sf::GraphicsContext::getActiveThreadLocalGlContext() == nullptr);
+                CHECK(!sf::GraphicsContext::hasActiveThreadLocalGlContext());
             }
         }
     }
@@ -149,49 +148,49 @@ TEST_CASE("[Window] TestContext" * doctest::skip(skipDisplayTests))
     SECTION("setActive()")
     {
         TestContext context(graphicsContext);
-        const auto  contextId = sf::GraphicsContext::getActiveContextId();
+        const auto  contextId = sf::GraphicsContext::getActiveThreadLocalGlContextId();
 
         // Set inactive
         CHECK(context.setActive(false));
-        CHECK(graphicsContext.getActiveContext() == nullptr);
-        CHECK(!sf::GraphicsContext::hasActiveContext());
+        CHECK(sf::GraphicsContext::getActiveThreadLocalGlContext() == nullptr);
+        CHECK(!sf::GraphicsContext::hasActiveThreadLocalGlContext());
 
         // Set active
         CHECK(context.setActive(true));
-        CHECK(graphicsContext.getActiveContext() == context.context.get());
-        CHECK(sf::GraphicsContext::getActiveContextId() == contextId);
+        CHECK(sf::GraphicsContext::getActiveThreadLocalGlContext() == context.glContext.get());
+        CHECK(sf::GraphicsContext::getActiveThreadLocalGlContextId() == contextId);
 
         // Create new context which becomes active automatically
         const TestContext newContext(graphicsContext);
-        CHECK(graphicsContext.getActiveContext() == newContext.context.get());
-        const auto newContextId = sf::GraphicsContext::getActiveContextId();
+        CHECK(sf::GraphicsContext::getActiveThreadLocalGlContext() == newContext.glContext.get());
+        const auto newContextId = sf::GraphicsContext::getActiveThreadLocalGlContextId();
         CHECK(newContextId != 0);
 
         // Set old context as inactive but new context remains active
         CHECK(context.setActive(false));
-        CHECK(graphicsContext.getActiveContext() == newContext.context.get());
-        CHECK(sf::GraphicsContext::getActiveContextId() == newContextId);
+        CHECK(sf::GraphicsContext::getActiveThreadLocalGlContext() == newContext.glContext.get());
+        CHECK(sf::GraphicsContext::getActiveThreadLocalGlContextId() == newContextId);
 
         // Set old context as active again
         CHECK(context.setActive(true));
-        CHECK(graphicsContext.getActiveContext() == context.context.get());
-        CHECK(sf::GraphicsContext::getActiveContextId() == contextId);
+        CHECK(sf::GraphicsContext::getActiveThreadLocalGlContext() == context.glContext.get());
+        CHECK(sf::GraphicsContext::getActiveThreadLocalGlContextId() == contextId);
     }
 
-    SECTION("getActiveContext()/getActiveContextId()")
+    SECTION("getActiveThreadLocalGlContext()/getActiveThreadLocalGlContextId()")
     {
-        CHECK(graphicsContext.getActiveContext() == nullptr);
-        CHECK(!sf::GraphicsContext::hasActiveContext());
+        CHECK(sf::GraphicsContext::getActiveThreadLocalGlContext() == nullptr);
+        CHECK(!sf::GraphicsContext::hasActiveThreadLocalGlContext());
 
         {
             const TestContext context(graphicsContext);
             CHECK(context.getSettings().majorVersion > 0);
-            CHECK(graphicsContext.getActiveContext() == context.context.get());
-            CHECK(sf::GraphicsContext::hasActiveContext());
+            CHECK(sf::GraphicsContext::getActiveThreadLocalGlContext() == context.glContext.get());
+            CHECK(sf::GraphicsContext::hasActiveThreadLocalGlContext());
         }
 
-        CHECK(graphicsContext.getActiveContext() == nullptr);
-        CHECK(!sf::GraphicsContext::hasActiveContext());
+        CHECK(sf::GraphicsContext::getActiveThreadLocalGlContext() == nullptr);
+        CHECK(!sf::GraphicsContext::hasActiveThreadLocalGlContext());
     }
 
     SECTION("Version String")
@@ -200,7 +199,8 @@ TEST_CASE("[Window] TestContext" * doctest::skip(skipDisplayTests))
         CHECK(context.setActive(true));
 
         using glGetStringFuncType  = const char*(GLAPI*)(unsigned int);
-        const auto glGetStringFunc = reinterpret_cast<glGetStringFuncType>(graphicsContext.getFunction("glGetString"));
+        const auto glGetStringFunc = reinterpret_cast<glGetStringFuncType>(
+            sf::GraphicsContext::getFunction("glGetString"));
         REQUIRE(glGetStringFunc);
 
         constexpr unsigned int glVendor   = 0x1F00;
@@ -229,11 +229,11 @@ TEST_CASE("[Window] TestContext" * doctest::skip(skipDisplayTests))
     SECTION("getFunction()")
     {
         const TestContext context(graphicsContext); // Windows requires an active context to use getFunction
-        CHECK(graphicsContext.getFunction("glEnable"));
-        CHECK(graphicsContext.getFunction("glGetError"));
-        CHECK(graphicsContext.getFunction("glGetIntegerv"));
-        CHECK(graphicsContext.getFunction("glGetString"));
-        CHECK(graphicsContext.getFunction("glGetStringi"));
-        CHECK(graphicsContext.getFunction("glIsEnabled"));
+        CHECK(sf::GraphicsContext::getFunction("glEnable"));
+        CHECK(sf::GraphicsContext::getFunction("glGetError"));
+        CHECK(sf::GraphicsContext::getFunction("glGetIntegerv"));
+        CHECK(sf::GraphicsContext::getFunction("glGetString"));
+        CHECK(sf::GraphicsContext::getFunction("glGetStringi"));
+        CHECK(sf::GraphicsContext::getFunction("glIsEnabled"));
     }
 }

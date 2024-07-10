@@ -56,7 +56,7 @@ public:
     /// \param shared Context to share the new one with (can be a null pointer)
     ///
     ////////////////////////////////////////////////////////////
-    WglContext(WglContext* shared);
+    WglContext(GraphicsContext& graphicsContext, std::uint64_t id, WglContext* shared);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context attached to a window
@@ -67,7 +67,12 @@ public:
     /// \param bitsPerPixel Pixel depth, in bits per pixel
     ///
     ////////////////////////////////////////////////////////////
-    WglContext(WglContext* shared, ContextSettings settings, const WindowImpl& owner, unsigned int bitsPerPixel);
+    WglContext(GraphicsContext&  graphicsContext,
+               std::uint64_t     id,
+               WglContext*       shared,
+               ContextSettings   settings,
+               const WindowImpl& owner,
+               unsigned int      bitsPerPixel);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context that embeds its own rendering target
@@ -77,7 +82,11 @@ public:
     /// \param size     Back buffer width and height, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    WglContext(WglContext* shared, ContextSettings settings, const Vector2u& size);
+    WglContext(GraphicsContext& graphicsContext,
+               std::uint64_t    id,
+               WglContext*      shared,
+               ContextSettings  settings,
+               const Vector2u&  size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -160,7 +169,11 @@ private:
     /// \param settings Creation parameters
     ///
     ////////////////////////////////////////////////////////////
-    WglContext(WglContext* shared, ContextSettings& settings, const SurfaceData& surfaceData);
+    WglContext(GraphicsContext&   graphicsContext,
+               std::uint64_t      id,
+               WglContext*        shared,
+               ContextSettings&   settings,
+               const SurfaceData& surfaceData);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the pixel format of the device context

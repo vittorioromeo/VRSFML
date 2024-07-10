@@ -27,6 +27,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/Unix/Display.hpp>
 
+#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
 
 #include <X11/keysym.h>
@@ -34,7 +35,6 @@
 #include <mutex>
 #include <unordered_map>
 
-#include <cassert>
 #include <clocale>
 #include <cstdlib>
 

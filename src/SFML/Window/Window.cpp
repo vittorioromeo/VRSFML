@@ -44,11 +44,11 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct Window::Window::Impl
 {
-    priv::UniquePtr<priv::GlContext> context;        //!< Platform-specific implementation of the OpenGL context
+    priv::UniquePtr<priv::GlContext> glContext;      //!< Platform-specific implementation of the OpenGL context
     Clock                            clock;          //!< Clock for measuring the elapsed time between frames
     Time                             frameTimeLimit; //!< Current framerate limit
 
-    explicit Impl(priv::UniquePtr<priv::GlContext>&& theContext) : context(SFML_MOVE(theContext))
+    explicit Impl(priv::UniquePtr<priv::GlContext>&& theContext) : glContext(SFML_MOVE(theContext))
     {
     }
 };
@@ -64,7 +64,7 @@ WindowBase(SFML_FORWARD(windowBaseArg)),
 m_impl(graphicsContext.createGlContext(settings, *WindowBase::m_impl, bitsPerPixel))
 {
     // Perform common initializations
-    assert(m_impl->context);
+    SFML_ASSERT(m_impl->glContext);
 
     // Setup default behaviors (to get a consistent behavior across different implementations)
     setVerticalSyncEnabled(false);
@@ -136,8 +136,8 @@ Window& Window::operator=(Window&&) noexcept = default;
 ////////////////////////////////////////////////////////////
 const ContextSettings& Window::getSettings() const
 {
-    assert(m_impl->context != nullptr);
-    return m_impl->context->getSettings();
+    SFML_ASSERT(m_impl->glContext != nullptr);
+    return m_impl->glContext->getSettings();
 }
 
 
@@ -145,7 +145,7 @@ const ContextSettings& Window::getSettings() const
 void Window::setVerticalSyncEnabled(bool enabled)
 {
     if (setActive())
-        m_impl->context->setVerticalSyncEnabled(enabled);
+        m_impl->glContext->setVerticalSyncEnabled(enabled);
 }
 
 
@@ -159,9 +159,9 @@ void Window::setFramerateLimit(unsigned int limit)
 ////////////////////////////////////////////////////////////
 bool Window::setActive(bool active) const
 {
-    assert(m_impl->context != nullptr);
+    SFML_ASSERT(m_impl->glContext != nullptr);
 
-    if (m_impl->context->setActive(active))
+    if (GraphicsContext::setActiveThreadLocalGlContext(*m_impl->glContext, active))
         return true;
 
     priv::err() << "Failed to activate the window's context" << priv::errEndl;
@@ -174,7 +174,7 @@ void Window::display()
 {
     // Display the backbuffer on screen
     if (setActive())
-        m_impl->context->display();
+        m_impl->glContext->display();
 
     // Limit the framerate if needed
     if (m_impl->frameTimeLimit != Time::Zero)

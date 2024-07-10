@@ -44,6 +44,7 @@
 #endif // SFML_SYSTEM_WINDOWS
 
 #include <SFML/System/AlgorithmUtils.hpp>
+#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InPlacePImpl.hpp>
 #include <SFML/System/Macros.hpp>
@@ -65,7 +66,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include <cassert>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>

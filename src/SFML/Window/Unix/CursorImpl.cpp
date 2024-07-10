@@ -29,13 +29,14 @@
 #include <SFML/Window/Unix/Display.hpp>
 #include <SFML/Window/Unix/Utils.hpp>
 
+#include <SFML/System/Assert.hpp>
+
 #include <X11/Xcursor/Xcursor.h>
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
 
 #include <vector>
 
-#include <cassert>
 #include <cstdlib>
 
 namespace sf::priv

@@ -29,6 +29,7 @@
 #include <SFML/Audio/SoundFileReaderWav.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
+#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InputStream.hpp>
 #include <SFML/System/Macros.hpp>
@@ -37,7 +38,6 @@
 
 #include <vector>
 
-#include <cassert>
 #include <cstddef>
 
 
@@ -193,7 +193,7 @@ sf::Optional<SoundFileReader::Info> SoundFileReaderWav::open(InputStream& stream
 ////////////////////////////////////////////////////////////
 void SoundFileReaderWav::seek(std::uint64_t sampleOffset)
 {
-    assert(m_impl->decoder && "wav decoder not initialized. Call SoundFileReaderWav::open() to initialize it.");
+    SFML_ASSERT(m_impl->decoder && "wav decoder not initialized. Call SoundFileReaderWav::open() to initialize it.");
 
     if (const ma_result result = ma_decoder_seek_to_pcm_frame(m_impl->decoder.asPtr(), sampleOffset / m_impl->channelCount);
         result != MA_SUCCESS)
@@ -204,7 +204,7 @@ void SoundFileReaderWav::seek(std::uint64_t sampleOffset)
 ////////////////////////////////////////////////////////////
 std::uint64_t SoundFileReaderWav::read(std::int16_t* samples, std::uint64_t maxCount)
 {
-    assert(m_impl->decoder && "wav decoder not initialized. Call SoundFileReaderWav::open() to initialize it.");
+    SFML_ASSERT(m_impl->decoder && "wav decoder not initialized. Call SoundFileReaderWav::open() to initialize it.");
 
     ma_uint64 framesRead{};
 

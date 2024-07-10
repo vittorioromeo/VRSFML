@@ -155,7 +155,7 @@ UniquePtr<WindowImpl> WindowImpl::create(VideoMode mode, const String& title, St
             {
                 err() << "The requested video mode is not available, switching to a valid mode" << errEndl;
 
-                assert(!VideoMode::getFullscreenModes().empty() && "No video modes available");
+                SFML_ASSERT(!VideoMode::getFullscreenModes().empty() && "No video modes available");
                 mode = VideoMode::getFullscreenModes()[0];
 
                 err() << "  VideoMode: { size: { " << mode.size.x << ", " << mode.size.y

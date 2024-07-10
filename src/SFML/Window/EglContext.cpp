@@ -94,7 +94,7 @@ void ensureInit()
                            // Dump a message to the console and let the application terminate
                            sf::priv::err() << "Failed to load EGL entry points" << sf::priv::errEndl;
 
-                           assert(false);
+                           SFML_ASSERT(false);
 
                            return false;
                        }
@@ -345,14 +345,14 @@ EGLConfig EglContext::getBestConfig(EGLDisplay display, unsigned int bitsPerPixe
 
         // Evaluate the config
         const int color = red + green + blue + alpha;
-        const int score = evaluateFormat(bitsPerPixel,
-                                         settings,
-                                         color,
-                                         depth,
-                                         stencil,
-                                         multiSampling ? samples : 0,
-                                         caveat == EGL_NONE,
-                                         false);
+        const int score = GlContext::evaluateFormat(bitsPerPixel,
+                                                    settings,
+                                                    color,
+                                                    depth,
+                                                    stencil,
+                                                    multiSampling ? samples : 0,
+                                                    caveat == EGL_NONE,
+                                                    false);
 
         // If it's better than the current best, make it the new best
         if (score < bestScore)
@@ -362,7 +362,7 @@ EGLConfig EglContext::getBestConfig(EGLDisplay display, unsigned int bitsPerPixe
         }
     }
 
-    assert(bestScore < 0x7FFFFFFF && "Failed to calculate best config");
+    SFML_ASSERT(bestScore < 0x7FFFFFFF && "Failed to calculate best config");
 
     return bestConfig;
 }

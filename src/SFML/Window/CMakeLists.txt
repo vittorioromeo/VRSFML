@@ -52,6 +52,8 @@ set(SRC
     ${SRCROOT}/WindowImpl.hpp
     ${SRCROOT}/GraphicsContext.cpp
     ${INCROOT}/GraphicsContext.hpp
+    ${SRCROOT}/GLExtensions.hpp
+    ${SRCROOT}/GLExtensions.cpp
 )
 source_group("" FILES ${SRC})
 

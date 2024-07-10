@@ -29,12 +29,11 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Export.hpp>
 
+#include <SFML/System/Assert.hpp>
 #include <SFML/System/Launder.hpp>
 #include <SFML/System/Macros.hpp>
 #include <SFML/System/PlacementNew.hpp>
 #include <SFML/System/RemoveCVRef.hpp>
-
-#include <cassert>
 
 
 namespace sf
@@ -130,7 +129,7 @@ public:
         }
         else
         {
-            assert(m_engaged && rhs.m_engaged);
+            SFML_ASSERT(m_engaged && rhs.m_engaged);
             *SFML_PRIV_LAUNDER_CAST(T*, m_buffer) = *SFML_PRIV_LAUNDER_CAST(const T*, rhs.m_buffer);
         }
 
@@ -157,7 +156,7 @@ public:
         }
         else
         {
-            assert(m_engaged && rhs.m_engaged);
+            SFML_ASSERT(m_engaged && rhs.m_engaged);
             *SFML_PRIV_LAUNDER_CAST(T*, m_buffer) = SFML_MOVE(*SFML_PRIV_LAUNDER_CAST(T*, rhs.m_buffer));
         }
 
@@ -303,7 +302,7 @@ public:
     //////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T* operator->() & noexcept
     {
-        assert(m_engaged);
+        SFML_ASSERT(m_engaged);
         return SFML_PRIV_LAUNDER_CAST(T*, m_buffer);
     }
 
@@ -311,7 +310,7 @@ public:
     //////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T* operator->() const& noexcept
     {
-        assert(m_engaged);
+        SFML_ASSERT(m_engaged);
         return SFML_PRIV_LAUNDER_CAST(const T*, m_buffer);
     }
 
@@ -319,7 +318,7 @@ public:
     //////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T& operator*() & noexcept
     {
-        assert(m_engaged);
+        SFML_ASSERT(m_engaged);
         return *SFML_PRIV_LAUNDER_CAST(T*, m_buffer);
     }
 
@@ -327,7 +326,7 @@ public:
     //////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T& operator*() const& noexcept
     {
-        assert(m_engaged);
+        SFML_ASSERT(m_engaged);
         return *SFML_PRIV_LAUNDER_CAST(const T*, m_buffer);
     }
 
@@ -335,7 +334,7 @@ public:
     //////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T&& operator*() && noexcept
     {
-        assert(m_engaged);
+        SFML_ASSERT(m_engaged);
         return SFML_MOVE(*SFML_PRIV_LAUNDER_CAST(T*, m_buffer));
     }
 

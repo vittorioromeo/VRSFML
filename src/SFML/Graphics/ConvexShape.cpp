@@ -27,7 +27,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/ConvexShape.hpp>
 
-#include <cassert>
+#include <SFML/System/Assert.hpp>
 
 
 namespace sf
@@ -57,7 +57,7 @@ std::size_t ConvexShape::getPointCount() const
 ////////////////////////////////////////////////////////////
 void ConvexShape::setPoint(std::size_t index, const Vector2f& point)
 {
-    assert(index < m_points.size() && "Index is out of bounds");
+    SFML_ASSERT(index < m_points.size() && "Index is out of bounds");
     m_points[index] = point;
     update(m_points.data(), m_points.size());
 }
@@ -66,7 +66,7 @@ void ConvexShape::setPoint(std::size_t index, const Vector2f& point)
 ////////////////////////////////////////////////////////////
 Vector2f ConvexShape::getPoint(std::size_t index) const
 {
-    assert(index < m_points.size() && "Index is out of bounds");
+    SFML_ASSERT(index < m_points.size() && "Index is out of bounds");
     return m_points[index];
 }
 
@@ -79,7 +79,7 @@ Vector2f ConvexShape::getGeometricCenter() const
     switch (pointCount)
     {
         case 0:
-            assert(false && "Cannot calculate geometric center of shape with no points");
+            SFML_ASSERT(false && "Cannot calculate geometric center of shape with no points");
             return Vector2f{};
         case 1:
             return m_points[0];

@@ -45,6 +45,7 @@
 #undef min // Defined by `Xlibint.h`, conflicts with standard headers
 #undef max // Defined by `Xlibint.h`, conflicts with standard headers
 
+#include <SFML/System/Assert.hpp>
 #include <SFML/System/Path.hpp>
 
 #include <X11/Xatom.h>
@@ -64,15 +65,14 @@
 #include <unistd.h>
 #include <vector>
 
-#include <cassert>
 #include <cstring>
 
 #ifdef SFML_OPENGL_ES
 #include <SFML/Window/EglContext.hpp>
-using ContextType = sf::priv::EglContext;
+using DerivedGlContextType = sf::priv::EglContext;
 #else
 #include <SFML/Window/Unix/GlxContext.hpp>
-using ContextType = sf::priv::GlxContext;
+using DerivedGlContextType = sf::priv::GlxContext;
 #endif
 
 ////////////////////////////////////////////////////////////
@@ -526,7 +526,7 @@ m_cursorGrabbed(m_fullscreen)
     else
     {
         // Choose the visual according to the context settings
-        const XVisualInfo visualInfo = ContextType::selectBestVisual(m_display.get(), mode.bitsPerPixel, settings);
+        const XVisualInfo visualInfo = DerivedGlContextType::selectBestVisual(m_display.get(), mode.bitsPerPixel, settings);
 
         visual = visualInfo.visual;
         depth  = visualInfo.depth;

@@ -36,11 +36,11 @@
 #include <SFML/Window/WindowImpl.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
+#include <SFML/System/Assert.hpp>
 #include <SFML/System/Macros.hpp>
 #include <SFML/System/Optional.hpp>
 #include <SFML/System/String.hpp>
 
-#include <cassert>
 #include <climits>
 #include <cstdlib>
 
@@ -183,7 +183,7 @@ void WindowBase::setMinimumSize(const Vector2u& minimumSize)
         return minimumSize.x <= m_impl->getMaximumSize()->x && minimumSize.y <= m_impl->getMaximumSize()->y;
     };
 
-    assert(validateMinimumSize() && "Minimum size cannot be bigger than the maximum size along either axis");
+    SFML_ASSERT(validateMinimumSize() && "Minimum size cannot be bigger than the maximum size along either axis");
 
     m_impl->setMinimumSize(sf::makeOptional(minimumSize));
     setSize(getSize());
@@ -214,7 +214,7 @@ void WindowBase::setMaximumSize(const Vector2u& maximumSize)
         return maximumSize.x >= m_impl->getMinimumSize()->x && maximumSize.y >= m_impl->getMinimumSize()->y;
     };
 
-    assert(validateMaxiumSize() && "Maximum size cannot be smaller than the minimum size along either axis");
+    SFML_ASSERT(validateMaxiumSize() && "Maximum size cannot be smaller than the minimum size along either axis");
 
     m_impl->setMaximumSize(sf::makeOptional(maximumSize));
     setSize(getSize());

@@ -28,6 +28,7 @@
 #include <SFML/Audio/SoundFileWriterWav.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
+#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Path.hpp>
 #include <SFML/System/PathUtils.hpp>
@@ -36,7 +37,6 @@
 #include <algorithm>
 #include <fstream>
 
-#include <cassert>
 #include <cstddef>
 #include <cstdint>
 
@@ -240,8 +240,8 @@ bool SoundFileWriterWav::open(const Path&                      filename,
 ////////////////////////////////////////////////////////////
 void SoundFileWriterWav::write(const std::int16_t* samples, std::uint64_t count)
 {
-    assert(m_impl->file.good() && "Most recent I/O operation failed");
-    assert(count % m_impl->channelCount == 0);
+    SFML_ASSERT(m_impl->file.good() && "Most recent I/O operation failed");
+    SFML_ASSERT(count % m_impl->channelCount == 0);
 
     if (count % m_impl->channelCount != 0)
         priv::err() << "Writing samples to WAV sound file requires writing full frames at a time" << priv::errEndl;
@@ -260,7 +260,7 @@ void SoundFileWriterWav::write(const std::int16_t* samples, std::uint64_t count)
 ////////////////////////////////////////////////////////////
 void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int channelCount, unsigned int channelMask)
 {
-    assert(m_impl->file.good() && "Most recent I/O operation failed");
+    SFML_ASSERT(m_impl->file.good() && "Most recent I/O operation failed");
 
     // Write the main chunk ID
     char mainChunkId[] = {'R', 'I', 'F', 'F'};

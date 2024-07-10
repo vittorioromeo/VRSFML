@@ -26,7 +26,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/GLCheck.hpp>
-#include <SFML/Graphics/GLExtensions.hpp>
+#include <SFML/Window/GLExtensions.hpp>
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/TextureSaver.hpp>
@@ -36,13 +36,13 @@
 #include <SFML/Window/Window.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
+#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Macros.hpp>
 #include <SFML/System/Path.hpp>
 
 #include <atomic>
 
-#include <cassert>
 #include <cstring>
 
 
@@ -198,7 +198,7 @@ sf::Optional<Texture> Texture::create(GraphicsContext& graphicsContext, const Ve
     // Create the OpenGL texture
     GLuint glTexture = 0;
     glCheck(glGenTextures(1, &glTexture));
-    assert(glTexture);
+    SFML_ASSERT(glTexture);
 
     // All the validity checks passed, we can store the new texture settings
     result.emplace(priv::PassKey<Texture>{}, graphicsContext, size, actualSize, glTexture, sRgb);
@@ -385,7 +385,7 @@ Vector2u Texture::getSize() const
 Image Texture::copyToImage() const
 {
     // Easy case: empty texture
-    assert(m_texture && "Texture::copyToImage Cannot copy empty texture to image");
+    SFML_ASSERT(m_texture && "Texture::copyToImage Cannot copy empty texture to image");
 
     const priv::TransientContextLock lock(*m_graphicsContext);
 
@@ -491,8 +491,8 @@ void Texture::update(const std::uint8_t* pixels)
 ////////////////////////////////////////////////////////////
 void Texture::update(const std::uint8_t* pixels, const Vector2u& size, const Vector2u& dest)
 {
-    assert(dest.x + size.x <= m_size.x && "Destination x coordinate is outside of texture");
-    assert(dest.y + size.y <= m_size.y && "Destination y coordinate is outside of texture");
+    SFML_ASSERT(dest.x + size.x <= m_size.x && "Destination x coordinate is outside of texture");
+    SFML_ASSERT(dest.y + size.y <= m_size.y && "Destination y coordinate is outside of texture");
 
     if (pixels && m_texture)
     {
@@ -535,8 +535,8 @@ void Texture::update(const Texture& texture)
 ////////////////////////////////////////////////////////////
 void Texture::update(const Texture& texture, const Vector2u& dest)
 {
-    assert(dest.x + texture.m_size.x <= m_size.x && "Destination x coordinate is outside of texture");
-    assert(dest.y + texture.m_size.y <= m_size.y && "Destination y coordinate is outside of texture");
+    SFML_ASSERT(dest.x + texture.m_size.x <= m_size.x && "Destination x coordinate is outside of texture");
+    SFML_ASSERT(dest.y + texture.m_size.y <= m_size.y && "Destination y coordinate is outside of texture");
 
     if (!m_texture || !texture.m_texture)
         return;
@@ -680,8 +680,8 @@ void Texture::update(const Window& window)
 ////////////////////////////////////////////////////////////
 void Texture::update(const Window& window, const Vector2u& dest)
 {
-    assert(dest.x + window.getSize().x <= m_size.x && "Destination x coordinate is outside of texture");
-    assert(dest.y + window.getSize().y <= m_size.y && "Destination y coordinate is outside of texture");
+    SFML_ASSERT(dest.x + window.getSize().x <= m_size.x && "Destination x coordinate is outside of texture");
+    SFML_ASSERT(dest.y + window.getSize().y <= m_size.y && "Destination y coordinate is outside of texture");
 
     if (m_texture && window.setActive(true))
     {

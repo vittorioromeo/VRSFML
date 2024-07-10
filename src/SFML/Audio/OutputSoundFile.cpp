@@ -29,11 +29,10 @@
 #include <SFML/Audio/SoundFileFactory.hpp>
 #include <SFML/Audio/SoundFileWriter.hpp>
 
+#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Macros.hpp>
 #include <SFML/System/Path.hpp>
-
-#include <cassert>
 
 
 namespace sf
@@ -79,7 +78,7 @@ sf::Optional<OutputSoundFile> OutputSoundFile::openFromFile(
 ////////////////////////////////////////////////////////////
 void OutputSoundFile::write(const std::int16_t* samples, std::uint64_t count)
 {
-    assert(m_writer);
+    SFML_ASSERT(m_writer);
 
     if (samples && count)
         m_writer->write(samples, count);

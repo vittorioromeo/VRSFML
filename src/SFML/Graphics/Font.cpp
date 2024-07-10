@@ -48,11 +48,12 @@
 #include FT_BITMAP_H
 #include FT_STROKER_H
 
+#include <SFML/System/Assert.hpp>
+
 #include <memory>
 #include <unordered_map>
 #include <vector>
 
-#include <cassert>
 #include <cstring>
 
 
@@ -386,7 +387,7 @@ const Font::Info& Font::getInfo() const
 ////////////////////////////////////////////////////////////
 unsigned int Font::getCharIndex(std::uint32_t codePoint) const
 {
-    assert(m_impl->fontHandles);
+    SFML_ASSERT(m_impl->fontHandles);
     return FT_Get_Char_Index(m_impl->fontHandles->face, codePoint);
 }
 
@@ -394,7 +395,7 @@ unsigned int Font::getCharIndex(std::uint32_t codePoint) const
 ////////////////////////////////////////////////////////////
 const Glyph& Font::getGlyph(std::uint32_t codePoint, unsigned int characterSize, bool bold, float outlineThickness) const
 {
-    assert(m_impl->fontHandles);
+    SFML_ASSERT(m_impl->fontHandles);
 
     // Get the page corresponding to the character size
     Page::GlyphTable& glyphs = loadPage(*m_impl->graphicsContext, characterSize).glyphs;
@@ -425,7 +426,7 @@ bool Font::hasGlyph(std::uint32_t codePoint) const
 ////////////////////////////////////////////////////////////
 float Font::getKerning(std::uint32_t first, std::uint32_t second, unsigned int characterSize, bool bold) const
 {
-    assert(m_impl->fontHandles);
+    SFML_ASSERT(m_impl->fontHandles);
 
     // Special case where first or second is 0 (null character)
     if (first == 0 || second == 0)
@@ -465,7 +466,7 @@ float Font::getKerning(std::uint32_t first, std::uint32_t second, unsigned int c
 ////////////////////////////////////////////////////////////
 float Font::getLineSpacing(unsigned int characterSize) const
 {
-    assert(m_impl->fontHandles);
+    SFML_ASSERT(m_impl->fontHandles);
 
     FT_Face face = m_impl->fontHandles->face;
 
@@ -481,7 +482,7 @@ float Font::getLineSpacing(unsigned int characterSize) const
 ////////////////////////////////////////////////////////////
 float Font::getUnderlinePosition(unsigned int characterSize) const
 {
-    assert(m_impl->fontHandles);
+    SFML_ASSERT(m_impl->fontHandles);
 
     FT_Face face = m_impl->fontHandles->face;
 
@@ -501,7 +502,7 @@ float Font::getUnderlinePosition(unsigned int characterSize) const
 ////////////////////////////////////////////////////////////
 float Font::getUnderlineThickness(unsigned int characterSize) const
 {
-    assert(m_impl->fontHandles);
+    SFML_ASSERT(m_impl->fontHandles);
 
     FT_Face face = m_impl->fontHandles->face;
 
@@ -552,7 +553,7 @@ Font::Page& Font::loadPage(GraphicsContext& graphicsContext, unsigned int charac
         return it->second;
 
     auto page = Page::create(graphicsContext, m_impl->isSmooth);
-    assert(page && "Font::loadPage() Failed to load page");
+    SFML_ASSERT(page && "Font::loadPage() Failed to load page");
 
     return m_impl->pages.emplace(characterSize, SFML_MOVE(*page)).first->second;
 }

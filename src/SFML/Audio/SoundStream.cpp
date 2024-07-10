@@ -31,6 +31,7 @@
 #include <SFML/Audio/SoundStream.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
+#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Macros.hpp>
 #include <SFML/System/Optional.hpp>
@@ -41,7 +42,6 @@
 
 #include <vector>
 
-#include <cassert>
 #include <cstring>
 
 
@@ -55,7 +55,7 @@ struct SoundStream::Impl
 
     void initialize()
     {
-        assert(soundBase.hasValue());
+        SFML_ASSERT(soundBase.hasValue());
 
         if (!soundBase->initialize(&onEnd))
             priv::err() << "Failed to initialize SoundStream::Impl" << priv::errEndl;
@@ -263,7 +263,7 @@ void SoundStream::initialize(unsigned int channelCount, unsigned int sampleRate,
         m_impl->soundBase->deinitialize();
         m_impl->initialize();
 
-        assert(m_impl->soundBase.hasValue());
+        SFML_ASSERT(m_impl->soundBase.hasValue());
         applyStoredSettings(m_impl->soundBase->getSound());
         setEffectProcessor(getEffectProcessor());
         setPlayingOffset(getPlayingOffset());
@@ -281,7 +281,7 @@ void SoundStream::play(PlaybackDevice& playbackDevice)
         m_impl->soundBase.emplace(playbackDevice, &Impl::vtable, [](void* ptr) { static_cast<Impl*>(ptr)->initialize(); });
         m_impl->initialize();
 
-        assert(m_impl->soundBase.hasValue());
+        SFML_ASSERT(m_impl->soundBase.hasValue());
         applyStoredSettings(m_impl->soundBase->getSound());
         setEffectProcessor(getEffectProcessor());
         setPlayingOffset(getPlayingOffset());

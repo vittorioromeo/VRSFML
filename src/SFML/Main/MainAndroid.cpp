@@ -37,6 +37,7 @@
 #include <SFML/Config.hpp>
 
 #include <SFML/System/Android/Activity.hpp>
+#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Sleep.hpp>
 #include <SFML/System/Time.hpp>
@@ -47,7 +48,6 @@
 #include <mutex>
 #include <thread>
 
-#include <cassert>
 #include <cstring>
 
 #define SF_GLAD_EGL_IMPLEMENTATION

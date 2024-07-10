@@ -197,10 +197,10 @@ private:
 /// Usage example:
 /// \code
 /// sf::SoundFileFactory::registerReader<MySoundFileReader>();
-/// assert(sf::SoundFileFactory::isReaderRegistered<MySoundFileReader>());
+/// SFML_ASSERT(sf::SoundFileFactory::isReaderRegistered<MySoundFileReader>());
 ///
 /// sf::SoundFileFactory::registerWriter<MySoundFileWriter>();
-/// assert(sf::SoundFileFactory::isWriterRegistered<MySoundFileWriter>());
+/// SFML_ASSERT(sf::SoundFileFactory::isWriterRegistered<MySoundFileWriter>());
 /// \endcode
 ///
 /// \see sf::InputSoundFile, sf::OutputSoundFile, sf::SoundFileReader, sf::SoundFileWriter

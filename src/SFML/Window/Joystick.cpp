@@ -28,7 +28,7 @@
 #include <SFML/Window/Joystick.hpp>
 #include <SFML/Window/JoystickManager.hpp>
 
-#include <cassert>
+#include <SFML/System/Assert.hpp>
 
 
 namespace sf
@@ -57,7 +57,7 @@ bool Joystick::hasAxis(unsigned int joystick, Axis axis)
 ////////////////////////////////////////////////////////////
 bool Joystick::isButtonPressed(unsigned int joystick, unsigned int button)
 {
-    assert(button < Joystick::ButtonCount && "Button must be less than Joystick::ButtonCount");
+    SFML_ASSERT(button < Joystick::ButtonCount && "Button must be less than Joystick::ButtonCount");
     return priv::JoystickManager::getInstance().getState(joystick).buttons[button];
 }
 

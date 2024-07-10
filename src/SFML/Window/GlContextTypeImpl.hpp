@@ -35,12 +35,12 @@
 #if defined(SFML_OPENGL_ES)
 
 #include <SFML/Window/EglContext.hpp>
-using ContextType = sf::priv::EglContext;
+using DerivedGlContextType = sf::priv::EglContext;
 
 #else
 
 #include <SFML/Window/Win32/WglContext.hpp>
-using ContextType = sf::priv::WglContext;
+using DerivedGlContextType = sf::priv::WglContext;
 
 #endif
 
@@ -50,34 +50,34 @@ using ContextType = sf::priv::WglContext;
 #if defined(SFML_USE_DRM)
 
 #include <SFML/Window/DRM/DRMContext.hpp>
-using ContextType = sf::priv::DRMContext;
+using DerivedGlContextType = sf::priv::DRMContext;
 
 #elif defined(SFML_OPENGL_ES)
 
 #include <SFML/Window/EglContext.hpp>
-using ContextType = sf::priv::EglContext;
+using DerivedGlContextType = sf::priv::EglContext;
 
 #else
 
 #include <SFML/Window/Unix/GlxContext.hpp>
-using ContextType = sf::priv::GlxContext;
+using DerivedGlContextType = sf::priv::GlxContext;
 
 #endif
 
 #elif defined(SFML_SYSTEM_MACOS)
 
 #include <SFML/Window/macOS/SFContext.hpp>
-using ContextType = sf::priv::SFContext;
+using DerivedGlContextType = sf::priv::SFContext;
 
 #elif defined(SFML_SYSTEM_IOS)
 
 #include <SFML/Window/iOS/EaglContext.hpp>
-using ContextType = sf::priv::EaglContext;
+using DerivedGlContextType = sf::priv::EaglContext;
 
 #elif defined(SFML_SYSTEM_ANDROID)
 
 #include <SFML/Window/EglContext.hpp>
-using ContextType = sf::priv::EglContext;
+using DerivedGlContextType = sf::priv::EglContext;
 
 #endif
 

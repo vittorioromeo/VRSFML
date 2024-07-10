@@ -30,12 +30,12 @@
 #include <SFML/Audio/SoundBufferRecorder.hpp>
 #include <SFML/Audio/SoundRecorder.hpp>
 
+#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Optional.hpp>
 
 #include <vector>
 
-#include <cassert>
 #include <cstring>
 
 
@@ -108,7 +108,7 @@ bool SoundBufferRecorder::onStop(CaptureDevice& captureDevice)
 ////////////////////////////////////////////////////////////
 const SoundBuffer& SoundBufferRecorder::getBuffer() const
 {
-    assert(m_impl->buffer.hasValue() && "SoundBufferRecorder::getBuffer() Cannot return reference to null buffer");
+    SFML_ASSERT(m_impl->buffer.hasValue() && "SoundBufferRecorder::getBuffer() Cannot return reference to null buffer");
     return *m_impl->buffer;
 }
 
