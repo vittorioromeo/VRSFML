@@ -31,6 +31,7 @@
 #include <SFML/Audio/SavedSettings.hpp>
 #include <SFML/Audio/SoundChannel.hpp>
 
+#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Time.hpp>
 
@@ -38,7 +39,6 @@
 
 #include <vector>
 
-#include <cassert>
 #include <cstring>
 
 
@@ -305,7 +305,7 @@ std::uint8_t MiniaudioUtils::soundChannelToMiniaudioChannel(SoundChannel soundCh
             // clang-format on
 
         default:
-            assert(soundChannel == SoundChannel::TopBackCenter);
+            SFML_ASSERT(soundChannel == SoundChannel::TopBackCenter);
             return std::uint8_t{MA_CHANNEL_TOP_BACK_CENTER};
     }
 }
@@ -341,7 +341,7 @@ SoundChannel MiniaudioUtils::miniaudioChannelToSoundChannel(std::uint8_t soundCh
             // clang-format on
 
         default:
-            assert(maChannel == MA_CHANNEL_TOP_BACK_CENTER);
+            SFML_ASSERT(maChannel == MA_CHANNEL_TOP_BACK_CENTER);
             return SoundChannel::TopBackCenter;
     }
 }

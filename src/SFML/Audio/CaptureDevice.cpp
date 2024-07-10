@@ -28,16 +28,16 @@
 #include <SFML/Audio/AudioContext.hpp>
 #include <SFML/Audio/CaptureDevice.hpp>
 #include <SFML/Audio/CaptureDeviceHandle.hpp>
-#include <SFML/Audio/SoundChannel.hpp>
 #include <SFML/Audio/MiniaudioUtils.hpp>
+#include <SFML/Audio/SoundChannel.hpp>
 
+#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
 
 #include <miniaudio.h>
 
 #include <vector>
 
-#include <cassert>
 #include <cstring>
 
 
@@ -55,8 +55,9 @@ struct CaptureDevice::Impl
         std::memcpy(impl.samples.data(), input, frameCount * impl.channelCount * sizeof(std::int16_t));
 
         // Notify the derived class of the availability of new samples
-        assert(impl.processSamplesFunc != nullptr && "processSamplesFunc callback not registered in capture device");
-        assert(impl.soundRecorder != nullptr && "processSamplesFunc callback user data is null");
+        SFML_ASSERT(impl.processSamplesFunc != nullptr &&
+                    "processSamplesFunc callback not registered in capture device");
+        SFML_ASSERT(impl.soundRecorder != nullptr && "processSamplesFunc callback user data is null");
         if (impl.processSamplesFunc(impl.soundRecorder, impl.samples.data(), impl.samples.size()))
             return;
 
@@ -150,8 +151,8 @@ CaptureDevice::~CaptureDevice()
     if (m_impl == nullptr) // Could be moved-from
         return;
 
-    assert(!ma_device_is_started(&m_impl->maDevice) &&
-           "The miniaudio capture device must be stopped before destroying the capture device");
+    SFML_ASSERT(!ma_device_is_started(&m_impl->maDevice) &&
+                "The miniaudio capture device must be stopped before destroying the capture device");
 }
 
 
@@ -213,8 +214,8 @@ unsigned int CaptureDevice::getSampleRate() const
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool CaptureDevice::startDevice() const
 {
-    assert(isDeviceInitialized() && "Attempted to start an uninitialized audio capture device");
-    assert(!isDeviceStarted() && "Attempted to start an already started audio capture device");
+    SFML_ASSERT(isDeviceInitialized() && "Attempted to start an uninitialized audio capture device");
+    SFML_ASSERT(!isDeviceStarted() && "Attempted to start an already started audio capture device");
 
     if (const auto result = ma_device_start(&m_impl->maDevice); result != MA_SUCCESS)
         return priv::MiniaudioUtils::fail("start audio capture device", result);
@@ -226,8 +227,8 @@ unsigned int CaptureDevice::getSampleRate() const
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool CaptureDevice::stopDevice() const
 {
-    assert(isDeviceInitialized() && "Attempted to stop an uninitialized audio capture device");
-    assert(isDeviceStarted() && "Attempted to stop an already stopped audio capture device");
+    SFML_ASSERT(isDeviceInitialized() && "Attempted to stop an uninitialized audio capture device");
+    SFML_ASSERT(isDeviceStarted() && "Attempted to stop an already stopped audio capture device");
 
     if (const auto result = ma_device_stop(&m_impl->maDevice); result != MA_SUCCESS)
         return priv::MiniaudioUtils::fail("stop audio capture device", result);

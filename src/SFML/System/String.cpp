@@ -26,11 +26,11 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/System/AlgorithmUtils.hpp>
+#include <SFML/System/Assert.hpp>
 #include <SFML/System/Macros.hpp>
 #include <SFML/System/String.hpp>
 #include <SFML/System/Utf.hpp>
 
-#include <cassert>
 #include <cstring>
 #include <cwchar>
 
@@ -308,7 +308,7 @@ String& String::operator+=(const String& right)
 ////////////////////////////////////////////////////////////
 char32_t String::operator[](std::size_t index) const
 {
-    assert(index < m_string.size() && "Index is out of bounds");
+    SFML_ASSERT(index < m_string.size() && "Index is out of bounds");
     return m_string[index];
 }
 
@@ -316,7 +316,7 @@ char32_t String::operator[](std::size_t index) const
 ////////////////////////////////////////////////////////////
 char32_t& String::operator[](std::size_t index)
 {
-    assert(index < m_string.size() && "Index is out of bounds");
+    SFML_ASSERT(index < m_string.size() && "Index is out of bounds");
     return m_string[index];
 }
 

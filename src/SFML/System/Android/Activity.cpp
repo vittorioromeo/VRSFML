@@ -28,10 +28,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Android/Activity.hpp>
+#include <SFML/System/Assert.hpp>
 
 #include <android/log.h>
-
-#include <cassert>
 
 #define LOGE(...) ((void)__android_log_print(ANDROID_LOG_INFO, "sfml-error", __VA_ARGS__))
 

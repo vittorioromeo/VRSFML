@@ -29,13 +29,12 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Export.hpp>
 
+#include <SFML/System/Assert.hpp>
 #include <SFML/System/Macros.hpp>
 #include <SFML/System/MaxAlignT.hpp>
 #include <SFML/System/PlacementNew.hpp>
 #include <SFML/System/RemoveRef.hpp>
 #include <SFML/System/SizeT.hpp>
-
-#include <cassert>
 
 
 namespace sf::priv
@@ -110,22 +109,22 @@ public:
         {
             if (operation == Operation::Destroy)
             {
-                assert(s != nullptr);
+                SFML_ASSERT(s != nullptr);
                 reinterpret_cast<UnrefType*>(s)->~UnrefType();
             }
             else if (operation == Operation::MoveConstruct)
             {
-                assert(o != nullptr);
+                SFML_ASSERT(o != nullptr);
                 SFML_PRIV_PLACEMENT_NEW(s) UnrefType(SFML_MOVE(*static_cast<UnrefType*>(o)));
             }
             else if (operation == Operation::CopyConstruct)
             {
-                assert(o != nullptr);
+                SFML_ASSERT(o != nullptr);
                 SFML_PRIV_PLACEMENT_NEW(s) UnrefType(*static_cast<const UnrefType*>(o));
             }
             else
             {
-                assert(false);
+                SFML_ASSERT(false);
             }
         };
 
@@ -152,7 +151,7 @@ public:
 
         m_allocPtr = rhs.m_allocPtr;
 
-        assert(m_allocPtr);
+        SFML_ASSERT(m_allocPtr);
         m_allocPtr(objStorage, const_cast<char*>(rhs.objStorage), Operation::CopyConstruct);
     }
 
@@ -168,7 +167,7 @@ public:
 
         m_allocPtr = rhs.m_allocPtr;
 
-        assert(m_allocPtr);
+        SFML_ASSERT(m_allocPtr);
         m_allocPtr(objStorage, const_cast<char*>(rhs.objStorage), Operation::CopyConstruct);
 
         return *this;
@@ -186,7 +185,7 @@ public:
 
         m_allocPtr = rhs.m_allocPtr;
 
-        assert(m_allocPtr);
+        SFML_ASSERT(m_allocPtr);
         m_allocPtr(objStorage, rhs.objStorage, Operation::MoveConstruct);
     }
 
@@ -202,7 +201,7 @@ public:
 
         m_allocPtr = rhs.m_allocPtr;
 
-        assert(m_allocPtr);
+        SFML_ASSERT(m_allocPtr);
         m_allocPtr(objStorage, rhs.objStorage, Operation::MoveConstruct);
 
         return *this;
@@ -217,14 +216,14 @@ public:
     template <typename... TArgs>
     RetType operator()(TArgs&&... args)
     {
-        assert(m_methodPtr != nullptr);
+        SFML_ASSERT(m_methodPtr != nullptr);
         return m_methodPtr(objStorage, functionPtr, SFML_FORWARD(args)...);
     }
 
     template <typename... TArgs>
     RetType operator()(TArgs&&... args) const
     {
-        assert(m_methodPtr != nullptr);
+        SFML_ASSERT(m_methodPtr != nullptr);
         return m_methodPtr(const_cast<char*>(objStorage), functionPtr, SFML_FORWARD(args)...);
     }
 

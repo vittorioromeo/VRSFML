@@ -30,20 +30,12 @@
 #include <SFML/Window/GlContextTypeImpl.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
 
-#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
-#include <SFML/System/Macros.hpp>
-#include <SFML/System/Optional.hpp>
-#include <SFML/System/UniquePtr.hpp>
 
 #include <glad/gl.h>
 
-#include <atomic>
-#include <memory>
-#include <mutex>
-#include <vector>
+#include <ios>
 
-#include <cassert>
 #include <cctype>
 #include <cstdlib>
 #include <cstring>
@@ -51,126 +43,10 @@
 
 namespace sf::priv
 {
-// This structure contains all the implementation data we
-// don't want to expose through the visible interface
-struct GlContext::Impl
-{
-    ////////////////////////////////////////////////////////////
-    /// \brief Constructor
-    ///
-    ////////////////////////////////////////////////////////////
-    Impl()
-    {
-        auto& weakUnsharedGlObjects = getWeakUnsharedGlObjects();
-        unsharedGlObjects           = weakUnsharedGlObjects.lock();
-
-        if (!unsharedGlObjects)
-        {
-            unsharedGlObjects = std::make_shared<UnsharedGlObjects>();
-
-            weakUnsharedGlObjects = unsharedGlObjects;
-        }
-    }
-
-    // Structure to track which unshared object belongs to which context
-    struct UnsharedGlObject
-    {
-        std::uint64_t         contextId{};
-        std::shared_ptr<void> object;
-    };
-
-    using UnsharedGlObjects = std::vector<UnsharedGlObject>;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get weak_ptr to unshared objects
-    ///
-    /// \return weak_ptr to unshared objects
-    ///
-    ////////////////////////////////////////////////////////////
-    static std::weak_ptr<UnsharedGlObjects>& getWeakUnsharedGlObjects()
-    {
-        static std::weak_ptr<UnsharedGlObjects> weakUnsharedGlObjects;
-        return weakUnsharedGlObjects;
-    }
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get mutex protecting unshared objects
-    ///
-    /// \return Mutex protecting unshared objects
-    ///
-    ////////////////////////////////////////////////////////////
-    static std::mutex& getUnsharedGlObjectsMutex()
-    {
-        static std::mutex mutex;
-        return mutex;
-    }
-
-    ///////////////////////////////////////////////////////////
-    // Member data
-    ////////////////////////////////////////////////////////////
-    std::shared_ptr<UnsharedGlObjects> unsharedGlObjects; //!< The current object's handle to unshared objects
-    const std::uint64_t                id{
-        []
-        {
-            static std::atomic<std::uint64_t> atomicId(1); // start at 1, zero is "no context"
-            return atomicId.fetch_add(1);
-        }()}; //!< Unique identifier, used for identifying contexts when managing unshareable OpenGL resources
-};
-
-
-////////////////////////////////////////////////////////////
-void GlContext::registerUnsharedGlObject(void* objectSharedPtr)
-{
-    const std::lock_guard lock(Impl::getUnsharedGlObjectsMutex());
-
-    if (const std::shared_ptr unsharedGlObjects = Impl::getWeakUnsharedGlObjects().lock())
-        unsharedGlObjects->emplace_back(GraphicsContext::getActiveContextId(),
-                                        SFML_MOVE(*static_cast<std::shared_ptr<void>*>(objectSharedPtr)));
-}
-
-
-////////////////////////////////////////////////////////////
-void GlContext::unregisterUnsharedGlObject(void* objectSharedPtr)
-{
-    const std::lock_guard lock(Impl::getUnsharedGlObjectsMutex());
-
-    if (const std::shared_ptr unsharedGlObjects = Impl::getWeakUnsharedGlObjects().lock())
-    {
-        const auto currentContextId = GraphicsContext::getActiveContextId();
-
-        // Find the object in unshared objects and remove it if its associated context is currently active
-        // This will trigger the destructor of the object since shared_ptr
-        // in unshared objects should be the only one existing
-        const auto iter = findIf(unsharedGlObjects->begin(),
-                                 unsharedGlObjects->end(),
-                                 [&](const Impl::UnsharedGlObject& obj) {
-                                     return obj.contextId == currentContextId &&
-                                            obj.object == *static_cast<std::shared_ptr<void>*>(objectSharedPtr);
-                                 });
-
-        if (iter != unsharedGlObjects->end())
-            unsharedGlObjects->erase(iter);
-    }
-}
-
-
-////////////////////////////////////////////////////////////
-bool GlContext::isExtensionAvailable(GraphicsContext& graphicsContext, const char* name)
-{
-    return graphicsContext.isExtensionAvailable(name);
-}
-
-
 ////////////////////////////////////////////////////////////
 GlContext::~GlContext()
 {
-    auto& [id, ptr, transientCount] = GraphicsContext::CurrentContext::get();
-
-    if (m_impl->id == id)
-    {
-        id  = 0;
-        ptr = nullptr;
-    }
+    m_graphicsContext.onGlContextDestroyed(*this);
 }
 
 
@@ -182,55 +58,10 @@ const ContextSettings& GlContext::getSettings() const
 
 
 ////////////////////////////////////////////////////////////
-bool GlContext::setActive(bool active)
-{
-    auto& [id, ptr, transientCount] = GraphicsContext::CurrentContext::get();
-
-    // If this context is already the active one on this thread, don't do anything
-    if (active && m_impl->id == id)
-        return true;
-
-    // If this context is not the active one on this thread, don't do anything
-    if (!active && m_impl->id != id)
-        return true;
-
-    const auto activate = [&]
-    {
-        // Activate the context
-        if (!makeCurrent(true))
-        {
-            err() << "makeCurrent(true) failure in GlContext::setActive" << errEndl;
-            return false;
-        }
-
-        // Set it as the new current context for this thread
-        id  = m_impl->id;
-        ptr = this;
-
-        return true;
-    };
-
-    const auto deactivate = [&]
-    {
-        // Deactivate the context
-        if (!makeCurrent(false))
-        {
-            err() << "makeCurrent(false) failure in GlContext::setActive" << errEndl;
-            return false;
-        }
-
-        id  = 0;
-        ptr = nullptr;
-
-        return true;
-    };
-
-    return active ? activate() : deactivate();
-}
-
-
-////////////////////////////////////////////////////////////
-GlContext::GlContext(const ContextSettings& settings) : m_settings(settings)
+GlContext::GlContext(GraphicsContext& graphicsContext, std::uint64_t id, const ContextSettings& settings) :
+m_settings(settings),
+m_graphicsContext(graphicsContext),
+m_id{id}
 {
 }
 
@@ -252,63 +83,23 @@ int GlContext::evaluateFormat(
     int antialiasingDiff = static_cast<int>(settings.antialiasingLevel) - antialiasing;
 
     // Weight sub-scores so that better settings don't score equally as bad as worse settings
-    colorDiff *= ((colorDiff > 0) ? 100000 : 1);
-    depthDiff *= ((depthDiff > 0) ? 100000 : 1);
-    stencilDiff *= ((stencilDiff > 0) ? 100000 : 1);
-    antialiasingDiff *= ((antialiasingDiff > 0) ? 100000 : 1);
+    colorDiff *= ((colorDiff > 0) ? 100'000 : 1);
+    depthDiff *= ((depthDiff > 0) ? 100'000 : 1);
+    stencilDiff *= ((stencilDiff > 0) ? 100'000 : 1);
+    antialiasingDiff *= ((antialiasingDiff > 0) ? 100'000 : 1);
 
     // Aggregate the scores
     int score = std::abs(colorDiff) + std::abs(depthDiff) + std::abs(stencilDiff) + std::abs(antialiasingDiff);
 
     // If the user wants an sRGB capable format, try really hard to get one
     if (settings.sRgbCapable && !sRgb)
-        score += 10000000;
+        score += 10'000'000;
 
     // Make sure we prefer hardware acceleration over features
     if (!accelerated)
-        score += 100000000;
+        score += 100'000'000;
 
     return score;
-}
-
-
-////////////////////////////////////////////////////////////
-void GlContext::cleanupUnsharedResources()
-{
-    const auto& [id, ptr, transientCount] = GraphicsContext::CurrentContext::get();
-
-    // Save the current context so we can restore it later
-    GlContext* contextToRestore = ptr;
-
-    // If this context is already active there is no need to save it
-    if (m_impl->id == id)
-        contextToRestore = nullptr;
-
-    // Make this context active so resources can be freed
-    if (!setActive(true))
-        err() << "Could not enable context in GlContext::cleanupUnsharedResources()" << errEndl;
-
-    {
-        const std::lock_guard lock(Impl::getUnsharedGlObjectsMutex());
-
-        // Destroy the unshared objects contained in this context
-        for (auto iter = m_impl->unsharedGlObjects->begin(); iter != m_impl->unsharedGlObjects->end();)
-        {
-            if (iter->contextId == m_impl->id)
-            {
-                iter = m_impl->unsharedGlObjects->erase(iter);
-            }
-            else
-            {
-                ++iter;
-            }
-        }
-    }
-
-    // Make the originally active context active again
-    if (contextToRestore)
-        if (!contextToRestore->setActive(true))
-            err() << "Could not restore context in GlContext::cleanupUnsharedResources()" << errEndl;
 }
 
 
@@ -316,7 +107,7 @@ void GlContext::cleanupUnsharedResources()
 bool GlContext::initialize(const ContextSettings& requestedSettings)
 {
     // Activate the context
-    if (!setActive(true))
+    if (!GraphicsContext::setActiveThreadLocalGlContext(*this, true))
         err() << "Error enabling context in GlContext::initalize()" << errEndl;
 
     // Retrieve the context version number
@@ -324,11 +115,11 @@ bool GlContext::initialize(const ContextSettings& requestedSettings)
     int minorVersion = 0;
 
     // Try the new way first
-    auto glGetIntegervFunc = reinterpret_cast<glGetIntegervFuncType>(ContextType::getFunction("glGetIntegerv"));
-    auto glGetErrorFunc    = reinterpret_cast<glGetErrorFuncType>(ContextType::getFunction("glGetError"));
-    auto glGetStringFunc   = reinterpret_cast<glGetStringFuncType>(ContextType::getFunction("glGetString"));
-    auto glEnableFunc      = reinterpret_cast<glEnableFuncType>(ContextType::getFunction("glEnable"));
-    auto glIsEnabledFunc   = reinterpret_cast<glIsEnabledFuncType>(ContextType::getFunction("glIsEnabled"));
+    auto glGetIntegervFunc = reinterpret_cast<glGetIntegervFuncType>(GraphicsContext::getFunction("glGetIntegerv"));
+    auto glGetErrorFunc    = reinterpret_cast<glGetErrorFuncType>(GraphicsContext::getFunction("glGetError"));
+    auto glGetStringFunc   = reinterpret_cast<glGetStringFuncType>(GraphicsContext::getFunction("glGetString"));
+    auto glEnableFunc      = reinterpret_cast<glEnableFuncType>(GraphicsContext::getFunction("glEnable"));
+    auto glIsEnabledFunc   = reinterpret_cast<glIsEnabledFuncType>(GraphicsContext::getFunction("glIsEnabled"));
 
     if (!glGetIntegervFunc || !glGetErrorFunc || !glGetStringFunc || !glEnableFunc || !glIsEnabledFunc)
     {
@@ -352,8 +143,7 @@ bool GlContext::initialize(const ContextSettings& requestedSettings)
         m_settings.majorVersion = 1;
         m_settings.minorVersion = 1;
 
-        const char* version = reinterpret_cast<const char*>(glGetStringFunc(GL_VERSION));
-        if (version)
+        if (const char* version = reinterpret_cast<const char*>(glGetStringFunc(GL_VERSION)))
         {
             // OpenGL ES Common Lite profile: The beginning of the returned string is "OpenGL ES-CL major.minor"
             // OpenGL ES Common profile:      The beginning of the returned string is "OpenGL ES-CM major.minor"
@@ -424,7 +214,8 @@ bool GlContext::initialize(const ContextSettings& requestedSettings)
         {
             m_settings.attributeFlags |= ContextSettings::Attribute::Core;
 
-            auto glGetStringiFunc = reinterpret_cast<glGetStringiFuncType>(ContextType::getFunction("glGetStringi"));
+            auto glGetStringiFunc = reinterpret_cast<glGetStringiFuncType>(
+                GraphicsContext::getFunction("glGetStringi"));
 
             if (glGetStringiFunc)
             {

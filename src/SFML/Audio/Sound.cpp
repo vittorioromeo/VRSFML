@@ -33,6 +33,7 @@
 #include <SFML/Audio/SoundSource.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
+#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Macros.hpp>
 #include <SFML/System/Time.hpp>
@@ -42,7 +43,6 @@
 
 #include <vector>
 
-#include <cassert>
 #include <cstring>
 
 
@@ -56,7 +56,7 @@ struct Sound::Impl
 
     void initialize()
     {
-        assert(soundBase.hasValue());
+        SFML_ASSERT(soundBase.hasValue());
 
         if (!soundBase->initialize(&onEnd))
             priv::err() << "Failed to initialize Sound::Impl" << priv::errEndl;
@@ -281,7 +281,7 @@ void Sound::play(PlaybackDevice& playbackDevice)
         m_impl->soundBase.emplace(playbackDevice, &Impl::vtable, [](void* ptr) { static_cast<Impl*>(ptr)->initialize(); });
         m_impl->initialize();
 
-        assert(m_impl->soundBase.hasValue());
+        SFML_ASSERT(m_impl->soundBase.hasValue());
         applyStoredSettings(m_impl->soundBase->getSound());
         setEffectProcessor(getEffectProcessor());
         setPlayingOffset(getPlayingOffset());
@@ -356,7 +356,7 @@ void Sound::setBuffer(const SoundBuffer& buffer)
         m_impl->soundBase->deinitialize();
         m_impl->initialize();
 
-        assert(m_impl->soundBase.hasValue());
+        SFML_ASSERT(m_impl->soundBase.hasValue());
         applyStoredSettings(m_impl->soundBase->getSound());
         setEffectProcessor(getEffectProcessor());
         setPlayingOffset(getPlayingOffset());
@@ -398,7 +398,7 @@ void Sound::setEffectProcessor(EffectProcessor effectProcessor)
 ////////////////////////////////////////////////////////////
 const SoundBuffer& Sound::getBuffer() const
 {
-    assert(m_impl && "Sound::getBuffer() Cannot access unset buffer");
+    SFML_ASSERT(m_impl && "Sound::getBuffer() Cannot access unset buffer");
     return *m_impl->buffer;
 }
 

@@ -32,6 +32,7 @@
 #include <SFML/Audio/PlaybackDeviceHandle.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
+#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/LifetimeDependant.hpp>
 #include <SFML/System/Optional.hpp>
@@ -42,8 +43,6 @@
 
 #include <mutex>
 #include <vector>
-
-#include <cassert>
 
 
 namespace sf
@@ -264,11 +263,11 @@ void PlaybackDevice::unregisterResource(ResourceEntryIndex resourceEntryIndex)
 {
     const std::lock_guard lock(m_impl->resourcesMutex);
 
-    assert(m_impl->resources.size() > resourceEntryIndex && //
-           "Attempted to unregister audio resource with invalid index");
+    SFML_ASSERT(m_impl->resources.size() > resourceEntryIndex && //
+                "Attempted to unregister audio resource with invalid index");
 
-    assert(m_impl->resources[resourceEntryIndex].resource != nullptr && //
-           "Attempted to unregister previously erased audio resource");
+    SFML_ASSERT(m_impl->resources[resourceEntryIndex].resource != nullptr && //
+                "Attempted to unregister previously erased audio resource");
 
     // Mark resource as inactive (can be recycled)
     m_impl->resources[resourceEntryIndex].resource = nullptr;

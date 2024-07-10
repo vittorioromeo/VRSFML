@@ -32,11 +32,11 @@
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/Vertex.hpp>
 
+#include <SFML/System/Assert.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #include <vector>
 
-#include <cassert>
 #include <cstddef>
 
 

@@ -27,7 +27,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/GLCheck.hpp>
-#include <SFML/Graphics/GLExtensions.hpp>
+#include <SFML/Window/GLExtensions.hpp>
 #include <SFML/Graphics/Shader.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
@@ -35,6 +35,7 @@
 #include <SFML/Window/TransientContextLock.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
+#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InputStream.hpp>
 #include <SFML/System/Macros.hpp>
@@ -49,8 +50,6 @@
 #include <string_view>
 #include <unordered_map>
 #include <vector>
-
-#include <cassert>
 
 
 #ifndef SFML_OPENGL_ES
@@ -271,7 +270,7 @@ struct Shader::Impl
 ////////////////////////////////////////////////////////////
 Shader::UniformLocation::UniformLocation(int location) : m_value(location)
 {
-    assert(m_value != -1);
+    SFML_ASSERT(m_value != -1);
 }
 
 
@@ -286,7 +285,7 @@ public:
     [[nodiscard, gnu::always_inline]] explicit UnsafeUniformBinder(Shader& shader) :
     m_currentProgram(castToGlHandle(shader.m_impl->shaderProgram))
     {
-        assert(m_currentProgram != 0);
+        SFML_ASSERT(m_currentProgram != 0);
 
         // Enable program object
         glCheck(m_savedProgram = GLEXT_glGetHandle(GLEXT_GL_PROGRAM_OBJECT));
@@ -363,7 +362,7 @@ Shader& Shader::operator=(Shader&& right) noexcept
     {
         // Destroy effect program
         const priv::TransientContextLock lock(*m_impl->graphicsContext);
-        assert(m_impl->shaderProgram);
+        SFML_ASSERT(m_impl->shaderProgram);
         glCheck(GLEXT_glDeleteObject(castToGlHandle(m_impl->shaderProgram)));
     }
 
@@ -739,7 +738,7 @@ void Shader::setUniform(UniformLocation location, const Glsl::Mat4& matrix)
 ////////////////////////////////////////////////////////////
 bool Shader::setUniform(UniformLocation location, const Texture& texture)
 {
-    assert(m_impl->shaderProgram);
+    SFML_ASSERT(m_impl->shaderProgram);
 
     const priv::TransientContextLock lock(*m_impl->graphicsContext);
 
@@ -768,7 +767,7 @@ bool Shader::setUniform(UniformLocation location, const Texture& texture)
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, CurrentTextureType)
 {
-    assert(m_impl->shaderProgram);
+    SFML_ASSERT(m_impl->shaderProgram);
 
     const priv::TransientContextLock lock(*m_impl->graphicsContext);
 

@@ -29,6 +29,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Export.hpp>
 
+#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Launder.hpp>
 #include <SFML/System/LifetimeDependee.hpp>
@@ -37,7 +38,6 @@
 #include <atomic>
 #include <string>
 
-#include <cassert>
 #include <cctype>
 #include <cstdlib>
 
@@ -237,7 +237,7 @@ void LifetimeDependee::addDependant()
 ////////////////////////////////////////////////////////////
 void LifetimeDependee::subDependant()
 {
-    assert(asAtomicUInt(m_dependantCount).load(std::memory_order_relaxed) > 0u);
+    SFML_ASSERT(asAtomicUInt(m_dependantCount).load(std::memory_order_relaxed) > 0u);
     asAtomicUInt(m_dependantCount).fetch_sub(1u, std::memory_order_relaxed);
 }
 

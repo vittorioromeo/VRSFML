@@ -15,7 +15,7 @@
 #include <limits>
 #include <ostream>
 
-#include <cassert>
+#include <SFML/System/Assert.hpp>
 
 
 namespace sf

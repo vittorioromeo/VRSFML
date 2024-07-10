@@ -17,8 +17,6 @@ set(SRC
     ${INCROOT}/Glyph.hpp
     ${SRCROOT}/GLCheck.cpp
     ${SRCROOT}/GLCheck.hpp
-    ${SRCROOT}/GLExtensions.hpp
-    ${SRCROOT}/GLExtensions.cpp
     ${SRCROOT}/Image.cpp
     ${INCROOT}/Image.hpp
     ${INCROOT}/PrimitiveType.hpp

@@ -5,11 +5,10 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow"
 
+#include <SFML/System/Assert.hpp>
 #include <SFML/System/IsSame.hpp>
 #include <SFML/System/PlacementNew.hpp>
 #include <SFML/System/SizeT.hpp>
-
-#include <cassert>
 
 
 // From:

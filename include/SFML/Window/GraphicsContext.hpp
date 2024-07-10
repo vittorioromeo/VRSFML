@@ -60,65 +60,14 @@ class [[nodiscard]] GraphicsContext
 {
 public:
     // TODO: private
-    ////////////////////////////////////////////////////////////
-    // This structure contains all the state necessary to
-    // track TransientContext usage
-    ////////////////////////////////////////////////////////////
-    struct [[nodiscard]] TransientContext
-    {
-        ////////////////////////////////////////////////////////////
-        [[nodiscard]] explicit TransientContext(GraphicsContext& theGraphicsContext);
-
-        ////////////////////////////////////////////////////////////
-        ~TransientContext();
-
-        ////////////////////////////////////////////////////////////
-        TransientContext(const TransientContext&)            = delete;
-        TransientContext& operator=(const TransientContext&) = delete;
-
-        ////////////////////////////////////////////////////////////
-        TransientContext(TransientContext&&)            = delete;
-        TransientContext& operator=(TransientContext&&) = delete;
-
-        ///////////////////////////////////////////////////////////
-        // Member data
-        ////////////////////////////////////////////////////////////
-        struct Impl;
-        priv::InPlacePImpl<Impl, 64> impl;
-    };
-
-    // TODO: private
-    struct CurrentContext
-    {
-        std::uint64_t        id{};
-        sf::priv::GlContext* ptr{};
-        unsigned int         transientCount{};
-
-        // This per-thread variable holds the current context information for each thread
-        static CurrentContext& get();
-
-    private:
-        // Private constructor to prevent CurrentContext from being constructed outside of get()
-        CurrentContext();
-    };
-
     [[nodiscard]] explicit GraphicsContext();
-
     ~GraphicsContext();
 
-    [[nodiscard]] bool setActive(bool active);
-
-    class Guard
-    {
-    public:
-        [[nodiscard]] explicit Guard(GraphicsContext& parent);
-        ~Guard();
-
-    private:
-        GraphicsContext& m_parent;
-    };
-
-    [[nodiscard]] Guard lock();
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool setSharedContextAsActiveThreadLocalGlContext(bool active);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context, not associated to a window
@@ -183,19 +132,34 @@ public:
     /// \return Address of the OpenGL function, 0 on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] GlFunctionPointer getFunction(const char* name);
+    [[nodiscard]] static GlFunctionPointer getFunction(const char* name);
+
 
     ////////////////////////////////////////////////////////////
-    /// \brief Acquires a context for short-term use on the current thread
+    /// \brief Register an OpenGL object to be destroyed when its containing context is destroyed
+    ///
+    /// This is used for internal purposes in order to properly
+    /// clean up OpenGL resources that cannot be shared bwteen
+    /// contexts.
+    ///
+    /// \param object Object to be destroyed when its containing context is destroyed
     ///
     ////////////////////////////////////////////////////////////
-    void acquireTransientContext();
+    void registerUnsharedGlObject(void* objectSharedPtr);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Releases a context after short-term use on the current thread
+    /// \brief Unregister an OpenGL object from its containing context
+    ///
+    /// \param object Object to be unregister
     ///
     ////////////////////////////////////////////////////////////
-    void releaseTransientContext();
+    void unregisterUnsharedGlObject(void* objectSharedPtr);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Notify unshared resources of context destruction
+    ///
+    ////////////////////////////////////////////////////////////
+    void cleanupUnsharedResources();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the currently active context
@@ -203,7 +167,7 @@ public:
     /// \return The currently active context or a null pointer if none is active
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static const priv::GlContext* getActiveContext();
+    [[nodiscard]] static const priv::GlContext* getActiveThreadLocalGlContext();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the currently active context's ID
@@ -214,14 +178,25 @@ public:
     /// \return The active context's ID or 0 if no context is currently active
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::uint64_t getActiveContextId();
+    [[nodiscard]] static std::uint64_t getActiveThreadLocalGlContextId();
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static bool hasActiveContext();
+    [[nodiscard]] static bool hasActiveThreadLocalGlContext();
 
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool setActiveThreadLocalGlContext(priv::GlContext& glContext, bool active);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    void onGlContextDestroyed(priv::GlContext& glContext);
 
 private:
     struct Impl;

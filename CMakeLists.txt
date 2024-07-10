@@ -46,6 +46,21 @@ if(SFML_OS_ANDROID)
     set(BUILD_SHARED_LIBS TRUE)
 endif()
 
+# add an option to enable stack traces on assertions
+sfml_set_option(SFML_ENABLE_STACK_TRACES $<CONFIG:Debug> BOOL "TRUE to enable lifetime tracking, FALSE to disable it")
+if(SFML_ENABLE_STACK_TRACES)
+    add_definitions(-DSFML_ENABLE_STACK_TRACES)
+
+    include(FetchContent)
+    FetchContent_Declare(
+        cpptrace
+        GIT_REPOSITORY https://github.com/jeremy-rifkin/cpptrace.git
+        GIT_TAG        v0.6.2 # <HASH or TAG>
+    )
+
+    FetchContent_MakeAvailable(cpptrace)
+endif()
+
 # add an option to enable lifetime tracking
 sfml_set_option(SFML_ENABLE_LIFETIME_TRACKING $<CONFIG:Debug> BOOL "TRUE to enable lifetime tracking, FALSE to disable it")
 if(SFML_ENABLE_LIFETIME_TRACKING)

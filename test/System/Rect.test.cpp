@@ -75,7 +75,7 @@ TEMPLATE_TEST_CASE("[Graphics] sf::Rect", "", int, float)
 
         const auto intersectionResult = sf::findIntersection(rectangle, intersectingRectangle);
         REQUIRE(intersectionResult.hasValue());
-        assert(*intersectionResult == sf::Rect<TestType>({5, 5}, {5, 5}));
+        SFML_ASSERT(*intersectionResult == sf::Rect<TestType>({5, 5}, {5, 5}));
 
         constexpr sf::Rect<TestType> nonIntersectingRectangle({-5, -5}, {5, 5});
         CHECK_FALSE(sf::findIntersection(rectangle, nonIntersectingRectangle).hasValue());

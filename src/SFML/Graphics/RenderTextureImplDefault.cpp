@@ -26,11 +26,11 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/GLCheck.hpp>
-#include <SFML/Graphics/GLExtensions.hpp>
 #include <SFML/Graphics/RenderTextureImplDefault.hpp>
 #include <SFML/Graphics/TextureSaver.hpp>
 
 #include <SFML/Window/ContextSettings.hpp>
+#include <SFML/Window/GLExtensions.hpp>
 #include <SFML/Window/GlContext.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
 
@@ -68,6 +68,7 @@ bool RenderTextureImplDefault::create(const Vector2u& size, unsigned int, const 
 
     // Create the in-memory OpenGL context
     m_context = m_graphicsContext->createGlContext(settings, size);
+    SFML_ASSERT(m_context != nullptr);
 
     return true;
 }
@@ -76,7 +77,7 @@ bool RenderTextureImplDefault::create(const Vector2u& size, unsigned int, const 
 ////////////////////////////////////////////////////////////
 bool RenderTextureImplDefault::activate(bool active)
 {
-    return m_context->setActive(active);
+    return GraphicsContext::setActiveThreadLocalGlContext(*m_context, active);
 }
 
 

@@ -108,7 +108,7 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.6.0
 
 **Bugfixes**
 
--   Fix `sf::Context::getActiveContext` to stop returning inactive contexts (#1794)
+-   Fix `sf::Context::getActiveThreadLocalGlContext` to stop returning inactive contexts (#1794)
 -   [Linux] Fixed crash with X11 when `$DISPLAY` is not `0.0` (#724, #1504)
 -   [Android] Ensure `setActive(false)` is called before the surface is destroyed in EglContext (#1530, #1531)
 -   [Android] Fixed EGL incorrectly being passed the anti-aliasing level as `EGL_SAMPLE_BUFFERS` instead of `EGL_SAMPLES` (#1533, #1534)

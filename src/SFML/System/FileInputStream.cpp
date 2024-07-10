@@ -33,10 +33,10 @@
 #include <SFML/System/Android/ResourceStream.hpp>
 #endif
 
+#include <SFML/System/Assert.hpp>
 #include <SFML/System/Macros.hpp>
 #include <SFML/System/Path.hpp>
 
-#include <cassert>
 #include <cstddef>
 
 namespace sf
@@ -90,12 +90,12 @@ sf::Optional<std::size_t> FileInputStream::read(void* data, std::size_t size)
 #ifdef SFML_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
     {
-        assert(m_androidFile);
+        SFML_ASSERT(m_androidFile);
         return m_androidFile->read(data, size);
     }
 #endif
 
-    assert(m_file);
+    SFML_ASSERT(m_file);
     return sf::makeOptional(std::fread(data, 1, size, m_file.get()));
 }
 
@@ -106,12 +106,12 @@ sf::Optional<std::size_t> FileInputStream::seek(std::size_t position)
 #ifdef SFML_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
     {
-        assert(m_androidFile);
+        SFML_ASSERT(m_androidFile);
         return m_androidFile->seek(position);
     }
 #endif
 
-    assert(m_file);
+    SFML_ASSERT(m_file);
 
     if (std::fseek(m_file.get(), static_cast<long>(position), SEEK_SET))
         return sf::nullOpt;
@@ -126,12 +126,12 @@ sf::Optional<std::size_t> FileInputStream::tell()
 #ifdef SFML_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
     {
-        assert(m_androidFile);
+        SFML_ASSERT(m_androidFile);
         return m_androidFile->tell();
     }
 #endif
 
-    assert(m_file);
+    SFML_ASSERT(m_file);
 
     const auto position = std::ftell(m_file.get());
     return position < 0 ? sf::nullOpt : sf::makeOptional(static_cast<std::size_t>(position));
@@ -144,12 +144,12 @@ sf::Optional<std::size_t> FileInputStream::getSize()
 #ifdef SFML_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
     {
-        assert(m_androidFile);
+        SFML_ASSERT(m_androidFile);
         return m_androidFile->getSize();
     }
 #endif
 
-    assert(m_file);
+    SFML_ASSERT(m_file);
 
     const auto position = tell().value();
     std::fseek(m_file.get(), 0, SEEK_END);

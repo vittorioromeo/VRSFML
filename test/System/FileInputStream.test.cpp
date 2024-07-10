@@ -12,7 +12,7 @@
 #include <string_view>
 #include <type_traits>
 
-#include <cassert>
+#include <SFML/System/Assert.hpp>
 
 namespace
 {
@@ -33,17 +33,17 @@ public:
     TemporaryFile(const std::string& contents) : m_path(getTemporaryFilePath())
     {
         std::ofstream ofs(m_path.to<std::string>());
-        assert(ofs && "Stream encountered an error");
+        SFML_ASSERT(ofs && "Stream encountered an error");
 
         ofs << contents;
-        assert(ofs && "Stream encountered an error");
+        SFML_ASSERT(ofs && "Stream encountered an error");
     }
 
     // Close and delete the generated file.
     ~TemporaryFile()
     {
         [[maybe_unused]] const bool removed = m_path.remove();
-        assert(removed && "m_path failed to be removed from filesystem");
+        SFML_ASSERT(removed && "m_path failed to be removed from filesystem");
     }
 
     // Prevent copies.

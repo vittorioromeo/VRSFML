@@ -31,7 +31,8 @@
 #include <type_traits>
 #endif
 
-#include <cassert>
+#include <SFML/System/Assert.hpp>
+
 #include <cstddef>
 
 
@@ -61,7 +62,7 @@ struct EnumArray
     constexpr Value& operator[](Enum key)
     {
         const auto index = static_cast<std::size_t>(key);
-        assert(index < Count && "Index is out of bounds");
+        SFML_ASSERT(index < Count && "Index is out of bounds");
         return data[index];
     }
 
@@ -74,7 +75,7 @@ struct EnumArray
     constexpr const Value& operator[](Enum key) const
     {
         const auto index = static_cast<std::size_t>(key);
-        assert(index < Count && "Index is out of bounds");
+        SFML_ASSERT(index < Count && "Index is out of bounds");
         return data[index];
     }
 

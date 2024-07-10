@@ -44,12 +44,13 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <SFML/System/Assert.hpp>
+
 #include <stb_image_write.h>
 
 #include <algorithm>
 #include <string>
 
-#include <cassert>
 #include <cstring>
 
 
@@ -102,8 +103,8 @@ namespace sf
 ////////////////////////////////////////////////////////////
 Image::Image(const Vector2u& size, const Color& color)
 {
-    assert(size.x > 0);
-    assert(size.y > 0);
+    SFML_ASSERT(size.x > 0);
+    SFML_ASSERT(size.y > 0);
 
     // Create a new pixel buffer first for exception safety's sake
     std::vector<std::uint8_t> newPixels(static_cast<std::size_t>(size.x) * static_cast<std::size_t>(size.y) * 4);
@@ -130,9 +131,9 @@ Image::Image(const Vector2u& size, const Color& color)
 ////////////////////////////////////////////////////////////
 Image::Image(const Vector2u& size, const std::uint8_t* pixels)
 {
-    assert(size.x > 0);
-    assert(size.y > 0);
-    assert(pixels != nullptr);
+    SFML_ASSERT(size.x > 0);
+    SFML_ASSERT(size.y > 0);
+    SFML_ASSERT(pixels != nullptr);
 
     // Create a new pixel buffer first for exception safety's sake
     std::vector<std::uint8_t> newPixels(pixels, pixels + size.x * size.y * 4);
@@ -150,9 +151,9 @@ Image::Image(priv::PassKey<Image>&&, Vector2u size, std::vector<std::uint8_t>&& 
 m_size(size),
 m_pixels(SFML_MOVE(pixels))
 {
-    assert(size.x > 0 && "Attempted to create an image with size.x == 0");
-    assert(size.y > 0 && "Attempted to create an image with size.y == 0");
-    assert(!m_pixels.empty() && "Attempted to create an image with no pixels");
+    SFML_ASSERT(size.x > 0 && "Attempted to create an image with size.x == 0");
+    SFML_ASSERT(size.y > 0 && "Attempted to create an image with size.y == 0");
+    SFML_ASSERT(!m_pixels.empty() && "Attempted to create an image with no pixels");
 }
 
 
@@ -177,8 +178,8 @@ sf::Optional<Image> Image::loadFromFile(const Path& filename)
 
     if (ptr)
     {
-        assert(width > 0 && "Loaded image from file with width == 0");
-        assert(height > 0 && "Loaded image from file with height == 0");
+        SFML_ASSERT(width > 0 && "Loaded image from file with width == 0");
+        SFML_ASSERT(height > 0 && "Loaded image from file with height == 0");
 
         return sf::makeOptional<Image>(priv::PassKey<Image>{},
                                        Vector2i{width, height}.to<Vector2u>(),
@@ -217,8 +218,8 @@ sf::Optional<Image> Image::loadFromMemory(const void* data, std::size_t size)
         return sf::nullOpt;
     }
 
-    assert(width > 0 && "Loaded image from memory with width == 0");
-    assert(height > 0 && "Loaded image from memory with height == 0");
+    SFML_ASSERT(width > 0 && "Loaded image from memory with width == 0");
+    SFML_ASSERT(height > 0 && "Loaded image from memory with height == 0");
 
     return sf::makeOptional<Image>(priv::PassKey<Image>{},
                                    Vector2i{width, height}.to<Vector2u>(),
@@ -255,8 +256,8 @@ sf::Optional<Image> Image::loadFromStream(InputStream& stream)
         return sf::nullOpt;
     }
 
-    assert(width > 0 && "Loaded image from stream with width == 0");
-    assert(height > 0 && "Loaded image from stream with height == 0");
+    SFML_ASSERT(width > 0 && "Loaded image from stream with width == 0");
+    SFML_ASSERT(height > 0 && "Loaded image from stream with height == 0");
 
     return sf::makeOptional<Image>(priv::PassKey<Image>{},
                                    Vector2i{width, height}.to<Vector2u>(),
@@ -268,7 +269,7 @@ sf::Optional<Image> Image::loadFromStream(InputStream& stream)
 bool Image::saveToFile(const Path& filename) const
 {
     // Make sure the image is not empty
-    assert(!m_pixels.empty() && m_size.x > 0 && m_size.y > 0);
+    SFML_ASSERT(!m_pixels.empty() && m_size.x > 0 && m_size.y > 0);
 
     // Extract the extension
     const Path extension     = filename.extension();
@@ -313,7 +314,7 @@ bool Image::saveToFile(const Path& filename) const
 sf::Optional<std::vector<std::uint8_t>> Image::saveToMemory(std::string_view format) const
 {
     // Make sure the image is not empty
-    assert(!m_pixels.empty() && m_size.x > 0 && m_size.y > 0);
+    SFML_ASSERT(!m_pixels.empty() && m_size.x > 0 && m_size.y > 0);
 
     // Choose function based on format
     const std::string specified     = priv::toLower(std::string(format));
@@ -357,7 +358,7 @@ Vector2u Image::getSize() const
 void Image::createMaskFromColor(const Color& color, std::uint8_t alpha)
 {
     // Make sure that the image is not empty
-    assert(!m_pixels.empty());
+    SFML_ASSERT(!m_pixels.empty());
 
     // Replace the alpha of the pixels that match the transparent color
     std::uint8_t* ptr = m_pixels.data();
@@ -376,7 +377,7 @@ void Image::createMaskFromColor(const Color& color, std::uint8_t alpha)
 [[nodiscard]] bool Image::copy(const Image& source, const Vector2u& dest, const IntRect& sourceRect, bool applyAlpha)
 {
     // Make sure that both images are valid
-    assert(source.m_size.x > 0 && source.m_size.y > 0 && m_size.x > 0 && m_size.y > 0);
+    SFML_ASSERT(source.m_size.x > 0 && source.m_size.y > 0 && m_size.x > 0 && m_size.y > 0);
 
     // Make sure the sourceRect components are non-negative before casting them to unsigned values
     if (sourceRect.position.x < 0 || sourceRect.position.y < 0 || sourceRect.size.x < 0 || sourceRect.size.y < 0)
@@ -462,8 +463,8 @@ void Image::createMaskFromColor(const Color& color, std::uint8_t alpha)
 ////////////////////////////////////////////////////////////
 void Image::setPixel(const Vector2u& coords, const Color& color)
 {
-    assert(coords.x < m_size.x && "Image::setPixel() x coordinate is out of bounds");
-    assert(coords.y < m_size.y && "Image::setPixel() y coordinate is out of bounds");
+    SFML_ASSERT(coords.x < m_size.x && "Image::setPixel() x coordinate is out of bounds");
+    SFML_ASSERT(coords.y < m_size.y && "Image::setPixel() y coordinate is out of bounds");
 
     const auto    index = (coords.x + coords.y * m_size.x) * 4;
     std::uint8_t* pixel = &m_pixels[index];
@@ -478,8 +479,8 @@ void Image::setPixel(const Vector2u& coords, const Color& color)
 ////////////////////////////////////////////////////////////
 Color Image::getPixel(const Vector2u& coords) const
 {
-    assert(coords.x < m_size.x && "Image::getPixel() x coordinate is out of bounds");
-    assert(coords.y < m_size.y && "Image::getPixel() y coordinate is out of bounds");
+    SFML_ASSERT(coords.x < m_size.x && "Image::getPixel() x coordinate is out of bounds");
+    SFML_ASSERT(coords.y < m_size.y && "Image::getPixel() y coordinate is out of bounds");
 
     const auto          index = (coords.x + coords.y * m_size.x) * 4;
     const std::uint8_t* pixel = &m_pixels[index];
@@ -491,7 +492,7 @@ Color Image::getPixel(const Vector2u& coords) const
 ////////////////////////////////////////////////////////////
 const std::uint8_t* Image::getPixelsPtr() const
 {
-    assert(!m_pixels.empty());
+    SFML_ASSERT(!m_pixels.empty());
     return m_pixels.data();
 }
 
@@ -499,7 +500,7 @@ const std::uint8_t* Image::getPixelsPtr() const
 ////////////////////////////////////////////////////////////
 void Image::flipHorizontally()
 {
-    assert(!m_pixels.empty());
+    SFML_ASSERT(!m_pixels.empty());
 
     const std::size_t rowSize = m_size.x * 4;
 
@@ -522,7 +523,7 @@ void Image::flipHorizontally()
 ////////////////////////////////////////////////////////////
 void Image::flipVertically()
 {
-    assert(!m_pixels.empty());
+    SFML_ASSERT(!m_pixels.empty());
 
     const auto rowSize = static_cast<decltype(m_pixels)::difference_type>(m_size.x * 4);
 

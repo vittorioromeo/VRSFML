@@ -71,6 +71,8 @@ set(SRC
     ${INCROOT}/RectUtils.hpp
     ${INCROOT}/RectUtils.inl
     ${INCROOT}/Optional.hpp
+    ${INCROOT}/Assert.hpp
+    ${SRCROOT}/Assert.cpp
 )
 
 if(SFML_ENABLE_PCH)
@@ -131,4 +133,8 @@ elseif(SFML_OS_WINDOWS)
     target_link_libraries(sfml-system PRIVATE winmm)
 elseif(SFML_OS_ANDROID)
     target_link_libraries(sfml-system PRIVATE android log)
+endif()
+
+if(SFML_ENABLE_STACK_TRACES)
+    target_link_libraries(sfml-system PRIVATE cpptrace::cpptrace)
 endif()

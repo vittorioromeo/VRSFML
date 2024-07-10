@@ -55,36 +55,6 @@ class [[nodiscard]] GlContext
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Register an OpenGL object to be destroyed when its containing context is destroyed
-    ///
-    /// This is used for internal purposes in order to properly
-    /// clean up OpenGL resources that cannot be shared bwteen
-    /// contexts.
-    ///
-    /// \param object Object to be destroyed when its containing context is destroyed
-    ///
-    ////////////////////////////////////////////////////////////
-    static void registerUnsharedGlObject(void* objectSharedPtr);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Unregister an OpenGL object from its containing context
-    ///
-    /// \param object Object to be unregister
-    ///
-    ////////////////////////////////////////////////////////////
-    static void unregisterUnsharedGlObject(void* objectSharedPtr);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Check whether a given OpenGL extension is available
-    ///
-    /// \param name Name of the extension to check for
-    ///
-    /// \return True if available, false if unavailable
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static bool isExtensionAvailable(GraphicsContext& graphicsContext, const char* name);
-
-    ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
@@ -113,22 +83,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const ContextSettings& getSettings() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Activate or deactivate the context as the current target for rendering
-    ///
-    /// A context is active only on the current thread, if you want to
-    /// make it active on another thread you have to deactivate it
-    /// on the previous thread first if it was active.
-    /// Only one context can be active on a thread at a time, thus
-    /// the context previously active (if any) automatically gets deactivated.
-    ///
-    /// \param active True to activate, false to deactivate
-    ///
-    /// \return True if operation was successful, false otherwise
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool setActive(bool active);
 
     ////////////////////////////////////////////////////////////
     /// \brief Display what has been rendered to the context so far
@@ -163,7 +117,7 @@ protected:
     /// This constructor is meant for derived classes only.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit GlContext(const ContextSettings& settings);
+    [[nodiscard]] explicit GlContext(GraphicsContext& graphicsContext, std::uint64_t id, const ContextSettings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Activate the context as the current target
@@ -175,12 +129,6 @@ protected:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] virtual bool makeCurrent(bool current) = 0;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Notify unshared resources of context destruction
-    ///
-    ////////////////////////////////////////////////////////////
-    void cleanupUnsharedResources();
 
     ////////////////////////////////////////////////////////////
     /// \brief Evaluate a pixel format configuration
@@ -214,7 +162,8 @@ protected:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    ContextSettings m_settings; //!< Creation settings of the context
+    ContextSettings  m_settings; //!< Creation settings of the context
+    GraphicsContext& m_graphicsContext;
 
 private:
     friend GraphicsContext;
@@ -229,8 +178,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    struct Impl;
-    const priv::InPlacePImpl<Impl, 32> m_impl; //!< Implementation details
+    const std::uint64_t m_id;
 };
 
 } // namespace sf::priv

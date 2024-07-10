@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <cassert>
+#include <SFML/System/Assert.hpp>
 
 #if !__has_builtin(__is_base_of)
 
@@ -117,13 +117,13 @@ public:
 
     [[nodiscard, gnu::always_inline]] T& operator*() const noexcept
     {
-        assert(m_ptr != nullptr);
+        SFML_ASSERT(m_ptr != nullptr);
         return *m_ptr;
     }
 
     [[nodiscard, gnu::always_inline]] T* operator->() const noexcept
     {
-        assert(m_ptr != nullptr);
+        SFML_ASSERT(m_ptr != nullptr);
         return m_ptr;
     }
 

@@ -53,10 +53,10 @@
 #include <SFML/Audio/SoundFileReaderMp3.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
+#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InputStream.hpp>
 
-#include <cassert>
 #include <cstdint>
 #include <cstring>
 
@@ -169,7 +169,7 @@ sf::Optional<SoundFileReader::Info> SoundFileReaderMp3::open(InputStream& stream
             break;
         default:
             priv::err() << "MP3 files with more than 2 channels not supported" << priv::errEndl;
-            assert(false);
+            SFML_ASSERT(false);
             break;
     }
 

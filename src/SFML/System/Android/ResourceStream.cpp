@@ -42,7 +42,7 @@ ResourceStream::ResourceStream(const Path& filename)
     ActivityStates&       states = getActivity();
     const std::lock_guard lock(states.mutex);
     m_file.reset(AAssetManager_open(states.activity->assetManager, filename.c_str(), AASSET_MODE_UNKNOWN));
-    assert(m_file && "Failed to initialize ResourceStream file");
+    SFML_ASSERT(m_file && "Failed to initialize ResourceStream file");
 }
 
 
