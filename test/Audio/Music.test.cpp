@@ -5,6 +5,7 @@
 // Other 1st party headers
 #include <SFML/System/FileInputStream.hpp>
 #include <SFML/System/Path.hpp>
+#include <SFML/System/Sleep.hpp>
 #include <SFML/System/Time.hpp>
 
 #include <Doctest.hpp>
@@ -13,8 +14,8 @@
 #include <LoadIntoMemoryUtil.hpp>
 #include <SystemUtil.hpp>
 
-#include <thread>
 #include <type_traits>
+
 
 TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
 {
@@ -119,19 +120,19 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
         // Wait for background thread to start
         music.play(playbackDevice);
         while (music.getStatus() == sf::Music::Status::Stopped)
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            sf::sleep(sf::milliseconds(10));
         CHECK(music.getStatus() == sf::Music::Status::Playing);
 
         // Wait for background thread to pause
         music.pause();
         while (music.getStatus() == sf::Music::Status::Playing)
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            sf::sleep(sf::milliseconds(10));
         CHECK(music.getStatus() == sf::Music::Status::Paused);
 
         // Wait for background thread to stop
         music.stop();
         while (music.getStatus() == sf::Music::Status::Paused)
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            sf::sleep(sf::milliseconds(10));
         CHECK(music.getStatus() == sf::Music::Status::Stopped);
     }
 

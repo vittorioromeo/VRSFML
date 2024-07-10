@@ -22,72 +22,57 @@
 //
 ////////////////////////////////////////////////////////////
 
+#pragma once
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/GlContext.hpp>
-#include <SFML/Window/GraphicsContext.hpp>
+#include <SFML/Audio/Listener.hpp>
 
-#include <SFML/System/Err.hpp>
-#include <SFML/System/Macros.hpp>
+#include <SFML/System/Angle.hpp>
+#include <SFML/System/Vector3.hpp>
 
-
-namespace sf
-{
-////////////////////////////////////////////////////////////
-Context::Context(GraphicsContext& graphicsContext) :
-m_graphicsContext(&graphicsContext),
-m_context(graphicsContext.createGlContext())
-{
-}
+#include <cfloat>
 
 
 ////////////////////////////////////////////////////////////
-Context::~Context()
-{
-}
-
-
+// Forward declarations
 ////////////////////////////////////////////////////////////
-Context::Context(Context&& rhs) noexcept : m_graphicsContext(rhs.m_graphicsContext), m_context(SFML_MOVE(rhs.m_context))
+struct ma_sound;
+
+
+namespace sf::priv
 {
-}
-
-
 ////////////////////////////////////////////////////////////
-Context& Context::operator=(Context&& rhs) noexcept
+struct SavedSettings
 {
-    if (this == &rhs)
-        return *this;
+    float          pitch{1.f};
+    float          pan{0.f};
+    float          volume{1.f};
+    bool           spatializationEnabled{true};
+    Vector3f       position{0.f, 0.f, 0.f};
+    Vector3f       direction{0.f, 0.f, -1.f};
+    float          directionalAttenuationFactor{1.f};
+    Vector3f       velocity{0.f, 0.f, 0.f};
+    float          dopplerFactor{1.f};
+    int            positioning{0 /* ma_positioning_absolute */};
+    float          minDistance{1.f};
+    float          maxDistance{FLT_MAX};
+    float          minGain{0.f};
+    float          maxGain{1.f};
+    float          rollOff{1.f};
+    bool           playing{false};
+    bool           looping{false};
+    Listener::Cone cone{radians(6.283185f), radians(6.283185f), 0.f};
 
-    m_graphicsContext = rhs.m_graphicsContext;
-    m_context         = SFML_MOVE(rhs.m_context);
+    ////////////////////////////////////////////////////////////
+    explicit SavedSettings() = default;
 
-    return *this;
-}
+    ////////////////////////////////////////////////////////////
+    explicit SavedSettings(const ma_sound& sound);
 
+    ////////////////////////////////////////////////////////////
+    void applyOnto(ma_sound& sound) const;
+};
 
-////////////////////////////////////////////////////////////
-bool Context::setAct ive(bool active)
-{
-    return m_context->setActive(active);
-}
-
-
-////////////////////////////////////////////////////////////
-const ContextSettings& Context::getSettings() const
-{
-    return m_context->getSettings();
-}
-
-
-////////////////////////////////////////////////////////////
-Context::Context(GraphicsContext& graphicsContext, const ContextSettings& settings, const Vector2u& size) :
-m_graphicsContext(&graphicsContext),
-m_context(graphicsContext.createGlContext(settings, size))
-{
-    if (!setActive(true))
-        priv::err() << "Failed to set context as active during construction" << priv::errEndl;
-}
-
-} // namespace sf
+} // namespace sf::priv

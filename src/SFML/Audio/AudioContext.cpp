@@ -27,6 +27,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/AudioContext.hpp>
 #include <SFML/Audio/CaptureDeviceHandle.hpp>
+#include <SFML/Audio/MiniaudioUtils.hpp>
 #include <SFML/Audio/PlaybackDeviceHandle.hpp>
 
 #include <SFML/System/Err.hpp>
@@ -35,8 +36,6 @@
 #include <SFML/System/UniquePtr.hpp>
 
 #include <miniaudio.h>
-
-#include <utility>
 
 
 namespace
@@ -54,18 +53,12 @@ void maLogCallback(void*, ma_uint32 level, const char* message)
 {
     // Create the log
     if (const ma_result result = ma_log_init(nullptr, &log); result != MA_SUCCESS)
-    {
-        sf::priv::err() << "Failed to initialize the audio log: " << ma_result_description(result) << sf::priv::errEndl;
-        return false;
-    }
+        return sf::priv::MiniaudioUtils::fail("initialize the audio log", result);
 
     // Register our logging callback to output any warning/error messages
     if (const ma_result result = ma_log_register_callback(&log, ma_log_callback_init(&maLogCallback, nullptr));
         result != MA_SUCCESS)
-    {
-        sf::priv::err() << "Failed to register audio log callback: " << ma_result_description(result) << sf::priv::errEndl;
-        return false;
-    }
+        return sf::priv::MiniaudioUtils::fail("register audio log callback", result);
 
     return true;
 }
@@ -87,22 +80,12 @@ void maLogCallback(void*, ma_uint32 level, const char* message)
     {
         // We can set backendCount to 1 since it is ignored when backends is set to nullptr
         if (const ma_result result = ma_context_init(backendList, 1, &contextConfig, &maContext); result != MA_SUCCESS)
-        {
-            sf::priv::err() << "Failed to initialize the audio playback context: " << ma_result_description(result)
-                            << sf::priv::errEndl;
-
-            return false;
-        }
+            return sf::priv::MiniaudioUtils::fail("initialize the audio playback", result);
 
         // Count the playback devices
         if (const ma_result result = ma_context_get_devices(&maContext, nullptr, &deviceCount, nullptr, nullptr);
             result != MA_SUCCESS)
-        {
-            sf::priv::err() << "Failed to get audio playback devices: " << ma_result_description(result)
-                            << sf::priv::errEndl;
-
-            return false;
-        }
+            return sf::priv::MiniaudioUtils::fail("get audio playback devices", result);
 
         // Check if there are audio playback devices available on the system
         if (deviceCount > 0)
@@ -139,10 +122,7 @@ template <typename F>
     // Get the playback devices
     if (const ma_result result = ma_context_get_devices(&maContext, &maDeviceInfosPtr, &maDeviceInfoCount, nullptr, nullptr);
         result != MA_SUCCESS)
-    {
-        sf::priv::err() << "Failed to get audio playback devices: " << ma_result_description(result) << sf::priv::errEndl;
-        return false; // Empty device entry impl vector
-    }
+        return sf::priv::MiniaudioUtils::fail("get audio playback devices", result);
 
     maDeviceInfoVector.reserve(maDeviceInfoCount);
 
@@ -150,6 +130,37 @@ template <typename F>
         func(maDeviceInfosPtr[i]);
 
     return true;
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename THandle, typename F>
+std::vector<THandle> getAvailableDeviceHandles(sf::priv::PassKey<sf::AudioContext>&& passKey,
+                                               ma_context&                           maContext,
+                                               const char*                           type,
+                                               F&&                                   fMAContextGetDevices)
+{
+    std::vector<THandle> deviceHandles; // Use a single local variable for NRVO
+
+    ma_device_info* maDeviceInfosPtr{};
+    ma_uint32       maDeviceInfoCount{};
+
+    // Get the Capture devices
+    if (const ma_result result = fMAContextGetDevices(&maContext, &maDeviceInfosPtr, &maDeviceInfoCount);
+        result != MA_SUCCESS)
+    {
+        sf::priv::err() << "Failed to get audio " << type << " devices: " << ma_result_description(result)
+                        << sf::priv::errEndl;
+
+        return deviceHandles; // Empty device handle vector
+    }
+
+    deviceHandles.reserve(maDeviceInfoCount);
+
+    for (ma_uint32 i = 0u; i < maDeviceInfoCount; ++i)
+        deviceHandles.emplace_back(SFML_MOVE(passKey), &maDeviceInfosPtr[i]);
+
+    return deviceHandles;
 }
 
 } // namespace
@@ -195,36 +206,12 @@ sf::Optional<AudioContext> AudioContext::create()
 
 
 ////////////////////////////////////////////////////////////
-template <typename THandle, typename F>
-std::vector<THandle> AudioContext::getAvailableDeviceHandles(const char* type, F&& fMAContextGetDevices)
-{
-    std::vector<THandle> deviceHandles; // Use a single local variable for NRVO
-
-    ma_device_info* maDeviceInfosPtr{};
-    ma_uint32       maDeviceInfoCount{};
-
-    // Get the Capture devices
-    if (const ma_result result = fMAContextGetDevices(&m_impl->maContext, &maDeviceInfosPtr, &maDeviceInfoCount);
-        result != MA_SUCCESS)
-    {
-        priv::err() << "Failed to get audio " << type << " devices: " << ma_result_description(result) << priv::errEndl;
-        return deviceHandles; // Empty device handle vector
-    }
-
-    deviceHandles.reserve(maDeviceInfoCount);
-
-    for (ma_uint32 i = 0u; i < maDeviceInfoCount; ++i)
-        deviceHandles.emplace_back(priv::PassKey<AudioContext>{}, &maDeviceInfosPtr[i]);
-
-    return deviceHandles;
-}
-
-
-////////////////////////////////////////////////////////////
 std::vector<PlaybackDeviceHandle> AudioContext::getAvailablePlaybackDeviceHandles()
 {
     return getAvailableDeviceHandles<PlaybackDeviceHandle> //
-        ("playback",
+        (priv::PassKey<AudioContext>{},
+         m_impl->maContext,
+         "playback",
          [](ma_context* maContext, ma_device_info** maDeviceInfosPtr, ma_uint32* maDeviceInfoCount)
          { return ma_context_get_devices(maContext, maDeviceInfosPtr, maDeviceInfoCount, nullptr, nullptr); });
 }
@@ -245,7 +232,9 @@ sf::Optional<PlaybackDeviceHandle> AudioContext::getDefaultPlaybackDeviceHandle(
 std::vector<CaptureDeviceHandle> AudioContext::getAvailableCaptureDeviceHandles()
 {
     return getAvailableDeviceHandles<CaptureDeviceHandle> //
-        ("capture",
+        (priv::PassKey<AudioContext>{},
+         m_impl->maContext,
+         "capture",
          [](ma_context* maContext, ma_device_info** maDeviceInfosPtr, ma_uint32* maDeviceInfoCount)
          { return ma_context_get_devices(maContext, nullptr, nullptr, maDeviceInfosPtr, maDeviceInfoCount); });
 }

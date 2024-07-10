@@ -26,8 +26,6 @@
 
 #include <SFML/System/Export.hpp>
 
-#include <SFML/System/Vector2.hpp>
-
 
 namespace sf
 {

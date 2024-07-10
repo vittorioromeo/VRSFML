@@ -1,4 +1,5 @@
 #include <SFML/System/Clock.hpp>
+#include <SFML/System/Sleep.hpp>
 #include <SFML/System/Time.hpp>
 
 #include <Doctest.hpp>
@@ -6,7 +7,6 @@
 #include <SystemUtil.hpp>
 
 #include <chrono>
-#include <thread>
 #include <type_traits>
 
 TEST_CASE("[System] sf::Clock")
@@ -33,7 +33,7 @@ TEST_CASE("[System] sf::Clock")
         const sf::Clock clock;
         CHECK(clock.getElapsedTime() >= sf::microseconds(0));
         const auto elapsed = clock.getElapsedTime();
-        std::this_thread::sleep_for(1ms);
+        sf::sleep(sf::milliseconds(1));
         CHECK(clock.getElapsedTime() > elapsed);
     }
 
@@ -43,7 +43,7 @@ TEST_CASE("[System] sf::Clock")
         clock.stop();
         CHECK(!clock.isRunning());
         const auto elapsed = clock.getElapsedTime();
-        std::this_thread::sleep_for(1ms);
+        sf::sleep(sf::milliseconds(1));
         CHECK(elapsed == clock.getElapsedTime());
 
         clock.start();
@@ -56,7 +56,7 @@ TEST_CASE("[System] sf::Clock")
         sf::Clock clock;
         CHECK(clock.restart() >= sf::microseconds(0));
         CHECK(clock.isRunning());
-        std::this_thread::sleep_for(1ms);
+        sf::sleep(sf::milliseconds(1));
         const auto elapsed = clock.restart();
         CHECK(clock.restart() < elapsed);
     }

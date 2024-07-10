@@ -41,12 +41,19 @@
 #include <cstdint>
 
 
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
 namespace sf
 {
 class AudioContext;
 class CaptureDeviceHandle;
 class SoundRecorder;
+} // namespace sf
 
+
+namespace sf
+{
 ////////////////////////////////////////////////////////////
 class CaptureDevice
 {
@@ -176,9 +183,11 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     using ProcessSamplesFunc = bool (*)(void* userData, const std::int16_t* samples, std::size_t sampleCount);
-
     void setProcessSamplesFunc(SoundRecorder* soundRecorder, ProcessSamplesFunc processSamplesFunc);
 
+    ////////////////////////////////////////////////////////////
+    // Member data
+    ////////////////////////////////////////////////////////////
     struct Impl;
     priv::UniquePtr<Impl> m_impl; //!< Implementation details
 

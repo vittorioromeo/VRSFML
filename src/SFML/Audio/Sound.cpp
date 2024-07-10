@@ -58,22 +58,22 @@ struct Sound::Impl
     {
         assert(soundBase.hasValue());
 
-        if (!soundBase->initialize(onEnd))
+        if (!soundBase->initialize(&onEnd))
             priv::err() << "Failed to initialize Sound::Impl" << priv::errEndl;
 
         // Because we are providing a custom data source, we have to provide the channel map ourselves
         if (buffer == nullptr || buffer->getChannelMap().empty())
         {
-            soundBase->sound.engineNode.spatializer.pChannelMapIn = nullptr;
+            soundBase->getSound().engineNode.spatializer.pChannelMapIn = nullptr;
             return;
         }
 
-        soundBase->soundChannelMap.clear();
+        soundBase->clearSoundChannelMap();
 
         for (const SoundChannel channel : buffer->getChannelMap())
-            soundBase->soundChannelMap.push_back(priv::MiniaudioUtils::soundChannelToMiniaudioChannel(channel));
+            soundBase->addToSoundChannelMap(priv::MiniaudioUtils::soundChannelToMiniaudioChannel(channel));
 
-        soundBase->sound.engineNode.spatializer.pChannelMapIn = soundBase->soundChannelMap.data();
+        soundBase->refreshSoundChannelMap();
     }
 
     static void onEnd(void* userData, ma_sound* soundPtr)
@@ -83,7 +83,7 @@ struct Sound::Impl
 
         // Seek back to the start of the sound when it finishes playing
         if (const ma_result result = ma_sound_seek_to_pcm_frame(soundPtr, 0); result != MA_SUCCESS)
-            priv::err() << "Failed to seek sound to frame 0: " << ma_result_description(result) << priv::errEndl;
+            priv::MiniaudioUtils::fail("seek sound to frame 0", result);
     }
 
     static ma_result read(ma_data_source* dataSource, void* framesOut, ma_uint64 frameCount, ma_uint64* framesRead)
@@ -278,11 +278,11 @@ void Sound::play(PlaybackDevice& playbackDevice)
 {
     if (!m_impl->soundBase.hasValue())
     {
-        m_impl->soundBase.emplace(playbackDevice, Impl::vtable, [](void* ptr) { static_cast<Impl*>(ptr)->initialize(); });
+        m_impl->soundBase.emplace(playbackDevice, &Impl::vtable, [](void* ptr) { static_cast<Impl*>(ptr)->initialize(); });
         m_impl->initialize();
 
         assert(m_impl->soundBase.hasValue());
-        applyStoredSettings(&m_impl->soundBase->sound);
+        applyStoredSettings(m_impl->soundBase->getSound());
         setEffectProcessor(getEffectProcessor());
         setPlayingOffset(getPlayingOffset());
     }
@@ -290,9 +290,9 @@ void Sound::play(PlaybackDevice& playbackDevice)
     if (m_impl->status == Status::Playing)
         setPlayingOffset(Time::Zero);
 
-    if (const ma_result result = ma_sound_start(&m_impl->soundBase->sound); result != MA_SUCCESS)
+    if (const ma_result result = ma_sound_start(&m_impl->soundBase->getSound()); result != MA_SUCCESS)
     {
-        priv::err() << "Failed to start playing sound: " << ma_result_description(result) << priv::errEndl;
+        priv::MiniaudioUtils::fail("start playing sound", result);
         return;
     }
 
@@ -306,9 +306,9 @@ void Sound::pause()
     if (!m_impl->soundBase.hasValue())
         return;
 
-    if (const ma_result result = ma_sound_stop(&m_impl->soundBase->sound); result != MA_SUCCESS)
+    if (const ma_result result = ma_sound_stop(&m_impl->soundBase->getSound()); result != MA_SUCCESS)
     {
-        priv::err() << "Failed to stop playing sound: " << ma_result_description(result) << priv::errEndl;
+        priv::MiniaudioUtils::fail("pause playing sound", result);
         return;
     }
 
@@ -323,9 +323,9 @@ void Sound::stop()
     if (!m_impl->soundBase.hasValue())
         return;
 
-    if (const ma_result result = ma_sound_stop(&m_impl->soundBase->sound); result != MA_SUCCESS)
+    if (const ma_result result = ma_sound_stop(&m_impl->soundBase->getSound()); result != MA_SUCCESS)
     {
-        priv::err() << "Failed to stop playing sound: " << ma_result_description(result) << priv::errEndl;
+        priv::MiniaudioUtils::fail("stop playing sound", result);
         return;
     }
 
@@ -357,7 +357,7 @@ void Sound::setBuffer(const SoundBuffer& buffer)
         m_impl->initialize();
 
         assert(m_impl->soundBase.hasValue());
-        applyStoredSettings(&m_impl->soundBase->sound);
+        applyStoredSettings(m_impl->soundBase->getSound());
         setEffectProcessor(getEffectProcessor());
         setPlayingOffset(getPlayingOffset());
     }
@@ -373,10 +373,10 @@ void Sound::setPlayingOffset(Time playingOffset)
     if (!m_impl->soundBase.hasValue())
         return;
 
-    if (m_impl->soundBase->sound.pDataSource == nullptr || m_impl->soundBase->sound.engineNode.pEngine == nullptr)
+    if (m_impl->soundBase->getSound().pDataSource == nullptr || m_impl->soundBase->getSound().engineNode.pEngine == nullptr)
         return;
 
-    const auto frameIndex = priv::MiniaudioUtils::getFrameIndex(m_impl->soundBase->sound, playingOffset);
+    const auto frameIndex = ma_uint64{priv::MiniaudioUtils::getFrameIndex(m_impl->soundBase->getSound(), playingOffset)};
 
     if (m_impl->buffer != nullptr)
         m_impl->cursor = static_cast<std::size_t>(frameIndex * m_impl->buffer->getChannelCount());
@@ -391,8 +391,7 @@ void Sound::setEffectProcessor(EffectProcessor effectProcessor)
     if (!m_impl->soundBase.hasValue())
         return;
 
-    m_impl->soundBase->effectProcessor = effectProcessor;
-    m_impl->soundBase->connectEffect(bool{m_impl->soundBase->effectProcessor});
+    m_impl->soundBase->setAndConnectEffectProcessor(SFML_MOVE(effectProcessor));
 }
 
 
@@ -442,7 +441,7 @@ void* Sound::getSound() const
     if (!m_impl->soundBase.hasValue())
         return nullptr;
 
-    return &m_impl->soundBase->sound;
+    return &m_impl->soundBase->getSound();
 }
 
 } // namespace sf

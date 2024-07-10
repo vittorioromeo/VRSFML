@@ -59,9 +59,9 @@ sf::Optional<Cursor> Cursor::loadFromPixels(const std::uint8_t* pixels, Vector2u
     sf::Optional<Cursor> cursor; // Use a single local variable for NRVO
 
     if ((pixels == nullptr) || (size.x == 0) || (size.y == 0))
-        return cursor;
+        return cursor; // Empty optional
 
-    cursor = sf::makeOptional<Cursor>(priv::PassKey<Cursor>{});
+    cursor.emplace(priv::PassKey<Cursor>{});
     if (!cursor->m_impl->loadFromPixels(pixels, size, hotspot))
     {
         priv::err() << "Failed to load cursor from pixels (invalid arguments)" << priv::errEndl;

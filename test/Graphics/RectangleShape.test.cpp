@@ -1,3 +1,4 @@
+#include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 
 #include <Doctest.hpp>
