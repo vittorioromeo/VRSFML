@@ -27,6 +27,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/AudioContext.hpp>
 #include <SFML/Audio/Listener.hpp>
+#include <SFML/Audio/MiniaudioUtils.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
 #include <SFML/Audio/PlaybackDeviceHandle.hpp>
 
@@ -55,7 +56,7 @@ struct PlaybackDevice::Impl
         ma_engine& maEngine = *static_cast<ma_engine*>(maDevice->pUserData);
 
         if (const ma_result result = ma_engine_read_pcm_frames(&maEngine, output, frameCount, nullptr); result != MA_SUCCESS)
-            priv::err() << "Failed to read PCM frames from audio engine: " << ma_result_description(result) << priv::errEndl;
+            priv::MiniaudioUtils::fail("read PCM frames from audio engine", result);
     }
 
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
@@ -88,10 +89,7 @@ struct PlaybackDevice::Impl
                 .pDeviceID = &static_cast<const ma_device_info*>(playbackDeviceHandle.getMADeviceInfo())->id;
 
             if (const ma_result result = ma_device_init(&maContext, &maDeviceConfig, &maDevice); result != MA_SUCCESS)
-            {
-                priv::err() << "Failed to initialize the audio device: " << ma_result_description(result) << priv::errEndl;
-                return false;
-            }
+                return priv::MiniaudioUtils::fail("initialize the audio device", result);
         }
 
         // Initialize miniaudio engine
@@ -103,10 +101,7 @@ struct PlaybackDevice::Impl
             engineConfig.listenerCount = 1;
 
             if (const ma_result result = ma_engine_init(&engineConfig, &maEngine); result != MA_SUCCESS)
-            {
-                priv::err() << "Failed to initialize the audio engine: " << ma_result_description(result) << priv::errEndl;
-                return false;
-            }
+                return priv::MiniaudioUtils::fail("initialize the audio engine", result);
         }
 
         return true;
@@ -205,7 +200,7 @@ void PlaybackDevice::transferResourcesTo(PlaybackDevice& other)
     if (const ma_result result = ma_device_set_master_volume(ma_engine_get_device(engine), listener.getVolume() * 0.01f);
         result != MA_SUCCESS)
     {
-        priv::err() << "Failed to set audio device master volume: " << ma_result_description(result) << priv::errEndl;
+        priv::MiniaudioUtils::fail("set audio device master volume", result);
         return false;
     }
 
@@ -247,7 +242,7 @@ PlaybackDevice::ResourceEntryIndex PlaybackDevice::registerResource(
 {
     const std::lock_guard lock(m_impl->resourcesMutex);
 
-    for (ResourceEntryIndex i = 0; i < m_impl->resources.size(); ++i)
+    for (ResourceEntryIndex i = 0; i < static_cast<PlaybackDevice::ResourceEntryIndex>(m_impl->resources.size()); ++i)
     {
         // Skip active resources
         if (m_impl->resources[i].resource != nullptr)
@@ -260,7 +255,7 @@ PlaybackDevice::ResourceEntryIndex PlaybackDevice::registerResource(
 
     // Add a new resource slot
     m_impl->resources.emplace_back(resource, deinitializeFunc, reinitializeFunc, transferFunc);
-    return m_impl->resources.size() - 1;
+    return static_cast<PlaybackDevice::ResourceEntryIndex>(m_impl->resources.size()) - 1;
 }
 
 

@@ -29,6 +29,7 @@
 #include <SFML/Audio/CaptureDevice.hpp>
 #include <SFML/Audio/CaptureDeviceHandle.hpp>
 #include <SFML/Audio/SoundChannel.hpp>
+#include <SFML/Audio/MiniaudioUtils.hpp>
 
 #include <SFML/System/Err.hpp>
 
@@ -61,7 +62,7 @@ struct CaptureDevice::Impl
 
         // If the derived class wants to stop, stop the capture
         if (const auto result = ma_device_stop(device); result != MA_SUCCESS)
-            priv::err() << "Failed to stop audio capture device: " << ma_result_description(result) << priv::errEndl;
+            priv::MiniaudioUtils::fail("stop audio capture device", result);
     }
 
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
@@ -98,10 +99,7 @@ struct CaptureDevice::Impl
                                                &captureDeviceConfig,
                                                &maDevice);
             result != MA_SUCCESS)
-        {
-            priv::err() << "Failed to initialize the audio device: " << ma_result_description(result) << priv::errEndl;
-            return false;
-        }
+            return priv::MiniaudioUtils::fail("initialize the audio device", result);
 
         return true;
     }
@@ -149,7 +147,7 @@ m_impl(priv::makeUnique<Impl>(audioContext, playbackDeviceHandle))
 ////////////////////////////////////////////////////////////
 CaptureDevice::~CaptureDevice()
 {
-    if (m_impl == nullptr) // Could be moved
+    if (m_impl == nullptr) // Could be moved-from
         return;
 
     assert(!ma_device_is_started(&m_impl->maDevice) &&
@@ -219,10 +217,7 @@ unsigned int CaptureDevice::getSampleRate() const
     assert(!isDeviceStarted() && "Attempted to start an already started audio capture device");
 
     if (const auto result = ma_device_start(&m_impl->maDevice); result != MA_SUCCESS)
-    {
-        priv::err() << "Failed to start audio capture device: " << ma_result_description(result) << priv::errEndl;
-        return false;
-    }
+        return priv::MiniaudioUtils::fail("start audio capture device", result);
 
     return true;
 }
@@ -235,10 +230,7 @@ unsigned int CaptureDevice::getSampleRate() const
     assert(isDeviceStarted() && "Attempted to stop an already stopped audio capture device");
 
     if (const auto result = ma_device_stop(&m_impl->maDevice); result != MA_SUCCESS)
-    {
-        priv::err() << "Failed to stop audio capture device: " << ma_result_description(result) << priv::errEndl;
-        return false;
-    }
+        return priv::MiniaudioUtils::fail("stop audio capture device", result);
 
     return true;
 }

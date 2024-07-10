@@ -27,10 +27,12 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/EffectProcessor.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
+#include <SFML/Audio/SavedSettings.hpp>
 #include <SFML/Audio/SoundSource.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Macros.hpp>
+#include <SFML/System/Time.hpp>
 
 #include <miniaudio.h>
 
@@ -38,179 +40,207 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
+struct SoundSource::Impl
+{
+    priv::SavedSettings savedSettings;
+    EffectProcessor     effectProcessor{};
+    Time                playingOffset;
+};
+
+////////////////////////////////////////////////////////////
+SoundSource::SoundSource() = default;
+
+
+////////////////////////////////////////////////////////////
+SoundSource::SoundSource(const SoundSource&) = default;
+
+
+////////////////////////////////////////////////////////////
+SoundSource::SoundSource(SoundSource&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
+SoundSource& SoundSource::operator=(SoundSource&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
+SoundSource::~SoundSource() = default;
+
+
+////////////////////////////////////////////////////////////
 void SoundSource::setPitch(float pitch)
 {
-    m_pitch = pitch;
+    m_impl->savedSettings.pitch = pitch;
 
     if (auto* sound = static_cast<ma_sound*>(getSound()))
-        ma_sound_set_pitch(sound, m_pitch);
+        ma_sound_set_pitch(sound, pitch);
 }
 
 
 ////////////////////////////////////////////////////////////
 void SoundSource::setPan(float pan)
 {
-    m_pan = pan;
+    m_impl->savedSettings.pan = pan;
 
     if (auto* sound = static_cast<ma_sound*>(getSound()))
-        ma_sound_set_pan(sound, m_pan);
+        ma_sound_set_pan(sound, pan);
 }
 
 
 ////////////////////////////////////////////////////////////
 void SoundSource::setVolume(float volume)
 {
-    m_volume = volume;
+    m_impl->savedSettings.volume = volume * 0.01f;
 
     if (auto* sound = static_cast<ma_sound*>(getSound()))
-        ma_sound_set_volume(sound, m_volume * 0.01f);
+        ma_sound_set_volume(sound, volume * 0.01f);
 }
 
 
 ////////////////////////////////////////////////////////////
 void SoundSource::setSpatializationEnabled(bool spatializationEnabled)
 {
-    m_spatializationEnabled = spatializationEnabled;
+    m_impl->savedSettings.spatializationEnabled = spatializationEnabled;
 
     if (auto* sound = static_cast<ma_sound*>(getSound()))
-        ma_sound_set_spatialization_enabled(sound, m_spatializationEnabled ? MA_TRUE : MA_FALSE);
+        ma_sound_set_spatialization_enabled(sound, spatializationEnabled ? MA_TRUE : MA_FALSE);
 }
 
 
 ////////////////////////////////////////////////////////////
 void SoundSource::setPosition(const Vector3f& position)
 {
-    m_position = position;
+    m_impl->savedSettings.position = position;
 
     if (auto* sound = static_cast<ma_sound*>(getSound()))
-        ma_sound_set_position(sound, m_position.x, m_position.y, m_position.z);
+        ma_sound_set_position(sound, position.x, position.y, position.z);
 }
 
 
 ////////////////////////////////////////////////////////////
 void SoundSource::setDirection(const Vector3f& direction)
 {
-    m_direction = direction;
+    m_impl->savedSettings.direction = direction;
 
     if (auto* sound = static_cast<ma_sound*>(getSound()))
-        ma_sound_set_direction(sound, m_direction.x, m_direction.y, m_direction.z);
+        ma_sound_set_direction(sound, direction.x, direction.y, direction.z);
 }
 
 
 ////////////////////////////////////////////////////////////
 void SoundSource::setCone(const Cone& cone)
 {
-    m_cone = cone;
+    m_impl->savedSettings.cone = cone;
 
     if (auto* sound = static_cast<ma_sound*>(getSound()))
         ma_sound_set_cone(sound,
-                          priv::clamp(m_cone.innerAngle, Angle::Zero, degrees(360.f)).asRadians(),
-                          priv::clamp(m_cone.outerAngle, Angle::Zero, degrees(360.f)).asRadians(),
-                          m_cone.outerGain);
+                          priv::clamp(m_impl->savedSettings.cone.innerAngle, Angle::Zero, degrees(360.f)).asRadians(),
+                          priv::clamp(m_impl->savedSettings.cone.outerAngle, Angle::Zero, degrees(360.f)).asRadians(),
+                          m_impl->savedSettings.cone.outerGain);
 }
 
 
 ////////////////////////////////////////////////////////////
 void SoundSource::setVelocity(const Vector3f& velocity)
 {
-    m_velocity = velocity;
+    m_impl->savedSettings.velocity = velocity;
 
     if (auto* sound = static_cast<ma_sound*>(getSound()))
-        ma_sound_set_velocity(sound, m_velocity.x, m_velocity.y, m_velocity.z);
+        ma_sound_set_velocity(sound, velocity.x, velocity.y, velocity.z);
 }
 
 
 ////////////////////////////////////////////////////////////
 void SoundSource::setDopplerFactor(float dopplerFactor)
 {
-    m_dopplerFactor = dopplerFactor;
+    m_impl->savedSettings.dopplerFactor = dopplerFactor;
 
     if (auto* sound = static_cast<ma_sound*>(getSound()))
-        ma_sound_set_doppler_factor(sound, m_dopplerFactor);
+        ma_sound_set_doppler_factor(sound, dopplerFactor);
 }
 
 
 ////////////////////////////////////////////////////////////
 void SoundSource::setDirectionalAttenuationFactor(float directionalAttenuationFactor)
 {
-    m_directionalAttenuationFactor = directionalAttenuationFactor;
+    m_impl->savedSettings.directionalAttenuationFactor = directionalAttenuationFactor;
 
     if (auto* sound = static_cast<ma_sound*>(getSound()))
-        ma_sound_set_directional_attenuation_factor(sound, m_directionalAttenuationFactor);
+        ma_sound_set_directional_attenuation_factor(sound, directionalAttenuationFactor);
 }
 
 
 ////////////////////////////////////////////////////////////
 void SoundSource::setRelativeToListener(bool relativeToListener)
 {
-    m_relativeToListener = relativeToListener;
+    m_impl->savedSettings.positioning = relativeToListener ? ma_positioning_relative : ma_positioning_absolute;
 
     if (auto* sound = static_cast<ma_sound*>(getSound()))
-        ma_sound_set_positioning(sound, m_relativeToListener ? ma_positioning_relative : ma_positioning_absolute);
+        ma_sound_set_positioning(sound, relativeToListener ? ma_positioning_relative : ma_positioning_absolute);
 }
 
 
 ////////////////////////////////////////////////////////////
 void SoundSource::setMinDistance(float minDistance)
 {
-    m_minDistance = minDistance;
+    m_impl->savedSettings.minDistance = minDistance;
 
     if (auto* sound = static_cast<ma_sound*>(getSound()))
-        ma_sound_set_min_distance(sound, m_minDistance);
+        ma_sound_set_min_distance(sound, minDistance);
 }
 
 
 ////////////////////////////////////////////////////////////
 void SoundSource::setMaxDistance(float maxDistance)
 {
-    m_maxDistance = maxDistance;
+    m_impl->savedSettings.maxDistance = maxDistance;
 
     if (auto* sound = static_cast<ma_sound*>(getSound()))
-        ma_sound_set_max_distance(sound, m_maxDistance);
+        ma_sound_set_max_distance(sound, maxDistance);
 }
 
 
 ////////////////////////////////////////////////////////////
 void SoundSource::setMinGain(float minGain)
 {
-    m_minGain = minGain;
+    m_impl->savedSettings.minGain = minGain;
 
     if (auto* sound = static_cast<ma_sound*>(getSound()))
-        ma_sound_set_min_gain(sound, m_minGain);
+        ma_sound_set_min_gain(sound, minGain);
 }
 
 
 ////////////////////////////////////////////////////////////
 void SoundSource::setMaxGain(float maxGain)
 {
-    m_maxGain = maxGain;
+    m_impl->savedSettings.maxGain = maxGain;
 
     if (auto* sound = static_cast<ma_sound*>(getSound()))
-        ma_sound_set_max_gain(sound, m_maxGain);
+        ma_sound_set_max_gain(sound, maxGain);
 }
 
 
 ////////////////////////////////////////////////////////////
 void SoundSource::setAttenuation(float attenuation)
 {
-    m_attenuation = attenuation;
+    m_impl->savedSettings.rollOff = attenuation;
 
     if (auto* sound = static_cast<ma_sound*>(getSound()))
-        ma_sound_set_rolloff(sound, m_attenuation);
+        ma_sound_set_rolloff(sound, attenuation);
 }
 
 
 ////////////////////////////////////////////////////////////
 void SoundSource::setEffectProcessor(EffectProcessor effectProcessor)
 {
-    m_effectProcessor = SFML_MOVE(effectProcessor);
+    m_impl->effectProcessor = SFML_MOVE(effectProcessor);
 }
 
 
 ////////////////////////////////////////////////////////////
 void SoundSource::setLoop(bool loop)
 {
-    m_loop = loop;
+    m_impl->savedSettings.looping = loop;
 
     if (auto* sound = static_cast<ma_sound*>(getSound()))
         ma_sound_set_looping(sound, loop ? MA_TRUE : MA_FALSE);
@@ -220,7 +250,7 @@ void SoundSource::setLoop(bool loop)
 ////////////////////////////////////////////////////////////
 void SoundSource::setPlayingOffset(Time playingOffset)
 {
-    m_playingOffset = playingOffset;
+    m_impl->playingOffset = playingOffset;
 }
 
 
@@ -234,21 +264,21 @@ float SoundSource::getPitch() const
 ////////////////////////////////////////////////////////////
 float SoundSource::getPan() const
 {
-    return m_pan;
+    return m_impl->savedSettings.pan;
 }
 
 
 ////////////////////////////////////////////////////////////
 float SoundSource::getVolume() const
 {
-    return m_volume;
+    return m_impl->savedSettings.volume;
 }
 
 
 ////////////////////////////////////////////////////////////
 bool SoundSource::isSpatializationEnabled() const
 {
-    return m_spatializationEnabled;
+    return m_impl->savedSettings.spatializationEnabled;
 }
 
 
@@ -256,7 +286,7 @@ bool SoundSource::isSpatializationEnabled() const
 Vector3f SoundSource::getPosition() const
 {
     // NOLINTNEXTLINE(modernize-return-braced-init-list)
-    return m_position;
+    return m_impl->savedSettings.position;
 }
 
 
@@ -264,7 +294,7 @@ Vector3f SoundSource::getPosition() const
 Vector3f SoundSource::getDirection() const
 {
     // NOLINTNEXTLINE(modernize-return-braced-init-list)
-    return m_direction;
+    return m_impl->savedSettings.direction;
 }
 
 
@@ -272,7 +302,7 @@ Vector3f SoundSource::getDirection() const
 SoundSource::Cone SoundSource::getCone() const
 {
     // NOLINTNEXTLINE(modernize-return-braced-init-list)
-    return m_cone;
+    return m_impl->savedSettings.cone;
 }
 
 
@@ -280,63 +310,63 @@ SoundSource::Cone SoundSource::getCone() const
 Vector3f SoundSource::getVelocity() const
 {
     // NOLINTNEXTLINE(modernize-return-braced-init-list)
-    return m_velocity;
+    return m_impl->savedSettings.velocity;
 }
 
 
 ////////////////////////////////////////////////////////////
 float SoundSource::getDopplerFactor() const
 {
-    return m_dopplerFactor;
+    return m_impl->savedSettings.dopplerFactor;
 }
 
 
 ////////////////////////////////////////////////////////////
 float SoundSource::getDirectionalAttenuationFactor() const
 {
-    return m_directionalAttenuationFactor;
+    return m_impl->savedSettings.directionalAttenuationFactor;
 }
 
 
 ////////////////////////////////////////////////////////////
 bool SoundSource::isRelativeToListener() const
 {
-    return m_relativeToListener;
+    return m_impl->savedSettings.positioning == ma_positioning_relative;
 }
 
 
 ////////////////////////////////////////////////////////////
 float SoundSource::getMinDistance() const
 {
-    return m_minDistance;
+    return m_impl->savedSettings.minDistance;
 }
 
 
 ////////////////////////////////////////////////////////////
 float SoundSource::getMaxDistance() const
 {
-    return m_maxDistance;
+    return m_impl->savedSettings.maxDistance;
 }
 
 
 ////////////////////////////////////////////////////////////
 float SoundSource::getMinGain() const
 {
-    return m_minGain;
+    return m_impl->savedSettings.minGain;
 }
 
 
 ////////////////////////////////////////////////////////////
 float SoundSource::getMaxGain() const
 {
-    return m_maxGain;
+    return m_impl->savedSettings.maxGain;
 }
 
 
 ////////////////////////////////////////////////////////////
 float SoundSource::getAttenuation() const
 {
-    return m_attenuation;
+    return m_impl->savedSettings.rollOff;
 }
 
 
@@ -344,21 +374,21 @@ float SoundSource::getAttenuation() const
 EffectProcessor SoundSource::getEffectProcessor() const
 {
     // NOLINTNEXTLINE(modernize-return-braced-init-list)
-    return m_effectProcessor;
+    return m_impl->effectProcessor;
 }
 
 
 ////////////////////////////////////////////////////////////
 bool SoundSource::getLoop() const
 {
-    return m_loop;
+    return m_impl->savedSettings.looping;
 }
 
 
 ////////////////////////////////////////////////////////////
 Time SoundSource::getPlayingOffset() const
 {
-    return m_playingOffset;
+    return m_impl->playingOffset;
 }
 
 
@@ -388,32 +418,11 @@ SoundSource& SoundSource::operator=(const SoundSource& right)
     return *this;
 }
 
-void SoundSource::applyStoredSettings(void* soundPtr) const
+
+////////////////////////////////////////////////////////////
+void SoundSource::applyStoredSettings(ma_sound& sound) const
 {
-    auto* sound = static_cast<ma_sound*>(soundPtr);
-    assert(sound != nullptr);
-
-    ma_sound_set_pitch(sound, m_pitch);
-    ma_sound_set_pan(sound, m_pan);
-    ma_sound_set_volume(sound, m_volume * 0.01f);
-    ma_sound_set_spatialization_enabled(sound, m_spatializationEnabled ? MA_TRUE : MA_FALSE);
-    ma_sound_set_position(sound, m_position.x, m_position.y, m_position.z);
-    ma_sound_set_direction(sound, m_direction.x, m_direction.y, m_direction.z);
-    ma_sound_set_cone(sound,
-                      priv::clamp(m_cone.innerAngle, Angle::Zero, degrees(360.f)).asRadians(),
-                      priv::clamp(m_cone.outerAngle, Angle::Zero, degrees(360.f)).asRadians(),
-                      m_cone.outerGain);
-    ma_sound_set_velocity(sound, m_velocity.x, m_velocity.y, m_velocity.z);
-    ma_sound_set_doppler_factor(sound, m_dopplerFactor);
-    ma_sound_set_directional_attenuation_factor(sound, m_directionalAttenuationFactor);
-    ma_sound_set_positioning(sound, m_relativeToListener ? ma_positioning_relative : ma_positioning_absolute);
-    ma_sound_set_min_distance(sound, m_minDistance);
-    ma_sound_set_max_distance(sound, m_maxDistance);
-    ma_sound_set_min_gain(sound, m_minGain);
-    ma_sound_set_max_gain(sound, m_maxGain);
-    ma_sound_set_rolloff(sound, m_attenuation);
-    ma_sound_set_looping(sound, m_loop ? MA_TRUE : MA_FALSE);
+    m_impl->savedSettings.applyOnto(sound);
 }
-
 
 } // namespace sf

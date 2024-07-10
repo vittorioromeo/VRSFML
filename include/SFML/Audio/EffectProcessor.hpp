@@ -31,6 +31,7 @@
 
 #include <SFML/System/FixedFunction.hpp>
 
+
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////

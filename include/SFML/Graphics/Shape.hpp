@@ -29,7 +29,6 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Export.hpp>
 
-#include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/Transformable.hpp>
 
 #include <SFML/System/InPlacePImpl.hpp>
@@ -44,6 +43,7 @@ namespace sf
 struct RenderStates;
 class RenderTarget;
 class Texture;
+class Color;
 
 ////////////////////////////////////////////////////////////
 /// \brief Base class for textured shapes with outline

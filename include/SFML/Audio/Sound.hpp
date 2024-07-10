@@ -35,13 +35,20 @@
 #include <SFML/System/UniquePtr.hpp>
 
 
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
 namespace sf
 {
 class EffectProcessor;
 class PlaybackDevice;
 class SoundBuffer;
 class Time;
+} // namespace sf
 
+
+namespace sf
+{
 ////////////////////////////////////////////////////////////
 /// \brief Regular sound that can be played in the audio environment
 ///

@@ -29,18 +29,28 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
-#include <SFML/Audio/EffectProcessor.hpp>
 #include <SFML/Audio/Listener.hpp>
 
 #include <SFML/System/Angle.hpp>
-#include <SFML/System/Time.hpp>
+#include <SFML/System/InPlacePImpl.hpp>
 #include <SFML/System/Vector3.hpp>
+
+
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+struct ma_sound;
+
+namespace sf
+{
+class EffectProcessor;
+class PlaybackDevice;
+class Time;
+} // namespace sf
 
 
 namespace sf
 {
-class PlaybackDevice;
-
 ////////////////////////////////////////////////////////////
 /// \brief Base class defining a sound's properties
 ///
@@ -76,25 +86,25 @@ public:
     /// \brief Copy constructor
     ///
     ////////////////////////////////////////////////////////////
-    SoundSource(const SoundSource&) = default;
+    SoundSource(const SoundSource&);
 
     ////////////////////////////////////////////////////////////
     /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    SoundSource(SoundSource&&) noexcept = default;
+    SoundSource(SoundSource&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment
     ///
     ////////////////////////////////////////////////////////////
-    SoundSource& operator=(SoundSource&&) noexcept = default;
+    SoundSource& operator=(SoundSource&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    virtual ~SoundSource() = default;
+    virtual ~SoundSource();
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the pitch of the sound
@@ -631,13 +641,13 @@ protected:
     /// This constructor is meant to be called by derived classes only.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SoundSource() = default;
+    [[nodiscard]] SoundSource();
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    void applyStoredSettings(void* soundPtr) const;
+    void applyStoredSettings(ma_sound& sound) const;
 
 private:
     ////////////////////////////////////////////////////////////
@@ -648,26 +658,11 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] virtual void* getSound() const = 0;
 
-    // TODO: pretty much the same as SavedSettings -- is this necessary at all?
-    float           m_pitch{1.f};
-    float           m_pan{0.f};
-    float           m_volume{1.f};
-    bool            m_spatializationEnabled{true};
-    Vector3f        m_position{0.f, 0.f, 0.f};
-    Vector3f        m_direction{0.f, 0.f, -1.f};
-    Cone            m_cone{radians(6.283185f), radians(6.283185f), 0.0f};
-    Vector3f        m_velocity{0.f, 0.f, 0.f};
-    float           m_dopplerFactor{1.f};
-    float           m_directionalAttenuationFactor{1.f};
-    bool            m_relativeToListener{false};
-    float           m_minDistance{1.f};
-    float           m_maxDistance{3.402823466e+38F};
-    float           m_minGain{0.f};
-    float           m_maxGain{1.f};
-    float           m_attenuation{1.f};
-    EffectProcessor m_effectProcessor{};
-    bool            m_loop{false};
-    Time            m_playingOffset;
+    ////////////////////////////////////////////////////////////
+    /// Member data
+    ////////////////////////////////////////////////////////////
+    struct Impl;
+    priv::InPlacePImpl<Impl, 320> m_impl; //!< Implementation details
 };
 
 } // namespace sf

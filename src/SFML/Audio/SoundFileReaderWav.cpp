@@ -123,7 +123,7 @@ SoundFileReaderWav::~SoundFileReaderWav()
     if (m_impl->decoder)
     {
         if (const ma_result result = ma_decoder_uninit(m_impl->decoder.asPtr()); result != MA_SUCCESS)
-            priv::err() << "Failed to uninitialize wav decoder: " << ma_result_description(result) << priv::errEndl;
+            priv::MiniaudioUtils::fail("uninitialize wav decoder", result);
     }
 }
 
@@ -135,7 +135,7 @@ sf::Optional<SoundFileReader::Info> SoundFileReaderWav::open(InputStream& stream
     {
         if (const ma_result result = ma_decoder_uninit(m_impl->decoder.asPtr()); result != MA_SUCCESS)
         {
-            priv::err() << "Failed to uninitialize wav decoder: " << ma_result_description(result) << priv::errEndl;
+            priv::MiniaudioUtils::fail("uninitialize wav decoder", result);
             return sf::nullOpt;
         }
     }
@@ -151,7 +151,7 @@ sf::Optional<SoundFileReader::Info> SoundFileReaderWav::open(InputStream& stream
     if (const ma_result result = ma_decoder_init(&onRead, &onSeek, &stream, &config, m_impl->decoder.asPtr());
         result != MA_SUCCESS)
     {
-        priv::err() << "Failed to initialize wav decoder: " << ma_result_description(result) << priv::errEndl;
+        priv::MiniaudioUtils::fail("initialize wav decoder", result);
         m_impl->decoder = sf::nullOpt;
         return sf::nullOpt;
     }
@@ -159,7 +159,7 @@ sf::Optional<SoundFileReader::Info> SoundFileReaderWav::open(InputStream& stream
     ma_uint64 frameCount{};
     if (const ma_result result = ma_decoder_get_available_frames(m_impl->decoder.asPtr(), &frameCount); result != MA_SUCCESS)
     {
-        priv::err() << "Failed to get available frames from wav decoder: " << ma_result_description(result) << priv::errEndl;
+        priv::MiniaudioUtils::fail("get available frames from wav decoder", result);
         return sf::nullOpt;
     }
 
@@ -175,7 +175,7 @@ sf::Optional<SoundFileReader::Info> SoundFileReaderWav::open(InputStream& stream
                                                             priv::getArraySize(channelMap));
         result != MA_SUCCESS)
     {
-        priv::err() << "Failed to get data format from wav decoder: " << ma_result_description(result) << priv::errEndl;
+        priv::MiniaudioUtils::fail("get data format from wav decoder", result);
         return sf::nullOpt;
     }
 
@@ -183,7 +183,7 @@ sf::Optional<SoundFileReader::Info> SoundFileReaderWav::open(InputStream& stream
     soundChannels.reserve(m_impl->channelCount);
 
     for (auto i = 0u; i < m_impl->channelCount; ++i)
-        soundChannels.emplace_back(priv::MiniaudioUtils::miniaudioChannelToSoundChannel(channelMap[i]));
+        soundChannels.emplace_back(priv::MiniaudioUtils::miniaudioChannelToSoundChannel(std::uint8_t{channelMap[i]}));
 
     return sf::makeOptional<Info>(
         {frameCount * m_impl->channelCount, m_impl->channelCount, sampleRate, SFML_MOVE(soundChannels)});
@@ -197,7 +197,7 @@ void SoundFileReaderWav::seek(std::uint64_t sampleOffset)
 
     if (const ma_result result = ma_decoder_seek_to_pcm_frame(m_impl->decoder.asPtr(), sampleOffset / m_impl->channelCount);
         result != MA_SUCCESS)
-        priv::err() << "Failed to seek wav sound stream: " << ma_result_description(result) << priv::errEndl;
+        priv::MiniaudioUtils::fail("seek wav sound stream", result);
 }
 
 
@@ -213,7 +213,7 @@ std::uint64_t SoundFileReaderWav::read(std::int16_t* samples, std::uint64_t maxC
                                                             maxCount / m_impl->channelCount,
                                                             &framesRead);
         result != MA_SUCCESS)
-        priv::err() << "Failed to read from wav sound stream: " << ma_result_description(result) << priv::errEndl;
+        priv::MiniaudioUtils::fail("read from wav sound stream", result);
 
     return framesRead * m_impl->channelCount;
 }

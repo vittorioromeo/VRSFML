@@ -42,6 +42,9 @@
 #include <cstdint>
 
 
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
 namespace sf
 {
 class InputSoundFile;
@@ -49,7 +52,11 @@ class InputStream;
 class Path;
 class Sound;
 class Time;
+} // namespace sf
 
+
+namespace sf
+{
 ////////////////////////////////////////////////////////////
 /// \brief Storage for audio samples defining a sound
 ///

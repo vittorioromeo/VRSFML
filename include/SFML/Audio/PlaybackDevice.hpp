@@ -32,10 +32,12 @@
 #include <SFML/System/LifetimeDependant.hpp>
 #include <SFML/System/LifetimeDependee.hpp>
 #include <SFML/System/Optional.hpp>
-#include <SFML/System/SizeT.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
 
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
 namespace sf::priv::MiniaudioUtils
 {
 struct SoundBase;
@@ -48,7 +50,11 @@ class Listener;
 class PlaybackDeviceHandle;
 class Sound;
 class SoundStream;
+} // namespace sf
 
+
+namespace sf
+{
 ////////////////////////////////////////////////////////////
 class PlaybackDevice
 {
@@ -110,7 +116,7 @@ private:
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    using ResourceEntryIndex = priv::SizeT;
+    using ResourceEntryIndex = unsigned int;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO

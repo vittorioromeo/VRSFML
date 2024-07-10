@@ -265,7 +265,7 @@ public:
     /// \see waitEvent, pollEvent
     ///
     ////////////////////////////////////////////////////////////
-    template <typename... Handlers>
+    template <typename... Handlers, auto PollEventFn = &WindowBase::pollEvent>
     void pollAndHandleEvents(Handlers&&... handlers);
 
     ////////////////////////////////////////////////////////////

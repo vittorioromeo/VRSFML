@@ -45,8 +45,8 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
-class PlaybackDevice;
 class CaptureDevice;
+class PlaybackDevice;
 } // namespace sf
 
 
@@ -148,21 +148,16 @@ public:
     [[nodiscard]] SFML_AUDIO_API sf::Optional<CaptureDeviceHandle> getDefaultCaptureDeviceHandle();
 
 private:
-    friend PlaybackDevice;
     friend CaptureDevice;
+    friend PlaybackDevice;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO
+    /// Implementation detail, returns a pointer to the miniaudio
+    /// context. This pointer is used in the playback and capture
+    /// device implementations to initialize the miniaudio devices.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] SFML_AUDIO_API void* getMAContext() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO
-    ///
-    ////////////////////////////////////////////////////////////
-    template <typename THandle, typename F>
-    std::vector<THandle> getAvailableDeviceHandles(const char* type, F&& fMAContextGetDevices);
 
 public:
     ////////////////////////////////////////////////////////////
@@ -174,14 +169,17 @@ public:
     [[nodiscard]] SFML_AUDIO_API explicit AudioContext(priv::PassKey<AudioContext>&&);
 
 private:
+    ////////////////////////////////////////////////////////////
+    // Member data
+    ////////////////////////////////////////////////////////////
     struct Impl;
     priv::UniquePtr<Impl> m_impl; //!< Implementation details (needs address stability)
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking
     ////////////////////////////////////////////////////////////
-    SFML_DEFINE_LIFETIME_DEPENDEE(AudioContext, PlaybackDevice);
     SFML_DEFINE_LIFETIME_DEPENDEE(AudioContext, CaptureDevice);
+    SFML_DEFINE_LIFETIME_DEPENDEE(AudioContext, PlaybackDevice);
 };
 
 } // namespace sf

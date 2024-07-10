@@ -44,10 +44,18 @@ inline constexpr struct InPlace
 {
 } inPlace;
 
+
 ////////////////////////////////////////////////////////////
 inline constexpr struct NullOpt
 {
 } nullOpt;
+
+
+////////////////////////////////////////////////////////////
+inline constexpr struct FromFunc
+{
+} fromFunc;
+
 
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -175,6 +183,15 @@ public:
 
 
     //////////////////////////////////////////
+    template <typename F>
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+    [[nodiscard, gnu::always_inline]] constexpr explicit Optional(FromFunc, F&& func) : m_engaged{true}
+    {
+        SFML_PRIV_PLACEMENT_NEW(m_buffer) T(SFML_FORWARD(func)());
+    }
+
+
+    //////////////////////////////////////////
     template <typename... Args>
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[gnu::always_inline]] constexpr T& emplace(Args&&... args)
@@ -184,6 +201,19 @@ public:
 
         m_engaged = true;
         return *(SFML_PRIV_PLACEMENT_NEW(m_buffer) T(SFML_FORWARD(args)...));
+    }
+
+
+    //////////////////////////////////////////
+    template <typename F>
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+    [[gnu::always_inline]] constexpr T& emplaceFromFunc(F&& func)
+    {
+        if (m_engaged)
+            SFML_PRIV_LAUNDER_CAST(T*, m_buffer)->~T();
+
+        m_engaged = true;
+        return *(SFML_PRIV_PLACEMENT_NEW(m_buffer) T(SFML_FORWARD(func)()));
     }
 
 
@@ -389,7 +419,15 @@ template <typename Object>
 template <typename T, typename... Args>
 [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Optional<T> makeOptional(Args&&... args)
 {
-    return Optional<T>{sf::inPlace, SFML_FORWARD(args)...};
+    return Optional<T>{inPlace, SFML_FORWARD(args)...};
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename F>
+[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr auto makeOptionalFromFunc(F&& f)
+{
+    return Optional<decltype(SFML_FORWARD(f)())>{fromFunc, SFML_FORWARD(f)};
 }
 
 } // namespace sf

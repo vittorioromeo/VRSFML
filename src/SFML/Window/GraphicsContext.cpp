@@ -72,7 +72,7 @@ namespace
     if (glGetErrorFunc() == GL_INVALID_ENUM || !majorVersion || !glGetStringiFunc)
     {
         // Try to load the < 3.0 way
-        const char* extensionString = reinterpret_cast<const char*>(glGetStringFunc(GL_EXTENSIONS));
+        const auto* extensionString = reinterpret_cast<const char*>(glGetStringFunc(GL_EXTENSIONS));
 
         if (extensionString == nullptr)
             return result; // Empty vector
@@ -98,7 +98,7 @@ namespace
         return result; // Empty vector
 
     for (unsigned int i = 0; i < static_cast<unsigned int>(numExtensions); ++i)
-        if (const char* extensionString = reinterpret_cast<const char*>(glGetStringiFunc(GL_EXTENSIONS, i)))
+        if (const auto* extensionString = reinterpret_cast<const char*>(glGetStringiFunc(GL_EXTENSIONS, i)))
             result.emplace_back(extensionString);
 
     return result;
