@@ -263,7 +263,7 @@ public:
     struct TouchBegan
     {
         unsigned int finger{}; //!< Index of the finger in case of multi-touch events
-        Vector2i     position; //!< Position of the touch, relative to the top left of the owner window
+        Vector2i     position; //!< Start position of the touch, relative to the top left of the owner window
     };
 
     ////////////////////////////////////////////////////////////
@@ -273,7 +273,7 @@ public:
     struct TouchMoved
     {
         unsigned int finger{}; //!< Index of the finger in case of multi-touch events
-        Vector2i     position; //!< Position of the touch, relative to the top left of the owner window
+        Vector2i     position; //!< Current position of the touch, relative to the top left of the owner window
     };
 
     ////////////////////////////////////////////////////////////
@@ -283,7 +283,7 @@ public:
     struct TouchEnded
     {
         unsigned int finger{}; //!< Index of the finger in case of multi-touch events
-        Vector2i     position; //!< Position of the touch, relative to the top left of the owner window
+        Vector2i     position; //!< Final position of the touch, relative to the top left of the owner window
     };
 
     ////////////////////////////////////////////////////////////

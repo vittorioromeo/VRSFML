@@ -405,26 +405,21 @@ std::optional<sf::Event> eventProcess()
                     if (special && inputEvent.value)
                         doDeferredText = special;
 
-                    if (inputEvent.value)
+                    const auto makeKeyEvent = [&](auto keyEvent)
                     {
-                        sf::Event::KeyPressed keyPressed;
-                        keyPressed.code     = kb;
-                        keyPressed.scancode = sf::Keyboard::Scan::Unknown; // TODO: not implemented
-                        keyPressed.alt      = altDown();
-                        keyPressed.control  = controlDown();
-                        keyPressed.shift    = shiftDown();
-                        keyPressed.system   = systemDown();
-                        return keyPressed;
-                    }
+                        keyEvent.code     = kb;
+                        keyEvent.scancode = sf::Keyboard::Scan::Unknown; // TODO: not implemented
+                        keyEvent.alt      = altDown();
+                        keyEvent.control  = controlDown();
+                        keyEvent.shift    = shiftDown();
+                        keyEvent.system   = systemDown();
+                        return keyEvent;
+                    };
 
-                    sf::Event::KeyReleased keyReleased;
-                    keyReleased.code     = kb;
-                    keyReleased.scancode = sf::Keyboard::Scan::Unknown; // TODO: not implemented
-                    keyReleased.alt      = altDown();
-                    keyReleased.control  = controlDown();
-                    keyReleased.shift    = shiftDown();
-                    keyReleased.system   = systemDown();
-                    return keyReleased;
+                    if (inputEvent.value)
+                        return makeKeyEvent(sf::Event::KeyPressed{});
+
+                    return makeKeyEvent(sf::Event::KeyReleased{});
                 }
             }
             else if (inputEvent.type == EV_REL)
