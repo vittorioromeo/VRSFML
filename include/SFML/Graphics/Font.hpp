@@ -36,8 +36,6 @@
 #include <SFML/System/Rect.hpp>
 #include <SFML/System/Vector2.hpp>
 
-#include <string>
-
 #include <cstddef>
 #include <cstdint>
 
@@ -56,6 +54,7 @@ class InputStream;
 class Path;
 class Text;
 class Texture;
+struct FontInfo;
 struct Glyph;
 
 ////////////////////////////////////////////////////////////
@@ -94,15 +93,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     Font& operator=(Font&& rhs) noexcept;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Holds various information about a font
-    ///
-    ////////////////////////////////////////////////////////////
-    struct Info
-    {
-        std::string family; //!< The font family
-    };
 
     ////////////////////////////////////////////////////////////
     /// \brief Open the font from a file
@@ -173,7 +163,7 @@ public:
     /// \return A structure that holds the font information
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const Info& getInfo() const;
+    [[nodiscard]] const FontInfo& getInfo() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Retrieve a glyph of the font
@@ -392,10 +382,7 @@ public:
     /// \brief Create a font from font handles and a family name
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Font(priv::PassKey<Font>&&,
-                       GraphicsContext& graphicsContext,
-                       void*            fontHandlesSharedPtr,
-                       std::string&&    familyName);
+    [[nodiscard]] Font(priv::PassKey<Font>&&, GraphicsContext& graphicsContext, void* fontHandlesSharedPtr, const char* familyName);
 
 private:
     ////////////////////////////////////////////////////////////

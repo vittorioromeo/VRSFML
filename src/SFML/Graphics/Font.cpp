@@ -26,6 +26,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Font.hpp>
+#include <SFML/Graphics/FontInfo.hpp>
 #include <SFML/Graphics/Glyph.hpp>
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/Texture.hpp>
@@ -166,7 +167,7 @@ struct Font::Impl
     GraphicsContext*             graphicsContext; //!< TODO
     std::shared_ptr<FontHandles> fontHandles;     //!< Shared information about the internal font instance
     bool                         isSmooth{true};  //!< Status of the smooth filter
-    Info                         info;            //!< Information about the font
+    FontInfo                     info;            //!< Information about the font
     mutable PageTable            pages;           //!< Table containing the glyphs pages by character size
     mutable std::vector<std::uint8_t> pixelBuffer; //!< Pixel buffer holding a glyph's pixels before being written to the texture
 #ifdef SFML_SYSTEM_ANDROID
@@ -176,11 +177,11 @@ struct Font::Impl
 
 
 ////////////////////////////////////////////////////////////
-Font::Font(priv::PassKey<Font>&&, GraphicsContext& graphicsContext, void* fontHandlesSharedPtr, std::string&& familyName) :
+Font::Font(priv::PassKey<Font>&&, GraphicsContext& graphicsContext, void* fontHandlesSharedPtr, const char* familyName) :
 m_impl(graphicsContext)
 {
     m_impl->fontHandles = SFML_MOVE(*static_cast<std::shared_ptr<FontHandles>*>(fontHandlesSharedPtr));
-    m_impl->info.family = SFML_MOVE(familyName);
+    m_impl->info.family = familyName;
 }
 
 
@@ -247,10 +248,7 @@ sf::Optional<Font> Font::openFromFile(GraphicsContext& graphicsContext, const Pa
         return sf::nullOpt;
     }
 
-    return sf::makeOptional<Font>(priv::PassKey<Font>{},
-                                  graphicsContext,
-                                  &fontHandles,
-                                  std::string(face->family_name ? face->family_name : ""));
+    return sf::makeOptional<Font>(priv::PassKey<Font>{}, graphicsContext, &fontHandles, face->family_name);
 
 #else
 
@@ -305,10 +303,7 @@ sf::Optional<Font> Font::openFromMemory(GraphicsContext& graphicsContext, const 
         return sf::nullOpt;
     }
 
-    return sf::makeOptional<Font>(priv::PassKey<Font>{},
-                                  graphicsContext,
-                                  &fontHandles,
-                                  std::string(face->family_name ? face->family_name : ""));
+    return sf::makeOptional<Font>(priv::PassKey<Font>{}, graphicsContext, &fontHandles, face->family_name);
 }
 
 
@@ -370,15 +365,12 @@ sf::Optional<Font> Font::openFromStream(GraphicsContext& graphicsContext, InputS
         return sf::nullOpt;
     }
 
-    return sf::makeOptional<Font>(priv::PassKey<Font>{},
-                                  graphicsContext,
-                                  &fontHandles,
-                                  std::string(face->family_name ? face->family_name : ""));
+    return sf::makeOptional<Font>(priv::PassKey<Font>{}, graphicsContext, &fontHandles, face->family_name);
 }
 
 
 ////////////////////////////////////////////////////////////
-const Font::Info& Font::getInfo() const
+const FontInfo& Font::getInfo() const
 {
     return m_impl->info;
 }

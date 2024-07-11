@@ -1,4 +1,5 @@
 #include <SFML/Graphics/Font.hpp>
+#include <SFML/Graphics/FontInfo.hpp>
 #include <SFML/Graphics/Glyph.hpp>
 #include <SFML/Graphics/Texture.hpp>
 

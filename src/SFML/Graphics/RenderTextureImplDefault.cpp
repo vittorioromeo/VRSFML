@@ -67,8 +67,8 @@ bool RenderTextureImplDefault::create(const Vector2u& size, unsigned int, const 
     m_size = size;
 
     // Create the in-memory OpenGL context
-    m_context = m_graphicsContext->createGlContext(settings, size);
-    SFML_ASSERT(m_context != nullptr);
+    m_glContext = m_graphicsContext->createGlContext(settings, size);
+    SFML_ASSERT(m_glContext != nullptr);
 
     return true;
 }
@@ -77,14 +77,14 @@ bool RenderTextureImplDefault::create(const Vector2u& size, unsigned int, const 
 ////////////////////////////////////////////////////////////
 bool RenderTextureImplDefault::activate(bool active)
 {
-    return GraphicsContext::setActiveThreadLocalGlContext(*m_context, active);
+    return m_graphicsContext->setActiveThreadLocalGlContext(*m_glContext, active);
 }
 
 
 ////////////////////////////////////////////////////////////
 bool RenderTextureImplDefault::isSrgb() const
 {
-    return m_context->getSettings().sRgbCapable;
+    return m_glContext->getSettings().sRgbCapable;
 }
 
 

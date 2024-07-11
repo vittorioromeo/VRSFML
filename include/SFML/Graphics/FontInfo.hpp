@@ -22,30 +22,25 @@
 //
 ////////////////////////////////////////////////////////////
 
+#pragma once
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/GlContext.hpp>
-#include <SFML/Window/GraphicsContext.hpp>
-#include <SFML/Window/TransientContextLock.hpp>
+#include <SFML/Graphics/Export.hpp>
 
-#include <SFML/System/Err.hpp>
-#include <SFML/System/Macros.hpp>
+#include <string>
 
 
-namespace sf::priv
+namespace sf
 {
 ////////////////////////////////////////////////////////////
-TransientContextLock::TransientContextLock(GraphicsContext& graphicsContext) : m_graphicsContext(graphicsContext)
-{
-    //m_graphicsContext.acquireTransientContext();
-}
-
-
+/// \brief Holds various information about a font
+///
 ////////////////////////////////////////////////////////////
-TransientContextLock::~TransientContextLock()
+struct SFML_GRAPHICS_API FontInfo
 {
-    // m_graphicsContext.releaseTransientContext();
-}
+    std::string family; //!< The font family
+};
 
-} // namespace sf::priv
+} // namespace sf

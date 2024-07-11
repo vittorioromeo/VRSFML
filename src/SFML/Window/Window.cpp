@@ -44,11 +44,14 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct Window::Window::Impl
 {
+    GraphicsContext*                 graphicsContext;
     priv::UniquePtr<priv::GlContext> glContext;      //!< Platform-specific implementation of the OpenGL context
     Clock                            clock;          //!< Clock for measuring the elapsed time between frames
     Time                             frameTimeLimit; //!< Current framerate limit
 
-    explicit Impl(priv::UniquePtr<priv::GlContext>&& theContext) : glContext(SFML_MOVE(theContext))
+    explicit Impl(GraphicsContext& theGraphicsContext, priv::UniquePtr<priv::GlContext>&& theContext) :
+    graphicsContext(&theGraphicsContext),
+    glContext(SFML_MOVE(theContext))
     {
     }
 };
@@ -61,7 +64,7 @@ Window::Window(GraphicsContext&       graphicsContext,
                TWindowBaseArg&&       windowBaseArg,
                unsigned int           bitsPerPixel) :
 WindowBase(SFML_FORWARD(windowBaseArg)),
-m_impl(graphicsContext.createGlContext(settings, *WindowBase::m_impl, bitsPerPixel))
+m_impl(graphicsContext, graphicsContext.createGlContext(settings, *WindowBase::m_impl, bitsPerPixel))
 {
     // Perform common initializations
     SFML_ASSERT(m_impl->glContext);
@@ -161,7 +164,7 @@ bool Window::setActive(bool active) const
 {
     SFML_ASSERT(m_impl->glContext != nullptr);
 
-    if (GraphicsContext::setActiveThreadLocalGlContext(*m_impl->glContext, active))
+    if (m_impl->graphicsContext->setActiveThreadLocalGlContext(*m_impl->glContext, active))
         return true;
 
     priv::err() << "Failed to activate the window's context" << priv::errEndl;

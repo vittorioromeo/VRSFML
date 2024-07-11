@@ -174,7 +174,7 @@ public:
     /// \return Address of the OpenGL function, 0 on failure
     ///
     ////////////////////////////////////////////////////////////
-    static GlFunctionPointer getFunction(const char* name);
+    GlFunctionPointer getFunction(const char* name);
 
 protected:
     friend class VideoModeImpl;

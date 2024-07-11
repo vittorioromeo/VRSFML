@@ -13,8 +13,7 @@ set(SRC
     ${INCROOT}/Export.hpp
     ${SRCROOT}/GlContext.cpp
     ${SRCROOT}/GlContext.hpp
-    ${SRCROOT}/TransientContextLock.cpp
-    ${INCROOT}/TransientContextLock.hpp
+    ${INCROOT}/ContextSettings.hpp
     ${INCROOT}/ContextSettings.hpp
     ${INCROOT}/Event.hpp
     ${INCROOT}/Event.inl

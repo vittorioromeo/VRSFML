@@ -27,7 +27,6 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/BlendMode.hpp>
 #include <SFML/Graphics/GLCheck.hpp>
-#include <SFML/Window/GLExtensions.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Shader.hpp>
@@ -39,6 +38,7 @@
 #include <SFML/Graphics/VertexBuffer.hpp>
 #include <SFML/Graphics/View.hpp>
 
+#include <SFML/Window/GLExtensions.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>

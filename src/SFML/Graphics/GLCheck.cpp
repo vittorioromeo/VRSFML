@@ -26,6 +26,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/GLCheck.hpp>
+
 #include <SFML/Window/GLExtensions.hpp>
 
 #include <SFML/System/Err.hpp>
