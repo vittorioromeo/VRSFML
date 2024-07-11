@@ -150,11 +150,13 @@ void WindowImplDRM::setVisible(bool /*visible*/)
 {
 }
 
+
 ////////////////////////////////////////////////////////////
 void WindowImplDRM::setMouseCursorVisible(bool /*visible*/)
 {
     // TODO: not implemented
 }
+
 
 ////////////////////////////////////////////////////////////
 void WindowImplDRM::setMouseCursorGrabbed(bool /*grabbed*/)
@@ -162,11 +164,13 @@ void WindowImplDRM::setMouseCursorGrabbed(bool /*grabbed*/)
     // TODO: not implemented
 }
 
+
 ////////////////////////////////////////////////////////////
 void WindowImplDRM::setMouseCursor(const CursorImpl& /*cursor*/)
 {
     // TODO: not implemented
 }
+
 
 ////////////////////////////////////////////////////////////
 void WindowImplDRM::setKeyRepeatEnabled(bool /*enabled*/)

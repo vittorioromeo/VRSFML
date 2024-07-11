@@ -33,6 +33,7 @@
 #include <SFML/Window/GlContext.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
 
+#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Macros.hpp>
 #include <SFML/System/UniquePtr.hpp>
@@ -548,32 +549,8 @@ bool RenderTextureImplFBO::activate(bool active)
         return true;
     }
 
-    std::uint64_t contextId = m_impl->graphicsContext->getActiveThreadLocalGlContextId();
-
-    // TODO:
-    /*
-    // In the odd case we have to activate and there is no active
-    // context yet, we have to create one
-    if (!contextId)
-    {
-        if (!m_impl->context)
-            m_impl->context = makeUnique<Context>(*m_impl->graphicsContext);
-
-        if (!m_impl->context->setActive(true))
-        {
-            err() << "Failed to set context as active during render texture activation" << errEndl;
-            return false;
-        }
-
-        contextId = m_impl->graphicsContext->getActiveThreadLocalGlContextId();
-
-        if (!contextId)
-        {
-            err() << "Impossible to activate render texture (failed to create backup context)" << errEndl;
-            return false;
-        }
-    }
-*/
+    SFML_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
+    const std::uint64_t contextId = m_impl->graphicsContext->getActiveThreadLocalGlContextId();
 
     // Lookup the FBO corresponding to the currently active context
     // If none is found, there is no FBO corresponding to the
