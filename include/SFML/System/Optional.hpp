@@ -63,14 +63,14 @@ class [[nodiscard]] Optional
 public:
     //////////////////////////////////////////
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
-    [[nodiscard, gnu::always_inline]] constexpr explicit Optional() noexcept : m_engaged{false}
+    [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional() noexcept : m_engaged{false}
     {
     }
 
 
     //////////////////////////////////////////
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
-    [[nodiscard, gnu::always_inline]] constexpr Optional(NullOpt) noexcept : m_engaged{false}
+    [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional(NullOpt) noexcept : m_engaged{false}
     {
     }
 
