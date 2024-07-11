@@ -414,6 +414,6 @@ namespace sf::priv
 /// \brief Make sure that extensions are initialized
 ///
 ////////////////////////////////////////////////////////////
-void ensureExtensionsInit();
+void ensureExtensionsInit(GraphicsContext& graphicsContext);
 
 } // namespace sf::priv

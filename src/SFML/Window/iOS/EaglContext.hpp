@@ -95,7 +95,7 @@ public:
     /// \return Address of the OpenGL function, 0 on failure
     ///
     ////////////////////////////////////////////////////////////
-    static GlFunctionPointer getFunction(const char* name);
+    GlFunctionPointer getFunction(const char* name);
 
     ////////////////////////////////////////////////////////////
     /// \brief Recreate the render buffers of the context

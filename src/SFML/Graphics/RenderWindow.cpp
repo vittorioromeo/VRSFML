@@ -26,12 +26,12 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/GLCheck.hpp>
-#include <SFML/Window/GLExtensions.hpp>
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/RenderTextureImplFBO.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 
 #include <SFML/Window/Event.hpp>
+#include <SFML/Window/GLExtensions.hpp>
 #include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/WindowBase.hpp>
 

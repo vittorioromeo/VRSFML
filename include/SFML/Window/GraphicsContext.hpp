@@ -64,12 +64,6 @@ public:
     ~GraphicsContext();
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool setSharedContextAsActiveThreadLocalGlContext(bool active);
-
-    ////////////////////////////////////////////////////////////
     /// \brief Create a new context, not associated to a window
     ///
     /// This function automatically chooses the specialized class
@@ -119,7 +113,7 @@ public:
     /// \return True if available, false if unavailable
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isExtensionAvailable(const char* name);
+    [[nodiscard]] bool isExtensionAvailable(const char* name) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the address of an OpenGL function
@@ -132,8 +126,7 @@ public:
     /// \return Address of the OpenGL function, 0 on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static GlFunctionPointer getFunction(const char* name);
-
+    [[nodiscard]] GlFunctionPointer getFunction(const char* name) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Register an OpenGL object to be destroyed when its containing context is destroyed
@@ -167,7 +160,7 @@ public:
     /// \return The currently active context or a null pointer if none is active
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static const priv::GlContext* getActiveThreadLocalGlContext();
+    [[nodiscard]] const priv::GlContext* getActiveThreadLocalGlContextPtr() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the currently active context's ID
@@ -178,25 +171,31 @@ public:
     /// \return The active context's ID or 0 if no context is currently active
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::uint64_t getActiveThreadLocalGlContextId();
+    [[nodiscard]] std::uint64_t getActiveThreadLocalGlContextId() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static bool hasActiveThreadLocalGlContext();
+    [[nodiscard]] bool hasActiveThreadLocalGlContext() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static bool setActiveThreadLocalGlContext(priv::GlContext& glContext, bool active);
+    [[nodiscard]] bool setActiveThreadLocalGlContext(priv::GlContext& glContext, bool active);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
     void onGlContextDestroyed(priv::GlContext& glContext);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool hasAnyActiveGlContext() const;
 
 private:
     struct Impl;

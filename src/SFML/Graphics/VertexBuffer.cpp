@@ -26,14 +26,13 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/GLCheck.hpp>
-#include <SFML/Window/GLExtensions.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Vertex.hpp>
 #include <SFML/Graphics/VertexBuffer.hpp>
 
+#include <SFML/Window/GLExtensions.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
-#include <SFML/Window/TransientContextLock.hpp>
 
 #include <SFML/System/Err.hpp>
 
@@ -122,7 +121,7 @@ VertexBuffer::~VertexBuffer()
 {
     if (m_buffer)
     {
-        const priv::TransientContextLock lock(*m_graphicsContext);
+        SFML_ASSERT(m_graphicsContext->hasAnyActiveGlContext());
 
         glCheck(GLEXT_glDeleteBuffers(1, &m_buffer));
     }
@@ -135,7 +134,7 @@ bool VertexBuffer::create(std::size_t vertexCount)
     if (!isAvailable(*m_graphicsContext))
         return false;
 
-    const priv::TransientContextLock lock(*m_graphicsContext);
+    SFML_ASSERT(m_graphicsContext->hasAnyActiveGlContext());
 
     if (!m_buffer)
         glCheck(GLEXT_glGenBuffers(1, &m_buffer));
@@ -186,7 +185,7 @@ bool VertexBuffer::update(const Vertex* vertices, std::size_t vertexCount, unsig
     if (offset && (offset + vertexCount > m_size))
         return false;
 
-    const priv::TransientContextLock lock(*m_graphicsContext);
+    SFML_ASSERT(m_graphicsContext->hasAnyActiveGlContext());
 
     glCheck(GLEXT_glBindBuffer(GLEXT_GL_ARRAY_BUFFER, m_buffer));
 
@@ -224,7 +223,7 @@ bool VertexBuffer::update([[maybe_unused]] const VertexBuffer& vertexBuffer)
     if (!m_buffer || !vertexBuffer.m_buffer)
         return false;
 
-    const priv::TransientContextLock lock(*m_graphicsContext);
+    SFML_ASSERT(m_graphicsContext->hasAnyActiveGlContext());
 
     // Make sure that extensions are initialized
     priv::ensureExtensionsInit(*m_graphicsContext);
@@ -312,7 +311,7 @@ void VertexBuffer::bind(GraphicsContext& graphicsContext, const VertexBuffer* ve
     if (!isAvailable(graphicsContext))
         return;
 
-    const priv::TransientContextLock lock(graphicsContext);
+    SFML_ASSERT(graphicsContext.hasAnyActiveGlContext());
 
     glCheck(GLEXT_glBindBuffer(GLEXT_GL_ARRAY_BUFFER, vertexBuffer ? vertexBuffer->m_buffer : 0));
 }
@@ -351,7 +350,7 @@ bool VertexBuffer::isAvailable(GraphicsContext& graphicsContext)
 {
     static const bool available = [&graphicsContext]
     {
-        const priv::TransientContextLock lock(graphicsContext);
+        SFML_ASSERT(graphicsContext.hasAnyActiveGlContext());
 
         // Make sure that extensions are initialized
         priv::ensureExtensionsInit(graphicsContext);

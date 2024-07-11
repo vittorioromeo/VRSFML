@@ -77,7 +77,7 @@ void ensureInit()
 
 
 ////////////////////////////////////////////////////////////
-void ensureExtensionsInit(HDC deviceContext)
+void ensureExtensionsInit(sf::priv::WglContext& wglContext, HDC deviceContext)
 {
     static bool initialized = false;
     if (initialized)
@@ -87,7 +87,10 @@ void ensureExtensionsInit(HDC deviceContext)
 
     // We don't check the return value since the extension
     // flags are cleared even if loading fails
-    gladLoadWGL(deviceContext, sf::priv::WglContext::getFunction);
+
+    // TODO:
+    static auto* wglContextPtr = &wglContext;
+    gladLoadWGL(deviceContext, [](const char* name) { return wglContextPtr->getFunction(name); });
 }
 
 } // namespace WglContextImpl
@@ -112,7 +115,7 @@ m_context(createContext(m_settings, m_surfaceData, shared))
     if (shared == nullptr && m_context)
     {
         makeCurrent(true);
-        WglContextImpl::ensureExtensionsInit(m_surfaceData.deviceContext);
+        WglContextImpl::ensureExtensionsInit(*this, m_surfaceData.deviceContext);
         makeCurrent(false);
     }
 }
@@ -184,7 +187,7 @@ WglContext::~WglContext()
 
 
 ////////////////////////////////////////////////////////////
-GlFunctionPointer WglContext::getFunction(const char* name)
+GlFunctionPointer WglContext::getFunction(const char* name) const
 {
     auto address = reinterpret_cast<GlFunctionPointer>(wglGetProcAddress(reinterpret_cast<LPCSTR>(name)));
 
@@ -231,7 +234,7 @@ void WglContext::display()
 void WglContext::setVerticalSyncEnabled(bool enabled)
 {
     // Make sure that extensions are initialized
-    WglContextImpl::ensureExtensionsInit(m_surfaceData.deviceContext);
+    WglContextImpl::ensureExtensionsInit(*this, m_surfaceData.deviceContext);
 
     if (SF_GLAD_WGL_EXT_swap_control)
     {

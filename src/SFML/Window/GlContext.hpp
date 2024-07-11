@@ -108,7 +108,7 @@ public:
     /// \param requestedSettings Requested settings during context creation
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool initialize(const ContextSettings& requestedSettings);
+    [[nodiscard]] bool initialize(const GlContext& sharedGlContext, const ContextSettings& requestedSettings);
 
 protected:
     ////////////////////////////////////////////////////////////

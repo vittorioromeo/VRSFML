@@ -32,7 +32,6 @@
 #include <SFML/Window/GLExtensions.hpp>
 #include <SFML/Window/GlContext.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
-#include <SFML/Window/TransientContextLock.hpp>
 
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Macros.hpp>
@@ -95,7 +94,7 @@ RenderTextureImplFBO::RenderTextureImplFBO(GraphicsContext& graphicsContext) : m
 ////////////////////////////////////////////////////////////
 RenderTextureImplFBO::~RenderTextureImplFBO()
 {
-    const TransientContextLock lock(*m_impl->graphicsContext);
+    SFML_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
 
     // Destroy the color buffer
     if (m_impl->colorBuffer)
@@ -125,7 +124,7 @@ RenderTextureImplFBO::~RenderTextureImplFBO()
 ////////////////////////////////////////////////////////////
 bool RenderTextureImplFBO::isAvailable(GraphicsContext& graphicsContext)
 {
-    const TransientContextLock lock(graphicsContext);
+    SFML_ASSERT(graphicsContext.hasAnyActiveGlContext());
 
     // Make sure that extensions are initialized
     ensureExtensionsInit(graphicsContext);
@@ -143,8 +142,8 @@ unsigned int RenderTextureImplFBO::getMaximumAntialiasingLevel(GraphicsContext& 
 
 #else
 
-    const TransientContextLock lock(graphicsContext);
-    GLint                      samples = 0;
+    SFML_ASSERT(graphicsContext.hasAnyActiveGlContext());
+    GLint samples = 0;
     glCheck(glGetIntegerv(GLEXT_GL_MAX_SAMPLES, &samples));
     return static_cast<unsigned int>(samples);
 
@@ -166,7 +165,7 @@ bool RenderTextureImplFBO::create(const Vector2u& size, unsigned int textureId, 
     m_impl->size = size;
 
     {
-        const TransientContextLock lock(*m_impl->graphicsContext);
+        SFML_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
 
         // Make sure that extensions are initialized
         ensureExtensionsInit(*m_impl->graphicsContext);
@@ -374,7 +373,7 @@ bool RenderTextureImplFBO::create(const Vector2u& size, unsigned int textureId, 
     m_impl->textureId = textureId;
 
     // We can't create an FBO now if there is no active context
-    if (!GraphicsContext::hasActiveThreadLocalGlContext())
+    if (!m_impl->graphicsContext->hasActiveThreadLocalGlContext())
         return true;
 
 #ifndef SFML_OPENGL_ES
@@ -464,7 +463,7 @@ bool RenderTextureImplFBO::createFrameBuffer()
     }
 
     // Insert the FBO into our map
-    m_impl->frameBuffers.emplace(GraphicsContext::getActiveThreadLocalGlContextId(), frameBuffer);
+    m_impl->frameBuffers.emplace(m_impl->graphicsContext->getActiveThreadLocalGlContextId(), frameBuffer);
 
     // Register the object with the current context so it is automatically destroyed
     std::shared_ptr<void> voidFrameBuffer = SFML_MOVE(frameBuffer);
@@ -525,7 +524,8 @@ bool RenderTextureImplFBO::createFrameBuffer()
         }
 
         // Insert the FBO into our map
-        m_impl->multisampleFrameBuffers.emplace(GraphicsContext::getActiveThreadLocalGlContextId(), multisampleFrameBuffer);
+        m_impl->multisampleFrameBuffers.emplace(m_impl->graphicsContext->getActiveThreadLocalGlContextId(),
+                                                multisampleFrameBuffer);
 
         // Register the object with the current context so it is automatically destroyed
         std::shared_ptr<void> voidMultisampleFrameBuffer = SFML_MOVE(multisampleFrameBuffer);
@@ -548,7 +548,7 @@ bool RenderTextureImplFBO::activate(bool active)
         return true;
     }
 
-    std::uint64_t contextId = GraphicsContext::getActiveThreadLocalGlContextId();
+    std::uint64_t contextId = m_impl->graphicsContext->getActiveThreadLocalGlContextId();
 
     // TODO:
     /*
@@ -565,7 +565,7 @@ bool RenderTextureImplFBO::activate(bool active)
             return false;
         }
 
-        contextId = GraphicsContext::getActiveThreadLocalGlContextId();
+        contextId = m_impl->graphicsContext->getActiveThreadLocalGlContextId();
 
         if (!contextId)
         {
@@ -635,7 +635,7 @@ void RenderTextureImplFBO::updateTexture(unsigned int)
     // are already available within the current context
     if (m_impl->multisample && m_impl->size.x && m_impl->size.y && activate(true))
     {
-        const std::uint64_t contextId = GraphicsContext::getActiveThreadLocalGlContextId();
+        const std::uint64_t contextId = m_impl->graphicsContext->getActiveThreadLocalGlContextId();
 
         const auto frameBufferIt = m_impl->frameBuffers.find(contextId);
         const auto multisampleIt = m_impl->multisampleFrameBuffers.find(contextId);

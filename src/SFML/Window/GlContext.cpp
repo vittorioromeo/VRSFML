@@ -104,22 +104,23 @@ int GlContext::evaluateFormat(
 
 
 ////////////////////////////////////////////////////////////
-bool GlContext::initialize(const ContextSettings& requestedSettings)
+bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettings& requestedSettings)
 {
-    // Activate the context
-    if (!GraphicsContext::setActiveThreadLocalGlContext(*this, true))
-        err() << "Error enabling context in GlContext::initalize()" << errEndl;
+    SFML_ASSERT(m_graphicsContext.getActiveThreadLocalGlContextPtr() == this);
+
+    const auto& derivedSharedGlContext = static_cast<const DerivedGlContextType&>(sharedGlContext);
 
     // Retrieve the context version number
     int majorVersion = 0;
     int minorVersion = 0;
 
     // Try the new way first
-    auto glGetIntegervFunc = reinterpret_cast<glGetIntegervFuncType>(GraphicsContext::getFunction("glGetIntegerv"));
-    auto glGetErrorFunc    = reinterpret_cast<glGetErrorFuncType>(GraphicsContext::getFunction("glGetError"));
-    auto glGetStringFunc   = reinterpret_cast<glGetStringFuncType>(GraphicsContext::getFunction("glGetString"));
-    auto glEnableFunc      = reinterpret_cast<glEnableFuncType>(GraphicsContext::getFunction("glEnable"));
-    auto glIsEnabledFunc   = reinterpret_cast<glIsEnabledFuncType>(GraphicsContext::getFunction("glIsEnabled"));
+    auto glGetIntegervFunc = reinterpret_cast<glGetIntegervFuncType>(
+        derivedSharedGlContext.getFunction("glGetIntegerv"));
+    auto glGetErrorFunc  = reinterpret_cast<glGetErrorFuncType>(derivedSharedGlContext.getFunction("glGetError"));
+    auto glGetStringFunc = reinterpret_cast<glGetStringFuncType>(derivedSharedGlContext.getFunction("glGetString"));
+    auto glEnableFunc    = reinterpret_cast<glEnableFuncType>(derivedSharedGlContext.getFunction("glEnable"));
+    auto glIsEnabledFunc = reinterpret_cast<glIsEnabledFuncType>(derivedSharedGlContext.getFunction("glIsEnabled"));
 
     if (!glGetIntegervFunc || !glGetErrorFunc || !glGetStringFunc || !glEnableFunc || !glIsEnabledFunc)
     {
@@ -215,7 +216,7 @@ bool GlContext::initialize(const ContextSettings& requestedSettings)
             m_settings.attributeFlags |= ContextSettings::Attribute::Core;
 
             auto glGetStringiFunc = reinterpret_cast<glGetStringiFuncType>(
-                GraphicsContext::getFunction("glGetStringi"));
+                m_graphicsContext.getFunction("glGetStringi"));
 
             if (glGetStringiFunc)
             {

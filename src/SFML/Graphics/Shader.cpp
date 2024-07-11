@@ -27,12 +27,11 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/GLCheck.hpp>
-#include <SFML/Window/GLExtensions.hpp>
 #include <SFML/Graphics/Shader.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
+#include <SFML/Window/GLExtensions.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
-#include <SFML/Window/TransientContextLock.hpp>
 
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Assert.hpp>
@@ -275,14 +274,14 @@ Shader::UniformLocation::UniformLocation(int location) : m_value(location)
 
 
 ////////////////////////////////////////////////////////////
-class [[nodiscard]] Shader::UnsafeUniformBinder
+class [[nodiscard]] Shader::UniformBinder
 {
 public:
     ////////////////////////////////////////////////////////////
     /// \brief Constructor: set up state before uniform is set
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] explicit UnsafeUniformBinder(Shader& shader) :
+    [[nodiscard, gnu::always_inline]] explicit UniformBinder(Shader& shader) :
     m_currentProgram(castToGlHandle(shader.m_impl->shaderProgram))
     {
         SFML_ASSERT(m_currentProgram != 0);
@@ -297,7 +296,7 @@ public:
     /// \brief Destructor: restore state after uniform is set
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] ~UnsafeUniformBinder()
+    [[gnu::always_inline]] ~UniformBinder()
     {
         // Disable program object
         if (m_currentProgram && (m_currentProgram != m_savedProgram))
@@ -308,13 +307,13 @@ public:
     /// \brief Deleted copy constructor
     ///
     ////////////////////////////////////////////////////////////
-    UnsafeUniformBinder(const UnsafeUniformBinder&) = delete;
+    UniformBinder(const UniformBinder&) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy assignment
     ///
     ////////////////////////////////////////////////////////////
-    UnsafeUniformBinder& operator=(const UnsafeUniformBinder&) = delete;
+    UniformBinder& operator=(const UniformBinder&) = delete;
 
 private:
     GLEXT_GLhandle m_currentProgram; //!< Handle to the program object of the modified `sf::Shader` instance
@@ -323,21 +322,9 @@ private:
 
 
 ////////////////////////////////////////////////////////////
-class [[nodiscard]] Shader::UniformBinder : public priv::TransientContextLock, public UnsafeUniformBinder
-{
-public:
-    [[nodiscard, gnu::always_inline]] explicit UniformBinder(Shader& shader) :
-    priv::TransientContextLock(*shader.m_impl->graphicsContext),
-    UnsafeUniformBinder(shader)
-    {
-    }
-};
-
-
-////////////////////////////////////////////////////////////
 Shader::~Shader()
 {
-    const priv::TransientContextLock lock(*m_impl->graphicsContext);
+    SFML_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
 
     // Destroy effect program
     if (m_impl->shaderProgram)
@@ -361,7 +348,7 @@ Shader& Shader::operator=(Shader&& right) noexcept
     // Explicit scope for RAII
     {
         // Destroy effect program
-        const priv::TransientContextLock lock(*m_impl->graphicsContext);
+        SFML_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
         SFML_ASSERT(m_impl->shaderProgram);
         glCheck(GLEXT_glDeleteObject(castToGlHandle(m_impl->shaderProgram)));
     }
@@ -740,7 +727,7 @@ bool Shader::setUniform(UniformLocation location, const Texture& texture)
 {
     SFML_ASSERT(m_impl->shaderProgram);
 
-    const priv::TransientContextLock lock(*m_impl->graphicsContext);
+    SFML_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
 
     // Store the location -> texture mapping
     if (const auto it = m_impl->textures.find(location.m_value); it != m_impl->textures.end())
@@ -769,7 +756,7 @@ void Shader::setUniform(UniformLocation location, CurrentTextureType)
 {
     SFML_ASSERT(m_impl->shaderProgram);
 
-    const priv::TransientContextLock lock(*m_impl->graphicsContext);
+    SFML_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
 
     // Find the location of the variable in the shader
     m_impl->currentTexture = location.m_value;
@@ -840,70 +827,6 @@ void Shader::setUniformArray(UniformLocation location, const Glsl::Mat4* matrixA
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniformUnsafe(UniformLocation location, float x)
-{
-    const UnsafeUniformBinder binder{*this};
-    glCheck(GLEXT_glUniform1f(location.m_value, x));
-}
-
-
-////////////////////////////////////////////////////////////
-void Shader::setUniformUnsafe(UniformLocation location, const Glsl::Vec2& v)
-{
-    const UnsafeUniformBinder binder{*this};
-    glCheck(GLEXT_glUniform2f(location.m_value, v.x, v.y));
-}
-
-
-////////////////////////////////////////////////////////////
-void Shader::setUniformUnsafe(UniformLocation location, const Glsl::Vec3& v)
-{
-    const UnsafeUniformBinder binder{*this};
-    glCheck(GLEXT_glUniform3f(location.m_value, v.x, v.y, v.z));
-}
-
-
-////////////////////////////////////////////////////////////
-void Shader::setUniformUnsafe(UniformLocation location, const Glsl::Vec4& v)
-{
-    const UnsafeUniformBinder binder{*this};
-    glCheck(GLEXT_glUniform4f(location.m_value, v.x, v.y, v.z, v.w));
-}
-
-
-////////////////////////////////////////////////////////////
-void Shader::setUniformUnsafe(UniformLocation location, int x)
-{
-    const UnsafeUniformBinder binder{*this};
-    glCheck(GLEXT_glUniform1i(location.m_value, x));
-}
-
-
-////////////////////////////////////////////////////////////
-void Shader::setUniformUnsafe(UniformLocation location, const Glsl::Ivec2& v)
-{
-    const UnsafeUniformBinder binder{*this};
-    glCheck(GLEXT_glUniform2i(location.m_value, v.x, v.y));
-}
-
-
-////////////////////////////////////////////////////////////
-void Shader::setUniformUnsafe(UniformLocation location, const Glsl::Ivec3& v)
-{
-    const UnsafeUniformBinder binder{*this};
-    glCheck(GLEXT_glUniform3i(location.m_value, v.x, v.y, v.z));
-}
-
-
-////////////////////////////////////////////////////////////
-void Shader::setUniformUnsafe(UniformLocation location, const Glsl::Ivec4& v)
-{
-    const UnsafeUniformBinder binder{*this};
-    glCheck(GLEXT_glUniform4i(location.m_value, v.x, v.y, v.z, v.w));
-}
-
-
-////////////////////////////////////////////////////////////
 unsigned int Shader::getNativeHandle() const
 {
     return m_impl->shaderProgram;
@@ -913,7 +836,7 @@ unsigned int Shader::getNativeHandle() const
 ////////////////////////////////////////////////////////////
 void Shader::bind() const
 {
-    const priv::TransientContextLock lock(*m_impl->graphicsContext);
+    SFML_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
 
     // Make sure that we can use shaders
     if (!isAvailable(*m_impl->graphicsContext))
@@ -946,7 +869,7 @@ void Shader::bind() const
 
 void Shader::unbind(GraphicsContext& graphicsContext)
 {
-    const priv::TransientContextLock lock(graphicsContext);
+    SFML_ASSERT(graphicsContext.hasAnyActiveGlContext());
 
     // Bind no shader
     glCheck(GLEXT_glUseProgramObject({}));
@@ -958,7 +881,7 @@ bool Shader::isAvailable(GraphicsContext& graphicsContext)
 {
     static const bool available = [&graphicsContext]
     {
-        const priv::TransientContextLock lock(graphicsContext);
+        SFML_ASSERT(graphicsContext.hasAnyActiveGlContext());
         priv::ensureExtensionsInit(graphicsContext);
 
         return GLEXT_multitexture && GLEXT_shading_language_100 && GLEXT_shader_objects && GLEXT_vertex_shader &&
@@ -974,7 +897,7 @@ bool Shader::isGeometryAvailable(GraphicsContext& graphicsContext)
 {
     static const bool available = [&graphicsContext]
     {
-        const priv::TransientContextLock lock(graphicsContext);
+        SFML_ASSERT(graphicsContext.hasAnyActiveGlContext());
         priv::ensureExtensionsInit(graphicsContext);
 
         return isAvailable(graphicsContext) && (GLEXT_geometry_shader4 || GLEXT_GL_VERSION_3_2);
@@ -997,7 +920,7 @@ sf::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
                                      std::string_view geometryShaderCode,
                                      std::string_view fragmentShaderCode)
 {
-    const priv::TransientContextLock lock(graphicsContext);
+    SFML_ASSERT(graphicsContext.hasAnyActiveGlContext());
 
     // First make sure that we can use shaders
     if (!isAvailable(graphicsContext))
