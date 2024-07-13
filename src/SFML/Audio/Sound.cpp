@@ -193,7 +193,7 @@ Sound::Sound(const SoundBuffer& buffer) : m_impl(priv::makeUnique<Impl>(this))
 {
     setBuffer(buffer);
 
-    SFML_UPDATE_LIFETIME_DEPENDANT(SoundBuffer, Sound, m_impl->buffer);
+    SFML_UPDATE_LIFETIME_DEPENDANT(SoundBuffer, Sound, this, m_impl->buffer);
 }
 
 
@@ -206,7 +206,7 @@ Sound::Sound(const Sound& rhs) : SoundSource(rhs), m_impl(priv::makeUnique<Impl>
     if (rhs.m_impl->buffer != nullptr)
         setBuffer(*rhs.m_impl->buffer);
 
-    SFML_UPDATE_LIFETIME_DEPENDANT(SoundBuffer, Sound, m_impl->buffer);
+    SFML_UPDATE_LIFETIME_DEPENDANT(SoundBuffer, Sound, this, m_impl->buffer);
 }
 
 
@@ -362,7 +362,7 @@ void Sound::setBuffer(const SoundBuffer& buffer)
         setPlayingOffset(getPlayingOffset());
     }
 
-    SFML_UPDATE_LIFETIME_DEPENDANT(SoundBuffer, Sound, m_impl->buffer);
+    SFML_UPDATE_LIFETIME_DEPENDANT(SoundBuffer, Sound, this, m_impl->buffer);
 }
 
 ////////////////////////////////////////////////////////////

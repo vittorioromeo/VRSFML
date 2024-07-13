@@ -31,6 +31,8 @@
 
 #include <SFML/Audio/SoundChannel.hpp>
 
+#include <SFML/System/LifetimeDependant.hpp>
+
 #include <cstddef>
 #include <cstdint>
 
@@ -171,6 +173,11 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     CaptureDevice* m_lastCaptureDevice{};
+
+    ////////////////////////////////////////////////////////////
+    // Lifetime tracking
+    ////////////////////////////////////////////////////////////
+    SFML_DEFINE_LIFETIME_DEPENDANT(CaptureDevice);
 };
 
 } // namespace sf

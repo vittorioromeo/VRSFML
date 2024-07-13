@@ -58,6 +58,13 @@ const ContextSettings& GlContext::getSettings() const
 
 
 ////////////////////////////////////////////////////////////
+[[nodiscard]] std::uint64_t GlContext::getId() const
+{
+    return m_id;
+}
+
+
+////////////////////////////////////////////////////////////
 GlContext::GlContext(GraphicsContext& graphicsContext, std::uint64_t id, const ContextSettings& settings) :
 m_settings(settings),
 m_graphicsContext(graphicsContext),
@@ -216,7 +223,7 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
             m_settings.attributeFlags |= ContextSettings::Attribute::Core;
 
             auto glGetStringiFunc = reinterpret_cast<glGetStringiFuncType>(
-                m_graphicsContext.getFunction("glGetStringi"));
+                derivedSharedGlContext.getFunction("glGetStringi"));
 
             if (glGetStringiFunc)
             {

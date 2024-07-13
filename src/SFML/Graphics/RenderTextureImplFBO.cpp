@@ -38,7 +38,6 @@
 #include <SFML/System/Macros.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
-#include <memory>
 #include <unordered_map>
 
 #include <cstdint>
@@ -49,32 +48,17 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 struct RenderTextureImplFBO::Impl
 {
-    struct [[nodiscard]] FrameBufferObject
-    {
-        [[nodiscard]] explicit FrameBufferObject()
-        {
-            // Create the framebuffer object
-            glCheck(GLEXT_glGenFramebuffers(1, &object));
-        }
-
-        ~FrameBufferObject()
-        {
-            if (object)
-                glCheck(GLEXT_glDeleteFramebuffers(1, &object));
-        }
-
-        GLuint object{};
-    };
-
     explicit Impl(GraphicsContext& theGraphicsContext) : graphicsContext(&theGraphicsContext)
     {
     }
 
-    using FrameBufferObjectMap = std::unordered_map<std::uint64_t, std::weak_ptr<FrameBufferObject>>;
+    using FrameBufferIdMap = std::unordered_map<std::uint64_t, unsigned int>;
 
-    GraphicsContext*     graphicsContext; //!< TODO
-    FrameBufferObjectMap frameBuffers;    //!< OpenGL frame buffer objects per context
-    FrameBufferObjectMap multisampleFrameBuffers; //!< Optional per-context OpenGL frame buffer objects with multisample attachments
+    GraphicsContext* graphicsContext; //!< TODO
+
+    FrameBufferIdMap frameBuffers;            //!< OpenGL frame buffer objects per context
+    FrameBufferIdMap multisampleFrameBuffers; //!< Optional per-context OpenGL frame buffer objects with multisample attachments
+
     unsigned int depthStencilBuffer{}; //!< Optional depth/stencil buffer attached to the frame buffer
     unsigned int colorBuffer{};        //!< Optional multisample color buffer attached to the frame buffer
     Vector2u     size;                 //!< Width and height of the attachments
@@ -112,13 +96,18 @@ RenderTextureImplFBO::~RenderTextureImplFBO()
     }
 
     // Unregister FBOs with the contexts if they haven't already been destroyed
-    for (auto& entry : m_impl->frameBuffers)
-        if (std::shared_ptr<void> frameBuffer = entry.second.lock())
-            m_impl->graphicsContext->unregisterUnsharedGlObject(&frameBuffer);
 
-    for (auto& entry : m_impl->multisampleFrameBuffers)
-        if (std::shared_ptr<void> multisampleFrameBuffer = entry.second.lock())
-            m_impl->graphicsContext->unregisterUnsharedGlObject(&multisampleFrameBuffer);
+    for (const auto& [glContextId, frameBufferId] : m_impl->frameBuffers)
+    {
+        glCheck(GLEXT_glDeleteFramebuffers(1, &frameBufferId));
+        m_impl->graphicsContext->unregisterUnsharedGlObject(glContextId, frameBufferId);
+    }
+
+    for (const auto& [glContextId, multisampleFrameBufferId] : m_impl->multisampleFrameBuffers)
+    {
+        glCheck(GLEXT_glDeleteFramebuffers(1, &multisampleFrameBufferId));
+        m_impl->graphicsContext->unregisterUnsharedGlObject(glContextId, multisampleFrameBufferId);
+    }
 }
 
 
@@ -420,14 +409,16 @@ bool RenderTextureImplFBO::create(const Vector2u& size, unsigned int textureId, 
 bool RenderTextureImplFBO::createFrameBuffer()
 {
     // Create the framebuffer object
-    auto frameBuffer = std::make_shared<Impl::FrameBufferObject>();
+    GLuint frameBufferId{};
+    glCheck(GLEXT_glGenFramebuffers(1, &frameBufferId));
 
-    if (!frameBuffer->object)
+    if (!frameBufferId)
     {
         err() << "Impossible to create render texture (failed to create the frame buffer object)" << errEndl;
         return false;
     }
-    glCheck(GLEXT_glBindFramebuffer(GLEXT_GL_FRAMEBUFFER, frameBuffer->object));
+
+    glCheck(GLEXT_glBindFramebuffer(GLEXT_GL_FRAMEBUFFER, frameBufferId));
 
     // Link the depth/stencil renderbuffer to the frame buffer
     if (!m_impl->multisample && m_impl->depthStencilBuffer)
@@ -463,27 +454,30 @@ bool RenderTextureImplFBO::createFrameBuffer()
         return false;
     }
 
+    // Get current GL context id
+    const std::uint64_t glContextId = m_impl->graphicsContext->getActiveThreadLocalGlContextId();
+
     // Insert the FBO into our map
-    m_impl->frameBuffers.emplace(m_impl->graphicsContext->getActiveThreadLocalGlContextId(), frameBuffer);
+    m_impl->frameBuffers.emplace(glContextId, frameBufferId);
 
     // Register the object with the current context so it is automatically destroyed
-    std::shared_ptr<void> voidFrameBuffer = SFML_MOVE(frameBuffer);
-    m_impl->graphicsContext->registerUnsharedGlObject(&voidFrameBuffer);
+    m_impl->graphicsContext->registerUnsharedGlObject(glContextId, frameBufferId);
 
 #ifndef SFML_OPENGL_ES
 
     if (m_impl->multisample)
     {
         // Create the multisample framebuffer object
-        auto multisampleFrameBuffer = std::make_shared<Impl::FrameBufferObject>();
+        GLuint multisampleFrameBufferId{};
+        glCheck(GLEXT_glGenFramebuffers(1, &multisampleFrameBufferId));
 
-        if (!multisampleFrameBuffer->object)
+        if (!multisampleFrameBufferId)
         {
             err() << "Impossible to create render texture (failed to create the multisample frame buffer object)"
                   << errEndl;
             return false;
         }
-        glCheck(GLEXT_glBindFramebuffer(GLEXT_GL_FRAMEBUFFER, multisampleFrameBuffer->object));
+        glCheck(GLEXT_glBindFramebuffer(GLEXT_GL_FRAMEBUFFER, multisampleFrameBufferId));
 
         // Link the multisample color buffer to the frame buffer
         glCheck(GLEXT_glBindRenderbuffer(GLEXT_GL_RENDERBUFFER, m_impl->colorBuffer));
@@ -525,12 +519,10 @@ bool RenderTextureImplFBO::createFrameBuffer()
         }
 
         // Insert the FBO into our map
-        m_impl->multisampleFrameBuffers.emplace(m_impl->graphicsContext->getActiveThreadLocalGlContextId(),
-                                                multisampleFrameBuffer);
+        m_impl->multisampleFrameBuffers.emplace(glContextId, multisampleFrameBufferId);
 
         // Register the object with the current context so it is automatically destroyed
-        std::shared_ptr<void> voidMultisampleFrameBuffer = SFML_MOVE(multisampleFrameBuffer);
-        m_impl->graphicsContext->registerUnsharedGlObject(&voidMultisampleFrameBuffer);
+        m_impl->graphicsContext->registerUnsharedGlObject(glContextId, multisampleFrameBufferId);
     }
 
 #endif
@@ -550,41 +542,29 @@ bool RenderTextureImplFBO::activate(bool active)
     }
 
     SFML_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
-    const std::uint64_t contextId = m_impl->graphicsContext->getActiveThreadLocalGlContextId();
+    const std::uint64_t glContextId = m_impl->graphicsContext->getActiveThreadLocalGlContextId();
 
     // Lookup the FBO corresponding to the currently active context
     // If none is found, there is no FBO corresponding to the
     // currently active context so we will have to create a new FBO
     if (m_impl->multisample)
     {
-        const auto it = m_impl->multisampleFrameBuffers.find(contextId);
+        const auto it = m_impl->multisampleFrameBuffers.find(glContextId);
 
         if (it != m_impl->multisampleFrameBuffers.end())
         {
-            const auto frameBuffer = it->second.lock();
-
-            if (frameBuffer)
-            {
-                glCheck(GLEXT_glBindFramebuffer(GLEXT_GL_FRAMEBUFFER, frameBuffer->object));
-
-                return true;
-            }
+            glCheck(GLEXT_glBindFramebuffer(GLEXT_GL_FRAMEBUFFER, it->second));
+            return true;
         }
     }
     else
     {
-        const auto it = m_impl->frameBuffers.find(contextId);
+        const auto it = m_impl->frameBuffers.find(glContextId);
 
         if (it != m_impl->frameBuffers.end())
         {
-            const auto frameBuffer = it->second.lock();
-
-            if (frameBuffer)
-            {
-                glCheck(GLEXT_glBindFramebuffer(GLEXT_GL_FRAMEBUFFER, frameBuffer->object));
-
-                return true;
-            }
+            glCheck(GLEXT_glBindFramebuffer(GLEXT_GL_FRAMEBUFFER, it->second));
+            return true;
         }
     }
 
@@ -612,44 +592,38 @@ void RenderTextureImplFBO::updateTexture(unsigned int)
     // are already available within the current context
     if (m_impl->multisample && m_impl->size.x && m_impl->size.y && activate(true))
     {
-        const std::uint64_t contextId = m_impl->graphicsContext->getActiveThreadLocalGlContextId();
+        const std::uint64_t glContextId = m_impl->graphicsContext->getActiveThreadLocalGlContextId();
 
-        const auto frameBufferIt = m_impl->frameBuffers.find(contextId);
-        const auto multisampleIt = m_impl->multisampleFrameBuffers.find(contextId);
+        const auto frameBufferIt = m_impl->frameBuffers.find(glContextId);
+        const auto multisampleIt = m_impl->multisampleFrameBuffers.find(glContextId);
 
         if ((frameBufferIt != m_impl->frameBuffers.end()) && (multisampleIt != m_impl->multisampleFrameBuffers.end()))
         {
-            const auto frameBuffer            = frameBufferIt->second.lock();
-            const auto multiSampleFrameBuffer = multisampleIt->second.lock();
+            // Scissor testing affects framebuffer blits as well
+            // Since we don't want scissor testing to interfere with our copying, we temporarily disable it for the blit if it is enabled
+            GLboolean scissorEnabled = GL_FALSE;
+            glCheck(glGetBooleanv(GL_SCISSOR_TEST, &scissorEnabled));
 
-            if (frameBuffer && multiSampleFrameBuffer)
-            {
-                // Scissor testing affects framebuffer blits as well
-                // Since we don't want scissor testing to interfere with our copying, we temporarily disable it for the blit if it is enabled
-                GLboolean scissorEnabled = GL_FALSE;
-                glCheck(glGetBooleanv(GL_SCISSOR_TEST, &scissorEnabled));
+            if (scissorEnabled == GL_TRUE)
+                glCheck(glDisable(GL_SCISSOR_TEST));
 
-                if (scissorEnabled == GL_TRUE)
-                    glCheck(glDisable(GL_SCISSOR_TEST));
+            // Set up the blit target (draw framebuffer) and blit (from the read framebuffer, our multisample FBO)
+            glCheck(GLEXT_glBindFramebuffer(GLEXT_GL_DRAW_FRAMEBUFFER, frameBufferIt->second));
+            glCheck(GLEXT_glBlitFramebuffer(0,
+                                            0,
+                                            static_cast<GLint>(m_impl->size.x),
+                                            static_cast<GLint>(m_impl->size.y),
+                                            0,
+                                            0,
+                                            static_cast<GLint>(m_impl->size.x),
+                                            static_cast<GLint>(m_impl->size.y),
+                                            GL_COLOR_BUFFER_BIT,
+                                            GL_NEAREST));
+            glCheck(GLEXT_glBindFramebuffer(GLEXT_GL_DRAW_FRAMEBUFFER, multisampleIt->second));
 
-                // Set up the blit target (draw framebuffer) and blit (from the read framebuffer, our multisample FBO)
-                glCheck(GLEXT_glBindFramebuffer(GLEXT_GL_DRAW_FRAMEBUFFER, frameBuffer->object));
-                glCheck(GLEXT_glBlitFramebuffer(0,
-                                                0,
-                                                static_cast<GLint>(m_impl->size.x),
-                                                static_cast<GLint>(m_impl->size.y),
-                                                0,
-                                                0,
-                                                static_cast<GLint>(m_impl->size.x),
-                                                static_cast<GLint>(m_impl->size.y),
-                                                GL_COLOR_BUFFER_BIT,
-                                                GL_NEAREST));
-                glCheck(GLEXT_glBindFramebuffer(GLEXT_GL_DRAW_FRAMEBUFFER, multiSampleFrameBuffer->object));
-
-                // Re-enable scissor testing if it was previously enabled
-                if (scissorEnabled == GL_TRUE)
-                    glCheck(glEnable(GL_SCISSOR_TEST));
-            }
+            // Re-enable scissor testing if it was previously enabled
+            if (scissorEnabled == GL_TRUE)
+                glCheck(glEnable(GL_SCISSOR_TEST));
         }
     }
 
