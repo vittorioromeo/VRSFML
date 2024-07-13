@@ -27,6 +27,7 @@ class GlContext
 {
 public:
     [[nodiscard]] const ContextSettings& getSettings() const;
+    [[nodiscard]] std::uint64_t          getId() const;
 };
 
 }; // namespace sf::priv
@@ -85,7 +86,7 @@ TEST_CASE("[Window] TestContext" * doctest::skip(skipDisplayTests))
     {
         const TestContext context(graphicsContext);
         CHECK(context.getSettings().majorVersion > 0);
-        CHECK(graphicsContext.getActiveThreadLocalGlContextPtr() == context.glContext.get());
+        CHECK(graphicsContext.getActiveThreadLocalGlContextId() == context.glContext->getId());
         CHECK(graphicsContext.hasActiveThreadLocalGlContext());
     }
 
@@ -98,7 +99,7 @@ TEST_CASE("[Window] TestContext" * doctest::skip(skipDisplayTests))
                 TestContext       movedContext(graphicsContext);
                 const TestContext context(SFML_MOVE(movedContext));
                 CHECK(context.getSettings().majorVersion > 0);
-                CHECK(graphicsContext.getActiveThreadLocalGlContextPtr() == context.glContext.get());
+                CHECK(graphicsContext.getActiveThreadLocalGlContextId() == context.glContext->getId());
                 CHECK(graphicsContext.hasActiveThreadLocalGlContext());
             }
 
@@ -106,12 +107,12 @@ TEST_CASE("[Window] TestContext" * doctest::skip(skipDisplayTests))
             {
                 TestContext movedContext(graphicsContext);
                 CHECK(movedContext.setActive(false));
-                CHECK(graphicsContext.getActiveThreadLocalGlContextPtr() == nullptr);
+                CHECK(graphicsContext.getActiveThreadLocalGlContextId() == 0u);
                 CHECK(!graphicsContext.hasActiveThreadLocalGlContext());
 
                 const TestContext context(SFML_MOVE(movedContext));
                 CHECK(context.getSettings().majorVersion > 0);
-                CHECK(graphicsContext.getActiveThreadLocalGlContextPtr() == nullptr);
+                CHECK(graphicsContext.getActiveThreadLocalGlContextId() == 0u);
                 CHECK(!graphicsContext.hasActiveThreadLocalGlContext());
             }
         }
@@ -123,12 +124,12 @@ TEST_CASE("[Window] TestContext" * doctest::skip(skipDisplayTests))
                 TestContext movedContext(graphicsContext);
                 TestContext context(graphicsContext);
                 CHECK(movedContext.setActive(true));
-                CHECK(graphicsContext.getActiveThreadLocalGlContextPtr() == movedContext.glContext.get());
+                CHECK(graphicsContext.getActiveThreadLocalGlContextId() == movedContext.glContext->getId());
                 CHECK(graphicsContext.hasActiveThreadLocalGlContext());
 
                 context = SFML_MOVE(movedContext);
                 CHECK(context.getSettings().majorVersion > 0);
-                CHECK(graphicsContext.getActiveThreadLocalGlContextPtr() == context.glContext.get());
+                CHECK(graphicsContext.getActiveThreadLocalGlContextId() == context.glContext->getId());
                 CHECK(graphicsContext.hasActiveThreadLocalGlContext());
             }
 
@@ -136,13 +137,13 @@ TEST_CASE("[Window] TestContext" * doctest::skip(skipDisplayTests))
             {
                 TestContext movedContext(graphicsContext);
                 CHECK(movedContext.setActive(false));
-                CHECK(graphicsContext.getActiveThreadLocalGlContextPtr() == nullptr);
+                CHECK(graphicsContext.getActiveThreadLocalGlContextId() == 0u);
                 CHECK(!graphicsContext.hasActiveThreadLocalGlContext());
 
                 TestContext context(graphicsContext);
                 context = SFML_MOVE(movedContext);
                 CHECK(context.getSettings().majorVersion > 0);
-                CHECK(graphicsContext.getActiveThreadLocalGlContextPtr() == nullptr);
+                CHECK(graphicsContext.getActiveThreadLocalGlContextId() == 0u);
                 CHECK(!graphicsContext.hasActiveThreadLocalGlContext());
             }
         }
@@ -155,44 +156,44 @@ TEST_CASE("[Window] TestContext" * doctest::skip(skipDisplayTests))
 
         // Set inactive
         CHECK(context.setActive(false));
-        CHECK(graphicsContext.getActiveThreadLocalGlContextPtr() == nullptr);
+        CHECK(graphicsContext.getActiveThreadLocalGlContextId() == 0u);
         CHECK(!graphicsContext.hasActiveThreadLocalGlContext());
 
         // Set active
         CHECK(context.setActive(true));
-        CHECK(graphicsContext.getActiveThreadLocalGlContextPtr() == context.glContext.get());
+        CHECK(graphicsContext.getActiveThreadLocalGlContextId() == context.glContext->getId());
         CHECK(graphicsContext.getActiveThreadLocalGlContextId() == contextId);
 
         // Create new context which becomes active automatically
         const TestContext newContext(graphicsContext);
-        CHECK(graphicsContext.getActiveThreadLocalGlContextPtr() == newContext.glContext.get());
+        CHECK(graphicsContext.getActiveThreadLocalGlContextId() == newContext.glContext->getId());
         const auto newContextId = graphicsContext.getActiveThreadLocalGlContextId();
         CHECK(newContextId != 0);
 
         // Set old context as inactive but new context remains active
         CHECK(context.setActive(false));
-        CHECK(graphicsContext.getActiveThreadLocalGlContextPtr() == newContext.glContext.get());
+        CHECK(graphicsContext.getActiveThreadLocalGlContextId() == newContext.glContext->getId());
         CHECK(graphicsContext.getActiveThreadLocalGlContextId() == newContextId);
 
         // Set old context as active again
         CHECK(context.setActive(true));
-        CHECK(graphicsContext.getActiveThreadLocalGlContextPtr() == context.glContext.get());
+        CHECK(graphicsContext.getActiveThreadLocalGlContextId() == context.glContext->getId());
         CHECK(graphicsContext.getActiveThreadLocalGlContextId() == contextId);
     }
 
-    SECTION("getActiveThreadLocalGlContextPtr()/getActiveThreadLocalGlContextId()")
+    SECTION("getActiveThreadLocalGlContextId()/getActiveThreadLocalGlContextId()")
     {
-        CHECK(graphicsContext.getActiveThreadLocalGlContextPtr() == nullptr);
+        CHECK(graphicsContext.getActiveThreadLocalGlContextId() == 0u);
         CHECK(!graphicsContext.hasActiveThreadLocalGlContext());
 
         {
             const TestContext context(graphicsContext);
             CHECK(context.getSettings().majorVersion > 0);
-            CHECK(graphicsContext.getActiveThreadLocalGlContextPtr() == context.glContext.get());
+            CHECK(graphicsContext.getActiveThreadLocalGlContextId() == context.glContext->getId());
             CHECK(graphicsContext.hasActiveThreadLocalGlContext());
         }
 
-        CHECK(graphicsContext.getActiveThreadLocalGlContextPtr() == nullptr);
+        CHECK(graphicsContext.getActiveThreadLocalGlContextId() == 0u);
         CHECK(!graphicsContext.hasActiveThreadLocalGlContext());
     }
 

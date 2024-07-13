@@ -117,8 +117,8 @@ struct Text::Impl
     Color                       fillColor{Color::White};    //!< Text fill color
     Color                       outlineColor{Color::Black}; //!< Text outline color
     float                       outlineThickness{0.f};      //!< Thickness of the text's outline
-    mutable std::vector<Vertex> vertices;                   //!< Vertex array containing the fill geometry
-    mutable std::size_t         fillVerticesStartIndex{};   //!< TODO
+    mutable std::vector<Vertex> vertices;                   //!< Vertex array containing the outline and fill geometry
+    mutable std::size_t         fillVerticesStartIndex{};   //!< Index in the vertex array where the fill vertices start
     mutable FloatRect           bounds;                     //!< Bounding rectangle of the text (in local coordinates)
     mutable bool                geometryNeedUpdate{};       //!< Does the geometry need to be recomputed?
     mutable std::uint64_t       fontTextureId{};            //!< The font texture id
@@ -135,7 +135,7 @@ struct Text::Impl
 ////////////////////////////////////////////////////////////
 Text::Text(const Font& font, String string, unsigned int characterSize) : m_impl(font, SFML_MOVE(string), characterSize)
 {
-    SFML_UPDATE_LIFETIME_DEPENDANT(Font, Text, m_impl->font);
+    SFML_UPDATE_LIFETIME_DEPENDANT(Font, Text, this, m_impl->font);
 }
 
 

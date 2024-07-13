@@ -83,7 +83,7 @@ bool SoundRecorder::start(CaptureDevice& captureDevice, unsigned int sampleRate)
     }
 
     m_lastCaptureDevice = &captureDevice;
-    // TODO: lifetime tracking
+    SFML_UPDATE_LIFETIME_DEPENDANT(CaptureDevice, SoundRecorder, this, m_lastCaptureDevice);
 
     captureDevice.setProcessSamplesFunc(this,
                                         [](void* userData, const std::int16_t* samples, std::size_t sampleCount) {

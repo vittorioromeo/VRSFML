@@ -1084,9 +1084,13 @@ int Shader::getUniformLocationImpl(std::string_view uniformName)
         return it->second;
     }
 
+    // Use thread-local string buffer to get a null-terminated uniform name
+    thread_local std::string uniformNameBuffer;
+    uniformNameBuffer.clear();
+    uniformNameBuffer.assign(uniformName);
+
     // Not in cache, request the location from OpenGL
-    // TODO: avoid string allocation with lcoal buffer
-    const int location = GLEXT_glGetUniformLocation(castToGlHandle(m_impl->shaderProgram), std::string{uniformName}.c_str());
+    const int location = GLEXT_glGetUniformLocation(castToGlHandle(m_impl->shaderProgram), uniformNameBuffer.c_str());
     m_impl->uniforms.emplace(uniformName, location);
 
     if (location == -1)

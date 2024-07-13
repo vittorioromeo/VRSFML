@@ -36,13 +36,11 @@
 #include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
-#include <SFML/System/Optional.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
 #include <glad/gl.h>
 
 #include <atomic>
-#include <memory>
 #include <mutex>
 #include <string>
 #include <vector>
@@ -124,9 +122,9 @@ constinit thread_local struct
 ////////////////////////////////////////////////////////////
 struct GraphicsContext::Impl
 {
-    std::atomic<std::uint64_t> nextThreadLocalGlContextId{1u};
+    std::atomic<std::uint64_t> nextThreadLocalGlContextId{2u}; // 1 is reserved for shared context
 
-    sf::Optional<DerivedGlContextType> sharedGlContext; //!< The hidden, inactive context that will be shared with all other contexts
+    DerivedGlContextType sharedGlContext; //!< The hidden, inactive context that will be shared with all other contexts
     std::recursive_mutex sharedGlContextMutex;
 
     std::vector<std::string> extensions; //!< Supported OpenGL extensions
@@ -136,37 +134,40 @@ struct GraphicsContext::Impl
 
     struct UnsharedGlObject
     {
-        std::uint64_t         glContextId{};
-        std::shared_ptr<void> object;
+        std::uint64_t glContextId{};
+        unsigned int  frameBufferId;
     };
 
     std::vector<UnsharedGlObject> unsharedObjects;
+
+    template <typename... SharedGlContextArgs>
+    explicit Impl(SharedGlContextArgs&&... args) : sharedGlContext(SFML_FORWARD(args)...)
+    {
+    }
 };
 
 
 ////////////////////////////////////////////////////////////
-GraphicsContext::GraphicsContext() : m_impl(priv::makeUnique<Impl>())
+GraphicsContext::GraphicsContext() : m_impl(priv::makeUnique<Impl>(*this, 1u, nullptr))
 {
-    m_impl->sharedGlContext.emplace(*this, m_impl->nextThreadLocalGlContextId.fetch_add(1u), nullptr);
-
     SFML_ASSERT(!hasAnyActiveGlContext());
 
-    if (!setActiveThreadLocalGlContext(*m_impl->sharedGlContext, true))
-        priv::err() << "Could not enable context in SharedContext()" << priv::errEndl;
+    if (!setActiveThreadLocalGlContext(m_impl->sharedGlContext, true))
+        priv::err() << "Could not enable shared context in GraphicsContext()" << priv::errEndl;
 
     SFML_ASSERT(isActiveGlContextSharedContext());
 
-    if (!m_impl->sharedGlContext->initialize(*m_impl->sharedGlContext, ContextSettings{}))
-        priv::err() << "Could not initialize context in SharedContext()" << priv::errEndl;
+    if (!m_impl->sharedGlContext.initialize(m_impl->sharedGlContext, ContextSettings{}))
+        priv::err() << "Could not initialize shared context in GraphicsContext()" << priv::errEndl;
 
-    m_impl->extensions = loadExtensions(*m_impl->sharedGlContext);
+    m_impl->extensions = loadExtensions(m_impl->sharedGlContext);
 
-    if (!setActiveThreadLocalGlContext(*m_impl->sharedGlContext, false))
-        priv::err() << "Could not disable context in SharedContext()" << priv::errEndl;
+    if (!setActiveThreadLocalGlContext(m_impl->sharedGlContext, false))
+        priv::err() << "Could not disable shared context in GraphicsContext()" << priv::errEndl;
 
     SFML_ASSERT(!hasAnyActiveGlContext());
 
-    if (!setActiveThreadLocalGlContext(*m_impl->sharedGlContext, true))
+    if (!setActiveThreadLocalGlContext(m_impl->sharedGlContext, true))
     {
         priv::err() << "Failed to enable shared GL context in `GraphicsContext::GraphicsContext`" << priv::errEndl;
         SFML_ASSERT(false);
@@ -189,34 +190,29 @@ GraphicsContext::~GraphicsContext()
 
 
 ////////////////////////////////////////////////////////////
-void GraphicsContext::registerUnsharedGlObject(void* objectSharedPtr)
+void GraphicsContext::registerUnsharedGlObject(std::uint64_t glContextId, unsigned int frameBufferId)
 {
-    SFML_ASSERT(activeGlContext.ptr != nullptr);
-
     const std::lock_guard lock(m_impl->unsharedObjectsMutex);
 
-    m_impl->unsharedObjects.emplace_back(activeGlContext.id,
-                                         SFML_MOVE(*static_cast<std::shared_ptr<void>*>(objectSharedPtr)));
+    SFML_ASSERT(getActiveThreadLocalGlContextId() == glContextId);
+    m_impl->unsharedObjects.emplace_back(glContextId, frameBufferId);
 }
 
 
 ////////////////////////////////////////////////////////////
-void GraphicsContext::unregisterUnsharedGlObject(void* objectSharedPtr)
+void GraphicsContext::unregisterUnsharedGlObject(std::uint64_t glContextId, unsigned int frameBufferId)
 {
-    SFML_ASSERT(activeGlContext.ptr != nullptr);
-
     const std::lock_guard lock(m_impl->unsharedObjectsMutex);
 
+    SFML_ASSERT(getActiveThreadLocalGlContextId() == glContextId);
+
     // Find the object in unshared objects and remove it if its associated context is currently active
-    // This will trigger the destructor of the object since shared_ptr
-    // in unshared objects should be the only one existing
+    // This will trigger the destructor of the object since shared_ptr in unshared objects should be the
+    // only one existing
     const auto iter = priv::findIf(m_impl->unsharedObjects.begin(),
                                    m_impl->unsharedObjects.end(),
                                    [&](const Impl::UnsharedGlObject& obj)
-                                   {
-                                       return obj.glContextId == activeGlContext.id &&
-                                              obj.object == *static_cast<std::shared_ptr<void>*>(objectSharedPtr);
-                                   });
+                                   { return obj.glContextId == glContextId && obj.frameBufferId == frameBufferId; });
 
     if (iter != m_impl->unsharedObjects.end())
         m_impl->unsharedObjects.erase(iter);
@@ -224,30 +220,53 @@ void GraphicsContext::unregisterUnsharedGlObject(void* objectSharedPtr)
 
 
 ////////////////////////////////////////////////////////////
-void GraphicsContext::cleanupUnsharedResources()
+void GraphicsContext::cleanupUnsharedResources(priv::GlContext& glContext)
 {
-    if (activeGlContext.ptr == nullptr)
-        return;
+    // Scope for lock guard
+    {
+        const std::lock_guard lock(m_impl->unsharedObjectsMutex);
+
+        if (!priv::anyOf(m_impl->unsharedObjects.begin(),
+                         m_impl->unsharedObjects.end(),
+                         [&](const Impl::UnsharedGlObject& obj) { return obj.glContextId == activeGlContext.id; }))
+        {
+            return;
+        }
+    }
+
+    SFML_ASSERT(false); // TODO: if this fails, need to delete framebuffer here
 
     // Save the current context so we can restore it later
     priv::GlContext* contextToRestore = activeGlContext.ptr;
 
-    // If this context is already active there is no need to save it
-    if (activeGlContext.ptr->m_id == activeGlContext.id)
-        contextToRestore = nullptr;
+    // Destroy the unshared objects contained in this context
+    for (auto iter = m_impl->unsharedObjects.begin(); iter != m_impl->unsharedObjects.end();)
+    {
+        if (iter->glContextId == glContext.m_id)
+        {
+            SFML_ASSERT(false); // TODO: if this fails, need to delete framebuffer here
+            iter = m_impl->unsharedObjects.erase(iter);
+        }
+        else
+        {
+            ++iter;
+        }
+    }
 
     // Make this context active so resources can be freed
-    if (!setActiveThreadLocalGlContext(*activeGlContext.ptr, true))
-        priv::err() << "Could not enable context in GlContext::cleanupUnsharedResources()" << priv::errEndl;
+    if (!setActiveThreadLocalGlContext(glContext, true))
+        priv::err() << "Could not enable GL context in GlContext::cleanupUnsharedResources()" << priv::errEndl;
 
+    // Scope for lock guard
     {
         const std::lock_guard lock(m_impl->unsharedObjectsMutex);
 
         // Destroy the unshared objects contained in this context
         for (auto iter = m_impl->unsharedObjects.begin(); iter != m_impl->unsharedObjects.end();)
         {
-            if (iter->glContextId == activeGlContext.ptr->m_id)
+            if (iter->glContextId == glContext.m_id)
             {
+                SFML_ASSERT(false); // TODO: if this fails, need to delete framebuffer here
                 iter = m_impl->unsharedObjects.erase(iter);
             }
             else
@@ -259,8 +278,15 @@ void GraphicsContext::cleanupUnsharedResources()
 
     // Make the originally active context active again
     if (contextToRestore != nullptr)
+    {
         if (!setActiveThreadLocalGlContext(*contextToRestore, true))
             priv::err() << "Could not restore context in GlContext::cleanupUnsharedResources()" << priv::errEndl;
+    }
+    else
+    {
+        activeGlContext.id  = 0u;
+        activeGlContext.ptr = nullptr;
+    }
 }
 
 
@@ -325,7 +351,7 @@ void GraphicsContext::onGlContextDestroyed(priv::GlContext& glContext)
     if (glContext.m_id != activeGlContext.id)
         return;
 
-    if (!setActiveThreadLocalGlContext(*m_impl->sharedGlContext, true))
+    if (!setActiveThreadLocalGlContext(m_impl->sharedGlContext, true))
     {
         priv::err() << "Failed to enable shared GL context in `GraphicsContext::onGlContextDestroyed`" << priv::errEndl;
         SFML_ASSERT(false);
@@ -336,6 +362,8 @@ void GraphicsContext::onGlContextDestroyed(priv::GlContext& glContext)
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool GraphicsContext::hasAnyActiveGlContext() const
 {
+    priv::err() << "pizza" << 1 << 2 << 3 << "banana" << priv::errEndl;
+
     return activeGlContext.id != 0u && activeGlContext.ptr != nullptr;
 }
 
@@ -343,60 +371,22 @@ void GraphicsContext::onGlContextDestroyed(priv::GlContext& glContext)
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool GraphicsContext::isActiveGlContextSharedContext() const
 {
-    return activeGlContext.id == 1u && activeGlContext.ptr == m_impl->sharedGlContext.asPtr();
+    return activeGlContext.id == 1u && activeGlContext.ptr == &m_impl->sharedGlContext;
 }
 
 
 ////////////////////////////////////////////////////////////
-priv::UniquePtr<priv::GlContext> GraphicsContext::createGlContext()
+template <typename... GLContextArgs>
+[[nodiscard]] priv::UniquePtr<priv::GlContext> GraphicsContext::createGlContextImpl(const ContextSettings& contextSettings,
+                                                                                    GLContextArgs&&... args)
 {
-    const std::lock_guard lock(m_impl->sharedGlContextMutex);
-
-    // We don't use acquireTransientContext here since we have
-    // to ensure we have exclusive access to the shared context
-    // in order to make sure it is not active during context creation
-    if (!setActiveThreadLocalGlContext(*m_impl->sharedGlContext, true))
-        priv::err() << "Error enabling shared context in GlContext::create()" << priv::errEndl;
-
-    // Create the context
-    auto context = priv::makeUnique<DerivedGlContextType>(*this,
-                                                          m_impl->nextThreadLocalGlContextId.fetch_add(1u),
-                                                          m_impl->sharedGlContext.asPtr());
-
-    if (!setActiveThreadLocalGlContext(*m_impl->sharedGlContext, false))
-        priv::err() << "Error disabling shared in GlContext::create()" << priv::errEndl;
-
-    // Activate the context
-    if (!setActiveThreadLocalGlContext(*context, true))
-    {
-        priv::err() << "Error enabling context in GlContext::initalize()" << priv::errEndl;
-        return nullptr;
-    }
-
-    if (!context->initialize(*m_impl->sharedGlContext, ContextSettings{}))
-    {
-        priv::err() << "Could not initialize context in GlContext::create()" << priv::errEndl;
-        return nullptr;
-    }
-
-    return context;
-}
-
-
-////////////////////////////////////////////////////////////
-priv::UniquePtr<priv::GlContext> GraphicsContext::createGlContext(const ContextSettings&  settings,
-                                                                  const priv::WindowImpl& owner,
-                                                                  unsigned int            bitsPerPixel)
-{
-    const std::lock_guard lock(m_impl->sharedGlContextMutex);
-
     // TODO: ?
     // If use_count is 2 (GlResource + sharedContext) we know that we are inside sf::Context or sf::Window
     // Only in this situation we allow the user to indirectly re-create the shared context as a core context
 
     // // Check if we need to convert our shared context into a core context
     // if ((SharedContext::getUseCount() == 2) && (settings.attributeFlags & ContextSettings::Attribute::Core) &&
-    //     !(sharedGlContext->m_settings.attributeFlags & ContextSettings::Attribute::Core))
+    //     !(sharedGlContext.m_settings.attributeFlags & ContextSettings::Attribute::Core))
     // {
     //     // Re-create our shared context as a core context
     //     const ContextSettings sharedSettings{/* depthBits */ 0,
@@ -407,9 +397,9 @@ priv::UniquePtr<priv::GlContext> GraphicsContext::createGlContext(const ContextS
     //                                          settings.attributeFlags};
 
     //     sharedGlContext.emplace(nullptr, sharedSettings, Vector2u{1, 1});
-    //     if (!sharedGlContext->initialize(sharedSettings))
+    //     if (!sharedGlContext.initialize(sharedSettings))
     //     {
-    //        priv::err() << "Could not initialize shared context in GlContext::create()" <<priv::errEndl;
+    //        priv::err() << "Could not initialize shared context in GraphicsContext::createGlContext()" <<priv::errEndl;
     //         return nullptr;
     //     }
 
@@ -417,84 +407,56 @@ priv::UniquePtr<priv::GlContext> GraphicsContext::createGlContext(const ContextS
     //     sharedContext->loadExtensions();
     // }
 
-    // We don't use acquireTransientContext here since we have
-    // to ensure we have exclusive access to the shared context
-    // in order to make sure it is not active during context creation
-    if (!setActiveThreadLocalGlContext(*m_impl->sharedGlContext, true))
-        priv::err() << "Error enabling shared context in GlContext::create()" << priv::errEndl;
+    const std::lock_guard lock(m_impl->sharedGlContextMutex);
 
-    // Create the context
-    auto context = priv::makeUnique<DerivedGlContextType>(*this,
-                                                          m_impl->nextThreadLocalGlContextId.fetch_add(1u),
-                                                          m_impl->sharedGlContext.asPtr(),
-                                                          settings,
-                                                          owner,
-                                                          bitsPerPixel);
+    if (!setActiveThreadLocalGlContext(m_impl->sharedGlContext, true))
+        priv::err() << "Error enabling shared GL context in GraphicsContext::createGlContext()" << priv::errEndl;
 
-    if (!setActiveThreadLocalGlContext(*m_impl->sharedGlContext, false))
-        priv::err() << "Error disabling shared context in GlContext::create()" << priv::errEndl;
+    auto glContext = priv::makeUnique<DerivedGlContextType>(*this,
+                                                            m_impl->nextThreadLocalGlContextId.fetch_add(1u),
+                                                            &m_impl->sharedGlContext,
+                                                            SFML_FORWARD(args)...);
 
-    // Activate the context
-    if (!setActiveThreadLocalGlContext(*context, true))
+    if (!setActiveThreadLocalGlContext(m_impl->sharedGlContext, false))
+        priv::err() << "Error disabling shared GL context in GraphicsContext::createGlContext()" << priv::errEndl;
+
+    if (!setActiveThreadLocalGlContext(*glContext, true))
     {
-        priv::err() << "Error enabling context in GlContext::initalize()" << priv::errEndl;
+        priv::err() << "Error enabling newly created GL context in GlContext::initalize()" << priv::errEndl;
         return nullptr;
     }
 
-    if (!context->initialize(*m_impl->sharedGlContext, settings))
+    if (!glContext->initialize(m_impl->sharedGlContext, contextSettings))
     {
-        priv::err() << "Could not initialize context in GlContext::create()" << priv::errEndl;
+        priv::err() << "Error initializing newly created GL context in GraphicsContext::createGlContext()" << priv::errEndl;
         return nullptr;
     }
 
-    context->checkSettings(settings);
-
-    return context;
+    glContext->checkSettings(contextSettings);
+    return glContext;
 }
 
 
 ////////////////////////////////////////////////////////////
-priv::UniquePtr<priv::GlContext> GraphicsContext::createGlContext(const ContextSettings& settings, const Vector2u& size)
+priv::UniquePtr<priv::GlContext> GraphicsContext::createGlContext()
 {
-    const std::lock_guard lock(m_impl->sharedGlContextMutex);
+    return createGlContextImpl(ContextSettings{});
+}
 
-    // TODO: ?
-    // If use_count is 2 (GlResource + sharedContext) we know that we are inside sf::Context or sf::Window
-    // Only in this situation we allow the user to indirectly re-create the shared context as a core context
-    // ...same as above...
 
-    // We don't use acquireTransientContext here since we have
-    // to ensure we have exclusive access to the shared context
-    // in order to make sure it is not active during context creation
-    if (!setActiveThreadLocalGlContext(*m_impl->sharedGlContext, true))
-        priv::err() << "Error enabling shared context in GlContext::create()" << priv::errEndl;
+////////////////////////////////////////////////////////////
+priv::UniquePtr<priv::GlContext> GraphicsContext::createGlContext(const ContextSettings&  contextSettings,
+                                                                  const priv::WindowImpl& owner,
+                                                                  unsigned int            bitsPerPixel)
+{
+    return createGlContextImpl(contextSettings, contextSettings, owner, bitsPerPixel);
+}
 
-    // Create the context
-    auto context = priv::makeUnique<DerivedGlContextType>(*this,
-                                                          m_impl->nextThreadLocalGlContextId.fetch_add(1u),
-                                                          m_impl->sharedGlContext.asPtr(),
-                                                          settings,
-                                                          size);
 
-    if (!setActiveThreadLocalGlContext(*m_impl->sharedGlContext, false))
-        priv::err() << "Error disabling shared context in GlContext::create()" << priv::errEndl;
-
-    // Activate the context
-    if (!setActiveThreadLocalGlContext(*context, true))
-    {
-        priv::err() << "Error enabling context in GlContext::initalize()" << priv::errEndl;
-        return nullptr;
-    }
-
-    if (!context->initialize(*m_impl->sharedGlContext, settings))
-    {
-        priv::err() << "Could not initialize context in GlContext::create()" << priv::errEndl;
-        return nullptr;
-    }
-
-    context->checkSettings(settings);
-
-    return context;
+////////////////////////////////////////////////////////////
+priv::UniquePtr<priv::GlContext> GraphicsContext::createGlContext(const ContextSettings& contextSettings, const Vector2u& size)
+{
+    return createGlContextImpl(contextSettings, contextSettings, size);
 }
 
 
@@ -508,7 +470,7 @@ bool GraphicsContext::isExtensionAvailable(const char* name) const
 ////////////////////////////////////////////////////////////
 GlFunctionPointer GraphicsContext::getFunction(const char* name) const
 {
-    return m_impl->sharedGlContext->getFunction(name);
+    return m_impl->sharedGlContext.getFunction(name);
 }
 
 } // namespace sf

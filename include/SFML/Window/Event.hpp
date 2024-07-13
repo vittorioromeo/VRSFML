@@ -240,7 +240,7 @@ public:
     };
 
     ////////////////////////////////////////////////////////////
-    /// \brief Joystick connected event subtypes
+    /// \brief Joystick connected event subtype
     ///
     ////////////////////////////////////////////////////////////
     struct JoystickConnected
@@ -249,7 +249,7 @@ public:
     };
 
     ////////////////////////////////////////////////////////////
-    /// \brief Joystick disconnected event subtypes
+    /// \brief Joystick disconnected event subtype
     ///
     ////////////////////////////////////////////////////////////
     struct JoystickDisconnected
@@ -258,7 +258,7 @@ public:
     };
 
     ////////////////////////////////////////////////////////////
-    /// \brief Touch began event subtypes
+    /// \brief Touch began event subtype
     ///
     ////////////////////////////////////////////////////////////
     struct TouchBegan
@@ -268,7 +268,7 @@ public:
     };
 
     ////////////////////////////////////////////////////////////
-    /// \brief Touch moved event subtypes
+    /// \brief Touch moved event subtype
     ///
     ////////////////////////////////////////////////////////////
     struct TouchMoved
@@ -278,7 +278,7 @@ public:
     };
 
     ////////////////////////////////////////////////////////////
-    /// \brief Touch ended event subtypes
+    /// \brief Touch ended event subtype
     ///
     ////////////////////////////////////////////////////////////
     struct TouchEnded
@@ -431,7 +431,7 @@ SFML_PRIV_EVENTS_X_MACRO(SFML_PRIV_EVENT_X_EXTERN_TEMPLATE_GETIF, SFML_PRIV_EVEN
 /// corresponds to a different subtype struct which contains
 /// the data required to process that event.
 ///
-/// Event subtypes are event types belonging to `sf::Event`,
+/// Event subtype are event types belonging to `sf::Event`,
 /// such as `sf::Event::Closed` or `sf::Event::MouseMoved`.
 ///
 /// The way to access the current active event subtype is via

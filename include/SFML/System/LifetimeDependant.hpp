@@ -64,8 +64,8 @@ private:
     mutable ::sf::priv::LifetimeDependant m_sfPrivLifetimeDependant##dependantType; \
     using sfPrivSwallowSemicolon##dependantType = void
 
-#define SFML_UPDATE_LIFETIME_DEPENDANT(dependantType, dependeeType, dependantMemberPtr) \
-    m_sfPrivLifetimeDependant##dependantType.update(                                    \
+#define SFML_UPDATE_LIFETIME_DEPENDANT(dependantType, dependeeType, thisPtr, dependantMemberPtr) \
+    thisPtr->m_sfPrivLifetimeDependant##dependantType.update(                                    \
         dependantMemberPtr == nullptr ? nullptr : &dependantMemberPtr->m_sfPrivLifetimeDependee##dependeeType)
 // NOLINTEND(bugprone-macro-parentheses)
 

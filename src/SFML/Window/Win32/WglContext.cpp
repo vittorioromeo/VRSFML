@@ -155,7 +155,7 @@ WglContext(graphicsContext, id, shared, ContextSettings{}, {1u, 1u})
 WglContext::~WglContext()
 {
     // Notify unshared OpenGL resources of context destruction
-    m_graphicsContext.cleanupUnsharedResources();
+    m_graphicsContext.cleanupUnsharedResources(*this);
 
     // Destroy the OpenGL context
     if (m_context)
@@ -797,7 +797,6 @@ HGLRC WglContext::createContext(ContextSettings& settings, const SurfaceData& su
     if (!result)
     {
         err() << "Failed to create an OpenGL context for this window: " << getErrorString(GetLastError()) << errEndl;
-
         return {};
     }
 

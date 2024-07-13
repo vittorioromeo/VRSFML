@@ -93,10 +93,14 @@ impl(thePlaybackDevice)
         {
             static_cast<SoundBase*>(ptr)->impl->playbackDevice     = &newPlaybackDevice;
             static_cast<SoundBase*>(ptr)->impl->resourceEntryIndex = newIndex;
+
+            SFML_UPDATE_LIFETIME_DEPENDANT(PlaybackDevice,
+                                           SoundBase,
+                                           static_cast<SoundBase*>(ptr),
+                                           static_cast<SoundBase*>(ptr)->impl->playbackDevice);
         });
 
-    // TODO:
-    // SFML_UPDATE_LIFETIME_DEPENDANT(PlaybackDevice, SoundBase, playbackDevice);
+    SFML_UPDATE_LIFETIME_DEPENDANT(PlaybackDevice, SoundBase, this, impl->playbackDevice);
 }
 
 

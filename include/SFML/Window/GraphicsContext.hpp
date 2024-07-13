@@ -43,14 +43,19 @@
 namespace sf::priv
 {
 class GlContext;
+class RenderTextureImplDefault;
+class RenderTextureImplFBO;
 class WindowImpl;
 } // namespace sf::priv
 
 namespace sf
 {
-using GlFunctionPointer = void (*)();
+class Window;
 struct ContextSettings;
+using GlFunctionPointer = void (*)();
 } // namespace sf
+
+struct TestContext;
 
 
 namespace sf
@@ -59,51 +64,17 @@ namespace sf
 class [[nodiscard]] GraphicsContext
 {
 public:
-    // TODO: private
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit GraphicsContext();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
     ~GraphicsContext();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Create a new context, not associated to a window
-    ///
-    /// This function automatically chooses the specialized class
-    /// to use according to the OS.
-    ///
-    /// \return Pointer to the created context
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] priv::UniquePtr<priv::GlContext> createGlContext();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Create a new context attached to a window
-    ///
-    /// This function automatically chooses the specialized class
-    /// to use according to the OS.
-    ///
-    /// \param settings     Creation parameters
-    /// \param owner        Pointer to the owner window
-    /// \param bitsPerPixel Pixel depth (in bits per pixel)
-    ///
-    /// \return Pointer to the created context
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] priv::UniquePtr<priv::GlContext> createGlContext(const ContextSettings&  settings,
-                                                                   const priv::WindowImpl& owner,
-                                                                   unsigned int            bitsPerPixel);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Create a new context that embeds its own rendering target
-    ///
-    /// This function automatically chooses the specialized class
-    /// to use according to the OS.
-    ///
-    /// \param settings Creation parameters
-    /// \param size     Back buffer width and height
-    ///
-    /// \return Pointer to the created context
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] priv::UniquePtr<priv::GlContext> createGlContext(const ContextSettings& settings, const Vector2u& size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Check whether a given OpenGL extension is available
@@ -129,38 +100,10 @@ public:
     [[nodiscard]] GlFunctionPointer getFunction(const char* name) const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Register an OpenGL object to be destroyed when its containing context is destroyed
-    ///
-    /// This is used for internal purposes in order to properly
-    /// clean up OpenGL resources that cannot be shared bwteen
-    /// contexts.
-    ///
-    /// \param object Object to be destroyed when its containing context is destroyed
-    ///
-    ////////////////////////////////////////////////////////////
-    void registerUnsharedGlObject(void* objectSharedPtr);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Unregister an OpenGL object from its containing context
-    ///
-    /// \param object Object to be unregister
-    ///
-    ////////////////////////////////////////////////////////////
-    void unregisterUnsharedGlObject(void* objectSharedPtr);
-
-    ////////////////////////////////////////////////////////////
     /// \brief Notify unshared resources of context destruction
     ///
     ////////////////////////////////////////////////////////////
-    void cleanupUnsharedResources();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the currently active context
-    ///
-    /// \return The currently active context or a null pointer if none is active
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] const priv::GlContext* getActiveThreadLocalGlContextPtr() const;
+    void cleanupUnsharedResources(priv::GlContext& glContext);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the currently active context's ID
@@ -183,7 +126,90 @@ public:
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool setActiveThreadLocalGlContext(priv::GlContext& glContext, bool active);
+    [[nodiscard]] bool hasAnyActiveGlContext() const;
+
+private:
+    friend priv::GlContext;
+    friend Window;
+    friend priv::RenderTextureImplDefault;
+    friend priv::RenderTextureImplFBO;
+    friend TestContext;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Create a new context, not associated to a window
+    ///
+    /// This function automatically chooses the specialized class
+    /// to use according to the OS.
+    ///
+    /// \return Pointer to the created context
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename... GLContextArgs>
+    [[nodiscard]] priv::UniquePtr<priv::GlContext> createGlContextImpl(const ContextSettings& contextSettings,
+                                                                       GLContextArgs&&... args);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Create a new context, not associated to a window
+    ///
+    /// This function automatically chooses the specialized class
+    /// to use according to the OS.
+    ///
+    /// \return Pointer to the created context
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] priv::UniquePtr<priv::GlContext> createGlContext();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Create a new context attached to a window
+    ///
+    /// This function automatically chooses the specialized class
+    /// to use according to the OS.
+    ///
+    /// \param settings     Creation parameters
+    /// \param owner        Pointer to the owner window
+    /// \param bitsPerPixel Pixel depth (in bits per pixel)
+    ///
+    /// \return Pointer to the created context
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] priv::UniquePtr<priv::GlContext> createGlContext(const ContextSettings&  contextSettings,
+                                                                   const priv::WindowImpl& owner,
+                                                                   unsigned int            bitsPerPixel);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Create a new context that embeds its own rendering target
+    ///
+    /// This function automatically chooses the specialized class
+    /// to use according to the OS.
+    ///
+    /// \param settings Creation parameters
+    /// \param size     Back buffer width and height
+    ///
+    /// \return Pointer to the created context
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] priv::UniquePtr<priv::GlContext> createGlContext(const ContextSettings& contextSettings,
+                                                                   const Vector2u&        size);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Register an OpenGL object to be destroyed when its containing context is destroyed
+    ///
+    /// This is used for internal purposes in order to properly
+    /// clean up OpenGL resources that cannot be shared bwteen
+    /// contexts.
+    ///
+    /// \param object Object to be destroyed when its containing context is destroyed
+    ///
+    ////////////////////////////////////////////////////////////
+    void registerUnsharedGlObject(std::uint64_t glContextId, unsigned int frameBufferId);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Unregister an OpenGL object from its containing context
+    ///
+    /// \param object Object to be unregister
+    ///
+    ////////////////////////////////////////////////////////////
+    void unregisterUnsharedGlObject(std::uint64_t glContextId, unsigned int frameBufferId);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO
@@ -195,7 +221,7 @@ public:
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool hasAnyActiveGlContext() const;
+    [[nodiscard]] bool setActiveThreadLocalGlContext(priv::GlContext& glContext, bool active);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO
@@ -203,7 +229,14 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isActiveGlContextSharedContext() const;
 
-private:
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the currently active context
+    ///
+    /// \return The currently active context or a null pointer if none is active
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] const priv::GlContext* getActiveThreadLocalGlContextPtr() const;
+
     struct Impl;
     priv::UniquePtr<Impl> m_impl;
 };

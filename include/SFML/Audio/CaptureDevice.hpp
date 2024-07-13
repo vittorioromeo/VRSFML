@@ -32,6 +32,7 @@
 #include <SFML/Audio/SoundChannel.hpp>
 
 #include <SFML/System/LifetimeDependant.hpp>
+#include <SFML/System/LifetimeDependee.hpp>
 #include <SFML/System/Optional.hpp>
 #include <SFML/System/UniquePtr.hpp>
 
@@ -194,7 +195,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Lifetime tracking
     ////////////////////////////////////////////////////////////
-    SFML_DEFINE_LIFETIME_DEPENDANT(AudioContext); // TODO: move inside impl?
+    SFML_DEFINE_LIFETIME_DEPENDANT(AudioContext);
+    SFML_DEFINE_LIFETIME_DEPENDEE(CaptureDevice, SoundRecorder);
 };
 
 } // namespace sf
