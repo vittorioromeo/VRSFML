@@ -236,20 +236,20 @@ template <typename T>
 using uncvref_t = typename uncvref<T>::type;
 
 template <typename T>
-static constexpr bool is_reference = false;
+inline constexpr bool is_reference = false;
 
 template <typename T>
-static constexpr bool is_reference<T&> = true;
+inline constexpr bool is_reference<T&> = true;
 
 template <typename T>
-static constexpr bool is_reference<T&&> = true;
+inline constexpr bool is_reference<T&&> = true;
 
 
 template <typename T>
-static constexpr bool is_void = false;
+inline constexpr bool is_void = false;
 
 template <>
-static constexpr bool is_void<void> = true;
+inline constexpr bool is_void<void> = true;
 
 struct void_type
 {
