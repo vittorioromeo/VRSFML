@@ -138,7 +138,7 @@ void updatePluggedList()
     }
 }
 
-sf::Optional<sf::Joystick::Axis> usageToAxis(int usage)
+Optional<sf::Joystick::Axis> usageToAxis(int usage)
 {
     switch (usage)
     {
@@ -280,7 +280,7 @@ JoystickCaps JoystickImpl::getCapabilities() const
                     caps.axes[Joystick::Axis::PovX] = true;
                     caps.axes[Joystick::Axis::PovY] = true;
                 }
-                else if (const sf::Optional<Joystick::Axis> axis = usageToAxis(usage))
+                else if (const Optional<Joystick::Axis> axis = usageToAxis(usage))
                 {
                     caps.axes[*axis] = true;
                 }
@@ -333,7 +333,7 @@ JoystickState JoystickImpl::JoystickImpl::update()
                     {
                         hatValueToSfml(value, m_state);
                     }
-                    else if (const sf::Optional<Joystick::Axis> axis = usageToAxis(usage))
+                    else if (const Optional<Joystick::Axis> axis = usageToAxis(usage))
                     {
                         int minimum = item.logical_minimum;
                         int maximum = item.logical_maximum;

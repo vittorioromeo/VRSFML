@@ -45,7 +45,7 @@ const IpAddress IpAddress::Broadcast(255, 255, 255, 255);
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<IpAddress> IpAddress::resolve(std::string_view address)
+Optional<IpAddress> IpAddress::resolve(std::string_view address)
 {
     using namespace std::string_view_literals;
 
@@ -121,7 +121,7 @@ std::uint32_t IpAddress::toInteger() const
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<IpAddress> IpAddress::getLocalAddress()
+Optional<IpAddress> IpAddress::getLocalAddress()
 {
     // The method here is to connect a UDP socket to anyone (here to localhost),
     // and get the local socket address with the getsockname function.
@@ -164,7 +164,7 @@ sf::Optional<IpAddress> IpAddress::getLocalAddress()
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<IpAddress> IpAddress::getPublicAddress(Time timeout)
+Optional<IpAddress> IpAddress::getPublicAddress(Time timeout)
 {
     // The trick here is more complicated, because the only way
     // to get our public IP address is to get it from a distant computer.
@@ -231,7 +231,7 @@ bool operator>=(const IpAddress& left, const IpAddress& right)
 
 
 ////////////////////////////////////////////////////////////
-std::istream& operator>>(std::istream& stream, sf::Optional<IpAddress>& address)
+std::istream& operator>>(std::istream& stream, Optional<IpAddress>& address)
 {
     std::string str;
     stream >> str;

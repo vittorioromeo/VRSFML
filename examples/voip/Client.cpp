@@ -10,8 +10,9 @@
 #include <SFML/Network/Socket.hpp>
 #include <SFML/Network/TcpSocket.hpp>
 
-#include <iostream>
 #include <SFML/System/Optional.hpp>
+
+#include <iostream>
 
 #include <cstddef>
 #include <cstdint>
@@ -119,14 +120,6 @@ private:
 ////////////////////////////////////////////////////////////
 void doClient(sf::CaptureDevice& captureDevice, unsigned short port)
 {
-    // Check that the device can capture audio
-    // TODO:
-    //if (!sf::SoundRecorder::isAvailable())
-    {
-        //  std::cout << "Sorry, audio capture is not supported by your system" << std::endl;
-        //return;
-    }
-
     // Ask for server address
     sf::Optional<sf::IpAddress> server;
     do

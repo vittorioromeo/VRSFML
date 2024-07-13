@@ -118,9 +118,9 @@ struct PlaybackDevice::Impl
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<PlaybackDevice> PlaybackDevice::createDefault(AudioContext& audioContext)
+Optional<PlaybackDevice> PlaybackDevice::createDefault(AudioContext& audioContext)
 {
-    sf::Optional defaultPlaybackDeviceHandle = audioContext.getDefaultPlaybackDeviceHandle();
+    Optional defaultPlaybackDeviceHandle = audioContext.getDefaultPlaybackDeviceHandle();
 
     if (!defaultPlaybackDeviceHandle.hasValue())
         return sf::nullOpt;

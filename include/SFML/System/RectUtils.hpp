@@ -46,7 +46,7 @@ namespace sf
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard]] SFML_SYSTEM_API sf::Optional<Rect<T>> findIntersection(const Rect<T>& rect0, const Rect<T>& rect1);
+[[nodiscard]] SFML_SYSTEM_API Optional<Rect<T>> findIntersection(const Rect<T>& rect0, const Rect<T>& rect1);
 
 } // namespace sf
 

@@ -106,6 +106,6 @@
 /// \return Left, Right, ..., or sf::nullOpt if the button is unknown
 ///
 ////////////////////////////////////////////////////////////
-+ (sf::Optional<sf::Mouse::Button>)mouseButtonFromEvent:(NSEvent*)event;
++ (Optional<sf::Mouse::Button>)mouseButtonFromEvent:(NSEvent*)event;
 
 @end

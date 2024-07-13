@@ -43,7 +43,7 @@ int main()
 
     window.setVerticalSyncEnabled(true);
 
-    auto image   = sf::Image(screenSize, sf::Color::White);
+    auto image   = sf::Image::create(screenSize, sf::Color::White).value();
     auto texture = sf::Texture::loadFromImage(graphicsContext, image).value();
 
     auto baseRenderTexture = sf::RenderTexture::create(graphicsContext, screenSize, sf::ContextSettings{0, 0, 4 /* AA level*/})

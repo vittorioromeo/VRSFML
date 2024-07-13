@@ -9,24 +9,11 @@
 
 
 ////////////////////////////////////////////////////////////
-// Function prototypes
-// (I'm too lazy to put them into separate headers...)
-////////////////////////////////////////////////////////////
-void doClient(sf::CaptureDevice& captureDevice, unsigned short port);
-void doServer(sf::PlaybackDevice& playbackDevice, unsigned short port);
-
-
-////////////////////////////////////////////////////////////
 /// Main
 ///
 ////////////////////////////////////////////////////////////
 int main()
 {
-    // Create an audio context and get the default playback and capture devices
-    auto audioContext   = sf::AudioContext::create().value();
-    auto playbackDevice = sf::PlaybackDevice::createDefault(audioContext).value();
-    auto captureDevice  = sf::CaptureDevice::createDefault(audioContext).value();
-
     // Choose a random port for opening sockets (ports < 1024 are reserved)
     const unsigned short port = 2435;
 
@@ -37,12 +24,22 @@ int main()
 
     if (who == 's')
     {
+        // Create an audio context and get the default playback device
+        auto audioContext   = sf::AudioContext::create().value();
+        auto playbackDevice = sf::PlaybackDevice::createDefault(audioContext).value();
+
         // Run as a server
+        void doServer(sf::PlaybackDevice&, unsigned short);
         doServer(playbackDevice, port);
     }
     else
     {
+        // Create an audio context and get the default capture device
+        auto audioContext  = sf::AudioContext::create().value();
+        auto captureDevice = sf::CaptureDevice::createDefault(audioContext).value();
+
         // Run as a client
+        void doClient(sf::CaptureDevice&, unsigned short);
         doClient(captureDevice, port);
     }
 

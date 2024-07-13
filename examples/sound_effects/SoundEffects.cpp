@@ -34,7 +34,6 @@
 #include <array>
 #include <iostream>
 #include <limits>
-#include <memory> // TODO: remove
 #include <vector>
 
 #include <cmath>
@@ -685,29 +684,28 @@ protected:
         m_music.setAttenuation(0.0f);
     }
 
-    const std::shared_ptr<bool>& getEnabled() const
-    {
-        return m_enabled;
-    }
 
     sf::Listener& m_listener;
-    sf::Music     m_music;
+
+    // Needs to be defined above `m_music` because it's used in the music's effect processor
+    bool m_enabled{true};
+
+    sf::Music m_music;
 
 private:
     void handleKey(sf::Keyboard::Key key) override
     {
         if (key == sf::Keyboard::Key::Space)
-            *m_enabled = !*m_enabled;
+            m_enabled = !m_enabled;
 
-        m_enabledText.setString(*m_enabled ? "Processing: Enabled" : "Processing: Disabled");
+        m_enabledText.setString(m_enabled ? "Processing: Enabled" : "Processing: Disabled");
     }
 
-    sf::CircleShape       m_listenerShape{20.f};
-    sf::CircleShape       m_soundShape{20.f};
-    sf::Vector2f          m_position;
-    std::shared_ptr<bool> m_enabled{std::make_shared<bool>(true)};
-    sf::Text              m_enabledText;
-    sf::Text              m_instructions;
+    sf::CircleShape m_listenerShape{20.f};
+    sf::CircleShape m_soundShape{20.f};
+    sf::Vector2f    m_position;
+    sf::Text        m_enabledText;
+    sf::Text        m_instructions;
 };
 
 
@@ -746,13 +744,11 @@ protected:
         // this lambda hence we need to always have usable coefficients and state until the music and the
         // associated lambda are destroyed
         m_music.setEffectProcessor(
-            [coefficients,
-             enabled = getEnabled(),
-             state   = std::vector<State>()](const float*  inputFrames,
-                                           unsigned int& inputFrameCount,
-                                           float*        outputFrames,
-                                           unsigned int& outputFrameCount,
-                                           unsigned int  frameChannelCount) mutable
+            [coefficients, &enabled = m_enabled, state = std::vector<State>()](const float*  inputFrames,
+                                                                               unsigned int& inputFrameCount,
+                                                                               float*        outputFrames,
+                                                                               unsigned int& outputFrameCount,
+                                                                               unsigned int  frameChannelCount) mutable
             {
                 // IMPORTANT: The channel count of the audio engine currently sourcing data from this sound
                 // will always be provided in frameChannelCount, this can be different from the channel count
@@ -777,7 +773,7 @@ protected:
                         channelState.ynz2 = channelState.ynz1;
                         channelState.ynz1 = yn;
 
-                        outputFrames[channel] = *enabled ? yn : xn;
+                        outputFrames[channel] = enabled ? yn : xn;
                     }
 
                     inputFrames += (inputFrames ? frameChannelCount : 0u);
@@ -864,9 +860,9 @@ struct Echo : Processing
         // associated lambda are destroyed
         m_music.setEffectProcessor(
             [delayInFrames,
-             enabled = getEnabled(),
-             buffer  = std::vector<float>(),
-             cursor  = 0u](const float*  inputFrames,
+             &enabled = m_enabled,
+             buffer   = std::vector<float>(),
+             cursor   = 0u](const float*  inputFrames,
                           unsigned int& inputFrameCount,
                           float*        outputFrames,
                           unsigned int& outputFrameCount,
@@ -886,7 +882,7 @@ struct Echo : Processing
                         const auto input = inputFrames ? inputFrames[channel] : 0.f; // Read silence if no input data available
                         const auto bufferIndex = (cursor * frameChannelCount) + channel;
                         buffer[bufferIndex]    = (buffer[bufferIndex] * decay) + (input * dry);
-                        outputFrames[channel]  = *enabled ? buffer[bufferIndex] * wet : input;
+                        outputFrames[channel]  = enabled ? buffer[bufferIndex] * wet : input;
                     }
 
                     cursor = (cursor + 1) % delayInFrames;
@@ -921,11 +917,11 @@ public:
         m_music.setEffectProcessor(
             [sampleRate = m_music.getSampleRate(),
              filters    = std::vector<ReverbFilter<float>>(),
-             enabled    = getEnabled()](const float*  inputFrames,
-                                     unsigned int& inputFrameCount,
-                                     float*        outputFrames,
-                                     unsigned int& outputFrameCount,
-                                     unsigned int  frameChannelCount) mutable
+             &enabled   = m_enabled](const float*  inputFrames,
+                                   unsigned int& inputFrameCount,
+                                   float*        outputFrames,
+                                   unsigned int& outputFrameCount,
+                                   unsigned int  frameChannelCount) mutable
             {
                 // IMPORTANT: The channel count of the audio engine currently sourcing data from this sound
                 // will always be provided in frameChannelCount, this can be different from the channel count
@@ -939,7 +935,7 @@ public:
                     for (auto channel = 0u; channel < frameChannelCount; ++channel)
                     {
                         const auto input = inputFrames ? inputFrames[channel] : 0.f; // Read silence if no input data available
-                        outputFrames[channel] = *enabled ? filters[channel](input) : input;
+                        outputFrames[channel] = enabled ? filters[channel](input) : input;
                     }
 
                     inputFrames += (inputFrames ? frameChannelCount : 0u);
@@ -1219,18 +1215,45 @@ int main()
                     // F1 key: change playback device
                     case sf::Keyboard::Key::F1:
                     {
-                        // TODO:
+                        std::size_t newPlaybackDeviceIndex{};
+
                         // We need to query the list every time we want to change
                         // since new devices could have been added in the mean time
+                        auto newPlaybackDeviceHandles = audioContext.getAvailablePlaybackDeviceHandles();
 
-                        const std::size_t newPlaybackDeviceIndex = (currentPlaybackDeviceIndex + 1) % playbackDevices.size();
-                        sf::PlaybackDevice& newPlaybackDevice = playbackDevices.at(newPlaybackDeviceIndex);
+                        // TODO: cleanup
+                        if (playbackDeviceHandles != newPlaybackDeviceHandles)
+                        {
+                            std::vector<sf::PlaybackDevice> newPlaybackDevices;
+                            newPlaybackDevices.reserve(newPlaybackDeviceHandles.size());
 
-                        getCurrentPlaybackDevice().transferResourcesTo(newPlaybackDevice);
+                            for (const sf::PlaybackDeviceHandle& deviceHandle : newPlaybackDeviceHandles)
+                            {
+                                newPlaybackDevices.emplace_back(audioContext, deviceHandle);
+
+                                if (deviceHandle.isDefault())
+                                    newPlaybackDeviceIndex = newPlaybackDevices.size() - 1;
+                            }
+
+                            sf::PlaybackDevice& newPlaybackDevice = newPlaybackDevices[newPlaybackDeviceIndex];
+
+                            getCurrentPlaybackDevice().transferResourcesTo(newPlaybackDevice);
+                            effects[current]->start(newPlaybackDevice);
+
+                            playbackDeviceHandles = std::move(newPlaybackDeviceHandles);
+                            playbackDevices       = std::move(newPlaybackDevices);
+                        }
+                        else
+                        {
+                            newPlaybackDeviceIndex = (currentPlaybackDeviceIndex + 1) % playbackDevices.size();
+
+                            sf::PlaybackDevice& newPlaybackDevice = playbackDevices.at(newPlaybackDeviceIndex);
+                            getCurrentPlaybackDevice().transferResourcesTo(newPlaybackDevice);
+                        }
+
+
                         currentPlaybackDeviceIndex = newPlaybackDeviceIndex;
-
                         playbackDeviceText.setString("Current playback device: " + getCurrentDeviceName());
-
                         break;
                     }
 

@@ -162,7 +162,7 @@ public:
     /// \see waitEvent, pollAndHandleEvents
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Optional<Event> pollEvent();
+    [[nodiscard]] Optional<Event> pollEvent();
 
     ////////////////////////////////////////////////////////////
     /// \brief Wait for an event and return it
@@ -188,7 +188,7 @@ public:
     /// \see pollEvent, pollAndHandleEvents
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Optional<Event> waitEvent(Time timeout = Time::Zero);
+    [[nodiscard]] Optional<Event> waitEvent(Time timeout = Time::Zero);
 
     ////////////////////////////////////////////////////////////
     /// \brief Handle all pending events
@@ -324,7 +324,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void setMinimumSize(const Vector2u& minimumSize);
-    void setMinimumSize(const sf::Optional<Vector2u>& minimumSize);
+    void setMinimumSize(const Optional<Vector2u>& minimumSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the maximum window rendering region size
@@ -335,7 +335,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void setMaximumSize(const Vector2u& maximumSize);
-    void setMaximumSize(const sf::Optional<Vector2u>& maximumSize);
+    void setMaximumSize(const Optional<Vector2u>& maximumSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the title of the window
@@ -521,7 +521,7 @@ private:
     /// \param event Event to filter
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Optional<Event> filterEvent(sf::Optional<Event> event);
+    [[nodiscard]] Optional<Event> filterEvent(Optional<Event> event);
 
     ////////////////////////////////////////////////////////////
     // Member data

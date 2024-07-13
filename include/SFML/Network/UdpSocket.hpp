@@ -154,11 +154,11 @@ public:
     /// \see send
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Status receive(void*                    data,
-                                 std::size_t              size,
-                                 std::size_t&             received,
-                                 sf::Optional<IpAddress>& remoteAddress,
-                                 unsigned short&          remotePort);
+    [[nodiscard]] Status receive(void*                data,
+                                 std::size_t          size,
+                                 std::size_t&         received,
+                                 Optional<IpAddress>& remoteAddress,
+                                 unsigned short&      remotePort);
 
     ////////////////////////////////////////////////////////////
     /// \brief Send a formatted packet of data to a remote peer
@@ -193,7 +193,7 @@ public:
     /// \see send
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Status receive(Packet& packet, sf::Optional<IpAddress>& remoteAddress, unsigned short& remotePort);
+    [[nodiscard]] Status receive(Packet& packet, Optional<IpAddress>& remoteAddress, unsigned short& remotePort);
 
 private:
     ////////////////////////////////////////////////////////////

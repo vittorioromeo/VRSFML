@@ -63,7 +63,7 @@ public:
     /// \brief Create a new audio context
     ///
     ////////////////////////////////////////////////////////////
-    SFML_AUDIO_API static sf::Optional<AudioContext> create();
+    SFML_AUDIO_API static Optional<AudioContext> create();
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -119,7 +119,7 @@ public:
     /// \return The handle to the default audio playback device
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_AUDIO_API sf::Optional<PlaybackDeviceHandle> getDefaultPlaybackDeviceHandle();
+    [[nodiscard]] SFML_AUDIO_API Optional<PlaybackDeviceHandle> getDefaultPlaybackDeviceHandle();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a list of handles to all available audio capture devices
@@ -145,7 +145,7 @@ public:
     /// \return The handle to the default audio capture device
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_AUDIO_API sf::Optional<CaptureDeviceHandle> getDefaultCaptureDeviceHandle();
+    [[nodiscard]] SFML_AUDIO_API Optional<CaptureDeviceHandle> getDefaultCaptureDeviceHandle();
 
 private:
     friend CaptureDevice;

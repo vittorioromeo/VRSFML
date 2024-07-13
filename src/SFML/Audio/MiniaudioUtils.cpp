@@ -70,6 +70,8 @@ struct MiniaudioUtils::SoundBase::Impl
     EffectProcessor effectProcessor;         //!< The effect processor
     PlaybackDevice::ResourceEntryIndex resourceEntryIndex; //!< Index of the resource entry registered with the PlaybackDevice
     SavedSettings savedSettings; //!< Saved settings used to restore ma_sound state in case we need to recreate it
+
+    [[maybe_unused]] bool effectNodeUninitialized{}; //!< TODO
 };
 
 ////////////////////////////////////////////////////////////
@@ -110,7 +112,10 @@ MiniaudioUtils::SoundBase::~SoundBase()
     impl->playbackDevice->unregisterResource(impl->resourceEntryIndex);
 
     ma_sound_uninit(&impl->sound);
+
     ma_node_uninit(&impl->effectNode, nullptr);
+    impl->effectNodeUninitialized = true; // Only for debugging
+
     ma_data_source_uninit(&impl->dataSourceBase);
 }
 
@@ -135,7 +140,13 @@ bool MiniaudioUtils::SoundBase::initialize(ma_sound_end_proc endCallback)
     // Initialize the custom effect node
     impl->effectNodeVTable.onProcess =
         [](ma_node* node, const float** framesIn, ma_uint32* frameCountIn, float** framesOut, ma_uint32* frameCountOut)
-    { static_cast<Impl::EffectNode*>(node)->impl->processEffect(framesIn, *frameCountIn, framesOut, *frameCountOut); };
+    {
+        // Assuming that `onProcess` is never called after the destructor of `SoundBase` is finished
+        SFML_ASSERT(!static_cast<Impl::EffectNode*>(node)->impl->impl->effectNodeUninitialized);
+
+        static_cast<Impl::EffectNode*>(node)->impl->processEffect(framesIn, *frameCountIn, framesOut, *frameCountOut);
+    };
+
     impl->effectNodeVTable.onGetRequiredInputFrameCount = nullptr;
     impl->effectNodeVTable.inputBusCount                = 1;
     impl->effectNodeVTable.outputBusCount               = 1;

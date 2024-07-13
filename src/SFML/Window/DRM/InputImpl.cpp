@@ -53,9 +53,9 @@ namespace
 {
 struct TouchSlot
 {
-    sf::Optional<unsigned int> oldId;
-    sf::Optional<unsigned int> id;
-    sf::Vector2i               pos;
+    Optional<unsigned int> oldId;
+    Optional<unsigned int> id;
+    sf::Vector2i           pos;
 };
 
 std::recursive_mutex inputMutex; // threadsafe? maybe...
@@ -167,7 +167,7 @@ void initFileDescriptors()
     std::atexit(uninitFileDescriptors);
 }
 
-sf::Optional<sf::Mouse::Button> toMouseButton(int code)
+Optional<sf::Mouse::Button> toMouseButton(int code)
 {
     switch (code)
     {
@@ -458,7 +458,7 @@ sf::Optional<sf::Event> eventProcess()
                         touchFd     = fileDescriptor;
                         break;
                     case ABS_MT_TRACKING_ID:
-                        atSlot(currentSlot).id = inputEvent.value >= 0 ? sf::Optional(inputEvent.value) : sf::nullOpt;
+                        atSlot(currentSlot).id = inputEvent.value >= 0 ? Optional(inputEvent.value) : sf::nullOpt;
                         touchFd                = fileDescriptor;
                         break;
                     case ABS_MT_POSITION_X:
@@ -539,7 +539,7 @@ sf::Optional<sf::Event> eventProcess()
 // assumes inputMutex is locked
 void update()
 {
-    while (const sf::Optional event = eventProcess())
+    while (const Optional event = eventProcess())
         pushEvent(*event);
 }
 } // namespace
@@ -673,7 +673,7 @@ Vector2i getTouchPosition(unsigned int finger, const WindowBase& /*relativeTo*/)
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<Event> checkEvent()
+Optional<Event> checkEvent()
 {
     const std::lock_guard lock(inputMutex);
 
@@ -685,7 +685,7 @@ sf::Optional<Event> checkEvent()
         return event;
     }
 
-    if (const sf::Optional event = eventProcess())
+    if (const Optional event = eventProcess())
     {
         return event;
     }

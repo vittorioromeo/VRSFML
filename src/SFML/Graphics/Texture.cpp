@@ -164,9 +164,9 @@ Texture& Texture::operator=(Texture&& right) noexcept
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<Texture> Texture::create(GraphicsContext& graphicsContext, const Vector2u& size, bool sRgb)
+Optional<Texture> Texture::create(GraphicsContext& graphicsContext, const Vector2u& size, bool sRgb)
 {
-    sf::Optional<Texture> result; // Use a single local variable for NRVO
+    Optional<Texture> result; // Use a single local variable for NRVO
 
     // Check if texture parameters are valid before creating it
     if ((size.x == 0) || (size.y == 0))
@@ -274,7 +274,7 @@ sf::Optional<Texture> Texture::create(GraphicsContext& graphicsContext, const Ve
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<Texture> Texture::loadFromFile(GraphicsContext& graphicsContext, const Path& filename, bool sRgb, const IntRect& area)
+Optional<Texture> Texture::loadFromFile(GraphicsContext& graphicsContext, const Path& filename, bool sRgb, const IntRect& area)
 {
     if (const auto image = sf::Image::loadFromFile(filename))
         return loadFromImage(graphicsContext, *image, sRgb, area);
@@ -285,12 +285,11 @@ sf::Optional<Texture> Texture::loadFromFile(GraphicsContext& graphicsContext, co
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<Texture> Texture::loadFromMemory(
-    GraphicsContext& graphicsContext,
-    const void*      data,
-    std::size_t      size,
-    bool             sRgb,
-    const IntRect&   area)
+Optional<Texture> Texture::loadFromMemory(GraphicsContext& graphicsContext,
+                                          const void*      data,
+                                          std::size_t      size,
+                                          bool             sRgb,
+                                          const IntRect&   area)
 {
     if (const auto image = sf::Image::loadFromMemory(data, size))
         return loadFromImage(graphicsContext, *image, sRgb, area);
@@ -301,7 +300,7 @@ sf::Optional<Texture> Texture::loadFromMemory(
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<Texture> Texture::loadFromStream(GraphicsContext& graphicsContext, InputStream& stream, bool sRgb, const IntRect& area)
+Optional<Texture> Texture::loadFromStream(GraphicsContext& graphicsContext, InputStream& stream, bool sRgb, const IntRect& area)
 {
     if (const auto image = sf::Image::loadFromStream(stream))
         return loadFromImage(graphicsContext, *image, sRgb, area);
@@ -312,9 +311,9 @@ sf::Optional<Texture> Texture::loadFromStream(GraphicsContext& graphicsContext, 
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<Texture> Texture::loadFromImage(GraphicsContext& graphicsContext, const Image& image, bool sRgb, const IntRect& area)
+Optional<Texture> Texture::loadFromImage(GraphicsContext& graphicsContext, const Image& image, bool sRgb, const IntRect& area)
 {
-    sf::Optional<Texture> result; // Use a single local variable for NRVO
+    Optional<Texture> result; // Use a single local variable for NRVO
 
     // Retrieve the image size
     const auto size = image.getSize().to<Vector2i>();
@@ -475,7 +474,9 @@ Image Texture::copyToImage() const
 
 #endif // SFML_OPENGL_ES
 
-    return {m_size, pixels.data()};
+    auto result = sf::Image::create(m_size, pixels.data());
+    SFML_ASSERT(result.hasValue());
+    return SFML_MOVE(*result);
 }
 
 

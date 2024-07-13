@@ -63,7 +63,7 @@ public:
     /// \return The number of bytes actually read, or `sf::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual sf::Optional<std::size_t> read(void* data, std::size_t size) = 0;
+    [[nodiscard]] virtual Optional<std::size_t> read(void* data, std::size_t size) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current reading position
@@ -73,7 +73,7 @@ public:
     /// \return The position actually sought to, or `sf::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual sf::Optional<std::size_t> seek(std::size_t position) = 0;
+    [[nodiscard]] virtual Optional<std::size_t> seek(std::size_t position) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current reading position in the stream
@@ -81,7 +81,7 @@ public:
     /// \return The current position, or `sf::nullOpt` on error.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual sf::Optional<std::size_t> tell() = 0;
+    [[nodiscard]] virtual Optional<std::size_t> tell() = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the stream
@@ -89,7 +89,7 @@ public:
     /// \return The total number of bytes available in the stream, or `sf::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual sf::Optional<std::size_t> getSize() = 0;
+    [[nodiscard]] virtual Optional<std::size_t> getSize() = 0;
 };
 
 } // namespace sf

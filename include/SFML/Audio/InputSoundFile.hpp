@@ -96,7 +96,7 @@ public:
     /// \return Input sound file if the file was successfully opened, otherwise `sf::nullOpt`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<InputSoundFile> openFromFile(const Path& filename);
+    [[nodiscard]] static Optional<InputSoundFile> openFromFile(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a sound file in memory for reading
@@ -110,7 +110,7 @@ public:
     /// \return Input sound file if the file was successfully opened, otherwise `sf::nullOpt`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<InputSoundFile> openFromMemory(const void* data, std::size_t sizeInBytes);
+    [[nodiscard]] static Optional<InputSoundFile> openFromMemory(const void* data, std::size_t sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a sound file from a custom stream for reading
@@ -123,7 +123,7 @@ public:
     /// \return Input sound file if the file was successfully opened, otherwise `sf::nullOpt`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<InputSoundFile> openFromStream(InputStream& stream);
+    [[nodiscard]] static Optional<InputSoundFile> openFromStream(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the total number of audio samples in the file

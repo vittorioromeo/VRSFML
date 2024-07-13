@@ -45,7 +45,7 @@ m_size(sizeInBytes)
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<std::size_t> MemoryInputStream::read(void* data, std::size_t size)
+Optional<std::size_t> MemoryInputStream::read(void* data, std::size_t size)
 {
     const std::size_t count = priv::min(size, m_size - m_offset);
 
@@ -60,7 +60,7 @@ sf::Optional<std::size_t> MemoryInputStream::read(void* data, std::size_t size)
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<std::size_t> MemoryInputStream::seek(std::size_t position)
+Optional<std::size_t> MemoryInputStream::seek(std::size_t position)
 {
     m_offset = position < m_size ? position : m_size;
     return sf::makeOptional(m_offset);
@@ -68,14 +68,14 @@ sf::Optional<std::size_t> MemoryInputStream::seek(std::size_t position)
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<std::size_t> MemoryInputStream::tell()
+Optional<std::size_t> MemoryInputStream::tell()
 {
     return sf::makeOptional(m_offset);
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<std::size_t> MemoryInputStream::getSize()
+Optional<std::size_t> MemoryInputStream::getSize()
 {
     return sf::makeOptional(m_size);
 }

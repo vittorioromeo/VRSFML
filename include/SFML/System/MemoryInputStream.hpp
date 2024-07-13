@@ -66,7 +66,7 @@ public:
     /// \return The number of bytes actually read, or `sf::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Optional<std::size_t> read(void* data, std::size_t size) override;
+    [[nodiscard]] Optional<std::size_t> read(void* data, std::size_t size) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current reading position
@@ -76,7 +76,7 @@ public:
     /// \return The position actually sought to, or `sf::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Optional<std::size_t> seek(std::size_t position) override;
+    [[nodiscard]] Optional<std::size_t> seek(std::size_t position) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current reading position in the stream
@@ -84,7 +84,7 @@ public:
     /// \return The current position, or `sf::nullOpt` on error.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Optional<std::size_t> tell() override;
+    [[nodiscard]] Optional<std::size_t> tell() override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the stream
@@ -92,7 +92,7 @@ public:
     /// \return The total number of bytes available in the stream, or `sf::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Optional<std::size_t> getSize() override;
+    [[nodiscard]] Optional<std::size_t> getSize() override;
 
 private:
     ////////////////////////////////////////////////////////////

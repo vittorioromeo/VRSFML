@@ -47,7 +47,7 @@ namespace sf
 template <typename... Handlers, auto PollEventFn> // Using this weird `auto` parameter to avoid dependency on event header
 void WindowBase::pollAndHandleEvents(Handlers&&... handlers)
 {
-    while (const sf::Optional event = (this->*PollEventFn)())
+    while (const Optional event = (this->*PollEventFn)())
         event->match(static_cast<Handlers&&>(handlers)..., [](const priv::DelayOverloadResolution&) { /* ignore */ });
 }
 

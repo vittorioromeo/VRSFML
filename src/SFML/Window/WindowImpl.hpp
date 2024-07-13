@@ -131,7 +131,7 @@ public:
     /// \return The event on success, `sf::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Optional<Event> waitEvent(Time timeout);
+    [[nodiscard]] Optional<Event> waitEvent(Time timeout);
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the next window event, if available
@@ -142,7 +142,7 @@ public:
     /// \return The event if available, `sf::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Optional<Event> pollEvent();
+    [[nodiscard]] Optional<Event> pollEvent();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the OS-specific handle of the window
@@ -166,7 +166,7 @@ public:
     /// \return Minimum size
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Optional<Vector2u> getMinimumSize() const;
+    [[nodiscard]] Optional<Vector2u> getMinimumSize() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the maximum window rendering region size
@@ -174,7 +174,7 @@ public:
     /// \return Maximum size
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Optional<Vector2u> getMaximumSize() const;
+    [[nodiscard]] Optional<Vector2u> getMaximumSize() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the position of the window on screen
@@ -208,7 +208,7 @@ public:
     /// \param minimumSize New minimum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    virtual void setMinimumSize(const sf::Optional<Vector2u>& minimumSize);
+    virtual void setMinimumSize(const Optional<Vector2u>& minimumSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the maximum window rendering region size
@@ -218,7 +218,7 @@ public:
     /// \param maximumSize New maximum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    virtual void setMaximumSize(const sf::Optional<Vector2u>& maximumSize);
+    virtual void setMaximumSize(const Optional<Vector2u>& maximumSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the title of the window
@@ -336,7 +336,7 @@ private:
     /// \return First event of the queue if available, `sf::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Optional<Event> popEvent();
+    [[nodiscard]] Optional<Event> popEvent();
 
     ////////////////////////////////////////////////////////////
     /// \brief Read the joysticks state and generate the appropriate events

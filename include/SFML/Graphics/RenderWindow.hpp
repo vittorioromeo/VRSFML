@@ -200,13 +200,13 @@ public:
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Optional<Event> pollEvent();
+    [[nodiscard]] Optional<Event> pollEvent();
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Optional<Event> waitEvent(Time timeout = Time::Zero);
+    [[nodiscard]] Optional<Event> waitEvent(Time timeout = Time::Zero);
 
 private:
     ////////////////////////////////////////////////////////////
@@ -230,7 +230,7 @@ private:
     /// \param event Event to filter
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Optional<Event> filterEvent(sf::Optional<Event> event);
+    [[nodiscard]] Optional<Event> filterEvent(Optional<Event> event);
 
     ////////////////////////////////////////////////////////////
     // Member data

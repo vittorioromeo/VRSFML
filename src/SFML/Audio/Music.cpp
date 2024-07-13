@@ -113,7 +113,7 @@ Music& Music::operator=(Music&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<Music> Music::tryOpenFromInputSoundFile(sf::Optional<InputSoundFile>&& optFile, const char* errorContext)
+Optional<Music> Music::tryOpenFromInputSoundFile(Optional<InputSoundFile>&& optFile, const char* errorContext)
 {
     if (!optFile.hasValue())
     {
@@ -126,21 +126,21 @@ sf::Optional<Music> Music::tryOpenFromInputSoundFile(sf::Optional<InputSoundFile
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<Music> Music::openFromFile(const Path& filename)
+Optional<Music> Music::openFromFile(const Path& filename)
 {
     return tryOpenFromInputSoundFile(InputSoundFile::openFromFile(filename), "file");
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<Music> Music::openFromMemory(const void* data, std::size_t sizeInBytes)
+Optional<Music> Music::openFromMemory(const void* data, std::size_t sizeInBytes)
 {
     return tryOpenFromInputSoundFile(InputSoundFile::openFromMemory(data, sizeInBytes), "memory");
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<Music> Music::openFromStream(InputStream& stream)
+Optional<Music> Music::openFromStream(InputStream& stream)
 {
     return tryOpenFromInputSoundFile(InputSoundFile::openFromStream(stream), "stream");
 }
@@ -216,7 +216,7 @@ void Music::onSeek(Time timeOffset)
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<std::uint64_t> Music::onLoop()
+Optional<std::uint64_t> Music::onLoop()
 {
     // Called by underlying SoundStream so we can determine where to loop.
     const std::lock_guard lock(m_impl->mutex);

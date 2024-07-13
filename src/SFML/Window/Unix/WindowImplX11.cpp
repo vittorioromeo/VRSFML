@@ -910,7 +910,7 @@ void WindowImplX11::setSize(const Vector2u& size)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplX11::setMinimumSize(const sf::Optional<Vector2u>& minimumSize)
+void WindowImplX11::setMinimumSize(const Optional<Vector2u>& minimumSize)
 {
     WindowImpl::setMinimumSize(minimumSize);
     setWindowSizeConstraints();
@@ -918,7 +918,7 @@ void WindowImplX11::setMinimumSize(const sf::Optional<Vector2u>& minimumSize)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplX11::setMaximumSize(const sf::Optional<Vector2u>& maximumSize)
+void WindowImplX11::setMaximumSize(const Optional<Vector2u>& maximumSize)
 {
     WindowImpl::setMaximumSize(maximumSize);
     setWindowSizeConstraints();

@@ -268,7 +268,7 @@ protected:
     /// \return The seek position after looping (or sf::nullOpt if there's no loop)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual sf::Optional<std::uint64_t> onLoop();
+    [[nodiscard]] virtual Optional<std::uint64_t> onLoop();
 
     ////////////////////////////////////////////////////////////
     // Member data

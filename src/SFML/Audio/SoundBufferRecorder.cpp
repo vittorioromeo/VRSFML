@@ -45,7 +45,7 @@ namespace sf
 struct SoundBufferRecorder::Impl
 {
     std::vector<std::int16_t> samples; //!< Temporary sample buffer to hold the recorded data
-    sf::Optional<SoundBuffer> buffer;  //!< Sound buffer that will contain the recorded data
+    Optional<SoundBuffer>     buffer;  //!< Sound buffer that will contain the recorded data
 };
 
 

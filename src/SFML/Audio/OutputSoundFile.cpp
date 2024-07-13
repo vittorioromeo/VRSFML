@@ -50,11 +50,10 @@ OutputSoundFile& OutputSoundFile::operator=(OutputSoundFile&&) noexcept = defaul
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<OutputSoundFile> OutputSoundFile::openFromFile(
-    const Path&                      filename,
-    unsigned int                     sampleRate,
-    unsigned int                     channelCount,
-    const std::vector<SoundChannel>& channelMap)
+Optional<OutputSoundFile> OutputSoundFile::openFromFile(const Path&                      filename,
+                                                        unsigned int                     sampleRate,
+                                                        unsigned int                     channelCount,
+                                                        const std::vector<SoundChannel>& channelMap)
 {
     // Find a suitable writer for the file type
     auto writer = SoundFileFactory::createWriterFromFilename(filename);

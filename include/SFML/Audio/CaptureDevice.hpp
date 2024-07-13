@@ -63,7 +63,7 @@ public:
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<CaptureDevice> createDefault(AudioContext& audioContext);
+    [[nodiscard]] static Optional<CaptureDevice> createDefault(AudioContext& audioContext);
 
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor

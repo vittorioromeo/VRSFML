@@ -36,7 +36,6 @@
 #include <SFML/System/Rect.hpp>
 #include <SFML/System/Vector2.hpp>
 
-#include <string_view>
 #include <vector>
 
 #include <cstddef>
@@ -56,6 +55,18 @@ class SFML_GRAPHICS_API Image
 {
 public:
     ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    enum class [[nodiscard]] SaveFormat
+    {
+        BMP,
+        TGA,
+        PNG,
+        JPG
+    };
+
+    ////////////////////////////////////////////////////////////
     /// \brief Construct the image and fill it with a unique color
     ///
     /// If \a size is zero, the behavior is undefined.
@@ -64,7 +75,7 @@ public:
     /// \param color Fill color
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Image(const Vector2u& size, const Color& color = Color::Black); // TODO: to factory
+    [[nodiscard]] static Optional<Image> create(const Vector2u& size, const Color& color = Color::Black);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the image from an array of pixels
@@ -78,7 +89,7 @@ public:
     /// \param pixels Array of pixels to copy to the image
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Image(const Vector2u& size, const std::uint8_t* pixels); // TODO: to factory
+    [[nodiscard]] static Optional<Image> create(const Vector2u& size, const std::uint8_t* pixels);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the image from a file on disk
@@ -95,7 +106,7 @@ public:
     /// \see loadFromMemory, loadFromStream, saveToFile
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<Image> loadFromFile(const Path& filename);
+    [[nodiscard]] static Optional<Image> loadFromFile(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the image from a file in memory
@@ -113,7 +124,7 @@ public:
     /// \see loadFromFile, loadFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<Image> loadFromMemory(const void* data, std::size_t size);
+    [[nodiscard]] static Optional<Image> loadFromMemory(const void* data, std::size_t size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the image from a custom stream
@@ -130,7 +141,7 @@ public:
     /// \see loadFromFile, loadFromMemory
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<Image> loadFromStream(InputStream& stream);
+    [[nodiscard]] static Optional<Image> loadFromStream(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Save the image to a file on disk
@@ -165,7 +176,7 @@ public:
     /// \see create, loadFromFile, loadFromMemory, saveToFile
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Optional<std::vector<std::uint8_t>> saveToMemory(std::string_view format) const;
+    [[nodiscard]] std::vector<std::uint8_t> saveToMemory(SaveFormat format) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size (width and height) of the image

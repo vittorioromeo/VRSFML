@@ -113,7 +113,7 @@ struct Font::Page
 
     using GlyphTable = std::unordered_map<std::uint64_t, Glyph>; //!< Table mapping a codepoint to its glyph
 
-    [[nodiscard]] static sf::Optional<Page> create(GraphicsContext& graphicsContext, bool smooth);
+    [[nodiscard]] static Optional<Page> create(GraphicsContext& graphicsContext, bool smooth);
     explicit Page(Texture&& texture);
 
     GlyphTable       glyphs;     //!< Table mapping code points to their corresponding glyph
@@ -158,7 +158,10 @@ struct Font::FontHandles
 ////////////////////////////////////////////////////////////
 struct Font::Impl
 {
-    explicit Impl(GraphicsContext& theGraphicsContext) : graphicsContext(&theGraphicsContext)
+    explicit Impl(GraphicsContext& theGraphicsContext, std::shared_ptr<FontHandles>&& theFontHandles, const char* theFamilyName) :
+    graphicsContext(&theGraphicsContext),
+    fontHandles(SFML_MOVE(theFontHandles)),
+    info{theFamilyName}
     {
     }
 
@@ -178,10 +181,8 @@ struct Font::Impl
 
 ////////////////////////////////////////////////////////////
 Font::Font(priv::PassKey<Font>&&, GraphicsContext& graphicsContext, void* fontHandlesSharedPtr, const char* familyName) :
-m_impl(graphicsContext)
+m_impl(graphicsContext, SFML_MOVE(*static_cast<std::shared_ptr<FontHandles>*>(fontHandlesSharedPtr)), familyName)
 {
-    m_impl->fontHandles = SFML_MOVE(*static_cast<std::shared_ptr<FontHandles>*>(fontHandlesSharedPtr));
-    m_impl->info.family = familyName;
 }
 
 
@@ -206,7 +207,7 @@ Font& Font::operator=(Font&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<Font> Font::openFromFile(GraphicsContext& graphicsContext, const Path& filename)
+Optional<Font> Font::openFromFile(GraphicsContext& graphicsContext, const Path& filename)
 {
 #ifndef SFML_SYSTEM_ANDROID
 
@@ -260,7 +261,7 @@ sf::Optional<Font> Font::openFromFile(GraphicsContext& graphicsContext, const Pa
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<Font> Font::openFromMemory(GraphicsContext& graphicsContext, const void* data, std::size_t sizeInBytes)
+Optional<Font> Font::openFromMemory(GraphicsContext& graphicsContext, const void* data, std::size_t sizeInBytes)
 {
     auto fontHandles = std::make_shared<FontHandles>();
 
@@ -305,7 +306,7 @@ sf::Optional<Font> Font::openFromMemory(GraphicsContext& graphicsContext, const 
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<Font> Font::openFromStream(GraphicsContext& graphicsContext, InputStream& stream)
+Optional<Font> Font::openFromStream(GraphicsContext& graphicsContext, InputStream& stream)
 {
     auto fontHandles = std::make_shared<FontHandles>();
 
@@ -831,10 +832,10 @@ bool Font::setCurrentSize(unsigned int characterSize) const
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<Font::Page> Font::Page::create(GraphicsContext& graphicsContext, bool smooth)
+Optional<Font::Page> Font::Page::create(GraphicsContext& graphicsContext, bool smooth)
 {
     // Make sure that the texture is initialized by default
-    Image image({128, 128}, Color::Transparent);
+    auto image = *Image::create({128, 128}, Color::Transparent);
 
     // Reserve a 2x2 white square for texturing underlines
     for (unsigned int x = 0; x < 2; ++x)

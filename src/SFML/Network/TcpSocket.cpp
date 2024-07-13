@@ -78,7 +78,7 @@ unsigned short TcpSocket::getLocalPort() const
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<IpAddress> TcpSocket::getRemoteAddress() const
+Optional<IpAddress> TcpSocket::getRemoteAddress() const
 {
     if (getNativeHandle() != priv::SocketImpl::invalidSocket())
     {

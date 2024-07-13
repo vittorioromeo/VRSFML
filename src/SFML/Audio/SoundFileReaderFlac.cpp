@@ -306,7 +306,7 @@ bool SoundFileReaderFlac::check(InputStream& stream)
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<SoundFileReader::Info> SoundFileReaderFlac::open(InputStream& stream)
+Optional<SoundFileReader::Info> SoundFileReaderFlac::open(InputStream& stream)
 {
     // Create the decoder
     m_impl->decoder.reset(FLAC__stream_decoder_new());

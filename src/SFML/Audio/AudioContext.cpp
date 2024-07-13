@@ -182,9 +182,9 @@ struct AudioContext::Impl
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<AudioContext> AudioContext::create()
+Optional<AudioContext> AudioContext::create()
 {
-    sf::Optional<AudioContext> result(sf::inPlace, priv::PassKey<AudioContext>{}); // Use a single local variable for NRVO
+    Optional<AudioContext> result(sf::inPlace, priv::PassKey<AudioContext>{}); // Use a single local variable for NRVO
 
     if (!tryCreateMALog(result->m_impl->maLog))
     {
@@ -217,7 +217,7 @@ std::vector<PlaybackDeviceHandle> AudioContext::getAvailablePlaybackDeviceHandle
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<PlaybackDeviceHandle> AudioContext::getDefaultPlaybackDeviceHandle()
+Optional<PlaybackDeviceHandle> AudioContext::getDefaultPlaybackDeviceHandle()
 {
     for (const PlaybackDeviceHandle& deviceHandle : getAvailablePlaybackDeviceHandles())
         if (deviceHandle.isDefault())
@@ -240,7 +240,7 @@ std::vector<CaptureDeviceHandle> AudioContext::getAvailableCaptureDeviceHandles(
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<CaptureDeviceHandle> AudioContext::getDefaultCaptureDeviceHandle()
+Optional<CaptureDeviceHandle> AudioContext::getDefaultCaptureDeviceHandle()
 {
     for (const CaptureDeviceHandle& deviceHandle : getAvailableCaptureDeviceHandles())
         if (deviceHandle.isDefault())
