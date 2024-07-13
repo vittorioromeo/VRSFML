@@ -55,7 +55,7 @@ public:
     /// \see findIntersection
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_SYSTEM_API constexpr bool contains(const Vector2<T>& point) const;
+    [[nodiscard]] constexpr bool contains(const Vector2<T>& point) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the position of the center of the rectangle
@@ -63,7 +63,7 @@ public:
     /// \return Center of rectangle
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector2<T> getCenter() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Vector2<T> getCenter() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO

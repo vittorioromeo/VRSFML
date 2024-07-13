@@ -27,6 +27,8 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Assert.hpp>
 
+#ifndef NDEBUG
+
 #ifdef SFML_ENABLE_STACK_TRACES
 #include <cpptrace/cpptrace.hpp>
 #endif
@@ -51,3 +53,5 @@ void assertFailure(const char* code, const char* file, const int line)
 }
 
 } // namespace sf::priv
+
+#endif

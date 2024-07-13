@@ -24,6 +24,8 @@
 
 #pragma once
 
+#ifndef NDEBUG
+
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
@@ -39,3 +41,9 @@ namespace sf::priv
             ::sf::priv::assertFailure(#__VA_ARGS__, __FILE__, __LINE__); \
         }                                                                \
     } while (false)
+
+#else
+
+#define SFML_ASSERT(...) (void)
+
+#endif
