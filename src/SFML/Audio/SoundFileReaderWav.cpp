@@ -90,8 +90,8 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 struct SoundFileReaderWav::Impl
 {
-    sf::Optional<ma_decoder> decoder;        //!< wav decoder
-    ma_uint32                channelCount{}; //!< Number of channels
+    Optional<ma_decoder> decoder;        //!< wav decoder
+    ma_uint32            channelCount{}; //!< Number of channels
 };
 
 
@@ -129,7 +129,7 @@ SoundFileReaderWav::~SoundFileReaderWav()
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<SoundFileReader::Info> SoundFileReaderWav::open(InputStream& stream)
+Optional<SoundFileReader::Info> SoundFileReaderWav::open(InputStream& stream)
 {
     if (m_impl->decoder)
     {

@@ -180,11 +180,11 @@ struct Sound::Impl
     ////////////////////////////////////////////////////////////
     static inline constexpr ma_data_source_vtable vtable{read, seek, getFormat, getCursor, getLength, setLooping, 0};
 
-    sf::Optional<priv::MiniaudioUtils::SoundBase> soundBase; //!< Sound base, needs to be first member
-    Sound*                                        owner;     //!< Owning `Sound` object
-    std::size_t                                   cursor{};  //!< The current playing position
-    const SoundBuffer*                            buffer{};  //!< Sound buffer bound to the source
-    SoundSource::Status                           status{SoundSource::Status::Stopped}; //!< The status
+    Optional<priv::MiniaudioUtils::SoundBase> soundBase; //!< Sound base, needs to be first member
+    Sound*                                    owner;     //!< Owning `Sound` object
+    std::size_t                               cursor{};  //!< The current playing position
+    const SoundBuffer*                        buffer{};  //!< Sound buffer bound to the source
+    SoundSource::Status                       status{SoundSource::Status::Stopped}; //!< The status
 };
 
 

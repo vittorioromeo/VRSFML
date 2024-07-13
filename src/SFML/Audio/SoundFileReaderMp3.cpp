@@ -106,8 +106,7 @@ bool SoundFileReaderMp3::check(InputStream& stream)
 {
     std::uint8_t header[10];
 
-    if (sf::Optional readResult = stream.read(header, sizeof(header));
-        !readResult.hasValue() || *readResult != sizeof(header))
+    if (Optional readResult = stream.read(header, sizeof(header)); !readResult.hasValue() || *readResult != sizeof(header))
         return false;
 
     if (hasValidId3Tag(header))
@@ -136,13 +135,13 @@ SoundFileReaderMp3::~SoundFileReaderMp3()
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<SoundFileReader::Info> SoundFileReaderMp3::open(InputStream& stream)
+Optional<SoundFileReader::Info> SoundFileReaderMp3::open(InputStream& stream)
 {
     // Init IO callbacks
     m_impl->io.read_data = &stream;
     m_impl->io.seek_data = &stream;
 
-    sf::Optional<Info> result; // Use a single local variable for NRVO
+    Optional<Info> result; // Use a single local variable for NRVO
 
     // Init mp3 decoder
     mp3dec_ex_open_cb(&m_impl->decoder, &m_impl->io, MP3D_SEEK_TO_SAMPLE);

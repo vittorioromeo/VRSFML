@@ -203,7 +203,7 @@ struct SoundStream::Impl
     ////////////////////////////////////////////////////////////
     static inline constexpr ma_data_source_vtable vtable{read, seek, getFormat, getCursor, getLength, setLooping, /* flags */ 0};
 
-    sf::Optional<priv::MiniaudioUtils::SoundBase> soundBase; //!< Sound base, needs to be first member
+    Optional<priv::MiniaudioUtils::SoundBase> soundBase; //!< Sound base, needs to be first member
 
     SoundStream*              owner;                //!< Owning `SoundStream` object
     std::vector<std::int16_t> sampleBuffer;         //!< Our temporary sample buffer
@@ -410,7 +410,7 @@ void SoundStream::setEffectProcessor(EffectProcessor effectProcessor)
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<std::uint64_t> SoundStream::onLoop()
+Optional<std::uint64_t> SoundStream::onLoop()
 {
     onSeek(Time::Zero);
     return sf::makeOptional(std::uint64_t{0});

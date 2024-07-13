@@ -114,7 +114,7 @@ public:
     /// \see openFromMemory, openFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<Font> openFromFile(GraphicsContext& graphicsContext, const Path& filename);
+    [[nodiscard]] static Optional<Font> openFromFile(GraphicsContext& graphicsContext, const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open the font from a file in memory
@@ -134,9 +134,7 @@ public:
     /// \see openFromFile, openFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<Font> openFromMemory(GraphicsContext& graphicsContext,
-                                                           const void*      data,
-                                                           std::size_t      sizeInBytes);
+    [[nodiscard]] static Optional<Font> openFromMemory(GraphicsContext& graphicsContext, const void* data, std::size_t sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open the font from a custom stream
@@ -155,7 +153,7 @@ public:
     /// \see openFromFile, openFromMemory
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<Font> openFromStream(GraphicsContext& graphicsContext, InputStream& stream);
+    [[nodiscard]] static Optional<Font> openFromStream(GraphicsContext& graphicsContext, InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the font information

@@ -177,8 +177,7 @@ EglContext::EglContext(EglContext* /*shared*/, const ContextSettings& /*settings
     EglContextImpl::ensureInit();
 
     sf::priv::err() << "Warning: context has not been initialized. The constructor EglContext(shared, settings, size) "
-                       "is "
-                       "currently not implemented.";
+                       "is currently not implemented.";
 }
 
 
@@ -186,7 +185,7 @@ EglContext::EglContext(EglContext* /*shared*/, const ContextSettings& /*settings
 EglContext::~EglContext()
 {
     // Notify unshared OpenGL resources of context destruction
-    cleanupUnsharedResources();
+    m_graphicsContext.cleanupUnsharedFrameBuffers(*this);
 
     // Deactivate the current context
     EGLContext currentContext = EGL_NO_CONTEXT;

@@ -69,7 +69,7 @@ public:
     /// \return The number of bytes actually read, or `sf::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    sf::Optional<std::size_t> read(void* data, std::size_t size) override;
+    Optional<std::size_t> read(void* data, std::size_t size) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current reading position in the asset file
@@ -79,7 +79,7 @@ public:
     /// \return The position actually sought to, or `sf::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    sf::Optional<std::size_t> seek(std::size_t position) override;
+    Optional<std::size_t> seek(std::size_t position) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current reading position in the asset file
@@ -87,7 +87,7 @@ public:
     /// \return The current position, or `sf::nullOpt` on error.
     ///
     ////////////////////////////////////////////////////////////
-    sf::Optional<std::size_t> tell() override;
+    Optional<std::size_t> tell() override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the asset file
@@ -95,7 +95,7 @@ public:
     /// \return The total number of bytes available in the asset, or `sf::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    sf::Optional<std::size_t> getSize() override;
+    Optional<std::size_t> getSize() override;
 
 private:
     ////////////////////////////////////////////////////////////

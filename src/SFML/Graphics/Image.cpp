@@ -31,6 +31,7 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InputStream.hpp>
 #include <SFML/System/Macros.hpp>
+#include <SFML/System/PassKey.hpp>
 #include <SFML/System/Path.hpp>
 #include <SFML/System/PathUtils.hpp>
 #include <SFML/System/StringUtils.hpp>
@@ -101,17 +102,21 @@ using StbPtr = sf::priv::UniquePtr<stbi_uc, StbDeleter>;
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-Image::Image(const Vector2u& size, const Color& color)
+Optional<Image> Image::create(const Vector2u& size, const Color& color)
 {
-    SFML_ASSERT(size.x > 0);
-    SFML_ASSERT(size.y > 0);
+    if (size.x == 0 || size.y == 0)
+    {
+        priv::err() << "Failed to create image, invalid size (zero) provided";
+        return sf::nullOpt;
+    }
 
     // Create a new pixel buffer first for exception safety's sake
     std::vector<std::uint8_t> newPixels(static_cast<std::size_t>(size.x) * static_cast<std::size_t>(size.y) * 4);
 
     // Fill it with the specified color
-    std::uint8_t* ptr = newPixels.data();
-    std::uint8_t* end = ptr + newPixels.size();
+    std::uint8_t*       ptr = newPixels.data();
+    std::uint8_t* const end = ptr + newPixels.size();
+
     while (ptr < end)
     {
         *ptr++ = color.r;
@@ -120,29 +125,26 @@ Image::Image(const Vector2u& size, const Color& color)
         *ptr++ = color.a;
     }
 
-    // Commit the new pixel buffer
-    m_pixels.swap(newPixels);
-
-    // Assign the new size
-    m_size = size;
+    return makeOptional<Image>(priv::PassKey<Image>{}, size, SFML_MOVE(newPixels));
 }
 
 
 ////////////////////////////////////////////////////////////
-Image::Image(const Vector2u& size, const std::uint8_t* pixels)
+Optional<Image> Image::create(const Vector2u& size, const std::uint8_t* pixels)
 {
-    SFML_ASSERT(size.x > 0);
-    SFML_ASSERT(size.y > 0);
-    SFML_ASSERT(pixels != nullptr);
+    if (size.x == 0 || size.y == 0)
+    {
+        priv::err() << "Failed to create image, invalid size (zero) provided";
+        return sf::nullOpt;
+    }
 
-    // Create a new pixel buffer first for exception safety's sake
-    std::vector<std::uint8_t> newPixels(pixels, pixels + size.x * size.y * 4);
+    if (pixels == nullptr)
+    {
+        priv::err() << "Failed to create image, null pixels pointer provided";
+        return sf::nullOpt;
+    }
 
-    // Commit the new pixel buffer
-    m_pixels.swap(newPixels);
-
-    // Assign the new size
-    m_size = size;
+    return makeOptional<Image>(priv::PassKey<Image>{}, size, std::vector<std::uint8_t>(pixels, pixels + size.x * size.y * 4));
 }
 
 
@@ -158,7 +160,7 @@ m_pixels(SFML_MOVE(pixels))
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<Image> Image::loadFromFile(const Path& filename)
+Optional<Image> Image::loadFromFile(const Path& filename)
 {
 #ifdef SFML_SYSTEM_ANDROID
 
@@ -195,10 +197,10 @@ sf::Optional<Image> Image::loadFromFile(const Path& filename)
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<Image> Image::loadFromMemory(const void* data, std::size_t size)
+Optional<Image> Image::loadFromMemory(const void* data, std::size_t size)
 {
     // Check input parameters
-    if (!data || size == 0)
+    if (data == nullptr || size == 0)
     {
         priv::err() << "Failed to load image from memory, no data provided";
         return sf::nullOpt;
@@ -228,7 +230,7 @@ sf::Optional<Image> Image::loadFromMemory(const void* data, std::size_t size)
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<Image> Image::loadFromStream(InputStream& stream)
+Optional<Image> Image::loadFromStream(InputStream& stream)
 {
     // Make sure that the stream's reading position is at the beginning
     if (!stream.seek(0).hasValue())
@@ -311,39 +313,39 @@ bool Image::saveToFile(const Path& filename) const
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<std::vector<std::uint8_t>> Image::saveToMemory(std::string_view format) const
+std::vector<std::uint8_t> Image::saveToMemory(SaveFormat format) const
 {
     // Make sure the image is not empty
     SFML_ASSERT(!m_pixels.empty() && m_size.x > 0 && m_size.y > 0);
 
     // Choose function based on format
-    const std::string specified     = priv::toLower(std::string(format));
-    const auto        convertedSize = m_size.to<Vector2i>();
+    const auto convertedSize = m_size.to<Vector2i>();
 
-    sf::Optional<std::vector<std::uint8_t>> buffer; // Use a single local variable for NRVO
+    std::vector<std::uint8_t> buffer; // Use a single local variable for NRVO
 
-    if (specified == "bmp")
+    if (format == SaveFormat::BMP)
     {
-        if (stbi_write_bmp_to_func(bufferFromCallback, &buffer.emplace(), convertedSize.x, convertedSize.y, 4, m_pixels.data()))
-            return buffer;
+        if (stbi_write_bmp_to_func(bufferFromCallback, &buffer, convertedSize.x, convertedSize.y, 4, m_pixels.data()))
+            return buffer; // Non-empty
     }
-    else if (specified == "tga")
+    else if (format == SaveFormat::TGA)
     {
-        if (stbi_write_tga_to_func(bufferFromCallback, &buffer.emplace(), convertedSize.x, convertedSize.y, 4, m_pixels.data()))
-            return buffer;
+        if (stbi_write_tga_to_func(bufferFromCallback, &buffer, convertedSize.x, convertedSize.y, 4, m_pixels.data()))
+            return buffer; // Non-empty
     }
-    else if (specified == "png")
+    else if (format == SaveFormat::PNG)
     {
-        if (stbi_write_png_to_func(bufferFromCallback, &buffer.emplace(), convertedSize.x, convertedSize.y, 4, m_pixels.data(), 0))
-            return buffer;
+        if (stbi_write_png_to_func(bufferFromCallback, &buffer, convertedSize.x, convertedSize.y, 4, m_pixels.data(), 0))
+            return buffer; // Non-empty
     }
-    else if (specified == "jpg" || specified == "jpeg")
+    else if (format == SaveFormat::JPG)
     {
-        if (stbi_write_jpg_to_func(bufferFromCallback, &buffer.emplace(), convertedSize.x, convertedSize.y, 4, m_pixels.data(), 90))
-            return buffer;
+        if (stbi_write_jpg_to_func(bufferFromCallback, &buffer, convertedSize.x, convertedSize.y, 4, m_pixels.data(), 90))
+            return buffer; // Non-empty
     }
 
-    return buffer; // Empty optional
+    SFML_ASSERT(false);
+    return buffer;
 }
 
 

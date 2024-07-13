@@ -78,7 +78,7 @@ void InputSoundFile::StreamDeleter::operator()(InputStream* ptr) const
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<InputSoundFile> InputSoundFile::openFromFile(const Path& filename)
+Optional<InputSoundFile> InputSoundFile::openFromFile(const Path& filename)
 {
     // Find a suitable reader for the file type
     auto reader = SoundFileFactory::createReaderFromFilename(filename);
@@ -121,7 +121,7 @@ sf::Optional<InputSoundFile> InputSoundFile::openFromFile(const Path& filename)
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<InputSoundFile> InputSoundFile::openFromMemory(const void* data, std::size_t sizeInBytes)
+Optional<InputSoundFile> InputSoundFile::openFromMemory(const void* data, std::size_t sizeInBytes)
 {
     // Find a suitable reader for the file type
     auto reader = SoundFileFactory::createReaderFromMemory(data, sizeInBytes);
@@ -152,7 +152,7 @@ sf::Optional<InputSoundFile> InputSoundFile::openFromMemory(const void* data, st
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<InputSoundFile> InputSoundFile::openFromStream(InputStream& stream)
+Optional<InputSoundFile> InputSoundFile::openFromStream(InputStream& stream)
 {
     // Find a suitable reader for the file type
     auto reader = SoundFileFactory::createReaderFromStream(stream);
@@ -163,7 +163,7 @@ sf::Optional<InputSoundFile> InputSoundFile::openFromStream(InputStream& stream)
     }
 
     // Don't forget to reset the stream to its beginning before re-opening it
-    if (const sf::Optional seekResult = stream.seek(0); !seekResult.hasValue() || *seekResult != 0)
+    if (const Optional seekResult = stream.seek(0); !seekResult.hasValue() || *seekResult != 0)
     {
         priv::err() << "Failed to open sound file from stream (cannot restart stream)";
         return sf::nullOpt;

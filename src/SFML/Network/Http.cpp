@@ -339,10 +339,10 @@ void Http::Response::parse(const std::string& data)
 ////////////////////////////////////////////////////////////
 struct Http::Impl
 {
-    TcpSocket               connection; //!< Connection to the host
-    sf::Optional<IpAddress> host;       //!< Web host address
-    std::string             hostName;   //!< Web host name
-    unsigned short          port{};     //!< Port used for connection with host
+    TcpSocket           connection; //!< Connection to the host
+    Optional<IpAddress> host;       //!< Web host address
+    std::string         hostName;   //!< Web host name
+    unsigned short      port{};     //!< Port used for connection with host
 };
 
 

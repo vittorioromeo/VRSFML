@@ -185,22 +185,24 @@ LifetimeDependee::~LifetimeDependee()
     const auto dependeeNameLower  = toLowerStr(m_dependeeName);
     const auto dependantNameLower = toLowerStr(m_dependantName);
 
-    priv::err() << "FATAL ERROR: a " << dependeeNameLower << " object was destroyed while existing "
-                << dependantNameLower << " objects depended on it.\n\n";
+    priv::err(true /* multiLine */) << "FATAL ERROR: a " << dependeeNameLower << " object was destroyed while existing "
+                                    << dependantNameLower << " objects depended on it.\n\n";
 
-    priv::err() << "Please ensure that every " << dependeeNameLower << " object outlives all of the "
-                << dependantNameLower << " objects associated with it, otherwise those " << dependantNameLower
-                << "s will try to access the memory of the destroyed " << dependeeNameLower
-                << ", causing undefined behavior (e.g., crashes, segfaults, or unexpected run-time behavior).\n\n";
+    priv::err(true /* multiLine */)
+        << "Please ensure that every " << dependeeNameLower << " object outlives all of the " << dependantNameLower
+        << " objects associated with it, otherwise those " << dependantNameLower
+        << "s will try to access the memory of the destroyed " << dependeeNameLower
+        << ", causing undefined behavior (e.g., crashes, segfaults, or unexpected run-time behavior).\n\n";
 
-    priv::err() << "One of the ways this issue can occur is when a " << dependeeNameLower
-                << " object is created as a local variable in a function and passed to a " << dependantNameLower
-                << " object. When the function has finished executing, the local " << dependeeNameLower
-                << " object will be destroyed, and the " << dependantNameLower
-                << " object associated with it will now be referring to invalid memory. Example:\n\n";
+    priv::err(true /* multiLine */)
+        << "One of the ways this issue can occur is when a " << dependeeNameLower
+        << " object is created as a local variable in a function and passed to a " << dependantNameLower
+        << " object. When the function has finished executing, the local " << dependeeNameLower
+        << " object will be destroyed, and the " << dependantNameLower
+        << " object associated with it will now be referring to invalid memory. Example:\n\n";
 
     // clang-format off
-    priv::err() << "    sf::" << m_dependantName << " create" << m_dependantName << "()\n"
+    priv::err(true /* multiLine */) << "    sf::" << m_dependantName << " create" << m_dependantName << "()\n"
           << "    {\n"
           << "        " << "sf::" << m_dependeeName << " " << dependeeNameLower << "(/* ... */);\n"
           << "        " << "sf::" << m_dependantName << " " << dependantNameLower << "(" << dependeeNameLower << ", /* ... */);\n"
@@ -212,17 +214,19 @@ LifetimeDependee::~LifetimeDependee()
           << "    }\n\n";
     // clang-format on
 
-    priv::err() << "Another possible cause of this error is storing both a " << dependeeNameLower << " and a "
-                << dependantNameLower
-                << " together in a data structure (e.g., `class`, `struct`, container, pair, etc...), and then moving "
-                   "that data structure (i.e., returning it from a function, or using `std::move`) -- the internal "
-                   "references between the "
-                << dependeeNameLower << " and " << dependantNameLower
-                << " will not be updated, resulting in the same lifetime issue.\n\n";
+    priv::err(true /* multiLine */)
+        << "Another possible cause of this error is storing both a " << dependeeNameLower << " and a " << dependantNameLower
+        << " together in a data structure (e.g., `class`, `struct`, container, pair, etc...), and then moving "
+           "that data structure (i.e., returning it from a function, or using `std::move`) -- the internal "
+           "references between the "
+        << dependeeNameLower << " and " << dependantNameLower
+        << " will not be updated, resulting in the same lifetime issue.\n\n";
 
-    priv::err() << "In general, make sure that all your " << dependeeNameLower << " objects are destroyed *after* all the "
-                << dependantNameLower << " objects depending on them to avoid these sort of issues.";
+    priv::err(true /* multiLine */) << "In general, make sure that all your " << dependeeNameLower
+                                    << " objects are destroyed *after* all the " << dependantNameLower
+                                    << " objects depending on them to avoid these sort of issues.";
 
+    priv::err() << '\n';
     std::abort();
 }
 

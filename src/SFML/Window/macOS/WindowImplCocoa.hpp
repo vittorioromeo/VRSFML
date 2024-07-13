@@ -285,7 +285,7 @@ public:
     /// \param minimumSize New minimum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    void setMinimumSize(const sf::Optional<Vector2u>& minimumSize) override;
+    void setMinimumSize(const Optional<Vector2u>& minimumSize) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the maximum window rendering region size
@@ -295,7 +295,7 @@ public:
     /// \param maximumSize New maximum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    void setMaximumSize(const sf::Optional<Vector2u>& maximumSize) override;
+    void setMaximumSize(const Optional<Vector2u>& maximumSize) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the title of the window

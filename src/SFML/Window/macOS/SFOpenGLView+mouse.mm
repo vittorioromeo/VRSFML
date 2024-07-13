@@ -135,7 +135,7 @@
 ////////////////////////////////////////////////////////
 - (void)handleMouseDown:(NSEvent*)theEvent
 {
-    const sf::Optional<sf::Mouse::Button> button = [SFOpenGLView mouseButtonFromEvent:theEvent];
+    const Optional<sf::Mouse::Button> button = [SFOpenGLView mouseButtonFromEvent:theEvent];
 
     if (m_requester != nil)
     {
@@ -180,7 +180,7 @@
 ////////////////////////////////////////////////////////////
 - (void)handleMouseUp:(NSEvent*)theEvent
 {
-    const sf::Optional<sf::Mouse::Button> button = [SFOpenGLView mouseButtonFromEvent:theEvent];
+    const Optional<sf::Mouse::Button> button = [SFOpenGLView mouseButtonFromEvent:theEvent];
 
     if (m_requester != nil)
     {
@@ -410,7 +410,7 @@
 
 
 ////////////////////////////////////////////////////////
-+ (sf::Optional<sf::Mouse::Button>)mouseButtonFromEvent:(NSEvent*)event
++ (Optional<sf::Mouse::Button>)mouseButtonFromEvent:(NSEvent*)event
 {
     switch ([event buttonNumber])
     {

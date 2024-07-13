@@ -74,7 +74,7 @@ public:
     /// \return Properties of the loaded sound if the file was successfully opened
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Optional<Info> open(InputStream& stream) override;
+    [[nodiscard]] Optional<Info> open(InputStream& stream) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current read position to the given sample offset

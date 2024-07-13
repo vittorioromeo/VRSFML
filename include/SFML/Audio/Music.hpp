@@ -99,7 +99,7 @@ public:
     /// \see openFromMemory, openFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<Music> openFromFile(const Path& filename);
+    [[nodiscard]] static Optional<Music> openFromFile(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a music from an audio file in memory
@@ -125,7 +125,7 @@ public:
     /// \see openFromFile, openFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<Music> openFromMemory(const void* data, std::size_t sizeInBytes);
+    [[nodiscard]] static Optional<Music> openFromMemory(const void* data, std::size_t sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a music from an audio file in a custom stream
@@ -149,7 +149,7 @@ public:
     /// \see openFromFile, openFromMemory
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<Music> openFromStream(InputStream& stream);
+    [[nodiscard]] static Optional<Music> openFromStream(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the total duration of the music
@@ -204,8 +204,8 @@ private:
     /// \brief Try opening the music file from an optional input sound file
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<Music> tryOpenFromInputSoundFile(sf::Optional<InputSoundFile>&& optFile,
-                                                                       const char*                    errorContext);
+    [[nodiscard]] static Optional<Music> tryOpenFromInputSoundFile(Optional<InputSoundFile>&& optFile,
+                                                                   const char*                errorContext);
 
 public:
     ////////////////////////////////////////////////////////////
@@ -301,7 +301,7 @@ protected:
     /// \return The seek position after looping (or sf::nullOpt if there's no loop)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Optional<std::uint64_t> onLoop() override;
+    [[nodiscard]] Optional<std::uint64_t> onLoop() override;
 
 private:
     ////////////////////////////////////////////////////////////

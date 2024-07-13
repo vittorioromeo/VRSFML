@@ -91,7 +91,7 @@ public:
     /// \see loadFromMemory, loadFromStream, loadFromSamples, saveToFile
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<SoundBuffer> loadFromFile(const Path& filename);
+    [[nodiscard]] static Optional<SoundBuffer> loadFromFile(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the sound buffer from a file in memory
@@ -107,7 +107,7 @@ public:
     /// \see loadFromFile, loadFromStream, loadFromSamples
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<SoundBuffer> loadFromMemory(const void* data, std::size_t sizeInBytes);
+    [[nodiscard]] static Optional<SoundBuffer> loadFromMemory(const void* data, std::size_t sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the sound buffer from a custom stream
@@ -122,7 +122,7 @@ public:
     /// \see loadFromFile, loadFromMemory, loadFromSamples
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<SoundBuffer> loadFromStream(InputStream& stream);
+    [[nodiscard]] static Optional<SoundBuffer> loadFromStream(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the sound buffer from an array of audio samples
@@ -140,7 +140,7 @@ public:
     /// \see loadFromFile, loadFromMemory, saveToFile
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<SoundBuffer> loadFromSamples(
+    [[nodiscard]] static Optional<SoundBuffer> loadFromSamples(
         const std::int16_t*              samples,
         std::uint64_t                    sampleCount,
         unsigned int                     channelCount,
@@ -266,7 +266,7 @@ private:
     /// \brief Load the sound buffer taking ownership of a vector of audio samples
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<SoundBuffer> loadFromSamplesImpl(
+    [[nodiscard]] static Optional<SoundBuffer> loadFromSamplesImpl(
         std::vector<std::int16_t>&&      samples,
         unsigned int                     channelCount,
         unsigned int                     sampleRate,
@@ -280,7 +280,7 @@ private:
     /// \return True on successful initialization, false on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<SoundBuffer> initialize(InputSoundFile& file);
+    [[nodiscard]] static Optional<SoundBuffer> initialize(InputSoundFile& file);
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the internal buffer with the cached audio samples

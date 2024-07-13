@@ -126,8 +126,8 @@ struct WindowImpl::Impl
     float joystickThreshold{0.1f}; //!< Joystick threshold (minimum motion for "move" event to be generated)
     EnumArray<Joystick::Axis, float, Joystick::AxisCount>
         previousAxes[Joystick::Count]{}; //!< Position of each axis last time a move event triggered, in range [-100, 100]
-    sf::Optional<Vector2u> minimumSize; //!< Minimum window size
-    sf::Optional<Vector2u> maximumSize; //!< Maximum window size
+    Optional<Vector2u> minimumSize;      //!< Minimum window size
+    Optional<Vector2u> maximumSize;      //!< Maximum window size
 
     explicit Impl(UniquePtr<JoystickStatesImpl>&& theJoystickStatesImpl) :
     joystickStatesImpl(SFML_MOVE(theJoystickStatesImpl))
@@ -217,14 +217,14 @@ WindowImpl::~WindowImpl()
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<Vector2u> WindowImpl::getMinimumSize() const
+Optional<Vector2u> WindowImpl::getMinimumSize() const
 {
     return m_impl->minimumSize;
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<Vector2u> WindowImpl::getMaximumSize() const
+Optional<Vector2u> WindowImpl::getMaximumSize() const
 {
     return m_impl->maximumSize;
 }
@@ -238,21 +238,21 @@ void WindowImpl::setJoystickThreshold(float threshold)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImpl::setMinimumSize(const sf::Optional<Vector2u>& minimumSize)
+void WindowImpl::setMinimumSize(const Optional<Vector2u>& minimumSize)
 {
     m_impl->minimumSize = minimumSize;
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowImpl::setMaximumSize(const sf::Optional<Vector2u>& maximumSize)
+void WindowImpl::setMaximumSize(const Optional<Vector2u>& maximumSize)
 {
     m_impl->maximumSize = maximumSize;
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<Event> WindowImpl::waitEvent(Time timeout)
+Optional<Event> WindowImpl::waitEvent(Time timeout)
 {
     const auto timedOut = [&, startTime = std::chrono::steady_clock::now()]
     {
@@ -277,7 +277,7 @@ sf::Optional<Event> WindowImpl::waitEvent(Time timeout)
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<Event> WindowImpl::pollEvent()
+Optional<Event> WindowImpl::pollEvent()
 {
     // If the event queue is empty, let's first check if new events are available from the OS
     if (m_impl->events.empty())
@@ -288,9 +288,9 @@ sf::Optional<Event> WindowImpl::pollEvent()
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<Event> WindowImpl::popEvent()
+Optional<Event> WindowImpl::popEvent()
 {
-    sf::Optional<Event> event; // Use a single local variable for NRVO
+    Optional<Event> event; // Use a single local variable for NRVO
 
     if (!m_impl->events.empty())
     {

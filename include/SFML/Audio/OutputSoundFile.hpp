@@ -90,7 +90,7 @@ public:
     /// \return Output sound file if the file was successfully opened
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<OutputSoundFile> openFromFile(
+    [[nodiscard]] static Optional<OutputSoundFile> openFromFile(
         const Path&                      filename,
         unsigned int                     sampleRate,
         unsigned int                     channelCount,

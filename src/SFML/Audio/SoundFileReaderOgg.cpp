@@ -108,9 +108,9 @@ SoundFileReaderOgg::~SoundFileReaderOgg()
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<SoundFileReader::Info> SoundFileReaderOgg::open(InputStream& stream)
+Optional<SoundFileReader::Info> SoundFileReaderOgg::open(InputStream& stream)
 {
-    sf::Optional<Info> result; // Use a single local variable for NRVO
+    Optional<Info> result; // Use a single local variable for NRVO
 
     // Open the Vorbis stream
     const int status = ov_open_callbacks(&stream, &m_impl->vorbis, nullptr, 0, callbacks);

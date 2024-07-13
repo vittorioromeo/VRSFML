@@ -103,7 +103,7 @@ public:
     /// \brief Notify unshared resources of context destruction
     ///
     ////////////////////////////////////////////////////////////
-    void cleanupUnsharedResources(priv::GlContext& glContext);
+    void cleanupUnsharedFrameBuffers(priv::GlContext& glContext);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the currently active context's ID
@@ -195,13 +195,13 @@ private:
     /// \brief Register an OpenGL object to be destroyed when its containing context is destroyed
     ///
     /// This is used for internal purposes in order to properly
-    /// clean up OpenGL resources that cannot be shared bwteen
+    /// clean up OpenGL resources that cannot be shared between
     /// contexts.
     ///
     /// \param object Object to be destroyed when its containing context is destroyed
     ///
     ////////////////////////////////////////////////////////////
-    void registerUnsharedGlObject(std::uint64_t glContextId, unsigned int frameBufferId);
+    void registerUnsharedFrameBuffer(std::uint64_t glContextId, unsigned int frameBufferId);
 
     ////////////////////////////////////////////////////////////
     /// \brief Unregister an OpenGL object from its containing context
@@ -209,7 +209,7 @@ private:
     /// \param object Object to be unregister
     ///
     ////////////////////////////////////////////////////////////
-    void unregisterUnsharedGlObject(std::uint64_t glContextId, unsigned int frameBufferId);
+    void unregisterUnsharedFrameBuffer(std::uint64_t glContextId, unsigned int frameBufferId);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO

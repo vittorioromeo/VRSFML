@@ -116,14 +116,14 @@ WindowBase& WindowBase::operator=(WindowBase&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<Event> WindowBase::pollEvent()
+Optional<Event> WindowBase::pollEvent()
 {
     return filterEvent(m_impl->pollEvent());
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<Event> WindowBase::waitEvent(Time timeout)
+Optional<Event> WindowBase::waitEvent(Time timeout)
 {
     return filterEvent(m_impl->waitEvent(timeout));
 }
@@ -191,7 +191,7 @@ void WindowBase::setMinimumSize(const Vector2u& minimumSize)
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::setMinimumSize(const sf::Optional<Vector2u>& minimumSize)
+void WindowBase::setMinimumSize(const Optional<Vector2u>& minimumSize)
 {
     if (minimumSize.hasValue())
         setMinimumSize(*minimumSize);
@@ -222,7 +222,7 @@ void WindowBase::setMaximumSize(const Vector2u& maximumSize)
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::setMaximumSize(const sf::Optional<Vector2u>& maximumSize)
+void WindowBase::setMaximumSize(const Optional<Vector2u>& maximumSize)
 {
     if (maximumSize.hasValue())
         setMinimumSize(*maximumSize);
@@ -326,7 +326,7 @@ bool WindowBase::createVulkanSurface(const Vulkan::VulkanSurfaceData& vulkanSurf
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<Event> WindowBase::filterEvent(sf::Optional<Event> event)
+Optional<Event> WindowBase::filterEvent(Optional<Event> event)
 {
     // Cache the new size if needed
     if (event.hasValue() && event->getIf<Event::Resized>())

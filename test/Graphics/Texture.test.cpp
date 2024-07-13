@@ -1,8 +1,9 @@
 #include <SFML/Graphics/Texture.hpp>
 
 // Other 1st party headers
-#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Graphics/Image.hpp>
+
+#include <SFML/Window/GraphicsContext.hpp>
 
 #include <SFML/System/FileInputStream.hpp>
 #include <SFML/System/Macros.hpp>
@@ -115,7 +116,7 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
     {
         SECTION("Subarea of image")
         {
-            const sf::Image image(sf::Vector2u{10, 15});
+            const auto image = sf::Image::create(sf::Vector2u{10, 15}).value();
 
             SECTION("Non-truncated area")
             {
@@ -208,18 +209,18 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
 
         SECTION("Image")
         {
-            auto            texture = sf::Texture::create(graphicsContext, sf::Vector2u{16, 32}).value();
-            const sf::Image image(sf::Vector2u{16, 32}, sf::Color::Red);
+            auto       texture = sf::Texture::create(graphicsContext, sf::Vector2u{16, 32}).value();
+            const auto image   = sf::Image::create(sf::Vector2u{16, 32}, sf::Color::Red).value();
             texture.update(image);
             CHECK(texture.copyToImage().getPixel(sf::Vector2u{7, 15}) == sf::Color::Red);
         }
 
         SECTION("Image and destination")
         {
-            auto            texture = sf::Texture::create(graphicsContext, sf::Vector2u{16, 32}).value();
-            const sf::Image image1(sf::Vector2u{16, 16}, sf::Color::Red);
+            auto       texture = sf::Texture::create(graphicsContext, sf::Vector2u{16, 32}).value();
+            const auto image1  = sf::Image::create(sf::Vector2u{16, 16}, sf::Color::Red).value();
             texture.update(image1);
-            const sf::Image image2(sf::Vector2u{16, 16}, sf::Color::Green);
+            const auto image2 = sf::Image::create(sf::Vector2u{16, 16}, sf::Color::Green).value();
             texture.update(image1, sf::Vector2u{0, 0});
             texture.update(image2, sf::Vector2u{0, 16});
             CHECK(texture.copyToImage().getPixel(sf::Vector2u{7, 7}) == sf::Color::Red);
@@ -276,8 +277,8 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
         CHECK_FALSE(texture2.isSmooth());
         CHECK(texture2.isRepeated());
 
-        const sf::Image image1 = texture1.copyToImage();
-        const sf::Image image2 = texture2.copyToImage();
+        const auto image1 = texture1.copyToImage();
+        const auto image2 = texture2.copyToImage();
         REQUIRE(image1.getSize() == sf::Vector2u{2, 1});
         REQUIRE(image2.getSize() == sf::Vector2u{1, 1});
         CHECK(image1.getPixel(sf::Vector2u{1, 0}) == sf::Color::Green);

@@ -59,7 +59,7 @@ public:
     /// \return Address if provided argument was valid, otherwise `sf::nullOpt`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<IpAddress> resolve(std::string_view address);
+    [[nodiscard]] static Optional<IpAddress> resolve(std::string_view address);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the address from 4 bytes
@@ -135,7 +135,7 @@ public:
     /// \see getPublicAddress
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<IpAddress> getLocalAddress();
+    [[nodiscard]] static Optional<IpAddress> getLocalAddress();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the computer's public address
@@ -159,7 +159,7 @@ public:
     /// \see getLocalAddress
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<IpAddress> getPublicAddress(Time timeout = Time::Zero);
+    [[nodiscard]] static Optional<IpAddress> getPublicAddress(Time timeout = Time::Zero);
 
     ////////////////////////////////////////////////////////////
     // Static member data
@@ -254,7 +254,7 @@ private:
 /// \return Reference to the input stream
 ///
 ////////////////////////////////////////////////////////////
-SFML_NETWORK_API std::istream& operator>>(std::istream& stream, sf::Optional<IpAddress>& address);
+SFML_NETWORK_API std::istream& operator>>(std::istream& stream, Optional<IpAddress>& address);
 
 ////////////////////////////////////////////////////////////
 /// \brief Overload of << operator to print an IP address to an output stream

@@ -101,7 +101,7 @@ public:
     /// \return Texture if creation was successful, otherwise `sf::nullOpt`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<Texture> create(GraphicsContext& graphicsContext, const Vector2u& size, bool sRgb = false);
+    [[nodiscard]] static Optional<Texture> create(GraphicsContext& graphicsContext, const Vector2u& size, bool sRgb = false);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the texture from a file on disk
@@ -126,10 +126,10 @@ public:
     /// \see loadFromMemory, loadFromStream, loadFromImage
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<Texture> loadFromFile(GraphicsContext& graphicsContext,
-                                                            const Path&      filename,
-                                                            bool             sRgb = false,
-                                                            const IntRect&   area = {});
+    [[nodiscard]] static Optional<Texture> loadFromFile(GraphicsContext& graphicsContext,
+                                                        const Path&      filename,
+                                                        bool             sRgb = false,
+                                                        const IntRect&   area = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the texture from a file in memory
@@ -155,7 +155,7 @@ public:
     /// \see loadFromFile, loadFromStream, loadFromImage
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<Texture> loadFromMemory(
+    [[nodiscard]] static Optional<Texture> loadFromMemory(
         GraphicsContext& graphicsContext,
         const void*      data,
         std::size_t      size,
@@ -185,11 +185,10 @@ public:
     /// \see loadFromFile, loadFromMemory, loadFromImage
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<Texture> loadFromStream(
-        GraphicsContext& graphicsContext,
-        InputStream&     stream,
-        bool             sRgb = false,
-        const IntRect&   area = {});
+    [[nodiscard]] static Optional<Texture> loadFromStream(GraphicsContext& graphicsContext,
+                                                          InputStream&     stream,
+                                                          bool             sRgb = false,
+                                                          const IntRect&   area = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the texture from an image
@@ -214,10 +213,10 @@ public:
     /// \see loadFromFile, loadFromMemory
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<Texture> loadFromImage(GraphicsContext& graphicsContext,
-                                                             const Image&     image,
-                                                             bool             sRgb = false,
-                                                             const IntRect&   area = {});
+    [[nodiscard]] static Optional<Texture> loadFromImage(GraphicsContext& graphicsContext,
+                                                         const Image&     image,
+                                                         bool             sRgb = false,
+                                                         const IntRect&   area = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the texture

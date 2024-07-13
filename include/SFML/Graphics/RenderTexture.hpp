@@ -103,9 +103,9 @@ public:
     /// \return Render texture if creation has been successful, otherwise `sf::nullOpt`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<RenderTexture> create(GraphicsContext&       graphicsContext,
-                                                            const Vector2u&        size,
-                                                            const ContextSettings& settings = {});
+    [[nodiscard]] static Optional<RenderTexture> create(GraphicsContext&       graphicsContext,
+                                                        const Vector2u&        size,
+                                                        const ContextSettings& settings = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the maximum anti-aliasing level supported by the system

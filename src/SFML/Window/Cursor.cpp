@@ -54,9 +54,9 @@ Cursor& Cursor::operator=(Cursor&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<Cursor> Cursor::loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vector2u hotspot)
+Optional<Cursor> Cursor::loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vector2u hotspot)
 {
-    sf::Optional<Cursor> cursor; // Use a single local variable for NRVO
+    Optional<Cursor> cursor; // Use a single local variable for NRVO
 
     if ((pixels == nullptr) || (size.x == 0) || (size.y == 0))
         return cursor; // Empty optional
@@ -81,7 +81,7 @@ sf::Optional<Cursor> Cursor::loadFromPixels(const std::uint8_t* pixels, Vector2u
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<Cursor> Cursor::loadFromSystem(Type type)
+Optional<Cursor> Cursor::loadFromSystem(Type type)
 {
     auto cursor = sf::makeOptional<Cursor>(priv::PassKey<Cursor>{}); // Use a single local variable for NRVO
 

@@ -110,7 +110,7 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
 
         const sf::Vector2u size{static_cast<unsigned int>(width), static_cast<unsigned int>(height)};
 
-        auto image   = sf::Image(size, sf::Color::White);
+        auto image   = sf::Image::create(size, sf::Color::White).value();
         auto texture = sf::Texture::loadFromImage(graphicsContext, image).value();
 
         auto baseRenderTexture = sf::RenderTexture::create(graphicsContext, size, sf::ContextSettings{0, 0, 4 /* AA level*/})

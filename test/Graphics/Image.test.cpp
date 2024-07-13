@@ -23,9 +23,15 @@ TEST_CASE("[Graphics] sf::Image")
 
     SECTION("Construction")
     {
+        SECTION("Invalid size")
+        {
+            CHECK(!sf::Image::create({10, 0}, sf::Color::Magenta).hasValue());
+            CHECK(!sf::Image::create({0, 10}, sf::Color::Magenta).hasValue());
+        }
+
         SECTION("Vector2 constructor")
         {
-            const sf::Image image(sf::Vector2u{10, 10});
+            const auto image = sf::Image::create(sf::Vector2u{10, 10}).value();
             CHECK(image.getSize() == sf::Vector2u{10, 10});
             CHECK(image.getPixelsPtr() != nullptr);
 
@@ -40,7 +46,7 @@ TEST_CASE("[Graphics] sf::Image")
 
         SECTION("Vector2 and color constructor")
         {
-            const sf::Image image(sf::Vector2u{10, 10}, sf::Color::Red);
+            const auto image = sf::Image::create(sf::Vector2u{10, 10}, sf::Color::Red).value();
             CHECK(image.getSize() == sf::Vector2u{10, 10});
             CHECK(image.getPixelsPtr() != nullptr);
 
@@ -65,7 +71,7 @@ TEST_CASE("[Graphics] sf::Image")
                 pixels[i + 3] = 255; // a
             }
 
-            const sf::Image image(sf::Vector2u{10, 10}, pixels);
+            const auto image = sf::Image::create(sf::Vector2u{10, 10}, pixels).value();
             CHECK(image.getSize() == sf::Vector2u{10, 10});
             CHECK(image.getPixelsPtr() != nullptr);
 
@@ -168,8 +174,9 @@ TEST_CASE("[Graphics] sf::Image")
 
         SECTION("Successful load")
         {
-            const auto memory = sf::Image({24, 24}, sf::Color::Green).saveToMemory("png").value();
-            const auto image  = sf::Image::loadFromMemory(memory.data(), memory.size()).value();
+            const auto memory = sf::Image::create({24, 24}, sf::Color::Green).value().saveToMemory(sf::Image::SaveFormat::PNG);
+
+            const auto image = sf::Image::loadFromMemory(memory.data(), memory.size()).value();
             CHECK(image.getSize() == sf::Vector2u{24, 24});
             CHECK(image.getPixelsPtr() != nullptr);
             CHECK(image.getPixel({0, 0}) == sf::Color::Green);
@@ -189,14 +196,7 @@ TEST_CASE("[Graphics] sf::Image")
 
     SECTION("saveToFile()")
     {
-        // TODO: remove
-        SECTION("Invalid size")
-        {
-            // CHECK(!sf::Image({10, 0}, sf::Color::Magenta).saveToFile("test.jpg"));
-            // CHECK(!sf::Image({0, 10}, sf::Color::Magenta).saveToFile("test.jpg"));
-        }
-
-        const sf::Image image({256, 256}, sf::Color::Magenta);
+        const auto image = sf::Image::create({256, 256}, sf::Color::Magenta).value();
 
         SECTION("No extension")
         {
@@ -244,36 +244,15 @@ TEST_CASE("[Graphics] sf::Image")
 
     SECTION("saveToMemory()")
     {
-        // TODO: remove
-        SECTION("Invalid size")
-        {
-            // CHECK(!sf::Image({10, 0}, sf::Color::Magenta).saveToMemory("test.jpg"));
-            // CHECK(!sf::Image({0, 10}, sf::Color::Magenta).saveToMemory("test.jpg"));
-        }
-
-        const sf::Image image({16, 16}, sf::Color::Magenta);
-
-        SECTION("No extension")
-        {
-            CHECK(!image.saveToMemory(""));
-        }
-
-        SECTION("Invalid extension")
-        {
-            CHECK(!image.saveToMemory("."));
-            CHECK(!image.saveToMemory("gif"));
-            CHECK(!image.saveToMemory(".jpg")); // Supposed to be "jpg"
-        }
+        const auto image = sf::Image::create({16, 16}, sf::Color::Magenta).value();
 
         SECTION("Successful save")
         {
-            sf::Optional<std::vector<std::uint8_t>> maybeOutput;
+            std::vector<std::uint8_t> output;
 
             SECTION("To bmp")
             {
-                maybeOutput = image.saveToMemory("bmp");
-                REQUIRE(maybeOutput.hasValue());
-                const auto& output = *maybeOutput;
+                output = image.saveToMemory(sf::Image::SaveFormat::BMP);
                 REQUIRE(output.size() == 1146);
                 CHECK(output[0] == 66);
                 CHECK(output[1] == 77);
@@ -287,9 +266,7 @@ TEST_CASE("[Graphics] sf::Image")
 
             SECTION("To tga")
             {
-                maybeOutput = image.saveToMemory("tga");
-                REQUIRE(maybeOutput.hasValue());
-                const auto& output = *maybeOutput;
+                output = image.saveToMemory(sf::Image::SaveFormat::TGA);
                 REQUIRE(output.size() == 98);
                 CHECK(output[0] == 0);
                 CHECK(output[1] == 0);
@@ -299,9 +276,7 @@ TEST_CASE("[Graphics] sf::Image")
 
             SECTION("To png")
             {
-                maybeOutput = image.saveToMemory("png");
-                REQUIRE(maybeOutput.hasValue());
-                const auto& output = *maybeOutput;
+                output = image.saveToMemory(sf::Image::SaveFormat::PNG);
                 REQUIRE(output.size() == 92);
                 CHECK(output[0] == 137);
                 CHECK(output[1] == 80);
@@ -315,7 +290,7 @@ TEST_CASE("[Graphics] sf::Image")
 
     SECTION("Set/get pixel")
     {
-        sf::Image image(sf::Vector2u{10, 10}, sf::Color::Green);
+        auto image = sf::Image::create(sf::Vector2u{10, 10}, sf::Color::Green).value();
         CHECK(image.getPixel(sf::Vector2u{2, 2}) == sf::Color::Green);
 
         image.setPixel(sf::Vector2u{2, 2}, sf::Color::Blue);
@@ -326,8 +301,8 @@ TEST_CASE("[Graphics] sf::Image")
     {
         SECTION("Copy (Image, Vector2u)")
         {
-            const sf::Image image1(sf::Vector2u{10, 10}, sf::Color::Blue);
-            sf::Image       image2(sf::Vector2u{10, 10});
+            const auto image1 = sf::Image::create(sf::Vector2u{10, 10}, sf::Color::Blue).value();
+            auto       image2 = sf::Image::create(sf::Vector2u{10, 10}).value();
             CHECK(image2.copy(image1, sf::Vector2u{0, 0}));
 
             for (std::uint32_t i = 0; i < 10; ++i)
@@ -341,8 +316,8 @@ TEST_CASE("[Graphics] sf::Image")
 
         SECTION("Copy (Image, Vector2u, IntRect)")
         {
-            const sf::Image image1(sf::Vector2u{5, 5}, sf::Color::Blue);
-            sf::Image       image2(sf::Vector2u{10, 10});
+            const auto image1 = sf::Image::create(sf::Vector2u{5, 5}, sf::Color::Blue).value();
+            auto       image2 = sf::Image::create(sf::Vector2u{10, 10}).value();
             CHECK(image2.copy(image1, sf::Vector2u{0, 0}, sf::IntRect(sf::Vector2i{0, 0}, sf::Vector2i{5, 5})));
 
             for (std::uint32_t i = 0; i < 10; ++i)
@@ -372,8 +347,8 @@ TEST_CASE("[Graphics] sf::Image")
                 ((source.b * source.a) + ((dest.b * dest.a) * (255 - source.a)) / 255) / a);
             const sf::Color composite(r, g, b, a);
 
-            sf::Image       image1(sf::Vector2u{10, 10}, dest);
-            const sf::Image image2(sf::Vector2u{10, 10}, source);
+            auto       image1 = sf::Image::create(sf::Vector2u{10, 10}, dest).value();
+            const auto image2 = sf::Image::create(sf::Vector2u{10, 10}, source).value();
             CHECK(image1.copy(image2, sf::Vector2u{0, 0}, sf::IntRect(sf::Vector2i{0, 0}, sf::Vector2i{10, 10}), true));
 
             for (std::uint32_t i = 0; i < 10; ++i)
@@ -387,8 +362,8 @@ TEST_CASE("[Graphics] sf::Image")
 
         SECTION("Copy (Out of bounds sourceRect)")
         {
-            const sf::Image image1(sf::Vector2u{5, 5}, sf::Color::Blue);
-            sf::Image       image2(sf::Vector2u{10, 10}, sf::Color::Red);
+            const auto image1 = sf::Image::create(sf::Vector2u{5, 5}, sf::Color::Blue).value();
+            auto       image2 = sf::Image::create(sf::Vector2u{10, 10}, sf::Color::Red).value();
             CHECK(!image2.copy(image1, sf::Vector2u{0, 0}, sf::IntRect(sf::Vector2i{5, 5}, sf::Vector2i{9, 9})));
 
             for (std::uint32_t i = 0; i < 10; ++i)
@@ -405,7 +380,7 @@ TEST_CASE("[Graphics] sf::Image")
     {
         SECTION("createMaskFromColor(Color)")
         {
-            sf::Image image(sf::Vector2u{10, 10}, sf::Color::Blue);
+            auto image = sf::Image::create(sf::Vector2u{10, 10}, sf::Color::Blue).value();
             image.createMaskFromColor(sf::Color::Blue);
 
             for (std::uint32_t i = 0; i < 10; ++i)
@@ -419,7 +394,7 @@ TEST_CASE("[Graphics] sf::Image")
 
         SECTION("createMaskFromColor(Color, std::uint8_t)")
         {
-            sf::Image image(sf::Vector2u{10, 10}, sf::Color::Blue);
+            auto image = sf::Image::create(sf::Vector2u{10, 10}, sf::Color::Blue).value();
             image.createMaskFromColor(sf::Color::Blue, 100);
 
             for (std::uint32_t i = 0; i < 10; ++i)
@@ -434,7 +409,7 @@ TEST_CASE("[Graphics] sf::Image")
 
     SECTION("Flip horizontally")
     {
-        sf::Image image(sf::Vector2u{10, 10}, sf::Color::Red);
+        auto image = sf::Image::create(sf::Vector2u{10, 10}, sf::Color::Red).value();
         image.setPixel(sf::Vector2u{0, 0}, sf::Color::Green);
         image.flipHorizontally();
 
@@ -443,7 +418,7 @@ TEST_CASE("[Graphics] sf::Image")
 
     SECTION("Flip vertically")
     {
-        sf::Image image(sf::Vector2u{10, 10}, sf::Color::Red);
+        auto image = sf::Image::create(sf::Vector2u{10, 10}, sf::Color::Red).value();
         image.setPixel(sf::Vector2u{0, 0}, sf::Color::Green);
         image.flipVertically();
 

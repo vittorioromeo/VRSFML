@@ -123,9 +123,9 @@ struct CaptureDevice::Impl
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<CaptureDevice> CaptureDevice::createDefault(AudioContext& audioContext)
+Optional<CaptureDevice> CaptureDevice::createDefault(AudioContext& audioContext)
 {
-    sf::Optional defaultCaptureDeviceHandle = audioContext.getDefaultCaptureDeviceHandle();
+    Optional defaultCaptureDeviceHandle = audioContext.getDefaultCaptureDeviceHandle();
 
     if (!defaultCaptureDeviceHandle.hasValue())
         return sf::nullOpt;

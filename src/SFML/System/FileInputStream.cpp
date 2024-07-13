@@ -61,7 +61,7 @@ FileInputStream& FileInputStream::operator=(FileInputStream&&) noexcept = defaul
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<FileInputStream> FileInputStream::open(const Path& filename)
+Optional<FileInputStream> FileInputStream::open(const Path& filename)
 {
 #ifdef SFML_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
@@ -85,7 +85,7 @@ sf::Optional<FileInputStream> FileInputStream::open(const Path& filename)
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<std::size_t> FileInputStream::read(void* data, std::size_t size)
+Optional<std::size_t> FileInputStream::read(void* data, std::size_t size)
 {
 #ifdef SFML_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
@@ -101,7 +101,7 @@ sf::Optional<std::size_t> FileInputStream::read(void* data, std::size_t size)
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<std::size_t> FileInputStream::seek(std::size_t position)
+Optional<std::size_t> FileInputStream::seek(std::size_t position)
 {
 #ifdef SFML_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
@@ -121,7 +121,7 @@ sf::Optional<std::size_t> FileInputStream::seek(std::size_t position)
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<std::size_t> FileInputStream::tell()
+Optional<std::size_t> FileInputStream::tell()
 {
 #ifdef SFML_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
@@ -139,7 +139,7 @@ sf::Optional<std::size_t> FileInputStream::tell()
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<std::size_t> FileInputStream::getSize()
+Optional<std::size_t> FileInputStream::getSize()
 {
 #ifdef SFML_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
@@ -154,7 +154,7 @@ sf::Optional<std::size_t> FileInputStream::getSize()
     const auto position = tell().value();
     std::fseek(m_file.get(), 0, SEEK_END);
 
-    sf::Optional<std::size_t> size = tell(); // Use a single local variable for NRVO
+    Optional<std::size_t> size = tell(); // Use a single local variable for NRVO
 
     if (!seek(position).hasValue())
     {

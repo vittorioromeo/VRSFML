@@ -33,7 +33,7 @@ namespace sf
 {
 ////////////////////////////////////////////////////////////
 template <typename T>
-sf::Optional<Rect<T>> findIntersection(const Rect<T>& rect0, const Rect<T>& rect1)
+Optional<Rect<T>> findIntersection(const Rect<T>& rect0, const Rect<T>& rect1)
 {
     // Rectangles with negative dimensions are allowed, so we must handle them correctly
 

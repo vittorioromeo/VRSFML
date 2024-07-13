@@ -161,8 +161,8 @@ int SensorImpl::processSensorEvents(int /* fd */, int /* events */, void* /* sen
 
     while (ASensorEventQueue_getEvents(sensorEventQueue, &event, 1) > 0)
     {
-        sf::Optional<Sensor::Type> type;
-        Vector3f                   data;
+        Optional<Sensor::Type> type;
+        Vector3f               data;
 
         switch (event.type)
         {

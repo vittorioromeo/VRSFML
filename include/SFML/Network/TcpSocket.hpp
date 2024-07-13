@@ -82,7 +82,7 @@ public:
     /// \see getRemotePort
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Optional<IpAddress> getRemoteAddress() const;
+    [[nodiscard]] Optional<IpAddress> getRemoteAddress() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the port of the connected peer to which

@@ -172,7 +172,7 @@ public:
     ///         `sf::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<Cursor> loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vector2u hotspot);
+    [[nodiscard]] static Optional<Cursor> loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vector2u hotspot);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a native system cursor
@@ -188,7 +188,7 @@ public:
     ///         `sf::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Optional<Cursor> loadFromSystem(Type type);
+    [[nodiscard]] static Optional<Cursor> loadFromSystem(Type type);
 
 private:
     friend class WindowBase;

@@ -52,11 +52,9 @@ RenderTexture& RenderTexture::operator=(RenderTexture&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-sf::Optional<RenderTexture> RenderTexture::create(GraphicsContext&       graphicsContext,
-                                                  const Vector2u&        size,
-                                                  const ContextSettings& settings)
+Optional<RenderTexture> RenderTexture::create(GraphicsContext& graphicsContext, const Vector2u& size, const ContextSettings& settings)
 {
-    sf::Optional<RenderTexture> result; // Use a single local variable for NRVO
+    Optional<RenderTexture> result; // Use a single local variable for NRVO
 
     // Create the texture
     auto texture = sf::Texture::create(graphicsContext, size, settings.sRgbCapable);
