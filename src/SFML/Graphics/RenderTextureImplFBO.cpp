@@ -43,6 +43,17 @@
 #include <cstdint>
 
 
+namespace
+{
+////////////////////////////////////////////////////////////
+void deleteFrameBuffer(unsigned int id)
+{
+    glCheck(GLEXT_glDeleteFramebuffers(1, &id));
+}
+
+} // namespace
+
+
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
@@ -96,18 +107,11 @@ RenderTextureImplFBO::~RenderTextureImplFBO()
     }
 
     // Unregister FBOs with the contexts if they haven't already been destroyed
-
     for (const auto& [glContextId, frameBufferId] : m_impl->frameBuffers)
-    {
-        glCheck(GLEXT_glDeleteFramebuffers(1, &frameBufferId));
         m_impl->graphicsContext->unregisterUnsharedFrameBuffer(glContextId, frameBufferId);
-    }
 
     for (const auto& [glContextId, multisampleFrameBufferId] : m_impl->multisampleFrameBuffers)
-    {
-        glCheck(GLEXT_glDeleteFramebuffers(1, &multisampleFrameBufferId));
         m_impl->graphicsContext->unregisterUnsharedFrameBuffer(glContextId, multisampleFrameBufferId);
-    }
 }
 
 
@@ -455,7 +459,7 @@ bool RenderTextureImplFBO::createFrameBuffer()
     m_impl->frameBuffers.emplace(glContextId, frameBufferId);
 
     // Register the object with the current context so it is automatically destroyed
-    m_impl->graphicsContext->registerUnsharedFrameBuffer(glContextId, frameBufferId);
+    m_impl->graphicsContext->registerUnsharedFrameBuffer(glContextId, frameBufferId, &deleteFrameBuffer);
 
 #ifndef SFML_OPENGL_ES
 
@@ -514,7 +518,7 @@ bool RenderTextureImplFBO::createFrameBuffer()
         m_impl->multisampleFrameBuffers.emplace(glContextId, multisampleFrameBufferId);
 
         // Register the object with the current context so it is automatically destroyed
-        m_impl->graphicsContext->registerUnsharedFrameBuffer(glContextId, multisampleFrameBufferId);
+        m_impl->graphicsContext->registerUnsharedFrameBuffer(glContextId, multisampleFrameBufferId, &deleteFrameBuffer);
     }
 
 #endif

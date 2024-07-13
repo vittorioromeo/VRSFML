@@ -192,6 +192,12 @@ private:
                                                                    const Vector2u&        size);
 
     ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    using UnsharedDeleteFn = void (*)(unsigned int);
+
+    ////////////////////////////////////////////////////////////
     /// \brief Register an OpenGL object to be destroyed when its containing context is destroyed
     ///
     /// This is used for internal purposes in order to properly
@@ -201,7 +207,7 @@ private:
     /// \param object Object to be destroyed when its containing context is destroyed
     ///
     ////////////////////////////////////////////////////////////
-    void registerUnsharedFrameBuffer(std::uint64_t glContextId, unsigned int frameBufferId);
+    void registerUnsharedFrameBuffer(std::uint64_t glContextId, unsigned int frameBufferId, UnsharedDeleteFn deleteFn);
 
     ////////////////////////////////////////////////////////////
     /// \brief Unregister an OpenGL object from its containing context
