@@ -122,24 +122,28 @@ constinit thread_local struct
 ////////////////////////////////////////////////////////////
 struct GraphicsContext::Impl
 {
+    ////////////////////////////////////////////////////////////
     std::atomic<std::uint64_t> nextThreadLocalGlContextId{2u}; // 1 is reserved for shared context
 
+    ////////////////////////////////////////////////////////////
     DerivedGlContextType sharedGlContext; //!< The hidden, inactive context that will be shared with all other contexts
     std::recursive_mutex sharedGlContextMutex;
 
+    ////////////////////////////////////////////////////////////
     std::vector<std::string> extensions; //!< Supported OpenGL extensions
 
     ////////////////////////////////////////////////////////////
-    std::mutex unsharedFrameBuffersMutex;
-
     struct UnsharedFrameBuffer
     {
-        std::uint64_t glContextId{};
-        unsigned int  frameBufferId;
+        std::uint64_t    glContextId{};
+        unsigned int     frameBufferId;
+        UnsharedDeleteFn deleteFn;
     };
 
+    std::mutex                       unsharedFrameBuffersMutex;
     std::vector<UnsharedFrameBuffer> unsharedFrameBuffers;
 
+    ////////////////////////////////////////////////////////////
     template <typename... SharedGlContextArgs>
     explicit Impl(SharedGlContextArgs&&... args) : sharedGlContext(SFML_FORWARD(args)...)
     {
@@ -180,6 +184,8 @@ GraphicsContext::GraphicsContext() : m_impl(priv::makeUnique<Impl>(*this, 1u, nu
 ////////////////////////////////////////////////////////////
 GraphicsContext::~GraphicsContext()
 {
+    SFML_ASSERT(m_impl->unsharedFrameBuffers.empty());
+
     SFML_ASSERT(hasAnyActiveGlContext());
 
     activeGlContext.id  = 0u;
@@ -190,21 +196,23 @@ GraphicsContext::~GraphicsContext()
 
 
 ////////////////////////////////////////////////////////////
-void GraphicsContext::registerUnsharedFrameBuffer(std::uint64_t glContextId, unsigned int frameBufferId)
+void GraphicsContext::registerUnsharedFrameBuffer(std::uint64_t glContextId, unsigned int frameBufferId, UnsharedDeleteFn deleteFn)
 {
-    const std::lock_guard lock(m_impl->unsharedFrameBuffersMutex);
-
     SFML_ASSERT(getActiveThreadLocalGlContextId() == glContextId);
-    m_impl->unsharedFrameBuffers.emplace_back(glContextId, frameBufferId);
+
+    const std::lock_guard lock(m_impl->unsharedFrameBuffersMutex);
+    m_impl->unsharedFrameBuffers.emplace_back(glContextId, frameBufferId, deleteFn);
 }
 
 
 ////////////////////////////////////////////////////////////
 void GraphicsContext::unregisterUnsharedFrameBuffer(std::uint64_t glContextId, unsigned int frameBufferId)
 {
-    const std::lock_guard lock(m_impl->unsharedFrameBuffersMutex);
+    // If we're not on the right context, wait for the cleanup later on
+    if (getActiveThreadLocalGlContextId() != glContextId)
+        return;
 
-    SFML_ASSERT(getActiveThreadLocalGlContextId() == glContextId);
+    const std::lock_guard lock(m_impl->unsharedFrameBuffersMutex);
 
     // Find the object in unshared objects and remove it if its associated context is currently active
     // Assume that the object has already been deleted with the right OpenGL delete call
@@ -214,43 +222,18 @@ void GraphicsContext::unregisterUnsharedFrameBuffer(std::uint64_t glContextId, u
                                    { return obj.glContextId == glContextId && obj.frameBufferId == frameBufferId; });
 
     if (iter != m_impl->unsharedFrameBuffers.end())
+    {
+        iter->deleteFn(iter->frameBufferId);
         m_impl->unsharedFrameBuffers.erase(iter);
+    }
 }
 
 
 ////////////////////////////////////////////////////////////
 void GraphicsContext::cleanupUnsharedFrameBuffers(priv::GlContext& glContext)
 {
-    // Scope for lock guard
-    {
-        const std::lock_guard lock(m_impl->unsharedFrameBuffersMutex);
-
-        if (!priv::anyOf(m_impl->unsharedFrameBuffers.begin(),
-                         m_impl->unsharedFrameBuffers.end(),
-                         [&](const Impl::UnsharedFrameBuffer& obj) { return obj.glContextId == activeGlContext.id; }))
-        {
-            return;
-        }
-    }
-
-    SFML_ASSERT(false); // TODO: if this fails, need to delete framebuffer here
-
     // Save the current context so we can restore it later
     priv::GlContext* glContextToRestore = activeGlContext.ptr;
-
-    // Destroy the unshared objects contained in this context
-    for (auto iter = m_impl->unsharedFrameBuffers.begin(); iter != m_impl->unsharedFrameBuffers.end();)
-    {
-        if (iter->glContextId == glContext.m_id)
-        {
-            SFML_ASSERT(false); // TODO: if this fails, need to delete framebuffer here
-            iter = m_impl->unsharedFrameBuffers.erase(iter);
-        }
-        else
-        {
-            ++iter;
-        }
-    }
 
     // Make this context active so resources can be freed
     if (!setActiveThreadLocalGlContext(glContext, true))
@@ -265,7 +248,7 @@ void GraphicsContext::cleanupUnsharedFrameBuffers(priv::GlContext& glContext)
         {
             if (iter->glContextId == glContext.m_id)
             {
-                SFML_ASSERT(false); // TODO: if this fails, need to delete framebuffer here
+                iter->deleteFn(iter->frameBufferId);
                 iter = m_impl->unsharedFrameBuffers.erase(iter);
             }
             else
