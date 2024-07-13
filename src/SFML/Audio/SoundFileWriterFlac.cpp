@@ -88,7 +88,7 @@ bool SoundFileWriterFlac::open(const Path&                      filename,
     switch (channelCount)
     {
         case 0:
-            priv::err() << "No channels to write to FLAC file" << priv::errEndl;
+            priv::err() << "No channels to write to FLAC file";
             return false;
         case 1:
             targetChannelMap = {SoundChannel::Mono};
@@ -137,14 +137,14 @@ bool SoundFileWriterFlac::open(const Path&                      filename,
                                 SoundChannel::SideRight};
             break;
         default:
-            priv::err() << "FLAC files with more than 8 channels not supported" << priv::errEndl;
+            priv::err() << "FLAC files with more than 8 channels not supported";
             return false;
     }
 
     // Check if the channel map contains channels that we cannot remap to a mapping supported by FLAC
     if (!std::is_permutation(channelMap.begin(), channelMap.end(), targetChannelMap.begin()))
     {
-        priv::err() << "Provided channel map cannot be reordered to a channel map supported by FLAC" << priv::errEndl;
+        priv::err() << "Provided channel map cannot be reordered to a channel map supported by FLAC";
         return false;
     }
 
@@ -158,7 +158,7 @@ bool SoundFileWriterFlac::open(const Path&                      filename,
     if (!m_impl->encoder)
     {
         priv::err() << "Failed to write flac file (failed to allocate encoder)\n"
-                    << priv::formatDebugPathInfo(filename) << priv::errEndl;
+                    << priv::formatDebugPathInfo(filename);
         return false;
     }
 
@@ -171,8 +171,7 @@ bool SoundFileWriterFlac::open(const Path&                      filename,
     if (FLAC__stream_encoder_init_file(m_impl->encoder.get(), filename.to<std::string>().c_str(), nullptr, nullptr) !=
         FLAC__STREAM_ENCODER_INIT_STATUS_OK)
     {
-        priv::err() << "Failed to write flac file (failed to open the file)\n"
-                    << priv::formatDebugPathInfo(filename) << priv::errEndl;
+        priv::err() << "Failed to write flac file (failed to open the file)\n" << priv::formatDebugPathInfo(filename);
         m_impl->encoder.reset();
         return false;
     }

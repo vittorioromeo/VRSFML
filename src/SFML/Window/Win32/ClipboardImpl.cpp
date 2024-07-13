@@ -44,13 +44,13 @@ String ClipboardImpl::getString()
 
     if (!IsClipboardFormatAvailable(CF_UNICODETEXT))
     {
-        err() << "Failed to get the clipboard data in Unicode format: " << getErrorString(GetLastError()) << errEndl;
+        err() << "Failed to get the clipboard data in Unicode format: " << getErrorString(GetLastError());
         return text;
     }
 
     if (!OpenClipboard(nullptr))
     {
-        err() << "Failed to open the Win32 clipboard: " << getErrorString(GetLastError()) << errEndl;
+        err() << "Failed to open the Win32 clipboard: " << getErrorString(GetLastError());
         return text;
     }
 
@@ -58,7 +58,7 @@ String ClipboardImpl::getString()
 
     if (!clipboardHandle)
     {
-        err() << "Failed to get Win32 handle for clipboard content: " << getErrorString(GetLastError()) << errEndl;
+        err() << "Failed to get Win32 handle for clipboard content: " << getErrorString(GetLastError());
         CloseClipboard();
 
         return text;
@@ -77,13 +77,13 @@ void ClipboardImpl::setString(const String& text)
 {
     if (!OpenClipboard(nullptr))
     {
-        err() << "Failed to open the Win32 clipboard: " << getErrorString(GetLastError()) << errEndl;
+        err() << "Failed to open the Win32 clipboard: " << getErrorString(GetLastError());
         return;
     }
 
     if (!EmptyClipboard())
     {
-        err() << "Failed to empty the Win32 clipboard: " << getErrorString(GetLastError()) << errEndl;
+        err() << "Failed to empty the Win32 clipboard: " << getErrorString(GetLastError());
         CloseClipboard();
 
         return;

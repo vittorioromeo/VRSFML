@@ -32,6 +32,7 @@
 #include <cpptrace/cpptrace.hpp>
 #endif
 
+#include <atomic>
 #include <iostream>
 #include <mutex>
 #include <ostream>
@@ -46,8 +47,9 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 struct ErrStream::Impl
 {
-    std::ostream stream;
-    std::mutex   mutex;
+    std::ostream      stream;
+    std::mutex        mutex;
+    std::atomic<bool> multiLine;
 
     explicit Impl(std::streambuf* sbuf) : stream(sbuf)
     {
@@ -56,7 +58,10 @@ struct ErrStream::Impl
 
 
 ////////////////////////////////////////////////////////////
-ErrStream::Guard::Guard(std::ostream& stream, void* mutexPtr) : m_stream(stream), m_mutexPtr(mutexPtr)
+ErrStream::Guard::Guard(std::ostream& stream, void* mutexPtr, bool multiLine) :
+m_stream(stream),
+m_mutexPtr(mutexPtr),
+m_multiLine(multiLine)
 {
 }
 
@@ -64,12 +69,15 @@ ErrStream::Guard::Guard(std::ostream& stream, void* mutexPtr) : m_stream(stream)
 ////////////////////////////////////////////////////////////
 ErrStream::Guard::~Guard()
 {
+    if (!m_multiLine)
+    {
 #ifdef SFML_ENABLE_STACK_TRACES
-    m_stream << "\n\n";
-    cpptrace::generate_trace().print();
+        m_stream << "\n\n";
+        cpptrace::generate_trace().print();
 #endif
 
-    m_stream << '\n' << std::flush;
+        m_stream << '\n' << std::flush;
+    }
 
     static_cast<std::mutex*>(m_mutexPtr)->unlock();
 }
@@ -119,9 +127,10 @@ void ErrStream::rdbuf(std::streambuf* sbuf)
 
 
 ////////////////////////////////////////////////////////////
-ErrStream& err()
+ErrStream& err(bool multiLine)
 {
     static ErrStream stream(std::cerr.rdbuf());
+    stream.m_impl->multiLine.store(multiLine);
     return stream;
 }
 
@@ -133,7 +142,7 @@ ErrStream::Guard ErrStream::operator<<(const T& value)
     m_impl->mutex.lock(); // Will be unlocked by `~Guard()`
     m_impl->stream << "[[SFML ERROR]]: " << value;
 
-    return Guard{m_impl->stream, &m_impl->mutex};
+    return Guard{m_impl->stream, &m_impl->mutex, m_impl->multiLine.load()};
 }
 
 
@@ -143,17 +152,7 @@ ErrStream::Guard ErrStream::operator<<(const char* value)
     m_impl->mutex.lock(); // Will be unlocked by `~Guard()`
     m_impl->stream << "[[SFML ERROR]]: " << value;
 
-    return Guard{m_impl->stream, &m_impl->mutex};
-}
-
-
-////////////////////////////////////////////////////////////
-ErrStream::Guard ErrStream::operator<<(ErrEndlType)
-{
-    m_impl->mutex.lock(); // Will be unlocked by `~Guard()`
-    m_impl->stream << '\n' << std::flush;
-
-    return Guard{m_impl->stream, &m_impl->mutex};
+    return Guard{m_impl->stream, &m_impl->mutex, m_impl->multiLine.load()};
 }
 
 
@@ -163,33 +162,20 @@ ErrStream::Guard ErrStream::operator<<(ErrFlushType)
     m_impl->mutex.lock(); // Will be unlocked by `~Guard()`
     m_impl->stream << std::flush;
 
-    return Guard{m_impl->stream, &m_impl->mutex};
+    return Guard{m_impl->stream, &m_impl->mutex, m_impl->multiLine.load()};
 }
 
 
 ////////////////////////////////////////////////////////////
 template ErrStream::Guard ErrStream::operator<< <const char* const>(const char* const&);
 template ErrStream::Guard ErrStream::operator<< <long>(const long&);
+template ErrStream::Guard ErrStream::operator<< <char>(const char&);
 
 
 ////////////////////////////////////////////////////////////
 ErrStream::Guard& ErrStream::Guard::operator<<(const char* value)
 {
     m_stream << value;
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-ErrStream::Guard& ErrStream::Guard::operator<<(ErrEndlType)
-{
-#ifdef SFML_ENABLE_STACK_TRACES
-    m_stream << "\n\n";
-    cpptrace::generate_trace().print();
-#endif
-
-    m_stream << '\n' << std::flush;
-
     return *this;
 }
 

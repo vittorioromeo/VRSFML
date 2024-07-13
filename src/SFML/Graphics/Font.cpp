@@ -217,8 +217,7 @@ sf::Optional<Font> Font::openFromFile(GraphicsContext& graphicsContext, const Pa
     // global manager that would create a lot of issues regarding creation and destruction order.
     if (FT_Init_FreeType(&fontHandles->library) != 0)
     {
-        priv::err() << "Failed to load font (failed to initialize FreeType)\n"
-                    << priv::formatDebugPathInfo(filename) << priv::errEndl;
+        priv::err() << "Failed to load font (failed to initialize FreeType)\n" << priv::formatDebugPathInfo(filename);
         return sf::nullOpt;
     }
 
@@ -226,8 +225,7 @@ sf::Optional<Font> Font::openFromFile(GraphicsContext& graphicsContext, const Pa
     FT_Face face = nullptr;
     if (FT_New_Face(fontHandles->library, filename.to<std::string>().c_str(), 0, &face) != 0)
     {
-        priv::err() << "Failed to load font (failed to create the font face)\n"
-                    << priv::formatDebugPathInfo(filename) << priv::errEndl;
+        priv::err() << "Failed to load font (failed to create the font face)\n" << priv::formatDebugPathInfo(filename);
         return sf::nullOpt;
     }
     fontHandles->face = face;
@@ -235,8 +233,7 @@ sf::Optional<Font> Font::openFromFile(GraphicsContext& graphicsContext, const Pa
     // Load the stroker that will be used to outline the font
     if (FT_Stroker_New(fontHandles->library, &fontHandles->stroker) != 0)
     {
-        priv::err() << "Failed to load font (failed to create the stroker)\n"
-                    << priv::formatDebugPathInfo(filename) << priv::errEndl;
+        priv::err() << "Failed to load font (failed to create the stroker)\n" << priv::formatDebugPathInfo(filename);
         return sf::nullOpt;
     }
 
@@ -244,7 +241,7 @@ sf::Optional<Font> Font::openFromFile(GraphicsContext& graphicsContext, const Pa
     if (FT_Select_Charmap(face, FT_ENCODING_UNICODE) != 0)
     {
         priv::err() << "Failed to load font (failed to set the Unicode character set)\n"
-                    << priv::formatDebugPathInfo(filename) << priv::errEndl;
+                    << priv::formatDebugPathInfo(filename);
         return sf::nullOpt;
     }
 
@@ -272,7 +269,7 @@ sf::Optional<Font> Font::openFromMemory(GraphicsContext& graphicsContext, const 
     // global manager that would create a lot of issues regarding creation and destruction order.
     if (FT_Init_FreeType(&fontHandles->library) != 0)
     {
-        priv::err() << "Failed to load font from memory (failed to initialize FreeType)" << priv::errEndl;
+        priv::err() << "Failed to load font from memory (failed to initialize FreeType)";
         return sf::nullOpt;
     }
 
@@ -284,7 +281,7 @@ sf::Optional<Font> Font::openFromMemory(GraphicsContext& graphicsContext, const 
                            0,
                            &face) != 0)
     {
-        priv::err() << "Failed to load font from memory (failed to create the font face)" << priv::errEndl;
+        priv::err() << "Failed to load font from memory (failed to create the font face)";
         return sf::nullOpt;
     }
     fontHandles->face = face;
@@ -292,14 +289,14 @@ sf::Optional<Font> Font::openFromMemory(GraphicsContext& graphicsContext, const 
     // Load the stroker that will be used to outline the font
     if (FT_Stroker_New(fontHandles->library, &fontHandles->stroker) != 0)
     {
-        priv::err() << "Failed to load font from memory (failed to create the stroker)" << priv::errEndl;
+        priv::err() << "Failed to load font from memory (failed to create the stroker)";
         return sf::nullOpt;
     }
 
     // Select the Unicode character map
     if (FT_Select_Charmap(face, FT_ENCODING_UNICODE) != 0)
     {
-        priv::err() << "Failed to load font from memory (failed to set the Unicode character set)" << priv::errEndl;
+        priv::err() << "Failed to load font from memory (failed to set the Unicode character set)";
         return sf::nullOpt;
     }
 
@@ -317,14 +314,14 @@ sf::Optional<Font> Font::openFromStream(GraphicsContext& graphicsContext, InputS
     // global manager that would create a lot of issues regarding creation and destruction order.
     if (FT_Init_FreeType(&fontHandles->library) != 0)
     {
-        priv::err() << "Failed to load font from stream (failed to initialize FreeType)" << priv::errEndl;
+        priv::err() << "Failed to load font from stream (failed to initialize FreeType)";
         return sf::nullOpt;
     }
 
     // Make sure that the stream's reading position is at the beginning
     if (!stream.seek(0).hasValue())
     {
-        priv::err() << "Failed to seek font stream" << priv::errEndl;
+        priv::err() << "Failed to seek font stream";
         return sf::nullOpt;
     }
 
@@ -346,7 +343,7 @@ sf::Optional<Font> Font::openFromStream(GraphicsContext& graphicsContext, InputS
     FT_Face face = nullptr;
     if (FT_Open_Face(fontHandles->library, &args, 0, &face) != 0)
     {
-        priv::err() << "Failed to load font from stream (failed to create the font face)" << priv::errEndl;
+        priv::err() << "Failed to load font from stream (failed to create the font face)";
         return sf::nullOpt;
     }
     fontHandles->face = face;
@@ -354,14 +351,14 @@ sf::Optional<Font> Font::openFromStream(GraphicsContext& graphicsContext, InputS
     // Load the stroker that will be used to outline the font
     if (FT_Stroker_New(fontHandles->library, &fontHandles->stroker) != 0)
     {
-        priv::err() << "Failed to load font from stream (failed to create the stroker)" << priv::errEndl;
+        priv::err() << "Failed to load font from stream (failed to create the stroker)";
         return sf::nullOpt;
     }
 
     // Select the Unicode character map
     if (FT_Select_Charmap(face, FT_ENCODING_UNICODE) != 0)
     {
-        priv::err() << "Failed to load font from stream (failed to set the Unicode character set)" << priv::errEndl;
+        priv::err() << "Failed to load font from stream (failed to set the Unicode character set)";
         return sf::nullOpt;
     }
 
@@ -616,7 +613,7 @@ Glyph Font::loadGlyph(std::uint32_t codePoint, unsigned int characterSize, bool 
             FT_Bitmap_Embolden(m_impl->fontHandles->library, &bitmap, weight, weight);
 
         if (outlineThickness != 0)
-            priv::err() << "Failed to outline glyph (no fallback available)" << priv::errEndl;
+            priv::err() << "Failed to outline glyph (no fallback available)";
     }
 
     // Compute the glyph's advance offset
@@ -757,7 +754,7 @@ IntRect Font::findGlyphRect(GraphicsContext& graphicsContext, Page& page, const 
                 auto newTexture = sf::Texture::create(graphicsContext, textureSize * 2u);
                 if (!newTexture)
                 {
-                    priv::err() << "Failed to create new page texture" << priv::errEndl;
+                    priv::err() << "Failed to create new page texture";
                     return rect;
                 }
 
@@ -768,8 +765,7 @@ IntRect Font::findGlyphRect(GraphicsContext& graphicsContext, Page& page, const 
             else
             {
                 // Oops, we've reached the maximum texture size...
-                priv::err() << "Failed to add a new character to the font: the maximum texture size has been reached"
-                            << priv::errEndl;
+                priv::err() << "Failed to add a new character to the font: the maximum texture size has been reached";
                 return rect;
             }
         }
@@ -814,17 +810,20 @@ bool Font::setCurrentSize(unsigned int characterSize) const
     // In the case of bitmap fonts, resizing can fail if the requested size is not available
     if (!FT_IS_SCALABLE(face))
     {
-        priv::err() << "Failed to set bitmap font size to " << characterSize << '\n' << "Available sizes are: ";
+        priv::err(true /* multiLine */) << "Failed to set bitmap font size to " << characterSize << '\n'
+                                        << "Available sizes are: ";
+
         for (int i = 0; i < face->num_fixed_sizes; ++i)
         {
             const long size = (face->available_sizes[i].y_ppem + 32) >> 6;
-            priv::err() << size << " ";
+            priv::err(true /* multiLine */) << size << " ";
         }
-        priv::err() << priv::errEndl;
+
+        priv::err() << '\n';
     }
     else
     {
-        priv::err() << "Failed to set font size to " << characterSize << priv::errEndl;
+        priv::err() << "Failed to set font size to " << characterSize;
     }
 
     return false;
@@ -846,7 +845,7 @@ sf::Optional<Font::Page> Font::Page::create(GraphicsContext& graphicsContext, bo
     auto texture = sf::Texture::loadFromImage(graphicsContext, image);
     if (!texture.hasValue())
     {
-        priv::err() << "Failed to load font page texture" << priv::errEndl;
+        priv::err() << "Failed to load font page texture";
         return sf::nullOpt;
     }
 

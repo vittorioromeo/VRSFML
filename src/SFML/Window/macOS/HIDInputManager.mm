@@ -709,7 +709,7 @@ HIDInputManager::HIDInputManager()
 
     if (openStatus != kIOReturnSuccess)
     {
-        priv::err() << "Error when opening the HID manager" << priv::errEndl;
+        priv::err() << "Error when opening the HID manager" ;
         freeUp();
         return;
     }
@@ -748,7 +748,7 @@ void HIDInputManager::initializeKeyboard()
     CFSetRef underlying = copyDevices(kHIDPage_GenericDesktop, kHIDUsage_GD_Keyboard);
     if (underlying == nullptr)
     {
-        priv::err() << "No keyboard detected by the HID manager!" << priv::errEndl;
+        priv::err() << "No keyboard detected by the HID manager!" ;
         freeUp();
         return;
     }
@@ -770,7 +770,7 @@ void HIDInputManager::loadKeyboard(IOHIDDeviceRef keyboard)
     CFArrayRef underlying = IOHIDDeviceCopyMatchingElements(keyboard, nullptr, kIOHIDOptionsTypeNone);
     if ((underlying == nullptr) || (CFArrayGetCount(underlying) == 0))
     {
-        priv::err() << "Detected a keyboard without any keys." << priv::errEndl;
+        priv::err() << "Detected a keyboard without any keys." ;
         return;
     }
 

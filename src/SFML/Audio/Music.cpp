@@ -117,7 +117,7 @@ sf::Optional<Music> Music::tryOpenFromInputSoundFile(sf::Optional<InputSoundFile
 {
     if (!optFile.hasValue())
     {
-        priv::err() << "Failed to open music from " << errorContext << priv::errEndl;
+        priv::err() << "Failed to open music from " << errorContext;
         return sf::nullOpt;
     }
 
@@ -258,7 +258,7 @@ void Music::setLoopPoints(TimeSpan timePoints)
     // Check our state. This averts a divide-by-zero. GetChannelCount() is cheap enough to use often
     if (getChannelCount() == 0 || m_impl->file.getSampleCount() == 0)
     {
-        priv::err() << "Music is not in a valid state to assign Loop Points." << priv::errEndl;
+        priv::err() << "Music is not in a valid state to assign Loop Points.";
         return;
     }
 
@@ -271,13 +271,13 @@ void Music::setLoopPoints(TimeSpan timePoints)
     // Validate
     if (samplePoints.offset >= m_impl->file.getSampleCount())
     {
-        priv::err() << "LoopPoints offset val must be in range [0, Duration)." << priv::errEndl;
+        priv::err() << "LoopPoints offset val must be in range [0, Duration).";
         return;
     }
 
     if (samplePoints.length == 0)
     {
-        priv::err() << "LoopPoints length val must be nonzero." << priv::errEndl;
+        priv::err() << "LoopPoints length val must be nonzero.";
         return;
     }
 

@@ -159,7 +159,7 @@ sf::Optional<SoundFileReader::Info> SoundFileReaderMp3::open(InputStream& stream
     switch (info.channelCount)
     {
         case 0:
-            priv::err() << "No channels in MP3 file" << priv::errEndl;
+            priv::err() << "No channels in MP3 file";
             break;
         case 1:
             info.channelMap = {SoundChannel::Mono};
@@ -168,7 +168,7 @@ sf::Optional<SoundFileReader::Info> SoundFileReaderMp3::open(InputStream& stream
             info.channelMap = {SoundChannel::SideLeft, SoundChannel::SideRight};
             break;
         default:
-            priv::err() << "MP3 files with more than 2 channels not supported" << priv::errEndl;
+            priv::err() << "MP3 files with more than 2 channels not supported";
             SFML_ASSERT(false);
             break;
     }

@@ -57,7 +57,7 @@ SoundBufferRecorder::SoundBufferRecorder() = default;
 SoundBufferRecorder::~SoundBufferRecorder()
 {
     if (!stop())
-        priv::err() << "Failed to stop sound buffer recorder on destruction" << priv::errEndl;
+        priv::err() << "Failed to stop sound buffer recorder on destruction";
 }
 
 
@@ -97,7 +97,7 @@ bool SoundBufferRecorder::onStop(CaptureDevice& captureDevice)
 
     if (!m_impl->buffer.hasValue())
     {
-        priv::err() << "Failed to stop capturing audio data" << priv::errEndl;
+        priv::err() << "Failed to stop capturing audio data";
         return false;
     }
 

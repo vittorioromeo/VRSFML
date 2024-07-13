@@ -77,7 +77,7 @@ Socket::Status TcpListener::listen(unsigned short port, const IpAddress& address
     if (bind(getNativeHandle(), reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) == -1)
     {
         // Not likely to happen, but...
-        priv::err() << "Failed to bind listener socket to port " << port << priv::errEndl;
+        priv::err() << "Failed to bind listener socket to port " << port;
         return Status::Error;
     }
 
@@ -85,7 +85,7 @@ Socket::Status TcpListener::listen(unsigned short port, const IpAddress& address
     if (::listen(getNativeHandle(), SOMAXCONN) == -1)
     {
         // Oops, socket is deaf
-        priv::err() << "Failed to listen to port " << port << priv::errEndl;
+        priv::err() << "Failed to listen to port " << port;
         return Status::Error;
     }
 
@@ -107,7 +107,7 @@ Socket::Status TcpListener::accept(TcpSocket& socket)
     // Make sure that we're listening
     if (getNativeHandle() == priv::SocketImpl::invalidSocket())
     {
-        priv::err() << "Failed to accept a new connection, the socket is not listening" << priv::errEndl;
+        priv::err() << "Failed to accept a new connection, the socket is not listening";
         return Status::Error;
     }
 

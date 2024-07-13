@@ -192,7 +192,7 @@ void updatePluggedList(udev_device* udevDevice = nullptr)
                     else if (std::strstr(action, "remove"))
                     {
                         // Not mapped during the initial scan, and removed (shouldn't happen)
-                        sf::priv::err() << "Trying to disconnect joystick that wasn't connected" << sf::priv::errEndl;
+                        sf::priv::err() << "Trying to disconnect joystick that wasn't connected";
                     }
                 }
             }
@@ -211,19 +211,19 @@ void updatePluggedList(udev_device* udevDevice = nullptr)
 
     if (!udevEnumerator)
     {
-        sf::priv::err() << "Error while creating udev enumerator" << sf::priv::errEndl;
+        sf::priv::err() << "Error while creating udev enumerator";
         return;
     }
 
     if (udev_enumerate_add_match_subsystem(udevEnumerator.get(), "input") < 0)
     {
-        sf::priv::err() << "Error while adding udev enumerator match" << sf::priv::errEndl;
+        sf::priv::err() << "Error while adding udev enumerator match";
         return;
     }
 
     if (udev_enumerate_scan_devices(udevEnumerator.get()) < 0)
     {
-        sf::priv::err() << "Error while enumerating udev devices" << sf::priv::errEndl;
+        sf::priv::err() << "Error while enumerating udev devices";
         return;
     }
 
@@ -328,7 +328,7 @@ unsigned int getJoystickVendorId(unsigned int index)
 {
     if (!udevContext)
     {
-        sf::priv::err() << "Failed to get vendor ID of joystick " << joystickList[index].deviceNode << sf::priv::errEndl;
+        sf::priv::err() << "Failed to get vendor ID of joystick " << joystickList[index].deviceNode;
         return 0;
     }
 
@@ -337,7 +337,7 @@ unsigned int getJoystickVendorId(unsigned int index)
 
     if (!udevDevice)
     {
-        sf::priv::err() << "Failed to get vendor ID of joystick " << joystickList[index].deviceNode << sf::priv::errEndl;
+        sf::priv::err() << "Failed to get vendor ID of joystick " << joystickList[index].deviceNode;
         return 0;
     }
 
@@ -349,7 +349,7 @@ unsigned int getJoystickVendorId(unsigned int index)
     if (const unsigned int id = getUsbAttributeUint(udevDevice.get(), "idVendor"))
         return id;
 
-    sf::priv::err() << "Failed to get vendor ID of joystick " << joystickList[index].deviceNode << sf::priv::errEndl;
+    sf::priv::err() << "Failed to get vendor ID of joystick " << joystickList[index].deviceNode;
 
     return 0;
 }
@@ -359,7 +359,7 @@ unsigned int getJoystickProductId(unsigned int index)
 {
     if (!udevContext)
     {
-        sf::priv::err() << "Failed to get product ID of joystick " << joystickList[index].deviceNode << sf::priv::errEndl;
+        sf::priv::err() << "Failed to get product ID of joystick " << joystickList[index].deviceNode;
         return 0;
     }
 
@@ -368,7 +368,7 @@ unsigned int getJoystickProductId(unsigned int index)
 
     if (!udevDevice)
     {
-        sf::priv::err() << "Failed to get product ID of joystick " << joystickList[index].deviceNode << sf::priv::errEndl;
+        sf::priv::err() << "Failed to get product ID of joystick " << joystickList[index].deviceNode;
         return 0;
     }
 
@@ -380,7 +380,7 @@ unsigned int getJoystickProductId(unsigned int index)
     if (const unsigned int id = getUsbAttributeUint(udevDevice.get(), "idProduct"))
         return id;
 
-    sf::priv::err() << "Failed to get product ID of joystick " << joystickList[index].deviceNode << sf::priv::errEndl;
+    sf::priv::err() << "Failed to get product ID of joystick " << joystickList[index].deviceNode;
 
     return 0;
 }
@@ -416,7 +416,7 @@ std::string getJoystickName(unsigned int index)
                 return {product};
     }
 
-    sf::priv::err() << "Unable to get name for joystick " << devnode << sf::priv::errEndl;
+    sf::priv::err() << "Unable to get name for joystick " << devnode;
 
     return "Unknown Joystick";
 }
@@ -432,7 +432,7 @@ void JoystickImpl::initialize()
 
     if (!udevContext)
     {
-        priv::err() << "Failed to create udev context, joystick support not available" << priv::errEndl;
+        priv::err() << "Failed to create udev context, joystick support not available";
         return;
     }
 
@@ -440,8 +440,7 @@ void JoystickImpl::initialize()
 
     if (!udevMonitor)
     {
-        priv::err() << "Failed to create udev monitor, joystick connections and disconnections won't be notified"
-                    << priv::errEndl;
+        priv::err() << "Failed to create udev monitor, joystick connections and disconnections won't be notified";
     }
     else
     {
@@ -451,7 +450,7 @@ void JoystickImpl::initialize()
         {
             priv::err() << "Failed to add udev monitor filter, joystick connections and disconnections won't be "
                            "notified: "
-                        << error << priv::errEndl;
+                        << error;
 
             udevMonitor.reset();
         }
@@ -463,7 +462,7 @@ void JoystickImpl::initialize()
             {
                 priv::err() << "Failed to enable udev monitor, joystick connections and disconnections won't be "
                                "notified: "
-                            << error << priv::errEndl;
+                            << error;
 
                 udevMonitor.reset();
             }
@@ -544,7 +543,7 @@ bool JoystickImpl::open(unsigned int index)
             return true;
         }
 
-        priv::err() << "Failed to open joystick " << devnode << ": " << errno << sf::priv::errEndl;
+        priv::err() << "Failed to open joystick " << devnode << ": " << errno;
     }
 
     return false;

@@ -141,7 +141,7 @@ void ensureExtensionsInit(GraphicsContext& graphicsContext)
         if ((majorVersion < 1) || ((majorVersion == 1) && (minorVersion < 1)))
         {
             priv::err() << "sfml-graphics requires support for OpenGL 1.1 or greater" << '\n'
-                        << "Ensure that hardware acceleration is enabled if available" << priv::errEndl;
+                        << "Ensure that hardware acceleration is enabled if available";
         }
     }
 }

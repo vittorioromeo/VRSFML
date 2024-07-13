@@ -99,7 +99,7 @@ void setVirtualKeyboardVisible(bool visible)
     const jint lResult = lJavaVM->AttachCurrentThread(&lJNIEnv, &lJavaVMAttachArgs);
 
     if (lResult == JNI_ERR)
-        priv::err() << "Failed to initialize JNI, couldn't switch the keyboard visibility" << priv::errEndl;
+        priv::err() << "Failed to initialize JNI, couldn't switch the keyboard visibility";
 
     // Retrieves NativeActivity
     jobject lNativeActivity     = states.activity->clazz;

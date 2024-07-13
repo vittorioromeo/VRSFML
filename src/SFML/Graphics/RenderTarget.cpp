@@ -110,8 +110,7 @@ std::uint32_t factorToGlConstant(sf::BlendMode::Factor blendFactor)
     }
     // clang-format on
 
-    sf::priv::err() << "Invalid value for sf::BlendMode::Factor! Fallback to sf::BlendMode::Factor::Zero."
-                    << sf::priv::errEndl;
+    sf::priv::err() << "Invalid value for sf::BlendMode::Factor! Fallback to sf::BlendMode::Factor::Zero.";
     SFML_ASSERT(false);
     return GL_ZERO;
 }
@@ -147,7 +146,7 @@ std::uint32_t equationToGlConstant(sf::BlendMode::Equation blendEquation)
     {
         sf::priv::err() << "OpenGL extension EXT_blend_minmax or EXT_blend_subtract unavailable" << '\n'
                         << "Some blending equations will fallback to sf::BlendMode::Equation::Add" << '\n'
-                        << "Ensure that hardware acceleration is enabled if available" << sf::priv::errEndl;
+                        << "Ensure that hardware acceleration is enabled if available";
 
         warned = true;
     }
@@ -171,8 +170,7 @@ std::uint32_t stencilOperationToGlConstant(sf::StencilUpdateOperation operation)
     }
     // clang-format on
 
-    sf::priv::err() << "Invalid value for sf::StencilUpdateOperation! Fallback to sf::StencilMode::Keep."
-                    << sf::priv::errEndl;
+    sf::priv::err() << "Invalid value for sf::StencilUpdateOperation! Fallback to sf::StencilMode::Keep.";
     SFML_ASSERT(false);
     return GL_KEEP;
 }
@@ -195,7 +193,7 @@ std::uint32_t stencilFunctionToGlConstant(sf::StencilComparison comparison)
     }
     // clang-format on
 
-    sf::priv::err() << "Invalid value for sf::StencilComparison! Fallback to sf::StencilMode::Always." << sf::priv::errEndl;
+    sf::priv::err() << "Invalid value for sf::StencilComparison! Fallback to sf::StencilMode::Always.";
     SFML_ASSERT(false);
     return GL_ALWAYS;
 }
@@ -502,7 +500,7 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, std::size_t firstVerte
     // VertexBuffer not supported?
     if (!VertexBuffer::isAvailable(*m_impl->graphicsContext))
     {
-        priv::err() << "sf::VertexBuffer is not available, drawing skipped" << priv::errEndl;
+        priv::err() << "sf::VertexBuffer is not available, drawing skipped";
         return;
     }
 
@@ -605,7 +603,7 @@ void RenderTarget::pushGLStates()
         if (error != GL_NO_ERROR)
         {
             priv::err() << "OpenGL error (" << error << ") detected in user code, "
-                        << "you should check for errors with glGetError()" << priv::errEndl;
+                        << "you should check for errors with glGetError()";
         }
 #endif
 
@@ -656,7 +654,7 @@ void RenderTarget::resetGLStates()
 #if defined(SFML_SYSTEM_MACOS)
     if (!setActive(false))
     {
-        priv::err() << "Failed to set render target inactive" << priv::errEndl;
+        priv::err() << "Failed to set render target inactive";
     }
 #endif
 
@@ -822,12 +820,12 @@ void RenderTarget::applyBlendMode(const BlendMode& mode)
         if (!warned)
         {
 #ifdef SFML_OPENGL_ES
-            priv::err() << "OpenGL ES extension OES_blend_subtract unavailable" << priv::errEndl;
+            priv::err() << "OpenGL ES extension OES_blend_subtract unavailable";
 #else
-            priv::err() << "OpenGL extension EXT_blend_minmax and EXT_blend_subtract unavailable" << priv::errEndl;
+            priv::err() << "OpenGL extension EXT_blend_minmax and EXT_blend_subtract unavailable";
 #endif
             priv::err() << "Selecting a blend equation not possible" << '\n'
-                        << "Ensure that hardware acceleration is enabled if available" << priv::errEndl;
+                        << "Ensure that hardware acceleration is enabled if available";
 
             warned = true;
         }

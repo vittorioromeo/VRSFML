@@ -93,7 +93,7 @@ void maLogCallback(void*, ma_uint32 level, const char* message)
 
         // Warn if no devices were found using the default backend list
         if (backendList == nullptr)
-            sf::priv::err() << "No audio playback devices available on the system" << sf::priv::errEndl;
+            sf::priv::err() << "No audio playback devices available on the system";
 
         // Clean up the context if we didn't find any devices (TODO: why?)
         ma_context_uninit(&maContext);
@@ -149,8 +149,7 @@ std::vector<THandle> getAvailableDeviceHandles(sf::priv::PassKey<sf::AudioContex
     if (const ma_result result = fMAContextGetDevices(&maContext, &maDeviceInfosPtr, &maDeviceInfoCount);
         result != MA_SUCCESS)
     {
-        sf::priv::err() << "Failed to get audio " << type << " devices: " << ma_result_description(result)
-                        << sf::priv::errEndl;
+        sf::priv::err() << "Failed to get audio " << type << " devices: " << ma_result_description(result);
 
         return deviceHandles; // Empty device handle vector
     }

@@ -322,7 +322,7 @@ Ftp::Response Ftp::download(const Path& remoteFile, const Path& localPath, Trans
     // If the download was unsuccessful, delete the partial file
     if (!response.isOk())
         if (!filepath.remove())
-            priv::err() << "Failed to delete '" << filepath << '\'' << priv::errEndl;
+            priv::err() << "Failed to delete '" << filepath << '\'';
 
     return response;
 }
@@ -603,7 +603,7 @@ void Ftp::DataChannel::receive(std::ostream& stream)
 
         if (!stream.good())
         {
-            priv::err() << "FTP Error: Writing to the file has failed" << priv::errEndl;
+            priv::err() << "FTP Error: Writing to the file has failed";
             break;
         }
     }
@@ -627,7 +627,7 @@ void Ftp::DataChannel::send(std::istream& stream)
 
         if (!stream.good() && !stream.eof())
         {
-            priv::err() << "FTP Error: Reading from the file has failed" << priv::errEndl;
+            priv::err() << "FTP Error: Reading from the file has failed";
             break;
         }
 

@@ -92,7 +92,7 @@ void ensureInit()
                        {
                            // At this point, the failure is unrecoverable
                            // Dump a message to the console and let the application terminate
-                           sf::priv::err() << "Failed to load EGL entry points" << sf::priv::errEndl;
+                           sf::priv::err() << "Failed to load EGL entry points";
 
                            SFML_ASSERT(false);
 
@@ -178,8 +178,7 @@ EglContext::EglContext(EglContext* /*shared*/, const ContextSettings& /*settings
 
     sf::priv::err() << "Warning: context has not been initialized. The constructor EglContext(shared, settings, size) "
                        "is "
-                       "currently not implemented."
-                    << sf::priv::errEndl;
+                       "currently not implemented.";
 }
 
 
@@ -424,7 +423,7 @@ XVisualInfo EglContext::selectBestVisual(::Display* xDisplay, unsigned int bitsP
     if (nativeVisualId == 0)
     {
         // Should never happen...
-        priv::err() << "No EGL visual found. You should check your graphics driver" << priv::errEndl;
+        priv::err() << "No EGL visual found. You should check your graphics driver";
 
         return {};
     }
@@ -439,7 +438,7 @@ XVisualInfo EglContext::selectBestVisual(::Display* xDisplay, unsigned int bitsP
     if (visualCount == 0)
     {
         // Can't happen...
-        priv::err() << "No X11 visual found. Bug in your EGL implementation ?" << priv::errEndl;
+        priv::err() << "No X11 visual found. Bug in your EGL implementation ?";
 
         return {};
     }

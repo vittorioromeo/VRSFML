@@ -131,7 +131,7 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
 
     if (!glGetIntegervFunc || !glGetErrorFunc || !glGetStringFunc || !glEnableFunc || !glIsEnabledFunc)
     {
-        err() << "Could not load necessary function to initialize OpenGL context" << errEndl;
+        err() << "Could not load necessary function to initialize OpenGL context";
         return false;
     }
 
@@ -182,12 +182,12 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
                 !parseVersionString(version, "OpenGL ES ", m_settings.majorVersion, m_settings.minorVersion) &&
                 !parseVersionString(version, "", m_settings.majorVersion, m_settings.minorVersion))
             {
-                err() << "Unable to parse OpenGL version string: \"" << version << '"' << ", defaulting to 1.1" << errEndl;
+                err() << "Unable to parse OpenGL version string: \"" << version << '"' << ", defaulting to 1.1";
             }
         }
         else
         {
-            err() << "Unable to retrieve OpenGL version string, defaulting to 1.1" << errEndl;
+            err() << "Unable to retrieve OpenGL version string, defaulting to 1.1";
         }
     }
 
@@ -271,7 +271,7 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
         // Check to see if the enable was successful
         if (glIsEnabledFunc(GL_FRAMEBUFFER_SRGB) == GL_FALSE)
         {
-            err() << "Warning: Failed to enable GL_FRAMEBUFFER_SRGB" << errEndl;
+            err() << "Warning: Failed to enable GL_FRAMEBUFFER_SRGB";
             m_settings.sRgbCapable = false;
         }
     }
@@ -310,7 +310,7 @@ void GlContext::checkSettings(const ContextSettings& requestedSettings) const
               << ((m_settings.attributeFlags & ContextSettings::Attribute::Core) != ContextSettings::Attribute{0u})
               << " ; debug = "
               << ((m_settings.attributeFlags & ContextSettings::Attribute::Debug) != ContextSettings::Attribute{0u})
-              << " ; sRGB = " << m_settings.sRgbCapable << std::noboolalpha << errEndl;
+              << " ; sRGB = " << m_settings.sRgbCapable << std::noboolalpha;
     }
 }
 

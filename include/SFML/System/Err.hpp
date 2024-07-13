@@ -37,13 +37,6 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-struct ErrEndlType
-{
-};
-
-inline constexpr ErrEndlType errEndl;
-
-////////////////////////////////////////////////////////////
 struct ErrFlushType
 {
 };
@@ -53,11 +46,13 @@ inline constexpr ErrFlushType errFlush;
 ////////////////////////////////////////////////////////////
 class SFML_SYSTEM_API ErrStream
 {
+    friend ErrStream& err(bool multiLine);
+
 private:
     class SFML_SYSTEM_API Guard
     {
     public:
-        explicit Guard(std::ostream& stream, void* mutexPtr);
+        explicit Guard(std::ostream& stream, void* mutexPtr, bool multiLine);
         ~Guard();
 
         Guard(const Guard&)            = delete;
@@ -70,7 +65,6 @@ private:
         Guard& operator<<(std::ostream& (*func)(std::ostream&));
 
         Guard& operator<<(const char* value);
-        Guard& operator<<(ErrEndlType);
         Guard& operator<<(ErrFlushType);
 
         template <typename T>
@@ -79,6 +73,7 @@ private:
     private:
         std::ostream& m_stream;
         void*         m_mutexPtr;
+        bool          m_multiLine;
     };
 
     struct Impl;
@@ -93,7 +88,6 @@ public:
     void            rdbuf(std::streambuf* sbuf);
 
     Guard operator<<(const char* value);
-    Guard operator<<(ErrEndlType);
     Guard operator<<(ErrFlushType);
 
     template <typename T>
@@ -104,7 +98,7 @@ public:
 /// \brief Standard stream used by SFML to output warnings and errors
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_SYSTEM_API ErrStream& err();
+[[nodiscard]] SFML_SYSTEM_API ErrStream& err(bool multiLine = false);
 
 } // namespace sf::priv
 

@@ -123,7 +123,7 @@ m_context(nil)
     ensureInit();
 
     // This constructor should never be used by implementation
-    priv::err() << "Calling bad EaglContext constructor, please contact your developer :)" priv::errEndl;
+    priv::err() << "Calling bad EaglContext constructor, please contact your developer :)";
 }
 
 

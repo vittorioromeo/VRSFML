@@ -169,7 +169,7 @@ GlxContext::~GlxContext()
 
 #if defined(GLX_DEBUGGING)
         if (glxErrorOccurred)
-            priv::err() << "GLX error in GlxContext::~GlxContext()" << priv::errEndl;
+            priv::err() << "GLX error in GlxContext::~GlxContext()";
 #endif
     }
 
@@ -224,7 +224,7 @@ bool GlxContext::makeCurrent(bool current)
 
 #if defined(GLX_DEBUGGING)
     if (glxErrorOccurred)
-        priv::err() << "GLX error in GlxContext::makeCurrent()" << priv::errEndl;
+        priv::err() << "GLX error in GlxContext::makeCurrent()";
 #endif
 
     return result;
@@ -245,7 +245,7 @@ void GlxContext::display()
 
 #if defined(GLX_DEBUGGING)
     if (glxErrorOccurred)
-        priv::err() << "GLX error in GlxContext::display()" << priv::errEndl;
+        priv::err() << "GLX error in GlxContext::display()";
 #endif
 }
 
@@ -277,14 +277,14 @@ void GlxContext::setVerticalSyncEnabled(bool enabled)
 
         if (!warned)
         {
-            priv::err() << "Setting vertical sync not supported" << priv::errEndl;
+            priv::err() << "Setting vertical sync not supported";
 
             warned = true;
         }
     }
 
     if (result != 0)
-        priv::err() << "Setting vertical sync failed" << priv::errEndl;
+        priv::err() << "Setting vertical sync failed";
 }
 
 
@@ -381,7 +381,7 @@ XVisualInfo GlxContext::selectBestVisual(::Display* display, unsigned int bitsPe
     }
 
     // Should never happen...
-    priv::err() << "No GLX visual found. You should check your graphics driver" << priv::errEndl;
+    priv::err() << "No GLX visual found. You should check your graphics driver";
     return {};
 }
 
@@ -432,7 +432,7 @@ void GlxContext::updateSettingsFromWindow()
     XWindowAttributes windowAttributes;
     if (XGetWindowAttributes(m_display.get(), m_window, &windowAttributes) == 0)
     {
-        priv::err() << "Failed to get the window attributes" << priv::errEndl;
+        priv::err() << "Failed to get the window attributes";
         return;
     }
 
@@ -577,7 +577,7 @@ void GlxContext::createContext(GlxContext* shared)
         XWindowAttributes windowAttributes;
         if (XGetWindowAttributes(m_display.get(), m_window, &windowAttributes) == 0)
         {
-            priv::err() << "Failed to get the window attributes" << priv::errEndl;
+            priv::err() << "Failed to get the window attributes";
             return;
         }
 
@@ -591,7 +591,7 @@ void GlxContext::createContext(GlxContext* shared)
 
     if (!visualInfo)
     {
-        priv::err() << "Failed to get visual info" << priv::errEndl;
+        priv::err() << "Failed to get visual info";
         return;
     }
 
@@ -603,7 +603,7 @@ void GlxContext::createContext(GlxContext* shared)
     int minor = 0;
 
     if (!glXQueryVersion(m_display.get(), &major, &minor))
-        priv::err() << "Failed to query GLX version, limited to legacy context creation" << priv::errEndl;
+        priv::err() << "Failed to query GLX version, limited to legacy context creation";
 
     // Check if glXCreateContextAttribsARB is available (requires GLX 1.3 or greater)
     const bool hasCreateContextArb = SF_GLAD_GLX_ARB_create_context && ((major > 1) || (minor >= 3));
@@ -636,7 +636,7 @@ void GlxContext::createContext(GlxContext* shared)
         }
 
         if (!config)
-            priv::err() << "Failed to get GLXFBConfig which corresponds to the window's visual" << priv::errEndl;
+            priv::err() << "Failed to get GLXFBConfig which corresponds to the window's visual";
 
         while (config && !m_context && m_settings.majorVersion)
         {
@@ -671,7 +671,7 @@ void GlxContext::createContext(GlxContext* shared)
                 if (!!(m_settings.attributeFlags & ContextSettings::Attribute::Core) ||
                     !!(m_settings.attributeFlags & ContextSettings::Attribute::Debug))
                     priv::err() << "Selecting a profile during context creation is not supported,"
-                                << "disabling compatibility and debug" << priv::errEndl;
+                                << "disabling compatibility and debug";
 
                 m_settings.attributeFlags = ContextSettings::Attribute::Default;
             }
@@ -688,7 +688,7 @@ void GlxContext::createContext(GlxContext* shared)
             {
                 if (!glXMakeCurrent(m_display.get(), None, nullptr))
                 {
-                    priv::err() << "Failed to deactivate shared context before sharing" << priv::errEndl;
+                    priv::err() << "Failed to deactivate shared context before sharing";
                     return;
                 }
             }
@@ -740,7 +740,7 @@ void GlxContext::createContext(GlxContext* shared)
         {
             if (!glXMakeCurrent(m_display.get(), None, nullptr))
             {
-                priv::err() << "Failed to deactivate shared context before sharing" << priv::errEndl;
+                priv::err() << "Failed to deactivate shared context before sharing";
                 return;
             }
         }
@@ -750,12 +750,12 @@ void GlxContext::createContext(GlxContext* shared)
 
 #if defined(GLX_DEBUGGING)
         if (glxErrorOccurred)
-            priv::err() << "GLX error in GlxContext::createContext()" << priv::errEndl;
+            priv::err() << "GLX error in GlxContext::createContext()";
 #endif
     }
 
     if (!m_context)
-        priv::err() << "Failed to create an OpenGL context for this window" << priv::errEndl;
+        priv::err() << "Failed to create an OpenGL context for this window";
 }
 
 } // namespace sf::priv
