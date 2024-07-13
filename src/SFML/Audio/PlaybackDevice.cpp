@@ -134,7 +134,7 @@ PlaybackDevice::PlaybackDevice(AudioContext& audioContext, const PlaybackDeviceH
 m_impl(priv::makeUnique<Impl>(audioContext, playbackDeviceHandle))
 {
     if (!m_impl->initialize())
-        priv::err() << "Failed to initialize the playback device" << priv::errEndl;
+        priv::err() << "Failed to initialize the playback device";
 
     SFML_UPDATE_LIFETIME_DEPENDANT(AudioContext, PlaybackDevice, this, m_impl->audioContext);
 }

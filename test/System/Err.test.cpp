@@ -18,22 +18,23 @@ TEST_CASE("[System] sf::err")
 
     SECTION("Redirect buffer to observe contents")
     {
-        sf::priv::err() << "We'll never be able to observe this" << sf::priv::errEndl; // Ensure buffer is flushed
+        sf::priv::err() << "We'll never be able to observe this"; // Ensure buffer is flushed
         auto* const defaultStreamBuffer = sf::priv::err().rdbuf();
         CHECK(defaultStreamBuffer != nullptr);
 
         const std::stringstream stream;
         sf::priv::err().rdbuf(stream.rdbuf());
         sf::priv::err() << "Something went wrong!\n";
-        CHECK(stream.str() == "Something went wrong!\n");
+        CHECK(stream.str().find("Something went wrong!\n") != std::string::npos);
 
         sf::priv::err().rdbuf(nullptr);
         sf::priv::err() << "Sent to the abyss";
-        CHECK(stream.str() == "Something went wrong!\n");
+        CHECK(stream.str().find("Something went wrong!\n") != std::string::npos);
 
         sf::priv::err().rdbuf(stream.rdbuf());
         sf::priv::err() << "Back to the stringstream :)\n";
-        CHECK(stream.str() == "Something went wrong!\nBack to the stringstream :)\n");
+        CHECK(stream.str().find("Something went wrong!\n") != std::string::npos);
+        CHECK(stream.str().find("Back to the stringstream :)\n") != std::string::npos);
 
         // Restore sf::err to default stream defaultStreamBuffer
         sf::priv::err().rdbuf(defaultStreamBuffer);

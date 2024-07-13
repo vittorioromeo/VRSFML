@@ -60,14 +60,14 @@ bool SoundRecorder::start(CaptureDevice& captureDevice, unsigned int sampleRate)
     // Ensure we have a capture device
     if (!captureDevice.isDeviceInitialized())
     {
-        priv::err() << "Trying to start sound recorder, but no device available" << priv::errEndl;
+        priv::err() << "Trying to start sound recorder, but no device available";
         return false;
     }
 
     // Check that another capture is not already running
     if (captureDevice.isDeviceStarted())
     {
-        priv::err() << "Trying to start sound recorder, but another capture is already running" << priv::errEndl;
+        priv::err() << "Trying to start sound recorder, but another capture is already running";
         return false;
     }
 
@@ -78,7 +78,7 @@ bool SoundRecorder::start(CaptureDevice& captureDevice, unsigned int sampleRate)
     // Start the capture
     if (!captureDevice.startDevice())
     {
-        priv::err() << "Failed to start sound recorder" << priv::errEndl;
+        priv::err() << "Failed to start sound recorder";
         return false;
     }
 
@@ -111,7 +111,7 @@ bool SoundRecorder::stop()
 
     if (!savedCaptureDevice->stopDevice())
     {
-        priv::err() << "Failed to stop sound recorder" << priv::errEndl;
+        priv::err() << "Failed to stop sound recorder";
         return false;
     }
 

@@ -68,7 +68,7 @@ void skip(void* user, int size)
 {
     auto& stream = *static_cast<sf::InputStream*>(user);
     if (!stream.seek(stream.tell().value() + static_cast<std::size_t>(size)).hasValue())
-        sf::priv::err() << "Failed to seek image loader input stream" << sf::priv::errEndl;
+        sf::priv::err() << "Failed to seek image loader input stream";
 }
 
 int eof(void* user)
@@ -188,7 +188,7 @@ sf::Optional<Image> Image::loadFromFile(const Path& filename)
 
     // Error, failed to load the image
     priv::err() << "Failed to load image\n"
-                << priv::formatDebugPathInfo(filename) << "\nReason: " << stbi_failure_reason() << priv::errEndl;
+                << priv::formatDebugPathInfo(filename) << "\nReason: " << stbi_failure_reason();
 
     return sf::nullOpt;
 }
@@ -200,7 +200,7 @@ sf::Optional<Image> Image::loadFromMemory(const void* data, std::size_t size)
     // Check input parameters
     if (!data || size == 0)
     {
-        priv::err() << "Failed to load image from memory, no data provided" << priv::errEndl;
+        priv::err() << "Failed to load image from memory, no data provided";
         return sf::nullOpt;
     }
 
@@ -214,7 +214,7 @@ sf::Optional<Image> Image::loadFromMemory(const void* data, std::size_t size)
 
     if (ptr == nullptr)
     {
-        priv::err() << "Failed to load image from memory. Reason: " << stbi_failure_reason() << priv::errEndl;
+        priv::err() << "Failed to load image from memory. Reason: " << stbi_failure_reason();
         return sf::nullOpt;
     }
 
@@ -233,7 +233,7 @@ sf::Optional<Image> Image::loadFromStream(InputStream& stream)
     // Make sure that the stream's reading position is at the beginning
     if (!stream.seek(0).hasValue())
     {
-        priv::err() << "Failed to seek image stream" << priv::errEndl;
+        priv::err() << "Failed to seek image stream";
         return sf::nullOpt;
     }
 
@@ -252,7 +252,7 @@ sf::Optional<Image> Image::loadFromStream(InputStream& stream)
 
     if (ptr == nullptr)
     {
-        priv::err() << "Failed to load image from stream. Reason: " << stbi_failure_reason() << priv::errEndl;
+        priv::err() << "Failed to load image from stream. Reason: " << stbi_failure_reason();
         return sf::nullOpt;
     }
 
@@ -305,7 +305,7 @@ bool Image::saveToFile(const Path& filename) const
         priv::err() << "Image file extension " << extension << " not supported\n";
     }
 
-    priv::err() << "Failed to save image\n" << priv::formatDebugPathInfo(filename) << priv::errEndl;
+    priv::err() << "Failed to save image\n" << priv::formatDebugPathInfo(filename);
     return false;
 }
 

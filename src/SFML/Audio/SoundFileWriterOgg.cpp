@@ -84,7 +84,7 @@ bool SoundFileWriterOgg::open(const Path&                      filename,
     switch (channelCount)
     {
         case 0:
-            priv::err() << "No channels to write to Vorbis file" << priv::errEndl;
+            priv::err() << "No channels to write to Vorbis file";
             return false;
         case 1:
             targetChannelMap = {SoundChannel::Mono};
@@ -133,14 +133,14 @@ bool SoundFileWriterOgg::open(const Path&                      filename,
                                 SoundChannel::LowFrequencyEffects};
             break;
         default:
-            priv::err() << "Vorbis files with more than 8 channels not supported" << priv::errEndl;
+            priv::err() << "Vorbis files with more than 8 channels not supported";
             return false;
     }
 
     // Check if the channel map contains channels that we cannot remap to a mapping supported by FLAC
     if (!std::is_permutation(channelMap.begin(), channelMap.end(), targetChannelMap.begin()))
     {
-        priv::err() << "Provided channel map cannot be reordered to a channel map supported by Vorbis" << priv::errEndl;
+        priv::err() << "Provided channel map cannot be reordered to a channel map supported by Vorbis";
         return false;
     }
 
@@ -162,8 +162,7 @@ bool SoundFileWriterOgg::open(const Path&                      filename,
     int status = vorbis_encode_init_vbr(&m_impl->vorbis, static_cast<long>(channelCount), static_cast<long>(sampleRate), 0.4f);
     if (status < 0)
     {
-        priv::err() << "Failed to write ogg/vorbis file (unsupported bitrate)\n"
-                    << priv::formatDebugPathInfo(filename) << priv::errEndl;
+        priv::err() << "Failed to write ogg/vorbis file (unsupported bitrate)\n" << priv::formatDebugPathInfo(filename);
         close();
         return false;
     }
@@ -173,8 +172,7 @@ bool SoundFileWriterOgg::open(const Path&                      filename,
     m_impl->file.open(filename.to<std::string>(), std::ios::binary);
     if (!m_impl->file)
     {
-        priv::err() << "Failed to write ogg/vorbis file (cannot open file)\n"
-                    << priv::formatDebugPathInfo(filename) << priv::errEndl;
+        priv::err() << "Failed to write ogg/vorbis file (cannot open file)\n" << priv::formatDebugPathInfo(filename);
         close();
         return false;
     }
@@ -192,7 +190,7 @@ bool SoundFileWriterOgg::open(const Path&                      filename,
     if (status < 0)
     {
         priv::err() << "Failed to write ogg/vorbis file (cannot generate the headers)\n"
-                    << priv::formatDebugPathInfo(filename) << priv::errEndl;
+                    << priv::formatDebugPathInfo(filename);
         close();
         return false;
     }

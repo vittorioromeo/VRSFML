@@ -116,7 +116,7 @@ sf::Optional<SoundFileReader::Info> SoundFileReaderOgg::open(InputStream& stream
     const int status = ov_open_callbacks(&stream, &m_impl->vorbis, nullptr, 0, callbacks);
     if (status < 0)
     {
-        priv::err() << "Failed to open Vorbis file for reading" << priv::errEndl;
+        priv::err() << "Failed to open Vorbis file for reading";
         return result; // Empty optional
     }
 
@@ -132,7 +132,7 @@ sf::Optional<SoundFileReader::Info> SoundFileReaderOgg::open(InputStream& stream
     switch (info.channelCount)
     {
         case 0:
-            priv::err() << "No channels in Vorbis file" << priv::errEndl;
+            priv::err() << "No channels in Vorbis file";
             break;
         case 1:
             info.channelMap = {SoundChannel::Mono};
@@ -181,7 +181,7 @@ sf::Optional<SoundFileReader::Info> SoundFileReaderOgg::open(InputStream& stream
                                SoundChannel::LowFrequencyEffects};
             break;
         default:
-            priv::err() << "Vorbis files with more than 8 channels not supported" << priv::errEndl;
+            priv::err() << "Vorbis files with more than 8 channels not supported";
             SFML_ASSERT(false);
             break;
     }

@@ -59,7 +59,7 @@ struct Sound::Impl
         SFML_ASSERT(soundBase.hasValue());
 
         if (!soundBase->initialize(&onEnd))
-            priv::err() << "Failed to initialize Sound::Impl" << priv::errEndl;
+            priv::err() << "Failed to initialize Sound::Impl";
 
         // Because we are providing a custom data source, we have to provide the channel map ourselves
         if (buffer == nullptr || buffer->getChannelMap().empty())

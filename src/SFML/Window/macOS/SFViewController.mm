@@ -50,7 +50,7 @@
 
         if (m_view == nil)
         {
-            sf::priv::err() << "No view was given to initWithWindow:." << sf::priv::errEndl;
+            sf::priv::err() << "No view was given to initWithWindow:." ;
             return self;
         }
 
@@ -63,7 +63,7 @@
         if (m_oglView == nil)
         {
             sf::priv::err() << "Could not create an instance of NSOpenGLView "
-                            << "in (SFViewController -initWithView:)." << sf::priv::errEndl;
+                            << "in (SFViewController -initWithView:)." ;
 
             return self;
         }
@@ -150,7 +150,7 @@
     (void)position;
     sf::priv::err() << "Cannot move SFML area when SFML is integrated in a NSView. Use the view handler directly "
                        "instead."
-                    << sf::priv::errEndl;
+                    ;
 }
 
 
@@ -187,7 +187,7 @@
 - (void)changeTitle:(NSString*)title
 {
     (void)title;
-    sf::priv::err() << "Cannot change the title of the SFML area when SFML is integrated in a NSView." << sf::priv::errEndl;
+    sf::priv::err() << "Cannot change the title of the SFML area when SFML is integrated in a NSView." ;
 }
 
 
@@ -251,7 +251,7 @@
 {
     (void)size;
     (void)pixels;
-    sf::priv::err() << "Cannot set an icon when SFML is integrated in a NSView." << sf::priv::errEndl;
+    sf::priv::err() << "Cannot set an icon when SFML is integrated in a NSView." ;
 }
 
 
@@ -265,7 +265,7 @@
          * See https://lists.apple.com/archives/cocoa-dev/2011/Feb/msg00460.html
          * for more information.
          */
-        sf::priv::err() << "Cannot fetch event from a worker thread. (OS X restriction)" << sf::priv::errEndl;
+        sf::priv::err() << "Cannot fetch event from a worker thread. (OS X restriction)" ;
 
         return;
     }

@@ -62,7 +62,7 @@ sf::Optional<RenderTexture> RenderTexture::create(GraphicsContext&       graphic
     auto texture = sf::Texture::create(graphicsContext, size, settings.sRgbCapable);
     if (!texture.hasValue())
     {
-        priv::err() << "Impossible to create render texture (failed to create the target texture)" << priv::errEndl;
+        priv::err() << "Impossible to create render texture (failed to create the target texture)";
         return result; // Empty optional
     }
 

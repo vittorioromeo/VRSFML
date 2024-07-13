@@ -45,7 +45,7 @@ std::vector<VideoMode> VideoModeImpl::getFullscreenModes()
 
     if (cgmodes == nullptr)
     {
-        sf::priv::err() << "Couldn't get VideoMode for main display." << sf::priv::errEndl;
+        sf::priv::err() << "Couldn't get VideoMode for main display.";
         return modes;
     }
 

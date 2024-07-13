@@ -109,21 +109,19 @@ std::vector<VideoMode> VideoModeImpl::getFullscreenModes()
             {
                 // Failed to get the screen configuration
                 priv::err() << "Failed to retrieve the screen configuration while trying to get the supported video "
-                               "modes"
-                            << priv::errEndl;
+                               "modes";
             }
         }
         else
         {
             // XRandr extension is not supported: we cannot get the video modes
-            priv::err() << "Failed to use the XRandR extension while trying to get the supported video modes"
-                        << priv::errEndl;
+            priv::err() << "Failed to use the XRandR extension while trying to get the supported video modes";
         }
     }
     else
     {
         // We couldn't connect to the X server
-        priv::err() << "Failed to connect to the X server while trying to get the supported video modes" << priv::errEndl;
+        priv::err() << "Failed to connect to the X server while trying to get the supported video modes";
     }
 
     return modes;
@@ -173,20 +171,20 @@ VideoMode VideoModeImpl::getDesktopMode()
             else
             {
                 // Failed to get the screen configuration
-                priv::err() << "Failed to retrieve the screen configuration while trying to get the desktop video modes"
-                            << priv::errEndl;
+                priv::err() << "Failed to retrieve the screen configuration while trying to get the desktop video "
+                               "modes";
             }
         }
         else
         {
             // XRandr extension is not supported: we cannot get the video modes
-            priv::err() << "Failed to use the XRandR extension while trying to get the desktop video modes" << priv::errEndl;
+            priv::err() << "Failed to use the XRandR extension while trying to get the desktop video modes";
         }
     }
     else
     {
         // We couldn't connect to the X server
-        priv::err() << "Failed to connect to the X server while trying to get the desktop video modes" << priv::errEndl;
+        priv::err() << "Failed to connect to the X server while trying to get the desktop video modes";
     }
 
     return desktopMode;

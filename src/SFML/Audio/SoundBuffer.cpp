@@ -72,7 +72,7 @@ SoundBuffer::SoundBuffer(const SoundBuffer& copy)
 
     // Update the internal buffer with the new samples
     if (!update(copy.getChannelCount(), copy.getSampleRate(), copy.getChannelMap()))
-        priv::err() << "Failed to update copy-constructed sound buffer" << priv::errEndl;
+        priv::err() << "Failed to update copy-constructed sound buffer";
 }
 
 
@@ -97,7 +97,7 @@ sf::Optional<SoundBuffer> SoundBuffer::loadFromFile(const Path& filename)
     if (auto file = InputSoundFile::openFromFile(filename))
         return initialize(*file);
 
-    priv::err() << "Failed to open sound buffer from file" << priv::errEndl;
+    priv::err() << "Failed to open sound buffer from file";
     return sf::nullOpt;
 }
 
@@ -108,7 +108,7 @@ sf::Optional<SoundBuffer> SoundBuffer::loadFromMemory(const void* data, std::siz
     if (auto file = InputSoundFile::openFromMemory(data, sizeInBytes))
         return initialize(*file);
 
-    priv::err() << "Failed to open sound buffer from memory" << priv::errEndl;
+    priv::err() << "Failed to open sound buffer from memory";
     return sf::nullOpt;
 }
 
@@ -119,7 +119,7 @@ sf::Optional<SoundBuffer> SoundBuffer::loadFromStream(InputStream& stream)
     if (auto file = InputSoundFile::openFromStream(stream))
         return initialize(*file);
 
-    priv::err() << "Failed to open sound buffer from stream" << priv::errEndl;
+    priv::err() << "Failed to open sound buffer from stream";
     return sf::nullOpt;
 }
 
@@ -139,7 +139,7 @@ sf::Optional<SoundBuffer> SoundBuffer::loadFromSamplesImpl(
                     << "array: " << samples.data() << ", "
                     << "count: " << samples.size() << ", "
                     << "channels: " << channelCount << ", "
-                    << "samplerate: " << sampleRate << ")" << priv::errEndl;
+                    << "samplerate: " << sampleRate << ")";
 
         return soundBuffer; // Empty optional
     }

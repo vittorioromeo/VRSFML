@@ -106,12 +106,12 @@ m_usage(rhs.m_usage)
     {
         if (!create(rhs.m_size))
         {
-            priv::err() << "Could not create vertex buffer for copying" << priv::errEndl;
+            priv::err() << "Could not create vertex buffer for copying";
             return;
         }
 
         if (!update(rhs))
-            priv::err() << "Could not copy vertex buffer" << priv::errEndl;
+            priv::err() << "Could not copy vertex buffer";
     }
 }
 
@@ -141,7 +141,7 @@ bool VertexBuffer::create(std::size_t vertexCount)
 
     if (!m_buffer)
     {
-        priv::err() << "Could not create vertex buffer, generation failed" << priv::errEndl;
+        priv::err() << "Could not create vertex buffer, generation failed";
         return false;
     }
 

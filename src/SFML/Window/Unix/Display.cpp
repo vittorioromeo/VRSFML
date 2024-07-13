@@ -67,8 +67,7 @@ std::shared_ptr<Display> openDisplay()
         // and cause an abnormal program termination
         if (!sharedDisplay)
         {
-            priv::err() << "Failed to open X11 display; make sure the DISPLAY environment variable is set correctly"
-                        << priv::errEndl;
+            priv::err() << "Failed to open X11 display; make sure the DISPLAY environment variable is set correctly";
             std::abort();
         }
     }

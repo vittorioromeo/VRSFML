@@ -67,7 +67,7 @@ sf::Optional<OutputSoundFile> OutputSoundFile::openFromFile(
     // Pass the stream to the reader
     if (!writer->open(filename, sampleRate, channelCount, channelMap))
     {
-        priv::err() << "Failed to open output sound file from file (writer open failure)" << priv::errEndl;
+        priv::err() << "Failed to open output sound file from file (writer open failure)";
         return sf::nullOpt;
     }
 

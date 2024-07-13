@@ -36,7 +36,7 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 String ClipboardImpl::getString()
 {
-    priv::err() << "Clipboard API not implemented for Android." << priv::errEndl;
+    priv::err() << "Clipboard API not implemented for Android.";
     return {};
 }
 
@@ -44,7 +44,7 @@ String ClipboardImpl::getString()
 ////////////////////////////////////////////////////////////
 void ClipboardImpl::setString(const String& /* text */)
 {
-    priv::err() << "Clipboard API not implemented for Android." << priv::errEndl;
+    priv::err() << "Clipboard API not implemented for Android.";
 }
 
 } // namespace sf::priv

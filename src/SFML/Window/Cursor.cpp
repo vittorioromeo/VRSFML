@@ -64,7 +64,7 @@ sf::Optional<Cursor> Cursor::loadFromPixels(const std::uint8_t* pixels, Vector2u
     cursor.emplace(priv::PassKey<Cursor>{});
     if (!cursor->m_impl->loadFromPixels(pixels, size, hotspot))
     {
-        priv::err() << "Failed to load cursor from pixels (invalid arguments)" << priv::errEndl;
+        priv::err() << "Failed to load cursor from pixels (invalid arguments)";
         return cursor; // Empty optional
     }
 

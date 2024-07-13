@@ -387,7 +387,7 @@ std::uint64_t MiniaudioUtils::getFrameIndex(ma_sound& sound, Time timeOffset)
 ////////////////////////////////////////////////////////////
 bool MiniaudioUtils::fail(const char* what, int maResult)
 {
-    err() << "Failed to " << what << ": " << ma_result_description(static_cast<ma_result>(maResult)) << errEndl;
+    err() << "Failed to " << what << ": " << ma_result_description(static_cast<ma_result>(maResult));
     return false;
 }
 

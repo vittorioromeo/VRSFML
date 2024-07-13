@@ -93,7 +93,7 @@ sf::Optional<InputSoundFile> InputSoundFile::openFromFile(const Path& filename)
     if (!fileInputStream)
     {
         priv::err() << "Failed to open input sound file from file (couldn't open file input stream)\n"
-                    << priv::formatDebugPathInfo(filename) << priv::errEndl;
+                    << priv::formatDebugPathInfo(filename);
 
         return sf::nullOpt;
     }
@@ -106,7 +106,7 @@ sf::Optional<InputSoundFile> InputSoundFile::openFromFile(const Path& filename)
     if (!info)
     {
         priv::err() << "Failed to open input sound file from file (reader open failure)\n"
-                    << priv::formatDebugPathInfo(filename) << priv::errEndl;
+                    << priv::formatDebugPathInfo(filename);
 
         return sf::nullOpt;
     }
@@ -138,7 +138,7 @@ sf::Optional<InputSoundFile> InputSoundFile::openFromMemory(const void* data, st
     auto info = reader->open(*memory);
     if (!info)
     {
-        priv::err() << "Failed to open input sound file from memory (reader open failure)" << priv::errEndl;
+        priv::err() << "Failed to open input sound file from memory (reader open failure)";
         return sf::nullOpt;
     }
 
@@ -165,7 +165,7 @@ sf::Optional<InputSoundFile> InputSoundFile::openFromStream(InputStream& stream)
     // Don't forget to reset the stream to its beginning before re-opening it
     if (const sf::Optional seekResult = stream.seek(0); !seekResult.hasValue() || *seekResult != 0)
     {
-        priv::err() << "Failed to open sound file from stream (cannot restart stream)" << priv::errEndl;
+        priv::err() << "Failed to open sound file from stream (cannot restart stream)";
         return sf::nullOpt;
     }
 
@@ -173,7 +173,7 @@ sf::Optional<InputSoundFile> InputSoundFile::openFromStream(InputStream& stream)
     auto info = reader->open(stream);
     if (!info)
     {
-        priv::err() << "Failed to open input sound file from stream (reader open failure)" << priv::errEndl;
+        priv::err() << "Failed to open input sound file from stream (reader open failure)";
         return sf::nullOpt;
     }
 

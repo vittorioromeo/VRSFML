@@ -75,7 +75,7 @@ m_impl(graphicsContext, graphicsContext.createGlContext(settings, *WindowBase::m
 
     // Activate the window
     if (!setActive())
-        priv::err() << "Failed to set window as active during initialization" << priv::errEndl;
+        priv::err() << "Failed to set window as active during initialization";
 }
 
 
@@ -167,7 +167,7 @@ bool Window::setActive(bool active) const
     if (m_impl->graphicsContext->setActiveThreadLocalGlContext(*m_impl->glContext, active))
         return true;
 
-    priv::err() << "Failed to activate the window's context" << priv::errEndl;
+    priv::err() << "Failed to activate the window's context";
     return false;
 }
 

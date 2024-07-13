@@ -139,7 +139,7 @@ CaptureDevice::CaptureDevice(AudioContext& audioContext, const CaptureDeviceHand
 m_impl(priv::makeUnique<Impl>(audioContext, playbackDeviceHandle))
 {
     if (!m_impl->initialize())
-        priv::err() << "Failed to initialize the capture device" << priv::errEndl;
+        priv::err() << "Failed to initialize the capture device";
 
     SFML_UPDATE_LIFETIME_DEPENDANT(AudioContext, CaptureDevice, this, m_impl->audioContext);
 }
@@ -182,7 +182,7 @@ bool CaptureDevice::setSampleRate(unsigned int sampleRate)
         m_impl->deinitialize();
         if (!m_impl->initialize())
         {
-            priv::err() << "Failed to set audio capture device sample rate to " << sampleRate << priv::errEndl;
+            priv::err() << "Failed to set audio capture device sample rate to " << sampleRate;
             return false;
         }
     }
@@ -243,7 +243,7 @@ bool CaptureDevice::setChannelCount(unsigned int channelCount)
     if (channelCount < 1 || channelCount > 2)
     {
         priv::err() << "Unsupported channel count: " << channelCount
-                    << " Currently only mono (1) and stereo (2) recording is supported." << priv::errEndl;
+                    << " Currently only mono (1) and stereo (2) recording is supported.";
 
         return false;
     }
@@ -257,7 +257,7 @@ bool CaptureDevice::setChannelCount(unsigned int channelCount)
     m_impl->deinitialize();
     if (!m_impl->initialize())
     {
-        priv::err() << "Failed to set audio capture device channel count to " << channelCount << priv::errEndl;
+        priv::err() << "Failed to set audio capture device channel count to " << channelCount;
         return false;
     }
 

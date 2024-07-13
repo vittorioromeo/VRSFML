@@ -109,7 +109,7 @@ bool SoundFileWriterWav::open(const Path&                      filename,
 
     if (channelCount == 0)
     {
-        priv::err() << "WAV sound file channel count 0" << priv::errEndl;
+        priv::err() << "WAV sound file channel count 0";
         return false;
     }
 
@@ -177,7 +177,7 @@ bool SoundFileWriterWav::open(const Path&                      filename,
 
             if (std::adjacent_find(sortedChannelMap.begin(), sortedChannelMap.end()) != sortedChannelMap.end())
             {
-                priv::err() << "Duplicate channels in channel map" << priv::errEndl;
+                priv::err() << "Duplicate channels in channel map";
                 return false;
             }
         }
@@ -203,7 +203,7 @@ bool SoundFileWriterWav::open(const Path&                      filename,
                              [channel](const SupportedChannel& c) { return c.channel == channel; }) ==
                 targetChannelMap.end())
             {
-                priv::err() << "Could not map all input channels to a channel supported by WAV" << priv::errEndl;
+                priv::err() << "Could not map all input channels to a channel supported by WAV";
                 return false;
             }
         }
@@ -225,8 +225,7 @@ bool SoundFileWriterWav::open(const Path&                      filename,
     m_impl->file.open(filename.to<std::string>(), std::ios::binary);
     if (!m_impl->file)
     {
-        priv::err() << "Failed to open WAV sound file for writing\n"
-                    << priv::formatDebugPathInfo(filename) << priv::errEndl;
+        priv::err() << "Failed to open WAV sound file for writing\n" << priv::formatDebugPathInfo(filename);
         return false;
     }
 
@@ -244,7 +243,7 @@ void SoundFileWriterWav::write(const std::int16_t* samples, std::uint64_t count)
     SFML_ASSERT(count % m_impl->channelCount == 0);
 
     if (count % m_impl->channelCount != 0)
-        priv::err() << "Writing samples to WAV sound file requires writing full frames at a time" << priv::errEndl;
+        priv::err() << "Writing samples to WAV sound file requires writing full frames at a time";
 
     while (count >= m_impl->channelCount)
     {
