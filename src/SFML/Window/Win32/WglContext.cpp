@@ -39,6 +39,7 @@
 
 #include <mutex>
 #include <vector>
+#include <windef.h>
 
 // We check for this definition in order to avoid multiple definitions of GLAD
 // entities during unity builds of SFML.
@@ -207,19 +208,23 @@ GlFunctionPointer WglContext::getFunction(const char* name) const
 ////////////////////////////////////////////////////////////
 bool WglContext::makeCurrent(bool current)
 {
-    if (!m_surfaceData.deviceContext || !m_context)
-    {
-        err() << "Failed to " << (current ? "activate" : "deactivate")
-              << " WGL context, surface data or context null: " << getErrorString(GetLastError());
+    const char* const currentStr = (current ? "activate" : "deactivate");
 
+    if (!m_surfaceData.deviceContext)
+    {
+        err() << "Failed to " << currentStr << " WGL context: null surface data";
+        return false;
+    }
+
+    if (!m_context)
+    {
+        err() << "Failed to " << currentStr << " WGL context: null context";
         return false;
     }
 
     if (wglMakeCurrent(m_surfaceData.deviceContext, current ? m_context : nullptr) == FALSE)
     {
-        err() << "Failed to " << (current ? "activate" : "deactivate")
-              << " WGL context: " << getErrorString(GetLastError());
-
+        err() << "Failed to " << currentStr << " WGL context: " << getErrorString(GetLastError());
         return false;
     }
 
@@ -736,7 +741,6 @@ HGLRC WglContext::createContext(ContextSettings& settings, const SurfaceData& su
                 if (wglMakeCurrent(xShared->m_surfaceData.deviceContext, nullptr) == FALSE)
                 {
                     err() << "Failed to deactivate shared context before sharing: " << getErrorString(GetLastError());
-
                     return {};
                 }
             }
@@ -771,12 +775,16 @@ HGLRC WglContext::createContext(ContextSettings& settings, const SurfaceData& su
             }
         }
 
+        err() << "WglContext::createContext failure:unable to create context from attributes";
         return {};
     };
 
     // We can't create an OpenGL context if we don't have a DC
     if (!surfaceData.deviceContext)
+    {
+        err() << "WglContext::createContext failure: no device context";
         return {};
+    }
 
     // Get the context to share display lists with
     HGLRC sharedContext = shared ? shared->m_context : nullptr;
@@ -820,6 +828,7 @@ HGLRC WglContext::createContext(ContextSettings& settings, const SurfaceData& su
         }
     }
 
+    SFML_ASSERT(result != HGLRC{});
     return result;
 }
 
