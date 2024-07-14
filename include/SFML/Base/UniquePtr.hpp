@@ -5,7 +5,6 @@
 #pragma once
 
 #include <SFML/Base/Assert.hpp>
-#include <SFML/Base/EnableIf.hpp>
 #include <SFML/Base/IsBaseOf.hpp>
 
 
@@ -35,7 +34,7 @@ public:
     {
     }
 
-    [[nodiscard, gnu::always_inline]] /* implicit */ UniquePtr(decltype(nullptr)) noexcept : m_ptr{nullptr}
+    [[nodiscard, gnu::always_inline]] explicit(false) UniquePtr(decltype(nullptr)) noexcept : m_ptr{nullptr}
     {
     }
 
@@ -60,16 +59,18 @@ public:
     UniquePtr(const UniquePtr&)            = delete;
     UniquePtr& operator=(const UniquePtr&) = delete;
 
-    template <typename U, typename UDeleter, typename = EnableIf<SFML_BASE_IS_BASE_OF(T, U)>>
-    [[nodiscard, gnu::always_inline]] UniquePtr(UniquePtr<U, UDeleter>&& rhs) noexcept :
+    template <typename U, typename UDeleter>
+    [[nodiscard, gnu::always_inline]] UniquePtr(UniquePtr<U, UDeleter>&& rhs) noexcept
+        requires(SFML_BASE_IS_BASE_OF(T, U)) :
     TDeleter{static_cast<UDeleter&&>(rhs)},
     m_ptr{rhs.m_ptr}
     {
         rhs.m_ptr = nullptr;
     }
 
-    template <typename U, typename UDeleter, typename = EnableIf<SFML_BASE_IS_BASE_OF(T, U)>>
+    template <typename U, typename UDeleter>
     [[gnu::always_inline]] UniquePtr& operator=(UniquePtr<U, UDeleter>&& rhs) noexcept
+        requires(SFML_BASE_IS_BASE_OF(T, U))
     {
         (*static_cast<TDeleter*>(this)) = static_cast<UDeleter&&>(rhs);
 

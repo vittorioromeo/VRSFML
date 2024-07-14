@@ -27,11 +27,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "IsTriviallyCopyAssignable.hpp"
-#include "IsTriviallyCopyConstructible.hpp"
-#include "IsTriviallyMoveAssignable.hpp"
-#include "IsTriviallyMoveConstructible.hpp"
-
 #include <SFML/System/Export.hpp>
 
 #include <SFML/Base/Assert.hpp>
@@ -472,7 +467,3 @@ template <typename F>
 }
 
 } // namespace sf::base
-
-
-// TODO
-static_assert(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::base::Optional<int>));
