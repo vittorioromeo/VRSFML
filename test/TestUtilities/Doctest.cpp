@@ -1,4 +1,4 @@
-#include <SFML/System/MathUtils.hpp>
+#include <SFML/Base/Math.hpp>
 
 #include <Doctest.hpp>
 
@@ -13,7 +13,7 @@ bool operator==(float value, const WithinRel& withinRel)
 
 bool operator==(float value, const WithinAbs& withinAbs)
 {
-    return sf::priv::fabs(value) == WithinRel{withinAbs.target, withinAbs.epsilon};
+    return sf::base::fabs(value) == WithinRel{withinAbs.target, withinAbs.epsilon};
 }
 
 } // namespace doctest::Matchers

@@ -25,7 +25,7 @@
 
 #import "NSString+stdstring.h"
 
-#include <SFML/System/AlgorithmUtils.hpp>
+#include <SFML/Base/Algorithm.hpp>
 #include <SFML/System/Utf.hpp>
 
 @implementation NSString (NSString_stdstring)
@@ -35,7 +35,7 @@
     std::string utf8;
     utf8.reserve(string.size() + 1);
 
-    sf::Utf8::fromAnsi(string.begin(), string.end(), priv::BackInserter(utf8));
+    sf::Utf8::fromAnsi(string.begin(), string.end(), base::BackInserter(utf8));
 
     NSString* str = [NSString stringWithCString:utf8.c_str() encoding:NSUTF8StringEncoding];
     return str;

@@ -27,12 +27,13 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/SoundFileReaderFlac.hpp>
 
-#include <SFML/System/AlgorithmUtils.hpp>
-#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InputStream.hpp>
-#include <SFML/System/Optional.hpp>
-#include <SFML/System/UniquePtr.hpp>
+
+#include <SFML/Base/Algorithm.hpp>
+#include <SFML/Base/Assert.hpp>
+#include <SFML/Base/Optional.hpp>
+#include <SFML/Base/UniquePtr.hpp>
 
 #include <FLAC/stream_decoder.h>
 
@@ -46,7 +47,7 @@ FLAC__StreamDecoderReadStatus streamRead(const FLAC__StreamDecoder*, FLAC__byte 
 {
     auto* data = static_cast<sf::priv::SoundFileReaderFlac::ClientData*>(clientData);
 
-    if (const sf::Optional count = data->stream->read(buffer, *bytes))
+    if (const sf::base::Optional count = data->stream->read(buffer, *bytes))
     {
         if (*count > 0)
         {
@@ -74,7 +75,7 @@ FLAC__StreamDecoderTellStatus streamTell(const FLAC__StreamDecoder*, FLAC__uint6
 {
     auto* data = static_cast<sf::priv::SoundFileReaderFlac::ClientData*>(clientData);
 
-    if (const sf::Optional position = data->stream->tell())
+    if (const sf::base::Optional position = data->stream->tell())
     {
         *absoluteByteOffset = *position;
         return FLAC__STREAM_DECODER_TELL_STATUS_OK;
@@ -87,7 +88,7 @@ FLAC__StreamDecoderLengthStatus streamLength(const FLAC__StreamDecoder*, FLAC__u
 {
     auto* data = static_cast<sf::priv::SoundFileReaderFlac::ClientData*>(clientData);
 
-    if (const sf::Optional count = data->stream->getSize())
+    if (const sf::base::Optional count = data->stream->getSize())
     {
         *streamLength = *count;
         return FLAC__STREAM_DECODER_LENGTH_STATUS_OK;
@@ -137,7 +138,7 @@ FLAC__StreamDecoderWriteStatus streamWrite(const FLAC__StreamDecoder*,
                     sample = static_cast<std::int16_t>(buffer[j][i] >> 16);
                     break;
                 default:
-                    SFML_ASSERT(false && "Invalid bits per sample. Must be 8, 16, 24, or 32.");
+                    SFML_BASE_ASSERT(false && "Invalid bits per sample. Must be 8, 16, 24, or 32.");
                     break;
             }
 
@@ -228,7 +229,7 @@ void streamMetadata(const FLAC__StreamDecoder*, const FLAC__StreamMetadata* meta
                 break;
             default:
                 sf::priv::err() << "FLAC files with more than 8 channels not supported";
-                SFML_ASSERT(false);
+                SFML_BASE_ASSERT(false);
                 break;
         }
     }
@@ -250,8 +251,8 @@ struct SoundFileReaderFlac::Impl
     {
         void operator()(FLAC__StreamDecoder* theDecoder) const;
     };
-    UniquePtr<FLAC__StreamDecoder, FlacStreamDecoderDeleter> decoder;    //!< FLAC decoder
-    ClientData                                               clientData; //!< Structure passed to the decoder callbacks
+    base::UniquePtr<FLAC__StreamDecoder, FlacStreamDecoderDeleter> decoder; //!< FLAC decoder
+    ClientData clientData; //!< Structure passed to the decoder callbacks
 };
 
 
@@ -306,14 +307,14 @@ bool SoundFileReaderFlac::check(InputStream& stream)
 
 
 ////////////////////////////////////////////////////////////
-Optional<SoundFileReader::Info> SoundFileReaderFlac::open(InputStream& stream)
+base::Optional<SoundFileReader::Info> SoundFileReaderFlac::open(InputStream& stream)
 {
     // Create the decoder
     m_impl->decoder.reset(FLAC__stream_decoder_new());
     if (!m_impl->decoder)
     {
         priv::err() << "Failed to open FLAC file (failed to allocate the decoder)";
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
     // Initialize the decoder with our callbacks
@@ -334,18 +335,18 @@ Optional<SoundFileReader::Info> SoundFileReaderFlac::open(InputStream& stream)
     {
         m_impl->decoder.reset();
         priv::err() << "Failed to open FLAC file (failed to read metadata)";
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
     // Retrieve the sound properties
-    return sf::makeOptional(m_impl->clientData.info); // was filled in the "metadata" callback
+    return sf::base::makeOptional(m_impl->clientData.info); // was filled in the "metadata" callback
 }
 
 
 ////////////////////////////////////////////////////////////
 void SoundFileReaderFlac::seek(std::uint64_t sampleOffset)
 {
-    SFML_ASSERT(m_impl->decoder && "No decoder available. Call SoundFileReaderFlac::open() to create a new one.");
+    SFML_BASE_ASSERT(m_impl->decoder && "No decoder available. Call SoundFileReaderFlac::open() to create a new one.");
 
     // Reset the callback data (the "write" callback will be called)
     m_impl->clientData.buffer    = nullptr;
@@ -375,7 +376,7 @@ void SoundFileReaderFlac::seek(std::uint64_t sampleOffset)
 ////////////////////////////////////////////////////////////
 std::uint64_t SoundFileReaderFlac::read(std::int16_t* samples, std::uint64_t maxCount)
 {
-    SFML_ASSERT(m_impl->decoder && "No decoder available. Call SoundFileReaderFlac::open() to create a new one.");
+    SFML_BASE_ASSERT(m_impl->decoder && "No decoder available. Call SoundFileReaderFlac::open() to create a new one.");
 
     // If there are leftovers from previous call, use it first
     const std::size_t left = m_impl->clientData.leftovers.size();
@@ -396,7 +397,7 @@ std::uint64_t SoundFileReaderFlac::read(std::int16_t* samples, std::uint64_t max
         }
 
         // We can use all the leftovers and decode new frames
-        priv::copy(m_impl->clientData.leftovers.begin(), m_impl->clientData.leftovers.end(), samples);
+        base::copy(m_impl->clientData.leftovers.begin(), m_impl->clientData.leftovers.end(), samples);
     }
 
     // Reset the data that will be used in the callback

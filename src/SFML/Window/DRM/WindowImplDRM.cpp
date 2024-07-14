@@ -46,7 +46,7 @@ namespace InputImpl
 /// \return False if event queue is empty
 ///
 ////////////////////////////////////////////////////////////
-Optional<Event> checkEvent();
+base::Optional<Event> checkEvent();
 
 ////////////////////////////////////////////////////////////
 /// \brief Backup terminal configuration and disable console feedback
@@ -122,13 +122,13 @@ void WindowImplDRM::setSize(const Vector2u& /*size*/)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplDRM::setMinimumSize(const Optional<Vector2u>& /* minimumSize */)
+void WindowImplDRM::setMinimumSize(const base::Optional<Vector2u>& /* minimumSize */)
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplDRM::setMaximumSize(const Optional<Vector2u>& /* maximumSize */)
+void WindowImplDRM::setMaximumSize(const base::Optional<Vector2u>& /* maximumSize */)
 {
 }
 
@@ -194,7 +194,7 @@ bool WindowImplDRM::hasFocus() const
 
 void WindowImplDRM::processEvents()
 {
-    while (const Optional event = InputImpl::checkEvent())
+    while (const base::Optional event = InputImpl::checkEvent())
         pushEvent(*event);
 }
 

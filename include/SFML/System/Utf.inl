@@ -25,8 +25,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Utf.hpp> // NOLINT(misc-header-include-cycle)
+
+#include <SFML/Base/Algorithm.hpp>
 
 
 ////////////////////////////////////////////////////////////
@@ -138,7 +139,7 @@ Out Utf<8>::encode(std::uint32_t input, Out output, std::uint8_t replacement)
         // clang-format on
 
         // Add them to the output
-        output = priv::copy(bytes, bytes + bytestoWrite, output);
+        output = base::copy(bytes, bytes + bytestoWrite, output);
     }
 
     return output;
@@ -261,7 +262,7 @@ Out Utf<8>::toLatin1(In begin, In end, Out output, char replacement)
 template <typename In, typename Out>
 Out Utf<8>::toUtf8(In begin, In end, Out output)
 {
-    return priv::copy(begin, end, output);
+    return base::copy(begin, end, output);
 }
 
 
@@ -430,7 +431,7 @@ Out Utf<16>::fromLatin1(In begin, In end, Out output)
 {
     // Latin-1 is directly compatible with Unicode encodings,
     // and can thus be treated as (a sub-range of) UTF-32
-    return priv::copy(begin, end, output);
+    return base::copy(begin, end, output);
 }
 
 
@@ -499,7 +500,7 @@ Out Utf<16>::toUtf8(In begin, In end, Out output)
 template <typename In, typename Out>
 Out Utf<16>::toUtf16(In begin, In end, Out output)
 {
-    return priv::copy(begin, end, output);
+    return base::copy(begin, end, output);
 }
 
 
@@ -580,7 +581,7 @@ Out Utf<32>::fromLatin1(In begin, In end, Out output)
 {
     // Latin-1 is directly compatible with Unicode encodings,
     // and can thus be treated as (a sub-range of) UTF-32
-    return priv::copy(begin, end, output);
+    return base::copy(begin, end, output);
 }
 
 
@@ -647,7 +648,7 @@ Out Utf<32>::toUtf16(In begin, In end, Out output)
 template <typename In, typename Out>
 Out Utf<32>::toUtf32(In begin, In end, Out output)
 {
-    return priv::copy(begin, end, output);
+    return base::copy(begin, end, output);
 }
 
 

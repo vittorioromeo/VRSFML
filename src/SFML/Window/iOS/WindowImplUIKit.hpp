@@ -109,22 +109,22 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Set the minimum window rendering region size
     ///
-    /// Pass sf::nullOpt to unset the minimum size
+    /// Pass base::nullOpt to unset the minimum size
     ///
     /// \param minimumSize New minimum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    void setMinimumSize(const Optional<Vector2u>& minimumSize) override;
+    void setMinimumSize(const base::Optional<Vector2u>& minimumSize) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the maximum window rendering region size
     ///
-    /// Pass sf::nullOpt to unset the maximum size
+    /// Pass base::nullOpt to unset the maximum size
     ///
     /// \param maximumSize New maximum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    void setMaximumSize(const Optional<Vector2u>& maximumSize) override;
+    void setMaximumSize(const base::Optional<Vector2u>& maximumSize) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the title of the window

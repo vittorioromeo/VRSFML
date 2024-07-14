@@ -28,10 +28,11 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/InputImpl.hpp>
 
-#include <SFML/System/AlgorithmUtils.hpp>
-#include <SFML/System/EnumArray.hpp>
 #include <SFML/System/Err.hpp>
-#include <SFML/System/Optional.hpp>
+
+#include <SFML/Base/Algorithm.hpp>
+#include <SFML/Base/EnumArray.hpp>
+#include <SFML/Base/Optional.hpp>
 
 #include <fcntl.h>
 #include <linux/input.h>
@@ -53,17 +54,17 @@ namespace
 {
 struct TouchSlot
 {
-    Optional<unsigned int> oldId;
-    Optional<unsigned int> id;
-    sf::Vector2i           pos;
+    base::Optional<unsigned int> oldId;
+    base::Optional<unsigned int> id;
+    sf::Vector2i                 pos;
 };
 
 std::recursive_mutex inputMutex; // threadsafe? maybe...
 sf::Vector2i         mousePos;   // current mouse position
 
 std::vector<int> fileDescriptors; // list of open file descriptors for /dev/input
-sf::priv::EnumArray<sf::Mouse::Button, bool, sf::Mouse::ButtonCount> mouseMap{}; // track whether mouse buttons are down
-sf::priv::EnumArray<sf::Keyboard::Key, bool, sf::Keyboard::KeyCount> keyMap{};   // track whether keys are down
+sf::base::EnumArray<sf::Mouse::Button, bool, sf::Mouse::ButtonCount> mouseMap{}; // track whether mouse buttons are down
+sf::base::EnumArray<sf::Keyboard::Key, bool, sf::Keyboard::KeyCount> keyMap{};   // track whether keys are down
 
 int                    touchFd = -1;    // file descriptor we have seen MT events on; assumes only 1
 std::vector<TouchSlot> touchSlots;      // track the state of each touch "slot"
@@ -167,7 +168,7 @@ void initFileDescriptors()
     std::atexit(uninitFileDescriptors);
 }
 
-Optional<sf::Mouse::Button> toMouseButton(int code)
+base::Optional<sf::Mouse::Button> toMouseButton(int code)
 {
     switch (code)
     {
@@ -183,7 +184,7 @@ Optional<sf::Mouse::Button> toMouseButton(int code)
             return sf::Mouse::Button::Extra2;
 
         default:
-            return sf::nullOpt;
+            return base::nullOpt;
     }
 }
 
@@ -341,7 +342,7 @@ void processSlots()
     }
 }
 
-sf::Optional<sf::Event> eventProcess()
+sf::base::Optional<sf::Event> eventProcess()
 {
     const std::lock_guard lock(inputMutex);
 
@@ -371,7 +372,7 @@ sf::Optional<sf::Event> eventProcess()
         {
             if (inputEvent.type == EV_KEY)
             {
-                if (const sf::Optional<sf::Mouse::Button> mb = toMouseButton(inputEvent.code))
+                if (const sf::base::Optional<sf::Mouse::Button> mb = toMouseButton(inputEvent.code))
                 {
                     mouseMap[*mb] = inputEvent.value;
 
@@ -458,8 +459,8 @@ sf::Optional<sf::Event> eventProcess()
                         touchFd     = fileDescriptor;
                         break;
                     case ABS_MT_TRACKING_ID:
-                        atSlot(currentSlot).id = inputEvent.value >= 0 ? Optional(inputEvent.value) : sf::nullOpt;
-                        touchFd                = fileDescriptor;
+                        atSlot(currentSlot).id = inputEvent.value >= 0 ? base::Optional(inputEvent.value) : base::nullOpt;
+                        touchFd = fileDescriptor;
                         break;
                     case ABS_MT_POSITION_X:
                         atSlot(currentSlot).pos.x = inputEvent.value;
@@ -533,13 +534,13 @@ sf::Optional<sf::Event> eventProcess()
     }
 
     // No events available
-    return sf::nullOpt;
+    return base::nullOpt;
 }
 
 // assumes inputMutex is locked
 void update()
 {
-    while (const Optional event = eventProcess())
+    while (const base::Optional event = eventProcess())
         pushEvent(*event);
 }
 } // namespace
@@ -646,7 +647,7 @@ void setMousePosition(const Vector2i& position, const WindowBase& /*relativeTo*/
 ////////////////////////////////////////////////////////////
 bool isTouchDown(unsigned int finger)
 {
-    return priv::anyOf(touchSlots.cbegin(),
+    return base::anyOf(touchSlots.cbegin(),
                        touchSlots.cend(),
                        [finger](const TouchSlot& slot) { return slot.id == finger; });
 }
@@ -673,19 +674,19 @@ Vector2i getTouchPosition(unsigned int finger, const WindowBase& /*relativeTo*/)
 
 
 ////////////////////////////////////////////////////////////
-Optional<Event> checkEvent()
+base::Optional<Event> checkEvent()
 {
     const std::lock_guard lock(inputMutex);
 
     if (!eventQueue.empty())
     {
-        auto event = sf::makeOptional(eventQueue.front());
+        auto event = sf::base::makeOptional(eventQueue.front());
         eventQueue.pop();
 
         return event;
     }
 
-    if (const Optional event = eventProcess())
+    if (const base::Optional event = eventProcess())
     {
         return event;
     }
@@ -695,13 +696,13 @@ Optional<Event> checkEvent()
     // sure of a good way to handle generating multiple events at once.)
     if (!eventQueue.empty())
     {
-        auto event = sf::makeOptional(eventQueue.front());
+        auto event = sf::base::makeOptional(eventQueue.front());
         eventQueue.pop();
 
         return event;
     }
 
-    return sf::nullOpt;
+    return base::nullOpt;
 }
 
 

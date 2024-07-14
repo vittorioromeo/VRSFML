@@ -30,8 +30,9 @@
 #include <SFML/Audio/PlaybackDevice.hpp>
 #include <SFML/Audio/SoundChannel.hpp>
 
-#include <SFML/System/InPlacePImpl.hpp>
 #include <SFML/System/LifetimeDependant.hpp>
+
+#include <SFML/Base/InPlacePImpl.hpp>
 
 #include <cfloat>
 #include <cstdint>
@@ -78,7 +79,7 @@ struct SoundBase
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    priv::InPlacePImpl<Impl, 2048> impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 2048> impl; //!< Implementation details
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking

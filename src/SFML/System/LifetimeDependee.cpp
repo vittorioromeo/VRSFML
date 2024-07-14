@@ -29,11 +29,12 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Export.hpp>
 
-#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
-#include <SFML/System/Launder.hpp>
 #include <SFML/System/LifetimeDependee.hpp>
-#include <SFML/System/PlacementNew.hpp>
+
+#include <SFML/Base/Assert.hpp>
+#include <SFML/Base/Launder.hpp>
+#include <SFML/Base/PlacementNew.hpp>
 
 #include <atomic>
 #include <string>
@@ -54,7 +55,7 @@ std::atomic<bool> lifetimeTrackingFatalErrorTriggered{false};
 
 [[gnu::always_inline, gnu::const]] inline AtomicUInt& asAtomicUInt(char* ptr)
 {
-    return *SFML_PRIV_LAUNDER_CAST(AtomicUInt*, ptr);
+    return *SFML_BASE_LAUNDER_CAST(AtomicUInt*, ptr);
 }
 
 } // namespace
@@ -89,7 +90,7 @@ LifetimeDependee::LifetimeDependee(const char* dependeeName, const char* dependa
 m_dependeeName(dependeeName),
 m_dependantName(dependantName)
 {
-    SFML_PRIV_PLACEMENT_NEW(m_dependantCount) AtomicUInt(0u);
+    SFML_BASE_PLACEMENT_NEW(m_dependantCount) AtomicUInt(0u);
 }
 
 
@@ -107,7 +108,7 @@ LifetimeDependee::LifetimeDependee(LifetimeDependee&& rhs) noexcept :
 m_dependeeName(rhs.m_dependeeName),
 m_dependantName(rhs.m_dependantName)
 {
-    SFML_PRIV_PLACEMENT_NEW(m_dependantCount)
+    SFML_BASE_PLACEMENT_NEW(m_dependantCount)
     AtomicUInt(asAtomicUInt(rhs.m_dependantCount).load(std::memory_order_relaxed));
 
     // Intentionally not resetting `rhs.m_dependantCount` here, as we want to get a fatal error
@@ -241,7 +242,7 @@ void LifetimeDependee::addDependant()
 ////////////////////////////////////////////////////////////
 void LifetimeDependee::subDependant()
 {
-    SFML_ASSERT(asAtomicUInt(m_dependantCount).load(std::memory_order_relaxed) > 0u);
+    SFML_BASE_ASSERT(asAtomicUInt(m_dependantCount).load(std::memory_order_relaxed) > 0u);
     asAtomicUInt(m_dependantCount).fetch_sub(1u, std::memory_order_relaxed);
 }
 

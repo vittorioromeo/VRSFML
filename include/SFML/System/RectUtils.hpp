@@ -29,8 +29,9 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Export.hpp>
 
-#include <SFML/System/Optional.hpp>
 #include <SFML/System/Rect.hpp>
+
+#include <SFML/Base/Optional.hpp>
 
 
 namespace sf
@@ -40,13 +41,13 @@ namespace sf
 ///
 /// \param rectangle Rectangle to test
 ///
-/// \return Intersection rectangle if intersecting, sf::nullOpt otherwise
+/// \return Intersection rectangle if intersecting, base::nullOpt otherwise
 ///
 /// \see contains
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard]] SFML_SYSTEM_API Optional<Rect<T>> findIntersection(const Rect<T>& rect0, const Rect<T>& rect1);
+[[nodiscard]] SFML_SYSTEM_API base::Optional<Rect<T>> findIntersection(const Rect<T>& rect0, const Rect<T>& rect1);
 
 } // namespace sf
 
@@ -109,7 +110,7 @@ extern template class sf::Rect<unsigned int>;
 /// bool b2 = r2.contains({3, 1}); // false
 ///
 /// // Test the intersection between r1 and r2
-/// sf::Optional<sf::IntRect> result = r1.findIntersection(r2);
+/// sf::base::Optional<sf::IntRect> result = r1.findIntersection(r2);
 /// // result.hasValue() == true
 /// // result.value() == sf::IntRect({4, 2}, {16, 3})
 /// \endcode

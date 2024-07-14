@@ -10,7 +10,7 @@
 #include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/Keyboard.hpp>
 
-#include <SFML/System/Optional.hpp>
+#include <SFML/Base/Optional.hpp>
 #include <SFML/System/Path.hpp>
 #include <SFML/System/String.hpp>
 #include <SFML/System/Vector2.hpp>
@@ -62,13 +62,13 @@ public:
         {
         }
 
-        sf::Optional<std::string> operator()(const sf::Event::Closed&)
+        sf::base::Optional<std::string> operator()(const sf::Event::Closed&)
         {
             application.m_mustClose = true;
-            return sf::nullOpt;
+            return sf::base::nullOpt;
         }
 
-        sf::Optional<std::string> operator()(const sf::Event::KeyPressed& keyPress)
+        sf::base::Optional<std::string> operator()(const sf::Event::KeyPressed& keyPress)
         {
             // When the enter key is pressed, switch to the next handler type
             if (keyPress.code == sf::Keyboard::Key::Enter)
@@ -77,22 +77,22 @@ public:
                 application.m_handlerText.setString("Current Handler: Overload");
             }
 
-            return sf::makeOptional<std::string>("Key Pressed: " + sf::Keyboard::getDescription(keyPress.scancode));
+            return sf::base::makeOptional<std::string>("Key Pressed: " + sf::Keyboard::getDescription(keyPress.scancode));
         }
 
-        sf::Optional<std::string> operator()(const sf::Event::MouseMoved& mouseMoved)
+        sf::base::Optional<std::string> operator()(const sf::Event::MouseMoved& mouseMoved)
         {
-            return sf::makeOptional<std::string>("Mouse Moved: " + vec2ToString(mouseMoved.position));
+            return sf::base::makeOptional<std::string>("Mouse Moved: " + vec2ToString(mouseMoved.position));
         }
 
-        sf::Optional<std::string> operator()(const sf::Event::MouseButtonPressed&)
+        sf::base::Optional<std::string> operator()(const sf::Event::MouseButtonPressed&)
         {
-            return sf::makeOptional<std::string>("Mouse Pressed");
+            return sf::base::makeOptional<std::string>("Mouse Pressed");
         }
 
-        sf::Optional<std::string> operator()(const sf::Event::TouchBegan& touchBegan)
+        sf::base::Optional<std::string> operator()(const sf::Event::TouchBegan& touchBegan)
         {
-            return sf::makeOptional<std::string>("Touch Began: " + vec2ToString(touchBegan.position));
+            return sf::base::makeOptional<std::string>("Touch Began: " + vec2ToString(touchBegan.position));
         }
 
         // When defining a visitor, make sure all event types can be handled by it.
@@ -100,11 +100,11 @@ public:
         // event type, you can provide a templated operator() that will be selected
         // by overload resolution when no other event type matches.
         template <typename T>
-        sf::Optional<std::string> operator()(const T&)
+        sf::base::Optional<std::string> operator()(const T&)
         {
             // All unhandled events will end up here
             // application.m_log.emplace_back("Other Event");
-            return sf::nullOpt;
+            return sf::base::nullOpt;
         }
 
         Application& application;
@@ -116,7 +116,7 @@ public:
         // The "classical form" of event handling
         // Poll/Wait for events in a loop and handle them
         // individually based on their concrete type
-        while (const sf::Optional event = m_window.pollEvent())
+        while (const sf::base::Optional event = m_window.pollEvent())
         {
             if (event->is<sf::Event::Closed>())
             {
@@ -161,9 +161,9 @@ public:
         // Event Visitor
         // A visitor able to visit all event types is passed to the event
         // The visitor's defined operator()s can also return values
-        while (const sf::Optional event = m_window.pollEvent())
+        while (const sf::base::Optional event = m_window.pollEvent())
         {
-            if (sf::Optional logMessage = event->visit(Visitor(*this)))
+            if (sf::base::Optional logMessage = event->visit(Visitor(*this)))
                 m_log.emplace_back(std::move(*logMessage));
         }
     }

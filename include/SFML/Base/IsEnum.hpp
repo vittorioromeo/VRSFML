@@ -25,38 +25,16 @@
 #pragma once
 
 
-namespace sf::priv
-{
+#if __has_builtin(__is_enum)
+
 ////////////////////////////////////////////////////////////
-/// \private
-///
-/// \brief Generic implementation of the PassKey idiom
-///
+#define SFML_BASE_IS_ENUM(...) __is_enum(__VA_ARGS__)
+
+#else
+
+#include <type_traits>
+
 ////////////////////////////////////////////////////////////
-template <typename T>
-class PassKey
-{
-    friend T;
+#define SFML_BASE_IS_ENUM(...) ::std::is_enum_v<__VA_ARGS__>
 
-private:
-    // NOLINTBEGIN(modernize-use-equals-delete)
-    // NOLINTBEGIN(modernize-use-equals-default)
-
-    // Intentionally not using `= default` here as it would make `PassKey` an aggregate
-    // and thus constructible from anyone
-    [[nodiscard]] explicit PassKey() noexcept
-    {
-    }
-
-    //NOLINTEND(modernize-use-equals-default)
-    //NOLINTEND(modernize-use-equals-delete)
-
-public:
-    PassKey(const PassKey&) = delete;
-    PassKey(PassKey&&)      = delete;
-
-    PassKey& operator=(const PassKey&) = delete;
-    PassKey& operator=(PassKey&&)      = delete;
-};
-
-} // namespace sf::priv
+#endif

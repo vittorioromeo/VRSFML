@@ -24,23 +24,17 @@
 
 #pragma once
 
-#if __has_builtin(__remove_reference)
 
-#define SFML_PRIV_REMOVE_REFERENCE(...) __remove_reference(__VA_ARGS__)
+#if __has_builtin(__is_base_of)
+
+////////////////////////////////////////////////////////////
+#define SFML_BASE_IS_BASE_OF(b, d) __is_base_of(b, d)
 
 #else
 
-namespace sf::priv
-{
+#include <type_traits>
 
-// clang-format off
-template <typename T> struct RemoveReference      { using type = T; };
-template <typename T> struct RemoveReference<T&>  { using type = T; };
-template <typename T> struct RemoveReference<T&&> { using type = T; };
-// clang-format on
-
-} // namespace sf::priv
-
-#define SFML_PRIV_REMOVE_REFERENCE(...) typename ::sf::priv::RemoveReference<__VA_ARGS__>::type
+////////////////////////////////////////////////////////////
+#define SFML_BASE_IS_BASE_OF(b, d) ::std::is_base_of_v<b, d>
 
 #endif

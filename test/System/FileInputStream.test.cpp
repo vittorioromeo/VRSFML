@@ -1,5 +1,5 @@
 #include <SFML/System/FileInputStream.hpp>
-#include <SFML/System/Macros.hpp>
+#include <SFML/Base/Macros.hpp>
 #include <SFML/System/Path.hpp>
 
 #include <Doctest.hpp>
@@ -12,7 +12,7 @@
 #include <string_view>
 #include <type_traits>
 
-#include <SFML/System/Assert.hpp>
+#include <SFML/Base/Assert.hpp>
 
 namespace
 {
@@ -33,17 +33,17 @@ public:
     TemporaryFile(const std::string& contents) : m_path(getTemporaryFilePath())
     {
         std::ofstream ofs(m_path.to<std::string>());
-        SFML_ASSERT(ofs && "Stream encountered an error");
+        SFML_BASE_ASSERT(ofs && "Stream encountered an error");
 
         ofs << contents;
-        SFML_ASSERT(ofs && "Stream encountered an error");
+        SFML_BASE_ASSERT(ofs && "Stream encountered an error");
     }
 
     // Close and delete the generated file.
     ~TemporaryFile()
     {
         [[maybe_unused]] const bool removed = m_path.remove();
-        SFML_ASSERT(removed && "m_path failed to be removed from filesystem");
+        SFML_BASE_ASSERT(removed && "m_path failed to be removed from filesystem");
     }
 
     // Prevent copies.
@@ -83,7 +83,7 @@ TEST_CASE("[System] sf::FileInputStream")
         SECTION("Move constructor")
         {
             auto                movedFileInputStream = sf::FileInputStream::open(temporaryFile.getPath()).value();
-            sf::FileInputStream fileInputStream      = SFML_MOVE(movedFileInputStream);
+            sf::FileInputStream fileInputStream      = SFML_BASE_MOVE(movedFileInputStream);
             CHECK(fileInputStream.read(buffer, 6).value() == 6);
             CHECK(fileInputStream.tell().value() == 6);
             CHECK(fileInputStream.getSize().value() == 11);
@@ -95,7 +95,7 @@ TEST_CASE("[System] sf::FileInputStream")
             auto                movedFileInputStream = sf::FileInputStream::open(temporaryFile.getPath()).value();
             const TemporaryFile temporaryFile2("Hello world the sequel");
             auto                fileInputStream = sf::FileInputStream::open(temporaryFile2.getPath()).value();
-            fileInputStream                     = SFML_MOVE(movedFileInputStream);
+            fileInputStream                     = SFML_BASE_MOVE(movedFileInputStream);
             CHECK(fileInputStream.read(buffer, 6).value() == 6);
             CHECK(fileInputStream.tell().value() == 6);
             CHECK(fileInputStream.getSize().value() == 11);

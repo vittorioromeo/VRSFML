@@ -113,7 +113,7 @@ int GlContext::evaluateFormat(
 ////////////////////////////////////////////////////////////
 bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettings& requestedSettings)
 {
-    SFML_ASSERT(m_graphicsContext.getActiveThreadLocalGlContextPtr() == this);
+    SFML_BASE_ASSERT(m_graphicsContext.getActiveThreadLocalGlContextPtr() == this);
 
     const auto& derivedSharedGlContext = static_cast<const DerivedGlContextType&>(sharedGlContext);
 

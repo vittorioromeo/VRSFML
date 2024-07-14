@@ -22,28 +22,36 @@
 //
 ////////////////////////////////////////////////////////////
 
-#pragma once
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include <SFML/Base/Assert.hpp>
 
 #ifndef NDEBUG
 
-namespace sf::priv
+#ifdef SFML_ENABLE_STACK_TRACES
+#include <cpptrace/cpptrace.hpp>
+#endif
+
+#include <cstdio>
+#include <cstdlib>
+
+
+namespace sf::base::priv
 {
 ////////////////////////////////////////////////////////////
-[[gnu::cold, gnu::noinline]] void assertFailure(const char* code, const char* file, int line);
+void assertFailure(const char* code, const char* file, const int line)
+{
+    std::printf("\n[[SFML ASSERTION FAILURE]]\n- %s:%d\n- SFML_BASE_ASSERT(%s);\n", file, line, code);
 
-} // namespace sf::priv
+#ifdef SFML_ENABLE_STACK_TRACES
+    std::puts("");
+    cpptrace::generate_trace().print();
+#endif
 
-#define SFML_ASSERT(...)                                                 \
-    do                                                                   \
-    {                                                                    \
-        if (!static_cast<bool>(__VA_ARGS__)) [[unlikely]]                \
-        {                                                                \
-            ::sf::priv::assertFailure(#__VA_ARGS__, __FILE__, __LINE__); \
-        }                                                                \
-    } while (false)
+    std::abort();
+}
 
-#else
-
-#define SFML_ASSERT(...) (void)
+} // namespace sf::base::priv
 
 #endif

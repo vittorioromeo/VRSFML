@@ -33,10 +33,11 @@
 #include <SFML/Window/GlContext.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
 
-#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
-#include <SFML/System/Macros.hpp>
-#include <SFML/System/UniquePtr.hpp>
+
+#include <SFML/Base/Assert.hpp>
+#include <SFML/Base/Macros.hpp>
+#include <SFML/Base/UniquePtr.hpp>
 
 #include <unordered_map>
 
@@ -67,11 +68,11 @@ struct RenderTextureImplFBO::Impl
 
     GraphicsContext* graphicsContext; //!< TODO
 
-    FrameBufferIdMap frameBuffers;            //!< OpenGL frame buffer objects per context
-    FrameBufferIdMap multisampleFrameBuffers; //!< Optional per-context OpenGL frame buffer objects with multisample attachments
+    FrameBufferIdMap frameBuffers; //!< OpenGL frame buffer objects per context
+    FrameBufferIdMap multisampleFrameBuffers; //!< base::Optional per-context OpenGL frame buffer objects with multisample attachments
 
-    unsigned int depthStencilBuffer{}; //!< Optional depth/stencil buffer attached to the frame buffer
-    unsigned int colorBuffer{};        //!< Optional multisample color buffer attached to the frame buffer
+    unsigned int depthStencilBuffer{}; //!< base::Optional depth/stencil buffer attached to the frame buffer
+    unsigned int colorBuffer{};        //!< base::Optional multisample color buffer attached to the frame buffer
     Vector2u     size;                 //!< Width and height of the attachments
     unsigned int textureId{};          //!< The ID of the texture to attach to the FBO
     bool         multisample{};        //!< Whether we have to create a multisample frame buffer as well
@@ -90,7 +91,7 @@ RenderTextureImplFBO::RenderTextureImplFBO(GraphicsContext& graphicsContext) : m
 ////////////////////////////////////////////////////////////
 RenderTextureImplFBO::~RenderTextureImplFBO()
 {
-    SFML_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
 
     // Destroy the color buffer
     if (m_impl->colorBuffer)
@@ -118,7 +119,7 @@ RenderTextureImplFBO::~RenderTextureImplFBO()
 ////////////////////////////////////////////////////////////
 bool RenderTextureImplFBO::isAvailable(GraphicsContext& graphicsContext)
 {
-    SFML_ASSERT(graphicsContext.hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(graphicsContext.hasAnyActiveGlContext());
 
     // Make sure that extensions are initialized
     ensureExtensionsInit(graphicsContext);
@@ -136,7 +137,7 @@ unsigned int RenderTextureImplFBO::getMaximumAntialiasingLevel(GraphicsContext& 
 
 #else
 
-    SFML_ASSERT(graphicsContext.hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(graphicsContext.hasAnyActiveGlContext());
     GLint samples = 0;
     glCheck(glGetIntegerv(GLEXT_GL_MAX_SAMPLES, &samples));
     return static_cast<unsigned int>(samples);
@@ -159,7 +160,7 @@ bool RenderTextureImplFBO::create(const Vector2u& size, unsigned int textureId, 
     m_impl->size = size;
 
     {
-        SFML_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
+        SFML_BASE_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
 
         // Make sure that extensions are initialized
         ensureExtensionsInit(*m_impl->graphicsContext);
@@ -537,7 +538,7 @@ bool RenderTextureImplFBO::activate(bool active)
         return true;
     }
 
-    SFML_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
     const std::uint64_t glContextId = m_impl->graphicsContext->getActiveThreadLocalGlContextId();
 
     // Lookup the FBO corresponding to the currently active context

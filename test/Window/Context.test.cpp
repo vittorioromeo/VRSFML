@@ -5,8 +5,8 @@
 #include <SFML/Window/ContextSettings.hpp>
 
 #include <SFML/System/Err.hpp>
-#include <SFML/System/Macros.hpp>
-#include <SFML/System/UniquePtr.hpp>
+#include <SFML/Base/Macros.hpp>
+#include <SFML/Base/UniquePtr.hpp>
 
 #include <Doctest.hpp>
 
@@ -67,7 +67,7 @@ struct TestContext
     }
 
     sf::GraphicsContext*                     graphicsContext;
-    sf::priv::UniquePtr<sf::priv::GlContext> glContext;
+    sf::base::UniquePtr<sf::priv::GlContext> glContext;
 };
 
 TEST_CASE("[Window] TestContext" * doctest::skip(skipDisplayTests))
@@ -97,7 +97,7 @@ TEST_CASE("[Window] TestContext" * doctest::skip(skipDisplayTests))
             SECTION("From active context")
             {
                 TestContext       movedContext(graphicsContext);
-                const TestContext context(SFML_MOVE(movedContext));
+                const TestContext context(SFML_BASE_MOVE(movedContext));
                 CHECK(context.getSettings().majorVersion > 0);
                 CHECK(graphicsContext.getActiveThreadLocalGlContextId() == context.glContext->getId());
                 CHECK(graphicsContext.hasActiveThreadLocalGlContext());
@@ -110,7 +110,7 @@ TEST_CASE("[Window] TestContext" * doctest::skip(skipDisplayTests))
                 CHECK(graphicsContext.getActiveThreadLocalGlContextId() == 0u);
                 CHECK(!graphicsContext.hasActiveThreadLocalGlContext());
 
-                const TestContext context(SFML_MOVE(movedContext));
+                const TestContext context(SFML_BASE_MOVE(movedContext));
                 CHECK(context.getSettings().majorVersion > 0);
                 CHECK(graphicsContext.getActiveThreadLocalGlContextId() == 0u);
                 CHECK(!graphicsContext.hasActiveThreadLocalGlContext());
@@ -127,7 +127,7 @@ TEST_CASE("[Window] TestContext" * doctest::skip(skipDisplayTests))
                 CHECK(graphicsContext.getActiveThreadLocalGlContextId() == movedContext.glContext->getId());
                 CHECK(graphicsContext.hasActiveThreadLocalGlContext());
 
-                context = SFML_MOVE(movedContext);
+                context = SFML_BASE_MOVE(movedContext);
                 CHECK(context.getSettings().majorVersion > 0);
                 CHECK(graphicsContext.getActiveThreadLocalGlContextId() == context.glContext->getId());
                 CHECK(graphicsContext.hasActiveThreadLocalGlContext());
@@ -141,7 +141,7 @@ TEST_CASE("[Window] TestContext" * doctest::skip(skipDisplayTests))
                 CHECK(!graphicsContext.hasActiveThreadLocalGlContext());
 
                 TestContext context(graphicsContext);
-                context = SFML_MOVE(movedContext);
+                context = SFML_BASE_MOVE(movedContext);
                 CHECK(context.getSettings().majorVersion > 0);
                 CHECK(graphicsContext.getActiveThreadLocalGlContextId() == 0u);
                 CHECK(!graphicsContext.hasActiveThreadLocalGlContext());

@@ -31,9 +31,10 @@
 #include <SFML/Audio/PlaybackDeviceHandle.hpp>
 
 #include <SFML/System/Err.hpp>
-#include <SFML/System/Macros.hpp>
-#include <SFML/System/PassKey.hpp>
-#include <SFML/System/UniquePtr.hpp>
+
+#include <SFML/Base/Macros.hpp>
+#include <SFML/Base/PassKey.hpp>
+#include <SFML/Base/UniquePtr.hpp>
 
 #include <miniaudio.h>
 
@@ -135,7 +136,7 @@ template <typename F>
 
 ////////////////////////////////////////////////////////////
 template <typename THandle, typename F>
-std::vector<THandle> getAvailableDeviceHandles(sf::priv::PassKey<sf::AudioContext>&& passKey,
+std::vector<THandle> getAvailableDeviceHandles(sf::base::PassKey<sf::AudioContext>&& passKey,
                                                ma_context&                           maContext,
                                                const char*                           type,
                                                F&&                                   fMAContextGetDevices)
@@ -157,7 +158,7 @@ std::vector<THandle> getAvailableDeviceHandles(sf::priv::PassKey<sf::AudioContex
     deviceHandles.reserve(maDeviceInfoCount);
 
     for (ma_uint32 i = 0u; i < maDeviceInfoCount; ++i)
-        deviceHandles.emplace_back(SFML_MOVE(passKey), &maDeviceInfosPtr[i]);
+        deviceHandles.emplace_back(SFML_BASE_MOVE(passKey), &maDeviceInfosPtr[i]);
 
     return deviceHandles;
 }
@@ -182,9 +183,9 @@ struct AudioContext::Impl
 
 
 ////////////////////////////////////////////////////////////
-Optional<AudioContext> AudioContext::create()
+base::Optional<AudioContext> AudioContext::create()
 {
-    Optional<AudioContext> result(sf::inPlace, priv::PassKey<AudioContext>{}); // Use a single local variable for NRVO
+    base::Optional<AudioContext> result(base::inPlace, base::PassKey<AudioContext>{}); // Use a single local variable for NRVO
 
     if (!tryCreateMALog(result->m_impl->maLog))
     {
@@ -208,7 +209,7 @@ Optional<AudioContext> AudioContext::create()
 std::vector<PlaybackDeviceHandle> AudioContext::getAvailablePlaybackDeviceHandles()
 {
     return getAvailableDeviceHandles<PlaybackDeviceHandle> //
-        (priv::PassKey<AudioContext>{},
+        (base::PassKey<AudioContext>{},
          m_impl->maContext,
          "playback",
          [](ma_context* maContext, ma_device_info** maDeviceInfosPtr, ma_uint32* maDeviceInfoCount)
@@ -217,13 +218,13 @@ std::vector<PlaybackDeviceHandle> AudioContext::getAvailablePlaybackDeviceHandle
 
 
 ////////////////////////////////////////////////////////////
-Optional<PlaybackDeviceHandle> AudioContext::getDefaultPlaybackDeviceHandle()
+base::Optional<PlaybackDeviceHandle> AudioContext::getDefaultPlaybackDeviceHandle()
 {
     for (const PlaybackDeviceHandle& deviceHandle : getAvailablePlaybackDeviceHandles())
         if (deviceHandle.isDefault())
-            return sf::makeOptional(deviceHandle);
+            return sf::base::makeOptional(deviceHandle);
 
-    return sf::nullOpt;
+    return base::nullOpt;
 }
 
 
@@ -231,7 +232,7 @@ Optional<PlaybackDeviceHandle> AudioContext::getDefaultPlaybackDeviceHandle()
 std::vector<CaptureDeviceHandle> AudioContext::getAvailableCaptureDeviceHandles()
 {
     return getAvailableDeviceHandles<CaptureDeviceHandle> //
-        (priv::PassKey<AudioContext>{},
+        (base::PassKey<AudioContext>{},
          m_impl->maContext,
          "capture",
          [](ma_context* maContext, ma_device_info** maDeviceInfosPtr, ma_uint32* maDeviceInfoCount)
@@ -240,13 +241,13 @@ std::vector<CaptureDeviceHandle> AudioContext::getAvailableCaptureDeviceHandles(
 
 
 ////////////////////////////////////////////////////////////
-Optional<CaptureDeviceHandle> AudioContext::getDefaultCaptureDeviceHandle()
+base::Optional<CaptureDeviceHandle> AudioContext::getDefaultCaptureDeviceHandle()
 {
     for (const CaptureDeviceHandle& deviceHandle : getAvailableCaptureDeviceHandles())
         if (deviceHandle.isDefault())
-            return sf::makeOptional(deviceHandle);
+            return sf::base::makeOptional(deviceHandle);
 
-    return sf::nullOpt;
+    return base::nullOpt;
 }
 
 
@@ -258,7 +259,7 @@ void* AudioContext::getMAContext() const
 
 
 ////////////////////////////////////////////////////////////
-AudioContext::AudioContext(priv::PassKey<AudioContext>&&) : m_impl(priv::makeUnique<Impl>())
+AudioContext::AudioContext(base::PassKey<AudioContext>&&) : m_impl(base::makeUnique<Impl>())
 {
 }
 

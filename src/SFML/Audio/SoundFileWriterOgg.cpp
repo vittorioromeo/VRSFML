@@ -27,12 +27,13 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/SoundFileWriterOgg.hpp>
 
-#include <SFML/System/AlgorithmUtils.hpp>
-#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Path.hpp>
 #include <SFML/System/PathUtils.hpp>
 #include <SFML/System/StringUtils.hpp>
+
+#include <SFML/Base/Algorithm.hpp>
+#include <SFML/Base/Assert.hpp>
 
 #include <vorbis/vorbisenc.h>
 
@@ -147,7 +148,7 @@ bool SoundFileWriterOgg::open(const Path&                      filename,
     // Build the remap table
     for (auto i = 0u; i < channelCount; ++i)
         m_impl->remapTable[i] = static_cast<std::size_t>(
-            priv::find(channelMap.begin(), channelMap.end(), targetChannelMap[i]) - channelMap.begin());
+            base::find(channelMap.begin(), channelMap.end(), targetChannelMap[i]) - channelMap.begin());
 
     // Save the channel count
     m_impl->channelCount = channelCount;
@@ -162,7 +163,7 @@ bool SoundFileWriterOgg::open(const Path&                      filename,
     int status = vorbis_encode_init_vbr(&m_impl->vorbis, static_cast<long>(channelCount), static_cast<long>(sampleRate), 0.4f);
     if (status < 0)
     {
-        priv::err() << "Failed to write ogg/vorbis file (unsupported bitrate)\n" << priv::formatDebugPathInfo(filename);
+        priv::err() << "Failed to write ogg/vorbis file (unsupported bitrate)\n" << priv::PathDebugFormatter{filename};
         close();
         return false;
     }
@@ -172,7 +173,7 @@ bool SoundFileWriterOgg::open(const Path&                      filename,
     m_impl->file.open(filename.to<std::string>(), std::ios::binary);
     if (!m_impl->file)
     {
-        priv::err() << "Failed to write ogg/vorbis file (cannot open file)\n" << priv::formatDebugPathInfo(filename);
+        priv::err() << "Failed to write ogg/vorbis file (cannot open file)\n" << priv::PathDebugFormatter{filename};
         close();
         return false;
     }
@@ -190,7 +191,7 @@ bool SoundFileWriterOgg::open(const Path&                      filename,
     if (status < 0)
     {
         priv::err() << "Failed to write ogg/vorbis file (cannot generate the headers)\n"
-                    << priv::formatDebugPathInfo(filename);
+                    << priv::PathDebugFormatter{filename};
         close();
         return false;
     }
@@ -225,7 +226,7 @@ void SoundFileWriterOgg::write(const std::int16_t* samples, std::uint64_t count)
     {
         // Prepare a buffer to hold our samples
         float** buffer = vorbis_analysis_buffer(&m_impl->state, bufferSize);
-        SFML_ASSERT(buffer && "Vorbis buffer failed to allocate");
+        SFML_BASE_ASSERT(buffer && "Vorbis buffer failed to allocate");
 
         // Write the samples to the buffer, converted to float and remapped to target channels
         for (int i = 0; i < std::min(frameCount, bufferSize); ++i)

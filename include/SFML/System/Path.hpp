@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Export.hpp>
 
-#include <SFML/System/InPlacePImpl.hpp>
+#include <SFML/Base/InPlacePImpl.hpp>
 
 #include <iosfwd>
 
@@ -68,6 +68,7 @@ public:
 
     [[nodiscard]] Path filename() const;
     [[nodiscard]] Path extension() const;
+    [[nodiscard]] Path absolute() const;
 
     [[nodiscard]] const value_type* c_str() const; // TODO: support other platforms
     // [[nodiscard]] std::string       string() const;
@@ -102,7 +103,7 @@ private:
     [[nodiscard]] Path(int, const void* fsPath);
 
     struct Impl;
-    priv::InPlacePImpl<Impl, 64> m_impl;
+    base::InPlacePImpl<Impl, 64> m_impl;
 };
 
 

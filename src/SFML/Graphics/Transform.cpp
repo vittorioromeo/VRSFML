@@ -28,7 +28,8 @@
 #include <SFML/Graphics/Transform.hpp>
 
 #include <SFML/System/Angle.hpp>
-#include <SFML/System/MathUtils.hpp>
+
+#include <SFML/Base/Math.hpp>
 
 
 namespace sf
@@ -37,8 +38,8 @@ namespace sf
 Transform& Transform::rotate(Angle angle)
 {
     const float rad = angle.asRadians();
-    const float cos = priv::cos(rad);
-    const float sin = priv::sin(rad);
+    const float cos = base::cos(rad);
+    const float sin = base::sin(rad);
 
     // clang-format off
     const Transform rotation(cos, -sin, 0,
@@ -54,8 +55,8 @@ Transform& Transform::rotate(Angle angle)
 Transform& Transform::rotate(Angle angle, const Vector2f& center)
 {
     const float rad = angle.asRadians();
-    const float cos = priv::cos(rad);
-    const float sin = priv::sin(rad);
+    const float cos = base::cos(rad);
+    const float sin = base::sin(rad);
 
     // clang-format off
     const Transform rotation(cos, -sin, center.x * (1 - cos) + center.y * sin,

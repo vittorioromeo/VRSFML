@@ -1,6 +1,6 @@
 #include <SFML/Network/Socket.hpp>
 
-#include <SFML/System/Macros.hpp>
+#include <SFML/Base/Macros.hpp>
 
 #include <Doctest.hpp>
 
@@ -50,7 +50,7 @@ TEST_CASE("[Network] sf::Socket")
             TestSocket movedTestSocket;
             movedTestSocket.setBlocking(false);
             movedTestSocket.create();
-            const TestSocket testSocket(SFML_MOVE(movedTestSocket));
+            const TestSocket testSocket(SFML_BASE_MOVE(movedTestSocket));
             CHECK(!testSocket.isBlocking());
             CHECK(testSocket.getNativeHandle() != invalidHandle);
         }
@@ -61,7 +61,7 @@ TEST_CASE("[Network] sf::Socket")
             movedTestSocket.setBlocking(false);
             movedTestSocket.create();
             TestSocket testSocket;
-            testSocket = SFML_MOVE(movedTestSocket);
+            testSocket = SFML_BASE_MOVE(movedTestSocket);
             CHECK(!testSocket.isBlocking());
             CHECK(testSocket.getNativeHandle() != invalidHandle);
         }

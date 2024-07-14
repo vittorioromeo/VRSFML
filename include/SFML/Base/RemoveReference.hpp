@@ -22,25 +22,28 @@
 //
 ////////////////////////////////////////////////////////////
 
+#pragma once
+
+
+#if __has_builtin(__remove_reference)
+
 ////////////////////////////////////////////////////////////
-// Headers
-////////////////////////////////////////////////////////////
-#include <SFML/System/Path.hpp>
-#include <SFML/System/PathUtils.hpp>
+#define SFML_BASE_REMOVE_REFERENCE(...) __remove_reference(__VA_ARGS__)
 
-#include <sstream>
-#include <string>
+#else
 
-
-namespace sf::priv
+namespace sf::base::priv
 {
 ////////////////////////////////////////////////////////////
-std::string formatDebugPathInfo(const Path& path)
-{
-    std::ostringstream oss;
-    oss << "    Provided path: " << path.to<std::string>() << '\n'; // TODO
-        //        << "    Absolute path: " << std::filesystem::absolute(path);
-    return oss.str();
-}
+// clang-format off
+template <typename T> struct RemoveReferenceImpl      { using type = T; };
+template <typename T> struct RemoveReferenceImpl<T&>  { using type = T; };
+template <typename T> struct RemoveReferenceImpl<T&&> { using type = T; };
+// clang-format on
 
-} // namespace sf::priv
+} // namespace sf::base::priv
+
+////////////////////////////////////////////////////////////
+#define SFML_BASE_REMOVE_REFERENCE(...) typename ::sf::base::priv::RemoveReferenceImpl<__VA_ARGS__>::type
+
+#endif

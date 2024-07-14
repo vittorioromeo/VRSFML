@@ -1,5 +1,5 @@
 #include <SFML/System/Angle.hpp>
-#include <SFML/System/MathUtils.hpp>
+#include <SFML/Base/Math.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #include <Doctest.hpp>
@@ -68,10 +68,10 @@ TEMPLATE_TEST_CASE("[System] sf::Vector2", "", int, float)
 
             CHECK(sf::Vector2f::fromAngle(1, 0_deg) == sf::Vector2f{1, 0});
             CHECK(sf::Vector2f::fromAngle(1, 45_deg) ==
-                  Approx(sf::Vector2f(sf::priv::sqrt(2.f) / 2.f, sf::priv::sqrt(2.f) / 2.f)));
+                  Approx(sf::Vector2f(sf::base::sqrt(2.f) / 2.f, sf::base::sqrt(2.f) / 2.f)));
             CHECK(sf::Vector2f::fromAngle(1, 90_deg) == Approx(sf::Vector2f{0, 1}));
             CHECK(sf::Vector2f::fromAngle(1, 135_deg) ==
-                  Approx(sf::Vector2f(-sf::priv::sqrt(2.f) / 2.f, sf::priv::sqrt(2.f) / 2.f)));
+                  Approx(sf::Vector2f(-sf::base::sqrt(2.f) / 2.f, sf::base::sqrt(2.f) / 2.f)));
             CHECK(sf::Vector2f::fromAngle(1, 180_deg) == Approx(sf::Vector2f(-1, 0)));
             CHECK(sf::Vector2f::fromAngle(1, 270_deg) == Approx(sf::Vector2f(0, -1)));
             CHECK(sf::Vector2f::fromAngle(1, 360_deg) == Approx(sf::Vector2f{1, 0}));
@@ -82,10 +82,10 @@ TEMPLATE_TEST_CASE("[System] sf::Vector2", "", int, float)
 
             CHECK(sf::Vector2f::fromAngle(-1, 0_deg) == sf::Vector2f(-1, 0));
             CHECK(sf::Vector2f::fromAngle(-1, 45_deg) ==
-                  Approx(sf::Vector2f(-sf::priv::sqrt(2.f) / 2.f, -sf::priv::sqrt(2.f) / 2.f)));
+                  Approx(sf::Vector2f(-sf::base::sqrt(2.f) / 2.f, -sf::base::sqrt(2.f) / 2.f)));
             CHECK(sf::Vector2f::fromAngle(-1, 90_deg) == Approx(sf::Vector2f(0, -1)));
             CHECK(sf::Vector2f::fromAngle(-1, 135_deg) ==
-                  Approx(sf::Vector2f(sf::priv::sqrt(2.f) / 2.f, -sf::priv::sqrt(2.f) / 2.f)));
+                  Approx(sf::Vector2f(sf::base::sqrt(2.f) / 2.f, -sf::base::sqrt(2.f) / 2.f)));
             CHECK(sf::Vector2f::fromAngle(-1, 180_deg) == Approx(sf::Vector2f{1, 0}));
             CHECK(sf::Vector2f::fromAngle(-1, 270_deg) == Approx(sf::Vector2f{0, 1}));
             CHECK(sf::Vector2f::fromAngle(-1, 360_deg) == Approx(sf::Vector2f(-1, 0)));
@@ -96,10 +96,10 @@ TEMPLATE_TEST_CASE("[System] sf::Vector2", "", int, float)
 
             CHECK(sf::Vector2f::fromAngle(4.2f, 0_deg) == sf::Vector2f(4.2f, 0));
             CHECK(sf::Vector2f::fromAngle(4.2f, 45_deg) ==
-                  Approx(sf::Vector2f(4.2f * sf::priv::sqrt(2.f) / 2.f, 4.2f * sf::priv::sqrt(2.f) / 2.f)));
+                  Approx(sf::Vector2f(4.2f * sf::base::sqrt(2.f) / 2.f, 4.2f * sf::base::sqrt(2.f) / 2.f)));
             CHECK(sf::Vector2f::fromAngle(4.2f, 90_deg) == Approx(sf::Vector2f(0, 4.2f)));
             CHECK(sf::Vector2f::fromAngle(4.2f, 135_deg) ==
-                  Approx(sf::Vector2f(-4.2f * sf::priv::sqrt(2.f) / 2.f, 4.2f * sf::priv::sqrt(2.f) / 2.f)));
+                  Approx(sf::Vector2f(-4.2f * sf::base::sqrt(2.f) / 2.f, 4.2f * sf::base::sqrt(2.f) / 2.f)));
             CHECK(sf::Vector2f::fromAngle(4.2f, 180_deg) == Approx(sf::Vector2f(-4.2f, 0)));
             CHECK(sf::Vector2f::fromAngle(4.2f, 270_deg) == Approx(sf::Vector2f(0, -4.2f)));
             CHECK(sf::Vector2f::fromAngle(4.2f, 360_deg) == Approx(sf::Vector2f(4.2f, 0)));

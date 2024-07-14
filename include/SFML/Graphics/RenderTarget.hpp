@@ -34,9 +34,10 @@
 #include <SFML/Graphics/PrimitiveType.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
 
-#include <SFML/System/InPlacePImpl.hpp>
 #include <SFML/System/Rect.hpp>
 #include <SFML/System/Vector2.hpp>
+
+#include <SFML/Base/InPlacePImpl.hpp>
 
 #include <cstddef>
 
@@ -629,7 +630,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    priv::InPlacePImpl<Impl, 768> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 768> m_impl; //!< Implementation details
 };
 
 } // namespace sf

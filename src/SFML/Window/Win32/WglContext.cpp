@@ -33,9 +33,10 @@
 #include <SFML/Window/Win32/WglContext.hpp>
 #include <SFML/Window/WindowImpl.hpp>
 
-#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/String.hpp>
+
+#include <SFML/Base/Assert.hpp>
 
 #include <mutex>
 #include <vector>
@@ -162,7 +163,7 @@ WglContext::~WglContext()
     if (m_context)
     {
         const bool rc = wglMakeCurrent(m_surfaceData.deviceContext, nullptr);
-        SFML_ASSERT(rc == TRUE);
+        SFML_BASE_ASSERT(rc == TRUE);
 
         wglDeleteContext(m_context);
     }
@@ -833,7 +834,7 @@ HGLRC WglContext::createContext(ContextSettings& settings, const SurfaceData& su
         }
     }
 
-    SFML_ASSERT(result != HGLRC{});
+    SFML_BASE_ASSERT(result != HGLRC{});
     return result;
 }
 

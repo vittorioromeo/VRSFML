@@ -4,7 +4,7 @@
 #include <SFML/Window/GraphicsContext.hpp>
 
 #include <SFML/System/FileInputStream.hpp>
-#include <SFML/System/Macros.hpp>
+#include <SFML/Base/Macros.hpp>
 #include <SFML/System/Path.hpp>
 
 #include <Doctest.hpp>
@@ -160,7 +160,7 @@ TEST_CASE("[Graphics] sf::Shader" * doctest::skip(skipShaderFullTest))
         {
             sf::Shader movedShader = sf::Shader::loadFromFile(graphicsContext, "Graphics/shader.vert", sf::Shader::Type::Vertex)
                                          .value();
-            const sf::Shader shader = SFML_MOVE(movedShader);
+            const sf::Shader shader = SFML_BASE_MOVE(movedShader);
             CHECK(shader.getNativeHandle() != 0);
         }
 
@@ -170,7 +170,7 @@ TEST_CASE("[Graphics] sf::Shader" * doctest::skip(skipShaderFullTest))
                                          .value();
             sf::Shader shader = sf::Shader::loadFromFile(graphicsContext, "Graphics/shader.frag", sf::Shader::Type::Fragment)
                                     .value();
-            shader = SFML_MOVE(movedShader);
+            shader = SFML_BASE_MOVE(movedShader);
             CHECK(shader.getNativeHandle() != 0);
         }
     }

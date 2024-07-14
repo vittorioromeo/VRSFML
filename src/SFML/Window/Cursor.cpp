@@ -29,14 +29,15 @@
 #include <SFML/Window/CursorImpl.hpp>
 
 #include <SFML/System/Err.hpp>
-#include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
+
+#include <SFML/Base/UniquePtr.hpp>
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-Cursor::Cursor(priv::PassKey<Cursor>&&)
+Cursor::Cursor(base::PassKey<Cursor>&&)
 {
 }
 
@@ -54,21 +55,21 @@ Cursor& Cursor::operator=(Cursor&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-Optional<Cursor> Cursor::loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vector2u hotspot)
+base::Optional<Cursor> Cursor::loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vector2u hotspot)
 {
-    Optional<Cursor> cursor; // Use a single local variable for NRVO
+    base::Optional<Cursor> cursor; // Use a single local variable for NRVO
 
     if ((pixels == nullptr) || (size.x == 0) || (size.y == 0))
         return cursor; // Empty optional
 
-    cursor.emplace(priv::PassKey<Cursor>{});
+    cursor.emplace(base::PassKey<Cursor>{});
     if (!cursor->m_impl->loadFromPixels(pixels, size, hotspot))
     {
         priv::err() << "Failed to load cursor from pixels (invalid arguments)";
         return cursor; // Empty optional
     }
 
-    cursor.emplace(priv::PassKey<Cursor>{});
+    cursor.emplace(base::PassKey<Cursor>{});
     if (!cursor->m_impl->loadFromPixels(pixels, size, hotspot))
     {
         // Error message generated in called function.
@@ -81,9 +82,9 @@ Optional<Cursor> Cursor::loadFromPixels(const std::uint8_t* pixels, Vector2u siz
 
 
 ////////////////////////////////////////////////////////////
-Optional<Cursor> Cursor::loadFromSystem(Type type)
+base::Optional<Cursor> Cursor::loadFromSystem(Type type)
 {
-    auto cursor = sf::makeOptional<Cursor>(priv::PassKey<Cursor>{}); // Use a single local variable for NRVO
+    auto cursor = sf::base::makeOptional<Cursor>(base::PassKey<Cursor>{}); // Use a single local variable for NRVO
 
     if (!cursor->m_impl->loadFromSystem(type))
     {

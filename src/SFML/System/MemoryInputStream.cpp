@@ -25,10 +25,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/AlgorithmUtils.hpp>
-#include <SFML/System/Assert.hpp>
 #include <SFML/System/MemoryInputStream.hpp>
-#include <SFML/System/Optional.hpp>
+
+#include <SFML/Base/Algorithm.hpp>
+#include <SFML/Base/Assert.hpp>
+#include <SFML/Base/Optional.hpp>
 
 #include <cstring>
 
@@ -40,14 +41,14 @@ MemoryInputStream::MemoryInputStream(const void* data, std::size_t sizeInBytes) 
 m_data(static_cast<const std::byte*>(data)),
 m_size(sizeInBytes)
 {
-    SFML_ASSERT(m_data && "MemoryInputStream must be initialized with non-null data");
+    SFML_BASE_ASSERT(m_data && "MemoryInputStream must be initialized with non-null data");
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<std::size_t> MemoryInputStream::read(void* data, std::size_t size)
+base::Optional<std::size_t> MemoryInputStream::read(void* data, std::size_t size)
 {
-    const std::size_t count = priv::min(size, m_size - m_offset);
+    const std::size_t count = base::min(size, m_size - m_offset);
 
     if (count > 0)
     {
@@ -55,29 +56,29 @@ Optional<std::size_t> MemoryInputStream::read(void* data, std::size_t size)
         m_offset += count;
     }
 
-    return sf::makeOptional(count);
+    return sf::base::makeOptional(count);
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<std::size_t> MemoryInputStream::seek(std::size_t position)
+base::Optional<std::size_t> MemoryInputStream::seek(std::size_t position)
 {
     m_offset = position < m_size ? position : m_size;
-    return sf::makeOptional(m_offset);
+    return sf::base::makeOptional(m_offset);
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<std::size_t> MemoryInputStream::tell()
+base::Optional<std::size_t> MemoryInputStream::tell()
 {
-    return sf::makeOptional(m_offset);
+    return sf::base::makeOptional(m_offset);
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<std::size_t> MemoryInputStream::getSize()
+base::Optional<std::size_t> MemoryInputStream::getSize()
 {
-    return sf::makeOptional(m_size);
+    return sf::base::makeOptional(m_size);
 }
 
 } // namespace sf

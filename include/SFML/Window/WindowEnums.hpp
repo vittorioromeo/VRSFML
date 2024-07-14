@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include <SFML/System/Macros.hpp>
+#include <SFML/Base/EnumClassBitwiseOps.hpp>
 
 #include <cstdint>
 
@@ -45,7 +45,7 @@ enum class [[nodiscard]] Style : std::uint32_t
     Default = Titlebar | Resize | Close //!< Default window style
 };
 
-SFML_PRIV_DEFINE_ENUM_CLASS_BITWISE_OPERATORS(Style);
+SFML_BASE_DEFINE_ENUM_CLASS_BITWISE_OPS(Style);
 
 ////////////////////////////////////////////////////////////
 /// \ingroup window

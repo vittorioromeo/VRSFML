@@ -31,9 +31,10 @@
 #include <SFML/Audio/SavedSettings.hpp>
 #include <SFML/Audio/SoundChannel.hpp>
 
-#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Time.hpp>
+
+#include <SFML/Base/Assert.hpp>
 
 #include <miniaudio.h>
 
@@ -142,7 +143,7 @@ bool MiniaudioUtils::SoundBase::initialize(ma_sound_end_proc endCallback)
         [](ma_node* node, const float** framesIn, ma_uint32* frameCountIn, float** framesOut, ma_uint32* frameCountOut)
     {
         // Assuming that `onProcess` is never called after the destructor of `SoundBase` is finished
-        SFML_ASSERT(!static_cast<Impl::EffectNode*>(node)->impl->impl->effectNodeUninitialized);
+        SFML_BASE_ASSERT(!static_cast<Impl::EffectNode*>(node)->impl->impl->effectNodeUninitialized);
 
         static_cast<Impl::EffectNode*>(node)->impl->processEffect(framesIn, *frameCountIn, framesOut, *frameCountOut);
     };
@@ -287,7 +288,7 @@ void MiniaudioUtils::SoundBase::refreshSoundChannelMap()
 ////////////////////////////////////////////////////////////
 void MiniaudioUtils::SoundBase::setAndConnectEffectProcessor(EffectProcessor effectProcessor)
 {
-    impl->effectProcessor = SFML_MOVE(effectProcessor);
+    impl->effectProcessor = SFML_BASE_MOVE(effectProcessor);
     connectEffect(bool{impl->effectProcessor});
 }
 
@@ -320,7 +321,7 @@ std::uint8_t MiniaudioUtils::soundChannelToMiniaudioChannel(SoundChannel soundCh
             // clang-format on
 
         default:
-            SFML_ASSERT(soundChannel == SoundChannel::TopBackCenter);
+            SFML_BASE_ASSERT(soundChannel == SoundChannel::TopBackCenter);
             return std::uint8_t{MA_CHANNEL_TOP_BACK_CENTER};
     }
 }
@@ -356,7 +357,7 @@ SoundChannel MiniaudioUtils::miniaudioChannelToSoundChannel(std::uint8_t soundCh
             // clang-format on
 
         default:
-            SFML_ASSERT(maChannel == MA_CHANNEL_TOP_BACK_CENTER);
+            SFML_BASE_ASSERT(maChannel == MA_CHANNEL_TOP_BACK_CENTER);
             return SoundChannel::TopBackCenter;
     }
 }

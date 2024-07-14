@@ -31,10 +31,11 @@
 
 #include <SFML/Graphics/Color.hpp>
 
-#include <SFML/System/Optional.hpp>
-#include <SFML/System/PassKey.hpp>
 #include <SFML/System/Rect.hpp>
 #include <SFML/System/Vector2.hpp>
+
+#include <SFML/Base/Optional.hpp>
+#include <SFML/Base/PassKey.hpp>
 
 #include <vector>
 
@@ -75,7 +76,7 @@ public:
     /// \param color Fill color
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Optional<Image> create(const Vector2u& size, const Color& color = Color::Black);
+    [[nodiscard]] static base::Optional<Image> create(const Vector2u& size, const Color& color = Color::Black);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the image from an array of pixels
@@ -89,7 +90,7 @@ public:
     /// \param pixels Array of pixels to copy to the image
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Optional<Image> create(const Vector2u& size, const std::uint8_t* pixels);
+    [[nodiscard]] static base::Optional<Image> create(const Vector2u& size, const std::uint8_t* pixels);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the image from a file on disk
@@ -101,12 +102,12 @@ public:
     ///
     /// \param filename Path of the image file to load
     ///
-    /// \return Image if loading was successful, `sf::nullOpt` otherwise
+    /// \return Image if loading was successful, `base::nullOpt` otherwise
     ///
     /// \see loadFromMemory, loadFromStream, saveToFile
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Optional<Image> loadFromFile(const Path& filename);
+    [[nodiscard]] static base::Optional<Image> loadFromFile(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the image from a file in memory
@@ -119,12 +120,12 @@ public:
     /// \param data Pointer to the file data in memory
     /// \param size Size of the data to load, in bytes
     ///
-    /// \return Image if loading was successful, `sf::nullOpt` otherwise
+    /// \return Image if loading was successful, `base::nullOpt` otherwise
     ///
     /// \see loadFromFile, loadFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Optional<Image> loadFromMemory(const void* data, std::size_t size);
+    [[nodiscard]] static base::Optional<Image> loadFromMemory(const void* data, std::size_t size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the image from a custom stream
@@ -136,12 +137,12 @@ public:
     ///
     /// \param stream Source stream to read from
     ///
-    /// \return Image if loading was successful, `sf::nullOpt` otherwise
+    /// \return Image if loading was successful, `base::nullOpt` otherwise
     ///
     /// \see loadFromFile, loadFromMemory
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Optional<Image> loadFromStream(InputStream& stream);
+    [[nodiscard]] static base::Optional<Image> loadFromStream(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Save the image to a file on disk
@@ -171,7 +172,7 @@ public:
     /// \param format Encoding format to use
     ///
     /// \return Buffer with encoded data if saving was successful,
-    ///     otherwise sf::nullOpt
+    ///     otherwise base::nullOpt
     ///
     /// \see create, loadFromFile, loadFromMemory, saveToFile
     ///
@@ -297,7 +298,7 @@ public:
     /// \brief Directly initialize data members
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Image(priv::PassKey<Image>&&, Vector2u size, std::vector<std::uint8_t>&& pixels);
+    [[nodiscard]] Image(base::PassKey<Image>&&, Vector2u size, std::vector<std::uint8_t>&& pixels);
 
 private:
     ////////////////////////////////////////////////////////////

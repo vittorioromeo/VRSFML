@@ -27,8 +27,8 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/View.hpp>
 
-#include <SFML/System/Assert.hpp>
-#include <SFML/System/MathUtils.hpp>
+#include <SFML/Base/Assert.hpp>
+#include <SFML/Base/Math.hpp>
 
 
 namespace sf
@@ -84,14 +84,16 @@ void View::setViewport(const FloatRect& viewport)
 ////////////////////////////////////////////////////////////
 void View::setScissor(const FloatRect& scissor)
 {
-    SFML_ASSERT(scissor.position.x >= 0.0f && scissor.position.x <= 1.0f && "scissor.position.x must lie within [0, 1]");
-    SFML_ASSERT(scissor.position.y >= 0.0f && scissor.position.y <= 1.0f && "scissor.position.y must lie within [0, 1]");
-    SFML_ASSERT(scissor.size.x >= 0.0f && "scissor.size.x must lie within [0, 1]");
-    SFML_ASSERT(scissor.size.y >= 0.0f && "scissor.size.y must lie within [0, 1]");
-    SFML_ASSERT(scissor.position.x + scissor.size.x <= 1.0f &&
-                "scissor.position.x + scissor.size.x must lie within [0, 1]");
-    SFML_ASSERT(scissor.position.y + scissor.size.y <= 1.0f &&
-                "scissor.position.y + scissor.size.y must lie within [0, 1]");
+    SFML_BASE_ASSERT(scissor.position.x >= 0.0f && scissor.position.x <= 1.0f &&
+                     "scissor.position.x must lie within [0, 1]");
+    SFML_BASE_ASSERT(scissor.position.y >= 0.0f && scissor.position.y <= 1.0f &&
+                     "scissor.position.y must lie within [0, 1]");
+    SFML_BASE_ASSERT(scissor.size.x >= 0.0f && "scissor.size.x must lie within [0, 1]");
+    SFML_BASE_ASSERT(scissor.size.y >= 0.0f && "scissor.size.y must lie within [0, 1]");
+    SFML_BASE_ASSERT(scissor.position.x + scissor.size.x <= 1.0f &&
+                     "scissor.position.x + scissor.size.x must lie within [0, 1]");
+    SFML_BASE_ASSERT(scissor.position.y + scissor.size.y <= 1.0f &&
+                     "scissor.position.y + scissor.size.y must lie within [0, 1]");
 
     m_scissor = scissor;
 }
@@ -161,8 +163,8 @@ const Transform& View::getTransform() const
     {
         // Rotation components
         const float angle  = m_rotation.asRadians();
-        const float cosine = priv::cos(angle);
-        const float sine   = priv::sin(angle);
+        const float cosine = base::cos(angle);
+        const float sine   = base::sin(angle);
         const float tx     = -m_center.x * cosine - m_center.y * sine + m_center.x;
         const float ty     = m_center.x * sine - m_center.y * cosine + m_center.y;
 

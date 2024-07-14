@@ -4,9 +4,9 @@
 
 #pragma once
 
-namespace sf::priv
+namespace sf::base
 {
 ////////////////////////////////////////////////////////////
 using SizeT = decltype(sizeof(int));
 
-} // namespace sf::priv
+} // namespace sf::base

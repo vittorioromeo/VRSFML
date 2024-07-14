@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Config.hpp>
 
-#include <SFML/System/Macros.hpp>
+#include <SFML/Base/EnumClassBitwiseOps.hpp>
 
 #include <cstdint>
 
@@ -66,7 +66,7 @@ struct ContextSettings
     bool         sRgbCapable{};                      //!< Whether the context framebuffer is sRGB capable
 };
 
-SFML_PRIV_DEFINE_ENUM_CLASS_BITWISE_OPERATORS(ContextSettings::Attribute);
+SFML_BASE_DEFINE_ENUM_CLASS_BITWISE_OPS(ContextSettings::Attribute);
 
 } // namespace sf
 

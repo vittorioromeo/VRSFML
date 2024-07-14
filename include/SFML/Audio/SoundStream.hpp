@@ -32,8 +32,8 @@
 #include <SFML/Audio/SoundChannel.hpp>
 #include <SFML/Audio/SoundSource.hpp>
 
-#include <SFML/System/Optional.hpp>
-#include <SFML/System/UniquePtr.hpp>
+#include <SFML/Base/Optional.hpp>
+#include <SFML/Base/UniquePtr.hpp>
 
 #include <vector>
 
@@ -265,10 +265,10 @@ protected:
     /// allow implementation of custom loop points. Otherwise,
     /// it just calls onSeek(Time::Zero) and returns 0.
     ///
-    /// \return The seek position after looping (or sf::nullOpt if there's no loop)
+    /// \return The seek position after looping (or base::nullOpt if there's no loop)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual Optional<std::uint64_t> onLoop();
+    [[nodiscard]] virtual base::Optional<std::uint64_t> onLoop();
 
     ////////////////////////////////////////////////////////////
     // Member data
@@ -289,7 +289,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    priv::UniquePtr<Impl> m_impl; //!< Implementation details
+    base::UniquePtr<Impl> m_impl; //!< Implementation details
 };
 
 } // namespace sf

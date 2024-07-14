@@ -27,9 +27,10 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/SoundFileReaderOgg.hpp>
 
-#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InputStream.hpp>
+
+#include <SFML/Base/Assert.hpp>
 
 #include <vorbis/vorbisfile.h>
 
@@ -58,14 +59,14 @@ int seek(void* data, ogg_int64_t signedOffset, int whence)
         case SEEK_END:
             offset = stream->getSize().value() - offset;
     }
-    const sf::Optional position = stream->seek(offset);
+    const sf::base::Optional position = stream->seek(offset);
     return position ? static_cast<int>(*position) : -1;
 }
 
 long tell(void* data)
 {
-    auto*              stream   = static_cast<sf::InputStream*>(data);
-    const sf::Optional position = stream->tell();
+    auto*                    stream   = static_cast<sf::InputStream*>(data);
+    const sf::base::Optional position = stream->tell();
     return position ? static_cast<long>(*position) : -1;
 }
 
@@ -108,9 +109,9 @@ SoundFileReaderOgg::~SoundFileReaderOgg()
 
 
 ////////////////////////////////////////////////////////////
-Optional<SoundFileReader::Info> SoundFileReaderOgg::open(InputStream& stream)
+base::Optional<SoundFileReader::Info> SoundFileReaderOgg::open(InputStream& stream)
 {
-    Optional<Info> result; // Use a single local variable for NRVO
+    base::Optional<Info> result; // Use a single local variable for NRVO
 
     // Open the Vorbis stream
     const int status = ov_open_callbacks(&stream, &m_impl->vorbis, nullptr, 0, callbacks);
@@ -182,7 +183,7 @@ Optional<SoundFileReader::Info> SoundFileReaderOgg::open(InputStream& stream)
             break;
         default:
             priv::err() << "Vorbis files with more than 8 channels not supported";
-            SFML_ASSERT(false);
+            SFML_BASE_ASSERT(false);
             break;
     }
 
@@ -196,8 +197,8 @@ Optional<SoundFileReader::Info> SoundFileReaderOgg::open(InputStream& stream)
 ////////////////////////////////////////////////////////////
 void SoundFileReaderOgg::seek(std::uint64_t sampleOffset)
 {
-    SFML_ASSERT(m_impl->vorbis.datasource &&
-                "Vorbis datasource is missing. Call SoundFileReaderOgg::open() to initialize it.");
+    SFML_BASE_ASSERT(m_impl->vorbis.datasource &&
+                     "Vorbis datasource is missing. Call SoundFileReaderOgg::open() to initialize it.");
 
     ov_pcm_seek(&m_impl->vorbis, static_cast<ogg_int64_t>(sampleOffset / m_impl->channelCount));
 }
@@ -206,8 +207,8 @@ void SoundFileReaderOgg::seek(std::uint64_t sampleOffset)
 ////////////////////////////////////////////////////////////
 std::uint64_t SoundFileReaderOgg::read(std::int16_t* samples, std::uint64_t maxCount)
 {
-    SFML_ASSERT(m_impl->vorbis.datasource &&
-                "Vorbis datasource is missing. Call SoundFileReaderOgg::open() to initialize it.");
+    SFML_BASE_ASSERT(m_impl->vorbis.datasource &&
+                     "Vorbis datasource is missing. Call SoundFileReaderOgg::open() to initialize it.");
 
     // Try to read the requested number of samples, stop only on error or end of file
     std::uint64_t count = 0;

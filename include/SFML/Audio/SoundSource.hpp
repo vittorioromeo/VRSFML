@@ -32,8 +32,9 @@
 #include <SFML/Audio/Listener.hpp>
 
 #include <SFML/System/Angle.hpp>
-#include <SFML/System/InPlacePImpl.hpp>
 #include <SFML/System/Vector3.hpp>
+
+#include <SFML/Base/InPlacePImpl.hpp>
 
 
 ////////////////////////////////////////////////////////////
@@ -662,7 +663,7 @@ private:
     /// Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    priv::InPlacePImpl<Impl, 320> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 320> m_impl; //!< Implementation details
 };
 
 } // namespace sf

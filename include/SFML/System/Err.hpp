@@ -29,13 +29,16 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Export.hpp>
 
-#include <SFML/System/InPlacePImpl.hpp>
+#include <SFML/Base/InPlacePImpl.hpp>
 
 #include <iosfwd>
 
 
 namespace sf::priv
 {
+////////////////////////////////////////////////////////////
+struct PathDebugFormatter;
+
 ////////////////////////////////////////////////////////////
 struct ErrFlushType
 {
@@ -66,6 +69,7 @@ private:
 
         Guard& operator<<(const char* value);
         Guard& operator<<(ErrFlushType);
+        Guard& operator<<(PathDebugFormatter);
 
         template <typename T>
         Guard& operator<<(const T& value);
@@ -77,7 +81,7 @@ private:
     };
 
     struct Impl;
-    priv::InPlacePImpl<Impl, 512> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 512> m_impl; //!< Implementation details
 
 public:
     explicit ErrStream(std::streambuf* sbuf);
@@ -89,6 +93,7 @@ public:
 
     Guard operator<<(const char* value);
     Guard operator<<(ErrFlushType);
+    Guard operator<<(PathDebugFormatter);
 
     template <typename T>
     Guard operator<<(const T& value);

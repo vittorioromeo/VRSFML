@@ -27,7 +27,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/JoystickManager.hpp>
 
-#include <SFML/System/Assert.hpp>
+#include <SFML/Base/Assert.hpp>
 
 
 namespace sf::priv
@@ -43,7 +43,7 @@ JoystickManager& JoystickManager::getInstance()
 ////////////////////////////////////////////////////////////
 const JoystickCaps& JoystickManager::getCapabilities(unsigned int joystick) const
 {
-    SFML_ASSERT(joystick < Joystick::Count && "Joystick index must be less than Joystick::Count");
+    SFML_BASE_ASSERT(joystick < Joystick::Count && "Joystick index must be less than Joystick::Count");
     return m_joysticks[joystick].capabilities;
 }
 
@@ -51,7 +51,7 @@ const JoystickCaps& JoystickManager::getCapabilities(unsigned int joystick) cons
 ////////////////////////////////////////////////////////////
 const JoystickState& JoystickManager::getState(unsigned int joystick) const
 {
-    SFML_ASSERT(joystick < Joystick::Count && "Joystick index must be less than Joystick::Count");
+    SFML_BASE_ASSERT(joystick < Joystick::Count && "Joystick index must be less than Joystick::Count");
     return m_joysticks[joystick].state;
 }
 
@@ -59,7 +59,7 @@ const JoystickState& JoystickManager::getState(unsigned int joystick) const
 ////////////////////////////////////////////////////////////
 const Joystick::Identification& JoystickManager::getIdentification(unsigned int joystick) const
 {
-    SFML_ASSERT(joystick < Joystick::Count && "Joystick index must be less than Joystick::Count");
+    SFML_BASE_ASSERT(joystick < Joystick::Count && "Joystick index must be less than Joystick::Count");
     return m_joysticks[joystick].identification;
 }
 

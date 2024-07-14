@@ -133,15 +133,15 @@ Socket::Status UdpSocket::send(const void* data, std::size_t size, const IpAddre
 
 
 ////////////////////////////////////////////////////////////
-Socket::Status UdpSocket::receive(void*                data,
-                                  std::size_t          size,
-                                  std::size_t&         received,
-                                  Optional<IpAddress>& remoteAddress,
-                                  unsigned short&      remotePort)
+Socket::Status UdpSocket::receive(void*                      data,
+                                  std::size_t                size,
+                                  std::size_t&               received,
+                                  base::Optional<IpAddress>& remoteAddress,
+                                  unsigned short&            remotePort)
 {
     // First clear the variables to fill
     received      = 0;
-    remoteAddress = sf::nullOpt;
+    remoteAddress = base::nullOpt;
     remotePort    = 0;
 
     // Check the destination buffer
@@ -201,7 +201,7 @@ Socket::Status UdpSocket::send(Packet& packet, const IpAddress& remoteAddress, u
 
 
 ////////////////////////////////////////////////////////////
-Socket::Status UdpSocket::receive(Packet& packet, Optional<IpAddress>& remoteAddress, unsigned short& remotePort)
+Socket::Status UdpSocket::receive(Packet& packet, base::Optional<IpAddress>& remoteAddress, unsigned short& remotePort)
 {
     // See the detailed comment in send(Packet) above.
 

@@ -7,7 +7,7 @@
 #include <SFML/Network/TcpSocket.hpp>
 
 #include <iostream>
-#include <SFML/System/Optional.hpp>
+#include <SFML/Base/Optional.hpp>
 
 #include <cstddef>
 
@@ -56,7 +56,7 @@ void runTcpServer(unsigned short port)
 void runTcpClient(unsigned short port)
 {
     // Ask for the server address
-    sf::Optional<sf::IpAddress> server;
+    sf::base::Optional<sf::IpAddress> server;
     do
     {
         std::cout << "Type the address or name of the server to connect to: ";

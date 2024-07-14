@@ -29,8 +29,9 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Network/Export.hpp>
 
-#include <SFML/System/Optional.hpp>
 #include <SFML/System/Time.hpp>
+
+#include <SFML/Base/Optional.hpp>
 
 #include <iosfwd>
 #include <string>
@@ -56,10 +57,10 @@ public:
     ///
     /// \param address IP address or network name
     ///
-    /// \return Address if provided argument was valid, otherwise `sf::nullOpt`
+    /// \return Address if provided argument was valid, otherwise `base::nullOpt`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Optional<IpAddress> resolve(std::string_view address);
+    [[nodiscard]] static base::Optional<IpAddress> resolve(std::string_view address);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the address from 4 bytes
@@ -130,12 +131,12 @@ public:
     /// Unlike getPublicAddress, this function is fast and may be
     /// used safely anywhere.
     ///
-    /// \return Local IP address of the computer on success, `sf::nullOpt` otherwise
+    /// \return Local IP address of the computer on success, `base::nullOpt` otherwise
     ///
     /// \see getPublicAddress
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Optional<IpAddress> getLocalAddress();
+    [[nodiscard]] static base::Optional<IpAddress> getLocalAddress();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the computer's public address
@@ -154,12 +155,12 @@ public:
     ///
     /// \param timeout Maximum time to wait
     ///
-    /// \return Public IP address of the computer on success, `sf::nullOpt` otherwise
+    /// \return Public IP address of the computer on success, `base::nullOpt` otherwise
     ///
     /// \see getLocalAddress
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Optional<IpAddress> getPublicAddress(Time timeout = Time::Zero);
+    [[nodiscard]] static base::Optional<IpAddress> getPublicAddress(Time timeout = Time::Zero);
 
     ////////////////////////////////////////////////////////////
     // Static member data
@@ -254,7 +255,7 @@ private:
 /// \return Reference to the input stream
 ///
 ////////////////////////////////////////////////////////////
-SFML_NETWORK_API std::istream& operator>>(std::istream& stream, Optional<IpAddress>& address);
+SFML_NETWORK_API std::istream& operator>>(std::istream& stream, base::Optional<IpAddress>& address);
 
 ////////////////////////////////////////////////////////////
 /// \brief Overload of << operator to print an IP address to an output stream

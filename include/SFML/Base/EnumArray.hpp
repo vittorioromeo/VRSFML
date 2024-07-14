@@ -27,31 +27,21 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#if !__has_builtin(__is_enum)
-#include <type_traits>
-#endif
-
-#include <SFML/System/Assert.hpp>
-
-#include <cstddef>
+#include <SFML/Base/Assert.hpp>
+#include <SFML/Base/IsEnum.hpp>
+#include <SFML/Base/SizeT.hpp>
 
 
-namespace sf::priv
+namespace sf::base
 {
 ////////////////////////////////////////////////////////////
 /// \brief Fixed-size array container indexed by an enumeration
 ///
 ////////////////////////////////////////////////////////////
-template <typename Enum, typename Value, std::size_t Count>
+template <typename Enum, typename Value, SizeT Count>
 struct EnumArray
 {
-    static_assert(
-#if !__has_builtin(__is_enum)
-        std::is_enum_v<Enum>,
-#else
-        __is_enum(Enum),
-#endif
-        "Enum type parameter must be an enumeration");
+    static_assert(SFML_BASE_IS_ENUM(Enum));
 
     ////////////////////////////////////////////////////////////
     /// \brief Returns a reference to the element associated to specified \a key
@@ -59,10 +49,10 @@ struct EnumArray
     /// No bounds checking is performed in release builds.
     ///
     ////////////////////////////////////////////////////////////
-    constexpr Value& operator[](Enum key)
+    [[nodiscard, gnu::always_inline]] constexpr Value& operator[](Enum key)
     {
-        const auto index = static_cast<std::size_t>(key);
-        SFML_ASSERT(index < Count && "Index is out of bounds");
+        const auto index = static_cast<SizeT>(key);
+        SFML_BASE_ASSERT(index < Count && "Index is out of bounds");
         return data[index];
     }
 
@@ -72,14 +62,14 @@ struct EnumArray
     /// No bounds checking is performed in release builds.
     ///
     ////////////////////////////////////////////////////////////
-    constexpr const Value& operator[](Enum key) const
+    [[nodiscard, gnu::always_inline]] constexpr const Value& operator[](Enum key) const
     {
-        const auto index = static_cast<std::size_t>(key);
-        SFML_ASSERT(index < Count && "Index is out of bounds");
+        const auto index = static_cast<SizeT>(key);
+        SFML_BASE_ASSERT(index < Count && "Index is out of bounds");
         return data[index];
     }
 
-    constexpr void fill(Value key)
+    [[nodiscard, gnu::always_inline]] constexpr void fill(Value key)
     {
         for (Value& value : data)
             value = key;
@@ -88,4 +78,4 @@ struct EnumArray
     Value data[Count];
 };
 
-} // namespace sf::priv
+} // namespace sf::base

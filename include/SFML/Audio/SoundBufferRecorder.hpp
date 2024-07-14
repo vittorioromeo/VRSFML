@@ -31,7 +31,7 @@
 
 #include <SFML/Audio/SoundRecorder.hpp>
 
-#include <SFML/System/InPlacePImpl.hpp>
+#include <SFML/Base/InPlacePImpl.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -112,7 +112,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    priv::InPlacePImpl<Impl, 256> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 256> m_impl; //!< Implementation details
 };
 
 } // namespace sf

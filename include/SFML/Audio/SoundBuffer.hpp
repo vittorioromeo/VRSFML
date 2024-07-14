@@ -31,10 +31,11 @@
 
 #include <SFML/Audio/SoundChannel.hpp>
 
-#include <SFML/System/InPlacePImpl.hpp>
 #include <SFML/System/LifetimeDependee.hpp>
-#include <SFML/System/Optional.hpp>
-#include <SFML/System/PassKey.hpp>
+
+#include <SFML/Base/InPlacePImpl.hpp>
+#include <SFML/Base/Optional.hpp>
+#include <SFML/Base/PassKey.hpp>
 
 #include <vector>
 
@@ -86,12 +87,12 @@ public:
     ///
     /// \param filename Path of the sound file to load
     ///
-    /// \return Sound buffer if loading succeeded, `sf::nullOpt` if it failed
+    /// \return Sound buffer if loading succeeded, `base::nullOpt` if it failed
     ///
     /// \see loadFromMemory, loadFromStream, loadFromSamples, saveToFile
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Optional<SoundBuffer> loadFromFile(const Path& filename);
+    [[nodiscard]] static base::Optional<SoundBuffer> loadFromFile(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the sound buffer from a file in memory
@@ -102,12 +103,12 @@ public:
     /// \param data        Pointer to the file data in memory
     /// \param sizeInBytes Size of the data to load, in bytes
     ///
-    /// \return Sound buffer if loading succeeded, `sf::nullOpt` if it failed
+    /// \return Sound buffer if loading succeeded, `base::nullOpt` if it failed
     ///
     /// \see loadFromFile, loadFromStream, loadFromSamples
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Optional<SoundBuffer> loadFromMemory(const void* data, std::size_t sizeInBytes);
+    [[nodiscard]] static base::Optional<SoundBuffer> loadFromMemory(const void* data, std::size_t sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the sound buffer from a custom stream
@@ -117,12 +118,12 @@ public:
     ///
     /// \param stream Source stream to read from
     ///
-    /// \return Sound buffer if loading succeeded, `sf::nullOpt` if it failed
+    /// \return Sound buffer if loading succeeded, `base::nullOpt` if it failed
     ///
     /// \see loadFromFile, loadFromMemory, loadFromSamples
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Optional<SoundBuffer> loadFromStream(InputStream& stream);
+    [[nodiscard]] static base::Optional<SoundBuffer> loadFromStream(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the sound buffer from an array of audio samples
@@ -135,12 +136,12 @@ public:
     /// \param sampleRate   Sample rate (number of samples to play per second)
     /// \param channelMap   Map of position in sample frame to sound channel
     ///
-    /// \return Sound buffer if loading succeeded, `sf::nullOpt` if it failed
+    /// \return Sound buffer if loading succeeded, `base::nullOpt` if it failed
     ///
     /// \see loadFromFile, loadFromMemory, saveToFile
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Optional<SoundBuffer> loadFromSamples(
+    [[nodiscard]] static base::Optional<SoundBuffer> loadFromSamples(
         const std::int16_t*              samples,
         std::uint64_t                    sampleCount,
         unsigned int                     channelCount,
@@ -259,14 +260,14 @@ public:
     /// \brief Construct from vector of samples
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit SoundBuffer(priv::PassKey<SoundBuffer>&&, std::vector<std::int16_t>&& samples);
+    [[nodiscard]] explicit SoundBuffer(base::PassKey<SoundBuffer>&&, std::vector<std::int16_t>&& samples);
 
 private:
     ////////////////////////////////////////////////////////////
     /// \brief Load the sound buffer taking ownership of a vector of audio samples
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Optional<SoundBuffer> loadFromSamplesImpl(
+    [[nodiscard]] static base::Optional<SoundBuffer> loadFromSamplesImpl(
         std::vector<std::int16_t>&&      samples,
         unsigned int                     channelCount,
         unsigned int                     sampleRate,
@@ -280,7 +281,7 @@ private:
     /// \return True on successful initialization, false on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Optional<SoundBuffer> initialize(InputSoundFile& file);
+    [[nodiscard]] static base::Optional<SoundBuffer> initialize(InputSoundFile& file);
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the internal buffer with the cached audio samples
@@ -314,7 +315,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    priv::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking

@@ -30,9 +30,10 @@
 #include <SFML/Audio/SoundBufferRecorder.hpp>
 #include <SFML/Audio/SoundRecorder.hpp>
 
-#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
-#include <SFML/System/Optional.hpp>
+
+#include <SFML/Base/Assert.hpp>
+#include <SFML/Base/Optional.hpp>
 
 #include <vector>
 
@@ -44,8 +45,8 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct SoundBufferRecorder::Impl
 {
-    std::vector<std::int16_t> samples; //!< Temporary sample buffer to hold the recorded data
-    Optional<SoundBuffer>     buffer;  //!< Sound buffer that will contain the recorded data
+    std::vector<std::int16_t>   samples; //!< Temporary sample buffer to hold the recorded data
+    base::Optional<SoundBuffer> buffer;  //!< Sound buffer that will contain the recorded data
 };
 
 
@@ -108,7 +109,8 @@ bool SoundBufferRecorder::onStop(CaptureDevice& captureDevice)
 ////////////////////////////////////////////////////////////
 const SoundBuffer& SoundBufferRecorder::getBuffer() const
 {
-    SFML_ASSERT(m_impl->buffer.hasValue() && "SoundBufferRecorder::getBuffer() Cannot return reference to null buffer");
+    SFML_BASE_ASSERT(m_impl->buffer.hasValue() &&
+                     "SoundBufferRecorder::getBuffer() Cannot return reference to null buffer");
     return *m_impl->buffer;
 }
 

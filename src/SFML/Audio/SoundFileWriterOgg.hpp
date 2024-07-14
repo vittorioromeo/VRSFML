@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/SoundFileWriter.hpp>
 
-#include <SFML/System/InPlacePImpl.hpp>
+#include <SFML/Base/InPlacePImpl.hpp>
 
 #include <vector>
 
@@ -115,7 +115,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    priv::InPlacePImpl<Impl, 1280> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 1280> m_impl; //!< Implementation details
 };
 
 } // namespace sf::priv

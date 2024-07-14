@@ -30,9 +30,10 @@
 #include <SFML/Audio/SavedSettings.hpp>
 #include <SFML/Audio/SoundSource.hpp>
 
-#include <SFML/System/AlgorithmUtils.hpp>
-#include <SFML/System/Macros.hpp>
 #include <SFML/System/Time.hpp>
+
+#include <SFML/Base/Algorithm.hpp>
+#include <SFML/Base/Macros.hpp>
 
 #include <miniaudio.h>
 
@@ -134,8 +135,8 @@ void SoundSource::setCone(const Cone& cone)
 
     if (auto* sound = static_cast<ma_sound*>(getSound()))
         ma_sound_set_cone(sound,
-                          priv::clamp(m_impl->savedSettings.cone.innerAngle, Angle::Zero, degrees(360.f)).asRadians(),
-                          priv::clamp(m_impl->savedSettings.cone.outerAngle, Angle::Zero, degrees(360.f)).asRadians(),
+                          base::clamp(m_impl->savedSettings.cone.innerAngle, Angle::Zero, degrees(360.f)).asRadians(),
+                          base::clamp(m_impl->savedSettings.cone.outerAngle, Angle::Zero, degrees(360.f)).asRadians(),
                           m_impl->savedSettings.cone.outerGain);
 }
 
@@ -233,7 +234,7 @@ void SoundSource::setAttenuation(float attenuation)
 ////////////////////////////////////////////////////////////
 void SoundSource::setEffectProcessor(EffectProcessor effectProcessor)
 {
-    m_impl->effectProcessor = SFML_MOVE(effectProcessor);
+    m_impl->effectProcessor = SFML_BASE_MOVE(effectProcessor);
 }
 
 

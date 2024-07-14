@@ -32,10 +32,11 @@
 #include <SFML/Graphics/CoordinateType.hpp>
 
 #include <SFML/System/LifetimeDependee.hpp>
-#include <SFML/System/Optional.hpp>
-#include <SFML/System/PassKey.hpp>
 #include <SFML/System/Rect.hpp>
 #include <SFML/System/Vector2.hpp>
+
+#include <SFML/Base/Optional.hpp>
+#include <SFML/Base/PassKey.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -98,10 +99,10 @@ public:
     /// \param size Width and height of the texture
     /// \param sRgb True to enable sRGB conversion, false to disable it
     ///
-    /// \return Texture if creation was successful, otherwise `sf::nullOpt`
+    /// \return Texture if creation was successful, otherwise `base::nullOpt`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Optional<Texture> create(GraphicsContext& graphicsContext, const Vector2u& size, bool sRgb = false);
+    [[nodiscard]] static base::Optional<Texture> create(GraphicsContext& graphicsContext, const Vector2u& size, bool sRgb = false);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the texture from a file on disk
@@ -121,15 +122,16 @@ public:
     /// \param sRgb     True to enable sRGB conversion, false to disable it
     /// \param area     Area of the image to load
     ///
-    /// \return Texture if loading was successful, otherwise `sf::nullOpt`
+    /// \return Texture if loading was successful, otherwise `base::nullOpt`
     ///
     /// \see loadFromMemory, loadFromStream, loadFromImage
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Optional<Texture> loadFromFile(GraphicsContext& graphicsContext,
-                                                        const Path&      filename,
-                                                        bool             sRgb = false,
-                                                        const IntRect&   area = {});
+    [[nodiscard]] static base::Optional<Texture> loadFromFile(
+        GraphicsContext& graphicsContext,
+        const Path&      filename,
+        bool             sRgb = false,
+        const IntRect&   area = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the texture from a file in memory
@@ -150,12 +152,12 @@ public:
     /// \param sRgb True to enable sRGB conversion, false to disable it
     /// \param area Area of the image to load
     ///
-    /// \return Texture if loading was successful, otherwise `sf::nullOpt`
+    /// \return Texture if loading was successful, otherwise `base::nullOpt`
     ///
     /// \see loadFromFile, loadFromStream, loadFromImage
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Optional<Texture> loadFromMemory(
+    [[nodiscard]] static base::Optional<Texture> loadFromMemory(
         GraphicsContext& graphicsContext,
         const void*      data,
         std::size_t      size,
@@ -180,15 +182,16 @@ public:
     /// \param sRgb   True to enable sRGB conversion, false to disable it
     /// \param area   Area of the image to load
     ///
-    /// \return Texture if loading was successful, otherwise `sf::nullOpt`
+    /// \return Texture if loading was successful, otherwise `base::nullOpt`
     ///
     /// \see loadFromFile, loadFromMemory, loadFromImage
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Optional<Texture> loadFromStream(GraphicsContext& graphicsContext,
-                                                          InputStream&     stream,
-                                                          bool             sRgb = false,
-                                                          const IntRect&   area = {});
+    [[nodiscard]] static base::Optional<Texture> loadFromStream(
+        GraphicsContext& graphicsContext,
+        InputStream&     stream,
+        bool             sRgb = false,
+        const IntRect&   area = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the texture from an image
@@ -208,15 +211,16 @@ public:
     /// \param sRgb   True to enable sRGB conversion, false to disable it
     /// \param area  Area of the image to load
     ///
-    /// \return Texture if loading was successful, otherwise `sf::nullOpt`
+    /// \return Texture if loading was successful, otherwise `base::nullOpt`
     ///
     /// \see loadFromFile, loadFromMemory
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Optional<Texture> loadFromImage(GraphicsContext& graphicsContext,
-                                                         const Image&     image,
-                                                         bool             sRgb = false,
-                                                         const IntRect&   area = {});
+    [[nodiscard]] static base::Optional<Texture> loadFromImage(
+        GraphicsContext& graphicsContext,
+        const Image&     image,
+        bool             sRgb = false,
+        const IntRect&   area = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the texture
@@ -576,7 +580,7 @@ public:
     /// Creates an empty texture.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Texture(priv::PassKey<Texture>&&,
+    [[nodiscard]] Texture(base::PassKey<Texture>&&,
                           GraphicsContext& graphicsContext,
                           const Vector2u&  size,
                           const Vector2u&  actualSize,

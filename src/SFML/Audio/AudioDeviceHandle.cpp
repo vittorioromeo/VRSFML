@@ -56,21 +56,21 @@ const void* AudioDeviceHandle::getMADeviceInfo() const
 
 
 ////////////////////////////////////////////////////////////
-AudioDeviceHandle::AudioDeviceHandle(priv::PassKey<AudioContext>&&, const void* maDeviceInfo) :
+AudioDeviceHandle::AudioDeviceHandle(base::PassKey<AudioContext>&&, const void* maDeviceInfo) :
 AudioDeviceHandle{maDeviceInfo}
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-AudioDeviceHandle::AudioDeviceHandle(priv::PassKey<PlaybackDevice>&&, const void* maDeviceInfo) :
+AudioDeviceHandle::AudioDeviceHandle(base::PassKey<PlaybackDevice>&&, const void* maDeviceInfo) :
 AudioDeviceHandle{maDeviceInfo}
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-AudioDeviceHandle::AudioDeviceHandle(priv::PassKey<CaptureDevice>&&, const void* maDeviceInfo) :
+AudioDeviceHandle::AudioDeviceHandle(base::PassKey<CaptureDevice>&&, const void* maDeviceInfo) :
 AudioDeviceHandle{maDeviceInfo}
 {
 }

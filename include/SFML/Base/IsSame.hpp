@@ -24,14 +24,26 @@
 
 #pragma once
 
-#if __has_builtin(__underlying_type)
 
-#define SFML_PRIV_UNDERLYING_TYPE(...) __underlying_type(__VA_ARGS__)
+#if __has_builtin(__is_same)
+
+////////////////////////////////////////////////////////////
+#define SFML_BASE_IS_SAME(a, b) __is_same(a, b)
 
 #else
 
-#include <type_traits>
+namespace sf::base::priv
+{
+////////////////////////////////////////////////////////////
+template <typename, typename>
+inline constexpr bool isSameImpl = false;
 
-#define SFML_PRIV_UNDERLYING_TYPE(...) typename ::std::underlying_type<__VA_ARGS__>::type
+template <typename T>
+inline constexpr bool isSameImpl<T, T> = true;
+
+} // namespace sf::base::priv
+
+////////////////////////////////////////////////////////////
+#define SFML_BASE_IS_SAME(a, b) ::sf::base::priv::isSameImpl<a, b>
 
 #endif

@@ -29,12 +29,11 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Export.hpp>
 
-#include <string>
-
 
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_SYSTEM_API std::string toLower(std::string str);
+template <typename T>
+[[nodiscard]] SFML_SYSTEM_API T toLower(T str);
 
 } // namespace sf::priv

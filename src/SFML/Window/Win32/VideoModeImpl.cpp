@@ -27,8 +27,9 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/VideoModeImpl.hpp>
 
-#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Win32/WindowsHeader.hpp>
+
+#include <SFML/Base/Algorithm.hpp>
 
 
 namespace sf::priv
@@ -48,7 +49,7 @@ std::vector<VideoMode> VideoModeImpl::getFullscreenModes()
         const VideoMode mode({win32Mode.dmPelsWidth, win32Mode.dmPelsHeight}, win32Mode.dmBitsPerPel);
 
         // Add it only if it is not already in the array
-        if (priv::find(modes.begin(), modes.end(), mode) == modes.end())
+        if (base::find(modes.begin(), modes.end(), mode) == modes.end())
             modes.push_back(mode);
     }
 

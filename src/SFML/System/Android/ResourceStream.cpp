@@ -42,39 +42,39 @@ ResourceStream::ResourceStream(const Path& filename)
     ActivityStates&       states = getActivity();
     const std::lock_guard lock(states.mutex);
     m_file.reset(AAssetManager_open(states.activity->assetManager, filename.c_str(), AASSET_MODE_UNKNOWN));
-    SFML_ASSERT(m_file && "Failed to initialize ResourceStream file");
+    SFML_BASE_ASSERT(m_file && "Failed to initialize ResourceStream file");
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<std::size_t> ResourceStream::read(void* data, std::size_t size)
+base::Optional<std::size_t> ResourceStream::read(void* data, std::size_t size)
 {
     const auto numBytesRead = AAsset_read(m_file.get(), data, size);
     if (numBytesRead < 0)
-        return sf::nullOpt;
+        return base::nullOpt;
     return numBytesRead;
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<std::size_t> ResourceStream::seek(std::size_t position)
+base::Optional<std::size_t> ResourceStream::seek(std::size_t position)
 {
     const auto newPosition = AAsset_seek(m_file.get(), static_cast<off_t>(position), SEEK_SET);
     if (newPosition < 0)
-        return sf::nullOpt;
+        return base::nullOpt;
     return newPosition;
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<std::size_t> ResourceStream::tell()
+base::Optional<std::size_t> ResourceStream::tell()
 {
     return getSize().value() - static_cast<std::size_t>(AAsset_getRemainingLength(m_file.get()));
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<std::size_t> ResourceStream::getSize()
+base::Optional<std::size_t> ResourceStream::getSize()
 {
     return AAsset_getLength(m_file.get());
 }

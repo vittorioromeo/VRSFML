@@ -27,7 +27,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/IsSame.hpp>
+#include <SFML/Base/IsSame.hpp>
 
 
 #if __has_builtin(__builtin_fabs) && __has_builtin(__builtin_fabsf) && __has_builtin(__builtin_fabsl) &&       \
@@ -39,47 +39,50 @@
     __has_builtin(__builtin_sin) && __has_builtin(__builtin_sinf) && __has_builtin(__builtin_sinl) &&          \
     __has_builtin(__builtin_sqrt) && __has_builtin(__builtin_sqrtf) && __has_builtin(__builtin_sqrtl)
 
-#define SFML_PRIV_HAS_MATH_BUILTINS 1
+////////////////////////////////////////////////////////////
+#define SFML_BASE_PRIV_HAS_MATH_BUILTINS 1
 
 #endif
 
-#ifndef SFML_PRIV_HAS_MATH_BUILTINS
+#ifndef SFML_BASE_PRIV_HAS_MATH_BUILTINS
 #include <cmath>
 #endif
 
-#ifdef SFML_PRIV_HAS_MATH_BUILTINS
+#ifdef SFML_BASE_PRIV_HAS_MATH_BUILTINS
 
-#define SFML_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_1ARG(name)                                     \
+////////////////////////////////////////////////////////////
+#define SFML_BASE_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_1ARG(name)                                \
     template <typename T>                                                                    \
     [[nodiscard, gnu::always_inline, gnu::const]] inline constexpr auto name(T arg) noexcept \
     {                                                                                        \
-        if constexpr (SFML_PRIV_IS_SAME(T, float))                                           \
+        if constexpr (SFML_BASE_IS_SAME(T, float))                                           \
         {                                                                                    \
             return __builtin_##name##f(arg);                                                 \
         }                                                                                    \
-        else if constexpr (SFML_PRIV_IS_SAME(T, double))                                     \
+        else if constexpr (SFML_BASE_IS_SAME(T, double))                                     \
         {                                                                                    \
             return __builtin_##name(arg);                                                    \
         }                                                                                    \
-        else if constexpr (SFML_PRIV_IS_SAME(T, long double))                                \
+        else if constexpr (SFML_BASE_IS_SAME(T, long double))                                \
         {                                                                                    \
             return __builtin_##name##l(arg);                                                 \
         }                                                                                    \
     }
 
-#define SFML_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_2ARG(name)                                              \
+////////////////////////////////////////////////////////////
+#define SFML_BASE_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_2ARG(name)                                         \
     template <typename T>                                                                             \
     [[nodiscard, gnu::always_inline, gnu::const]] inline constexpr auto name(T arg0, T arg1) noexcept \
     {                                                                                                 \
-        if constexpr (SFML_PRIV_IS_SAME(T, float))                                                    \
+        if constexpr (SFML_BASE_IS_SAME(T, float))                                                    \
         {                                                                                             \
             return __builtin_##name##f(arg0, arg1);                                                   \
         }                                                                                             \
-        else if constexpr (SFML_PRIV_IS_SAME(T, double))                                              \
+        else if constexpr (SFML_BASE_IS_SAME(T, double))                                              \
         {                                                                                             \
             return __builtin_##name(arg0, arg1);                                                      \
         }                                                                                             \
-        else if constexpr (SFML_PRIV_IS_SAME(T, long double))                                         \
+        else if constexpr (SFML_BASE_IS_SAME(T, long double))                                         \
         {                                                                                             \
             return __builtin_##name##l(arg0, arg1);                                                   \
         }                                                                                             \
@@ -87,14 +90,16 @@
 
 #else
 
-#define SFML_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_1ARG(name)                                     \
+////////////////////////////////////////////////////////////
+#define SFML_BASE_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_1ARG(name)                                \
     template <typename T>                                                                    \
     [[nodiscard, gnu::always_inline, gnu::const]] inline constexpr auto name(T arg) noexcept \
     {                                                                                        \
         return std::name(arg);                                                               \
     }
 
-#define SFML_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_2ARG(name)                                              \
+////////////////////////////////////////////////////////////
+#define SFML_BASE_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_2ARG(name)                                         \
     template <typename T>                                                                             \
     [[nodiscard, gnu::always_inline, gnu::const]] inline constexpr auto name(T arg0, T arg1) noexcept \
     {                                                                                                 \
@@ -104,16 +109,30 @@
 #endif
 
 
-namespace sf::priv
+namespace sf::base
 {
+////////////////////////////////////////////////////////////
+SFML_BASE_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_1ARG(fabs)
 
-SFML_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_1ARG(fabs)
-SFML_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_2ARG(atan2)
-SFML_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_1ARG(ceil)
-SFML_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_1ARG(cos)
-SFML_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_1ARG(floor)
-SFML_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_1ARG(lround)
-SFML_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_1ARG(sin)
-SFML_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_1ARG(sqrt)
+////////////////////////////////////////////////////////////
+SFML_BASE_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_2ARG(atan2)
 
-} // namespace sf::priv
+////////////////////////////////////////////////////////////
+SFML_BASE_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_1ARG(ceil)
+
+////////////////////////////////////////////////////////////
+SFML_BASE_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_1ARG(cos)
+
+////////////////////////////////////////////////////////////
+SFML_BASE_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_1ARG(floor)
+
+////////////////////////////////////////////////////////////
+SFML_BASE_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_1ARG(lround)
+
+////////////////////////////////////////////////////////////
+SFML_BASE_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_1ARG(sin)
+
+////////////////////////////////////////////////////////////
+SFML_BASE_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_1ARG(sqrt)
+
+} // namespace sf::base

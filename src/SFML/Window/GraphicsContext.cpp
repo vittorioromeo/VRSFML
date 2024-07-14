@@ -33,10 +33,11 @@
 #include <SFML/Window/GlContextTypeImpl.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
 
-#include <SFML/System/AlgorithmUtils.hpp>
-#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
-#include <SFML/System/UniquePtr.hpp>
+
+#include <SFML/Base/Algorithm.hpp>
+#include <SFML/Base/Assert.hpp>
+#include <SFML/Base/UniquePtr.hpp>
 
 #include <glad/gl.h>
 
@@ -145,21 +146,21 @@ struct GraphicsContext::Impl
 
     ////////////////////////////////////////////////////////////
     template <typename... SharedGlContextArgs>
-    explicit Impl(SharedGlContextArgs&&... args) : sharedGlContext(SFML_FORWARD(args)...)
+    explicit Impl(SharedGlContextArgs&&... args) : sharedGlContext(SFML_BASE_FORWARD(args)...)
     {
     }
 };
 
 
 ////////////////////////////////////////////////////////////
-GraphicsContext::GraphicsContext() : m_impl(priv::makeUnique<Impl>(*this, 1u, nullptr))
+GraphicsContext::GraphicsContext() : m_impl(base::makeUnique<Impl>(*this, 1u, nullptr))
 {
-    SFML_ASSERT(!hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(!hasAnyActiveGlContext());
 
     if (!setActiveThreadLocalGlContext(m_impl->sharedGlContext, true))
         priv::err() << "Could not enable shared context in GraphicsContext()";
 
-    SFML_ASSERT(isActiveGlContextSharedContext());
+    SFML_BASE_ASSERT(isActiveGlContextSharedContext());
 
     if (!m_impl->sharedGlContext.initialize(m_impl->sharedGlContext, ContextSettings{}))
         priv::err() << "Could not initialize shared context in GraphicsContext()";
@@ -169,12 +170,12 @@ GraphicsContext::GraphicsContext() : m_impl(priv::makeUnique<Impl>(*this, 1u, nu
     if (!setActiveThreadLocalGlContext(m_impl->sharedGlContext, false))
         priv::err() << "Could not disable shared context in GraphicsContext()";
 
-    SFML_ASSERT(!hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(!hasAnyActiveGlContext());
 
     if (!setActiveThreadLocalGlContext(m_impl->sharedGlContext, true))
     {
         priv::err() << "Failed to enable shared GL context in `GraphicsContext::GraphicsContext`";
-        SFML_ASSERT(false);
+        SFML_BASE_ASSERT(false);
     }
 
     priv::ensureExtensionsInit(*this);
@@ -184,21 +185,21 @@ GraphicsContext::GraphicsContext() : m_impl(priv::makeUnique<Impl>(*this, 1u, nu
 ////////////////////////////////////////////////////////////
 GraphicsContext::~GraphicsContext()
 {
-    SFML_ASSERT(m_impl->unsharedFrameBuffers.empty());
+    SFML_BASE_ASSERT(m_impl->unsharedFrameBuffers.empty());
 
-    SFML_ASSERT(hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(hasAnyActiveGlContext());
 
     activeGlContext.id  = 0u;
     activeGlContext.ptr = nullptr;
 
-    SFML_ASSERT(!hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(!hasAnyActiveGlContext());
 }
 
 
 ////////////////////////////////////////////////////////////
 void GraphicsContext::registerUnsharedFrameBuffer(std::uint64_t glContextId, unsigned int frameBufferId, UnsharedDeleteFn deleteFn)
 {
-    SFML_ASSERT(getActiveThreadLocalGlContextId() == glContextId);
+    SFML_BASE_ASSERT(getActiveThreadLocalGlContextId() == glContextId);
 
     const std::lock_guard lock(m_impl->unsharedFrameBuffersMutex);
     m_impl->unsharedFrameBuffers.emplace_back(glContextId, frameBufferId, deleteFn);
@@ -216,7 +217,7 @@ void GraphicsContext::unregisterUnsharedFrameBuffer(std::uint64_t glContextId, u
 
     // Find the object in unshared objects and remove it if its associated context is currently active
     // Assume that the object has already been deleted with the right OpenGL delete call
-    const auto iter = priv::findIf(m_impl->unsharedFrameBuffers.begin(),
+    const auto iter = base::findIf(m_impl->unsharedFrameBuffers.begin(),
                                    m_impl->unsharedFrameBuffers.end(),
                                    [&](const Impl::UnsharedFrameBuffer& obj)
                                    { return obj.glContextId == glContextId && obj.frameBufferId == frameBufferId; });
@@ -299,14 +300,14 @@ bool GraphicsContext::setActiveThreadLocalGlContext(priv::GlContext& glContext, 
     // If `glContext` is already the active one on this thread, don't do anything
     if (active && glContext.m_id == activeGlContext.id)
     {
-        SFML_ASSERT(activeGlContext.ptr == &glContext);
+        SFML_BASE_ASSERT(activeGlContext.ptr == &glContext);
         return true;
     }
 
     // If `glContext` is not the active one on this thread, don't do anything
     if (!active && glContext.m_id != activeGlContext.id)
     {
-        SFML_ASSERT(activeGlContext.ptr != &glContext);
+        SFML_BASE_ASSERT(activeGlContext.ptr != &glContext);
         return true;
     }
 
@@ -334,7 +335,7 @@ void GraphicsContext::onGlContextDestroyed(priv::GlContext& glContext)
     if (!setActiveThreadLocalGlContext(m_impl->sharedGlContext, true))
     {
         priv::err() << "Failed to enable shared GL context in `GraphicsContext::onGlContextDestroyed`";
-        SFML_ASSERT(false);
+        SFML_BASE_ASSERT(false);
     }
 }
 
@@ -355,7 +356,7 @@ void GraphicsContext::onGlContextDestroyed(priv::GlContext& glContext)
 
 ////////////////////////////////////////////////////////////
 template <typename... GLContextArgs>
-[[nodiscard]] priv::UniquePtr<priv::GlContext> GraphicsContext::createGlContextImpl(const ContextSettings& contextSettings,
+[[nodiscard]] base::UniquePtr<priv::GlContext> GraphicsContext::createGlContextImpl(const ContextSettings& contextSettings,
                                                                                     GLContextArgs&&... args)
 {
     // TODO: ?
@@ -390,10 +391,10 @@ template <typename... GLContextArgs>
     if (!setActiveThreadLocalGlContext(m_impl->sharedGlContext, true))
         priv::err() << "Error enabling shared GL context in GraphicsContext::createGlContext()";
 
-    auto glContext = priv::makeUnique<DerivedGlContextType>(*this,
+    auto glContext = base::makeUnique<DerivedGlContextType>(*this,
                                                             m_impl->nextThreadLocalGlContextId.fetch_add(1u),
                                                             &m_impl->sharedGlContext,
-                                                            SFML_FORWARD(args)...);
+                                                            SFML_BASE_FORWARD(args)...);
 
     if (!setActiveThreadLocalGlContext(m_impl->sharedGlContext, false))
         priv::err() << "Error disabling shared GL context in GraphicsContext::createGlContext()";
@@ -416,14 +417,14 @@ template <typename... GLContextArgs>
 
 
 ////////////////////////////////////////////////////////////
-priv::UniquePtr<priv::GlContext> GraphicsContext::createGlContext()
+base::UniquePtr<priv::GlContext> GraphicsContext::createGlContext()
 {
     return createGlContextImpl(ContextSettings{});
 }
 
 
 ////////////////////////////////////////////////////////////
-priv::UniquePtr<priv::GlContext> GraphicsContext::createGlContext(const ContextSettings&  contextSettings,
+base::UniquePtr<priv::GlContext> GraphicsContext::createGlContext(const ContextSettings&  contextSettings,
                                                                   const priv::WindowImpl& owner,
                                                                   unsigned int            bitsPerPixel)
 {
@@ -432,7 +433,7 @@ priv::UniquePtr<priv::GlContext> GraphicsContext::createGlContext(const ContextS
 
 
 ////////////////////////////////////////////////////////////
-priv::UniquePtr<priv::GlContext> GraphicsContext::createGlContext(const ContextSettings& contextSettings, const Vector2u& size)
+base::UniquePtr<priv::GlContext> GraphicsContext::createGlContext(const ContextSettings& contextSettings, const Vector2u& size)
 {
     return createGlContextImpl(contextSettings, contextSettings, size);
 }
@@ -441,7 +442,7 @@ priv::UniquePtr<priv::GlContext> GraphicsContext::createGlContext(const ContextS
 ////////////////////////////////////////////////////////////
 bool GraphicsContext::isExtensionAvailable(const char* name) const
 {
-    return priv::find(m_impl->extensions.begin(), m_impl->extensions.end(), name) != m_impl->extensions.end();
+    return base::find(m_impl->extensions.begin(), m_impl->extensions.end(), name) != m_impl->extensions.end();
 }
 
 

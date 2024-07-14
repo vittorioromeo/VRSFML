@@ -7,7 +7,7 @@
 #include <SFML/Graphics/Font.hpp>
 
 #include <SFML/System/LifetimeDependee.hpp>
-#include <SFML/System/Macros.hpp>
+#include <SFML/Base/Macros.hpp>
 #include <SFML/System/Path.hpp>
 #include <SFML/System/String.hpp>
 
@@ -16,7 +16,7 @@
 #include <GraphicsUtil.hpp>
 #include <WindowUtil.hpp>
 
-#include <SFML/System/Optional.hpp>
+#include <SFML/Base/Optional.hpp>
 #include <type_traits>
 
 TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
@@ -232,11 +232,11 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             const sf::priv::LifetimeDependee::TestingModeGuard guard;
             CHECK(!guard.fatalErrorTriggered());
 
-            sf::Optional<BadStruct> badStruct0;
+            sf::base::Optional<BadStruct> badStruct0;
             badStruct0.emplace(graphicsContext);
             CHECK(!guard.fatalErrorTriggered());
 
-            const BadStruct badStruct1 = SFML_MOVE(badStruct0.value());
+            const BadStruct badStruct1 = SFML_BASE_MOVE(badStruct0.value());
             CHECK(!guard.fatalErrorTriggered());
 
             badStruct0.reset();

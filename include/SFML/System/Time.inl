@@ -25,8 +25,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/Assert.hpp>
 #include <SFML/System/Time.hpp> // NOLINT(misc-header-include-cycle)
+
+#include <SFML/Base/Assert.hpp>
 
 
 namespace sf
@@ -205,7 +206,7 @@ constexpr Time& operator*=(Time& left, std::int64_t right)
 ////////////////////////////////////////////////////////////
 constexpr Time operator/(Time left, float right)
 {
-    SFML_ASSERT(right != 0 && "Time::operator/ cannot divide by 0");
+    SFML_BASE_ASSERT(right != 0 && "Time::operator/ cannot divide by 0");
     return seconds(left.asSeconds() / right);
 }
 
@@ -213,7 +214,7 @@ constexpr Time operator/(Time left, float right)
 ////////////////////////////////////////////////////////////
 constexpr Time operator/(Time left, std::int64_t right)
 {
-    SFML_ASSERT(right != 0 && "Time::operator/ cannot divide by 0");
+    SFML_BASE_ASSERT(right != 0 && "Time::operator/ cannot divide by 0");
     return microseconds(left.asMicroseconds() / right);
 }
 
@@ -221,7 +222,7 @@ constexpr Time operator/(Time left, std::int64_t right)
 ////////////////////////////////////////////////////////////
 constexpr Time& operator/=(Time& left, float right)
 {
-    SFML_ASSERT(right != 0 && "Time::operator/= cannot divide by 0");
+    SFML_BASE_ASSERT(right != 0 && "Time::operator/= cannot divide by 0");
     return left = left / right;
 }
 
@@ -229,7 +230,7 @@ constexpr Time& operator/=(Time& left, float right)
 ////////////////////////////////////////////////////////////
 constexpr Time& operator/=(Time& left, std::int64_t right)
 {
-    SFML_ASSERT(right != 0 && "Time::operator/= cannot divide by 0");
+    SFML_BASE_ASSERT(right != 0 && "Time::operator/= cannot divide by 0");
     return left = left / right;
 }
 
@@ -237,7 +238,7 @@ constexpr Time& operator/=(Time& left, std::int64_t right)
 ////////////////////////////////////////////////////////////
 constexpr float operator/(Time left, Time right)
 {
-    SFML_ASSERT(right.asMicroseconds() != 0 && "Time::operator/ cannot divide by 0");
+    SFML_BASE_ASSERT(right.asMicroseconds() != 0 && "Time::operator/ cannot divide by 0");
     return left.asSeconds() / right.asSeconds();
 }
 
@@ -245,7 +246,7 @@ constexpr float operator/(Time left, Time right)
 ////////////////////////////////////////////////////////////
 constexpr Time operator%(Time left, Time right)
 {
-    SFML_ASSERT(right.asMicroseconds() != 0 && "Time::operator% cannot modulus by 0");
+    SFML_BASE_ASSERT(right.asMicroseconds() != 0 && "Time::operator% cannot modulus by 0");
     return microseconds(left.asMicroseconds() % right.asMicroseconds());
 }
 
@@ -253,7 +254,7 @@ constexpr Time operator%(Time left, Time right)
 ////////////////////////////////////////////////////////////
 constexpr Time& operator%=(Time& left, Time right)
 {
-    SFML_ASSERT(right.asMicroseconds() != 0 && "Time::operator%= cannot modulus by 0");
+    SFML_BASE_ASSERT(right.asMicroseconds() != 0 && "Time::operator%= cannot modulus by 0");
     return left = left % right;
 }
 

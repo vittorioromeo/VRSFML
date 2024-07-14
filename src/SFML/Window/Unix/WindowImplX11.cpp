@@ -33,7 +33,6 @@
 #include <SFML/Window/Unix/Utils.hpp>
 #include <SFML/Window/Unix/WindowImplX11.hpp>
 
-#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Sleep.hpp>
 #include <SFML/System/String.hpp>
@@ -41,12 +40,15 @@
 #include <SFML/System/Time.hpp>
 #include <SFML/System/Utf.hpp>
 
+#include <SFML/Base/Algorithm.hpp>
+
 #include <X11/Xlibint.h>
 #undef min // Defined by `Xlibint.h`, conflicts with standard headers
 #undef max // Defined by `Xlibint.h`, conflicts with standard headers
 
-#include <SFML/System/Assert.hpp>
 #include <SFML/System/Path.hpp>
+
+#include <SFML/Base/Assert.hpp>
 
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
@@ -366,7 +368,7 @@ bool isWMAbsolutePositionGood()
     if (!ewmhSupported())
         return false;
 
-    return priv::anyOf(std::begin(wmAbsPosGood),
+    return base::anyOf(std::begin(wmAbsPosGood),
                        std::end(wmAbsPosGood),
                        [&](const sf::String& name) { return name == windowManagerName; });
 }
@@ -654,7 +656,7 @@ m_cursorGrabbed(m_fullscreen)
     // For simplicity, we retrieve it via the base executable name.
     std::string       executableName = findExecutableName().to<std::string>();
     std::vector<char> windowInstance(executableName.size() + 1, 0);
-    priv::copy(executableName.begin(), executableName.end(), windowInstance.begin());
+    base::copy(executableName.begin(), executableName.end(), windowInstance.begin());
     hint.res_name = windowInstance.data();
 
     // The class name identifies a class of windows that
@@ -662,7 +664,7 @@ m_cursorGrabbed(m_fullscreen)
     // the class name.
     std::string       ansiTitle = title.toAnsiString();
     std::vector<char> windowClass(ansiTitle.size() + 1, 0);
-    priv::copy(ansiTitle.begin(), ansiTitle.end(), windowClass.begin());
+    base::copy(ansiTitle.begin(), ansiTitle.end(), windowClass.begin());
     hint.res_class = windowClass.data();
 
     XSetClassHint(m_display.get(), m_window, &hint);
@@ -723,7 +725,7 @@ WindowImplX11::~WindowImplX11()
 
     // Remove this window from the global list of windows (required for focus request)
     const std::lock_guard lock(allWindowsMutex);
-    allWindows.erase(priv::find(allWindows.begin(), allWindows.end(), this));
+    allWindows.erase(base::find(allWindows.begin(), allWindows.end(), this));
 }
 
 
@@ -910,7 +912,7 @@ void WindowImplX11::setSize(const Vector2u& size)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplX11::setMinimumSize(const Optional<Vector2u>& minimumSize)
+void WindowImplX11::setMinimumSize(const base::Optional<Vector2u>& minimumSize)
 {
     WindowImpl::setMinimumSize(minimumSize);
     setWindowSizeConstraints();
@@ -918,7 +920,7 @@ void WindowImplX11::setMinimumSize(const Optional<Vector2u>& minimumSize)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplX11::setMaximumSize(const Optional<Vector2u>& maximumSize)
+void WindowImplX11::setMaximumSize(const base::Optional<Vector2u>& maximumSize)
 {
     WindowImpl::setMaximumSize(maximumSize);
     setWindowSizeConstraints();

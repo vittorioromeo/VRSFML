@@ -27,7 +27,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/Vulkan.hpp>
 
-#include <SFML/System/Assert.hpp>
+#include <SFML/Base/Assert.hpp>
 
 #ifdef SFML_SYSTEM_WINDOWS
 
@@ -69,7 +69,7 @@ bool Vulkan::isAvailable([[maybe_unused]] bool requireGraphics)
 ////////////////////////////////////////////////////////////
 VulkanFunctionPointer Vulkan::getFunction([[maybe_unused]] const char* name)
 {
-    SFML_ASSERT(name && "Name cannot be a null pointer");
+    SFML_BASE_ASSERT(name && "Name cannot be a null pointer");
 
 #ifdef SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
 

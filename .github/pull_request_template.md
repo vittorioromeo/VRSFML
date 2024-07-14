@@ -39,7 +39,7 @@ int main()
 
     while (true)
     {
-        while (const sf::Optional event = window.pollEvent())
+        while (const sf::base::Optional event = window.pollEvent())
         {
             if (event->is<sf::Event::Closed>())
                 return 0;

@@ -150,14 +150,14 @@ void WindowImplAndroid::setSize(const Vector2u& /* size */)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplAndroid::setMinimumSize(const Optional<Vector2u>& /* minimumSize */)
+void WindowImplAndroid::setMinimumSize(const base::Optional<Vector2u>& /* minimumSize */)
 {
     // Not applicable
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplAndroid::setMaximumSize(const Optional<Vector2u>& /* maximumSize */)
+void WindowImplAndroid::setMaximumSize(const base::Optional<Vector2u>& /* maximumSize */)
 {
     // Not applicable
 }

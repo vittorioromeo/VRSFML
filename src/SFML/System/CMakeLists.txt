@@ -1,3 +1,42 @@
+set(BASE_INCROOT ${PROJECT_SOURCE_DIR}/include/SFML/Base)
+set(BASE_SRCROOT ${PROJECT_SOURCE_DIR}/src/SFML/Base)
+
+# all source files
+set(SRC_BASE
+    # headers
+    ${BASE_INCROOT}/Algorithm.hpp
+    ${BASE_INCROOT}/Assert.hpp
+    ${BASE_INCROOT}/EnableIf.hpp
+    ${BASE_INCROOT}/EnumArray.hpp
+    ${BASE_INCROOT}/EnumClassBitwiseOps.hpp
+    ${BASE_INCROOT}/FixedFunction.hpp
+    ${BASE_INCROOT}/InPlacePImpl.hpp
+    ${BASE_INCROOT}/IsBaseOf.hpp
+    ${BASE_INCROOT}/IsEnum.hpp
+    ${BASE_INCROOT}/IsFloatingPoint.hpp
+    ${BASE_INCROOT}/IsSame.hpp
+    ${BASE_INCROOT}/Launder.hpp
+    ${BASE_INCROOT}/Macros.hpp
+    ${BASE_INCROOT}/Math.hpp
+    ${BASE_INCROOT}/MaxAlignT.hpp
+    ${BASE_INCROOT}/Optional.hpp
+    ${BASE_INCROOT}/PassKey.hpp
+    ${BASE_INCROOT}/PlacementNew.hpp
+    ${BASE_INCROOT}/RemoveCVRef.hpp
+    ${BASE_INCROOT}/RemoveReference.hpp
+    ${BASE_INCROOT}/SizeT.hpp
+    ${BASE_INCROOT}/UnderlyingType.hpp
+    ${BASE_INCROOT}/UniquePtr.hpp
+    ${BASE_INCROOT}/Variant.hpp
+
+    # sources
+    ${BASE_SRCROOT}/Assert.cpp
+)
+
+
+
+
+
 set(INCROOT ${PROJECT_SOURCE_DIR}/include/SFML/System)
 set(SRCROOT ${PROJECT_SOURCE_DIR}/src/SFML/System)
 
@@ -7,7 +46,6 @@ set(SRC
     ${INCROOT}/Angle.inl
     ${SRCROOT}/Clock.cpp
     ${INCROOT}/Clock.hpp
-    ${SRCROOT}/EnumArray.hpp
     ${SRCROOT}/Err.cpp
     ${INCROOT}/Err.hpp
     ${INCROOT}/Export.hpp
@@ -38,42 +76,23 @@ set(SRC
     ${SRCROOT}/MemoryInputStream.cpp
     ${INCROOT}/MemoryInputStream.hpp
     ${INCROOT}/SuspendAwareClock.hpp
-    ${INCROOT}/PassKey.hpp
     ${SRCROOT}/LifetimeDependee.cpp
     ${INCROOT}/LifetimeDependee.hpp
     ${SRCROOT}/LifetimeDependant.cpp
     ${INCROOT}/LifetimeDependant.hpp
-    ${INCROOT}/Variant.hpp
-    ${INCROOT}/UniquePtr.hpp
-    ${INCROOT}/InPlacePImpl.hpp
     ${SRCROOT}/StringUtils.hpp
     ${SRCROOT}/StringUtils.cpp
     ${INCROOT}/Path.hpp
     ${SRCROOT}/Path.cpp
     ${SRCROOT}/PathUtils.hpp
-    ${SRCROOT}/PathUtils.cpp
-    ${INCROOT}/AlgorithmUtils.hpp
-    ${SRCROOT}/AlgorithmUtils.cpp
-    ${INCROOT}/Macros.hpp
-    ${INCROOT}/MathUtils.hpp
-    ${INCROOT}/Launder.hpp
-    ${INCROOT}/PlacementNew.hpp
-    ${INCROOT}/SizeT.hpp
-    ${INCROOT}/FixedFunction.hpp
-    ${INCROOT}/IsSame.hpp
-    ${INCROOT}/IsFloatingPoint.hpp
-    ${INCROOT}/RemoveRef.hpp
-    ${INCROOT}/RemoveCVRef.hpp
-    ${INCROOT}/MaxAlignT.hpp
     ${SRCROOT}/Rect.cpp
     ${INCROOT}/Rect.hpp
     ${INCROOT}/Rect.inl
     ${INCROOT}/RectUtils.hpp
     ${INCROOT}/RectUtils.inl
-    ${INCROOT}/Optional.hpp
-    ${INCROOT}/Assert.hpp
-    ${SRCROOT}/Assert.cpp
 )
+
+list(APPEND SRC ${SRC_BASE})
 
 if(SFML_ENABLE_PCH)
     list(APPEND SRC ${SRCROOT}/PCH.cpp)

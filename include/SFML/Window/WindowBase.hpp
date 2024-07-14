@@ -32,10 +32,11 @@
 #include <SFML/Window/WindowEnums.hpp>
 #include <SFML/Window/WindowHandle.hpp>
 
-#include <SFML/System/Optional.hpp>
 #include <SFML/System/Time.hpp>
-#include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
+
+#include <SFML/Base/Optional.hpp>
+#include <SFML/Base/UniquePtr.hpp>
 
 #include <cstdint>
 
@@ -146,23 +147,23 @@ public:
     /// \brief Pop the next event from the front of the FIFO event queue, if any, and return it
     ///
     /// This function is not blocking: if there's no pending event then
-    /// it will return a `sf::nullOpt`. Note that more than one event
+    /// it will return a `base::nullOpt`. Note that more than one event
     /// may be present in the event queue, thus you should always call
     /// this function in a loop to make sure that you process every
     /// pending event.
     /// \code
-    /// while (const sf::Optional event = window.pollEvent())
+    /// while (const sf::base::Optional event = window.pollEvent())
     /// {
     ///    // process event...
     /// }
     /// \endcode
     ///
-    /// \return The event, otherwise `sf::nullOpt` if no events are pending
+    /// \return The event, otherwise `base::nullOpt` if no events are pending
     ///
     /// \see waitEvent, pollAndHandleEvents
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Optional<Event> pollEvent();
+    [[nodiscard]] base::Optional<Event> pollEvent();
 
     ////////////////////////////////////////////////////////////
     /// \brief Wait for an event and return it
@@ -170,12 +171,12 @@ public:
     /// This function is blocking: if there's no pending event then
     /// it will wait until an event is received or until the provided
     /// timeout elapses. Only if an error or a timeout occurs the
-    /// returned event will be `sf::nullOpt`.
+    /// returned event will be `base::nullOpt`.
     /// This function is typically used when you have a thread that is
     /// dedicated to events handling: you want to make this thread sleep
     /// as long as no new event is received.
     /// \code
-    /// while (const sf::Optional event = window.waitEvent())
+    /// while (const sf::base::Optional event = window.waitEvent())
     /// {
     ///    // process event...
     /// }
@@ -183,12 +184,12 @@ public:
     ///
     /// \param timeout Maximum time to wait (`Time::Zero` for infinite)
     ///
-    /// \return The event, otherwise `sf::nullOpt` on timeout or if window was closed
+    /// \return The event, otherwise `base::nullOpt` on timeout or if window was closed
     ///
     /// \see pollEvent, pollAndHandleEvents
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Optional<Event> waitEvent(Time timeout = Time::Zero);
+    [[nodiscard]] base::Optional<Event> waitEvent(Time timeout = Time::Zero);
 
     ////////////////////////////////////////////////////////////
     /// \brief Handle all pending events
@@ -318,24 +319,24 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Set the minimum window rendering region size
     ///
-    /// Pass sf::nullOpt to unset the minimum size
+    /// Pass base::nullOpt to unset the minimum size
     ///
     /// \param minimumSize New minimum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
     void setMinimumSize(const Vector2u& minimumSize);
-    void setMinimumSize(const Optional<Vector2u>& minimumSize);
+    void setMinimumSize(const base::Optional<Vector2u>& minimumSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the maximum window rendering region size
     ///
-    /// Pass sf::nullOpt to unset the maximum size
+    /// Pass base::nullOpt to unset the maximum size
     ///
     /// \param maximumSize New maximum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
     void setMaximumSize(const Vector2u& maximumSize);
-    void setMaximumSize(const Optional<Vector2u>& maximumSize);
+    void setMaximumSize(const base::Optional<Vector2u>& maximumSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the title of the window
@@ -507,7 +508,7 @@ private:
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowBase(priv::UniquePtr<priv::WindowImpl>&& impl);
+    [[nodiscard]] explicit WindowBase(base::UniquePtr<priv::WindowImpl>&& impl);
 
     ////////////////////////////////////////////////////////////
     /// \brief Processes an event before it is sent to the user
@@ -521,12 +522,12 @@ private:
     /// \param event Event to filter
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Optional<Event> filterEvent(Optional<Event> event);
+    [[nodiscard]] base::Optional<Event> filterEvent(base::Optional<Event> event);
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    priv::UniquePtr<priv::WindowImpl> m_impl; //!< Platform-specific implementation of the window
+    base::UniquePtr<priv::WindowImpl> m_impl; //!< Platform-specific implementation of the window
     Vector2u                          m_size; //!< Current size of the window
 };
 
@@ -557,7 +558,7 @@ private:
 /// while (true)
 /// {
 ///    // Event processing
-///    while (const sf::Optional event = window.pollEvent())
+///    while (const sf::base::Optional event = window.pollEvent())
 ///    {
 ///        // Request for closing the window
 ///        if (event->is<sf::Event::Closed>())

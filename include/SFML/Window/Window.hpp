@@ -32,7 +32,7 @@
 #include <SFML/Window/WindowEnums.hpp>
 #include <SFML/Window/WindowHandle.hpp>
 
-#include <SFML/System/InPlacePImpl.hpp>
+#include <SFML/Base/InPlacePImpl.hpp>
 
 
 namespace sf
@@ -253,7 +253,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    priv::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
 };
 
 } // namespace sf
@@ -305,7 +305,7 @@ private:
 /// while (true)
 /// {
 ///    // Event processing
-///    while (const sf::Optional event = window.pollEvent())
+///    while (const sf::base::Optional event = window.pollEvent())
 ///    {
 ///        // Request for closing the window
 ///        if (event->is<sf::Event::Closed>())

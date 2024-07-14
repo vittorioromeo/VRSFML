@@ -31,13 +31,14 @@
 
 #include <SFML/Graphics/Transformable.hpp>
 
-#include <SFML/System/InPlacePImpl.hpp>
 #include <SFML/System/LifetimeDependant.hpp>
 #include <SFML/System/Rect.hpp>
 #include <SFML/System/Vector2.hpp>
 
+#include <SFML/Base/EnumClassBitwiseOps.hpp>
+#include <SFML/Base/InPlacePImpl.hpp>
+
 #include <cstddef>
-#include <cstdint>
 
 
 namespace sf
@@ -445,7 +446,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    priv::InPlacePImpl<Impl, 192> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 192> m_impl; //!< Implementation details
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking
@@ -453,7 +454,7 @@ private:
     SFML_DEFINE_LIFETIME_DEPENDANT(Font);
 };
 
-SFML_PRIV_DEFINE_ENUM_CLASS_BITWISE_OPERATORS(Text::Style);
+SFML_BASE_DEFINE_ENUM_CLASS_BITWISE_OPS(Text::Style);
 
 } // namespace sf
 

@@ -28,7 +28,8 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Android/Activity.hpp>
-#include <SFML/System/Assert.hpp>
+
+#include <SFML/Base/Assert.hpp>
 
 #include <android/log.h>
 

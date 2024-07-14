@@ -31,8 +31,9 @@
 
 #include <SFML/Network/Socket.hpp>
 
-#include <SFML/System/Optional.hpp>
 #include <SFML/System/Time.hpp>
+
+#include <SFML/Base/Optional.hpp>
 
 #include <vector>
 
@@ -82,7 +83,7 @@ public:
     /// \see getRemotePort
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Optional<IpAddress> getRemoteAddress() const;
+    [[nodiscard]] base::Optional<IpAddress> getRemoteAddress() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the port of the connected peer to which
@@ -108,7 +109,7 @@ public:
     ///
     /// \param remoteAddress Address of the remote peer
     /// \param remotePort    Port of the remote peer
-    /// \param timeout       Optional maximum time to wait
+    /// \param timeout       base::Optional maximum time to wait
     ///
     /// \return Status code
     ///

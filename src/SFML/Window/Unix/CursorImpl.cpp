@@ -29,7 +29,7 @@
 #include <SFML/Window/Unix/Display.hpp>
 #include <SFML/Window/Unix/Utils.hpp>
 
-#include <SFML/System/Assert.hpp>
+#include <SFML/Base/Assert.hpp>
 
 #include <X11/Xcursor/Xcursor.h>
 #include <X11/Xutil.h>

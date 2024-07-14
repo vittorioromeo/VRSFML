@@ -4,7 +4,7 @@
 #include <SFML/Network/Ftp.hpp>
 #include <SFML/Network/IpAddress.hpp>
 
-#include <SFML/System/Optional.hpp>
+#include <SFML/Base/Optional.hpp>
 
 #include <iostream>
 
@@ -26,7 +26,7 @@ std::ostream& operator<<(std::ostream& stream, const sf::Ftp::Response& response
 int main()
 {
     // Choose the server address
-    sf::Optional<sf::IpAddress> address;
+    sf::base::Optional<sf::IpAddress> address;
     do
     {
         std::cout << "Enter the FTP server address: ";

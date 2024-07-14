@@ -27,14 +27,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/RemoveRef.hpp>
-#include <SFML/System/UnderlyingType.hpp>
+#include <SFML/Base/UnderlyingType.hpp>
 
 
-#define SFML_MOVE(...)    static_cast<SFML_PRIV_REMOVE_REFERENCE(decltype(__VA_ARGS__)) &&>(__VA_ARGS__)
-#define SFML_FORWARD(...) static_cast<decltype(__VA_ARGS__)&&>(__VA_ARGS__)
-
-#define SFML_PRIV_DEFINE_ENUM_CLASS_BITWISE_OPERATORS(enumType)                                                  \
+////////////////////////////////////////////////////////////
+#define SFML_BASE_DEFINE_ENUM_CLASS_BITWISE_OPS(enumType)                                                        \
                                                                                                                  \
     [[nodiscard, gnu::always_inline, gnu::const]] inline bool operator!(enumType lhs) noexcept                   \
     {                                                                                                            \
@@ -43,25 +40,25 @@
                                                                                                                  \
     [[nodiscard, gnu::always_inline, gnu::const]] inline enumType operator|(enumType lhs, enumType rhs) noexcept \
     {                                                                                                            \
-        return enumType{static_cast<SFML_PRIV_UNDERLYING_TYPE(enumType)>(lhs) |                                  \
-                        static_cast<SFML_PRIV_UNDERLYING_TYPE(enumType)>(rhs)};                                  \
+        return enumType{static_cast<SFML_BASE_UNDERLYING_TYPE(enumType)>(lhs) |                                  \
+                        static_cast<SFML_BASE_UNDERLYING_TYPE(enumType)>(rhs)};                                  \
     }                                                                                                            \
                                                                                                                  \
     [[nodiscard, gnu::always_inline, gnu::const]] inline enumType operator&(enumType lhs, enumType rhs) noexcept \
     {                                                                                                            \
-        return enumType{static_cast<SFML_PRIV_UNDERLYING_TYPE(enumType)>(lhs) &                                  \
-                        static_cast<SFML_PRIV_UNDERLYING_TYPE(enumType)>(rhs)};                                  \
+        return enumType{static_cast<SFML_BASE_UNDERLYING_TYPE(enumType)>(lhs) &                                  \
+                        static_cast<SFML_BASE_UNDERLYING_TYPE(enumType)>(rhs)};                                  \
     }                                                                                                            \
                                                                                                                  \
     [[nodiscard, gnu::always_inline, gnu::const]] inline enumType operator^(enumType lhs, enumType rhs) noexcept \
     {                                                                                                            \
-        return enumType{static_cast<SFML_PRIV_UNDERLYING_TYPE(enumType)>(lhs) ^                                  \
-                        static_cast<SFML_PRIV_UNDERLYING_TYPE(enumType)>(rhs)};                                  \
+        return enumType{static_cast<SFML_BASE_UNDERLYING_TYPE(enumType)>(lhs) ^                                  \
+                        static_cast<SFML_BASE_UNDERLYING_TYPE(enumType)>(rhs)};                                  \
     }                                                                                                            \
                                                                                                                  \
     [[nodiscard, gnu::always_inline, gnu::const]] inline enumType operator~(enumType lhs) noexcept               \
     {                                                                                                            \
-        return enumType{~static_cast<SFML_PRIV_UNDERLYING_TYPE(enumType)>(lhs)};                                 \
+        return enumType{~static_cast<SFML_BASE_UNDERLYING_TYPE(enumType)>(lhs)};                                 \
     }                                                                                                            \
                                                                                                                  \
     [[gnu::always_inline]] inline enumType& operator|=(enumType& lhs, enumType rhs) noexcept                     \

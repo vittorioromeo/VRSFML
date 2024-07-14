@@ -37,10 +37,11 @@
 #endif
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InputStream.hpp>
-#include <SFML/System/Macros.hpp>
-#include <SFML/System/MathUtils.hpp>
 #include <SFML/System/Path.hpp>
 #include <SFML/System/PathUtils.hpp>
+
+#include <SFML/Base/Macros.hpp>
+#include <SFML/Base/Math.hpp>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -49,7 +50,7 @@
 #include FT_BITMAP_H
 #include FT_STROKER_H
 
-#include <SFML/System/Assert.hpp>
+#include <SFML/Base/Assert.hpp>
 
 #include <memory>
 #include <unordered_map>
@@ -64,7 +65,7 @@ namespace
 unsigned long read(FT_Stream rec, unsigned long offset, unsigned char* buffer, unsigned long count)
 {
     auto* stream = static_cast<sf::InputStream*>(rec->descriptor.pointer);
-    if (sf::Optional seekResult = stream->seek(offset); seekResult.hasValue() && *seekResult == offset)
+    if (sf::base::Optional seekResult = stream->seek(offset); seekResult.hasValue() && *seekResult == offset)
     {
         if (count > 0)
             return static_cast<unsigned long>(stream->read(reinterpret_cast<char*>(buffer), count).value());
@@ -113,7 +114,7 @@ struct Font::Page
 
     using GlyphTable = std::unordered_map<std::uint64_t, Glyph>; //!< Table mapping a codepoint to its glyph
 
-    [[nodiscard]] static Optional<Page> create(GraphicsContext& graphicsContext, bool smooth);
+    [[nodiscard]] static base::Optional<Page> create(GraphicsContext& graphicsContext, bool smooth);
     explicit Page(Texture&& texture);
 
     GlyphTable       glyphs;     //!< Table mapping code points to their corresponding glyph
@@ -160,7 +161,7 @@ struct Font::Impl
 {
     explicit Impl(GraphicsContext& theGraphicsContext, std::shared_ptr<FontHandles>&& theFontHandles, const char* theFamilyName) :
     graphicsContext(&theGraphicsContext),
-    fontHandles(SFML_MOVE(theFontHandles)),
+    fontHandles(SFML_BASE_MOVE(theFontHandles)),
     info{theFamilyName}
     {
     }
@@ -174,14 +175,14 @@ struct Font::Impl
     mutable PageTable            pages;           //!< Table containing the glyphs pages by character size
     mutable std::vector<std::uint8_t> pixelBuffer; //!< Pixel buffer holding a glyph's pixels before being written to the texture
 #ifdef SFML_SYSTEM_ANDROID
-    priv::UniquePtr<priv::ResourceStream> m_stream; //!< Asset file streamer (if loaded from file)
+    base::UniquePtr<priv::ResourceStream> m_stream; //!< Asset file streamer (if loaded from file)
 #endif
 };
 
 
 ////////////////////////////////////////////////////////////
-Font::Font(priv::PassKey<Font>&&, GraphicsContext& graphicsContext, void* fontHandlesSharedPtr, const char* familyName) :
-m_impl(graphicsContext, SFML_MOVE(*static_cast<std::shared_ptr<FontHandles>*>(fontHandlesSharedPtr)), familyName)
+Font::Font(base::PassKey<Font>&&, GraphicsContext& graphicsContext, void* fontHandlesSharedPtr, const char* familyName) :
+m_impl(graphicsContext, SFML_BASE_MOVE(*static_cast<std::shared_ptr<FontHandles>*>(fontHandlesSharedPtr)), familyName)
 {
 }
 
@@ -207,7 +208,7 @@ Font& Font::operator=(Font&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-Optional<Font> Font::openFromFile(GraphicsContext& graphicsContext, const Path& filename)
+base::Optional<Font> Font::openFromFile(GraphicsContext& graphicsContext, const Path& filename)
 {
 #ifndef SFML_SYSTEM_ANDROID
 
@@ -218,42 +219,42 @@ Optional<Font> Font::openFromFile(GraphicsContext& graphicsContext, const Path& 
     // global manager that would create a lot of issues regarding creation and destruction order.
     if (FT_Init_FreeType(&fontHandles->library) != 0)
     {
-        priv::err() << "Failed to load font (failed to initialize FreeType)\n" << priv::formatDebugPathInfo(filename);
-        return sf::nullOpt;
+        priv::err() << "Failed to load font (failed to initialize FreeType)\n" << priv::PathDebugFormatter{filename};
+        return base::nullOpt;
     }
 
     // Load the new font face from the specified file
     FT_Face face = nullptr;
     if (FT_New_Face(fontHandles->library, filename.to<std::string>().c_str(), 0, &face) != 0)
     {
-        priv::err() << "Failed to load font (failed to create the font face)\n" << priv::formatDebugPathInfo(filename);
-        return sf::nullOpt;
+        priv::err() << "Failed to load font (failed to create the font face)\n" << priv::PathDebugFormatter{filename};
+        return base::nullOpt;
     }
     fontHandles->face = face;
 
     // Load the stroker that will be used to outline the font
     if (FT_Stroker_New(fontHandles->library, &fontHandles->stroker) != 0)
     {
-        priv::err() << "Failed to load font (failed to create the stroker)\n" << priv::formatDebugPathInfo(filename);
-        return sf::nullOpt;
+        priv::err() << "Failed to load font (failed to create the stroker)\n" << priv::PathDebugFormatter{filename};
+        return base::nullOpt;
     }
 
     // Select the unicode character map
     if (FT_Select_Charmap(face, FT_ENCODING_UNICODE) != 0)
     {
         priv::err() << "Failed to load font (failed to set the Unicode character set)\n"
-                    << priv::formatDebugPathInfo(filename);
-        return sf::nullOpt;
+                    << priv::PathDebugFormatter{filename};
+        return base::nullOpt;
     }
 
-    return sf::makeOptional<Font>(priv::PassKey<Font>{}, graphicsContext, &fontHandles, face->family_name);
+    return sf::base::makeOptional<Font>(base::PassKey<Font>{}, graphicsContext, &fontHandles, face->family_name);
 
 #else
 
-    auto stream = priv::makeUnique<priv::ResourceStream>(filename);
+    auto stream = base::makeUnique<priv::ResourceStream>(filename);
     auto font   = openFromStream(*stream);
     if (font)
-        font->m_stream = SFML_MOVE(stream);
+        font->m_stream = SFML_BASE_MOVE(stream);
     return font;
 
 #endif
@@ -261,7 +262,7 @@ Optional<Font> Font::openFromFile(GraphicsContext& graphicsContext, const Path& 
 
 
 ////////////////////////////////////////////////////////////
-Optional<Font> Font::openFromMemory(GraphicsContext& graphicsContext, const void* data, std::size_t sizeInBytes)
+base::Optional<Font> Font::openFromMemory(GraphicsContext& graphicsContext, const void* data, std::size_t sizeInBytes)
 {
     auto fontHandles = std::make_shared<FontHandles>();
 
@@ -271,7 +272,7 @@ Optional<Font> Font::openFromMemory(GraphicsContext& graphicsContext, const void
     if (FT_Init_FreeType(&fontHandles->library) != 0)
     {
         priv::err() << "Failed to load font from memory (failed to initialize FreeType)";
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
     // Load the new font face from the specified file
@@ -283,7 +284,7 @@ Optional<Font> Font::openFromMemory(GraphicsContext& graphicsContext, const void
                            &face) != 0)
     {
         priv::err() << "Failed to load font from memory (failed to create the font face)";
-        return sf::nullOpt;
+        return base::nullOpt;
     }
     fontHandles->face = face;
 
@@ -291,22 +292,22 @@ Optional<Font> Font::openFromMemory(GraphicsContext& graphicsContext, const void
     if (FT_Stroker_New(fontHandles->library, &fontHandles->stroker) != 0)
     {
         priv::err() << "Failed to load font from memory (failed to create the stroker)";
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
     // Select the Unicode character map
     if (FT_Select_Charmap(face, FT_ENCODING_UNICODE) != 0)
     {
         priv::err() << "Failed to load font from memory (failed to set the Unicode character set)";
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
-    return sf::makeOptional<Font>(priv::PassKey<Font>{}, graphicsContext, &fontHandles, face->family_name);
+    return sf::base::makeOptional<Font>(base::PassKey<Font>{}, graphicsContext, &fontHandles, face->family_name);
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<Font> Font::openFromStream(GraphicsContext& graphicsContext, InputStream& stream)
+base::Optional<Font> Font::openFromStream(GraphicsContext& graphicsContext, InputStream& stream)
 {
     auto fontHandles = std::make_shared<FontHandles>();
 
@@ -316,14 +317,14 @@ Optional<Font> Font::openFromStream(GraphicsContext& graphicsContext, InputStrea
     if (FT_Init_FreeType(&fontHandles->library) != 0)
     {
         priv::err() << "Failed to load font from stream (failed to initialize FreeType)";
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
     // Make sure that the stream's reading position is at the beginning
     if (!stream.seek(0).hasValue())
     {
         priv::err() << "Failed to seek font stream";
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
     // Prepare a wrapper for our stream, that we'll pass to FreeType callbacks
@@ -345,7 +346,7 @@ Optional<Font> Font::openFromStream(GraphicsContext& graphicsContext, InputStrea
     if (FT_Open_Face(fontHandles->library, &args, 0, &face) != 0)
     {
         priv::err() << "Failed to load font from stream (failed to create the font face)";
-        return sf::nullOpt;
+        return base::nullOpt;
     }
     fontHandles->face = face;
 
@@ -353,17 +354,17 @@ Optional<Font> Font::openFromStream(GraphicsContext& graphicsContext, InputStrea
     if (FT_Stroker_New(fontHandles->library, &fontHandles->stroker) != 0)
     {
         priv::err() << "Failed to load font from stream (failed to create the stroker)";
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
     // Select the Unicode character map
     if (FT_Select_Charmap(face, FT_ENCODING_UNICODE) != 0)
     {
         priv::err() << "Failed to load font from stream (failed to set the Unicode character set)";
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
-    return sf::makeOptional<Font>(priv::PassKey<Font>{}, graphicsContext, &fontHandles, face->family_name);
+    return sf::base::makeOptional<Font>(base::PassKey<Font>{}, graphicsContext, &fontHandles, face->family_name);
 }
 
 
@@ -377,7 +378,7 @@ const FontInfo& Font::getInfo() const
 ////////////////////////////////////////////////////////////
 unsigned int Font::getCharIndex(std::uint32_t codePoint) const
 {
-    SFML_ASSERT(m_impl->fontHandles);
+    SFML_BASE_ASSERT(m_impl->fontHandles);
     return FT_Get_Char_Index(m_impl->fontHandles->face, codePoint);
 }
 
@@ -385,7 +386,7 @@ unsigned int Font::getCharIndex(std::uint32_t codePoint) const
 ////////////////////////////////////////////////////////////
 const Glyph& Font::getGlyph(std::uint32_t codePoint, unsigned int characterSize, bool bold, float outlineThickness) const
 {
-    SFML_ASSERT(m_impl->fontHandles);
+    SFML_BASE_ASSERT(m_impl->fontHandles);
 
     // Get the page corresponding to the character size
     Page::GlyphTable& glyphs = loadPage(*m_impl->graphicsContext, characterSize).glyphs;
@@ -416,7 +417,7 @@ bool Font::hasGlyph(std::uint32_t codePoint) const
 ////////////////////////////////////////////////////////////
 float Font::getKerning(std::uint32_t first, std::uint32_t second, unsigned int characterSize, bool bold) const
 {
-    SFML_ASSERT(m_impl->fontHandles);
+    SFML_BASE_ASSERT(m_impl->fontHandles);
 
     // Special case where first or second is 0 (null character)
     if (first == 0 || second == 0)
@@ -445,7 +446,7 @@ float Font::getKerning(std::uint32_t first, std::uint32_t second, unsigned int c
 
         // Combine kerning with compensation deltas and return the X advance
         // Flooring is required as we use FT_KERNING_UNFITTED flag which is not quantized in 64 based grid
-        return priv::floor((secondLsbDelta - firstRsbDelta + static_cast<float>(kerning.x) + 32) / float{1 << 6});
+        return base::floor((secondLsbDelta - firstRsbDelta + static_cast<float>(kerning.x) + 32) / float{1 << 6});
     }
 
     // Invalid font
@@ -456,7 +457,7 @@ float Font::getKerning(std::uint32_t first, std::uint32_t second, unsigned int c
 ////////////////////////////////////////////////////////////
 float Font::getLineSpacing(unsigned int characterSize) const
 {
-    SFML_ASSERT(m_impl->fontHandles);
+    SFML_BASE_ASSERT(m_impl->fontHandles);
 
     FT_Face face = m_impl->fontHandles->face;
 
@@ -472,7 +473,7 @@ float Font::getLineSpacing(unsigned int characterSize) const
 ////////////////////////////////////////////////////////////
 float Font::getUnderlinePosition(unsigned int characterSize) const
 {
-    SFML_ASSERT(m_impl->fontHandles);
+    SFML_BASE_ASSERT(m_impl->fontHandles);
 
     FT_Face face = m_impl->fontHandles->face;
 
@@ -492,7 +493,7 @@ float Font::getUnderlinePosition(unsigned int characterSize) const
 ////////////////////////////////////////////////////////////
 float Font::getUnderlineThickness(unsigned int characterSize) const
 {
-    SFML_ASSERT(m_impl->fontHandles);
+    SFML_BASE_ASSERT(m_impl->fontHandles);
 
     FT_Face face = m_impl->fontHandles->face;
 
@@ -543,9 +544,9 @@ Font::Page& Font::loadPage(GraphicsContext& graphicsContext, unsigned int charac
         return it->second;
 
     auto page = Page::create(graphicsContext, m_impl->isSmooth);
-    SFML_ASSERT(page && "Font::loadPage() Failed to load page");
+    SFML_BASE_ASSERT(page && "Font::loadPage() Failed to load page");
 
-    return m_impl->pages.emplace(characterSize, SFML_MOVE(*page)).first->second;
+    return m_impl->pages.emplace(characterSize, SFML_BASE_MOVE(*page)).first->second;
 }
 
 
@@ -832,7 +833,7 @@ bool Font::setCurrentSize(unsigned int characterSize) const
 
 
 ////////////////////////////////////////////////////////////
-Optional<Font::Page> Font::Page::create(GraphicsContext& graphicsContext, bool smooth)
+base::Optional<Font::Page> Font::Page::create(GraphicsContext& graphicsContext, bool smooth)
 {
     // Make sure that the texture is initialized by default
     auto image = *Image::create({128, 128}, Color::Transparent);
@@ -847,16 +848,16 @@ Optional<Font::Page> Font::Page::create(GraphicsContext& graphicsContext, bool s
     if (!texture.hasValue())
     {
         priv::err() << "Failed to load font page texture";
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
     texture->setSmooth(smooth);
-    return sf::makeOptional<Page>(SFML_MOVE(*texture));
+    return sf::base::makeOptional<Page>(SFML_BASE_MOVE(*texture));
 }
 
 
 ////////////////////////////////////////////////////////////
-Font::Page::Page(Texture&& theTexture) : texture(SFML_MOVE(theTexture))
+Font::Page::Page(Texture&& theTexture) : texture(SFML_BASE_MOVE(theTexture))
 {
 }
 

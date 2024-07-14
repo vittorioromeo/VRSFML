@@ -29,13 +29,13 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
-#include <SFML/System/FixedFunction.hpp>
+#include <SFML/Base/FixedFunction.hpp>
 
 
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-using EffectProcessorImpl = priv::FixedFunction<
+using EffectProcessorImpl = base::FixedFunction<
     void(const float* inputFrames, unsigned int& inputFrameCount, float* outputFrames, unsigned int& outputFrameCount, unsigned int frameChannelCount),
     128>;
 
