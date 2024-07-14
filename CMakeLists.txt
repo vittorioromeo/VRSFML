@@ -59,6 +59,9 @@ if(SFML_ENABLE_STACK_TRACES)
     )
 
     FetchContent_MakeAvailable(cpptrace)
+
+    # install(TARGETS cpptrace-lib EXPORT SFMLConfigExport)
+    # install(TARGETS dwarf EXPORT SFMLConfigExport)
 endif()
 
 # add an option to enable lifetime tracking

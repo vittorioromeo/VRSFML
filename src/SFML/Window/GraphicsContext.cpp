@@ -314,7 +314,6 @@ bool GraphicsContext::setActiveThreadLocalGlContext(priv::GlContext& glContext, 
     if (!glContext.makeCurrent(active))
     {
         priv::err() << "`glContext.makeCurrent` failure in `GraphicsContext::setActiveThreadLocalGlContext`";
-
         return false;
     }
 
