@@ -66,9 +66,9 @@ unsigned short TcpSocket::getLocalPort() const
         // Retrieve information about the local end of the socket
         sockaddr_in                  address{};
         priv::SocketImpl::AddrLength size = sizeof(address);
-        if (getsockname(getNativeHandle(), reinterpret_cast<sockaddr*>(&address), &size) != -1)
+        if (priv::SocketImpl::getSockName(getNativeHandle(), address, size))
         {
-            return ntohs(address.sin_port);
+            return priv::SocketImpl::ntohs(address.sin_port);
         }
     }
 
@@ -85,9 +85,9 @@ sf::Optional<IpAddress> TcpSocket::getRemoteAddress() const
         // Retrieve information about the remote end of the socket
         sockaddr_in                  address{};
         priv::SocketImpl::AddrLength size = sizeof(address);
-        if (getpeername(getNativeHandle(), reinterpret_cast<sockaddr*>(&address), &size) != -1)
+        if (!priv::SocketImpl::getPeerName(getNativeHandle(), address, size))
         {
-            return sf::makeOptional<IpAddress>(ntohl(address.sin_addr.s_addr));
+            return sf::makeOptional<IpAddress>(priv::SocketImpl::ntohl(address));
         }
     }
 
@@ -104,9 +104,9 @@ unsigned short TcpSocket::getRemotePort() const
         // Retrieve information about the remote end of the socket
         sockaddr_in                  address{};
         priv::SocketImpl::AddrLength size = sizeof(address);
-        if (getpeername(getNativeHandle(), reinterpret_cast<sockaddr*>(&address), &size) != -1)
+        if (!priv::SocketImpl::getPeerName(getNativeHandle(), address, size))
         {
-            return ntohs(address.sin_port);
+            return priv::SocketImpl::ntohs(address.sin_port);
         }
     }
 
@@ -132,7 +132,7 @@ Socket::Status TcpSocket::connect(const IpAddress& remoteAddress, unsigned short
         // ----- We're not using a timeout: just try to connect -----
 
         // Connect the socket
-        if (::connect(getNativeHandle(), reinterpret_cast<sockaddr*>(&address), sizeof(address)) == -1)
+        if (!priv::SocketImpl::connect(getNativeHandle(), address))
             return priv::SocketImpl::getErrorStatus();
 
         // Connection succeeded
@@ -149,7 +149,7 @@ Socket::Status TcpSocket::connect(const IpAddress& remoteAddress, unsigned short
         setBlocking(false);
 
     // Try to connect to the remote address
-    if (::connect(getNativeHandle(), reinterpret_cast<sockaddr*>(&address), sizeof(address)) >= 0)
+    if (priv::SocketImpl::connect(getNativeHandle(), address))
     {
         // We got instantly connected! (it may no happen a lot...)
         setBlocking(blocking);
@@ -166,18 +166,8 @@ Socket::Status TcpSocket::connect(const IpAddress& remoteAddress, unsigned short
     // Otherwise, wait until something happens to our socket (success, timeout or error)
     if (status == Socket::Status::NotReady)
     {
-        // Setup the selector
-        fd_set selector;
-        FD_ZERO(&selector);
-        FD_SET(getNativeHandle(), &selector);
-
-        // Setup the timeout
-        timeval time{};
-        time.tv_sec  = static_cast<long>(timeout.asMicroseconds() / 1000000);
-        time.tv_usec = static_cast<int>(timeout.asMicroseconds() % 1000000);
-
         // Wait for something to write on our socket (which means that the connection request has returned)
-        if (select(static_cast<int>(getNativeHandle() + 1), nullptr, &selector, nullptr, &time) > 0)
+        if (priv::SocketImpl::select(getNativeHandle(), timeout.asMicroseconds()))
         {
             // At this point the connection may have been either accepted or refused.
             // To know whether it's a success or a failure, we must check the address of the connected peer
@@ -386,12 +376,12 @@ Socket::Status TcpSocket::receive(Packet& packet)
         }
 
         // The packet size has been fully received
-        packetSize = ntohl(m_pendingPacket.size);
+        packetSize = priv::SocketImpl::ntohl(m_pendingPacket.size);
     }
     else
     {
         // The packet size has already been received in a previous call
-        packetSize = ntohl(m_pendingPacket.size);
+        packetSize = priv::SocketImpl::ntohl(m_pendingPacket.size);
     }
 
     // Loop until we receive all the packet data
