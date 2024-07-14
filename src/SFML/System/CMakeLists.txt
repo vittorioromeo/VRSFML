@@ -136,5 +136,5 @@ elseif(SFML_OS_ANDROID)
 endif()
 
 if(SFML_ENABLE_STACK_TRACES)
-    target_link_libraries(sfml-system PRIVATE cpptrace::cpptrace)
+    target_link_libraries(sfml-system PUBLIC cpptrace::cpptrace)
 endif()

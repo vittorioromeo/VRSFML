@@ -208,12 +208,17 @@ GlFunctionPointer WglContext::getFunction(const char* name) const
 bool WglContext::makeCurrent(bool current)
 {
     if (!m_surfaceData.deviceContext || !m_context)
+    {
+        err() << "Failed to " << (current ? "activate" : "deactivate")
+              << " WGL context, surface data or context null: " << getErrorString(GetLastError());
+
         return false;
+    }
 
     if (wglMakeCurrent(m_surfaceData.deviceContext, current ? m_context : nullptr) == FALSE)
     {
         err() << "Failed to " << (current ? "activate" : "deactivate")
-              << " OpenGL context: " << getErrorString(GetLastError());
+              << " WGL context: " << getErrorString(GetLastError());
 
         return false;
     }
