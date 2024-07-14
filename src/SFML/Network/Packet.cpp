@@ -136,7 +136,7 @@ Packet& Packet::operator>>(std::int16_t& data)
     if (checkSize(sizeof(data)))
     {
         std::memcpy(&data, &m_data[m_readPos], sizeof(data));
-        data = static_cast<std::int16_t>(ntohs(static_cast<std::uint16_t>(data)));
+        data = static_cast<std::int16_t>(priv::SocketImpl::ntohs(static_cast<std::uint16_t>(data)));
         m_readPos += sizeof(data);
     }
 
@@ -150,7 +150,7 @@ Packet& Packet::operator>>(std::uint16_t& data)
     if (checkSize(sizeof(data)))
     {
         std::memcpy(&data, &m_data[m_readPos], sizeof(data));
-        data = ntohs(data);
+        data = priv::SocketImpl::ntohs(data);
         m_readPos += sizeof(data);
     }
 
@@ -164,7 +164,7 @@ Packet& Packet::operator>>(std::int32_t& data)
     if (checkSize(sizeof(data)))
     {
         std::memcpy(&data, &m_data[m_readPos], sizeof(data));
-        data = static_cast<std::int32_t>(ntohl(static_cast<std::uint32_t>(data)));
+        data = static_cast<std::int32_t>(priv::SocketImpl::ntohl(static_cast<std::uint32_t>(data)));
         m_readPos += sizeof(data);
     }
 
@@ -178,7 +178,7 @@ Packet& Packet::operator>>(std::uint32_t& data)
     if (checkSize(sizeof(data)))
     {
         std::memcpy(&data, &m_data[m_readPos], sizeof(data));
-        data = ntohl(data);
+        data = priv::SocketImpl::ntohl(data);
         m_readPos += sizeof(data);
     }
 
@@ -390,7 +390,7 @@ Packet& Packet::operator<<(std::uint8_t data)
 ////////////////////////////////////////////////////////////
 Packet& Packet::operator<<(std::int16_t data)
 {
-    auto toWrite = static_cast<std::int16_t>(htons(static_cast<std::uint16_t>(data)));
+    auto toWrite = static_cast<std::int16_t>(priv::SocketImpl::htons(static_cast<std::uint16_t>(data)));
     append(&toWrite, sizeof(toWrite));
     return *this;
 }
@@ -399,7 +399,7 @@ Packet& Packet::operator<<(std::int16_t data)
 ////////////////////////////////////////////////////////////
 Packet& Packet::operator<<(std::uint16_t data)
 {
-    std::uint16_t toWrite = htons(data);
+    std::uint16_t toWrite = priv::SocketImpl::htons(data);
     append(&toWrite, sizeof(toWrite));
     return *this;
 }
@@ -408,7 +408,7 @@ Packet& Packet::operator<<(std::uint16_t data)
 ////////////////////////////////////////////////////////////
 Packet& Packet::operator<<(std::int32_t data)
 {
-    auto toWrite = static_cast<std::int32_t>(htonl(static_cast<std::uint32_t>(data)));
+    auto toWrite = static_cast<std::int32_t>(priv::SocketImpl::htonl(static_cast<std::uint32_t>(data)));
     append(&toWrite, sizeof(toWrite));
     return *this;
 }
@@ -417,7 +417,7 @@ Packet& Packet::operator<<(std::int32_t data)
 ////////////////////////////////////////////////////////////
 Packet& Packet::operator<<(std::uint32_t data)
 {
-    std::uint32_t toWrite = htonl(data);
+    std::uint32_t toWrite = priv::SocketImpl::htonl(data);
     append(&toWrite, sizeof(toWrite));
     return *this;
 }

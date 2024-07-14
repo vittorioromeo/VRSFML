@@ -31,6 +31,8 @@
 
 #include <SFML/System/Err.hpp>
 
+#include <SFML/Base/Optional.hpp>
+
 #include <istream>
 
 #include <cstring>
@@ -66,39 +68,31 @@ base::Optional<IpAddress> IpAddress::resolve(std::string_view address)
         return sf::base::makeOptional(Any);
 
     // Try to convert the address as a byte representation ("xxx.xxx.xxx.xxx")
-    if (const std::uint32_t ip = inet_addr(address.data()); ip != INADDR_NONE)
-        return sf::base::makeOptional<IpAddress>(ntohl(ip));
+    if (const auto ip = priv::SocketImpl::inetAddr(address.data()); ip.hasValue())
+        return sf::base::makeOptional<IpAddress>(priv::SocketImpl::ntohl(*ip));
 
     // Not a valid address, try to convert it as a host name
-    addrinfo hints{}; // Zero-initialize
-    hints.ai_family = AF_INET;
+    const base::Optional converted = priv::SocketImpl::convertToHostname(address.data());
 
-    addrinfo* result = nullptr;
-    if (getaddrinfo(address.data(), nullptr, &hints, &result) == 0 && result != nullptr)
+    if (!converted.hasValue())
     {
-        sockaddr_in sin{};
-        std::memcpy(&sin, result->ai_addr, sizeof(*result->ai_addr));
-
-        const std::uint32_t ip = sin.sin_addr.s_addr;
-        freeaddrinfo(result);
-
-        return sf::base::makeOptional<IpAddress>(ntohl(ip));
+        // Not generating en error message here as resolution failure is a valid outcome.
+        return base::nullOpt;
     }
 
-    // Not generating en error message here as resolution failure is a valid outcome.
-    return base::nullOpt;
+    return base::makeOptional<IpAddress>(priv::SocketImpl::ntohl(*converted));
 }
 
 
 ////////////////////////////////////////////////////////////
 IpAddress::IpAddress(std::uint8_t byte0, std::uint8_t byte1, std::uint8_t byte2, std::uint8_t byte3) :
-m_address(htonl(static_cast<std::uint32_t>((byte0 << 24) | (byte1 << 16) | (byte2 << 8) | byte3)))
+m_address(priv::SocketImpl::htonl(static_cast<std::uint32_t>((byte0 << 24) | (byte1 << 16) | (byte2 << 8) | byte3)))
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-IpAddress::IpAddress(std::uint32_t address) : m_address(htonl(address))
+IpAddress::IpAddress(std::uint32_t address) : m_address(priv::SocketImpl::htonl(address))
 {
 }
 
@@ -106,17 +100,14 @@ IpAddress::IpAddress(std::uint32_t address) : m_address(htonl(address))
 ////////////////////////////////////////////////////////////
 std::string IpAddress::toString() const
 {
-    in_addr address{};
-    address.s_addr = m_address;
-
-    return inet_ntoa(address);
+    return priv::SocketImpl::addrToString(m_address);
 }
 
 
 ////////////////////////////////////////////////////////////
 std::uint32_t IpAddress::toInteger() const
 {
-    return ntohl(m_address);
+    return priv::SocketImpl::ntohl(m_address);
 }
 
 
@@ -128,7 +119,7 @@ base::Optional<IpAddress> IpAddress::getLocalAddress()
     // UDP connection will not send anything to the network, so this function won't cause any overhead.
 
     // Create the socket
-    const SocketHandle sock = socket(PF_INET, SOCK_DGRAM, 0);
+    const SocketHandle sock = priv::SocketImpl::udpSocket();
     if (sock == priv::SocketImpl::invalidSocket())
     {
         priv::err() << "Failed to retrieve local address (invalid socket)";
@@ -136,8 +127,8 @@ base::Optional<IpAddress> IpAddress::getLocalAddress()
     }
 
     // Connect the socket to localhost on any port
-    sockaddr_in address = priv::SocketImpl::createAddress(ntohl(INADDR_LOOPBACK), 9);
-    if (connect(sock, reinterpret_cast<sockaddr*>(&address), sizeof(address)) == -1)
+    priv::SockAddrIn address = priv::SocketImpl::createAddress(priv::SocketImpl::ntohl(priv::SocketImpl::inaddrLoopback()), 9);
+    if (!priv::SocketImpl::connect(sock, address))
     {
         priv::SocketImpl::close(sock);
 
@@ -146,8 +137,8 @@ base::Optional<IpAddress> IpAddress::getLocalAddress()
     }
 
     // Get the local address of the socket connection
-    priv::SocketImpl::AddrLength size = sizeof(address);
-    if (getsockname(sock, reinterpret_cast<sockaddr*>(&address), &size) == -1)
+    auto size = address.size();
+    if (!priv::SocketImpl::getSockName(sock, address, size))
     {
         priv::SocketImpl::close(sock);
 
@@ -159,7 +150,7 @@ base::Optional<IpAddress> IpAddress::getLocalAddress()
     priv::SocketImpl::close(sock);
 
     // Finally build the IP address
-    return sf::base::makeOptional<IpAddress>(ntohl(address.sin_addr.s_addr));
+    return sf::base::makeOptional<IpAddress>(priv::SocketImpl::ntohl(address.sAddr()));
 }
 
 
