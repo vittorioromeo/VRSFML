@@ -256,13 +256,16 @@ int main()
                     // TODO: not working
                     if (mipmapEnabled)
                     {
+                        std::cout << "disabling mipmap\n";
+
                         // We simply reload the texture to disable mipmapping
                         texture = sf::Texture::loadFromFile(graphicsContext, resourcesDir() / "logo.png").value();
 
                         mipmapEnabled = false;
                     }
-                    else if (texture.generateMipmap())
+                    else if (true ||texture.generateMipmap())
                     {
+                        std::cout << "enabling mipmap\n";
                         mipmapEnabled = true;
                     }
                 }
