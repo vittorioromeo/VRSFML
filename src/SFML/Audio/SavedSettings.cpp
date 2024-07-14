@@ -36,14 +36,14 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] sf::Vector3f convertMAVec3(const ma_vec3f& v)
+[[nodiscard, gnu::always_inline, gnu::pure]] inline sf::Vector3f convertMAVec3(const ma_vec3f& v)
 {
     return {v.x, v.y, v.z};
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] sf::Listener::Cone convertMACone(const ma_sound& sound)
+[[nodiscard, gnu::always_inline, gnu::pure]] inline sf::Listener::Cone convertMACone(const ma_sound& sound)
 {
     sf::Listener::Cone cone;
 
