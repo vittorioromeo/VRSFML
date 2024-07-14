@@ -150,16 +150,18 @@ Texture& Texture::operator=(Texture&& right) noexcept
     }
 
     // Move old to new.
-    m_size          = base::exchange(right.m_size, {});
-    m_actualSize    = base::exchange(right.m_actualSize, {});
-    m_texture       = base::exchange(right.m_texture, 0u);
-    m_isSmooth      = base::exchange(right.m_isSmooth, false);
-    m_sRgb          = base::exchange(right.m_sRgb, false);
-    m_isRepeated    = base::exchange(right.m_isRepeated, false);
-    m_pixelsFlipped = base::exchange(right.m_pixelsFlipped, false);
-    m_fboAttachment = base::exchange(right.m_fboAttachment, false);
-    m_hasMipmap     = base::exchange(right.m_hasMipmap, false);
-    m_cacheId       = base::exchange(right.m_cacheId, 0u);
+    m_graphicsContext = right.m_graphicsContext;
+    m_size            = base::exchange(right.m_size, {});
+    m_actualSize      = base::exchange(right.m_actualSize, {});
+    m_texture         = base::exchange(right.m_texture, 0u);
+    m_isSmooth        = base::exchange(right.m_isSmooth, false);
+    m_sRgb            = base::exchange(right.m_sRgb, false);
+    m_isRepeated      = base::exchange(right.m_isRepeated, false);
+    m_pixelsFlipped   = base::exchange(right.m_pixelsFlipped, false);
+    m_fboAttachment   = base::exchange(right.m_fboAttachment, false);
+    m_hasMipmap       = base::exchange(right.m_hasMipmap, false);
+    m_cacheId         = base::exchange(right.m_cacheId, 0u);
+
     return *this;
 }
 
@@ -496,33 +498,33 @@ void Texture::update(const std::uint8_t* pixels, const Vector2u& size, const Vec
     SFML_BASE_ASSERT(dest.x + size.x <= m_size.x && "Destination x coordinate is outside of texture");
     SFML_BASE_ASSERT(dest.y + size.y <= m_size.y && "Destination y coordinate is outside of texture");
 
-    if (pixels && m_texture)
-    {
-        SFML_BASE_ASSERT(m_graphicsContext->hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(pixels != nullptr);
+    SFML_BASE_ASSERT(m_texture);
 
-        // Make sure that the current texture binding will be preserved
-        const priv::TextureSaver save;
+    SFML_BASE_ASSERT(m_graphicsContext->hasAnyActiveGlContext());
 
-        // Copy pixels from the given array to the texture
-        glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
-        glCheck(glTexSubImage2D(GL_TEXTURE_2D,
-                                0,
-                                static_cast<GLint>(dest.x),
-                                static_cast<GLint>(dest.y),
-                                static_cast<GLsizei>(size.x),
-                                static_cast<GLsizei>(size.y),
-                                GL_RGBA,
-                                GL_UNSIGNED_BYTE,
-                                pixels));
-        glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_isSmooth ? GL_LINEAR : GL_NEAREST));
-        m_hasMipmap     = false;
-        m_pixelsFlipped = false;
-        m_cacheId       = TextureImpl::getUniqueId();
+    // Make sure that the current texture binding will be preserved
+    const priv::TextureSaver save;
 
-        // Force an OpenGL flush, so that the texture data will appear updated
-        // in all contexts immediately (solves problems in multi-threaded apps)
-        glCheck(glFlush());
-    }
+    // Copy pixels from the given array to the texture
+    glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
+    glCheck(glTexSubImage2D(GL_TEXTURE_2D,
+                            0,
+                            static_cast<GLint>(dest.x),
+                            static_cast<GLint>(dest.y),
+                            static_cast<GLsizei>(size.x),
+                            static_cast<GLsizei>(size.y),
+                            GL_RGBA,
+                            GL_UNSIGNED_BYTE,
+                            pixels));
+    glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_isSmooth ? GL_LINEAR : GL_NEAREST));
+    m_hasMipmap     = false;
+    m_pixelsFlipped = false;
+    m_cacheId       = TextureImpl::getUniqueId();
+
+    // Force an OpenGL flush, so that the texture data will appear updated
+    // in all contexts immediately (solves problems in multi-threaded apps)
+    glCheck(glFlush());
 }
 
 
@@ -540,8 +542,8 @@ void Texture::update(const Texture& texture, const Vector2u& dest)
     SFML_BASE_ASSERT(dest.x + texture.m_size.x <= m_size.x && "Destination x coordinate is outside of texture");
     SFML_BASE_ASSERT(dest.y + texture.m_size.y <= m_size.y && "Destination y coordinate is outside of texture");
 
-    if (!m_texture || !texture.m_texture)
-        return;
+    SFML_BASE_ASSERT(m_texture);
+    SFML_BASE_ASSERT(texture.m_texture);
 
 #ifndef SFML_OPENGL_ES
 
@@ -815,16 +817,17 @@ bool Texture::isRepeated() const
 ////////////////////////////////////////////////////////////
 bool Texture::generateMipmap()
 {
-    if (!m_texture)
-        return false;
-
+    SFML_BASE_ASSERT(m_texture);
     SFML_BASE_ASSERT(m_graphicsContext->hasAnyActiveGlContext());
 
     // Make sure that extensions are initialized
     priv::ensureExtensionsInit(*m_graphicsContext);
 
     if (!GLEXT_framebuffer_object)
+    {
+        priv::err() << "Could not generate mipmap, missing GL extension";
         return false;
+    }
 
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
@@ -864,8 +867,10 @@ void Texture::bind(GraphicsContext& graphicsContext, const Texture* texture, Coo
 {
     SFML_BASE_ASSERT(graphicsContext.hasAnyActiveGlContext());
 
-    if (texture && texture->m_texture)
+    if (texture)
     {
+        SFML_BASE_ASSERT(texture->m_texture);
+
         // Bind the texture
         glCheck(glBindTexture(GL_TEXTURE_2D, texture->m_texture));
 
