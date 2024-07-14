@@ -775,7 +775,7 @@ HGLRC WglContext::createContext(ContextSettings& settings, const SurfaceData& su
             }
         }
 
-        err() << "WglContext::createContext failure:unable to create context from attributes";
+        err() << "WglContext::createContext failure: unable to create context via attributes";
         return {};
     };
 
@@ -793,7 +793,12 @@ HGLRC WglContext::createContext(ContextSettings& settings, const SurfaceData& su
     const ContextSettings::Attribute originalAttributeFlags = settings.attributeFlags;
 
     if (SF_GLAD_WGL_ARB_create_context)
-        return createContextViaAttributes(settings, surfaceData, shared, sharedContext, originalAttributeFlags);
+    {
+        HGLRC resultViaAttributes = createContextViaAttributes(settings, surfaceData, shared, sharedContext, originalAttributeFlags);
+
+        if (resultViaAttributes)
+            return resultViaAttributes;
+    }
 
     // set the context version to 1.1 (arbitrary) and disable flags
     settings.majorVersion   = 1;
