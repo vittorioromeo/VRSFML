@@ -27,6 +27,11 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Network/SocketImpl.hpp>
 
+#include <SFML/System/Win32/WindowsHeader.hpp>
+
+#include <winsock2.h>
+#include <ws2tcpip.h>
+
 #include <cstdint>
 
 
@@ -45,9 +50,90 @@ sockaddr_in SocketImpl::createAddress(std::uint32_t address, unsigned short port
 
 
 ////////////////////////////////////////////////////////////
+SocketHandle SocketImpl::accept(SocketHandle handle, sockaddr_in& address, AddrLength& length)
+{
+    return ::accept(handle, reinterpret_cast<sockaddr*>(&address), &length);
+}
+
+
+////////////////////////////////////////////////////////////
+bool SocketImpl::listen(SocketHandle handle)
+{
+    return ::listen(handle, SOMAXCONN) != -1;
+}
+
+
+////////////////////////////////////////////////////////////
+bool SocketImpl::getSockName(SocketHandle handle, sockaddr_in& address, AddrLength& length)
+{
+    return ::getsockname(handle, reinterpret_cast<sockaddr*>(&address), &length) != -1;
+}
+
+
+////////////////////////////////////////////////////////////
+bool SocketImpl::getPeerName(SocketHandle handle, sockaddr_in& address, AddrLength& length)
+{
+    return ::getpeername(handle, reinterpret_cast<sockaddr*>(&address), &length) != -1;
+}
+
+
+////////////////////////////////////////////////////////////
+bool SocketImpl::bind(SocketHandle handle, sockaddr_in& address)
+{
+    return ::bind(handle, reinterpret_cast<sockaddr*>(&address), sizeof(address)) != -1;
+}
+
+
+////////////////////////////////////////////////////////////
+bool SocketImpl::connect(SocketHandle handle, sockaddr_in& address)
+{
+    return ::connect(handle, reinterpret_cast<sockaddr*>(&address), sizeof(address)) != -1;
+}
+
+
+////////////////////////////////////////////////////////////
 SocketHandle SocketImpl::invalidSocket()
 {
     return INVALID_SOCKET;
+}
+
+
+////////////////////////////////////////////////////////////
+unsigned long SocketImpl::ntohl(unsigned long netlong)
+{
+    return ::ntohl(netlong);
+}
+
+
+////////////////////////////////////////////////////////////
+unsigned short SocketImpl::ntohs(unsigned short netshort)
+{
+    return ::ntohs(netshort);
+}
+
+
+////////////////////////////////////////////////////////////
+unsigned long SocketImpl::ntohl(sockaddr_in addr)
+{
+    return ::ntohl(addr.sin_addr.s_addr);
+}
+
+
+////////////////////////////////////////////////////////////
+bool SocketImpl::select(SocketHandle handle, long long timeoutUs)
+{
+    // Setup the selector
+    fd_set selector;
+    FD_ZERO(&selector);
+    FD_SET(handle, &selector);
+
+    // Setup the timeout
+    timeval time{};
+    time.tv_sec  = static_cast<long>(timeoutUs / 1000000);
+    time.tv_usec = static_cast<int>(timeoutUs % 1000000);
+
+    // Wait for something to write on our socket (which means that the connection request has returned)
+    return ::select(static_cast<int>(handle + 1), nullptr, &selector, nullptr, &time) > 0;
 }
 
 
