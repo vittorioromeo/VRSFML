@@ -49,11 +49,11 @@ unsigned short UdpSocket::getLocalPort() const
     if (getNativeHandle() != priv::SocketImpl::invalidSocket())
     {
         // Retrieve information about the local end of the socket
-        sockaddr_in                  address{};
-        priv::SocketImpl::AddrLength size = sizeof(address);
-        if (getsockname(getNativeHandle(), reinterpret_cast<sockaddr*>(&address), &size) != -1)
+        priv::SockAddrIn address{};
+        auto             size = address.size();
+        if (priv::SocketImpl::getSockName(getNativeHandle(), address, size))
         {
-            return ntohs(address.sin_port);
+            return priv::SocketImpl::ntohs(address.sinPort());
         }
     }
 
@@ -76,8 +76,8 @@ Socket::Status UdpSocket::bind(unsigned short port, const IpAddress& address)
         return Status::Error;
 
     // Bind the socket
-    sockaddr_in addr = priv::SocketImpl::createAddress(address.toInteger(), port);
-    if (::bind(getNativeHandle(), reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) == -1)
+    priv::SockAddrIn addr = priv::SocketImpl::createAddress(address.toInteger(), port);
+    if (!priv::SocketImpl::bind(getNativeHandle(), addr))
     {
         priv::err() << "Failed to bind socket to port " << port;
         return Status::Error;
@@ -110,18 +110,17 @@ Socket::Status UdpSocket::send(const void* data, std::size_t size, const IpAddre
     }
 
     // Build the target address
-    sockaddr_in address = priv::SocketImpl::createAddress(remoteAddress.toInteger(), remotePort);
+    priv::SockAddrIn address = priv::SocketImpl::createAddress(remoteAddress.toInteger(), remotePort);
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wuseless-cast"
     // Send the data (unlike TCP, all the data is always sent in one call)
     const int sent = static_cast<int>(
-        sendto(getNativeHandle(),
-               static_cast<const char*>(data),
-               static_cast<priv::SocketImpl::Size>(size),
-               0,
-               reinterpret_cast<sockaddr*>(&address),
-               sizeof(address)));
+        priv::SocketImpl::sendTo(getNativeHandle(),
+                                 static_cast<const char*>(data),
+                                 static_cast<priv::SocketImpl::Size>(size),
+                                 0,
+                                 address));
 #pragma GCC diagnostic pop
 
     // Check for errors
@@ -152,19 +151,19 @@ Socket::Status UdpSocket::receive(void*                      data,
     }
 
     // Data that will be filled with the other computer's address
-    sockaddr_in address = priv::SocketImpl::createAddress(INADDR_ANY, 0);
+    priv::SockAddrIn address = priv::SocketImpl::createAddress(priv::SocketImpl::inaddrAny(), 0);
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wuseless-cast"
     // Receive a chunk of bytes
-    priv::SocketImpl::AddrLength addressSize  = sizeof(address);
-    const int                    sizeReceived = static_cast<int>(
-        recvfrom(getNativeHandle(),
-                 static_cast<char*>(data),
-                 static_cast<priv::SocketImpl::Size>(size),
-                 0,
-                 reinterpret_cast<sockaddr*>(&address),
-                 &addressSize));
+    auto      addressSize  = address.size();
+    const int sizeReceived = static_cast<int>(
+        priv::SocketImpl::recvFrom(getNativeHandle(),
+                                   static_cast<char*>(data),
+                                   static_cast<priv::SocketImpl::Size>(size),
+                                   0,
+                                   address,
+                                   addressSize));
 #pragma GCC diagnostic pop
 
     // Check for errors
@@ -173,8 +172,8 @@ Socket::Status UdpSocket::receive(void*                      data,
 
     // Fill the sender information
     received = static_cast<std::size_t>(sizeReceived);
-    remoteAddress.emplace(ntohl(address.sin_addr.s_addr));
-    remotePort = ntohs(address.sin_port);
+    remoteAddress.emplace(priv::SocketImpl::ntohl(address.sAddr()));
+    remotePort = priv::SocketImpl::ntohs(address.sinPort());
 
     return Status::Done;
 }

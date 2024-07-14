@@ -15,6 +15,13 @@ set(SRC_BASE
     ${BASE_INCROOT}/IsEnum.hpp
     ${BASE_INCROOT}/IsFloatingPoint.hpp
     ${BASE_INCROOT}/IsSame.hpp
+    ${BASE_INCROOT}/IsTriviallyCopyable.hpp
+    ${BASE_INCROOT}/IsTriviallyCopyAssignable.hpp
+    ${BASE_INCROOT}/IsTriviallyCopyConstructible.hpp
+    ${BASE_INCROOT}/IsTriviallyDestructible.hpp
+    ${BASE_INCROOT}/IsTriviallyMoveAssignable.hpp
+    ${BASE_INCROOT}/IsTriviallyMoveConstructible.hpp
+    ${BASE_INCROOT}/IsTriviallyMoveConstructible.hpp
     ${BASE_INCROOT}/Launder.hpp
     ${BASE_INCROOT}/Macros.hpp
     ${BASE_INCROOT}/Math.hpp

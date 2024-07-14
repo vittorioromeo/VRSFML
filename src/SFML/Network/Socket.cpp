@@ -104,7 +104,7 @@ void Socket::create()
     // Don't create the socket if it already exists
     if (m_socket == priv::SocketImpl::invalidSocket())
     {
-        const SocketHandle handle = socket(PF_INET, m_type == Type::Tcp ? SOCK_STREAM : SOCK_DGRAM, 0);
+        const SocketHandle handle = m_type == Type::Tcp ? priv::SocketImpl::tcpSocket() : priv::SocketImpl::udpSocket();
 
         if (handle == priv::SocketImpl::invalidSocket())
         {
@@ -132,29 +132,20 @@ void Socket::create(SocketHandle handle)
         if (m_type == Type::Tcp)
         {
             // Disable the Nagle algorithm (i.e. removes buffering of TCP packets)
-            int yes = 1;
-            if (setsockopt(m_socket, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&yes), sizeof(yes)) == -1)
-            {
-                priv::err() << "Failed to set socket option \"TCP_NODELAY\" ; "
-                            << "all your TCP packets will be buffered";
-            }
+            if (!priv::SocketImpl::disableNagle(m_socket))
+                priv::err() << "Failed to set socket option \"TCP_NODELAY\" ; all your TCP packets will be buffered";
 
 // On macOS, disable the SIGPIPE signal on disconnection
 #ifdef SFML_SYSTEM_MACOS
-            if (setsockopt(m_socket, SOL_SOCKET, SO_NOSIGPIPE, reinterpret_cast<char*>(&yes), sizeof(yes)) == -1)
-            {
+            if (!priv::SocketImpl::disableSigpipe(m_socket))
                 priv::err() << "Failed to set socket option \"SO_NOSIGPIPE\"";
-            }
 #endif
         }
         else
         {
             // Enable broadcast by default for UDP sockets
-            int yes = 1;
-            if (setsockopt(m_socket, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<char*>(&yes), sizeof(yes)) == -1)
-            {
+            if (!priv::SocketImpl::enableBroadcast(m_socket))
                 priv::err() << "Failed to enable broadcast on UDP socket";
-            }
         }
     }
 }

@@ -46,11 +46,11 @@ unsigned short TcpListener::getLocalPort() const
     if (getNativeHandle() != priv::SocketImpl::invalidSocket())
     {
         // Retrieve information about the local end of the socket
-        sockaddr_in                  address{};
-        priv::SocketImpl::AddrLength size = sizeof(address);
+        priv::SockAddrIn address{};
+        auto             size = address.size();
         if (priv::SocketImpl::getSockName(getNativeHandle(), address, size))
         {
-            return priv::SocketImpl::ntohs(address.sin_port);
+            return priv::SocketImpl::ntohs(address.sinPort());
         }
     }
 
@@ -73,7 +73,7 @@ Socket::Status TcpListener::listen(unsigned short port, const IpAddress& address
         return Status::Error;
 
     // Bind the socket to the specified port
-    sockaddr_in addr = priv::SocketImpl::createAddress(address.toInteger(), port);
+    priv::SockAddrIn addr = priv::SocketImpl::createAddress(address.toInteger(), port);
     if (!priv::SocketImpl::bind(getNativeHandle(), addr))
     {
         // Not likely to happen, but...
@@ -112,9 +112,9 @@ Socket::Status TcpListener::accept(TcpSocket& socket)
     }
 
     // Accept a new connection
-    sockaddr_in                  address{};
-    priv::SocketImpl::AddrLength length = sizeof(address);
-    const SocketHandle           remote = priv::SocketImpl::accept(getNativeHandle(), address, length);
+    priv::SockAddrIn   address{};
+    auto               length = address.size();
+    const SocketHandle remote = priv::SocketImpl::accept(getNativeHandle(), address, length);
 
     // Check for errors
     if (remote == priv::SocketImpl::invalidSocket())

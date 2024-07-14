@@ -65,11 +65,11 @@ unsigned short TcpSocket::getLocalPort() const
     if (getNativeHandle() != priv::SocketImpl::invalidSocket())
     {
         // Retrieve information about the local end of the socket
-        sockaddr_in                  address{};
-        priv::SocketImpl::AddrLength size = sizeof(address);
+        priv::SockAddrIn address{};
+        auto             size = address.size();
         if (priv::SocketImpl::getSockName(getNativeHandle(), address, size))
         {
-            return priv::SocketImpl::ntohs(address.sin_port);
+            return priv::SocketImpl::ntohs(address.sinPort());
         }
     }
 
@@ -84,9 +84,9 @@ base::Optional<IpAddress> TcpSocket::getRemoteAddress() const
     if (getNativeHandle() != priv::SocketImpl::invalidSocket())
     {
         // Retrieve information about the remote end of the socket
-        sockaddr_in                  address{};
-        priv::SocketImpl::AddrLength size = sizeof(address);
-        if (!priv::SocketImpl::getPeerName(getNativeHandle(), address, size))
+        priv::SockAddrIn address{};
+        auto             size = address.size();
+        if (priv::SocketImpl::getPeerName(getNativeHandle(), address, size))
         {
             return sf::base::makeOptional<IpAddress>(priv::SocketImpl::ntohl(address));
         }
@@ -103,11 +103,11 @@ unsigned short TcpSocket::getRemotePort() const
     if (getNativeHandle() != priv::SocketImpl::invalidSocket())
     {
         // Retrieve information about the remote end of the socket
-        sockaddr_in                  address{};
-        priv::SocketImpl::AddrLength size = sizeof(address);
-        if (!priv::SocketImpl::getPeerName(getNativeHandle(), address, size))
+        priv::SockAddrIn address{};
+        auto             size = address.size();
+        if (priv::SocketImpl::getPeerName(getNativeHandle(), address, size))
         {
-            return priv::SocketImpl::ntohs(address.sin_port);
+            return priv::SocketImpl::ntohs(address.sinPort());
         }
     }
 
@@ -126,7 +126,7 @@ Socket::Status TcpSocket::connect(const IpAddress& remoteAddress, unsigned short
     create();
 
     // Create the remote address
-    sockaddr_in address = priv::SocketImpl::createAddress(remoteAddress.toInteger(), remotePort);
+    priv::SockAddrIn address = priv::SocketImpl::createAddress(remoteAddress.toInteger(), remotePort);
 
     if (timeout <= Time::Zero)
     {
@@ -168,7 +168,7 @@ Socket::Status TcpSocket::connect(const IpAddress& remoteAddress, unsigned short
     if (status == Socket::Status::NotReady)
     {
         // Wait for something to write on our socket (which means that the connection request has returned)
-        if (priv::SocketImpl::select(getNativeHandle(), timeout.asMicroseconds()))
+        if (priv::SocketImpl::select(getNativeHandle(), timeout.asMicroseconds()) > 0)
         {
             // At this point the connection may have been either accepted or refused.
             // To know whether it's a success or a failure, we must check the address of the connected peer
@@ -237,10 +237,10 @@ Socket::Status TcpSocket::send(const void* data, std::size_t size, std::size_t& 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wuseless-cast"
         // Send a chunk of data
-        result = static_cast<int>(::send(getNativeHandle(),
-                                         static_cast<const char*>(data) + sent,
-                                         static_cast<priv::SocketImpl::Size>(size - sent),
-                                         flags));
+        result = static_cast<int>(priv::SocketImpl::send(getNativeHandle(),
+                                                         static_cast<const char*>(data) + sent,
+                                                         static_cast<priv::SocketImpl::Size>(size - sent),
+                                                         flags));
 #pragma GCC diagnostic pop
 
         // Check for errors
@@ -276,7 +276,7 @@ Socket::Status TcpSocket::receive(void* data, std::size_t size, std::size_t& rec
 #pragma GCC diagnostic ignored "-Wuseless-cast"
     // Receive a chunk of bytes
     const int sizeReceived = static_cast<int>(
-        recv(getNativeHandle(), static_cast<char*>(data), static_cast<priv::SocketImpl::Size>(size), flags));
+        priv::SocketImpl::recv(getNativeHandle(), static_cast<char*>(data), static_cast<priv::SocketImpl::Size>(size), flags));
 #pragma GCC diagnostic pop
 
     // Check the number of bytes received
@@ -311,7 +311,7 @@ Socket::Status TcpSocket::send(Packet& packet)
     const void* data = packet.onSend(size);
 
     // First convert the packet size to network byte order
-    std::uint32_t packetSize = htonl(static_cast<std::uint32_t>(size));
+    std::uint32_t packetSize = priv::SocketImpl::htonl(static_cast<std::uint32_t>(size));
 
     // Allocate memory for the data block to send
     m_blockToSendBuffer.resize(sizeof(packetSize) + size);
