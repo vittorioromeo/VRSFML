@@ -474,6 +474,7 @@ base::Optional<Shader> Shader::loadFromMemory(GraphicsContext& graphicsContext, 
     if (type == Type::Geometry)
         return compile(graphicsContext, {}, shader, {});
 
+    SFML_BASE_ASSERT(type == Type::Fragment);
     return compile(graphicsContext, {}, {}, shader);
 }
 
@@ -523,6 +524,7 @@ base::Optional<Shader> Shader::loadFromStream(GraphicsContext& graphicsContext, 
     if (type == Type::Geometry)
         return compile(graphicsContext, {}, shaderView, {});
 
+    SFML_BASE_ASSERT(type == Type::Fragment);
     return compile(graphicsContext, {}, {}, shaderView);
 }
 

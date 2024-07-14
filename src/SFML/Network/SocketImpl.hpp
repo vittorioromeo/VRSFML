@@ -32,10 +32,6 @@
 
 #if defined(SFML_SYSTEM_WINDOWS)
 
-#include <SFML/System/Win32/WindowsHeader.hpp>
-
-#include <winsock2.h>
-#include <ws2tcpip.h>
 
 #else
 
@@ -53,6 +49,31 @@
 
 #include <cstdint>
 
+// NOLINTBEGIN
+typedef struct in_addr
+{
+    union
+    {
+        struct
+        {
+            unsigned char s_b1, s_b2, s_b3, s_b4;
+        } S_un_b;
+        struct
+        {
+            unsigned short s_w1, s_w2;
+        } S_un_w;
+        unsigned long S_addr;
+    } S_un;
+} IN_ADDR, *PIN_ADDR, *LPIN_ADDR;
+
+struct sockaddr_in
+{
+    short          sin_family;
+    unsigned short sin_port;
+    struct in_addr sin_addr;
+    char           sin_zero[8];
+};
+// NOLINTEND
 
 namespace sf::priv
 {
@@ -84,7 +105,67 @@ public:
     /// \return sockaddr_in ready to be used by socket functions
     ///
     ////////////////////////////////////////////////////////////
-    static sockaddr_in createAddress(std::uint32_t address, unsigned short port);
+    [[nodiscard]] static sockaddr_in createAddress(std::uint32_t address, unsigned short port);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static SocketHandle accept(SocketHandle handle, sockaddr_in& address, AddrLength& length);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool listen(SocketHandle handle);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool getSockName(SocketHandle handle, sockaddr_in& address, AddrLength& length);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool getPeerName(SocketHandle handle, sockaddr_in& address, AddrLength& length);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool bind(SocketHandle handle, sockaddr_in& address);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool connect(SocketHandle handle, sockaddr_in& address);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static unsigned long ntohl(unsigned long netlong);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static unsigned short ntohs(unsigned short netshort);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static unsigned long ntohl(sockaddr_in addr);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool select(SocketHandle handle, long long timeoutUs);
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the value of the invalid socket
@@ -92,7 +173,7 @@ public:
     /// \return Special value of the invalid socket
     ///
     ////////////////////////////////////////////////////////////
-    static SocketHandle invalidSocket();
+    [[nodiscard]] static SocketHandle invalidSocket();
 
     ////////////////////////////////////////////////////////////
     /// \brief Close and destroy a socket
@@ -117,7 +198,7 @@ public:
     /// \return Status corresponding to the last socket error
     ///
     ////////////////////////////////////////////////////////////
-    static Socket::Status getErrorStatus();
+    [[nodiscard]] static Socket::Status getErrorStatus();
 };
 
 } // namespace sf::priv
