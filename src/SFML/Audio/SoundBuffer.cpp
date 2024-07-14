@@ -31,10 +31,11 @@
 #include <SFML/Audio/SoundBuffer.hpp>
 
 #include <SFML/System/Err.hpp>
-#include <SFML/System/Macros.hpp>
-#include <SFML/System/Optional.hpp>
 #include <SFML/System/Path.hpp>
 #include <SFML/System/Time.hpp>
+
+#include <SFML/Base/Macros.hpp>
+#include <SFML/Base/Optional.hpp>
 
 #include <unordered_set>
 
@@ -51,7 +52,7 @@ struct SoundBuffer::Impl
 {
     explicit Impl() = default;
 
-    explicit Impl(std::vector<std::int16_t>&& theSamples) : samples(SFML_MOVE(theSamples))
+    explicit Impl(std::vector<std::int16_t>&& theSamples) : samples(SFML_BASE_MOVE(theSamples))
     {
     }
 
@@ -92,45 +93,46 @@ SoundBuffer::~SoundBuffer()
 
 
 ////////////////////////////////////////////////////////////
-Optional<SoundBuffer> SoundBuffer::loadFromFile(const Path& filename)
+base::Optional<SoundBuffer> SoundBuffer::loadFromFile(const Path& filename)
 {
     if (auto file = InputSoundFile::openFromFile(filename))
         return initialize(*file);
 
     priv::err() << "Failed to open sound buffer from file";
-    return sf::nullOpt;
+    return base::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<SoundBuffer> SoundBuffer::loadFromMemory(const void* data, std::size_t sizeInBytes)
+base::Optional<SoundBuffer> SoundBuffer::loadFromMemory(const void* data, std::size_t sizeInBytes)
 {
     if (auto file = InputSoundFile::openFromMemory(data, sizeInBytes))
         return initialize(*file);
 
     priv::err() << "Failed to open sound buffer from memory";
-    return sf::nullOpt;
+    return base::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<SoundBuffer> SoundBuffer::loadFromStream(InputStream& stream)
+base::Optional<SoundBuffer> SoundBuffer::loadFromStream(InputStream& stream)
 {
     if (auto file = InputSoundFile::openFromStream(stream))
         return initialize(*file);
 
     priv::err() << "Failed to open sound buffer from stream";
-    return sf::nullOpt;
+    return base::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<SoundBuffer> SoundBuffer::loadFromSamplesImpl(std::vector<std::int16_t>&&      samples,
-                                                       unsigned int                     channelCount,
-                                                       unsigned int                     sampleRate,
-                                                       const std::vector<SoundChannel>& channelMap)
+base::Optional<SoundBuffer> SoundBuffer::loadFromSamplesImpl(
+    std::vector<std::int16_t>&&      samples,
+    unsigned int                     channelCount,
+    unsigned int                     sampleRate,
+    const std::vector<SoundChannel>& channelMap)
 {
-    Optional<SoundBuffer> soundBuffer; // Use a single local variable for NRVO
+    base::Optional<SoundBuffer> soundBuffer; // Use a single local variable for NRVO
 
     if (channelCount == 0 || sampleRate == 0 || channelMap.empty())
     {
@@ -144,7 +146,7 @@ Optional<SoundBuffer> SoundBuffer::loadFromSamplesImpl(std::vector<std::int16_t>
     }
 
     // Take ownership of the audio samples
-    soundBuffer.emplace(priv::PassKey<SoundBuffer>{}, SFML_MOVE(samples));
+    soundBuffer.emplace(base::PassKey<SoundBuffer>{}, SFML_BASE_MOVE(samples));
 
     // Update the internal buffer with the new samples
     if (!soundBuffer->update(channelCount, sampleRate, channelMap))
@@ -155,7 +157,7 @@ Optional<SoundBuffer> SoundBuffer::loadFromSamplesImpl(std::vector<std::int16_t>
 
 
 ////////////////////////////////////////////////////////////
-Optional<SoundBuffer> SoundBuffer::loadFromSamples(
+base::Optional<SoundBuffer> SoundBuffer::loadFromSamples(
     const std::int16_t*              samples,
     std::uint64_t                    sampleCount,
     unsigned int                     channelCount,
@@ -240,13 +242,14 @@ SoundBuffer& SoundBuffer::operator=(const SoundBuffer& right)
 
 
 ////////////////////////////////////////////////////////////
-SoundBuffer::SoundBuffer(priv::PassKey<SoundBuffer>&&, std::vector<std::int16_t>&& samples) : m_impl(SFML_MOVE(samples))
+SoundBuffer::SoundBuffer(base::PassKey<SoundBuffer>&&, std::vector<std::int16_t>&& samples) :
+m_impl(SFML_BASE_MOVE(samples))
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<SoundBuffer> SoundBuffer::initialize(InputSoundFile& file)
+base::Optional<SoundBuffer> SoundBuffer::initialize(InputSoundFile& file)
 {
     // Read the samples from the provided file
     const std::uint64_t       sampleCount = file.getSampleCount();
@@ -254,10 +257,10 @@ Optional<SoundBuffer> SoundBuffer::initialize(InputSoundFile& file)
 
     if (file.read(samples.data(), sampleCount) != sampleCount)
     {
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
-    return loadFromSamplesImpl(SFML_MOVE(samples), file.getChannelCount(), file.getSampleRate(), file.getChannelMap());
+    return loadFromSamplesImpl(SFML_BASE_MOVE(samples), file.getChannelCount(), file.getSampleRate(), file.getChannelMap());
 }
 
 

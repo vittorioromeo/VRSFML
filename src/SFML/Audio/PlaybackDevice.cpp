@@ -31,13 +31,14 @@
 #include <SFML/Audio/PlaybackDevice.hpp>
 #include <SFML/Audio/PlaybackDeviceHandle.hpp>
 
-#include <SFML/System/AlgorithmUtils.hpp>
-#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/LifetimeDependant.hpp>
-#include <SFML/System/Optional.hpp>
-#include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector3.hpp>
+
+#include <SFML/Base/Algorithm.hpp>
+#include <SFML/Base/Assert.hpp>
+#include <SFML/Base/Optional.hpp>
+#include <SFML/Base/UniquePtr.hpp>
 
 #include <miniaudio.h>
 
@@ -118,20 +119,20 @@ struct PlaybackDevice::Impl
 
 
 ////////////////////////////////////////////////////////////
-Optional<PlaybackDevice> PlaybackDevice::createDefault(AudioContext& audioContext)
+base::Optional<PlaybackDevice> PlaybackDevice::createDefault(AudioContext& audioContext)
 {
-    Optional defaultPlaybackDeviceHandle = audioContext.getDefaultPlaybackDeviceHandle();
+    base::Optional defaultPlaybackDeviceHandle = audioContext.getDefaultPlaybackDeviceHandle();
 
     if (!defaultPlaybackDeviceHandle.hasValue())
-        return sf::nullOpt;
+        return base::nullOpt;
 
-    return sf::makeOptional<PlaybackDevice>(audioContext, *defaultPlaybackDeviceHandle);
+    return sf::base::makeOptional<PlaybackDevice>(audioContext, *defaultPlaybackDeviceHandle);
 }
 
 
 ////////////////////////////////////////////////////////////
 PlaybackDevice::PlaybackDevice(AudioContext& audioContext, const PlaybackDeviceHandle& playbackDeviceHandle) :
-m_impl(priv::makeUnique<Impl>(audioContext, playbackDeviceHandle))
+m_impl(base::makeUnique<Impl>(audioContext, playbackDeviceHandle))
 {
     if (!m_impl->initialize())
         priv::err() << "Failed to initialize the playback device";
@@ -218,8 +219,8 @@ void PlaybackDevice::transferResourcesTo(PlaybackDevice& other)
     const auto& cone = listener.getCone();
     ma_engine_listener_set_cone(engine,
                                 0,
-                                priv::clamp(cone.innerAngle, Angle::Zero, degrees(360.f)).asRadians(),
-                                priv::clamp(cone.outerAngle, Angle::Zero, degrees(360.f)).asRadians(),
+                                base::clamp(cone.innerAngle, Angle::Zero, degrees(360.f)).asRadians(),
+                                base::clamp(cone.outerAngle, Angle::Zero, degrees(360.f)).asRadians(),
                                 cone.outerGain);
 
     ma_engine_listener_set_world_up(engine,
@@ -263,11 +264,11 @@ void PlaybackDevice::unregisterResource(ResourceEntryIndex resourceEntryIndex)
 {
     const std::lock_guard lock(m_impl->resourcesMutex);
 
-    SFML_ASSERT(m_impl->resources.size() > resourceEntryIndex && //
-                "Attempted to unregister audio resource with invalid index");
+    SFML_BASE_ASSERT(m_impl->resources.size() > resourceEntryIndex && //
+                     "Attempted to unregister audio resource with invalid index");
 
-    SFML_ASSERT(m_impl->resources[resourceEntryIndex].resource != nullptr && //
-                "Attempted to unregister previously erased audio resource");
+    SFML_BASE_ASSERT(m_impl->resources[resourceEntryIndex].resource != nullptr && //
+                     "Attempted to unregister previously erased audio resource");
 
     // Mark resource as inactive (can be recycled)
     m_impl->resources[resourceEntryIndex].resource = nullptr;

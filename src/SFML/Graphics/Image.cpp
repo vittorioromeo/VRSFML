@@ -27,15 +27,16 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Image.hpp>
 
-#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InputStream.hpp>
-#include <SFML/System/Macros.hpp>
-#include <SFML/System/PassKey.hpp>
 #include <SFML/System/Path.hpp>
 #include <SFML/System/PathUtils.hpp>
 #include <SFML/System/StringUtils.hpp>
-#include <SFML/System/UniquePtr.hpp>
+
+#include <SFML/Base/Algorithm.hpp>
+#include <SFML/Base/Macros.hpp>
+#include <SFML/Base/PassKey.hpp>
+#include <SFML/Base/UniquePtr.hpp>
 
 #ifdef SFML_SYSTEM_ANDROID
 #include <SFML/System/Android/Activity.hpp>
@@ -45,7 +46,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#include <SFML/System/Assert.hpp>
+#include <SFML/Base/Assert.hpp>
 
 #include <stb_image_write.h>
 
@@ -60,8 +61,8 @@ namespace
 // stb_image callbacks that operate on a sf::InputStream
 int read(void* user, char* data, int size)
 {
-    auto&              stream = *static_cast<sf::InputStream*>(user);
-    const sf::Optional count  = stream.read(data, static_cast<std::size_t>(size));
+    auto&                    stream = *static_cast<sf::InputStream*>(user);
+    const sf::base::Optional count  = stream.read(data, static_cast<std::size_t>(size));
     return count ? static_cast<int>(*count) : -1;
 }
 
@@ -84,7 +85,7 @@ void bufferFromCallback(void* context, void* data, int size)
     const auto* source = static_cast<std::uint8_t*>(data);
     auto*       dest   = static_cast<std::vector<std::uint8_t>*>(context);
 
-    sf::priv::appendRangeIntoVector(source, source + size, *dest);
+    sf::base::appendRangeIntoVector(source, source + size, *dest);
 }
 
 // Deleter for STB pointers
@@ -95,19 +96,19 @@ struct StbDeleter
         stbi_image_free(image);
     }
 };
-using StbPtr = sf::priv::UniquePtr<stbi_uc, StbDeleter>;
+using StbPtr = sf::base::UniquePtr<stbi_uc, StbDeleter>;
 } // namespace
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-Optional<Image> Image::create(const Vector2u& size, const Color& color)
+base::Optional<Image> Image::create(const Vector2u& size, const Color& color)
 {
     if (size.x == 0 || size.y == 0)
     {
         priv::err() << "Failed to create image, invalid size (zero) provided";
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
     // Create a new pixel buffer first for exception safety's sake
@@ -125,42 +126,42 @@ Optional<Image> Image::create(const Vector2u& size, const Color& color)
         *ptr++ = color.a;
     }
 
-    return makeOptional<Image>(priv::PassKey<Image>{}, size, SFML_MOVE(newPixels));
+    return makeOptional<Image>(base::PassKey<Image>{}, size, SFML_BASE_MOVE(newPixels));
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<Image> Image::create(const Vector2u& size, const std::uint8_t* pixels)
+base::Optional<Image> Image::create(const Vector2u& size, const std::uint8_t* pixels)
 {
     if (size.x == 0 || size.y == 0)
     {
         priv::err() << "Failed to create image, invalid size (zero) provided";
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
     if (pixels == nullptr)
     {
         priv::err() << "Failed to create image, null pixels pointer provided";
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
-    return makeOptional<Image>(priv::PassKey<Image>{}, size, std::vector<std::uint8_t>(pixels, pixels + size.x * size.y * 4));
+    return makeOptional<Image>(base::PassKey<Image>{}, size, std::vector<std::uint8_t>(pixels, pixels + size.x * size.y * 4));
 }
 
 
 ////////////////////////////////////////////////////////////
-Image::Image(priv::PassKey<Image>&&, Vector2u size, std::vector<std::uint8_t>&& pixels) :
+Image::Image(base::PassKey<Image>&&, Vector2u size, std::vector<std::uint8_t>&& pixels) :
 m_size(size),
-m_pixels(SFML_MOVE(pixels))
+m_pixels(SFML_BASE_MOVE(pixels))
 {
-    SFML_ASSERT(size.x > 0 && "Attempted to create an image with size.x == 0");
-    SFML_ASSERT(size.y > 0 && "Attempted to create an image with size.y == 0");
-    SFML_ASSERT(!m_pixels.empty() && "Attempted to create an image with no pixels");
+    SFML_BASE_ASSERT(size.x > 0 && "Attempted to create an image with size.x == 0");
+    SFML_BASE_ASSERT(size.y > 0 && "Attempted to create an image with size.y == 0");
+    SFML_BASE_ASSERT(!m_pixels.empty() && "Attempted to create an image with no pixels");
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<Image> Image::loadFromFile(const Path& filename)
+base::Optional<Image> Image::loadFromFile(const Path& filename)
 {
 #ifdef SFML_SYSTEM_ANDROID
 
@@ -180,30 +181,30 @@ Optional<Image> Image::loadFromFile(const Path& filename)
 
     if (ptr)
     {
-        SFML_ASSERT(width > 0 && "Loaded image from file with width == 0");
-        SFML_ASSERT(height > 0 && "Loaded image from file with height == 0");
+        SFML_BASE_ASSERT(width > 0 && "Loaded image from file with width == 0");
+        SFML_BASE_ASSERT(height > 0 && "Loaded image from file with height == 0");
 
-        return sf::makeOptional<Image>(priv::PassKey<Image>{},
-                                       Vector2i{width, height}.to<Vector2u>(),
-                                       std::vector<std::uint8_t>{ptr.get(), ptr.get() + width * height * 4});
+        return sf::base::makeOptional<Image>(base::PassKey<Image>{},
+                                             Vector2i{width, height}.to<Vector2u>(),
+                                             std::vector<std::uint8_t>{ptr.get(), ptr.get() + width * height * 4});
     }
 
     // Error, failed to load the image
     priv::err() << "Failed to load image\n"
-                << priv::formatDebugPathInfo(filename) << "\nReason: " << stbi_failure_reason();
+                << priv::PathDebugFormatter{filename} << "\nReason: " << stbi_failure_reason();
 
-    return sf::nullOpt;
+    return base::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<Image> Image::loadFromMemory(const void* data, std::size_t size)
+base::Optional<Image> Image::loadFromMemory(const void* data, std::size_t size)
 {
     // Check input parameters
     if (data == nullptr || size == 0)
     {
         priv::err() << "Failed to load image from memory, no data provided";
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
     // Load the image and get a pointer to the pixels in memory
@@ -217,26 +218,26 @@ Optional<Image> Image::loadFromMemory(const void* data, std::size_t size)
     if (ptr == nullptr)
     {
         priv::err() << "Failed to load image from memory. Reason: " << stbi_failure_reason();
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
-    SFML_ASSERT(width > 0 && "Loaded image from memory with width == 0");
-    SFML_ASSERT(height > 0 && "Loaded image from memory with height == 0");
+    SFML_BASE_ASSERT(width > 0 && "Loaded image from memory with width == 0");
+    SFML_BASE_ASSERT(height > 0 && "Loaded image from memory with height == 0");
 
-    return sf::makeOptional<Image>(priv::PassKey<Image>{},
-                                   Vector2i{width, height}.to<Vector2u>(),
-                                   std::vector<std::uint8_t>{ptr.get(), ptr.get() + width * height * 4});
+    return sf::base::makeOptional<Image>(base::PassKey<Image>{},
+                                         Vector2i{width, height}.to<Vector2u>(),
+                                         std::vector<std::uint8_t>{ptr.get(), ptr.get() + width * height * 4});
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<Image> Image::loadFromStream(InputStream& stream)
+base::Optional<Image> Image::loadFromStream(InputStream& stream)
 {
     // Make sure that the stream's reading position is at the beginning
     if (!stream.seek(0).hasValue())
     {
         priv::err() << "Failed to seek image stream";
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
     // Setup the stb_image callbacks
@@ -255,15 +256,15 @@ Optional<Image> Image::loadFromStream(InputStream& stream)
     if (ptr == nullptr)
     {
         priv::err() << "Failed to load image from stream. Reason: " << stbi_failure_reason();
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
-    SFML_ASSERT(width > 0 && "Loaded image from stream with width == 0");
-    SFML_ASSERT(height > 0 && "Loaded image from stream with height == 0");
+    SFML_BASE_ASSERT(width > 0 && "Loaded image from stream with width == 0");
+    SFML_BASE_ASSERT(height > 0 && "Loaded image from stream with height == 0");
 
-    return sf::makeOptional<Image>(priv::PassKey<Image>{},
-                                   Vector2i{width, height}.to<Vector2u>(),
-                                   std::vector<std::uint8_t>{ptr.get(), ptr.get() + width * height * 4});
+    return sf::base::makeOptional<Image>(base::PassKey<Image>{},
+                                         Vector2i{width, height}.to<Vector2u>(),
+                                         std::vector<std::uint8_t>{ptr.get(), ptr.get() + width * height * 4});
 }
 
 
@@ -271,7 +272,7 @@ Optional<Image> Image::loadFromStream(InputStream& stream)
 bool Image::saveToFile(const Path& filename) const
 {
     // Make sure the image is not empty
-    SFML_ASSERT(!m_pixels.empty() && m_size.x > 0 && m_size.y > 0);
+    SFML_BASE_ASSERT(!m_pixels.empty() && m_size.x > 0 && m_size.y > 0);
 
     // Extract the extension
     const Path extension     = filename.extension();
@@ -307,7 +308,7 @@ bool Image::saveToFile(const Path& filename) const
         priv::err() << "Image file extension " << extension << " not supported\n";
     }
 
-    priv::err() << "Failed to save image\n" << priv::formatDebugPathInfo(filename);
+    priv::err() << "Failed to save image\n" << priv::PathDebugFormatter{filename};
     return false;
 }
 
@@ -316,7 +317,7 @@ bool Image::saveToFile(const Path& filename) const
 std::vector<std::uint8_t> Image::saveToMemory(SaveFormat format) const
 {
     // Make sure the image is not empty
-    SFML_ASSERT(!m_pixels.empty() && m_size.x > 0 && m_size.y > 0);
+    SFML_BASE_ASSERT(!m_pixels.empty() && m_size.x > 0 && m_size.y > 0);
 
     // Choose function based on format
     const auto convertedSize = m_size.to<Vector2i>();
@@ -344,7 +345,7 @@ std::vector<std::uint8_t> Image::saveToMemory(SaveFormat format) const
             return buffer; // Non-empty
     }
 
-    SFML_ASSERT(false);
+    SFML_BASE_ASSERT(false);
     return buffer;
 }
 
@@ -360,7 +361,7 @@ Vector2u Image::getSize() const
 void Image::createMaskFromColor(const Color& color, std::uint8_t alpha)
 {
     // Make sure that the image is not empty
-    SFML_ASSERT(!m_pixels.empty());
+    SFML_BASE_ASSERT(!m_pixels.empty());
 
     // Replace the alpha of the pixels that match the transparent color
     std::uint8_t* ptr = m_pixels.data();
@@ -379,7 +380,7 @@ void Image::createMaskFromColor(const Color& color, std::uint8_t alpha)
 [[nodiscard]] bool Image::copy(const Image& source, const Vector2u& dest, const IntRect& sourceRect, bool applyAlpha)
 {
     // Make sure that both images are valid
-    SFML_ASSERT(source.m_size.x > 0 && source.m_size.y > 0 && m_size.x > 0 && m_size.y > 0);
+    SFML_BASE_ASSERT(source.m_size.x > 0 && source.m_size.y > 0 && m_size.x > 0 && m_size.y > 0);
 
     // Make sure the sourceRect components are non-negative before casting them to unsigned values
     if (sourceRect.position.x < 0 || sourceRect.position.y < 0 || sourceRect.size.x < 0 || sourceRect.size.y < 0)
@@ -406,7 +407,7 @@ void Image::createMaskFromColor(const Color& color, std::uint8_t alpha)
         return false;
 
     // Then find the valid size of the destination rectangle
-    const Vector2u dstSize(priv::min(m_size.x - dest.x, srcRect.size.x), priv::min(m_size.y - dest.y, srcRect.size.y));
+    const Vector2u dstSize(base::min(m_size.x - dest.x, srcRect.size.x), base::min(m_size.y - dest.y, srcRect.size.y));
 
     // Precompute as much as possible
     const std::size_t  pitch     = static_cast<std::size_t>(dstSize.x) * 4;
@@ -465,8 +466,8 @@ void Image::createMaskFromColor(const Color& color, std::uint8_t alpha)
 ////////////////////////////////////////////////////////////
 void Image::setPixel(const Vector2u& coords, const Color& color)
 {
-    SFML_ASSERT(coords.x < m_size.x && "Image::setPixel() x coordinate is out of bounds");
-    SFML_ASSERT(coords.y < m_size.y && "Image::setPixel() y coordinate is out of bounds");
+    SFML_BASE_ASSERT(coords.x < m_size.x && "Image::setPixel() x coordinate is out of bounds");
+    SFML_BASE_ASSERT(coords.y < m_size.y && "Image::setPixel() y coordinate is out of bounds");
 
     const auto    index = (coords.x + coords.y * m_size.x) * 4;
     std::uint8_t* pixel = &m_pixels[index];
@@ -481,8 +482,8 @@ void Image::setPixel(const Vector2u& coords, const Color& color)
 ////////////////////////////////////////////////////////////
 Color Image::getPixel(const Vector2u& coords) const
 {
-    SFML_ASSERT(coords.x < m_size.x && "Image::getPixel() x coordinate is out of bounds");
-    SFML_ASSERT(coords.y < m_size.y && "Image::getPixel() y coordinate is out of bounds");
+    SFML_BASE_ASSERT(coords.x < m_size.x && "Image::getPixel() x coordinate is out of bounds");
+    SFML_BASE_ASSERT(coords.y < m_size.y && "Image::getPixel() y coordinate is out of bounds");
 
     const auto          index = (coords.x + coords.y * m_size.x) * 4;
     const std::uint8_t* pixel = &m_pixels[index];
@@ -494,7 +495,7 @@ Color Image::getPixel(const Vector2u& coords) const
 ////////////////////////////////////////////////////////////
 const std::uint8_t* Image::getPixelsPtr() const
 {
-    SFML_ASSERT(!m_pixels.empty());
+    SFML_BASE_ASSERT(!m_pixels.empty());
     return m_pixels.data();
 }
 
@@ -502,7 +503,7 @@ const std::uint8_t* Image::getPixelsPtr() const
 ////////////////////////////////////////////////////////////
 void Image::flipHorizontally()
 {
-    SFML_ASSERT(!m_pixels.empty());
+    SFML_BASE_ASSERT(!m_pixels.empty());
 
     const std::size_t rowSize = m_size.x * 4;
 
@@ -525,7 +526,7 @@ void Image::flipHorizontally()
 ////////////////////////////////////////////////////////////
 void Image::flipVertically()
 {
-    SFML_ASSERT(!m_pixels.empty());
+    SFML_BASE_ASSERT(!m_pixels.empty());
 
     const auto rowSize = static_cast<decltype(m_pixels)::difference_type>(m_size.x * 4);
 

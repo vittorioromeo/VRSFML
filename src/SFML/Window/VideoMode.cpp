@@ -28,7 +28,7 @@
 #include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/VideoModeImpl.hpp>
 
-#include <SFML/System/AlgorithmUtils.hpp>
+#include <SFML/Base/Algorithm.hpp>
 
 #include <algorithm>
 #include <functional>
@@ -71,7 +71,7 @@ bool VideoMode::isValid() const
 {
     const std::vector<VideoMode>& modes = getFullscreenModes();
 
-    return priv::find(modes.begin(), modes.end(), *this) != modes.end();
+    return base::find(modes.begin(), modes.end(), *this) != modes.end();
 }
 
 

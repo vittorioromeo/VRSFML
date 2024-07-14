@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
-#include <SFML/System/UniquePtr.hpp>
+#include <SFML/Base/UniquePtr.hpp>
 
 #include <cstddef>
 
@@ -115,7 +115,7 @@ public:
     /// \see createReaderFromMemory, createReaderFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static priv::UniquePtr<SoundFileReader> createReaderFromFilename(const Path& filename);
+    [[nodiscard]] static base::UniquePtr<SoundFileReader> createReaderFromFilename(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Instantiate the right codec for the given file in memory
@@ -128,7 +128,7 @@ public:
     /// \see createReaderFromFilename, createReaderFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static priv::UniquePtr<SoundFileReader> createReaderFromMemory(const void* data, std::size_t sizeInBytes);
+    [[nodiscard]] static base::UniquePtr<SoundFileReader> createReaderFromMemory(const void* data, std::size_t sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Instantiate the right codec for the given file in stream
@@ -140,7 +140,7 @@ public:
     /// \see createReaderFromFilename, createReaderFromMemory
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static priv::UniquePtr<SoundFileReader> createReaderFromStream(InputStream& stream);
+    [[nodiscard]] static base::UniquePtr<SoundFileReader> createReaderFromStream(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Instantiate the right writer for the given file on disk
@@ -150,14 +150,14 @@ public:
     /// \return A new sound file writer that can write given file, or null if no writer can handle it
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static priv::UniquePtr<SoundFileWriter> createWriterFromFilename(const Path& filename);
+    [[nodiscard]] static base::UniquePtr<SoundFileWriter> createWriterFromFilename(const Path& filename);
 
 private:
     ////////////////////////////////////////////////////////////
     // Types
     ////////////////////////////////////////////////////////////
     template <typename T>
-    using CreateFnPtr = priv::UniquePtr<T> (*)();
+    using CreateFnPtr = base::UniquePtr<T> (*)();
 
     using ReaderCheckFnPtr = bool (*)(InputStream&);
     using WriterCheckFnPtr = bool (*)(const Path&);
@@ -197,10 +197,10 @@ private:
 /// Usage example:
 /// \code
 /// sf::SoundFileFactory::registerReader<MySoundFileReader>();
-/// SFML_ASSERT(sf::SoundFileFactory::isReaderRegistered<MySoundFileReader>());
+/// SFML_BASE_ASSERT(sf::SoundFileFactory::isReaderRegistered<MySoundFileReader>());
 ///
 /// sf::SoundFileFactory::registerWriter<MySoundFileWriter>();
-/// SFML_ASSERT(sf::SoundFileFactory::isWriterRegistered<MySoundFileWriter>());
+/// SFML_BASE_ASSERT(sf::SoundFileFactory::isWriterRegistered<MySoundFileWriter>());
 /// \endcode
 ///
 /// \see sf::InputSoundFile, sf::OutputSoundFile, sf::SoundFileReader, sf::SoundFileWriter

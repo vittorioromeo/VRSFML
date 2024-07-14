@@ -32,7 +32,8 @@
 #include <SFML/Audio/SoundSource.hpp>
 
 #include <SFML/System/LifetimeDependant.hpp>
-#include <SFML/System/UniquePtr.hpp>
+
+#include <SFML/Base/UniquePtr.hpp>
 
 
 ////////////////////////////////////////////////////////////
@@ -233,7 +234,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    priv::UniquePtr<Impl> m_impl; //!< Implementation details
+    base::UniquePtr<Impl> m_impl; //!< Implementation details
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking

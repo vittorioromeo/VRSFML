@@ -43,19 +43,20 @@
 
 #endif // SFML_SYSTEM_WINDOWS
 
-#include <SFML/System/AlgorithmUtils.hpp>
-#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
-#include <SFML/System/InPlacePImpl.hpp>
-#include <SFML/System/Macros.hpp>
-#include <SFML/System/MathUtils.hpp>
-#include <SFML/System/Optional.hpp>
 #include <SFML/System/Path.hpp>
 #include <SFML/System/Rect.hpp>
 #include <SFML/System/String.hpp>
 #include <SFML/System/Time.hpp>
-#include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
+
+#include <SFML/Base/Algorithm.hpp>
+#include <SFML/Base/Assert.hpp>
+#include <SFML/Base/InPlacePImpl.hpp>
+#include <SFML/Base/Macros.hpp>
+#include <SFML/Base/Math.hpp>
+#include <SFML/Base/Optional.hpp>
+#include <SFML/Base/UniquePtr.hpp>
 
 #include <algorithm>
 #include <chrono>

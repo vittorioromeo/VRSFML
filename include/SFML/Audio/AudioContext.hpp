@@ -33,9 +33,10 @@
 #include <SFML/Audio/PlaybackDeviceHandle.hpp>
 
 #include <SFML/System/LifetimeDependee.hpp>
-#include <SFML/System/Optional.hpp>
-#include <SFML/System/PassKey.hpp>
-#include <SFML/System/UniquePtr.hpp>
+
+#include <SFML/Base/Optional.hpp>
+#include <SFML/Base/PassKey.hpp>
+#include <SFML/Base/UniquePtr.hpp>
 
 #include <vector>
 
@@ -63,7 +64,7 @@ public:
     /// \brief Create a new audio context
     ///
     ////////////////////////////////////////////////////////////
-    SFML_AUDIO_API static Optional<AudioContext> create();
+    SFML_AUDIO_API static base::Optional<AudioContext> create();
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -113,13 +114,13 @@ public:
     /// \brief Get a handle to the default audio playback device
     ///
     /// This function returns a handle to the default audio
-    /// playback device. If none is available, `sf::nullOpt` is
+    /// playback device. If none is available, `base::nullOpt` is
     /// returned instead.
     ///
     /// \return The handle to the default audio playback device
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_AUDIO_API Optional<PlaybackDeviceHandle> getDefaultPlaybackDeviceHandle();
+    [[nodiscard]] SFML_AUDIO_API base::Optional<PlaybackDeviceHandle> getDefaultPlaybackDeviceHandle();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a list of handles to all available audio capture devices
@@ -139,13 +140,13 @@ public:
     /// \brief Get a handle to the default audio capture device
     ///
     /// This function returns a handle to the default audio
-    /// capture device. If none is available, `sf::nullOpt` is
+    /// capture device. If none is available, `base::nullOpt` is
     /// returned instead.
     ///
     /// \return The handle to the default audio capture device
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_AUDIO_API Optional<CaptureDeviceHandle> getDefaultCaptureDeviceHandle();
+    [[nodiscard]] SFML_AUDIO_API base::Optional<CaptureDeviceHandle> getDefaultCaptureDeviceHandle();
 
 private:
     friend CaptureDevice;
@@ -166,14 +167,14 @@ public:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_AUDIO_API explicit AudioContext(priv::PassKey<AudioContext>&&);
+    [[nodiscard]] SFML_AUDIO_API explicit AudioContext(base::PassKey<AudioContext>&&);
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    priv::UniquePtr<Impl> m_impl; //!< Implementation details (needs address stability)
+    base::UniquePtr<Impl> m_impl; //!< Implementation details (needs address stability)
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking

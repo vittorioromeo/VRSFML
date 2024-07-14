@@ -33,8 +33,9 @@
 #include <SFML/Window/GraphicsContext.hpp>
 
 #include <SFML/System/Err.hpp>
-#include <SFML/System/Macros.hpp>
-#include <SFML/System/UniquePtr.hpp>
+
+#include <SFML/Base/Macros.hpp>
+#include <SFML/Base/UniquePtr.hpp>
 
 
 namespace sf
@@ -52,9 +53,11 @@ RenderTexture& RenderTexture::operator=(RenderTexture&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-Optional<RenderTexture> RenderTexture::create(GraphicsContext& graphicsContext, const Vector2u& size, const ContextSettings& settings)
+base::Optional<RenderTexture> RenderTexture::create(GraphicsContext&       graphicsContext,
+                                                    const Vector2u&        size,
+                                                    const ContextSettings& settings)
 {
-    Optional<RenderTexture> result; // Use a single local variable for NRVO
+    base::Optional<RenderTexture> result; // Use a single local variable for NRVO
 
     // Create the texture
     auto texture = sf::Texture::create(graphicsContext, size, settings.sRgbCapable);
@@ -64,7 +67,7 @@ Optional<RenderTexture> RenderTexture::create(GraphicsContext& graphicsContext, 
         return result; // Empty optional
     }
 
-    auto& renderTexture = result.emplace(priv::PassKey<RenderTexture>{}, graphicsContext, SFML_MOVE(*texture));
+    auto& renderTexture = result.emplace(base::PassKey<RenderTexture>{}, graphicsContext, SFML_BASE_MOVE(*texture));
 
     // We disable smoothing by default for render textures
     renderTexture.setSmooth(false);
@@ -73,7 +76,7 @@ Optional<RenderTexture> RenderTexture::create(GraphicsContext& graphicsContext, 
     if (priv::RenderTextureImplFBO::isAvailable(graphicsContext))
     {
         // Use frame-buffer object (FBO)
-        renderTexture.m_impl = priv::makeUnique<priv::RenderTextureImplFBO>(graphicsContext);
+        renderTexture.m_impl = base::makeUnique<priv::RenderTextureImplFBO>(graphicsContext);
 
         // Mark the texture as being a framebuffer object attachment
         renderTexture.m_texture.m_fboAttachment = true;
@@ -81,7 +84,7 @@ Optional<RenderTexture> RenderTexture::create(GraphicsContext& graphicsContext, 
     else
     {
         // Use default implementation
-        renderTexture.m_impl = priv::makeUnique<priv::RenderTextureImplDefault>(graphicsContext);
+        renderTexture.m_impl = base::makeUnique<priv::RenderTextureImplDefault>(graphicsContext);
     }
 
     // Initialize the render texture
@@ -202,9 +205,9 @@ const Texture& RenderTexture::getTexture() const
 
 
 ////////////////////////////////////////////////////////////
-RenderTexture::RenderTexture(priv::PassKey<RenderTexture>&&, GraphicsContext& graphicsContext, Texture&& texture) :
+RenderTexture::RenderTexture(base::PassKey<RenderTexture>&&, GraphicsContext& graphicsContext, Texture&& texture) :
 RenderTarget(graphicsContext),
-m_texture(SFML_MOVE(texture))
+m_texture(SFML_BASE_MOVE(texture))
 {
 }
 

@@ -25,10 +25,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/String.hpp>
 #include <SFML/System/StringUtfUtils.hpp> // NOLINT(misc-header-include-cycle)
 #include <SFML/System/Utf.hpp>
+
+#include <SFML/Base/Algorithm.hpp>
 
 
 namespace sf
@@ -38,7 +39,7 @@ template <typename T>
 String StringUtfUtils::fromUtf8(T begin, T end)
 {
     String string;
-    Utf8::toUtf32(begin, end, priv::BackInserter(string.m_string));
+    Utf8::toUtf32(begin, end, base::BackInserter(string.m_string));
     return string;
 }
 
@@ -48,7 +49,7 @@ template <typename T>
 String StringUtfUtils::fromUtf16(T begin, T end)
 {
     String string;
-    Utf16::toUtf32(begin, end, priv::BackInserter(string.m_string));
+    Utf16::toUtf32(begin, end, base::BackInserter(string.m_string));
     return string;
 }
 

@@ -28,11 +28,12 @@
 #include <SFML/Audio/InputSoundFile.hpp>
 #include <SFML/Audio/Music.hpp>
 
-#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
-#include <SFML/System/Optional.hpp>
 #include <SFML/System/Time.hpp>
-#include <SFML/System/UniquePtr.hpp>
+
+#include <SFML/Base/Algorithm.hpp>
+#include <SFML/Base/Optional.hpp>
+#include <SFML/Base/UniquePtr.hpp>
 
 #include <mutex>
 
@@ -74,7 +75,7 @@ struct Music::Impl
     Span<std::uint64_t>       loopSpan; //!< Loop Range Specifier
 
     explicit Impl(InputSoundFile&& theFile) :
-    file(SFML_MOVE(theFile)),
+    file(SFML_BASE_MOVE(theFile)),
 
     // Resize the internal buffer so that it can contain 1 second of audio samples
     samples(file.getSampleRate() * file.getChannelCount()),
@@ -87,7 +88,7 @@ struct Music::Impl
 
 
 ////////////////////////////////////////////////////////////
-Music::Music(priv::PassKey<Music>&&, InputSoundFile&& file) : m_impl(priv::makeUnique<Impl>(SFML_MOVE(file)))
+Music::Music(base::PassKey<Music>&&, InputSoundFile&& file) : m_impl(base::makeUnique<Impl>(SFML_BASE_MOVE(file)))
 {
     SoundStream::initialize(m_impl->file.getChannelCount(), m_impl->file.getSampleRate(), m_impl->file.getChannelMap());
 }
@@ -113,34 +114,34 @@ Music& Music::operator=(Music&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-Optional<Music> Music::tryOpenFromInputSoundFile(Optional<InputSoundFile>&& optFile, const char* errorContext)
+base::Optional<Music> Music::tryOpenFromInputSoundFile(base::Optional<InputSoundFile>&& optFile, const char* errorContext)
 {
     if (!optFile.hasValue())
     {
         priv::err() << "Failed to open music from " << errorContext;
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
-    return sf::makeOptional<Music>(priv::PassKey<Music>{}, SFML_MOVE(*optFile));
+    return sf::base::makeOptional<Music>(base::PassKey<Music>{}, SFML_BASE_MOVE(*optFile));
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<Music> Music::openFromFile(const Path& filename)
+base::Optional<Music> Music::openFromFile(const Path& filename)
 {
     return tryOpenFromInputSoundFile(InputSoundFile::openFromFile(filename), "file");
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<Music> Music::openFromMemory(const void* data, std::size_t sizeInBytes)
+base::Optional<Music> Music::openFromMemory(const void* data, std::size_t sizeInBytes)
 {
     return tryOpenFromInputSoundFile(InputSoundFile::openFromMemory(data, sizeInBytes), "memory");
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<Music> Music::openFromStream(InputStream& stream)
+base::Optional<Music> Music::openFromStream(InputStream& stream)
 {
     return tryOpenFromInputSoundFile(InputSoundFile::openFromStream(stream), "stream");
 }
@@ -216,7 +217,7 @@ void Music::onSeek(Time timeOffset)
 
 
 ////////////////////////////////////////////////////////////
-Optional<std::uint64_t> Music::onLoop()
+base::Optional<std::uint64_t> Music::onLoop()
 {
     // Called by underlying SoundStream so we can determine where to loop.
     const std::lock_guard lock(m_impl->mutex);
@@ -227,17 +228,17 @@ Optional<std::uint64_t> Music::onLoop()
         // Looping is enabled, and either we're at the loop end, or we're at the EOF
         // when it's equivalent to the loop end (loop end takes priority). Send us to loop begin
         m_impl->file.seek(m_impl->loopSpan.offset);
-        return sf::makeOptional(m_impl->file.getSampleOffset());
+        return sf::base::makeOptional(m_impl->file.getSampleOffset());
     }
 
     if (getLoop() && (currentOffset >= m_impl->file.getSampleCount()))
     {
         // If we're at the EOF, reset to 0
         m_impl->file.seek(0);
-        return sf::makeOptional(std::uint64_t{0});
+        return sf::base::makeOptional(std::uint64_t{0});
     }
 
-    return sf::nullOpt;
+    return base::nullOpt;
 }
 
 
@@ -282,7 +283,7 @@ void Music::setLoopPoints(TimeSpan timePoints)
     }
 
     // Clamp End Point
-    samplePoints.length = priv::min(samplePoints.length, m_impl->file.getSampleCount() - samplePoints.offset);
+    samplePoints.length = base::min(samplePoints.length, m_impl->file.getSampleCount() - samplePoints.offset);
 
     // If this change has no effect, we can return without touching anything
     if (samplePoints.offset == m_impl->loopSpan.offset && samplePoints.length == m_impl->loopSpan.length)
@@ -307,7 +308,7 @@ void Music::setLoopPoints(TimeSpan timePoints)
     // Resume
     if (oldStatus == Status::Playing)
     {
-        SFML_ASSERT(m_lastPlaybackDevice != nullptr);
+        SFML_BASE_ASSERT(m_lastPlaybackDevice != nullptr);
         play(*m_lastPlaybackDevice);
     }
 }

@@ -2555,7 +2555,7 @@ public:
         while (true)
         {
             // Process events
-            while (const sf::Optional event = window.pollEvent())
+            while (const sf::base::Optional event = window.pollEvent())
             {
                 // Window closed or escape key pressed: exit
                 if (event->is<sf::Event::Closed>() ||
@@ -2595,7 +2595,7 @@ private:
     VkDebugReportCallbackEXT        debugReportCallback{};
     VkSurfaceKHR                    surface{};
     VkPhysicalDevice                gpu{};
-    sf::Optional<std::uint32_t>     queueFamilyIndex;
+    sf::base::Optional<std::uint32_t>     queueFamilyIndex;
     VkDevice                        device{};
     VkQueue                         queue{};
     VkSurfaceFormatKHR              swapchainFormat{};

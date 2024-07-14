@@ -32,12 +32,13 @@
 #include <SFML/Audio/SoundBuffer.hpp>
 #include <SFML/Audio/SoundSource.hpp>
 
-#include <SFML/System/AlgorithmUtils.hpp>
-#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
-#include <SFML/System/Macros.hpp>
 #include <SFML/System/Time.hpp>
-#include <SFML/System/UniquePtr.hpp>
+
+#include <SFML/Base/Algorithm.hpp>
+#include <SFML/Base/Assert.hpp>
+#include <SFML/Base/Macros.hpp>
+#include <SFML/Base/UniquePtr.hpp>
 
 #include <miniaudio.h>
 
@@ -56,7 +57,7 @@ struct Sound::Impl
 
     void initialize()
     {
-        SFML_ASSERT(soundBase.hasValue());
+        SFML_BASE_ASSERT(soundBase.hasValue());
 
         if (!soundBase->initialize(&onEnd))
             priv::err() << "Failed to initialize Sound::Impl";
@@ -95,7 +96,7 @@ struct Sound::Impl
             return MA_NO_DATA_AVAILABLE;
 
         // Determine how many frames we can read
-        *framesRead = priv::min(frameCount, (buffer->getSampleCount() - impl.cursor) / buffer->getChannelCount());
+        *framesRead = base::min(frameCount, (buffer->getSampleCount() - impl.cursor) / buffer->getChannelCount());
 
         // Copy the samples to the output
         const auto sampleCount = *framesRead * buffer->getChannelCount();
@@ -180,16 +181,16 @@ struct Sound::Impl
     ////////////////////////////////////////////////////////////
     static inline constexpr ma_data_source_vtable vtable{read, seek, getFormat, getCursor, getLength, setLooping, 0};
 
-    Optional<priv::MiniaudioUtils::SoundBase> soundBase; //!< Sound base, needs to be first member
-    Sound*                                    owner;     //!< Owning `Sound` object
-    std::size_t                               cursor{};  //!< The current playing position
-    const SoundBuffer*                        buffer{};  //!< Sound buffer bound to the source
-    SoundSource::Status                       status{SoundSource::Status::Stopped}; //!< The status
+    base::Optional<priv::MiniaudioUtils::SoundBase> soundBase; //!< Sound base, needs to be first member
+    Sound*                                          owner;     //!< Owning `Sound` object
+    std::size_t                                     cursor{};  //!< The current playing position
+    const SoundBuffer*                              buffer{};  //!< Sound buffer bound to the source
+    SoundSource::Status                             status{SoundSource::Status::Stopped}; //!< The status
 };
 
 
 ////////////////////////////////////////////////////////////
-Sound::Sound(const SoundBuffer& buffer) : m_impl(priv::makeUnique<Impl>(this))
+Sound::Sound(const SoundBuffer& buffer) : m_impl(base::makeUnique<Impl>(this))
 {
     setBuffer(buffer);
 
@@ -199,7 +200,7 @@ Sound::Sound(const SoundBuffer& buffer) : m_impl(priv::makeUnique<Impl>(this))
 
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(readability-redundant-member-init)
-Sound::Sound(const Sound& rhs) : SoundSource(rhs), m_impl(priv::makeUnique<Impl>(this))
+Sound::Sound(const Sound& rhs) : SoundSource(rhs), m_impl(base::makeUnique<Impl>(this))
 {
     SoundSource::operator=(rhs);
 
@@ -241,7 +242,7 @@ Sound& Sound::operator=(const Sound& rhs)
 
 
 ////////////////////////////////////////////////////////////
-Sound::Sound(Sound&& rhs) noexcept : m_impl(SFML_MOVE(rhs.m_impl))
+Sound::Sound(Sound&& rhs) noexcept : m_impl(SFML_BASE_MOVE(rhs.m_impl))
 {
     // Update self-referential owner pointer.
     m_impl->owner = this;
@@ -253,7 +254,7 @@ Sound& Sound::operator=(Sound&& rhs) noexcept
 {
     if (this != &rhs)
     {
-        m_impl = SFML_MOVE(rhs.m_impl);
+        m_impl = SFML_BASE_MOVE(rhs.m_impl);
 
         // Update self-referential owner pointer.
         m_impl->owner = this;
@@ -281,7 +282,7 @@ void Sound::play(PlaybackDevice& playbackDevice)
         m_impl->soundBase.emplace(playbackDevice, &Impl::vtable, [](void* ptr) { static_cast<Impl*>(ptr)->initialize(); });
         m_impl->initialize();
 
-        SFML_ASSERT(m_impl->soundBase.hasValue());
+        SFML_BASE_ASSERT(m_impl->soundBase.hasValue());
         applyStoredSettings(m_impl->soundBase->getSound());
         setEffectProcessor(getEffectProcessor());
         setPlayingOffset(getPlayingOffset());
@@ -356,7 +357,7 @@ void Sound::setBuffer(const SoundBuffer& buffer)
         m_impl->soundBase->deinitialize();
         m_impl->initialize();
 
-        SFML_ASSERT(m_impl->soundBase.hasValue());
+        SFML_BASE_ASSERT(m_impl->soundBase.hasValue());
         applyStoredSettings(m_impl->soundBase->getSound());
         setEffectProcessor(getEffectProcessor());
         setPlayingOffset(getPlayingOffset());
@@ -391,14 +392,14 @@ void Sound::setEffectProcessor(EffectProcessor effectProcessor)
     if (!m_impl->soundBase.hasValue())
         return;
 
-    m_impl->soundBase->setAndConnectEffectProcessor(SFML_MOVE(effectProcessor));
+    m_impl->soundBase->setAndConnectEffectProcessor(SFML_BASE_MOVE(effectProcessor));
 }
 
 
 ////////////////////////////////////////////////////////////
 const SoundBuffer& Sound::getBuffer() const
 {
-    SFML_ASSERT(m_impl && "Sound::getBuffer() Cannot access unset buffer");
+    SFML_BASE_ASSERT(m_impl && "Sound::getBuffer() Cannot access unset buffer");
     return *m_impl->buffer;
 }
 

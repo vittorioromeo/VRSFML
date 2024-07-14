@@ -27,9 +27,10 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/SensorImpl.hpp>
 
-#include <SFML/System/EnumArray.hpp>
-#include <SFML/System/Optional.hpp>
 #include <SFML/System/Time.hpp>
+
+#include <SFML/Base/EnumArray.hpp>
+#include <SFML/Base/Optional.hpp>
 
 #include <android/looper.h>
 
@@ -47,7 +48,7 @@ namespace
 ALooper*                                                               looper;
 ASensorManager*                                                        sensorManager;
 ASensorEventQueue*                                                     sensorEventQueue;
-sf::priv::EnumArray<sf::Sensor::Type, sf::Vector3f, sf::Sensor::Count> sensorData;
+sf::base::EnumArray<sf::Sensor::Type, sf::Vector3f, sf::Sensor::Count> sensorData;
 } // namespace
 
 
@@ -139,7 +140,7 @@ void SensorImpl::setEnabled(bool enabled)
 const ASensor* SensorImpl::getDefaultSensor(Sensor::Type sensor)
 {
     // Find the Android sensor type
-    static EnumArray<Sensor::Type, int, Sensor::Count> types =
+    static base::EnumArray<Sensor::Type, int, Sensor::Count> types =
         {ASENSOR_TYPE_ACCELEROMETER,
          ASENSOR_TYPE_GYROSCOPE,
          ASENSOR_TYPE_MAGNETIC_FIELD,
@@ -161,8 +162,8 @@ int SensorImpl::processSensorEvents(int /* fd */, int /* events */, void* /* sen
 
     while (ASensorEventQueue_getEvents(sensorEventQueue, &event, 1) > 0)
     {
-        Optional<Sensor::Type> type;
-        Vector3f               data;
+        base::Optional<Sensor::Type> type;
+        Vector3f                     data;
 
         switch (event.type)
         {

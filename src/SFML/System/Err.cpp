@@ -27,6 +27,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Path.hpp>
+#include <SFML/System/PathUtils.hpp>
 
 #ifdef SFML_ENABLE_STACK_TRACES
 #include <cpptrace/cpptrace.hpp>
@@ -167,6 +168,18 @@ ErrStream::Guard ErrStream::operator<<(ErrFlushType)
 
 
 ////////////////////////////////////////////////////////////
+ErrStream::Guard ErrStream::operator<<(PathDebugFormatter pathDebugFormatter)
+{
+    m_impl->mutex.lock(); // Will be unlocked by `~Guard()`
+
+    m_impl->stream << "    Provided path: " << pathDebugFormatter.path.to<std::string>() << '\n'
+                   << "    Absolute path: " << pathDebugFormatter.path.absolute();
+
+    return Guard{m_impl->stream, &m_impl->mutex, m_impl->multiLine.load()};
+}
+
+
+////////////////////////////////////////////////////////////
 template ErrStream::Guard ErrStream::operator<< <const char* const>(const char* const&);
 template ErrStream::Guard ErrStream::operator<< <long>(const long&);
 template ErrStream::Guard ErrStream::operator<< <char>(const char&);
@@ -184,6 +197,16 @@ ErrStream::Guard& ErrStream::Guard::operator<<(const char* value)
 ErrStream::Guard& ErrStream::Guard::operator<<(ErrFlushType)
 {
     m_stream << std::flush;
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+ErrStream::Guard& ErrStream::Guard::operator<<(PathDebugFormatter pathDebugFormatter)
+{
+    m_stream << "    Provided path: " << pathDebugFormatter.path.to<std::string>() << '\n'
+             << "    Absolute path: " << pathDebugFormatter.path.absolute();
+
     return *this;
 }
 

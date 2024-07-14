@@ -6,7 +6,7 @@
 #include <SFML/Network/UdpSocket.hpp>
 
 #include <iostream>
-#include <SFML/System/Optional.hpp>
+#include <SFML/Base/Optional.hpp>
 
 #include <cstddef>
 
@@ -28,7 +28,7 @@ void runUdpServer(unsigned short port)
     // Wait for a message
     char                         in[128];
     std::size_t                  received = 0;
-    sf::Optional<sf::IpAddress> sender;
+    sf::base::Optional<sf::IpAddress> sender;
     unsigned short               senderPort = 0;
     if (socket.receive(in, sizeof(in), received, sender, senderPort) != sf::Socket::Status::Done)
         return;
@@ -49,7 +49,7 @@ void runUdpServer(unsigned short port)
 void runUdpClient(unsigned short port)
 {
     // Ask for the server address
-    sf::Optional<sf::IpAddress> server;
+    sf::base::Optional<sf::IpAddress> server;
     do
     {
         std::cout << "Type the address or name of the server to connect to: ";
@@ -68,7 +68,7 @@ void runUdpClient(unsigned short port)
     // Receive an answer from anyone (but most likely from the server)
     char                         in[128];
     std::size_t                  received = 0;
-    sf::Optional<sf::IpAddress> sender;
+    sf::base::Optional<sf::IpAddress> sender;
     unsigned short               senderPort = 0;
     if (socket.receive(in, sizeof(in), received, sender, senderPort) != sf::Socket::Status::Done)
         return;

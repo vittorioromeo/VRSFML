@@ -138,7 +138,7 @@ int main()
     // Create all of our graphics resources
     sf::Text                 hudText(font);
     sf::Text                 statusText(font);
-    sf::Optional<sf::Shader> terrainShader;
+    sf::base::Optional<sf::Shader> terrainShader;
     sf::RenderStates         terrainStates;
     sf::VertexBuffer         terrain(graphicsContext, sf::PrimitiveType::Triangles, sf::VertexBuffer::Usage::Static);
 
@@ -221,7 +221,7 @@ int main()
     while (true)
     {
         // Handle events
-        while (const sf::Optional event = window.pollEvent())
+        while (const sf::base::Optional event = window.pollEvent())
         {
             // Window closed or escape key pressed: exit
             if (event->is<sf::Event::Closed>() ||

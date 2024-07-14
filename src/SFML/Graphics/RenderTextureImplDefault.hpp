@@ -29,8 +29,9 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/RenderTextureImpl.hpp>
 
-#include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
+
+#include <SFML/Base/UniquePtr.hpp>
 
 
 namespace sf
@@ -116,7 +117,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     GraphicsContext*                 m_graphicsContext; //!< TODO
-    priv::UniquePtr<priv::GlContext> m_glContext;       //!< P-Buffer based context
+    base::UniquePtr<priv::GlContext> m_glContext;       //!< P-Buffer based context
     Vector2u                         m_size;            //!< Width and height of the P-Buffer
 };
 

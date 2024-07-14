@@ -30,8 +30,9 @@
 #include <SFML/Network/TcpSocket.hpp>
 
 #include <SFML/System/Err.hpp>
-#include <SFML/System/Optional.hpp>
 #include <SFML/System/StringUtils.hpp>
+
+#include <SFML/Base/Optional.hpp>
 
 #include <iterator>
 #include <limits>
@@ -339,10 +340,10 @@ void Http::Response::parse(const std::string& data)
 ////////////////////////////////////////////////////////////
 struct Http::Impl
 {
-    TcpSocket           connection; //!< Connection to the host
-    Optional<IpAddress> host;       //!< Web host address
-    std::string         hostName;   //!< Web host name
-    unsigned short      port{};     //!< Port used for connection with host
+    TcpSocket                 connection; //!< Connection to the host
+    base::Optional<IpAddress> host;       //!< Web host address
+    std::string               hostName;   //!< Web host name
+    unsigned short            port{};     //!< Port used for connection with host
 };
 
 

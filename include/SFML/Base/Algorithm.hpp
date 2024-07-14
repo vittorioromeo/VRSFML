@@ -27,11 +27,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/Macros.hpp>
-#include <SFML/System/SizeT.hpp>
+#include <SFML/Base/Macros.hpp>
 
 
-namespace sf::priv
+namespace sf::base
 {
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -64,7 +63,7 @@ template <typename Iter, typename TargetIter>
 template <typename T, typename Vector>
 [[gnu::always_inline]] inline void appendRangeIntoVector(const T* rangeBegin, const T* rangeEnd, Vector& target)
 {
-    target.reserve(target.size() + static_cast<SizeT>(rangeEnd - rangeBegin));
+    target.reserve(target.size() + static_cast<decltype(target.size())>(rangeEnd - rangeBegin));
 
     for (; rangeBegin != rangeEnd; ++rangeBegin)
         target.push_back(*rangeBegin);
@@ -73,7 +72,7 @@ template <typename T, typename Vector>
 
 ////////////////////////////////////////////////////////////
 template <typename Iter, typename T>
-[[gnu::always_inline, gnu::pure]] constexpr Iter find(Iter rangeBegin, Iter rangeEnd, const T& target)
+[[gnu::always_inline, gnu::pure]] constexpr Iter find(Iter rangeBegin, Iter rangeEnd, const T& target) noexcept
 {
     for (; rangeBegin != rangeEnd; ++rangeBegin)
         if (*rangeBegin == target)
@@ -85,7 +84,7 @@ template <typename Iter, typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename Iter, typename Predicate>
-[[gnu::always_inline, gnu::pure]] constexpr Iter findIf(Iter rangeBegin, Iter rangeEnd, Predicate&& predicate)
+[[gnu::always_inline, gnu::pure]] constexpr Iter findIf(Iter rangeBegin, Iter rangeEnd, Predicate&& predicate) noexcept
 {
     for (; rangeBegin != rangeEnd; ++rangeBegin)
         if (predicate(*rangeBegin))
@@ -97,7 +96,7 @@ template <typename Iter, typename Predicate>
 
 ////////////////////////////////////////////////////////////
 template <typename Iter, typename Predicate>
-[[gnu::always_inline, gnu::pure]] constexpr bool anyOf(Iter rangeBegin, Iter rangeEnd, Predicate&& predicate)
+[[gnu::always_inline, gnu::pure]] constexpr bool anyOf(Iter rangeBegin, Iter rangeEnd, Predicate&& predicate) noexcept
 {
     for (; rangeBegin != rangeEnd; ++rangeBegin)
         if (predicate(*rangeBegin))
@@ -109,7 +108,7 @@ template <typename Iter, typename Predicate>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T& clamp(const T& value, const T& minValue, const T& maxValue)
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T& clamp(const T& value, const T& minValue, const T& maxValue) noexcept
 {
     if (value < minValue)
         return minValue;
@@ -122,8 +121,8 @@ template <typename T>
 
 
 ////////////////////////////////////////////////////////////
-template <typename T, SizeT N>
-[[nodiscard, gnu::always_inline, gnu::const]] constexpr SizeT getArraySize(const T (&)[N])
+template <typename T, auto N>
+[[nodiscard, gnu::always_inline, gnu::const]] constexpr auto getArraySize(const T (&)[N]) noexcept
 {
     return N;
 }
@@ -156,17 +155,17 @@ public:
         return *this;
     }
 
-    [[nodiscard, gnu::always_inline, gnu::pure]] BackInserter& operator*()
+    [[nodiscard, gnu::always_inline, gnu::pure]] BackInserter& operator*() noexcept
     {
         return *this;
     }
 
-    [[gnu::always_inline, gnu::pure]] BackInserter& operator++()
+    [[gnu::always_inline, gnu::pure]] BackInserter& operator++() noexcept
     {
         return *this;
     }
 
-    [[nodiscard, gnu::always_inline, gnu::pure]] BackInserter operator++(int)
+    [[nodiscard, gnu::always_inline, gnu::pure]] BackInserter operator++(int) noexcept
     {
         return *this;
     }
@@ -177,9 +176,9 @@ public:
 template <typename T, typename U = T>
 [[nodiscard, gnu::always_inline]] inline constexpr T exchange(T& obj, U&& newVal)
 {
-    T oldVal = SFML_MOVE(obj);
-    obj      = SFML_FORWARD(newVal);
+    T oldVal = SFML_BASE_MOVE(obj);
+    obj      = SFML_BASE_FORWARD(newVal);
     return oldVal;
 }
 
-} // namespace sf::priv
+} // namespace sf::base

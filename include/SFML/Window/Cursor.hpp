@@ -29,10 +29,11 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/Export.hpp>
 
-#include <SFML/System/InPlacePImpl.hpp>
-#include <SFML/System/Optional.hpp>
-#include <SFML/System/PassKey.hpp>
 #include <SFML/System/Vector2.hpp>
+
+#include <SFML/Base/InPlacePImpl.hpp>
+#include <SFML/Base/Optional.hpp>
+#include <SFML/Base/PassKey.hpp>
 
 #include <cstdint>
 
@@ -169,10 +170,10 @@ public:
     /// \param size     Width and height of the image
     /// \param hotspot  (x,y) location of the hotspot
     /// \return Cursor if the cursor was successfully loaded;
-    ///         `sf::nullOpt` otherwise
+    ///         `base::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Optional<Cursor> loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vector2u hotspot);
+    [[nodiscard]] static base::Optional<Cursor> loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vector2u hotspot);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a native system cursor
@@ -185,10 +186,10 @@ public:
     /// \param type Native system cursor type
     /// \return Cursor if and only if the corresponding cursor is
     ///         natively supported by the operating system;
-    ///         `sf::nullOpt` otherwise
+    ///         `base::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Optional<Cursor> loadFromSystem(Type type);
+    [[nodiscard]] static base::Optional<Cursor> loadFromSystem(Type type);
 
 private:
     friend class WindowBase;
@@ -200,7 +201,7 @@ public:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Cursor(priv::PassKey<Cursor>&&);
+    [[nodiscard]] Cursor(base::PassKey<Cursor>&&);
 
 private:
     ////////////////////////////////////////////////////////////
@@ -218,7 +219,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    priv::InPlacePImpl<priv::CursorImpl, 32> m_impl; //!< Implementation details
+    base::InPlacePImpl<priv::CursorImpl, 32> m_impl; //!< Implementation details
 };
 
 } // namespace sf

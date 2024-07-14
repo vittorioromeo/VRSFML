@@ -25,10 +25,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/Assert.hpp>
-#include <SFML/System/IsFloatingPoint.hpp>
-#include <SFML/System/MathUtils.hpp>
 #include <SFML/System/Vector3.hpp> // NOLINTNEXTLINE(misc-header-include-cycle)
+
+#include <SFML/Base/Assert.hpp>
+#include <SFML/Base/IsFloatingPoint.hpp>
+#include <SFML/Base/Math.hpp>
 
 
 namespace sf
@@ -39,7 +40,7 @@ constexpr Vector3<T> Vector3<T>::normalized() const
 {
     static_assert(priv::isFloatingPoint<T>, "Vector3::normalized() is only supported for floating point types");
 
-    SFML_ASSERT(*this != Vector3<T>() && "Vector3::normalized() cannot normalize a zero vector");
+    SFML_BASE_ASSERT(*this != Vector3<T>() && "Vector3::normalized() cannot normalize a zero vector");
     return (*this) / length();
 }
 
@@ -51,7 +52,7 @@ constexpr T Vector3<T>::length() const
     static_assert(priv::isFloatingPoint<T>, "Vector3::length() is only supported for floating point types");
 
     // don't use std::hypot because of slow performance
-    return priv::sqrt(x * x + y * y + z * z);
+    return base::sqrt(x * x + y * y + z * z);
 }
 
 
@@ -91,9 +92,9 @@ constexpr Vector3<T> Vector3<T>::cwiseMul(const Vector3<T>& rhs) const
 template <typename T>
 constexpr Vector3<T> Vector3<T>::cwiseDiv(const Vector3<T>& rhs) const
 {
-    SFML_ASSERT(rhs.x != 0 && "Vector3::cwiseDiv() cannot divide by 0 (x coordinate)");
-    SFML_ASSERT(rhs.y != 0 && "Vector3::cwiseDiv() cannot divide by 0 (y coordinate)");
-    SFML_ASSERT(rhs.z != 0 && "Vector3::cwiseDiv() cannot divide by 0 (z coordinate)");
+    SFML_BASE_ASSERT(rhs.x != 0 && "Vector3::cwiseDiv() cannot divide by 0 (x coordinate)");
+    SFML_BASE_ASSERT(rhs.y != 0 && "Vector3::cwiseDiv() cannot divide by 0 (y coordinate)");
+    SFML_BASE_ASSERT(rhs.z != 0 && "Vector3::cwiseDiv() cannot divide by 0 (z coordinate)");
 
     return Vector3<T>(x / rhs.x, y / rhs.y, z / rhs.z);
 }
@@ -189,7 +190,7 @@ constexpr Vector3<T>& operator*=(Vector3<T>& left, T right)
 template <typename T>
 constexpr Vector3<T> operator/(const Vector3<T>& left, T right)
 {
-    SFML_ASSERT(right != 0 && "Vector3::operator/ cannot divide by 0");
+    SFML_BASE_ASSERT(right != 0 && "Vector3::operator/ cannot divide by 0");
 
     return Vector3<T>(left.x / right, left.y / right, left.z / right);
 }
@@ -199,7 +200,7 @@ constexpr Vector3<T> operator/(const Vector3<T>& left, T right)
 template <typename T>
 constexpr Vector3<T>& operator/=(Vector3<T>& left, T right)
 {
-    SFML_ASSERT(right != 0 && "Vector3::operator/= cannot divide by 0");
+    SFML_BASE_ASSERT(right != 0 && "Vector3::operator/= cannot divide by 0");
 
     left.x /= right;
     left.y /= right;

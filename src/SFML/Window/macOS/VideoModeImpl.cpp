@@ -29,8 +29,9 @@
 #include <SFML/Window/VideoModeImpl.hpp>
 #include <SFML/Window/macOS/cg_sf_conversion.hpp>
 
-#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
+
+#include <SFML/Base/Algorithm.hpp>
 
 namespace sf::priv
 {
@@ -64,7 +65,7 @@ std::vector<VideoMode> VideoModeImpl::getFullscreenModes()
             continue;
 
         // If not yet listed we add it to our modes array.
-        if (priv::find(modes.begin(), modes.end(), mode) == modes.end())
+        if (base::find(modes.begin(), modes.end(), mode) == modes.end())
             modes.push_back(mode);
     }
 

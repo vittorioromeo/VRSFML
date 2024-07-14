@@ -34,8 +34,9 @@
 #include <SFML/Window/Mouse.hpp>
 #include <SFML/Window/Sensor.hpp>
 
-#include <SFML/System/Variant.hpp>
 #include <SFML/System/Vector2.hpp>
+
+#include <SFML/Base/Variant.hpp>
 
 #include <cstdint>
 
@@ -443,7 +444,7 @@ SFML_PRIV_EVENTS_X_MACRO(SFML_PRIV_EVENT_X_EXTERN_TEMPLATE_GETIF, SFML_PRIV_EVEN
 /// without actually reading any of the corresponding event data.
 ///
 /// \code
-/// while (const sf::Optional event = window.pollEvent())
+/// while (const sf::base::Optional event = window.pollEvent())
 /// {
 ///     // Window closed or escape key pressed: exit
 ///     if (event->is<sf::Event::Closed>() ||

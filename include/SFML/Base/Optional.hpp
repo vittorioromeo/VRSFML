@@ -29,14 +29,14 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Export.hpp>
 
-#include <SFML/System/Assert.hpp>
-#include <SFML/System/Launder.hpp>
-#include <SFML/System/Macros.hpp>
-#include <SFML/System/PlacementNew.hpp>
-#include <SFML/System/RemoveCVRef.hpp>
+#include <SFML/Base/Assert.hpp>
+#include <SFML/Base/Launder.hpp>
+#include <SFML/Base/Macros.hpp>
+#include <SFML/Base/PlacementNew.hpp>
+#include <SFML/Base/RemoveCVRef.hpp>
 
 
-namespace sf
+namespace sf::base
 {
 ////////////////////////////////////////////////////////////
 inline constexpr struct InPlace
@@ -79,7 +79,7 @@ public:
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[nodiscard, gnu::always_inline]] constexpr explicit Optional(const T& object) : m_engaged{true}
     {
-        SFML_PRIV_PLACEMENT_NEW(m_buffer) T(object);
+        SFML_BASE_PLACEMENT_NEW(m_buffer) T(object);
     }
 
 
@@ -87,7 +87,7 @@ public:
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[nodiscard, gnu::always_inline]] constexpr explicit Optional(T&& object) noexcept : m_engaged{true}
     {
-        SFML_PRIV_PLACEMENT_NEW(m_buffer) T(SFML_MOVE(object));
+        SFML_BASE_PLACEMENT_NEW(m_buffer) T(SFML_BASE_MOVE(object));
     }
 
 
@@ -96,7 +96,7 @@ public:
     [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional(const Optional& rhs) : m_engaged{rhs.m_engaged}
     {
         if (m_engaged)
-            SFML_PRIV_PLACEMENT_NEW(m_buffer) T(*SFML_PRIV_LAUNDER_CAST(const T*, rhs.m_buffer));
+            SFML_BASE_PLACEMENT_NEW(m_buffer) T(*SFML_BASE_LAUNDER_CAST(const T*, rhs.m_buffer));
     }
 
 
@@ -106,7 +106,7 @@ public:
     m_engaged{rhs.m_engaged}
     {
         if (m_engaged)
-            SFML_PRIV_PLACEMENT_NEW(m_buffer) T(SFML_MOVE(*SFML_PRIV_LAUNDER_CAST(T*, rhs.m_buffer)));
+            SFML_BASE_PLACEMENT_NEW(m_buffer) T(SFML_BASE_MOVE(*SFML_BASE_LAUNDER_CAST(T*, rhs.m_buffer)));
     }
 
 
@@ -120,17 +120,17 @@ public:
         if (m_engaged && !rhs.m_engaged)
         {
             m_engaged = false;
-            SFML_PRIV_LAUNDER_CAST(T*, m_buffer)->~T();
+            SFML_BASE_LAUNDER_CAST(T*, m_buffer)->~T();
         }
         else if (!m_engaged && rhs.m_engaged)
         {
             m_engaged = true;
-            SFML_PRIV_PLACEMENT_NEW(m_buffer) T(*SFML_PRIV_LAUNDER_CAST(const T*, rhs.m_buffer));
+            SFML_BASE_PLACEMENT_NEW(m_buffer) T(*SFML_BASE_LAUNDER_CAST(const T*, rhs.m_buffer));
         }
         else
         {
-            SFML_ASSERT(m_engaged && rhs.m_engaged);
-            *SFML_PRIV_LAUNDER_CAST(T*, m_buffer) = *SFML_PRIV_LAUNDER_CAST(const T*, rhs.m_buffer);
+            SFML_BASE_ASSERT(m_engaged && rhs.m_engaged);
+            *SFML_BASE_LAUNDER_CAST(T*, m_buffer) = *SFML_BASE_LAUNDER_CAST(const T*, rhs.m_buffer);
         }
 
         return *this;
@@ -147,17 +147,17 @@ public:
         if (m_engaged && !rhs.m_engaged)
         {
             m_engaged = false;
-            SFML_PRIV_LAUNDER_CAST(T*, m_buffer)->~T();
+            SFML_BASE_LAUNDER_CAST(T*, m_buffer)->~T();
         }
         else if (!m_engaged && rhs.m_engaged)
         {
             m_engaged = true;
-            SFML_PRIV_PLACEMENT_NEW(m_buffer) T(SFML_MOVE(*SFML_PRIV_LAUNDER_CAST(T*, rhs.m_buffer)));
+            SFML_BASE_PLACEMENT_NEW(m_buffer) T(SFML_BASE_MOVE(*SFML_BASE_LAUNDER_CAST(T*, rhs.m_buffer)));
         }
         else
         {
-            SFML_ASSERT(m_engaged && rhs.m_engaged);
-            *SFML_PRIV_LAUNDER_CAST(T*, m_buffer) = SFML_MOVE(*SFML_PRIV_LAUNDER_CAST(T*, rhs.m_buffer));
+            SFML_BASE_ASSERT(m_engaged && rhs.m_engaged);
+            *SFML_BASE_LAUNDER_CAST(T*, m_buffer) = SFML_BASE_MOVE(*SFML_BASE_LAUNDER_CAST(T*, rhs.m_buffer));
         }
 
         return *this;
@@ -177,7 +177,7 @@ public:
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[nodiscard, gnu::always_inline]] constexpr explicit Optional(InPlace, Args&&... args) : m_engaged{true}
     {
-        SFML_PRIV_PLACEMENT_NEW(m_buffer) T(SFML_FORWARD(args)...);
+        SFML_BASE_PLACEMENT_NEW(m_buffer) T(SFML_BASE_FORWARD(args)...);
     }
 
 
@@ -186,7 +186,7 @@ public:
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[nodiscard, gnu::always_inline]] constexpr explicit Optional(FromFunc, F&& func) : m_engaged{true}
     {
-        SFML_PRIV_PLACEMENT_NEW(m_buffer) T(SFML_FORWARD(func)());
+        SFML_BASE_PLACEMENT_NEW(m_buffer) T(SFML_BASE_FORWARD(func)());
     }
 
 
@@ -196,10 +196,10 @@ public:
     [[gnu::always_inline]] constexpr T& emplace(Args&&... args)
     {
         if (m_engaged)
-            SFML_PRIV_LAUNDER_CAST(T*, m_buffer)->~T();
+            SFML_BASE_LAUNDER_CAST(T*, m_buffer)->~T();
 
         m_engaged = true;
-        return *(SFML_PRIV_PLACEMENT_NEW(m_buffer) T(SFML_FORWARD(args)...));
+        return *(SFML_BASE_PLACEMENT_NEW(m_buffer) T(SFML_BASE_FORWARD(args)...));
     }
 
 
@@ -209,10 +209,10 @@ public:
     [[gnu::always_inline]] constexpr T& emplaceFromFunc(F&& func)
     {
         if (m_engaged)
-            SFML_PRIV_LAUNDER_CAST(T*, m_buffer)->~T();
+            SFML_BASE_LAUNDER_CAST(T*, m_buffer)->~T();
 
         m_engaged = true;
-        return *(SFML_PRIV_PLACEMENT_NEW(m_buffer) T(SFML_FORWARD(func)()));
+        return *(SFML_BASE_PLACEMENT_NEW(m_buffer) T(SFML_BASE_FORWARD(func)()));
     }
 
 
@@ -220,7 +220,7 @@ public:
     [[gnu::always_inline]] constexpr void reset() noexcept
     {
         if (m_engaged)
-            SFML_PRIV_LAUNDER_CAST(T*, m_buffer)->~T();
+            SFML_BASE_LAUNDER_CAST(T*, m_buffer)->~T();
 
         m_engaged = false;
     }
@@ -230,7 +230,7 @@ public:
     [[gnu::always_inline]] constexpr ~Optional() noexcept
     {
         if (m_engaged)
-            SFML_PRIV_LAUNDER_CAST(T*, m_buffer)->~T();
+            SFML_BASE_LAUNDER_CAST(T*, m_buffer)->~T();
     }
 
 
@@ -240,7 +240,7 @@ public:
         if (!m_engaged)
             throw 0; // TODO
 
-        return *SFML_PRIV_LAUNDER_CAST(T*, m_buffer);
+        return *SFML_BASE_LAUNDER_CAST(T*, m_buffer);
     }
 
 
@@ -250,7 +250,7 @@ public:
         if (!m_engaged)
             throw 0; // TODO
 
-        return *SFML_PRIV_LAUNDER_CAST(const T*, m_buffer);
+        return *SFML_BASE_LAUNDER_CAST(const T*, m_buffer);
     }
 
 
@@ -260,28 +260,28 @@ public:
         if (!m_engaged)
             throw 0; // TODO
 
-        return SFML_MOVE(*SFML_PRIV_LAUNDER_CAST(T*, m_buffer));
+        return SFML_BASE_MOVE(*SFML_BASE_LAUNDER_CAST(T*, m_buffer));
     }
 
 
     //////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T& valueOr(T& defaultValue) & noexcept
     {
-        return m_engaged ? *SFML_PRIV_LAUNDER_CAST(T*, m_buffer) : defaultValue;
+        return m_engaged ? *SFML_BASE_LAUNDER_CAST(T*, m_buffer) : defaultValue;
     }
 
 
     //////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T& valueOr(const T& defaultValue) const& noexcept
     {
-        return m_engaged ? *SFML_PRIV_LAUNDER_CAST(const T*, m_buffer) : defaultValue;
+        return m_engaged ? *SFML_BASE_LAUNDER_CAST(const T*, m_buffer) : defaultValue;
     }
 
 
     //////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T&& valueOr(T&& defaultValue) && noexcept
     {
-        return SFML_MOVE(m_engaged ? *SFML_PRIV_LAUNDER_CAST(T*, m_buffer) : defaultValue);
+        return SFML_BASE_MOVE(m_engaged ? *SFML_BASE_LAUNDER_CAST(T*, m_buffer) : defaultValue);
     }
 
 
@@ -302,54 +302,54 @@ public:
     //////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T* operator->() & noexcept
     {
-        SFML_ASSERT(m_engaged);
-        return SFML_PRIV_LAUNDER_CAST(T*, m_buffer);
+        SFML_BASE_ASSERT(m_engaged);
+        return SFML_BASE_LAUNDER_CAST(T*, m_buffer);
     }
 
 
     //////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T* operator->() const& noexcept
     {
-        SFML_ASSERT(m_engaged);
-        return SFML_PRIV_LAUNDER_CAST(const T*, m_buffer);
+        SFML_BASE_ASSERT(m_engaged);
+        return SFML_BASE_LAUNDER_CAST(const T*, m_buffer);
     }
 
 
     //////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T& operator*() & noexcept
     {
-        SFML_ASSERT(m_engaged);
-        return *SFML_PRIV_LAUNDER_CAST(T*, m_buffer);
+        SFML_BASE_ASSERT(m_engaged);
+        return *SFML_BASE_LAUNDER_CAST(T*, m_buffer);
     }
 
 
     //////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T& operator*() const& noexcept
     {
-        SFML_ASSERT(m_engaged);
-        return *SFML_PRIV_LAUNDER_CAST(const T*, m_buffer);
+        SFML_BASE_ASSERT(m_engaged);
+        return *SFML_BASE_LAUNDER_CAST(const T*, m_buffer);
     }
 
 
     //////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T&& operator*() && noexcept
     {
-        SFML_ASSERT(m_engaged);
-        return SFML_MOVE(*SFML_PRIV_LAUNDER_CAST(T*, m_buffer));
+        SFML_BASE_ASSERT(m_engaged);
+        return SFML_BASE_MOVE(*SFML_BASE_LAUNDER_CAST(T*, m_buffer));
     }
 
 
     //////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T* asPtr() noexcept
     {
-        return m_engaged ? SFML_PRIV_LAUNDER_CAST(T*, m_buffer) : nullptr;
+        return m_engaged ? SFML_BASE_LAUNDER_CAST(T*, m_buffer) : nullptr;
     }
 
 
     //////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T* asPtr() const noexcept
     {
-        return m_engaged ? SFML_PRIV_LAUNDER_CAST(const T*, m_buffer) : nullptr;
+        return m_engaged ? SFML_BASE_LAUNDER_CAST(const T*, m_buffer) : nullptr;
     }
 
 
@@ -410,7 +410,7 @@ private:
 template <typename Object>
 [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr auto makeOptional(Object&& object)
 {
-    return Optional<SFML_PRIV_REMOVE_CVREF(Object)>{SFML_FORWARD(object)};
+    return Optional<SFML_BASE_REMOVE_CVREF(Object)>{SFML_BASE_FORWARD(object)};
 }
 
 
@@ -418,7 +418,7 @@ template <typename Object>
 template <typename T, typename... Args>
 [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Optional<T> makeOptional(Args&&... args)
 {
-    return Optional<T>{inPlace, SFML_FORWARD(args)...};
+    return Optional<T>{inPlace, SFML_BASE_FORWARD(args)...};
 }
 
 
@@ -426,7 +426,7 @@ template <typename T, typename... Args>
 template <typename F>
 [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr auto makeOptionalFromFunc(F&& f)
 {
-    return Optional<decltype(SFML_FORWARD(f)())>{fromFunc, SFML_FORWARD(f)};
+    return Optional<decltype(SFML_BASE_FORWARD(f)())>{fromFunc, SFML_BASE_FORWARD(f)};
 }
 
-} // namespace sf
+} // namespace sf::base

@@ -30,10 +30,10 @@
 #import <SFML/Window/macOS/SFOpenGLView.h>
 #include <SFML/Window/macOS/WindowImplCocoa.hpp>
 
-#include <SFML/System/AlgorithmUtils.hpp>
-#include <SFML/System/MathUtils.hpp>
+#include <SFML/Base/Algorithm.hpp>
+#include <SFML/Base/Math.hpp>
 
-#include <SFML/System/Optional.hpp>
+#include <SFML/Base/Optional.hpp>
 
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -135,7 +135,7 @@
 ////////////////////////////////////////////////////////
 - (void)handleMouseDown:(NSEvent*)theEvent
 {
-    const Optional<sf::Mouse::Button> button = [SFOpenGLView mouseButtonFromEvent:theEvent];
+    const base::Optional<sf::Mouse::Button> button = [SFOpenGLView mouseButtonFromEvent:theEvent];
 
     if (m_requester != nil)
     {
@@ -180,7 +180,7 @@
 ////////////////////////////////////////////////////////////
 - (void)handleMouseUp:(NSEvent*)theEvent
 {
-    const Optional<sf::Mouse::Button> button = [SFOpenGLView mouseButtonFromEvent:theEvent];
+    const base::Optional<sf::Mouse::Button> button = [SFOpenGLView mouseButtonFromEvent:theEvent];
 
     if (m_requester != nil)
     {
@@ -373,13 +373,13 @@
                 if (m_deltaXBuffer <= 0)
                     rawPos.x += deltaX / factor;
                 else
-                    m_deltaXBuffer -= priv::fabs(deltaX / factorBuffer);
+                    m_deltaXBuffer -= base::fabs(deltaX / factorBuffer);
 
                 // Rinse and repeat for Y.
                 if (m_deltaYBuffer <= 0)
                     rawPos.y -= deltaY / factor;
                 else
-                    m_deltaYBuffer -= priv::fabs(deltaY / factorBuffer);
+                    m_deltaYBuffer -= base::fabs(deltaY / factorBuffer);
             }
         }
 
@@ -387,16 +387,16 @@
         NSSize  size   = [self frame].size;
         NSPoint origin = [self frame].origin;
         NSPoint oldPos = rawPos;
-        rawPos.x       = priv::clamp(rawPos.x, origin.x, origin.x + size.width - 1);
-        rawPos.y       = priv::clamp(rawPos.y, origin.y + 1, origin.y + size.height);
+        rawPos.x       = base::clamp(rawPos.x, origin.x, origin.x + size.width - 1);
+        rawPos.y       = base::clamp(rawPos.y, origin.y + 1, origin.y + size.height);
         // Note: the `-1` and `+1` on the two lines above prevent the user to click
         // on the left or below the window, respectively, and therefore prevent the
         // application to lose focus by accident. The sign of this offset is determined
         // by the direction of the x and y axis.
 
         // Increase X and Y buffer with the distance of the projection
-        m_deltaXBuffer += priv::fabs(rawPos.x - oldPos.x);
-        m_deltaYBuffer += priv::fabs(rawPos.y - oldPos.y);
+        m_deltaXBuffer += base::fabs(rawPos.x - oldPos.x);
+        m_deltaYBuffer += base::fabs(rawPos.y - oldPos.y);
     }
 
     NSPoint loc = [self convertPoint:rawPos fromView:nil];
@@ -410,7 +410,7 @@
 
 
 ////////////////////////////////////////////////////////
-+ (Optional<sf::Mouse::Button>)mouseButtonFromEvent:(NSEvent*)event
++ (base::Optional<sf::Mouse::Button>)mouseButtonFromEvent:(NSEvent*)event
 {
     switch ([event buttonNumber])
     {
@@ -425,7 +425,7 @@
         case 4:
             return sf::Mouse::Button::Extra2;
         default:
-            return sf::nullOpt; // Never happens! (hopefully)
+            return base::nullOpt; // Never happens! (hopefully)
     }
 }
 

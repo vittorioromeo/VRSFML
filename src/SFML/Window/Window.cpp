@@ -33,10 +33,11 @@
 
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Err.hpp>
-#include <SFML/System/Macros.hpp>
 #include <SFML/System/Sleep.hpp>
 #include <SFML/System/String.hpp>
 #include <SFML/System/Time.hpp>
+
+#include <SFML/Base/Macros.hpp>
 
 
 namespace sf
@@ -45,13 +46,13 @@ namespace sf
 struct Window::Window::Impl
 {
     GraphicsContext*                 graphicsContext;
-    priv::UniquePtr<priv::GlContext> glContext;      //!< Platform-specific implementation of the OpenGL context
+    base::UniquePtr<priv::GlContext> glContext;      //!< Platform-specific implementation of the OpenGL context
     Clock                            clock;          //!< Clock for measuring the elapsed time between frames
     Time                             frameTimeLimit; //!< Current framerate limit
 
-    explicit Impl(GraphicsContext& theGraphicsContext, priv::UniquePtr<priv::GlContext>&& theContext) :
+    explicit Impl(GraphicsContext& theGraphicsContext, base::UniquePtr<priv::GlContext>&& theContext) :
     graphicsContext(&theGraphicsContext),
-    glContext(SFML_MOVE(theContext))
+    glContext(SFML_BASE_MOVE(theContext))
     {
     }
 };
@@ -63,11 +64,11 @@ Window::Window(GraphicsContext&       graphicsContext,
                const ContextSettings& settings,
                TWindowBaseArg&&       windowBaseArg,
                unsigned int           bitsPerPixel) :
-WindowBase(SFML_FORWARD(windowBaseArg)),
+WindowBase(SFML_BASE_FORWARD(windowBaseArg)),
 m_impl(graphicsContext, graphicsContext.createGlContext(settings, *WindowBase::m_impl, bitsPerPixel))
 {
     // Perform common initializations
-    SFML_ASSERT(m_impl->glContext);
+    SFML_BASE_ASSERT(m_impl->glContext);
 
     // Setup default behaviors (to get a consistent behavior across different implementations)
     setVerticalSyncEnabled(false);
@@ -139,7 +140,7 @@ Window& Window::operator=(Window&&) noexcept = default;
 ////////////////////////////////////////////////////////////
 const ContextSettings& Window::getSettings() const
 {
-    SFML_ASSERT(m_impl->glContext != nullptr);
+    SFML_BASE_ASSERT(m_impl->glContext != nullptr);
     return m_impl->glContext->getSettings();
 }
 
@@ -162,7 +163,7 @@ void Window::setFramerateLimit(unsigned int limit)
 ////////////////////////////////////////////////////////////
 bool Window::setActive(bool active) const
 {
-    SFML_ASSERT(m_impl->glContext != nullptr);
+    SFML_BASE_ASSERT(m_impl->glContext != nullptr);
 
     if (m_impl->graphicsContext->setActiveThreadLocalGlContext(*m_impl->glContext, active))
         return true;

@@ -33,8 +33,9 @@
 
 #include <SFML/System/LifetimeDependant.hpp>
 #include <SFML/System/LifetimeDependee.hpp>
-#include <SFML/System/Optional.hpp>
-#include <SFML/System/UniquePtr.hpp>
+
+#include <SFML/Base/Optional.hpp>
+#include <SFML/Base/UniquePtr.hpp>
 
 #include <vector>
 
@@ -63,7 +64,7 @@ public:
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Optional<CaptureDevice> createDefault(AudioContext& audioContext);
+    [[nodiscard]] static base::Optional<CaptureDevice> createDefault(AudioContext& audioContext);
 
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
@@ -190,7 +191,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    priv::UniquePtr<Impl> m_impl; //!< Implementation details
+    base::UniquePtr<Impl> m_impl; //!< Implementation details
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking

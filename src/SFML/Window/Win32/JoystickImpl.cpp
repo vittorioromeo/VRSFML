@@ -28,12 +28,13 @@
 #include <SFML/Window/JoystickImpl.hpp>
 #include <SFML/Window/Win32/Utils.hpp>
 
-#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Err.hpp>
-#include <SFML/System/MathUtils.hpp>
 #include <SFML/System/Time.hpp>
 #include <SFML/System/Win32/WindowsHeader.hpp>
+
+#include <SFML/Base/Algorithm.hpp>
+#include <SFML/Base/Math.hpp>
 
 #include <algorithm>
 #include <regstr.h>
@@ -399,8 +400,8 @@ JoystickState JoystickImpl::update()
         if (pos.dwPOV != 0xFFFF)
         {
             const float angle                = static_cast<float>(pos.dwPOV) / 18000.f * 3.141592654f;
-            state.axes[Joystick::Axis::PovX] = priv::sin(angle) * 100;
-            state.axes[Joystick::Axis::PovY] = priv::cos(angle) * 100;
+            state.axes[Joystick::Axis::PovX] = base::sin(angle) * 100;
+            state.axes[Joystick::Axis::PovY] = base::cos(angle) * 100;
         }
         else
         {
@@ -479,7 +480,7 @@ void JoystickImpl::cleanupDInput()
 bool JoystickImpl::isConnectedDInput(unsigned int index)
 {
     // Check if a joystick with the given index is in the connected list
-    return priv::anyOf(joystickList.cbegin(),
+    return base::anyOf(joystickList.cbegin(),
                        joystickList.cend(),
                        [index](const JoystickRecord& record) { return record.index == index; });
 }
@@ -915,8 +916,8 @@ JoystickState JoystickImpl::updateDInputBuffered()
                     {
                         const float angle = (static_cast<float>(value)) * 3.141592654f / DI_DEGREES / 180.f;
 
-                        m_state.axes[Joystick::Axis::PovX] = priv::sin(angle) * 100.f;
-                        m_state.axes[Joystick::Axis::PovY] = priv::cos(angle) * 100.f;
+                        m_state.axes[Joystick::Axis::PovX] = base::sin(angle) * 100.f;
+                        m_state.axes[Joystick::Axis::PovY] = base::cos(angle) * 100.f;
                     }
                     else
                     {
@@ -1006,8 +1007,8 @@ JoystickState JoystickImpl::updateDInputPolled()
                     {
                         const float angle = (static_cast<float>(value)) * 3.141592654f / DI_DEGREES / 180.f;
 
-                        state.axes[Joystick::Axis::PovX] = priv::sin(angle) * 100.f;
-                        state.axes[Joystick::Axis::PovY] = priv::cos(angle) * 100.f;
+                        state.axes[Joystick::Axis::PovX] = base::sin(angle) * 100.f;
+                        state.axes[Joystick::Axis::PovY] = base::cos(angle) * 100.f;
                     }
                     else
                     {

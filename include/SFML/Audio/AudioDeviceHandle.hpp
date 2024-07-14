@@ -29,8 +29,8 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
-#include <SFML/System/InPlacePImpl.hpp>
-#include <SFML/System/PassKey.hpp>
+#include <SFML/Base/InPlacePImpl.hpp>
+#include <SFML/Base/PassKey.hpp>
 
 
 ////////////////////////////////////////////////////////////
@@ -131,7 +131,7 @@ public:
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit AudioDeviceHandle(PassKey<AudioContext>&&, const void* maDeviceInfo);
+    [[nodiscard]] explicit AudioDeviceHandle(base::PassKey<AudioContext>&&, const void* maDeviceInfo);
 
     ////////////////////////////////////////////////////////////
     /// \private
@@ -139,7 +139,7 @@ public:
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit AudioDeviceHandle(PassKey<PlaybackDevice>&&, const void* maDeviceInfo);
+    [[nodiscard]] explicit AudioDeviceHandle(base::PassKey<PlaybackDevice>&&, const void* maDeviceInfo);
 
     ////////////////////////////////////////////////////////////
     /// \private
@@ -147,11 +147,11 @@ public:
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit AudioDeviceHandle(PassKey<CaptureDevice>&&, const void* maDeviceInfo);
+    [[nodiscard]] explicit AudioDeviceHandle(base::PassKey<CaptureDevice>&&, const void* maDeviceInfo);
 
 private:
     struct Impl;
-    InPlacePImpl<Impl, 2048> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 2048> m_impl; //!< Implementation details
 };
 
 ////////////////////////////////////////////////////////////

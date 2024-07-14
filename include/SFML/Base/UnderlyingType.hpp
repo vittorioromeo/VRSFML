@@ -22,13 +22,19 @@
 //
 ////////////////////////////////////////////////////////////
 
+#pragma once
+
+
+#if __has_builtin(__underlying_type)
+
 ////////////////////////////////////////////////////////////
-// Headers
+#define SFML_BASE_UNDERLYING_TYPE(...) __underlying_type(__VA_ARGS__)
+
+#else
+
+#include <type_traits>
+
 ////////////////////////////////////////////////////////////
-#include <SFML/System/AlgorithmUtils.hpp>
+#define SFML_BASE_UNDERLYING_TYPE(...) typename ::std::underlying_type<__VA_ARGS__>::type
 
-
-namespace sf::priv
-{
-
-} // namespace sf::priv
+#endif

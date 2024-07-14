@@ -29,10 +29,11 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/Export.hpp>
 
-#include <SFML/System/InPlacePImpl.hpp>
-#include <SFML/System/Optional.hpp>
-#include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
+
+#include <SFML/Base/InPlacePImpl.hpp>
+#include <SFML/Base/Optional.hpp>
+#include <SFML/Base/UniquePtr.hpp>
 
 #include <cstdint>
 
@@ -145,7 +146,7 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     template <typename... GLContextArgs>
-    [[nodiscard]] priv::UniquePtr<priv::GlContext> createGlContextImpl(const ContextSettings& contextSettings,
+    [[nodiscard]] base::UniquePtr<priv::GlContext> createGlContextImpl(const ContextSettings& contextSettings,
                                                                        GLContextArgs&&... args);
 
     ////////////////////////////////////////////////////////////
@@ -157,7 +158,7 @@ private:
     /// \return Pointer to the created context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] priv::UniquePtr<priv::GlContext> createGlContext();
+    [[nodiscard]] base::UniquePtr<priv::GlContext> createGlContext();
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context attached to a window
@@ -172,7 +173,7 @@ private:
     /// \return Pointer to the created context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] priv::UniquePtr<priv::GlContext> createGlContext(const ContextSettings&  contextSettings,
+    [[nodiscard]] base::UniquePtr<priv::GlContext> createGlContext(const ContextSettings&  contextSettings,
                                                                    const priv::WindowImpl& owner,
                                                                    unsigned int            bitsPerPixel);
 
@@ -188,7 +189,7 @@ private:
     /// \return Pointer to the created context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] priv::UniquePtr<priv::GlContext> createGlContext(const ContextSettings& contextSettings,
+    [[nodiscard]] base::UniquePtr<priv::GlContext> createGlContext(const ContextSettings& contextSettings,
                                                                    const Vector2u&        size);
 
     ////////////////////////////////////////////////////////////
@@ -244,7 +245,7 @@ private:
     [[nodiscard]] const priv::GlContext* getActiveThreadLocalGlContextPtr() const;
 
     struct Impl;
-    priv::UniquePtr<Impl> m_impl;
+    base::UniquePtr<Impl> m_impl;
 };
 
 } // namespace sf

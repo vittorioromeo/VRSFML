@@ -41,11 +41,12 @@
 #include <SFML/Window/GLExtensions.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
 
-#include <SFML/System/AlgorithmUtils.hpp>
-#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
-#include <SFML/System/MathUtils.hpp>
 #include <SFML/System/Rect.hpp>
+
+#include <SFML/Base/Algorithm.hpp>
+#include <SFML/Base/Assert.hpp>
+#include <SFML/Base/Math.hpp>
 
 #include <mutex>
 #include <unordered_map>
@@ -111,7 +112,7 @@ std::uint32_t factorToGlConstant(sf::BlendMode::Factor blendFactor)
     // clang-format on
 
     sf::priv::err() << "Invalid value for sf::BlendMode::Factor! Fallback to sf::BlendMode::Factor::Zero.";
-    SFML_ASSERT(false);
+    SFML_BASE_ASSERT(false);
     return GL_ZERO;
 }
 
@@ -171,7 +172,7 @@ std::uint32_t stencilOperationToGlConstant(sf::StencilUpdateOperation operation)
     // clang-format on
 
     sf::priv::err() << "Invalid value for sf::StencilUpdateOperation! Fallback to sf::StencilMode::Keep.";
-    SFML_ASSERT(false);
+    SFML_BASE_ASSERT(false);
     return GL_KEEP;
 }
 
@@ -194,7 +195,7 @@ std::uint32_t stencilFunctionToGlConstant(sf::StencilComparison comparison)
     // clang-format on
 
     sf::priv::err() << "Invalid value for sf::StencilComparison! Fallback to sf::StencilMode::Always.";
-    SFML_ASSERT(false);
+    SFML_BASE_ASSERT(false);
     return GL_ALWAYS;
 }
 } // namespace RenderTargetImpl
@@ -340,8 +341,8 @@ IntRect RenderTarget::getViewport(const View& view) const
     const auto [width, height] = getSize().to<Vector2f>();
     const FloatRect& viewport  = view.getViewport();
 
-    return Rect<long>({priv::lround(width * viewport.position.x), priv::lround(height * viewport.position.y)},
-                      {priv::lround(width * viewport.size.x), priv::lround(height * viewport.size.y)})
+    return Rect<long>({base::lround(width * viewport.position.x), base::lround(height * viewport.position.y)},
+                      {base::lround(width * viewport.size.x), base::lround(height * viewport.size.y)})
         .to<IntRect>();
 }
 
@@ -352,8 +353,8 @@ IntRect RenderTarget::getScissor(const View& view) const
     const auto [width, height] = getSize().to<Vector2f>();
     const FloatRect& scissor   = view.getScissor();
 
-    return Rect<long>({priv::lround(width * scissor.position.x), priv::lround(height * scissor.position.y)},
-                      {priv::lround(width * scissor.size.x), priv::lround(height * scissor.size.y)})
+    return Rect<long>({base::lround(width * scissor.position.x), base::lround(height * scissor.position.y)},
+                      {base::lround(width * scissor.size.x), base::lround(height * scissor.size.y)})
         .to<IntRect>();
 }
 
@@ -428,7 +429,7 @@ void RenderTarget::draw(const Vertex* vertices, std::size_t vertexCount, Primiti
     if (RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) || setActive(true))
     {
         // Check if the vertex count is low enough so that we can pre-transform them
-        const bool useVertexCache = (vertexCount <= priv::getArraySize(m_impl->cache.vertexCache));
+        const bool useVertexCache = (vertexCount <= base::getArraySize(m_impl->cache.vertexCache));
 
         if (useVertexCache)
         {
@@ -509,7 +510,7 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, std::size_t firstVerte
         return;
 
     // Clamp vertexCount to something that makes sense
-    vertexCount = priv::min(vertexCount, vertexBuffer.getVertexCount() - firstVertex);
+    vertexCount = base::min(vertexCount, vertexBuffer.getVertexCount() - firstVertex);
 
     // Nothing to draw?
     if (!vertexCount || !vertexBuffer.getNativeHandle())

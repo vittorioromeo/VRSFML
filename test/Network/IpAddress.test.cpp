@@ -74,7 +74,7 @@ TEST_CASE("[Network] sf::IpAddress")
     {
         SECTION("getLocalAddress")
         {
-            const sf::Optional<sf::IpAddress> ipAddress = sf::IpAddress::getLocalAddress();
+            const sf::base::Optional<sf::IpAddress> ipAddress = sf::IpAddress::getLocalAddress();
             REQUIRE(ipAddress.hasValue());
             CHECK(ipAddress->toString() != "0.0.0.0");
             CHECK(ipAddress->toInteger() != 0);
@@ -82,7 +82,7 @@ TEST_CASE("[Network] sf::IpAddress")
 
         SECTION("getPublicAddress")
         {
-            const sf::Optional<sf::IpAddress> ipAddress = sf::IpAddress::getPublicAddress(sf::milliseconds(250));
+            const sf::base::Optional<sf::IpAddress> ipAddress = sf::IpAddress::getPublicAddress(sf::milliseconds(250));
             if (ipAddress.hasValue())
             {
                 CHECK(ipAddress->toString() != "0.0.0.0");
@@ -165,7 +165,7 @@ TEST_CASE("[Network] sf::IpAddress")
 
         SECTION("operator>>")
         {
-            sf::Optional<sf::IpAddress> ipAddress;
+            sf::base::Optional<sf::IpAddress> ipAddress;
             std::istringstream("198.51.100.4") >> ipAddress;
             REQUIRE(ipAddress.hasValue());
             CHECK(ipAddress->toString() == "198.51.100.4"s);

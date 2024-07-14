@@ -30,9 +30,10 @@
 #include <SFML/Window/Unix/KeySymToUnicodeMapping.hpp>
 #include <SFML/Window/Unix/KeyboardImpl.hpp>
 
-#include <SFML/System/EnumArray.hpp>
 #include <SFML/System/String.hpp>
 #include <SFML/System/Utf.hpp>
+
+#include <SFML/Base/EnumArray.hpp>
 
 #include <X11/XKBlib.h>
 #include <X11/Xlib.h>
@@ -50,7 +51,7 @@ namespace
 
 const KeyCode nullKeyCode = 0;
 const int     maxKeyCode  = 256;
-sf::priv::EnumArray<sf::Keyboard::Scancode, KeyCode, sf::Keyboard::ScancodeCount> scancodeToKeycode; ///< Mapping of SFML scancode to X11 KeyCode
+sf::base::EnumArray<sf::Keyboard::Scancode, KeyCode, sf::Keyboard::ScancodeCount> scancodeToKeycode; ///< Mapping of SFML scancode to X11 KeyCode
 std::array<sf::Keyboard::Scancode, maxKeyCode> keycodeToScancode; ///< Mapping of X11 KeyCode to SFML scancode
 
 ////////////////////////////////////////////////////////////

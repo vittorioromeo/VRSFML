@@ -32,9 +32,9 @@
 #include <SFML/Audio/SoundChannel.hpp>
 #include <SFML/Audio/SoundStream.hpp>
 
-#include <SFML/System/Optional.hpp>
-#include <SFML/System/PassKey.hpp>
-#include <SFML/System/UniquePtr.hpp>
+#include <SFML/Base/Optional.hpp>
+#include <SFML/Base/PassKey.hpp>
+#include <SFML/Base/UniquePtr.hpp>
 
 #include <vector>
 
@@ -94,12 +94,12 @@ public:
     ///
     /// \param filename Path of the music file to open
     ///
-    /// \return Music source if loading succeeded, `sf::nullOpt` if it failed
+    /// \return Music source if loading succeeded, `base::nullOpt` if it failed
     ///
     /// \see openFromMemory, openFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Optional<Music> openFromFile(const Path& filename);
+    [[nodiscard]] static base::Optional<Music> openFromFile(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a music from an audio file in memory
@@ -120,12 +120,12 @@ public:
     /// \param data        Pointer to the file data in memory
     /// \param sizeInBytes Size of the data to load, in bytes
     ///
-    /// \return Music source if loading succeeded, `sf::nullOpt` if it failed
+    /// \return Music source if loading succeeded, `base::nullOpt` if it failed
     ///
     /// \see openFromFile, openFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Optional<Music> openFromMemory(const void* data, std::size_t sizeInBytes);
+    [[nodiscard]] static base::Optional<Music> openFromMemory(const void* data, std::size_t sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a music from an audio file in a custom stream
@@ -144,12 +144,12 @@ public:
     ///
     /// \param stream Source stream to read from
     ///
-    /// \return Music source if loading succeeded, `sf::nullOpt` if it failed
+    /// \return Music source if loading succeeded, `base::nullOpt` if it failed
     ///
     /// \see openFromFile, openFromMemory
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Optional<Music> openFromStream(InputStream& stream);
+    [[nodiscard]] static base::Optional<Music> openFromStream(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the total duration of the music
@@ -204,8 +204,8 @@ private:
     /// \brief Try opening the music file from an optional input sound file
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Optional<Music> tryOpenFromInputSoundFile(Optional<InputSoundFile>&& optFile,
-                                                                   const char*                errorContext);
+    [[nodiscard]] static base::Optional<Music> tryOpenFromInputSoundFile(base::Optional<InputSoundFile>&& optFile,
+                                                                         const char*                      errorContext);
 
 public:
     ////////////////////////////////////////////////////////////
@@ -214,7 +214,7 @@ public:
     /// \brief Initialize the internal state after loading a new music
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Music(priv::PassKey<Music>&&, InputSoundFile&& file);
+    [[nodiscard]] explicit Music(base::PassKey<Music>&&, InputSoundFile&& file);
 
     ////////////////////////////////////////////////////////////
     /// \brief Structure template defining a time range
@@ -298,17 +298,17 @@ protected:
     /// the seek position for a loop. We then determine whether we are looping on a
     /// loop point or the end-of-file, perform the seek, and return the new position.
     ///
-    /// \return The seek position after looping (or sf::nullOpt if there's no loop)
+    /// \return The seek position after looping (or base::nullOpt if there's no loop)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Optional<std::uint64_t> onLoop() override;
+    [[nodiscard]] base::Optional<std::uint64_t> onLoop() override;
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    priv::UniquePtr<Impl> m_impl; //!< Implementation details
+    base::UniquePtr<Impl> m_impl; //!< Implementation details
 };
 
 } // namespace sf

@@ -7,7 +7,7 @@
 
 #include <SFML/System/Rect.hpp>
 
-#include <SFML/System/UniquePtr.hpp>
+#include <SFML/Base/UniquePtr.hpp>
 
 #include <iosfwd>
 
@@ -37,7 +37,7 @@ template <typename T>
 std::ostream& operator<<(std::ostream& os, const Vector3<T>& vector);
 
 template <typename T, typename Del>
-std::ostream& operator<<(std::ostream& os, const sf::priv::UniquePtr<T, Del>&)
+std::ostream& operator<<(std::ostream& os, const sf::base::UniquePtr<T, Del>&)
 {
     return os;
 }

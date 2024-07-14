@@ -29,10 +29,11 @@
 #include <SFML/Audio/SoundFileFactory.hpp>
 #include <SFML/Audio/SoundFileWriter.hpp>
 
-#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
-#include <SFML/System/Macros.hpp>
 #include <SFML/System/Path.hpp>
+
+#include <SFML/Base/Assert.hpp>
+#include <SFML/Base/Macros.hpp>
 
 
 namespace sf
@@ -50,34 +51,35 @@ OutputSoundFile& OutputSoundFile::operator=(OutputSoundFile&&) noexcept = defaul
 
 
 ////////////////////////////////////////////////////////////
-Optional<OutputSoundFile> OutputSoundFile::openFromFile(const Path&                      filename,
-                                                        unsigned int                     sampleRate,
-                                                        unsigned int                     channelCount,
-                                                        const std::vector<SoundChannel>& channelMap)
+base::Optional<OutputSoundFile> OutputSoundFile::openFromFile(
+    const Path&                      filename,
+    unsigned int                     sampleRate,
+    unsigned int                     channelCount,
+    const std::vector<SoundChannel>& channelMap)
 {
     // Find a suitable writer for the file type
     auto writer = SoundFileFactory::createWriterFromFilename(filename);
     if (!writer)
     {
         // Error message generated in called function.
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
     // Pass the stream to the reader
     if (!writer->open(filename, sampleRate, channelCount, channelMap))
     {
         priv::err() << "Failed to open output sound file from file (writer open failure)";
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
-    return sf::makeOptional<OutputSoundFile>(priv::PassKey<OutputSoundFile>{}, SFML_MOVE(writer));
+    return sf::base::makeOptional<OutputSoundFile>(base::PassKey<OutputSoundFile>{}, SFML_BASE_MOVE(writer));
 }
 
 
 ////////////////////////////////////////////////////////////
 void OutputSoundFile::write(const std::int16_t* samples, std::uint64_t count)
 {
-    SFML_ASSERT(m_writer);
+    SFML_BASE_ASSERT(m_writer);
 
     if (samples && count)
         m_writer->write(samples, count);
@@ -93,8 +95,8 @@ void OutputSoundFile::close()
 
 
 ////////////////////////////////////////////////////////////
-OutputSoundFile::OutputSoundFile(priv::PassKey<OutputSoundFile>&&, priv::UniquePtr<SoundFileWriter>&& writer) :
-m_writer(SFML_MOVE(writer))
+OutputSoundFile::OutputSoundFile(base::PassKey<OutputSoundFile>&&, base::UniquePtr<SoundFileWriter>&& writer) :
+m_writer(SFML_BASE_MOVE(writer))
 {
 }
 

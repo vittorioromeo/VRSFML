@@ -4,30 +4,13 @@
 
 #pragma once
 
-#include <SFML/System/Assert.hpp>
+#include <SFML/Base/Assert.hpp>
+#include <SFML/Base/EnableIf.hpp>
+#include <SFML/Base/IsBaseOf.hpp>
 
-#if !__has_builtin(__is_base_of)
 
-#include <type_traits>
-
-namespace sf::priv
+namespace sf::base
 {
-template <typename B, typename D>
-using IsBaseOf = std::is_base_of<B, D>;
-}
-
-#endif
-
-namespace sf::priv
-{
-
-// clang-format off
-template<bool, typename = void> struct EnableIfImpl          { };
-template<typename T>            struct EnableIfImpl<true, T> { using type = T; };
-// clang-format on
-
-template <bool B, typename T = void>
-using EnableIf = typename EnableIfImpl<B, T>::type;
 
 struct UniquePtrDefaultDeleter
 {
@@ -77,14 +60,7 @@ public:
     UniquePtr(const UniquePtr&)            = delete;
     UniquePtr& operator=(const UniquePtr&) = delete;
 
-    template <typename U,
-              typename UDeleter,
-#if __has_builtin(__is_base_of)
-              typename = EnableIf<__is_base_of(T, U)>
-#else
-              typename = EnableIf<IsBaseOf<T, U>::value>
-#endif
-              >
+    template <typename U, typename UDeleter, typename = EnableIf<SFML_BASE_IS_BASE_OF(T, U)>>
     [[nodiscard, gnu::always_inline]] UniquePtr(UniquePtr<U, UDeleter>&& rhs) noexcept :
     TDeleter{static_cast<UDeleter&&>(rhs)},
     m_ptr{rhs.m_ptr}
@@ -92,14 +68,7 @@ public:
         rhs.m_ptr = nullptr;
     }
 
-    template <typename U,
-              typename UDeleter,
-#if __has_builtin(__is_base_of)
-              typename = EnableIf<__is_base_of(T, U)>
-#else
-              typename = EnableIf<IsBaseOf<T, U>::value>
-#endif
-              >
+    template <typename U, typename UDeleter, typename = EnableIf<SFML_BASE_IS_BASE_OF(T, U)>>
     [[gnu::always_inline]] UniquePtr& operator=(UniquePtr<U, UDeleter>&& rhs) noexcept
     {
         (*static_cast<TDeleter*>(this)) = static_cast<UDeleter&&>(rhs);
@@ -117,13 +86,13 @@ public:
 
     [[nodiscard, gnu::always_inline]] T& operator*() const noexcept
     {
-        SFML_ASSERT(m_ptr != nullptr);
+        SFML_BASE_ASSERT(m_ptr != nullptr);
         return *m_ptr;
     }
 
     [[nodiscard, gnu::always_inline]] T* operator->() const noexcept
     {
-        SFML_ASSERT(m_ptr != nullptr);
+        SFML_BASE_ASSERT(m_ptr != nullptr);
         return m_ptr;
     }
 
@@ -169,4 +138,4 @@ template <typename T, typename... Ts>
     return UniquePtr<T>{new T{static_cast<Ts&&>(xs)...}};
 }
 
-} // namespace sf::priv
+} // namespace sf::base

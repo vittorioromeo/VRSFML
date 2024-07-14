@@ -28,7 +28,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/JoystickImpl.hpp>
 
-#include <SFML/System/Optional.hpp>
+#include <SFML/Base/Optional.hpp>
 
 #include <dirent.h>
 #include <fcntl.h>
@@ -138,7 +138,7 @@ void updatePluggedList()
     }
 }
 
-Optional<sf::Joystick::Axis> usageToAxis(int usage)
+base::Optional<sf::Joystick::Axis> usageToAxis(int usage)
 {
     switch (usage)
     {
@@ -155,7 +155,7 @@ Optional<sf::Joystick::Axis> usageToAxis(int usage)
         case HUG_RY:
             return sf::Joystick::Axis::V;
         default:
-            return sf::nullOpt;
+            return base::nullOpt;
     }
 }
 
@@ -280,7 +280,7 @@ JoystickCaps JoystickImpl::getCapabilities() const
                     caps.axes[Joystick::Axis::PovX] = true;
                     caps.axes[Joystick::Axis::PovY] = true;
                 }
-                else if (const Optional<Joystick::Axis> axis = usageToAxis(usage))
+                else if (const base::Optional<Joystick::Axis> axis = usageToAxis(usage))
                 {
                     caps.axes[*axis] = true;
                 }
@@ -333,7 +333,7 @@ JoystickState JoystickImpl::JoystickImpl::update()
                     {
                         hatValueToSfml(value, m_state);
                     }
-                    else if (const Optional<Joystick::Axis> axis = usageToAxis(usage))
+                    else if (const base::Optional<Joystick::Axis> axis = usageToAxis(usage))
                     {
                         int minimum = item.logical_minimum;
                         int maximum = item.logical_maximum;

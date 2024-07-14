@@ -7,7 +7,7 @@
 
 #include <SFML/System/FileInputStream.hpp>
 #include <SFML/System/InputStream.hpp>
-#include <SFML/System/Optional.hpp>
+#include <SFML/Base/Optional.hpp>
 #include <SFML/System/Path.hpp>
 
 #include <Doctest.hpp>
@@ -29,9 +29,9 @@ struct NoopSoundFileReader : sf::SoundFileReader
         return false;
     }
 
-    sf::Optional<Info> open(sf::InputStream&) override
+    sf::base::Optional<Info> open(sf::InputStream&) override
     {
-        return sf::nullOpt;
+        return sf::base::nullOpt;
     }
 
     void seek(std::uint64_t) override
@@ -113,7 +113,7 @@ TEST_CASE("[Audio] sf::SoundFileFactory")
 
     SECTION("createReaderFromStream()")
     {
-        sf::Optional<sf::FileInputStream> stream;
+        sf::base::Optional<sf::FileInputStream> stream;
 
         SECTION("flac")
         {

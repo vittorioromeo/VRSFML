@@ -10,7 +10,7 @@
 #include <SFML/Network/Socket.hpp>
 #include <SFML/Network/TcpSocket.hpp>
 
-#include <SFML/System/Optional.hpp>
+#include <SFML/Base/Optional.hpp>
 
 #include <iostream>
 
@@ -121,7 +121,7 @@ private:
 void doClient(sf::CaptureDevice& captureDevice, unsigned short port)
 {
     // Ask for server address
-    sf::Optional<sf::IpAddress> server;
+    sf::base::Optional<sf::IpAddress> server;
     do
     {
         std::cout << "Type address or name of the server to connect to: ";

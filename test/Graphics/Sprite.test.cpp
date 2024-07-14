@@ -9,7 +9,7 @@
 #include <GraphicsUtil.hpp>
 #include <WindowUtil.hpp>
 
-#include <SFML/System/Optional.hpp>
+#include <SFML/Base/Optional.hpp>
 #include <type_traits>
 
 TEST_CASE("[Graphics] sf::Sprite" * doctest::skip(skipDisplayTests))

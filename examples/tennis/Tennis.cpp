@@ -139,7 +139,7 @@ int main()
     while (true)
     {
         // Handle events
-        while (const sf::Optional event = window.pollEvent())
+        while (const sf::base::Optional event = window.pollEvent())
         {
             // Window closed or escape key pressed: exit
             if (event->is<sf::Event::Closed>() ||

@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Export.hpp>
 
-#include <SFML/System/SizeT.hpp>
+#include <SFML/Base/SizeT.hpp>
 
 
 namespace sf::priv
@@ -43,7 +43,7 @@ template <typename IntegerType, typename... Bytes>
     static_assert(sizeof(IntegerType) >= sizeof...(Bytes), "IntegerType not large enough to contain bytes");
 
     IntegerType integer = 0;
-    SizeT       index   = 0;
+    base::SizeT index   = 0;
     return ((integer |= static_cast<IntegerType>(static_cast<IntegerType>(byte) << 8 * index++)), ...);
 }
 

@@ -34,10 +34,11 @@
 
 #include <SFML/Window/ContextSettings.hpp>
 
-#include <SFML/System/Optional.hpp>
-#include <SFML/System/PassKey.hpp>
-#include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
+
+#include <SFML/Base/Optional.hpp>
+#include <SFML/Base/PassKey.hpp>
+#include <SFML/Base/UniquePtr.hpp>
 
 
 namespace sf
@@ -100,12 +101,12 @@ public:
     /// \param size     Width and height of the render-texture
     /// \param settings Additional settings for the underlying OpenGL texture and context
     ///
-    /// \return Render texture if creation has been successful, otherwise `sf::nullOpt`
+    /// \return Render texture if creation has been successful, otherwise `base::nullOpt`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Optional<RenderTexture> create(GraphicsContext&       graphicsContext,
-                                                        const Vector2u&        size,
-                                                        const ContextSettings& settings = {});
+    [[nodiscard]] static base::Optional<RenderTexture> create(GraphicsContext&       graphicsContext,
+                                                              const Vector2u&        size,
+                                                              const ContextSettings& settings = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the maximum anti-aliasing level supported by the system
@@ -249,13 +250,13 @@ public:
     /// \brief Construct from texture
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit RenderTexture(priv::PassKey<RenderTexture>&&, GraphicsContext& graphicsContext, Texture&& texture);
+    [[nodiscard]] explicit RenderTexture(base::PassKey<RenderTexture>&&, GraphicsContext& graphicsContext, Texture&& texture);
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    priv::UniquePtr<priv::RenderTextureImpl> m_impl;    //!< Platform/hardware specific implementation
+    base::UniquePtr<priv::RenderTextureImpl> m_impl;    //!< Platform/hardware specific implementation
     Texture                                  m_texture; //!< Target texture to draw on
 };
 

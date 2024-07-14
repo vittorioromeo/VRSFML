@@ -31,7 +31,7 @@
 
 #include <SFML/Audio/SoundChannel.hpp>
 
-#include <SFML/System/Optional.hpp>
+#include <SFML/Base/Optional.hpp>
 
 #include <vector>
 
@@ -86,7 +86,7 @@ public:
     /// \return Properties of the loaded sound if the file was successfully opened
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual Optional<Info> open(InputStream& stream) = 0;
+    [[nodiscard]] virtual base::Optional<Info> open(InputStream& stream) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current read position to the given sample offset
@@ -145,7 +145,7 @@ public:
 ///         // return true if the reader can handle the format
 ///     }
 ///
-///     [[nodiscard]] sf::Optional<sf::SoundFileReader::Info> open(sf::InputStream& stream) override
+///     [[nodiscard]] sf::base::Optional<sf::SoundFileReader::Info> open(sf::InputStream& stream) override
 ///     {
 ///         // read the sound file header and fill the sound attributes
 ///         // (channel count, sample count and sample rate)

@@ -33,11 +33,12 @@
 #include <SFML/Window/WindowEnums.hpp>
 #include <SFML/Window/WindowHandle.hpp>
 
-#include <SFML/System/InPlacePImpl.hpp>
-#include <SFML/System/Optional.hpp>
-#include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <SFML/System/Vector3.hpp>
+
+#include <SFML/Base/InPlacePImpl.hpp>
+#include <SFML/Base/Optional.hpp>
+#include <SFML/Base/UniquePtr.hpp>
 
 #include <cstdint>
 
@@ -77,7 +78,7 @@ public:
     /// \return Pointer to the created window
     ///
     ////////////////////////////////////////////////////////////
-    static priv::UniquePtr<WindowImpl> create(VideoMode              mode,
+    static base::UniquePtr<WindowImpl> create(VideoMode              mode,
                                               const String&          title,
                                               Style                  style,
                                               State                  state,
@@ -91,7 +92,7 @@ public:
     /// \return Pointer to the created window
     ///
     ////////////////////////////////////////////////////////////
-    static priv::UniquePtr<WindowImpl> create(WindowHandle handle);
+    static base::UniquePtr<WindowImpl> create(WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -128,10 +129,10 @@ public:
     ///
     /// \param timeout Maximum time to wait (`Time::Zero` for infinite)
     ///
-    /// \return The event on success, `sf::nullOpt` otherwise
+    /// \return The event on success, `base::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Optional<Event> waitEvent(Time timeout);
+    [[nodiscard]] base::Optional<Event> waitEvent(Time timeout);
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the next window event, if available
@@ -139,10 +140,10 @@ public:
     /// If there's no event available, this function calls the
     /// window's internal event processing function.
     ///
-    /// \return The event if available, `sf::nullOpt` otherwise
+    /// \return The event if available, `base::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Optional<Event> pollEvent();
+    [[nodiscard]] base::Optional<Event> pollEvent();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the OS-specific handle of the window
@@ -166,7 +167,7 @@ public:
     /// \return Minimum size
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Optional<Vector2u> getMinimumSize() const;
+    [[nodiscard]] base::Optional<Vector2u> getMinimumSize() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the maximum window rendering region size
@@ -174,7 +175,7 @@ public:
     /// \return Maximum size
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Optional<Vector2u> getMaximumSize() const;
+    [[nodiscard]] base::Optional<Vector2u> getMaximumSize() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the position of the window on screen
@@ -203,22 +204,22 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Set the minimum window rendering region size
     ///
-    /// Pass sf::nullOpt to unset the minimum size
+    /// Pass base::nullOpt to unset the minimum size
     ///
     /// \param minimumSize New minimum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    virtual void setMinimumSize(const Optional<Vector2u>& minimumSize);
+    virtual void setMinimumSize(const base::Optional<Vector2u>& minimumSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the maximum window rendering region size
     ///
-    /// Pass sf::nullOpt to unset the maximum size
+    /// Pass base::nullOpt to unset the maximum size
     ///
     /// \param maximumSize New maximum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    virtual void setMaximumSize(const Optional<Vector2u>& maximumSize);
+    virtual void setMaximumSize(const base::Optional<Vector2u>& maximumSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the title of the window
@@ -333,10 +334,10 @@ private:
     struct JoystickStatesImpl;
 
     ////////////////////////////////////////////////////////////
-    /// \return First event of the queue if available, `sf::nullOpt` otherwise
+    /// \return First event of the queue if available, `base::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Optional<Event> popEvent();
+    [[nodiscard]] base::Optional<Event> popEvent();
 
     ////////////////////////////////////////////////////////////
     /// \brief Read the joysticks state and generate the appropriate events
@@ -360,7 +361,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    priv::InPlacePImpl<Impl, 512> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 512> m_impl; //!< Implementation details
 };
 
 } // namespace priv

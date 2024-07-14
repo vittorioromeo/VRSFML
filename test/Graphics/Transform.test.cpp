@@ -10,7 +10,7 @@
 #include <type_traits>
 #include <vector>
 
-#include <SFML/System/Assert.hpp>
+#include <SFML/Base/Assert.hpp>
 
 TEST_CASE("[Graphics] sf::Transform")
 {

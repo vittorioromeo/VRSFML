@@ -45,29 +45,29 @@ const IpAddress IpAddress::Broadcast(255, 255, 255, 255);
 
 
 ////////////////////////////////////////////////////////////
-Optional<IpAddress> IpAddress::resolve(std::string_view address)
+base::Optional<IpAddress> IpAddress::resolve(std::string_view address)
 {
     using namespace std::string_view_literals;
 
     if (address.empty())
     {
         // Not generating en error message here as resolution failure is a valid outcome.
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
     if (address == "255.255.255.255"sv)
     {
         // The broadcast address needs to be handled explicitly,
         // because it is also the value returned by inet_addr on error
-        return sf::makeOptional(Broadcast);
+        return sf::base::makeOptional(Broadcast);
     }
 
     if (address == "0.0.0.0"sv)
-        return sf::makeOptional(Any);
+        return sf::base::makeOptional(Any);
 
     // Try to convert the address as a byte representation ("xxx.xxx.xxx.xxx")
     if (const std::uint32_t ip = inet_addr(address.data()); ip != INADDR_NONE)
-        return sf::makeOptional<IpAddress>(ntohl(ip));
+        return sf::base::makeOptional<IpAddress>(ntohl(ip));
 
     // Not a valid address, try to convert it as a host name
     addrinfo hints{}; // Zero-initialize
@@ -82,11 +82,11 @@ Optional<IpAddress> IpAddress::resolve(std::string_view address)
         const std::uint32_t ip = sin.sin_addr.s_addr;
         freeaddrinfo(result);
 
-        return sf::makeOptional<IpAddress>(ntohl(ip));
+        return sf::base::makeOptional<IpAddress>(ntohl(ip));
     }
 
     // Not generating en error message here as resolution failure is a valid outcome.
-    return sf::nullOpt;
+    return base::nullOpt;
 }
 
 
@@ -121,7 +121,7 @@ std::uint32_t IpAddress::toInteger() const
 
 
 ////////////////////////////////////////////////////////////
-Optional<IpAddress> IpAddress::getLocalAddress()
+base::Optional<IpAddress> IpAddress::getLocalAddress()
 {
     // The method here is to connect a UDP socket to anyone (here to localhost),
     // and get the local socket address with the getsockname function.
@@ -132,7 +132,7 @@ Optional<IpAddress> IpAddress::getLocalAddress()
     if (sock == priv::SocketImpl::invalidSocket())
     {
         priv::err() << "Failed to retrieve local address (invalid socket)";
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
     // Connect the socket to localhost on any port
@@ -142,7 +142,7 @@ Optional<IpAddress> IpAddress::getLocalAddress()
         priv::SocketImpl::close(sock);
 
         priv::err() << "Failed to retrieve local address (socket connection failure)";
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
     // Get the local address of the socket connection
@@ -152,19 +152,19 @@ Optional<IpAddress> IpAddress::getLocalAddress()
         priv::SocketImpl::close(sock);
 
         priv::err() << "Failed to retrieve local address (socket local address retrieval failure)";
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
     // Close the socket
     priv::SocketImpl::close(sock);
 
     // Finally build the IP address
-    return sf::makeOptional<IpAddress>(ntohl(address.sin_addr.s_addr));
+    return sf::base::makeOptional<IpAddress>(ntohl(address.sin_addr.s_addr));
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<IpAddress> IpAddress::getPublicAddress(Time timeout)
+base::Optional<IpAddress> IpAddress::getPublicAddress(Time timeout)
 {
     // The trick here is more complicated, because the only way
     // to get our public IP address is to get it from a distant computer.
@@ -184,7 +184,7 @@ Optional<IpAddress> IpAddress::getPublicAddress(Time timeout)
     priv::err() << "Failed to retrieve public address from external IP resolution server (HTTP response status "
                 << static_cast<int>(status) << ")";
 
-    return sf::nullOpt;
+    return base::nullOpt;
 }
 
 
@@ -231,7 +231,7 @@ bool operator>=(const IpAddress& left, const IpAddress& right)
 
 
 ////////////////////////////////////////////////////////////
-std::istream& operator>>(std::istream& stream, Optional<IpAddress>& address)
+std::istream& operator>>(std::istream& stream, base::Optional<IpAddress>& address)
 {
     std::string str;
     stream >> str;

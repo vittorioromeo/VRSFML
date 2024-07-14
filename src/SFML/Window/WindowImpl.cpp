@@ -35,14 +35,15 @@
 #include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/WindowImpl.hpp>
 
-#include <SFML/System/EnumArray.hpp>
 #include <SFML/System/Err.hpp>
-#include <SFML/System/Macros.hpp>
-#include <SFML/System/MathUtils.hpp>
 #include <SFML/System/Sleep.hpp>
 #include <SFML/System/Time.hpp>
 #include <SFML/System/TimeChronoUtil.hpp>
-#include <SFML/System/UniquePtr.hpp>
+
+#include <SFML/Base/EnumArray.hpp>
+#include <SFML/Base/Macros.hpp>
+#include <SFML/Base/Math.hpp>
+#include <SFML/Base/UniquePtr.hpp>
 
 #include <chrono>
 #include <queue>
@@ -120,24 +121,24 @@ struct WindowImpl::JoystickStatesImpl
 ////////////////////////////////////////////////////////////
 struct WindowImpl::Impl
 {
-    std::queue<Event>                                events;             //!< Queue of available events
-    UniquePtr<JoystickStatesImpl>                    joystickStatesImpl; //!< Previous state of the joysticks (PImpl)
-    EnumArray<Sensor::Type, Vector3f, Sensor::Count> sensorValue;        //!< Previous value of the sensors
+    std::queue<Event>                   events;                         //!< Queue of available events
+    base::UniquePtr<JoystickStatesImpl> joystickStatesImpl;             //!< Previous state of the joysticks (PImpl)
+    base::EnumArray<Sensor::Type, Vector3f, Sensor::Count> sensorValue; //!< Previous value of the sensors
     float joystickThreshold{0.1f}; //!< Joystick threshold (minimum motion for "move" event to be generated)
-    EnumArray<Joystick::Axis, float, Joystick::AxisCount>
+    base::EnumArray<Joystick::Axis, float, Joystick::AxisCount>
         previousAxes[Joystick::Count]{}; //!< Position of each axis last time a move event triggered, in range [-100, 100]
-    Optional<Vector2u> minimumSize;      //!< Minimum window size
-    Optional<Vector2u> maximumSize;      //!< Maximum window size
+    base::Optional<Vector2u> minimumSize; //!< Minimum window size
+    base::Optional<Vector2u> maximumSize; //!< Maximum window size
 
-    explicit Impl(UniquePtr<JoystickStatesImpl>&& theJoystickStatesImpl) :
-    joystickStatesImpl(SFML_MOVE(theJoystickStatesImpl))
+    explicit Impl(base::UniquePtr<JoystickStatesImpl>&& theJoystickStatesImpl) :
+    joystickStatesImpl(SFML_BASE_MOVE(theJoystickStatesImpl))
     {
     }
 };
 
 
 ////////////////////////////////////////////////////////////
-UniquePtr<WindowImpl> WindowImpl::create(VideoMode mode, const String& title, Style style, State state, const ContextSettings& settings)
+base::UniquePtr<WindowImpl> WindowImpl::create(VideoMode mode, const String& title, Style style, State state, const ContextSettings& settings)
 {
     // Fullscreen style requires some tests
     if (state == State::Fullscreen)
@@ -155,7 +156,7 @@ UniquePtr<WindowImpl> WindowImpl::create(VideoMode mode, const String& title, St
             {
                 err() << "The requested video mode is not available, switching to a valid mode";
 
-                SFML_ASSERT(!VideoMode::getFullscreenModes().empty() && "No video modes available");
+                SFML_BASE_ASSERT(!VideoMode::getFullscreenModes().empty() && "No video modes available");
                 mode = VideoMode::getFullscreenModes()[0];
 
                 err() << "  VideoMode: { size: { " << mode.size.x << ", " << mode.size.y
@@ -175,7 +176,7 @@ UniquePtr<WindowImpl> WindowImpl::create(VideoMode mode, const String& title, St
         style |= Style::Titlebar;
 #endif
 
-    auto windowImpl = makeUnique<WindowImplType>(mode, title, style, state, settings);
+    auto windowImpl = base::makeUnique<WindowImplType>(mode, title, style, state, settings);
 
     if (state == State::Fullscreen)
         WindowImplImpl::fullscreenWindow = windowImpl.get();
@@ -185,14 +186,14 @@ UniquePtr<WindowImpl> WindowImpl::create(VideoMode mode, const String& title, St
 
 
 ////////////////////////////////////////////////////////////
-UniquePtr<WindowImpl> WindowImpl::create(WindowHandle handle)
+base::UniquePtr<WindowImpl> WindowImpl::create(WindowHandle handle)
 {
-    return makeUnique<WindowImplType>(handle);
+    return base::makeUnique<WindowImplType>(handle);
 }
 
 
 ////////////////////////////////////////////////////////////
-WindowImpl::WindowImpl() : m_impl(makeUnique<JoystickStatesImpl>())
+WindowImpl::WindowImpl() : m_impl(base::makeUnique<JoystickStatesImpl>())
 {
     // Get the initial joystick states
     JoystickManager::getInstance().update();
@@ -217,14 +218,14 @@ WindowImpl::~WindowImpl()
 
 
 ////////////////////////////////////////////////////////////
-Optional<Vector2u> WindowImpl::getMinimumSize() const
+base::Optional<Vector2u> WindowImpl::getMinimumSize() const
 {
     return m_impl->minimumSize;
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<Vector2u> WindowImpl::getMaximumSize() const
+base::Optional<Vector2u> WindowImpl::getMaximumSize() const
 {
     return m_impl->maximumSize;
 }
@@ -238,21 +239,21 @@ void WindowImpl::setJoystickThreshold(float threshold)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImpl::setMinimumSize(const Optional<Vector2u>& minimumSize)
+void WindowImpl::setMinimumSize(const base::Optional<Vector2u>& minimumSize)
 {
     m_impl->minimumSize = minimumSize;
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowImpl::setMaximumSize(const Optional<Vector2u>& maximumSize)
+void WindowImpl::setMaximumSize(const base::Optional<Vector2u>& maximumSize)
 {
     m_impl->maximumSize = maximumSize;
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<Event> WindowImpl::waitEvent(Time timeout)
+base::Optional<Event> WindowImpl::waitEvent(Time timeout)
 {
     const auto timedOut = [&, startTime = std::chrono::steady_clock::now()]
     {
@@ -277,7 +278,7 @@ Optional<Event> WindowImpl::waitEvent(Time timeout)
 
 
 ////////////////////////////////////////////////////////////
-Optional<Event> WindowImpl::pollEvent()
+base::Optional<Event> WindowImpl::pollEvent()
 {
     // If the event queue is empty, let's first check if new events are available from the OS
     if (m_impl->events.empty())
@@ -288,9 +289,9 @@ Optional<Event> WindowImpl::pollEvent()
 
 
 ////////////////////////////////////////////////////////////
-Optional<Event> WindowImpl::popEvent()
+base::Optional<Event> WindowImpl::popEvent()
 {
-    Optional<Event> event; // Use a single local variable for NRVO
+    base::Optional<Event> event; // Use a single local variable for NRVO
 
     if (!m_impl->events.empty())
     {
@@ -349,7 +350,7 @@ void WindowImpl::processJoystickEvents()
 
             const float prevPos = m_impl->previousAxes[i][axis];
             const float currPos = m_impl->joystickStatesImpl->states[i].axes[axis];
-            if (priv::fabs(currPos - prevPos) >= m_impl->joystickThreshold)
+            if (base::fabs(currPos - prevPos) >= m_impl->joystickThreshold)
             {
                 pushEvent(Event::JoystickMoved{i, axis, currPos});
                 m_impl->previousAxes[i][axis] = currPos;

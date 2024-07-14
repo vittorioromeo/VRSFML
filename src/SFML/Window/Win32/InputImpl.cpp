@@ -28,16 +28,17 @@
 #include <SFML/Window/InputImpl.hpp>
 #include <SFML/Window/Window.hpp>
 
-#include <SFML/System/EnumArray.hpp>
-#include <SFML/System/Optional.hpp>
 #include <SFML/System/String.hpp>
 #include <SFML/System/Win32/WindowsHeader.hpp>
+
+#include <SFML/Base/EnumArray.hpp>
+#include <SFML/Base/Optional.hpp>
 
 
 namespace
 {
-sf::priv::EnumArray<sf::Keyboard::Key, sf::Keyboard::Scancode, sf::Keyboard::KeyCount> keyToScancodeMapping; ///< Mapping from Key to Scancode
-sf::priv::EnumArray<sf::Keyboard::Scancode, sf::Keyboard::Key, sf::Keyboard::ScancodeCount> scancodeToKeyMapping; ///< Mapping from Scancode to Key
+sf::base::EnumArray<sf::Keyboard::Key, sf::Keyboard::Scancode, sf::Keyboard::KeyCount> keyToScancodeMapping; ///< Mapping from Key to Scancode
+sf::base::EnumArray<sf::Keyboard::Scancode, sf::Keyboard::Key, sf::Keyboard::ScancodeCount> scancodeToKeyMapping; ///< Mapping from Scancode to Key
 
 sf::Keyboard::Key virtualKeyToSfKey(UINT virtualKey)
 {
@@ -514,34 +515,34 @@ UINT sfScanToVirtualKey(sf::Keyboard::Scancode code)
     // clang-format on
 }
 
-sf::Optional<sf::String> sfScanToConsumerKeyName(sf::Keyboard::Scancode code)
+sf::base::Optional<sf::String> sfScanToConsumerKeyName(sf::Keyboard::Scancode code)
 {
     // Convert an SFML scancode to a Windows consumer keyboard key name
     // Reference: https://learn.microsoft.com/en-us/windows/win32/inputdev/about-keyboard-input#keystroke-messages
     // clang-format off
     switch (code)
     {
-        case sf::Keyboard::Scan::MediaNextTrack:     return sf::makeOptional<sf::String>("Next Track");
-        case sf::Keyboard::Scan::MediaPreviousTrack: return sf::makeOptional<sf::String>("Previous Track");
-        case sf::Keyboard::Scan::MediaStop:          return sf::makeOptional<sf::String>("Stop");
-        case sf::Keyboard::Scan::MediaPlayPause:     return sf::makeOptional<sf::String>("Play/Pause");
-        case sf::Keyboard::Scan::VolumeMute:         return sf::makeOptional<sf::String>("Mute");
-        case sf::Keyboard::Scan::VolumeUp:           return sf::makeOptional<sf::String>("Volume Increment");
-        case sf::Keyboard::Scan::VolumeDown:         return sf::makeOptional<sf::String>("Volume Decrement");
-        case sf::Keyboard::Scan::LaunchMediaSelect:  return sf::makeOptional<sf::String>("Consumer Control Configuration");
-        case sf::Keyboard::Scan::LaunchMail:         return sf::makeOptional<sf::String>("Email Reader");
-        case sf::Keyboard::Scan::LaunchApplication2: return sf::makeOptional<sf::String>("Calculator");
-        case sf::Keyboard::Scan::LaunchApplication1: return sf::makeOptional<sf::String>("Local Machine Browser");
-        case sf::Keyboard::Scan::Search:             return sf::makeOptional<sf::String>("Search");
-        case sf::Keyboard::Scan::HomePage:           return sf::makeOptional<sf::String>("Home");
-        case sf::Keyboard::Scan::Back:               return sf::makeOptional<sf::String>("Back");
-        case sf::Keyboard::Scan::Forward:            return sf::makeOptional<sf::String>("Forward");
-        case sf::Keyboard::Scan::Stop:               return sf::makeOptional<sf::String>("Stop");
-        case sf::Keyboard::Scan::Refresh:            return sf::makeOptional<sf::String>("Refresh");
-        case sf::Keyboard::Scan::Favorites:          return sf::makeOptional<sf::String>("Bookmarks");
+        case sf::Keyboard::Scan::MediaNextTrack:     return sf::base::makeOptional<sf::String>("Next Track");
+        case sf::Keyboard::Scan::MediaPreviousTrack: return sf::base::makeOptional<sf::String>("Previous Track");
+        case sf::Keyboard::Scan::MediaStop:          return sf::base::makeOptional<sf::String>("Stop");
+        case sf::Keyboard::Scan::MediaPlayPause:     return sf::base::makeOptional<sf::String>("Play/Pause");
+        case sf::Keyboard::Scan::VolumeMute:         return sf::base::makeOptional<sf::String>("Mute");
+        case sf::Keyboard::Scan::VolumeUp:           return sf::base::makeOptional<sf::String>("Volume Increment");
+        case sf::Keyboard::Scan::VolumeDown:         return sf::base::makeOptional<sf::String>("Volume Decrement");
+        case sf::Keyboard::Scan::LaunchMediaSelect:  return sf::base::makeOptional<sf::String>("Consumer Control Configuration");
+        case sf::Keyboard::Scan::LaunchMail:         return sf::base::makeOptional<sf::String>("Email Reader");
+        case sf::Keyboard::Scan::LaunchApplication2: return sf::base::makeOptional<sf::String>("Calculator");
+        case sf::Keyboard::Scan::LaunchApplication1: return sf::base::makeOptional<sf::String>("Local Machine Browser");
+        case sf::Keyboard::Scan::Search:             return sf::base::makeOptional<sf::String>("Search");
+        case sf::Keyboard::Scan::HomePage:           return sf::base::makeOptional<sf::String>("Home");
+        case sf::Keyboard::Scan::Back:               return sf::base::makeOptional<sf::String>("Back");
+        case sf::Keyboard::Scan::Forward:            return sf::base::makeOptional<sf::String>("Forward");
+        case sf::Keyboard::Scan::Stop:               return sf::base::makeOptional<sf::String>("Stop");
+        case sf::Keyboard::Scan::Refresh:            return sf::base::makeOptional<sf::String>("Refresh");
+        case sf::Keyboard::Scan::Favorites:          return sf::base::makeOptional<sf::String>("Bookmarks");
 
         // Not a consumer key
-        default: return sf::nullOpt;
+        default: return sf::base::nullOpt;
     }
     // clang-format on
 }

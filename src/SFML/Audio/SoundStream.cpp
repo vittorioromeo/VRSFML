@@ -30,13 +30,14 @@
 #include <SFML/Audio/PlaybackDevice.hpp>
 #include <SFML/Audio/SoundStream.hpp>
 
-#include <SFML/System/AlgorithmUtils.hpp>
-#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
-#include <SFML/System/Macros.hpp>
-#include <SFML/System/Optional.hpp>
 #include <SFML/System/Sleep.hpp>
 #include <SFML/System/Time.hpp>
+
+#include <SFML/Base/Algorithm.hpp>
+#include <SFML/Base/Assert.hpp>
+#include <SFML/Base/Macros.hpp>
+#include <SFML/Base/Optional.hpp>
 
 #include <miniaudio.h>
 
@@ -55,7 +56,7 @@ struct SoundStream::Impl
 
     void initialize()
     {
-        SFML_ASSERT(soundBase.hasValue());
+        SFML_BASE_ASSERT(soundBase.hasValue());
 
         if (!soundBase->initialize(&onEnd))
             priv::err() << "Failed to initialize SoundStream::Impl";
@@ -108,7 +109,7 @@ struct SoundStream::Impl
         if (!impl.sampleBuffer.empty())
         {
             // Determine how many frames we can read
-            *framesRead = priv::min(frameCount, (impl.sampleBuffer.size() - impl.sampleBufferCursor) / impl.channelCount);
+            *framesRead = base::min(frameCount, (impl.sampleBuffer.size() - impl.sampleBufferCursor) / impl.channelCount);
 
             const auto sampleCount = *framesRead * impl.channelCount;
 
@@ -203,7 +204,7 @@ struct SoundStream::Impl
     ////////////////////////////////////////////////////////////
     static inline constexpr ma_data_source_vtable vtable{read, seek, getFormat, getCursor, getLength, setLooping, /* flags */ 0};
 
-    Optional<priv::MiniaudioUtils::SoundBase> soundBase; //!< Sound base, needs to be first member
+    base::Optional<priv::MiniaudioUtils::SoundBase> soundBase; //!< Sound base, needs to be first member
 
     SoundStream*              owner;                //!< Owning `SoundStream` object
     std::vector<std::int16_t> sampleBuffer;         //!< Our temporary sample buffer
@@ -218,7 +219,7 @@ struct SoundStream::Impl
 
 
 ////////////////////////////////////////////////////////////
-SoundStream::SoundStream() : m_impl(priv::makeUnique<Impl>(this))
+SoundStream::SoundStream() : m_impl(base::makeUnique<Impl>(this))
 {
 }
 
@@ -228,7 +229,7 @@ SoundStream::~SoundStream() = default;
 
 
 ////////////////////////////////////////////////////////////
-SoundStream::SoundStream(SoundStream&& rhs) noexcept : m_impl(SFML_MOVE(rhs.m_impl))
+SoundStream::SoundStream(SoundStream&& rhs) noexcept : m_impl(SFML_BASE_MOVE(rhs.m_impl))
 {
     // Update self-referential owner pointer.
     m_impl->owner = this;
@@ -240,7 +241,7 @@ SoundStream& SoundStream::operator=(SoundStream&& rhs) noexcept
 {
     if (this != &rhs)
     {
-        m_impl = SFML_MOVE(rhs.m_impl);
+        m_impl = SFML_BASE_MOVE(rhs.m_impl);
 
         // Update self-referential owner pointer.
         m_impl->owner = this;
@@ -263,7 +264,7 @@ void SoundStream::initialize(unsigned int channelCount, unsigned int sampleRate,
         m_impl->soundBase->deinitialize();
         m_impl->initialize();
 
-        SFML_ASSERT(m_impl->soundBase.hasValue());
+        SFML_BASE_ASSERT(m_impl->soundBase.hasValue());
         applyStoredSettings(m_impl->soundBase->getSound());
         setEffectProcessor(getEffectProcessor());
         setPlayingOffset(getPlayingOffset());
@@ -281,7 +282,7 @@ void SoundStream::play(PlaybackDevice& playbackDevice)
         m_impl->soundBase.emplace(playbackDevice, &Impl::vtable, [](void* ptr) { static_cast<Impl*>(ptr)->initialize(); });
         m_impl->initialize();
 
-        SFML_ASSERT(m_impl->soundBase.hasValue());
+        SFML_BASE_ASSERT(m_impl->soundBase.hasValue());
         applyStoredSettings(m_impl->soundBase->getSound());
         setEffectProcessor(getEffectProcessor());
         setPlayingOffset(getPlayingOffset());
@@ -405,15 +406,15 @@ void SoundStream::setEffectProcessor(EffectProcessor effectProcessor)
     if (!m_impl->soundBase.hasValue())
         return;
 
-    m_impl->soundBase->setAndConnectEffectProcessor(SFML_MOVE(effectProcessor));
+    m_impl->soundBase->setAndConnectEffectProcessor(SFML_BASE_MOVE(effectProcessor));
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<std::uint64_t> SoundStream::onLoop()
+base::Optional<std::uint64_t> SoundStream::onLoop()
 {
     onSeek(Time::Zero);
-    return sf::makeOptional(std::uint64_t{0});
+    return sf::base::makeOptional(std::uint64_t{0});
 }
 
 

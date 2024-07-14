@@ -29,8 +29,6 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Export.hpp>
 
-#include <string> // TODO: low hanging fruit
-
 
 namespace sf
 {
@@ -41,6 +39,13 @@ class Path;
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_SYSTEM_API std::string formatDebugPathInfo(const Path& path);
+struct PathDebugFormatter
+{
+    const Path& path;
+
+    explicit PathDebugFormatter(const Path& thePath) : path(thePath)
+    {
+    }
+};
 
 } // namespace sf::priv

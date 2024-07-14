@@ -31,9 +31,10 @@
 
 #include <SFML/Window/ContextSettings.hpp>
 
-#include <SFML/System/InPlacePImpl.hpp>
-#include <SFML/System/UniquePtr.hpp>
 #include <SFML/System/Vector2.hpp>
+
+#include <SFML/Base/InPlacePImpl.hpp>
+#include <SFML/Base/UniquePtr.hpp>
 
 
 namespace sf

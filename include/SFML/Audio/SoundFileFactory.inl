@@ -32,16 +32,16 @@ namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 template <typename T>
-UniquePtr<SoundFileReader> createReader()
+base::UniquePtr<SoundFileReader> createReader()
 {
-    return makeUnique<T>();
+    return base::makeUnique<T>();
 }
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-UniquePtr<SoundFileWriter> createWriter()
+base::UniquePtr<SoundFileWriter> createWriter()
 {
-    return makeUnique<T>();
+    return base::makeUnique<T>();
 }
 
 } // namespace sf::priv

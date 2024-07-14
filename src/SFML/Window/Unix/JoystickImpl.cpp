@@ -28,7 +28,8 @@
 #include <SFML/Window/JoystickImpl.hpp>
 
 #include <SFML/System/Err.hpp>
-#include <SFML/System/UniquePtr.hpp>
+
+#include <SFML/Base/UniquePtr.hpp>
 
 #include <fcntl.h>
 #include <libudev.h>
@@ -67,7 +68,7 @@ struct UdevDeleter
 };
 
 template <typename T>
-using UdevPtr = sf::priv::UniquePtr<T, UdevDeleter>;
+using UdevPtr = sf::base::UniquePtr<T, UdevDeleter>;
 
 UdevPtr<udev>         udevContext;
 UdevPtr<udev_monitor> udevMonitor;

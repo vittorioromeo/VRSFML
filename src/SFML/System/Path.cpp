@@ -125,6 +125,13 @@ Path Path::extension() const
 
 
 ////////////////////////////////////////////////////////////
+Path Path::absolute() const
+{
+    return Path{0, asVoidPtr(std::filesystem::absolute(m_impl->fsPath))};
+}
+
+
+////////////////////////////////////////////////////////////
 const wchar_t* Path::c_str() const
 {
     return m_impl->fsPath.c_str();

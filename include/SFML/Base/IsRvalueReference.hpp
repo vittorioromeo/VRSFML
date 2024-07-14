@@ -22,36 +22,17 @@
 //
 ////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
-// Headers
-////////////////////////////////////////////////////////////
-#include <SFML/System/Assert.hpp>
-
-#ifndef NDEBUG
-
-#ifdef SFML_ENABLE_STACK_TRACES
-#include <cpptrace/cpptrace.hpp>
-#endif
-
-#include <cstdio>
-#include <cstdlib>
+#pragma once
 
 
-namespace sf::priv
+namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-void assertFailure(const char* code, const char* file, const int line)
-{
-    std::printf("\n[[SFML ASSERTION FAILURE]]\n- %s:%d\n- SFML_ASSERT(%s);\n", file, line, code);
+template <typename>
+inline constexpr bool isRvalueReference = false;
 
-#ifdef SFML_ENABLE_STACK_TRACES
-    std::puts("");
-    cpptrace::generate_trace().print();
-#endif
+////////////////////////////////////////////////////////////
+template <typename T>
+inline constexpr bool isRvalueReference<T&&> = true;
 
-    std::abort();
-}
-
-} // namespace sf::priv
-
-#endif
+} // namespace sf::base

@@ -95,7 +95,7 @@ TEST_CASE("[Graphics] sf::Image")
 
         SECTION("Successful load")
         {
-            sf::Optional<sf::Image> image;
+            sf::base::Optional<sf::Image> image;
 
             SECTION("bmp")
             {

@@ -31,9 +31,9 @@
 
 #include <SFML/Audio/SoundChannel.hpp>
 
-#include <SFML/System/Optional.hpp>
-#include <SFML/System/PassKey.hpp>
-#include <SFML/System/UniquePtr.hpp>
+#include <SFML/Base/Optional.hpp>
+#include <SFML/Base/PassKey.hpp>
+#include <SFML/Base/UniquePtr.hpp>
 
 #include <vector>
 
@@ -93,10 +93,10 @@ public:
     ///
     /// \param filename Path of the sound file to load
     ///
-    /// \return Input sound file if the file was successfully opened, otherwise `sf::nullOpt`
+    /// \return Input sound file if the file was successfully opened, otherwise `base::nullOpt`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Optional<InputSoundFile> openFromFile(const Path& filename);
+    [[nodiscard]] static base::Optional<InputSoundFile> openFromFile(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a sound file in memory for reading
@@ -107,10 +107,10 @@ public:
     /// \param data        Pointer to the file data in memory
     /// \param sizeInBytes Size of the data to load, in bytes
     ///
-    /// \return Input sound file if the file was successfully opened, otherwise `sf::nullOpt`
+    /// \return Input sound file if the file was successfully opened, otherwise `base::nullOpt`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Optional<InputSoundFile> openFromMemory(const void* data, std::size_t sizeInBytes);
+    [[nodiscard]] static base::Optional<InputSoundFile> openFromMemory(const void* data, std::size_t sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a sound file from a custom stream for reading
@@ -120,10 +120,10 @@ public:
     ///
     /// \param stream Source stream to read from
     ///
-    /// \return Input sound file if the file was successfully opened, otherwise `sf::nullOpt`
+    /// \return Input sound file if the file was successfully opened, otherwise `base::nullOpt`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Optional<InputSoundFile> openFromStream(InputStream& stream);
+    [[nodiscard]] static base::Optional<InputSoundFile> openFromStream(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the total number of audio samples in the file
@@ -249,7 +249,7 @@ private:
         StreamDeleter(bool theOwned);
 
         // To accept ownership transfer from default deleter
-        StreamDeleter(const priv::UniquePtrDefaultDeleter&);
+        StreamDeleter(const base::UniquePtrDefaultDeleter&);
 
         void operator()(InputStream* ptr) const;
 
@@ -263,9 +263,9 @@ public:
     /// \brief Constructor from reader, stream, and attributes
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] InputSoundFile(priv::PassKey<InputSoundFile>&&,
-                                 priv::UniquePtr<SoundFileReader>&&            reader,
-                                 priv::UniquePtr<InputStream, StreamDeleter>&& stream,
+    [[nodiscard]] InputSoundFile(base::PassKey<InputSoundFile>&&,
+                                 base::UniquePtr<SoundFileReader>&&            reader,
+                                 base::UniquePtr<InputStream, StreamDeleter>&& stream,
                                  std::uint64_t                                 sampleCount,
                                  unsigned int                                  sampleRate,
                                  std::vector<SoundChannel>&&                   channelMap);
@@ -274,8 +274,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    priv::UniquePtr<SoundFileReader> m_reader; //!< Reader that handles I/O on the file's format
-    priv::UniquePtr<InputStream, StreamDeleter> m_stream{nullptr, false}; //!< Input stream used to access the file's data
+    base::UniquePtr<SoundFileReader> m_reader; //!< Reader that handles I/O on the file's format
+    base::UniquePtr<InputStream, StreamDeleter> m_stream{nullptr, false}; //!< Input stream used to access the file's data
     std::uint64_t             m_sampleOffset{};                           //!< Sample Read Position
     std::uint64_t             m_sampleCount{};                            //!< Total number of samples in the file
     unsigned int              m_sampleRate{};                             //!< Number of samples per second

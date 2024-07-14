@@ -52,10 +52,11 @@
 
 #include <SFML/Audio/SoundFileReaderMp3.hpp>
 
-#include <SFML/System/AlgorithmUtils.hpp>
-#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InputStream.hpp>
+
+#include <SFML/Base/Algorithm.hpp>
+#include <SFML/Base/Assert.hpp>
 
 #include <cstdint>
 #include <cstring>
@@ -74,8 +75,8 @@ namespace
 ////////////////////////////////////////////////////////////
 [[nodiscard]] int seekCallback(std::uint64_t offset, void* data)
 {
-    auto*              stream   = static_cast<sf::InputStream*>(data);
-    const sf::Optional position = stream->seek(static_cast<std::size_t>(offset));
+    auto*                    stream   = static_cast<sf::InputStream*>(data);
+    const sf::base::Optional position = stream->seek(static_cast<std::size_t>(offset));
     return position ? 0 : -1;
 }
 
@@ -106,7 +107,8 @@ bool SoundFileReaderMp3::check(InputStream& stream)
 {
     std::uint8_t header[10];
 
-    if (Optional readResult = stream.read(header, sizeof(header)); !readResult.hasValue() || *readResult != sizeof(header))
+    if (base::Optional readResult = stream.read(header, sizeof(header));
+        !readResult.hasValue() || *readResult != sizeof(header))
         return false;
 
     if (hasValidId3Tag(header))
@@ -135,13 +137,13 @@ SoundFileReaderMp3::~SoundFileReaderMp3()
 
 
 ////////////////////////////////////////////////////////////
-Optional<SoundFileReader::Info> SoundFileReaderMp3::open(InputStream& stream)
+base::Optional<SoundFileReader::Info> SoundFileReaderMp3::open(InputStream& stream)
 {
     // Init IO callbacks
     m_impl->io.read_data = &stream;
     m_impl->io.seek_data = &stream;
 
-    Optional<Info> result; // Use a single local variable for NRVO
+    base::Optional<Info> result; // Use a single local variable for NRVO
 
     // Init mp3 decoder
     mp3dec_ex_open_cb(&m_impl->decoder, &m_impl->io, MP3D_SEEK_TO_SAMPLE);
@@ -168,7 +170,7 @@ Optional<SoundFileReader::Info> SoundFileReaderMp3::open(InputStream& stream)
             break;
         default:
             priv::err() << "MP3 files with more than 2 channels not supported";
-            SFML_ASSERT(false);
+            SFML_BASE_ASSERT(false);
             break;
     }
 
@@ -180,7 +182,7 @@ Optional<SoundFileReader::Info> SoundFileReaderMp3::open(InputStream& stream)
 ////////////////////////////////////////////////////////////
 void SoundFileReaderMp3::seek(std::uint64_t sampleOffset)
 {
-    m_impl->position = priv::min(sampleOffset, m_impl->numSamples);
+    m_impl->position = base::min(sampleOffset, m_impl->numSamples);
     mp3dec_ex_seek(&m_impl->decoder, m_impl->position);
 }
 
@@ -188,7 +190,7 @@ void SoundFileReaderMp3::seek(std::uint64_t sampleOffset)
 ////////////////////////////////////////////////////////////
 std::uint64_t SoundFileReaderMp3::read(std::int16_t* samples, std::uint64_t maxCount)
 {
-    std::uint64_t toRead = priv::min(maxCount, m_impl->numSamples - m_impl->position);
+    std::uint64_t toRead = base::min(maxCount, m_impl->numSamples - m_impl->position);
     toRead               = std::uint64_t{mp3dec_ex_read(&m_impl->decoder, samples, static_cast<std::size_t>(toRead))};
     m_impl->position += toRead;
     return toRead;

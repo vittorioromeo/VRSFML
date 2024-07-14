@@ -34,7 +34,7 @@
 #include <SFML/Window/GlContext.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
 
-#include <SFML/System/UniquePtr.hpp>
+#include <SFML/Base/UniquePtr.hpp>
 
 
 namespace sf::priv
@@ -68,7 +68,7 @@ bool RenderTextureImplDefault::create(const Vector2u& size, unsigned int, const 
 
     // Create the in-memory OpenGL context
     m_glContext = m_graphicsContext->createGlContext(settings, size);
-    SFML_ASSERT(m_glContext != nullptr);
+    SFML_BASE_ASSERT(m_glContext != nullptr);
 
     return true;
 }

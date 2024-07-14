@@ -27,14 +27,14 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/IsSame.hpp>
+#include <SFML/Base/IsSame.hpp>
 
 
 namespace sf::priv
 {
-
+////////////////////////////////////////////////////////////
 template <typename T>
-inline constexpr bool isFloatingPoint = SFML_PRIV_IS_SAME(T, float) || SFML_PRIV_IS_SAME(T, double) ||
-                                        SFML_PRIV_IS_SAME(T, long double);
+inline constexpr bool isFloatingPoint = SFML_BASE_IS_SAME(T, float) || SFML_BASE_IS_SAME(T, double) ||
+                                        SFML_BASE_IS_SAME(T, long double);
 
 } // namespace sf::priv

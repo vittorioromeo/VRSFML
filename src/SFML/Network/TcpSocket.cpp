@@ -30,8 +30,9 @@
 #include <SFML/Network/SocketImpl.hpp>
 #include <SFML/Network/TcpSocket.hpp>
 
-#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
+
+#include <SFML/Base/Algorithm.hpp>
 
 #include <cstring>
 
@@ -78,7 +79,7 @@ unsigned short TcpSocket::getLocalPort() const
 
 
 ////////////////////////////////////////////////////////////
-Optional<IpAddress> TcpSocket::getRemoteAddress() const
+base::Optional<IpAddress> TcpSocket::getRemoteAddress() const
 {
     if (getNativeHandle() != priv::SocketImpl::invalidSocket())
     {
@@ -87,12 +88,12 @@ Optional<IpAddress> TcpSocket::getRemoteAddress() const
         priv::SocketImpl::AddrLength size = sizeof(address);
         if (getpeername(getNativeHandle(), reinterpret_cast<sockaddr*>(&address), &size) != -1)
         {
-            return sf::makeOptional<IpAddress>(ntohl(address.sin_addr.s_addr));
+            return sf::base::makeOptional<IpAddress>(ntohl(address.sin_addr.s_addr));
         }
     }
 
     // We failed to retrieve the address
-    return sf::nullOpt;
+    return base::nullOpt;
 }
 
 
@@ -399,7 +400,7 @@ Socket::Status TcpSocket::receive(Packet& packet)
     while (m_pendingPacket.data.size() < packetSize)
     {
         // Receive a chunk of data
-        const std::size_t sizeToGet = priv::min(packetSize - m_pendingPacket.data.size(), sizeof(buffer));
+        const std::size_t sizeToGet = base::min(packetSize - m_pendingPacket.data.size(), sizeof(buffer));
         const Status      status    = receive(buffer, sizeToGet, received);
         if (status != Status::Done)
             return status;

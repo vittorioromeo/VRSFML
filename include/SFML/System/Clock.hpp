@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Export.hpp>
 
-#include <SFML/System/InPlacePImpl.hpp>
+#include <SFML/Base/InPlacePImpl.hpp>
 
 
 namespace sf
@@ -148,7 +148,7 @@ private:
     // Member data
     ///////////////////////////////////////////////////////////
     struct Impl;
-    priv::InPlacePImpl<Impl, 16> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 16> m_impl; //!< Implementation details
 };
 
 } // namespace sf

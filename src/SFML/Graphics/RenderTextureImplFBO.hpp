@@ -29,8 +29,9 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/RenderTextureImpl.hpp>
 
-#include <SFML/System/InPlacePImpl.hpp>
 #include <SFML/System/Vector2.hpp>
+
+#include <SFML/Base/InPlacePImpl.hpp>
 
 
 namespace sf
@@ -136,7 +137,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    InPlacePImpl<Impl, 192> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 192> m_impl; //!< Implementation details
 };
 
 } // namespace priv

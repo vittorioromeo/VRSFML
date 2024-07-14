@@ -35,11 +35,12 @@
 #include <SFML/Window/WindowHandle.hpp>
 #include <SFML/Window/WindowImpl.hpp>
 
-#include <SFML/System/AlgorithmUtils.hpp>
-#include <SFML/System/Assert.hpp>
-#include <SFML/System/Macros.hpp>
-#include <SFML/System/Optional.hpp>
 #include <SFML/System/String.hpp>
+
+#include <SFML/Base/Algorithm.hpp>
+#include <SFML/Base/Assert.hpp>
+#include <SFML/Base/Macros.hpp>
+#include <SFML/Base/Optional.hpp>
 
 #include <climits>
 #include <cstdlib>
@@ -48,7 +49,7 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-WindowBase::WindowBase(priv::UniquePtr<priv::WindowImpl>&& impl) : m_impl(SFML_MOVE(impl))
+WindowBase::WindowBase(base::UniquePtr<priv::WindowImpl>&& impl) : m_impl(SFML_BASE_MOVE(impl))
 {
     // Setup default behaviors (to get a consistent behavior across different implementations)
     setVisible(true);
@@ -116,14 +117,14 @@ WindowBase& WindowBase::operator=(WindowBase&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-Optional<Event> WindowBase::pollEvent()
+base::Optional<Event> WindowBase::pollEvent()
 {
     return filterEvent(m_impl->pollEvent());
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<Event> WindowBase::waitEvent(Time timeout)
+base::Optional<Event> WindowBase::waitEvent(Time timeout)
 {
     return filterEvent(m_impl->waitEvent(timeout));
 }
@@ -157,8 +158,8 @@ void WindowBase::setSize(const Vector2u& size)
     const auto minimumSize = m_impl->getMinimumSize().valueOr(Vector2u());
     const auto maximumSize = m_impl->getMaximumSize().valueOr(Vector2u{UINT_MAX, UINT_MAX});
 
-    const auto width  = priv::clamp(size.x, minimumSize.x, maximumSize.x);
-    const auto height = priv::clamp(size.y, minimumSize.y, maximumSize.y);
+    const auto width  = base::clamp(size.x, minimumSize.x, maximumSize.x);
+    const auto height = base::clamp(size.y, minimumSize.y, maximumSize.y);
 
     // Do nothing if requested size matches current size
     const Vector2u clampedSize(width, height);
@@ -183,21 +184,21 @@ void WindowBase::setMinimumSize(const Vector2u& minimumSize)
         return minimumSize.x <= m_impl->getMaximumSize()->x && minimumSize.y <= m_impl->getMaximumSize()->y;
     };
 
-    SFML_ASSERT(validateMinimumSize() && "Minimum size cannot be bigger than the maximum size along either axis");
+    SFML_BASE_ASSERT(validateMinimumSize() && "Minimum size cannot be bigger than the maximum size along either axis");
 
-    m_impl->setMinimumSize(sf::makeOptional(minimumSize));
+    m_impl->setMinimumSize(sf::base::makeOptional(minimumSize));
     setSize(getSize());
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::setMinimumSize(const Optional<Vector2u>& minimumSize)
+void WindowBase::setMinimumSize(const base::Optional<Vector2u>& minimumSize)
 {
     if (minimumSize.hasValue())
         setMinimumSize(*minimumSize);
     else
     {
-        m_impl->setMinimumSize(sf::nullOpt);
+        m_impl->setMinimumSize(base::nullOpt);
         setSize(getSize());
     }
 }
@@ -214,21 +215,21 @@ void WindowBase::setMaximumSize(const Vector2u& maximumSize)
         return maximumSize.x >= m_impl->getMinimumSize()->x && maximumSize.y >= m_impl->getMinimumSize()->y;
     };
 
-    SFML_ASSERT(validateMaxiumSize() && "Maximum size cannot be smaller than the minimum size along either axis");
+    SFML_BASE_ASSERT(validateMaxiumSize() && "Maximum size cannot be smaller than the minimum size along either axis");
 
-    m_impl->setMaximumSize(sf::makeOptional(maximumSize));
+    m_impl->setMaximumSize(sf::base::makeOptional(maximumSize));
     setSize(getSize());
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::setMaximumSize(const Optional<Vector2u>& maximumSize)
+void WindowBase::setMaximumSize(const base::Optional<Vector2u>& maximumSize)
 {
     if (maximumSize.hasValue())
         setMinimumSize(*maximumSize);
     else
     {
-        m_impl->setMaximumSize(sf::nullOpt);
+        m_impl->setMaximumSize(base::nullOpt);
         setSize(getSize());
     }
 }
@@ -326,7 +327,7 @@ bool WindowBase::createVulkanSurface(const Vulkan::VulkanSurfaceData& vulkanSurf
 
 
 ////////////////////////////////////////////////////////////
-Optional<Event> WindowBase::filterEvent(Optional<Event> event)
+base::Optional<Event> WindowBase::filterEvent(base::Optional<Event> event)
 {
     // Cache the new size if needed
     if (event.hasValue() && event->getIf<Event::Resized>())

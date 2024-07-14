@@ -30,7 +30,7 @@
 #include <SFML/Window/Sensor.hpp>
 #include <SFML/Window/SensorImpl.hpp>
 
-#include <SFML/System/EnumArray.hpp>
+#include <SFML/Base/EnumArray.hpp>
 
 
 namespace sf::priv
@@ -135,7 +135,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    EnumArray<Sensor::Type, Item, Sensor::Count> m_sensors; //!< Sensors information and state
+    base::EnumArray<Sensor::Type, Item, Sensor::Count> m_sensors; //!< Sensors information and state
 };
 
 } // namespace sf::priv

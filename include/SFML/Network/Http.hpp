@@ -29,8 +29,9 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Network/Export.hpp>
 
-#include <SFML/System/InPlacePImpl.hpp>
 #include <SFML/System/Time.hpp>
+
+#include <SFML/Base/InPlacePImpl.hpp>
 
 #include <string>
 
@@ -199,7 +200,7 @@ public:
         // Member data
         ////////////////////////////////////////////////////////////
         struct Impl;
-        priv::InPlacePImpl<Impl, 192> m_impl; //!< Implementation details
+        base::InPlacePImpl<Impl, 192> m_impl; //!< Implementation details
     };
 
     ////////////////////////////////////////////////////////////
@@ -364,7 +365,7 @@ public:
         // Member data
         ////////////////////////////////////////////////////////////
         struct Impl;
-        priv::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
+        base::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
     };
 
     ////////////////////////////////////////////////////////////
@@ -449,7 +450,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    priv::InPlacePImpl<Impl, 256> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 256> m_impl; //!< Implementation details
 };
 
 } // namespace sf

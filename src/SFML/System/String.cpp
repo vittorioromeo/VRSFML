@@ -25,11 +25,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/AlgorithmUtils.hpp>
-#include <SFML/System/Assert.hpp>
-#include <SFML/System/Macros.hpp>
 #include <SFML/System/String.hpp>
 #include <SFML/System/Utf.hpp>
+
+#include <SFML/Base/Algorithm.hpp>
+#include <SFML/Base/Assert.hpp>
+#include <SFML/Base/Macros.hpp>
 
 #include <cstring>
 #include <cwchar>
@@ -169,7 +170,7 @@ String::String(const char* ansiString, const std::locale& locale)
         if (length > 0)
         {
             m_string.reserve(length + 1);
-            Utf32::fromAnsi(ansiString, ansiString + length, priv::BackInserter(m_string), locale);
+            Utf32::fromAnsi(ansiString, ansiString + length, base::BackInserter(m_string), locale);
         }
     }
 }
@@ -179,7 +180,7 @@ String::String(const char* ansiString, const std::locale& locale)
 String::String(const std::string& ansiString, const std::locale& locale)
 {
     m_string.reserve(ansiString.length() + 1);
-    Utf32::fromAnsi(ansiString.begin(), ansiString.end(), priv::BackInserter(m_string), locale);
+    Utf32::fromAnsi(ansiString.begin(), ansiString.end(), base::BackInserter(m_string), locale);
 }
 
 
@@ -192,7 +193,7 @@ String::String(const wchar_t* wideString)
         if (length > 0)
         {
             m_string.reserve(length + 1);
-            Utf32::fromWide(wideString, wideString + length, priv::BackInserter(m_string));
+            Utf32::fromWide(wideString, wideString + length, base::BackInserter(m_string));
         }
     }
 }
@@ -202,7 +203,7 @@ String::String(const wchar_t* wideString)
 String::String(const std::wstring& wideString)
 {
     m_string.reserve(wideString.length() + 1);
-    Utf32::fromWide(wideString.begin(), wideString.end(), priv::BackInserter(m_string));
+    Utf32::fromWide(wideString.begin(), wideString.end(), base::BackInserter(m_string));
 }
 
 
@@ -215,7 +216,7 @@ String::String(const char32_t* utf32String)
 
 
 ////////////////////////////////////////////////////////////
-String::String(std::u32string utf32String) : m_string(SFML_MOVE(utf32String))
+String::String(std::u32string utf32String) : m_string(SFML_BASE_MOVE(utf32String))
 {
 }
 
@@ -242,7 +243,7 @@ std::string String::toAnsiString(const std::locale& locale) const
     output.reserve(m_string.length() + 1);
 
     // Convert
-    Utf32::toAnsi(m_string.begin(), m_string.end(), priv::BackInserter(output), 0, locale);
+    Utf32::toAnsi(m_string.begin(), m_string.end(), base::BackInserter(output), 0, locale);
 
     return output;
 }
@@ -256,7 +257,7 @@ std::wstring String::toWideString() const
     output.reserve(m_string.length() + 1);
 
     // Convert
-    Utf32::toWide(m_string.begin(), m_string.end(), priv::BackInserter(output), 0);
+    Utf32::toWide(m_string.begin(), m_string.end(), base::BackInserter(output), 0);
 
     return output;
 }
@@ -270,7 +271,7 @@ U8String String::toUtf8() const
     output.reserve(m_string.length());
 
     // Convert
-    Utf32::toUtf8(m_string.begin(), m_string.end(), priv::BackInserter(output));
+    Utf32::toUtf8(m_string.begin(), m_string.end(), base::BackInserter(output));
 
     return output;
 }
@@ -284,7 +285,7 @@ std::u16string String::toUtf16() const
     output.reserve(m_string.length());
 
     // Convert
-    Utf32::toUtf16(m_string.begin(), m_string.end(), priv::BackInserter(output));
+    Utf32::toUtf16(m_string.begin(), m_string.end(), base::BackInserter(output));
 
     return output;
 }
@@ -308,7 +309,7 @@ String& String::operator+=(const String& right)
 ////////////////////////////////////////////////////////////
 char32_t String::operator[](std::size_t index) const
 {
-    SFML_ASSERT(index < m_string.size() && "Index is out of bounds");
+    SFML_BASE_ASSERT(index < m_string.size() && "Index is out of bounds");
     return m_string[index];
 }
 
@@ -316,7 +317,7 @@ char32_t String::operator[](std::size_t index) const
 ////////////////////////////////////////////////////////////
 char32_t& String::operator[](std::size_t index)
 {
-    SFML_ASSERT(index < m_string.size() && "Index is out of bounds");
+    SFML_BASE_ASSERT(index < m_string.size() && "Index is out of bounds");
     return m_string[index];
 }
 

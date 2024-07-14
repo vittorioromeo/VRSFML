@@ -30,7 +30,7 @@
 #import <SFML/Window/macOS/SFOpenGLView.h>
 
 #import <AppKit/AppKit.h>
-#include <SFML/System/Optional.hpp>
+#include <SFML/Base/Optional.hpp>
 
 
 ////////////////////////////////////////////////////////////
@@ -103,9 +103,9 @@
 ///
 /// \param event a mouse button event
 ///
-/// \return Left, Right, ..., or sf::nullOpt if the button is unknown
+/// \return Left, Right, ..., or base::nullOpt if the button is unknown
 ///
 ////////////////////////////////////////////////////////////
-+ (Optional<sf::Mouse::Button>)mouseButtonFromEvent:(NSEvent*)event;
++ (base::Optional<sf::Mouse::Button>)mouseButtonFromEvent:(NSEvent*)event;
 
 @end

@@ -94,7 +94,7 @@ void ensureInit()
                            // Dump a message to the console and let the application terminate
                            sf::priv::err() << "Failed to load EGL entry points";
 
-                           SFML_ASSERT(false);
+                           SFML_BASE_ASSERT(false);
 
                            return false;
                        }
@@ -360,7 +360,7 @@ EGLConfig EglContext::getBestConfig(EGLDisplay display, unsigned int bitsPerPixe
         }
     }
 
-    SFML_ASSERT(bestScore < 0x7FFFFFFF && "Failed to calculate best config");
+    SFML_BASE_ASSERT(bestScore < 0x7FFFFFFF && "Failed to calculate best config");
 
     return bestConfig;
 }

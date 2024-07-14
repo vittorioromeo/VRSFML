@@ -33,16 +33,17 @@
 #include <SFML/Window/GLExtensions.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
 
-#include <SFML/System/AlgorithmUtils.hpp>
-#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InputStream.hpp>
-#include <SFML/System/Macros.hpp>
-#include <SFML/System/Optional.hpp>
 #include <SFML/System/Path.hpp>
 #include <SFML/System/PathUtils.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <SFML/System/Vector3.hpp>
+
+#include <SFML/Base/Algorithm.hpp>
+#include <SFML/Base/Assert.hpp>
+#include <SFML/Base/Macros.hpp>
+#include <SFML/Base/Optional.hpp>
 
 #include <fstream>
 #include <string>
@@ -99,14 +100,14 @@ struct [[nodiscard]] BufferSlice
 };
 
 // Read the contents of a file into an array of char
-[[nodiscard]] sf::Optional<BufferSlice> appendFileContentsToVector(const sf::Path& filename, std::vector<char>& buffer)
+[[nodiscard]] sf::base::Optional<BufferSlice> appendFileContentsToVector(const sf::Path& filename, std::vector<char>& buffer)
 {
     std::ifstream file(filename.to<std::string>(), std::ios_base::binary);
 
     if (!file)
     {
         sf::priv::err() << "Failed to open shader file";
-        return sf::nullOpt;
+        return sf::base::nullOpt;
     }
 
     file.seekg(0, std::ios_base::end);
@@ -122,18 +123,18 @@ struct [[nodiscard]] BufferSlice
     }
 
     buffer.push_back('\0');
-    return sf::makeOptional<BufferSlice>(bufferSizeBeforeRead, buffer.size() - bufferSizeBeforeRead);
+    return sf::base::makeOptional<BufferSlice>(bufferSizeBeforeRead, buffer.size() - bufferSizeBeforeRead);
 }
 
 // Read the contents of a stream into an array of char
-[[nodiscard]] sf::Optional<BufferSlice> appendStreamContentsToVector(sf::InputStream& stream, std::vector<char>& buffer)
+[[nodiscard]] sf::base::Optional<BufferSlice> appendStreamContentsToVector(sf::InputStream& stream, std::vector<char>& buffer)
 {
-    const sf::Optional<std::size_t> size = stream.getSize();
+    const sf::base::Optional<std::size_t> size = stream.getSize();
 
     if (!size.hasValue() || size.value() == 0)
     {
         buffer.push_back('\0');
-        return sf::nullOpt;
+        return sf::base::nullOpt;
     }
 
     const std::size_t bufferSizeBeforeRead = buffer.size();
@@ -142,19 +143,19 @@ struct [[nodiscard]] BufferSlice
     if (!stream.seek(0).hasValue())
     {
         sf::priv::err() << "Failed to seek shader stream";
-        return sf::nullOpt;
+        return sf::base::nullOpt;
     }
 
-    const sf::Optional<std::size_t> read = stream.read(buffer.data() + bufferSizeBeforeRead, *size);
+    const sf::base::Optional<std::size_t> read = stream.read(buffer.data() + bufferSizeBeforeRead, *size);
 
     if (!read.hasValue() || *read != *size)
     {
         sf::priv::err() << "Failed to read stream contents into buffer";
-        return sf::nullOpt;
+        return sf::base::nullOpt;
     }
 
     buffer.push_back('\0');
-    return sf::makeOptional<BufferSlice>(bufferSizeBeforeRead, buffer.size() - bufferSizeBeforeRead);
+    return sf::base::makeOptional<BufferSlice>(bufferSizeBeforeRead, buffer.size() - bufferSizeBeforeRead);
 }
 
 // Return a thread-local vector for suitable use as a temporary buffer
@@ -257,10 +258,10 @@ struct Shader::Impl
 
     Impl(Impl&& rhs) noexcept :
     graphicsContext(rhs.graphicsContext),
-    shaderProgram(priv::exchange(rhs.shaderProgram, 0u)),
-    currentTexture(priv::exchange(rhs.currentTexture, -1)),
-    textures(SFML_MOVE(rhs.textures)),
-    uniforms(SFML_MOVE(rhs.uniforms))
+    shaderProgram(base::exchange(rhs.shaderProgram, 0u)),
+    currentTexture(base::exchange(rhs.currentTexture, -1)),
+    textures(SFML_BASE_MOVE(rhs.textures)),
+    uniforms(SFML_BASE_MOVE(rhs.uniforms))
     {
     }
 };
@@ -269,7 +270,7 @@ struct Shader::Impl
 ////////////////////////////////////////////////////////////
 Shader::UniformLocation::UniformLocation(int location) : m_value(location)
 {
-    SFML_ASSERT(m_value != -1);
+    SFML_BASE_ASSERT(m_value != -1);
 }
 
 
@@ -284,7 +285,7 @@ public:
     [[nodiscard, gnu::always_inline]] explicit UniformBinder(Shader& shader) :
     m_currentProgram(castToGlHandle(shader.m_impl->shaderProgram))
     {
-        SFML_ASSERT(m_currentProgram != 0);
+        SFML_BASE_ASSERT(m_currentProgram != 0);
 
         // Enable program object
         glCheck(m_savedProgram = GLEXT_glGetHandle(GLEXT_GL_PROGRAM_OBJECT));
@@ -324,7 +325,7 @@ private:
 ////////////////////////////////////////////////////////////
 Shader::~Shader()
 {
-    SFML_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
 
     // Destroy effect program
     if (m_impl->shaderProgram)
@@ -348,34 +349,34 @@ Shader& Shader::operator=(Shader&& right) noexcept
     // Explicit scope for RAII
     {
         // Destroy effect program
-        SFML_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
-        SFML_ASSERT(m_impl->shaderProgram);
+        SFML_BASE_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
+        SFML_BASE_ASSERT(m_impl->shaderProgram);
         glCheck(GLEXT_glDeleteObject(castToGlHandle(m_impl->shaderProgram)));
     }
 
     // Move the contents of right.
-    m_impl->shaderProgram  = priv::exchange(right.m_impl->shaderProgram, 0u);
-    m_impl->currentTexture = priv::exchange(right.m_impl->currentTexture, -1);
-    m_impl->textures       = SFML_MOVE(right.m_impl->textures);
-    m_impl->uniforms       = SFML_MOVE(right.m_impl->uniforms);
+    m_impl->shaderProgram  = base::exchange(right.m_impl->shaderProgram, 0u);
+    m_impl->currentTexture = base::exchange(right.m_impl->currentTexture, -1);
+    m_impl->textures       = SFML_BASE_MOVE(right.m_impl->textures);
+    m_impl->uniforms       = SFML_BASE_MOVE(right.m_impl->uniforms);
 
     return *this;
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<Shader> Shader::loadFromFile(GraphicsContext& graphicsContext, const Path& filename, Type type)
+base::Optional<Shader> Shader::loadFromFile(GraphicsContext& graphicsContext, const Path& filename, Type type)
 {
     // Prepare thread-local buffer
     std::vector<char>& buffer = getThreadLocalCharBuffer();
     buffer.clear();
 
     // Read the file
-    const Optional<BufferSlice> shaderSlice = appendFileContentsToVector(filename, buffer);
+    const base::Optional<BufferSlice> shaderSlice = appendFileContentsToVector(filename, buffer);
     if (!shaderSlice.hasValue())
     {
-        priv::err() << "Failed to open shader file\n" << priv::formatDebugPathInfo(filename);
-        return sf::nullOpt;
+        priv::err() << "Failed to open shader file\n" << priv::PathDebugFormatter{filename};
+        return base::nullOpt;
     }
 
     const std::string_view shaderView = shaderSlice->toView(buffer);
@@ -392,28 +393,28 @@ Optional<Shader> Shader::loadFromFile(GraphicsContext& graphicsContext, const Pa
 
 
 ////////////////////////////////////////////////////////////
-Optional<Shader> Shader::loadFromFile(GraphicsContext& graphicsContext,
-                                      const Path&      vertexShaderFilename,
-                                      const Path&      fragmentShaderFilename)
+base::Optional<Shader> Shader::loadFromFile(GraphicsContext& graphicsContext,
+                                            const Path&      vertexShaderFilename,
+                                            const Path&      fragmentShaderFilename)
 {
     // Prepare thread-local buffer
     std::vector<char>& buffer = getThreadLocalCharBuffer();
     buffer.clear();
 
     // Read the vertex shader file
-    const Optional<BufferSlice> vertexShaderSlice = appendFileContentsToVector(vertexShaderFilename, buffer);
+    const base::Optional<BufferSlice> vertexShaderSlice = appendFileContentsToVector(vertexShaderFilename, buffer);
     if (!vertexShaderSlice.hasValue())
     {
-        priv::err() << "Failed to open vertex shader file\n" << priv::formatDebugPathInfo(vertexShaderFilename);
-        return sf::nullOpt;
+        priv::err() << "Failed to open vertex shader file\n" << priv::PathDebugFormatter{vertexShaderFilename};
+        return base::nullOpt;
     }
 
     // Read the fragment shader file
-    const Optional<BufferSlice> fragmentShaderSlice = appendFileContentsToVector(fragmentShaderFilename, buffer);
+    const base::Optional<BufferSlice> fragmentShaderSlice = appendFileContentsToVector(fragmentShaderFilename, buffer);
     if (!fragmentShaderSlice.hasValue())
     {
-        priv::err() << "Failed to open fragment shader file\n" << priv::formatDebugPathInfo(fragmentShaderFilename);
-        return sf::nullOpt;
+        priv::err() << "Failed to open fragment shader file\n" << priv::PathDebugFormatter{fragmentShaderFilename};
+        return base::nullOpt;
     }
 
     // Compile the shader program
@@ -422,37 +423,37 @@ Optional<Shader> Shader::loadFromFile(GraphicsContext& graphicsContext,
 
 
 ////////////////////////////////////////////////////////////
-Optional<Shader> Shader::loadFromFile(GraphicsContext& graphicsContext,
-                                      const Path&      vertexShaderFilename,
-                                      const Path&      geometryShaderFilename,
-                                      const Path&      fragmentShaderFilename)
+base::Optional<Shader> Shader::loadFromFile(GraphicsContext& graphicsContext,
+                                            const Path&      vertexShaderFilename,
+                                            const Path&      geometryShaderFilename,
+                                            const Path&      fragmentShaderFilename)
 {
     // Prepare thread-local buffer
     std::vector<char>& buffer = getThreadLocalCharBuffer();
     buffer.clear();
 
     // Read the vertex shader file
-    const Optional<BufferSlice> vertexShaderSlice = appendFileContentsToVector(vertexShaderFilename, buffer);
+    const base::Optional<BufferSlice> vertexShaderSlice = appendFileContentsToVector(vertexShaderFilename, buffer);
     if (!vertexShaderSlice.hasValue())
     {
-        priv::err() << "Failed to open vertex shader file\n" << priv::formatDebugPathInfo(vertexShaderFilename);
-        return sf::nullOpt;
+        priv::err() << "Failed to open vertex shader file\n" << priv::PathDebugFormatter{vertexShaderFilename};
+        return base::nullOpt;
     }
 
     // Read the geometry shader file
-    const Optional<BufferSlice> geometryShaderSlice = appendFileContentsToVector(geometryShaderFilename, buffer);
+    const base::Optional<BufferSlice> geometryShaderSlice = appendFileContentsToVector(geometryShaderFilename, buffer);
     if (!geometryShaderSlice.hasValue())
     {
-        priv::err() << "Failed to open geometry shader file\n" << priv::formatDebugPathInfo(geometryShaderFilename);
-        return sf::nullOpt;
+        priv::err() << "Failed to open geometry shader file\n" << priv::PathDebugFormatter{geometryShaderFilename};
+        return base::nullOpt;
     }
 
     // Read the fragment shader file
-    const Optional<BufferSlice> fragmentShaderSlice = appendFileContentsToVector(fragmentShaderFilename, buffer);
+    const base::Optional<BufferSlice> fragmentShaderSlice = appendFileContentsToVector(fragmentShaderFilename, buffer);
     if (!fragmentShaderSlice.hasValue())
     {
-        priv::err() << "Failed to open fragment shader file\n" << priv::formatDebugPathInfo(fragmentShaderFilename);
-        return sf::nullOpt;
+        priv::err() << "Failed to open fragment shader file\n" << priv::PathDebugFormatter{fragmentShaderFilename};
+        return base::nullOpt;
     }
 
     // Compile the shader program
@@ -464,7 +465,7 @@ Optional<Shader> Shader::loadFromFile(GraphicsContext& graphicsContext,
 
 
 ////////////////////////////////////////////////////////////
-Optional<Shader> Shader::loadFromMemory(GraphicsContext& graphicsContext, std::string_view shader, Type type)
+base::Optional<Shader> Shader::loadFromMemory(GraphicsContext& graphicsContext, std::string_view shader, Type type)
 {
     // Compile the shader program
     if (type == Type::Vertex)
@@ -478,7 +479,9 @@ Optional<Shader> Shader::loadFromMemory(GraphicsContext& graphicsContext, std::s
 
 
 ////////////////////////////////////////////////////////////
-Optional<Shader> Shader::loadFromMemory(GraphicsContext& graphicsContext, std::string_view vertexShader, std::string_view fragmentShader)
+base::Optional<Shader> Shader::loadFromMemory(GraphicsContext& graphicsContext,
+                                              std::string_view vertexShader,
+                                              std::string_view fragmentShader)
 {
     // Compile the shader program
     return compile(graphicsContext, vertexShader, {}, fragmentShader);
@@ -486,10 +489,10 @@ Optional<Shader> Shader::loadFromMemory(GraphicsContext& graphicsContext, std::s
 
 
 ////////////////////////////////////////////////////////////
-Optional<Shader> Shader::loadFromMemory(GraphicsContext& graphicsContext,
-                                        std::string_view vertexShader,
-                                        std::string_view geometryShader,
-                                        std::string_view fragmentShader)
+base::Optional<Shader> Shader::loadFromMemory(GraphicsContext& graphicsContext,
+                                              std::string_view vertexShader,
+                                              std::string_view geometryShader,
+                                              std::string_view fragmentShader)
 {
     // Compile the shader program
     return compile(graphicsContext, vertexShader, geometryShader, fragmentShader);
@@ -497,18 +500,18 @@ Optional<Shader> Shader::loadFromMemory(GraphicsContext& graphicsContext,
 
 
 ////////////////////////////////////////////////////////////
-Optional<Shader> Shader::loadFromStream(GraphicsContext& graphicsContext, InputStream& stream, Type type)
+base::Optional<Shader> Shader::loadFromStream(GraphicsContext& graphicsContext, InputStream& stream, Type type)
 {
     // Prepare thread-local buffer
     std::vector<char>& buffer = getThreadLocalCharBuffer();
     buffer.clear();
 
     // Read the shader code from the stream
-    const Optional<BufferSlice> shaderSlice = appendStreamContentsToVector(stream, buffer);
+    const base::Optional<BufferSlice> shaderSlice = appendStreamContentsToVector(stream, buffer);
     if (!shaderSlice.hasValue())
     {
         priv::err() << "Failed to read vertex shader from stream";
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
     const std::string_view shaderView = shaderSlice->toView(buffer);
@@ -525,28 +528,28 @@ Optional<Shader> Shader::loadFromStream(GraphicsContext& graphicsContext, InputS
 
 
 ////////////////////////////////////////////////////////////
-Optional<Shader> Shader::loadFromStream(GraphicsContext& graphicsContext,
-                                        InputStream&     vertexShaderStream,
-                                        InputStream&     fragmentShaderStream)
+base::Optional<Shader> Shader::loadFromStream(GraphicsContext& graphicsContext,
+                                              InputStream&     vertexShaderStream,
+                                              InputStream&     fragmentShaderStream)
 {
     // Prepare thread-local buffer
     std::vector<char>& buffer = getThreadLocalCharBuffer();
     buffer.clear();
 
     // Read the vertex shader code from the stream
-    const Optional<BufferSlice> vertexShaderSlice = appendStreamContentsToVector(vertexShaderStream, buffer);
+    const base::Optional<BufferSlice> vertexShaderSlice = appendStreamContentsToVector(vertexShaderStream, buffer);
     if (!vertexShaderSlice.hasValue())
     {
         priv::err() << "Failed to read vertex shader from stream";
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
     // Read the fragment shader code from the stream
-    const Optional<BufferSlice> fragmentShaderSlice = appendStreamContentsToVector(fragmentShaderStream, buffer);
+    const base::Optional<BufferSlice> fragmentShaderSlice = appendStreamContentsToVector(fragmentShaderStream, buffer);
     if (!fragmentShaderSlice.hasValue())
     {
         priv::err() << "Failed to read fragment shader from stream";
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
     // Compile the shader program
@@ -555,37 +558,37 @@ Optional<Shader> Shader::loadFromStream(GraphicsContext& graphicsContext,
 
 
 ////////////////////////////////////////////////////////////
-Optional<Shader> Shader::loadFromStream(GraphicsContext& graphicsContext,
-                                        InputStream&     vertexShaderStream,
-                                        InputStream&     geometryShaderStream,
-                                        InputStream&     fragmentShaderStream)
+base::Optional<Shader> Shader::loadFromStream(GraphicsContext& graphicsContext,
+                                              InputStream&     vertexShaderStream,
+                                              InputStream&     geometryShaderStream,
+                                              InputStream&     fragmentShaderStream)
 {
     // Prepare thread-local buffer
     std::vector<char>& buffer = getThreadLocalCharBuffer();
     buffer.clear();
 
     // Read the vertex shader code from the stream
-    const Optional<BufferSlice> vertexShaderSlice = appendStreamContentsToVector(vertexShaderStream, buffer);
+    const base::Optional<BufferSlice> vertexShaderSlice = appendStreamContentsToVector(vertexShaderStream, buffer);
     if (!vertexShaderSlice.hasValue())
     {
         priv::err() << "Failed to read vertex shader from stream";
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
     // Read the geometry shader code from the stream
-    const Optional<BufferSlice> geometryShaderSlice = appendStreamContentsToVector(geometryShaderStream, buffer);
+    const base::Optional<BufferSlice> geometryShaderSlice = appendStreamContentsToVector(geometryShaderStream, buffer);
     if (!geometryShaderSlice.hasValue())
     {
         priv::err() << "Failed to read geometry shader from stream";
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
     // Read the fragment shader code from the stream
-    const Optional<BufferSlice> fragmentShaderSlice = appendStreamContentsToVector(fragmentShaderStream, buffer);
+    const base::Optional<BufferSlice> fragmentShaderSlice = appendStreamContentsToVector(fragmentShaderStream, buffer);
     if (!fragmentShaderSlice.hasValue())
     {
         priv::err() << "Failed to read fragment shader from stream";
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
     // Compile the shader program
@@ -597,13 +600,13 @@ Optional<Shader> Shader::loadFromStream(GraphicsContext& graphicsContext,
 
 
 ////////////////////////////////////////////////////////////
-Optional<Shader::UniformLocation> Shader::getUniformLocation(std::string_view uniformName)
+base::Optional<Shader::UniformLocation> Shader::getUniformLocation(std::string_view uniformName)
 {
     const int location = getUniformLocationImpl(uniformName);
     if (location == -1)
-        return sf::nullOpt;
+        return base::nullOpt;
 
-    return sf::makeOptional(UniformLocation{location});
+    return sf::base::makeOptional(UniformLocation{location});
 }
 
 
@@ -718,9 +721,9 @@ void Shader::setUniform(UniformLocation location, const Glsl::Mat4& matrix)
 ////////////////////////////////////////////////////////////
 bool Shader::setUniform(UniformLocation location, const Texture& texture)
 {
-    SFML_ASSERT(m_impl->shaderProgram);
+    SFML_BASE_ASSERT(m_impl->shaderProgram);
 
-    SFML_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
 
     // Store the location -> texture mapping
     if (const auto it = m_impl->textures.find(location.m_value); it != m_impl->textures.end())
@@ -747,9 +750,9 @@ bool Shader::setUniform(UniformLocation location, const Texture& texture)
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, CurrentTextureType)
 {
-    SFML_ASSERT(m_impl->shaderProgram);
+    SFML_BASE_ASSERT(m_impl->shaderProgram);
 
-    SFML_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
 
     // Find the location of the variable in the shader
     m_impl->currentTexture = location.m_value;
@@ -829,7 +832,7 @@ unsigned int Shader::getNativeHandle() const
 ////////////////////////////////////////////////////////////
 void Shader::bind() const
 {
-    SFML_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
 
     // Make sure that we can use shaders
     if (!isAvailable(*m_impl->graphicsContext))
@@ -861,7 +864,7 @@ void Shader::bind() const
 
 void Shader::unbind(GraphicsContext& graphicsContext)
 {
-    SFML_ASSERT(graphicsContext.hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(graphicsContext.hasAnyActiveGlContext());
 
     // Bind no shader
     glCheck(GLEXT_glUseProgramObject({}));
@@ -873,7 +876,7 @@ bool Shader::isAvailable(GraphicsContext& graphicsContext)
 {
     static const bool available = [&graphicsContext]
     {
-        SFML_ASSERT(graphicsContext.hasAnyActiveGlContext());
+        SFML_BASE_ASSERT(graphicsContext.hasAnyActiveGlContext());
         priv::ensureExtensionsInit(graphicsContext);
 
         return GLEXT_multitexture && GLEXT_shading_language_100 && GLEXT_shader_objects && GLEXT_vertex_shader &&
@@ -889,7 +892,7 @@ bool Shader::isGeometryAvailable(GraphicsContext& graphicsContext)
 {
     static const bool available = [&graphicsContext]
     {
-        SFML_ASSERT(graphicsContext.hasAnyActiveGlContext());
+        SFML_BASE_ASSERT(graphicsContext.hasAnyActiveGlContext());
         priv::ensureExtensionsInit(graphicsContext);
 
         return isAvailable(graphicsContext) && (GLEXT_geometry_shader4 || GLEXT_GL_VERSION_3_2);
@@ -900,19 +903,19 @@ bool Shader::isGeometryAvailable(GraphicsContext& graphicsContext)
 
 
 ////////////////////////////////////////////////////////////
-Shader::Shader(priv::PassKey<Shader>&&, GraphicsContext& graphicsContext, unsigned int shaderProgram) :
+Shader::Shader(base::PassKey<Shader>&&, GraphicsContext& graphicsContext, unsigned int shaderProgram) :
 m_impl(graphicsContext, shaderProgram)
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
-                                 std::string_view vertexShaderCode,
-                                 std::string_view geometryShaderCode,
-                                 std::string_view fragmentShaderCode)
+base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
+                                       std::string_view vertexShaderCode,
+                                       std::string_view geometryShaderCode,
+                                       std::string_view fragmentShaderCode)
 {
-    SFML_ASSERT(graphicsContext.hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(graphicsContext.hasAnyActiveGlContext());
 
     // First make sure that we can use shaders
     if (!isAvailable(graphicsContext))
@@ -920,7 +923,7 @@ Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
         priv::err() << "Failed to create a shader: your system doesn't support shaders "
                     << "(you should test Shader::isAvailable() before trying to use the Shader class)";
 
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
     // Make sure we can use geometry shaders
@@ -929,7 +932,7 @@ Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
         priv::err() << "Failed to create a shader: your system doesn't support geometry shaders "
                     << "(you should test Shader::isGeometryAvailable() before trying to use geometry shaders)";
 
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
     // Create the program
@@ -957,7 +960,7 @@ Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
             priv::err() << "Failed to compile vertex shader:" << '\n' << static_cast<const char*>(log);
             glCheck(GLEXT_glDeleteObject(vertexShader));
             glCheck(GLEXT_glDeleteObject(shaderProgram));
-            return sf::nullOpt;
+            return base::nullOpt;
         }
 
         // Attach the shader to the program, and delete it (not needed anymore)
@@ -985,7 +988,7 @@ Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
             priv::err() << "Failed to compile geometry shader:" << '\n' << static_cast<const char*>(log);
             glCheck(GLEXT_glDeleteObject(geometryShader));
             glCheck(GLEXT_glDeleteObject(shaderProgram));
-            return sf::nullOpt;
+            return base::nullOpt;
         }
 
         // Attach the shader to the program, and delete it (not needed anymore)
@@ -1014,7 +1017,7 @@ Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
             priv::err() << "Failed to compile fragment shader:" << '\n' << static_cast<const char*>(log);
             glCheck(GLEXT_glDeleteObject(fragmentShader));
             glCheck(GLEXT_glDeleteObject(shaderProgram));
-            return sf::nullOpt;
+            return base::nullOpt;
         }
 
         // Attach the shader to the program, and delete it (not needed anymore)
@@ -1034,14 +1037,14 @@ Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
         glCheck(GLEXT_glGetInfoLog(shaderProgram, sizeof(log), nullptr, log));
         priv::err() << "Failed to link shader:" << '\n' << static_cast<const char*>(log);
         glCheck(GLEXT_glDeleteObject(shaderProgram));
-        return sf::nullOpt;
+        return base::nullOpt;
     }
 
     // Force an OpenGL flush, so that the shader will appear updated
     // in all contexts immediately (solves problems in multi-threaded apps)
     glCheck(glFlush());
 
-    return sf::makeOptional<Shader>(priv::PassKey<Shader>{}, graphicsContext, castFromGlHandle(shaderProgram));
+    return sf::base::makeOptional<Shader>(base::PassKey<Shader>{}, graphicsContext, castFromGlHandle(shaderProgram));
 }
 
 
@@ -1109,71 +1112,71 @@ Shader& Shader::operator=(Shader&& right) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-Optional<Shader> Shader::loadFromFile(const Path& /* filename */, Type /* type */)
+base::Optional<Shader> Shader::loadFromFile(const Path& /* filename */, Type /* type */)
 {
-    return sf::nullOpt;
+    return base::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<Shader> Shader::loadFromFile(const Path& /* vertexShaderFilename */, const Path& /* fragmentShaderFilename */)
+base::Optional<Shader> Shader::loadFromFile(const Path& /* vertexShaderFilename */, const Path& /* fragmentShaderFilename */)
 {
-    return sf::nullOpt;
+    return base::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<Shader> Shader::loadFromFile(const Path& /* vertexShaderFilename */,
-                                      const Path& /* geometryShaderFilename */,
-                                      const Path& /* fragmentShaderFilename */)
+base::Optional<Shader> Shader::loadFromFile(const Path& /* vertexShaderFilename */,
+                                            const Path& /* geometryShaderFilename */,
+                                            const Path& /* fragmentShaderFilename */)
 {
-    return sf::nullOpt;
+    return base::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<Shader> Shader::loadFromMemory(std::string_view /* shader */, Type /* type */)
+base::Optional<Shader> Shader::loadFromMemory(std::string_view /* shader */, Type /* type */)
 {
-    return sf::nullOpt;
+    return base::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<Shader> Shader::loadFromMemory(std::string_view /* vertexShader */, std::string_view /* fragmentShader */)
+base::Optional<Shader> Shader::loadFromMemory(std::string_view /* vertexShader */, std::string_view /* fragmentShader */)
 {
-    return sf::nullOpt;
+    return base::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<Shader> Shader::loadFromMemory(std::string_view /* vertexShader */,
-                                        std::string_view /* geometryShader */,
-                                        std::string_view /* fragmentShader */)
+base::Optional<Shader> Shader::loadFromMemory(std::string_view /* vertexShader */,
+                                              std::string_view /* geometryShader */,
+                                              std::string_view /* fragmentShader */)
 {
-    return sf::nullOpt;
+    return base::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<Shader> Shader::loadFromStream(InputStream& /* stream */, Type /* type */)
+base::Optional<Shader> Shader::loadFromStream(InputStream& /* stream */, Type /* type */)
 {
-    return sf::nullOpt;
+    return base::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<Shader> Shader::loadFromStream(InputStream& /* vertexShaderStream */, InputStream& /* fragmentShaderStream */)
+base::Optional<Shader> Shader::loadFromStream(InputStream& /* vertexShaderStream */, InputStream& /* fragmentShaderStream */)
 {
-    return sf::nullOpt;
+    return base::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<Shader> Shader::loadFromStream(InputStream& /* vertexShaderStream */,
-                                        InputStream& /* geometryShaderStream */,
-                                        InputStream& /* fragmentShaderStream */)
+base::Optional<Shader> Shader::loadFromStream(InputStream& /* vertexShaderStream */,
+                                              InputStream& /* geometryShaderStream */,
+                                              InputStream& /* fragmentShaderStream */)
 {
-    return sf::nullOpt;
+    return base::nullOpt;
 }
 
 
@@ -1338,17 +1341,17 @@ bool Shader::isGeometryAvailable()
 
 
 ////////////////////////////////////////////////////////////
-Shader::Shader(priv::PassKey<Shader>&&, unsigned int shaderProgram) : m_impl->shaderProgram(shaderProgram)
+Shader::Shader(base::PassKey<Shader>&&, unsigned int shaderProgram) : m_impl->shaderProgram(shaderProgram)
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-Optional<Shader> Shader::compile(std::string_view /* vertexShaderCode */,
-                                 std::string_view /* geometryShaderCode */,
-                                 std::string_view /* fragmentShaderCode */)
+base::Optional<Shader> Shader::compile(std::string_view /* vertexShaderCode */,
+                                       std::string_view /* geometryShaderCode */,
+                                       std::string_view /* fragmentShaderCode */)
 {
-    return sf::nullOpt;
+    return base::nullOpt;
 }
 
 

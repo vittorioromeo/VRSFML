@@ -24,26 +24,39 @@
 
 #pragma once
 
-////////////////////////////////////////////////////////////
-// Headers
-////////////////////////////////////////////////////////////
-#if __has_builtin(__is_same)
 
-#define SFML_PRIV_IS_SAME(a, b) __is_same(a, b)
-
-#else
-
-namespace sf::priv
+namespace sf::base
 {
-
-template <typename, typename>
-inline constexpr bool isSameType = false;
-
+////////////////////////////////////////////////////////////
+/// \private
+///
+/// \brief Generic implementation of the PassKey idiom
+///
+////////////////////////////////////////////////////////////
 template <typename T>
-inline constexpr bool isSameType<T, T> = true;
+class PassKey
+{
+    friend T;
 
-} // namespace sf::priv
+private:
+    // NOLINTBEGIN(modernize-use-equals-delete)
+    // NOLINTBEGIN(modernize-use-equals-default)
 
-#define SFML_PRIV_IS_SAME(a, b) ::sf::priv::isSameType<a, b>
+    // Intentionally not using `= default` here as it would make `PassKey` an aggregate
+    // and thus constructible from anyone
+    [[nodiscard]] explicit PassKey() noexcept
+    {
+    }
 
-#endif
+    //NOLINTEND(modernize-use-equals-default)
+    //NOLINTEND(modernize-use-equals-delete)
+
+public:
+    PassKey(const PassKey&) = delete;
+    PassKey(PassKey&&)      = delete;
+
+    PassKey& operator=(const PassKey&) = delete;
+    PassKey& operator=(PassKey&&)      = delete;
+};
+
+} // namespace sf::base

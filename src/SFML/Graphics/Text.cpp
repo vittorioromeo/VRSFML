@@ -35,10 +35,11 @@
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/Vertex.hpp>
 
-#include <SFML/System/Macros.hpp>
-#include <SFML/System/MathUtils.hpp>
 #include <SFML/System/Rect.hpp>
 #include <SFML/System/String.hpp>
+
+#include <SFML/Base/Macros.hpp>
+#include <SFML/Base/Math.hpp>
 
 #include <vector>
 
@@ -59,8 +60,8 @@ void addLine(std::vector<sf::Vertex>& vertices,
              float                    thickness,
              float                    outlineThickness = 0)
 {
-    const float top    = sf::priv::floor(lineTop + offset - (thickness / 2) + 0.5f);
-    const float bottom = top + sf::priv::floor(thickness + 0.5f);
+    const float top    = sf::base::floor(lineTop + offset - (thickness / 2) + 0.5f);
+    const float bottom = top + sf::base::floor(thickness + 0.5f);
 
     const sf::Vertex vertexData[] = {{{-outlineThickness, top - outlineThickness}, color, {1.0f, 1.0f}},
                                      {{lineLength + outlineThickness, top - outlineThickness}, color, {1.0f, 1.0f}},
@@ -125,7 +126,7 @@ struct Text::Impl
 
     explicit Impl(const Font& theFont, String theString, unsigned int theCharacterSize) :
     font(&theFont),
-    string(SFML_MOVE(theString)),
+    string(SFML_BASE_MOVE(theString)),
     characterSize(theCharacterSize)
     {
     }
@@ -133,7 +134,8 @@ struct Text::Impl
 
 
 ////////////////////////////////////////////////////////////
-Text::Text(const Font& font, String string, unsigned int characterSize) : m_impl(font, SFML_MOVE(string), characterSize)
+Text::Text(const Font& font, String string, unsigned int characterSize) :
+m_impl(font, SFML_BASE_MOVE(string), characterSize)
 {
     SFML_UPDATE_LIFETIME_DEPENDANT(Font, Text, this, m_impl->font);
 }
@@ -352,7 +354,7 @@ float Text::getOutlineThickness() const
 Vector2f Text::findCharacterPos(std::size_t index) const
 {
     // Adjust the index if it's out of range
-    index = priv::min(index, m_impl->string.getSize());
+    index = base::min(index, m_impl->string.getSize());
 
     // Precompute the variables needed by the algorithm
     const bool  isBold          = !!(m_impl->style & Style::Bold);
@@ -592,8 +594,8 @@ void Text::ensureGeometryUpdate() const
         if ((curChar == U' ') || (curChar == U'\n') || (curChar == U'\t'))
         {
             // Update the current bounds (min coordinates)
-            minX = priv::min(minX, x);
-            minY = priv::min(minY, y);
+            minX = base::min(minX, x);
+            minY = base::min(minY, y);
 
             switch (curChar)
             {
@@ -610,8 +612,8 @@ void Text::ensureGeometryUpdate() const
             }
 
             // Update the current bounds (max coordinates)
-            maxX = priv::max(maxX, x);
-            maxY = priv::max(maxY, y);
+            maxX = base::max(maxX, x);
+            maxY = base::max(maxY, y);
 
             // Next glyph, no need to create a quad for whitespace
             continue;
@@ -636,10 +638,10 @@ void Text::ensureGeometryUpdate() const
         const Vector2f p1 = glyph.bounds.position;
         const Vector2f p2 = glyph.bounds.position + glyph.bounds.size;
 
-        minX = priv::min(minX, x + p1.x - italicShear * p2.y);
-        maxX = priv::max(maxX, x + p2.x - italicShear * p1.y);
-        minY = priv::min(minY, y + p1.y);
-        maxY = priv::max(maxY, y + p2.y);
+        minX = base::min(minX, x + p1.x - italicShear * p2.y);
+        maxX = base::max(maxX, x + p2.x - italicShear * p1.y);
+        minY = base::min(minY, y + p1.y);
+        maxY = base::max(maxY, y + p2.y);
 
         // Advance to the next character
         x += glyph.advance + letterSpacing;
@@ -648,7 +650,7 @@ void Text::ensureGeometryUpdate() const
     // If we're using outline, update the current bounds
     if (m_impl->outlineThickness != 0)
     {
-        const float outline = priv::fabs(priv::ceil(m_impl->outlineThickness));
+        const float outline = base::fabs(base::ceil(m_impl->outlineThickness));
         minX -= outline;
         maxX += outline;
         minY -= outline;

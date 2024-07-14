@@ -31,9 +31,9 @@
 
 #include <SFML/Audio/SoundChannel.hpp>
 
-#include <SFML/System/Optional.hpp>
-#include <SFML/System/PassKey.hpp>
-#include <SFML/System/UniquePtr.hpp>
+#include <SFML/Base/Optional.hpp>
+#include <SFML/Base/PassKey.hpp>
+#include <SFML/Base/UniquePtr.hpp>
 
 #include <vector>
 
@@ -90,7 +90,7 @@ public:
     /// \return Output sound file if the file was successfully opened
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Optional<OutputSoundFile> openFromFile(
+    [[nodiscard]] static base::Optional<OutputSoundFile> openFromFile(
         const Path&                      filename,
         unsigned int                     sampleRate,
         unsigned int                     channelCount,
@@ -117,13 +117,13 @@ public:
     /// \brief Constructor from writer
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit OutputSoundFile(priv::PassKey<OutputSoundFile>&&, priv::UniquePtr<SoundFileWriter>&& writer);
+    [[nodiscard]] explicit OutputSoundFile(base::PassKey<OutputSoundFile>&&, base::UniquePtr<SoundFileWriter>&& writer);
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    priv::UniquePtr<SoundFileWriter> m_writer; //!< Writer that handles I/O on the file's format
+    base::UniquePtr<SoundFileWriter> m_writer; //!< Writer that handles I/O on the file's format
 };
 
 } // namespace sf

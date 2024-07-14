@@ -30,7 +30,7 @@
 #include <SFML/Window/EglContext.hpp>
 #include <SFML/Window/Event.hpp>
 
-#include <SFML/System/EnumArray.hpp>
+#include <SFML/Base/EnumArray.hpp>
 
 #include <android/configuration.h>
 #include <android/native_activity.h>

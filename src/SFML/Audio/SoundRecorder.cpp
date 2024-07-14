@@ -28,8 +28,9 @@
 #include <SFML/Audio/CaptureDevice.hpp>
 #include <SFML/Audio/SoundRecorder.hpp>
 
-#include <SFML/System/Assert.hpp>
 #include <SFML/System/Err.hpp>
+
+#include <SFML/Base/Assert.hpp>
 
 #include <miniaudio.h>
 
@@ -45,8 +46,8 @@ SoundRecorder::SoundRecorder() = default;
 ////////////////////////////////////////////////////////////
 SoundRecorder::~SoundRecorder()
 {
-    SFML_ASSERT(m_lastCaptureDevice == nullptr &&
-                "The sound recorder must be stopped before destroying the capture device");
+    SFML_BASE_ASSERT(m_lastCaptureDevice == nullptr &&
+                     "The sound recorder must be stopped before destroying the capture device");
 }
 
 

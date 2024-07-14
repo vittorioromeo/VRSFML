@@ -28,10 +28,11 @@
 #include <SFML/Network/Ftp.hpp>
 #include <SFML/Network/IpAddress.hpp>
 
-#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
-#include <SFML/System/Macros.hpp>
 #include <SFML/System/Path.hpp>
+
+#include <SFML/Base/Algorithm.hpp>
+#include <SFML/Base/Macros.hpp>
 
 #include <fstream>
 #include <sstream>
@@ -81,7 +82,7 @@ private:
 
 
 ////////////////////////////////////////////////////////////
-Ftp::Response::Response(Status code, std::string message) : m_status(code), m_message(SFML_MOVE(message))
+Ftp::Response::Response(Status code, std::string message) : m_status(code), m_message(SFML_BASE_MOVE(message))
 {
 }
 
@@ -402,7 +403,7 @@ Ftp::Response Ftp::getResponse()
         }
         else
         {
-            priv::copy(m_receiveBuffer.begin(), m_receiveBuffer.end(), buffer);
+            base::copy(m_receiveBuffer.begin(), m_receiveBuffer.end(), buffer);
             length = m_receiveBuffer.size();
             m_receiveBuffer.clear();
         }

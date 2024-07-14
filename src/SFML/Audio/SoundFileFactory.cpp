@@ -47,7 +47,7 @@ namespace
 {
 ////////////////////////////////////////////////////////////
 template <typename T>
-using CreateFnPtr = sf::priv::UniquePtr<T> (*)();
+using CreateFnPtr = sf::base::UniquePtr<T> (*)();
 
 using ReaderCheckFnPtr = bool (*)(sf::InputStream&);
 using WriterCheckFnPtr = bool (*)(const sf::Path&);
@@ -87,13 +87,13 @@ using WriterFactoryMap = std::unordered_map<CreateFnPtr<sf::SoundFileWriter>, Wr
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-priv::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromFilename(const Path& filename)
+base::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromFilename(const Path& filename)
 {
     // Wrap the input file into a file stream
     auto stream = FileInputStream::open(filename);
     if (!stream)
     {
-        priv::err() << "Failed to open sound file (couldn't open stream)\n" << priv::formatDebugPathInfo(filename);
+        priv::err() << "Failed to open sound file (couldn't open stream)\n" << priv::PathDebugFormatter{filename};
         return nullptr;
     }
 
@@ -111,13 +111,13 @@ priv::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromFilename(cons
     }
 
     // No suitable reader found
-    priv::err() << "Failed to open sound file (format not supported)\n" << priv::formatDebugPathInfo(filename);
+    priv::err() << "Failed to open sound file (format not supported)\n" << priv::PathDebugFormatter{filename};
     return nullptr;
 }
 
 
 ////////////////////////////////////////////////////////////
-priv::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromMemory(const void* data, std::size_t sizeInBytes)
+base::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromMemory(const void* data, std::size_t sizeInBytes)
 {
     // Wrap the memory file into a file stream
     MemoryInputStream stream(data, sizeInBytes);
@@ -142,7 +142,7 @@ priv::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromMemory(const 
 
 
 ////////////////////////////////////////////////////////////
-priv::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromStream(InputStream& stream)
+base::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromStream(InputStream& stream)
 {
     // Test the stream for all the registered factories
     for (const auto& [fpCreate, fpCheck] : getReaderFactoryMap())
@@ -164,7 +164,7 @@ priv::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromStream(InputS
 
 
 ////////////////////////////////////////////////////////////
-priv::UniquePtr<SoundFileWriter> SoundFileFactory::createWriterFromFilename(const Path& filename)
+base::UniquePtr<SoundFileWriter> SoundFileFactory::createWriterFromFilename(const Path& filename)
 {
     // Test the filename in all the registered factories
     for (const auto& [fpCreate, fpCheck] : getWriterFactoryMap())
@@ -174,7 +174,7 @@ priv::UniquePtr<SoundFileWriter> SoundFileFactory::createWriterFromFilename(cons
     }
 
     // No suitable writer found
-    priv::err() << "Failed to open sound file (format not supported)\n" << priv::formatDebugPathInfo(filename);
+    priv::err() << "Failed to open sound file (format not supported)\n" << priv::PathDebugFormatter{filename};
     return nullptr;
 }
 

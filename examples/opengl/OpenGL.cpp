@@ -45,18 +45,18 @@ sf::Path resourcesDir()
 #endif
 }
 
-sf::Optional<sf::RenderWindow> recreateWindow(sf::GraphicsContext&       graphicsContext,
-                                              const sf::ContextSettings& contextSettings,
-                                              sf::Texture&               texture)
+sf::base::Optional<sf::RenderWindow> recreateWindow(sf::GraphicsContext&       graphicsContext,
+                                                    const sf::ContextSettings& contextSettings,
+                                                    sf::Texture&               texture)
 {
     // Create the main window
-    sf::Optional<sf::RenderWindow> window(sf::inPlace,
-                                          graphicsContext,
-                                          sf::VideoMode({800, 600}),
-                                          "SFML graphics with OpenGL",
-                                          sf::Style::Default,
-                                          sf::State::Windowed,
-                                          contextSettings);
+    sf::base::Optional<sf::RenderWindow> window(sf::base::inPlace,
+                                                graphicsContext,
+                                                sf::VideoMode({800, 600}),
+                                                "SFML graphics with OpenGL",
+                                                sf::Style::Default,
+                                                sf::State::Windowed,
+                                                contextSettings);
 
     window->setVerticalSyncEnabled(true);
     window->setMinimumSize({400u, 300u});
@@ -66,7 +66,7 @@ sf::Optional<sf::RenderWindow> recreateWindow(sf::GraphicsContext&       graphic
     if (!window->setActive(true))
     {
         std::cerr << "Failed to set window to active" << std::endl;
-        return sf::nullOpt;
+        return sf::base::nullOpt;
     }
 
 
@@ -173,7 +173,7 @@ sf::Optional<sf::RenderWindow> recreateWindow(sf::GraphicsContext&       graphic
     if (!window->setActive(false))
     {
         std::cerr << "Failed to set window to inactive" << std::endl;
-        return sf::nullOpt;
+        return sf::base::nullOpt;
     }
 
     return window;
@@ -225,7 +225,7 @@ int main()
         (void)texture.generateMipmap();
 
         // Create the main window
-        sf::Optional<sf::RenderWindow> window = recreateWindow(graphicsContext, contextSettings, texture);
+        sf::base::Optional<sf::RenderWindow> window = recreateWindow(graphicsContext, contextSettings, texture);
         if (!window.hasValue())
             return EXIT_FAILURE;
 
@@ -239,7 +239,7 @@ int main()
         while (true)
         {
             // Process events
-            while (const sf::Optional event = window->pollEvent())
+            while (const sf::base::Optional event = window->pollEvent())
             {
                 // Window closed or escape key pressed: exit
                 if (event->is<sf::Event::Closed>() ||

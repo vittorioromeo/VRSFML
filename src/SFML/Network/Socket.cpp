@@ -28,8 +28,9 @@
 #include <SFML/Network/Socket.hpp>
 #include <SFML/Network/SocketImpl.hpp>
 
-#include <SFML/System/AlgorithmUtils.hpp>
 #include <SFML/System/Err.hpp>
+
+#include <SFML/Base/Algorithm.hpp>
 
 
 namespace sf
@@ -51,7 +52,7 @@ Socket::~Socket()
 ////////////////////////////////////////////////////////////
 Socket::Socket(Socket&& socket) noexcept :
 m_type(socket.m_type),
-m_socket(priv::exchange(socket.m_socket, priv::SocketImpl::invalidSocket())),
+m_socket(base::exchange(socket.m_socket, priv::SocketImpl::invalidSocket())),
 m_isBlocking(socket.m_isBlocking)
 {
 }
@@ -66,7 +67,7 @@ Socket& Socket::operator=(Socket&& socket) noexcept
     close();
 
     m_type       = socket.m_type;
-    m_socket     = priv::exchange(socket.m_socket, priv::SocketImpl::invalidSocket());
+    m_socket     = base::exchange(socket.m_socket, priv::SocketImpl::invalidSocket());
     m_isBlocking = socket.m_isBlocking;
     return *this;
 }
