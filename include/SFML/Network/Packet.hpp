@@ -29,8 +29,9 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Network/Export.hpp>
 
-#include <string>
-#include <vector>
+#include <SFML/Base/InPlacePImpl.hpp>
+
+#include <stdfwd/string>
 
 #include <cstddef>
 #include <cstdint>
@@ -54,37 +55,37 @@ public:
     /// Creates an empty packet.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Packet() = default;
+    [[nodiscard]] Packet();
 
     ////////////////////////////////////////////////////////////
     /// \brief Virtual destructor
     ///
     ////////////////////////////////////////////////////////////
-    virtual ~Packet() = default;
+    virtual ~Packet();
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy constructor
     ///
     ////////////////////////////////////////////////////////////
-    Packet(const Packet&) = default;
+    Packet(const Packet&);
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy assignment
     ///
     ////////////////////////////////////////////////////////////
-    Packet& operator=(const Packet&) = default;
+    Packet& operator=(const Packet&);
 
     ////////////////////////////////////////////////////////////
     /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    Packet(Packet&&) noexcept = default;
+    Packet(Packet&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment
     ///
     ////////////////////////////////////////////////////////////
-    Packet& operator=(Packet&&) noexcept = default;
+    Packet& operator=(Packet&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Append data to the end of the packet
@@ -421,12 +422,16 @@ private:
     [[nodiscard]] bool checkSize(std::size_t size);
 
     ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] std::size_t& getSendPos();
+
+    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::vector<std::byte> m_data;          //!< Data stored in the packet
-    std::size_t            m_readPos{};     //!< Current reading position in the packet
-    std::size_t            m_sendPos{};     //!< Current send position in the packet (for handling partial sends)
-    bool                   m_isValid{true}; //!< Reading state of the packet
+    struct Impl;
+    base::InPlacePImpl<Impl, 64> m_impl; //!< Implementation details
 };
 
 } // namespace sf

@@ -24,17 +24,26 @@
 
 #pragma once
 
+
+#if __has_builtin(__is_trivially_assignable)
+
 ////////////////////////////////////////////////////////////
-// Headers
+#define SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(...) __is_trivially_assignable(__VA_ARGS__&, __VA_ARGS__&&)
+
+#else
+
+#include <type_traits>
+
 ////////////////////////////////////////////////////////////
-#include <SFML/Base/IsSame.hpp>
+#define SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(...) ::std::is_trivially_move_assignable<__VA_ARGS__>
+
+#endif
 
 
-namespace sf::priv
+namespace sf::base
 {
 ////////////////////////////////////////////////////////////
 template <typename T>
-inline constexpr bool isFloatingPoint = SFML_BASE_IS_SAME(T, float) || SFML_BASE_IS_SAME(T, double) ||
-                                        SFML_BASE_IS_SAME(T, long double);
+inline constexpr bool isTriviallyMoveAssignable = SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(T);
 
-} // namespace sf::priv
+} // namespace sf::base

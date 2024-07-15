@@ -68,7 +68,7 @@ WindowBase(SFML_BASE_FORWARD(windowBaseArg)),
 m_impl(graphicsContext, graphicsContext.createGlContext(settings, *WindowBase::m_impl, bitsPerPixel))
 {
     // Perform common initializations
-    SFML_BASE_ASSERT(m_impl->glContext);
+    SFML_BASE_ASSERT(m_impl->glContext != nullptr);
 
     // Setup default behaviors (to get a consistent behavior across different implementations)
     setVerticalSyncEnabled(false);

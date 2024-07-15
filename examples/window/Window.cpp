@@ -49,13 +49,9 @@ int main()
 
     // Load OpenGL or OpenGL ES entry points using glad
 #ifdef SFML_OPENGL_ES
-    gladLoadGLES1([](const char* name) { return gcPtr->getFunction(name); });
+    gladLoadGLES1(graphicsContext.getGLLoadFn());
 #else
-    // TODO: garbage
-    static sf::GraphicsContext* gcPtr;
-    gcPtr = &graphicsContext;
-
-    gladLoadGL([](const char* name) { return gcPtr->getFunction(name); });
+    gladLoadGL(graphicsContext.getGLLoadFn());
 #endif
 
     // Set the color and depth clear values

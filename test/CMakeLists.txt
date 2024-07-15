@@ -74,6 +74,14 @@ if(SFML_RUN_AUDIO_DEVICE_TESTS)
     target_compile_definitions(sfml-test-main PRIVATE SFML_RUN_AUDIO_DEVICE_TESTS)
 endif()
 
+set(BASE_SRC
+    Base/Algorithm.test.cpp
+    Base/MaxAlignT.test.cpp
+    Base/Traits.test.cpp
+    Base/SizeT.test.cpp
+)
+sfml_add_test(test-sfml-base "${BASE_SRC}" "")
+
 set(SYSTEM_SRC
     System/Angle.test.cpp
     System/Clock.test.cpp
@@ -182,6 +190,7 @@ if(SFML_OS_ANDROID AND DEFINED ENV{LIBCXX_SHARED_SO})
         "#!/bin/bash\n\
         adb shell \"mkdir -p ${TARGET_DIR}\"\n\
         adb push $<TARGET_FILE:test-sfml-audio>    ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:test-sfml-base>     ${TARGET_DIR}\n\
         adb push $<TARGET_FILE:test-sfml-graphics> ${TARGET_DIR}\n\
         adb push $<TARGET_FILE:test-sfml-network>  ${TARGET_DIR}\n\
         adb push $<TARGET_FILE:test-sfml-system>   ${TARGET_DIR}\n\
@@ -254,7 +263,7 @@ else()
 endif()
 
 # Convenience for building and running tests in a single command
-add_custom_target(runtests DEPENDS test-sfml-system test-sfml-window test-sfml-graphics test-sfml-network test-sfml-audio)
+add_custom_target(runtests DEPENDS test-sfml-base test-sfml-system test-sfml-window test-sfml-graphics test-sfml-network test-sfml-audio)
 add_custom_command(TARGET runtests
                    COMMENT "Run tests"
                    POST_BUILD

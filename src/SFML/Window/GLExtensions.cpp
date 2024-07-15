@@ -95,14 +95,11 @@ void ensureExtensionsInit(GraphicsContext& graphicsContext)
     {
         initialized = true;
 
-        // TODO: garbage
-        static sf::GraphicsContext* gcPtr;
-        gcPtr = &graphicsContext;
-
+        // Load OpenGL or OpenGL ES entry points using glad
 #ifdef SFML_OPENGL_ES
-        gladLoadGLES1([](const char* name) { return gcPtr->getFunction(name); });
+        gladLoadGLES1(graphicsContext.getGLLoadFn());
 #else
-        gladLoadGL([](const char* name) { return gcPtr->getFunction(name); });
+        gladLoadGL(graphicsContext.getGLLoadFn());
 #endif
         // Some GL implementations don't fully follow extension specifications
         // and advertise support for extensions although not providing the

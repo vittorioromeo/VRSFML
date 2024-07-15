@@ -237,10 +237,11 @@ int main()
         return EXIT_FAILURE;
     }
 
+    // Load OpenGL or OpenGL ES entry points using glad
 #ifdef SFML_OPENGL_ES
-    gladLoadGLES1([](const char* name) { return gcPtr->getFunction(name); });
+    gladLoadGLES1(graphicsContext.getGLLoadFn());
 #else
-    gladLoadGL([](const char* name) { return gcPtr->getFunction(name); });
+    gladLoadGL(graphicsContext.getGLLoadFn());
 #endif
 
     // Initialize our views

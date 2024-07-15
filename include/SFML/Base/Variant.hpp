@@ -6,9 +6,9 @@
 #pragma GCC diagnostic ignored "-Wshadow"
 
 #include <SFML/Base/Assert.hpp>
-#include <SFML/Base/IsSame.hpp>
 #include <SFML/Base/PlacementNew.hpp>
 #include <SFML/Base/SizeT.hpp>
+#include <SFML/Base/Traits/IsSame.hpp>
 
 
 // From:

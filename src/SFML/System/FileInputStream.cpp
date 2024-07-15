@@ -92,12 +92,12 @@ base::Optional<std::size_t> FileInputStream::read(void* data, std::size_t size)
 #ifdef SFML_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
     {
-        SFML_BASE_ASSERT(m_androidFile);
+        SFML_BASE_ASSERT(m_androidFile != nullptr);
         return m_androidFile->read(data, size);
     }
 #endif
 
-    SFML_BASE_ASSERT(m_file);
+    SFML_BASE_ASSERT(m_file != nullptr);
     return sf::base::makeOptional(std::fread(data, 1, size, m_file.get()));
 }
 
@@ -108,12 +108,12 @@ base::Optional<std::size_t> FileInputStream::seek(std::size_t position)
 #ifdef SFML_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
     {
-        SFML_BASE_ASSERT(m_androidFile);
+        SFML_BASE_ASSERT(m_androidFile != nullptr);
         return m_androidFile->seek(position);
     }
 #endif
 
-    SFML_BASE_ASSERT(m_file);
+    SFML_BASE_ASSERT(m_file != nullptr);
 
     if (std::fseek(m_file.get(), static_cast<long>(position), SEEK_SET))
         return base::nullOpt;
@@ -128,12 +128,12 @@ base::Optional<std::size_t> FileInputStream::tell()
 #ifdef SFML_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
     {
-        SFML_BASE_ASSERT(m_androidFile);
+        SFML_BASE_ASSERT(m_androidFile != nullptr);
         return m_androidFile->tell();
     }
 #endif
 
-    SFML_BASE_ASSERT(m_file);
+    SFML_BASE_ASSERT(m_file != nullptr);
 
     const auto position = std::ftell(m_file.get());
     return position < 0 ? base::nullOpt : sf::base::makeOptional(static_cast<std::size_t>(position));
@@ -146,12 +146,12 @@ base::Optional<std::size_t> FileInputStream::getSize()
 #ifdef SFML_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
     {
-        SFML_BASE_ASSERT(m_androidFile);
+        SFML_BASE_ASSERT(m_androidFile != nullptr);
         return m_androidFile->getSize();
     }
 #endif
 
-    SFML_BASE_ASSERT(m_file);
+    SFML_BASE_ASSERT(m_file != nullptr);
 
     const auto position = tell().value();
     std::fseek(m_file.get(), 0, SEEK_END);

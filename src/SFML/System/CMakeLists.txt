@@ -6,22 +6,10 @@ set(SRC_BASE
     # headers
     ${BASE_INCROOT}/Algorithm.hpp
     ${BASE_INCROOT}/Assert.hpp
-    ${BASE_INCROOT}/EnableIf.hpp
     ${BASE_INCROOT}/EnumArray.hpp
     ${BASE_INCROOT}/EnumClassBitwiseOps.hpp
     ${BASE_INCROOT}/FixedFunction.hpp
     ${BASE_INCROOT}/InPlacePImpl.hpp
-    ${BASE_INCROOT}/IsBaseOf.hpp
-    ${BASE_INCROOT}/IsEnum.hpp
-    ${BASE_INCROOT}/IsFloatingPoint.hpp
-    ${BASE_INCROOT}/IsSame.hpp
-    ${BASE_INCROOT}/IsTriviallyCopyable.hpp
-    ${BASE_INCROOT}/IsTriviallyCopyAssignable.hpp
-    ${BASE_INCROOT}/IsTriviallyCopyConstructible.hpp
-    ${BASE_INCROOT}/IsTriviallyDestructible.hpp
-    ${BASE_INCROOT}/IsTriviallyMoveAssignable.hpp
-    ${BASE_INCROOT}/IsTriviallyMoveConstructible.hpp
-    ${BASE_INCROOT}/IsTriviallyMoveConstructible.hpp
     ${BASE_INCROOT}/Launder.hpp
     ${BASE_INCROOT}/Macros.hpp
     ${BASE_INCROOT}/Math.hpp
@@ -29,10 +17,21 @@ set(SRC_BASE
     ${BASE_INCROOT}/Optional.hpp
     ${BASE_INCROOT}/PassKey.hpp
     ${BASE_INCROOT}/PlacementNew.hpp
-    ${BASE_INCROOT}/RemoveCVRef.hpp
-    ${BASE_INCROOT}/RemoveReference.hpp
     ${BASE_INCROOT}/SizeT.hpp
-    ${BASE_INCROOT}/UnderlyingType.hpp
+    ${BASE_INCROOT}/Traits/IsBaseOf.hpp
+    ${BASE_INCROOT}/Traits/IsEnum.hpp
+    ${BASE_INCROOT}/Traits/IsFloatingPoint.hpp
+    ${BASE_INCROOT}/Traits/IsSame.hpp
+    ${BASE_INCROOT}/Traits/IsTriviallyCopyable.hpp
+    ${BASE_INCROOT}/Traits/IsTriviallyCopyAssignable.hpp
+    ${BASE_INCROOT}/Traits/IsTriviallyCopyConstructible.hpp
+    ${BASE_INCROOT}/Traits/IsTriviallyDestructible.hpp
+    ${BASE_INCROOT}/Traits/IsTriviallyMoveAssignable.hpp
+    ${BASE_INCROOT}/Traits/IsTriviallyMoveConstructible.hpp
+    ${BASE_INCROOT}/Traits/IsTriviallyMoveConstructible.hpp
+    ${BASE_INCROOT}/Traits/RemoveCVRef.hpp
+    ${BASE_INCROOT}/Traits/RemoveReference.hpp
+    ${BASE_INCROOT}/Traits/UnderlyingType.hpp
     ${BASE_INCROOT}/UniquePtr.hpp
     ${BASE_INCROOT}/Variant.hpp
 
@@ -164,3 +163,5 @@ endif()
 if(SFML_ENABLE_STACK_TRACES)
     target_link_libraries(sfml-system PUBLIC cpptrace::cpptrace)
 endif()
+
+target_link_libraries(sfml-system PUBLIC stdfwd)

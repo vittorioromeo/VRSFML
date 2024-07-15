@@ -38,6 +38,22 @@
 #include <SFML/System/String.hpp>
 
 
+namespace
+{
+////////////////////////////////////////////////////////////
+void retrieveWindowFrameBufferId(sf::GraphicsContext& graphicsContext, unsigned int& defaultFrameBuffer)
+{
+    if (sf::priv::RenderTextureImplFBO::isAvailable(graphicsContext))
+    {
+        // Retrieve the framebuffer ID we have to bind when targeting the window for rendering
+        // We assume that this window's context is still active at this point
+        glCheck(glGetIntegerv(GLEXT_GL_FRAMEBUFFER_BINDING, reinterpret_cast<GLint*>(&defaultFrameBuffer)));
+    }
+}
+
+
+} // namespace
+
 namespace sf
 {
 ////////////////////////////////////////////////////////////
@@ -50,16 +66,8 @@ RenderWindow::RenderWindow(GraphicsContext&       graphicsContext,
 Window(graphicsContext, mode, title, style, state, settings),
 RenderTarget(graphicsContext)
 {
-    // TODO: repetition
-    if (priv::RenderTextureImplFBO::isAvailable(getGraphicsContext()))
-    {
-        // Retrieve the framebuffer ID we have to bind when targeting the window for rendering
-        // We assume that this window's context is still active at this point
-        glCheck(glGetIntegerv(GLEXT_GL_FRAMEBUFFER_BINDING, reinterpret_cast<GLint*>(&m_defaultFrameBuffer)));
-    }
-
-    // Just initialize the render target part
-    RenderTarget::initialize();
+    retrieveWindowFrameBufferId(getGraphicsContext(), m_defaultFrameBuffer);
+    RenderTarget::initialize(); // Just initialize the render target part
 }
 
 
@@ -102,16 +110,8 @@ RenderWindow::RenderWindow(GraphicsContext& graphicsContext, WindowHandle handle
 Window(graphicsContext, handle, settings),
 RenderTarget(graphicsContext)
 {
-    // TODO: repetition
-    if (priv::RenderTextureImplFBO::isAvailable(getGraphicsContext()))
-    {
-        // Retrieve the framebuffer ID we have to bind when targeting the window for rendering
-        // We assume that this window's context is still active at this point
-        glCheck(glGetIntegerv(GLEXT_GL_FRAMEBUFFER_BINDING, reinterpret_cast<GLint*>(&m_defaultFrameBuffer)));
-    }
-
-    // Just initialize the render target part
-    RenderTarget::initialize();
+    retrieveWindowFrameBufferId(getGraphicsContext(), m_defaultFrameBuffer);
+    RenderTarget::initialize(); // Just initialize the render target part
 }
 
 

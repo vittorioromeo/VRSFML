@@ -30,12 +30,12 @@
 #include <SFML/System/Export.hpp>
 
 #include <SFML/Base/Assert.hpp>
-#include <SFML/Base/IsRvalueReference.hpp>
 #include <SFML/Base/Macros.hpp>
 #include <SFML/Base/MaxAlignT.hpp>
 #include <SFML/Base/PlacementNew.hpp>
-#include <SFML/Base/RemoveReference.hpp>
 #include <SFML/Base/SizeT.hpp>
+#include <SFML/Base/Traits/IsRvalueReference.hpp>
+#include <SFML/Base/Traits/RemoveReference.hpp>
 
 
 namespace sf::base
@@ -114,14 +114,12 @@ public:
                 SFML_BASE_ASSERT(o != nullptr);
                 SFML_BASE_PLACEMENT_NEW(s) UnrefType(SFML_BASE_MOVE(*static_cast<UnrefType*>(o)));
             }
-            else if (operation == Operation::CopyConstruct)
-            {
-                SFML_BASE_ASSERT(o != nullptr);
-                SFML_BASE_PLACEMENT_NEW(s) UnrefType(*static_cast<const UnrefType*>(o));
-            }
             else
             {
-                SFML_BASE_ASSERT(false);
+                SFML_BASE_ASSERT(operation == Operation::CopyConstruct);
+
+                SFML_BASE_ASSERT(o != nullptr);
+                SFML_BASE_PLACEMENT_NEW(s) UnrefType(*static_cast<const UnrefType*>(o));
             }
         };
 
@@ -152,7 +150,7 @@ public:
 
         m_allocPtr = rhs.m_allocPtr;
 
-        SFML_BASE_ASSERT(m_allocPtr);
+        SFML_BASE_ASSERT(m_allocPtr != nullptr);
         m_allocPtr(objStorage, const_cast<char*>(rhs.objStorage), Operation::CopyConstruct);
     }
 
@@ -170,7 +168,7 @@ public:
 
         m_allocPtr = rhs.m_allocPtr;
 
-        SFML_BASE_ASSERT(m_allocPtr);
+        SFML_BASE_ASSERT(m_allocPtr != nullptr);
         m_allocPtr(objStorage, const_cast<char*>(rhs.objStorage), Operation::CopyConstruct);
 
         return *this;
@@ -190,7 +188,7 @@ public:
 
         m_allocPtr = rhs.m_allocPtr;
 
-        SFML_BASE_ASSERT(m_allocPtr);
+        SFML_BASE_ASSERT(m_allocPtr != nullptr);
         m_allocPtr(objStorage, rhs.objStorage, Operation::MoveConstruct);
     }
 
@@ -208,7 +206,7 @@ public:
 
         m_allocPtr = rhs.m_allocPtr;
 
-        SFML_BASE_ASSERT(m_allocPtr);
+        SFML_BASE_ASSERT(m_allocPtr != nullptr);
         m_allocPtr(objStorage, rhs.objStorage, Operation::MoveConstruct);
 
         return *this;
@@ -252,7 +250,7 @@ public:
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::priv::FixedFunction
+/// \class sf::base::FixedFunction
 /// \ingroup system
 ///
 /// TODO

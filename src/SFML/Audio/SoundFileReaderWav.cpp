@@ -194,7 +194,7 @@ base::Optional<SoundFileReader::Info> SoundFileReaderWav::open(InputStream& stre
 ////////////////////////////////////////////////////////////
 void SoundFileReaderWav::seek(std::uint64_t sampleOffset)
 {
-    SFML_BASE_ASSERT(m_impl->decoder &&
+    SFML_BASE_ASSERT(m_impl->decoder.hasValue() &&
                      "wav decoder not initialized. Call SoundFileReaderWav::open() to initialize it.");
 
     if (const ma_result result = ma_decoder_seek_to_pcm_frame(m_impl->decoder.asPtr(), sampleOffset / m_impl->channelCount);
@@ -206,7 +206,7 @@ void SoundFileReaderWav::seek(std::uint64_t sampleOffset)
 ////////////////////////////////////////////////////////////
 std::uint64_t SoundFileReaderWav::read(std::int16_t* samples, std::uint64_t maxCount)
 {
-    SFML_BASE_ASSERT(m_impl->decoder &&
+    SFML_BASE_ASSERT(m_impl->decoder.hasValue() &&
                      "wav decoder not initialized. Call SoundFileReaderWav::open() to initialize it.");
 
     ma_uint64 framesRead{};

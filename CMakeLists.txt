@@ -46,6 +46,24 @@ if(SFML_OS_ANDROID)
     set(BUILD_SHARED_LIBS TRUE)
 endif()
 
+# stdfwd
+include(FetchContent)
+FetchContent_Declare(
+    stdfwd
+    GIT_REPOSITORY https://github.com/olegpublicprofile/stdfwd.git
+    GIT_TAG        v0.3
+)
+
+FetchContent_MakeAvailable(stdfwd)
+
+add_library(stdfwd INTERFACE)
+target_include_directories(stdfwd INTERFACE
+    $<BUILD_INTERFACE:${stdfwd_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include/stdfwd>
+)
+install(TARGETS stdfwd EXPORT SFMLConfigExport)
+install(DIRECTORY ${stdfwd_SOURCE_DIR}/include DESTINATION .)
+
 # add an option to enable stack traces on assertions
 sfml_set_option(SFML_ENABLE_STACK_TRACES $<CONFIG:Debug> BOOL "TRUE to enable lifetime tracking, FALSE to disable it")
 if(SFML_ENABLE_STACK_TRACES)
@@ -55,7 +73,7 @@ if(SFML_ENABLE_STACK_TRACES)
     FetchContent_Declare(
         cpptrace
         GIT_REPOSITORY https://github.com/jeremy-rifkin/cpptrace.git
-        GIT_TAG        v0.6.2 # <HASH or TAG>
+        GIT_TAG        v0.6.2
     )
 
     FetchContent_MakeAvailable(cpptrace)

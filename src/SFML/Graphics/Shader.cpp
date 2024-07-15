@@ -325,7 +325,7 @@ private:
 ////////////////////////////////////////////////////////////
 Shader::~Shader()
 {
-    SFML_BASE_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(m_impl->graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
     // Destroy effect program
     if (m_impl->shaderProgram)
@@ -349,7 +349,7 @@ Shader& Shader::operator=(Shader&& right) noexcept
     // Explicit scope for RAII
     {
         // Destroy effect program
-        SFML_BASE_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
+        SFML_BASE_ASSERT(m_impl->graphicsContext->hasActiveThreadLocalOrSharedGlContext());
         SFML_BASE_ASSERT(m_impl->shaderProgram);
         glCheck(GLEXT_glDeleteObject(castToGlHandle(m_impl->shaderProgram)));
     }
@@ -725,7 +725,7 @@ bool Shader::setUniform(UniformLocation location, const Texture& texture)
 {
     SFML_BASE_ASSERT(m_impl->shaderProgram);
 
-    SFML_BASE_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(m_impl->graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
     // Store the location -> texture mapping
     if (const auto it = m_impl->textures.find(location.m_value); it != m_impl->textures.end())
@@ -754,7 +754,7 @@ void Shader::setUniform(UniformLocation location, CurrentTextureType)
 {
     SFML_BASE_ASSERT(m_impl->shaderProgram);
 
-    SFML_BASE_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(m_impl->graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
     // Find the location of the variable in the shader
     m_impl->currentTexture = location.m_value;
@@ -834,7 +834,7 @@ unsigned int Shader::getNativeHandle() const
 ////////////////////////////////////////////////////////////
 void Shader::bind() const
 {
-    SFML_BASE_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(m_impl->graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
     // Make sure that we can use shaders
     if (!isAvailable(*m_impl->graphicsContext))
@@ -866,7 +866,7 @@ void Shader::bind() const
 
 void Shader::unbind(GraphicsContext& graphicsContext)
 {
-    SFML_BASE_ASSERT(graphicsContext.hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
 
     // Bind no shader
     glCheck(GLEXT_glUseProgramObject({}));
@@ -878,7 +878,7 @@ bool Shader::isAvailable(GraphicsContext& graphicsContext)
 {
     static const bool available = [&graphicsContext]
     {
-        SFML_BASE_ASSERT(graphicsContext.hasAnyActiveGlContext());
+        SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
         priv::ensureExtensionsInit(graphicsContext);
 
         return GLEXT_multitexture && GLEXT_shading_language_100 && GLEXT_shader_objects && GLEXT_vertex_shader &&
@@ -894,7 +894,7 @@ bool Shader::isGeometryAvailable(GraphicsContext& graphicsContext)
 {
     static const bool available = [&graphicsContext]
     {
-        SFML_BASE_ASSERT(graphicsContext.hasAnyActiveGlContext());
+        SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
         priv::ensureExtensionsInit(graphicsContext);
 
         return isAvailable(graphicsContext) && (GLEXT_geometry_shader4 || GLEXT_GL_VERSION_3_2);
@@ -917,7 +917,7 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
                                        std::string_view geometryShaderCode,
                                        std::string_view fragmentShaderCode)
 {
-    SFML_BASE_ASSERT(graphicsContext.hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
 
     // First make sure that we can use shaders
     if (!isAvailable(graphicsContext))

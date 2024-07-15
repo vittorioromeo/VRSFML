@@ -347,9 +347,9 @@ public:
     decltype(auto) visit(Visitor&& visitor) const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO
+    /// \brief Invokes `visit` with an overload created from `handlers...`
     ///
-    /// \return TODO
+    /// \return Transparently forwards whatever `visit` returns
     ///
     ////////////////////////////////////////////////////////////
     template <typename... Handlers>

@@ -108,7 +108,7 @@ Texture::~Texture()
     // Destroy the OpenGL texture
     if (m_texture)
     {
-        SFML_BASE_ASSERT(m_graphicsContext->hasAnyActiveGlContext());
+        SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
         const GLuint texture = m_texture;
         glCheck(glDeleteTextures(1, &texture));
@@ -143,7 +143,7 @@ Texture& Texture::operator=(Texture&& right) noexcept
     // Destroy the OpenGL texture
     if (m_texture)
     {
-        SFML_BASE_ASSERT(m_graphicsContext->hasAnyActiveGlContext());
+        SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
         const GLuint texture = m_texture;
         glCheck(glDeleteTextures(1, &texture));
@@ -178,7 +178,7 @@ base::Optional<Texture> Texture::create(GraphicsContext& graphicsContext, const 
         return result; // Empty optional
     }
 
-    SFML_BASE_ASSERT(graphicsContext.hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
 
     // Make sure that extensions are initialized
     priv::ensureExtensionsInit(graphicsContext);
@@ -349,7 +349,7 @@ base::Optional<Texture> Texture::loadFromImage(GraphicsContext& graphicsContext,
     // Create the texture and upload the pixels
     if ((result = sf::Texture::create(graphicsContext, rectangle.size.to<Vector2u>(), sRgb)))
     {
-        SFML_BASE_ASSERT(graphicsContext.hasAnyActiveGlContext());
+        SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
 
         // Make sure that the current texture binding will be preserved
         const priv::TextureSaver save;
@@ -389,7 +389,7 @@ Image Texture::copyToImage() const
     // Easy case: empty texture
     SFML_BASE_ASSERT(m_texture && "Texture::copyToImage Cannot copy empty texture to image");
 
-    SFML_BASE_ASSERT(m_graphicsContext->hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
@@ -501,7 +501,7 @@ void Texture::update(const std::uint8_t* pixels, const Vector2u& size, const Vec
     SFML_BASE_ASSERT(pixels != nullptr);
     SFML_BASE_ASSERT(m_texture);
 
-    SFML_BASE_ASSERT(m_graphicsContext->hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
@@ -548,7 +548,7 @@ void Texture::update(const Texture& texture, const Vector2u& dest)
 #ifndef SFML_OPENGL_ES
 
     {
-        SFML_BASE_ASSERT(m_graphicsContext->hasAnyActiveGlContext());
+        SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
         // Make sure that extensions are initialized
         priv::ensureExtensionsInit(*m_graphicsContext);
@@ -556,7 +556,7 @@ void Texture::update(const Texture& texture, const Vector2u& dest)
 
     if (GLEXT_framebuffer_object && GLEXT_framebuffer_blit)
     {
-        SFML_BASE_ASSERT(m_graphicsContext->hasAnyActiveGlContext());
+        SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
         // Save the current bindings so we can restore them after we are done
         GLint readFramebuffer = 0;
@@ -689,7 +689,7 @@ void Texture::update(const Window& window, const Vector2u& dest)
 
     if (m_texture && window.setActive(true))
     {
-        SFML_BASE_ASSERT(m_graphicsContext->hasAnyActiveGlContext());
+        SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
         // Make sure that the current texture binding will be preserved
         const priv::TextureSaver save;
@@ -725,7 +725,7 @@ void Texture::setSmooth(bool smooth)
 
         if (m_texture)
         {
-            SFML_BASE_ASSERT(m_graphicsContext->hasAnyActiveGlContext());
+            SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
             // Make sure that the current texture binding will be preserved
             const priv::TextureSaver save;
@@ -771,7 +771,7 @@ void Texture::setRepeated(bool repeated)
 
         if (m_texture)
         {
-            SFML_BASE_ASSERT(m_graphicsContext->hasAnyActiveGlContext());
+            SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
             // Make sure that the current texture binding will be preserved
             const priv::TextureSaver save;
@@ -818,7 +818,7 @@ bool Texture::isRepeated() const
 bool Texture::generateMipmap()
 {
     SFML_BASE_ASSERT(m_texture);
-    SFML_BASE_ASSERT(m_graphicsContext->hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
     // Make sure that extensions are initialized
     priv::ensureExtensionsInit(*m_graphicsContext);
@@ -850,7 +850,7 @@ void Texture::invalidateMipmap()
     if (!m_hasMipmap)
         return;
 
-    SFML_BASE_ASSERT(m_graphicsContext->hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
@@ -865,7 +865,7 @@ void Texture::invalidateMipmap()
 ////////////////////////////////////////////////////////////
 void Texture::bind(GraphicsContext& graphicsContext, const Texture* texture, CoordinateType coordinateType)
 {
-    SFML_BASE_ASSERT(graphicsContext.hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
 
     if (texture)
     {
@@ -933,7 +933,7 @@ unsigned int Texture::getMaximumSize(GraphicsContext& graphicsContext)
 {
     static const unsigned int size = [&graphicsContext]
     {
-        SFML_BASE_ASSERT(graphicsContext.hasAnyActiveGlContext());
+        SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
 
         GLint value = 0;
 

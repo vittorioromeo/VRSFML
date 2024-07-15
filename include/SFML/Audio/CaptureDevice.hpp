@@ -37,7 +37,7 @@
 #include <SFML/Base/Optional.hpp>
 #include <SFML/Base/UniquePtr.hpp>
 
-#include <vector>
+#include <stdfwd/vector>
 
 #include <cstddef>
 #include <cstdint>
@@ -151,7 +151,7 @@ public:
     /// \return Map of position in sample frame to sound channel
     ///
     ////////////////////////////////////////////////////////////
-    const std::vector<SoundChannel>& getChannelMap() const;
+    const stdfwd::vector<SoundChannel>& getChannelMap() const;
 
 private:
     friend SoundRecorder;

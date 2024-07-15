@@ -28,8 +28,8 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Base/Assert.hpp>
-#include <SFML/Base/IsEnum.hpp>
 #include <SFML/Base/SizeT.hpp>
+#include <SFML/Base/Traits/IsEnum.hpp>
 
 
 namespace sf::base
@@ -69,7 +69,7 @@ struct EnumArray
         return data[index];
     }
 
-    [[nodiscard, gnu::always_inline]] constexpr void fill(Value key)
+    [[gnu::always_inline]] constexpr void fill(Value key)
     {
         for (Value& value : data)
             value = key;

@@ -72,7 +72,7 @@ struct MiniaudioUtils::SoundBase::Impl
     PlaybackDevice::ResourceEntryIndex resourceEntryIndex; //!< Index of the resource entry registered with the PlaybackDevice
     SavedSettings savedSettings; //!< Saved settings used to restore ma_sound state in case we need to recreate it
 
-    [[maybe_unused]] bool effectNodeUninitialized{}; //!< TODO
+    [[maybe_unused]] bool effectNodeUninitialized{}; //!< Failsafe debug boolean to check if `onProcess` is called after destruction
 };
 
 ////////////////////////////////////////////////////////////

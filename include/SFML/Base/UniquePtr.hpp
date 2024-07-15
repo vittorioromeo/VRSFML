@@ -5,7 +5,7 @@
 #pragma once
 
 #include <SFML/Base/Assert.hpp>
-#include <SFML/Base/IsBaseOf.hpp>
+#include <SFML/Base/Traits/IsBaseOf.hpp>
 
 
 namespace sf::base
@@ -61,7 +61,7 @@ public:
 
     template <typename U, typename UDeleter>
     [[nodiscard, gnu::always_inline]] UniquePtr(UniquePtr<U, UDeleter>&& rhs) noexcept
-        requires(SFML_BASE_IS_BASE_OF(T, U)) :
+        requires(base::isBaseOf<T, U>) :
     TDeleter{static_cast<UDeleter&&>(rhs)},
     m_ptr{rhs.m_ptr}
     {
@@ -70,7 +70,7 @@ public:
 
     template <typename U, typename UDeleter>
     [[gnu::always_inline]] UniquePtr& operator=(UniquePtr<U, UDeleter>&& rhs) noexcept
-        requires(SFML_BASE_IS_BASE_OF(T, U))
+        requires(base::isBaseOf<T, U>)
     {
         (*static_cast<TDeleter*>(this)) = static_cast<UDeleter&&>(rhs);
 

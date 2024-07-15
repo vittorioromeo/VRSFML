@@ -333,8 +333,8 @@ Socket::Status TcpSocket::send(Packet& packet)
 #pragma GCC diagnostic ignored "-Wsign-conversion"
     // Send the data block
     std::size_t  sent   = 0;
-    const Status status = send(m_blockToSendBuffer.data() + packet.m_sendPos,
-                               static_cast<priv::SocketImpl::Size>(m_blockToSendBuffer.size() - packet.m_sendPos),
+    const Status status = send(m_blockToSendBuffer.data() + packet.getSendPos(),
+                               static_cast<priv::SocketImpl::Size>(m_blockToSendBuffer.size() - packet.getSendPos()),
                                sent);
 #pragma GCC diagnostic pop
 #pragma GCC diagnostic pop
@@ -342,11 +342,11 @@ Socket::Status TcpSocket::send(Packet& packet)
     // In the case of a partial send, record the location to resume from
     if (status == Status::Partial)
     {
-        packet.m_sendPos += sent;
+        packet.getSendPos() += sent;
     }
     else if (status == Status::Done)
     {
-        packet.m_sendPos = 0;
+        packet.getSendPos() = 0;
     }
 
     return status;

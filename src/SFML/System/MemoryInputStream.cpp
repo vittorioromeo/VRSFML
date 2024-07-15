@@ -41,7 +41,7 @@ MemoryInputStream::MemoryInputStream(const void* data, std::size_t sizeInBytes) 
 m_data(static_cast<const std::byte*>(data)),
 m_size(sizeInBytes)
 {
-    SFML_BASE_ASSERT(m_data && "MemoryInputStream must be initialized with non-null data");
+    SFML_BASE_ASSERT(m_data != nullptr && "MemoryInputStream must be initialized with non-null data");
 }
 
 

@@ -24,21 +24,17 @@
 
 #pragma once
 
-#if __has_builtin(__is_trivially_destructible)
-
 ////////////////////////////////////////////////////////////
-#define SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(...) __is_trivially_destructible(__VA_ARGS__)
-
-#elif __has_builtin(__has_trivial_destructor)
-
+// Headers
 ////////////////////////////////////////////////////////////
-#define SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(...) __has_trivial_destructor(__VA_ARGS__)
+#include <SFML/Base/Traits/IsSame.hpp>
 
-#else
 
-#include <type_traits>
-
+namespace sf::base
+{
 ////////////////////////////////////////////////////////////
-#define SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(...) ::std::is_trivially_destructible<__VA_ARGS__>
+template <typename T>
+inline constexpr bool isFloatingPoint = SFML_BASE_IS_SAME(T, float) || SFML_BASE_IS_SAME(T, double) ||
+                                        SFML_BASE_IS_SAME(T, long double);
 
-#endif
+} // namespace sf::base

@@ -38,7 +38,7 @@
 #include <SFML/Base/PassKey.hpp>
 #include <SFML/Base/UniquePtr.hpp>
 
-#include <vector>
+#include <stdfwd/vector>
 
 
 ////////////////////////////////////////////////////////////
@@ -108,7 +108,7 @@ public:
     /// \return A vector containing the device handles or an empty vector if no devices are available
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_AUDIO_API std::vector<PlaybackDeviceHandle> getAvailablePlaybackDeviceHandles();
+    [[nodiscard]] SFML_AUDIO_API stdfwd::vector<PlaybackDeviceHandle> getAvailablePlaybackDeviceHandles();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a handle to the default audio playback device
@@ -134,7 +134,7 @@ public:
     /// \return A vector containing the device handles or an empty vector if no devices are available
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_AUDIO_API std::vector<CaptureDeviceHandle> getAvailableCaptureDeviceHandles();
+    [[nodiscard]] SFML_AUDIO_API stdfwd::vector<CaptureDeviceHandle> getAvailableCaptureDeviceHandles();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a handle to the default audio capture device

@@ -38,6 +38,7 @@
 #include <SFML/Base/Optional.hpp>
 
 #include <unordered_set>
+#include <vector>
 
 
 namespace sf

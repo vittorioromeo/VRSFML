@@ -28,8 +28,8 @@
 #include <SFML/System/Vector3.hpp> // NOLINTNEXTLINE(misc-header-include-cycle)
 
 #include <SFML/Base/Assert.hpp>
-#include <SFML/Base/IsFloatingPoint.hpp>
 #include <SFML/Base/Math.hpp>
+#include <SFML/Base/Traits/IsFloatingPoint.hpp>
 
 
 namespace sf
@@ -38,7 +38,7 @@ namespace sf
 template <typename T>
 constexpr Vector3<T> Vector3<T>::normalized() const
 {
-    static_assert(priv::isFloatingPoint<T>, "Vector3::normalized() is only supported for floating point types");
+    static_assert(base::isFloatingPoint<T>, "Vector3::normalized() is only supported for floating point types");
 
     SFML_BASE_ASSERT(*this != Vector3<T>() && "Vector3::normalized() cannot normalize a zero vector");
     return (*this) / length();
@@ -49,7 +49,7 @@ constexpr Vector3<T> Vector3<T>::normalized() const
 template <typename T>
 constexpr T Vector3<T>::length() const
 {
-    static_assert(priv::isFloatingPoint<T>, "Vector3::length() is only supported for floating point types");
+    static_assert(base::isFloatingPoint<T>, "Vector3::length() is only supported for floating point types");
 
     // don't use std::hypot because of slow performance
     return base::sqrt(x * x + y * y + z * z);

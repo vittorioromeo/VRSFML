@@ -3,6 +3,7 @@
 #include <Doctest.hpp>
 
 #include <sstream>
+#include <string>
 
 TEST_CASE("[System] sf::err")
 {
