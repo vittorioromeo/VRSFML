@@ -32,6 +32,9 @@
 #include <SFML/Base/Assert.hpp>
 #include <SFML/Base/Macros.hpp>
 
+#include <locale>
+#include <string>
+
 #include <cstring>
 #include <cwchar>
 
@@ -39,125 +42,66 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-void U8StringCharTraits::assign(char_type& c1, char_type c2) noexcept
+struct String::Impl
 {
-    c1 = c2;
-}
+    std::u32string string; //!< Internal string of UTF-32 characters
+};
 
 
 ////////////////////////////////////////////////////////////
-U8StringCharTraits::char_type* U8StringCharTraits::assign(char_type* s, std::size_t n, char_type c)
-{
-    return reinterpret_cast<U8StringCharTraits::char_type*>(
-        std::char_traits<char>::assign(reinterpret_cast<char*>(s), n, static_cast<char>(c)));
-}
+String::String() = default;
 
 
 ////////////////////////////////////////////////////////////
-bool U8StringCharTraits::eq(char_type c1, char_type c2) noexcept
-{
-    return c1 == c2;
-}
+String::~String() = default;
 
 
 ////////////////////////////////////////////////////////////
-bool U8StringCharTraits::lt(char_type c1, char_type c2) noexcept
-{
-    return c1 < c2;
-}
+String::String(const String&) = default;
 
 
 ////////////////////////////////////////////////////////////
-U8StringCharTraits::char_type* U8StringCharTraits::move(char_type* s1, const char_type* s2, std::size_t n)
-{
-    std::memmove(s1, s2, n);
-    return s1;
-}
+String& String::operator=(const String&) = default;
 
 
 ////////////////////////////////////////////////////////////
-U8StringCharTraits::char_type* U8StringCharTraits::copy(char_type* s1, const char_type* s2, std::size_t n)
-{
-    std::memcpy(s1, s2, n);
-    return s1;
-}
+String::String(String&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-int U8StringCharTraits::compare(const char_type* s1, const char_type* s2, std::size_t n)
-{
-    return std::memcmp(s1, s2, n);
-}
+String& String::operator=(String&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-std::size_t U8StringCharTraits::length(const char_type* s)
+String::String(char ansiChar) : String(ansiChar, std::locale{})
 {
-    return std::strlen(reinterpret_cast<const char*>(s));
-}
-
-
-////////////////////////////////////////////////////////////
-const U8StringCharTraits::char_type* U8StringCharTraits::find(const char_type* s, std::size_t n, const char_type& c)
-{
-    return reinterpret_cast<const U8StringCharTraits::char_type*>(
-        std::char_traits<char>::find(reinterpret_cast<const char*>(s), n, static_cast<char>(c)));
-}
-
-
-////////////////////////////////////////////////////////////
-U8StringCharTraits::char_type U8StringCharTraits::to_char_type(int_type i) noexcept
-{
-    return static_cast<U8StringCharTraits::char_type>(std::char_traits<char>::to_char_type(i));
-}
-
-
-////////////////////////////////////////////////////////////
-U8StringCharTraits::int_type U8StringCharTraits::to_int_type(char_type c) noexcept
-{
-    return std::char_traits<char>::to_int_type(static_cast<char>(c));
-}
-
-
-////////////////////////////////////////////////////////////
-bool U8StringCharTraits::eq_int_type(int_type i1, int_type i2) noexcept
-{
-    return i1 == i2;
-}
-
-
-////////////////////////////////////////////////////////////
-U8StringCharTraits::int_type U8StringCharTraits::eof() noexcept
-{
-    return std::char_traits<char>::eof();
-}
-
-
-////////////////////////////////////////////////////////////
-U8StringCharTraits::int_type U8StringCharTraits::not_eof(int_type i) noexcept
-{
-    return std::char_traits<char>::not_eof(i);
 }
 
 
 ////////////////////////////////////////////////////////////
 String::String(char ansiChar, const std::locale& locale)
 {
-    m_string += Utf32::decodeAnsi(ansiChar, locale);
+    m_impl->string += Utf32::decodeAnsi(ansiChar, locale);
 }
 
 
 ////////////////////////////////////////////////////////////
 String::String(wchar_t wideChar)
 {
-    m_string += Utf32::decodeWide(wideChar);
+    m_impl->string += Utf32::decodeWide(wideChar);
 }
 
 
 ////////////////////////////////////////////////////////////
 String::String(char32_t utf32Char)
 {
-    m_string += utf32Char;
+    m_impl->string += utf32Char;
+}
+
+
+////////////////////////////////////////////////////////////
+String::String(const char* ansiString) : String(ansiString, std::locale{})
+{
 }
 
 
@@ -169,18 +113,24 @@ String::String(const char* ansiString, const std::locale& locale)
         const std::size_t length = std::strlen(ansiString);
         if (length > 0)
         {
-            m_string.reserve(length + 1);
-            Utf32::fromAnsi(ansiString, ansiString + length, base::BackInserter(m_string), locale);
+            m_impl->string.reserve(length + 1);
+            Utf32::fromAnsi(ansiString, ansiString + length, base::BackInserter(m_impl->string), locale);
         }
     }
 }
 
 
 ////////////////////////////////////////////////////////////
+String::String(const std::string& ansiString) : String(ansiString, std::locale{})
+{
+}
+
+
+////////////////////////////////////////////////////////////
 String::String(const std::string& ansiString, const std::locale& locale)
 {
-    m_string.reserve(ansiString.length() + 1);
-    Utf32::fromAnsi(ansiString.begin(), ansiString.end(), base::BackInserter(m_string), locale);
+    m_impl->string.reserve(ansiString.length() + 1);
+    Utf32::fromAnsi(ansiString.begin(), ansiString.end(), base::BackInserter(m_impl->string), locale);
 }
 
 
@@ -192,8 +142,8 @@ String::String(const wchar_t* wideString)
         const std::size_t length = std::wcslen(wideString);
         if (length > 0)
         {
-            m_string.reserve(length + 1);
-            Utf32::fromWide(wideString, wideString + length, base::BackInserter(m_string));
+            m_impl->string.reserve(length + 1);
+            Utf32::fromWide(wideString, wideString + length, base::BackInserter(m_impl->string));
         }
     }
 }
@@ -202,8 +152,8 @@ String::String(const wchar_t* wideString)
 ////////////////////////////////////////////////////////////
 String::String(const std::wstring& wideString)
 {
-    m_string.reserve(wideString.length() + 1);
-    Utf32::fromWide(wideString.begin(), wideString.end(), base::BackInserter(m_string));
+    m_impl->string.reserve(wideString.length() + 1);
+    Utf32::fromWide(wideString.begin(), wideString.end(), base::BackInserter(m_impl->string));
 }
 
 
@@ -211,12 +161,12 @@ String::String(const std::wstring& wideString)
 String::String(const char32_t* utf32String)
 {
     if (utf32String)
-        m_string = utf32String;
+        m_impl->string = utf32String;
 }
 
 
 ////////////////////////////////////////////////////////////
-String::String(std::u32string utf32String) : m_string(SFML_BASE_MOVE(utf32String))
+String::String(std::u32string utf32String) : m_impl(SFML_BASE_MOVE(utf32String))
 {
 }
 
@@ -236,14 +186,21 @@ String::operator std::wstring() const
 
 
 ////////////////////////////////////////////////////////////
+std::string String::toAnsiString() const
+{
+    return toAnsiString(std::locale{});
+}
+
+
+////////////////////////////////////////////////////////////
 std::string String::toAnsiString(const std::locale& locale) const
 {
     // Prepare the output string
     std::string output;
-    output.reserve(m_string.length() + 1);
+    output.reserve(m_impl->string.length() + 1);
 
     // Convert
-    Utf32::toAnsi(m_string.begin(), m_string.end(), base::BackInserter(output), 0, locale);
+    Utf32::toAnsi(m_impl->string.begin(), m_impl->string.end(), base::BackInserter(output), 0, locale);
 
     return output;
 }
@@ -254,10 +211,10 @@ std::wstring String::toWideString() const
 {
     // Prepare the output string
     std::wstring output;
-    output.reserve(m_string.length() + 1);
+    output.reserve(m_impl->string.length() + 1);
 
     // Convert
-    Utf32::toWide(m_string.begin(), m_string.end(), base::BackInserter(output), 0);
+    Utf32::toWide(m_impl->string.begin(), m_impl->string.end(), base::BackInserter(output), 0);
 
     return output;
 }
@@ -268,10 +225,10 @@ U8String String::toUtf8() const
 {
     // Prepare the output string
     U8String output;
-    output.reserve(m_string.length());
+    output.reserve(m_impl->string.length());
 
     // Convert
-    Utf32::toUtf8(m_string.begin(), m_string.end(), base::BackInserter(output));
+    Utf32::toUtf8(m_impl->string.begin(), m_impl->string.end(), base::BackInserter(output));
 
     return output;
 }
@@ -282,10 +239,10 @@ std::u16string String::toUtf16() const
 {
     // Prepare the output string
     std::u16string output;
-    output.reserve(m_string.length());
+    output.reserve(m_impl->string.length());
 
     // Convert
-    Utf32::toUtf16(m_string.begin(), m_string.end(), base::BackInserter(output));
+    Utf32::toUtf16(m_impl->string.begin(), m_impl->string.end(), base::BackInserter(output));
 
     return output;
 }
@@ -294,14 +251,14 @@ std::u16string String::toUtf16() const
 ////////////////////////////////////////////////////////////
 std::u32string String::toUtf32() const
 {
-    return m_string;
+    return m_impl->string;
 }
 
 
 ////////////////////////////////////////////////////////////
 String& String::operator+=(const String& right)
 {
-    m_string += right.m_string;
+    m_impl->string += right.m_impl->string;
     return *this;
 }
 
@@ -309,65 +266,65 @@ String& String::operator+=(const String& right)
 ////////////////////////////////////////////////////////////
 char32_t String::operator[](std::size_t index) const
 {
-    SFML_BASE_ASSERT(index < m_string.size() && "Index is out of bounds");
-    return m_string[index];
+    SFML_BASE_ASSERT(index < m_impl->string.size() && "Index is out of bounds");
+    return m_impl->string[index];
 }
 
 
 ////////////////////////////////////////////////////////////
 char32_t& String::operator[](std::size_t index)
 {
-    SFML_BASE_ASSERT(index < m_string.size() && "Index is out of bounds");
-    return m_string[index];
+    SFML_BASE_ASSERT(index < m_impl->string.size() && "Index is out of bounds");
+    return m_impl->string[index];
 }
 
 
 ////////////////////////////////////////////////////////////
 void String::clear()
 {
-    m_string.clear();
+    m_impl->string.clear();
 }
 
 
 ////////////////////////////////////////////////////////////
 std::size_t String::getSize() const
 {
-    return m_string.size();
+    return m_impl->string.size();
 }
 
 
 ////////////////////////////////////////////////////////////
 bool String::isEmpty() const
 {
-    return m_string.empty();
+    return m_impl->string.empty();
 }
 
 
 ////////////////////////////////////////////////////////////
 void String::erase(std::size_t position, std::size_t count)
 {
-    m_string.erase(position, count);
+    m_impl->string.erase(position, count);
 }
 
 
 ////////////////////////////////////////////////////////////
 void String::insert(std::size_t position, const String& str)
 {
-    m_string.insert(position, str.m_string);
+    m_impl->string.insert(position, str.m_impl->string);
 }
 
 
 ////////////////////////////////////////////////////////////
 std::size_t String::find(const String& str, std::size_t start) const
 {
-    return m_string.find(str.m_string, start);
+    return m_impl->string.find(str.m_impl->string, start);
 }
 
 
 ////////////////////////////////////////////////////////////
 void String::replace(std::size_t position, std::size_t length, const String& replaceWith)
 {
-    m_string.replace(position, length, replaceWith.m_string);
+    m_impl->string.replace(position, length, replaceWith.m_impl->string);
 }
 
 
@@ -390,49 +347,56 @@ void String::replace(const String& searchFor, const String& replaceWith)
 ////////////////////////////////////////////////////////////
 String String::substring(std::size_t position, std::size_t length) const
 {
-    return m_string.substr(position, length);
+    return m_impl->string.substr(position, length);
 }
 
 
 ////////////////////////////////////////////////////////////
 const char32_t* String::getData() const
 {
-    return m_string.c_str();
+    return m_impl->string.c_str();
 }
 
 
 ////////////////////////////////////////////////////////////
 String::Iterator String::begin()
 {
-    return m_string.begin();
+    return m_impl->string.empty() ? nullptr : &(m_impl->string.front());
 }
 
 
 ////////////////////////////////////////////////////////////
 String::ConstIterator String::begin() const
 {
-    return m_string.begin();
+    return m_impl->string.empty() ? nullptr : &(m_impl->string.front());
 }
 
 
 ////////////////////////////////////////////////////////////
 String::Iterator String::end()
 {
-    return m_string.end();
+    return m_impl->string.empty() ? nullptr : &(m_impl->string.front()) + m_impl->string.size();
 }
 
 
 ////////////////////////////////////////////////////////////
 String::ConstIterator String::end() const
 {
-    return m_string.end();
+    return m_impl->string.empty() ? nullptr : &(m_impl->string.front()) + m_impl->string.size();
+}
+
+
+////////////////////////////////////////////////////////////
+stdfwd::u32string& String::getImplString()
+{
+    return m_impl->string;
 }
 
 
 ////////////////////////////////////////////////////////////
 bool operator==(const String& left, const String& right)
 {
-    return left.m_string == right.m_string;
+    return left.m_impl->string == right.m_impl->string;
 }
 
 
@@ -446,7 +410,7 @@ bool operator!=(const String& left, const String& right)
 ////////////////////////////////////////////////////////////
 bool operator<(const String& left, const String& right)
 {
-    return left.m_string < right.m_string;
+    return left.m_impl->string < right.m_impl->string;
 }
 
 
@@ -479,5 +443,9 @@ String operator+(const String& left, const String& right)
 
     return string;
 }
+
+
+////////////////////////////////////////////////////////////
+const std::size_t String::InvalidPos{std::u32string::npos};
 
 } // namespace sf

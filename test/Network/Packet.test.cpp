@@ -9,6 +9,7 @@
 #include <SystemUtil.hpp>
 
 #include <limits>
+#include <string>
 #include <type_traits>
 #include <vector>
 

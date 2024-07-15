@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <type_traits>
+#include <vector>
 
 TEST_CASE("[Window] sf::VideoMode" * doctest::skip(skipDisplayTests))
 {

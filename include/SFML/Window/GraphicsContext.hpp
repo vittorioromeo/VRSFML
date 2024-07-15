@@ -127,7 +127,14 @@ public:
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool hasAnyActiveGlContext() const;
+    [[nodiscard]] bool hasActiveThreadLocalOrSharedGlContext() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    using GLLoadFn = GlFunctionPointer (*)(const char*);
+    [[nodiscard]] GLLoadFn getGLLoadFn() const;
 
 private:
     friend priv::GlContext;
@@ -244,6 +251,9 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const priv::GlContext* getActiveThreadLocalGlContextPtr() const;
 
+    ////////////////////////////////////////////////////////////
+    // Member data
+    ////////////////////////////////////////////////////////////
     struct Impl;
     base::UniquePtr<Impl> m_impl;
 };
@@ -253,7 +263,7 @@ private:
 
 ////////////////////////////////////////////////////////////
 /// \class sf::GraphicsContext
-/// \ingroup graphics
+/// \ingroup window
 ///
 /// TODO
 ///

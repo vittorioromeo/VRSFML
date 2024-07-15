@@ -29,6 +29,8 @@
 #include <SFML/Graphics/Glsl.hpp>
 #include <SFML/Graphics/Transform.hpp>
 
+#include <cstring>
+
 
 namespace sf::priv
 {
@@ -63,9 +65,7 @@ void copyMatrix(const Transform& source, Matrix<4, 4>& dest)
 ////////////////////////////////////////////////////////////
 void copyMatrix(const float* source, std::size_t elements, float* dest)
 {
-    // TODO: use memcpy
-    for (const float* sourcePtr = source; sourcePtr != source + elements;)
-        *dest++ = *sourcePtr++;
+    std::memcpy(dest, source, elements * sizeof(float));
 }
 
 } // namespace sf::priv

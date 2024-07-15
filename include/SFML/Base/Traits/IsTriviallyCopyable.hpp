@@ -38,3 +38,12 @@
 #define SFML_BASE_IS_TRIVIALLY_COPYABLE(...) ::std::is_trivially_copyable<__VA_ARGS__>
 
 #endif
+
+
+namespace sf::base
+{
+////////////////////////////////////////////////////////////
+template <typename T>
+inline constexpr bool isTriviallyCopyable = SFML_BASE_IS_TRIVIALLY_COPYABLE(T);
+
+} // namespace sf::base

@@ -30,20 +30,26 @@
 #include <SFML/System/Export.hpp>
 
 #include <SFML/Base/Assert.hpp>
-#include <SFML/Base/IsTriviallyCopyAssignable.hpp>
-#include <SFML/Base/IsTriviallyCopyConstructible.hpp>
-#include <SFML/Base/IsTriviallyCopyable.hpp>
-#include <SFML/Base/IsTriviallyDestructible.hpp>
-#include <SFML/Base/IsTriviallyMoveAssignable.hpp>
-#include <SFML/Base/IsTriviallyMoveConstructible.hpp>
 #include <SFML/Base/Launder.hpp>
 #include <SFML/Base/Macros.hpp>
 #include <SFML/Base/PlacementNew.hpp>
-#include <SFML/Base/RemoveCVRef.hpp>
+#include <SFML/Base/Traits/IsTriviallyCopyAssignable.hpp>
+#include <SFML/Base/Traits/IsTriviallyCopyConstructible.hpp>
+#include <SFML/Base/Traits/IsTriviallyCopyable.hpp>
+#include <SFML/Base/Traits/IsTriviallyDestructible.hpp>
+#include <SFML/Base/Traits/IsTriviallyMoveAssignable.hpp>
+#include <SFML/Base/Traits/IsTriviallyMoveConstructible.hpp>
+#include <SFML/Base/Traits/RemoveCVRef.hpp>
 
 
 namespace sf::base
 {
+////////////////////////////////////////////////////////////
+struct BadOptionalAccess
+{
+};
+
+
 ////////////////////////////////////////////////////////////
 inline constexpr struct InPlace
 {
@@ -100,7 +106,7 @@ public:
     //////////////////////////////////////////
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional(const Optional& rhs)
-        requires(!SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(T)) :
+        requires(!base::isTriviallyCopyConstructible<T>) :
     m_engaged{rhs.m_engaged}
     {
         if (m_engaged)
@@ -110,13 +116,13 @@ public:
 
     //////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional(const Optional& rhs)
-        requires(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(T)) = default;
+        requires(base::isTriviallyCopyConstructible<T>) = default;
 
 
     //////////////////////////////////////////
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional(Optional&& rhs) noexcept
-        requires(!SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(T)) :
+        requires(!base::isTriviallyMoveConstructible<T>) :
     m_engaged{rhs.m_engaged}
     {
         if (m_engaged)
@@ -126,13 +132,13 @@ public:
 
     //////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional(Optional&& rhs)
-        requires(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(T)) = default;
+        requires(base::isTriviallyMoveConstructible<T>) = default;
 
 
     //////////////////////////////////////////
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[gnu::always_inline]] constexpr Optional& operator=(const Optional& rhs)
-        requires(!SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(T))
+        requires(!base::isTriviallyCopyAssignable<T>)
     {
         if (&rhs == this || (!m_engaged && !rhs.m_engaged))
             return *this;
@@ -160,13 +166,13 @@ public:
     //////////////////////////////////////////
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[gnu::always_inline]] constexpr Optional& operator=(const Optional& rhs)
-        requires(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(T)) = default;
+        requires(base::isTriviallyCopyAssignable<T>) = default;
 
 
     //////////////////////////////////////////
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[gnu::always_inline]] constexpr Optional& operator=(Optional&& rhs) noexcept
-        requires(!SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(T))
+        requires(!base::isTriviallyMoveAssignable<T>)
     {
         if (&rhs == this || (!m_engaged && !rhs.m_engaged))
             return *this;
@@ -194,7 +200,7 @@ public:
     //////////////////////////////////////////
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[gnu::always_inline]] constexpr Optional& operator=(Optional&& rhs)
-        requires(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(T)) = default;
+        requires(base::isTriviallyMoveAssignable<T>) = default;
 
 
     //////////////////////////////////////////
@@ -260,7 +266,7 @@ public:
 
 
     //////////////////////////////////////////
-    [[gnu::always_inline]] constexpr ~Optional() noexcept requires(!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(T))
+    [[gnu::always_inline]] constexpr ~Optional() noexcept requires(!base::isTriviallyDestructible<T>)
     {
         if (m_engaged)
             SFML_BASE_LAUNDER_CAST(T*, m_buffer)->~T();
@@ -268,14 +274,14 @@ public:
 
 
     //////////////////////////////////////////
-    [[gnu::always_inline]] constexpr ~Optional() noexcept requires(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(T)) = default;
+    [[gnu::always_inline]] constexpr ~Optional() noexcept requires(base::isTriviallyDestructible<T>) = default;
 
 
     //////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr T& value() &
     {
-        if (!m_engaged)
-            throw 0; // TODO
+        if (!m_engaged) [[unlikely]]
+            throw BadOptionalAccess{};
 
         return *SFML_BASE_LAUNDER_CAST(T*, m_buffer);
     }
@@ -284,8 +290,8 @@ public:
     //////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr const T& value() const&
     {
-        if (!m_engaged)
-            throw 0; // TODO
+        if (!m_engaged) [[unlikely]]
+            throw BadOptionalAccess{};
 
         return *SFML_BASE_LAUNDER_CAST(const T*, m_buffer);
     }
@@ -294,8 +300,8 @@ public:
     //////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr T&& value() &&
     {
-        if (!m_engaged)
-            throw 0; // TODO
+        if (!m_engaged) [[unlikely]]
+            throw BadOptionalAccess{};
 
         return SFML_BASE_MOVE(*SFML_BASE_LAUNDER_CAST(T*, m_buffer));
     }

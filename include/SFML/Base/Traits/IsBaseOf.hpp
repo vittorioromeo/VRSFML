@@ -25,25 +25,25 @@
 #pragma once
 
 
-#if __has_builtin(__is_same)
+#if __has_builtin(__is_base_of)
 
 ////////////////////////////////////////////////////////////
-#define SFML_BASE_IS_SAME(a, b) __is_same(a, b)
+#define SFML_BASE_IS_BASE_OF(b, d) __is_base_of(b, d)
 
 #else
 
-namespace sf::base::priv
-{
-////////////////////////////////////////////////////////////
-template <typename, typename>
-inline constexpr bool isSameImpl = false;
-
-template <typename T>
-inline constexpr bool isSameImpl<T, T> = true;
-
-} // namespace sf::base::priv
+#include <type_traits>
 
 ////////////////////////////////////////////////////////////
-#define SFML_BASE_IS_SAME(a, b) ::sf::base::priv::isSameImpl<a, b>
+#define SFML_BASE_IS_BASE_OF(b, d) ::std::is_base_of_v<b, d>
 
 #endif
+
+
+namespace sf::base
+{
+////////////////////////////////////////////////////////////
+template <typename B, typename D>
+inline constexpr bool isBaseOf = SFML_BASE_IS_BASE_OF(B, D);
+
+} // namespace sf::base

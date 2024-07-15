@@ -69,16 +69,11 @@ sf::base::Optional<sf::RenderWindow> recreateWindow(sf::GraphicsContext&       g
         return sf::base::nullOpt;
     }
 
-
     // Load OpenGL or OpenGL ES entry points using glad
 #ifdef SFML_OPENGL_ES
-    gladLoadGLES1([](const char* name) { return gcPtr->getFunction(name); });
+    gladLoadGLES1(graphicsContext.getGLLoadFn());
 #else
-    // TODO: garbage
-    static sf::GraphicsContext* gcPtr;
-    gcPtr = &graphicsContext;
-
-    gladLoadGL([](const char* name) { return gcPtr->getFunction(name); });
+    gladLoadGL(graphicsContext.getGLLoadFn());
 #endif
 
     // Enable Z-buffer read and write
@@ -208,7 +203,7 @@ int main()
 
         sf::Text text(font, "SFML / OpenGL demo");
         sf::Text sRgbInstructions(font, "Press space to toggle sRGB conversion (off)");
-        sf::Text mipmapInstructions(font, "Press return to toggle mipmapping");
+        sf::Text mipmapInstructions(font, "Press return to toggle mipmapping (on)");
         text.setFillColor(sf::Color(255, 255, 255, 170));
         sRgbInstructions.setFillColor(sf::Color(255, 255, 255, 170));
         mipmapInstructions.setFillColor(sf::Color(255, 255, 255, 170));
@@ -253,21 +248,23 @@ int main()
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>();
                     keyPressed && keyPressed->code == sf::Keyboard::Key::Enter)
                 {
-                    // TODO: not working
                     if (mipmapEnabled)
                     {
-                        std::cout << "disabling mipmap\n";
-
                         // We simply reload the texture to disable mipmapping
                         texture = sf::Texture::loadFromFile(graphicsContext, resourcesDir() / "logo.png").value();
 
+                        // Rebind the texture
+                        sf::Texture::bind(graphicsContext, &texture);
+
                         mipmapEnabled = false;
                     }
-                    else if (true ||texture.generateMipmap())
+                    else if (texture.generateMipmap())
                     {
-                        std::cout << "enabling mipmap\n";
                         mipmapEnabled = true;
                     }
+
+                    mipmapInstructions.setString(mipmapEnabled ? "Press return to toggle mipmapping (on)"
+                                                               : "Press return to toggle mipmapping (off)");
                 }
 
                 // Space key: toggle sRGB conversion

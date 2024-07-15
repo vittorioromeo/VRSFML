@@ -111,11 +111,15 @@ namespace
 }
 
 ////////////////////////////////////////////////////////////
-constinit thread_local struct
+thread_local constinit struct
 {
     std::uint64_t        id{0u};
     sf::priv::GlContext* ptr{nullptr};
 } activeGlContext;
+
+
+////////////////////////////////////////////////////////////
+constinit bool graphicsContextAlive{false};
 
 } // namespace
 
@@ -123,6 +127,19 @@ constinit thread_local struct
 ////////////////////////////////////////////////////////////
 struct GraphicsContext::Impl
 {
+    ////////////////////////////////////////////////////////////
+    struct ClearAliveFlag
+    {
+        ~ClearAliveFlag()
+        {
+            SFML_BASE_ASSERT(graphicsContextAlive);
+            graphicsContextAlive = false;
+        }
+    };
+
+    ////////////////////////////////////////////////////////////
+    ClearAliveFlag clearAliveFlag;
+
     ////////////////////////////////////////////////////////////
     std::atomic<std::uint64_t> nextThreadLocalGlContextId{2u}; // 1 is reserved for shared context
 
@@ -148,6 +165,10 @@ struct GraphicsContext::Impl
     template <typename... SharedGlContextArgs>
     explicit Impl(SharedGlContextArgs&&... args) : sharedGlContext(SFML_BASE_FORWARD(args)...)
     {
+        SFML_BASE_ASSERT(!graphicsContextAlive &&
+                         "An `sf::GraphicsContext` object is already alive, only one can exist at a time");
+
+        graphicsContextAlive = true;
     }
 };
 
@@ -155,7 +176,7 @@ struct GraphicsContext::Impl
 ////////////////////////////////////////////////////////////
 GraphicsContext::GraphicsContext() : m_impl(base::makeUnique<Impl>(*this, 1u, nullptr))
 {
-    SFML_BASE_ASSERT(!hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(!hasActiveThreadLocalOrSharedGlContext());
 
     if (!setActiveThreadLocalGlContext(m_impl->sharedGlContext, true))
         priv::err() << "Could not enable shared context in GraphicsContext()";
@@ -170,7 +191,7 @@ GraphicsContext::GraphicsContext() : m_impl(base::makeUnique<Impl>(*this, 1u, nu
     if (!setActiveThreadLocalGlContext(m_impl->sharedGlContext, false))
         priv::err() << "Could not disable shared context in GraphicsContext()";
 
-    SFML_BASE_ASSERT(!hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(!hasActiveThreadLocalOrSharedGlContext());
 
     if (!setActiveThreadLocalGlContext(m_impl->sharedGlContext, true))
     {
@@ -187,12 +208,12 @@ GraphicsContext::~GraphicsContext()
 {
     SFML_BASE_ASSERT(m_impl->unsharedFrameBuffers.empty());
 
-    SFML_BASE_ASSERT(hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(hasActiveThreadLocalOrSharedGlContext());
 
     activeGlContext.id  = 0u;
     activeGlContext.ptr = nullptr;
 
-    SFML_BASE_ASSERT(!hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(!hasActiveThreadLocalOrSharedGlContext());
 }
 
 
@@ -276,6 +297,7 @@ void GraphicsContext::cleanupUnsharedFrameBuffers(priv::GlContext& glContext)
 ////////////////////////////////////////////////////////////
 const priv::GlContext* GraphicsContext::getActiveThreadLocalGlContextPtr() const
 {
+    SFML_BASE_ASSERT(graphicsContextAlive);
     return activeGlContext.ptr;
 }
 
@@ -283,6 +305,7 @@ const priv::GlContext* GraphicsContext::getActiveThreadLocalGlContextPtr() const
 ////////////////////////////////////////////////////////////
 std::uint64_t GraphicsContext::getActiveThreadLocalGlContextId() const
 {
+    SFML_BASE_ASSERT(graphicsContextAlive);
     return activeGlContext.id;
 }
 
@@ -290,6 +313,7 @@ std::uint64_t GraphicsContext::getActiveThreadLocalGlContextId() const
 ////////////////////////////////////////////////////////////
 bool GraphicsContext::hasActiveThreadLocalGlContext() const
 {
+    SFML_BASE_ASSERT(graphicsContextAlive);
     return activeGlContext.id != 0;
 }
 
@@ -297,6 +321,8 @@ bool GraphicsContext::hasActiveThreadLocalGlContext() const
 ////////////////////////////////////////////////////////////
 bool GraphicsContext::setActiveThreadLocalGlContext(priv::GlContext& glContext, bool active)
 {
+    SFML_BASE_ASSERT(graphicsContextAlive);
+
     // If `glContext` is already the active one on this thread, don't do anything
     if (active && glContext.m_id == activeGlContext.id)
     {
@@ -341,8 +367,9 @@ void GraphicsContext::onGlContextDestroyed(priv::GlContext& glContext)
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool GraphicsContext::hasAnyActiveGlContext() const
+[[nodiscard]] bool GraphicsContext::hasActiveThreadLocalOrSharedGlContext() const
 {
+    SFML_BASE_ASSERT(graphicsContextAlive);
     return activeGlContext.id != 0u && activeGlContext.ptr != nullptr;
 }
 
@@ -350,7 +377,22 @@ void GraphicsContext::onGlContextDestroyed(priv::GlContext& glContext)
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool GraphicsContext::isActiveGlContextSharedContext() const
 {
+    SFML_BASE_ASSERT(graphicsContextAlive);
     return activeGlContext.id == 1u && activeGlContext.ptr == &m_impl->sharedGlContext;
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] GraphicsContext::GLLoadFn GraphicsContext::getGLLoadFn() const
+{
+    static const sf::GraphicsContext* lastGraphicsContext;
+    lastGraphicsContext = this;
+
+    return [](const char* name)
+    {
+        SFML_BASE_ASSERT(graphicsContextAlive);
+        return lastGraphicsContext->getFunction(name);
+    };
 }
 
 

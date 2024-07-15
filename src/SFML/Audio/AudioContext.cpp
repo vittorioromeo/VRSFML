@@ -38,6 +38,8 @@
 
 #include <miniaudio.h>
 
+#include <vector>
+
 
 namespace
 {

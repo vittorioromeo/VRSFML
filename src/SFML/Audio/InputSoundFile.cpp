@@ -249,7 +249,7 @@ std::uint64_t InputSoundFile::getSampleOffset() const
 ////////////////////////////////////////////////////////////
 void InputSoundFile::seek(std::uint64_t sampleOffset)
 {
-    SFML_BASE_ASSERT(m_reader);
+    SFML_BASE_ASSERT(m_reader != nullptr);
 
     if (!m_channelMap.empty())
     {
@@ -271,7 +271,7 @@ void InputSoundFile::seek(Time timeOffset)
 ////////////////////////////////////////////////////////////
 std::uint64_t InputSoundFile::read(std::int16_t* samples, std::uint64_t maxCount)
 {
-    SFML_BASE_ASSERT(m_reader);
+    SFML_BASE_ASSERT(m_reader != nullptr);
 
     std::uint64_t readSamples = 0;
     if (samples && maxCount)

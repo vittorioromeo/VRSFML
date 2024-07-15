@@ -31,7 +31,7 @@
 
 #include <SFML/System/Vector2.hpp>
 
-#include <vector>
+#include <stdfwd/vector>
 
 
 namespace sf
@@ -82,7 +82,7 @@ public:
     /// \return Array containing all the supported fullscreen modes
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static const std::vector<VideoMode>& getFullscreenModes();
+    [[nodiscard]] static const stdfwd::vector<VideoMode>& getFullscreenModes();
 
     ////////////////////////////////////////////////////////////
     /// \brief Tell whether or not the video mode is valid

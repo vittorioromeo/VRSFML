@@ -91,7 +91,7 @@ RenderTextureImplFBO::RenderTextureImplFBO(GraphicsContext& graphicsContext) : m
 ////////////////////////////////////////////////////////////
 RenderTextureImplFBO::~RenderTextureImplFBO()
 {
-    SFML_BASE_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(m_impl->graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
     // Destroy the color buffer
     if (m_impl->colorBuffer)
@@ -119,7 +119,7 @@ RenderTextureImplFBO::~RenderTextureImplFBO()
 ////////////////////////////////////////////////////////////
 bool RenderTextureImplFBO::isAvailable(GraphicsContext& graphicsContext)
 {
-    SFML_BASE_ASSERT(graphicsContext.hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
 
     // Make sure that extensions are initialized
     ensureExtensionsInit(graphicsContext);
@@ -137,7 +137,7 @@ unsigned int RenderTextureImplFBO::getMaximumAntialiasingLevel(GraphicsContext& 
 
 #else
 
-    SFML_BASE_ASSERT(graphicsContext.hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
     GLint samples = 0;
     glCheck(glGetIntegerv(GLEXT_GL_MAX_SAMPLES, &samples));
     return static_cast<unsigned int>(samples);
@@ -160,7 +160,7 @@ bool RenderTextureImplFBO::create(const Vector2u& size, unsigned int textureId, 
     m_impl->size = size;
 
     {
-        SFML_BASE_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
+        SFML_BASE_ASSERT(m_impl->graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
         // Make sure that extensions are initialized
         ensureExtensionsInit(*m_impl->graphicsContext);
@@ -538,7 +538,7 @@ bool RenderTextureImplFBO::activate(bool active)
         return true;
     }
 
-    SFML_BASE_ASSERT(m_impl->graphicsContext->hasAnyActiveGlContext());
+    SFML_BASE_ASSERT(m_impl->graphicsContext->hasActiveThreadLocalOrSharedGlContext());
     const std::uint64_t glContextId = m_impl->graphicsContext->getActiveThreadLocalGlContextId();
 
     // Lookup the FBO corresponding to the currently active context

@@ -29,46 +29,18 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/System/Export.hpp>
 
-#include <locale>
-#include <string>
+#include <SFML/Base/InPlacePImpl.hpp>
+
+#include <stdfwd/locale>
+#include <stdfwd/string>
+#include <stdfwd/string_headers/u32string>
 
 #include <cstddef>
-#include <cstdint>
 
 
 namespace sf
 {
 class StringUtfUtils;
-
-////////////////////////////////////////////////////////////
-/// \brief Character traits for std::uint8_t
-///
-////////////////////////////////////////////////////////////
-struct SFML_SYSTEM_API U8StringCharTraits
-{
-    // NOLINTBEGIN(readability-identifier-naming)
-    using char_type  = std::uint8_t;
-    using int_type   = std::char_traits<char>::int_type;
-    using off_type   = std::char_traits<char>::off_type;
-    using pos_type   = std::char_traits<char>::pos_type;
-    using state_type = std::char_traits<char>::state_type;
-
-    static void             assign(char_type& c1, char_type c2) noexcept;
-    static char_type*       assign(char_type* s, std::size_t n, char_type c);
-    static bool             eq(char_type c1, char_type c2) noexcept;
-    static bool             lt(char_type c1, char_type c2) noexcept;
-    static char_type*       move(char_type* s1, const char_type* s2, std::size_t n);
-    static char_type*       copy(char_type* s1, const char_type* s2, std::size_t n);
-    static int              compare(const char_type* s1, const char_type* s2, std::size_t n);
-    static std::size_t      length(const char_type* s);
-    static const char_type* find(const char_type* s, std::size_t n, const char_type& c);
-    static char_type        to_char_type(int_type i) noexcept;
-    static int_type         to_int_type(char_type c) noexcept;
-    static bool             eq_int_type(int_type i1, int_type i2) noexcept;
-    static int_type         eof() noexcept;
-    static int_type         not_eof(int_type i) noexcept;
-    // NOLINTEND(readability-identifier-naming)
-};
 
 ////////////////////////////////////////////////////////////
 /// \brief Portable replacement for std::basic_string<std::uint8_t>
@@ -78,7 +50,7 @@ struct SFML_SYSTEM_API U8StringCharTraits
 /// standard C++. Thus we can't depend on its continued existence.
 ///
 ////////////////////////////////////////////////////////////
-using U8String = std::basic_string<std::uint8_t, U8StringCharTraits>;
+using U8String = std::u8string;
 
 ////////////////////////////////////////////////////////////
 /// \brief Utility string class that automatically handles
@@ -93,15 +65,15 @@ public:
     ////////////////////////////////////////////////////////////
     // Types
     ////////////////////////////////////////////////////////////
-    using Iterator      = std::u32string::iterator;       //!< Iterator type
-    using ConstIterator = std::u32string::const_iterator; //!< Read-only iterator type
+    using Iterator      = char32_t*;       //!< Iterator type
+    using ConstIterator = const char32_t*; //!< Read-only iterator type
 
     ////////////////////////////////////////////////////////////
     // Static member data
     ////////////////////////////////////////////////////////////
     // NOLINTBEGIN(readability-identifier-naming)
     /// Represents an invalid position in the string
-    static inline const std::size_t InvalidPos{std::u32string::npos};
+    static const std::size_t InvalidPos;
     // NOLINTEND(readability-identifier-naming)
 
     ////////////////////////////////////////////////////////////
@@ -110,7 +82,37 @@ public:
     /// This constructor creates an empty string.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] String() = default;
+    [[nodiscard]] String();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Destructor
+    ///
+    ////////////////////////////////////////////////////////////
+    ~String();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Copy constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    String(const String&);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Copy assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    String& operator=(const String&);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    String(String&&) noexcept;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    String& operator=(String&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from a single ANSI character and a locale
@@ -122,7 +124,8 @@ public:
     /// \param locale   Locale to use for conversion
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] String(char ansiChar, const std::locale& locale = {});
+    [[nodiscard]] String(char ansiChar);
+    [[nodiscard]] String(char ansiChar, const std::locale& locale);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from single wide character
@@ -150,7 +153,8 @@ public:
     /// \param locale     Locale to use for conversion
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] String(const char* ansiString, const std::locale& locale = {});
+    [[nodiscard]] String(const char* ansiString);
+    [[nodiscard]] String(const char* ansiString, const std::locale& locale);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from an ANSI string and a locale
@@ -162,7 +166,8 @@ public:
     /// \param locale     Locale to use for conversion
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] String(const std::string& ansiString, const std::locale& locale = {});
+    [[nodiscard]] String(const std::string& ansiString);
+    [[nodiscard]] String(const std::string& ansiString, const std::locale& locale);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from null-terminated C-style wide string
@@ -243,7 +248,8 @@ public:
     /// \see toWideString, operator std::string
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string toAnsiString(const std::locale& locale = {}) const;
+    [[nodiscard]] std::string toAnsiString() const;
+    [[nodiscard]] std::string toAnsiString(const std::locale& locale) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert the Unicode string to a wide string
@@ -504,9 +510,16 @@ private:
     friend SFML_SYSTEM_API bool operator<(const String& left, const String& right);
 
     ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    stdfwd::u32string& getImplString();
+
+    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::u32string m_string; //!< Internal string of UTF-32 characters
+    struct Impl;
+    base::InPlacePImpl<Impl, 32> m_impl; //!< Implementation details
 };
 
 ////////////////////////////////////////////////////////////

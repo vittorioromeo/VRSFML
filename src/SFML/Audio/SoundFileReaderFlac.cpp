@@ -346,7 +346,8 @@ base::Optional<SoundFileReader::Info> SoundFileReaderFlac::open(InputStream& str
 ////////////////////////////////////////////////////////////
 void SoundFileReaderFlac::seek(std::uint64_t sampleOffset)
 {
-    SFML_BASE_ASSERT(m_impl->decoder && "No decoder available. Call SoundFileReaderFlac::open() to create a new one.");
+    SFML_BASE_ASSERT(m_impl->decoder != nullptr &&
+                     "No decoder available. Call SoundFileReaderFlac::open() to create a new one.");
 
     // Reset the callback data (the "write" callback will be called)
     m_impl->clientData.buffer    = nullptr;
@@ -376,7 +377,8 @@ void SoundFileReaderFlac::seek(std::uint64_t sampleOffset)
 ////////////////////////////////////////////////////////////
 std::uint64_t SoundFileReaderFlac::read(std::int16_t* samples, std::uint64_t maxCount)
 {
-    SFML_BASE_ASSERT(m_impl->decoder && "No decoder available. Call SoundFileReaderFlac::open() to create a new one.");
+    SFML_BASE_ASSERT(m_impl->decoder != nullptr &&
+                     "No decoder available. Call SoundFileReaderFlac::open() to create a new one.");
 
     // If there are leftovers from previous call, use it first
     const std::size_t left = m_impl->clientData.leftovers.size();

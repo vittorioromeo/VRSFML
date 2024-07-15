@@ -29,8 +29,8 @@
 #include <SFML/System/Vector2.hpp> // NOLINT(misc-header-include-cycle)
 
 #include <SFML/Base/Assert.hpp>
-#include <SFML/Base/IsFloatingPoint.hpp>
 #include <SFML/Base/Math.hpp>
+#include <SFML/Base/Traits/IsFloatingPoint.hpp>
 
 
 namespace sf
@@ -202,7 +202,7 @@ constexpr bool operator!=(const Vector2<T>& left, const Vector2<T>& right)
 template <typename T>
 constexpr Vector2<T> Vector2<T>::normalized() const
 {
-    static_assert(priv::isFloatingPoint<T>, "Vector2::normalized() is only supported for floating point types");
+    static_assert(base::isFloatingPoint<T>, "Vector2::normalized() is only supported for floating point types");
 
     SFML_BASE_ASSERT(*this != Vector2<T>() && "Vector2::normalized() cannot normalize a zero vector");
 
@@ -214,7 +214,7 @@ constexpr Vector2<T> Vector2<T>::normalized() const
 template <typename T>
 constexpr Angle Vector2<T>::angleTo(const Vector2<T>& rhs) const
 {
-    static_assert(priv::isFloatingPoint<T>, "Vector2::angleTo() is only supported for floating point types");
+    static_assert(base::isFloatingPoint<T>, "Vector2::angleTo() is only supported for floating point types");
 
     SFML_BASE_ASSERT(*this != Vector2<T>() && "Vector2::angleTo() cannot calculate angle from a zero vector");
     SFML_BASE_ASSERT(rhs != Vector2<T>() && "Vector2::angleTo() cannot calculate angle to a zero vector");
@@ -227,7 +227,7 @@ constexpr Angle Vector2<T>::angleTo(const Vector2<T>& rhs) const
 template <typename T>
 constexpr Angle Vector2<T>::angle() const
 {
-    static_assert(priv::isFloatingPoint<T>, "Vector2::angle() is only supported for floating point types");
+    static_assert(base::isFloatingPoint<T>, "Vector2::angle() is only supported for floating point types");
 
     SFML_BASE_ASSERT(*this != Vector2<T>() && "Vector2::angle() cannot calculate angle from a zero vector");
 
@@ -239,7 +239,7 @@ constexpr Angle Vector2<T>::angle() const
 template <typename T>
 constexpr Vector2<T> Vector2<T>::rotatedBy(Angle phi) const
 {
-    static_assert(priv::isFloatingPoint<T>, "Vector2::rotatedBy() is only supported for floating point types");
+    static_assert(base::isFloatingPoint<T>, "Vector2::rotatedBy() is only supported for floating point types");
 
     // No zero vector assert, because rotating a zero vector is well-defined (yields always itself)
     const T cos = base::cos(static_cast<T>(phi.asRadians()));
@@ -254,7 +254,7 @@ constexpr Vector2<T> Vector2<T>::rotatedBy(Angle phi) const
 template <typename T>
 constexpr Vector2<T> Vector2<T>::movedTowards(T r, Angle phi) const
 {
-    static_assert(priv::isFloatingPoint<T>, "Vector2::movedTowards() is only supported for floating point types");
+    static_assert(base::isFloatingPoint<T>, "Vector2::movedTowards() is only supported for floating point types");
 
     return *this + Vector2<T>::fromAngle(r, phi);
 }
@@ -263,7 +263,7 @@ constexpr Vector2<T> Vector2<T>::movedTowards(T r, Angle phi) const
 template <typename T>
 constexpr Vector2<T> Vector2<T>::projectedOnto(const Vector2<T>& axis) const
 {
-    static_assert(priv::isFloatingPoint<T>, "Vector2::projectedOnto() is only supported for floating point types");
+    static_assert(base::isFloatingPoint<T>, "Vector2::projectedOnto() is only supported for floating point types");
 
     SFML_BASE_ASSERT(axis != Vector2<T>() && "Vector2::projectedOnto() cannot project onto a zero vector");
     return dot(axis) / axis.lengthSq() * axis;
@@ -274,7 +274,7 @@ constexpr Vector2<T> Vector2<T>::projectedOnto(const Vector2<T>& axis) const
 template <typename T>
 constexpr Vector2<T> Vector2<T>::fromAngle(T r, Angle phi)
 {
-    static_assert(priv::isFloatingPoint<T>, "Vector2::Vector2(T, Angle) is only supported for floating point types");
+    static_assert(base::isFloatingPoint<T>, "Vector2::Vector2(T, Angle) is only supported for floating point types");
     return {r * static_cast<T>(base::cos(phi.asRadians())), r * static_cast<T>(base::sin(phi.asRadians()))};
 }
 
@@ -283,7 +283,7 @@ constexpr Vector2<T> Vector2<T>::fromAngle(T r, Angle phi)
 template <typename T>
 constexpr T Vector2<T>::length() const
 {
-    static_assert(priv::isFloatingPoint<T>, "Vector2::length() is only supported for floating point types");
+    static_assert(base::isFloatingPoint<T>, "Vector2::length() is only supported for floating point types");
 
     // don't use std::hypot because of slow performance
     return base::sqrt(x * x + y * y);

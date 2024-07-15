@@ -46,6 +46,6 @@ namespace sf::base::priv
 #else
 
 ////////////////////////////////////////////////////////////
-#define SFML_BASE_ASSERT(...) (void)
+#define SFML_BASE_ASSERT(...)
 
 #endif

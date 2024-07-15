@@ -36,7 +36,7 @@ namespace sf::base
 template <typename T>
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T& min(const T& a, const T& b) noexcept
 {
-    return a < b ? a : b;
+    return b < a ? b : a;
 }
 
 
@@ -122,7 +122,7 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T, auto N>
-[[nodiscard, gnu::always_inline, gnu::const]] constexpr auto getArraySize(const T (&)[N]) noexcept
+[[nodiscard, gnu::always_inline, gnu::const]] constexpr decltype(sizeof(int)) getArraySize(const T (&)[N]) noexcept
 {
     return N;
 }
