@@ -181,4 +181,19 @@ template <typename T, typename U = T>
     return oldVal;
 }
 
+
+////////////////////////////////////////////////////////////
+template <class Iter, class Predicate>
+Iter removeIf(Iter first, Iter last, Predicate&& predicate)
+{
+    first = findIf(first, last, predicate);
+
+    if (first != last)
+        for (Iter i = first; ++i != last;)
+            if (!predicate(*i))
+                *first++ = SFML_BASE_MOVE(*i);
+
+    return first;
+}
+
 } // namespace sf::base

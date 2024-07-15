@@ -36,7 +36,6 @@
 #include <SFML/Base/Algorithm.hpp>
 #include <SFML/Base/Math.hpp>
 
-#include <algorithm>
 #include <regstr.h>
 #include <sstream>
 #include <string>
@@ -500,7 +499,7 @@ void JoystickImpl::updateConnectionsDInput()
                                                     DIEDFL_ATTACHEDONLY);
 
     // Remove devices that were not connected during the enumeration
-    joystickList.erase(std::remove_if(joystickList.begin(),
+    joystickList.erase(base::removeIf(joystickList.begin(),
                                       joystickList.end(),
                                       [](const JoystickRecord& joystickRecord) { return !joystickRecord.plugged; }),
                        joystickList.end());

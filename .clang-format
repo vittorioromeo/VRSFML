@@ -117,11 +117,9 @@ IncludeCategories:
     Regex: '^<(glad|gl|X11|jni|android|stb_|GLES2|vorbis|miniaudio|doctest|Doctest)'
   - Priority: 11
     Regex: '^<(AudioUtil|SystemUtil|GraphicsUtil|WindowUtil|StringifyVectorUtil|StringifyOptionalUtil|StringifyPathUtil|StringifyStringUtil|StringifyArrayUtil|LoadIntoMemoryUtil)'
-  - Priority: 13
-    Regex: '^<stdfwd/(.+)>$'
   - Priority: 12
     Regex: '^<([^c](.+)|coroutine|charconv|chrono|complex|concepts|condition_variable)>$'
-  - Priority: 14
+  - Priority: 13
     Regex: '^<c(.+)>$'
 SortIncludes: true
 SortUsingDeclarations: true
