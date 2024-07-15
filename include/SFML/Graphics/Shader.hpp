@@ -35,7 +35,7 @@
 #include <SFML/Base/Optional.hpp>
 #include <SFML/Base/PassKey.hpp>
 
-#include <stdfwd/string_view>
+#include <string_view>
 
 #include <cstddef>
 

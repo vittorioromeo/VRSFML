@@ -163,5 +163,3 @@ endif()
 if(SFML_ENABLE_STACK_TRACES)
     target_link_libraries(sfml-system PUBLIC cpptrace::cpptrace)
 endif()
-
-target_link_libraries(sfml-system PUBLIC stdfwd)

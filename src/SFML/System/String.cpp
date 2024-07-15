@@ -387,7 +387,7 @@ String::ConstIterator String::end() const
 
 
 ////////////////////////////////////////////////////////////
-stdfwd::u32string& String::getImplString()
+std::u32string& String::getImplString()
 {
     return m_impl->string;
 }

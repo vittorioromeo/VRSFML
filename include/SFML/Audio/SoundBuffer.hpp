@@ -37,7 +37,7 @@
 #include <SFML/Base/Optional.hpp>
 #include <SFML/Base/PassKey.hpp>
 
-#include <stdfwd/vector>
+#include <vector>
 
 #include <cstddef>
 #include <cstdint>
@@ -146,7 +146,7 @@ public:
         std::uint64_t                       sampleCount,
         unsigned int                        channelCount,
         unsigned int                        sampleRate,
-        const stdfwd::vector<SoundChannel>& channelMap);
+        const std::vector<SoundChannel>& channelMap);
 
     ////////////////////////////////////////////////////////////
     /// \brief Save the sound buffer to an audio file
@@ -228,7 +228,7 @@ public:
     /// \see getSampleRate, getChannelCount, getDuration
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] stdfwd::vector<SoundChannel> getChannelMap() const;
+    [[nodiscard]] std::vector<SoundChannel> getChannelMap() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the total duration of the sound
@@ -260,7 +260,7 @@ public:
     /// \brief Construct from vector of samples
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit SoundBuffer(base::PassKey<SoundBuffer>&&, stdfwd::vector<std::int16_t>&& samples);
+    [[nodiscard]] explicit SoundBuffer(base::PassKey<SoundBuffer>&&, std::vector<std::int16_t>&& samples);
 
 private:
     ////////////////////////////////////////////////////////////
@@ -268,10 +268,10 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<SoundBuffer> loadFromSamplesImpl(
-        stdfwd::vector<std::int16_t>&&      samples,
+        std::vector<std::int16_t>&&      samples,
         unsigned int                        channelCount,
         unsigned int                        sampleRate,
-        const stdfwd::vector<SoundChannel>& channelMap);
+        const std::vector<SoundChannel>& channelMap);
 
     ////////////////////////////////////////////////////////////
     /// \brief Initialize the internal state after loading a new sound
@@ -293,7 +293,7 @@ private:
     /// \return True on success, false if any error happened
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool update(unsigned int channelCount, unsigned int sampleRate, const stdfwd::vector<SoundChannel>& channelMap);
+    [[nodiscard]] bool update(unsigned int channelCount, unsigned int sampleRate, const std::vector<SoundChannel>& channelMap);
 
     ////////////////////////////////////////////////////////////
     /// \brief Add a sound to the list of sounds that use this buffer

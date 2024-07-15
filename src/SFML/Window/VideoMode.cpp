@@ -31,7 +31,6 @@
 #include <SFML/Base/Algorithm.hpp>
 
 #include <algorithm>
-#include <functional>
 
 
 namespace sf
@@ -58,7 +57,7 @@ const std::vector<VideoMode>& VideoMode::getFullscreenModes()
     static const auto modes = []
     {
         std::vector<VideoMode> result = priv::VideoModeImpl::getFullscreenModes();
-        std::sort(result.begin(), result.end(), std::greater<>());
+        std::sort(result.begin(), result.end(), [](const auto& lhs, const auto& rhs) { return lhs > rhs; });
         return result;
     }();
 

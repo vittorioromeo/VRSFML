@@ -31,9 +31,8 @@
 
 #include <SFML/Base/InPlacePImpl.hpp>
 
-#include <stdfwd/locale>
-#include <stdfwd/string>
-#include <stdfwd/string_headers/u32string>
+#include <locale>
+#include <string>
 
 #include <cstddef>
 
@@ -513,7 +512,7 @@ private:
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
-    stdfwd::u32string& getImplString();
+    std::u32string& getImplString();
 
     ////////////////////////////////////////////////////////////
     // Member data

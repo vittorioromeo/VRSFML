@@ -31,7 +31,7 @@
 
 #include <SFML/Base/InPlacePImpl.hpp>
 
-#include <stdfwd/string>
+#include <string>
 
 #include <cstddef>
 #include <cstdint>
