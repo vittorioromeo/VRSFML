@@ -22,7 +22,6 @@
 #endif
 
 #include <array>
-#include <iostream>
 
 #include <cstdlib>
 

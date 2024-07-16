@@ -687,7 +687,9 @@ void Texture::update(const Window& window, const Vector2u& dest)
     SFML_BASE_ASSERT(dest.x + window.getSize().x <= m_size.x && "Destination x coordinate is outside of texture");
     SFML_BASE_ASSERT(dest.y + window.getSize().y <= m_size.y && "Destination y coordinate is outside of texture");
 
-    if (m_texture && window.setActive(true))
+    SFML_BASE_ASSERT(m_texture);
+
+    if (window.setActive(true))
     {
         SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
@@ -712,6 +714,10 @@ void Texture::update(const Window& window, const Vector2u& dest)
         // Force an OpenGL flush, so that the texture will appear updated
         // in all contexts immediately (solves problems in multi-threaded apps)
         glCheck(glFlush());
+    }
+    else
+    {
+        throw 100;
     }
 }
 

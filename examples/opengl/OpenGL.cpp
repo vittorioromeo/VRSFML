@@ -325,6 +325,8 @@ int main()
                     return EXIT_FAILURE;
             }
 
+            window->clear(); // TODO: needed
+
             // Draw the background
             window->pushGLStates();
             window->draw(background, backgroundTexture);
