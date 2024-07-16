@@ -292,8 +292,8 @@ public:
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
-        // Prepare the rend
-        // TODOer state
+        // Prepare the render state
+        // TODO
         states.shader    = const_cast<sf::Shader*>(&m_shader);
         states.texture   = &m_logoTexture;
         states.transform = m_transform;

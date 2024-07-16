@@ -329,7 +329,7 @@ Shader::~Shader()
 
     // Destroy effect program
     if (m_impl->shaderProgram)
-        glCheck(GLEXT_glDeleteObject(castToGlHandle(m_impl->shaderProgram)));
+        glCheck(GLEXT_glDeleteProgram(castToGlHandle(m_impl->shaderProgram)));
 }
 
 
@@ -351,7 +351,7 @@ Shader& Shader::operator=(Shader&& right) noexcept
         // Destroy effect program
         SFML_BASE_ASSERT(m_impl->graphicsContext->hasActiveThreadLocalOrSharedGlContext());
         SFML_BASE_ASSERT(m_impl->shaderProgram);
-        glCheck(GLEXT_glDeleteObject(castToGlHandle(m_impl->shaderProgram)));
+        glCheck(GLEXT_glDeleteProgram(castToGlHandle(m_impl->shaderProgram)));
     }
 
     // Move the contents of right.
@@ -956,20 +956,20 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
 
         // Check the compile log
         GLint success = 0;
-        glCheck(GLEXT_glGetObjectParameteriv(vertexShader, GLEXT_GL_OBJECT_COMPILE_STATUS, &success));
+        glCheck(GLEXT_glGetShaderParameteriv(vertexShader, GLEXT_GL_OBJECT_COMPILE_STATUS, &success));
         if (success == GL_FALSE)
         {
             char log[1024];
-            glCheck(GLEXT_glGetInfoLog(vertexShader, sizeof(log), nullptr, log));
+            glCheck(GLEXT_glGetShaderInfoLog(vertexShader, sizeof(log), nullptr, log));
             priv::err() << "Failed to compile vertex shader:" << '\n' << static_cast<const char*>(log);
-            glCheck(GLEXT_glDeleteObject(vertexShader));
-            glCheck(GLEXT_glDeleteObject(shaderProgram));
+            glCheck(GLEXT_glDeleteShader(vertexShader));
+            glCheck(GLEXT_glDeleteProgram(shaderProgram));
             return base::nullOpt;
         }
 
         // Attach the shader to the program, and delete it (not needed anymore)
-        glCheck(GLEXT_glAttachObject(shaderProgram, vertexShader));
-        glCheck(GLEXT_glDeleteObject(vertexShader));
+        glCheck(GLEXT_glAttachShader(shaderProgram, vertexShader));
+        glCheck(GLEXT_glDeleteShader(vertexShader));
     }
 
     // Create the geometry shader if needed
@@ -984,20 +984,20 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
 
         // Check the compile log
         GLint success = 0;
-        glCheck(GLEXT_glGetObjectParameteriv(geometryShader, GLEXT_GL_OBJECT_COMPILE_STATUS, &success));
+        glCheck(GLEXT_glGetShaderParameteriv(geometryShader, GLEXT_GL_OBJECT_COMPILE_STATUS, &success));
         if (success == GL_FALSE)
         {
             char log[1024];
-            glCheck(GLEXT_glGetInfoLog(geometryShader, sizeof(log), nullptr, log));
+            glCheck(GLEXT_glGetShaderInfoLog(geometryShader, sizeof(log), nullptr, log));
             priv::err() << "Failed to compile geometry shader:" << '\n' << static_cast<const char*>(log);
-            glCheck(GLEXT_glDeleteObject(geometryShader));
-            glCheck(GLEXT_glDeleteObject(shaderProgram));
+            glCheck(GLEXT_glDeleteShader(geometryShader));
+            glCheck(GLEXT_glDeleteProgram(shaderProgram));
             return base::nullOpt;
         }
 
         // Attach the shader to the program, and delete it (not needed anymore)
-        glCheck(GLEXT_glAttachObject(shaderProgram, geometryShader));
-        glCheck(GLEXT_glDeleteObject(geometryShader));
+        glCheck(GLEXT_glAttachShader(shaderProgram, geometryShader));
+        glCheck(GLEXT_glDeleteShader(geometryShader));
     }
 
     // Create the fragment shader if needed
@@ -1013,20 +1013,20 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
 
         // Check the compile log
         GLint success = 0;
-        glCheck(GLEXT_glGetObjectParameteriv(fragmentShader, GLEXT_GL_OBJECT_COMPILE_STATUS, &success));
+        glCheck(GLEXT_glGetShaderParameteriv(fragmentShader, GLEXT_GL_OBJECT_COMPILE_STATUS, &success));
         if (success == GL_FALSE)
         {
             char log[1024];
-            glCheck(GLEXT_glGetInfoLog(fragmentShader, sizeof(log), nullptr, log));
+            glCheck(GLEXT_glGetShaderInfoLog(fragmentShader, sizeof(log), nullptr, log));
             priv::err() << "Failed to compile fragment shader:" << '\n' << static_cast<const char*>(log);
-            glCheck(GLEXT_glDeleteObject(fragmentShader));
-            glCheck(GLEXT_glDeleteObject(shaderProgram));
+            glCheck(GLEXT_glDeleteShader(fragmentShader));
+            glCheck(GLEXT_glDeleteProgram(shaderProgram));
             return base::nullOpt;
         }
 
         // Attach the shader to the program, and delete it (not needed anymore)
-        glCheck(GLEXT_glAttachObject(shaderProgram, fragmentShader));
-        glCheck(GLEXT_glDeleteObject(fragmentShader));
+        glCheck(GLEXT_glAttachShader(shaderProgram, fragmentShader));
+        glCheck(GLEXT_glDeleteShader(fragmentShader));
     }
 
     // Link the program
@@ -1034,13 +1034,13 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
 
     // Check the link log
     GLint success = 0;
-    glCheck(GLEXT_glGetObjectParameteriv(shaderProgram, GLEXT_GL_OBJECT_LINK_STATUS, &success));
+    glCheck(GLEXT_glGetShaderParameteriv(shaderProgram, GLEXT_GL_OBJECT_LINK_STATUS, &success));
     if (success == GL_FALSE)
     {
         char log[1024];
-        glCheck(GLEXT_glGetInfoLog(shaderProgram, sizeof(log), nullptr, log));
+        glCheck(GLEXT_glGetShaderInfoLog(shaderProgram, sizeof(log), nullptr, log));
         priv::err() << "Failed to link shader:" << '\n' << static_cast<const char*>(log);
-        glCheck(GLEXT_glDeleteObject(shaderProgram));
+        glCheck(GLEXT_glDeleteProgram(shaderProgram));
         return base::nullOpt;
     }
 

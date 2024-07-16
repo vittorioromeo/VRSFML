@@ -35,6 +35,8 @@
 #include <SFML/Base/Optional.hpp>
 #include <SFML/Base/UniquePtr.hpp>
 
+#include <functional>
+
 #include <cstdint>
 
 
@@ -51,6 +53,7 @@ class WindowImpl;
 
 namespace sf
 {
+class RenderTarget;
 class Shader;
 class Window;
 struct ContextSettings;
@@ -143,6 +146,7 @@ private:
     friend priv::RenderTextureImplDefault;
     friend priv::RenderTextureImplFBO;
     friend TestContext;
+    friend RenderTarget;
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context, not associated to a window
@@ -238,6 +242,14 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool setActiveThreadLocalGlContext(priv::GlContext& glContext, bool active);
 
+public:
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool setActiveThreadLocalGlContextToSharedContext(bool active);
+
+private:
     ////////////////////////////////////////////////////////////
     /// \brief TODO
     ///
@@ -257,6 +269,10 @@ private:
     ////////////////////////////////////////////////////////////
     struct Impl;
     base::UniquePtr<Impl> m_impl;
+
+public: // TODO
+    int builtInShaderState{0};
+    void (*buildInShaderDestroyFn)(){};
 };
 
 } // namespace sf
