@@ -917,8 +917,8 @@ void Texture::bind(GraphicsContext& graphicsContext, const Texture* texture, Coo
     {
         static auto empty = [&]() -> Texture
         {
-            const sf::Image image({1, 1}, sf::Color::White);
-            return Texture::loadFromImage(graphicsContext, image).value();
+            const auto image = sf::Image::create({1, 1}, sf::Color::White);
+            return Texture::loadFromImage(graphicsContext, *image).value();
         }();
 
         // Bind no texture
