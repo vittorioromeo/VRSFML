@@ -35,8 +35,6 @@
 #include <SFML/Base/Optional.hpp>
 #include <SFML/Base/UniquePtr.hpp>
 
-#include <functional>
-
 #include <cstdint>
 
 
@@ -249,13 +247,13 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool setActiveThreadLocalGlContextToSharedContext(bool active);
 
-private:
     ////////////////////////////////////////////////////////////
     /// \brief TODO
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isActiveGlContextSharedContext() const;
 
+private:
     ////////////////////////////////////////////////////////////
     /// \brief Get the currently active context
     ///
