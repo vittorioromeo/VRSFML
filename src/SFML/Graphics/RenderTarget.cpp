@@ -26,6 +26,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/BlendMode.hpp>
+#include <SFML/Graphics/CoordinateType.hpp>
 #include <SFML/Graphics/GLCheck.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
@@ -39,14 +40,17 @@
 #include <SFML/Graphics/View.hpp>
 
 #include <SFML/Window/GLExtensions.hpp>
+#include <SFML/Window/GlContextTypeImpl.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
 
 #include <SFML/System/Err.hpp>
+#include <SFML/System/MathUtils.hpp>
 #include <SFML/System/Rect.hpp>
 
 #include <SFML/Base/Algorithm.hpp>
 #include <SFML/Base/Assert.hpp>
 #include <SFML/Base/Math.hpp>
+#include <SFML/Base/Optional.hpp>
 
 #include <mutex>
 #include <unordered_map>
@@ -198,6 +202,15 @@ std::uint32_t stencilFunctionToGlConstant(sf::StencilComparison comparison)
     SFML_BASE_ASSERT(false);
     return GL_ALWAYS;
 }
+
+sf::Shader& getShader(sf::GraphicsContext& graphicsContext, const sf::RenderStates& states)
+{
+    if (states.shader != nullptr)
+        return *states.shader;
+
+    return graphicsContext.getBuiltInShader();
+}
+
 } // namespace RenderTargetImpl
 } // namespace
 
@@ -237,17 +250,44 @@ struct RenderTarget::Impl
     View             view;            //!< Current view
     StatesCache      cache{};         //!< Render states cache
     std::uint64_t    id{};            //!< Unique number that identifies the RenderTarget
+    unsigned int     vao{};
+    unsigned int     vbo{};
 };
 
 
 ////////////////////////////////////////////////////////////
 RenderTarget::RenderTarget(GraphicsContext& graphicsContext) : m_impl(graphicsContext)
 {
+    priv::ensureExtensionsInit(graphicsContext);
+
+    glCheck(glGenVertexArrays(1, &m_impl->vao));
+    SFML_BASE_ASSERT(m_impl->vao != 0);
+
+    glCheck(glBindVertexArray(m_impl->vao));
+    {
+        int out{};
+        glCheck(glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &out));
+        SFML_BASE_ASSERT(out != 0);
+    }
+
+    glCheck(glGenBuffers(1, &m_impl->vbo));
+    SFML_BASE_ASSERT(m_impl->vbo != 0);
+
+    glCheck(glBindBuffer(GL_ARRAY_BUFFER, m_impl->vbo));
+    {
+        int out{};
+        glCheck(glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &out));
+        SFML_BASE_ASSERT(out != 0);
+    }
 }
 
 
 ////////////////////////////////////////////////////////////
-RenderTarget::~RenderTarget() = default;
+RenderTarget::~RenderTarget()
+{
+    glCheck(glDeleteBuffers(1, &m_impl->vbo));
+    glCheck(glDeleteVertexArrays(1, &m_impl->vao));
+}
 
 
 ////////////////////////////////////////////////////////////
@@ -268,7 +308,7 @@ void RenderTarget::clear(const Color& color)
 
         // Apply the view (scissor testing can affect clearing)
         if (!m_impl->cache.enable || m_impl->cache.viewChanged)
-            applyCurrentView();
+            applyCurrentView(RenderStates{} /* TODO */);
 
         glCheck(glClearColor(color.r / 255.f, color.g / 255.f, color.b / 255.f, color.a / 255.f));
         glCheck(glClear(GL_COLOR_BUFFER_BIT));
@@ -286,7 +326,7 @@ void RenderTarget::clearStencil(StencilValue stencilValue)
 
         // Apply the view (scissor testing can affect clearing)
         if (!m_impl->cache.enable || m_impl->cache.viewChanged)
-            applyCurrentView();
+            applyCurrentView(RenderStates{} /* TODO */);
 
         glCheck(glClearStencil(static_cast<int>(stencilValue.value)));
         glCheck(glClear(GL_STENCIL_BUFFER_BIT));
@@ -304,7 +344,7 @@ void RenderTarget::clear(const Color& color, StencilValue stencilValue)
 
         // Apply the view (scissor testing can affect clearing)
         if (!m_impl->cache.enable || m_impl->cache.viewChanged)
-            applyCurrentView();
+            applyCurrentView(RenderStates{} /* TODO */);
 
         glCheck(glClearColor(color.r / 255.f, color.g / 255.f, color.b / 255.f, color.a / 255.f));
         glCheck(glClearStencil(static_cast<int>(stencilValue.value)));
@@ -426,65 +466,213 @@ void RenderTarget::draw(const Vertex* vertices, std::size_t vertexCount, Primiti
     if (!vertices || (vertexCount == 0))
         return;
 
-    if (RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) || setActive(true))
-    {
-        // Check if the vertex count is low enough so that we can pre-transform them
-        const bool useVertexCache = (vertexCount <= base::getArraySize(m_impl->cache.vertexCache));
-
-        if (useVertexCache)
+    if (RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) || setActive(true) || /* TODO*/)
+        true
         {
-            // Pre-transform the vertices and store them into the vertex cache
-            for (std::size_t i = 0; i < vertexCount; ++i)
-            {
-                Vertex& vertex   = m_impl->cache.vertexCache[i];
-                vertex.position  = states.transform * vertices[i].position;
-                vertex.color     = vertices[i].color;
-                vertex.texCoords = vertices[i].texCoords;
-            }
-        }
+            // Check if the vertex count is low enough so that we can pre-transform them
+            const bool useVertexCache = (vertexCount <= base::getArraySize(m_impl->cache.vertexCache));
 
-        setupDraw(useVertexCache, states);
-
-        // Check if texture coordinates array is needed, and update client state accordingly
-        const bool enableTexCoordsArray = (states.texture || states.shader);
-        if (!m_impl->cache.enable || (enableTexCoordsArray != m_impl->cache.texCoordsArrayEnabled))
-        {
-            if (enableTexCoordsArray)
-                glCheck(glEnableClientState(GL_TEXTURE_COORD_ARRAY));
-            else
-                glCheck(glDisableClientState(GL_TEXTURE_COORD_ARRAY));
-        }
-
-        // If we switch between non-cache and cache mode or enable texture
-        // coordinates we need to set up the pointers to the vertices' components
-        if (!m_impl->cache.enable || !useVertexCache || !m_impl->cache.useVertexCache)
-        {
-            const auto* data = reinterpret_cast<const std::byte*>(vertices);
-
-            // If we pre-transform the vertices, we must use our internal vertex cache
             if (useVertexCache)
-                data = reinterpret_cast<const std::byte*>(m_impl->cache.vertexCache);
+            {
+                // Pre-transform the vertices and store them into the vertex cache
+                for (std::size_t i = 0; i < vertexCount; ++i)
+                {
+                    Vertex& vertex   = m_impl->cache.vertexCache[i];
+                    vertex.position  = states.transform * vertices[i].position;
+                    vertex.color     = vertices[i].color;
+                    vertex.texCoords = vertices[i].texCoords;
+                }
+            }
 
-            glCheck(glVertexPointer(2, GL_FLOAT, sizeof(Vertex), data + 0));
-            glCheck(glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), data + 8));
-            if (enableTexCoordsArray)
+            setupDraw(useVertexCache, states);
+
+            // Check if texture coordinates array is needed, and update client state accordingly
+            const bool enableTexCoordsArray = (states.texture || states.shader);
+            if (!m_impl->cache.enable || (enableTexCoordsArray != m_impl->cache.texCoordsArrayEnabled))
+            {
+                if (enableTexCoordsArray)
+                    glCheck(glEnableClientState(GL_TEXTURE_COORD_ARRAY));
+                else
+                    glCheck(glDisableClientState(GL_TEXTURE_COORD_ARRAY));
+            }
+
+            // If we switch between non-cache and cache mode or enable texture
+            // coordinates we need to set up the pointers to the vertices' components
+            if (!m_impl->cache.enable || !useVertexCache || !m_impl->cache.useVertexCache)
+            {
+                const auto* data = reinterpret_cast<const std::byte*>(vertices);
+
+                // If we pre-transform the vertices, we must use our internal vertex cache
+                if (useVertexCache)
+                    data = reinterpret_cast<const std::byte*>(m_impl->cache.vertexCache);
+
+#if 1
+                // (void)setActive(true); // TODO
+
+                glCheck(glBindVertexArray(m_impl->vao));
+                {
+                    int out{};
+                    glCheck(glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &out));
+                    SFML_BASE_ASSERT(out != 0);
+                }
+
+                glCheck(glBindBuffer(GL_ARRAY_BUFFER, m_impl->vbo));
+                {
+                    int out{};
+                    glCheck(glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &out));
+                    SFML_BASE_ASSERT(out != 0);
+                }
+
+                Shader&            shader       = RenderTargetImpl::getShader(*m_impl->graphicsContext, states);
+                const unsigned int nativeHandle = shader.getNativeHandle();
+                SFML_BASE_ASSERT(glIsProgram(nativeHandle));
+
+                glCheck(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertexCount, vertices, GL_STATIC_DRAW));
+
+                //TODO BC: actually get the layout indices
+                const GLint pIdx = glCheckExpr(glGetAttribLocation(nativeHandle, "position"));
+                const GLint cIdx = glCheckExpr(glGetAttribLocation(nativeHandle, "color"));
+                const GLint tIdx = glCheckExpr(glGetAttribLocation(nativeHandle, "texCoord"));
+
+                glCheck(glEnableVertexAttribArray(pIdx));
+                glCheck(glVertexAttribPointer(pIdx, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0));
+
+                if (cIdx >= 0)
+                {
+                    glCheck(glEnableVertexAttribArray(cIdx));
+                    glCheck(
+                        glVertexAttribPointer(cIdx, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), (void*)(sizeof(float) * 2)));
+                }
+
+                if (tIdx >= 0)
+                {
+                    if (enableTexCoordsArray)
+                    {
+                        glCheck(glEnableVertexAttribArray(tIdx));
+                        glCheck(glVertexAttribPointer(tIdx,
+                                                      2,
+                                                      GL_FLOAT,
+                                                      GL_FALSE,
+                                                      sizeof(Vertex),
+                                                      (void*)(sizeof(float) * 2 + sizeof(char) * 4)));
+                    }
+                    else
+                    {
+                        // glCheck(glDisableClientState(tIdx));
+                    }
+                }
+
+                shader.bind();
+#else
+                glCheck(glVertexPointer(2, GL_FLOAT, sizeof(Vertex), data + 0));
+                glCheck(glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), data + 8));
+                if (enableTexCoordsArray)
+                    glCheck(glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), data + 12));
+#endif
+            }
+            else if (enableTexCoordsArray && !m_impl->cache.texCoordsArrayEnabled)
+            {
+                // If we enter this block, we are already using our internal vertex cache
+                const auto* data = reinterpret_cast<const std::byte*>(m_impl->cache.vertexCache);
+
+#if 1
+                SFML_BASE_ASSERT(false);
+                // (void)setActive(true); // TODO
+
+                Shader&            shader       = RenderTargetImpl::getShader(*m_impl->graphicsContext, states);
+                const unsigned int nativeHandle = shader.getNativeHandle();
+                SFML_BASE_ASSERT(glIsProgram(nativeHandle));
+
+                //TODO BC: actually get the layout indices
+                const GLint pIdx = glCheckExpr(glGetAttribLocation(nativeHandle, "position"));
+                const GLint cIdx = glCheckExpr(glGetAttribLocation(nativeHandle, "color"));
+                const GLint tIdx = glCheckExpr(glGetAttribLocation(nativeHandle, "texCoord"));
+
+                glCheck(glEnableVertexAttribArray(pIdx));
+                glCheck(glVertexAttribPointer(pIdx, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), data + 0));
+
+                if (cIdx >= 0)
+                {
+                    glCheck(glEnableVertexAttribArray(cIdx));
+                    glCheck(glVertexAttribPointer(cIdx, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), data + 8));
+                }
+
+                if (tIdx >= 0)
+                {
+                    glCheck(glEnableVertexAttribArray(tIdx));
+                    glCheck(glVertexAttribPointer(tIdx, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), data + 12));
+                }
+#else
                 glCheck(glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), data + 12));
+#endif
+            }
+            else
+            {
+#if 1
+                const char* data = reinterpret_cast<const char*>(vertices);
+
+                // If we pre-transform the vertices, we must use our internal vertex cache
+                if (useVertexCache)
+                    data = reinterpret_cast<const char*>(m_impl->cache.vertexCache);
+
+                // (void)setActive(true); // TODO
+
+                glCheck(glBindVertexArray(m_impl->vao));
+                {
+                    int out{};
+                    glCheck(glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &out));
+                    SFML_BASE_ASSERT(out != 0);
+                }
+
+                glCheck(glBindBuffer(GL_ARRAY_BUFFER, m_impl->vbo));
+                {
+                    int out{};
+                    glCheck(glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &out));
+                    SFML_BASE_ASSERT(out != 0);
+                }
+
+                Shader&            shader       = RenderTargetImpl::getShader(*m_impl->graphicsContext, states);
+                const unsigned int nativeHandle = shader.getNativeHandle();
+                SFML_BASE_ASSERT(glIsProgram(nativeHandle));
+
+                glCheck(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertexCount, data, GL_STATIC_DRAW));
+
+                //TODO BC: actually get the layout indices
+                const GLint pIdx = glCheckExpr(glGetAttribLocation(nativeHandle, "position"));
+                const GLint cIdx = glCheckExpr(glGetAttribLocation(nativeHandle, "color"));
+                const GLint tIdx = glCheckExpr(glGetAttribLocation(nativeHandle, "texCoord"));
+
+                glCheck(glEnableVertexAttribArray(pIdx));
+                glCheck(glVertexAttribPointer(pIdx, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0));
+
+                if (cIdx >= 0)
+                {
+                    glCheck(glEnableVertexAttribArray(cIdx));
+                    glCheck(
+                        glVertexAttribPointer(cIdx, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), (void*)(sizeof(float) * 2)));
+                }
+
+                if (tIdx >= 0)
+                {
+                    glCheck(glEnableVertexAttribArray(tIdx));
+                    glCheck(glVertexAttribPointer(tIdx,
+                                                  2,
+                                                  GL_FLOAT,
+                                                  GL_FALSE,
+                                                  sizeof(Vertex),
+                                                  (void*)(sizeof(float) * 2 + sizeof(char) * 4)));
+                }
+#endif
+            }
+
+
+            drawPrimitives(type, 0, vertexCount);
+            cleanupDraw(states);
+
+            // Update the cache
+            m_impl->cache.useVertexCache        = useVertexCache;
+            m_impl->cache.texCoordsArrayEnabled = enableTexCoordsArray;
         }
-        else if (enableTexCoordsArray && !m_impl->cache.texCoordsArrayEnabled)
-        {
-            // If we enter this block, we are already using our internal vertex cache
-            const auto* data = reinterpret_cast<const std::byte*>(m_impl->cache.vertexCache);
-
-            glCheck(glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), data + 12));
-        }
-
-        drawPrimitives(type, 0, vertexCount);
-        cleanupDraw(states);
-
-        // Update the cache
-        m_impl->cache.useVertexCache        = useVertexCache;
-        m_impl->cache.texCoordsArrayEnabled = enableTexCoordsArray;
-    }
 }
 
 
@@ -527,9 +715,44 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, std::size_t firstVerte
         if (!m_impl->cache.enable || !m_impl->cache.texCoordsArrayEnabled)
             glCheck(glEnableClientState(GL_TEXTURE_COORD_ARRAY));
 
+#if 1
+        SFML_BASE_ASSERT(false);
+        // (void)setActive(true); // TODO
+
+        Shader&            shader       = RenderTargetImpl::getShader(*m_impl->graphicsContext, states);
+        const unsigned int nativeHandle = shader.getNativeHandle();
+        SFML_BASE_ASSERT(glIsProgram(nativeHandle));
+
+        //TODO BC: actually get the layout indices
+        const GLint pIdx = glCheckExpr(glGetAttribLocation(nativeHandle, "position"));
+        SFML_BASE_ASSERT(pIdx != -1);
+
+        const GLint cIdx = glCheckExpr(glGetAttribLocation(nativeHandle, "color"));
+        SFML_BASE_ASSERT(cIdx != -1);
+
+        const GLint tIdx = glCheckExpr(glGetAttribLocation(nativeHandle, "texCoord"));
+        SFML_BASE_ASSERT(tIdx != -1);
+
+        glCheck(glEnableVertexAttribArray(pIdx));
+        glCheck(glVertexAttribPointer(pIdx, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<const void*>(0)));
+
+        if (cIdx >= 0)
+        {
+            glCheck(glEnableVertexAttribArray(cIdx));
+            glCheck(
+                glVertexAttribPointer(cIdx, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), reinterpret_cast<const void*>(8)));
+        }
+
+        if (tIdx >= 0)
+        {
+            glCheck(glEnableVertexAttribArray(tIdx));
+            glCheck(glVertexAttribPointer(tIdx, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<const void*>(12)));
+        }
+#else
         glCheck(glVertexPointer(2, GL_FLOAT, sizeof(Vertex), reinterpret_cast<const void*>(0)));
         glCheck(glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), reinterpret_cast<const void*>(8)));
         glCheck(glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), reinterpret_cast<const void*>(12)));
+#endif
 
         drawPrimitives(vertexBuffer.getPrimitiveType(), firstVertex, vertexCount);
 
@@ -673,12 +896,20 @@ void RenderTarget::resetGLStates()
 
         // Define the default OpenGL states
         glCheck(glDisable(GL_CULL_FACE));
+
+#ifndef SFML_OPENGL_ES
         glCheck(glDisable(GL_LIGHTING));
+#endif
+
         glCheck(glDisable(GL_STENCIL_TEST));
         glCheck(glDisable(GL_DEPTH_TEST));
+
+#ifndef SFML_OPENGL_ES
         glCheck(glDisable(GL_ALPHA_TEST));
         glCheck(glDisable(GL_SCISSOR_TEST));
         glCheck(glEnable(GL_TEXTURE_2D));
+#endif
+
         glCheck(glEnable(GL_BLEND));
         glCheck(glMatrixMode(GL_MODELVIEW));
         glCheck(glLoadIdentity());
@@ -694,8 +925,10 @@ void RenderTarget::resetGLStates()
         applyBlendMode(BlendAlpha);
         applyStencilMode(StencilMode());
         applyTexture(nullptr);
-        if (shaderAvailable)
-            applyShader(nullptr);
+
+        // TODO:?
+        // if (shaderAvailable)
+        //     applyShader(nullptr);
 
         if (vertexBufferAvailable)
             glCheck(VertexBuffer::bind(*m_impl->graphicsContext, nullptr));
@@ -743,7 +976,7 @@ GraphicsContext& RenderTarget::getGraphicsContext()
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::applyCurrentView()
+void RenderTarget::applyCurrentView(const RenderStates& states)
 {
     // Set the viewport
     const IntRect viewport    = getViewport(m_impl->view);
@@ -773,8 +1006,15 @@ void RenderTarget::applyCurrentView()
     }
 
     // Set the projection matrix
+#if 1
+    // (void)setActive(true); // TODO
+
+    Shader& shader = RenderTargetImpl::getShader(*m_impl->graphicsContext, states);
+    shader.setUniform(shader.getUniformLocation("projMatrix").value(), Glsl::Mat4(m_impl->view.getTransform().getMatrix()));
+#else
     glCheck(glMatrixMode(GL_PROJECTION));
     glCheck(glLoadMatrixf(m_impl->view.getTransform().getMatrix()));
+#endif
 
     // Go back to model-view mode
     glCheck(glMatrixMode(GL_MODELVIEW));
@@ -874,14 +1114,21 @@ void RenderTarget::applyStencilMode(const StencilMode& mode)
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::applyTransform(const Transform& transform)
+void RenderTarget::applyTransform(const RenderStates& states)
 {
     // No need to call glMatrixMode(GL_MODELVIEW), it is always the
     // current mode (for optimization purpose, since it's the most used)
-    if (transform == Transform::Identity)
+#if 1
+    // (void)setActive(true); // TODO
+
+    Shader& shader = RenderTargetImpl::getShader(*m_impl->graphicsContext, states);
+    shader.setUniform(shader.getUniformLocation("viewMatrix").value(), Glsl::Mat4(states.transform.getMatrix()));
+#else
+    if (states.transform == Transform::Identity)
         glCheck(glLoadIdentity());
     else
-        glCheck(glLoadMatrixf(transform.getMatrix()));
+        glCheck(glLoadMatrixf(states.transform.getMatrix()));
+#endif
 }
 
 
@@ -926,20 +1173,52 @@ void RenderTarget::setupDraw(bool useVertexCache, const RenderStates& states)
     if (!m_impl->cache.glStatesSet)
         resetGLStates();
 
+#if 1
+    {
+        // (void)setActive(true); // TODO
+
+        Shader& shader = RenderTargetImpl::getShader(*m_impl->graphicsContext, states);
+        applyShader(&shader);
+
+        if (states.texture != nullptr)
+        {
+            const Optional ulTextMatrix = shader.getUniformLocation("textMatrix");
+            if (ulTextMatrix.hasValue())
+                shader.setUniform(*ulTextMatrix, states.texture->getMatrix(CoordinateType::Pixels));
+        }
+    }
+#else
+    // Apply the shader
+    if (states.shader)
+        applyShader(states.shader);
+#endif
+
     if (useVertexCache)
     {
+#if 1
+        Transform identity = Transform::Identity;
+
+        // (void)setActive(true); // TODO
+
+        Shader& shader = RenderTargetImpl::getShader(*m_impl->graphicsContext, states);
+
+        const Optional uLViewMatrix = shader.getUniformLocation("viewMatrix");
+        if (uLViewMatrix.hasValue())
+            shader.setUniform(*uLViewMatrix, Glsl::Mat4(identity.getMatrix()));
+#else
         // Since vertices are transformed, we must use an identity transform to render them
         if (!m_impl->cache.enable || !m_impl->cache.useVertexCache)
             glCheck(glLoadIdentity());
+#endif
     }
     else
     {
-        applyTransform(states.transform);
+        applyTransform(states);
     }
 
     // Apply the view
-    if (!m_impl->cache.enable || m_impl->cache.viewChanged)
-        applyCurrentView();
+    // if (!m_impl->cache.enable || m_impl->cache.viewChanged) // TODO
+    applyCurrentView(states);
 
     // Apply the blend mode
     if (!m_impl->cache.enable || (states.blendMode != m_impl->cache.lastBlendMode))
@@ -970,10 +1249,6 @@ void RenderTarget::setupDraw(bool useVertexCache, const RenderStates& states)
         if (textureId != m_impl->cache.lastTextureId || states.coordinateType != m_impl->cache.lastCoordinateType)
             applyTexture(states.texture, states.coordinateType);
     }
-
-    // Apply the shader
-    if (states.shader)
-        applyShader(states.shader);
 }
 
 
@@ -981,10 +1256,11 @@ void RenderTarget::setupDraw(bool useVertexCache, const RenderStates& states)
 void RenderTarget::drawPrimitives(PrimitiveType type, std::size_t firstVertex, std::size_t vertexCount)
 {
     // Find the OpenGL primitive type
-    static constexpr GLenum modes[] = {GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN};
+    static constexpr GLenum modes[6] = {GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN};
     const GLenum mode = modes[static_cast<std::size_t>(type)];
 
     // Draw the primitives
+    glBindVertexArray(m_impl->vao);
     glCheck(glDrawArrays(mode, static_cast<GLint>(firstVertex), static_cast<GLsizei>(vertexCount)));
 }
 
@@ -993,8 +1269,10 @@ void RenderTarget::drawPrimitives(PrimitiveType type, std::size_t firstVertex, s
 void RenderTarget::cleanupDraw(const RenderStates& states)
 {
     // Unbind the shader, if any
-    if (states.shader)
-        applyShader(nullptr);
+
+    // TODO:
+    // if (states.shader)
+    //     applyShader(nullptr);
 
     // If the texture we used to draw belonged to a RenderTexture, then forcibly unbind that texture.
     // This prevents a bug where some drivers do not clear RenderTextures properly.

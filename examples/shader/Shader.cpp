@@ -19,10 +19,11 @@
 #include <SFML/Window/VideoMode.hpp>
 
 #include <SFML/System/Clock.hpp>
-#include <SFML/Base/Optional.hpp>
 #include <SFML/System/Path.hpp>
 #include <SFML/System/String.hpp>
 #include <SFML/System/Time.hpp>
+
+#include <SFML/Base/Optional.hpp>
 
 #include <array>
 #include <iostream>
@@ -75,7 +76,8 @@ public:
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
-        states.shader = &m_shader;
+        // TODO
+        states.shader = const_cast<sf::Shader*>(&m_shader);
         target.draw(sf::Sprite{m_texture.getRect()}, m_texture, states);
     }
 
@@ -102,7 +104,8 @@ public:
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
-        states.shader = &m_shader;
+        // TODO
+        states.shader = const_cast<sf::Shader*>(&m_shader);
         target.draw(m_text, states);
     }
 
@@ -162,7 +165,8 @@ public:
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
-        states.shader = &m_shader;
+        // TODO
+        states.shader = const_cast<sf::Shader*>(&m_shader);
         target.draw(m_points, sf::PrimitiveType::Points, states);
     }
 
@@ -239,7 +243,8 @@ public:
     {
         const sf::Texture& texture = m_surface.getTexture();
 
-        states.shader = &m_shader;
+        // TODO
+        states.shader = const_cast<sf::Shader*>(&m_shader);
         target.draw(sf::Sprite{texture.getRect()}, texture, states);
     }
 
@@ -287,8 +292,9 @@ public:
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
-        // Prepare the render state
-        states.shader    = &m_shader;
+        // Prepare the rend
+        // TODOer state
+        states.shader    = const_cast<sf::Shader*>(&m_shader);
         states.texture   = &m_logoTexture;
         states.transform = m_transform;
 
@@ -329,7 +335,7 @@ sf::base::Optional<Pixelate> tryLoadPixelate(sf::GraphicsContext& graphicsContex
     if (!texture.hasValue())
         return sf::base::nullOpt;
 
-    auto shader = sf::Shader::loadFromFile(graphicsContext, "resources/pixelate.frag", sf::Shader::Type::Fragment);
+    auto shader = sf::Shader::loadFromFile(graphicsContext, "resources/billboard.vert", "resources/pixelate.frag");
     if (!shader.hasValue())
         return sf::base::nullOpt;
 
@@ -378,16 +384,16 @@ sf::base::Optional<Edge> tryLoadEdge(sf::GraphicsContext& graphicsContext)
     entityTexture->setSmooth(true);
 
     // Load the shader
-    auto shader = sf::Shader::loadFromFile(graphicsContext, "resources/edge.frag", sf::Shader::Type::Fragment);
+    auto shader = sf::Shader::loadFromFile(graphicsContext, "resources/billboard.vert", "resources/edge.frag");
     if (!shader.hasValue())
         return sf::base::nullOpt;
 
     shader->setUniform(shader->getUniformLocation("texture").value(), sf::Shader::CurrentTexture);
 
     return sf::base::makeOptional<Edge>(std::move(*surface),
-                                  std::move(*backgroundTexture),
-                                  std::move(*entityTexture),
-                                  std::move(*shader));
+                                        std::move(*backgroundTexture),
+                                        std::move(*entityTexture),
+                                        std::move(*shader));
 }
 
 sf::base::Optional<Geometry> tryLoadGeometry(sf::GraphicsContext& graphicsContext)

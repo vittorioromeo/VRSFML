@@ -286,12 +286,13 @@ inline int SF_GL_OES_vertex_buffer_object = 1;
 #define GLEXT_GL_OBJECT_LINK_STATUS    GL_OBJECT_LINK_STATUS_ARB
 #define GLEXT_GLhandle                 GLhandleARB
 
-#define GLEXT_shader_objects_dependencies                                                                               \
-    SF_GLAD_GL_ARB_shader_objects, glDeleteObjectARB, glGetHandleARB, glCreateShaderObjectARB, glShaderSourceARB,       \
-        glCompileShaderARB, glCreateProgramObjectARB, glAttachObjectARB, glLinkProgramARB, glUseProgramObjectARB,       \
-        glUniform1fARB, glUniform2fARB, glUniform3fARB, glUniform4fARB, glUniform1iARB, glUniform2iARB, glUniform3iARB, \
-        glUniform4iARB, glUniform1fvARB, glUniform2fvARB, glUniform2ivARB, glUniform3fvARB, glUniform4fvARB,            \
-        glUniformMatrix3fvARB, glUniformMatrix4fvARB, glGetObjectParameterivARB, glGetInfoLogARB, glGetUniformLocationARB
+#define GLEXT_shader_objects_dependencies                                                                          \
+    SF_GLAD_GL_ARB_shader_objects, glDeleteObjectARB, glGetHandleARB, glCreateShaderObjectARB, glShaderSourceARB,  \
+        glCompileShaderARB, glCreateProgramObjectARB, glAttachObjectARB, glLinkProgramARB, glUseProgramObjectARB,  \
+        glIsProgramARB, glUniform1fARB, glUniform2fARB, glUniform3fARB, glUniform4fARB, glUniform1iARB,            \
+        glUniform2iARB, glUniform3iARB, glUniform4iARB, glUniform1fvARB, glUniform2fvARB, glUniform2ivARB,         \
+        glUniform3fvARB, glUniform4fvARB, glUniformMatrix3fvARB, glUniformMatrix4fvARB, glGetObjectParameterivARB, \
+        glGetInfoLogARB, glGetUniformLocationARB
 
 // Core since 2.0 - ARB_vertex_shader
 #define GLEXT_vertex_shader                       SF_GLAD_GL_ARB_vertex_shader
