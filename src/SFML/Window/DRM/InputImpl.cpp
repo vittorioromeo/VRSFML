@@ -401,8 +401,12 @@ sf::base::Optional<sf::Event> eventProcess()
                 {
                     // key down and key up events
                     //
+                    keyMap[kb] = inputEvent.value;
 
-                    const auto makeKeyEvent = [](auto keyEvent)
+                    if (special && inputEvent.value)
+                        doDeferredText = special;
+
+                    const auto makeKeyEvent = [&](auto keyEvent)
                     {
                         keyEvent.code     = kb;
                         keyEvent.scancode = sf::Keyboard::Scan::Unknown; // TODO: not implemented
@@ -412,11 +416,6 @@ sf::base::Optional<sf::Event> eventProcess()
                         keyEvent.system   = systemDown();
                         return keyEvent;
                     };
-
-                    keyMap[kb] = inputEvent.value;
-
-                    if (special && inputEvent.value)
-                        doDeferredText = special;
 
                     if (inputEvent.value)
                         return makeKeyEvent(sf::Event::KeyPressed{});
