@@ -12245,4 +12245,3 @@ static int gladLoadGLES1( GLADloadfunc load) {
 #endif
 
 #endif /* SF_GLAD_GL_IMPLEMENTATION */
-

@@ -915,14 +915,14 @@ void Texture::bind(GraphicsContext& graphicsContext, const Texture* texture, Coo
     }
     else
     {
-        static auto empty = [&]() -> Texture
+        /* static auto empty = [&]() -> Texture
         {
             const auto image = sf::Image::create({1, 1}, sf::Color::White);
             return Texture::loadFromImage(graphicsContext, *image).value();
-        }();
+        }();*/
 
         // Bind no texture
-        glCheck(glBindTexture(GL_TEXTURE_2D, empty.m_texture));
+        glCheck(glBindTexture(GL_TEXTURE_2D, 0));
 
         // Reset the texture matrix
         glCheck(glMatrixMode(GL_TEXTURE));

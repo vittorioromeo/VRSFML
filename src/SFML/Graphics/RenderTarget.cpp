@@ -254,6 +254,10 @@ void main()
 ////////////////////////////////////////////////////////////
 sf::base::Optional<sf::Shader> createBuiltInShader(sf::GraphicsContext& graphicsContext)
 {
+    // TODO: probably not needed?
+    const bool rc = graphicsContext.setActiveThreadLocalGlContextToSharedContext(true);
+    SFML_BASE_ASSERT(rc);
+
     sf::base::Optional shader = sf::Shader::loadFromMemory(graphicsContext, defaultVertexShader, defaultFragShader);
     SFML_BASE_ASSERT(shader.hasValue());
 
@@ -271,8 +275,23 @@ sf::base::Optional<sf::Shader> createBuiltInShader(sf::GraphicsContext& graphics
 sf::Shader& getBuiltInShader(sf::GraphicsContext& graphicsContext)
 {
     SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
-    static sf::Shader shader = createBuiltInShader(graphicsContext).value();
-    return shader;
+    static sf::base::Optional<sf::Shader> shader;
+
+    if (graphicsContext.builtInShaderState == 0)
+    {
+        shader = createBuiltInShader(graphicsContext);
+
+        graphicsContext.builtInShaderState     = 1;
+        graphicsContext.buildInShaderDestroyFn = [] { shader.reset(); };
+    }
+
+    if (graphicsContext.builtInShaderState == 1)
+    {
+        return shader.value();
+    }
+
+    SFML_BASE_ASSERT(graphicsContext.builtInShaderState == 2);
+    throw 100;
 }
 
 
