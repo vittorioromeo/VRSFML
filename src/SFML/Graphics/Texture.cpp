@@ -915,8 +915,14 @@ void Texture::bind(GraphicsContext& graphicsContext, const Texture* texture, Coo
     }
     else
     {
+        static auto empty = [&]() -> Texture
+        {
+            const sf::Image image({1, 1}, sf::Color::White);
+            return Texture::loadFromImage(graphicsContext, image).value();
+        }();
+
         // Bind no texture
-        glCheck(glBindTexture(GL_TEXTURE_2D, 0));
+        glCheck(glBindTexture(GL_TEXTURE_2D, empty.m_texture));
 
         // Reset the texture matrix
         glCheck(glMatrixMode(GL_TEXTURE));
@@ -946,6 +952,37 @@ unsigned int Texture::getMaximumSize(GraphicsContext& graphicsContext)
     }();
 
     return size;
+}
+
+
+////////////////////////////////////////////////////////////
+Glsl::Mat4 Texture::getMatrix(CoordinateType coordinateType) const
+{
+    SFML_BASE_ASSERT(m_texture);
+
+    GLfloat matrix[16] = {1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f};
+
+    // Check if we need to define a special texture matrix
+    if ((coordinateType == CoordinateType::Pixels) || m_pixelsFlipped)
+    {
+
+        // If non-normalized coordinates (= pixels) are requested, we need to
+        // setup scale factors that convert the range [0 .. size] to [0 .. 1]
+        if (coordinateType == CoordinateType::Pixels)
+        {
+            matrix[0] = 1.f / static_cast<float>(m_actualSize.x);
+            matrix[5] = 1.f / static_cast<float>(m_actualSize.y);
+        }
+
+        // If pixels are flipped we must invert the Y axis
+        if (m_pixelsFlipped)
+        {
+            matrix[5]  = -matrix[5];
+            matrix[13] = static_cast<float>(m_size.y) / static_cast<float>(m_actualSize.y);
+        }
+    }
+
+    return Glsl::Mat4(matrix);
 }
 
 

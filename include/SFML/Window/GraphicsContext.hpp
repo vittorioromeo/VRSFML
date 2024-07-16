@@ -51,6 +51,7 @@ class WindowImpl;
 
 namespace sf
 {
+class Shader;
 class Window;
 struct ContextSettings;
 using GlFunctionPointer = void (*)();
@@ -250,6 +251,12 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const priv::GlContext* getActiveThreadLocalGlContextPtr() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] Shader& getBuiltInShader();
 
     ////////////////////////////////////////////////////////////
     // Member data

@@ -30,6 +30,7 @@
 #include <SFML/Graphics/Export.hpp>
 
 #include <SFML/Graphics/CoordinateType.hpp>
+#include <SFML/Graphics/Glsl.hpp>
 
 #include <SFML/System/LifetimeDependee.hpp>
 #include <SFML/System/Rect.hpp>
@@ -565,6 +566,12 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static unsigned int getMaximumSize(GraphicsContext& graphicsContext);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] Glsl::Mat4 getMatrix(CoordinateType coordinateType) const;
 
 private:
     friend class Text;
