@@ -11,6 +11,8 @@ attribute vec2 texCoord;
 varying vec4 v_color;
 varying vec2 v_texCoord;
 
+// TODO: check local branch on PC, I think this worked
+
 void main()
 {
     gl_Position = projMatrix * viewMatrix * vec4(position, 0.0, 1.0);

@@ -213,7 +213,7 @@ class Edge : public Effect
 public:
     void update(float time, float x, float y) override
     {
-        m_shader.setUniform(m_ulEdgeThreshold, 1 - (x + y) / 2);
+        m_shader.setUniform(m_ulEdgeThreshold, sf::base::clamp(1.f - (x + y) / 2.f, 0.f, 1.f));
 
         // Render the updated scene to the off-screen surface
         m_surface.clear(sf::Color::White);

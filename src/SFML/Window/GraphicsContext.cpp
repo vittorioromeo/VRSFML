@@ -123,69 +123,6 @@ thread_local constinit struct
 ////////////////////////////////////////////////////////////
 constinit bool graphicsContextAlive{false};
 
-
-////////////////////////////////////////////////////////////
-constexpr const char* defaultFragShader = R"(
-
-#ifdef GL_ES
-precision mediump float;
-#endif
-
-uniform sampler2D texture;
-
-varying vec4 v_color;
-varying vec2 v_texCoord;
-
-void main()
-{
-    gl_FragColor = v_color * texture2D(texture, v_texCoord.st);
-}
-
-)";
-
-
-////////////////////////////////////////////////////////////
-constexpr const char* defaultVertexShader = R"(
-
-#ifdef GL_ES
-precision mediump float;
-#endif
-
-uniform mat4 projMatrix;
-uniform mat4 textMatrix;
-uniform mat4 viewMatrix;
-
-attribute vec4 color;
-attribute vec2 position;
-attribute vec2 texCoord;
-
-varying vec4 v_color;
-varying vec2 v_texCoord;
-
-void main()
-{
-    gl_Position = projMatrix * viewMatrix * vec4(position, 0.0, 1.0);
-    v_texCoord = (textMatrix * vec4(texCoord, 0.0, 1.0)).xy;
-    v_color = color;
-}
-
-)";
-
-////////////////////////////////////////////////////////////
-sf::base::Optional<Shader> createBuiltInShader(GraphicsContext& graphicsContext)
-{
-    sf::base::Optional shader = sf::Shader::loadFromMemory(graphicsContext, defaultVertexShader, defaultFragShader);
-    SFML_BASE_ASSERT(shader.hasValue());
-
-    const sf::base::Optional ulTexture = shader->getUniformLocation("texture");
-    SFML_BASE_ASSERT(ulTexture.hasValue());
-
-    shader->setUniform(*ulTexture, sf::Shader::CurrentTexture);
-
-    SFML_BASE_ASSERT(glIsProgram(shader->getNativeHandle()));
-    return shader;
-}
-
 } // namespace
 
 
@@ -226,10 +163,6 @@ struct GraphicsContext::Impl
     std::mutex                       unsharedFrameBuffersMutex;
     std::vector<UnsharedFrameBuffer> unsharedFrameBuffers;
 
-
-    ////////////////////////////////////////////////////////////
-    base::Optional<Shader> builtInShader;
-
     ////////////////////////////////////////////////////////////
     template <typename... SharedGlContextArgs>
     explicit Impl(SharedGlContextArgs&&... args) : sharedGlContext(SFML_BASE_FORWARD(args)...)
@@ -257,8 +190,9 @@ GraphicsContext::GraphicsContext() : m_impl(base::makeUnique<Impl>(*this, 1u, nu
 
     m_impl->extensions = loadExtensions(m_impl->sharedGlContext);
 
-    m_impl->builtInShader = createBuiltInShader(*this);
-    SFML_BASE_ASSERT(m_impl->builtInShader.hasValue());
+    // TODO: 
+    // m_impl->builtInShader = createBuiltInShader(*this);
+    // SFML_BASE_ASSERT(m_impl->builtInShader.hasValue());
 
     if (!setActiveThreadLocalGlContext(m_impl->sharedGlContext, false))
         priv::err() << "Could not disable shared context in GraphicsContext()";
@@ -564,12 +498,6 @@ bool GraphicsContext::isExtensionAvailable(const char* name) const
 GlFunctionPointer GraphicsContext::getFunction(const char* name) const
 {
     return m_impl->sharedGlContext.getFunction(name);
-}
-
-////////////////////////////////////////////////////////////
-Shader& GraphicsContext::getBuiltInShader()
-{
-    return *m_impl->builtInShader;
 }
 
 } // namespace sf
