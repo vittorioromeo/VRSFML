@@ -31,8 +31,13 @@
 
 #include <SFML/Base/InPlacePImpl.hpp>
 
+#if defined(__GLIBCXX__) && __has_include(<bits/localefwd.h>) && __has_include(<bits/stringfwd.h>)
+#include <bits/localefwd.h>
+#include <bits/stringfwd.h>
+#else
 #include <locale>
 #include <string>
+#endif
 
 #include <cstddef>
 
@@ -40,16 +45,6 @@
 namespace sf
 {
 class StringUtfUtils;
-
-////////////////////////////////////////////////////////////
-/// \brief Portable replacement for std::basic_string<std::uint8_t>
-///
-/// While all major C++ implementations happen to define this
-/// as of early 2024, this specialization is not strictly speaking
-/// standard C++. Thus we can't depend on its continued existence.
-///
-////////////////////////////////////////////////////////////
-using U8String = std::u8string;
 
 ////////////////////////////////////////////////////////////
 /// \brief Utility string class that automatically handles
@@ -271,7 +266,7 @@ public:
     /// \see toUtf16, toUtf32
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::U8String toUtf8() const;
+    [[nodiscard]] std::u8string toUtf8() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert the Unicode string to a UTF-16 string

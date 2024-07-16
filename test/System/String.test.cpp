@@ -1,6 +1,8 @@
 #include <SFML/System/String.hpp>
 #include <SFML/System/StringUtfUtils.hpp>
 
+#include <SFML/Base/Assert.hpp>
+
 #include <Doctest.hpp>
 
 #include <GraphicsUtil.hpp>
@@ -9,8 +11,6 @@
 #include <array>
 #include <sstream>
 #include <type_traits>
-
-#include <SFML/Base/Assert.hpp>
 
 namespace
 {
@@ -42,9 +42,9 @@ auto toHex(const std::uint32_t character)
 namespace doctest
 {
 template <>
-struct StringMaker<sf::U8String>
+struct StringMaker<std::u8string>
 {
-    static doctest::String convert(const sf::U8String& string)
+    static doctest::String convert(const std::u8string& string)
     {
         std::ostringstream output;
         for (const auto character : string)
@@ -97,7 +97,7 @@ TEST_CASE("[System] sf::String")
             CHECK(std::wstring(string) == L"a"s);
             CHECK(string.toAnsiString() == "a"s);
             CHECK(string.toWideString() == L"a"s);
-            CHECK(string.toUtf8() == sf::U8String{'a'});
+            CHECK(string.toUtf8() == std::u8string{'a'});
             CHECK(string.toUtf16() == u"a"s);
             CHECK(string.toUtf32() == U"a"s);
             CHECK(string.getSize() == 1);
@@ -112,7 +112,7 @@ TEST_CASE("[System] sf::String")
             CHECK(std::wstring(string) == L"def"s);
             CHECK(string.toAnsiString() == "def"s);
             CHECK(string.toWideString() == L"def"s);
-            CHECK(string.toUtf8() == sf::U8String{'d', 'e', 'f'});
+            CHECK(string.toUtf8() == std::u8string{'d', 'e', 'f'});
             CHECK(string.toUtf16() == u"def"s);
             CHECK(string.toUtf32() == U"def"s);
             CHECK(string.getSize() == 3);
@@ -127,7 +127,7 @@ TEST_CASE("[System] sf::String")
             CHECK(std::wstring(string) == L"ghi"s);
             CHECK(string.toAnsiString() == "ghi"s);
             CHECK(string.toWideString() == L"ghi"s);
-            CHECK(string.toUtf8() == sf::U8String{'g', 'h', 'i'});
+            CHECK(string.toUtf8() == std::u8string{'g', 'h', 'i'});
             CHECK(string.toUtf16() == u"ghi"s);
             CHECK(string.toUtf32() == U"ghi"s);
             CHECK(string.getSize() == 3);
@@ -142,7 +142,7 @@ TEST_CASE("[System] sf::String")
             CHECK(std::wstring(string) == L"\xFA"s);
             CHECK(string.toAnsiString() == select("\xFA"s, "\0"s));
             CHECK(string.toWideString() == L"\xFA"s);
-            CHECK(string.toUtf8() == sf::U8String{0xC3, 0xBA});
+            CHECK(string.toUtf8() == std::u8string{0xC3, 0xBA});
             CHECK(string.toUtf16() == u"\xFA"s);
             CHECK(string.toUtf32() == U"\xFA"s);
             CHECK(string.getSize() == 1);
@@ -157,7 +157,7 @@ TEST_CASE("[System] sf::String")
             CHECK(std::wstring(string) == L"j\xFAl"s);
             CHECK(string.toAnsiString() == select("j\xFAl"s, "j\0l"s));
             CHECK(string.toWideString() == L"j\xFAl"s);
-            CHECK(string.toUtf8() == sf::U8String{'j', 0xC3, 0xBA, 'l'});
+            CHECK(string.toUtf8() == std::u8string{'j', 0xC3, 0xBA, 'l'});
             CHECK(string.toUtf16() == u"j\xFAl"s);
             CHECK(string.toUtf32() == U"j\xFAl"s);
             CHECK(string.getSize() == 3);
@@ -172,7 +172,7 @@ TEST_CASE("[System] sf::String")
             CHECK(std::wstring(string) == L"mno\xFA"s);
             CHECK(string.toAnsiString() == select("mno\xFA"s, "mno\0"s));
             CHECK(string.toWideString() == L"mno\xFA"s);
-            CHECK(string.toUtf8() == sf::U8String{'m', 'n', 'o', 0xC3, 0XBA});
+            CHECK(string.toUtf8() == std::u8string{'m', 'n', 'o', 0xC3, 0XBA});
             CHECK(string.toUtf16() == u"mno\xFA"s);
             CHECK(string.toUtf32() == U"mno\xFA"s);
             CHECK(string.getSize() == 4);
@@ -187,7 +187,7 @@ TEST_CASE("[System] sf::String")
             CHECK(std::wstring(string) == select(L""s, L"\U0010AFAF"s));
             CHECK(string.toAnsiString() == "\0"s);
             CHECK(string.toWideString() == select(L""s, L"\U0010AFAF"s));
-            CHECK(string.toUtf8() == sf::U8String{0xF4, 0x8A, 0xBE, 0xAF});
+            CHECK(string.toUtf8() == std::u8string{0xF4, 0x8A, 0xBE, 0xAF});
             CHECK(string.toUtf16() == u"\U0010AFAF"s);
             CHECK(string.toUtf32() == U"\U0010AFAF"s);
             CHECK(string.getSize() == 1);
@@ -202,7 +202,7 @@ TEST_CASE("[System] sf::String")
             CHECK(std::wstring(string) == select(L"rs"s, L"\U0010ABCDrs"s));
             CHECK(string.toAnsiString() == "\0rs"s);
             CHECK(string.toWideString() == select(L"rs"s, L"\U0010ABCDrs"s));
-            CHECK(string.toUtf8() == sf::U8String{0xF4, 0x8A, 0xAF, 0x8D, 'r', 's'});
+            CHECK(string.toUtf8() == std::u8string{0xF4, 0x8A, 0xAF, 0x8D, 'r', 's'});
             CHECK(string.toUtf16() == u"\U0010ABCDrs"s);
             CHECK(string.toUtf32() == U"\U0010ABCDrs"s);
             CHECK(string.getSize() == 3);
@@ -217,7 +217,7 @@ TEST_CASE("[System] sf::String")
             CHECK(std::wstring(string) == select(L"tuv"s, L"tuv\U00104321"s));
             CHECK(string.toAnsiString() == "tuv\0"s);
             CHECK(string.toWideString() == select(L"tuv"s, L"tuv\U00104321"s));
-            CHECK(string.toUtf8() == sf::U8String{'t', 'u', 'v', 0xF4, 0x84, 0x8C, 0xA1});
+            CHECK(string.toUtf8() == std::u8string{'t', 'u', 'v', 0xF4, 0x84, 0x8C, 0xA1});
             CHECK(string.toUtf16() == u"tuv\U00104321"s);
             CHECK(string.toUtf32() == U"tuv\U00104321"s);
             CHECK(string.getSize() == 4);
@@ -236,7 +236,7 @@ TEST_CASE("[System] sf::String")
             CHECK(std::wstring(string) == L"wxyz"s);
             CHECK(string.toAnsiString() == "wxyz"s);
             CHECK(string.toWideString() == L"wxyz"s);
-            CHECK(string.toUtf8() == sf::U8String{'w', 'x', 'y', 'z'});
+            CHECK(string.toUtf8() == std::u8string{'w', 'x', 'y', 'z'});
             CHECK(string.toUtf16() == u"wxyz"s);
             CHECK(string.toUtf32() == U"wxyz"s);
             CHECK(string.getSize() == 4);
@@ -262,7 +262,7 @@ TEST_CASE("[System] sf::String")
         CHECK(std::wstring(string) == L"\xF1xyz"s);
         CHECK(string.toAnsiString() == select("\xF1xyz"s, "\0xyz"s));
         CHECK(string.toWideString() == L"\xF1xyz"s);
-        CHECK(string.toUtf8() == sf::U8String{0xC3, 0xB1, 'x', 'y', 'z'});
+        CHECK(string.toUtf8() == std::u8string{0xC3, 0xB1, 'x', 'y', 'z'});
         CHECK(string.toUtf16() == u"\xF1xyz"s);
         CHECK(string.toUtf32() == U"\xF1xyz"s);
         CHECK(string.getSize() == 4);
@@ -278,7 +278,7 @@ TEST_CASE("[System] sf::String")
         CHECK(std::wstring(string) == select(L"wyz"s, L"w\U00104321yz"s));
         CHECK(string.toAnsiString() == "w\0yz"s);
         CHECK(string.toWideString() == select(L"wyz"s, L"w\U00104321yz"s));
-        CHECK(string.toUtf8() == sf::U8String{'w', 0xF4, 0x84, 0x8C, 0xA1, 'y', 'z'});
+        CHECK(string.toUtf8() == std::u8string{'w', 0xF4, 0x84, 0x8C, 0xA1, 'y', 'z'});
         CHECK(string.toUtf16() == u"w\U00104321yz"s);
         CHECK(string.toUtf32() == U"w\U00104321yz"s);
         CHECK(string.getSize() == 4);
