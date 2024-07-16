@@ -401,8 +401,12 @@ sf::base::Optional<sf::Event> eventProcess()
                 {
                     // key down and key up events
                     //
+                    keyMap[kb] = inputEvent.value;
 
-                    const auto makeKeyEvent = [](auto keyEvent)
+                    if (special && inputEvent.value)
+                        doDeferredText = special;
+
+                    const auto makeKeyEvent = [&](auto keyEvent)
                     {
                         keyEvent.code     = kb;
                         keyEvent.scancode = sf::Keyboard::Scan::Unknown; // TODO: not implemented
@@ -413,15 +417,8 @@ sf::base::Optional<sf::Event> eventProcess()
                         return keyEvent;
                     };
 
-                    keyMap[kb] = inputEvent.value;
-
-                    if (special && inputEvent.value)
-                        doDeferredText = special;
-
                     if (inputEvent.value)
-                        return makeKeyEvent(sf::Event::KeyPressed{});
-
-                    return makeKeyEvent(sf::Event::KeyReleased{});
+                        return makeKeyEvent(sf::Event::KeyReleased{});
                 }
             }
             else if (inputEvent.type == EV_REL)
@@ -432,7 +429,6 @@ sf::base::Optional<sf::Event> eventProcess()
                     case REL_X:
                         mousePos.x += inputEvent.value;
                         posChange = true;
-                        break;
 
                     case REL_Y:
                         mousePos.y += inputEvent.value;
