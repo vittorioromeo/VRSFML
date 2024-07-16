@@ -27,12 +27,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/Win32/WindowsHeader.hpp>
-
-#include <SFML/Base/EnumArray.hpp>
-
-#include <dinput.h>
-#include <mmsystem.h>
+#include <SFML/Window/JoystickImpl.hpp>
 
 
 namespace sf::priv
@@ -44,6 +39,18 @@ namespace sf::priv
 class JoystickImpl
 {
 public:
+    ////////////////////////////////////////////////////////////
+    /// \brief Default constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    explicit JoystickImpl();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Destructor
+    ///
+    ////////////////////////////////////////////////////////////
+    ~JoystickImpl();
+
     ////////////////////////////////////////////////////////////
     /// \brief Perform the global initialization of the joystick module
     ///
@@ -182,39 +189,10 @@ public:
 
 private:
     ////////////////////////////////////////////////////////////
-    /// \brief Device enumeration callback function passed to EnumDevices in updateConnections
-    ///
-    /// \param deviceInstance Device object instance
-    /// \param userData       User data (unused)
-    ///
-    /// \return DIENUM_CONTINUE to continue enumerating devices or DIENUM_STOP to stop
-    ///
-    ////////////////////////////////////////////////////////////
-    static BOOL CALLBACK deviceEnumerationCallback(const DIDEVICEINSTANCE* deviceInstance, void* userData);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Device object enumeration callback function passed to EnumObjects in open
-    ///
-    /// \param deviceObjectInstance Device object instance
-    /// \param userData             User data (pointer to our JoystickImpl object)
-    ///
-    /// \return DIENUM_CONTINUE to continue enumerating objects or DIENUM_STOP to stop
-    ///
-    ////////////////////////////////////////////////////////////
-    static BOOL CALLBACK deviceObjectEnumerationCallback(const DIDEVICEOBJECTINSTANCE* deviceObjectInstance, void* userData);
-
-    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    unsigned int          m_index{};                                    //!< Index of the joystick
-    JOYCAPS               m_caps{};                                     //!< Joystick capabilities
-    IDirectInputDevice8W* m_device{};                                   //!< DirectInput 8.x device
-    DIDEVCAPS             m_deviceCaps{};                               //!< DirectInput device capabilities
-    base::EnumArray<Joystick::Axis, int, Joystick::AxisCount> m_axes{}; //!< Offsets to the bytes containing the axes states, -1 if not available
-    int m_buttons[Joystick::ButtonCount]{}; //!< Offsets to the bytes containing the button states, -1 if not available
-    Joystick::Identification m_identification; //!< Joystick identification
-    JoystickState            m_state;          //!< Buffered joystick state
-    bool                     m_buffered{};     //!< true if the device uses buffering, false if the device uses polling
+    struct Impl;
+    base::InPlacePImpl<Impl, 1280> m_impl; //!< Implementation details
 };
 
 } // namespace sf::priv

@@ -221,10 +221,10 @@ std::wstring String::toWideString() const
 
 
 ////////////////////////////////////////////////////////////
-U8String String::toUtf8() const
+std::u8string String::toUtf8() const
 {
     // Prepare the output string
-    U8String output;
+    std::u8string output;
     output.reserve(m_impl->string.length());
 
     // Convert
