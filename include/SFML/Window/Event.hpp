@@ -265,7 +265,7 @@ public:
     struct TouchBegan
     {
         unsigned int finger{}; //!< Index of the finger in case of multi-touch events
-        Vector2i     position; //!< Position of the touch, relative to the top left of the owner window
+        Vector2i     position; //!< Start position of the touch, relative to the top left of the owner window
     };
 
     ////////////////////////////////////////////////////////////
@@ -275,7 +275,7 @@ public:
     struct TouchMoved
     {
         unsigned int finger{}; //!< Index of the finger in case of multi-touch events
-        Vector2i     position; //!< Position of the touch, relative to the top left of the owner window
+        Vector2i     position; //!< Current position of the touch, relative to the top left of the owner window
     };
 
     ////////////////////////////////////////////////////////////
@@ -285,7 +285,7 @@ public:
     struct TouchEnded
     {
         unsigned int finger{}; //!< Index of the finger in case of multi-touch events
-        Vector2i     position; //!< Position of the touch, relative to the top left of the owner window
+        Vector2i     position; //!< Final position of the touch, relative to the top left of the owner window
     };
 
     ////////////////////////////////////////////////////////////
@@ -438,7 +438,7 @@ SFML_PRIV_EVENTS_X_MACRO(SFML_PRIV_EVENT_X_EXTERN_TEMPLATE_GETIF, SFML_PRIV_EVEN
 /// The way to access the current active event subtype is via
 /// `sf::Event::getIf`. This member function returns the address
 /// of the event subtype struct if the event subtype matches the
-/// active event, otherise it returns `nullptr`.
+/// active event, otherwise it returns `nullptr`.
 ///
 /// `sf::Event::is` is used to check the active event subtype
 /// without actually reading any of the corresponding event data.

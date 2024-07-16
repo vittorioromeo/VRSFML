@@ -256,6 +256,9 @@ int main()
                         // Rebind the texture
                         sf::Texture::bind(graphicsContext, &texture);
 
+                        // Rebind the texture
+                        sf::Texture::bind(&texture);
+
                         mipmapEnabled = false;
                     }
                     else if (texture.generateMipmap())
