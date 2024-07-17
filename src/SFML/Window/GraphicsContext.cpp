@@ -417,6 +417,33 @@ void GraphicsContext::onGlContextDestroyed(priv::GlContext& glContext)
 
 
 ////////////////////////////////////////////////////////////
+GraphicsContext::SharedContextGuard::SharedContextGuard(GraphicsContext& theGraphicsContext) :
+graphicsContext(theGraphicsContext),
+lastActiveContextId(activeGlContext.id),
+lastActiveContextPtr(activeGlContext.ptr)
+{
+    if (lastActiveContextPtr != nullptr)
+        if (!graphicsContext.setActiveThreadLocalGlContext(*lastActiveContextPtr, false))
+            priv::err() << "Error disabling last active GL context in SharedContextGuard::SharedContextGuard()";
+
+    if (!graphicsContext.setActiveThreadLocalGlContextToSharedContext(true))
+        priv::err() << "Error enabling shared GL context in SharedContextGuard::SharedContextGuard()";
+}
+
+
+////////////////////////////////////////////////////////////
+GraphicsContext::SharedContextGuard::~SharedContextGuard()
+{
+    if (!graphicsContext.setActiveThreadLocalGlContextToSharedContext(false))
+        priv::err() << "Error disabling shared GL context in SharedContextGuard::~SharedContextGuard()";
+
+    if (lastActiveContextPtr != nullptr)
+        if (!graphicsContext.setActiveThreadLocalGlContext(*lastActiveContextPtr, true))
+            priv::err() << "Error enabling last active GL context in SharedContextGuard::~SharedContextGuard()";
+}
+
+
+////////////////////////////////////////////////////////////
 template <typename... GLContextArgs>
 [[nodiscard]] base::UniquePtr<priv::GlContext> GraphicsContext::createGlContextImpl(const ContextSettings& contextSettings,
                                                                                     GLContextArgs&&... args)

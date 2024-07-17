@@ -1,16 +1,16 @@
-#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/Graphics/StencilMode.hpp>
 
+#include <SFML/Window/GraphicsContext.hpp>
+
 #include <Doctest.hpp>
 
 #include <GraphicsUtil.hpp>
 #include <WindowUtil.hpp>
 
-#if 0
 TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
 {
     sf::GraphicsContext graphicsContext;
@@ -31,7 +31,7 @@ TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
 
         SECTION("Stencil-Only")
         {
-            renderTexture
+             renderTexture
                 .draw(shape1,
                       /* texture */ nullptr,
                       sf::RenderStates{
@@ -333,4 +333,3 @@ TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
         }
     }
 }
-#endif
