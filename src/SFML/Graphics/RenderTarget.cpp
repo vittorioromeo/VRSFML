@@ -299,19 +299,24 @@ void main()
                                                                  const char*          fragmentSrc)
 {
     // TODO: probably not needed?
-    const bool rc = graphicsContext.setActiveThreadLocalGlContextToSharedContext(true);
-    SFML_BASE_ASSERT(rc);
+    sf::base::Optional<sf::Shader> shader;
 
-    SFML_BASE_ASSERT(graphicsContext.isActiveGlContextSharedContext());
+    {
+        auto contextGuard = sf::GraphicsContext::SharedContextGuard{graphicsContext};
 
-    sf::base::Optional shader = sf::Shader::loadFromMemory(graphicsContext, vertexSrc, fragmentSrc);
-    SFML_BASE_ASSERT(shader.hasValue());
+        SFML_BASE_ASSERT(graphicsContext.isActiveGlContextSharedContext());
 
-    const sf::base::Optional ulTexture = shader->getUniformLocation("texture");
-    if (ulTexture.hasValue())
-        shader->setUniform(*ulTexture, sf::Shader::CurrentTexture);
+        shader = sf::Shader::loadFromMemory(graphicsContext, vertexSrc, fragmentSrc);
+        SFML_BASE_ASSERT(shader.hasValue());
 
-    SFML_BASE_ASSERT(glIsProgram(shader->getNativeHandle()));
+        const sf::base::Optional ulTexture = shader->getUniformLocation("texture");
+        if (ulTexture.hasValue())
+            shader->setUniform(*ulTexture, sf::Shader::CurrentTexture);
+
+        SFML_BASE_ASSERT(glIsProgram(shader->getNativeHandle()));
+    }
+
+    //SFML_BASE_ASSERT(!graphicsContext.isActiveGlContextSharedContext());
     return shader;
 }
 
@@ -357,15 +362,15 @@ struct [[nodiscard]] BuiltInShaders
 
 
 ////////////////////////////////////////////////////////////
-sf::Shader& getShader(sf::GraphicsContext& graphicsContext, const sf::RenderStates& states)
+sf::Shader& getShader(sf::GraphicsContext& graphicsContext, const sf::Shader* statesShader, const sf::Texture* statesTexture)
 {
-    if (states.shader != nullptr)
-        return *const_cast<sf::Shader*>(states.shader); // TODO: nasty cast
+    if (statesShader != nullptr)
+        return *const_cast<sf::Shader*>(statesShader); // TODO: nasty cast
 
-    if (!states.shader && !states.texture)
+    if (statesShader == nullptr && statesTexture == nullptr)
         return *getBuiltInShaders(graphicsContext).untexturedShader;
 
-    SFML_BASE_ASSERT(!states.shader && states.texture);
+    SFML_BASE_ASSERT(statesShader == nullptr && statesTexture != nullptr);
     return *getBuiltInShaders(graphicsContext).texturedShader;
 }
 
@@ -758,13 +763,13 @@ void RenderTarget::draw(const Vertex* vertices, std::size_t vertexCount, Primiti
             m_impl->vao.bind();
             m_impl->vbo.bind();
 
-            Shader&            shader       = RenderTargetImpl::getShader(*m_impl->graphicsContext, states);
+            Shader& shader = RenderTargetImpl::getShader(*m_impl->graphicsContext, states.shader, states.texture);
             const unsigned int nativeHandle = shader.getNativeHandle();
             SFML_BASE_ASSERT(glIsProgram(nativeHandle));
 
             glCheck(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertexCount, data, GL_STATIC_DRAW));
             doVertexStuff(nativeHandle, true);
-            shader.bind();
+            //shader.bind();
 #else
             glCheck(glVertexPointer(2, GL_FLOAT, sizeof(Vertex), data + 0));
             glCheck(glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), data + 8));
@@ -781,7 +786,7 @@ void RenderTarget::draw(const Vertex* vertices, std::size_t vertexCount, Primiti
             SFML_BASE_ASSERT(false);
             // (void)setActive(true); // TODO
 
-            Shader&            shader       = RenderTargetImpl::getShader(*m_impl->graphicsContext, states);
+            Shader& shader = RenderTargetImpl::getShader(*m_impl->graphicsContext, states.shader, states.texture);
             const unsigned int nativeHandle = shader.getNativeHandle();
             SFML_BASE_ASSERT(glIsProgram(nativeHandle));
 
@@ -822,7 +827,7 @@ void RenderTarget::draw(const Vertex* vertices, std::size_t vertexCount, Primiti
             m_impl->vao.bind();
             m_impl->vbo.bind();
 
-            Shader&            shader       = RenderTargetImpl::getShader(*m_impl->graphicsContext, states);
+            Shader& shader = RenderTargetImpl::getShader(*m_impl->graphicsContext, states.shader, states.texture);
             const unsigned int nativeHandle = shader.getNativeHandle();
             SFML_BASE_ASSERT(glIsProgram(nativeHandle));
 
@@ -886,7 +891,7 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, std::size_t firstVerte
         SFML_BASE_ASSERT(false);
         // (void)setActive(true); // TODO
 
-        Shader&            shader       = RenderTargetImpl::getShader(*m_impl->graphicsContext, states);
+        Shader& shader = RenderTargetImpl::getShader(*m_impl->graphicsContext, states.shader, states.texture);
         const unsigned int nativeHandle = shader.getNativeHandle();
         SFML_BASE_ASSERT(glIsProgram(nativeHandle));
 
@@ -1117,7 +1122,7 @@ GraphicsContext& RenderTarget::getGraphicsContext()
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::applyCurrentView(const RenderStates& states)
+void RenderTarget::applyCurrentView([[maybe_unused]] const RenderStates& states)
 {
     // Set the viewport
     const IntRect viewport    = getViewport(m_impl->view);
@@ -1148,9 +1153,7 @@ void RenderTarget::applyCurrentView(const RenderStates& states)
 
     // Set the projection matrix
 #if 1 // TODO: this makes renderwindow test fail due to texture update
-    // (void)setActive(true); // TODO
-
-    Shader& shader = RenderTargetImpl::getShader(*m_impl->graphicsContext, states);
+    [[maybe_unused]] Shader& shader = RenderTargetImpl::getShader(*m_impl->graphicsContext, states.shader, states.texture);
     shader.setUniform(shader.getUniformLocation("projMatrix").value(), Glsl::Mat4(m_impl->view.getTransform().getMatrix()));
 #else
     glCheck(glMatrixMode(GL_PROJECTION));
@@ -1262,7 +1265,7 @@ void RenderTarget::applyTransform(const RenderStates& states)
 #if 1
     // (void)setActive(true); // TODO
 
-    Shader& shader = RenderTargetImpl::getShader(*m_impl->graphicsContext, states);
+    Shader& shader = RenderTargetImpl::getShader(*m_impl->graphicsContext, states.shader, states.texture);
     shader.setUniform(shader.getUniformLocation("viewMatrix").value(), Glsl::Mat4(states.transform.getMatrix()));
 #else
     if (states.transform == Transform::Identity)
@@ -1317,8 +1320,7 @@ void RenderTarget::setupDraw(bool useVertexCache, const RenderStates& states)
 #if 1
     {
         // (void)setActive(true); // TODO
-
-        Shader& shader = RenderTargetImpl::getShader(*m_impl->graphicsContext, states);
+        Shader& shader = RenderTargetImpl::getShader(*m_impl->graphicsContext, states.shader, states.texture);
         applyShader(&shader);
 
         if (states.texture != nullptr)
@@ -1341,7 +1343,7 @@ void RenderTarget::setupDraw(bool useVertexCache, const RenderStates& states)
 
         // (void)setActive(true); // TODO
 
-        Shader& shader = RenderTargetImpl::getShader(*m_impl->graphicsContext, states);
+        Shader& shader = RenderTargetImpl::getShader(*m_impl->graphicsContext, states.shader, states.texture);
 
         const base::Optional uLViewMatrix = shader.getUniformLocation("viewMatrix");
         if (uLViewMatrix.hasValue())

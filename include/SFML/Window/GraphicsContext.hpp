@@ -146,6 +146,30 @@ private:
     friend TestContext;
     friend RenderTarget; // TODO
 
+public:
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO
+    ///
+    ////////////////////////////////////////////////////////////
+    struct [[nodiscard]] SharedContextGuard
+    {
+        [[nodiscard]] explicit SharedContextGuard(GraphicsContext& theGraphicsContext);
+        ~SharedContextGuard();
+
+        SharedContextGuard(const SharedContextGuard&)            = delete;
+        SharedContextGuard& operator=(const SharedContextGuard&) = delete;
+
+        SharedContextGuard(SharedContextGuard&&)            = delete;
+        SharedContextGuard& operator=(SharedContextGuard&&) = delete;
+
+        GraphicsContext& graphicsContext;
+        std::uint64_t    lastActiveContextId;
+        priv::GlContext* lastActiveContextPtr;
+    };
+
+private:
+    friend SharedContextGuard;
+
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context, not associated to a window
     ///
