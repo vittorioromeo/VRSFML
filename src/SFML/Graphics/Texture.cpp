@@ -717,7 +717,7 @@ void Texture::update(const Window& window, const Vector2u& dest)
     }
     else
     {
-        throw 100;
+        throw 100; // TODO:
     }
 }
 
@@ -921,12 +921,6 @@ void Texture::bind(GraphicsContext& graphicsContext, const Texture* texture, Coo
     }
     else
     {
-        /* static auto empty = [&]() -> Texture
-        {
-            const auto image = sf::Image::create({1, 1}, sf::Color::White);
-            return Texture::loadFromImage(graphicsContext, *image).value();
-        }();*/
-
         // Bind no texture
         glCheck(glBindTexture(GL_TEXTURE_2D, 0));
 
@@ -971,7 +965,6 @@ Glsl::Mat4 Texture::getMatrix(CoordinateType coordinateType) const
     // Check if we need to define a special texture matrix
     if ((coordinateType == CoordinateType::Pixels) || m_pixelsFlipped)
     {
-
         // If non-normalized coordinates (= pixels) are requested, we need to
         // setup scale factors that convert the range [0 .. size] to [0 .. 1]
         if (coordinateType == CoordinateType::Pixels)

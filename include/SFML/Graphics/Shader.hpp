@@ -336,7 +336,11 @@ public:
         InputStream&     fragmentShaderStream);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO
+    /// \brief Get the location ID of a shader uniform
+    ///
+    /// \param name Name of the uniform variable to search
+    ///
+    /// \return Location ID of the uniform, or `sf::base::nullOpt` if not found
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] base::Optional<UniformLocation> getUniformLocation(std::string_view uniformName);
@@ -708,16 +712,6 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     void bindTextures() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the location ID of a shader uniform
-    ///
-    /// \param name Name of the uniform variable to search
-    ///
-    /// \return Location ID of the uniform, or -1 if not found
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] int getUniformLocationImpl(std::string_view uniformName);
 
     ////////////////////////////////////////////////////////////
     /// \brief RAII object to save and restore the program

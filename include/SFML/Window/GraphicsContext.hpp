@@ -51,8 +51,8 @@ class WindowImpl;
 
 namespace sf
 {
-class RenderTarget;
-class Shader;
+class RenderTarget; // TODO
+class Shader;       // TODO
 class Window;
 struct ContextSettings;
 using GlFunctionPointer = void (*)();
@@ -144,7 +144,7 @@ private:
     friend priv::RenderTextureImplDefault;
     friend priv::RenderTextureImplFBO;
     friend TestContext;
-    friend RenderTarget;
+    friend RenderTarget; // TODO
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context, not associated to a window

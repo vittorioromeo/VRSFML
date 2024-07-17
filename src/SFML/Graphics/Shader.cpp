@@ -52,8 +52,6 @@
 #include <vector>
 
 
-#ifndef SFML_OPENGL_ES
-
 #if defined(SFML_SYSTEM_MACOS) || defined(SFML_SYSTEM_IOS)
 
 #define castToGlHandle(x)   reinterpret_cast<GLEXT_GLhandle>(static_cast<std::ptrdiff_t>(x))
@@ -283,7 +281,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] explicit UniformBinder(Shader& shader) :
-    m_currentProgram(castToGlHandle(shader.m_impl->shaderProgram))
+    m_currentProgram(static_cast<GLEXT_GLhandle>(castToGlHandle(shader.m_impl->shaderProgram)))
     {
         SFML_BASE_ASSERT(m_currentProgram != 0);
 
@@ -604,11 +602,23 @@ base::Optional<Shader> Shader::loadFromStream(GraphicsContext& graphicsContext,
 ////////////////////////////////////////////////////////////
 base::Optional<Shader::UniformLocation> Shader::getUniformLocation(std::string_view uniformName)
 {
-    const int location = getUniformLocationImpl(uniformName);
-    if (location == -1)
-        return base::nullOpt;
+    // Check the cache
+    if (const auto it = m_impl->uniforms.find(uniformName); it != m_impl->uniforms.end())
+    {
+        // Already in cache, return it
+        return sf::base::makeOptional(UniformLocation{it->second});
+    }
 
-    return sf::base::makeOptional(UniformLocation{location});
+    // Use thread-local string buffer to get a null-terminated uniform name
+    thread_local std::string uniformNameBuffer;
+    uniformNameBuffer.clear();
+    uniformNameBuffer.assign(uniformName);
+
+    // Not in cache, request the location from OpenGL
+    const int location = GLEXT_glGetUniformLocation(castToGlHandle(m_impl->shaderProgram), uniformNameBuffer.c_str());
+    m_impl->uniforms.emplace(uniformName, location);
+
+    return location == -1 ? base::nullOpt : sf::base::makeOptional(UniformLocation{location});
 }
 
 
@@ -877,6 +887,12 @@ void Shader::unbind(GraphicsContext& graphicsContext)
 ////////////////////////////////////////////////////////////
 bool Shader::isAvailable(GraphicsContext& graphicsContext)
 {
+#ifdef SFML_OPENGL_ES
+
+    return true;
+
+#else
+
     static const bool available = [&graphicsContext]
     {
         SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
@@ -887,12 +903,19 @@ bool Shader::isAvailable(GraphicsContext& graphicsContext)
     }();
 
     return available;
+#endif
 }
 
 
 ////////////////////////////////////////////////////////////
-bool Shader::isGeometryAvailable(GraphicsContext& graphicsContext)
+bool Shader::isGeometryAvailable([[maybe_unused]] GraphicsContext& graphicsContext)
 {
+#ifdef SFML_OPENGL_ES
+
+    return false;
+
+#else
+
     static const bool available = [&graphicsContext]
     {
         SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
@@ -902,6 +925,8 @@ bool Shader::isGeometryAvailable(GraphicsContext& graphicsContext)
     }();
 
     return available;
+
+#endif
 }
 
 
@@ -1069,301 +1094,4 @@ void Shader::bindTextures() const
     glCheck(GLEXT_glActiveTexture(GLEXT_GL_TEXTURE0));
 }
 
-
-////////////////////////////////////////////////////////////
-int Shader::getUniformLocationImpl(std::string_view uniformName)
-{
-    // Check the cache
-    if (const auto it = m_impl->uniforms.find(uniformName); it != m_impl->uniforms.end())
-    {
-        // Already in cache, return it
-        return it->second;
-    }
-
-    // Use thread-local string buffer to get a null-terminated uniform name
-    thread_local std::string uniformNameBuffer;
-    uniformNameBuffer.clear();
-    uniformNameBuffer.assign(uniformName);
-
-    // Not in cache, request the location from OpenGL
-    const int location = GLEXT_glGetUniformLocation(castToGlHandle(m_impl->shaderProgram), uniformNameBuffer.c_str());
-    m_impl->uniforms.emplace(uniformName, location);
-
-    if (location == -1)
-        priv::err() << "Uniform \"" << uniformName << "\" not found in shader";
-
-    return location;
-}
-
 } // namespace sf
-
-#else // SFML_OPENGL_ES
-
-// OpenGL ES 1 doesn't support GLSL shaders at all, we have to provide an empty implementation
-
-namespace sf
-{
-////////////////////////////////////////////////////////////
-Shader::~Shader() = default;
-
-
-////////////////////////////////////////////////////////////
-Shader::Shader(Shader&& source) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
-Shader& Shader::operator=(Shader&& right) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::loadFromFile(const Path& /* filename */, Type /* type */)
-{
-    return base::nullOpt;
-}
-
-
-////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::loadFromFile(const Path& /* vertexShaderFilename */, const Path& /* fragmentShaderFilename */)
-{
-    return base::nullOpt;
-}
-
-
-////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::loadFromFile(const Path& /* vertexShaderFilename */,
-                                            const Path& /* geometryShaderFilename */,
-                                            const Path& /* fragmentShaderFilename */)
-{
-    return base::nullOpt;
-}
-
-
-////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::loadFromMemory(std::string_view /* shader */, Type /* type */)
-{
-    return base::nullOpt;
-}
-
-
-////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::loadFromMemory(std::string_view /* vertexShader */, std::string_view /* fragmentShader */)
-{
-    return base::nullOpt;
-}
-
-
-////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::loadFromMemory(std::string_view /* vertexShader */,
-                                              std::string_view /* geometryShader */,
-                                              std::string_view /* fragmentShader */)
-{
-    return base::nullOpt;
-}
-
-
-////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::loadFromStream(InputStream& /* stream */, Type /* type */)
-{
-    return base::nullOpt;
-}
-
-
-////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::loadFromStream(InputStream& /* vertexShaderStream */, InputStream& /* fragmentShaderStream */)
-{
-    return base::nullOpt;
-}
-
-
-////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::loadFromStream(InputStream& /* vertexShaderStream */,
-                                              InputStream& /* geometryShaderStream */,
-                                              InputStream& /* fragmentShaderStream */)
-{
-    return base::nullOpt;
-}
-
-
-////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation /* uniformLocation */, float)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation /* uniformLocation */, const Glsl::Vec2&)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation /* uniformLocation */, const Glsl::Vec3&)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation /* uniformLocation */, const Glsl::Vec4&)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation /* uniformLocation */, int)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation /* uniformLocation */, const Glsl::Ivec2&)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation /* uniformLocation */, const Glsl::Ivec3&)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation /* uniformLocation */, const Glsl::Ivec4&)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation /* uniformLocation */, bool)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation /* uniformLocation */, const Glsl::Bvec2&)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation /* uniformLocation */, const Glsl::Bvec3&)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation /* uniformLocation */, const Glsl::Bvec4&)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation /* uniformLocation */, const Glsl::Mat3& /* matrix */)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation /* uniformLocation */, const Glsl::Mat4& /* matrix */)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-bool Shader::setUniform(UniformLocation /* uniformLocation */, const Texture& /* texture */)
-{
-    return false;
-}
-
-
-////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation /* uniformLocation */, CurrentTextureType)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-void Shader::setUniformArray(UniformLocation /* uniformLocation */, const float* /* scalarArray */, std::size_t /* length */)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-void Shader::setUniformArray(UniformLocation /* uniformLocation */, const Glsl::Vec2* /* vectorArray */, std::size_t /* length */)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-void Shader::setUniformArray(UniformLocation /* uniformLocation */, const Glsl::Vec3* /* vectorArray */, std::size_t /* length */)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-void Shader::setUniformArray(UniformLocation /* uniformLocation */, const Glsl::Vec4* /* vectorArray */, std::size_t /* length */)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-void Shader::setUniformArray(UniformLocation /* uniformLocation */, const Glsl::Mat3* /* matrixArray */, std::size_t /* length */)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-void Shader::setUniformArray(UniformLocation /* uniformLocation */, const Glsl::Mat4* /* matrixArray */, std::size_t /* length */)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-unsigned int Shader::getNativeHandle() const
-{
-    return 0;
-}
-
-
-////////////////////////////////////////////////////////////
-void Shader::bind(const Shader* /* shader */)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-bool Shader::isAvailable(graphicsContext)
-{
-    return false;
-}
-
-
-////////////////////////////////////////////////////////////
-bool Shader::isGeometryAvailable()
-{
-    return false;
-}
-
-
-////////////////////////////////////////////////////////////
-Shader::Shader(base::PassKey<Shader>&&, unsigned int shaderProgram) : m_impl->shaderProgram(shaderProgram)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::compile(std::string_view /* vertexShaderCode */,
-                                       std::string_view /* geometryShaderCode */,
-                                       std::string_view /* fragmentShaderCode */)
-{
-    return base::nullOpt;
-}
-
-
-////////////////////////////////////////////////////////////
-void Shader::bindTextures() const
-{
-}
-
-} // namespace sf
-
-#endif // SFML_OPENGL_ES

@@ -67,18 +67,18 @@ RenderStates::RenderStates(const Texture* theTexture) : texture(theTexture)
 
 
 ////////////////////////////////////////////////////////////
-RenderStates::RenderStates(/* TODO: const */ Shader* theShader) : shader(theShader)
+RenderStates::RenderStates(const Shader* theShader) : shader(theShader)
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-RenderStates::RenderStates(const BlendMode&          theBlendMode,
-                           const StencilMode&        theStencilMode,
-                           const Transform&          theTransform,
-                           CoordinateType            theCoordinateType,
-                           const Texture*            theTexture,
-                           /* TODO: const */ Shader* theShader) :
+RenderStates::RenderStates(const BlendMode&   theBlendMode,
+                           const StencilMode& theStencilMode,
+                           const Transform&   theTransform,
+                           CoordinateType     theCoordinateType,
+                           const Texture*     theTexture,
+                           const Shader*      theShader) :
 blendMode(theBlendMode),
 stencilMode(theStencilMode),
 transform(theTransform),

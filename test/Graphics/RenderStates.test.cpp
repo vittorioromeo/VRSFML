@@ -83,7 +83,7 @@ TEST_CASE("[Graphics] sf::RenderStates")
 
         SECTION("Shader constructor")
         {
-            sf::Shader*            shader = nullptr;
+            const sf::Shader*      shader = nullptr;
             const sf::RenderStates renderStates(shader);
             CHECK(renderStates.blendMode == sf::BlendMode());
             CHECK(renderStates.stencilMode == sf::StencilMode{});

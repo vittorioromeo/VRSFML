@@ -2,9 +2,6 @@
 
 #include <doctest/parts/doctest_fwd.h>
 
-#ifdef SFML_ENABLE_STACK_TRACES
-#include <cpptrace/cpptrace.hpp>
-#endif
 
 #define SECTION(name) DOCTEST_SUBCASE(name)
 
