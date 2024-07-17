@@ -84,6 +84,8 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
         auto texture = sf::Texture::create(graphicsContext, window.getSize()).value();
 
         window.clear(sf::Color::Red);
+        window.display();
+
         texture.update(window);
         CHECK(texture.copyToImage().getPixel(sf::Vector2u{64, 64}) == sf::Color::Red);
 

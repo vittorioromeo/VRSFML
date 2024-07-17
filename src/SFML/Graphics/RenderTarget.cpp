@@ -204,27 +204,7 @@ std::uint32_t stencilFunctionToGlConstant(sf::StencilComparison comparison)
 
 
 ////////////////////////////////////////////////////////////
-constexpr const char* defaultFragShader = R"(
-
-#ifdef GL_ES
-precision mediump float;
-#endif
-
-uniform sampler2D texture;
-
-varying vec4 v_color;
-varying vec2 v_texCoord;
-
-void main()
-{
-    gl_FragColor = v_color * texture2D(texture, v_texCoord.st);
-}
-
-)";
-
-
-////////////////////////////////////////////////////////////
-constexpr const char* defaultVertexShader = R"(
+constexpr const char* defaultTexturedShaderVertexSrc = R"(
 
 #ifdef GL_ES
 precision mediump float;
@@ -252,7 +232,71 @@ void main()
 
 
 ////////////////////////////////////////////////////////////
-sf::base::Optional<sf::Shader> createBuiltInShader(sf::GraphicsContext& graphicsContext)
+constexpr const char* defaultTexturedShaderFragmentSrc = R"(
+
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+uniform sampler2D texture;
+
+varying vec4 v_color;
+varying vec2 v_texCoord;
+
+void main()
+{
+    gl_FragColor = v_color * texture2D(texture, v_texCoord.st);
+}
+
+)";
+
+
+////////////////////////////////////////////////////////////
+constexpr const char* defaultUntexturedShaderVertexSrc = R"(
+
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+uniform mat4 projMatrix;
+uniform mat4 viewMatrix;
+
+attribute vec4 color;
+attribute vec2 position;
+attribute vec2 texCoord;
+
+varying vec4 v_color;
+
+void main()
+{
+    gl_Position = projMatrix * viewMatrix * vec4(position, 0.0, 1.0);
+    v_color = color;
+}
+
+)";
+
+
+////////////////////////////////////////////////////////////
+constexpr const char* defaultUntexturedShaderFragmentSrc = R"(
+
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+varying vec4 v_color;
+
+void main()
+{
+    gl_FragColor = v_color;
+}
+
+)";
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] sf::base::Optional<sf::Shader> createBuiltInShader(sf::GraphicsContext& graphicsContext,
+                                                                 const char*          vertexSrc,
+                                                                 const char*          fragmentSrc)
 {
     // TODO: probably not needed?
     const bool rc = graphicsContext.setActiveThreadLocalGlContextToSharedContext(true);
@@ -260,13 +304,12 @@ sf::base::Optional<sf::Shader> createBuiltInShader(sf::GraphicsContext& graphics
 
     SFML_BASE_ASSERT(graphicsContext.isActiveGlContextSharedContext());
 
-    sf::base::Optional shader = sf::Shader::loadFromMemory(graphicsContext, defaultVertexShader, defaultFragShader);
+    sf::base::Optional shader = sf::Shader::loadFromMemory(graphicsContext, vertexSrc, fragmentSrc);
     SFML_BASE_ASSERT(shader.hasValue());
 
     const sf::base::Optional ulTexture = shader->getUniformLocation("texture");
-    SFML_BASE_ASSERT(ulTexture.hasValue());
-
-    shader->setUniform(*ulTexture, sf::Shader::CurrentTexture);
+    if (ulTexture.hasValue())
+        shader->setUniform(*ulTexture, sf::Shader::CurrentTexture);
 
     SFML_BASE_ASSERT(glIsProgram(shader->getNativeHandle()));
     return shader;
@@ -274,26 +317,42 @@ sf::base::Optional<sf::Shader> createBuiltInShader(sf::GraphicsContext& graphics
 
 
 ////////////////////////////////////////////////////////////
-sf::Shader& getBuiltInShader(sf::GraphicsContext& graphicsContext)
+struct [[nodiscard]] BuiltInShaders
+{
+    sf::Shader* texturedShader;
+    sf::Shader* untexturedShader;
+};
+
+[[nodiscard]] BuiltInShaders getBuiltInShaders(sf::GraphicsContext& graphicsContext)
 {
     SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
-    static sf::base::Optional<sf::Shader> shader;
+    static sf::base::Optional<sf::Shader> texturedShader;
+    static sf::base::Optional<sf::Shader> untexturedShader;
 
     if (graphicsContext.builtInShaderState == 0)
     {
-        shader = createBuiltInShader(graphicsContext);
+        texturedShader = createBuiltInShader(graphicsContext, defaultTexturedShaderVertexSrc, defaultTexturedShaderFragmentSrc);
 
-        graphicsContext.builtInShaderState     = 1;
-        graphicsContext.buildInShaderDestroyFn = [] { shader.reset(); };
+        untexturedShader = createBuiltInShader(graphicsContext,
+                                               defaultUntexturedShaderVertexSrc,
+                                               defaultUntexturedShaderFragmentSrc);
+
+        graphicsContext.builtInShaderState = 1;
+
+        graphicsContext.buildInShaderDestroyFn = []
+        {
+            texturedShader.reset();
+            untexturedShader.reset();
+        };
     }
 
     if (graphicsContext.builtInShaderState == 1)
     {
-        return shader.value();
+        return BuiltInShaders{texturedShader.asPtr(), untexturedShader.asPtr()};
     }
 
     SFML_BASE_ASSERT(graphicsContext.builtInShaderState == 2);
-    throw 100;
+    throw 100; // TODO
 }
 
 
@@ -301,9 +360,13 @@ sf::Shader& getBuiltInShader(sf::GraphicsContext& graphicsContext)
 sf::Shader& getShader(sf::GraphicsContext& graphicsContext, const sf::RenderStates& states)
 {
     if (states.shader != nullptr)
-        return *states.shader;
+        return *const_cast<sf::Shader*>(states.shader); // TODO: nasty cast
 
-    return RenderTargetImpl::getBuiltInShader(graphicsContext);
+    if (!states.shader && !states.texture)
+        return *getBuiltInShaders(graphicsContext).untexturedShader;
+
+    SFML_BASE_ASSERT(!states.shader && states.texture);
+    return *getBuiltInShaders(graphicsContext).texturedShader;
 }
 
 } // namespace RenderTargetImpl
@@ -406,26 +469,30 @@ using VBO = OpenGLRAII<[](auto& id) { glCheck(glGenBuffers(1, &id)); },
 void doVertexStuff(unsigned int shaderNativeHandle, bool enableTexCoordsArray)
 {
     //TODO BC: actually get the layout indices
-    const GLint pIdx = glCheckExpr(glGetAttribLocation(shaderNativeHandle, "position"));
-    const GLint cIdx = glCheckExpr(glGetAttribLocation(shaderNativeHandle, "color"));
-    const GLint tIdx = glCheckExpr(glGetAttribLocation(shaderNativeHandle, "texCoord"));
+    const GLint posAttribIdx      = glCheckExpr(glGetAttribLocation(shaderNativeHandle, "position"));
+    const GLint colorAttribIdx    = glCheckExpr(glGetAttribLocation(shaderNativeHandle, "color"));
+    const GLint texCoordAttribIdx = glCheckExpr(glGetAttribLocation(shaderNativeHandle, "texCoord"));
 
-    glCheck(glEnableVertexAttribArray(pIdx));
-    glCheck(glVertexAttribPointer(pIdx, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(0)));
+    glCheck(glEnableVertexAttribArray(posAttribIdx));
+    glCheck(glVertexAttribPointer(posAttribIdx, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(0)));
 
-    if (cIdx >= 0)
+    if (colorAttribIdx >= 0)
     {
-        glCheck(glEnableVertexAttribArray(cIdx));
-        glCheck(
-            glVertexAttribPointer(cIdx, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), reinterpret_cast<void*>(sizeof(float) * 2)));
+        glCheck(glEnableVertexAttribArray(colorAttribIdx));
+        glCheck(glVertexAttribPointer(colorAttribIdx,
+                                      4,
+                                      GL_UNSIGNED_BYTE,
+                                      GL_TRUE,
+                                      sizeof(Vertex),
+                                      reinterpret_cast<void*>(sizeof(float) * 2)));
     }
 
-    if (tIdx >= 0)
+    if (texCoordAttribIdx >= 0)
     {
         if (enableTexCoordsArray)
         {
-            glCheck(glEnableVertexAttribArray(tIdx));
-            glCheck(glVertexAttribPointer(tIdx,
+            glCheck(glEnableVertexAttribArray(texCoordAttribIdx));
+            glCheck(glVertexAttribPointer(texCoordAttribIdx,
                                           2,
                                           GL_FLOAT,
                                           GL_FALSE,
@@ -1343,6 +1410,7 @@ void RenderTarget::drawPrimitives(PrimitiveType type, std::size_t firstVertex, s
 void RenderTarget::cleanupDraw(const RenderStates& states)
 {
     // Unbind the shader, if any
+    applyShader(nullptr);
 
     // TODO:
     // if (states.shader)

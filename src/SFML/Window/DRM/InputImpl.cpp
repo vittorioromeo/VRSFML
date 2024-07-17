@@ -418,7 +418,9 @@ sf::base::Optional<sf::Event> eventProcess()
                     };
 
                     if (inputEvent.value)
-                        return makeKeyEvent(sf::Event::KeyReleased{});
+                        return makeKeyEvent(sf::Event::KeyPressed{});
+
+                    return makeKeyEvent(sf::Event::KeyReleased{});
                 }
             }
             else if (inputEvent.type == EV_REL)
@@ -429,6 +431,7 @@ sf::base::Optional<sf::Event> eventProcess()
                     case REL_X:
                         mousePos.x += inputEvent.value;
                         posChange = true;
+                        break;
 
                     case REL_Y:
                         mousePos.y += inputEvent.value;

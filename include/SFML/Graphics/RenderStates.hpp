@@ -99,7 +99,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
     /// \param theShader Shader to use
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit RenderStates(/* TODO: const */ Shader* theShader);
+    [[nodiscard]] explicit RenderStates(const Shader* theShader);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a set of render states with all its attributes
@@ -113,12 +113,12 @@ struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit RenderStates(
-        const BlendMode&          theBlendMode,
-        const StencilMode&        theStencilMode,
-        const Transform&          theTransform,
-        CoordinateType            theCoordinateType,
-        const Texture*            theTexture,
-        /* TODO: const */ Shader* theShader);
+        const BlendMode&   theBlendMode,
+        const StencilMode& theStencilMode,
+        const Transform&   theTransform,
+        CoordinateType     theCoordinateType,
+        const Texture*     theTexture,
+        const Shader*      theShader);
 
     ////////////////////////////////////////////////////////////
     // Static member data
@@ -129,12 +129,12 @@ struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    BlendMode                 blendMode{BlendAlpha};                  //!< Blending mode
-    StencilMode               stencilMode;                            //!< Stencil mode
-    Transform                 transform;                              //!< Transform
-    CoordinateType            coordinateType{CoordinateType::Pixels}; //!< Texture coordinate type
-    const Texture*            texture{};                              //!< Texture
-    /* TODO: const */ Shader* shader{};                               //!< Shader
+    BlendMode      blendMode{BlendAlpha};                  //!< Blending mode
+    StencilMode    stencilMode;                            //!< Stencil mode
+    Transform      transform;                              //!< Transform
+    CoordinateType coordinateType{CoordinateType::Pixels}; //!< Texture coordinate type
+    const Texture* texture{};                              //!< Texture
+    const Shader*  shader{};                               //!< Shader
 };
 
 } // namespace sf
