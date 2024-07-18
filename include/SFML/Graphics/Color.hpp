@@ -48,7 +48,7 @@ public:
     /// sf::Color(0, 0, 0, 255).
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr Color();
+    [[nodiscard]] constexpr Color() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the color from its 4 RGBA components
