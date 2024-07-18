@@ -294,7 +294,7 @@ private:
 
 public: // TODO
     int builtInShaderState{0};
-    void (*buildInShaderDestroyFn)(){};
+    void (*builtInShaderDestroyFn)(){};
 };
 
 } // namespace sf

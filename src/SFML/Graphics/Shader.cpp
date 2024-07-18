@@ -606,7 +606,7 @@ base::Optional<Shader::UniformLocation> Shader::getUniformLocation(std::string_v
     if (const auto it = m_impl->uniforms.find(uniformName); it != m_impl->uniforms.end())
     {
         // Already in cache, return it
-        return sf::base::makeOptional(UniformLocation{it->second});
+        return it->second == -1 ? base::nullOpt : sf::base::makeOptional(UniformLocation{it->second});
     }
 
     // Use thread-local string buffer to get a null-terminated uniform name

@@ -218,9 +218,11 @@ GraphicsContext::~GraphicsContext()
 
     if (builtInShaderState == 1)
     {
-        SFML_BASE_ASSERT(buildInShaderDestroyFn != nullptr);
+        SFML_BASE_ASSERT(builtInShaderDestroyFn != nullptr);
         builtInShaderState = 2;
-        buildInShaderDestroyFn();
+
+        auto contextGuard = SharedContextGuard{*this};
+        builtInShaderDestroyFn();
     }
 
     activeGlContext.id  = 0u;
