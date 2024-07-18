@@ -43,6 +43,15 @@ class [[nodiscard]] Rect
 {
 public:
     ////////////////////////////////////////////////////////////
+    /// \brief Default constructor
+    ///
+    /// Creates an empty rectangle (it is equivalent to calling
+    /// Rect({0, 0}, {0, 0})).
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] constexpr Rect() = default;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Check if a point is inside the rectangle's area
     ///
     /// This check is non-inclusive. If the point lies on the

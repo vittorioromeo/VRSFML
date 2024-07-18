@@ -45,7 +45,7 @@ public:
     /// Sets the angle value to zero.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr Angle();
+    [[nodiscard]] constexpr Angle() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the angle's value in degrees

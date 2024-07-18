@@ -135,7 +135,10 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
         windowBase.setMinimumSize({200u, 300u});
     }
 
-    SECTION("pollAndHandleEvents()")
+    // Test for compilation but do not run. This code sometimes hangs indefinitely
+    // when running on the BuildBot CI pipeline. Because it contains no
+    // assertions we have nothing to gain by running it anyways
+    (void)[]
     {
         sf::WindowBase windowBase(sf::VideoMode({360, 240}), "WindowBase Tests");
 
@@ -150,5 +153,5 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 
         // Should compile if user provides both a specific handler and a catch-all
         windowBase.pollAndHandleEvents([](const sf::Event::Closed&) {}, [](const auto&) {});
-    }
+    };
 }

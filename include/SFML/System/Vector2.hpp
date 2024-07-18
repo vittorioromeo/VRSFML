@@ -44,6 +44,14 @@ class Vector2
 {
 public:
     ////////////////////////////////////////////////////////////
+    /// \brief Default constructor
+    ///
+    /// Creates a Vector2(0, 0).
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] constexpr Vector2() = default;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Construct the vector from polar coordinates <i><b>(floating-point)</b></i>
     ///
     /// \param r   Length of vector (can be negative)
