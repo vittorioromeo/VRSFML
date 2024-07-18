@@ -47,7 +47,7 @@ public:
     /// Sets the time value to zero.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr explicit Time();
+    [[nodiscard]] constexpr Time() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from microseconds
