@@ -344,7 +344,7 @@ struct [[nodiscard]] BuiltInShaders
 
         graphicsContext.builtInShaderState = 1;
 
-        graphicsContext.buildInShaderDestroyFn = []
+        graphicsContext.builtInShaderDestroyFn = []
         {
             texturedShader.reset();
             untexturedShader.reset();
@@ -888,7 +888,7 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, std::size_t firstVerte
             glCheck(glEnableClientState(GL_TEXTURE_COORD_ARRAY));
 
 #if 1
-        SFML_BASE_ASSERT(false);
+        //SFML_BASE_ASSERT(false);
         // (void)setActive(true); // TODO
 
         Shader& shader = RenderTargetImpl::getShader(*m_impl->graphicsContext, states.shader, states.texture);
