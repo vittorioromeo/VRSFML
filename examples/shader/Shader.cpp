@@ -76,8 +76,7 @@ public:
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
-        // TODO
-        states.shader = const_cast<sf::Shader*>(&m_shader);
+        states.shader = &m_shader;
         target.draw(sf::Sprite{m_texture.getRect()}, m_texture, states);
     }
 
@@ -104,8 +103,7 @@ public:
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
-        // TODO
-        states.shader = const_cast<sf::Shader*>(&m_shader);
+        states.shader = &m_shader;
         target.draw(m_text, states);
     }
 
@@ -165,8 +163,7 @@ public:
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
-        // TODO
-        states.shader = const_cast<sf::Shader*>(&m_shader);
+        states.shader = &m_shader;
         target.draw(m_points, sf::PrimitiveType::Points, states);
     }
 
@@ -243,8 +240,7 @@ public:
     {
         const sf::Texture& texture = m_surface.getTexture();
 
-        // TODO
-        states.shader = const_cast<sf::Shader*>(&m_shader);
+        states.shader = &m_shader;
         target.draw(sf::Sprite{texture.getRect()}, texture, states);
     }
 
@@ -293,8 +289,7 @@ public:
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
         // Prepare the render state
-        // TODO
-        states.shader    = const_cast<sf::Shader*>(&m_shader);
+        states.shader    = &m_shader;
         states.texture   = &m_logoTexture;
         states.transform = m_transform;
 
@@ -436,13 +431,6 @@ int main()
 {
     // Create the graphics context
     sf::GraphicsContext graphicsContext;
-
-    // Exit early if shaders are not available
-    if (!sf::Shader::isAvailable(graphicsContext))
-    {
-        std::cerr << "Shaders not supported on current system, aborting" << std::endl;
-        return EXIT_FAILURE;
-    }
 
     // Open the application font
     const auto font = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf").value();

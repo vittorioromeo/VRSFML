@@ -34,7 +34,6 @@
 #include <SFML/Base/Optional.hpp>
 
 #include <iosfwd>
-
 #include <string>
 #include <string_view>
 

@@ -51,7 +51,9 @@ int main()
         while (const sf::base::Optional event = window.pollEvent())
         {
             // Window closed: exit
-            if (event->is<sf::Event::Closed>())
+            if (event->is<sf::Event::Closed>() ||
+                (event->is<sf::Event::KeyPressed>() &&
+                 event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape))
             {
                 return EXIT_SUCCESS;
             }

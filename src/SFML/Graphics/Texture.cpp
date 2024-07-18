@@ -870,7 +870,7 @@ void Texture::invalidateMipmap()
 
 
 ////////////////////////////////////////////////////////////
-void Texture::bind(GraphicsContext& graphicsContext, const Texture* texture, CoordinateType coordinateType)
+void Texture::bind(GraphicsContext& graphicsContext, const Texture* texture)
 {
     SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
 
@@ -880,57 +880,11 @@ void Texture::bind(GraphicsContext& graphicsContext, const Texture* texture, Coo
 
         // Bind the texture
         glCheck(glBindTexture(GL_TEXTURE_2D, texture->m_texture));
-
-        // Check if we need to define a special texture matrix
-        if ((coordinateType == CoordinateType::Pixels) || texture->m_pixelsFlipped)
-        {
-            // clang-format off
-            float matrix[] = {1.f, 0.f, 0.f, 0.f,
-                              0.f, 1.f, 0.f, 0.f,
-                              0.f, 0.f, 1.f, 0.f,
-                              0.f, 0.f, 0.f, 1.f};
-            // clang-format on
-
-            // If non-normalized coordinates (= pixels) are requested, we need to
-            // setup scale factors that convert the range [0 .. size] to [0 .. 1]
-            if (coordinateType == CoordinateType::Pixels)
-            {
-                matrix[0] = 1.f / static_cast<float>(texture->m_actualSize.x);
-                matrix[5] = 1.f / static_cast<float>(texture->m_actualSize.y);
-            }
-
-            // If pixels are flipped we must invert the Y axis
-            if (texture->m_pixelsFlipped)
-            {
-                matrix[5]  = -matrix[5];
-                matrix[13] = static_cast<float>(texture->m_size.y) / static_cast<float>(texture->m_actualSize.y);
-            }
-
-            // Load the matrix
-            glCheck(glMatrixMode(GL_TEXTURE));
-            glCheck(glLoadMatrixf(matrix));
-        }
-        else
-        {
-            // Reset the texture matrix
-            glCheck(glMatrixMode(GL_TEXTURE));
-            glCheck(glLoadIdentity());
-        }
-
-        // Go back to model-view mode (sf::RenderTarget relies on it)
-        glCheck(glMatrixMode(GL_MODELVIEW));
     }
     else
     {
         // Bind no texture
         glCheck(glBindTexture(GL_TEXTURE_2D, 0));
-
-        // Reset the texture matrix
-        glCheck(glMatrixMode(GL_TEXTURE));
-        glCheck(glLoadIdentity());
-
-        // Go back to model-view mode (sf::RenderTarget relies on it)
-        glCheck(glMatrixMode(GL_MODELVIEW));
     }
 }
 
@@ -961,7 +915,12 @@ Glsl::Mat4 Texture::getMatrix(CoordinateType coordinateType) const
 {
     SFML_BASE_ASSERT(m_texture);
 
-    GLfloat matrix[16] = {1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f};
+    // clang-format off
+    float matrix[] = {1.f, 0.f, 0.f, 0.f,
+                      0.f, 1.f, 0.f, 0.f,
+                      0.f, 0.f, 1.f, 0.f,
+                      0.f, 0.f, 0.f, 1.f};
+    // clang-format on
 
     // Check if we need to define a special texture matrix
     if ((coordinateType == CoordinateType::Pixels) || m_pixelsFlipped)

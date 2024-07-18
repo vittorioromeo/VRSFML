@@ -551,9 +551,7 @@ public:
     /// \param coordinateType Type of texture coordinates to use
     ///
     ////////////////////////////////////////////////////////////
-    static void bind(GraphicsContext& graphicsContext,
-                     const Texture*   texture,
-                     CoordinateType   coordinateType = CoordinateType::Normalized);
+    static void bind(GraphicsContext& graphicsContext, const Texture* texture);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the maximum texture size allowed

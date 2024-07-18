@@ -136,11 +136,11 @@ int main()
     const auto font = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf").value();
 
     // Create all of our graphics resources
-    sf::Text                 hudText(font);
-    sf::Text                 statusText(font);
+    sf::Text                       hudText(font);
+    sf::Text                       statusText(font);
     sf::base::Optional<sf::Shader> terrainShader;
-    sf::RenderStates         terrainStates;
-    sf::VertexBuffer         terrain(graphicsContext, sf::PrimitiveType::Triangles, sf::VertexBuffer::Usage::Static);
+    sf::RenderStates               terrainStates;
+    sf::VertexBuffer terrain(graphicsContext, sf::PrimitiveType::Triangles, sf::VertexBuffer::Usage::Static);
 
     // Set up our text drawables
     statusText.setCharacterSize(28);
@@ -161,9 +161,9 @@ int main()
     ThreadPool threadPool;
 
     // Set up our graphics resources and set the status text accordingly
-    if (!sf::VertexBuffer::isAvailable(graphicsContext) || !sf::Shader::isAvailable(graphicsContext))
+    if (!sf::VertexBuffer::isAvailable(graphicsContext))
     {
-        statusText.setString("Shaders and/or Vertex Buffers Unsupported");
+        statusText.setString("Vertex Buffers Unsupported");
     }
     else if (!(terrainShader = sf::Shader::loadFromFile(graphicsContext,
                                                         "resources/terrain.vert",

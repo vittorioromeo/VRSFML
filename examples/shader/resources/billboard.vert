@@ -1,11 +1,11 @@
 #version 150
 
 uniform mat4 sf_u_projectionMatrix;
-uniform mat4 sf_u_textureMatrix;
 uniform mat4 sf_u_modelViewMatrix;
+uniform mat4 sf_u_textureMatrix;
 
-attribute vec4 sf_a_color;
 attribute vec2 sf_a_position;
+attribute vec4 sf_a_color;
 attribute vec2 sf_a_texCoord;
 
 varying vec4 sf_v_color;

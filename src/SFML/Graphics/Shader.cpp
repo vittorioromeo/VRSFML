@@ -847,13 +847,7 @@ void Shader::bind() const
     SFML_BASE_ASSERT(m_impl->graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
     // Make sure that we can use shaders
-    if (!isAvailable(*m_impl->graphicsContext))
-    {
-        priv::err() << "Failed to bind or unbind shader: your system doesn't support shaders "
-                    << "(you should test Shader::isAvailable(graphicsContext) before trying to use the Shader class)";
-
-        return;
-    }
+    ensureIsAvailable(*m_impl->graphicsContext);
 
     if (m_impl->shaderProgram == 0)
     {
@@ -885,7 +879,7 @@ void Shader::unbind(GraphicsContext& graphicsContext)
 
 
 ////////////////////////////////////////////////////////////
-bool Shader::isAvailable(GraphicsContext& graphicsContext)
+void Shader::ensureIsAvailable(GraphicsContext& graphicsContext)
 {
 #ifdef SFML_OPENGL_ES
 
@@ -902,7 +896,12 @@ bool Shader::isAvailable(GraphicsContext& graphicsContext)
                GLEXT_fragment_shader;
     }();
 
-    return available;
+    if (!available)
+    {
+        priv::err() << "[[SFML FATAL ERROR]]: your system doesn't support shaders";
+        std::abort();
+    }
+
 #endif
 }
 
@@ -916,12 +915,14 @@ bool Shader::isGeometryAvailable([[maybe_unused]] GraphicsContext& graphicsConte
 
 #else
 
+    ensureIsAvailable(graphicsContext);
+
     static const bool available = [&graphicsContext]
     {
         SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
         priv::ensureExtensionsInit(graphicsContext);
 
-        return isAvailable(graphicsContext) && (GLEXT_geometry_shader4 || GLEXT_GL_VERSION_3_2);
+        return GLEXT_geometry_shader4 || GLEXT_GL_VERSION_3_2;
     }();
 
     return available;
@@ -946,13 +947,7 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
     SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
 
     // First make sure that we can use shaders
-    if (!isAvailable(graphicsContext))
-    {
-        priv::err() << "Failed to create a shader: your system doesn't support shaders "
-                    << "(you should test Shader::isAvailable() before trying to use the Shader class)";
-
-        return base::nullOpt;
-    }
+    ensureIsAvailable(graphicsContext);
 
     // Make sure we can use geometry shaders
     if (geometryShaderCode.data() && !isGeometryAvailable(graphicsContext))

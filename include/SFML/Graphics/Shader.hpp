@@ -647,18 +647,6 @@ public:
     static void unbind(GraphicsContext& graphicsContext);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Tell whether or not the system supports shaders
-    ///
-    /// This function should always be called before using
-    /// the shader features. If it returns false, then
-    /// any attempt to use sf::Shader will fail.
-    ///
-    /// \return True if shaders are supported, false otherwise
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static bool isAvailable(GraphicsContext& graphicsContext);
-
-    ////////////////////////////////////////////////////////////
     /// \brief Tell whether or not the system supports geometry shaders
     ///
     /// This function should always be called before using
@@ -686,6 +674,16 @@ public:
     [[nodiscard]] explicit Shader(base::PassKey<Shader>&&, GraphicsContext& graphicsContext, unsigned int shaderProgram);
 
 private:
+    ////////////////////////////////////////////////////////////
+    /// \brief Ensures that the system supports shaders
+    ///
+    /// This function should always be called before using
+    /// the shader features. If it fails the application is
+    /// aborted.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static void ensureIsAvailable(GraphicsContext& graphicsContext);
+
     ////////////////////////////////////////////////////////////
     /// \brief Compile the shader(s) and create the program
     ///

@@ -1,5 +1,5 @@
 uniform sampler2D sf_u_texture;
-uniform float edge_threshold;
+uniform float     edge_threshold;
 
 varying vec4 sf_v_color;
 varying vec2 sf_v_texCoord;
@@ -11,19 +11,23 @@ void main()
     vec2 offx = vec2(offset, 0.0);
     vec2 offy = vec2(0.0, offset);
 
+    // clang-format off
     vec4 hEdge = texture2D(sf_u_texture, sf_v_texCoord.xy - offy)        * -2.0 +
                  texture2D(sf_u_texture, sf_v_texCoord.xy + offy)        *  2.0 +
                  texture2D(sf_u_texture, sf_v_texCoord.xy - offx - offy) * -1.0 +
                  texture2D(sf_u_texture, sf_v_texCoord.xy - offx + offy) *  1.0 +
                  texture2D(sf_u_texture, sf_v_texCoord.xy + offx - offy) * -1.0 +
                  texture2D(sf_u_texture, sf_v_texCoord.xy + offx + offy) *  1.0;
+    // clang-format on
 
+    // clang-format off
     vec4 vEdge = texture2D(sf_u_texture, sf_v_texCoord.xy - offx)        *  2.0 +
                  texture2D(sf_u_texture, sf_v_texCoord.xy + offx)        * -2.0 +
                  texture2D(sf_u_texture, sf_v_texCoord.xy - offx - offy) *  1.0 +
                  texture2D(sf_u_texture, sf_v_texCoord.xy - offx + offy) * -1.0 +
                  texture2D(sf_u_texture, sf_v_texCoord.xy + offx - offy) *  1.0 +
                  texture2D(sf_u_texture, sf_v_texCoord.xy + offx + offy) * -1.0;
+    // clang-format on
 
     vec3 result = sqrt(hEdge.rgb * hEdge.rgb + vEdge.rgb * vEdge.rgb);
 
