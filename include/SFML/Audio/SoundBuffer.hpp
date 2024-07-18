@@ -142,10 +142,10 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<SoundBuffer> loadFromSamples(
-        const std::int16_t*                 samples,
-        std::uint64_t                       sampleCount,
-        unsigned int                        channelCount,
-        unsigned int                        sampleRate,
+        const std::int16_t*              samples,
+        std::uint64_t                    sampleCount,
+        unsigned int                     channelCount,
+        unsigned int                     sampleRate,
         const std::vector<SoundChannel>& channelMap);
 
     ////////////////////////////////////////////////////////////
@@ -269,8 +269,8 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<SoundBuffer> loadFromSamplesImpl(
         std::vector<std::int16_t>&&      samples,
-        unsigned int                        channelCount,
-        unsigned int                        sampleRate,
+        unsigned int                     channelCount,
+        unsigned int                     sampleRate,
         const std::vector<SoundChannel>& channelMap);
 
     ////////////////////////////////////////////////////////////

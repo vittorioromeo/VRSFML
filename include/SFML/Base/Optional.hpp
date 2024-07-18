@@ -137,8 +137,7 @@ public:
 
     //////////////////////////////////////////
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
-    [[gnu::always_inline]] constexpr Optional& operator=(const Optional& rhs)
-        requires(!base::isTriviallyCopyAssignable<T>)
+    [[gnu::always_inline]] constexpr Optional& operator=(const Optional& rhs) requires(!base::isTriviallyCopyAssignable<T>)
     {
         if (&rhs == this || (!m_engaged && !rhs.m_engaged))
             return *this;
