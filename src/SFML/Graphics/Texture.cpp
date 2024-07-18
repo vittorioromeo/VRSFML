@@ -675,50 +675,51 @@ void Texture::update(const Image& image, const Vector2u& dest)
 
 
 ////////////////////////////////////////////////////////////
-void Texture::update(const Window& window)
+[[nodiscard]] bool Texture::update(const Window& window)
 {
-    update(window, {0, 0});
+    return update(window, {0, 0});
 }
 
 
 ////////////////////////////////////////////////////////////
-void Texture::update(const Window& window, const Vector2u& dest)
+[[nodiscard]] bool Texture::update(const Window& window, const Vector2u& dest)
 {
     SFML_BASE_ASSERT(dest.x + window.getSize().x <= m_size.x && "Destination x coordinate is outside of texture");
     SFML_BASE_ASSERT(dest.y + window.getSize().y <= m_size.y && "Destination y coordinate is outside of texture");
 
     SFML_BASE_ASSERT(m_texture);
 
-    if (window.setActive(true))
+    if (!window.setActive(true))
     {
-        SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
-
-        // Make sure that the current texture binding will be preserved
-        const priv::TextureSaver save;
-
-        // Copy pixels from the back-buffer to the texture
-        glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
-        glCheck(glCopyTexSubImage2D(GL_TEXTURE_2D,
-                                    0,
-                                    static_cast<GLint>(dest.x),
-                                    static_cast<GLint>(dest.y),
-                                    0,
-                                    0,
-                                    static_cast<GLsizei>(window.getSize().x),
-                                    static_cast<GLsizei>(window.getSize().y)));
-        glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_isSmooth ? GL_LINEAR : GL_NEAREST));
-        m_hasMipmap     = false;
-        m_pixelsFlipped = true;
-        m_cacheId       = TextureImpl::getUniqueId();
-
-        // Force an OpenGL flush, so that the texture will appear updated
-        // in all contexts immediately (solves problems in multi-threaded apps)
-        glCheck(glFlush());
+        priv::err() << "Failed to activate window in `Texture::update`";
+        return false;
     }
-    else
-    {
-        throw 100; // TODO:
-    }
+
+    SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
+
+    // Make sure that the current texture binding will be preserved
+    const priv::TextureSaver save;
+
+    // Copy pixels from the back-buffer to the texture
+    glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
+    glCheck(glCopyTexSubImage2D(GL_TEXTURE_2D,
+                                0,
+                                static_cast<GLint>(dest.x),
+                                static_cast<GLint>(dest.y),
+                                0,
+                                0,
+                                static_cast<GLsizei>(window.getSize().x),
+                                static_cast<GLsizei>(window.getSize().y)));
+    glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_isSmooth ? GL_LINEAR : GL_NEAREST));
+    m_hasMipmap     = false;
+    m_pixelsFlipped = true;
+    m_cacheId       = TextureImpl::getUniqueId();
+
+    // Force an OpenGL flush, so that the texture will appear updated
+    // in all contexts immediately (solves problems in multi-threaded apps)
+    glCheck(glFlush());
+
+    return true;
 }
 
 

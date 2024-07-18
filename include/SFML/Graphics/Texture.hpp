@@ -377,7 +377,7 @@ public:
     /// \param window Window to copy to the texture
     ///
     ////////////////////////////////////////////////////////////
-    void update(const Window& window);
+    [[nodiscard]] bool update(const Window& window);
 
     ////////////////////////////////////////////////////////////
     /// \brief Update a part of the texture from the contents of a window
@@ -393,7 +393,7 @@ public:
     /// \param dest   Coordinates of the destination position
     ///
     ////////////////////////////////////////////////////////////
-    void update(const Window& window, const Vector2u& dest);
+    [[nodiscard]] bool update(const Window& window, const Vector2u& dest);
 
     ////////////////////////////////////////////////////////////
     /// \brief Enable or disable the smooth filter

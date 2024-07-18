@@ -1,20 +1,20 @@
 varying vec3 normal;
 
-uniform mat4 projMatrix;
-uniform mat4 textMatrix;
-uniform mat4 viewMatrix;
+uniform mat4 sf_u_projectionMatrix;
+uniform mat4 sf_u_textureMatrix;
+uniform mat4 sf_u_modelViewMatrix;
 
-attribute vec4 color;
-attribute vec2 position;
-attribute vec2 texCoord;
+attribute vec4 sf_a_color;
+attribute vec2 sf_a_position;
+attribute vec2 sf_a_texCoord;
 
-varying vec4 v_color;
-varying vec2 v_texCoord;
+varying vec4 sf_v_color;
+varying vec2 sf_v_texCoord;
 
 void main()
 {
-    gl_Position = projMatrix * viewMatrix * vec4(position, 0.0, 1.0);
-    v_texCoord  = (textMatrix * vec4(texCoord, 0.0, 1.0)).xy;
-    v_color     = color;
-    normal      = vec3(gl_MultiTexCoord0.xy, 1.0);
+    gl_Position   = sf_u_projectionMatrix * sf_u_modelViewMatrix * vec4(sf_a_position, 0.0, 1.0);
+    sf_v_texCoord = (sf_u_textureMatrix * vec4(sf_a_texCoord, 0.0, 1.0)).xy;
+    sf_v_color    = sf_a_color;
+    normal        = vec3(gl_MultiTexCoord0.xy, 1.0);
 }

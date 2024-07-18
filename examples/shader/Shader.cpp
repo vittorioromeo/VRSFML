@@ -63,7 +63,7 @@ public:
     explicit Pixelate(sf::Texture&& texture, sf::Shader&& shader) :
     m_texture(std::move(texture)),
     m_shader(std::move(shader)),
-    m_ulTexture(m_shader.getUniformLocation("texture").value()),
+    m_ulTexture(m_shader.getUniformLocation("sf_u_texture").value()),
     m_ulPixelThreshold(m_shader.getUniformLocation("pixel_threshold").value())
     {
         m_shader.setUniform(m_ulTexture, sf::Shader::CurrentTexture);
@@ -388,7 +388,7 @@ sf::base::Optional<Edge> tryLoadEdge(sf::GraphicsContext& graphicsContext)
     if (!shader.hasValue())
         return sf::base::nullOpt;
 
-    shader->setUniform(shader->getUniformLocation("texture").value(), sf::Shader::CurrentTexture);
+    shader->setUniform(shader->getUniformLocation("sf_u_texture").value(), sf::Shader::CurrentTexture);
 
     return sf::base::makeOptional<Edge>(std::move(*surface),
                                         std::move(*backgroundTexture),
@@ -417,7 +417,7 @@ sf::base::Optional<Geometry> tryLoadGeometry(sf::GraphicsContext& graphicsContex
     if (!shader.hasValue())
         return sf::base::nullOpt;
 
-    shader->setUniform(shader->getUniformLocation("texture").value(), sf::Shader::CurrentTexture);
+    shader->setUniform(shader->getUniformLocation("sf_u_texture").value(), sf::Shader::CurrentTexture);
 
     // Set the render resolution (used for proper scaling)
     shader->setUniform(shader->getUniformLocation("resolution").value(), sf::Vector2f{800, 600});

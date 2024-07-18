@@ -13,7 +13,7 @@ layout(points) in;
 layout(triangle_strip, max_vertices = 4) out;
 
 // Output texture coordinates
-varying vec2 v_texCoord;
+varying vec2 sf_v_texCoord;
 
 in gl_PerVertex
 {
@@ -21,7 +21,7 @@ in gl_PerVertex
 }
 gl_in[];
 
-uniform mat4 textMatrix;
+uniform mat4 sf_u_textureMatrix;
 
 // Main entry point
 void main()
@@ -40,22 +40,22 @@ void main()
 
         // Bottom left vertex
         gl_Position = vec4(pos - half_size, 0.f, 1.f);
-        v_texCoord  = vec2(1.f, 1.f);
+        sf_v_texCoord  = vec2(1.f, 1.f);
         EmitVertex();
 
         // Bottom right vertex
         gl_Position = vec4(pos.x + half_size.x, pos.y - half_size.y, 0.f, 1.f);
-        v_texCoord  = vec2(0.f, 1.f);
+        sf_v_texCoord  = vec2(0.f, 1.f);
         EmitVertex();
 
         // Top left vertex
         gl_Position = vec4(pos.x - half_size.x, pos.y + half_size.y, 0.f, 1.f);
-        v_texCoord  = vec2(1.f, 0.f);
+        sf_v_texCoord  = vec2(1.f, 0.f);
         EmitVertex();
 
         // Top right vertex
         gl_Position = vec4(pos + half_size, 0.f, 1.f);
-        v_texCoord  = vec2(0.f, 0.f);
+        sf_v_texCoord  = vec2(0.f, 0.f);
         EmitVertex();
 
         // And finalize the primitive
