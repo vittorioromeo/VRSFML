@@ -1,10 +1,10 @@
 varying vec3 normal;
 uniform float lightFactor;
 
-uniform sampler2D texture;
+uniform sampler2D sf_u_texture;
 
-varying vec4 v_color;
-varying vec2 v_texCoord;
+varying vec4 sf_v_color;
+varying vec2 sf_v_texCoord;
 
 void main()
 {
@@ -12,5 +12,5 @@ void main()
     vec3 eyePosition = vec3(0.0, 0.0, 1.0);
     vec3 halfVector = normalize(lightPosition + eyePosition);
     float intensity = lightFactor + (1.0 - lightFactor) * dot(normalize(normal), normalize(halfVector));
-    gl_FragColor = v_color * vec4(intensity, intensity, intensity, 1.0);
+    gl_FragColor = sf_v_color * vec4(intensity, intensity, intensity, 1.0);
 }

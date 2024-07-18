@@ -84,15 +84,15 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
         auto texture = sf::Texture::create(graphicsContext, window.getSize()).value();
 
         window.clear(sf::Color::Red);
-        texture.update(window);
+        CHECK(texture.update(window));
         CHECK(texture.copyToImage().getPixel(sf::Vector2u{64, 64}) == sf::Color::Red);
 
         window.clear(sf::Color::Green);
-        texture.update(window);
+        CHECK(texture.update(window));
         CHECK(texture.copyToImage().getPixel(sf::Vector2u{128, 128}) == sf::Color::Green);
 
         window.clear(sf::Color::Blue);
-        texture.update(window);
+        CHECK(texture.update(window));
         CHECK(texture.copyToImage().getPixel(sf::Vector2u{196, 196}) == sf::Color::Blue);
     }
 }

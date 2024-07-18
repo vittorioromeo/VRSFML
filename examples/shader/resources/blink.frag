@@ -1,12 +1,12 @@
-uniform sampler2D texture;
+uniform sampler2D sf_u_texture;
 uniform float blink_alpha;
 
-varying vec4 v_color;
-varying vec2 v_texCoord;
+varying vec4 sf_v_color;
+varying vec2 sf_v_texCoord;
 
 void main()
 {
-    vec4 pixel = v_color;
+    vec4 pixel = sf_v_color;
     pixel.a = blink_alpha;
 
     gl_FragColor = pixel;
