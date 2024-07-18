@@ -581,14 +581,6 @@ private:
     void applyStencilMode(const StencilMode& mode);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Apply a new transform
-    ///
-    /// \param transform Transform to apply
-    ///
-    ////////////////////////////////////////////////////////////
-    void applyTransform(const Shader* statesShader, const Texture* statesTexture, const Transform& transform);
-
-    ////////////////////////////////////////////////////////////
     /// \brief Apply a new texture
     ///
     /// \param texture        Texture to apply

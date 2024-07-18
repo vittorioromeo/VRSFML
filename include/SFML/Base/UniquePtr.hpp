@@ -60,8 +60,7 @@ public:
     UniquePtr& operator=(const UniquePtr&) = delete;
 
     template <typename U, typename UDeleter>
-    [[nodiscard, gnu::always_inline]] UniquePtr(UniquePtr<U, UDeleter>&& rhs) noexcept
-        requires(base::isBaseOf<T, U>) :
+    [[nodiscard, gnu::always_inline]] UniquePtr(UniquePtr<U, UDeleter>&& rhs) noexcept requires(base::isBaseOf<T, U>) :
     TDeleter{static_cast<UDeleter&&>(rhs)},
     m_ptr{rhs.m_ptr}
     {
@@ -69,8 +68,7 @@ public:
     }
 
     template <typename U, typename UDeleter>
-    [[gnu::always_inline]] UniquePtr& operator=(UniquePtr<U, UDeleter>&& rhs) noexcept
-        requires(base::isBaseOf<T, U>)
+    [[gnu::always_inline]] UniquePtr& operator=(UniquePtr<U, UDeleter>&& rhs) noexcept requires(base::isBaseOf<T, U>)
     {
         (*static_cast<TDeleter*>(this)) = static_cast<UDeleter&&>(rhs);
 

@@ -37,6 +37,7 @@ set(SRC_BASE
 
     # sources
     ${BASE_SRCROOT}/Assert.cpp
+    ${BASE_SRCROOT}/Optional.cpp
 )
 
 

@@ -91,8 +91,10 @@ using ContextRenderTargetMap = std::unordered_map<std::uint64_t, std::uint64_t>;
 // Check if a RenderTarget with the given ID is active in the current context
 [[nodiscard]] bool isActive(sf::GraphicsContext& graphicsContext, std::uint64_t id)
 {
-    const auto it = getContextRenderTargetMap().find(graphicsContext.getActiveThreadLocalGlContextId());
-    return (it != getContextRenderTargetMap().end()) && (it->second == id);
+    const auto& contextRenderTargetMap = getContextRenderTargetMap();
+
+    const auto it = contextRenderTargetMap.find(graphicsContext.getActiveThreadLocalGlContextId());
+    return (it != contextRenderTargetMap.end()) && (it->second == id);
 }
 
 // Convert an sf::BlendMode::Factor constant to the corresponding OpenGL constant.
@@ -293,29 +295,17 @@ void main()
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::base::Optional<sf::Shader> createBuiltInShader(sf::GraphicsContext& graphicsContext,
-                                                                 const char*          vertexSrc,
-                                                                 const char*          fragmentSrc)
+[[nodiscard]] sf::Shader createBuiltInShader(sf::GraphicsContext& graphicsContext, const char* vertexSrc, const char* fragmentSrc)
 {
-    // TODO: probably not needed?
-    sf::base::Optional<sf::Shader> shader;
+    auto contextGuard = sf::GraphicsContext::SharedContextGuard{graphicsContext};
+    SFML_BASE_ASSERT(graphicsContext.isActiveGlContextSharedContext());
 
-    {
-        auto contextGuard = sf::GraphicsContext::SharedContextGuard{graphicsContext};
+    auto shader = *sf::Shader::loadFromMemory(graphicsContext, vertexSrc, fragmentSrc);
+    SFML_BASE_ASSERT(glIsProgram(shader.getNativeHandle()));
 
-        SFML_BASE_ASSERT(graphicsContext.isActiveGlContextSharedContext());
+    if (const sf::base::Optional ulTexture = shader.getUniformLocation("sf_u_texture"))
+        shader.setUniform(*ulTexture, sf::Shader::CurrentTexture);
 
-        shader = sf::Shader::loadFromMemory(graphicsContext, vertexSrc, fragmentSrc);
-        SFML_BASE_ASSERT(shader.hasValue());
-
-        const sf::base::Optional ulTexture = shader->getUniformLocation("sf_u_texture");
-        if (ulTexture.hasValue())
-            shader->setUniform(*ulTexture, sf::Shader::CurrentTexture);
-
-        SFML_BASE_ASSERT(glIsProgram(shader->getNativeHandle()));
-    }
-
-    //SFML_BASE_ASSERT(!graphicsContext.isActiveGlContextSharedContext());
     return shader;
 }
 
@@ -323,39 +313,33 @@ void main()
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] BuiltInShaders
 {
-    sf::Shader* texturedShader;
-    sf::Shader* untexturedShader;
+    sf::Shader texturedShader;
+    sf::Shader untexturedShader;
 };
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] BuiltInShaders getBuiltInShaders(sf::GraphicsContext& graphicsContext)
+[[nodiscard]] sf::base::Optional<BuiltInShaders>& getBuiltInShaders(sf::GraphicsContext& graphicsContext)
 {
+    // TODO: rewrite to WindowContext and GraphicsContext:WindowContext
+
     SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
-    static sf::base::Optional<sf::Shader> texturedShader;
-    static sf::base::Optional<sf::Shader> untexturedShader;
+
+    static sf::base::Optional<BuiltInShaders> builtInShaders;
 
     if (graphicsContext.builtInShaderState == 0)
     {
-        texturedShader = createBuiltInShader(graphicsContext, defaultTexturedShaderVertexSrc, defaultTexturedShaderFragmentSrc);
-
-        untexturedShader = createBuiltInShader(graphicsContext,
-                                               defaultUntexturedShaderVertexSrc,
-                                               defaultUntexturedShaderFragmentSrc);
+        builtInShaders
+            .emplace(createBuiltInShader(graphicsContext, defaultTexturedShaderVertexSrc, defaultTexturedShaderFragmentSrc),
+                     createBuiltInShader(graphicsContext, defaultUntexturedShaderVertexSrc, defaultUntexturedShaderFragmentSrc));
 
         graphicsContext.builtInShaderState = 1;
 
-        graphicsContext.builtInShaderDestroyFn = []
-        {
-            texturedShader.reset();
-            untexturedShader.reset();
-        };
+        graphicsContext.builtInShaderDestroyFn = [] { builtInShaders.reset(); };
     }
 
     if (graphicsContext.builtInShaderState == 1)
-    {
-        return BuiltInShaders{texturedShader.asPtr(), untexturedShader.asPtr()};
-    }
+        return builtInShaders;
 
     SFML_BASE_ASSERT(graphicsContext.builtInShaderState == 2);
     throw 100; // TODO
@@ -369,10 +353,10 @@ sf::Shader& getShader(sf::GraphicsContext& graphicsContext, const sf::Shader* st
         return *const_cast<sf::Shader*>(statesShader); // TODO: nasty cast
 
     if (statesShader == nullptr && statesTexture == nullptr)
-        return *getBuiltInShaders(graphicsContext).untexturedShader;
+        return getBuiltInShaders(graphicsContext)->untexturedShader;
 
     SFML_BASE_ASSERT(statesShader == nullptr && statesTexture != nullptr);
-    return *getBuiltInShaders(graphicsContext).texturedShader;
+    return getBuiltInShaders(graphicsContext)->texturedShader;
 }
 
 } // namespace RenderTargetImpl
@@ -399,10 +383,10 @@ struct [[nodiscard]] StatesCache
     bool           texCoordsArrayEnabled{}; //!< Is GL_TEXTURE_COORD_ARRAY client state enabled?
     bool           useVertexCache{};        //!< Did we previously use the vertex cache?
     Vertex         vertexCache[4]{};        //!< Pre-transformed vertices cache
-    std::uint32_t  programChanged;          //!< TODO
-    std::int32_t   posAttrib;               //!< TODO
-    std::int32_t   colAttrib;               //!< TODO
-    std::int32_t   texAttrib;               //!< TODO
+    GLuint         programChanged;          //!< TODO
+    GLint          posAttrib;               //!< TODO
+    GLint          colAttrib;               //!< TODO
+    GLint          texAttrib;               //!< TODO
 };
 
 
@@ -429,9 +413,6 @@ public:
 
     void bind() const
     {
-        // TODO:
-        // SFML_BASE_ASSERT(!isBound());
-
         SFML_BASE_ASSERT(m_id != 0u);
         FnBind(m_id);
 
@@ -467,25 +448,25 @@ private:
 
 ////////////////////////////////////////////////////////////
 using VAO = OpenGLRAII<[](auto& id) { glCheck(glGenVertexArrays(1, &id)); },
-                       [](const auto& id) { glCheck(glBindVertexArray(id)); },
+                       [](auto id) { glCheck(glBindVertexArray(id)); },
                        [](auto& id) { glCheck(glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &id)); },
                        [](auto& id) { glCheck(glDeleteVertexArrays(1, &id)); }>;
 
 
 ////////////////////////////////////////////////////////////
 using VBO = OpenGLRAII<[](auto& id) { glCheck(glGenBuffers(1, &id)); },
-                       [](const auto& id) { glCheck(glBindBuffer(GL_ARRAY_BUFFER, id)); },
+                       [](auto id) { glCheck(glBindBuffer(GL_ARRAY_BUFFER, id)); },
                        [](auto& id) { glCheck(glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &id)); },
                        [](auto& id) { glCheck(glDeleteBuffers(1, &id)); }>;
 
 
 ////////////////////////////////////////////////////////////
-void doVertexStuff(unsigned int shaderNativeHandle, bool enableTexCoordsArray) // TODO: name
+void doVertexStuff(bool        enableTexCoordsArray,
+                   const GLint posAttribIdx,
+                   const GLint colorAttribIdx,
+                   const GLint texCoordAttribIdx) // TODO: name
 {
-    SFML_BASE_ASSERT(glIsProgram(shaderNativeHandle));
-
     // TODO BC: actually get the layout indices
-    const GLint posAttribIdx = glCheckExpr(glGetAttribLocation(shaderNativeHandle, "sf_a_position"));
     SFML_BASE_ASSERT(posAttribIdx >= 0);
 
     glCheck(glEnableVertexAttribArray(posAttribIdx));
@@ -494,9 +475,9 @@ void doVertexStuff(unsigned int shaderNativeHandle, bool enableTexCoordsArray) /
                                   /*       type */ GL_FLOAT,
                                   /* normalized */ GL_FALSE,
                                   /*     stride */ sizeof(Vertex),
-                                  /*     offset */ reinterpret_cast<const void*>(0)));
+                                  /*     offset */ reinterpret_cast<const void*>(0u)));
 
-    if (const GLint colorAttribIdx = glCheckExpr(glGetAttribLocation(shaderNativeHandle, "sf_a_color")); colorAttribIdx >= 0)
+    if (colorAttribIdx >= 0)
     {
         glCheck(glEnableVertexAttribArray(colorAttribIdx));
         glCheck(glVertexAttribPointer(/*      index */ colorAttribIdx,
@@ -504,28 +485,19 @@ void doVertexStuff(unsigned int shaderNativeHandle, bool enableTexCoordsArray) /
                                       /*       type */ GL_UNSIGNED_BYTE,
                                       /* normalized */ GL_TRUE,
                                       /*     stride */ sizeof(Vertex),
-                                      /*     offset */ reinterpret_cast<const void*>(sizeof(float) * 2)));
+                                      /*     offset */ reinterpret_cast<const void*>(sizeof(float) * 2u)));
     }
 
-    if (const GLint texCoordAttribIdx = glCheckExpr(glGetAttribLocation(shaderNativeHandle, "sf_a_texCoord"));
-        texCoordAttribIdx >= 0)
+    if (enableTexCoordsArray && texCoordAttribIdx >= 0)
     {
-        if (enableTexCoordsArray)
-        {
-            glCheck(glEnableVertexAttribArray(texCoordAttribIdx));
-            glCheck(
-                glVertexAttribPointer(/*      index */ texCoordAttribIdx,
-                                      /*       size */ 2,
-                                      /*       type */ GL_FLOAT,
-                                      /* normalized */ GL_FALSE,
-                                      /*     stride */ sizeof(Vertex),
-                                      /*     offset */ reinterpret_cast<const void*>(sizeof(float) * 2 + sizeof(char) * 4)));
-        }
-        else
-        {
-            // TODO:?
-            // glCheck(glDisableClientState(tIdx));
-        }
+        glCheck(glEnableVertexAttribArray(texCoordAttribIdx));
+        glCheck(
+            glVertexAttribPointer(/*      index */ texCoordAttribIdx,
+                                  /*       size */ 2,
+                                  /*       type */ GL_FLOAT,
+                                  /* normalized */ GL_FALSE,
+                                  /*     stride */ sizeof(Vertex),
+                                  /*     offset */ reinterpret_cast<const void*>(sizeof(float) * 2u + sizeof(char) * 4u)));
     }
 }
 
@@ -729,13 +701,13 @@ void RenderTarget::draw(const Shape& shape, const Texture* texture, const Render
 void RenderTarget::draw(const Vertex* vertices, std::size_t vertexCount, PrimitiveType type, const RenderStates& states)
 {
     // Nothing to draw?
-    if (!vertices || (vertexCount == 0))
+    if (vertices == nullptr || (vertexCount == 0))
         return;
 
     if (RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) || setActive(true))
     {
         // Check if the vertex count is low enough so that we can pre-transform them
-        const bool useVertexCache = (vertexCount <= base::getArraySize(m_impl->cache.vertexCache));
+        const bool useVertexCache = vertexCount <= base::getArraySize(m_impl->cache.vertexCache);
 
         if (useVertexCache)
         {
@@ -752,107 +724,13 @@ void RenderTarget::draw(const Vertex* vertices, std::size_t vertexCount, Primiti
         setupDraw(useVertexCache, states);
 
         // Check if texture coordinates array is needed, and update client state accordingly
-        const bool enableTexCoordsArray = (states.texture || states.shader);
-        if (!m_impl->cache.enable || (enableTexCoordsArray != m_impl->cache.texCoordsArrayEnabled))
-        {
-            if (enableTexCoordsArray)
-                glCheck(glEnableClientState(GL_TEXTURE_COORD_ARRAY));
-            else
-                glCheck(glDisableClientState(GL_TEXTURE_COORD_ARRAY));
-        }
+        const bool enableTexCoordsArray = states.texture || states.shader;
 
-        // If we switch between non-cache and cache mode or enable texture
-        // coordinates we need to set up the pointers to the vertices' components
-        if (!m_impl->cache.enable || !useVertexCache || !m_impl->cache.useVertexCache)
-        {
-            const auto* data = reinterpret_cast<const std::byte*>(vertices);
+        // If we pre-transform the vertices, we must use our internal vertex cache
+        const auto* data = reinterpret_cast<const char*>(useVertexCache ? m_impl->cache.vertexCache : vertices);
 
-            // If we pre-transform the vertices, we must use our internal vertex cache
-            if (useVertexCache)
-                data = reinterpret_cast<const std::byte*>(m_impl->cache.vertexCache);
-
-            // (void)setActive(true); // TODO
-
-            m_impl->vao.bind();
-            m_impl->vbo.bind();
-
-            Shader& shader = RenderTargetImpl::getShader(*m_impl->graphicsContext, states.shader, states.texture);
-
-            glCheck(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertexCount, data, GL_STATIC_DRAW));
-            doVertexStuff(shader.getNativeHandle(), true);
-            //shader.bind();
-        }
-        else if (enableTexCoordsArray && !m_impl->cache.texCoordsArrayEnabled)
-        {
-            // If we enter this block, we are already using our internal vertex cache
-            const auto* data = reinterpret_cast<const std::byte*>(m_impl->cache.vertexCache);
-
-            SFML_BASE_ASSERT(false);
-            // (void)setActive(true); // TODO
-
-            Shader& shader = RenderTargetImpl::getShader(*m_impl->graphicsContext, states.shader, states.texture);
-            const unsigned int nativeHandle = shader.getNativeHandle();
-
-            // TODO BC: actually get the layout indices
-            const GLint posAttribIdx = glCheckExpr(glGetAttribLocation(nativeHandle, "sf_a_position"));
-            SFML_BASE_ASSERT(posAttribIdx >= 0);
-
-            glCheck(glEnableVertexAttribArray(posAttribIdx));
-            glCheck(glVertexAttribPointer(/*      index */ posAttribIdx,
-                                          /*       size */ 2,
-                                          /*       type */ GL_FLOAT,
-                                          /* normalized */ GL_FALSE,
-                                          /*     stride */ sizeof(Vertex),
-                                          /*    pointer */ data + 0));
-
-            if (const GLint colorAttribIdx = glCheckExpr(glGetAttribLocation(nativeHandle, "sf_a_color"));
-                colorAttribIdx >= 0)
-            {
-                glCheck(glEnableVertexAttribArray(colorAttribIdx));
-                glCheck(glVertexAttribPointer(/*      index */ colorAttribIdx,
-                                              /*       size */ 4,
-                                              /*       type */ GL_UNSIGNED_BYTE,
-                                              /* normalized */ GL_TRUE,
-                                              /*     stride */ sizeof(Vertex),
-                                              /*    pointer */ data + sizeof(float) * 2));
-            }
-
-            if (const GLint texCoordAttribIdx = glCheckExpr(glGetAttribLocation(nativeHandle, "sf_a_texCoord"));
-                texCoordAttribIdx >= 0)
-            {
-                glCheck(glEnableVertexAttribArray(texCoordAttribIdx));
-                glCheck(glVertexAttribPointer(/*      index */ texCoordAttribIdx,
-                                              /*       size */ 2,
-                                              /*       type */ GL_FLOAT,
-                                              /* normalized */ GL_FALSE,
-                                              /*     stride */ sizeof(Vertex),
-                                              /*    pointer */ data + sizeof(float) * 2 + sizeof(char) * 4));
-            }
-        }
-        else
-        {
-#if 1
-            const char* data = reinterpret_cast<const char*>(vertices);
-
-            // If we pre-transform the vertices, we must use our internal vertex cache
-            if (useVertexCache)
-                data = reinterpret_cast<const char*>(m_impl->cache.vertexCache);
-
-            // (void)setActive(true); // TODO
-
-            m_impl->vao.bind();
-            m_impl->vbo.bind();
-
-            Shader& shader = RenderTargetImpl::getShader(*m_impl->graphicsContext, states.shader, states.texture);
-            const unsigned int nativeHandle = shader.getNativeHandle();
-            SFML_BASE_ASSERT(glIsProgram(nativeHandle));
-
-            glCheck(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertexCount, data, GL_STATIC_DRAW));
-            doVertexStuff(nativeHandle, true);
-            shader.bind();
-#endif
-        }
-
+        glCheck(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertexCount, data, GL_STATIC_DRAW));
+        doVertexStuff(enableTexCoordsArray, m_impl->cache.posAttrib, m_impl->cache.colAttrib, m_impl->cache.texAttrib);
 
         drawPrimitives(type, 0, vertexCount);
         cleanupDraw(states);
@@ -900,17 +778,7 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, std::size_t firstVerte
         VertexBuffer::bind(*m_impl->graphicsContext, &vertexBuffer);
 
         // Always enable texture coordinates
-        if (!m_impl->cache.enable || !m_impl->cache.texCoordsArrayEnabled)
-            glCheck(glEnableClientState(GL_TEXTURE_COORD_ARRAY));
-
-        // (void)setActive(true); // TODO
-
-        Shader& shader = RenderTargetImpl::getShader(*m_impl->graphicsContext, states.shader, states.texture);
-        const unsigned int nativeHandle = shader.getNativeHandle();
-        SFML_BASE_ASSERT(glIsProgram(nativeHandle));
-
-        doVertexStuff(shader.getNativeHandle(), /* enableTexCoordsArray */ true);
-
+        doVertexStuff(true /* enableTexCoordsArray */, m_impl->cache.posAttrib, m_impl->cache.colAttrib, m_impl->cache.texAttrib);
         drawPrimitives(vertexBuffer.getPrimitiveType(), firstVertex, vertexCount);
 
         // Unbind vertex buffer
@@ -936,45 +804,51 @@ bool RenderTarget::isSrgb() const
 ////////////////////////////////////////////////////////////
 bool RenderTarget::setActive(bool active)
 {
+    // If this RenderTarget is already active on the current GL context, do nothing
+    if (const bool isAlreadyActive = RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id);
+        (active && isAlreadyActive) || (!active && !isAlreadyActive))
+        return true;
+
     // Mark this RenderTarget as active or no longer active in the tracking map
     const std::lock_guard lock(RenderTargetImpl::getMutex());
 
     const std::uint64_t contextId = m_impl->graphicsContext->getActiveThreadLocalGlContextId();
 
-    using RenderTargetImpl::getContextRenderTargetMap;
-    auto&      contextRenderTargetMap = getContextRenderTargetMap();
-    const auto it                     = contextRenderTargetMap.find(contextId);
+    auto& contextRenderTargetMap = RenderTargetImpl::getContextRenderTargetMap();
 
-    if (active)
+    const auto it = contextRenderTargetMap.find(contextId);
+
+    // Deactivation
+    if (!active)
     {
-        if (it == contextRenderTargetMap.end())
-        {
-            contextRenderTargetMap[contextId] = m_impl->id;
-
-            m_impl->cache.glStatesSet = false;
-            m_impl->cache.enable      = false;
-        }
-        else if (it->second != m_impl->id)
-        {
-            it->second = m_impl->id;
-
-            m_impl->cache.enable = false;
-        }
-    }
-    else
-    {
-        if (it != contextRenderTargetMap.end())
-            contextRenderTargetMap.erase(it);
+        SFML_BASE_ASSERT(it != contextRenderTargetMap.end());
+        contextRenderTargetMap.erase(it);
 
         m_impl->cache.enable = false;
+        return true;
     }
 
+    // First ever activation
+    if (it == contextRenderTargetMap.end())
+    {
+        contextRenderTargetMap[contextId] = m_impl->id;
+
+        m_impl->cache.glStatesSet = false;
+        m_impl->cache.enable      = false;
+        return true;
+    }
+
+    // Activation on a different context
+    SFML_BASE_ASSERT(it->second != m_impl->id);
+    it->second = m_impl->id;
+
+    m_impl->cache.enable = false;
     return true;
 }
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::pushGLStates()
+void RenderTarget::pushGLStates() // TODO: remove?
 {
     if (RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) || setActive(true))
     {
@@ -987,17 +861,6 @@ void RenderTarget::pushGLStates()
                         << "you should check for errors with glGetError()";
         }
 #endif
-
-#ifndef SFML_OPENGL_ES
-        glCheck(glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS));
-        glCheck(glPushAttrib(GL_ALL_ATTRIB_BITS));
-#endif
-        glCheck(glMatrixMode(GL_MODELVIEW));
-        glCheck(glPushMatrix());
-        glCheck(glMatrixMode(GL_PROJECTION));
-        glCheck(glPushMatrix());
-        glCheck(glMatrixMode(GL_TEXTURE));
-        glCheck(glPushMatrix());
     }
 
     resetGLStates();
@@ -1005,21 +868,9 @@ void RenderTarget::pushGLStates()
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::popGLStates()
+void RenderTarget::popGLStates() // TODO: remove?
 {
-    if (RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) || setActive(true))
-    {
-        glCheck(glMatrixMode(GL_PROJECTION));
-        glCheck(glPopMatrix());
-        glCheck(glMatrixMode(GL_MODELVIEW));
-        glCheck(glPopMatrix());
-        glCheck(glMatrixMode(GL_TEXTURE));
-        glCheck(glPopMatrix());
-#ifndef SFML_OPENGL_ES
-        glCheck(glPopClientAttrib());
-        glCheck(glPopAttrib());
-#endif
-    }
+    (void)(RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) || setActive(true));
 }
 
 
@@ -1027,8 +878,7 @@ void RenderTarget::popGLStates()
 void RenderTarget::resetGLStates()
 {
     // Check here to make sure a context change does not happen after activate(true)
-    [[maybe_unused /* TODO */]] const bool shaderAvailable       = Shader::isAvailable(*m_impl->graphicsContext);
-    const bool                             vertexBufferAvailable = VertexBuffer::isAvailable(*m_impl->graphicsContext);
+    const bool vertexBufferAvailable = VertexBuffer::isAvailable(*m_impl->graphicsContext);
 
 // Workaround for states not being properly reset on
 // macOS unless a context switch really takes place
@@ -1053,27 +903,22 @@ void RenderTarget::resetGLStates()
 
         // Define the default OpenGL states
         glCheck(glDisable(GL_CULL_FACE));
-
-#ifndef SFML_OPENGL_ES
-        glCheck(glDisable(GL_LIGHTING));
-#endif
-
         glCheck(glDisable(GL_STENCIL_TEST));
         glCheck(glDisable(GL_DEPTH_TEST));
-
-#ifndef SFML_OPENGL_ES
-        glCheck(glDisable(GL_ALPHA_TEST));
         glCheck(glDisable(GL_SCISSOR_TEST));
-        glCheck(glEnable(GL_TEXTURE_2D));
-#endif
-
         glCheck(glEnable(GL_BLEND));
-        glCheck(glMatrixMode(GL_MODELVIEW));
-        glCheck(glLoadIdentity());
-        glCheck(glEnableClientState(GL_VERTEX_ARRAY));
-        glCheck(glEnableClientState(GL_COLOR_ARRAY));
-        glCheck(glEnableClientState(GL_TEXTURE_COORD_ARRAY));
         glCheck(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
+
+        const auto disableCacheAttrib = [&](const auto& cacheAttrib)
+        {
+            if (cacheAttrib >= 0)
+                glCheck(glDisableVertexAttribArray(cacheAttrib));
+        };
+
+        disableCacheAttrib(m_impl->cache.posAttrib);
+        disableCacheAttrib(m_impl->cache.colAttrib);
+        disableCacheAttrib(m_impl->cache.texAttrib);
+
         m_impl->cache.scissorEnabled = false;
         m_impl->cache.stencilEnabled = false;
         m_impl->cache.glStatesSet    = true;
@@ -1082,8 +927,7 @@ void RenderTarget::resetGLStates()
         applyBlendMode(BlendAlpha);
         applyStencilMode(StencilMode());
         applyTexture(nullptr);
-        if (shaderAvailable)
-            applyShader(nullptr);
+        applyShader(nullptr);
 
         if (vertexBufferAvailable)
             glCheck(VertexBuffer::bind(*m_impl->graphicsContext, nullptr));
@@ -1168,9 +1012,6 @@ void RenderTarget::applyCurrentView(const Shader* statesShader, const Texture* s
     Shader& shader = RenderTargetImpl::getShader(*m_impl->graphicsContext, statesShader, statesTexture);
     shader.setUniform(shader.getUniformLocation("sf_u_projectionMatrix").value(),
                       Glsl::Mat4(m_impl->view.getTransform().getMatrix()));
-
-    // Go back to model-view mode
-    glCheck(glMatrixMode(GL_MODELVIEW));
 
     m_impl->cache.viewChanged = false;
 }
@@ -1267,21 +1108,9 @@ void RenderTarget::applyStencilMode(const StencilMode& mode)
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::applyTransform(const Shader* statesShader, const Texture* statesTexture, const Transform& transform)
-{
-    // No need to call glMatrixMode(GL_MODELVIEW), it is always the
-    // current mode (for optimization purpose, since it's the most used)
-
-    // (void)setActive(true); // TODO
-    Shader& shader = RenderTargetImpl::getShader(*m_impl->graphicsContext, statesShader, statesTexture);
-    shader.setUniform(shader.getUniformLocation("sf_u_modelViewMatrix").value(), Glsl::Mat4(transform.getMatrix()));
-}
-
-
-////////////////////////////////////////////////////////////
 void RenderTarget::applyTexture(const Texture* texture, CoordinateType coordinateType)
 {
-    Texture::bind(*m_impl->graphicsContext, texture, coordinateType);
+    Texture::bind(*m_impl->graphicsContext, texture);
 
     m_impl->cache.lastTextureId      = texture ? texture->m_cacheId : 0;
     m_impl->cache.lastCoordinateType = coordinateType;
@@ -1319,44 +1148,22 @@ void RenderTarget::setupDraw(bool useVertexCache, const RenderStates& states)
     if (!m_impl->cache.glStatesSet)
         resetGLStates();
 
-    {
-        // (void)setActive(true); // TODO
-        Shader& shader = RenderTargetImpl::getShader(*m_impl->graphicsContext, states.shader, states.texture);
-        applyShader(&shader);
+    Shader& usedShader = RenderTargetImpl::getShader(*m_impl->graphicsContext, states.shader, states.texture);
 
-        if (states.texture != nullptr)
-        {
-            const base::Optional ulTextureMatrix = shader.getUniformLocation("sf_u_textureMatrix");
-            if (ulTextureMatrix.hasValue())
-                shader.setUniform(*ulTextureMatrix, states.texture->getMatrix(CoordinateType::Pixels));
-        }
-    }
 
     if (useVertexCache)
     {
-#if 1
-        Transform identity = Transform::Identity;
-
-        // (void)setActive(true); // TODO
-
-        Shader& shader = RenderTargetImpl::getShader(*m_impl->graphicsContext, states.shader, states.texture);
-
-        const base::Optional ulViewMatrix = shader.getUniformLocation("sf_u_modelViewMatrix");
-        if (ulViewMatrix.hasValue())
-            shader.setUniform(*ulViewMatrix, Glsl::Mat4(identity.getMatrix()));
-#else
-        // Since vertices are transformed, we must use an identity transform to render them
-        if (!m_impl->cache.enable || !m_impl->cache.useVertexCache)
-            glCheck(glLoadIdentity());
-#endif
+        usedShader.setUniform(usedShader.getUniformLocation("sf_u_modelViewMatrix").value(),
+                              Glsl::Mat4(Transform::Identity.getMatrix()));
     }
     else
     {
-        applyTransform(states.shader, states.texture, states.transform);
+        usedShader.setUniform(usedShader.getUniformLocation("sf_u_modelViewMatrix").value(),
+                              Glsl::Mat4(states.transform.getMatrix()));
     }
 
     // Apply the view
-    // if (!m_impl->cache.enable || m_impl->cache.viewChanged) // TODO
+    // if (!m_impl->cache.enable || m_impl->cache.viewChanged) // TODO: breaks island example
     applyCurrentView(states.shader, states.texture);
 
     // Apply the blend mode
@@ -1388,6 +1195,39 @@ void RenderTarget::setupDraw(bool useVertexCache, const RenderStates& states)
         if (textureId != m_impl->cache.lastTextureId || states.coordinateType != m_impl->cache.lastCoordinateType)
             applyTexture(states.texture, states.coordinateType);
     }
+
+    // Update shader texture matrix
+    if (states.texture != nullptr)
+    {
+        const base::Optional ulTextureMatrix = usedShader.getUniformLocation("sf_u_textureMatrix");
+        if (ulTextureMatrix.hasValue()) // Might be optimized out sometimes...?
+            usedShader.setUniform(*ulTextureMatrix, states.texture->getMatrix(m_impl->cache.lastCoordinateType));
+    }
+
+    // Apply the shader
+    applyShader(&usedShader);
+
+    m_impl->vao.bind();
+    m_impl->vbo.bind();
+
+    // Update cache
+    const auto usedNativeHandle = usedShader.getNativeHandle();
+    // if (m_impl->cache.programChanged != usedNativeHandle)
+    {
+        m_impl->cache.programChanged = usedNativeHandle;
+
+        const auto updateCacheAttrib = [&](auto& cacheAttrib, const char* attribName)
+        {
+            cacheAttrib = glGetAttribLocation(usedNativeHandle, attribName);
+
+            if (cacheAttrib >= 0)
+                glCheck(glEnableVertexAttribArray(cacheAttrib));
+        };
+
+        updateCacheAttrib(m_impl->cache.posAttrib, "sf_a_position");
+        updateCacheAttrib(m_impl->cache.colAttrib, "sf_a_color");
+        updateCacheAttrib(m_impl->cache.texAttrib, "sf_a_texCoord");
+    }
 }
 
 
@@ -1399,7 +1239,7 @@ void RenderTarget::drawPrimitives(PrimitiveType type, std::size_t firstVertex, s
     const GLenum mode = modes[static_cast<std::size_t>(type)];
 
     // Draw the primitives
-    m_impl->vao.bind();
+    //m_impl->vao.bind();
     glCheck(glDrawArrays(mode, static_cast<GLint>(firstVertex), static_cast<GLsizei>(vertexCount)));
 }
 
