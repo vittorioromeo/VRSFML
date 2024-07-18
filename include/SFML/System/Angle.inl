@@ -51,10 +51,6 @@ inline constexpr float tau = pi * 2.f;
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-constexpr Angle::Angle() = default;
-
-
-////////////////////////////////////////////////////////////
 constexpr float Angle::asDegrees() const
 {
     return m_radians * (180.f / priv::pi);

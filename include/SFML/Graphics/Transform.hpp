@@ -50,7 +50,7 @@ public:
     /// Creates an identity transform (a transform that does nothing).
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr Transform();
+    [[nodiscard]] constexpr Transform() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a transform from a 3x3 matrix
