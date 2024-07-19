@@ -300,7 +300,7 @@ void main()
     auto contextGuard = sf::GraphicsContext::SharedContextGuard{graphicsContext};
     SFML_BASE_ASSERT(graphicsContext.isActiveGlContextSharedContext());
 
-    auto shader = *sf::Shader::loadFromMemory(graphicsContext, vertexSrc, fragmentSrc);
+    auto shader = sf::Shader::loadFromMemory(graphicsContext, vertexSrc, fragmentSrc).value();
     SFML_BASE_ASSERT(glIsProgram(shader.getNativeHandle()));
 
     if (const sf::base::Optional ulTexture = shader.getUniformLocation("sf_u_texture"))
@@ -509,9 +509,12 @@ void doVertexStuff(bool        enableTexCoordsArray,
 struct RenderTarget::Impl
 {
     explicit Impl(GraphicsContext& theGraphicsContext) :
-    graphicsContext(&theGraphicsContext),
+    graphicsContext(&theGraphicsContext)
+#ifndef SFML_OPENGL_ES // TODO
+    ,
     vao(theGraphicsContext),
     vbo(theGraphicsContext)
+#endif
     {
     }
 
@@ -520,8 +523,10 @@ struct RenderTarget::Impl
     View             view;            //!< Current view
     StatesCache      cache{};         //!< Render states cache
     std::uint64_t    id{};            //!< Unique number that identifies the RenderTarget
-    VAO              vao;             //!< TODO
-    VBO              vbo;             //!< TODO
+#ifndef SFML_OPENGL_ES                // TODO
+    VAO vao;                          //!< TODO
+    VBO vbo;                          //!< TODO
+#endif
 };
 
 
@@ -732,6 +737,7 @@ void RenderTarget::draw(const Vertex* vertices, std::size_t vertexCount, Primiti
         // If we pre-transform the vertices, we must use our internal vertex cache
         const auto* data = reinterpret_cast<const char*>(useVertexCache ? m_impl->cache.vertexCache : vertices);
 
+        // TODO: GLES, must pass data as param
         glCheck(glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeof(Vertex) * vertexCount), data, GL_STATIC_DRAW));
         doVertexStuff(enableTexCoordsArray, m_impl->cache.posAttrib, m_impl->cache.colAttrib, m_impl->cache.texAttrib);
 
@@ -905,12 +911,16 @@ void RenderTarget::resetGLStates()
         }
 
         // Define the default OpenGL states
-        glCheck(glDisable(GL_CULL_FACE));
-        glCheck(glDisable(GL_STENCIL_TEST));
-        glCheck(glDisable(GL_DEPTH_TEST));
-        glCheck(glDisable(GL_SCISSOR_TEST));
-        glCheck(glEnable(GL_BLEND));
-        glCheck(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
+        {
+            GraphicsContext::SharedContextGuard guard(*m_impl->graphicsContext);
+
+            glCheck(glDisable(GL_CULL_FACE));
+            glCheck(glDisable(GL_STENCIL_TEST));
+            glCheck(glDisable(GL_DEPTH_TEST));
+            glCheck(glDisable(GL_SCISSOR_TEST));
+            glCheck(glEnable(GL_BLEND));
+            glCheck(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
+        }
 
         const auto disableCacheAttrib = [&](const GLint cacheAttrib)
         {
@@ -1210,8 +1220,10 @@ void RenderTarget::setupDraw(bool useVertexCache, const RenderStates& states)
     // Apply the shader
     applyShader(&usedShader);
 
+#ifndef SFML_OPENGL_ES
     m_impl->vao.bind();
     m_impl->vbo.bind();
+#endif
 
     // Update cache
     const auto usedNativeHandle = usedShader.getNativeHandle();

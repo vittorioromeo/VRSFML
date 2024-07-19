@@ -170,8 +170,6 @@ bool RenderTextureImplFBO::create(Vector2u size, unsigned int textureId, const C
 
         m_impl->sRgb = settings.sRgbCapable && GL_EXT_texture_sRGB;
 
-#ifndef SFML_OPENGL_ES
-
         // Check if the requested anti-aliasing level is supported
         if (settings.antialiasingLevel)
         {
@@ -186,8 +184,6 @@ bool RenderTextureImplFBO::create(Vector2u size, unsigned int textureId, const C
                 return false;
             }
         }
-
-#endif
 
         if (!settings.antialiasingLevel)
         {
@@ -259,9 +255,6 @@ bool RenderTextureImplFBO::create(Vector2u size, unsigned int textureId, const C
         }
         else
         {
-
-#ifndef SFML_OPENGL_ES
-
             // Create the multisample color buffer
             GLuint color = 0;
             glCheck(GLEXT_glGenRenderbuffers(1, &color));
@@ -346,15 +339,6 @@ bool RenderTextureImplFBO::create(Vector2u size, unsigned int textureId, const C
             }
 
             m_impl->multisample = true;
-
-#else
-
-            m_impl->multisample = false;
-
-            err() << "Impossible to create render texture (failed to create the multisample render buffers)";
-            return false;
-
-#endif // SFML_OPENGL_ES
         }
     }
 

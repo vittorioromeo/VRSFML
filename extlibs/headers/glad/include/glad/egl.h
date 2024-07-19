@@ -1527,4 +1527,3 @@ static int gladLoaderLoadEGL(EGLDisplay display) {
 #endif
 
 #endif /* SF_GLAD_EGL_IMPLEMENTATION */
-

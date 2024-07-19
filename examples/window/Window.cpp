@@ -76,11 +76,7 @@ int main()
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     const GLfloat ratio = static_cast<float>(window.getSize().x) / static_cast<float>(window.getSize().y);
-#ifdef SFML_OPENGL_ES
-    glFrustumf(-ratio, ratio, -1.f, 1.f, 1.f, 500.f);
-#else
     glFrustum(-ratio, ratio, -1.f, 1.f, 1.f, 500.f);
-#endif
 
     // Define a 3D cube (6 faces made of 2 triangles composed by 3 vertices)
     // clang-format off
@@ -166,11 +162,7 @@ int main()
                 glMatrixMode(GL_PROJECTION);
                 glLoadIdentity();
                 const GLfloat newRatio = static_cast<float>(width) / static_cast<float>(height);
-#ifdef SFML_OPENGL_ES
-                glFrustumf(-newRatio, newRatio, -1.f, 1.f, 1.f, 500.f);
-#else
                 glFrustum(-newRatio, newRatio, -1.f, 1.f, 1.f, 500.f);
-#endif
             }
         }
 

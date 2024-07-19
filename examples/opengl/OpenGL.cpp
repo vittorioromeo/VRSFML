@@ -97,11 +97,7 @@ sf::base::Optional<sf::RenderWindow> recreateWindow(sf::GraphicsContext&       g
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     const GLfloat ratio = static_cast<float>(window->getSize().x) / static_cast<float>(window->getSize().y);
-#ifdef SFML_OPENGL_ES
-    glFrustumf(-ratio, ratio, -1.f, 1.f, 1.f, 500.f);
-#else
     glFrustum(-ratio, ratio, -1.f, 1.f, 1.f, 500.f);
-#endif
 
     // Bind the texture
     glEnable(GL_TEXTURE_2D);
@@ -299,11 +295,7 @@ int main()
                     glMatrixMode(GL_PROJECTION);
                     glLoadIdentity();
                     const GLfloat newRatio = static_cast<float>(width) / static_cast<float>(height);
-#ifdef SFML_OPENGL_ES
-                    glFrustumf(-newRatio, newRatio, -1.f, 1.f, 1.f, 500.f);
-#else
                     glFrustum(-newRatio, newRatio, -1.f, 1.f, 1.f, 500.f);
-#endif
 
                     // Make the window no longer the active window for OpenGL calls
                     if (!window->setActive(false))

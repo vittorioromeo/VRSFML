@@ -873,6 +873,7 @@ void Texture::invalidateMipmap()
 void Texture::bind([[maybe_unused]] GraphicsContext& graphicsContext, const Texture* texture)
 {
     SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
+    GraphicsContext::SharedContextGuard guard(graphicsContext);
 
     if (texture)
     {
@@ -901,6 +902,7 @@ unsigned int Texture::getMaximumSize(GraphicsContext& graphicsContext)
         // Make sure that extensions are initialized
         priv::ensureExtensionsInit(graphicsContext);
 
+        GraphicsContext::SharedContextGuard guard(graphicsContext);
         glCheck(glGetIntegerv(GL_MAX_TEXTURE_SIZE, &value));
 
         return static_cast<unsigned int>(value);
