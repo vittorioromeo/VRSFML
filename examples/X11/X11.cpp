@@ -54,11 +54,7 @@
     glLoadIdentity();
     const float extent = std::tan(sf::degrees(45).asRadians());
 
-#ifdef SFML_OPENGL_ES
-    glFrustumf(-extent, extent, -extent, extent, 1.0f, 500.0f);
-#else
     glFrustum(-extent, extent, -extent, extent, 1.0f, 500.0f);
-#endif
 
     // Enable position and texture coordinates vertex components
     glEnableClientState(GL_VERTEX_ARRAY);

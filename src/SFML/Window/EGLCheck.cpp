@@ -31,6 +31,8 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Path.hpp>
 
+#include <SFML/Base/Assert.hpp>
+
 #include <glad/egl.h>
 
 
@@ -42,7 +44,10 @@ void eglCheckError(const char* file, unsigned int line, const char* expression)
     const auto logError = [&](const char* error, const char* description)
     {
         err() << "An internal EGL call failed in " << Path{file}.filename() << " (" << line << ") : "
-              << "\nExpression:\n   " << expression << "\nError description:\n   " << error << "\n   " << description;
+              << "\nExpression:\n   " << expression << "\nError description:\n   " << error << "\n   " << description
+              << '\n';
+
+        SFML_BASE_ASSERT(false);
     };
 
     // Obtain information about the success or failure of the most recent EGL

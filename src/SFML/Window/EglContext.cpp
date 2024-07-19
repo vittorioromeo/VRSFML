@@ -27,10 +27,13 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/EglContext.hpp>
+#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/WindowImpl.hpp>
 
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Sleep.hpp>
+
+#include <SFML/Base/Assert.hpp>
 
 #include <memory>
 #include <mutex>
@@ -56,7 +59,7 @@ namespace
 // A nested named namespace is used here to allow unity builds of SFML.
 namespace EglContextImpl
 {
-EGLDisplay getInitializedDisplay()
+[[nodiscard]] EGLDisplay getInitializedDisplay()
 {
 #if defined(SFML_SYSTEM_ANDROID)
 
@@ -76,35 +79,37 @@ EGLDisplay getInitializedDisplay()
         eglCheck(eglInitialize(display, nullptr, nullptr));
     }
 
+    SFML_BASE_ASSERT(display != EGL_NO_DISPLAY);
     return display;
 }
 
 
 ////////////////////////////////////////////////////////////
-void ensureInit()
+bool ensureInit()
 {
-    static std::once_flag flag;
+    static bool result = []
+    {
+        if (!gladLoaderLoadEGL(EGL_NO_DISPLAY))
+        {
+            // At this point, the failure is unrecoverable
+            // Dump a message to the console and let the application terminate
+            sf::priv::err() << "Failed to load EGL entry points";
 
-    std::call_once(flag,
-                   []
-                   {
-                       if (!gladLoaderLoadEGL(EGL_NO_DISPLAY))
-                       {
-                           // At this point, the failure is unrecoverable
-                           // Dump a message to the console and let the application terminate
-                           sf::priv::err() << "Failed to load EGL entry points";
+            SFML_BASE_ASSERT(false);
 
-                           SFML_BASE_ASSERT(false);
+            return false;
+        }
 
-                           return false;
-                       }
+        // Continue loading with a display
+        gladLoaderLoadEGL(getInitializedDisplay());
 
-                       // Continue loading with a display
-                       gladLoaderLoadEGL(getInitializedDisplay());
+        return true;
+    }();
 
-                       return true;
-                   });
+    SFML_BASE_ASSERT(result);
+    return result;
 }
+
 } // namespace EglContextImpl
 } // namespace
 
@@ -112,7 +117,8 @@ void ensureInit()
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-EglContext::EglContext(EglContext* shared)
+EglContext::EglContext(GraphicsContext& graphicsContext, std::uint64_t id, EglContext* shared) :
+GlContext(graphicsContext, id, {})
 {
     EglContextImpl::ensureInit();
 
@@ -128,6 +134,7 @@ EglContext::EglContext(EglContext* shared)
     EGLint attribList[] = {EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE};
 
     eglCheck(m_surface = eglCreatePbufferSurface(m_display, m_config, attribList));
+    SFML_BASE_ASSERT(m_surface != EGL_NO_SURFACE);
 
     // Create EGL context
     createContext(shared);
@@ -135,10 +142,13 @@ EglContext::EglContext(EglContext* shared)
 
 
 ////////////////////////////////////////////////////////////
-EglContext::EglContext(EglContext*                        shared,
+EglContext::EglContext(GraphicsContext&                   graphicsContext,
+                       std::uint64_t                      id,
+                       EglContext*                        shared,
                        const ContextSettings&             settings,
                        [[maybe_unused]] const WindowImpl& owner,
-                       unsigned int                       bitsPerPixel)
+                       unsigned int                       bitsPerPixel) :
+GlContext(graphicsContext, id, settings)
 {
     EglContextImpl::ensureInit();
 
@@ -172,7 +182,12 @@ EglContext::EglContext(EglContext*                        shared,
 
 
 ////////////////////////////////////////////////////////////
-EglContext::EglContext(EglContext* /*shared*/, const ContextSettings& /*settings*/, Vector2u /*size*/)
+EglContext::EglContext(GraphicsContext& graphicsContext,
+                       std::uint64_t    id,
+                       EglContext* /*shared*/,
+                       const ContextSettings& /*settings*/,
+                       Vector2u /*size*/) :
+GlContext(graphicsContext, id, {})
 {
     EglContextImpl::ensureInit();
 
@@ -211,7 +226,7 @@ EglContext::~EglContext()
 
 
 ////////////////////////////////////////////////////////////
-GlFunctionPointer EglContext::getFunction(const char* name)
+GlFunctionPointer EglContext::getFunction(const char* name) const
 {
     EglContextImpl::ensureInit();
 
@@ -260,18 +275,14 @@ void EglContext::createContext(EglContext* shared)
 {
     const EGLint contextVersion[] = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE};
 
-    EGLContext toShared = nullptr;
-
-    if (shared)
-        toShared = shared->m_context;
-    else
-        toShared = EGL_NO_CONTEXT;
+    EGLContext toShared = shared != nullptr ? shared->m_context : EGL_NO_CONTEXT;
 
     if (toShared != EGL_NO_CONTEXT)
-        eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+        eglCheck(eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT));
 
     // Create EGL context
     eglCheck(m_context = eglCreateContext(m_display, m_config, toShared, contextVersion));
+    SFML_BASE_ASSERT(m_context != EGL_NO_CONTEXT);
 }
 
 
@@ -279,14 +290,16 @@ void EglContext::createContext(EglContext* shared)
 void EglContext::createSurface(EGLNativeWindowType window)
 {
     eglCheck(m_surface = eglCreateWindowSurface(m_display, m_config, window, nullptr));
+    SFML_BASE_ASSERT(m_surface != EGL_NO_SURFACE);
 }
 
 
 ////////////////////////////////////////////////////////////
 void EglContext::destroySurface()
 {
+    SFML_BASE_ASSERT(false); // TODO:
     // Ensure that this context is no longer active since our surface is going to be destroyed
-    setActive(false);
+    // setActive(false); // TODO:
 
     eglCheck(eglDestroySurface(m_display, m_surface));
     m_surface = EGL_NO_SURFACE;

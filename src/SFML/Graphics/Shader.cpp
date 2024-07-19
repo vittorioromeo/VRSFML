@@ -285,8 +285,14 @@ public:
     {
         SFML_BASE_ASSERT(m_currentProgram != 0);
 
-        // Enable program object
+
+// Enable program object
+#ifndef SFML_OPENGL_ES
         glCheck(m_savedProgram = GLEXT_glGetHandle(GLEXT_GL_PROGRAM_OBJECT));
+#else
+        glCheck(glGetIntegerv(GL_CURRENT_PROGRAM, reinterpret_cast<GLint*>(&m_savedProgram)));
+#endif
+
         if (m_currentProgram != m_savedProgram)
             glCheck(GLEXT_glUseProgramObject(m_currentProgram));
     }
@@ -879,13 +885,9 @@ void Shader::unbind([[maybe_unused]] GraphicsContext& graphicsContext)
 
 
 ////////////////////////////////////////////////////////////
-void Shader::ensureIsAvailable(GraphicsContext& graphicsContext)
+void Shader::ensureIsAvailable([[maybe_unused]] GraphicsContext& graphicsContext)
 {
-#ifdef SFML_OPENGL_ES
-
-    return true;
-
-#else
+#ifndef SFML_OPENGL_ES
 
     static const bool available = [&graphicsContext]
     {
@@ -992,6 +994,7 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
         glCheck(GLEXT_glDeleteShader(vertexShader));
     }
 
+#ifndef SFML_OPENGL_ES
     // Create the geometry shader if needed
     if (geometryShaderCode.data())
     {
@@ -1019,6 +1022,7 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
         glCheck(GLEXT_glAttachShader(shaderProgram, geometryShader));
         glCheck(GLEXT_glDeleteShader(geometryShader));
     }
+#endif
 
     // Create the fragment shader if needed
     if (fragmentShaderCode.data())
