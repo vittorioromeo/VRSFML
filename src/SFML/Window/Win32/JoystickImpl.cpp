@@ -25,6 +25,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Window/JoystickIdentification.hpp>
 #include <SFML/Window/JoystickImpl.hpp>
 #include <SFML/Window/Win32/JoystickImpl.hpp>
 #include <SFML/Window/Win32/Utils.hpp>
