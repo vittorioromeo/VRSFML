@@ -82,11 +82,7 @@ public:
     /// \param size     Back buffer width and height, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    WglContext(GraphicsContext& graphicsContext,
-               std::uint64_t    id,
-               WglContext*      shared,
-               ContextSettings  settings,
-               const Vector2u&  size);
+    WglContext(GraphicsContext& graphicsContext, std::uint64_t id, WglContext* shared, ContextSettings settings, Vector2u size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -199,7 +195,7 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static SurfaceData createSurface(ContextSettings& settings,
                                                    WglContext*      shared,
-                                                   const Vector2u&  size,
+                                                   Vector2u         size,
                                                    unsigned int     bitsPerPixel);
 
     ////////////////////////////////////////////////////////////

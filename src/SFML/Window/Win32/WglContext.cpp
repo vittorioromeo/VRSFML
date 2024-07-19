@@ -140,7 +140,7 @@ WglContext::WglContext(GraphicsContext& graphicsContext,
                        std::uint64_t    id,
                        WglContext*      shared,
                        ContextSettings  settings,
-                       const Vector2u&  size) :
+                       Vector2u         size) :
 WglContext(graphicsContext, id, shared, settings, createSurface(settings, shared, size, VideoMode::getDesktopMode().bitsPerPixel))
 {
 }
@@ -582,10 +582,7 @@ void WglContext::updateSettingsFromPixelFormat(ContextSettings& settings, HDC de
 
 
 ////////////////////////////////////////////////////////////
-WglContext::SurfaceData WglContext::createSurface(ContextSettings& settings,
-                                                  WglContext*      shared,
-                                                  const Vector2u&  size,
-                                                  unsigned int     bitsPerPixel)
+WglContext::SurfaceData WglContext::createSurface(ContextSettings& settings, WglContext* shared, Vector2u size, unsigned int bitsPerPixel)
 {
     // If pbuffers are not available we use a hidden window as the off-screen surface to draw to
     const auto createHiddenWindow = [](ContextSettings& xSettings, const Vector2u& xSize, unsigned int xBitsPerPixel) -> SurfaceData

@@ -103,7 +103,7 @@ public:
     /// \return Texture if creation was successful, otherwise `base::nullOpt`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Texture> create(GraphicsContext& graphicsContext, const Vector2u& size, bool sRgb = false);
+    [[nodiscard]] static base::Optional<Texture> create(GraphicsContext& graphicsContext, Vector2u size, bool sRgb = false);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the texture from a file on disk
@@ -282,7 +282,7 @@ public:
     /// \param dest   Coordinates of the destination position
     ///
     ////////////////////////////////////////////////////////////
-    void update(const std::uint8_t* pixels, const Vector2u& size, const Vector2u& dest);
+    void update(const std::uint8_t* pixels, Vector2u size, Vector2u dest);
 
     ////////////////////////////////////////////////////////////
     /// \brief Update a part of this texture from another texture
@@ -319,7 +319,7 @@ public:
     /// \param dest    Coordinates of the destination position
     ///
     ////////////////////////////////////////////////////////////
-    void update(const Texture& texture, const Vector2u& dest);
+    void update(const Texture& texture, Vector2u dest);
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the texture from an image
@@ -356,7 +356,7 @@ public:
     /// \param dest  Coordinates of the destination position
     ///
     ////////////////////////////////////////////////////////////
-    void update(const Image& image, const Vector2u& dest);
+    void update(const Image& image, Vector2u dest);
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the texture from the contents of a window
@@ -393,7 +393,7 @@ public:
     /// \param dest   Coordinates of the destination position
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool update(const Window& window, const Vector2u& dest);
+    [[nodiscard]] bool update(const Window& window, Vector2u dest);
 
     ////////////////////////////////////////////////////////////
     /// \brief Enable or disable the smooth filter
@@ -587,8 +587,8 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Texture(base::PassKey<Texture>&&,
                           GraphicsContext& graphicsContext,
-                          const Vector2u&  size,
-                          const Vector2u&  actualSize,
+                          Vector2u         size,
+                          Vector2u         actualSize,
                           unsigned int     texture,
                           bool             sRgb);
 

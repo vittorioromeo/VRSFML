@@ -130,7 +130,7 @@ Vector2i WindowImplAndroid::getPosition() const
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplAndroid::setPosition(const Vector2i& /* position */)
+void WindowImplAndroid::setPosition(Vector2i /* position */)
 {
     // Not applicable
 }
@@ -144,7 +144,7 @@ Vector2u WindowImplAndroid::getSize() const
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplAndroid::setSize(const Vector2u& /* size */)
+void WindowImplAndroid::setSize(Vector2u /* size */)
 {
 }
 
@@ -171,7 +171,7 @@ void WindowImplAndroid::setTitle(const String& /* title */)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplAndroid::setIcon(const Vector2u& /* size */, const std::uint8_t* /* pixels */)
+void WindowImplAndroid::setIcon(Vector2u /* size */, const std::uint8_t* /* pixels */)
 {
     // Not applicable
 }

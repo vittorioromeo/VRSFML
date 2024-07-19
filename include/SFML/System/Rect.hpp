@@ -55,7 +55,7 @@ public:
     /// \see findIntersection
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr bool contains(const Vector2<T>& point) const;
+    [[nodiscard]] constexpr bool contains(Vector2<T> point) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the position of the center of the rectangle

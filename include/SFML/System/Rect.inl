@@ -34,7 +34,7 @@ namespace sf
 {
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr bool Rect<T>::contains(const Vector2<T>& point) const
+constexpr bool Rect<T>::contains(Vector2<T> point) const
 {
     // Rectangles with negative dimensions are allowed, so we must handle them correctly
 

@@ -68,8 +68,8 @@ namespace sf
 ////////////////////////////////////////////////////////////
 Texture::Texture(base::PassKey<Texture>&&,
                  GraphicsContext& graphicsContext,
-                 const Vector2u&  size,
-                 const Vector2u&  actualSize,
+                 Vector2u         size,
+                 Vector2u         actualSize,
                  unsigned int     texture,
                  bool             sRgb) :
 m_graphicsContext(&graphicsContext),
@@ -167,7 +167,7 @@ Texture& Texture::operator=(Texture&& right) noexcept
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Texture> Texture::create(GraphicsContext& graphicsContext, const Vector2u& size, bool sRgb)
+base::Optional<Texture> Texture::create(GraphicsContext& graphicsContext, Vector2u size, bool sRgb)
 {
     base::Optional<Texture> result; // Use a single local variable for NRVO
 
@@ -493,7 +493,7 @@ void Texture::update(const std::uint8_t* pixels)
 
 
 ////////////////////////////////////////////////////////////
-void Texture::update(const std::uint8_t* pixels, const Vector2u& size, const Vector2u& dest)
+void Texture::update(const std::uint8_t* pixels, Vector2u size, Vector2u dest)
 {
     SFML_BASE_ASSERT(dest.x + size.x <= m_size.x && "Destination x coordinate is outside of texture");
     SFML_BASE_ASSERT(dest.y + size.y <= m_size.y && "Destination y coordinate is outside of texture");
@@ -537,7 +537,7 @@ void Texture::update(const Texture& texture)
 
 
 ////////////////////////////////////////////////////////////
-void Texture::update(const Texture& texture, const Vector2u& dest)
+void Texture::update(const Texture& texture, Vector2u dest)
 {
     SFML_BASE_ASSERT(dest.x + texture.m_size.x <= m_size.x && "Destination x coordinate is outside of texture");
     SFML_BASE_ASSERT(dest.y + texture.m_size.y <= m_size.y && "Destination y coordinate is outside of texture");
@@ -668,7 +668,7 @@ void Texture::update(const Image& image)
 
 
 ////////////////////////////////////////////////////////////
-void Texture::update(const Image& image, const Vector2u& dest)
+void Texture::update(const Image& image, Vector2u dest)
 {
     update(image.getPixelsPtr(), image.getSize(), dest);
 }
@@ -682,7 +682,7 @@ void Texture::update(const Image& image, const Vector2u& dest)
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool Texture::update(const Window& window, const Vector2u& dest)
+bool Texture::update(const Window& window, Vector2u dest)
 {
     SFML_BASE_ASSERT(dest.x + window.getSize().x <= m_size.x && "Destination x coordinate is outside of texture");
     SFML_BASE_ASSERT(dest.y + window.getSize().y <= m_size.y && "Destination y coordinate is outside of texture");
