@@ -7,6 +7,7 @@
 
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
+#include <SFML/Window/VideoMode.hpp>
 
 #include <cstdlib>
 
