@@ -46,7 +46,10 @@ void glCheckError(const char* file, unsigned int line, const char* expression)
               << "\nExpression:\n   " << expression << "\nError description:\n   " << error << "\n   " << description
               << '\n';
 
-        SFML_BASE_ASSERT(false);
+        // TODO:
+        // SFML_BASE_ASSERT(false);
+
+        glCheckError(file, line, expression);
     };
 
     // Get the last error
