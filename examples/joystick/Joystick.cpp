@@ -8,6 +8,7 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/Joystick.hpp>
+#include <SFML/Window/JoystickIdentification.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/VideoMode.hpp>
 

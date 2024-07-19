@@ -19,7 +19,9 @@ set(SRC
     ${INCROOT}/Event.inl
     ${SRCROOT}/InputImpl.hpp
     ${INCROOT}/Joystick.hpp
+    ${INCROOT}/JoystickIdentification.hpp
     ${SRCROOT}/Joystick.cpp
+    ${SRCROOT}/JoystickIdentification.cpp
     ${INCROOT}/JoystickAxis.hpp
     ${SRCROOT}/JoystickImpl.hpp
     ${SRCROOT}/JoystickManager.cpp

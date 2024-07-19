@@ -26,7 +26,6 @@
 #define STB_PERLIN_IMPLEMENTATION
 #include <stb_perlin.h>
 
-#include <algorithm>
 #include <array>
 #include <deque>
 #include <iostream>
