@@ -466,6 +466,8 @@ void doVertexStuff(bool        enableTexCoordsArray,
                    const GLint colorAttribIdx,
                    const GLint texCoordAttribIdx) // TODO: name
 {
+#define SFML_PRIV_OFFSETOF(...) reinterpret_cast<const void*>(offsetof(__VA_ARGS__))
+
     // TODO BC: actually get the layout indices
     SFML_BASE_ASSERT(posAttribIdx >= 0);
 
@@ -475,7 +477,7 @@ void doVertexStuff(bool        enableTexCoordsArray,
                                   /*       type */ GL_FLOAT,
                                   /* normalized */ GL_FALSE,
                                   /*     stride */ sizeof(Vertex),
-                                  /*     offset */ reinterpret_cast<const void*>(0u)));
+                                  /*     offset */ SFML_PRIV_OFFSETOF(Vertex, position)));
 
     if (colorAttribIdx >= 0)
     {
@@ -485,20 +487,21 @@ void doVertexStuff(bool        enableTexCoordsArray,
                                       /*       type */ GL_UNSIGNED_BYTE,
                                       /* normalized */ GL_TRUE,
                                       /*     stride */ sizeof(Vertex),
-                                      /*     offset */ reinterpret_cast<const void*>(sizeof(float) * 2u)));
+                                      /*     offset */ SFML_PRIV_OFFSETOF(Vertex, color)));
     }
 
     if (enableTexCoordsArray && texCoordAttribIdx >= 0)
     {
         glCheck(glEnableVertexAttribArray(texCoordAttribIdx));
-        glCheck(
-            glVertexAttribPointer(/*      index */ texCoordAttribIdx,
-                                  /*       size */ 2,
-                                  /*       type */ GL_FLOAT,
-                                  /* normalized */ GL_FALSE,
-                                  /*     stride */ sizeof(Vertex),
-                                  /*     offset */ reinterpret_cast<const void*>(sizeof(float) * 2u + sizeof(char) * 4u)));
+        glCheck(glVertexAttribPointer(/*      index */ texCoordAttribIdx,
+                                      /*       size */ 2,
+                                      /*       type */ GL_FLOAT,
+                                      /* normalized */ GL_FALSE,
+                                      /*     stride */ sizeof(Vertex),
+                                      /*     offset */ SFML_PRIV_OFFSETOF(Vertex, texCoords)));
     }
+
+#undef SFML_PRIV_OFFSETOF
 }
 
 
