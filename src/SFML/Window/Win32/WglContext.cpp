@@ -162,7 +162,7 @@ WglContext::~WglContext()
     // Destroy the OpenGL context
     if (m_context)
     {
-        const bool rc = wglMakeCurrent(m_surfaceData.deviceContext, nullptr);
+        [[maybe_unused]] const bool rc = wglMakeCurrent(m_surfaceData.deviceContext, nullptr);
         SFML_BASE_ASSERT(rc == TRUE);
 
         wglDeleteContext(m_context);

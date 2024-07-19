@@ -682,7 +682,7 @@ private:
     /// aborted.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static void ensureIsAvailable(GraphicsContext& graphicsContext);
+    static void ensureIsAvailable(GraphicsContext& graphicsContext);
 
     ////////////////////////////////////////////////////////////
     /// \brief Compile the shader(s) and create the program

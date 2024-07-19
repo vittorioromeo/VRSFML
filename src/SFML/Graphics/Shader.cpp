@@ -869,7 +869,7 @@ void Shader::bind() const
 }
 
 
-void Shader::unbind(GraphicsContext& graphicsContext)
+void Shader::unbind([[maybe_unused]] GraphicsContext& graphicsContext)
 {
     SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
 
