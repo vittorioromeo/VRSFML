@@ -870,7 +870,7 @@ void Texture::invalidateMipmap()
 
 
 ////////////////////////////////////////////////////////////
-void Texture::bind(GraphicsContext& graphicsContext, const Texture* texture)
+void Texture::bind([[maybe_unused]] GraphicsContext& graphicsContext, const Texture* texture)
 {
     SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
 

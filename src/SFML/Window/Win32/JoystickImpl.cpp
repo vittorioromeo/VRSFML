@@ -800,10 +800,10 @@ bool JoystickImpl::openDInput(unsigned int index)
                         propertyRange.lMin              = -32768;
                         propertyRange.lMax              = 32767;
 
-                        const HRESULT result = joystick.m_impl->device->SetProperty(DIPROP_RANGE, &propertyRange.diph);
+                        const HRESULT propResult = joystick.m_impl->device->SetProperty(DIPROP_RANGE, &propertyRange.diph);
 
-                        if (result != DI_OK)
-                            sf::priv::err() << "Failed to set DirectInput device axis property range: " << result;
+                        if (propResult != DI_OK)
+                            sf::priv::err() << "Failed to set DirectInput device axis property range: " << propResult;
 
                         return DIENUM_CONTINUE;
                     }

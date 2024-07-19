@@ -27,8 +27,6 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Base/Optional.hpp>
 
-#ifndef NDEBUG
-
 #ifdef SFML_ENABLE_STACK_TRACES
 #include <cpptrace/cpptrace.hpp>
 #endif
@@ -53,5 +51,3 @@ void throwIfNotEngaged()
 }
 
 } // namespace sf::base::priv
-
-#endif

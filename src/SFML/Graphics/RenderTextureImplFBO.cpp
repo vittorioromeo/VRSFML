@@ -129,7 +129,7 @@ bool RenderTextureImplFBO::isAvailable(GraphicsContext& graphicsContext)
 
 
 ////////////////////////////////////////////////////////////
-unsigned int RenderTextureImplFBO::getMaximumAntialiasingLevel(GraphicsContext& graphicsContext)
+unsigned int RenderTextureImplFBO::getMaximumAntialiasingLevel([[maybe_unused]] GraphicsContext& graphicsContext)
 {
 #ifdef SFML_OPENGL_ES
 

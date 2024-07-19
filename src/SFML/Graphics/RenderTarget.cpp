@@ -471,8 +471,8 @@ void doVertexStuff(bool        enableTexCoordsArray,
     // TODO BC: actually get the layout indices
     SFML_BASE_ASSERT(posAttribIdx >= 0);
 
-    glCheck(glEnableVertexAttribArray(posAttribIdx));
-    glCheck(glVertexAttribPointer(/*      index */ posAttribIdx,
+    glCheck(glEnableVertexAttribArray(static_cast<GLuint>(posAttribIdx)));
+    glCheck(glVertexAttribPointer(/*      index */ static_cast<GLuint>(posAttribIdx),
                                   /*       size */ 2,
                                   /*       type */ GL_FLOAT,
                                   /* normalized */ GL_FALSE,
@@ -481,8 +481,8 @@ void doVertexStuff(bool        enableTexCoordsArray,
 
     if (colorAttribIdx >= 0)
     {
-        glCheck(glEnableVertexAttribArray(colorAttribIdx));
-        glCheck(glVertexAttribPointer(/*      index */ colorAttribIdx,
+        glCheck(glEnableVertexAttribArray(static_cast<GLuint>(colorAttribIdx)));
+        glCheck(glVertexAttribPointer(/*      index */ static_cast<GLuint>(colorAttribIdx),
                                       /*       size */ 4,
                                       /*       type */ GL_UNSIGNED_BYTE,
                                       /* normalized */ GL_TRUE,
@@ -492,8 +492,8 @@ void doVertexStuff(bool        enableTexCoordsArray,
 
     if (enableTexCoordsArray && texCoordAttribIdx >= 0)
     {
-        glCheck(glEnableVertexAttribArray(texCoordAttribIdx));
-        glCheck(glVertexAttribPointer(/*      index */ texCoordAttribIdx,
+        glCheck(glEnableVertexAttribArray(static_cast<GLuint>(texCoordAttribIdx)));
+        glCheck(glVertexAttribPointer(/*      index */ static_cast<GLuint>(texCoordAttribIdx),
                                       /*       size */ 2,
                                       /*       type */ GL_FLOAT,
                                       /* normalized */ GL_FALSE,
@@ -732,7 +732,7 @@ void RenderTarget::draw(const Vertex* vertices, std::size_t vertexCount, Primiti
         // If we pre-transform the vertices, we must use our internal vertex cache
         const auto* data = reinterpret_cast<const char*>(useVertexCache ? m_impl->cache.vertexCache : vertices);
 
-        glCheck(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertexCount, data, GL_STATIC_DRAW));
+        glCheck(glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeof(Vertex) * vertexCount), data, GL_STATIC_DRAW));
         doVertexStuff(enableTexCoordsArray, m_impl->cache.posAttrib, m_impl->cache.colAttrib, m_impl->cache.texAttrib);
 
         drawPrimitives(type, 0, vertexCount);
@@ -912,10 +912,10 @@ void RenderTarget::resetGLStates()
         glCheck(glEnable(GL_BLEND));
         glCheck(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
 
-        const auto disableCacheAttrib = [&](const auto& cacheAttrib)
+        const auto disableCacheAttrib = [&](const GLint cacheAttrib)
         {
             if (cacheAttrib >= 0)
-                glCheck(glDisableVertexAttribArray(cacheAttrib));
+                glCheck(glDisableVertexAttribArray(static_cast<GLuint>(cacheAttrib)));
         };
 
         disableCacheAttrib(m_impl->cache.posAttrib);
@@ -1219,12 +1219,12 @@ void RenderTarget::setupDraw(bool useVertexCache, const RenderStates& states)
     {
         m_impl->cache.programChanged = usedNativeHandle;
 
-        const auto updateCacheAttrib = [&](auto& cacheAttrib, const char* attribName)
+        const auto updateCacheAttrib = [&](GLint& cacheAttrib, const char* attribName)
         {
             cacheAttrib = glGetAttribLocation(usedNativeHandle, attribName);
 
             if (cacheAttrib >= 0)
-                glCheck(glEnableVertexAttribArray(cacheAttrib));
+                glCheck(glEnableVertexAttribArray(static_cast<GLuint>(cacheAttrib)));
         };
 
         updateCacheAttrib(m_impl->cache.posAttrib, "sf_a_position");
