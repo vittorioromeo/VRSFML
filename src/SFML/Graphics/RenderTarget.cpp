@@ -911,16 +911,12 @@ void RenderTarget::resetGLStates()
         }
 
         // Define the default OpenGL states
-        {
-            GraphicsContext::SharedContextGuard guard(*m_impl->graphicsContext);
-
-            glCheck(glDisable(GL_CULL_FACE));
-            glCheck(glDisable(GL_STENCIL_TEST));
-            glCheck(glDisable(GL_DEPTH_TEST));
-            glCheck(glDisable(GL_SCISSOR_TEST));
-            glCheck(glEnable(GL_BLEND));
-            glCheck(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
-        }
+        glCheck(glDisable(GL_CULL_FACE));
+        glCheck(glDisable(GL_STENCIL_TEST));
+        glCheck(glDisable(GL_DEPTH_TEST));
+        glCheck(glDisable(GL_SCISSOR_TEST));
+        glCheck(glEnable(GL_BLEND));
+        glCheck(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
 
         const auto disableCacheAttrib = [&](const GLint cacheAttrib)
         {
@@ -1254,7 +1250,9 @@ void RenderTarget::drawPrimitives(PrimitiveType type, std::size_t firstVertex, s
     const GLenum mode = modes[static_cast<std::size_t>(type)];
 
     // Draw the primitives
-    //m_impl->vao.bind();
+#ifndef SFML_OPENGL_ES
+    m_impl->vao.bind();
+#endif
     glCheck(glDrawArrays(mode, static_cast<GLint>(firstVertex), static_cast<GLsizei>(vertexCount)));
 }
 

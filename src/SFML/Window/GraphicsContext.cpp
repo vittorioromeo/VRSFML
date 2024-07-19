@@ -147,6 +147,8 @@ struct GraphicsContext::Impl
     DerivedGlContextType sharedGlContext; //!< The hidden, inactive context that will be shared with all other contexts
     std::recursive_mutex sharedGlContextMutex;
 
+    base::UniquePtr<priv::GlContext> drawingContext; // TODO:?
+
     ////////////////////////////////////////////////////////////
     std::vector<std::string> extensions; //!< Supported OpenGL extensions
 
@@ -188,22 +190,16 @@ GraphicsContext::GraphicsContext() : m_impl(base::makeUnique<Impl>(*this, 1u, nu
 
     m_impl->extensions = loadExtensions(m_impl->sharedGlContext);
 
+    SFML_BASE_ASSERT(isActiveGlContextSharedContext());
+
     // TODO:
     // m_impl->builtInShader = createBuiltInShader(*this);
     // SFML_BASE_ASSERT(m_impl->builtInShader.hasValue());
 
-    if (!setActiveThreadLocalGlContextToSharedContext(false))
-        priv::err() << "Could not disable shared context in GraphicsContext()";
-
-    SFML_BASE_ASSERT(!hasActiveThreadLocalOrSharedGlContext());
-
-    if (!setActiveThreadLocalGlContextToSharedContext(true))
-    {
-        priv::err() << "Failed to enable shared GL context in `GraphicsContext::GraphicsContext`";
-        SFML_BASE_ASSERT(false);
-    }
-
     priv::ensureExtensionsInit(*this);
+
+    // m_impl->drawingContext = createGlContext();
+    // SFML_BASE_ASSERT(setActiveThreadLocalGlContext(*m_impl->drawingContext, true));
 }
 
 
