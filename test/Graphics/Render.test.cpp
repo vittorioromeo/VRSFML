@@ -31,7 +31,7 @@ TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
 
         SECTION("Stencil-Only")
         {
-             renderTexture
+            renderTexture
                 .draw(shape1,
                       /* texture */ nullptr,
                       sf::RenderStates{

@@ -23,6 +23,7 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/Keyboard.hpp>
+#include <SFML/Window/VideoMode.hpp>
 
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Path.hpp>

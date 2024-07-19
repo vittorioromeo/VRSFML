@@ -32,7 +32,6 @@
 #include <SFML/Graphics/RenderTarget.hpp>
 
 #include <SFML/Window/ContextSettings.hpp>
-#include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/Window.hpp>
 #include <SFML/Window/WindowEnums.hpp>
 #include <SFML/Window/WindowHandle.hpp>
