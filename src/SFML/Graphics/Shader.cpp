@@ -631,7 +631,7 @@ void Shader::setUniform(UniformLocation location, float x)
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation location, const Glsl::Vec2& v)
+void Shader::setUniform(UniformLocation location, Glsl::Vec2 v)
 {
     const UniformBinder binder{*this};
     glCheck(GLEXT_glUniform2f(location.m_value, v.x, v.y));
@@ -663,7 +663,7 @@ void Shader::setUniform(UniformLocation location, int x)
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation location, const Glsl::Ivec2& v)
+void Shader::setUniform(UniformLocation location, Glsl::Ivec2 v)
 {
     const UniformBinder binder{*this};
     glCheck(GLEXT_glUniform2i(location.m_value, v.x, v.y));
@@ -694,7 +694,7 @@ void Shader::setUniform(UniformLocation location, bool x)
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation location, const Glsl::Bvec2& v)
+void Shader::setUniform(UniformLocation location, Glsl::Bvec2 v)
 {
     return setUniform(location, v.to<Glsl::Ivec2>());
 }

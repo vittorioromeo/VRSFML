@@ -361,7 +361,7 @@ public:
     /// \param vector Value of the vec2 vector
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(UniformLocation location, const Glsl::Vec2& vector);
+    void setUniform(UniformLocation location, Glsl::Vec2 vector);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p vec3 uniform
@@ -406,7 +406,7 @@ public:
     /// \param vector Value of the ivec2 vector
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(UniformLocation location, const Glsl::Ivec2& vector);
+    void setUniform(UniformLocation location, Glsl::Ivec2 vector);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p ivec3 uniform
@@ -450,7 +450,7 @@ public:
     /// \param vector Value of the bvec2 vector
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(UniformLocation location, const Glsl::Bvec2& vector);
+    void setUniform(UniformLocation location, Glsl::Bvec2 vector);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p bvec3 uniform

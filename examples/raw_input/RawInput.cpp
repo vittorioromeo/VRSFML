@@ -59,7 +59,7 @@ int main()
                 return EXIT_SUCCESS;
             }
 
-            static const auto vec2ToString = [](const sf::Vector2i& vec2)
+            static const auto vec2ToString = [](const sf::Vector2i vec2)
             { return '(' + std::to_string(vec2.x) + ", " + std::to_string(vec2.y) + ')'; };
 
             if (const auto* const mouseMoved = event->getIf<sf::Event::MouseMoved>())
