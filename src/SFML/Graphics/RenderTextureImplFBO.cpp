@@ -124,6 +124,7 @@ bool RenderTextureImplFBO::isAvailable(GraphicsContext& graphicsContext)
     // Make sure that extensions are initialized
     ensureExtensionsInit(graphicsContext);
 
+return false;
     return GLEXT_framebuffer_object != 0;
 }
 

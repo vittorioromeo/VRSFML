@@ -952,7 +952,7 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
     ensureIsAvailable(graphicsContext);
 
     // Make sure we can use geometry shaders
-    if (geometryShaderCode.data() && !isGeometryAvailable(graphicsContext))
+    if (geometryShaderCode.data() != nullptr && !isGeometryAvailable(graphicsContext))
     {
         priv::err() << "Failed to create a shader: your system doesn't support geometry shaders "
                     << "(you should test Shader::isGeometryAvailable() before trying to use geometry shaders)";
@@ -965,6 +965,33 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
     glCheck(shaderProgram = glCreateProgram());
     SFML_BASE_ASSERT(glIsProgram(shaderProgram));
 
+#ifdef SFML_OPENGL_ES
+    if (vertexShaderCode.data() == nullptr)
+    {
+        vertexShaderCode = R"glsl(
+
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+uniform mat4 sf_u_projectionMatrix;
+uniform mat4 sf_u_modelViewMatrix;
+
+attribute vec2 sf_a_position;
+attribute vec4 sf_a_color;
+
+varying vec4 sf_v_color;
+
+void main()
+{
+    gl_Position = sf_u_projectionMatrix * sf_u_modelViewMatrix * vec4(sf_a_position, 0.0, 1.0);
+    sf_v_color = sf_a_color;
+}
+
+        )glsl";
+    }
+#endif
+
     // Create the vertex shader if needed
     if (vertexShaderCode.data())
     {
@@ -975,6 +1002,7 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
         const auto       sourceCodeLength = static_cast<GLint>(vertexShaderCode.length());
         glCheck(GLEXT_glShaderSource(vertexShader, 1, &sourceCode, &sourceCodeLength));
         glCheck(GLEXT_glCompileShader(vertexShader));
+        SFML_BASE_ASSERT(glIsShader(vertexShader));
 
         // Check the compile log
         GLint success = 0;
@@ -1004,6 +1032,7 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
         const auto           sourceCodeLength = static_cast<GLint>(geometryShaderCode.length());
         glCheck(GLEXT_glShaderSource(geometryShader, 1, &sourceCode, &sourceCodeLength));
         glCheck(GLEXT_glCompileShader(geometryShader));
+        SFML_BASE_ASSERT(glIsShader(geometryShader));
 
         // Check the compile log
         GLint success = 0;
@@ -1024,6 +1053,29 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
     }
 #endif
 
+#ifdef SFML_OPENGL_ES
+    if (fragmentShaderCode.data() == nullptr)
+    {
+        fragmentShaderCode = R"glsl(
+
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+uniform sampler2D sf_u_texture;
+
+varying vec4 sf_v_color;
+varying vec2 sf_v_texCoord;
+
+void main()
+{
+    gl_FragColor = sf_v_color * texture2D(sf_u_texture, sf_v_texCoord.st);
+}
+
+        )glsl";
+    }
+#endif
+
     // Create the fragment shader if needed
     if (fragmentShaderCode.data())
     {
@@ -1034,6 +1086,7 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
         const auto       sourceCodeLength = static_cast<GLint>(fragmentShaderCode.length());
         glCheck(GLEXT_glShaderSource(fragmentShader, 1, &sourceCode, &sourceCodeLength));
         glCheck(GLEXT_glCompileShader(fragmentShader));
+        SFML_BASE_ASSERT(glIsShader(fragmentShader));
 
         // Check the compile log
         GLint success = 0;
@@ -1058,11 +1111,11 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
 
     // Check the link log
     GLint success = 0;
-    glCheck(GLEXT_glGetShaderParameteriv(shaderProgram, GLEXT_GL_OBJECT_LINK_STATUS, &success));
+    glCheck(GLEXT_glGetProgramParameteriv(shaderProgram, GLEXT_GL_OBJECT_LINK_STATUS, &success));
     if (success == GL_FALSE)
     {
         char log[1024];
-        glCheck(GLEXT_glGetShaderInfoLog(shaderProgram, sizeof(log), nullptr, log));
+        glCheck(GLEXT_glGetProgramInfoLog(shaderProgram, sizeof(log), nullptr, log));
         priv::err() << "Failed to link shader:" << '\n' << static_cast<const char*>(log);
         glCheck(GLEXT_glDeleteProgram(shaderProgram));
         return base::nullOpt;

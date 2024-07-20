@@ -176,7 +176,7 @@ struct GraphicsContext::Impl
 
 
 ////////////////////////////////////////////////////////////
-GraphicsContext::GraphicsContext() : m_impl(base::makeUnique<Impl>(*this, 1u, nullptr))
+GraphicsContext::GraphicsContext() : m_impl(base::makeUnique<Impl>(*this, 1u /* id */, nullptr /* shared */))
 {
     SFML_BASE_ASSERT(!hasActiveThreadLocalOrSharedGlContext());
 
