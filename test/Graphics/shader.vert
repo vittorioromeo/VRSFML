@@ -1,3 +1,7 @@
+#ifdef GL_ES
+precision mediump float;
+#endif
+
 uniform vec2  storm_position;
 uniform float storm_total_radius;
 uniform float storm_inner_radius;

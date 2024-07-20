@@ -135,6 +135,16 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
         return false;
     }
 
+#define GLCHECK_INNER(...)                   \
+    do                                       \
+    {                                        \
+        __VA_ARGS__;                         \
+        if (glGetErrorFunc() != GL_NO_ERROR) \
+        {                                    \
+            /* TODO */                       \
+        }                                    \
+    } while (false)
+
     glGetIntegervFunc(GL_MAJOR_VERSION, &majorVersion);
     glGetIntegervFunc(GL_MINOR_VERSION, &minorVersion);
 
@@ -213,7 +223,7 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
     {
         // Retrieve the context flags
         int flags = 0;
-        glGetIntegervFunc(GL_CONTEXT_FLAGS, &flags);
+        GLCHECK_INNER(glGetIntegervFunc(GL_CONTEXT_FLAGS, &flags));
 
         if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
             m_settings.attributeFlags |= ContextSettings::Attribute::Debug;
@@ -228,7 +238,7 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
             if (glGetStringiFunc)
             {
                 int numExtensions = 0;
-                glGetIntegervFunc(GL_NUM_EXTENSIONS, &numExtensions);
+                GLCHECK_INNER(glGetIntegervFunc(GL_NUM_EXTENSIONS, &numExtensions));
 
                 for (unsigned int i = 0; i < static_cast<unsigned int>(numExtensions); ++i)
                 {
@@ -246,7 +256,7 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
         {
             // Retrieve the context profile
             int profile = 0;
-            glGetIntegervFunc(GL_CONTEXT_PROFILE_MASK, &profile);
+            GLCHECK_INNER(glGetIntegervFunc(GL_CONTEXT_PROFILE_MASK, &profile));
 
             if (profile & GL_CONTEXT_CORE_PROFILE_BIT)
                 m_settings.attributeFlags |= ContextSettings::Attribute::Core;

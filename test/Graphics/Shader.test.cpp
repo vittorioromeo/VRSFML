@@ -16,6 +16,11 @@
 namespace
 {
 constexpr auto vertexSource = R"glsl(
+
+#ifdef GL_ES
+precision mediump float;
+#endif
+
 uniform vec2  storm_position;
 uniform float storm_total_radius;
 uniform float storm_inner_radius;
@@ -48,9 +53,11 @@ void main()
     sf_v_texCoord = (sf_u_textureMatrix * vec4(sf_a_texCoord, 0.0, 1.0)).xy;
     sf_v_color    = sf_a_color;
 }
+
 )glsl";
 
 constexpr auto geometrySource = R"glsl(
+
 #version 150
 
 // The render target's resolution (used for scaling)
@@ -115,9 +122,15 @@ void main()
         EndPrimitive();
     }
 }
+
 )glsl";
 
 constexpr auto fragmentSource = R"glsl(
+
+#ifdef GL_ES
+precision mediump float;
+#endif
+
 uniform sampler2D sf_u_texture;
 uniform float     blink_alpha;
 
@@ -131,6 +144,7 @@ void main()
 
     gl_FragColor = pixel;
 }
+
 )glsl";
 
 #ifdef SFML_RUN_DISPLAY_TESTS

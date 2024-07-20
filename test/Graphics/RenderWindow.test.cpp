@@ -1,6 +1,8 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 
 // Other 1st party headers
+#include "C:/OHWorkspace/SFML/extlibs/headers/glad/include/glad/gl.h"
+
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/View.hpp>
@@ -81,7 +83,7 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
                                 sf::ContextSettings{});
         REQUIRE(window.getSize() == sf::Vector2u{256, 256});
 
-        auto texture = sf::Texture::create(graphicsContext, window.getSize()).value();
+        auto texture = sf::Texture::create(graphicsContext, sf::Vector2u{256, 256}).value();
 
         window.clear(sf::Color::Red);
         CHECK(texture.update(window));

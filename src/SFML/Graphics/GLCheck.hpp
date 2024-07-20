@@ -29,6 +29,9 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Config.hpp>
 
+#include <SFML/Window/GLExtensions.hpp>
+
+#include <SFML/Base/Assert.hpp>
 
 namespace sf::priv
 {
@@ -42,6 +45,7 @@ namespace sf::priv
 #define glCheck(expr)                                        \
     do                                                       \
     {                                                        \
+        SFML_BASE_ASSERT(glGetError() == GL_NO_ERROR);       \
         expr;                                                \
         ::sf::priv::glCheckError(__FILE__, __LINE__, #expr); \
     } while (false)
@@ -49,6 +53,7 @@ namespace sf::priv
 #define glCheckExpr(expr)                                    \
     [&]                                                      \
     {                                                        \
+        SFML_BASE_ASSERT(glGetError() == GL_NO_ERROR);       \
         auto result = expr;                                  \
         ::sf::priv::glCheckError(__FILE__, __LINE__, #expr); \
         return result;                                       \

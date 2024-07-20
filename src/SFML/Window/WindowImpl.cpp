@@ -34,6 +34,7 @@
 #include <SFML/Window/SensorManager.hpp>
 #include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/WindowImpl.hpp>
+#include <SFML/Window/GLExtensions.hpp>
 
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Sleep.hpp>

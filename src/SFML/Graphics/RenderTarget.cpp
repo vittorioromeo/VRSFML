@@ -506,6 +506,52 @@ void doVertexStuff(bool        enableTexCoordsArray,
 
 
 ////////////////////////////////////////////////////////////
+void doVertexStuffES(bool        enableTexCoordsArray,
+                     const GLint posAttribIdx,
+                     const GLint colorAttribIdx,
+                     const GLint texCoordAttribIdx,
+                     const char* ptr) // TODO: name
+{
+#define SFML_PRIV_OFFSETOF(...) reinterpret_cast<const void*>(offsetof(__VA_ARGS__))
+
+    // TODO BC: actually get the layout indices
+    SFML_BASE_ASSERT(posAttribIdx >= 0);
+
+    glCheck(glEnableVertexAttribArray(static_cast<GLuint>(posAttribIdx)));
+    glCheck(glVertexAttribPointer(/*      index */ static_cast<GLuint>(posAttribIdx),
+                                  /*       size */ 2,
+                                  /*       type */ GL_FLOAT,
+                                  /* normalized */ GL_FALSE,
+                                  /*     stride */ sizeof(Vertex),
+                                  /*     offset */ ptr + (unsigned long long)SFML_PRIV_OFFSETOF(Vertex, position)));
+
+    if (colorAttribIdx >= 0)
+    {
+        glCheck(glEnableVertexAttribArray(static_cast<GLuint>(colorAttribIdx)));
+        glCheck(glVertexAttribPointer(/*      index */ static_cast<GLuint>(colorAttribIdx),
+                                      /*       size */ 4,
+                                      /*       type */ GL_UNSIGNED_BYTE,
+                                      /* normalized */ GL_TRUE,
+                                      /*     stride */ sizeof(Vertex),
+                                      /*     offset */ ptr + (unsigned long long)SFML_PRIV_OFFSETOF(Vertex, color)));
+    }
+
+    if (enableTexCoordsArray && texCoordAttribIdx >= 0)
+    {
+        glCheck(glEnableVertexAttribArray(static_cast<GLuint>(texCoordAttribIdx)));
+        glCheck(glVertexAttribPointer(/*      index */ static_cast<GLuint>(texCoordAttribIdx),
+                                      /*       size */ 2,
+                                      /*       type */ GL_FLOAT,
+                                      /* normalized */ GL_FALSE,
+                                      /*     stride */ sizeof(Vertex),
+                                      /*     offset */ ptr + (unsigned long long)SFML_PRIV_OFFSETOF(Vertex, texCoords)));
+    }
+
+#undef SFML_PRIV_OFFSETOF
+}
+
+
+////////////////////////////////////////////////////////////
 struct RenderTarget::Impl
 {
     explicit Impl(GraphicsContext& theGraphicsContext) :
@@ -738,8 +784,8 @@ void RenderTarget::draw(const Vertex* vertices, std::size_t vertexCount, Primiti
         const auto* data = reinterpret_cast<const char*>(useVertexCache ? m_impl->cache.vertexCache : vertices);
 
         // TODO: GLES, must pass data as param
-        glCheck(glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeof(Vertex) * vertexCount), data, GL_STATIC_DRAW));
-        doVertexStuff(enableTexCoordsArray, m_impl->cache.posAttrib, m_impl->cache.colAttrib, m_impl->cache.texAttrib);
+        //glCheck(glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeof(Vertex) * vertexCount), data, GL_STATIC_DRAW));
+        doVertexStuffES(enableTexCoordsArray, m_impl->cache.posAttrib, m_impl->cache.colAttrib, m_impl->cache.texAttrib, data);
 
         drawPrimitives(type, 0, vertexCount);
         cleanupDraw(states);

@@ -197,6 +197,7 @@ base::Optional<Texture> Texture::create(GraphicsContext& graphicsContext, Vector
         return result; // Empty optional
     }
 
+
     // Create the OpenGL texture
     GLuint glTexture = 0;
     glCheck(glGenTextures(1, &glTexture));
@@ -499,7 +500,9 @@ void Texture::update(const std::uint8_t* pixels, Vector2u size, Vector2u dest)
     SFML_BASE_ASSERT(dest.y + size.y <= m_size.y && "Destination y coordinate is outside of texture");
 
     SFML_BASE_ASSERT(pixels != nullptr);
+
     SFML_BASE_ASSERT(m_texture);
+    SFML_BASE_ASSERT(glIsTexture(m_texture));
 
     SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
@@ -543,7 +546,10 @@ void Texture::update(const Texture& texture, Vector2u dest)
     SFML_BASE_ASSERT(dest.y + texture.m_size.y <= m_size.y && "Destination y coordinate is outside of texture");
 
     SFML_BASE_ASSERT(m_texture);
+    SFML_BASE_ASSERT(glIsTexture(m_texture));
+
     SFML_BASE_ASSERT(texture.m_texture);
+    SFML_BASE_ASSERT(glIsTexture(texture.m_texture));
 
 #ifndef SFML_OPENGL_ES
 
@@ -688,6 +694,7 @@ bool Texture::update(const Window& window, Vector2u dest)
     SFML_BASE_ASSERT(dest.y + window.getSize().y <= m_size.y && "Destination y coordinate is outside of texture");
 
     SFML_BASE_ASSERT(m_texture);
+    SFML_BASE_ASSERT(glIsTexture(m_texture));
 
     if (!window.setActive(true))
     {
@@ -825,6 +832,8 @@ bool Texture::isRepeated() const
 bool Texture::generateMipmap()
 {
     SFML_BASE_ASSERT(m_texture);
+    SFML_BASE_ASSERT(glIsTexture(m_texture));
+
     SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
     // Make sure that extensions are initialized
@@ -895,6 +904,7 @@ unsigned int Texture::getMaximumSize(GraphicsContext& graphicsContext)
     static const unsigned int size = [&graphicsContext]
     {
         SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
+        GraphicsContext::SharedContextGuard guard{graphicsContext};
 
         GLint value = 0;
 
@@ -914,6 +924,7 @@ unsigned int Texture::getMaximumSize(GraphicsContext& graphicsContext)
 Glsl::Mat4 Texture::getMatrix(CoordinateType coordinateType) const
 {
     SFML_BASE_ASSERT(m_texture);
+    SFML_BASE_ASSERT(glIsTexture(m_texture));
 
     // clang-format off
     float matrix[] = {1.f, 0.f, 0.f, 0.f,
