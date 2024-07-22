@@ -197,9 +197,6 @@ GraphicsContext::GraphicsContext() : m_impl(base::makeUnique<Impl>(*this, 1u /* 
     // SFML_BASE_ASSERT(m_impl->builtInShader.hasValue());
 
     priv::ensureExtensionsInit(*this);
-
-    // m_impl->drawingContext = createGlContext();
-    // SFML_BASE_ASSERT(setActiveThreadLocalGlContext(*m_impl->drawingContext, true));
 }
 
 

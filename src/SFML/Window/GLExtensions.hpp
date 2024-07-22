@@ -34,7 +34,7 @@
 
 #ifdef SFML_OPENGL_ES
 
-// SFML requires at a bare minimum OpenGL ES 1.0 capability
+// SFML requires at a bare minimum OpenGL ES 3.1 capability
 // Some extensions only incorporated by 2.0 are also required
 // OpenGL ES 1.0 is defined relative to OpenGL 1.3
 // OpenGL ES 1.1 is defined relative to OpenGL 1.5
@@ -178,8 +178,8 @@ inline int SF_GL_OES_vertex_buffer_object = 1;
 #define GLEXT_GL_FRAGMENT_SHADER GL_FRAGMENT_SHADER
 
 // Core since 3.0
-#define GLEXT_packed_depth_stencil SF_GLAD_GL_OES_packed_depth_stencil
-#define GLEXT_GL_DEPTH24_STENCIL8  GL_DEPTH24_STENCIL8_OES
+#define GLEXT_packed_depth_stencil GLAD_GL_EXT_packed_depth_stencil
+#define GLEXT_GL_DEPTH24_STENCIL8  GL_DEPTH24_STENCIL8
 
 // Core since 3.0
 #define GLEXT_framebuffer_blit false
@@ -208,12 +208,16 @@ inline int SF_GL_OES_vertex_buffer_object = 1;
 #define GLEXT_GL_SRGB8_ALPHA8 0
 
 // Core since 3.0 - EXT_blend_minmax
-#define GLEXT_blend_minmax SF_GLAD_GL_EXT_blend_minmax
+#define GLEXT_blend_minmax GLAD_GL_EXT_blend_minmax
 // glBlendEquation is provided by OES_blend_subtract, see above
 #define GLEXT_GL_MIN GL_MIN_EXT
 #define GLEXT_GL_MAX GL_MAX_EXT
 
-#define GLEXT_EXT_blend_minmax_dependencies SF_GLAD_GL_EXT_blend_minmax, glBlendEquationEXT
+#define GLEXT_EXT_blend_minmax_dependencies GLAD_GL_EXT_blend_minmax, glBlendEquationEXT
+
+// Core since 3.2 - ARB_geometry_shader4
+#define GLEXT_geometry_shader4         GLAD_GL_ARB_geometry_shader4
+#define GLEXT_GL_GEOMETRY_SHADER       GL_GEOMETRY_SHADER
 
 #else
 
@@ -232,39 +236,39 @@ inline int SF_GL_OES_vertex_buffer_object = 1;
 // The following extensions are optional.
 
 // Core since 1.2 - SGIS_texture_edge_clamp / EXT_texture_edge_clamp
-#define GLEXT_texture_edge_clamp SF_GLAD_GL_SGIS_texture_edge_clamp
+#define GLEXT_texture_edge_clamp true
 #define GLEXT_GL_CLAMP_TO_EDGE   GL_CLAMP_TO_EDGE_SGIS
 
 // Core since 1.2 - EXT_blend_minmax
-#define GLEXT_blend_minmax       SF_GLAD_GL_EXT_blend_minmax
+#define GLEXT_blend_minmax       GLAD_GL_EXT_blend_minmax
 #define GLEXT_glBlendEquation    glBlendEquationEXT
 #define GLEXT_GL_FUNC_ADD        GL_FUNC_ADD_EXT
 #define GLEXT_GL_MIN             GL_MIN_EXT
 #define GLEXT_GL_MAX             GL_MAX_EXT
 
-#define GLEXT_blend_minmax_dependencies SF_GLAD_GL_EXT_blend_minmax, glBlendEquationEXT
+#define GLEXT_blend_minmax_dependencies GLAD_GL_EXT_blend_minmax, glBlendEquationEXT
 
 // Core since 1.2 - EXT_blend_subtract
-#define GLEXT_blend_subtract            SF_GLAD_GL_EXT_blend_subtract
+#define GLEXT_blend_subtract            GLAD_GL_EXT_blend_subtract
 #define GLEXT_GL_FUNC_SUBTRACT          GL_FUNC_SUBTRACT_EXT
 #define GLEXT_GL_FUNC_REVERSE_SUBTRACT  GL_FUNC_REVERSE_SUBTRACT_EXT
 
 // Core since 1.3 - ARB_multitexture
-#define GLEXT_multitexture              SF_GLAD_GL_ARB_multitexture
+#define GLEXT_multitexture              GLAD_GL_ARB_multitexture
 #define GLEXT_glClientActiveTexture     glClientActiveTextureARB
 #define GLEXT_glActiveTexture           glActiveTextureARB
 #define GLEXT_GL_TEXTURE0               GL_TEXTURE0_ARB
 
-#define GLEXT_multitexture_dependencies SF_GLAD_GL_ARB_multitexture, glClientActiveTextureARB, glActiveTextureARB
+#define GLEXT_multitexture_dependencies GLAD_GL_ARB_multitexture, glClientActiveTextureARB, glActiveTextureARB
 
 // Core since 1.4 - EXT_blend_func_separate
-#define GLEXT_blend_func_separate       SF_GLAD_GL_EXT_blend_func_separate
+#define GLEXT_blend_func_separate       GLAD_GL_EXT_blend_func_separate
 #define GLEXT_glBlendFuncSeparate       glBlendFuncSeparateEXT
 
-#define GLEXT_blend_func_separate_dependencies SF_GLAD_GL_EXT_blend_func_separate, glBlendFuncSeparateEXT
+#define GLEXT_blend_func_separate_dependencies GLAD_GL_EXT_blend_func_separate, glBlendFuncSeparateEXT
 
 // Core since 1.5 - ARB_vertex_buffer_object
-#define GLEXT_vertex_buffer_object             SF_GLAD_GL_ARB_vertex_buffer_object
+#define GLEXT_vertex_buffer_object             GLAD_GL_ARB_vertex_buffer_object
 #define GLEXT_GL_ARRAY_BUFFER                  GL_ARRAY_BUFFER_ARB
 #define GLEXT_GL_DYNAMIC_DRAW                  GL_DYNAMIC_DRAW_ARB
 #define GLEXT_GL_READ_ONLY                     GL_READ_ONLY_ARB
@@ -279,15 +283,15 @@ inline int SF_GL_OES_vertex_buffer_object = 1;
 #define GLEXT_glMapBuffer                      glMapBufferARB
 #define GLEXT_glUnmapBuffer                    glUnmapBufferARB
 
-#define GLEXT_vertex_buffer_object_dependencies                                                                    \
-    SF_GLAD_GL_ARB_vertex_buffer_object, glBindBufferARB, glBufferDataARB, glBufferSubDataARB, glDeleteBuffersARB, \
+#define GLEXT_vertex_buffer_object_dependencies                                                                 \
+    GLAD_GL_ARB_vertex_buffer_object, glBindBufferARB, glBufferDataARB, glBufferSubDataARB, glDeleteBuffersARB, \
         glGenBuffersARB, glMapBufferARB, glUnmapBufferARB
 
 // Core since 2.0 - ARB_shading_language_100
-#define GLEXT_shading_language_100     SF_GLAD_GL_ARB_shading_language_100
+#define GLEXT_shading_language_100     GLAD_GL_ARB_shading_language_100
 
 // Core since 2.0 - ARB_shader_objects
-#define GLEXT_shader_objects           SF_GLAD_GL_ARB_shader_objects
+#define GLEXT_shader_objects           GLAD_GL_ARB_shader_objects
 #define GLEXT_glDeleteProgram          glDeleteObjectARB
 #define GLEXT_glDeleteShader           glDeleteObjectARB
 #define GLEXT_glGetHandle              glGetHandleARB
@@ -324,36 +328,36 @@ inline int SF_GL_OES_vertex_buffer_object = 1;
 #define GLEXT_GLhandle                 GLhandleARB
 
 #define GLEXT_shader_objects_dependencies                                                                               \
-    SF_GLAD_GL_ARB_shader_objects, glDeleteObjectARB, glGetHandleARB, glCreateShaderObjectARB, glShaderSourceARB,       \
+    GLAD_GL_ARB_shader_objects, glDeleteObjectARB, glGetHandleARB, glCreateShaderObjectARB, glShaderSourceARB,          \
         glCompileShaderARB, glCreateProgramObjectARB, glAttachObjectARB, glLinkProgramARB, glUseProgramObjectARB,       \
         glUniform1fARB, glUniform2fARB, glUniform3fARB, glUniform4fARB, glUniform1iARB, glUniform2iARB, glUniform3iARB, \
         glUniform4iARB, glUniform1fvARB, glUniform2fvARB, glUniform2ivARB, glUniform3fvARB, glUniform4fvARB,            \
         glUniformMatrix3fvARB, glUniformMatrix4fvARB, glGetObjectParameterivARB, glGetInfoLogARB, glGetUniformLocationARB
 
 // Core since 2.0 - ARB_vertex_shader
-#define GLEXT_vertex_shader                       SF_GLAD_GL_ARB_vertex_shader
+#define GLEXT_vertex_shader                       GLAD_GL_ARB_vertex_shader
 #define GLEXT_GL_VERTEX_SHADER                    GL_VERTEX_SHADER_ARB
 #define GLEXT_GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS_ARB
 
 // Core since 2.0 - ARB_fragment_shader
-#define GLEXT_fragment_shader                     SF_GLAD_GL_ARB_fragment_shader
-#define GLEXT_GL_FRAGMENT_SHADER                  GL_FRAGMENT_SHADER_ARB
+#define GLEXT_fragment_shader                     true
+#define GLEXT_GL_FRAGMENT_SHADER                  GL_FRAGMENT_SHADER
 
 // Core since 2.0 - ARB_texture_non_power_of_two
-#define GLEXT_texture_non_power_of_two            SF_GLAD_GL_ARB_texture_non_power_of_two
+#define GLEXT_texture_non_power_of_two            GLAD_GL_ARB_texture_non_power_of_two
 
 // Core since 2.0 - EXT_blend_equation_separate
-#define GLEXT_blend_equation_separate             SF_GLAD_GL_EXT_blend_equation_separate
+#define GLEXT_blend_equation_separate             GLAD_GL_EXT_blend_equation_separate
 #define GLEXT_glBlendEquationSeparate             glBlendEquationSeparateEXT
 
-#define GLEXT_blend_equation_separate_dependencies SF_GLAD_GL_EXT_blend_equation_separate, glBlendEquationSeparateEXT
+#define GLEXT_blend_equation_separate_dependencies GLAD_GL_EXT_blend_equation_separate, glBlendEquationSeparateEXT
 
 // Core since 2.1 - EXT_texture_sRGB
-#define GLEXT_texture_sRGB                         SF_GLAD_GL_EXT_texture_sRGB
+#define GLEXT_texture_sRGB                         GLAD_GL_EXT_texture_sRGB
 #define GLEXT_GL_SRGB8_ALPHA8                      GL_SRGB8_ALPHA8_EXT
 
 // Core since 3.0 - EXT_framebuffer_object
-#define GLEXT_framebuffer_object                   SF_GLAD_GL_EXT_framebuffer_object
+#define GLEXT_framebuffer_object                   GLAD_GL_EXT_framebuffer_object
 #define GLEXT_glBindRenderbuffer                   glBindRenderbufferEXT
 #define GLEXT_glDeleteRenderbuffers                glDeleteRenderbuffersEXT
 #define GLEXT_glGenRenderbuffers                   glGenRenderbuffersEXT
@@ -375,67 +379,67 @@ inline int SF_GL_OES_vertex_buffer_object = 1;
 #define GLEXT_GL_INVALID_FRAMEBUFFER_OPERATION     GL_INVALID_FRAMEBUFFER_OPERATION_EXT
 #define GLEXT_GL_STENCIL_ATTACHMENT                GL_STENCIL_ATTACHMENT_EXT
 
-#define GLEXT_framebuffer_object_dependencies                                                                  \
-    SF_GLAD_GL_EXT_framebuffer_object, glBindRenderbufferEXT, glDeleteRenderbuffersEXT, glGenRenderbuffersEXT, \
-        glRenderbufferStorageEXT, glBindFramebufferEXT, glDeleteFramebuffersEXT, glGenFramebuffersEXT,         \
+#define GLEXT_framebuffer_object_dependencies                                                               \
+    GLAD_GL_EXT_framebuffer_object, glBindRenderbufferEXT, glDeleteRenderbuffersEXT, glGenRenderbuffersEXT, \
+        glRenderbufferStorageEXT, glBindFramebufferEXT, glDeleteFramebuffersEXT, glGenFramebuffersEXT,      \
         glCheckFramebufferStatusEXT, glFramebufferTexture2DEXT, glFramebufferRenderbufferEXT, glGenerateMipmapEXT
 
 // Core since 3.0 - EXT_packed_depth_stencil
-#define GLEXT_packed_depth_stencil        SF_GLAD_GL_EXT_packed_depth_stencil
-#define GLEXT_GL_DEPTH24_STENCIL8         GL_DEPTH24_STENCIL8_EXT
+#define GLEXT_packed_depth_stencil        GLAD_GL_EXT_packed_depth_stencil
+#define GLEXT_GL_DEPTH24_STENCIL8         GL_DEPTH24_STENCIL8
 
 // Core since 3.0 - EXT_framebuffer_blit
-#define GLEXT_framebuffer_blit            SF_GLAD_GL_EXT_framebuffer_blit
+#define GLEXT_framebuffer_blit            GLAD_GL_EXT_framebuffer_blit
 #define GLEXT_glBlitFramebuffer           glBlitFramebufferEXT
 #define GLEXT_GL_READ_FRAMEBUFFER         GL_READ_FRAMEBUFFER_EXT
 #define GLEXT_GL_DRAW_FRAMEBUFFER         GL_DRAW_FRAMEBUFFER_EXT
 #define GLEXT_GL_DRAW_FRAMEBUFFER_BINDING GL_DRAW_FRAMEBUFFER_BINDING_EXT
 #define GLEXT_GL_READ_FRAMEBUFFER_BINDING GL_READ_FRAMEBUFFER_BINDING_EXT
 
-#define GLEXT_framebuffer_blit_dependencies    SF_GLAD_GL_EXT_framebuffer_blit, glBlitFramebufferEXT
+#define GLEXT_framebuffer_blit_dependencies    GLAD_GL_EXT_framebuffer_blit, glBlitFramebufferEXT
 
 // Core since 3.0 - EXT_framebuffer_multisample
-#define GLEXT_framebuffer_multisample          SF_GLAD_GL_EXT_framebuffer_multisample
+#define GLEXT_framebuffer_multisample          GLAD_GL_EXT_framebuffer_multisample
 #define GLEXT_glRenderbufferStorageMultisample glRenderbufferStorageMultisampleEXT
 #define GLEXT_GL_MAX_SAMPLES                   GL_MAX_SAMPLES_EXT
 
 #define GLEXT_framebuffer_multisample_dependencies \
-    SF_GLAD_GL_EXT_framebuffer_multisample, glRenderbufferStorageMultisampleEXT
+    GLAD_GL_EXT_framebuffer_multisample, glRenderbufferStorageMultisampleEXT
 
 // Core since 3.1 - ARB_copy_buffer
-#define GLEXT_copy_buffer          SF_GLAD_GL_ARB_copy_buffer
+#define GLEXT_copy_buffer          GLAD_GL_ARB_copy_buffer
 #define GLEXT_GL_COPY_READ_BUFFER  GL_COPY_READ_BUFFER
 #define GLEXT_GL_COPY_WRITE_BUFFER GL_COPY_WRITE_BUFFER
 #define GLEXT_glCopyBufferSubData  glCopyBufferSubData
 
-#define GLEXT_copy_buffer_dependencies SF_GLAD_GL_ARB_copy_buffer, glCopyBufferSubData
+#define GLEXT_copy_buffer_dependencies GLAD_GL_ARB_copy_buffer, glCopyBufferSubData
 
 // Core since 3.2 - ARB_geometry_shader4
-#define GLEXT_geometry_shader4         SF_GLAD_GL_ARB_geometry_shader4
-#define GLEXT_GL_GEOMETRY_SHADER       GL_GEOMETRY_SHADER_ARB
+#define GLEXT_geometry_shader4         GLAD_GL_ARB_geometry_shader4
+#define GLEXT_GL_GEOMETRY_SHADER       GL_GEOMETRY_SHADER
 
 #endif
 
 // OpenGL Versions
-#define GLEXT_GL_VERSION_1_0 SF_GLAD_GL_VERSION_1_0
-#define GLEXT_GL_VERSION_1_1 SF_GLAD_GL_VERSION_1_1
-#define GLEXT_GL_VERSION_1_2 SF_GLAD_GL_VERSION_1_2
-#define GLEXT_GL_VERSION_1_3 SF_GLAD_GL_VERSION_1_3
-#define GLEXT_GL_VERSION_1_4 SF_GLAD_GL_VERSION_1_4
-#define GLEXT_GL_VERSION_1_5 SF_GLAD_GL_VERSION_1_5
-#define GLEXT_GL_VERSION_2_0 SF_GLAD_GL_VERSION_2_0
-#define GLEXT_GL_VERSION_2_1 SF_GLAD_GL_VERSION_2_1
-#define GLEXT_GL_VERSION_3_0 SF_GLAD_GL_VERSION_3_0
-#define GLEXT_GL_VERSION_3_1 SF_GLAD_GL_VERSION_3_1
-#define GLEXT_GL_VERSION_3_2 SF_GLAD_GL_VERSION_3_2
-#define GLEXT_GL_VERSION_3_3 SF_GLAD_GL_VERSION_3_3
-#define GLEXT_GL_VERSION_4_0 SF_GLAD_GL_VERSION_4_0
-#define GLEXT_GL_VERSION_4_1 SF_GLAD_GL_VERSION_4_1
-#define GLEXT_GL_VERSION_4_2 SF_GLAD_GL_VERSION_4_2
-#define GLEXT_GL_VERSION_4_3 SF_GLAD_GL_VERSION_4_3
-#define GLEXT_GL_VERSION_4_4 SF_GLAD_GL_VERSION_4_4
-#define GLEXT_GL_VERSION_4_5 SF_GLAD_GL_VERSION_4_5
-#define GLEXT_GL_VERSION_4_6 SF_GLAD_GL_VERSION_4_6
+#define GLEXT_GL_VERSION_1_0 GLAD_GL_VERSION_1_0
+#define GLEXT_GL_VERSION_1_1 GLAD_GL_VERSION_1_1
+#define GLEXT_GL_VERSION_1_2 GLAD_GL_VERSION_1_2
+#define GLEXT_GL_VERSION_1_3 GLAD_GL_VERSION_1_3
+#define GLEXT_GL_VERSION_1_4 GLAD_GL_VERSION_1_4
+#define GLEXT_GL_VERSION_1_5 GLAD_GL_VERSION_1_5
+#define GLEXT_GL_VERSION_2_0 GLAD_GL_VERSION_2_0
+#define GLEXT_GL_VERSION_2_1 GLAD_GL_VERSION_2_1
+#define GLEXT_GL_VERSION_3_0 GLAD_GL_VERSION_3_0
+#define GLEXT_GL_VERSION_3_1 GLAD_GL_VERSION_3_1
+#define GLEXT_GL_VERSION_3_2 GLAD_GL_VERSION_3_2
+#define GLEXT_GL_VERSION_3_3 GLAD_GL_VERSION_3_3
+#define GLEXT_GL_VERSION_4_0 GLAD_GL_VERSION_4_0
+#define GLEXT_GL_VERSION_4_1 GLAD_GL_VERSION_4_1
+#define GLEXT_GL_VERSION_4_2 GLAD_GL_VERSION_4_2
+#define GLEXT_GL_VERSION_4_3 GLAD_GL_VERSION_4_3
+#define GLEXT_GL_VERSION_4_4 GLAD_GL_VERSION_4_4
+#define GLEXT_GL_VERSION_4_5 GLAD_GL_VERSION_4_5
+#define GLEXT_GL_VERSION_4_6 GLAD_GL_VERSION_4_6
 
 
 namespace sf

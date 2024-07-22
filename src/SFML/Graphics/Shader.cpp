@@ -894,8 +894,7 @@ void Shader::ensureIsAvailable([[maybe_unused]] GraphicsContext& graphicsContext
         SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
         priv::ensureExtensionsInit(graphicsContext);
 
-        return GLEXT_multitexture && GLEXT_shading_language_100 && GLEXT_shader_objects && GLEXT_vertex_shader &&
-               GLEXT_fragment_shader;
+        return GLEXT_multitexture && GLEXT_shader_objects && GLEXT_vertex_shader && GLEXT_fragment_shader;
     }();
 
     if (!available)
@@ -911,12 +910,6 @@ void Shader::ensureIsAvailable([[maybe_unused]] GraphicsContext& graphicsContext
 ////////////////////////////////////////////////////////////
 bool Shader::isGeometryAvailable([[maybe_unused]] GraphicsContext& graphicsContext)
 {
-#ifdef SFML_OPENGL_ES
-
-    return false;
-
-#else
-
     ensureIsAvailable(graphicsContext);
 
     static const bool available = [&graphicsContext]
@@ -924,12 +917,10 @@ bool Shader::isGeometryAvailable([[maybe_unused]] GraphicsContext& graphicsConte
         SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
         priv::ensureExtensionsInit(graphicsContext);
 
-        return GLEXT_geometry_shader4 || GLEXT_GL_VERSION_3_2;
+        return GLEXT_geometry_shader4 || GLAD_GL_ES_VERSION_3_2 || GLEXT_GL_VERSION_3_2;
     }();
 
     return available;
-
-#endif
 }
 
 
@@ -1022,12 +1013,11 @@ void main()
         glCheck(GLEXT_glDeleteShader(vertexShader));
     }
 
-#ifndef SFML_OPENGL_ES
     // Create the geometry shader if needed
     if (geometryShaderCode.data())
     {
         // Create and compile the shader
-        const GLEXT_GLhandle geometryShader   = GLEXT_glCreateShaderObject(GLEXT_GL_GEOMETRY_SHADER);
+        const GLEXT_GLhandle geometryShader   = GLEXT_glCreateShaderObject(GL_GEOMETRY_SHADER);
         const GLcharARB*     sourceCode       = geometryShaderCode.data();
         const auto           sourceCodeLength = static_cast<GLint>(geometryShaderCode.length());
         glCheck(GLEXT_glShaderSource(geometryShader, 1, &sourceCode, &sourceCodeLength));
@@ -1051,7 +1041,6 @@ void main()
         glCheck(GLEXT_glAttachShader(shaderProgram, geometryShader));
         glCheck(GLEXT_glDeleteShader(geometryShader));
     }
-#endif
 
 #ifdef SFML_OPENGL_ES
     if (fragmentShaderCode.data() == nullptr)
