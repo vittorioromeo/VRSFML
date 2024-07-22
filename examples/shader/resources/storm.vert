@@ -1,3 +1,7 @@
+#ifdef GL_ES
+precision mediump float;
+#endif
+
 uniform vec2  storm_position;
 uniform float storm_total_radius;
 uniform float storm_inner_radius;
@@ -29,4 +33,6 @@ void main()
     gl_Position   = sf_u_projectionMatrix * sf_u_modelViewMatrix * vec4(newPosition, 0.0, 1.0);
     sf_v_texCoord = (sf_u_textureMatrix * vec4(sf_a_texCoord, 0.0, 1.0)).xy;
     sf_v_color    = sf_a_color;
+
+    gl_PointSize = 2.0;
 }

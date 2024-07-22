@@ -1,4 +1,6 @@
-#version 150
+#ifdef GL_ES
+precision mediump float;
+#endif
 
 // The render target's resolution (used for scaling)
 uniform vec2 resolution;
