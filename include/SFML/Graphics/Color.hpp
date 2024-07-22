@@ -38,36 +38,15 @@ namespace sf
 /// \brief Utility class for manipulating RGBA colors
 ///
 ////////////////////////////////////////////////////////////
-class [[nodiscard]] Color
+struct [[nodiscard]] Color
 {
-public:
-    ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// Constructs an opaque black color. It is equivalent to
-    /// sf::Color(0, 0, 0, 255).
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr Color() = default;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct the color from its 4 RGBA components
-    ///
-    /// \param red   Red component (in the range [0, 255])
-    /// \param green Green component (in the range [0, 255])
-    /// \param blue  Blue component (in the range [0, 255])
-    /// \param alpha Alpha (opacity) component (in the range [0, 255])
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr Color(std::uint8_t red, std::uint8_t green, std::uint8_t blue, std::uint8_t alpha = 255);
-
     ////////////////////////////////////////////////////////////
     /// \brief Construct the color from 32-bit unsigned integer
     ///
     /// \param color Number containing the RGBA components (in that order)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr explicit Color(std::uint32_t color);
+    [[nodiscard]] constexpr static Color fromRGBA(std::uint32_t color);
 
     ////////////////////////////////////////////////////////////
     /// \brief Retrieve the color as a 32-bit unsigned integer
