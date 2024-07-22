@@ -292,10 +292,10 @@ constexpr T Vector2<T>::length() const
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-template <typename U>
-constexpr U Vector2<T>::to() const
+template <typename OtherVector2>
+constexpr OtherVector2 Vector2<T>::to() const
 {
-    using ValueType = decltype(U{}.x);
+    using ValueType = decltype(OtherVector2{}.x);
     return Vector2<ValueType>{static_cast<ValueType>(x), static_cast<ValueType>(y)};
 }
 

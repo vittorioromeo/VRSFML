@@ -505,7 +505,7 @@ private:
     friend class Window;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO
+    /// \brief Construct a window base from the inner implementation
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit WindowBase(base::UniquePtr<priv::WindowImpl>&& impl);

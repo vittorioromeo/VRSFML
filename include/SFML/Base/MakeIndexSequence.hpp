@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2013 Jonathan De Wachter (dewachter.jonathan@gmail.com)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -24,47 +24,64 @@
 
 #pragma once
 
+#include <SFML/Base/IndexSequence.hpp>
+
+
+#if __has_builtin(__integer_pack)
+
 ////////////////////////////////////////////////////////////
-// Headers
-////////////////////////////////////////////////////////////
-#include <SFML/Config.hpp>
-
-#include <SFML/Base/Assert.hpp>
+#define SFML_BASE_MAKE_INTEGER_SEQUENCE(N) ::sf::base::IndexSequence<__integer_pack(N)>
 
 
-namespace sf::priv
+namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-/// Let's define a macro to quickly check every EGL API call
-////////////////////////////////////////////////////////////
-#ifdef SFML_DEBUG
+template <decltype(sizeof(int)) N>
+using MakeIndexSequence = SFML_BASE_MAKE_INTEGER_SEQUENCE(N);
 
-// In debug mode, perform a test on every EGL call
-// The do-while loop is needed so that glCheck can be used as a single statement in if/else branches
-#define eglCheck(expr)                                        \
-    do                                                        \
-    {                                                         \
-        SFML_BASE_ASSERT(eglGetError() == EGL_SUCCESS);       \
-                                                              \
-        expr;                                                 \
-        ::sf::priv::eglCheckError(__FILE__, __LINE__, #expr); \
-    } while (false)
+} // namespace sf::base
+
+#elif __has_builtin(__make_integer_seq)
+
+namespace sf::base::priv
+{
+////////////////////////////////////////////////////////////
+template <typename T, T... Is>
+struct MakeIndexSequenceHelper
+{
+    using type = IndexSequence<Is...>;
+};
+
+} // namespace sf::base::priv
+
+
+namespace sf::base
+{
+////////////////////////////////////////////////////////////
+template <decltype(sizeof(int)) N>
+using MakeIndexSequence = typename __make_integer_seq<priv::MakeIndexSequenceHelper, decltype(sizeof(int)), N>::type;
+
+} // namespace sf::base
+
+
+////////////////////////////////////////////////////////////
+#define SFML_BASE_MAKE_INTEGER_SEQUENCE(N) ::sf::base::MakeIndexSequence<N>
 
 #else
 
-// Else, we don't add any overhead
-#define eglCheck(expr) (expr)
+#include <utility>
+
+
+namespace sf::base
+{
+////////////////////////////////////////////////////////////
+template <decltype(sizeof(int)) N>
+using MakeIndexSequence = std::make_index_sequence<N>;
+
+} // namespace sf::base
+
+
+////////////////////////////////////////////////////////////
+#define SFML_BASE_MAKE_INTEGER_SEQUENCE(N) ::sf::base::MakeIndexSequence<N>
 
 #endif
-
-////////////////////////////////////////////////////////////
-/// \brief Check the last EGL error
-///
-/// \param file Source file where the call is located
-/// \param line Line number of the source file where the call is located
-/// \param expression The evaluated expression as a string
-///
-////////////////////////////////////////////////////////////
-void eglCheckError(const char* file, unsigned int line, const char* expression);
-
-} // namespace sf::priv

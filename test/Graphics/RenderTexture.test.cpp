@@ -158,5 +158,5 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
         CHECK((finalImage.getPixel({0u, 0u}) == sf::Color::White));
         CHECK((finalImage.getPixel({static_cast<unsigned int>(width / 2.f) + 1u, 0u}) == sf::Color::Green));
     }
-    #endif
+#endif
 }

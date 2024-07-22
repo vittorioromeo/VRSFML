@@ -80,7 +80,7 @@ String getDescription(Keyboard::Scancode /* code */)
 ////////////////////////////////////////////////////////////
 void setVirtualKeyboardVisible(bool visible)
 {
-    // TODO: Check if the window is active
+    // TODO P2: Check if the window is active
 
     ActivityStates&       states = getActivity();
     const std::lock_guard lock(states.mutex);

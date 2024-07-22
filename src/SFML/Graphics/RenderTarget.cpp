@@ -27,7 +27,6 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/BlendMode.hpp>
 #include <SFML/Graphics/CoordinateType.hpp>
-#include <SFML/Graphics/GLCheck.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Shader.hpp>
@@ -39,6 +38,7 @@
 #include <SFML/Graphics/VertexBuffer.hpp>
 #include <SFML/Graphics/View.hpp>
 
+#include <SFML/Window/GLCheck.hpp>
 #include <SFML/Window/GLExtensions.hpp>
 #include <SFML/Window/GlContextTypeImpl.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
@@ -297,9 +297,6 @@ void main()
 ////////////////////////////////////////////////////////////
 [[nodiscard]] sf::Shader createBuiltInShader(sf::GraphicsContext& graphicsContext, const char* vertexSrc, const char* fragmentSrc)
 {
-    auto contextGuard = sf::GraphicsContext::SharedContextGuard{graphicsContext};
-    SFML_BASE_ASSERT(graphicsContext.isActiveGlContextSharedContext());
-
     auto shader = sf::Shader::loadFromMemory(graphicsContext, vertexSrc, fragmentSrc).value();
     SFML_BASE_ASSERT(glIsProgram(shader.getNativeHandle()));
 
@@ -321,7 +318,7 @@ struct [[nodiscard]] BuiltInShaders
 ////////////////////////////////////////////////////////////
 [[nodiscard]] sf::base::Optional<BuiltInShaders>& getBuiltInShaders(sf::GraphicsContext& graphicsContext)
 {
-    // TODO: rewrite to WindowContext and GraphicsContext:WindowContext
+    // TODO P0: rewrite to WindowContext and GraphicsContext:WindowContext
 
     SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
 
@@ -342,7 +339,7 @@ struct [[nodiscard]] BuiltInShaders
         return builtInShaders;
 
     SFML_BASE_ASSERT(graphicsContext.builtInShaderState == 2);
-    throw 100; // TODO
+    throw 100; // TODO P0: ...
 }
 
 
@@ -350,7 +347,7 @@ struct [[nodiscard]] BuiltInShaders
 sf::Shader& getShader(sf::GraphicsContext& graphicsContext, const sf::Shader* statesShader, const sf::Texture* statesTexture)
 {
     if (statesShader != nullptr)
-        return *const_cast<sf::Shader*>(statesShader); // TODO: nasty cast
+        return *const_cast<sf::Shader*>(statesShader); // TODO P0: nasty cast...
 
     if (statesShader == nullptr && statesTexture == nullptr)
         return getBuiltInShaders(graphicsContext)->untexturedShader;
@@ -383,10 +380,10 @@ struct [[nodiscard]] StatesCache
     bool           texCoordsArrayEnabled{}; //!< Is GL_TEXTURE_COORD_ARRAY client state enabled?
     bool           useVertexCache{};        //!< Did we previously use the vertex cache?
     Vertex         vertexCache[4]{};        //!< Pre-transformed vertices cache
-    GLuint         programChanged;          //!< TODO
-    GLint          posAttrib;               //!< TODO
-    GLint          colAttrib;               //!< TODO
-    GLint          texAttrib;               //!< TODO
+    GLuint         lastUsedProgramId;       //!< GL id of the last used shader program
+    GLint          sfAttribPositionIdx;     //!< Index of the "sf_a_position" attribute
+    GLint          sfAttribColorIdx;        //!< Index of the "sf_a_color" attribute
+    GLint          sfAttribTexCoordIdx;     //!< Index of the "sf_a_texCoord" attribute
 };
 
 
@@ -395,10 +392,8 @@ template <auto FnGen, auto FnBind, auto FnGet, auto FnDelete>
 class OpenGLRAII
 {
 public:
-    [[nodiscard]] explicit OpenGLRAII(GraphicsContext& graphicsContext)
+    [[nodiscard]] explicit OpenGLRAII(GraphicsContext&)
     {
-        priv::ensureExtensionsInit(graphicsContext);
-
         SFML_BASE_ASSERT(m_id == 0u);
         FnGen(m_id);
         SFML_BASE_ASSERT(m_id != 0u);
@@ -464,11 +459,11 @@ using VBO = OpenGLRAII<[](auto& id) { glCheck(glGenBuffers(1, &id)); },
 void doVertexStuff(bool        enableTexCoordsArray,
                    const GLint posAttribIdx,
                    const GLint colorAttribIdx,
-                   const GLint texCoordAttribIdx) // TODO: name
+                   const GLint texCoordAttribIdx) // TODO P0: better name for func and params
 {
 #define SFML_PRIV_OFFSETOF(...) reinterpret_cast<const void*>(offsetof(__VA_ARGS__))
 
-    // TODO BC: actually get the layout indices
+    // TODO P0: "actually get the layout indices" -- not sure what that means, we do that...?
     SFML_BASE_ASSERT(posAttribIdx >= 0);
 
     glCheck(glEnableVertexAttribArray(static_cast<GLuint>(posAttribIdx)));
@@ -515,13 +510,13 @@ struct RenderTarget::Impl
     {
     }
 
-    GraphicsContext* graphicsContext; //!< TODO
+    GraphicsContext* graphicsContext; //!< The graphics context
     View             defaultView;     //!< Default view
     View             view;            //!< Current view
     StatesCache      cache{};         //!< Render states cache
-    std::uint64_t    id{};            //!< Unique number that identifies the RenderTarget
-    VAO              vao;             //!< TODO
-    VBO              vbo;             //!< TODO
+    std::uint64_t    id{};            //!< Unique number that identifies the render target
+    VAO              vao;             //!< Vertex array object associated with the render target
+    VBO              vbo;             //!< Vertex buffer object associated with the render target
 };
 
 
@@ -733,7 +728,10 @@ void RenderTarget::draw(const Vertex* vertices, std::size_t vertexCount, Primiti
         const auto* data = reinterpret_cast<const char*>(useVertexCache ? m_impl->cache.vertexCache : vertices);
 
         glCheck(glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeof(Vertex) * vertexCount), data, GL_STATIC_DRAW));
-        doVertexStuff(enableTexCoordsArray, m_impl->cache.posAttrib, m_impl->cache.colAttrib, m_impl->cache.texAttrib);
+        doVertexStuff(enableTexCoordsArray,
+                      m_impl->cache.sfAttribPositionIdx,
+                      m_impl->cache.sfAttribColorIdx,
+                      m_impl->cache.sfAttribTexCoordIdx);
 
         drawPrimitives(type, 0, vertexCount);
         cleanupDraw(states);
@@ -781,7 +779,10 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, std::size_t firstVerte
         VertexBuffer::bind(*m_impl->graphicsContext, &vertexBuffer);
 
         // Always enable texture coordinates
-        doVertexStuff(true /* enableTexCoordsArray */, m_impl->cache.posAttrib, m_impl->cache.colAttrib, m_impl->cache.texAttrib);
+        doVertexStuff(true /* enableTexCoordsArray */,
+                      m_impl->cache.sfAttribPositionIdx,
+                      m_impl->cache.sfAttribColorIdx,
+                      m_impl->cache.sfAttribTexCoordIdx);
         drawPrimitives(vertexBuffer.getPrimitiveType(), firstVertex, vertexCount);
 
         // Unbind vertex buffer
@@ -851,7 +852,7 @@ bool RenderTarget::setActive(bool active)
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::pushGLStates() // TODO: remove?
+void RenderTarget::pushGLStates() // TODO P0: remove?
 {
     if (RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) || setActive(true))
     {
@@ -871,7 +872,7 @@ void RenderTarget::pushGLStates() // TODO: remove?
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::popGLStates() // TODO: remove?
+void RenderTarget::popGLStates() // TODO P0: remove?
 {
     (void)(RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) || setActive(true));
 }
@@ -894,9 +895,6 @@ void RenderTarget::resetGLStates()
 
     if (RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) || setActive(true))
     {
-        // Make sure that extensions are initialized
-        priv::ensureExtensionsInit(*m_impl->graphicsContext);
-
         // Make sure that the texture unit which is active is the number 0
         if (GLEXT_multitexture)
         {
@@ -918,9 +916,9 @@ void RenderTarget::resetGLStates()
                 glCheck(glDisableVertexAttribArray(static_cast<GLuint>(cacheAttrib)));
         };
 
-        disableCacheAttrib(m_impl->cache.posAttrib);
-        disableCacheAttrib(m_impl->cache.colAttrib);
-        disableCacheAttrib(m_impl->cache.texAttrib);
+        disableCacheAttrib(m_impl->cache.sfAttribPositionIdx);
+        disableCacheAttrib(m_impl->cache.sfAttribColorIdx);
+        disableCacheAttrib(m_impl->cache.sfAttribTexCoordIdx);
 
         m_impl->cache.scissorEnabled = false;
         m_impl->cache.stencilEnabled = false;
@@ -962,11 +960,11 @@ void RenderTarget::initialize()
     m_impl->view        = m_impl->defaultView;
 
     // Set GL states only on first draw, so that we don't pollute user's states
-    m_impl->cache.glStatesSet    = false;
-    m_impl->cache.programChanged = 0u;
-    m_impl->cache.posAttrib      = -1;
-    m_impl->cache.colAttrib      = -1;
-    m_impl->cache.texAttrib      = -1;
+    m_impl->cache.glStatesSet         = false;
+    m_impl->cache.lastUsedProgramId   = 0u;
+    m_impl->cache.sfAttribPositionIdx = -1;
+    m_impl->cache.sfAttribColorIdx    = -1;
+    m_impl->cache.sfAttribTexCoordIdx = -1;
 
     // Generate a unique ID for this RenderTarget to track
     // whether it is active within a specific context
@@ -1166,7 +1164,7 @@ void RenderTarget::setupDraw(bool useVertexCache, const RenderStates& states)
     }
 
     // Apply the view
-    // if (!m_impl->cache.enable || m_impl->cache.viewChanged) // TODO: breaks island example
+    // if (!m_impl->cache.enable || m_impl->cache.viewChanged) // TODO P0: uncommenting breaks island example
     applyCurrentView(states.shader, states.texture);
 
     // Apply the blend mode
@@ -1215,9 +1213,9 @@ void RenderTarget::setupDraw(bool useVertexCache, const RenderStates& states)
 
     // Update cache
     const auto usedNativeHandle = usedShader.getNativeHandle();
-    // if (m_impl->cache.programChanged != usedNativeHandle)
+    if (m_impl->cache.lastUsedProgramId != usedNativeHandle)
     {
-        m_impl->cache.programChanged = usedNativeHandle;
+        m_impl->cache.lastUsedProgramId = usedNativeHandle;
 
         const auto updateCacheAttrib = [&](GLint& cacheAttrib, const char* attribName)
         {
@@ -1227,9 +1225,9 @@ void RenderTarget::setupDraw(bool useVertexCache, const RenderStates& states)
                 glCheck(glEnableVertexAttribArray(static_cast<GLuint>(cacheAttrib)));
         };
 
-        updateCacheAttrib(m_impl->cache.posAttrib, "sf_a_position");
-        updateCacheAttrib(m_impl->cache.colAttrib, "sf_a_color");
-        updateCacheAttrib(m_impl->cache.texAttrib, "sf_a_texCoord");
+        updateCacheAttrib(m_impl->cache.sfAttribPositionIdx, "sf_a_position");
+        updateCacheAttrib(m_impl->cache.sfAttribColorIdx, "sf_a_color");
+        updateCacheAttrib(m_impl->cache.sfAttribTexCoordIdx, "sf_a_texCoord");
     }
 }
 

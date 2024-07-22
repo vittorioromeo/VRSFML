@@ -258,7 +258,7 @@ m_cursorGrabbed(m_fullscreen)
 ////////////////////////////////////////////////////////////
 WindowImplWin32::~WindowImplWin32()
 {
-    // TODO should we restore the cursor shape and visibility?
+    // TODO P2: should we restore the cursor shape and visibility?
 
     // Destroy the custom icon, if any
     if (m_icon)

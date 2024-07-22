@@ -25,12 +25,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/GLCheck.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Vertex.hpp>
 #include <SFML/Graphics/VertexBuffer.hpp>
 
+#include <SFML/Window/GLCheck.hpp>
 #include <SFML/Window/GLExtensions.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
 
@@ -219,9 +219,6 @@ bool VertexBuffer::update([[maybe_unused]] const VertexBuffer& vertexBuffer)
 
     SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
-    // Make sure that extensions are initialized
-    priv::ensureExtensionsInit(*m_graphicsContext);
-
     if (GLEXT_copy_buffer)
     {
         glCheck(glBindBuffer(GL_COPY_READ_BUFFER, vertexBuffer.m_buffer));
@@ -343,10 +340,6 @@ bool VertexBuffer::isAvailable(GraphicsContext& graphicsContext)
     static const bool available = [&graphicsContext]
     {
         SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
-
-        // Make sure that extensions are initialized
-        priv::ensureExtensionsInit(graphicsContext);
-
         return GLEXT_vertex_buffer_object != 0;
     }();
 

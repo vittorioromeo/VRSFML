@@ -168,7 +168,7 @@ struct Font::Impl
 
     using PageTable = std::unordered_map<unsigned int, Page>; //!< Table mapping a character size to its page (texture)
 
-    GraphicsContext*             graphicsContext; //!< TODO
+    GraphicsContext*             graphicsContext; //!< The graphics context
     std::shared_ptr<FontHandles> fontHandles;     //!< Shared information about the internal font instance
     bool                         isSmooth{true};  //!< Status of the smooth filter
     FontInfo                     info;            //!< Information about the font

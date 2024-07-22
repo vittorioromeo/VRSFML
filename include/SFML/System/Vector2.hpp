@@ -188,11 +188,13 @@ public:
     [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Vector2 cwiseDiv(Vector2 rhs) const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO
+    /// \brief Convert to another `Vector2` of type `OtherVector2`
+    ///
+    /// `OtherVector2` must be a `Vector2<...>` type.
     ///
     ////////////////////////////////////////////////////////////
-    template <typename U>
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr U to() const;
+    template <typename OtherVector2>
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr OtherVector2 to() const;
 
     ////////////////////////////////////////////////////////////
     // Member data
@@ -225,7 +227,7 @@ using Vector2f = Vector2<float>;
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector2<T> operator-(Vector2<T> right);
+[[nodiscard, gnu::always_inline, gnu::const]] constexpr Vector2<T> operator-(Vector2<T> right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -270,7 +272,7 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector2<T> operator+(Vector2<T> left, Vector2<T> right);
+[[nodiscard, gnu::always_inline, gnu::const]] constexpr Vector2<T> operator+(Vector2<T> left, Vector2<T> right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -283,7 +285,7 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector2<T> operator-(Vector2<T> left, Vector2<T> right);
+[[nodiscard, gnu::always_inline, gnu::const]] constexpr Vector2<T> operator-(Vector2<T> left, Vector2<T> right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -296,7 +298,7 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector2<T> operator*(Vector2<T> left, T right);
+[[nodiscard, gnu::always_inline, gnu::const]] constexpr Vector2<T> operator*(Vector2<T> left, T right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -309,7 +311,7 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector2<T> operator*(T left, Vector2<T> right);
+[[nodiscard, gnu::always_inline, gnu::const]] constexpr Vector2<T> operator*(T left, Vector2<T> right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -338,7 +340,7 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector2<T> operator/(Vector2<T> left, T right);
+[[nodiscard, gnu::always_inline, gnu::const]] constexpr Vector2<T> operator/(Vector2<T> left, T right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -369,7 +371,7 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator==(Vector2<T> left, Vector2<T> right);
+[[nodiscard, gnu::always_inline, gnu::const]] constexpr bool operator==(Vector2<T> left, Vector2<T> right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -384,7 +386,7 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator!=(Vector2<T> left, Vector2<T> right);
+[[nodiscard, gnu::always_inline, gnu::const]] constexpr bool operator!=(Vector2<T> left, Vector2<T> right);
 
 } // namespace sf
 

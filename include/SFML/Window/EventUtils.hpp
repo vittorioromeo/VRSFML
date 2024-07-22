@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2013 Jonathan De Wachter (dewachter.jonathan@gmail.com)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -27,44 +27,40 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Config.hpp>
-
-#include <SFML/Base/Assert.hpp>
+#include <SFML/Window/Export.hpp>
 
 
-namespace sf::priv
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+namespace sf
+{
+class Event;
+} // namespace sf
+
+
+////////////////////////////////////////////////////////////
+/// \brief Event handling utilities
+///
+////////////////////////////////////////////////////////////
+namespace sf::EventUtils
 {
 ////////////////////////////////////////////////////////////
-/// Let's define a macro to quickly check every EGL API call
-////////////////////////////////////////////////////////////
-#ifdef SFML_DEBUG
-
-// In debug mode, perform a test on every EGL call
-// The do-while loop is needed so that glCheck can be used as a single statement in if/else branches
-#define eglCheck(expr)                                        \
-    do                                                        \
-    {                                                         \
-        SFML_BASE_ASSERT(eglGetError() == EGL_SUCCESS);       \
-                                                              \
-        expr;                                                 \
-        ::sf::priv::eglCheckError(__FILE__, __LINE__, #expr); \
-    } while (false)
-
-#else
-
-// Else, we don't add any overhead
-#define eglCheck(expr) (expr)
-
-#endif
-
-////////////////////////////////////////////////////////////
-/// \brief Check the last EGL error
-///
-/// \param file Source file where the call is located
-/// \param line Line number of the source file where the call is located
-/// \param expression The evaluated expression as a string
+/// \brief Check if the event is `Event::Closed` or `Event::KeyPressed`
+///        with escape key
 ///
 ////////////////////////////////////////////////////////////
-void eglCheckError(const char* file, unsigned int line, const char* expression);
+[[nodiscard]] SFML_WINDOW_API bool isClosedOrEscapeKeyPressed(const Event& event);
 
-} // namespace sf::priv
+} // namespace sf::EventUtils
+
+
+////////////////////////////////////////////////////////////
+/// \namespace sf::EventUtils
+/// \ingroup window
+///
+/// Provides event handling utilities
+///
+/// \see sf::Event
+///
+////////////////////////////////////////////////////////////

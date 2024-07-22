@@ -191,7 +191,7 @@ GlContext(graphicsContext, id, {})
 {
     EglContextImpl::ensureInit();
 
-    // TODO: this gets called from rendertextureimpl
+    // TODO P0: this gets called from `RenderTextureImplDefault`
     sf::priv::err() << "Warning: context has not been initialized. The constructor EglContext(shared, settings, size) "
                        "is currently not implemented.";
 }
@@ -298,9 +298,10 @@ void EglContext::createSurface(EGLNativeWindowType window)
 ////////////////////////////////////////////////////////////
 void EglContext::destroySurface()
 {
-    SFML_BASE_ASSERT(false); // TODO:
-    // Ensure that this context is no longer active since our surface is going to be destroyed
-    // setActive(false); // TODO:
+    // Seems to only be called by `WindowImplAndroid`
+
+    if (!m_graphicsContext.setActiveThreadLocalGlContext(*this, false))
+        err() << "Failure to disable EGL context in `EglContext::destroySurface`";
 
     eglCheck(eglDestroySurface(m_display, m_surface));
     m_surface = EGL_NO_SURFACE;
@@ -383,9 +384,9 @@ EGLConfig EglContext::getBestConfig(EGLDisplay display, unsigned int bitsPerPixe
 ////////////////////////////////////////////////////////////
 void EglContext::updateSettings()
 {
-    m_settings.majorVersion      = 1;
-    m_settings.minorVersion      = 1;
-    m_settings.attributeFlags    = ContextSettings::Attribute::Default | ContextSettings::Attribute::Debug; // TODO
+    m_settings.majorVersion = 1;
+    m_settings.minorVersion = 1;
+    m_settings.attributeFlags = ContextSettings::Attribute::Default | ContextSettings::Attribute::Debug; // TODO P0: needed?
     m_settings.depthBits         = 0;
     m_settings.stencilBits       = 0;
     m_settings.antialiasingLevel = 0;

@@ -6,11 +6,12 @@
 #include <SFML/Graphics/View.hpp>
 
 #include <SFML/Window/Event.hpp>
+#include <SFML/Window/EventUtils.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/VideoMode.hpp>
 
 #include <SFML/System/Path.hpp>
-#include <SFML/System/Sleep\.hpp>
+#include <SFML/System/Sleep.hpp>
 
 #include <SFML/Base/Optional.hpp>
 
@@ -122,13 +123,8 @@ int main(int, char**)
     {
         while (const sf::base::Optional event = active ? window.pollEvent() : window.waitEvent())
         {
-            // Window closed or escape key pressed: exit
-            if (event->is<sf::Event::Closed>() ||
-                (event->is<sf::Event::KeyPressed>() &&
-                 event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape))
-            {
+            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return EXIT_SUCCESS;
-            }
 
             if (const auto* resized = event->getIf<sf::Event::Resized>())
             {

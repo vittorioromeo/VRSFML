@@ -77,22 +77,35 @@ void ensureInit()
     gladLoadWGL(nullptr, getOpenGl32Function);
 }
 
+////////////////////////////////////////////////////////////
+struct ExtensionInitState
+{
+    bool                  initialized{false};
+    sf::priv::WglContext* firstContext{nullptr}; // Should always be the shared context
+};
+
 
 ////////////////////////////////////////////////////////////
-void ensureExtensionsInit(sf::priv::WglContext& wglContext, HDC deviceContext)
+[[nodiscard]] ExtensionInitState& getExtensionInitState()
 {
-    static bool initialized = false;
-    if (initialized)
+    static ExtensionInitState result;
+    return result;
+}
+
+
+////////////////////////////////////////////////////////////
+void ensureWGLExtensionsInit(sf::priv::WglContext& wglContext, HDC deviceContext)
+{
+    ExtensionInitState& extensionInitState = getExtensionInitState();
+    if (extensionInitState.initialized)
         return;
 
-    initialized = true;
+    extensionInitState.initialized  = true;
+    extensionInitState.firstContext = &wglContext; // Should always be the shared context
 
     // We don't check the return value since the extension
     // flags are cleared even if loading fails
-
-    // TODO:
-    static auto* wglContextPtr = &wglContext;
-    gladLoadWGL(deviceContext, [](const char* name) { return wglContextPtr->getFunction(name); });
+    gladLoadWGL(deviceContext, [](const char* name) { return getExtensionInitState().firstContext->getFunction(name); });
 }
 
 } // namespace WglContextImpl
@@ -108,7 +121,6 @@ WglContext::WglContext(GraphicsContext&   graphicsContext,
                        ContextSettings&   settings,
                        const SurfaceData& surfaceData) :
 GlContext(graphicsContext, id, settings),
-// Create the rendering surface from the owner window
 m_surfaceData(surfaceData),
 m_context(createContext(m_settings, m_surfaceData, shared))
 {
@@ -117,7 +129,7 @@ m_context(createContext(m_settings, m_surfaceData, shared))
     if (shared == nullptr && m_context)
     {
         makeCurrent(true);
-        WglContextImpl::ensureExtensionsInit(*this, m_surfaceData.deviceContext);
+        WglContextImpl::ensureWGLExtensionsInit(*this, m_surfaceData.deviceContext);
         makeCurrent(false);
     }
 }
@@ -245,7 +257,7 @@ void WglContext::display()
 void WglContext::setVerticalSyncEnabled(bool enabled)
 {
     // Make sure that extensions are initialized
-    WglContextImpl::ensureExtensionsInit(*this, m_surfaceData.deviceContext);
+    SFML_BASE_ASSERT(WglContextImpl::getExtensionInitState().initialized);
 
     if (GLAD_WGL_EXT_swap_control)
     {

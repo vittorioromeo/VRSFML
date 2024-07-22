@@ -86,7 +86,7 @@ public:
     static inline CurrentTextureType CurrentTexture;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO
+    /// \brief Type-safe wrapper over a non-null shader uniform location
     ///
     ////////////////////////////////////////////////////////////
     class [[nodiscard]] UniformLocation

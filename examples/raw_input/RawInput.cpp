@@ -7,6 +7,7 @@
 #include <SFML/Graphics/Text.hpp>
 
 #include <SFML/Window/Event.hpp>
+#include <SFML/Window/EventUtils.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/VideoMode.hpp>
 
@@ -54,10 +55,8 @@ int main()
     {
         while (const sf::base::Optional event = window.pollEvent())
         {
-            if (event->is<sf::Event::Closed>())
-            {
+            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return EXIT_SUCCESS;
-            }
 
             static const auto vec2ToString = [](const sf::Vector2i vec2)
             { return '(' + std::to_string(vec2.x) + ", " + std::to_string(vec2.y) + ')'; };

@@ -12,7 +12,7 @@ struct StringMaker<sf::base::Optional<T>>
 {
     static doctest::String convert(const sf::base::Optional<T>&)
     {
-        return ""; // TODO
+        return ""; // TODO P2:
     }
 };
 

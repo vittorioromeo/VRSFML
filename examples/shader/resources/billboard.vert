@@ -13,8 +13,6 @@ attribute vec2 sf_a_texCoord;
 varying vec4 sf_v_color;
 varying vec2 sf_v_texCoord;
 
-// TODO: check local branch on PC, I think this worked
-
 void main()
 {
     gl_Position   = sf_u_projectionMatrix * sf_u_modelViewMatrix * vec4(sf_a_position, 0.0, 1.0);

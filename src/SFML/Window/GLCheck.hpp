@@ -33,6 +33,7 @@
 
 #include <SFML/Base/Assert.hpp>
 
+
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
@@ -46,6 +47,7 @@ namespace sf::priv
     do                                                       \
     {                                                        \
         SFML_BASE_ASSERT(glGetError() == GL_NO_ERROR);       \
+                                                             \
         expr;                                                \
         ::sf::priv::glCheckError(__FILE__, __LINE__, #expr); \
     } while (false)
@@ -54,8 +56,10 @@ namespace sf::priv
     [&]                                                      \
     {                                                        \
         SFML_BASE_ASSERT(glGetError() == GL_NO_ERROR);       \
+                                                             \
         auto result = expr;                                  \
         ::sf::priv::glCheckError(__FILE__, __LINE__, #expr); \
+                                                             \
         return result;                                       \
     }()
 
