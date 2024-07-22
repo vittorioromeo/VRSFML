@@ -51,7 +51,7 @@
     defined(SFML_SYSTEM_NETBSD)
 
 #if defined(SFML_OPENGL_ES)
-#include <GLES2/gl2.h>
+#include <GLES3/gl3.h>
 #else
 #include <GL/gl.h>
 #endif
@@ -67,10 +67,10 @@
 
 #elif defined(SFML_SYSTEM_ANDROID)
 
-#include <GLES2/gl2.h>
+#include <GLES3/gl3.h>
 
 // We're not using OpenGL ES 2+ yet, but we can use the sRGB extension
-#include <GLES2/gl2ext.h>
-#include <GLES2/gl2platform.h>
+#include <GLES3/gl3ext.h>
+#include <GLES3/gl3platform.h>
 
 #endif

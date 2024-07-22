@@ -506,61 +506,12 @@ void doVertexStuff(bool        enableTexCoordsArray,
 
 
 ////////////////////////////////////////////////////////////
-void doVertexStuffES(bool        enableTexCoordsArray,
-                     const GLint posAttribIdx,
-                     const GLint colorAttribIdx,
-                     const GLint texCoordAttribIdx,
-                     const char* ptr) // TODO: name
-{
-#define SFML_PRIV_OFFSETOF(...) reinterpret_cast<const void*>(offsetof(__VA_ARGS__))
-
-    // TODO BC: actually get the layout indices
-    SFML_BASE_ASSERT(posAttribIdx >= 0);
-
-    glCheck(glEnableVertexAttribArray(static_cast<GLuint>(posAttribIdx)));
-    glCheck(glVertexAttribPointer(/*      index */ static_cast<GLuint>(posAttribIdx),
-                                  /*       size */ 2,
-                                  /*       type */ GL_FLOAT,
-                                  /* normalized */ GL_FALSE,
-                                  /*     stride */ sizeof(Vertex),
-                                  /*     offset */ ptr + (unsigned long long)SFML_PRIV_OFFSETOF(Vertex, position)));
-
-    if (colorAttribIdx >= 0)
-    {
-        glCheck(glEnableVertexAttribArray(static_cast<GLuint>(colorAttribIdx)));
-        glCheck(glVertexAttribPointer(/*      index */ static_cast<GLuint>(colorAttribIdx),
-                                      /*       size */ 4,
-                                      /*       type */ GL_UNSIGNED_BYTE,
-                                      /* normalized */ GL_TRUE,
-                                      /*     stride */ sizeof(Vertex),
-                                      /*     offset */ ptr + (unsigned long long)SFML_PRIV_OFFSETOF(Vertex, color)));
-    }
-
-    if (enableTexCoordsArray && texCoordAttribIdx >= 0)
-    {
-        glCheck(glEnableVertexAttribArray(static_cast<GLuint>(texCoordAttribIdx)));
-        glCheck(glVertexAttribPointer(/*      index */ static_cast<GLuint>(texCoordAttribIdx),
-                                      /*       size */ 2,
-                                      /*       type */ GL_FLOAT,
-                                      /* normalized */ GL_FALSE,
-                                      /*     stride */ sizeof(Vertex),
-                                      /*     offset */ ptr + (unsigned long long)SFML_PRIV_OFFSETOF(Vertex, texCoords)));
-    }
-
-#undef SFML_PRIV_OFFSETOF
-}
-
-
-////////////////////////////////////////////////////////////
 struct RenderTarget::Impl
 {
     explicit Impl(GraphicsContext& theGraphicsContext) :
-    graphicsContext(&theGraphicsContext)
-#ifndef SFML_OPENGL_ES // TODO
-    ,
+    graphicsContext(&theGraphicsContext),
     vao(theGraphicsContext),
     vbo(theGraphicsContext)
-#endif
     {
     }
 
@@ -569,10 +520,8 @@ struct RenderTarget::Impl
     View             view;            //!< Current view
     StatesCache      cache{};         //!< Render states cache
     std::uint64_t    id{};            //!< Unique number that identifies the RenderTarget
-#ifndef SFML_OPENGL_ES                // TODO
-    VAO vao;                          //!< TODO
-    VBO vbo;                          //!< TODO
-#endif
+    VAO              vao;             //!< TODO
+    VBO              vbo;             //!< TODO
 };
 
 
@@ -783,9 +732,8 @@ void RenderTarget::draw(const Vertex* vertices, std::size_t vertexCount, Primiti
         // If we pre-transform the vertices, we must use our internal vertex cache
         const auto* data = reinterpret_cast<const char*>(useVertexCache ? m_impl->cache.vertexCache : vertices);
 
-        // TODO: GLES, must pass data as param
-        //glCheck(glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeof(Vertex) * vertexCount), data, GL_STATIC_DRAW));
-        doVertexStuffES(enableTexCoordsArray, m_impl->cache.posAttrib, m_impl->cache.colAttrib, m_impl->cache.texAttrib, data);
+        glCheck(glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeof(Vertex) * vertexCount), data, GL_STATIC_DRAW));
+        doVertexStuff(enableTexCoordsArray, m_impl->cache.posAttrib, m_impl->cache.colAttrib, m_impl->cache.texAttrib);
 
         drawPrimitives(type, 0, vertexCount);
         cleanupDraw(states);
@@ -1262,10 +1210,8 @@ void RenderTarget::setupDraw(bool useVertexCache, const RenderStates& states)
     // Apply the shader
     applyShader(&usedShader);
 
-#ifndef SFML_OPENGL_ES
     m_impl->vao.bind();
     m_impl->vbo.bind();
-#endif
 
     // Update cache
     const auto usedNativeHandle = usedShader.getNativeHandle();
@@ -1296,9 +1242,7 @@ void RenderTarget::drawPrimitives(PrimitiveType type, std::size_t firstVertex, s
     const GLenum mode = modes[static_cast<std::size_t>(type)];
 
     // Draw the primitives
-#ifndef SFML_OPENGL_ES
     m_impl->vao.bind();
-#endif
     glCheck(glDrawArrays(mode, static_cast<GLint>(firstVertex), static_cast<GLsizei>(vertexCount)));
 }
 

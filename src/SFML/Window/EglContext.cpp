@@ -48,9 +48,9 @@
 
 // We check for this definition in order to avoid multiple definitions of GLAD
 // entities during unity builds of SFML.
-#ifndef SF_GLAD_EGL_IMPLEMENTATION_INCLUDED
-#define SF_GLAD_EGL_IMPLEMENTATION_INCLUDED
-#define SF_GLAD_EGL_IMPLEMENTATION
+#ifndef GLAD_EGL_IMPLEMENTATION_INCLUDED
+#define GLAD_EGL_IMPLEMENTATION_INCLUDED
+#define GLAD_EGL_IMPLEMENTATION
 #include <glad/egl.h>
 #endif
 
@@ -274,7 +274,7 @@ void EglContext::setVerticalSyncEnabled(bool enabled)
 ////////////////////////////////////////////////////////////
 void EglContext::createContext(EglContext* shared)
 {
-    const EGLint contextVersion[] = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE};
+    const EGLint contextVersion[] = {EGL_CONTEXT_MAJOR_VERSION, 3, EGL_CONTEXT_MINOR_VERSION, 1, EGL_NONE};
 
     EGLContext toShared = shared != nullptr ? shared->m_context : EGL_NO_CONTEXT;
 
@@ -332,7 +332,7 @@ EGLConfig EglContext::getBestConfig(EGLDisplay display, unsigned int bitsPerPixe
         int renderableType = 0;
         eglCheck(eglGetConfigAttrib(display, configs[i], EGL_SURFACE_TYPE, &surfaceType));
         eglCheck(eglGetConfigAttrib(display, configs[i], EGL_RENDERABLE_TYPE, &renderableType));
-        if (!(surfaceType & (EGL_WINDOW_BIT | EGL_PBUFFER_BIT)) || !(renderableType & EGL_OPENGL_ES2_BIT))
+        if (!(surfaceType & (EGL_WINDOW_BIT | EGL_PBUFFER_BIT)) || !(renderableType & EGL_OPENGL_ES3_BIT))
             continue;
 
         // Extract the components of the current config

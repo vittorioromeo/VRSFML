@@ -207,7 +207,7 @@ bool RenderTextureImplFBO::create(Vector2u size, unsigned int textureId, const C
                 }
                 glCheck(GLEXT_glBindRenderbuffer(GLEXT_GL_RENDERBUFFER, m_impl->depthStencilBuffer));
                 glCheck(GLEXT_glRenderbufferStorage(GLEXT_GL_RENDERBUFFER,
-                                                    GLEXT_GL_DEPTH24_STENCIL8,
+                                                    GL_DEPTH24_STENCIL8,
                                                     static_cast<GLsizei>(size.x),
                                                     static_cast<GLsizei>(size.y)));
 
@@ -287,7 +287,7 @@ bool RenderTextureImplFBO::create(Vector2u size, unsigned int textureId, const C
                 glCheck(GLEXT_glBindRenderbuffer(GLEXT_GL_RENDERBUFFER, m_impl->depthStencilBuffer));
                 glCheck(GLEXT_glRenderbufferStorageMultisample(GLEXT_GL_RENDERBUFFER,
                                                                static_cast<GLsizei>(settings.antialiasingLevel),
-                                                               GLEXT_GL_DEPTH24_STENCIL8,
+                                                               GL_DEPTH24_STENCIL8,
                                                                static_cast<GLsizei>(size.x),
                                                                static_cast<GLsizei>(size.y)));
 

@@ -43,9 +43,9 @@
 
 // We check for this definition in order to avoid multiple definitions of GLAD
 // entities during unity builds of SFML.
-#ifndef SF_GLAD_EGL_IMPLEMENTATION_INCLUDED
-#define SF_GLAD_EGL_IMPLEMENTATION_INCLUDED
-#define SF_GLAD_EGL_IMPLEMENTATION
+#ifndef GLAD_EGL_IMPLEMENTATION_INCLUDED
+#define GLAD_EGL_IMPLEMENTATION_INCLUDED
+#define GLAD_EGL_IMPLEMENTATION
 #include <glad/egl.h>
 #endif
 
