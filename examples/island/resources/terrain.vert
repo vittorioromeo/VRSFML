@@ -1,3 +1,7 @@
+#ifdef GL_ES
+precision mediump float;
+#endif
+
 varying vec3 normal;
 
 uniform mat4 sf_u_projectionMatrix;

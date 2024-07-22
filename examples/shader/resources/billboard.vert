@@ -1,4 +1,6 @@
-#version 150
+#ifdef GL_ES
+precision mediump float;
+#endif
 
 uniform mat4 sf_u_projectionMatrix;
 uniform mat4 sf_u_modelViewMatrix;

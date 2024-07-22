@@ -1,3 +1,7 @@
+#ifdef GL_ES
+precision mediump float;
+#endif
+
 uniform float wave_phase;
 uniform vec2  wave_amplitude;
 
