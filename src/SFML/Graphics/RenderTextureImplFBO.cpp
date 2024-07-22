@@ -25,10 +25,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/GLCheck.hpp>
 #include <SFML/Graphics/RenderTextureImplFBO.hpp>
 
 #include <SFML/Window/ContextSettings.hpp>
+#include <SFML/Window/GLCheck.hpp>
 #include <SFML/Window/GLExtensions.hpp>
 #include <SFML/Window/GlContext.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
@@ -66,7 +66,7 @@ struct RenderTextureImplFBO::Impl
 
     using FrameBufferIdMap = std::unordered_map<std::uint64_t, unsigned int>;
 
-    GraphicsContext* graphicsContext; //!< TODO
+    GraphicsContext* graphicsContext; //!< The graphics context
 
     FrameBufferIdMap frameBuffers; //!< OpenGL frame buffer objects per context
     FrameBufferIdMap multisampleFrameBuffers; //!< base::Optional per-context OpenGL frame buffer objects with multisample attachments
@@ -120,10 +120,6 @@ RenderTextureImplFBO::~RenderTextureImplFBO()
 bool RenderTextureImplFBO::isAvailable(GraphicsContext& graphicsContext)
 {
     SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
-
-    // Make sure that extensions are initialized
-    ensureExtensionsInit(graphicsContext);
-
     return GLEXT_framebuffer_object != 0;
 }
 
@@ -138,9 +134,7 @@ unsigned int RenderTextureImplFBO::getMaximumAntialiasingLevel([[maybe_unused]] 
 #else
 
     SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
-    GLint samples = 0;
-    glCheck(glGetIntegerv(GLEXT_GL_MAX_SAMPLES, &samples));
-    return static_cast<unsigned int>(samples);
+    return static_cast<unsigned int>(getGLInteger(GLEXT_GL_MAX_SAMPLES));
 
 #endif
 }
@@ -162,9 +156,6 @@ bool RenderTextureImplFBO::create(Vector2u size, unsigned int textureId, const C
     {
         SFML_BASE_ASSERT(m_impl->graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
-        // Make sure that extensions are initialized
-        ensureExtensionsInit(*m_impl->graphicsContext);
-
         if (settings.antialiasingLevel && !(GLEXT_framebuffer_multisample && GLEXT_framebuffer_blit))
             return false;
 
@@ -173,8 +164,7 @@ bool RenderTextureImplFBO::create(Vector2u size, unsigned int textureId, const C
         // Check if the requested anti-aliasing level is supported
         if (settings.antialiasingLevel)
         {
-            GLint samples = 0;
-            glCheck(glGetIntegerv(GLEXT_GL_MAX_SAMPLES, &samples));
+            const auto samples = getGLInteger(GLEXT_GL_MAX_SAMPLES);
 
             if (settings.antialiasingLevel > static_cast<unsigned int>(samples))
             {
@@ -352,11 +342,8 @@ bool RenderTextureImplFBO::create(Vector2u size, unsigned int textureId, const C
 #ifndef SFML_OPENGL_ES
 
     // Save the current bindings so we can restore them after we are done
-    GLint readFramebuffer = 0;
-    GLint drawFramebuffer = 0;
-
-    glCheck(glGetIntegerv(GLEXT_GL_READ_FRAMEBUFFER_BINDING, &readFramebuffer));
-    glCheck(glGetIntegerv(GLEXT_GL_DRAW_FRAMEBUFFER_BINDING, &drawFramebuffer));
+    const auto readFramebuffer = getGLInteger(GLEXT_GL_READ_FRAMEBUFFER_BINDING);
+    const auto drawFramebuffer = getGLInteger(GLEXT_GL_DRAW_FRAMEBUFFER_BINDING);
 
     if (createFrameBuffer())
     {
@@ -370,9 +357,7 @@ bool RenderTextureImplFBO::create(Vector2u size, unsigned int textureId, const C
 #else
 
     // Save the current binding so we can restore them after we are done
-    GLint frameBuffer = 0;
-
-    glCheck(glGetIntegerv(GLEXT_GL_FRAMEBUFFER_BINDING, &frameBuffer));
+    const auto frameBuffer = getGLInteger(GLEXT_GL_DRAW_FRAMEBUFFER_BINDING);
 
     if (createFrameBuffer())
     {

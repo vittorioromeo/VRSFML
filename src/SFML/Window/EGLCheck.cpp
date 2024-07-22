@@ -47,7 +47,8 @@ void eglCheckError(const char* file, unsigned int line, const char* expression)
               << "\nExpression:\n   " << expression << "\nError description:\n   " << error << "\n   " << description
               << '\n';
 
-        SFML_BASE_ASSERT(false);
+        // Call recursively as there might be additional context
+        eglCheckError(file, line, expression);
     };
 
     // Obtain information about the success or failure of the most recent EGL

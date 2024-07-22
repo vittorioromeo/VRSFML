@@ -19,6 +19,7 @@
 
 #include <type_traits>
 
+
 TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 {
     sf::GraphicsContext graphicsContext;
@@ -44,7 +45,7 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
                                           sf::ContextSettings{});
             CHECK(window.getSize() == sf::Vector2u{256, 256});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
-            CHECK(window.getSettings().attributeFlags == sf::ContextSettings::Attribute::Default);
+            CHECK(window.getSettings().attributeFlags == sf::ContextSettings{}.attributeFlags);
             CHECK(!window.isSrgb());
             CHECK(window.getView().getCenter() == sf::Vector2f{128, 128});
             CHECK(window.getView().getSize() == sf::Vector2f{256, 256});
@@ -62,7 +63,7 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
                                           sf::ContextSettings{});
             CHECK(window.getSize() == sf::Vector2u{240, 300});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
-            CHECK(window.getSettings().attributeFlags == sf::ContextSettings::Attribute::Default);
+            CHECK(window.getSettings().attributeFlags == sf::ContextSettings{}.attributeFlags);
             CHECK(!window.isSrgb());
             CHECK(window.getView().getCenter() == sf::Vector2f{120, 150});
             CHECK(window.getView().getSize() == sf::Vector2f{240, 300});

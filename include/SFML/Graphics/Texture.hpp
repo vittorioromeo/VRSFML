@@ -566,7 +566,7 @@ public:
     [[nodiscard]] static unsigned int getMaximumSize(GraphicsContext& graphicsContext);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO
+    /// \brief Compute and return the texture matrix (used by shaders)
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Glsl::Mat4 getMatrix(CoordinateType coordinateType) const;
@@ -620,7 +620,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    GraphicsContext* m_graphicsContext; //!< TODO
+    GraphicsContext* m_graphicsContext; //!< The graphics context
     Vector2u         m_size;            //!< Public texture size
     Vector2u         m_actualSize;      //!< Actual texture size (can be greater than public size because of padding)
     unsigned int     m_texture{};       //!< Internal texture identifier

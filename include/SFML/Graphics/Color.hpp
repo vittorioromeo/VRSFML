@@ -46,7 +46,7 @@ struct [[nodiscard]] Color
     /// \param color Number containing the RGBA components (in that order)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr static Color fromRGBA(std::uint32_t color);
+    [[nodiscard, gnu::always_inline, gnu::const]] constexpr static Color fromRGBA(std::uint32_t color);
 
     ////////////////////////////////////////////////////////////
     /// \brief Retrieve the color as a 32-bit unsigned integer
@@ -54,7 +54,7 @@ struct [[nodiscard]] Color
     /// \return Color represented as a 32-bit unsigned integer
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr std::uint32_t toInteger() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr std::uint32_t toInteger() const;
 
     ////////////////////////////////////////////////////////////
     // Static member data
@@ -92,7 +92,7 @@ struct [[nodiscard]] Color
 /// \return True if colors are equal, false if they are different
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] constexpr bool operator==(const Color& left, const Color& right);
+[[nodiscard, gnu::always_inline, gnu::const]] constexpr bool operator==(const Color& left, const Color& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Color
@@ -106,7 +106,7 @@ struct [[nodiscard]] Color
 /// \return True if colors are different, false if they are equal
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] constexpr bool operator!=(const Color& left, const Color& right);
+[[nodiscard, gnu::always_inline, gnu::const]] constexpr bool operator!=(const Color& left, const Color& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Color
@@ -121,7 +121,7 @@ struct [[nodiscard]] Color
 /// \return Result of \a left + \a right
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] constexpr Color operator+(const Color& left, const Color& right);
+[[nodiscard, gnu::always_inline, gnu::const]] constexpr Color operator+(const Color& left, const Color& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Color
@@ -136,7 +136,7 @@ struct [[nodiscard]] Color
 /// \return Result of \a left - \a right
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] constexpr Color operator-(const Color& left, const Color& right);
+[[nodiscard, gnu::always_inline, gnu::const]] constexpr Color operator-(const Color& left, const Color& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Color
@@ -153,7 +153,7 @@ struct [[nodiscard]] Color
 /// \return Result of \a left * \a right
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] constexpr Color operator*(const Color& left, const Color& right);
+[[nodiscard, gnu::always_inline, gnu::const]] constexpr Color operator*(const Color& left, const Color& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Color
@@ -169,7 +169,7 @@ struct [[nodiscard]] Color
 /// \return Reference to \a left
 ///
 ////////////////////////////////////////////////////////////
-constexpr Color& operator+=(Color& left, const Color& right);
+[[gnu::always_inline]] constexpr Color& operator+=(Color& left, const Color& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Color
@@ -185,7 +185,7 @@ constexpr Color& operator+=(Color& left, const Color& right);
 /// \return Reference to \a left
 ///
 ////////////////////////////////////////////////////////////
-constexpr Color& operator-=(Color& left, const Color& right);
+[[gnu::always_inline]] constexpr Color& operator-=(Color& left, const Color& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Color
@@ -203,7 +203,7 @@ constexpr Color& operator-=(Color& left, const Color& right);
 /// \return Reference to \a left
 ///
 ////////////////////////////////////////////////////////////
-constexpr Color& operator*=(Color& left, const Color& right);
+[[gnu::always_inline]] constexpr Color& operator*=(Color& left, const Color& right);
 
 } // namespace sf
 

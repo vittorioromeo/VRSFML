@@ -11,12 +11,16 @@ set(SRC
     ${SRCROOT}/CursorImpl.hpp
     ${SRCROOT}/Event.cpp
     ${INCROOT}/Export.hpp
+    ${SRCROOT}/GLCheck.cpp
+    ${SRCROOT}/GLCheck.hpp
     ${SRCROOT}/GlContext.cpp
     ${SRCROOT}/GlContext.hpp
     ${INCROOT}/ContextSettings.hpp
     ${INCROOT}/ContextSettings.hpp
     ${INCROOT}/Event.hpp
     ${INCROOT}/Event.inl
+    ${INCROOT}/EventUtils.hpp
+    ${SRCROOT}/EventUtils.cpp
     ${SRCROOT}/InputImpl.hpp
     ${INCROOT}/Joystick.hpp
     ${INCROOT}/JoystickIdentification.hpp

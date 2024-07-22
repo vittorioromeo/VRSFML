@@ -11,6 +11,7 @@
 #include <SFML/Graphics/VertexBuffer.hpp>
 
 #include <SFML/Window/Event.hpp>
+#include <SFML/Window/EventUtils.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/VideoMode.hpp>
@@ -223,13 +224,8 @@ int main()
         // Handle events
         while (const sf::base::Optional event = window.pollEvent())
         {
-            // Window closed or escape key pressed: exit
-            if (event->is<sf::Event::Closed>() ||
-                (event->is<sf::Event::KeyPressed>() &&
-                 event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape))
-            {
+            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return EXIT_SUCCESS;
-            }
 
             // Arrow key pressed:
             if (terrainShader.hasValue() && event->is<sf::Event::KeyPressed>())
@@ -237,7 +233,10 @@ int main()
                 switch (event->getIf<sf::Event::KeyPressed>()->code)
                 {
                     case sf::Keyboard::Key::Enter:
-                        generateTerrain(threadPool, terrainStagingBuffer.data());
+                        if (threadPool.pendingWorkCount == 0 && !threadPool.bufferUploadPending)
+                        {
+                            generateTerrain(threadPool, terrainStagingBuffer.data());
+                        }
                         break;
                     case sf::Keyboard::Key::Down:
                         currentSetting = (currentSetting + 1) % settings.size();

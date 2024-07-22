@@ -22,7 +22,25 @@
 //
 ////////////////////////////////////////////////////////////
 
+#pragma once
+
+
+namespace sf::base
+{
 ////////////////////////////////////////////////////////////
-// Headers
+template <typename... Fs>
+struct [[nodiscard]] OverloadSet : Fs...
+{
+    [[nodiscard, gnu::always_inline]] explicit OverloadSet(Fs&&... fs) noexcept : Fs{static_cast<Fs&&>(fs)}...
+    {
+    }
+
+    using Fs::operator()...;
+};
+
+
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/Listener.hpp>
+template <typename... Fs>
+OverloadSet(Fs...) -> OverloadSet<Fs...>;
+
+} // namespace sf::base

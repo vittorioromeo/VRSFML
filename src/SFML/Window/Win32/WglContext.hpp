@@ -147,7 +147,7 @@ public:
 
 private:
     ////////////////////////////////////////////////////////////
-    /// \brief TODO
+    /// \brief Data associated with a WGL surface
     ///
     ////////////////////////////////////////////////////////////
     struct SurfaceData
@@ -159,17 +159,17 @@ private:
     };
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO
+    /// \brief Create the context and initialize extensions
     ///
     /// \param shared   Context to share the new one with
     /// \param settings Creation parameters
     ///
     ////////////////////////////////////////////////////////////
-    WglContext(GraphicsContext&   graphicsContext,
-               std::uint64_t      id,
-               WglContext*        shared,
-               ContextSettings&   settings,
-               const SurfaceData& surfaceData);
+    explicit WglContext(GraphicsContext&   graphicsContext,
+                        std::uint64_t      id,
+                        WglContext*        shared,
+                        ContextSettings&   settings,
+                        const SurfaceData& surfaceData);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the pixel format of the device context

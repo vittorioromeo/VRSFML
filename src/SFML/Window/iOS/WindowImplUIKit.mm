@@ -132,7 +132,7 @@ Vector2u WindowImplUIKit::getSize() const
 ////////////////////////////////////////////////////////////
 void WindowImplUIKit::setSize(Vector2u size)
 {
-    // TODO ...
+    // TODO P2: ...
 
     // if these sizes are required one day, don't forget to scale them!
     // size.x /= m_backingScale;

@@ -147,8 +147,6 @@ struct GraphicsContext::Impl
     DerivedGlContextType sharedGlContext; //!< The hidden, inactive context that will be shared with all other contexts
     std::recursive_mutex sharedGlContextMutex;
 
-    base::UniquePtr<priv::GlContext> drawingContext; // TODO:?
-
     ////////////////////////////////////////////////////////////
     std::vector<std::string> extensions; //!< Supported OpenGL extensions
 
@@ -192,7 +190,7 @@ GraphicsContext::GraphicsContext() : m_impl(base::makeUnique<Impl>(*this, 1u /* 
 
     SFML_BASE_ASSERT(isActiveGlContextSharedContext());
 
-    // TODO:
+    // TODO P0: better shader lifetime management
     // m_impl->builtInShader = createBuiltInShader(*this);
     // SFML_BASE_ASSERT(m_impl->builtInShader.hasValue());
 
@@ -214,7 +212,6 @@ GraphicsContext::~GraphicsContext()
         SFML_BASE_ASSERT(builtInShaderDestroyFn != nullptr);
         builtInShaderState = 2;
 
-        auto contextGuard = SharedContextGuard{*this};
         builtInShaderDestroyFn();
     }
 
@@ -398,6 +395,17 @@ void GraphicsContext::onGlContextDestroyed(priv::GlContext& glContext)
 
 
 ////////////////////////////////////////////////////////////
+void GraphicsContext::loadGLEntryPointsViaGLAD() const
+{
+#ifdef SFML_OPENGL_ES
+    gladLoadGLES2(getGLLoadFn());
+#else
+    gladLoadGL(getGLLoadFn());
+#endif
+}
+
+
+////////////////////////////////////////////////////////////
 [[nodiscard]] GraphicsContext::GLLoadFn GraphicsContext::getGLLoadFn() const
 {
     static const sf::GraphicsContext* lastGraphicsContext;
@@ -412,38 +420,11 @@ void GraphicsContext::onGlContextDestroyed(priv::GlContext& glContext)
 
 
 ////////////////////////////////////////////////////////////
-GraphicsContext::SharedContextGuard::SharedContextGuard(GraphicsContext& theGraphicsContext) :
-graphicsContext(theGraphicsContext),
-lastActiveContextId(activeGlContext.id),
-lastActiveContextPtr(activeGlContext.ptr)
-{
-    if (lastActiveContextPtr != nullptr)
-        if (!graphicsContext.setActiveThreadLocalGlContext(*lastActiveContextPtr, false))
-            priv::err() << "Error disabling last active GL context in SharedContextGuard::SharedContextGuard()";
-
-    if (!graphicsContext.setActiveThreadLocalGlContextToSharedContext(true))
-        priv::err() << "Error enabling shared GL context in SharedContextGuard::SharedContextGuard()";
-}
-
-
-////////////////////////////////////////////////////////////
-GraphicsContext::SharedContextGuard::~SharedContextGuard()
-{
-    if (!graphicsContext.setActiveThreadLocalGlContextToSharedContext(false))
-        priv::err() << "Error disabling shared GL context in SharedContextGuard::~SharedContextGuard()";
-
-    if (lastActiveContextPtr != nullptr)
-        if (!graphicsContext.setActiveThreadLocalGlContext(*lastActiveContextPtr, true))
-            priv::err() << "Error enabling last active GL context in SharedContextGuard::~SharedContextGuard()";
-}
-
-
-////////////////////////////////////////////////////////////
 template <typename... GLContextArgs>
 [[nodiscard]] base::UniquePtr<priv::GlContext> GraphicsContext::createGlContextImpl(const ContextSettings& contextSettings,
                                                                                     GLContextArgs&&... args)
 {
-    // TODO: ?
+    // TODO P0: maybe graphicscontext should take a contextsetttings for teh shared context??
     // If use_count is 2 (GlResource + sharedContext) we know that we are inside sf::Context or sf::Window
     // Only in this situation we allow the user to indirectly re-create the shared context as a core context
 

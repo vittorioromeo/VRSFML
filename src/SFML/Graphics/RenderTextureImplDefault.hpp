@@ -116,7 +116,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    GraphicsContext*                 m_graphicsContext; //!< TODO
+    GraphicsContext*                 m_graphicsContext; //!< The graphics context
     base::UniquePtr<priv::GlContext> m_glContext;       //!< P-Buffer based context
     Vector2u                         m_size;            //!< Width and height of the P-Buffer
 };

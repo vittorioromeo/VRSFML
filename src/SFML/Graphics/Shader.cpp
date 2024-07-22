@@ -26,10 +26,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/GLCheck.hpp>
 #include <SFML/Graphics/Shader.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
+#include <SFML/Window/GLCheck.hpp>
 #include <SFML/Window/GLExtensions.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
 
@@ -70,15 +70,8 @@ namespace
 // Retrieve the maximum number of texture units available
 [[nodiscard]] std::size_t getMaxTextureUnits()
 {
-    static const GLint maxUnits = []
-    {
-        GLint value = 0;
-        glCheck(glGetIntegerv(GLEXT_GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &value));
-
-        return value;
-    }();
-
-    return static_cast<std::size_t>(maxUnits);
+    static const auto maxUnits = static_cast<std::size_t>(sf::priv::getGLInteger(GLEXT_GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS));
+    return maxUnits;
 }
 
 // Pair of indices into thread-local buffer
@@ -892,8 +885,6 @@ void Shader::ensureIsAvailable([[maybe_unused]] GraphicsContext& graphicsContext
     static const bool available = [&graphicsContext]
     {
         SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
-        priv::ensureExtensionsInit(graphicsContext);
-
         return GLEXT_multitexture && GLEXT_shader_objects && GLEXT_vertex_shader && GLEXT_fragment_shader;
     }();
 
@@ -915,8 +906,6 @@ bool Shader::isGeometryAvailable([[maybe_unused]] GraphicsContext& graphicsConte
     static const bool available = [&graphicsContext]
     {
         SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
-        priv::ensureExtensionsInit(graphicsContext);
-
         return GLEXT_geometry_shader4 || GLAD_GL_ES_VERSION_3_2 || GLEXT_GL_VERSION_3_2;
     }();
 

@@ -291,7 +291,7 @@ int WindowImplAndroid::processEvent(int /* fd */, int /* events */, void* /* dat
                     break;
                 }
 
-                // TODO: should hover_move indeed trigger the event?
+                // TODO P2: should hover_move indeed trigger the event?
                 // case AMOTION_EVENT_ACTION_HOVER_MOVE:
                 case AMOTION_EVENT_ACTION_MOVE:
                 {
@@ -299,7 +299,7 @@ int WindowImplAndroid::processEvent(int /* fd */, int /* events */, void* /* dat
                     break;
                 }
 
-                // TODO: investigate AMOTION_EVENT_OUTSIDE
+                // TODO P2: investigate AMOTION_EVENT_OUTSIDE
                 case AMOTION_EVENT_ACTION_POINTER_DOWN:
                 case AMOTION_EVENT_ACTION_DOWN:
                 {

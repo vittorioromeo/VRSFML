@@ -25,8 +25,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/GLCheck.hpp>
-
+#include <SFML/Window/GLCheck.hpp>
 #include <SFML/Window/GLExtensions.hpp>
 
 #include <SFML/System/Err.hpp>
@@ -46,9 +45,7 @@ void glCheckError(const char* file, unsigned int line, const char* expression)
               << "\nExpression:\n   " << expression << "\nError description:\n   " << error << "\n   " << description
               << '\n';
 
-        // TODO:
-        // SFML_BASE_ASSERT(false);
-
+        // Call recursively as there might be additional context
         glCheckError(file, line, expression);
     };
 

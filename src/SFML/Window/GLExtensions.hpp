@@ -104,7 +104,7 @@ inline int SF_GL_OES_vertex_buffer_object = 1;
 #define GLEXT_glBlendEquationSeparate glBlendEquationSeparate
 
 // Core since 2.0 - OES_texture_npot
-#define GLEXT_texture_non_power_of_two false
+#define GLEXT_texture_non_power_of_two GLAD_GL_ARB_texture_non_power_of_two
 
 // Core since 2.0 - OES_framebuffer_object
 #define GLEXT_framebuffer_object               true
@@ -182,30 +182,27 @@ inline int SF_GL_OES_vertex_buffer_object = 1;
 #define GLEXT_GL_DEPTH24_STENCIL8  GL_DEPTH24_STENCIL8
 
 // Core since 3.0
-#define GLEXT_framebuffer_blit false
-#define GLEXT_glBlitFramebuffer \
-    glBlitFramebufferEXT // Placeholder to satisfy the compiler, entry point is not loaded in GLES
-#define GLEXT_GL_READ_FRAMEBUFFER         0
-#define GLEXT_GL_DRAW_FRAMEBUFFER         0
-#define GLEXT_GL_DRAW_FRAMEBUFFER_BINDING 0
-#define GLEXT_GL_READ_FRAMEBUFFER_BINDING 0
+#define GLEXT_framebuffer_blit            true
+#define GLEXT_glBlitFramebuffer           glBlitFramebufferEXT
+#define GLEXT_GL_READ_FRAMEBUFFER         GL_READ_FRAMEBUFFER
+#define GLEXT_GL_DRAW_FRAMEBUFFER         GL_DRAW_FRAMEBUFFER
+#define GLEXT_GL_DRAW_FRAMEBUFFER_BINDING GL_DRAW_FRAMEBUFFER_BINDING
+#define GLEXT_GL_READ_FRAMEBUFFER_BINDING GL_READ_FRAMEBUFFER_BINDING
 
 // Core since 3.0
-#define GLEXT_framebuffer_multisample false
-#define GLEXT_glRenderbufferStorageMultisample \
-    glRenderbufferStorageMultisampleEXT // Placeholder to satisfy the compiler, entry point is not loaded in GLES
-#define GLEXT_GL_MAX_SAMPLES 0
+#define GLEXT_framebuffer_multisample          GLAD_GL_EXT_framebuffer_multisample
+#define GLEXT_glRenderbufferStorageMultisample glRenderbufferStorageMultisampleEXT
+#define GLEXT_GL_MAX_SAMPLES                   GL_MAX_SAMPLES_EXT
 
 // Core since 3.0 - NV_copy_buffer
-#define GLEXT_copy_buffer          false
-#define GLEXT_GL_COPY_READ_BUFFER  0
-#define GLEXT_GL_COPY_WRITE_BUFFER 0
-#define GLEXT_glCopyBufferSubData \
-    glCopyBufferSubData // Placeholder to satisfy the compiler, entry point is not loaded in GLES
+#define GLEXT_copy_buffer          GLAD_GL_ARB_copy_buffer
+#define GLEXT_GL_COPY_READ_BUFFER  GL_COPY_READ_BUFFER
+#define GLEXT_GL_COPY_WRITE_BUFFER GL_COPY_WRITE_BUFFER
+#define GLEXT_glCopyBufferSubData  glCopyBufferSubData
 
 // Core since 3.0 - EXT_sRGB
-#define GLEXT_texture_sRGB    false
-#define GLEXT_GL_SRGB8_ALPHA8 0
+#define GLEXT_texture_sRGB    GLAD_GL_EXT_texture_sRGB
+#define GLEXT_GL_SRGB8_ALPHA8 GL_SRGB8_ALPHA8_EXT
 
 // Core since 3.0 - EXT_blend_minmax
 #define GLEXT_blend_minmax GLAD_GL_EXT_blend_minmax
@@ -216,8 +213,8 @@ inline int SF_GL_OES_vertex_buffer_object = 1;
 #define GLEXT_EXT_blend_minmax_dependencies GLAD_GL_EXT_blend_minmax, glBlendEquationEXT
 
 // Core since 3.2 - ARB_geometry_shader4
-#define GLEXT_geometry_shader4         GLAD_GL_ARB_geometry_shader4
-#define GLEXT_GL_GEOMETRY_SHADER       GL_GEOMETRY_SHADER
+#define GLEXT_geometry_shader4   GLAD_GL_ARB_geometry_shader4
+#define GLEXT_GL_GEOMETRY_SHADER GL_GEOMETRY_SHADER
 
 #else
 
@@ -450,11 +447,16 @@ class GraphicsContext;
 
 namespace sf::priv
 {
-
 ////////////////////////////////////////////////////////////
 /// \brief Make sure that extensions are initialized
 ///
 ////////////////////////////////////////////////////////////
 void ensureExtensionsInit(GraphicsContext& graphicsContext);
+
+////////////////////////////////////////////////////////////
+/// \brief Get GL integer and assert success
+///
+////////////////////////////////////////////////////////////
+[[nodiscard]] GLint getGLInteger(GLenum parameterName);
 
 } // namespace sf::priv

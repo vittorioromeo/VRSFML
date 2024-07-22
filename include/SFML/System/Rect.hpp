@@ -66,7 +66,9 @@ public:
     [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Vector2<T> getCenter() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO
+    /// \brief Convert to another `Rect` of type `OtherRect`
+    ///
+    /// `OtherRect` must be a `Rect<...>` type.
     ///
     ////////////////////////////////////////////////////////////
     template <typename U>

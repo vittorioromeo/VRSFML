@@ -234,11 +234,7 @@ int main()
     }
 
     // Load OpenGL or OpenGL ES entry points using glad
-#ifdef SFML_OPENGL_ES
-    gladLoadGLES2(graphicsContext.getGLLoadFn());
-#else
-    gladLoadGL(graphicsContext.getGLLoadFn());
-#endif
+    graphicsContext.loadGLEntryPointsViaGLAD();
 
     // Initialize our views
     if (!initialize(sfmlView1))

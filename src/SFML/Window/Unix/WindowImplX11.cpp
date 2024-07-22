@@ -1194,7 +1194,7 @@ void WindowImplX11::requestFocus()
     }
 
     // Check if window is viewable (not on other desktop, ...)
-    // TODO: Check also if minimized
+    // TODO P2: Check also if minimized
     XWindowAttributes attributes;
     if (XGetWindowAttributes(m_display.get(), m_window, &attributes) == 0)
     {
@@ -1810,7 +1810,7 @@ bool WindowImplX11::processEvent(XEvent& windowEvent)
         case KeyPress:
         {
             // Fill the event parameters
-            // TODO: if modifiers are wrong, use XGetModifierMapping to retrieve the actual modifiers mapping
+            // TODO P2: if modifiers are wrong, use XGetModifierMapping to retrieve the actual modifiers mapping
             Event::KeyPressed event;
             event.code     = KeyboardImpl::getKeyFromEvent(windowEvent.xkey);
             event.scancode = KeyboardImpl::getScancodeFromEvent(windowEvent.xkey);

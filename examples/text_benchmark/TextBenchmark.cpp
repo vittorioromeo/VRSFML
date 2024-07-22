@@ -5,6 +5,7 @@
 #include <SFML/Graphics/Vertex.hpp>
 
 #include <SFML/Window/ContextSettings.hpp>
+#include <SFML/Window/EventUtils.hpp>
 #if 1
 
 #include <SFML/Graphics/Font.hpp>
@@ -62,12 +63,8 @@ int main()
     {
         while (auto event = window.pollEvent())
         {
-            if (event->is<sf::Event::Closed>() ||
-                (event->is<sf::Event::KeyPressed>() &&
-                 event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape))
-            {
+            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return EXIT_SUCCESS;
-            }
         }
 
         window.clear();
@@ -172,12 +169,8 @@ int main()
     {
         while (auto event = window.pollEvent())
         {
-            if (event->is<sf::Event::Closed>() ||
-                (event->is<sf::Event::KeyPressed>() &&
-                 event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape))
-            {
+            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return EXIT_SUCCESS;
-            }
         }
 
         for (int i = 0; i < 20; ++i)
