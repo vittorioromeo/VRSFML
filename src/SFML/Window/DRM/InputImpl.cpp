@@ -528,7 +528,7 @@ sf::base::Optional<sf::Event> eventProcess()
 
     if (code > 0)
     {
-        // TODO: Proper unicode handling
+        // TODO P2: Proper unicode handling
         return sf::Event::TextEntered{code};
     }
 

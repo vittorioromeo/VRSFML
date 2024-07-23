@@ -17,7 +17,7 @@ namespace
 {
 constexpr auto vertexSource = R"glsl(
 
-#version 150
+#version 310 es
 
 #ifdef GL_ES
 precision mediump float;
@@ -31,12 +31,12 @@ uniform mat4 sf_u_projectionMatrix;
 uniform mat4 sf_u_textureMatrix;
 uniform mat4 sf_u_modelViewMatrix;
 
-attribute vec4 sf_a_color;
-attribute vec2 sf_a_position;
-attribute vec2 sf_a_texCoord;
+in vec2 sf_a_position;
+in vec4 sf_a_color;
+in vec2 sf_a_texCoord;
 
-varying vec4 sf_v_color;
-varying vec2 sf_v_texCoord;
+out vec4 sf_v_color;
+out vec2 sf_v_texCoord;
 
 out gl_PerVertex
 {
@@ -65,7 +65,7 @@ void main()
 
 constexpr auto geometrySource = R"glsl(
 
-#version 150
+#version 310 es
 
 // The render target's resolution (used for scaling)
 uniform vec2 resolution;
@@ -140,8 +140,8 @@ precision mediump float;
 uniform sampler2D sf_u_texture;
 uniform float     blink_alpha;
 
-varying vec4 sf_v_color;
-varying vec2 sf_v_texCoord;
+out vec4 sf_v_color;
+out vec2 sf_v_texCoord;
 
 void main()
 {

@@ -1,4 +1,4 @@
-#version 150
+#version 310 es
 
 // The render target's resolution (used for scaling)
 uniform vec2 resolution;

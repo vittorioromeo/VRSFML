@@ -12,7 +12,7 @@ find_path(GLES_INCLUDE_DIR GLES3/gl3.h)
 if (SFML_OS_EMSCRIPTEN)
     set(GLES_LIBRARY GL)
 else()
-    find_library(GLES_LIBRARY NAMES GLESv3)
+    find_library(GLES_LIBRARY NAMES GLESv2)
 endif()
 
 include(FindPackageHandleStandardArgs)

@@ -882,7 +882,7 @@ void Shader::ensureIsAvailable([[maybe_unused]] GraphicsContext& graphicsContext
 {
 #ifndef SFML_OPENGL_ES
 
-    static const bool available = [&graphicsContext]
+    static const bool available = [&]
     {
         SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
         return GLEXT_multitexture && GLEXT_shader_objects && GLEXT_vertex_shader && GLEXT_fragment_shader;
@@ -903,7 +903,7 @@ bool Shader::isGeometryAvailable([[maybe_unused]] GraphicsContext& graphicsConte
 {
     ensureIsAvailable(graphicsContext);
 
-    static const bool available = [&graphicsContext]
+    static const bool available = [&]
     {
         SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
         return GLEXT_geometry_shader4 || GLAD_GL_ES_VERSION_3_2 || GLEXT_GL_VERSION_3_2;
@@ -1042,8 +1042,8 @@ precision mediump float;
 
 uniform sampler2D sf_u_texture;
 
-varying vec4 sf_v_color;
-varying vec2 sf_v_texCoord;
+out vec4 sf_v_color;
+out vec2 sf_v_texCoord;
 
 void main()
 {

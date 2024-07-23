@@ -305,7 +305,7 @@ endif()
 
 if(SFML_OS_IOS)
     target_link_libraries(sfml-window PRIVATE "-framework OpenGLES")
-elseif(SFML_OS_ANDROID OR SFML_OS_EMSCRIPTEN)
+elseif(SFML_OS_ANDROID OR SFML_OS_EMSCRIPTEN OR SFML_OPENGL_ES)
     find_package(EGL REQUIRED)
     find_package(GLES REQUIRED)
     target_link_libraries(sfml-window PRIVATE EGL::EGL GLES::GLES)

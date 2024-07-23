@@ -7,8 +7,8 @@ uniform float lightFactor;
 
 uniform sampler2D sf_u_texture;
 
-varying vec4 sf_v_color;
-varying vec2 sf_v_texCoord;
+out vec4 sf_v_color;
+out vec2 sf_v_texCoord;
 
 void main()
 {
