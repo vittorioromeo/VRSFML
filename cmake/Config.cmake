@@ -71,9 +71,11 @@ elseif(${EMSCRIPTEN})
     message(STATUS "Detected Emscripten")
     set(SFML_OS_EMSCRIPTEN 1)
 
-    if (NOT SFML_OPENGL_ES)
-        message(FATAL_ERROR "Emscripten required OpenGL ES")
-    endif()
+    # use the OpenGL ES implementation on Emscripten
+    set(OPENGL_ES 1)
+
+    # TODO
+    set(CMAKE_EXECUTABLE_SUFFIX ".html")
 else()
     message(FATAL_ERROR "Unsupported operating system or environment")
     return()

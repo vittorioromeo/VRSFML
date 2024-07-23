@@ -132,7 +132,7 @@ Path Path::absolute() const
 
 
 ////////////////////////////////////////////////////////////
-const wchar_t* Path::c_str() const
+const Path::value_type* Path::c_str() const
 {
     return m_impl->fsPath.c_str();
 }

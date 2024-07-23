@@ -42,7 +42,11 @@ add_library(sfml-test-main STATIC
     TestUtilities/StringifyVectorUtil.hpp
 )
 target_include_directories(sfml-test-main PUBLIC TestUtilities)
-target_compile_definitions(sfml-test-main PUBLIC DOCTEST_CONFIG_REQUIRE_STRINGIFICATION_FOR_ALL_USED_TYPES)
+if (SFML_OS_EMSCRIPTEN)
+    target_compile_definitions(sfml-test-main PUBLIC DOCTEST_CONFIG_REQUIRE_STRINGIFICATION_FOR_ALL_USED_TYPES DOCTEST_CONFIG_NO_EXCEPTIONS_BUT_WITH_ALL_ASSERTS)
+else()
+    target_compile_definitions(sfml-test-main PUBLIC DOCTEST_CONFIG_REQUIRE_STRINGIFICATION_FOR_ALL_USED_TYPES)
+endif()
 set_target_warnings(sfml-test-main)
 
 # enable precompiled headers
