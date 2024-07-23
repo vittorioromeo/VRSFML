@@ -27,71 +27,67 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Sensor.hpp>
+#include <SFML/Window/Cursor.hpp>
+
+#include <SFML/System/Vector2.hpp>
 
 
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-/// \brief Emscripten implementation of sensors
+/// \brief Stub implementation of cursor
 ///
 ////////////////////////////////////////////////////////////
-class SensorImpl
+class StubCursorImpl
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Perform the global initialization of the sensor module
+    /// \brief Default constructor
+    ///
+    /// Refer to sf::Cursor::Cursor().
     ///
     ////////////////////////////////////////////////////////////
-    static void initialize();
+    StubCursorImpl() = default;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Perform the global cleanup of the sensor module
+    /// \brief Deleted copy constructor
     ///
     ////////////////////////////////////////////////////////////
-    static void cleanup();
+    StubCursorImpl(const StubCursorImpl&) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Check if a sensor is available
-    ///
-    /// \param sensor Sensor to check
-    ///
-    /// \return True if the sensor is available, false otherwise
+    /// \brief Deleted copy assignment
     ///
     ////////////////////////////////////////////////////////////
-    static bool isAvailable(Sensor::Type sensor);
+    StubCursorImpl& operator=(const StubCursorImpl&) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Open the sensor
-    ///
-    /// \param sensor Type of the sensor
-    ///
-    /// \return True on success, false on failure
+    /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool open(Sensor::Type sensor);
+    StubCursorImpl(StubCursorImpl&&) noexcept;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Close the sensor
+    /// \brief Move assignment
     ///
     ////////////////////////////////////////////////////////////
-    void close();
+    StubCursorImpl& operator=(StubCursorImpl&&) noexcept;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Update the sensor and get its new value
+    /// \brief Create a cursor with the provided image
     ///
-    /// \return Sensor value
+    /// Returns false.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector3f update();
+    bool loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vector2u hotspot);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Enable or disable the sensor
+    /// \brief Create a native system cursor
     ///
-    /// \param enabled True to enable, false to disable
+    /// Returns false.
     ///
     ////////////////////////////////////////////////////////////
-    void setEnabled(bool enabled);
+    bool loadFromSystem(Cursor::Type type);
 };
 
 } // namespace sf::priv

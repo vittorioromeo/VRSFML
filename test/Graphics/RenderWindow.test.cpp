@@ -1,7 +1,11 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 
 // Other 1st party headers
+#if 0
 #include "C:/OHWorkspace/SFML/extlibs/headers/glad/include/glad/gl.h"
+#else
+#include "C:/OHW/SFML/extlibs/headers/glad/include/glad/gl.h"
+#endif
 
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/Texture.hpp>

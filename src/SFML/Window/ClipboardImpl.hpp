@@ -31,19 +31,17 @@
 
 #if defined(SFML_SYSTEM_WINDOWS)
 #include <SFML/Window/Win32/ClipboardImpl.hpp>
-#elif defined(SFML_SYSTEM_LINUX) || defined(SFML_SYSTEM_FREEBSD) || defined(SFML_SYSTEM_OPENBSD) || \
-    defined(SFML_SYSTEM_NETBSD)
-#if defined(SFML_USE_DRM)
-#include <SFML/Window/DRM/ClipboardImpl.hpp>
-#else
+#elif !defined(SFML_USE_DRM) && (defined(SFML_SYSTEM_LINUX) || defined(SFML_SYSTEM_FREEBSD) ||
+                                 defined(SFML_SYSTEM_OPENBSD) || defined(SFML_SYSTEM_NETBSD))
 #include <SFML/Window/Unix/ClipboardImpl.hpp>
-#endif
 #elif defined(SFML_SYSTEM_MACOS)
 #include <SFML/Window/macOS/ClipboardImpl.hpp>
 #elif defined(SFML_SYSTEM_IOS)
 #include <SFML/Window/iOS/ClipboardImpl.hpp>
-#elif defined(SFML_SYSTEM_ANDROID)
-#include <SFML/Window/Android/ClipboardImpl.hpp>
-#elif defined(SFML_SYSTEM_EMSCRIPTEN)
-#include <SFML/Window/Emscripten/ClipboardImpl.hpp>
+#elif defined(SFML_SYSTEM_EMSCRIPTEN) || defined(SFML_SYSTEM_ANDROID) || defined(SFML_USE_DRM)
+#include <SFML/Window/Stub/StubClipboardImpl.hpp>
+namespace sf::priv
+{
+using ClipboardImpl = StubClipboardImpl;
+}
 #endif

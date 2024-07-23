@@ -25,7 +25,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Emscripten/ClipboardImpl.hpp>
+#include <SFML/Window/Stub/StubClipboardImpl.hpp>
 
 #include <SFML/System/Err.hpp>
 #include <SFML/System/String.hpp>
@@ -34,17 +34,17 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-String ClipboardImpl::getString()
+String StubClipboardImpl::getString()
 {
-    priv::err() << "Clipboard API not implemented for Android.";
+    err() << "Clipboard API not implemented";
     return {};
 }
 
 
 ////////////////////////////////////////////////////////////
-void ClipboardImpl::setString(const String& /* text */)
+void StubClipboardImpl::setString(const String& /* text */)
 {
-    priv::err() << "Clipboard API not implemented for Android.";
+    err() << "Clipboard API not implemented";
 }
 
 } // namespace sf::priv

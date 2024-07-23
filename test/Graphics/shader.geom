@@ -18,8 +18,7 @@ varying vec2 sf_v_texCoord;
 in gl_PerVertex
 {
     vec4 gl_Position;
-}
-gl_in[];
+} gl_in[];
 
 uniform mat4 sf_u_textureMatrix;
 

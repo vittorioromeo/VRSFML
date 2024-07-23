@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2013 Jonathan De Wachter (dewachter.jonathan@gmail.com)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -24,83 +24,74 @@
 
 #pragma once
 
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include <SFML/Window/Sensor.hpp>
+
 
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-/// \brief Android implementation of joysticks
+/// \brief Stub implementation of sensor
 ///
 ////////////////////////////////////////////////////////////
-class JoystickImpl
+class StubSensorImpl
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Perform the global initialization of the joystick module
+    /// \brief Perform the global initialization of the sensor module
     ///
     ////////////////////////////////////////////////////////////
     static void initialize();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Perform the global cleanup of the joystick module
+    /// \brief Perform the global cleanup of the sensor module
     ///
     ////////////////////////////////////////////////////////////
     static void cleanup();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Check if a joystick is currently connected
+    /// \brief Check if a sensor is available
     ///
-    /// \param index Index of the joystick to check
+    /// \param sensor Sensor to check
     ///
-    /// \return True if the joystick is connected, false otherwise
+    /// \return True if the sensor is available, false otherwise
     ///
     ////////////////////////////////////////////////////////////
-    static bool isConnected(unsigned int index);
+    static bool isAvailable(Sensor::Type sensor);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Open the joystick
+    /// \brief Open the sensor
     ///
-    /// \param index Index assigned to the joystick
+    /// \param sensor Type of the sensor
     ///
     /// \return True on success, false on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool open(unsigned int index);
+    [[nodiscard]] bool open(Sensor::Type sensor);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Close the joystick
+    /// \brief Close the sensor
     ///
     ////////////////////////////////////////////////////////////
     void close();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the joystick capabilities
+    /// \brief Update the sensor and get its new value
     ///
-    /// \return Joystick capabilities
+    /// \return Sensor value
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] JoystickCaps getCapabilities() const;
+    [[nodiscard]] Vector3f update();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the joystick identification
+    /// \brief Enable or disable the sensor
     ///
-    /// \return Joystick identification
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] Joystick::Identification getIdentification() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Update the joystick and get its new state
-    ///
-    /// \return Joystick state
+    /// \param enabled True to enable, false to disable
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] JoystickState update();
-
-private:
-    ////////////////////////////////////////////////////////////
-    // Member data
-    ////////////////////////////////////////////////////////////
-    Joystick::Identification m_identification; ///< Joystick identification
+    void setEnabled(bool enabled);
 };
 
 } // namespace sf::priv
