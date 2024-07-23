@@ -272,6 +272,26 @@ elseif(SFML_OS_ANDROID)
         ${SRCROOT}/Android/SensorImpl.cpp
     )
     source_group("android" FILES ${PLATFORM_SRC})
+elseif(SFML_OS_EMSCRIPTEN)
+    set(PLATFORM_SRC
+        ${SRCROOT}/EGLCheck.cpp
+        ${SRCROOT}/EGLCheck.hpp
+        ${SRCROOT}/EglContext.cpp
+        ${SRCROOT}/EglContext.hpp
+        ${SRCROOT}/Emscripten/CursorImpl.hpp
+        ${SRCROOT}/Emscripten/CursorImpl.cpp
+        ${SRCROOT}/Emscripten/ClipboardImpl.hpp
+        ${SRCROOT}/Emscripten/ClipboardImpl.cpp
+        # ${SRCROOT}/Emscripten/WindowImplEmscripten.hpp
+        # ${SRCROOT}/Emscripten/WindowImplEmscripten.cpp
+        # ${SRCROOT}/Emscripten/VideoModeImpl.cpp
+        # ${SRCROOT}/Emscripten/InputImpl.cpp
+        # ${SRCROOT}/Emscripten/JoystickImpl.hpp
+        # ${SRCROOT}/Emscripten/JoystickImpl.cpp
+        ${SRCROOT}/Emscripten/SensorImpl.hpp
+        ${SRCROOT}/Emscripten/SensorImpl.cpp
+    )
+    source_group("emscripten" FILES ${PLATFORM_SRC})
 endif()
 
 # define the sfml-window target
@@ -311,7 +331,7 @@ endif()
 
 if(SFML_OS_IOS)
     target_link_libraries(sfml-window PRIVATE "-framework OpenGLES")
-elseif(SFML_OS_ANDROID)
+elseif(SFML_OS_ANDROID OR SFML_OS_EMSCRIPTEN)
     find_package(EGL REQUIRED)
     find_package(GLES REQUIRED)
     target_link_libraries(sfml-window PRIVATE EGL::EGL GLES::GLES)

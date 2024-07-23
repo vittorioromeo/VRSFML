@@ -79,6 +79,11 @@ using DerivedGlContextType = sf::priv::EaglContext;
 #include <SFML/Window/EglContext.hpp>
 using DerivedGlContextType = sf::priv::EglContext;
 
+#elif defined(SFML_SYSTEM_EMSCRIPTEN)
+
+#include <SFML/Window/EglContext.hpp>
+using DerivedGlContextType = sf::priv::EglContext;
+
 #endif
 
 #if defined(SFML_SYSTEM_WINDOWS)

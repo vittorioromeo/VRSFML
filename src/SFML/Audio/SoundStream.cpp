@@ -109,7 +109,9 @@ struct SoundStream::Impl
         if (!impl.sampleBuffer.empty())
         {
             // Determine how many frames we can read
-            *framesRead = base::min(frameCount, (impl.sampleBuffer.size() - impl.sampleBufferCursor) / impl.channelCount);
+            *framesRead = base::min(frameCount,
+                                    static_cast<ma_uint64>(
+                                        (impl.sampleBuffer.size() - impl.sampleBufferCursor) / impl.channelCount));
 
             const auto sampleCount = *framesRead * impl.channelCount;
 

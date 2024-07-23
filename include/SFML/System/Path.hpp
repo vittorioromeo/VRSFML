@@ -40,7 +40,11 @@ namespace sf
 class [[nodiscard]] Path
 {
 public:
+#ifdef SFML_SYSTEM_EMSCRIPTEN
+    using value_type = char;
+#else
     using value_type = wchar_t;
+#endif
     // using string_type = std::basic_string<value_type>;
 
     [[nodiscard]] static Path tempDirectoryPath();
