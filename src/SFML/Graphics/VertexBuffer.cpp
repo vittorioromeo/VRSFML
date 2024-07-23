@@ -337,7 +337,7 @@ VertexBuffer::Usage VertexBuffer::getUsage() const
 ////////////////////////////////////////////////////////////
 bool VertexBuffer::isAvailable(GraphicsContext& graphicsContext)
 {
-    static const bool available = [&graphicsContext]
+    static const bool available = [&]
     {
         SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
         return GLEXT_vertex_buffer_object != 0;

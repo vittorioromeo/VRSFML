@@ -8,12 +8,12 @@ uniform mat4 sf_u_projectionMatrix;
 uniform mat4 sf_u_modelViewMatrix;
 uniform mat4 sf_u_textureMatrix;
 
-attribute vec2 sf_a_position;
-attribute vec4 sf_a_color;
-attribute vec2 sf_a_texCoord;
+in vec2 sf_a_position;
+in vec4 sf_a_color;
+in vec2 sf_a_texCoord;
 
-varying vec4 sf_v_color;
-varying vec2 sf_v_texCoord;
+out vec4 sf_v_color;
+out vec2 sf_v_texCoord;
 
 out gl_PerVertex
 {

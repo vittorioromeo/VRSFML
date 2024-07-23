@@ -20,6 +20,7 @@
       "binaryDir": "build",
       "installDir": "${sourceDir}/build/install",
       "cacheVariables": {
+        "CMAKE_BUILD_MODE": "DEBUG",
         "CMAKE_COLOR_DIAGNOSTICS": "ON",
         "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
         "CMAKE_CXX_COMPILER": "clang++",
@@ -40,6 +41,7 @@
       "binaryDir": "build",
       "installDir": "${sourceDir}/build/install",
       "cacheVariables": {
+        "CMAKE_BUILD_MODE": "DEBUG",
         "CMAKE_COLOR_DIAGNOSTICS": "ON",
         "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
         "CMAKE_CXX_COMPILER": "g++",
@@ -60,6 +62,7 @@
       "binaryDir": "build2",
       "installDir": "${sourceDir}/build2/install",
       "cacheVariables": {
+        "CMAKE_BUILD_MODE": "DEBUG",
         "CMAKE_COLOR_DIAGNOSTICS": "ON",
         "CMAKE_CXX_COMPILER_LAUNCHER": "",
         "CMAKE_CXX_EXTENSIONS": "OFF",

@@ -1,3 +1,5 @@
+// TODO P0: compiles and links on ARM x64, but doesn't display anything
+
 #version 150
 
 #ifdef GL_ES

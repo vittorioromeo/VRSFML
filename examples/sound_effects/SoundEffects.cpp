@@ -1218,7 +1218,7 @@ int main()
                         // since new devices could have been added in the mean time
                         auto newPlaybackDeviceHandles = audioContext.getAvailablePlaybackDeviceHandles();
 
-                        // TODO: cleanup
+                        // TODO P1: cleanup
                         if (playbackDeviceHandles != newPlaybackDeviceHandles)
                         {
                             std::vector<sf::PlaybackDevice> newPlaybackDevices;
