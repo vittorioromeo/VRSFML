@@ -1,3 +1,5 @@
+#version 150
+
 #ifdef GL_ES
 precision mediump float;
 #endif
@@ -16,6 +18,11 @@ attribute vec2 sf_a_texCoord;
 
 varying vec4 sf_v_color;
 varying vec2 sf_v_texCoord;
+
+out gl_PerVertex
+{
+    vec4 gl_Position;
+};
 
 void main()
 {

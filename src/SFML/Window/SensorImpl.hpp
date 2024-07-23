@@ -31,18 +31,15 @@
 
 #include <SFML/Window/Sensor.hpp>
 
-#if defined(SFML_SYSTEM_WINDOWS)
+#if defined(SFML_SYSTEM_WINDOWS) || defined(SFML_SYSTEM_LINUX) || defined(SFML_SYSTEM_FREEBSD) || \
+    defined(SFML_SYSTEM_OPENBSD) || defined(SFML_SYSTEM_NETBSD) || defined(SFML_SYSTEM_MACOS) ||  \
+    defined(SFML_SYSTEM_EMSCRIPTEN)
 
-#include <SFML/Window/Win32/SensorImpl.hpp>
-
-#elif defined(SFML_SYSTEM_LINUX) || defined(SFML_SYSTEM_FREEBSD) || defined(SFML_SYSTEM_OPENBSD) || \
-    defined(SFML_SYSTEM_NETBSD)
-
-#include <SFML/Window/Unix/SensorImpl.hpp>
-
-#elif defined(SFML_SYSTEM_MACOS)
-
-#include <SFML/Window/macOS/SensorImpl.hpp>
+#include <SFML/Window/Stub/StubSensorImpl.hpp>
+namespace sf::priv
+{
+using SensorImpl = StubSensorImpl;
+}
 
 #elif defined(SFML_SYSTEM_IOS)
 
@@ -51,9 +48,5 @@
 #elif defined(SFML_SYSTEM_ANDROID)
 
 #include <SFML/Window/Android/SensorImpl.hpp>
-
-#elif defined(SFML_SYSTEM_EMSCRIPTEN)
-
-#include <SFML/Window/Emscripten/SensorImpl.hpp>
 
 #endif

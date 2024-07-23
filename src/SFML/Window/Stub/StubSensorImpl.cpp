@@ -22,47 +22,65 @@
 //
 ////////////////////////////////////////////////////////////
 
-#pragma once
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include <SFML/Window/Stub/StubSensorImpl.hpp>
+
+#include <SFML/System/Err.hpp>
 
 
-namespace sf
-{
-class String;
-
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-/// \brief Give access to the system clipboard
-///
-////////////////////////////////////////////////////////////
-class ClipboardImpl
+void StubSensorImpl::initialize()
 {
-public:
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the content of the clipboard as string data
-    ///
-    /// This function returns the content of the clipboard
-    /// as a string. If the clipboard does not contain string
-    /// it returns an empty sf::String object.
-    ///
-    /// \return Current content of the clipboard
-    ///
-    ////////////////////////////////////////////////////////////
-    static String getString();
+    err() << "Sensor API not implemented";
+}
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Set the content of the clipboard as string data
-    ///
-    /// This function sets the content of the clipboard as a
-    /// string.
-    ///
-    /// \param text sf::String object containing the data to be sent
-    /// to the clipboard
-    ///
-    ////////////////////////////////////////////////////////////
-    static void setString(const String& text);
-};
 
-} // namespace priv
+////////////////////////////////////////////////////////////
+void StubSensorImpl::cleanup()
+{
+    err() << "Sensor API not implemented";
+}
 
-} // namespace sf
+
+////////////////////////////////////////////////////////////
+bool StubSensorImpl::isAvailable(Sensor::Type /*sensor*/)
+{
+    err() << "Sensor API not implemented";
+    return false;
+}
+
+
+////////////////////////////////////////////////////////////
+bool StubSensorImpl::open(Sensor::Type /*sensor*/)
+{
+    err() << "Sensor API not implemented";
+    return false;
+}
+
+
+////////////////////////////////////////////////////////////
+void StubSensorImpl::close()
+{
+    err() << "Sensor API not implemented";
+}
+
+
+////////////////////////////////////////////////////////////
+Vector3f StubSensorImpl::update()
+{
+    err() << "Sensor API not implemented";
+    return {};
+}
+
+
+////////////////////////////////////////////////////////////
+void StubSensorImpl::setEnabled(bool /*enabled*/)
+{
+    err() << "Sensor API not implemented";
+}
+
+} // namespace sf::priv

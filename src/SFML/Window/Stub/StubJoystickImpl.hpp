@@ -24,72 +24,86 @@
 
 #pragma once
 
-////////////////////////////////////////////////////////////
-// Headers
-////////////////////////////////////////////////////////////
-#include <SFML/Window/Cursor.hpp>
 
-#include <SFML/System/Vector2.hpp>
+namespace sf::Joystick
+{
+struct Identification;
+} // namespace sf::Joystick
 
 
 namespace sf::priv
 {
+class JoystickCaps;
+class JoystickState;
+
 ////////////////////////////////////////////////////////////
-/// \brief Emscripten implementation of Cursor
-///
-/// This is a typical "not supported" implementation.
+/// \brief Stub implementation of joystick
 ///
 ////////////////////////////////////////////////////////////
-class CursorImpl
+class JoystickImpl
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// Refer to sf::Cursor::Cursor().
+    /// \brief Perform the global initialization of the joystick module
     ///
     ////////////////////////////////////////////////////////////
-    CursorImpl() = default;
+    static void initialize();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Deleted copy constructor
+    /// \brief Perform the global cleanup of the joystick module
     ///
     ////////////////////////////////////////////////////////////
-    CursorImpl(const CursorImpl&) = delete;
+    static void cleanup();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Deleted copy assignment
+    /// \brief Check if a joystick is currently connected
+    ///
+    /// \param index Index of the joystick to check
+    ///
+    /// \return True if the joystick is connected, false otherwise
     ///
     ////////////////////////////////////////////////////////////
-    CursorImpl& operator=(const CursorImpl&) = delete;
+    static bool isConnected(unsigned int index);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Move constructor
+    /// \brief Open the joystick
+    ///
+    /// \param index Index assigned to the joystick
+    ///
+    /// \return True on success, false on failure
     ///
     ////////////////////////////////////////////////////////////
-    CursorImpl(CursorImpl&&) noexcept;
+    [[nodiscard]] bool open(unsigned int index);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Move assignment
+    /// \brief Close the joystick
     ///
     ////////////////////////////////////////////////////////////
-    CursorImpl& operator=(CursorImpl&&) noexcept;
+    void close();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Create a cursor with the provided image
+    /// \brief Get the joystick capabilities
     ///
-    /// Returns false.
+    /// \return Joystick capabilities
     ///
     ////////////////////////////////////////////////////////////
-    bool loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vector2u hotspot);
+    [[nodiscard]] JoystickCaps getCapabilities() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Create a native system cursor
+    /// \brief Get the joystick identification
     ///
-    /// Returns false.
+    /// \return Joystick identification
     ///
     ////////////////////////////////////////////////////////////
-    bool loadFromSystem(Cursor::Type type);
+    [[nodiscard]] Joystick::Identification getIdentification() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Update the joystick and get its new state
+    ///
+    /// \return Joystick state
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] JoystickState update();
 };
 
 } // namespace sf::priv

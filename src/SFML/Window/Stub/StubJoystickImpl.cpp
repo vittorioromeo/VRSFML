@@ -25,26 +25,72 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Android/ClipboardImpl.hpp>
+#include <SFML/Window/JoystickIdentification.hpp>
+#include <SFML/Window/JoystickImpl.hpp>
 
 #include <SFML/System/Err.hpp>
-#include <SFML/System/String.hpp>
 
 
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-String ClipboardImpl::getString()
+void JoystickImpl::initialize()
 {
-    priv::err() << "Clipboard API not implemented for Android.";
+    err() << "Joystick API not implemented";
+}
+
+
+////////////////////////////////////////////////////////////
+void JoystickImpl::cleanup()
+{
+    err() << "Joystick API not implemented";
+}
+
+
+////////////////////////////////////////////////////////////
+bool JoystickImpl::isConnected(unsigned int /* index */)
+{
+    err() << "Joystick API not implemented";
+    return false;
+}
+
+
+////////////////////////////////////////////////////////////
+bool JoystickImpl::open(unsigned int /* index */)
+{
+    err() << "Joystick API not implemented";
+    return false;
+}
+
+
+////////////////////////////////////////////////////////////
+void JoystickImpl::close()
+{
+    err() << "Joystick API not implemented";
+}
+
+
+////////////////////////////////////////////////////////////
+JoystickCaps JoystickImpl::getCapabilities() const
+{
+    err() << "Joystick API not implemented";
     return {};
 }
 
 
 ////////////////////////////////////////////////////////////
-void ClipboardImpl::setString(const String& /* text */)
+Joystick::Identification JoystickImpl::getIdentification() const
 {
-    priv::err() << "Clipboard API not implemented for Android.";
+    err() << "Joystick API not implemented";
+    return {};
+}
+
+
+////////////////////////////////////////////////////////////
+JoystickState JoystickImpl::update()
+{
+    err() << "Joystick API not implemented";
+    return {};
 }
 
 } // namespace sf::priv
