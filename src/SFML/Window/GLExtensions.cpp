@@ -181,9 +181,9 @@ void ensureExtensionsInit(GraphicsContext& graphicsContext)
     extensionSanityCheck();
 
     // TODO P0: maybe conditionally enable depending on graphicscontext's debug ctx param?
-    glEnable(GL_DEBUG_OUTPUT);
-    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-    glDebugMessageCallback(mMessageCallback, nullptr);
+    glCheck(glEnable(GL_DEBUG_OUTPUT));
+    glCheck(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
+    glCheck(glDebugMessageCallback(mMessageCallback, nullptr));
 
     // Retrieve the context version number
     const auto majorVersion = getGLInteger(GL_MAJOR_VERSION);

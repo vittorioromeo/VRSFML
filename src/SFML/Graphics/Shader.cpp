@@ -326,7 +326,10 @@ Shader::~Shader()
 
     // Destroy effect program
     if (m_impl->shaderProgram)
+    {
+        SFML_BASE_ASSERT(glCheckExpr(glIsProgram(castToGlHandle(m_impl->shaderProgram))));
         glCheck(GLEXT_glDeleteProgram(castToGlHandle(m_impl->shaderProgram)));
+    }
 }
 
 
@@ -856,7 +859,7 @@ void Shader::bind() const
     }
 
     // Enable the program
-    SFML_BASE_ASSERT(glIsProgram(castToGlHandle(m_impl->shaderProgram)));
+    SFML_BASE_ASSERT(glCheckExpr(glIsProgram(castToGlHandle(m_impl->shaderProgram))));
     glCheck(GLEXT_glUseProgramObject(castToGlHandle(m_impl->shaderProgram)));
 
     // Bind the textures
@@ -943,12 +946,12 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
     // Create the program
     GLEXT_GLhandle shaderProgram{};
     glCheck(shaderProgram = glCreateProgram());
-    SFML_BASE_ASSERT(glIsProgram(shaderProgram));
+    SFML_BASE_ASSERT(glCheckExpr(glIsProgram(shaderProgram)));
 
 #ifdef SFML_OPENGL_ES
     if (vertexShaderCode.data() == nullptr)
     {
-        vertexShaderCode = R"glsl(
+        vertexShaderCode = R"glsl(#version 310 es
 
 #ifdef GL_ES
 precision mediump float;
@@ -957,10 +960,10 @@ precision mediump float;
 uniform mat4 sf_u_projectionMatrix;
 uniform mat4 sf_u_modelViewMatrix;
 
-attribute vec2 sf_a_position;
-attribute vec4 sf_a_color;
+in vec2 sf_a_position;
+in vec4 sf_a_color;
 
-varying vec4 sf_v_color;
+out vec4 sf_v_color;
 
 void main()
 {
@@ -982,7 +985,7 @@ void main()
         const auto       sourceCodeLength = static_cast<GLint>(vertexShaderCode.length());
         glCheck(GLEXT_glShaderSource(vertexShader, 1, &sourceCode, &sourceCodeLength));
         glCheck(GLEXT_glCompileShader(vertexShader));
-        SFML_BASE_ASSERT(glIsShader(vertexShader));
+        SFML_BASE_ASSERT(glCheckExpr(glIsShader(vertexShader)));
 
         // Check the compile log
         GLint success = 0;
@@ -1011,7 +1014,7 @@ void main()
         const auto           sourceCodeLength = static_cast<GLint>(geometryShaderCode.length());
         glCheck(GLEXT_glShaderSource(geometryShader, 1, &sourceCode, &sourceCodeLength));
         glCheck(GLEXT_glCompileShader(geometryShader));
-        SFML_BASE_ASSERT(glIsShader(geometryShader));
+        SFML_BASE_ASSERT(glCheckExpr(glIsShader(geometryShader)));
 
         // Check the compile log
         GLint success = 0;
@@ -1034,7 +1037,7 @@ void main()
 #ifdef SFML_OPENGL_ES
     if (fragmentShaderCode.data() == nullptr)
     {
-        fragmentShaderCode = R"glsl(
+        fragmentShaderCode = R"glsl(#version 310 es
 
 #ifdef GL_ES
 precision mediump float;
@@ -1042,12 +1045,14 @@ precision mediump float;
 
 uniform sampler2D sf_u_texture;
 
-out vec4 sf_v_color;
-out vec2 sf_v_texCoord;
+in vec4 sf_v_color;
+in vec2 sf_v_texCoord;
+
+out vec4 sf_fragColor;
 
 void main()
 {
-    gl_FragColor = sf_v_color * texture2D(sf_u_texture, sf_v_texCoord.st);
+    sf_fragColor = sf_v_color * texture(sf_u_texture, sf_v_texCoord.st);
 }
 
         )glsl";
@@ -1064,7 +1069,7 @@ void main()
         const auto       sourceCodeLength = static_cast<GLint>(fragmentShaderCode.length());
         glCheck(GLEXT_glShaderSource(fragmentShader, 1, &sourceCode, &sourceCodeLength));
         glCheck(GLEXT_glCompileShader(fragmentShader));
-        SFML_BASE_ASSERT(glIsShader(fragmentShader));
+        SFML_BASE_ASSERT(glCheckExpr(glIsShader(fragmentShader)));
 
         // Check the compile log
         GLint success = 0;

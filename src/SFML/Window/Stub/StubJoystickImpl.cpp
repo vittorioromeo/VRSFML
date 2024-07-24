@@ -36,21 +36,21 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 void JoystickImpl::initialize()
 {
-    err() << "Joystick API not implemented";
+    // err() << "Joystick API not implemented";
 }
 
 
 ////////////////////////////////////////////////////////////
 void JoystickImpl::cleanup()
 {
-    err() << "Joystick API not implemented";
+    // err() << "Joystick API not implemented";
 }
 
 
 ////////////////////////////////////////////////////////////
 bool JoystickImpl::isConnected(unsigned int /* index */)
 {
-    err() << "Joystick API not implemented";
+    // err() << "Joystick API not implemented";
     return false;
 }
 
@@ -58,7 +58,7 @@ bool JoystickImpl::isConnected(unsigned int /* index */)
 ////////////////////////////////////////////////////////////
 bool JoystickImpl::open(unsigned int /* index */)
 {
-    err() << "Joystick API not implemented";
+    // err() << "Joystick API not implemented";
     return false;
 }
 
@@ -66,14 +66,14 @@ bool JoystickImpl::open(unsigned int /* index */)
 ////////////////////////////////////////////////////////////
 void JoystickImpl::close()
 {
-    err() << "Joystick API not implemented";
+    // err() << "Joystick API not implemented";
 }
 
 
 ////////////////////////////////////////////////////////////
 JoystickCaps JoystickImpl::getCapabilities() const
 {
-    err() << "Joystick API not implemented";
+    // err() << "Joystick API not implemented";
     return {};
 }
 
@@ -81,7 +81,7 @@ JoystickCaps JoystickImpl::getCapabilities() const
 ////////////////////////////////////////////////////////////
 Joystick::Identification JoystickImpl::getIdentification() const
 {
-    err() << "Joystick API not implemented";
+    // err() << "Joystick API not implemented";
     return {};
 }
 
@@ -89,7 +89,7 @@ Joystick::Identification JoystickImpl::getIdentification() const
 ////////////////////////////////////////////////////////////
 JoystickState JoystickImpl::update()
 {
-    err() << "Joystick API not implemented";
+    // err() << "Joystick API not implemented";
     return {};
 }
 

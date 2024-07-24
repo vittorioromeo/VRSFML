@@ -1,4 +1,4 @@
-#version 150
+#version 310 es
 
 #ifdef GL_ES
 precision mediump float;
@@ -14,11 +14,6 @@ in vec2 sf_a_texCoord;
 
 out vec4 sf_v_color;
 out vec2 sf_v_texCoord;
-
-out gl_PerVertex
-{
-    vec4 gl_Position;
-};
 
 void main()
 {

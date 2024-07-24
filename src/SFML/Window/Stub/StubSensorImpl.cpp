@@ -35,21 +35,21 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 void StubSensorImpl::initialize()
 {
-    err() << "Sensor API not implemented";
+    // err() << "Sensor API not implemented";
 }
 
 
 ////////////////////////////////////////////////////////////
 void StubSensorImpl::cleanup()
 {
-    err() << "Sensor API not implemented";
+    // err() << "Sensor API not implemented";
 }
 
 
 ////////////////////////////////////////////////////////////
 bool StubSensorImpl::isAvailable(Sensor::Type /*sensor*/)
 {
-    err() << "Sensor API not implemented";
+    // err() << "Sensor API not implemented";
     return false;
 }
 
@@ -57,7 +57,7 @@ bool StubSensorImpl::isAvailable(Sensor::Type /*sensor*/)
 ////////////////////////////////////////////////////////////
 bool StubSensorImpl::open(Sensor::Type /*sensor*/)
 {
-    err() << "Sensor API not implemented";
+    // err() << "Sensor API not implemented";
     return false;
 }
 
@@ -65,14 +65,14 @@ bool StubSensorImpl::open(Sensor::Type /*sensor*/)
 ////////////////////////////////////////////////////////////
 void StubSensorImpl::close()
 {
-    err() << "Sensor API not implemented";
+    // err() << "Sensor API not implemented";
 }
 
 
 ////////////////////////////////////////////////////////////
 Vector3f StubSensorImpl::update()
 {
-    err() << "Sensor API not implemented";
+    // err() << "Sensor API not implemented";
     return {};
 }
 
@@ -80,7 +80,7 @@ Vector3f StubSensorImpl::update()
 ////////////////////////////////////////////////////////////
 void StubSensorImpl::setEnabled(bool /*enabled*/)
 {
-    err() << "Sensor API not implemented";
+    // err() << "Sensor API not implemented";
 }
 
 } // namespace sf::priv

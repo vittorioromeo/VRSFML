@@ -15,9 +15,7 @@
 
 namespace
 {
-constexpr auto vertexSource = R"glsl(
-
-#version 310 es
+constexpr auto vertexSource = R"glsl(#version 310 es
 
 #ifdef GL_ES
 precision mediump float;
@@ -37,11 +35,6 @@ in vec2 sf_a_texCoord;
 
 out vec4 sf_v_color;
 out vec2 sf_v_texCoord;
-
-out gl_PerVertex
-{
-    vec4 gl_Position;
-};
 
 void main()
 {
@@ -63,9 +56,8 @@ void main()
 
 )glsl";
 
-constexpr auto geometrySource = R"glsl(
-
-#version 310 es
+constexpr auto geometrySource = R"glsl(#version 310 es
+#extension GL_EXT_geometry_shader : enable
 
 // The render target's resolution (used for scaling)
 uniform vec2 resolution;
@@ -80,12 +72,7 @@ layout(points) in;
 layout(triangle_strip, max_vertices = 4) out;
 
 // Output texture coordinates
-varying vec2 sf_v_texCoord;
-
-in gl_PerVertex
-{
-    vec4 gl_Position;
-} gl_in[];
+out vec2 sf_v_texCoord;
 
 uniform mat4 sf_u_textureMatrix;
 
@@ -131,7 +118,7 @@ void main()
 
 )glsl";
 
-constexpr auto fragmentSource = R"glsl(
+constexpr auto fragmentSource = R"glsl(#version 310 es
 
 #ifdef GL_ES
 precision mediump float;
@@ -140,15 +127,17 @@ precision mediump float;
 uniform sampler2D sf_u_texture;
 uniform float     blink_alpha;
 
-out vec4 sf_v_color;
-out vec2 sf_v_texCoord;
+in vec4 sf_v_color;
+in vec2 sf_v_texCoord;
+
+out vec4 sf_fragColor;
 
 void main()
 {
     vec4 pixel = sf_v_color;
     pixel.a    = blink_alpha;
 
-    gl_FragColor = pixel;
+    sf_fragColor = pixel;
 }
 
 )glsl";

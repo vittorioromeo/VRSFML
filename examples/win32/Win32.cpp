@@ -1,3 +1,5 @@
+// TODO P0: assertion failure on glcheck when second renderwindow is destroyed
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -16,9 +18,11 @@
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
+
 #include <windows.h>
 
 #include <cmath>
+
 
 HWND button;
 

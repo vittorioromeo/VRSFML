@@ -206,7 +206,7 @@ using ContextRenderTargetMap = std::unordered_map<std::uint64_t, std::uint64_t>;
 
 
 ////////////////////////////////////////////////////////////
-constexpr const char* defaultTexturedShaderVertexSrc = R"glsl(
+constexpr const char* defaultTexturedShaderVertexSrc = R"glsl(#version 310 es
 
 #ifdef GL_ES
 precision mediump float;
@@ -234,7 +234,7 @@ void main()
 
 
 ////////////////////////////////////////////////////////////
-constexpr const char* defaultTexturedShaderFragmentSrc = R"glsl(
+constexpr const char* defaultTexturedShaderFragmentSrc = R"glsl(#version 310 es
 
 #ifdef GL_ES
 precision mediump float;
@@ -242,19 +242,21 @@ precision mediump float;
 
 uniform sampler2D sf_u_texture;
 
-out vec4 sf_v_color;
-out vec2 sf_v_texCoord;
+in vec4 sf_v_color;
+in vec2 sf_v_texCoord;
+
+out vec4 sf_fragColor;
 
 void main()
 {
-    gl_FragColor = sf_v_color * texture2D(sf_u_texture, sf_v_texCoord.st);
+    sf_fragColor = sf_v_color * texture(sf_u_texture, sf_v_texCoord.st);
 }
 
 )glsl";
 
 
 ////////////////////////////////////////////////////////////
-constexpr const char* defaultUntexturedShaderVertexSrc = R"glsl(
+constexpr const char* defaultUntexturedShaderVertexSrc = R"glsl(#version 310 es
 
 #ifdef GL_ES
 precision mediump float;
@@ -263,10 +265,10 @@ precision mediump float;
 uniform mat4 sf_u_projectionMatrix;
 uniform mat4 sf_u_modelViewMatrix;
 
-attribute vec2 sf_a_position;
-attribute vec4 sf_a_color;
+in vec2 sf_a_position;
+in vec4 sf_a_color;
 
-varying vec4 sf_v_color;
+out vec4 sf_v_color;
 
 void main()
 {
@@ -278,17 +280,19 @@ void main()
 
 
 ////////////////////////////////////////////////////////////
-constexpr const char* defaultUntexturedShaderFragmentSrc = R"glsl(
+constexpr const char* defaultUntexturedShaderFragmentSrc = R"glsl(#version 310 es
 
 #ifdef GL_ES
 precision mediump float;
 #endif
 
-varying vec4 sf_v_color;
+in vec4 sf_v_color;
+
+out vec4 sf_fragColor;
 
 void main()
 {
-    gl_FragColor = sf_v_color;
+    sf_fragColor = sf_v_color;
 }
 
 )glsl";
@@ -298,7 +302,7 @@ void main()
 [[nodiscard]] sf::Shader createBuiltInShader(sf::GraphicsContext& graphicsContext, const char* vertexSrc, const char* fragmentSrc)
 {
     auto shader = sf::Shader::loadFromMemory(graphicsContext, vertexSrc, fragmentSrc).value();
-    SFML_BASE_ASSERT(glIsProgram(shader.getNativeHandle()));
+    SFML_BASE_ASSERT(glCheckExpr(glIsProgram(shader.getNativeHandle())));
 
     if (const sf::base::Optional ulTexture = shader.getUniformLocation("sf_u_texture"))
         shader.setUniform(*ulTexture, sf::Shader::CurrentTexture);
@@ -326,6 +330,8 @@ struct [[nodiscard]] BuiltInShaders
 
     if (graphicsContext.builtInShaderState == 0)
     {
+        SFML_BASE_ASSERT(!builtInShaders.hasValue());
+
         builtInShaders
             .emplace(createBuiltInShader(graphicsContext, defaultTexturedShaderVertexSrc, defaultTexturedShaderFragmentSrc),
                      createBuiltInShader(graphicsContext, defaultUntexturedShaderVertexSrc, defaultUntexturedShaderFragmentSrc));
@@ -1219,7 +1225,7 @@ void RenderTarget::setupDraw(bool useVertexCache, const RenderStates& states)
 
         const auto updateCacheAttrib = [&](GLint& cacheAttrib, const char* attribName)
         {
-            cacheAttrib = glGetAttribLocation(usedNativeHandle, attribName);
+            cacheAttrib = glCheckExpr(glGetAttribLocation(usedNativeHandle, attribName));
 
             if (cacheAttrib >= 0)
                 glCheck(glEnableVertexAttribArray(static_cast<GLuint>(cacheAttrib)));

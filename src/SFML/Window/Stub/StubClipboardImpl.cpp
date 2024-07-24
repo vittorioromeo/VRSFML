@@ -36,7 +36,7 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 String StubClipboardImpl::getString()
 {
-    err() << "Clipboard API not implemented";
+    // err() << "Clipboard API not implemented";
     return {};
 }
 
@@ -44,7 +44,7 @@ String StubClipboardImpl::getString()
 ////////////////////////////////////////////////////////////
 void StubClipboardImpl::setString(const String& /* text */)
 {
-    err() << "Clipboard API not implemented";
+    // err() << "Clipboard API not implemented";
 }
 
 } // namespace sf::priv
