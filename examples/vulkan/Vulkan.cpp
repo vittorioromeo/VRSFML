@@ -1,7 +1,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/EventUtils.hpp>
 #define GLAD_VULKAN_IMPLEMENTATION
 #include <vulkan.h>
 
@@ -9,6 +8,8 @@
 #include <SFML/Graphics/Image.hpp>
 
 #include <SFML/Window/Event.hpp>
+#include <SFML/Window/EventUtils.hpp>
+#include <SFML/Window/GameLoop.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/Vulkan.hpp>
@@ -2553,13 +2554,13 @@ public:
         const sf::Clock clock;
 
         // Start game loop
-        while (true)
+        SFML_GAME_LOOP
         {
             // Process events
             while (const sf::base::Optional event = window.pollEvent())
             {
                 if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                    return;
+                    SFML_GAME_LOOP_BREAK;
 
                 // Re-create the swapchain when the window is resized
                 if (event->is<sf::Event::Resized>())
@@ -2574,7 +2575,10 @@ public:
                 // Render the frame
                 draw();
             }
-        }
+
+            // Continue to the next frame
+            SFML_GAME_LOOP_CONTINUE;
+        };
     }
 
 private:

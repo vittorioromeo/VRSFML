@@ -8,6 +8,7 @@
 
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/EventUtils.hpp>
+#include <SFML/Window/GameLoop.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/VideoMode.hpp>
 
@@ -51,12 +52,12 @@ int main()
 
     std::vector<std::string> log;
 
-    while (true)
+    SFML_GAME_LOOP
     {
         while (const sf::base::Optional event = window.pollEvent())
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                return EXIT_SUCCESS;
+                SFML_GAME_LOOP_BREAK;
 
             static const auto vec2ToString = [](const sf::Vector2i vec2)
             { return '(' + std::to_string(vec2.x) + ", " + std::to_string(vec2.y) + ')'; };
@@ -84,5 +85,8 @@ int main()
         }
 
         window.display();
-    }
+
+        // Continue to the next frame
+        SFML_GAME_LOOP_CONTINUE;
+    };
 }

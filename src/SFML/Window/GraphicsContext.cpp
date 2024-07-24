@@ -46,9 +46,40 @@ namespace
     if (!glGetErrorFunc || !glGetIntegervFunc || !glGetStringFunc)
         return result; // Empty vector
 
+// TODO P0: Repetition with glcontext.cpp
+// These functions are expected to fail, but we don't want to pollute the state of `glGetError` so we have to call it anyway
+#define SFML_PRIV_GLCHECK_INNER(...)                             \
+    do                                                           \
+    {                                                            \
+        SFML_BASE_ASSERT(glGetErrorFunc() == GL_NO_ERROR);       \
+                                                                 \
+        __VA_ARGS__;                                             \
+                                                                 \
+        if (glGetErrorFunc() != GL_NO_ERROR)                     \
+        {                                                        \
+            /* err() << "Inner GL error: '" #__VA_ARGS__ "'"; */ \
+        };                                                       \
+                                                                 \
+    } while (false)
+
+#define SFML_PRIV_GLCHECK_INNER_EXPR(...)                        \
+    [&]                                                          \
+    {                                                            \
+        SFML_BASE_ASSERT(glGetErrorFunc() == GL_NO_ERROR);       \
+                                                                 \
+        auto result = __VA_ARGS__;                               \
+                                                                 \
+        if (glGetErrorFunc() != GL_NO_ERROR)                     \
+        {                                                        \
+            /* err() << "Inner GL error: '" #__VA_ARGS__ "'"; */ \
+        };                                                       \
+                                                                 \
+        return result;                                           \
+    }()
+
     // Check whether a >= 3.0 context is available
     int majorVersion = 0;
-    glGetIntegervFunc(GL_MAJOR_VERSION, &majorVersion);
+    glGetIntegervFunc(GL_MAJOR_VERSION, &majorVersion); // intentionally not checked, will be checked below
 
     auto glGetStringiFunc = reinterpret_cast<glGetStringiFuncType>(glContext.getFunction("glGetStringi"));
 
@@ -75,14 +106,14 @@ namespace
 
     // Try to load the >= 3.0 way
     int numExtensions = 0;
-    glGetIntegervFunc(GL_NUM_EXTENSIONS, &numExtensions);
+    SFML_PRIV_GLCHECK_INNER(glGetIntegervFunc(GL_NUM_EXTENSIONS, &numExtensions));
 
     if (numExtensions == 0)
         return result; // Empty vector
 
     for (int i = 0; i < numExtensions; ++i)
         if (const auto* extensionString = reinterpret_cast<const char*>(
-                glGetStringiFunc(GL_EXTENSIONS, static_cast<unsigned int>(i))))
+                SFML_PRIV_GLCHECK_INNER_EXPR(glGetStringiFunc(GL_EXTENSIONS, static_cast<unsigned int>(i)))))
             result.emplace_back(extensionString);
 
     return result;
@@ -173,6 +204,12 @@ GraphicsContext::GraphicsContext() : m_impl(base::makeUnique<Impl>(*this, 1u /* 
     // SFML_BASE_ASSERT(m_impl->builtInShader.hasValue());
 
     priv::ensureExtensionsInit(*this);
+
+    // TODO P0: needed for emscripten shader example, why ?
+    while (glGetError() != GL_NO_ERROR)
+        ;
+
+    SFML_BASE_ASSERT(glGetError() == GL_NO_ERROR);
 }
 
 

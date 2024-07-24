@@ -18,6 +18,7 @@
 
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/EventUtils.hpp>
+#include <SFML/Window/GameLoop.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/Touch.hpp>
 #include <SFML/Window/VideoMode.hpp>
@@ -29,11 +30,6 @@
 #include <SFML/System/String.hpp>
 #include <SFML/System/Time.hpp>
 #include <SFML/System/Vector2.hpp>
-
-// TODO P0:
-#ifdef SFML_SYSTEM_EMSCRIPTEN
-#include <emscripten.h>
-#endif
 
 #include <random>
 #include <string>
@@ -142,14 +138,14 @@ int main()
 
     sf::Clock clock;
     bool      isPlaying = false;
-    auto      mainLoop  = [&]
+
+    SFML_GAME_LOOP
     {
         // Handle events
         while (const sf::base::Optional event = window.pollEvent())
         {
-            // TODO P0:
-            // if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-            // return EXIT_SUCCESS;
+            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+                SFML_GAME_LOOP_BREAK;
 
             // Space key pressed: play
             if ((event->is<sf::Event::KeyPressed>() &&
@@ -313,15 +309,10 @@ int main()
 
         // Display things on screen
         window.display();
+
+        // Continue to next frame
+        SFML_GAME_LOOP_CONTINUE;
     };
-
-// TODO P0:
-#ifdef SFML_SYSTEM_EMSCRIPTEN
-    static auto f          = mainLoop;
-    auto        mainLoopFn = [] { f(); };
-
-    emscripten_set_main_loop(mainLoopFn, 0, 1);
-#endif
 
     return EXIT_SUCCESS;
 }

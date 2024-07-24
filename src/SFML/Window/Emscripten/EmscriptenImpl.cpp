@@ -19,359 +19,265 @@
 #include <SFML/System/String.hpp>
 #include <SFML/System/StringUtfUtils.hpp>
 
+#include <SFML/Base/Math.hpp>
+
 #include <emscripten.h>
 #include <emscripten/html5.h>
-#include <map>
+#include <unordered_map>
 #include <vector>
 
-#include <cmath>
+
+#define EMSCRIPTEN_TRY(...)                                                         \
+    [&]() -> bool                                                                   \
+    {                                                                               \
+        if ((__VA_ARGS__) != EMSCRIPTEN_RESULT_SUCCESS)                             \
+        {                                                                           \
+            ::sf::priv::err() << "Emscripten operation failed: '" #__VA_ARGS__ "'"; \
+            return false;                                                           \
+        }                                                                           \
+                                                                                    \
+        return true;                                                                \
+    }()
 
 
 namespace
 {
-sf::priv::WindowImplEmscripten*      window         = nullptr;
-bool                                 windowHasFocus = false;
-bool                                 joysticksConnected[sf::Joystick::Count];
-bool                                 keyStatus[sf::Keyboard::KeyCount];
-bool                                 keyStatusInitialized = false;
-bool                                 mouseStatus[sf::Mouse::ButtonCount];
-bool                                 mouseStatusInitialized = false;
-sf::Vector2i                         mousePosition;
-bool                                 mousePositionInitialized = false;
-std::map<unsigned int, sf::Vector2i> touchStatus;
-bool                                 fullscreenPending = false;
+constinit sf::priv::WindowImplEmscripten* window = nullptr;
 
-sf::Keyboard::Key keyCodeToSF(unsigned long key, unsigned long location)
+constinit bool windowHasFocus    = false;
+constinit bool fullscreenPending = false;
+
+constinit bool joysticksConnected[sf::Joystick::Count]{};
+constinit bool keyStatus[sf::Keyboard::KeyCount]{};
+constinit bool mouseStatus[sf::Mouse::ButtonCount]{};
+
+constinit sf::Vector2i mousePosition{};
+
+std::unordered_map<unsigned int, sf::Vector2i> touchStatus;
+
+[[nodiscard]] sf::Keyboard::Key keyCodeToSF(unsigned long key, unsigned long location)
 {
+    // clang-format off
     switch (key)
     {
-        case '\b':
-            return sf::Keyboard::Key::Backspace;
-        case '\t':
-            return sf::Keyboard::Key::Tab;
+        case '\b': return sf::Keyboard::Key::Backspace;
+        case '\t': return sf::Keyboard::Key::Tab;
 
         case '\r':
         {
-            if (location == DOM_KEY_LOCATION_STANDARD)
-                return sf::Keyboard::Key::Enter;
-            else if (location == DOM_KEY_LOCATION_NUMPAD)
-                return sf::Keyboard::Key::Enter;
-            break;
+            if (location == DOM_KEY_LOCATION_STANDARD) return sf::Keyboard::Key::Enter;
+            if (location == DOM_KEY_LOCATION_NUMPAD)   return sf::Keyboard::Key::Enter;
+            return sf::Keyboard::Key::Unknown;
         }
 
         case 16:
         {
-            if (location == DOM_KEY_LOCATION_LEFT)
-                return sf::Keyboard::Key::LShift;
-            else if (location == DOM_KEY_LOCATION_RIGHT)
-                return sf::Keyboard::Key::RShift;
-            break;
+            if (location == DOM_KEY_LOCATION_LEFT)  return sf::Keyboard::Key::LShift;
+            if (location == DOM_KEY_LOCATION_RIGHT) return sf::Keyboard::Key::RShift;
+            return sf::Keyboard::Key::Unknown;
         }
 
         case 17:
         {
-            if (location == DOM_KEY_LOCATION_LEFT)
-                return sf::Keyboard::Key::LControl;
-            else if (location == DOM_KEY_LOCATION_RIGHT)
-                return sf::Keyboard::Key::RControl;
-            break;
+            if (location == DOM_KEY_LOCATION_LEFT)  return sf::Keyboard::Key::LControl;
+            if (location == DOM_KEY_LOCATION_RIGHT) return sf::Keyboard::Key::RControl;
+            return sf::Keyboard::Key::Unknown;
         }
 
         case 18:
         {
-            if (location == DOM_KEY_LOCATION_LEFT)
-                return sf::Keyboard::Key::LAlt;
-            else if (location == DOM_KEY_LOCATION_RIGHT)
-                return sf::Keyboard::Key::RAlt;
-            break;
+            if (location == DOM_KEY_LOCATION_LEFT)  return sf::Keyboard::Key::LAlt;
+            if (location == DOM_KEY_LOCATION_RIGHT) return sf::Keyboard::Key::RAlt;
+            return sf::Keyboard::Key::Unknown;
         }
 
-        case 19:
-            return sf::Keyboard::Key::Pause;
+        case 19: return sf::Keyboard::Key::Pause;
 
-            // case 20: Caps Lock
+        // case 20: Caps Lock
 
-        case 27:
-            return sf::Keyboard::Key::Escape;
+        case 27: return sf::Keyboard::Key::Escape;
 
-        case ' ':
-            return sf::Keyboard::Key::Space;
-        case 33:
-            return sf::Keyboard::Key::PageUp;
-        case 34:
-            return sf::Keyboard::Key::PageDown;
-        case 35:
-            return sf::Keyboard::Key::End;
-        case 36:
-            return sf::Keyboard::Key::Home;
-        case 37:
-            return sf::Keyboard::Key::Left;
-        case 39:
-            return sf::Keyboard::Key::Right;
-        case 38:
-            return sf::Keyboard::Key::Up;
-        case 40:
-            return sf::Keyboard::Key::Down;
+        case ' ': return sf::Keyboard::Key::Space;
+        case 33: return sf::Keyboard::Key::PageUp;
+        case 34: return sf::Keyboard::Key::PageDown;
+        case 35: return sf::Keyboard::Key::End;
+        case 36: return sf::Keyboard::Key::Home;
+        case 37: return sf::Keyboard::Key::Left;
+        case 39: return sf::Keyboard::Key::Right;
+        case 38: return sf::Keyboard::Key::Up;
+        case 40: return sf::Keyboard::Key::Down;
 
-            // case 42: Print Screen
+        // case 42: Print Screen
 
-        case 45:
-            return sf::Keyboard::Key::Insert;
-        case 46:
-            return sf::Keyboard::Key::Delete;
+        case 45: return sf::Keyboard::Key::Insert;
+        case 46: return sf::Keyboard::Key::Delete;
 
-        case ';':
-            return sf::Keyboard::Key::Semicolon;
+        case ';': return sf::Keyboard::Key::Semicolon;
+        case '=': return sf::Keyboard::Key::Equal;
 
-        case '=':
-            return sf::Keyboard::Key::Equal;
+        case 'A': return sf::Keyboard::Key::A;
+        case 'Z': return sf::Keyboard::Key::Z;
+        case 'E': return sf::Keyboard::Key::E;
+        case 'R': return sf::Keyboard::Key::R;
+        case 'T': return sf::Keyboard::Key::T;
+        case 'Y': return sf::Keyboard::Key::Y;
+        case 'U': return sf::Keyboard::Key::U;
+        case 'I': return sf::Keyboard::Key::I;
+        case 'O': return sf::Keyboard::Key::O;
+        case 'P': return sf::Keyboard::Key::P;
+        case 'Q': return sf::Keyboard::Key::Q;
+        case 'S': return sf::Keyboard::Key::S;
+        case 'D': return sf::Keyboard::Key::D;
+        case 'F': return sf::Keyboard::Key::F;
+        case 'G': return sf::Keyboard::Key::G;
+        case 'H': return sf::Keyboard::Key::H;
+        case 'J': return sf::Keyboard::Key::J;
+        case 'K': return sf::Keyboard::Key::K;
+        case 'L': return sf::Keyboard::Key::L;
+        case 'M': return sf::Keyboard::Key::M;
+        case 'W': return sf::Keyboard::Key::W;
+        case 'X': return sf::Keyboard::Key::X;
+        case 'C': return sf::Keyboard::Key::C;
+        case 'V': return sf::Keyboard::Key::V;
+        case 'B': return sf::Keyboard::Key::B;
+        case 'N': return sf::Keyboard::Key::N;
 
-        case 'A':
-            return sf::Keyboard::Key::A;
-        case 'Z':
-            return sf::Keyboard::Key::Z;
-        case 'E':
-            return sf::Keyboard::Key::E;
-        case 'R':
-            return sf::Keyboard::Key::R;
-        case 'T':
-            return sf::Keyboard::Key::T;
-        case 'Y':
-            return sf::Keyboard::Key::Y;
-        case 'U':
-            return sf::Keyboard::Key::U;
-        case 'I':
-            return sf::Keyboard::Key::I;
-        case 'O':
-            return sf::Keyboard::Key::O;
-        case 'P':
-            return sf::Keyboard::Key::P;
-        case 'Q':
-            return sf::Keyboard::Key::Q;
-        case 'S':
-            return sf::Keyboard::Key::S;
-        case 'D':
-            return sf::Keyboard::Key::D;
-        case 'F':
-            return sf::Keyboard::Key::F;
-        case 'G':
-            return sf::Keyboard::Key::G;
-        case 'H':
-            return sf::Keyboard::Key::H;
-        case 'J':
-            return sf::Keyboard::Key::J;
-        case 'K':
-            return sf::Keyboard::Key::K;
-        case 'L':
-            return sf::Keyboard::Key::L;
-        case 'M':
-            return sf::Keyboard::Key::M;
-        case 'W':
-            return sf::Keyboard::Key::W;
-        case 'X':
-            return sf::Keyboard::Key::X;
-        case 'C':
-            return sf::Keyboard::Key::C;
-        case 'V':
-            return sf::Keyboard::Key::V;
-        case 'B':
-            return sf::Keyboard::Key::B;
-        case 'N':
-            return sf::Keyboard::Key::N;
-        case '0':
-            return sf::Keyboard::Key::Num0;
-        case '1':
-            return sf::Keyboard::Key::Num1;
-        case '2':
-            return sf::Keyboard::Key::Num2;
-        case '3':
-            return sf::Keyboard::Key::Num3;
-        case '4':
-            return sf::Keyboard::Key::Num4;
-        case '5':
-            return sf::Keyboard::Key::Num5;
-        case '6':
-            return sf::Keyboard::Key::Num6;
-        case '7':
-            return sf::Keyboard::Key::Num7;
-        case '8':
-            return sf::Keyboard::Key::Num8;
-        case '9':
-            return sf::Keyboard::Key::Num9;
+        case '0': return sf::Keyboard::Key::Num0;
+        case '1': return sf::Keyboard::Key::Num1;
+        case '2': return sf::Keyboard::Key::Num2;
+        case '3': return sf::Keyboard::Key::Num3;
+        case '4': return sf::Keyboard::Key::Num4;
+        case '5': return sf::Keyboard::Key::Num5;
+        case '6': return sf::Keyboard::Key::Num6;
+        case '7': return sf::Keyboard::Key::Num7;
+        case '8': return sf::Keyboard::Key::Num8;
+        case '9': return sf::Keyboard::Key::Num9;
 
         case 91:
         {
-            if (location == DOM_KEY_LOCATION_LEFT)
-                return sf::Keyboard::Key::LSystem;
-            else if (location == DOM_KEY_LOCATION_RIGHT)
-                return sf::Keyboard::Key::RSystem;
-            break;
+            if (location == DOM_KEY_LOCATION_LEFT)  return sf::Keyboard::Key::LSystem;
+            if (location == DOM_KEY_LOCATION_RIGHT) return sf::Keyboard::Key::RSystem;
+            return sf::Keyboard::Key::Unknown;
         }
 
-        case 93:
-            return sf::Keyboard::Key::Menu;
+        case 93: return sf::Keyboard::Key::Menu;
 
-        case 96:
-            return sf::Keyboard::Key::Numpad0;
-        case 97:
-            return sf::Keyboard::Key::Numpad1;
-        case 98:
-            return sf::Keyboard::Key::Numpad2;
-        case 99:
-            return sf::Keyboard::Key::Numpad3;
-        case 100:
-            return sf::Keyboard::Key::Numpad4;
-        case 101:
-            return sf::Keyboard::Key::Numpad5;
-        case 102:
-            return sf::Keyboard::Key::Numpad6;
-        case 103:
-            return sf::Keyboard::Key::Numpad7;
-        case 104:
-            return sf::Keyboard::Key::Numpad8;
-        case 105:
-            return sf::Keyboard::Key::Numpad9;
+        case 96: return sf::Keyboard::Key::Numpad0;
+        case 97: return sf::Keyboard::Key::Numpad1;
+        case 98: return sf::Keyboard::Key::Numpad2;
+        case 99: return sf::Keyboard::Key::Numpad3;
+        case 100: return sf::Keyboard::Key::Numpad4;
+        case 101: return sf::Keyboard::Key::Numpad5;
+        case 102: return sf::Keyboard::Key::Numpad6;
+        case 103: return sf::Keyboard::Key::Numpad7;
+        case 104: return sf::Keyboard::Key::Numpad8;
+        case 105: return sf::Keyboard::Key::Numpad9;
 
-        case 106:
-            return sf::Keyboard::Key::Multiply;
-        case 107:
-            return sf::Keyboard::Key::Add;
-        case 109:
-            return sf::Keyboard::Key::Subtract;
-        case 111:
-            return sf::Keyboard::Key::Divide;
+        case 106: return sf::Keyboard::Key::Multiply;
+        case 107: return sf::Keyboard::Key::Add;
+        case 109: return sf::Keyboard::Key::Subtract;
+        case 111: return sf::Keyboard::Key::Divide;
 
-        case 112:
-            return sf::Keyboard::Key::F1;
-        case 113:
-            return sf::Keyboard::Key::F2;
-        case 114:
-            return sf::Keyboard::Key::F3;
-        case 115:
-            return sf::Keyboard::Key::F4;
-        case 116:
-            return sf::Keyboard::Key::F5;
-        case 117:
-            return sf::Keyboard::Key::F6;
-        case 118:
-            return sf::Keyboard::Key::F7;
-        case 119:
-            return sf::Keyboard::Key::F8;
-        case 120:
-            return sf::Keyboard::Key::F9;
-        case 121:
-            return sf::Keyboard::Key::F10;
-        case 122:
-            return sf::Keyboard::Key::F11;
-        case 123:
-            return sf::Keyboard::Key::F12;
-        case 124:
-            return sf::Keyboard::Key::F13;
-        case 125:
-            return sf::Keyboard::Key::F14;
-        case 126:
-            return sf::Keyboard::Key::F15;
+        case 112: return sf::Keyboard::Key::F1;
+        case 113: return sf::Keyboard::Key::F2;
+        case 114: return sf::Keyboard::Key::F3;
+        case 115: return sf::Keyboard::Key::F4;
+        case 116: return sf::Keyboard::Key::F5;
+        case 117: return sf::Keyboard::Key::F6;
+        case 118: return sf::Keyboard::Key::F7;
+        case 119: return sf::Keyboard::Key::F8;
+        case 120: return sf::Keyboard::Key::F9;
+        case 121: return sf::Keyboard::Key::F10;
+        case 122: return sf::Keyboard::Key::F11;
+        case 123: return sf::Keyboard::Key::F12;
+        case 124: return sf::Keyboard::Key::F13;
+        case 125: return sf::Keyboard::Key::F14;
+        case 126: return sf::Keyboard::Key::F15;
 
-            // case 144: Num Lock
-            // case 145: Scroll Lock
+        // case 144: Num Lock
+        // case 145: Scroll Lock
 
-        case 173:
-            return sf::Keyboard::Key::Hyphen;
+        case 173: return sf::Keyboard::Key::Hyphen;
 
-        case 188:
-            return sf::Keyboard::Key::Comma;
+        case 188: return sf::Keyboard::Key::Comma;
 
-        case 190:
-            return sf::Keyboard::Key::Period;
-        case 191:
-            return sf::Keyboard::Key::Slash;
-        case 192:
-            return sf::Keyboard::Key::Grave;
+        case 190: return sf::Keyboard::Key::Period;
+        case 191: return sf::Keyboard::Key::Slash;
+        case 192: return sf::Keyboard::Key::Grave;
 
-        case 219:
-            return sf::Keyboard::Key::LBracket;
-        case 220:
-            return sf::Keyboard::Key::Backslash;
-        case 221:
-            return sf::Keyboard::Key::RBracket;
-        case 222:
-            return sf::Keyboard::Key::Apostrophe;
+        case 219: return sf::Keyboard::Key::LBracket;
+        case 220: return sf::Keyboard::Key::Backslash;
+        case 221: return sf::Keyboard::Key::RBracket;
+        case 222: return sf::Keyboard::Key::Apostrophe;
     }
+    // clang-format on
 
     return sf::Keyboard::Key::Unknown;
 }
 
-void updatePluggedList()
+bool updatePluggedList()
 {
-    int numJoysticks = emscripten_get_num_gamepads();
+    const int numJoysticks = emscripten_get_num_gamepads();
 
     if (numJoysticks == EMSCRIPTEN_RESULT_NOT_SUPPORTED)
     {
-        for (unsigned int i = 0u; i < sf::Joystick::Count; ++i)
-        {
-            joysticksConnected[i] = false;
-        }
+        for (bool& flag : joysticksConnected)
+            flag = false;
 
-        return;
+        return false;
     }
 
     for (unsigned int i = 0u; (i < sf::Joystick::Count) && (i < static_cast<unsigned int>(numJoysticks)); ++i)
     {
         EmscriptenGamepadEvent gamepadEvent;
-        if (emscripten_get_gamepad_status(static_cast<int>(i), &gamepadEvent) != EMSCRIPTEN_RESULT_SUCCESS)
-        {
-            sf::priv::err() << "Failed to get status of gamepad " << i;
-            joysticksConnected[i] = false;
-            continue;
-        }
 
-        if (gamepadEvent.connected)
-            joysticksConnected[i] = true;
-        else
-            joysticksConnected[i] = false;
+        joysticksConnected[i] = EMSCRIPTEN_TRY(emscripten_get_gamepad_status(static_cast<int>(i), &gamepadEvent))
+                                    ? gamepadEvent.connected
+                                    : false;
     }
+
+    return true;
 }
 
-EM_BOOL canvasSizeChangedCallback(int eventType, const void* reserved, void* userData)
+[[nodiscard]] EM_BOOL canvasSizeChangedCallback(int /* eventType */, const void* /* reserved */, void* /* userData */)
 {
     if (!window)
-        return 0;
+        return EM_FALSE;
 
-    int width, height, fullscreen;
-    emscripten_get_canvas_size(&width, &height, &fullscreen);
+    int width{};
+    int height{};
+    if (!EMSCRIPTEN_TRY(emscripten_get_canvas_element_size("#canvas", &width, &height)))
+        return EM_FALSE;
 
-    sf::Event::Resized event{.size{static_cast<unsigned int>(width), static_cast<unsigned int>(height)}};
-    window->pushHtmlEvent(event);
-
-    return 0;
+    window->pushHtmlEvent(sf::Event::Resized{.size{static_cast<unsigned int>(width), static_cast<unsigned int>(height)}});
+    return EM_TRUE;
 }
 
 void requestFullscreen()
 {
-    EmscriptenFullscreenStrategy fullscreenStrategy;
+    const EmscriptenFullscreenStrategy fullscreenStrategy{.scaleMode = EMSCRIPTEN_FULLSCREEN_SCALE_STRETCH,
+                                                          .canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_HIDEF,
+                                                          .filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_BILINEAR,
+                                                          .canvasResizedCallback         = canvasSizeChangedCallback,
+                                                          .canvasResizedCallbackUserData = nullptr,
+                                                          .canvasResizedCallbackTargetThread = {}};
 
-    fullscreenStrategy.scaleMode                     = EMSCRIPTEN_FULLSCREEN_SCALE_STRETCH;
-    fullscreenStrategy.canvasResolutionScaleMode     = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_HIDEF;
-    fullscreenStrategy.filteringMode                 = EMSCRIPTEN_FULLSCREEN_FILTERING_BILINEAR;
-    fullscreenStrategy.canvasResizedCallback         = canvasSizeChangedCallback;
-    fullscreenStrategy.canvasResizedCallbackUserData = 0;
-
-    emscripten_request_fullscreen_strategy(0, 0, &fullscreenStrategy);
+    emscripten_request_fullscreen_strategy("#canvas", EM_FALSE /* deferUntilInEventHandler */, &fullscreenStrategy);
 }
 
-EM_BOOL keyCallback(int eventType, const EmscriptenKeyboardEvent* e, void* userData)
+[[nodiscard]] EM_BOOL keyCallback(int eventType, const EmscriptenKeyboardEvent* e, void* /* userData */)
 {
     if (!window)
-        return 0;
+        return EM_FALSE;
 
-    sf::Keyboard::Key key = keyCodeToSF(e->which, e->location);
+    const sf::Keyboard::Key key = keyCodeToSF(e->which, e->location);
 
     switch (eventType)
     {
         case EMSCRIPTEN_EVENT_KEYDOWN:
         {
             if (e->repeat && !window->getKeyRepeatEnabled())
-                return 1;
+                return EM_TRUE;
 
             if (fullscreenPending)
             {
@@ -380,14 +286,11 @@ EM_BOOL keyCallback(int eventType, const EmscriptenKeyboardEvent* e, void* userD
             }
 
             keyStatus[static_cast<std::size_t>(key)] = true;
-
-            sf::Event::KeyPressed event;
-            event.alt     = e->altKey != 0;
-            event.control = e->ctrlKey != 0;
-            event.shift   = e->shiftKey != 0;
-            event.system  = e->metaKey != 0;
-            event.code    = key;
-            window->pushHtmlEvent(event);
+            window->pushHtmlEvent(sf::Event::KeyPressed{.code    = key,
+                                                        .alt     = e->altKey != 0,
+                                                        .control = e->ctrlKey != 0,
+                                                        .shift   = e->shiftKey != 0,
+                                                        .system  = e->metaKey != 0});
 
             // We try to prevent some keystrokes from bubbling
             // If we try to prevent bubbling for all keys,
@@ -395,33 +298,28 @@ EM_BOOL keyCallback(int eventType, const EmscriptenKeyboardEvent* e, void* userD
             if ((key == sf::Keyboard::Key::Tab) || (key == sf::Keyboard::Key::Backspace) ||
                 (key == sf::Keyboard::Key::Menu) || (key == sf::Keyboard::Key::LSystem) ||
                 (key == sf::Keyboard::Key::RSystem))
-                return 1;
+                return EM_TRUE;
 
-            return 0;
+            return EM_FALSE;
         }
         case EMSCRIPTEN_EVENT_KEYUP:
         {
             keyStatus[static_cast<std::size_t>(key)] = false;
 
-            sf::Event::KeyReleased event;
-            event.alt     = e->altKey != 0;
-            event.control = e->ctrlKey != 0;
-            event.shift   = e->shiftKey != 0;
-            event.system  = e->metaKey != 0;
-            event.code    = key;
-            window->pushHtmlEvent(event);
-            return 1;
+            window->pushHtmlEvent(sf::Event::KeyReleased{.code    = key,
+                                                         .alt     = e->altKey != 0,
+                                                         .control = e->ctrlKey != 0,
+                                                         .shift   = e->shiftKey != 0,
+                                                         .system  = e->metaKey != 0});
+            return EM_TRUE;
         }
         case EMSCRIPTEN_EVENT_KEYPRESS:
         {
             if (e->charCode == 0)
-                return 1;
+                return EM_TRUE;
 
-            sf::Event::TextEntered event;
-            event.unicode = e->charCode;
-            window->pushHtmlEvent(event);
-
-            return 1;
+            window->pushHtmlEvent(sf::Event::TextEntered{.unicode = e->charCode});
+            return EM_TRUE;
         }
         default:
         {
@@ -429,212 +327,142 @@ EM_BOOL keyCallback(int eventType, const EmscriptenKeyboardEvent* e, void* userD
         }
     }
 
-    return 0;
+    return EM_FALSE;
 }
 
-EM_BOOL mouseCallback(int eventType, const EmscriptenMouseEvent* e, void* userData)
+[[nodiscard]] EM_BOOL mouseCallback(int eventType, const EmscriptenMouseEvent* e, void* /* userData */)
 {
-    mousePosition.x = e->clientX;
-    mousePosition.y = e->clientY;
+    mousePosition = {e->targetX, e->targetY};
 
     if (!window)
-        return 0;
+        return EM_FALSE;
+
+    const auto handleMouseEvent = [&]<typename TEvent, bool TDown>
+    {
+        const auto pushEventAndUpdateStatus = [&](sf::Mouse::Button sfButton)
+        {
+            window->pushHtmlEvent(sf::Event::MouseButtonPressed{.button = sfButton, .position = mousePosition});
+            mouseStatus[static_cast<std::size_t>(sfButton)] = TDown;
+        };
+
+        // clang-format off
+        if (e->button == 0) return pushEventAndUpdateStatus(sf::Mouse::Button::Left);
+        if (e->button == 1) return pushEventAndUpdateStatus(sf::Mouse::Button::Middle);
+        if (e->button == 2) return pushEventAndUpdateStatus(sf::Mouse::Button::Right);
+        if (e->button == 3) return pushEventAndUpdateStatus(sf::Mouse::Button::Extra1);
+        if (e->button == 4) return pushEventAndUpdateStatus(sf::Mouse::Button::Extra2);
+        // clang-format on
+    };
 
     switch (eventType)
     {
         case EMSCRIPTEN_EVENT_MOUSEDOWN:
         {
-            sf::Event::MouseButtonPressed event{.position{e->clientX, e->clientY}};
-
             if (fullscreenPending)
             {
                 requestFullscreen();
                 fullscreenPending = false;
             }
 
-            if (e->button == 0)
-            {
-                event.button                                                   = sf::Mouse::Button::Left;
-                mouseStatus[static_cast<std::size_t>(sf::Mouse::Button::Left)] = true;
-            }
-            else if (e->button == 1)
-            {
-                event.button                                                     = sf::Mouse::Button::Middle;
-                mouseStatus[static_cast<std::size_t>(sf::Mouse::Button::Middle)] = true;
-            }
-            else if (e->button == 2)
-            {
-                event.button                                                    = sf::Mouse::Button::Right;
-                mouseStatus[static_cast<std::size_t>(sf::Mouse::Button::Right)] = true;
-            }
-            else
-            {
-                // TODO P0: extra buttons
-                // event.button = sf::Mouse::ButtonCount;
-            }
-
-            window->pushHtmlEvent(event);
-            return 1;
+            handleMouseEvent.operator()<sf::Event::MouseButtonPressed, true>();
+            return EM_TRUE;
         }
+
         case EMSCRIPTEN_EVENT_MOUSEUP:
         {
-            sf::Event::MouseButtonReleased event{.position{e->clientX, e->clientY}};
-
-            if (e->button == 0)
-            {
-                event.button                                                   = sf::Mouse::Button::Left;
-                mouseStatus[static_cast<std::size_t>(sf::Mouse::Button::Left)] = false;
-            }
-            else if (e->button == 1)
-            {
-                event.button                                                     = sf::Mouse::Button::Middle;
-                mouseStatus[static_cast<std::size_t>(sf::Mouse::Button::Middle)] = false;
-            }
-            else if (e->button == 2)
-            {
-                event.button                                                    = sf::Mouse::Button::Right;
-                mouseStatus[static_cast<std::size_t>(sf::Mouse::Button::Right)] = false;
-            }
-            else
-            {
-                // TODO P0: extra buttons
-                // event.button = sf::Mouse::ButtonCount;
-            }
-
-            window->pushHtmlEvent(event);
-            return 1;
+            handleMouseEvent.operator()<sf::Event::MouseButtonReleased, false>();
+            return EM_TRUE;
         }
+
         case EMSCRIPTEN_EVENT_MOUSEMOVE:
         {
-            sf::Event::MouseMoved event{.position{e->clientX, e->clientY}};
-            window->pushHtmlEvent(event);
-            return 1;
+            window->pushHtmlEvent(sf::Event::MouseMoved{.position = mousePosition});
+            return EM_TRUE;
         }
+
         case EMSCRIPTEN_EVENT_MOUSEENTER:
         {
-            sf::Event::MouseEntered event;
-            window->pushHtmlEvent(event);
-            return 1;
+            window->pushHtmlEvent(sf::Event::MouseEntered{});
+            return EM_TRUE;
         }
+
         case EMSCRIPTEN_EVENT_MOUSELEAVE:
         {
-            sf::Event::MouseLeft event;
-            window->pushHtmlEvent(event);
-            return 1;
-        }
-        default:
-        {
-            break;
+            window->pushHtmlEvent(sf::Event::MouseLeft{});
+            return EM_TRUE;
         }
     }
 
-    return 0;
+    return EM_FALSE;
 }
 
-EM_BOOL wheelCallback(int eventType, const EmscriptenWheelEvent* e, void* userData)
+[[nodiscard]] EM_BOOL wheelCallback(int eventType, const EmscriptenWheelEvent* e, void* /* userData */)
 {
     if (!window)
-        return 0;
+        return EM_FALSE;
 
-    switch (eventType)
-    {
-        case EMSCRIPTEN_EVENT_WHEEL:
-        {
-            if (std::fabs(e->deltaY) > 0.0)
-            {
-                sf::Event::MouseWheelScrolled event;
-                event.wheel    = sf::Mouse::Wheel::Vertical;
-                event.delta    = -static_cast<float>(e->deltaY);
-                event.position = {e->mouse.clientX, e->mouse.clientY};
-                window->pushHtmlEvent(event);
-            }
+    if (eventType != EMSCRIPTEN_EVENT_WHEEL)
+        return EM_FALSE;
 
-            if (std::fabs(e->deltaX) > 0.0)
-            {
-                sf::Event::MouseWheelScrolled event;
+    if (sf::base::fabs(e->deltaY) > 0.0)
+        window->pushHtmlEvent(sf::Event::MouseWheelScrolled{.wheel    = sf::Mouse::Wheel::Vertical,
+                                                            .delta    = -static_cast<float>(e->deltaY),
+                                                            .position = {e->mouse.targetX, e->mouse.targetY}});
 
-                event.wheel    = sf::Mouse::Wheel::Horizontal;
-                event.delta    = static_cast<float>(e->deltaX);
-                event.position = {e->mouse.clientX, e->mouse.clientY};
-                window->pushHtmlEvent(event);
-            }
+    if (sf::base::fabs(e->deltaX) > 0.0)
+        window->pushHtmlEvent(sf::Event::MouseWheelScrolled{.wheel    = sf::Mouse::Wheel::Horizontal,
+                                                            .delta    = static_cast<float>(e->deltaX),
+                                                            .position = {e->mouse.targetX, e->mouse.targetY}});
 
-            return 1;
-        }
-        default:
-        {
-            break;
-        }
-    }
-
-    return 0;
+    return EM_TRUE;
 }
 
-EM_BOOL uieventCallback(int eventType, const EmscriptenUiEvent* e, void* userData)
+[[nodiscard]] EM_BOOL uieventCallback(int eventType, const EmscriptenUiEvent* /* e */, void* /* userData */)
 {
     if (!window)
-        return 0;
+        return EM_FALSE;
 
-    switch (eventType)
-    {
-        case EMSCRIPTEN_EVENT_RESIZE:
-        {
-            int width, height, fullscreen;
-            emscripten_get_canvas_size(&width, &height, &fullscreen);
+    if (eventType != EMSCRIPTEN_EVENT_RESIZE)
+        return EM_FALSE;
 
-            sf::Event::Resized event;
-            event.size = {static_cast<unsigned int>(width), static_cast<unsigned int>(height)};
-            window->pushHtmlEvent(event);
+    int width{};
+    int height{};
+    if (!EMSCRIPTEN_TRY(emscripten_get_canvas_element_size("#canvas", &width, &height)))
+        return EM_FALSE;
 
-            return 1;
-        }
-        default:
-        {
-            break;
-        }
-    }
-
-    return 0;
+    window->pushHtmlEvent(sf::Event::Resized{.size = {static_cast<unsigned int>(width), static_cast<unsigned int>(height)}});
+    return EM_TRUE;
 }
 
-EM_BOOL focuseventCallback(int eventType, const EmscriptenFocusEvent* e, void* userData)
+[[nodiscard]] EM_BOOL focuseventCallback(int eventType, const EmscriptenFocusEvent* /* e */, void* /* userData */)
 {
     if (!window)
-        return 0;
+        return EM_FALSE;
 
     switch (eventType)
     {
         case EMSCRIPTEN_EVENT_FOCUS:
         {
-            sf::Event::FocusGained event;
-            window->pushHtmlEvent(event);
-
+            window->pushHtmlEvent(sf::Event::FocusGained{});
             windowHasFocus = true;
-
-            return 1;
+            return EM_TRUE;
         }
+
         case EMSCRIPTEN_EVENT_BLUR:
         {
-            sf::Event::FocusLost event;
-            window->pushHtmlEvent(event);
-
+            window->pushHtmlEvent(sf::Event::FocusLost{});
             windowHasFocus = false;
-
-            return 1;
-        }
-        default:
-        {
-            break;
+            return EM_TRUE;
         }
     }
 
-    return 0;
+    return EM_FALSE;
 }
 
-EM_BOOL deviceorientationCallback(int eventType, const EmscriptenDeviceOrientationEvent* e, void* userData)
+[[nodiscard]] EM_BOOL deviceorientationCallback(int eventType, const EmscriptenDeviceOrientationEvent* /* e */, void* /* userData */)
 {
     if (!window)
-        return 0;
+        return EM_FALSE;
 
     switch (eventType)
     {
@@ -642,13 +470,13 @@ EM_BOOL deviceorientationCallback(int eventType, const EmscriptenDeviceOrientati
             break;
     }
 
-    return 0;
+    return EM_FALSE;
 }
 
-EM_BOOL devicemotionCallback(int eventType, const EmscriptenDeviceMotionEvent* e, void* userData)
+[[nodiscard]] EM_BOOL devicemotionCallback(int eventType, const EmscriptenDeviceMotionEvent* /* e */, void* /* userData */)
 {
     if (!window)
-        return 0;
+        return EM_FALSE;
 
     switch (eventType)
     {
@@ -656,13 +484,13 @@ EM_BOOL devicemotionCallback(int eventType, const EmscriptenDeviceMotionEvent* e
             break;
     }
 
-    return 0;
+    return EM_FALSE;
 }
 
-EM_BOOL orientationchangeCallback(int eventType, const EmscriptenOrientationChangeEvent* e, void* userData)
+[[nodiscard]] EM_BOOL orientationchangeCallback(int eventType, const EmscriptenOrientationChangeEvent* /* e */, void* /* userData */)
 {
     if (!window)
-        return 0;
+        return EM_FALSE;
 
     switch (eventType)
     {
@@ -670,13 +498,13 @@ EM_BOOL orientationchangeCallback(int eventType, const EmscriptenOrientationChan
             break;
     }
 
-    return 0;
+    return EM_FALSE;
 }
 
-EM_BOOL fullscreenchangeCallback(int eventType, const EmscriptenFullscreenChangeEvent* e, void* userData)
+[[nodiscard]] EM_BOOL fullscreenchangeCallback(int eventType, const EmscriptenFullscreenChangeEvent* /* e */, void* /* userData */)
 {
     if (!window)
-        return 0;
+        return EM_FALSE;
 
     switch (eventType)
     {
@@ -684,13 +512,13 @@ EM_BOOL fullscreenchangeCallback(int eventType, const EmscriptenFullscreenChange
             break;
     }
 
-    return 0;
+    return EM_FALSE;
 }
 
-EM_BOOL pointerlockchangeCallback(int eventType, const EmscriptenPointerlockChangeEvent* e, void* userData)
+[[nodiscard]] EM_BOOL pointerlockchangeCallback(int eventType, const EmscriptenPointerlockChangeEvent* /* e */, void* /* userData */)
 {
     if (!window)
-        return 0;
+        return EM_FALSE;
 
     switch (eventType)
     {
@@ -698,13 +526,13 @@ EM_BOOL pointerlockchangeCallback(int eventType, const EmscriptenPointerlockChan
             break;
     }
 
-    return 0;
+    return EM_FALSE;
 }
 
-EM_BOOL visibilitychangeCallback(int eventType, const EmscriptenVisibilityChangeEvent* e, void* userData)
+[[nodiscard]] EM_BOOL visibilitychangeCallback(int eventType, const EmscriptenVisibilityChangeEvent* /* e */, void* /* userData */)
 {
     if (!window)
-        return 0;
+        return EM_FALSE;
 
     switch (eventType)
     {
@@ -713,82 +541,75 @@ EM_BOOL visibilitychangeCallback(int eventType, const EmscriptenVisibilityChange
             sf::Event::Closed event;
             window->pushHtmlEvent(event);
 
-            return 1;
-        }
-        default:
-        {
-            break;
+            return EM_TRUE;
         }
     }
 
-    return 0;
+    return EM_FALSE;
 }
 
-EM_BOOL touchCallback(int eventType, const EmscriptenTouchEvent* e, void* userData)
+[[nodiscard]] EM_BOOL touchCallback(int eventType, const EmscriptenTouchEvent* e, void* /* userData */)
 {
     if (!window)
-        return 0;
+        return EM_FALSE;
+
+    const auto pushTouchEvent = [&]<typename TEvent>(int touchIdx)
+    {
+        sf::Event::TouchEnded event;
+        event.finger   = static_cast<unsigned int>(e->touches[touchIdx].identifier);
+        event.position = {e->touches[touchIdx].clientX, e->touches[touchIdx].clientY};
+        window->pushHtmlEvent(event);
+    };
 
     switch (eventType)
     {
         case EMSCRIPTEN_EVENT_TOUCHSTART:
         {
-            sf::Event::TouchBegan event;
-
             for (int i = 0; i < e->numTouches; ++i)
             {
-                event.finger   = e->touches[i].identifier;
-                event.position = {e->touches[i].clientX, e->touches[i].clientY};
-                window->pushHtmlEvent(event);
+                pushTouchEvent.operator()<sf::Event::TouchBegan>(i);
 
-                touchStatus.insert(std::make_pair(static_cast<unsigned int>(e->touches[i].identifier),
-                                                  sf::Vector2i(e->touches[i].clientX, e->touches[i].clientY)));
+                touchStatus.emplace(static_cast<unsigned int>(e->touches[i].identifier),
+                                    sf::Vector2i{e->touches[i].clientX, e->touches[i].clientY});
             }
 
-            return 1;
+            return EM_TRUE;
         }
+
         case EMSCRIPTEN_EVENT_TOUCHEND:
         {
-            sf::Event::TouchEnded event;
-
             for (int i = 0; i < e->numTouches; ++i)
             {
-                event.finger   = e->touches[i].identifier;
-                event.position = {e->touches[i].clientX, e->touches[i].clientY};
-                window->pushHtmlEvent(event);
+                pushTouchEvent.operator()<sf::Event::TouchEnded>(i);
 
                 touchStatus.erase(static_cast<unsigned int>(e->touches[i].identifier));
             }
 
-            return 1;
+            return EM_TRUE;
         }
+
         case EMSCRIPTEN_EVENT_TOUCHMOVE:
         {
-            sf::Event::TouchMoved event;
-
             for (int i = 0; i < e->numTouches; ++i)
             {
-                event.finger   = e->touches[i].identifier;
-                event.position = {e->touches[i].clientX, e->touches[i].clientY};
-                window->pushHtmlEvent(event);
+                pushTouchEvent.operator()<sf::Event::TouchMoved>(i);
 
-                touchStatus[static_cast<unsigned int>(e->touches[i].identifier)] = sf::Vector2i(e->touches[i].clientX,
-                                                                                                e->touches[i].clientY);
+                touchStatus[static_cast<unsigned int>(e->touches[i].identifier)] = {e->touches[i].clientX,
+                                                                                    e->touches[i].clientY};
             }
 
-            return 1;
-        }
-        default:
-        {
-            break;
+            return EM_TRUE;
         }
     }
 
-    return 0;
+    return EM_FALSE;
 }
 
-EM_BOOL gamepadCallback(int eventType, const EmscriptenGamepadEvent* e, void* userData)
+[[nodiscard]] EM_BOOL gamepadCallback(int eventType, const EmscriptenGamepadEvent* /* e */, void* /* userData */)
 {
+    if (!window)
+        return EM_FALSE;
+
     switch (eventType)
     {
         case EMSCRIPTEN_EVENT_GAMEPADCONNECTED:
@@ -798,21 +619,13 @@ EM_BOOL gamepadCallback(int eventType, const EmscriptenGamepadEvent* e, void* us
 
             updatePluggedList();
 
-            if (window)
-            {
-                for (int i = 0; i < sf::Joystick::Count; ++i)
-                {
-                    if (!previousConnected[i] && joysticksConnected[i])
-                    {
-                        sf::Event::JoystickConnected event;
-                        event.joystickId = i;
-                        window->pushHtmlEvent(event);
-                    }
-                }
-            }
+            for (unsigned int i = 0u; i < sf::Joystick::Count; ++i)
+                if (!previousConnected[i] && joysticksConnected[i])
+                    window->pushHtmlEvent(sf::Event::JoystickConnected{.joystickId = i});
 
-            return 1;
+            return EM_TRUE;
         }
+
         case EMSCRIPTEN_EVENT_GAMEPADDISCONNECTED:
         {
             bool previousConnected[sf::Joystick::Count];
@@ -820,28 +633,15 @@ EM_BOOL gamepadCallback(int eventType, const EmscriptenGamepadEvent* e, void* us
 
             updatePluggedList();
 
-            if (window)
-            {
-                for (int i = 0; i < sf::Joystick::Count; ++i)
-                {
-                    if (previousConnected[i] && !joysticksConnected[i])
-                    {
-                        sf::Event::JoystickDisconnected event;
-                        event.joystickId = i;
-                        window->pushHtmlEvent(event);
-                    }
-                }
-            }
+            for (unsigned int i = 0u; i < sf::Joystick::Count; ++i)
+                if (previousConnected[i] && !joysticksConnected[i])
+                    window->pushHtmlEvent(sf::Event::JoystickDisconnected{.joystickId = i});
 
-            return 1;
-        }
-        default:
-        {
-            break;
+            return EM_TRUE;
         }
     }
 
-    return 0;
+    return EM_FALSE;
 }
 
 void setCallbacks()
@@ -851,104 +651,48 @@ void setCallbacks()
     if (callbacksSet)
         return;
 
-    if (emscripten_set_keypress_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, keyCallback) != EMSCRIPTEN_RESULT_SUCCESS)
-        sf::priv::err() << "Failed to set keypress callback";
+    constexpr void* nullUserData = nullptr;
+    constexpr bool  useCapture   = true;
+    const auto*     windowTarget = EMSCRIPTEN_EVENT_TARGET_WINDOW;
+    constexpr auto  canvasTarget = "#canvas";
 
-    if (emscripten_set_keydown_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, keyCallback) != EMSCRIPTEN_RESULT_SUCCESS)
-        sf::priv::err() << "Failed to set keydown callback";
-
-    if (emscripten_set_keyup_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, keyCallback) != EMSCRIPTEN_RESULT_SUCCESS)
-        sf::priv::err() << "Failed to set keyup callback";
-
-    if (emscripten_set_click_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, mouseCallback) != EMSCRIPTEN_RESULT_SUCCESS)
-        sf::priv::err() << "Failed to set click callback";
-
-    if (emscripten_set_mousedown_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, mouseCallback) != EMSCRIPTEN_RESULT_SUCCESS)
-        sf::priv::err() << "Failed to set mousedown callback";
-
-    if (emscripten_set_mouseup_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, mouseCallback) != EMSCRIPTEN_RESULT_SUCCESS)
-        sf::priv::err() << "Failed to set mouseup callback";
-
-    if (emscripten_set_dblclick_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, mouseCallback) != EMSCRIPTEN_RESULT_SUCCESS)
-        sf::priv::err() << "Failed to set dblclick callback";
-
-    if (emscripten_set_mousemove_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, mouseCallback) != EMSCRIPTEN_RESULT_SUCCESS)
-        sf::priv::err() << "Failed to set mousemove callback";
-
-    if (emscripten_set_mouseenter_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, mouseCallback) != EMSCRIPTEN_RESULT_SUCCESS)
-        sf::priv::err() << "Failed to set mouseenter callback";
-
-    if (emscripten_set_mouseleave_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, mouseCallback) != EMSCRIPTEN_RESULT_SUCCESS)
-        sf::priv::err() << "Failed to set mouseleave callback";
-
-    if (emscripten_set_mouseover_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, mouseCallback) != EMSCRIPTEN_RESULT_SUCCESS)
-        sf::priv::err() << "Failed to set mouseover callback";
-
-    if (emscripten_set_mouseout_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, mouseCallback) != EMSCRIPTEN_RESULT_SUCCESS)
-        sf::priv::err() << "Failed to set mouseout callback";
-
-    if (emscripten_set_wheel_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, wheelCallback) != EMSCRIPTEN_RESULT_SUCCESS)
-        sf::priv::err() << "Failed to set wheel callback";
-
-    if (emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, uieventCallback) != EMSCRIPTEN_RESULT_SUCCESS)
-        sf::priv::err() << "Failed to set resize callback";
-
-    if (emscripten_set_scroll_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, uieventCallback) != EMSCRIPTEN_RESULT_SUCCESS)
-        sf::priv::err() << "Failed to set scroll callback";
-
-    if (emscripten_set_blur_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, focuseventCallback) != EMSCRIPTEN_RESULT_SUCCESS)
-        sf::priv::err() << "Failed to set blur callback";
-
-    if (emscripten_set_focus_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, focuseventCallback) != EMSCRIPTEN_RESULT_SUCCESS)
-        sf::priv::err() << "Failed to set focus callback";
-
-    if (emscripten_set_focusin_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, focuseventCallback) != EMSCRIPTEN_RESULT_SUCCESS)
-        sf::priv::err() << "Failed to set focusin callback";
-
-    if (emscripten_set_focusout_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, focuseventCallback) !=
-        EMSCRIPTEN_RESULT_SUCCESS)
-        sf::priv::err() << "Failed to set focusout callback";
-
-    if (emscripten_set_deviceorientation_callback(0, 1, deviceorientationCallback) != EMSCRIPTEN_RESULT_SUCCESS)
-        sf::priv::err() << "Failed to set deviceorientation callback";
-
-    if (emscripten_set_devicemotion_callback(0, 1, devicemotionCallback) != EMSCRIPTEN_RESULT_SUCCESS)
-        sf::priv::err() << "Failed to set devicemotion callback";
-
-    if (emscripten_set_orientationchange_callback(0, 1, orientationchangeCallback) != EMSCRIPTEN_RESULT_SUCCESS)
-        sf::priv::err() << "Failed to set orientationchange callback";
-
-    if (!keyStatusInitialized)
-    {
-        for (unsigned int i = 0u; i < sf::Keyboard::KeyCount; ++i)
-        {
-            keyStatus[i] = false;
-        }
-
-        keyStatusInitialized = true;
-    }
-
-    if (!mouseStatusInitialized)
-    {
-        for (unsigned int i = 0u; i < sf::Mouse::ButtonCount; ++i)
-        {
-            mouseStatus[i] = false;
-        }
-
-        mouseStatusInitialized = true;
-    }
+    EMSCRIPTEN_TRY(emscripten_set_keypress_callback(windowTarget, nullUserData, useCapture, keyCallback));
+    EMSCRIPTEN_TRY(emscripten_set_keydown_callback(windowTarget, nullUserData, useCapture, keyCallback));
+    EMSCRIPTEN_TRY(emscripten_set_keyup_callback(windowTarget, nullUserData, useCapture, keyCallback));
+    EMSCRIPTEN_TRY(emscripten_set_click_callback(canvasTarget, nullUserData, useCapture, mouseCallback));
+    EMSCRIPTEN_TRY(emscripten_set_mousedown_callback(canvasTarget, nullUserData, useCapture, mouseCallback));
+    EMSCRIPTEN_TRY(emscripten_set_mouseup_callback(canvasTarget, nullUserData, useCapture, mouseCallback));
+    EMSCRIPTEN_TRY(emscripten_set_dblclick_callback(canvasTarget, nullUserData, useCapture, mouseCallback));
+    EMSCRIPTEN_TRY(emscripten_set_mousemove_callback(canvasTarget, nullUserData, useCapture, mouseCallback));
+    EMSCRIPTEN_TRY(emscripten_set_mouseenter_callback(canvasTarget, nullUserData, useCapture, mouseCallback));
+    EMSCRIPTEN_TRY(emscripten_set_mouseleave_callback(canvasTarget, nullUserData, useCapture, mouseCallback));
+    EMSCRIPTEN_TRY(emscripten_set_mouseover_callback(canvasTarget, nullUserData, useCapture, mouseCallback));
+    EMSCRIPTEN_TRY(emscripten_set_mouseout_callback(canvasTarget, nullUserData, useCapture, mouseCallback));
+    EMSCRIPTEN_TRY(emscripten_set_wheel_callback(canvasTarget, nullUserData, useCapture, wheelCallback));
+    EMSCRIPTEN_TRY(emscripten_set_resize_callback(canvasTarget, nullUserData, useCapture, uieventCallback));
+    EMSCRIPTEN_TRY(emscripten_set_scroll_callback(canvasTarget, nullUserData, useCapture, uieventCallback));
+    EMSCRIPTEN_TRY(emscripten_set_blur_callback(canvasTarget, nullUserData, useCapture, focuseventCallback));
+    EMSCRIPTEN_TRY(emscripten_set_focus_callback(windowTarget, nullUserData, useCapture, focuseventCallback));
+    EMSCRIPTEN_TRY(emscripten_set_focusin_callback(windowTarget, nullUserData, useCapture, focuseventCallback));
+    EMSCRIPTEN_TRY(emscripten_set_focusout_callback(windowTarget, nullUserData, useCapture, focuseventCallback));
+    EMSCRIPTEN_TRY(emscripten_set_deviceorientation_callback(nullUserData, useCapture, deviceorientationCallback));
+    EMSCRIPTEN_TRY(emscripten_set_devicemotion_callback(nullUserData, useCapture, devicemotionCallback));
+    EMSCRIPTEN_TRY(emscripten_set_orientationchange_callback(nullUserData, useCapture, orientationchangeCallback));
+    EMSCRIPTEN_TRY(emscripten_set_touchstart_callback(canvasTarget, nullUserData, useCapture, touchCallback));
+    EMSCRIPTEN_TRY(emscripten_set_touchend_callback(canvasTarget, nullUserData, useCapture, touchCallback));
+    EMSCRIPTEN_TRY(emscripten_set_touchmove_callback(canvasTarget, nullUserData, useCapture, touchCallback));
+    EMSCRIPTEN_TRY(emscripten_set_touchcancel_callback(canvasTarget, nullUserData, useCapture, touchCallback));
 
     callbacksSet = true;
 }
+
 } // namespace
 
 
-namespace sf
-{
-namespace priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-WindowImplEmscripten::WindowImplEmscripten(WindowHandle handle) : m_keyRepeatEnabled(true)
+WindowImplEmscripten::WindowImplEmscripten(WindowHandle /* handle */) : m_keyRepeatEnabled(true)
 {
     err() << "Creating a window from a WindowHandle unsupported";
     std::abort();
@@ -956,7 +700,11 @@ WindowImplEmscripten::WindowImplEmscripten(WindowHandle handle) : m_keyRepeatEna
 
 
 ////////////////////////////////////////////////////////////
-WindowImplEmscripten::WindowImplEmscripten(VideoMode mode, const String& title, Style style, State state, const ContextSettings& settings) :
+WindowImplEmscripten::WindowImplEmscripten(VideoMode mode,
+                                           const String& /* title */,
+                                           Style /* style */,
+                                           State state,
+                                           const ContextSettings& /* settings */) :
 m_keyRepeatEnabled(true)
 {
     if (window)
@@ -972,9 +720,7 @@ m_keyRepeatEnabled(true)
     setSize(mode.size);
 
     if (state == State::Fullscreen)
-    {
         fullscreenPending = true;
-    }
 }
 
 
@@ -989,7 +735,7 @@ WindowImplEmscripten::~WindowImplEmscripten()
 WindowHandle WindowImplEmscripten::getNativeHandle() const
 {
     // Not applicable
-    return 0;
+    return {};
 }
 
 
@@ -1004,12 +750,12 @@ void WindowImplEmscripten::processEvents()
 Vector2i WindowImplEmscripten::getPosition() const
 {
     // Not applicable
-    return Vector2i();
+    return {};
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplEmscripten::setPosition(Vector2i position)
+void WindowImplEmscripten::setPosition(Vector2i /* position */)
 {
     // Not applicable
 }
@@ -1018,57 +764,58 @@ void WindowImplEmscripten::setPosition(Vector2i position)
 ////////////////////////////////////////////////////////////
 Vector2u WindowImplEmscripten::getSize() const
 {
-    int width, height, fullscreen;
-    emscripten_get_canvas_size(&width, &height, &fullscreen);
+    int width{};
+    int height{};
+    EMSCRIPTEN_TRY(emscripten_get_canvas_element_size("#canvas", &width, &height));
 
-    return Vector2u(width, height);
+    return {static_cast<unsigned int>(width), static_cast<unsigned int>(height)};
 }
 
 
 ////////////////////////////////////////////////////////////
 void WindowImplEmscripten::setSize(Vector2u size)
 {
-    emscripten_set_canvas_size(size.x, size.y);
+    emscripten_set_canvas_element_size("#canvas", static_cast<int>(size.x), static_cast<int>(size.y));
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplEmscripten::setTitle(const String& title)
+void WindowImplEmscripten::setTitle(const String& /* title */)
 {
     // Not applicable
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplEmscripten::setIcon(Vector2u size, const std::uint8_t* pixels)
+void WindowImplEmscripten::setIcon(Vector2u /* size */, const std::uint8_t* /* pixels */)
 {
     // Not applicable
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplEmscripten::setVisible(bool visible)
+void WindowImplEmscripten::setVisible(bool /* visible */)
 {
     // Not applicable
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplEmscripten::setMouseCursorVisible(bool visible)
+void WindowImplEmscripten::setMouseCursorVisible(bool /* visible */)
 {
     // Not applicable
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplEmscripten::setMouseCursorGrabbed(bool grabbed)
+void WindowImplEmscripten::setMouseCursorGrabbed(bool /* grabbed */)
 {
     // Not applicable
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplEmscripten::setMouseCursor(const CursorImpl& cursor)
+void WindowImplEmscripten::setMouseCursor(const CursorImpl& /* cursor */)
 {
     // Not applicable
 }
@@ -1112,51 +859,43 @@ void WindowImplEmscripten::pushHtmlEvent(const Event& event)
 ////////////////////////////////////////////////////////////
 bool InputImpl::isKeyPressed(Keyboard::Key key)
 {
-    if (!keyStatusInitialized)
-    {
-        for (int i = 0; i < sf::Keyboard::KeyCount; ++i)
-        {
-            keyStatus[i] = false;
-        }
-
-        keyStatusInitialized = true;
-
-        return false;
-    }
-
     return keyStatus[static_cast<std::size_t>(key)];
 }
 
 ////////////////////////////////////////////////////////////
-bool InputImpl::isKeyPressed(Keyboard::Scancode code)
+bool InputImpl::isKeyPressed(Keyboard::Scancode /* code */)
 {
     // Not applicable
+    return {};
 }
 
 
 ////////////////////////////////////////////////////////////
-Keyboard::Key InputImpl::localize(Keyboard::Scancode code)
+Keyboard::Key InputImpl::localize(Keyboard::Scancode /* code */)
 {
     // Not applicable
+    return {};
 }
 
 
 ////////////////////////////////////////////////////////////
-Keyboard::Scancode InputImpl::delocalize(Keyboard::Key key)
+Keyboard::Scancode InputImpl::delocalize(Keyboard::Key /* key */)
 {
     // Not applicable
+    return {};
 }
 
 
 ////////////////////////////////////////////////////////////
-String InputImpl::getDescription(Keyboard::Scancode code)
+String InputImpl::getDescription(Keyboard::Scancode /* code */)
 {
     // Not applicable
+    return {};
 }
 
 
 ////////////////////////////////////////////////////////////
-void InputImpl::setVirtualKeyboardVisible(bool visible)
+void InputImpl::setVirtualKeyboardVisible(bool /* visible */)
 {
     // Not applicable
 }
@@ -1164,18 +903,6 @@ void InputImpl::setVirtualKeyboardVisible(bool visible)
 ////////////////////////////////////////////////////////////
 bool InputImpl::isMouseButtonPressed(Mouse::Button button)
 {
-    if (!mouseStatusInitialized)
-    {
-        for (int i = 0; i < sf::Mouse::ButtonCount; ++i)
-        {
-            mouseStatus[i] = false;
-        }
-
-        mouseStatusInitialized = true;
-
-        return false;
-    }
-
     return mouseStatus[static_cast<std::size_t>(button)];
 }
 
@@ -1188,21 +915,21 @@ Vector2i InputImpl::getMousePosition()
 
 
 ////////////////////////////////////////////////////////////
-Vector2i InputImpl::getMousePosition(const WindowBase& relativeTo)
+Vector2i InputImpl::getMousePosition(const WindowBase& /* relativeTo */)
 {
     return getMousePosition();
 }
 
 
 ////////////////////////////////////////////////////////////
-void InputImpl::setMousePosition(Vector2i position)
+void InputImpl::setMousePosition(Vector2i /* position */)
 {
     // Not applicable
 }
 
 
 ////////////////////////////////////////////////////////////
-void InputImpl::setMousePosition(Vector2i position, const WindowBase& relativeTo)
+void InputImpl::setMousePosition(Vector2i position, const WindowBase& /* relativeTo */)
 {
     setMousePosition(position);
 }
@@ -1211,34 +938,29 @@ void InputImpl::setMousePosition(Vector2i position, const WindowBase& relativeTo
 ////////////////////////////////////////////////////////////
 bool InputImpl::isTouchDown(unsigned int finger)
 {
-    if (touchStatus.find(finger) == touchStatus.end())
-        return false;
-
-    return true;
+    return touchStatus.find(finger) != touchStatus.end();
 }
 
 
 ////////////////////////////////////////////////////////////
 Vector2i InputImpl::getTouchPosition(unsigned int finger)
 {
-    std::map<unsigned int, Vector2i>::const_iterator iter = touchStatus.find(finger);
-    if (iter == touchStatus.end())
-        return Vector2i();
-
-    return iter->second;
+    const auto iter = touchStatus.find(finger);
+    return iter == touchStatus.end() ? Vector2i() : iter->second;
 }
 
 
 ////////////////////////////////////////////////////////////
-Vector2i InputImpl::getTouchPosition(unsigned int finger, const WindowBase& relativeTo)
+Vector2i InputImpl::getTouchPosition(unsigned int finger, const WindowBase& /* relativeTo */)
 {
     return getTouchPosition(finger);
 }
 
+
 ////////////////////////////////////////////////////////////
 struct JoystickImpl::Impl
 {
-    int                      index;          ///< Index of the joystick
+    int                      index{-1};      ///< Index of the joystick
     Joystick::Identification identification; ///< Joystick identification
 };
 
@@ -1259,11 +981,8 @@ void JoystickImpl::initialize()
     if (callbacksSet)
         return;
 
-    if (emscripten_set_gamepadconnected_callback(0, 1, gamepadCallback) != EMSCRIPTEN_RESULT_SUCCESS)
-        sf::priv::err() << "Failed to set gamepadconnected callback";
-
-    if (emscripten_set_gamepaddisconnected_callback(0, 1, gamepadCallback) != EMSCRIPTEN_RESULT_SUCCESS)
-        sf::priv::err() << "Failed to set gamepaddisconnected callback";
+    EMSCRIPTEN_TRY(emscripten_set_gamepadconnected_callback(nullptr, true /* useCapture */, gamepadCallback));
+    EMSCRIPTEN_TRY(emscripten_set_gamepaddisconnected_callback(nullptr, true /* useCapture */, gamepadCallback));
 
     callbacksSet = true;
 }
@@ -1288,33 +1007,26 @@ bool JoystickImpl::open(unsigned int index)
     if (!isConnected(index))
         return false;
 
-    int numJoysticks = emscripten_get_num_gamepads();
+    const int numJoysticks = emscripten_get_num_gamepads();
 
     if (numJoysticks == EMSCRIPTEN_RESULT_NOT_SUPPORTED)
         return false;
 
-    if (index >= numJoysticks)
+    if (static_cast<int>(index) >= numJoysticks)
         return false;
 
     EmscriptenGamepadEvent gamepadEvent;
-    if (emscripten_get_gamepad_status(index, &gamepadEvent) != EMSCRIPTEN_RESULT_SUCCESS)
-    {
-        sf::priv::err() << "Failed to get status of gamepad " << index;
-        joysticksConnected[index] = false;
-        return false;
-    }
-
-    if (!gamepadEvent.connected)
+    if (!EMSCRIPTEN_TRY(emscripten_get_gamepad_status(static_cast<int>(index), &gamepadEvent)) || !gamepadEvent.connected)
     {
         joysticksConnected[index] = false;
         return false;
     }
 
-    m_impl->index = index;
+    m_impl->index = static_cast<int>(index);
 
     m_impl->identification.name      = StringUtfUtils::fromUtf8(gamepadEvent.id, gamepadEvent.id + 64);
-    m_impl->identification.vendorId  = 0;
-    m_impl->identification.productId = 0;
+    m_impl->identification.vendorId  = 0u;
+    m_impl->identification.productId = 0u;
 
     return true;
 }
@@ -1333,15 +1045,14 @@ JoystickCaps JoystickImpl::getCapabilities() const
     JoystickCaps caps;
 
     EmscriptenGamepadEvent gamepadEvent;
-    if (emscripten_get_gamepad_status(m_impl->index, &gamepadEvent) != EMSCRIPTEN_RESULT_SUCCESS)
+    if (!EMSCRIPTEN_TRY(emscripten_get_gamepad_status(m_impl->index, &gamepadEvent)))
     {
-        sf::priv::err() << "Failed to get status of gamepad " << m_impl->index;
         joysticksConnected[m_impl->index] = false;
         return caps;
     }
 
     // Get the number of buttons
-    caps.buttonCount = gamepadEvent.numButtons;
+    caps.buttonCount = static_cast<unsigned int>(gamepadEvent.numButtons);
 
     if (caps.buttonCount > Joystick::ButtonCount)
         caps.buttonCount = Joystick::ButtonCount;
@@ -1387,17 +1098,14 @@ JoystickState JoystickImpl::update()
     JoystickState state;
 
     EmscriptenGamepadEvent gamepadEvent;
-    if (emscripten_get_gamepad_status(m_impl->index, &gamepadEvent) != EMSCRIPTEN_RESULT_SUCCESS)
+    if (!EMSCRIPTEN_TRY(emscripten_get_gamepad_status(m_impl->index, &gamepadEvent)))
     {
-        sf::priv::err() << "Failed to get status of gamepad " << m_impl->index;
         joysticksConnected[m_impl->index] = false;
         return state;
     }
 
-    for (int i = 0; (i < gamepadEvent.numButtons) && (i < Joystick::ButtonCount); ++i)
-    {
+    for (int i = 0; (i < gamepadEvent.numButtons) && (i < static_cast<int>(Joystick::ButtonCount)); ++i)
         state.buttons[i] = gamepadEvent.digitalButton[i];
-    }
 
     if (std::strcmp(gamepadEvent.mapping, "standard") == 0)
     {
@@ -1414,21 +1122,15 @@ JoystickState JoystickImpl::update()
 ////////////////////////////////////////////////////////////
 std::vector<VideoMode> VideoModeImpl::getFullscreenModes()
 {
-    VideoMode desktop = getDesktopMode();
-
-    std::vector<VideoMode> modes;
-    modes.push_back(desktop);
-    return modes;
+    return {getDesktopMode()};
 }
 
 
 ////////////////////////////////////////////////////////////
 VideoMode VideoModeImpl::getDesktopMode()
 {
-    int width  = emscripten_run_script_int("screen.width");
-    int height = emscripten_run_script_int("screen.height");
-    return VideoMode({static_cast<unsigned int>(width), static_cast<unsigned int>(height)});
+    return VideoMode{{static_cast<unsigned int>(emscripten_run_script_int("screen.width")),
+                      static_cast<unsigned int>(emscripten_run_script_int("screen.height"))}};
 }
 
-} // namespace priv
-} // namespace sf
+} // namespace sf::priv

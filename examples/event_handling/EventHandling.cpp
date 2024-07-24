@@ -7,6 +7,7 @@
 #include <SFML/Graphics/Text.hpp>
 
 #include <SFML/Window/Event.hpp>
+#include <SFML/Window/GameLoop.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/VideoMode.hpp>
@@ -265,7 +266,7 @@ public:
         // All the following forms of event handling have equivalent behavior
         // In your own code you should decide which form of event handling
         // suits your needs best and use a single form of event handling
-        while (true)
+        SFML_GAME_LOOP
         {
             if (m_handlerType == HandlerType::Classic)
                 runHandlerClassic();
@@ -279,7 +280,7 @@ public:
                 runHandlerForward();
 
             if (m_mustClose)
-                return;
+                SFML_GAME_LOOP_BREAK;
 
             // Limit the log to 24 entries
             if (m_log.size() > 24u)
@@ -298,7 +299,10 @@ public:
             m_window.draw(m_handlerText);
             m_window.draw(m_instructions);
             m_window.display();
-        }
+
+            // Continue to the next frame
+            SFML_GAME_LOOP_CONTINUE;
+        };
     }
 
     // The following handle methods are called by the forwarding event handler implementation

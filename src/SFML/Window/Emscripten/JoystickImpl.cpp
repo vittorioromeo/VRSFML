@@ -71,7 +71,7 @@ EM_BOOL gamepadCallback(int eventType, const EmscriptenGamepadEvent* e, void* us
                         sf::Event event;
                         event.type                       = sf::Event::JoystickConnected;
                         event.joystickConnect.joystickId = i;
-                        window->pushHtmlEvent(event);
+                        window->pushEvent(event);
                     }
                 }
             }
@@ -94,7 +94,7 @@ EM_BOOL gamepadCallback(int eventType, const EmscriptenGamepadEvent* e, void* us
                         sf::Event event;
                         event.type                       = sf::Event::JoystickDisconnected;
                         event.joystickConnect.joystickId = i;
-                        window->pushHtmlEvent(event);
+                        window->pushEvent(event);
                     }
                 }
             }
