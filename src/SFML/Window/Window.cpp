@@ -25,6 +25,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Window/GLExtensions.hpp>
 #include <SFML/Window/GlContext.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/VideoMode.hpp>

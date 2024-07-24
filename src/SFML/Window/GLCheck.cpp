@@ -37,7 +37,7 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-void glCheckError(const char* file, unsigned int line, const char* expression)
+bool glCheckError(const char* file, unsigned int line, const char* expression)
 {
     const auto logError = [&](const char* error, const char* description)
     {
@@ -45,15 +45,14 @@ void glCheckError(const char* file, unsigned int line, const char* expression)
               << "\nExpression:\n   " << expression << "\nError description:\n   " << error << "\n   " << description
               << '\n';
 
-        // Call recursively as there might be additional context
-        glCheckError(file, line, expression);
+        return false;
     };
 
     // Get the last error
     const GLenum errorCode = glGetError();
 
     if (errorCode == GL_NO_ERROR)
-        return;
+        return true;
 
     switch (errorCode)
     {

@@ -1,3 +1,5 @@
+#version 310 es
+
 #ifdef GL_ES
 precision mediump float;
 #endif
@@ -5,8 +7,10 @@ precision mediump float;
 uniform sampler2D sf_u_texture;
 uniform float     edge_threshold;
 
-out vec4 sf_v_color;
-out vec2 sf_v_texCoord;
+in vec4 sf_v_color;
+in vec2 sf_v_texCoord;
+
+out vec4 sf_fragColor;
 
 void main()
 {
@@ -16,33 +20,33 @@ void main()
     vec2 offy = vec2(0.0, offset);
 
     // clang-format off
-    vec4 hEdge = texture2D(sf_u_texture, sf_v_texCoord.xy - offy)        * -2.0 +
-                 texture2D(sf_u_texture, sf_v_texCoord.xy + offy)        *  2.0 +
-                 texture2D(sf_u_texture, sf_v_texCoord.xy - offx - offy) * -1.0 +
-                 texture2D(sf_u_texture, sf_v_texCoord.xy - offx + offy) *  1.0 +
-                 texture2D(sf_u_texture, sf_v_texCoord.xy + offx - offy) * -1.0 +
-                 texture2D(sf_u_texture, sf_v_texCoord.xy + offx + offy) *  1.0;
+    vec4 hEdge = texture(sf_u_texture, sf_v_texCoord.xy - offy)        * -2.0 +
+                 texture(sf_u_texture, sf_v_texCoord.xy + offy)        *  2.0 +
+                 texture(sf_u_texture, sf_v_texCoord.xy - offx - offy) * -1.0 +
+                 texture(sf_u_texture, sf_v_texCoord.xy - offx + offy) *  1.0 +
+                 texture(sf_u_texture, sf_v_texCoord.xy + offx - offy) * -1.0 +
+                 texture(sf_u_texture, sf_v_texCoord.xy + offx + offy) *  1.0;
     // clang-format on
 
     // clang-format off
-    vec4 vEdge = texture2D(sf_u_texture, sf_v_texCoord.xy - offx)        *  2.0 +
-                 texture2D(sf_u_texture, sf_v_texCoord.xy + offx)        * -2.0 +
-                 texture2D(sf_u_texture, sf_v_texCoord.xy - offx - offy) *  1.0 +
-                 texture2D(sf_u_texture, sf_v_texCoord.xy - offx + offy) * -1.0 +
-                 texture2D(sf_u_texture, sf_v_texCoord.xy + offx - offy) *  1.0 +
-                 texture2D(sf_u_texture, sf_v_texCoord.xy + offx + offy) * -1.0;
+    vec4 vEdge = texture(sf_u_texture, sf_v_texCoord.xy - offx)        *  2.0 +
+                 texture(sf_u_texture, sf_v_texCoord.xy + offx)        * -2.0 +
+                 texture(sf_u_texture, sf_v_texCoord.xy - offx - offy) *  1.0 +
+                 texture(sf_u_texture, sf_v_texCoord.xy - offx + offy) * -1.0 +
+                 texture(sf_u_texture, sf_v_texCoord.xy + offx - offy) *  1.0 +
+                 texture(sf_u_texture, sf_v_texCoord.xy + offx + offy) * -1.0;
     // clang-format on
 
     vec3 result = sqrt(hEdge.rgb * hEdge.rgb + vEdge.rgb * vEdge.rgb);
 
     float edge = length(result);
 
-    vec4 pixel = sf_v_color * texture2D(sf_u_texture, sf_v_texCoord.xy);
+    vec4 pixel = sf_v_color * texture(sf_u_texture, sf_v_texCoord.xy);
 
     if (edge > (edge_threshold * 8.0))
         pixel.rgb = vec3(0.0, 0.0, 0.0);
     else
         pixel.a = edge_threshold;
 
-    gl_FragColor = pixel;
+    sf_fragColor = pixel;
 }

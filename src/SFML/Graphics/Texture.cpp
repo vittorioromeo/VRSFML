@@ -498,7 +498,7 @@ void Texture::update(const std::uint8_t* pixels, Vector2u size, Vector2u dest)
     SFML_BASE_ASSERT(pixels != nullptr);
 
     SFML_BASE_ASSERT(m_texture);
-    SFML_BASE_ASSERT(glIsTexture(m_texture));
+    SFML_BASE_ASSERT(glCheckExpr(glIsTexture(m_texture)));
 
     SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
@@ -542,10 +542,10 @@ void Texture::update(const Texture& texture, Vector2u dest)
     SFML_BASE_ASSERT(dest.y + texture.m_size.y <= m_size.y && "Destination y coordinate is outside of texture");
 
     SFML_BASE_ASSERT(m_texture);
-    SFML_BASE_ASSERT(glIsTexture(m_texture));
+    SFML_BASE_ASSERT(glCheckExpr(glIsTexture(m_texture)));
 
     SFML_BASE_ASSERT(texture.m_texture);
-    SFML_BASE_ASSERT(glIsTexture(texture.m_texture));
+    SFML_BASE_ASSERT(glCheckExpr(glIsTexture(texture.m_texture)));
 
 #ifndef SFML_OPENGL_ES // TODO P0: I think this can be removed now
 
@@ -682,7 +682,7 @@ bool Texture::update(const Window& window, Vector2u dest)
     SFML_BASE_ASSERT(dest.y + window.getSize().y <= m_size.y && "Destination y coordinate is outside of texture");
 
     SFML_BASE_ASSERT(m_texture);
-    SFML_BASE_ASSERT(glIsTexture(m_texture));
+    SFML_BASE_ASSERT(glCheckExpr(glIsTexture(m_texture)));
 
     if (!window.setActive(true))
     {
@@ -905,7 +905,7 @@ bool Texture::isRepeated() const
 bool Texture::generateMipmap()
 {
     SFML_BASE_ASSERT(m_texture);
-    SFML_BASE_ASSERT(glIsTexture(m_texture));
+    SFML_BASE_ASSERT(glCheckExpr(glIsTexture(m_texture)));
 
     SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
@@ -982,7 +982,7 @@ unsigned int Texture::getMaximumSize(GraphicsContext& graphicsContext)
 Glsl::Mat4 Texture::getMatrix(CoordinateType coordinateType) const
 {
     SFML_BASE_ASSERT(m_texture);
-    SFML_BASE_ASSERT(glIsTexture(m_texture));
+    SFML_BASE_ASSERT(glCheckExpr(glIsTexture(m_texture)));
 
     // clang-format off
     float matrix[] = {1.f, 0.f, 0.f, 0.f,

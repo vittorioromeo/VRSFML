@@ -1,4 +1,5 @@
 #version 310 es
+#extension GL_EXT_geometry_shader : enable
 
 // The render target's resolution (used for scaling)
 uniform vec2 resolution;
@@ -13,12 +14,7 @@ layout(points) in;
 layout(triangle_strip, max_vertices = 4) out;
 
 // Output texture coordinates
-varying vec2 sf_v_texCoord;
-
-in gl_PerVertex
-{
-    vec4 gl_Position;
-} gl_in[];
+out vec2 sf_v_texCoord;
 
 uniform mat4 sf_u_textureMatrix;
 

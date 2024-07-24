@@ -1,3 +1,5 @@
+#version 310 es
+
 #ifdef GL_ES
 precision mediump float;
 #endif
@@ -5,8 +7,10 @@ precision mediump float;
 uniform sampler2D sf_u_texture;
 uniform float     blur_radius;
 
-out vec4 sf_v_color;
-out vec2 sf_v_texCoord;
+in vec4 sf_v_color;
+in vec2 sf_v_texCoord;
+
+out vec4 sf_fragColor;
 
 void main()
 {
@@ -14,16 +18,16 @@ void main()
     vec2 offy = vec2(0.0, blur_radius);
 
     // clang-format off
-    vec4 pixel = texture2D(sf_u_texture, sf_v_texCoord.xy)               * 4.0 +
-                 texture2D(sf_u_texture, sf_v_texCoord.xy - offx)        * 2.0 +
-                 texture2D(sf_u_texture, sf_v_texCoord.xy + offx)        * 2.0 +
-                 texture2D(sf_u_texture, sf_v_texCoord.xy - offy)        * 2.0 +
-                 texture2D(sf_u_texture, sf_v_texCoord.xy + offy)        * 2.0 +
-                 texture2D(sf_u_texture, sf_v_texCoord.xy - offx - offy) * 1.0 +
-                 texture2D(sf_u_texture, sf_v_texCoord.xy - offx + offy) * 1.0 +
-                 texture2D(sf_u_texture, sf_v_texCoord.xy + offx - offy) * 1.0 +
-                 texture2D(sf_u_texture, sf_v_texCoord.xy + offx + offy) * 1.0;
+    vec4 pixel = texture(sf_u_texture, sf_v_texCoord.xy)               * 4.0 +
+                 texture(sf_u_texture, sf_v_texCoord.xy - offx)        * 2.0 +
+                 texture(sf_u_texture, sf_v_texCoord.xy + offx)        * 2.0 +
+                 texture(sf_u_texture, sf_v_texCoord.xy - offy)        * 2.0 +
+                 texture(sf_u_texture, sf_v_texCoord.xy + offy)        * 2.0 +
+                 texture(sf_u_texture, sf_v_texCoord.xy - offx - offy) * 1.0 +
+                 texture(sf_u_texture, sf_v_texCoord.xy - offx + offy) * 1.0 +
+                 texture(sf_u_texture, sf_v_texCoord.xy + offx - offy) * 1.0 +
+                 texture(sf_u_texture, sf_v_texCoord.xy + offx + offy) * 1.0;
     // clang-format on
 
-    gl_FragColor = sf_v_color * (pixel / 16.0);
+    sf_fragColor = sf_v_color * (pixel / 16.0);
 }
