@@ -329,6 +329,16 @@ macro(sfml_add_example target)
             -sALLOW_MEMORY_GROWTH=1
             -sMAX_WEBGL_VERSION=2
             -sMIN_WEBGL_VERSION=2)
+
+        add_custom_command(
+            TARGET ${target} PRE_LINK
+            COMMAND ${CMAKE_COMMAND} -E copy
+                    ${PROJECT_SOURCE_DIR}/examples/${target}/resources
+                    ${CMAKE_CURRENT_BINARY_DIR})
+
+        foreach(RESOURCE ${THIS_BUNDLE_RESOURCES})
+            target_link_options(${target} PRIVATE "SHELL:--preload-file ${RESOURCE}")
+        endforeach()
     endif()
 
     if(SFML_OS_IOS)

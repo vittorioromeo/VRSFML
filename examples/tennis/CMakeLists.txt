@@ -1,9 +1,12 @@
 # all source files
 set(SRC Tennis.cpp)
+
+set(RESOURCES
+    resources/ball.wav
+    resources/tuffy.ttf
+    resources/sfml_logo.png)
+
 if(SFML_OS_IOS)
-    set(RESOURCES
-        resources/ball.wav
-        resources/tuffy.ttf)
     set_source_files_properties(${RESOURCES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 endif()
 
