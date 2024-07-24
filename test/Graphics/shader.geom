@@ -1,4 +1,4 @@
-#version 310 es
+#version 300 es
 #extension GL_EXT_geometry_shader : enable
 
 // The render target's resolution (used for scaling)

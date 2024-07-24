@@ -1,4 +1,4 @@
-#version 310 es
+#version 300 es
 #extension GL_EXT_geometry_shader : enable
 
 // TODO P0: compiles and links on ARM x64, but doesn't display anything

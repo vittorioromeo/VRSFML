@@ -96,6 +96,13 @@ using WindowImplType = sf::priv::WindowImplAndroid;
 
 #define SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
 
+#elif defined(SFML_SYSTEM_EMSCRIPTEN)
+
+#include <SFML/Window/Emscripten/WindowImplEmscripten.hpp>
+using WindowImplType = sf::priv::WindowImplEmscripten;
+
+#define SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
+
 #endif
 
 

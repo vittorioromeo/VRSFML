@@ -30,6 +30,10 @@
 #include <SFML/System/Time.hpp>
 #include <SFML/System/Vector2.hpp>
 
+// TODO P0:
+#ifdef SFML_SYSTEM_EMSCRIPTEN
+#include <emscripten.h>
+#endif
 #include <random>
 #include <string>
 
@@ -80,13 +84,15 @@ int main()
     auto playbackDevice = sf::PlaybackDevice::createDefault(audioContext).value();
 
     // Load the sounds used in the game
-    const auto ballSoundBuffer = sf::SoundBuffer::loadFromFile(resourcesDir() / "ball.wav").value();
-    sf::Sound  ballSound(ballSoundBuffer);
+    // TODO P0:
+    // const auto ballSoundBuffer = sf::SoundBuffer::loadFromFile(resourcesDir() / "ball.wav").value();
+    // sf::Sound  ballSound(ballSoundBuffer);
 
     // Create the SFML logo texture:
-    const auto sfmlLogoTexture = sf::Texture::loadFromFile(graphicsContext, resourcesDir() / "sfml_logo.png").value();
-    sf::Sprite sfmlLogo(sfmlLogoTexture.getRect());
-    sfmlLogo.setPosition({170.f, 50.f});
+    // TODO P0:
+    // const auto sfmlLogoTexture = sf::Texture::loadFromFile(graphicsContext, resourcesDir() / "sfml_logo.png").value();
+    // sf::Sprite sfmlLogo(sfmlLogoTexture.getRect());
+    // sfmlLogo.setPosition({170.f, 50.f});
 
     // Create the left paddle
     sf::RectangleShape leftPaddle;
@@ -113,18 +119,18 @@ int main()
     ball.setOrigin({ballRadius / 2.f, ballRadius / 2.f});
 
     // Open the text font
-    const auto font = sf::Font::openFromFile(graphicsContext, resourcesDir() / "tuffy.ttf").value();
+    //   const auto font = sf::Font::openFromFile(graphicsContext, resourcesDir() / "tuffy.ttf").value();
 
     // Initialize the pause message
-    sf::Text pauseMessage(font);
-    pauseMessage.setCharacterSize(40);
-    pauseMessage.setPosition({170.f, 200.f});
-    pauseMessage.setFillColor(sf::Color::White);
+    //   sf::Text pauseMessage(font);
+    //   pauseMessage.setCharacterSize(40);
+    //   pauseMessage.setPosition({170.f, 200.f});
+    //   pauseMessage.setFillColor(sf::Color::White);
 
 #ifdef SFML_SYSTEM_IOS
     pauseMessage.setString("Welcome to SFML Tennis!\nTouch the screen to start the game.");
 #else
-    pauseMessage.setString("Welcome to SFML Tennis!\n\nPress space to start the game.");
+    //   pauseMessage.setString("Welcome to SFML Tennis!\n\nPress space to start the game.");
 #endif
 
     // Define the paddles properties
@@ -137,13 +143,13 @@ int main()
 
     sf::Clock clock;
     bool      isPlaying = false;
-    while (true)
+    auto      mainLoop  = [&]
     {
         // Handle events
         while (const sf::base::Optional event = window.pollEvent())
         {
-            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                return EXIT_SUCCESS;
+            // if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+            // return EXIT_SUCCESS;
 
             // Space key pressed: play
             if ((event->is<sf::Event::KeyPressed>() &&
@@ -234,22 +240,22 @@ int main()
             if (ball.getPosition().x - ballRadius < 0.f)
             {
                 isPlaying = false;
-                pauseMessage.setString("You Lost!\n\n" + inputString);
+                //  pauseMessage.setString("You Lost!\n\n" + inputString);
             }
             if (ball.getPosition().x + ballRadius > gameWidth)
             {
                 isPlaying = false;
-                pauseMessage.setString("You Won!\n\n" + inputString);
+                //   pauseMessage.setString("You Won!\n\n" + inputString);
             }
             if (ball.getPosition().y - ballRadius < 0.f)
             {
-                ballSound.play(playbackDevice);
+                //  ballSound.play(playbackDevice);
                 ballAngle = -ballAngle;
                 ball.setPosition({ball.getPosition().x, ballRadius + 0.1f});
             }
             if (ball.getPosition().y + ballRadius > gameHeight)
             {
-                ballSound.play(playbackDevice);
+                //   ballSound.play(playbackDevice);
                 ballAngle = -ballAngle;
                 ball.setPosition({ball.getPosition().x, gameHeight - ballRadius - 0.1f});
             }
@@ -268,7 +274,7 @@ int main()
                 else
                     ballAngle = sf::degrees(180) - ballAngle - sf::degrees(dist(rng));
 
-                ballSound.play(playbackDevice);
+                //  ballSound.play(playbackDevice);
                 ball.setPosition({leftPaddle.getPosition().x + ballRadius + paddleSize.x / 2 + 0.1f, ball.getPosition().y});
             }
 
@@ -283,7 +289,7 @@ int main()
                 else
                     ballAngle = sf::degrees(180) - ballAngle - sf::degrees(dist(rng));
 
-                ballSound.play(playbackDevice);
+                //  ballSound.play(playbackDevice);
                 ball.setPosition({rightPaddle.getPosition().x - ballRadius - paddleSize.x / 2 - 0.1f, ball.getPosition().y});
             }
         }
@@ -301,13 +307,21 @@ int main()
         else
         {
             // Draw the pause message
-            window.draw(pauseMessage);
-            window.draw(sfmlLogo, sfmlLogoTexture);
+            //  window.draw(pauseMessage);
+            // window.draw(sfmlLogo, sfmlLogoTexture);
         }
 
         // Display things on screen
         window.display();
-    }
+    };
+
+// TODO P0:
+#ifdef SFML_SYSTEM_EMSCRIPTEN
+    static auto f          = mainLoop;
+    auto        mainLoopFn = [] { f(); };
+
+    emscripten_set_main_loop(mainLoopFn, 0, 1);
+#endif
 
     return EXIT_SUCCESS;
 }

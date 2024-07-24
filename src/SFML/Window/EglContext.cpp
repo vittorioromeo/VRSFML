@@ -46,12 +46,15 @@
 #include <X11/Xlib.h>
 #endif
 
+// TODO P0:
+#ifndef SFML_SYSTEM_EMSCRIPTEN
 // We check for this definition in order to avoid multiple definitions of GLAD
 // entities during unity builds of SFML.
 #ifndef GLAD_EGL_IMPLEMENTATION_INCLUDED
 #define GLAD_EGL_IMPLEMENTATION_INCLUDED
 #define GLAD_EGL_IMPLEMENTATION
 #include <glad/egl.h>
+#endif
 #endif
 
 namespace
@@ -87,6 +90,8 @@ namespace EglContextImpl
 ////////////////////////////////////////////////////////////
 bool ensureInit()
 {
+#ifndef SFML_SYSTEM_EMSCRIPTEN
+
     static bool result = []
     {
         if (!gladLoaderLoadEGL(EGL_NO_DISPLAY))
@@ -108,6 +113,12 @@ bool ensureInit()
 
     SFML_BASE_ASSERT(result);
     return result;
+
+#else
+
+    return true;
+
+#endif
 }
 
 } // namespace EglContextImpl
@@ -129,12 +140,17 @@ GlContext(graphicsContext, id, {})
     m_config = getBestConfig(m_display, VideoMode::getDesktopMode().bitsPerPixel, ContextSettings());
     updateSettings();
 
+#ifndef SFML_SYSTEM_EMSCRIPTEN
     // Note: The EGL specs say that attribList can be a null pointer when passed to eglCreatePbufferSurface,
     // but this is resulting in a segfault. Bug in Android?
     EGLint attribList[] = {EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE};
 
     eglCheck(m_surface = eglCreatePbufferSurface(m_display, m_config, attribList));
     SFML_BASE_ASSERT(m_surface != EGL_NO_SURFACE);
+#else
+    EGLNativeWindowType dummyWindow{};
+    createSurface(dummyWindow);
+#endif
 
     // Create EGL context
     createContext(shared);
@@ -274,7 +290,11 @@ void EglContext::setVerticalSyncEnabled(bool enabled)
 ////////////////////////////////////////////////////////////
 void EglContext::createContext(EglContext* shared)
 {
+#ifndef SFML_SYSTEM_EMSCRIPTEN
     const EGLint contextVersion[] = {EGL_CONTEXT_MAJOR_VERSION, 3, EGL_CONTEXT_MINOR_VERSION, 1, EGL_NONE};
+#else
+    const EGLint contextVersion[] = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE, EGL_NONE};
+#endif
 
     EGLContext toShared = shared != nullptr ? shared->m_context : EGL_NO_CONTEXT;
 
@@ -311,6 +331,7 @@ void EglContext::destroySurface()
 ////////////////////////////////////////////////////////////
 EGLConfig EglContext::getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const ContextSettings& settings)
 {
+#ifndef SFML_SYSTEM_EMSCRIPTEN
     EglContextImpl::ensureInit();
 
     // Determine the number of available configs
@@ -378,6 +399,40 @@ EGLConfig EglContext::getBestConfig(EGLDisplay display, unsigned int bitsPerPixe
     SFML_BASE_ASSERT(bestScore < 0x7FFFFFFF && "Failed to calculate best config");
 
     return bestConfig;
+#else
+    // Set our video settings constraint
+    const EGLint attributes[] =
+        {EGL_BUFFER_SIZE,
+         static_cast<EGLint>(bitsPerPixel),
+         EGL_RED_SIZE,
+         8,
+         EGL_BLUE_SIZE,
+         8,
+         EGL_GREEN_SIZE,
+         8,
+         EGL_DEPTH_SIZE,
+         static_cast<EGLint>(settings.depthBits),
+         EGL_STENCIL_SIZE,
+         static_cast<EGLint>(settings.stencilBits),
+         EGL_SAMPLE_BUFFERS,
+         static_cast<EGLint>(settings.antialiasingLevel),
+         EGL_SURFACE_TYPE,
+         EGL_RENDERABLE_TYPE,
+         EGL_OPENGL_ES_BIT,
+         EGL_NONE,
+         EGL_NONE};
+
+    EGLint    configCount;
+    EGLConfig config;
+
+    // Ask EGL for the best config matching our video settings
+    eglCheck(eglChooseConfig(display, attributes, &config, 1, &configCount));
+
+    if (configCount == 0)
+        err() << "Failed to get any EGL frame buffer configurations";
+
+    return config;
+#endif
 }
 
 

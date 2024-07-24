@@ -951,7 +951,7 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
 #ifdef SFML_OPENGL_ES
     if (vertexShaderCode.data() == nullptr)
     {
-        vertexShaderCode = R"glsl(#version 310 es
+        vertexShaderCode = R"glsl(#version 300 es
 
 #ifdef GL_ES
 precision mediump float;
@@ -1037,7 +1037,7 @@ void main()
 #ifdef SFML_OPENGL_ES
     if (fragmentShaderCode.data() == nullptr)
     {
-        fragmentShaderCode = R"glsl(#version 310 es
+        fragmentShaderCode = R"glsl(#version 300 es
 
 #ifdef GL_ES
 precision mediump float;

@@ -15,7 +15,7 @@
 
 namespace
 {
-constexpr auto vertexSource = R"glsl(#version 310 es
+constexpr auto vertexSource = R"glsl(#version 300 es
 
 #ifdef GL_ES
 precision mediump float;
@@ -56,7 +56,7 @@ void main()
 
 )glsl";
 
-constexpr auto geometrySource = R"glsl(#version 310 es
+constexpr auto geometrySource = R"glsl(#version 300 es
 #extension GL_EXT_geometry_shader : enable
 
 // The render target's resolution (used for scaling)
@@ -118,7 +118,7 @@ void main()
 
 )glsl";
 
-constexpr auto fragmentSource = R"glsl(#version 310 es
+constexpr auto fragmentSource = R"glsl(#version 300 es
 
 #ifdef GL_ES
 precision mediump float;
