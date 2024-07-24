@@ -124,6 +124,12 @@ else()
 
         set_target_properties(freetype PROPERTIES FOLDER "Dependencies")
 
+        # TODO P0: document
+        if(SFML_OS_EMSCRIPTEN)
+            target_compile_options(freetype PRIVATE -pthread)
+            target_link_options(freetype PRIVATE -pthread)
+        endif()
+
         # if building SFML as a shared library and linking our dependencies in
         # as static libraries we need to build them with -fPIC
         if(SFML_BUILD_SHARED_LIBS)

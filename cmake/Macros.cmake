@@ -77,6 +77,26 @@ macro(sfml_add_library module)
     endif()
     add_library(SFML::${module} ALIAS ${target})
 
+    # TODO P0:
+    if(SFML_OS_EMSCRIPTEN)
+        target_compile_options(${target} PRIVATE -pthread)
+        target_link_options(${target} PRIVATE
+            -sWASM=1
+            -sSTACK_SIZE=4mb
+            -sFULL_ES2=1
+            -sFULL_ES3=1
+            -sUSE_WEBGL2=1
+            -sFETCH=1
+            -sFORCE_FILESYSTEM=1
+            -sASSERTIONS=2
+            -sGL_DEBUG=1
+            -sALLOW_MEMORY_GROWTH=1
+            -sMAX_WEBGL_VERSION=2
+            -sMIN_WEBGL_VERSION=2
+            -sUSE_PTHREADS=1
+            -pthread)
+    endif()
+
     # enable C++20 support
     target_compile_features(${target} PUBLIC cxx_std_20)
 
@@ -255,6 +275,14 @@ endmacro()
 #                           RESOURCES_DIR resources)             # A directory to install next to the executable and sources
 macro(sfml_add_example target)
 
+    # list and copy resources for emscripten support
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/resources)
+        file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/../..)
+        file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+    endif()
+
+    file(GLOB GLOBBED_RESOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} resources/*)
+
     # parse the arguments
     cmake_parse_arguments(THIS "GUI_APP" "RESOURCES_DIR" "SOURCES;BUNDLE_RESOURCES;DEPENDS" ${ARGN})
 
@@ -317,8 +345,10 @@ macro(sfml_add_example target)
 
     # TODO P0:
     if(SFML_OS_EMSCRIPTEN)
+        target_compile_options(${target} PRIVATE -pthread)
         target_link_options(${target} PRIVATE
             -sWASM=1
+            -sSTACK_SIZE=4mb
             -sFULL_ES2=1
             -sFULL_ES3=1
             -sUSE_WEBGL2=1
@@ -328,15 +358,11 @@ macro(sfml_add_example target)
             -sGL_DEBUG=1
             -sALLOW_MEMORY_GROWTH=1
             -sMAX_WEBGL_VERSION=2
-            -sMIN_WEBGL_VERSION=2)
+            -sMIN_WEBGL_VERSION=2
+            -sUSE_PTHREADS=1
+            -pthread)
 
-        add_custom_command(
-            TARGET ${target} PRE_LINK
-            COMMAND ${CMAKE_COMMAND} -E copy
-                    ${PROJECT_SOURCE_DIR}/examples/${target}/resources
-                    ${CMAKE_CURRENT_BINARY_DIR})
-
-        foreach(RESOURCE ${THIS_BUNDLE_RESOURCES})
+        foreach(RESOURCE ${GLOBBED_RESOURCES})
             target_link_options(${target} PRIVATE "SHELL:--preload-file ${RESOURCE}")
         endforeach()
     endif()

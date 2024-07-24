@@ -12,6 +12,7 @@
 
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/EventUtils.hpp>
+#include <SFML/Window/GameLoop.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/VideoMode.hpp>
@@ -219,13 +220,13 @@ int main()
     std::ostringstream osstr;
     sf::Clock          clock;
 
-    while (true)
+    SFML_GAME_LOOP
     {
         // Handle events
         while (const sf::base::Optional event = window.pollEvent())
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                return EXIT_SUCCESS;
+                SFML_GAME_LOOP_BREAK;
 
             // Arrow key pressed:
             if (terrainShader.hasValue() && event->is<sf::Event::KeyPressed>())
@@ -275,7 +276,7 @@ int main()
                         if (!terrain.update(terrainStagingBuffer.data()))
                         {
                             std::cerr << "Failed to update vertex buffer" << std::endl;
-                            return EXIT_FAILURE;
+                            SFML_GAME_LOOP_BREAK;
                         }
 
                         threadPool.bufferUploadPending = false;
@@ -306,7 +307,10 @@ int main()
 
         // Display things on screen
         window.display();
-    }
+
+        // Continue to next frame
+        SFML_GAME_LOOP_CONTINUE;
+    };
 }
 
 

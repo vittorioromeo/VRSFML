@@ -14,6 +14,7 @@
 
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/EventUtils.hpp>
+#include <SFML/Window/GameLoop.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/Mouse.hpp>
@@ -24,10 +25,10 @@
 #include <SFML/System/String.hpp>
 #include <SFML/System/Time.hpp>
 
+#include <SFML/Base/Assert.hpp>
 #include <SFML/Base/Optional.hpp>
 
 #include <array>
-#include <iostream>
 #include <random>
 #include <string>
 #include <vector>
@@ -424,6 +425,8 @@ sf::base::Optional<Geometry> tryLoadGeometry(sf::GraphicsContext& graphicsContex
 } // namespace
 
 
+bool xd();
+
 ////////////////////////////////////////////////////////////
 /// Main
 ///
@@ -475,19 +478,21 @@ int main()
     instructions.setOutlineThickness(3.f);
     instructions.setOutlineColor(sf::Color::Red);
 
+    // TODO P0: loading textures fails if the window is created after!!! does it still??
     // Create the main window
     sf::RenderWindow window(graphicsContext, sf::VideoMode({800, 600}), "SFML Shader", sf::Style::Titlebar | sf::Style::Close);
     window.setVerticalSyncEnabled(true);
 
     // Start the game loop
     const sf::Clock clock;
-    while (true)
+
+    SFML_GAME_LOOP
     {
         // Process events
         while (const sf::base::Optional event = window.pollEvent())
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                return EXIT_SUCCESS;
+                SFML_GAME_LOOP_BREAK;
 
             if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
             {
@@ -555,5 +560,8 @@ int main()
 
         // Finally, display the rendered frame on screen
         window.display();
-    }
+
+        // Continue to next frame
+        SFML_GAME_LOOP_CONTINUE;
+    };
 }

@@ -7,6 +7,7 @@
 
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/EventUtils.hpp>
+#include <SFML/Window/GameLoop.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/Joystick.hpp>
 #include <SFML/Window/JoystickIdentification.hpp>
@@ -168,13 +169,13 @@ int main()
         }
     }
 
-    while (true)
+    SFML_GAME_LOOP
     {
         // Handle events
         while (const sf::base::Optional event = window.pollEvent())
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                return EXIT_SUCCESS;
+                SFML_GAME_LOOP_BREAK;
 
             if (const auto* joystickButtonPressed = event->getIf<sf::Event::JoystickButtonPressed>())
             {
@@ -247,5 +248,8 @@ int main()
 
         // Display things on screen
         window.display();
-    }
+
+        // Continue to the next frame
+        SFML_GAME_LOOP_CONTINUE;
+    };
 }

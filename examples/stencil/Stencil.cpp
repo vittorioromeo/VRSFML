@@ -7,6 +7,7 @@
 
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/EventUtils.hpp>
+#include <SFML/Window/GameLoop.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/VideoMode.hpp>
 
@@ -47,13 +48,13 @@ int main()
     blue.setPosition({550, 470});
     blue.setRotation(sf::degrees(180));
 
-    while (true)
+    SFML_GAME_LOOP
     {
         // Handle events
         while (const sf::base::Optional event = window.pollEvent())
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                return EXIT_SUCCESS;
+                SFML_GAME_LOOP_BREAK;
         }
 
         // When drawing using a 2D API, we normally resort to what is known as the "painter's algorithm".
@@ -147,7 +148,10 @@ int main()
 
         // Display things on screen
         window.display();
-    }
+
+        // Continue to the next frame
+        SFML_GAME_LOOP_CONTINUE;
+    };
 
     return EXIT_SUCCESS;
 }
