@@ -43,39 +43,39 @@ namespace sf::priv
 
 // In debug mode, perform a test on every OpenGL call
 // The do-while loop is needed so that glCheck can be used as a single statement in if/else branches
-#define glCheck(expr)                                                \
-    do                                                               \
-    {                                                                \
-        SFML_BASE_ASSERT(glGetError() == GL_NO_ERROR);               \
-                                                                     \
-        expr;                                                        \
-                                                                     \
-        while (!::sf::priv::glCheckError(__FILE__, __LINE__, #expr)) \
-        {                                                            \
-            /* no-op */                                              \
-        }                                                            \
+#define glCheck(...)                                                        \
+    do                                                                      \
+    {                                                                       \
+        SFML_BASE_ASSERT(glGetError() == GL_NO_ERROR);                      \
+                                                                            \
+        __VA_ARGS__;                                                        \
+                                                                            \
+        while (!::sf::priv::glCheckError(__FILE__, __LINE__, #__VA_ARGS__)) \
+        {                                                                   \
+            /* no-op */                                                     \
+        }                                                                   \
     } while (false)
 
-#define glCheckExpr(expr)                                            \
-    [&]                                                              \
-    {                                                                \
-        SFML_BASE_ASSERT(glGetError() == GL_NO_ERROR);               \
-                                                                     \
-        auto result = expr;                                          \
-                                                                     \
-        while (!::sf::priv::glCheckError(__FILE__, __LINE__, #expr)) \
-        {                                                            \
-            /* no-op */                                              \
-        }                                                            \
-                                                                     \
-        return result;                                               \
+#define glCheckExpr(...)                                                    \
+    [&]                                                                     \
+    {                                                                       \
+        SFML_BASE_ASSERT(glGetError() == GL_NO_ERROR);                      \
+                                                                            \
+        auto result = __VA_ARGS__;                                          \
+                                                                            \
+        while (!::sf::priv::glCheckError(__FILE__, __LINE__, #__VA_ARGS__)) \
+        {                                                                   \
+            /* no-op */                                                     \
+        }                                                                   \
+                                                                            \
+        return result;                                                      \
     }()
 
 #else
 
 // Else, we don't add any overhead
-#define glCheck(expr)     (expr)
-#define glCheckExpr(expr) (expr)
+#define glCheck(...)     (__VA_ARGS__)
+#define glCheckExpr(...) (__VA_ARGS__)
 
 #endif
 

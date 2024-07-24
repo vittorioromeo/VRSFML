@@ -39,7 +39,7 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-void eglCheckError(const char* file, unsigned int line, const char* expression)
+bool eglCheckError(const char* file, unsigned int line, const char* expression)
 {
     const auto logError = [&](const char* error, const char* description)
     {
@@ -47,8 +47,7 @@ void eglCheckError(const char* file, unsigned int line, const char* expression)
               << "\nExpression:\n   " << expression << "\nError description:\n   " << error << "\n   " << description
               << '\n';
 
-        // Call recursively as there might be additional context
-        eglCheckError(file, line, expression);
+        return false;
     };
 
     // Obtain information about the success or failure of the most recent EGL
@@ -56,7 +55,7 @@ void eglCheckError(const char* file, unsigned int line, const char* expression)
     const EGLint errorCode = eglGetError();
 
     if (errorCode == EGL_SUCCESS)
-        return;
+        return true;
 
     switch (errorCode)
     {

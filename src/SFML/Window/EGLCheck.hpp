@@ -41,19 +41,23 @@ namespace sf::priv
 
 // In debug mode, perform a test on every EGL call
 // The do-while loop is needed so that glCheck can be used as a single statement in if/else branches
-#define eglCheck(expr)                                        \
-    do                                                        \
-    {                                                         \
-        SFML_BASE_ASSERT(eglGetError() == EGL_SUCCESS);       \
-                                                              \
-        expr;                                                 \
-        ::sf::priv::eglCheckError(__FILE__, __LINE__, #expr); \
+#define eglCheck(...)                                                        \
+    do                                                                       \
+    {                                                                        \
+        SFML_BASE_ASSERT(eglGetError() == EGL_SUCCESS);                      \
+                                                                             \
+        __VA_ARGS__;                                                         \
+                                                                             \
+        while (!::sf::priv::eglCheckError(__FILE__, __LINE__, #__VA_ARGS__)) \
+        {                                                                    \
+            /* no-op */                                                      \
+        }                                                                    \
     } while (false)
 
 #else
 
 // Else, we don't add any overhead
-#define eglCheck(expr) (expr)
+#define eglCheck(...) (__VA_ARGS__)
 
 #endif
 
@@ -65,6 +69,6 @@ namespace sf::priv
 /// \param expression The evaluated expression as a string
 ///
 ////////////////////////////////////////////////////////////
-void eglCheckError(const char* file, unsigned int line, const char* expression);
+[[nodiscard]] bool eglCheckError(const char* file, unsigned int line, const char* expression);
 
 } // namespace sf::priv
