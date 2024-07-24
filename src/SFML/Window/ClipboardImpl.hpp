@@ -31,8 +31,8 @@
 
 #if defined(SFML_SYSTEM_WINDOWS)
 #include <SFML/Window/Win32/ClipboardImpl.hpp>
-#elif !defined(SFML_USE_DRM) && (defined(SFML_SYSTEM_LINUX) || defined(SFML_SYSTEM_FREEBSD) ||
-                                 defined(SFML_SYSTEM_OPENBSD) || defined(SFML_SYSTEM_NETBSD))
+#elif /*!defined(SFML_USE_DRM) && (defined(SFML_SYSTEM_LINUX) || defined(SFML_SYSTEM_FREEBSD) ||
+defined(SFML_SYSTEM_OPENBSD) || defined(SFML_SYSTEM_NETBSD))*/ false // TODO P0
 #include <SFML/Window/Unix/ClipboardImpl.hpp>
 #elif defined(SFML_SYSTEM_MACOS)
 #include <SFML/Window/macOS/ClipboardImpl.hpp>

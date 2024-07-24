@@ -26,7 +26,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/JoystickIdentification.hpp>
-#include <SFML/Window/JoystickImpl.hpp>
+#include <SFML/Window/Stub/StubJoystickImpl.hpp>
 
 #include <SFML/System/Err.hpp>
 
@@ -34,29 +34,21 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-void JoystickImpl::initialize()
+void StubJoystickImpl::initialize()
 {
     // err() << "Joystick API not implemented";
 }
 
 
 ////////////////////////////////////////////////////////////
-void JoystickImpl::cleanup()
+void StubJoystickImpl::cleanup()
 {
     // err() << "Joystick API not implemented";
 }
 
 
 ////////////////////////////////////////////////////////////
-bool JoystickImpl::isConnected(unsigned int /* index */)
-{
-    // err() << "Joystick API not implemented";
-    return false;
-}
-
-
-////////////////////////////////////////////////////////////
-bool JoystickImpl::open(unsigned int /* index */)
+bool StubJoystickImpl::isConnected(unsigned int /* index */)
 {
     // err() << "Joystick API not implemented";
     return false;
@@ -64,14 +56,22 @@ bool JoystickImpl::open(unsigned int /* index */)
 
 
 ////////////////////////////////////////////////////////////
-void JoystickImpl::close()
+bool StubJoystickImpl::open(unsigned int /* index */)
+{
+    // err() << "Joystick API not implemented";
+    return false;
+}
+
+
+////////////////////////////////////////////////////////////
+void StubJoystickImpl::close()
 {
     // err() << "Joystick API not implemented";
 }
 
 
 ////////////////////////////////////////////////////////////
-JoystickCaps JoystickImpl::getCapabilities() const
+JoystickCaps StubJoystickImpl::getCapabilities() const
 {
     // err() << "Joystick API not implemented";
     return {};
@@ -79,7 +79,7 @@ JoystickCaps JoystickImpl::getCapabilities() const
 
 
 ////////////////////////////////////////////////////////////
-Joystick::Identification JoystickImpl::getIdentification() const
+Joystick::Identification StubJoystickImpl::getIdentification() const
 {
     // err() << "Joystick API not implemented";
     return {};
@@ -87,7 +87,7 @@ Joystick::Identification JoystickImpl::getIdentification() const
 
 
 ////////////////////////////////////////////////////////////
-JoystickState JoystickImpl::update()
+JoystickState StubJoystickImpl::update()
 {
     // err() << "Joystick API not implemented";
     return {};
