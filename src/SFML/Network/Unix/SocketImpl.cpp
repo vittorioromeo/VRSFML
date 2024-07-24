@@ -37,7 +37,7 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-sockaddr_in SocketImpl::createAddress(std::uint32_t address, unsigned short port)
+SockAddrIn SocketImpl::createAddress(std::uint32_t address, unsigned short port)
 {
     auto addr            = sockaddr_in();
     addr.sin_addr.s_addr = priv::SocketImpl::htonl(address);

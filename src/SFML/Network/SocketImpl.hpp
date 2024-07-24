@@ -54,7 +54,6 @@
 #include <cstdint>
 
 struct sockaddr_in;
-struct fd_set;
 
 /*
 // NOLINTBEGIN
