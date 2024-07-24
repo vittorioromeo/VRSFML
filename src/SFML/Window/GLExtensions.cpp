@@ -180,6 +180,8 @@ void ensureExtensionsInit(GraphicsContext& graphicsContext)
     // from an entry point perspective.
     extensionSanityCheck();
 
+// TODO P0:
+#ifndef SFML_SYSTEM_EMSCRIPTEN
     // TODO P0: maybe conditionally enable depending on graphicscontext's debug ctx param?
     glCheck(glEnable(GL_DEBUG_OUTPUT));
     glCheck(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
@@ -194,6 +196,7 @@ void ensureExtensionsInit(GraphicsContext& graphicsContext)
         priv::err() << "sfml-graphics requires support for OpenGL 1.1 or greater" << '\n'
                     << "Ensure that hardware acceleration is enabled if available";
     }
+#endif
 }
 
 } // namespace sf::priv

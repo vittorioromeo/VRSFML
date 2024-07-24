@@ -73,8 +73,7 @@ struct JoystickState
 
 #include <SFML/Window/FreeBSD/JoystickImpl.hpp>
 
-#elif defined(SFML_SYSTEM_OPENBSD) || defined(SFML_SYSTEM_IOS) || defined(SFML_SYSTEM_ANDROID) || \
-    defined(SFML_SYSTEM_EMSCRIPTEN)
+#elif defined(SFML_SYSTEM_OPENBSD) || defined(SFML_SYSTEM_IOS) || defined(SFML_SYSTEM_ANDROID)
 
 #include <SFML/Window/Stub/StubJoystickImpl.hpp>
 namespace sf::priv
@@ -89,5 +88,9 @@ using JoystickImpl = StubJoystickImpl;
 #elif defined(SFML_SYSTEM_MACOS)
 
 #include <SFML/Window/macOS/JoystickImpl.hpp>
+
+#elif defined(SFML_SYSTEM_EMSCRIPTEN)
+
+#include <SFML/Window/Emscripten/JoystickImpl.hpp>
 
 #endif

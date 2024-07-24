@@ -33,7 +33,14 @@
 #include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/WindowEnums.hpp> // Prevent conflict with macro None from Xlib
 
+// TODO P0:
+#ifndef SFML_SYSTEM_EMSCRIPTEN
 #include <glad/egl.h>
+#else
+#define KHRONOS_APIENTRY __stdcall
+#include <EGL/egl.h>
+#endif
+
 #if defined(SFML_SYSTEM_LINUX) && !defined(SFML_USE_DRM)
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>

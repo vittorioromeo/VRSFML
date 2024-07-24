@@ -33,7 +33,13 @@
 
 #include <SFML/Base/Assert.hpp>
 
+// TODO P0:
+#ifndef SFML_SYSTEM_EMSCRIPTEN
 #include <glad/egl.h>
+#else
+#define KHRONOS_APIENTRY __stdcall
+#include <EGL/egl.h>
+#endif
 
 
 namespace sf::priv

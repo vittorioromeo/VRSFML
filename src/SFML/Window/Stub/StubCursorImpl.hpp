@@ -65,13 +65,13 @@ public:
     /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    StubCursorImpl(StubCursorImpl&&) noexcept;
+    StubCursorImpl(StubCursorImpl&&) noexcept = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment
     ///
     ////////////////////////////////////////////////////////////
-    StubCursorImpl& operator=(StubCursorImpl&&) noexcept;
+    StubCursorImpl& operator=(StubCursorImpl&&) noexcept = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a cursor with the provided image

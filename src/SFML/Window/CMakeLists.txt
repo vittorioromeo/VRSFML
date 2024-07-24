@@ -253,17 +253,19 @@ elseif(SFML_OS_ANDROID)
     )
     source_group("android" FILES ${PLATFORM_SRC})
 elseif(SFML_OS_EMSCRIPTEN)
+    # TODO P0:
     set(PLATFORM_SRC
         ${SRCROOT}/EGLCheck.cpp
         ${SRCROOT}/EGLCheck.hpp
         ${SRCROOT}/EglContext.cpp
         ${SRCROOT}/EglContext.hpp
-        # ${SRCROOT}/Emscripten/WindowImplEmscripten.hpp
+        ${SRCROOT}/Emscripten/WindowImplEmscripten.hpp
         # ${SRCROOT}/Emscripten/WindowImplEmscripten.cpp
+        ${SRCROOT}/Emscripten/JoystickImpl.hpp
+        ${SRCROOT}/Emscripten/EmscriptenImpl.cpp
+        # ${SRCROOT}/Emscripten/JoystickImpl.cpp
         # ${SRCROOT}/Emscripten/VideoModeImpl.cpp
         # ${SRCROOT}/Emscripten/InputImpl.cpp
-        # ${SRCROOT}/Emscripten/JoystickImpl.hpp
-        # ${SRCROOT}/Emscripten/JoystickImpl.cpp
     )
     source_group("emscripten" FILES ${PLATFORM_SRC})
 endif()

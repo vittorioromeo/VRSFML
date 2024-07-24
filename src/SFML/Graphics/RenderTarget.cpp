@@ -206,7 +206,7 @@ using ContextRenderTargetMap = std::unordered_map<std::uint64_t, std::uint64_t>;
 
 
 ////////////////////////////////////////////////////////////
-constexpr const char* defaultTexturedShaderVertexSrc = R"glsl(#version 310 es
+constexpr const char* defaultTexturedShaderVertexSrc = R"glsl(#version 300 es
 
 #ifdef GL_ES
 precision mediump float;
@@ -234,7 +234,7 @@ void main()
 
 
 ////////////////////////////////////////////////////////////
-constexpr const char* defaultTexturedShaderFragmentSrc = R"glsl(#version 310 es
+constexpr const char* defaultTexturedShaderFragmentSrc = R"glsl(#version 300 es
 
 #ifdef GL_ES
 precision mediump float;
@@ -256,7 +256,7 @@ void main()
 
 
 ////////////////////////////////////////////////////////////
-constexpr const char* defaultUntexturedShaderVertexSrc = R"glsl(#version 310 es
+constexpr const char* defaultUntexturedShaderVertexSrc = R"glsl(#version 300 es
 
 #ifdef GL_ES
 precision mediump float;
@@ -280,7 +280,7 @@ void main()
 
 
 ////////////////////////////////////////////////////////////
-constexpr const char* defaultUntexturedShaderFragmentSrc = R"glsl(#version 310 es
+constexpr const char* defaultUntexturedShaderFragmentSrc = R"glsl(#version 300 es
 
 #ifdef GL_ES
 precision mediump float;

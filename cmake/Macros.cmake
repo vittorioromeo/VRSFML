@@ -315,6 +315,22 @@ macro(sfml_add_example target)
         target_link_libraries(${target} PRIVATE ${THIS_DEPENDS})
     endif()
 
+    # TODO P0:
+    if(SFML_OS_EMSCRIPTEN)
+        target_link_options(${target} PRIVATE
+            -sWASM=1
+            -sFULL_ES2=1
+            -sFULL_ES3=1
+            -sUSE_WEBGL2=1
+            -sFETCH=1
+            -sFORCE_FILESYSTEM=1
+            -sASSERTIONS=2
+            -sGL_DEBUG=1
+            -sALLOW_MEMORY_GROWTH=1
+            -sMAX_WEBGL_VERSION=2
+            -sMIN_WEBGL_VERSION=2)
+    endif()
+
     if(SFML_OS_IOS)
         sfml_set_common_ios_properties(${target})
     endif()

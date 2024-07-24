@@ -63,7 +63,7 @@ class CursorImpl;
 /// \brief Abstract base class for OS-specific window implementation
 ///
 ////////////////////////////////////////////////////////////
-class WindowImpl
+class WindowImpl // TODO P1: Remove and rely on `.cpp` compilation? how to deal with state?
 {
 public:
     ////////////////////////////////////////////////////////////
