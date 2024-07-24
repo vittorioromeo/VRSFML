@@ -89,6 +89,8 @@ base::Optional<RenderTexture> RenderTexture::create(GraphicsContext& graphicsCon
     // We pass the actual size of our texture since OpenGL ES requires that all attachments have identical sizes
     if (!renderTexture.m_impl->create(renderTexture.m_texture.m_actualSize, renderTexture.m_texture.m_texture, settings))
     {
+        priv::err() << "Impossible to create render texture (failed to create render texture impl)";
+
         result.reset();
         return result; // Empty optional
     }

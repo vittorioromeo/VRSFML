@@ -136,15 +136,37 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
     }
 
 // These functions are expected to fail, but we don't want to pollute the state of `glGetError` so we have to call it anyway
-#define SFML_PRIV_GLCHECK_INNER(...) \
-    do                               \
-    {                                \
-        __VA_ARGS__;                 \
-        (void)glGetErrorFunc();      \
+#define SFML_PRIV_GLCHECK_INNER(...)                             \
+    do                                                           \
+    {                                                            \
+        SFML_BASE_ASSERT(glGetErrorFunc() == GL_NO_ERROR);       \
+                                                                 \
+        __VA_ARGS__;                                             \
+                                                                 \
+        if (glGetErrorFunc() != GL_NO_ERROR)                     \
+        {                                                        \
+            /* err() << "Inner GL error: '" #__VA_ARGS__ "'"; */ \
+        };                                                       \
+                                                                 \
     } while (false)
 
-    glGetIntegervFunc(GL_MAJOR_VERSION, &majorVersion);
-    glGetIntegervFunc(GL_MINOR_VERSION, &minorVersion);
+#define SFML_PRIV_GLCHECK_INNER_EXPR(...)                        \
+    [&]                                                          \
+    {                                                            \
+        SFML_BASE_ASSERT(glGetErrorFunc() == GL_NO_ERROR);       \
+                                                                 \
+        auto result = __VA_ARGS__;                               \
+                                                                 \
+        if (glGetErrorFunc() != GL_NO_ERROR)                     \
+        {                                                        \
+            /* err() << "Inner GL error: '" #__VA_ARGS__ "'"; */ \
+        };                                                       \
+                                                                 \
+        return result;                                           \
+    }()
+
+    glGetIntegervFunc(GL_MAJOR_VERSION, &majorVersion); // intentionally not checked, will be checked below
+    glGetIntegervFunc(GL_MINOR_VERSION, &minorVersion); // intentionally not checked, will be checked below
 
     if (glGetErrorFunc() != GL_INVALID_ENUM)
     {
@@ -159,7 +181,7 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
         m_settings.majorVersion = 1;
         m_settings.minorVersion = 1;
 
-        if (const char* version = reinterpret_cast<const char*>(glGetStringFunc(GL_VERSION)))
+        if (const char* version = reinterpret_cast<const char*>(SFML_PRIV_GLCHECK_INNER_EXPR(glGetStringFunc(GL_VERSION))))
         {
             // OpenGL ES Common Lite profile: The beginning of the returned string is "OpenGL ES-CL major.minor"
             // OpenGL ES Common profile:      The beginning of the returned string is "OpenGL ES-CM major.minor"
@@ -261,12 +283,10 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
         }
     }
 
-#undef SFML_PRIV_GLCHECK_INNER
-
     // Enable anti-aliasing if requested by the user and supported
     if ((requestedSettings.antialiasingLevel > 0) && (m_settings.antialiasingLevel > 0))
     {
-        glEnableFunc(GL_MULTISAMPLE);
+        SFML_PRIV_GLCHECK_INNER(glEnableFunc(GL_MULTISAMPLE));
     }
     else
     {
@@ -276,10 +296,10 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
     // Enable sRGB if requested by the user and supported
     if (requestedSettings.sRgbCapable && m_settings.sRgbCapable)
     {
-        glEnableFunc(GL_FRAMEBUFFER_SRGB);
+        SFML_PRIV_GLCHECK_INNER(glEnableFunc(GL_FRAMEBUFFER_SRGB));
 
         // Check to see if the enable was successful
-        if (glIsEnabledFunc(GL_FRAMEBUFFER_SRGB) == GL_FALSE)
+        if (SFML_PRIV_GLCHECK_INNER_EXPR(glIsEnabledFunc(GL_FRAMEBUFFER_SRGB)) == GL_FALSE)
         {
             err() << "Warning: Failed to enable GL_FRAMEBUFFER_SRGB";
             m_settings.sRgbCapable = false;
@@ -291,6 +311,7 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
     }
 
     return true;
+#undef SFML_PRIV_GLCHECK_INNER
 }
 
 

@@ -157,7 +157,12 @@ bool RenderTextureImplFBO::create(Vector2u size, unsigned int textureId, const C
         SFML_BASE_ASSERT(m_impl->graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
         if (settings.antialiasingLevel && !(GLEXT_framebuffer_multisample && GLEXT_framebuffer_blit))
+        {
+            err() << "Impossible to create render texture (anti-aliasing unsupported)"
+                  << " Requested: " << settings.antialiasingLevel;
+
             return false;
+        }
 
         m_impl->sRgb = settings.sRgbCapable && GL_EXT_texture_sRGB;
 

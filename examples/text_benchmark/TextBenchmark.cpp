@@ -38,6 +38,8 @@ int main()
 
     sf::GraphicsContext graphicsContext;
 
+    // TODO P0: aa level of 4 causes glcheck assert fail on opengl
+
     sf::RenderWindow window(graphicsContext,
                             sf::VideoMode(screenSize),
                             "Window",
