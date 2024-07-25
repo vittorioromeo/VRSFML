@@ -55,6 +55,33 @@ inline constexpr struct FromFunc
 
 
 ////////////////////////////////////////////////////////////
+// NOLINTBEGIN(bugprone-macro-parentheses)
+#define SFML_PRIV_OPTIONAL_DESTROY_IF_ENGAGED(T, engaged, buffer) \
+    do                                                            \
+    {                                                             \
+        if constexpr (!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(T))    \
+        {                                                         \
+            if (engaged)                                          \
+                SFML_BASE_LAUNDER_CAST(T*, buffer)->~T();         \
+        }                                                         \
+    } while (false)
+// NOLINTEND(bugprone-macro-parentheses)
+
+
+////////////////////////////////////////////////////////////
+// NOLINTBEGIN(bugprone-macro-parentheses)
+#define SFML_PRIV_OPTIONAL_DESTROY(T, buffer)                  \
+    do                                                         \
+    {                                                          \
+        if constexpr (!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(T)) \
+        {                                                      \
+            SFML_BASE_LAUNDER_CAST(T*, buffer)->~T();          \
+        }                                                      \
+    } while (false)
+// NOLINTEND(bugprone-macro-parentheses)
+
+
+////////////////////////////////////////////////////////////
 template <typename T>
 class [[nodiscard]] Optional
 {
@@ -131,7 +158,7 @@ public:
         if (m_engaged && !rhs.m_engaged)
         {
             m_engaged = false;
-            SFML_BASE_LAUNDER_CAST(T*, m_buffer)->~T();
+            SFML_PRIV_OPTIONAL_DESTROY(T, m_buffer);
         }
         else if (!m_engaged && rhs.m_engaged)
         {
@@ -165,7 +192,7 @@ public:
         if (m_engaged && !rhs.m_engaged)
         {
             m_engaged = false;
-            SFML_BASE_LAUNDER_CAST(T*, m_buffer)->~T();
+            SFML_PRIV_OPTIONAL_DESTROY(T, m_buffer);
         }
         else if (!m_engaged && rhs.m_engaged)
         {
@@ -219,10 +246,9 @@ public:
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[gnu::always_inline]] constexpr T& emplace(Args&&... args)
     {
-        if (m_engaged)
-            SFML_BASE_LAUNDER_CAST(T*, m_buffer)->~T();
-
+        SFML_PRIV_OPTIONAL_DESTROY_IF_ENGAGED(T, m_engaged, m_buffer);
         m_engaged = true;
+
         return *(SFML_BASE_PLACEMENT_NEW(m_buffer) T(SFML_BASE_FORWARD(args)...));
     }
 
@@ -232,10 +258,9 @@ public:
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[gnu::always_inline]] constexpr T& emplaceFromFunc(F&& func)
     {
-        if (m_engaged)
-            SFML_BASE_LAUNDER_CAST(T*, m_buffer)->~T();
-
+        SFML_PRIV_OPTIONAL_DESTROY_IF_ENGAGED(T, m_engaged, m_buffer);
         m_engaged = true;
+
         return *(SFML_BASE_PLACEMENT_NEW(m_buffer) T(SFML_BASE_FORWARD(func)()));
     }
 
@@ -243,9 +268,7 @@ public:
     //////////////////////////////////////////
     [[gnu::always_inline]] constexpr void reset() noexcept
     {
-        if (m_engaged)
-            SFML_BASE_LAUNDER_CAST(T*, m_buffer)->~T();
-
+        SFML_PRIV_OPTIONAL_DESTROY_IF_ENGAGED(T, m_engaged, m_buffer);
         m_engaged = false;
     }
 
@@ -253,8 +276,7 @@ public:
     //////////////////////////////////////////
     [[gnu::always_inline]] constexpr ~Optional() noexcept requires(!base::isTriviallyDestructible<T>)
     {
-        if (m_engaged)
-            SFML_BASE_LAUNDER_CAST(T*, m_buffer)->~T();
+        SFML_PRIV_OPTIONAL_DESTROY_IF_ENGAGED(T, m_engaged, m_buffer);
     }
 
 
@@ -432,6 +454,11 @@ private:
     alignas(T) char m_buffer[sizeof(T)];
     bool m_engaged;
 };
+
+
+////////////////////////////////////////////////////////////
+#undef SFML_PRIV_OPTIONAL_DESTROY
+#undef SFML_PRIV_OPTIONAL_DESTROY_IF_ENGAGED
 
 
 ////////////////////////////////////////////////////////////

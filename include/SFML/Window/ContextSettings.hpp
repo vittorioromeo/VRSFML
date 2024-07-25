@@ -38,10 +38,16 @@ struct ContextSettings
     unsigned int depthBits{};         //!< Bits of the depth buffer
     unsigned int stencilBits{};       //!< Bits of the stencil buffer
     unsigned int antialiasingLevel{}; //!< Level of antialiasing
-    unsigned int majorVersion{1};     //!< Major number of the context version to create
-    unsigned int minorVersion{1};     //!< Minor number of the context version to create
-    Attribute    attributeFlags{
-#ifndef SFML_OPENGL_ES
+    // TODO P0: review all these defaults, also for desktop, also maybe use macros or constexpr values
+#ifndef SFML_SYSTEM_EMSCRIPTEN
+    unsigned int majorVersion{1}; //!< Major number of the context version to create
+    unsigned int minorVersion{1}; //!< Minor number of the context version to create
+#else
+    unsigned int majorVersion{2}; //!< Major number of the context version to create
+    unsigned int minorVersion{0}; //!< Minor number of the context version to create
+#endif
+    Attribute attributeFlags{
+#if !defined(SFML_OPENGL_ES) || defined(SFML_SYSTEM_EMSCRIPTEN)
         Attribute::Default
 #else
         Attribute::Core
