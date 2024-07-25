@@ -29,8 +29,8 @@ class WindowImpl;
 
 namespace sf
 {
-class RenderTarget; // TODO
-class Shader;       // TODO
+class RenderTarget; // TODO P1: needed?
+class Shader;       // TODO P1: needed?
 class Window;
 struct ContextSettings;
 using GlFunctionPointer = void (*)();
@@ -46,13 +46,13 @@ class [[nodiscard]] GraphicsContext
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief TODO
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit GraphicsContext();
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
     ~GraphicsContext();
@@ -98,19 +98,19 @@ public:
     [[nodiscard]] std::uint64_t getActiveThreadLocalGlContextId() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool hasActiveThreadLocalGlContext() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool hasActiveThreadLocalOrSharedGlContext() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
     using GLLoadFn = GlFunctionPointer (*)(const char*);
@@ -126,7 +126,13 @@ private:
     friend priv::RenderTextureImplDefault;
     friend priv::RenderTextureImplFBO;
     friend TestContext;
-    friend RenderTarget; // TODO
+    friend RenderTarget; // TODO P1: needed?
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void ensureExtensionsInit() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context, not associated to a window
@@ -185,7 +191,7 @@ private:
                                                                    const Vector2u&        size);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
     using UnsharedDeleteFn = void (*)(unsigned int);
@@ -211,26 +217,26 @@ private:
     void unregisterUnsharedFrameBuffer(std::uint64_t glContextId, unsigned int frameBufferId);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
     void onGlContextDestroyed(priv::GlContext& glContext);
 
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief TODO
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool setActiveThreadLocalGlContext(priv::GlContext& glContext, bool active);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool setActiveThreadLocalGlContextToSharedContext(bool active);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isActiveGlContextSharedContext() const;
@@ -256,7 +262,7 @@ private:
     struct Impl;
     base::UniquePtr<Impl> m_impl;
 
-public: // TODO
+public: // TODO P0: cleanup lifetime of shaders
     int builtInShaderState{0};
     void (*builtInShaderDestroyFn)(){};
 };
@@ -268,6 +274,6 @@ public: // TODO
 /// \class sf::GraphicsContext
 /// \ingroup window
 ///
-/// TODO
+/// TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////

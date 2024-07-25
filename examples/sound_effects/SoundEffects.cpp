@@ -1082,7 +1082,7 @@ int main()
 
 
     // Create the playback device and listener
-    // TODO
+    // TODO P1: docs
     auto audioContext          = sf::AudioContext::create().value();
     auto playbackDeviceHandles = audioContext.getAvailablePlaybackDeviceHandles();
 
@@ -1102,7 +1102,7 @@ int main()
     const auto getCurrentPlaybackDevice = [&]() -> sf::PlaybackDevice&
     { return playbackDevices.at(currentPlaybackDeviceIndex); };
 
-    // TODO
+    // TODO P1: docs
     sf::Listener listener;
 
     // Helper function to open a new instance of the music file

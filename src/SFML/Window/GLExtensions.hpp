@@ -417,20 +417,9 @@ inline int SF_GL_OES_vertex_buffer_object = 1;
 #define GLEXT_GL_VERSION_4_6 GLAD_GL_VERSION_4_6
 
 
-namespace sf
-{
-class GraphicsContext;
-} // namespace sf
-
-
+// TODO P1: move?
 namespace sf::priv
 {
-////////////////////////////////////////////////////////////
-/// \brief Make sure that extensions are initialized
-///
-////////////////////////////////////////////////////////////
-void ensureExtensionsInit(GraphicsContext& graphicsContext);
-
 ////////////////////////////////////////////////////////////
 /// \brief Get GL integer and assert success
 ///
