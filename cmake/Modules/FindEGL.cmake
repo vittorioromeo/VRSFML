@@ -20,8 +20,7 @@ find_package_handle_standard_args(EGL DEFAULT_MSG EGL_LIBRARY EGL_INCLUDE_DIR)
 
 if (SFML_OS_EMSCRIPTEN)
     add_library(EGL::EGL INTERFACE IMPORTED)
-    set_property(TARGET EGL::EGL APPEND PROPERTY
-        INTERFACE_LINK_LIBRARIES ${EGL_LIBRARY})
+    target_link_libraries(EGL::EGL INTERFACE ${EGL_LIBRARY})
 else()
     add_library(EGL::EGL IMPORTED UNKNOWN)
     set_target_properties(EGL::EGL PROPERTIES

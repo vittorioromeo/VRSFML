@@ -77,24 +77,10 @@ macro(sfml_add_library module)
     endif()
     add_library(SFML::${module} ALIAS ${target})
 
-    # TODO P0:
+    # set required compile/link options for emscripten
     if(SFML_OS_EMSCRIPTEN)
-        target_compile_options(${target} PRIVATE -pthread)
-        target_link_options(${target} PRIVATE
-            -sWASM=1
-            -sSTACK_SIZE=4mb
-            -sFULL_ES2=1
-            -sFULL_ES3=1
-            -sUSE_WEBGL2=1
-            -sFETCH=1
-            -sFORCE_FILESYSTEM=1
-            -sASSERTIONS=2
-            -sGL_DEBUG=1
-            -sALLOW_MEMORY_GROWTH=1
-            -sMAX_WEBGL_VERSION=2
-            -sMIN_WEBGL_VERSION=2
-            -sUSE_PTHREADS=1
-            -pthread)
+        target_compile_options(${target} PRIVATE ${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS})
+        target_link_options(${target} PRIVATE ${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS})
     endif()
 
     # enable C++20 support
@@ -276,12 +262,14 @@ endmacro()
 macro(sfml_add_example target)
 
     # list and copy resources for emscripten support
-    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/resources)
-        file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/../..)
-        file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-    endif()
+    if(SFML_OS_EMSCRIPTEN)
+        if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/resources)
+            file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/../..)
+            file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+        endif()
 
-    file(GLOB GLOBBED_RESOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} resources/*)
+        file(GLOB GLOBBED_RESOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} resources/*)
+    endif()
 
     # parse the arguments
     cmake_parse_arguments(THIS "GUI_APP" "RESOURCES_DIR" "SOURCES;BUNDLE_RESOURCES;DEPENDS" ${ARGN})
@@ -343,24 +331,10 @@ macro(sfml_add_example target)
         target_link_libraries(${target} PRIVATE ${THIS_DEPENDS})
     endif()
 
-    # TODO P0:
+    # set required compile/link options for emscripten and preload resource files
     if(SFML_OS_EMSCRIPTEN)
-        target_compile_options(${target} PRIVATE -pthread)
-        target_link_options(${target} PRIVATE
-            -sWASM=1
-            -sSTACK_SIZE=4mb
-            -sFULL_ES2=1
-            -sFULL_ES3=1
-            -sUSE_WEBGL2=1
-            -sFETCH=1
-            -sFORCE_FILESYSTEM=1
-            -sASSERTIONS=2
-            -sGL_DEBUG=1
-            -sALLOW_MEMORY_GROWTH=1
-            -sMAX_WEBGL_VERSION=2
-            -sMIN_WEBGL_VERSION=2
-            -sUSE_PTHREADS=1
-            -pthread)
+        target_compile_options(${target} PRIVATE ${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS})
+        target_link_options(${target} PRIVATE ${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS})
 
         foreach(RESOURCE ${GLOBBED_RESOURCES})
             target_link_options(${target} PRIVATE "SHELL:--preload-file ${RESOURCE}")
@@ -387,6 +361,12 @@ function(sfml_add_test target SOURCES DEPENDS)
 
     # create the target
     add_executable(${target} ${SOURCES})
+
+    # set required compile/link options for emscripten
+    if(SFML_OS_EMSCRIPTEN)
+        target_compile_options(${target} PRIVATE ${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS})
+        target_link_options(${target} PRIVATE ${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS})
+    endif()
 
     # enable precompiled headers
     if (SFML_ENABLE_PCH)

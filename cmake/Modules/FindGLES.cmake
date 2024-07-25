@@ -20,8 +20,7 @@ find_package_handle_standard_args(GLES DEFAULT_MSG GLES_LIBRARY GLES_INCLUDE_DIR
 
 if (SFML_OS_EMSCRIPTEN)
     add_library(GLES::GLES INTERFACE IMPORTED)
-    set_property(TARGET GLES::GLES APPEND PROPERTY
-        INTERFACE_LINK_LIBRARIES ${GLES_LIBRARY})
+    target_link_libraries(GLES::GLES INTERFACE ${GLES_LIBRARY})
 else()
     add_library(GLES::GLES IMPORTED UNKNOWN)
     set_target_properties(GLES::GLES PROPERTIES

@@ -1,4 +1,4 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
+#include <SFML/Copyright.hpp>
 
 ////////////////////////////////////////////////////////////
 // Headers

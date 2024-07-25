@@ -22,6 +22,13 @@ set_target_properties(doctest_with_main PROPERTIES EXPORT_COMPILE_COMMANDS OFF)
 get_target_property(DOCTEST_INCLUDE_DIRS doctest INTERFACE_INCLUDE_DIRECTORIES)
 target_include_directories(doctest SYSTEM INTERFACE ${DOCTEST_INCLUDE_DIRS})
 
+# add flags required for emscripten support (e.g. pthread)
+if(SFML_OS_EMSCRIPTEN)
+    target_compile_definitions(doctest INTERFACE DOCTEST_CONFIG_COLORS_NONE)
+    target_compile_options(doctest INTERFACE ${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS})
+    target_link_options(doctest INTERFACE ${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS})
+endif()
+
 add_library(sfml-test-main STATIC
     TestUtilities/Doctest.hpp
     TestUtilities/Doctest.cpp
@@ -42,11 +49,8 @@ add_library(sfml-test-main STATIC
     TestUtilities/StringifyVectorUtil.hpp
 )
 target_include_directories(sfml-test-main PUBLIC TestUtilities)
-if (SFML_OS_EMSCRIPTEN)
-    target_compile_definitions(sfml-test-main PUBLIC DOCTEST_CONFIG_REQUIRE_STRINGIFICATION_FOR_ALL_USED_TYPES DOCTEST_CONFIG_NO_EXCEPTIONS_BUT_WITH_ALL_ASSERTS)
-else()
-    target_compile_definitions(sfml-test-main PUBLIC DOCTEST_CONFIG_REQUIRE_STRINGIFICATION_FOR_ALL_USED_TYPES)
-endif()
+target_compile_definitions(sfml-test-main PUBLIC DOCTEST_CONFIG_REQUIRE_STRINGIFICATION_FOR_ALL_USED_TYPES)
+
 set_target_warnings(sfml-test-main)
 
 # enable precompiled headers
@@ -154,6 +158,23 @@ set(GRAPHICS_SRC
 sfml_add_test(test-sfml-graphics "${GRAPHICS_SRC}" SFML::Graphics)
 if(SFML_RUN_DISPLAY_TESTS)
     target_compile_definitions(test-sfml-graphics PRIVATE SFML_RUN_DISPLAY_TESTS)
+endif()
+if(SFML_OS_EMSCRIPTEN)
+    set(GRAPHICS_TEST_RESOURCES
+        Graphics/invalid_shader.vert
+        Graphics/sfml-logo-big.bmp
+        Graphics/sfml-logo-big.gif
+        Graphics/sfml-logo-big.jpg
+        Graphics/sfml-logo-big.png
+        Graphics/sfml-logo-big.psd
+        Graphics/shader.frag
+        Graphics/shader.geom
+        Graphics/shader.vert
+        Graphics/tuffy.ttf)
+
+    foreach(RESOURCE ${GRAPHICS_TEST_RESOURCES})
+        target_link_options(test-sfml-graphics PRIVATE "SHELL:--preload-file ${RESOURCE}")
+    endforeach()
 endif()
 
 set(NETWORK_SRC
