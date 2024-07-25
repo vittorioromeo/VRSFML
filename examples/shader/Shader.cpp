@@ -478,7 +478,6 @@ int main()
     instructions.setOutlineThickness(3.f);
     instructions.setOutlineColor(sf::Color::Red);
 
-    // TODO P0: loading textures fails if the window is created after!!! does it still??
     // Create the main window
     sf::RenderWindow window(graphicsContext, sf::VideoMode({800, 600}), "SFML Shader", sf::Style::Titlebar | sf::Style::Close);
     window.setVerticalSyncEnabled(true);

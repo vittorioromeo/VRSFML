@@ -124,10 +124,10 @@ else()
 
         set_target_properties(freetype PROPERTIES FOLDER "Dependencies")
 
-        # TODO P0: document
+        # add flags required for emscripten support (e.g. pthread)
         if(SFML_OS_EMSCRIPTEN)
-            target_compile_options(freetype PRIVATE -pthread)
-            target_link_options(freetype PRIVATE -pthread)
+            target_compile_options(freetype PRIVATE ${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS})
+            target_link_options(freetype PRIVATE ${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS})
         endif()
 
         # if building SFML as a shared library and linking our dependencies in

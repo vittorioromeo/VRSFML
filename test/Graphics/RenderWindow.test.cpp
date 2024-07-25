@@ -1,12 +1,6 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 
 // Other 1st party headers
-#if 1 // TODO P0: fix
-#include "C:/OHWorkspace/SFML/extlibs/headers/glad/include/glad/gl.h"
-#else
-#include "C:/OHW/SFML/extlibs/headers/glad/include/glad/gl.h"
-#endif
-
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/View.hpp>
@@ -48,8 +42,12 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
                                           sf::State::Windowed,
                                           sf::ContextSettings{});
             CHECK(window.getSize() == sf::Vector2u{256, 256});
+#ifndef SFML_SYSTEM_EMSCRIPTEN
             CHECK(window.getNativeHandle() != sf::WindowHandle());
             CHECK(window.getSettings().attributeFlags == sf::ContextSettings{}.attributeFlags);
+#else
+            CHECK(window.getNativeHandle() == sf::WindowHandle());
+#endif
             CHECK(!window.isSrgb());
             CHECK(window.getView().getCenter() == sf::Vector2f{128, 128});
             CHECK(window.getView().getSize() == sf::Vector2f{256, 256});
@@ -66,8 +64,12 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
                                           sf::State::Windowed,
                                           sf::ContextSettings{});
             CHECK(window.getSize() == sf::Vector2u{240, 300});
+#ifndef SFML_SYSTEM_EMSCRIPTEN
             CHECK(window.getNativeHandle() != sf::WindowHandle());
             CHECK(window.getSettings().attributeFlags == sf::ContextSettings{}.attributeFlags);
+#else
+            CHECK(window.getNativeHandle() == sf::WindowHandle());
+#endif
             CHECK(!window.isSrgb());
             CHECK(window.getView().getCenter() == sf::Vector2f{120, 150});
             CHECK(window.getView().getSize() == sf::Vector2f{240, 300});

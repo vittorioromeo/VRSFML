@@ -15,7 +15,7 @@
 #ifndef SFML_SYSTEM_EMSCRIPTEN
 #include <glad/egl.h>
 #else
-#define KHRONOS_APIENTRY __stdcall
+#define KHRONOS_APIENTRY
 #include <EGL/egl.h>
 #endif
 

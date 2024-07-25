@@ -440,28 +440,27 @@ using VBO = OpenGLRAII<[](auto& id) { glCheck(glGenBuffers(1, &id)); },
 
 
 ////////////////////////////////////////////////////////////
-void doVertexStuff(bool        enableTexCoordsArray,
-                   const GLint posAttribIdx,
-                   const GLint colorAttribIdx,
-                   const GLint texCoordAttribIdx) // TODO P0: better name for func and params
+void setupVertexAttribPointers(bool        enableTexCoordsArray,
+                               const GLint sfAttribPositionIdx,
+                               const GLint sfAttribColorIdx,
+                               const GLint sfAttribTexCoordIdx)
 {
 #define SFML_PRIV_OFFSETOF(...) reinterpret_cast<const void*>(offsetof(__VA_ARGS__))
 
-    // TODO P0: "actually get the layout indices" -- not sure what that means, we do that...?
-    SFML_BASE_ASSERT(posAttribIdx >= 0);
+    SFML_BASE_ASSERT(sfAttribPositionIdx >= 0);
 
-    glCheck(glEnableVertexAttribArray(static_cast<GLuint>(posAttribIdx)));
-    glCheck(glVertexAttribPointer(/*      index */ static_cast<GLuint>(posAttribIdx),
+    glCheck(glEnableVertexAttribArray(static_cast<GLuint>(sfAttribPositionIdx)));
+    glCheck(glVertexAttribPointer(/*      index */ static_cast<GLuint>(sfAttribPositionIdx),
                                   /*       size */ 2,
                                   /*       type */ GL_FLOAT,
                                   /* normalized */ GL_FALSE,
                                   /*     stride */ sizeof(Vertex),
                                   /*     offset */ SFML_PRIV_OFFSETOF(Vertex, position)));
 
-    if (colorAttribIdx >= 0)
+    if (sfAttribColorIdx >= 0)
     {
-        glCheck(glEnableVertexAttribArray(static_cast<GLuint>(colorAttribIdx)));
-        glCheck(glVertexAttribPointer(/*      index */ static_cast<GLuint>(colorAttribIdx),
+        glCheck(glEnableVertexAttribArray(static_cast<GLuint>(sfAttribColorIdx)));
+        glCheck(glVertexAttribPointer(/*      index */ static_cast<GLuint>(sfAttribColorIdx),
                                       /*       size */ 4,
                                       /*       type */ GL_UNSIGNED_BYTE,
                                       /* normalized */ GL_TRUE,
@@ -469,10 +468,10 @@ void doVertexStuff(bool        enableTexCoordsArray,
                                       /*     offset */ SFML_PRIV_OFFSETOF(Vertex, color)));
     }
 
-    if (enableTexCoordsArray && texCoordAttribIdx >= 0)
+    if (enableTexCoordsArray && sfAttribTexCoordIdx >= 0)
     {
-        glCheck(glEnableVertexAttribArray(static_cast<GLuint>(texCoordAttribIdx)));
-        glCheck(glVertexAttribPointer(/*      index */ static_cast<GLuint>(texCoordAttribIdx),
+        glCheck(glEnableVertexAttribArray(static_cast<GLuint>(sfAttribTexCoordIdx)));
+        glCheck(glVertexAttribPointer(/*      index */ static_cast<GLuint>(sfAttribTexCoordIdx),
                                       /*       size */ 2,
                                       /*       type */ GL_FLOAT,
                                       /* normalized */ GL_FALSE,
@@ -712,10 +711,10 @@ void RenderTarget::draw(const Vertex* vertices, std::size_t vertexCount, Primiti
         const auto* data = reinterpret_cast<const char*>(useVertexCache ? m_impl->cache.vertexCache : vertices);
 
         glCheck(glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeof(Vertex) * vertexCount), data, GL_STATIC_DRAW));
-        doVertexStuff(enableTexCoordsArray,
-                      m_impl->cache.sfAttribPositionIdx,
-                      m_impl->cache.sfAttribColorIdx,
-                      m_impl->cache.sfAttribTexCoordIdx);
+        setupVertexAttribPointers(enableTexCoordsArray,
+                                  m_impl->cache.sfAttribPositionIdx,
+                                  m_impl->cache.sfAttribColorIdx,
+                                  m_impl->cache.sfAttribTexCoordIdx);
 
         drawPrimitives(type, 0, vertexCount);
         cleanupDraw(states);
@@ -763,10 +762,10 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, std::size_t firstVerte
         VertexBuffer::bind(*m_impl->graphicsContext, &vertexBuffer);
 
         // Always enable texture coordinates
-        doVertexStuff(true /* enableTexCoordsArray */,
-                      m_impl->cache.sfAttribPositionIdx,
-                      m_impl->cache.sfAttribColorIdx,
-                      m_impl->cache.sfAttribTexCoordIdx);
+        setupVertexAttribPointers(true /* enableTexCoordsArray */,
+                                  m_impl->cache.sfAttribPositionIdx,
+                                  m_impl->cache.sfAttribColorIdx,
+                                  m_impl->cache.sfAttribTexCoordIdx);
         drawPrimitives(vertexBuffer.getPrimitiveType(), firstVertex, vertexCount);
 
         // Unbind vertex buffer

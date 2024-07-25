@@ -161,6 +161,7 @@ void ensureExtensionsInit(GraphicsContext& graphicsContext)
 // TODO P0:
 #ifndef SFML_SYSTEM_EMSCRIPTEN
     // TODO P0: maybe conditionally enable depending on graphicscontext's debug ctx param?
+    // or for emscripten, try to enable without glcheck and then drain gl errors
     glCheck(glEnable(GL_DEBUG_OUTPUT));
     glCheck(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
     glCheck(glDebugMessageCallback(mMessageCallback, nullptr));

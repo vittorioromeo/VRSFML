@@ -202,21 +202,16 @@ EglContext::~EglContext()
     eglCheck(currentContext = eglGetCurrentContext());
 
     if (currentContext == m_context)
-    {
         eglCheck(eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT));
-    }
 
-    // Destroy context
+// TODO P0: for some reason this breaks graphics tests
+#ifndef SFML_SYSTEM_EMSCRIPTEN
     if (m_context != EGL_NO_CONTEXT)
-    {
         eglCheck(eglDestroyContext(m_display, m_context));
-    }
+#endif
 
-    // Destroy surface
     if (m_surface != EGL_NO_SURFACE)
-    {
         eglCheck(eglDestroySurface(m_display, m_surface));
-    }
 }
 
 

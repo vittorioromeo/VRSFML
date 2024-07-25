@@ -74,10 +74,26 @@ elseif(${EMSCRIPTEN})
     # use the OpenGL ES implementation on Emscripten
     set(OPENGL_ES 1)
 
-    # TODO
+    # TODO P0:
     set(CMAKE_EXECUTABLE_SUFFIX ".html")
-    set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -pthread)
-    set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} -pthread)
+    set(SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS -pthread)
+    set(SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS
+        -sWASM=1
+        -sSTACK_SIZE=4mb
+        -sFULL_ES2=1
+        -sFULL_ES3=1
+        -sUSE_WEBGL2=1
+        -sFETCH=1
+        -sFORCE_FILESYSTEM=1
+        -sASSERTIONS=2
+        -sGL_DEBUG=1
+        -sALLOW_MEMORY_GROWTH=1
+        -sMAX_WEBGL_VERSION=2
+        -sMIN_WEBGL_VERSION=2
+        -sUSE_PTHREADS=1
+        -pthread)
+
+    # TODO P0: -fwasm-exceptions seems to break examples
 else()
     message(FATAL_ERROR "Unsupported operating system or environment")
     return()
