@@ -95,10 +95,6 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
 
     const auto& derivedSharedGlContext = static_cast<const DerivedGlContextType&>(sharedGlContext);
 
-    // Retrieve the context version number
-    int majorVersion = 0;
-    int minorVersion = 0;
-
     // Try the new way first
     auto glGetIntegervFunc = reinterpret_cast<glGetIntegervFuncType>(
         derivedSharedGlContext.getFunction("glGetIntegerv"));
@@ -142,6 +138,19 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
                                                                  \
         return result;                                           \
     }()
+
+
+#if defined(SFML_SYSTEM_EMSCRIPTEN)
+
+    // Hardcoded for WebGL 2.0
+    m_settings.majorVersion = 2;
+    m_settings.minorVersion = 0;
+
+#else
+
+    // Retrieve the context version number
+    int majorVersion = 0;
+    int minorVersion = 0;
 
     glGetIntegervFunc(GL_MAJOR_VERSION, &majorVersion); // intentionally not checked, will be checked below
     glGetIntegervFunc(GL_MINOR_VERSION, &minorVersion); // intentionally not checked, will be checked below
@@ -260,6 +269,8 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
                 m_settings.attributeFlags |= ContextSettings::Attribute::Core;
         }
     }
+
+#endif
 
     // Enable anti-aliasing if requested by the user and supported
     if ((requestedSettings.antialiasingLevel > 0) && (m_settings.antialiasingLevel > 0))

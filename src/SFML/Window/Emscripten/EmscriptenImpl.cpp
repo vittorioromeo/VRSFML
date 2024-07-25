@@ -707,7 +707,7 @@ WindowImplEmscripten::WindowImplEmscripten(VideoMode mode,
                                            const ContextSettings& /* settings */) :
 m_keyRepeatEnabled(true)
 {
-    if (window)
+    if (window != nullptr)
     {
         err() << "Creating multiple windows is unsupported";
         std::abort();
