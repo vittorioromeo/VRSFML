@@ -166,19 +166,25 @@ public:
     [[nodiscard]] bool setActive(bool active = true) override;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P0: ? needed to forward to base
+    /// \brief Sets the size of the window and forwards to `WindowBase::setSize`
+    ///
+    /// \see WindowBase::setSize
     ///
     ////////////////////////////////////////////////////////////
     void setSize(const Vector2u& size);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P0: ? needed to forward to base
+    /// \brief Polls the next event and forwards to `WindowBase::pollEvent`
+    ///
+    /// \see WindowBase::pollEvent
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] base::Optional<Event> pollEvent();
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P0: ? needed to forward to base
+    /// \brief Waits for the next event and forwards to `WindowBase::waitEvent`
+    ///
+    /// \see WindowBase::waitEvent
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] base::Optional<Event> waitEvent(Time timeout = Time::Zero);
