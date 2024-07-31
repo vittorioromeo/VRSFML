@@ -95,7 +95,7 @@ RenderTextureImplFBO::~RenderTextureImplFBO()
 
 
 ////////////////////////////////////////////////////////////
-bool RenderTextureImplFBO::isAvailable(GraphicsContext& graphicsContext)
+bool RenderTextureImplFBO::isAvailable([[maybe_unused]] GraphicsContext& graphicsContext)
 {
     SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
     return GLEXT_framebuffer_object != 0;
