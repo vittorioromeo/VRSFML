@@ -313,15 +313,10 @@ VertexBuffer::Usage VertexBuffer::getUsage() const
 
 
 ////////////////////////////////////////////////////////////
-bool VertexBuffer::isAvailable(GraphicsContext& graphicsContext)
+bool VertexBuffer::isAvailable([[maybe_unused]] GraphicsContext& graphicsContext)
 {
-    static const bool available = [&]
-    {
-        SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
-        return GLEXT_vertex_buffer_object != 0;
-    }();
-
-    return available;
+    SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
+    return GLEXT_vertex_buffer_object != 0;
 }
 
 
