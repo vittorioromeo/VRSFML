@@ -74,7 +74,20 @@ SoundFileWriterWav::SoundFileWriterWav() = default;
 ////////////////////////////////////////////////////////////
 SoundFileWriterWav::~SoundFileWriterWav()
 {
-    close();
+    if (!m_impl->file.is_open())
+        return;
+
+    // If the file is open, finalize the header and close it
+    m_impl->file.flush();
+
+    // Update the main chunk size and data sub-chunk size
+    const std::uint32_t fileSize = static_cast<std::uint32_t>(m_impl->file.tellp());
+    m_impl->file.seekp(4);
+    encode(m_impl->file, fileSize - 8); // 8 bytes RIFF header
+    m_impl->file.seekp(40);
+    encode(m_impl->file, fileSize - 44); // 44 bytes RIFF + WAVE headers
+
+    m_impl->file.close();
 }
 
 
@@ -301,24 +314,5 @@ void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int chann
     encode(m_impl->file, dataChunkSize);
 }
 
-
-////////////////////////////////////////////////////////////
-void SoundFileWriterWav::close()
-{
-    // If the file is open, finalize the header and close it
-    if (m_impl->file.is_open())
-    {
-        m_impl->file.flush();
-
-        // Update the main chunk size and data sub-chunk size
-        const std::uint32_t fileSize = static_cast<std::uint32_t>(m_impl->file.tellp());
-        m_impl->file.seekp(4);
-        encode(m_impl->file, fileSize - 8); // 8 bytes RIFF header
-        m_impl->file.seekp(40);
-        encode(m_impl->file, fileSize - 44); // 44 bytes RIFF + WAVE headers
-
-        m_impl->file.close();
-    }
-}
 
 } // namespace sf::priv

@@ -82,7 +82,12 @@ SoundFileReaderOgg::SoundFileReaderOgg() = default;
 ////////////////////////////////////////////////////////////
 SoundFileReaderOgg::~SoundFileReaderOgg()
 {
-    close();
+    if (m_impl->vorbis.datasource)
+    {
+        ov_clear(&m_impl->vorbis);
+        m_impl->vorbis.datasource = nullptr;
+        m_impl->channelCount      = 0;
+    }
 }
 
 
@@ -208,18 +213,6 @@ std::uint64_t SoundFileReaderOgg::read(std::int16_t* samples, std::uint64_t maxC
     }
 
     return count;
-}
-
-
-////////////////////////////////////////////////////////////
-void SoundFileReaderOgg::close()
-{
-    if (m_impl->vorbis.datasource)
-    {
-        ov_clear(&m_impl->vorbis);
-        m_impl->vorbis.datasource = nullptr;
-        m_impl->channelCount      = 0;
-    }
 }
 
 } // namespace sf::priv

@@ -65,14 +65,6 @@ void OutputSoundFile::write(const std::int16_t* samples, std::uint64_t count)
 
 
 ////////////////////////////////////////////////////////////
-void OutputSoundFile::close()
-{
-    // Destroy the reader
-    m_writer.reset();
-}
-
-
-////////////////////////////////////////////////////////////
 OutputSoundFile::OutputSoundFile(base::PassKey<OutputSoundFile>&&, base::UniquePtr<SoundFileWriter>&& writer) :
 m_writer(SFML_BASE_MOVE(writer))
 {
