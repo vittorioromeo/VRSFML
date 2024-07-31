@@ -94,7 +94,7 @@ struct Setting
 };
 
 // Terrain noise parameters
-const int perlinOctaves = 3;
+constexpr int perlinOctaves = 3;
 
 float perlinFrequency     = 7.0f;
 float perlinFrequencyBase = 4.0f;

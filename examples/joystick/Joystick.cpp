@@ -39,7 +39,7 @@ std::ostringstream sstr;
 float              threshold = 0.1f;
 
 // Axes labels in as strings
-const std::array<std::string, 8> axislabels = {"X", "Y", "Z", "R", "U", "V", "PovX", "PovY"};
+constexpr std::array<std::string, 8> axislabels = {"X", "Y", "Z", "R", "U", "V", "PovX", "PovY"};
 
 // Helper to set text entries to a specified value
 template <typename T>
