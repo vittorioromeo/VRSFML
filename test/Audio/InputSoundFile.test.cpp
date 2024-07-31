@@ -241,16 +241,4 @@ TEST_CASE("[Audio] sf::InputSoundFile")
             }
         }
     }
-
-    SECTION("close()")
-    {
-        auto inputSoundFile = sf::InputSoundFile::openFromFile("Audio/ding.flac").value();
-        inputSoundFile.close();
-        CHECK(inputSoundFile.getSampleCount() == 0);
-        CHECK(inputSoundFile.getChannelCount() == 0);
-        CHECK(inputSoundFile.getSampleRate() == 0);
-        CHECK(inputSoundFile.getDuration() == sf::Time::Zero);
-        CHECK(inputSoundFile.getTimeOffset() == sf::Time::Zero);
-        CHECK(inputSoundFile.getSampleOffset() == 0);
-    }
 }

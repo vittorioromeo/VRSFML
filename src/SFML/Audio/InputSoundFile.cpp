@@ -260,18 +260,6 @@ std::uint64_t InputSoundFile::read(std::int16_t* samples, std::uint64_t maxCount
 
 
 ////////////////////////////////////////////////////////////
-void InputSoundFile::close()
-{
-    m_reader.reset();
-    m_stream.reset();
-    m_sampleOffset = {};
-    m_sampleCount  = {};
-    m_sampleRate   = {};
-    m_channelMap.clear();
-}
-
-
-////////////////////////////////////////////////////////////
 InputSoundFile::InputSoundFile(base::PassKey<InputSoundFile>&&,
                                base::UniquePtr<SoundFileReader>&&            reader,
                                base::UniquePtr<InputStream, StreamDeleter>&& stream,
