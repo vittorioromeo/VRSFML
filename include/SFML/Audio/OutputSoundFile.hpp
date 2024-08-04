@@ -1,19 +1,17 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
+#include <SFML/Audio/ChannelMap.hpp>
 #include <SFML/Audio/SoundChannel.hpp>
 
 #include <SFML/Base/Optional.hpp>
 #include <SFML/Base/PassKey.hpp>
 #include <SFML/Base/UniquePtr.hpp>
-
-#include <vector>
 
 #include <cstdint>
 
@@ -69,10 +67,10 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<OutputSoundFile> openFromFile(
-        const Path&                      filename,
-        unsigned int                     sampleRate,
-        unsigned int                     channelCount,
-        const std::vector<SoundChannel>& channelMap);
+        const Path&       filename,
+        unsigned int      sampleRate,
+        unsigned int      channelCount,
+        const ChannelMap& channelMap);
 
     ////////////////////////////////////////////////////////////
     /// \brief Write audio samples to the file

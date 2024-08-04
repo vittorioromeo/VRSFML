@@ -10,6 +10,8 @@ set(SRC
     ${INCROOT}/Http.hpp
     ${SRCROOT}/IpAddress.cpp
     ${INCROOT}/IpAddress.hpp
+    ${SRCROOT}/IpAddressUtils.cpp
+    ${INCROOT}/IpAddressUtils.hpp
     ${SRCROOT}/Packet.cpp
     ${INCROOT}/Packet.hpp
     ${SRCROOT}/Socket.cpp

@@ -1,6 +1,5 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -46,8 +45,6 @@ public:
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy constructor
-    ///
-    /// \param copy instance to copy
     ///
     ////////////////////////////////////////////////////////////
     Texture(const Texture& rhs);

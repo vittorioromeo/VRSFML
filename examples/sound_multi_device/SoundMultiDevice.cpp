@@ -2,6 +2,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/AudioContext.hpp>
+#include <SFML/Audio/AudioContextUtils.hpp>
 #include <SFML/Audio/Music.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
 #include <SFML/Audio/PlaybackDeviceHandle.hpp>
@@ -39,7 +40,8 @@ int main()
 
     // For each hardware playback device, create a SFML playback device
     std::vector<sf::PlaybackDevice> playbackDevices;
-    for (const sf::PlaybackDeviceHandle& deviceHandle : audioContext.getAvailablePlaybackDeviceHandles())
+    for (const sf::PlaybackDeviceHandle& deviceHandle :
+         sf::AudioContextUtils::getAvailablePlaybackDeviceHandles(audioContext))
         playbackDevices.emplace_back(audioContext, deviceHandle);
 
     // Play multiple sources simultaneously on separate playback devices

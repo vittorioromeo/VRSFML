@@ -7,6 +7,7 @@
 #include <SFML/Window/GlContext.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/VideoMode.hpp>
+#include <SFML/Window/VideoModeUtils.hpp>
 #include <SFML/Window/Window.hpp>
 #include <SFML/Window/WindowImpl.hpp>
 
@@ -80,7 +81,7 @@ Window(graphicsContext, mode, title, sf::Style::Default, state, settings)
 
 ////////////////////////////////////////////////////////////
 Window::Window(GraphicsContext& graphicsContext, WindowHandle handle, const ContextSettings& settings) :
-Window(graphicsContext, settings, handle, VideoMode::getDesktopMode().bitsPerPixel)
+Window(graphicsContext, settings, handle, VideoModeUtils::getDesktopMode().bitsPerPixel)
 {
 }
 

@@ -12,6 +12,8 @@
 
 #include <SFML/Base/Algorithm.hpp>
 
+#include <vector>
+
 #include <cstring>
 
 #ifdef _MSC_VER
@@ -32,9 +34,44 @@ const int flags = 0;
 namespace sf
 {
 ////////////////////////////////////////////////////////////
+/// \brief Structure holding the data of a pending packet
+///
+////////////////////////////////////////////////////////////
+struct PendingPacket
+{
+    std::uint32_t          size{};         //!< Data of packet size
+    std::size_t            sizeReceived{}; //!< Number of size bytes received so far
+    std::vector<std::byte> data;           //!< Data of the packet
+};
+
+
+////////////////////////////////////////////////////////////
+struct TcpSocket::Impl
+{
+    ////////////////////////////////////////////////////////////
+    // Member data
+    ////////////////////////////////////////////////////////////
+    PendingPacket          pendingPacket;     //!< Temporary data of the packet currently being received
+    std::vector<std::byte> blockToSendBuffer; //!< Buffer used to prepare data being sent from the socket
+};
+
+
+////////////////////////////////////////////////////////////
 TcpSocket::TcpSocket() : Socket(Type::Tcp)
 {
 }
+
+
+////////////////////////////////////////////////////////////
+TcpSocket::~TcpSocket() = default;
+
+
+////////////////////////////////////////////////////////////
+TcpSocket::TcpSocket(TcpSocket&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
+TcpSocket& TcpSocket::operator=(TcpSocket&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
@@ -182,7 +219,7 @@ void TcpSocket::disconnect()
     close();
 
     // Reset the pending packet data
-    m_pendingPacket = PendingPacket();
+    m_impl->pendingPacket = PendingPacket();
 }
 
 
@@ -292,15 +329,15 @@ Socket::Status TcpSocket::send(Packet& packet)
     std::uint32_t packetSize = priv::SocketImpl::htonl(static_cast<std::uint32_t>(size));
 
     // Allocate memory for the data block to send
-    m_blockToSendBuffer.resize(sizeof(packetSize) + size);
+    m_impl->blockToSendBuffer.resize(sizeof(packetSize) + size);
 
 // Copy the packet size and data into the block to send
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wnull-dereference" // False positive.
-    std::memcpy(m_blockToSendBuffer.data(), &packetSize, sizeof(packetSize));
+    std::memcpy(m_impl->blockToSendBuffer.data(), &packetSize, sizeof(packetSize));
 #pragma GCC diagnostic pop
     if (size > 0)
-        std::memcpy(m_blockToSendBuffer.data() + sizeof(packetSize), data, size);
+        std::memcpy(m_impl->blockToSendBuffer.data() + sizeof(packetSize), data, size);
 
 // These warnings are ignored here for portability, as even on Windows the
 // signature of `send` might change depending on whether Win32 or MinGW is
@@ -311,8 +348,8 @@ Socket::Status TcpSocket::send(Packet& packet)
 #pragma GCC diagnostic ignored "-Wsign-conversion"
     // Send the data block
     std::size_t  sent   = 0;
-    const Status status = send(m_blockToSendBuffer.data() + packet.getSendPos(),
-                               static_cast<priv::SocketImpl::Size>(m_blockToSendBuffer.size() - packet.getSendPos()),
+    const Status status = send(m_impl->blockToSendBuffer.data() + packet.getSendPos(),
+                               static_cast<priv::SocketImpl::Size>(m_impl->blockToSendBuffer.size() - packet.getSendPos()),
                                sent);
 #pragma GCC diagnostic pop
 #pragma GCC diagnostic pop
@@ -340,35 +377,35 @@ Socket::Status TcpSocket::receive(Packet& packet)
     // We start by getting the size of the incoming packet
     std::uint32_t packetSize = 0;
     std::size_t   received   = 0;
-    if (m_pendingPacket.sizeReceived < sizeof(m_pendingPacket.size))
+    if (m_impl->pendingPacket.sizeReceived < sizeof(m_impl->pendingPacket.size))
     {
         // Loop until we've received the entire size of the packet
         // (even a 4 byte variable may be received in more than one call)
-        while (m_pendingPacket.sizeReceived < sizeof(m_pendingPacket.size))
+        while (m_impl->pendingPacket.sizeReceived < sizeof(m_impl->pendingPacket.size))
         {
-            char*        data   = reinterpret_cast<char*>(&m_pendingPacket.size) + m_pendingPacket.sizeReceived;
-            const Status status = receive(data, sizeof(m_pendingPacket.size) - m_pendingPacket.sizeReceived, received);
-            m_pendingPacket.sizeReceived += received;
+            char* data = reinterpret_cast<char*>(&m_impl->pendingPacket.size) + m_impl->pendingPacket.sizeReceived;
+            const Status status = receive(data, sizeof(m_impl->pendingPacket.size) - m_impl->pendingPacket.sizeReceived, received);
+            m_impl->pendingPacket.sizeReceived += received;
 
             if (status != Status::Done)
                 return status;
         }
 
         // The packet size has been fully received
-        packetSize = priv::SocketImpl::ntohl(m_pendingPacket.size);
+        packetSize = priv::SocketImpl::ntohl(m_impl->pendingPacket.size);
     }
     else
     {
         // The packet size has already been received in a previous call
-        packetSize = priv::SocketImpl::ntohl(m_pendingPacket.size);
+        packetSize = priv::SocketImpl::ntohl(m_impl->pendingPacket.size);
     }
 
     // Loop until we receive all the packet data
     char buffer[1024]{};
-    while (m_pendingPacket.data.size() < packetSize)
+    while (m_impl->pendingPacket.data.size() < packetSize)
     {
         // Receive a chunk of data
-        const std::size_t sizeToGet = base::min(packetSize - m_pendingPacket.data.size(), sizeof(buffer));
+        const std::size_t sizeToGet = base::min(packetSize - m_impl->pendingPacket.data.size(), sizeof(buffer));
         const Status      status    = receive(buffer, sizeToGet, received);
         if (status != Status::Done)
             return status;
@@ -376,18 +413,18 @@ Socket::Status TcpSocket::receive(Packet& packet)
         // Append it into the packet
         if (received > 0)
         {
-            m_pendingPacket.data.resize(m_pendingPacket.data.size() + received);
-            std::byte* begin = m_pendingPacket.data.data() + m_pendingPacket.data.size() - received;
+            m_impl->pendingPacket.data.resize(m_impl->pendingPacket.data.size() + received);
+            std::byte* begin = m_impl->pendingPacket.data.data() + m_impl->pendingPacket.data.size() - received;
             std::memcpy(begin, buffer, received);
         }
     }
 
     // We have received all the packet data: we can copy it to the user packet
-    if (!m_pendingPacket.data.empty())
-        packet.onReceive(m_pendingPacket.data.data(), m_pendingPacket.data.size());
+    if (!m_impl->pendingPacket.data.empty())
+        packet.onReceive(m_impl->pendingPacket.data.data(), m_impl->pendingPacket.data.size());
 
     // Clear the pending packet data
-    m_pendingPacket = PendingPacket();
+    m_impl->pendingPacket = PendingPacket();
 
     return Status::Done;
 }

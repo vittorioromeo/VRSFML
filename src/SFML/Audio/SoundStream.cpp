@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Audio/ChannelMap.hpp>
 #include <SFML/Audio/EffectProcessor.hpp>
 #include <SFML/Audio/MiniaudioUtils.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
@@ -40,7 +41,7 @@ struct SoundStream::Impl
             priv::err() << "Failed to initialize SoundStream::Impl";
 
         // Because we are providing a custom data source, we have to provide the channel map ourselves
-        if (channelMap.empty())
+        if (channelMap.isEmpty())
         {
             soundBase->getSound().engineNode.spatializer.pChannelMapIn = nullptr;
             return;
@@ -192,7 +193,7 @@ struct SoundStream::Impl
     std::uint64_t             samplesProcessed{};   //!< Number of samples processed since beginning of the stream
     unsigned int              channelCount{};       //!< Number of channels (1 = mono, 2 = stereo, ...)
     unsigned int              sampleRate{};         //!< Frequency (samples / second)
-    std::vector<SoundChannel> channelMap;           //!< The map of position in sample frame to sound channel
+    ChannelMap                channelMap;           //!< The map of position in sample frame to sound channel
     bool                      streaming{true};      //!< True if we are still streaming samples from the source
     SoundSource::Status       status{SoundSource::Status::Stopped}; //!< The status
 };
@@ -232,7 +233,7 @@ SoundStream& SoundStream::operator=(SoundStream&& rhs) noexcept
 
 
 ////////////////////////////////////////////////////////////
-void SoundStream::initialize(unsigned int channelCount, unsigned int sampleRate, const std::vector<SoundChannel>& channelMap)
+void SoundStream::initialize(unsigned int channelCount, unsigned int sampleRate, const ChannelMap& channelMap)
 {
     m_impl->channelCount     = channelCount;
     m_impl->sampleRate       = sampleRate;
@@ -330,7 +331,7 @@ unsigned int SoundStream::getSampleRate() const
 
 
 ////////////////////////////////////////////////////////////
-std::vector<SoundChannel> SoundStream::getChannelMap() const
+ChannelMap SoundStream::getChannelMap() const
 {
     return m_impl->channelMap;
 }

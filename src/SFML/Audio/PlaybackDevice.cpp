@@ -4,6 +4,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/AudioContext.hpp>
+#include <SFML/Audio/AudioContextUtils.hpp>
 #include <SFML/Audio/Listener.hpp>
 #include <SFML/Audio/MiniaudioUtils.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
@@ -99,7 +100,7 @@ struct PlaybackDevice::Impl
 ////////////////////////////////////////////////////////////
 base::Optional<PlaybackDevice> PlaybackDevice::createDefault(AudioContext& audioContext)
 {
-    base::Optional defaultPlaybackDeviceHandle = audioContext.getDefaultPlaybackDeviceHandle();
+    base::Optional defaultPlaybackDeviceHandle = AudioContextUtils::getDefaultPlaybackDeviceHandle(audioContext);
 
     if (!defaultPlaybackDeviceHandle.hasValue())
         return base::nullOpt;

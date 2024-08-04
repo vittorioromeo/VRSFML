@@ -113,36 +113,6 @@ template <typename F>
     return true;
 }
 
-
-////////////////////////////////////////////////////////////
-template <typename THandle, typename F>
-std::vector<THandle> getAvailableDeviceHandles(sf::base::PassKey<sf::AudioContext>&& passKey,
-                                               ma_context&                           maContext,
-                                               const char*                           type,
-                                               F&&                                   fMAContextGetDevices)
-{
-    std::vector<THandle> deviceHandles; // Use a single local variable for NRVO
-
-    ma_device_info* maDeviceInfosPtr{};
-    ma_uint32       maDeviceInfoCount{};
-
-    // Get the Capture devices
-    if (const ma_result result = fMAContextGetDevices(&maContext, &maDeviceInfosPtr, &maDeviceInfoCount);
-        result != MA_SUCCESS)
-    {
-        sf::priv::err() << "Failed to get audio " << type << " devices: " << ma_result_description(result);
-
-        return deviceHandles; // Empty device handle vector
-    }
-
-    deviceHandles.reserve(maDeviceInfoCount);
-
-    for (ma_uint32 i = 0u; i < maDeviceInfoCount; ++i)
-        deviceHandles.emplace_back(SFML_BASE_MOVE(passKey), &maDeviceInfosPtr[i]);
-
-    return deviceHandles;
-}
-
 } // namespace
 
 
@@ -182,52 +152,6 @@ base::Optional<AudioContext> AudioContext::create()
     }
 
     return result;
-}
-
-
-////////////////////////////////////////////////////////////
-std::vector<PlaybackDeviceHandle> AudioContext::getAvailablePlaybackDeviceHandles()
-{
-    return getAvailableDeviceHandles<PlaybackDeviceHandle> //
-        (base::PassKey<AudioContext>{},
-         m_impl->maContext,
-         "playback",
-         [](ma_context* maContext, ma_device_info** maDeviceInfosPtr, ma_uint32* maDeviceInfoCount)
-         { return ma_context_get_devices(maContext, maDeviceInfosPtr, maDeviceInfoCount, nullptr, nullptr); });
-}
-
-
-////////////////////////////////////////////////////////////
-base::Optional<PlaybackDeviceHandle> AudioContext::getDefaultPlaybackDeviceHandle()
-{
-    for (const PlaybackDeviceHandle& deviceHandle : getAvailablePlaybackDeviceHandles())
-        if (deviceHandle.isDefault())
-            return sf::base::makeOptional(deviceHandle);
-
-    return base::nullOpt;
-}
-
-
-////////////////////////////////////////////////////////////
-std::vector<CaptureDeviceHandle> AudioContext::getAvailableCaptureDeviceHandles()
-{
-    return getAvailableDeviceHandles<CaptureDeviceHandle> //
-        (base::PassKey<AudioContext>{},
-         m_impl->maContext,
-         "capture",
-         [](ma_context* maContext, ma_device_info** maDeviceInfosPtr, ma_uint32* maDeviceInfoCount)
-         { return ma_context_get_devices(maContext, nullptr, nullptr, maDeviceInfosPtr, maDeviceInfoCount); });
-}
-
-
-////////////////////////////////////////////////////////////
-base::Optional<CaptureDeviceHandle> AudioContext::getDefaultCaptureDeviceHandle()
-{
-    for (const CaptureDeviceHandle& deviceHandle : getAvailableCaptureDeviceHandles())
-        if (deviceHandle.isDefault())
-            return sf::base::makeOptional(deviceHandle);
-
-    return base::nullOpt;
 }
 
 

@@ -37,7 +37,7 @@ struct SoundBuffer::Impl
 
     std::vector<std::int16_t> samples;                        //!< Samples buffer
     unsigned int              sampleRate{44100};              //!< Number of samples per second
-    std::vector<SoundChannel> channelMap{SoundChannel::Mono}; //!< The map of position in sample frame to sound channel
+    ChannelMap                channelMap{SoundChannel::Mono}; //!< The map of position in sample frame to sound channel
     Time                      duration;                       //!< Sound duration
     mutable SoundList         sounds;                         //!< List of sounds that are using this buffer
 };
@@ -105,15 +105,16 @@ base::Optional<SoundBuffer> SoundBuffer::loadFromStream(InputStream& stream)
 
 
 ////////////////////////////////////////////////////////////
+template <typename TVector>
 base::Optional<SoundBuffer> SoundBuffer::loadFromSamplesImpl(
-    std::vector<std::int16_t>&&      samples,
-    unsigned int                     channelCount,
-    unsigned int                     sampleRate,
-    const std::vector<SoundChannel>& channelMap)
+    TVector&&         samples,
+    unsigned int      channelCount,
+    unsigned int      sampleRate,
+    const ChannelMap& channelMap)
 {
     base::Optional<SoundBuffer> soundBuffer; // Use a single local variable for NRVO
 
-    if (channelCount == 0 || sampleRate == 0 || channelMap.empty())
+    if (channelCount == 0 || sampleRate == 0 || channelMap.isEmpty())
     {
         priv::err() << "Failed to load sound buffer from samples ("
                     << "array: " << samples.data() << ", "
@@ -125,7 +126,7 @@ base::Optional<SoundBuffer> SoundBuffer::loadFromSamplesImpl(
     }
 
     // Take ownership of the audio samples
-    soundBuffer.emplace(base::PassKey<SoundBuffer>{}, SFML_BASE_MOVE(samples));
+    soundBuffer.emplace(base::PassKey<SoundBuffer>{}, &samples);
 
     // Update the internal buffer with the new samples
     if (!soundBuffer->update(channelCount, sampleRate, channelMap))
@@ -137,11 +138,11 @@ base::Optional<SoundBuffer> SoundBuffer::loadFromSamplesImpl(
 
 ////////////////////////////////////////////////////////////
 base::Optional<SoundBuffer> SoundBuffer::loadFromSamples(
-    const std::int16_t*              samples,
-    std::uint64_t                    sampleCount,
-    unsigned int                     channelCount,
-    unsigned int                     sampleRate,
-    const std::vector<SoundChannel>& channelMap)
+    const std::int16_t* samples,
+    std::uint64_t       sampleCount,
+    unsigned int        channelCount,
+    unsigned int        sampleRate,
+    const ChannelMap&   channelMap)
 {
     return loadFromSamplesImpl(std::vector<std::int16_t>(samples, samples + sampleCount), channelCount, sampleRate, channelMap);
 }
@@ -187,12 +188,12 @@ unsigned int SoundBuffer::getSampleRate() const
 ////////////////////////////////////////////////////////////
 unsigned int SoundBuffer::getChannelCount() const
 {
-    return static_cast<unsigned int>(m_impl->channelMap.size());
+    return static_cast<unsigned int>(m_impl->channelMap.getSize());
 }
 
 
 ////////////////////////////////////////////////////////////
-std::vector<SoundChannel> SoundBuffer::getChannelMap() const
+ChannelMap SoundBuffer::getChannelMap() const
 {
     return m_impl->channelMap;
 }
@@ -221,8 +222,8 @@ SoundBuffer& SoundBuffer::operator=(const SoundBuffer& right)
 
 
 ////////////////////////////////////////////////////////////
-SoundBuffer::SoundBuffer(base::PassKey<SoundBuffer>&&, std::vector<std::int16_t>&& samples) :
-m_impl(SFML_BASE_MOVE(samples))
+SoundBuffer::SoundBuffer(base::PassKey<SoundBuffer>&&, void* samplesVectorPtr) :
+m_impl(SFML_BASE_MOVE(*static_cast<std::vector<std::int16_t>*>(samplesVectorPtr)))
 {
 }
 
@@ -244,10 +245,10 @@ base::Optional<SoundBuffer> SoundBuffer::initialize(InputSoundFile& file)
 
 
 ////////////////////////////////////////////////////////////
-bool SoundBuffer::update(unsigned int channelCount, unsigned int sampleRate, const std::vector<SoundChannel>& channelMap)
+bool SoundBuffer::update(unsigned int channelCount, unsigned int sampleRate, const ChannelMap& channelMap)
 {
     // Check parameters
-    if (!channelCount || !sampleRate || (channelMap.size() != channelCount))
+    if (!channelCount || !sampleRate || (channelMap.getSize() != channelCount))
         return false;
 
     m_impl->sampleRate = sampleRate;

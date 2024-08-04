@@ -1,8 +1,7 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
-
 #pragma once
-
 #include <SFML/Base/IndexSequence.hpp>
+
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
 #if __has_builtin(__integer_pack)

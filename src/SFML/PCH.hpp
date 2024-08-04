@@ -1,6 +1,5 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 #ifndef SFML_ENABLE_PCH
 #error "PCH header included, but `SFML_ENABLE_PCH` was not defined"

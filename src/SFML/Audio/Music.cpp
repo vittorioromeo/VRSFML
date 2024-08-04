@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Audio/ChannelMap.hpp>
 #include <SFML/Audio/InputSoundFile.hpp>
 #include <SFML/Audio/Music.hpp>
 
@@ -14,6 +15,9 @@
 #include <SFML/Base/UniquePtr.hpp>
 
 #include <mutex>
+#include <vector>
+
+#include <cstdint>
 
 
 namespace
@@ -147,7 +151,7 @@ unsigned int Music::getSampleRate() const
 
 
 ////////////////////////////////////////////////////////////
-std::vector<SoundChannel> Music::getChannelMap() const
+ChannelMap Music::getChannelMap() const
 {
     return m_impl->file.getChannelMap();
 }

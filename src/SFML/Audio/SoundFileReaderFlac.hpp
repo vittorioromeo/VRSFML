@@ -1,6 +1,5 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -9,8 +8,6 @@
 
 #include <SFML/Base/InPlacePImpl.hpp>
 #include <SFML/Base/Optional.hpp>
-
-#include <vector>
 
 #include <cstdint>
 
@@ -86,20 +83,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] std::uint64_t read(std::int16_t* samples, std::uint64_t maxCount) override;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Hold the state that is passed to the decoder callbacks
-    ///
-    ////////////////////////////////////////////////////////////
-    struct ClientData
-    {
-        InputStream*              stream{};
-        SoundFileReader::Info     info;
-        std::int16_t*             buffer{};
-        std::uint64_t             remaining{};
-        std::vector<std::int16_t> leftovers;
-        bool                      error{};
-    };
 
 private:
     ////////////////////////////////////////////////////////////

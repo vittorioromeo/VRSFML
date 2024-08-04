@@ -7,6 +7,7 @@
 #include <SFML/Window/GlContext.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/VideoMode.hpp>
+#include <SFML/Window/VideoModeUtils.hpp>
 #include <SFML/Window/Win32/Utils.hpp>
 #include <SFML/Window/Win32/WglContext.hpp>
 #include <SFML/Window/WindowImpl.hpp>
@@ -131,7 +132,7 @@ WglContext::WglContext(GraphicsContext& graphicsContext,
                        WglContext*      shared,
                        ContextSettings  settings,
                        Vector2u         size) :
-WglContext(graphicsContext, id, shared, settings, createSurface(settings, shared, size, VideoMode::getDesktopMode().bitsPerPixel))
+WglContext(graphicsContext, id, shared, settings, createSurface(settings, shared, size, VideoModeUtils::getDesktopMode().bitsPerPixel))
 {
 }
 

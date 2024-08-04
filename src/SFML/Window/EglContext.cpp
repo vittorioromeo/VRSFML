@@ -6,6 +6,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/EglContext.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
+#include <SFML/Window/VideoModeUtils.hpp>
 #include <SFML/Window/WindowImpl.hpp>
 
 #include <SFML/System/Err.hpp>
@@ -115,7 +116,7 @@ GlContext(graphicsContext, id, {})
     m_display = EglContextImpl::getInitializedDisplay();
 
     // Get the best EGL config matching the default video settings
-    m_config = getBestConfig(m_display, VideoMode::getDesktopMode().bitsPerPixel, ContextSettings());
+    m_config = getBestConfig(m_display, VideoModeUtils::getDesktopMode().bitsPerPixel, ContextSettings());
     updateSettings();
 
 #ifndef SFML_SYSTEM_EMSCRIPTEN

@@ -1,6 +1,5 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -12,10 +11,9 @@
 #include <SFML/System/Rect.hpp>
 #include <SFML/System/Vector2.hpp>
 
+#include <SFML/Base/InPlacePImpl.hpp>
 #include <SFML/Base/Optional.hpp>
 #include <SFML/Base/PassKey.hpp>
-
-#include <vector>
 
 #include <cstddef>
 #include <cstdint>
@@ -33,6 +31,36 @@ class Path;
 class SFML_GRAPHICS_API Image
 {
 public:
+    ////////////////////////////////////////////////////////////
+    /// \brief Destructor
+    ///
+    ////////////////////////////////////////////////////////////
+    ~Image();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Copy constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    Image(const Image& rhs);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Copy assignment operator
+    ///
+    ////////////////////////////////////////////////////////////
+    Image& operator=(const Image&);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    Image(Image&&) noexcept;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move assignment operator
+    ///
+    ////////////////////////////////////////////////////////////
+    Image& operator=(Image&&) noexcept;
+
     ////////////////////////////////////////////////////////////
     /// \brief Supported image saving formats
     ///
@@ -121,41 +149,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<Image> loadFromStream(InputStream& stream);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Save the image to a file on disk
-    ///
-    /// The format of the image is automatically deduced from
-    /// the extension. The supported image formats are bmp, png,
-    /// tga and jpg. The destination file is overwritten
-    /// if it already exists. This function fails if the image is empty.
-    ///
-    /// \param filename Path of the file to save
-    ///
-    /// \return True if saving was successful
-    ///
-    /// \see create, loadFromFile, loadFromMemory
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool saveToFile(const Path& filename) const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Save the image to a buffer in memory
-    ///
-    /// The format of the image must be specified.
-    /// The supported image formats are bmp, png, tga and jpg.
-    /// This function fails if the image is empty, or if
-    /// the format was invalid.
-    ///
-    /// \param format Encoding format to use
-    ///
-    /// \return Buffer with encoded data if saving was successful,
-    ///     otherwise base::nullOpt
-    ///
-    /// \see create, loadFromFile, loadFromMemory, saveToFile
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::vector<std::uint8_t> saveToMemory(SaveFormat format) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size (width and height) of the image
@@ -276,14 +269,15 @@ public:
     /// \brief Directly initialize data members
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Image(base::PassKey<Image>&&, Vector2u size, std::vector<std::uint8_t>&& pixels);
+    template <typename... VectorArgs>
+    [[nodiscard]] Image(base::PassKey<Image>&&, Vector2u size, VectorArgs&&... vectorArgs);
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2u                  m_size;   //!< Image size
-    std::vector<std::uint8_t> m_pixels; //!< Pixels of the image
+    struct Impl;
+    base::InPlacePImpl<Impl, 48> m_impl; //!< Implementation details
 };
 
 } // namespace sf
@@ -329,7 +323,7 @@ private:
 /// image.setPixel({0, 0}, color);
 ///
 /// // Save the image to a file
-/// if (!image.saveToFile("result.png"))
+/// if (!sf::ImageUtils::saveToFile(image, "result.png"))
 ///     return -1;
 /// \endcode
 ///

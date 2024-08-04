@@ -5,6 +5,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Network/Http.hpp>
 #include <SFML/Network/IpAddress.hpp>
+#include <SFML/Network/IpAddressUtils.hpp>
 #include <SFML/Network/TcpSocket.hpp>
 
 #include <SFML/System/Err.hpp>
@@ -368,7 +369,7 @@ void Http::setHost(const std::string& host, unsigned short port)
     if (!m_impl->hostName.empty() && (*m_impl->hostName.rbegin() == '/'))
         m_impl->hostName.erase(m_impl->hostName.size() - 1);
 
-    m_impl->host = IpAddress::resolve(m_impl->hostName);
+    m_impl->host = IpAddressUtils::resolve(m_impl->hostName);
 }
 
 

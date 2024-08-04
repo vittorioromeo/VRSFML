@@ -17,6 +17,8 @@ set(SRC
     ${INCROOT}/Glyph.hpp
     ${SRCROOT}/Image.cpp
     ${INCROOT}/Image.hpp
+    ${SRCROOT}/ImageUtils.cpp
+    ${INCROOT}/ImageUtils.hpp
     ${INCROOT}/PrimitiveType.hpp
     ${SRCROOT}/RenderStates.cpp
     ${INCROOT}/RenderStates.hpp

@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Audio/ChannelMap.hpp>
 #include <SFML/Audio/MiniaudioUtils.hpp>
 #include <SFML/Audio/SoundFileReaderWav.hpp>
 
@@ -14,8 +15,6 @@
 #include <SFML/Base/Macros.hpp>
 
 #include <miniaudio.h>
-
-#include <vector>
 
 #include <cstddef>
 
@@ -158,11 +157,11 @@ base::Optional<SoundFileReader::Info> SoundFileReaderWav::open(InputStream& stre
         return base::nullOpt;
     }
 
-    std::vector<SoundChannel> soundChannels;
+    ChannelMap soundChannels;
     soundChannels.reserve(m_impl->channelCount);
 
     for (auto i = 0u; i < m_impl->channelCount; ++i)
-        soundChannels.emplace_back(priv::MiniaudioUtils::miniaudioChannelToSoundChannel(std::uint8_t{channelMap[i]}));
+        soundChannels.append(priv::MiniaudioUtils::miniaudioChannelToSoundChannel(std::uint8_t{channelMap[i]}));
 
     return sf::base::makeOptional<Info>(
         {frameCount * m_impl->channelCount, m_impl->channelCount, sampleRate, SFML_BASE_MOVE(soundChannels)});

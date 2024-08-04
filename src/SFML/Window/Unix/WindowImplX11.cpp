@@ -10,6 +10,7 @@
 #include <SFML/Window/Unix/KeyboardImpl.hpp>
 #include <SFML/Window/Unix/Utils.hpp>
 #include <SFML/Window/Unix/WindowImplX11.hpp>
+#include <SFML/Window/VideoModeUtils.hpp>
 
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Sleep.hpp>
@@ -1269,7 +1270,7 @@ void WindowImplX11::setVideoMode(const VideoMode& mode)
     using namespace WindowImplX11Impl;
 
     // Skip mode switching if the new mode is equal to the desktop mode
-    if (mode == VideoMode::getDesktopMode())
+    if (mode == VideoModeUtils::getDesktopMode())
         return;
 
     // Check if the XRandR extension is present

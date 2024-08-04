@@ -41,7 +41,7 @@ struct Sound::Impl
             priv::err() << "Failed to initialize Sound::Impl";
 
         // Because we are providing a custom data source, we have to provide the channel map ourselves
-        if (buffer == nullptr || buffer->getChannelMap().empty())
+        if (buffer == nullptr || buffer->getChannelMap().isEmpty())
         {
             soundBase->getSound().engineNode.spatializer.pChannelMapIn = nullptr;
             return;

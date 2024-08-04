@@ -1,6 +1,5 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -10,9 +9,8 @@
 #include <SFML/Network/IpAddress.hpp>
 #include <SFML/Network/Socket.hpp>
 
+#include <SFML/Base/InPlacePImpl.hpp>
 #include <SFML/Base/Optional.hpp>
-
-#include <vector>
 
 #include <cstddef>
 
@@ -39,6 +37,24 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] UdpSocket();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Destructor
+    ///
+    ////////////////////////////////////////////////////////////
+    ~UdpSocket() override;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    UdpSocket(UdpSocket&&) noexcept;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move assignment operator
+    ///
+    ////////////////////////////////////////////////////////////
+    UdpSocket& operator=(UdpSocket&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the port to which the socket is bound locally
@@ -177,7 +193,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::vector<std::byte> m_buffer{MaxDatagramSize}; //!< Temporary buffer holding the received data in Receive(Packet)
+    struct Impl;
+    base::InPlacePImpl<Impl, 32> m_impl; //!< Implementation details
 };
 
 } // namespace sf

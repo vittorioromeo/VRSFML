@@ -1,6 +1,5 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -11,12 +10,10 @@
 
 #include <SFML/System/Time.hpp>
 
+#include <SFML/Base/InPlacePImpl.hpp>
 #include <SFML/Base/Optional.hpp>
 
-#include <vector>
-
 #include <cstddef>
-#include <cstdint>
 
 
 namespace sf
@@ -37,6 +34,24 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] TcpSocket();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Destructor
+    ///
+    ////////////////////////////////////////////////////////////
+    ~TcpSocket() override;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    TcpSocket(TcpSocket&&) noexcept;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move assignment operator
+    ///
+    ////////////////////////////////////////////////////////////
+    TcpSocket& operator=(TcpSocket&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the port to which the socket is bound locally
@@ -197,21 +212,10 @@ private:
     friend class TcpListener;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Structure holding the data of a pending packet
-    ///
-    ////////////////////////////////////////////////////////////
-    struct PendingPacket
-    {
-        std::uint32_t          size{};         //!< Data of packet size
-        std::size_t            sizeReceived{}; //!< Number of size bytes received so far
-        std::vector<std::byte> data;           //!< Data of the packet
-    };
-
-    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    PendingPacket          m_pendingPacket;     //!< Temporary data of the packet currently being received
-    std::vector<std::byte> m_blockToSendBuffer; //!< Buffer used to prepare data being sent from the socket
+    struct Impl;
+    base::InPlacePImpl<Impl, 96> m_impl; //!< Implementation details
 };
 
 } // namespace sf

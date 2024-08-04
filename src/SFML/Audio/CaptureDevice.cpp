@@ -4,8 +4,10 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/AudioContext.hpp>
+#include <SFML/Audio/AudioContextUtils.hpp>
 #include <SFML/Audio/CaptureDevice.hpp>
 #include <SFML/Audio/CaptureDeviceHandle.hpp>
+#include <SFML/Audio/ChannelMap.hpp>
 #include <SFML/Audio/MiniaudioUtils.hpp>
 #include <SFML/Audio/SoundChannel.hpp>
 
@@ -92,7 +94,7 @@ struct CaptureDevice::Impl
     ma_uint32                 channelCount{1u};               //!< Number of recording channels
     ma_uint32                 sampleRate{44100u};             //!< Sample rate
     std::vector<std::int16_t> samples;                        //!< Buffer to store captured samples
-    std::vector<SoundChannel> channelMap{SoundChannel::Mono}; //!< The map of position in sample frame to sound channel
+    ChannelMap                channelMap{SoundChannel::Mono}; //!< The map of position in sample frame to sound channel
 
     SoundRecorder*     soundRecorder{nullptr}; //!< Used in the miniaudio device callback
     ProcessSamplesFunc processSamplesFunc{};   //!< Used in the miniaudio device callback
@@ -104,7 +106,7 @@ struct CaptureDevice::Impl
 ////////////////////////////////////////////////////////////
 base::Optional<CaptureDevice> CaptureDevice::createDefault(AudioContext& audioContext)
 {
-    base::Optional defaultCaptureDeviceHandle = audioContext.getDefaultCaptureDeviceHandle();
+    base::Optional defaultCaptureDeviceHandle = AudioContextUtils::getDefaultCaptureDeviceHandle(audioContext);
 
     if (!defaultCaptureDeviceHandle.hasValue())
         return base::nullOpt;
@@ -262,7 +264,7 @@ unsigned int CaptureDevice::getChannelCount() const
 
 
 ////////////////////////////////////////////////////////////
-const std::vector<SoundChannel>& CaptureDevice::getChannelMap() const
+const ChannelMap& CaptureDevice::getChannelMap() const
 {
     return m_impl->channelMap;
 }

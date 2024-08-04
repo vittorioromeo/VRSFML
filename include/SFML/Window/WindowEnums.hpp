@@ -1,8 +1,7 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
-
 #pragma once
-
 #include <SFML/Base/EnumClassBitwiseOps.hpp>
+
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 #include <cstdint>
 

@@ -5,6 +5,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/InputImpl.hpp>
 #include <SFML/Window/VideoMode.hpp>
+#include <SFML/Window/VideoModeUtils.hpp>
 #include <SFML/Window/Window.hpp>
 #include <SFML/Window/macOS/AutoreleasePoolWrapper.hpp>
 #include <SFML/Window/macOS/HIDInputManager.hpp>
@@ -58,7 +59,7 @@ SFOpenGLView* getSFOpenGLViewFromSFMLWindow(const sf::WindowBase& window)
             }
             else
             {
-                sf::priv::err() << "The content view is not a valid SFOpenGLView" ;
+                sf::priv::err() << "The content view is not a valid SFOpenGLView";
 
                 view = nil;
             }
@@ -79,13 +80,13 @@ SFOpenGLView* getSFOpenGLViewFromSFMLWindow(const sf::WindowBase& window)
 
         // No matching subview ?
         if (view == nil)
-            sf::priv::err() << "Cannot find a valid SFOpenGLView subview." ;
+            sf::priv::err() << "Cannot find a valid SFOpenGLView subview.";
     }
     else
     {
         if (nsHandle != nil)
             sf::priv::err() << "The system handle is neither a <NSWindow*> nor <NSView*>"
-                            << "object. This shouldn't happen." ;
+                            << "object. This shouldn't happen.";
         // Else: this probably means the SFML window was previously closed.
     }
 
@@ -154,7 +155,7 @@ Vector2i getMousePosition()
     const AutoreleasePool pool;
     // Reverse Y axis to match SFML coord.
     NSPoint pos = [NSEvent mouseLocation];
-    pos.y       = sf::VideoMode::getDesktopMode().size.y - pos.y;
+    pos.y       = sf::VideoModeUtils::getDesktopMode().size.y - pos.y;
 
     const int scale = static_cast<int>([[NSScreen mainScreen] backingScaleFactor]);
     return Vector2i(static_cast<int>(pos.x), static_cast<int>(pos.y)) * scale;

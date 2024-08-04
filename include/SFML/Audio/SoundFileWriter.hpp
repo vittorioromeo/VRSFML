@@ -1,15 +1,13 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
+#include <SFML/Audio/ChannelMap.hpp>
 #include <SFML/Audio/SoundChannel.hpp>
-
-#include <vector>
 
 #include <cstdint>
 
@@ -49,10 +47,10 @@ public:
     /// \return True if the file was successfully opened
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual bool open(const Path&                      filename,
-                                    unsigned int                     sampleRate,
-                                    unsigned int                     channelCount,
-                                    const std::vector<SoundChannel>& channelMap) = 0;
+    [[nodiscard]] virtual bool open(const Path&       filename,
+                                    unsigned int      sampleRate,
+                                    unsigned int      channelCount,
+                                    const ChannelMap& channelMap) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Write audio samples to the open file
@@ -94,7 +92,7 @@ public:
 ///         // return true if the writer can handle the format
 ///     }
 ///
-///     [[nodiscard]] bool open(const Path& filename, unsigned int sampleRate, unsigned int channelCount, const std::vector<SoundChannel>& channelMap) override
+///     [[nodiscard]] bool open(const Path& filename, unsigned int sampleRate, unsigned int channelCount, const ChannelMap& channelMap) override
 ///     {
 ///         // open the file 'filename' for writing,
 ///         // write the given sample rate and channel count to the file header

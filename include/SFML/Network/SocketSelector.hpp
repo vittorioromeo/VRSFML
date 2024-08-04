@@ -1,6 +1,5 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -9,7 +8,7 @@
 
 #include <SFML/System/Time.hpp>
 
-#include <SFML/Base/UniquePtr.hpp>
+#include <SFML/Base/InPlacePImpl.hpp>
 
 
 namespace sf
@@ -38,20 +37,14 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Copy constructor
     ///
-    /// \param copy Instance to copy
-    ///
     ////////////////////////////////////////////////////////////
-    SocketSelector(const SocketSelector& copy);
+    SocketSelector(const SocketSelector&);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Overload of assignment operator
-    ///
-    /// \param right Instance to assign
-    ///
-    /// \return Reference to self
+    /// \brief Copy assignment
     ///
     ////////////////////////////////////////////////////////////
-    SocketSelector& operator=(const SocketSelector& right);
+    SocketSelector& operator=(const SocketSelector&);
 
     ////////////////////////////////////////////////////////////
     /// \brief Move constructor
@@ -143,12 +136,11 @@ public:
     [[nodiscard]] bool isReady(Socket& socket) const;
 
 private:
-    struct SocketSelectorImpl;
-
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    base::UniquePtr<SocketSelectorImpl> m_impl; //!< Opaque pointer to the implementation (which requires OS-specific types)
+    struct Impl;
+    base::InPlacePImpl<Impl, 1536> m_impl; //!< Implementation details
 };
 
 } // namespace sf

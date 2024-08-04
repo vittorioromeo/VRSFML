@@ -1,4 +1,5 @@
 #include <SFML/Window/VideoMode.hpp>
+#include <SFML/Window/VideoModeUtils.hpp>
 
 #include <Doctest.hpp>
 
@@ -45,7 +46,7 @@ TEST_CASE("[Window] sf::VideoMode" * doctest::skip(skipDisplayTests))
 
     SECTION("getFullscreenModes()")
     {
-        const auto& modes = sf::VideoMode::getFullscreenModes();
+        const auto& modes = sf::VideoModeUtils::getFullscreenModes();
         CHECK(std::is_sorted(modes.begin(), modes.end(), [](const auto& lhs, const auto& rhs) { return lhs > rhs; }));
     }
 

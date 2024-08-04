@@ -1,6 +1,5 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -8,8 +7,6 @@
 #include <SFML/Audio/SoundFileWriter.hpp>
 
 #include <SFML/Base/InPlacePImpl.hpp>
-
-#include <vector>
 
 #include <cstdint>
 
@@ -62,10 +59,10 @@ public:
     /// \return True if the file was successfully opened
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool open(const Path&                      filename,
-                            unsigned int                     sampleRate,
-                            unsigned int                     channelCount,
-                            const std::vector<SoundChannel>& channelMap) override;
+    [[nodiscard]] bool open(const Path&       filename,
+                            unsigned int      sampleRate,
+                            unsigned int      channelCount,
+                            const ChannelMap& channelMap) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Write audio samples to the open file

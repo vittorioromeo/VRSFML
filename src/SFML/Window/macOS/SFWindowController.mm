@@ -4,6 +4,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/VideoMode.hpp>
+#include <SFML/Window/VideoModeUtils.hpp>
 #include <SFML/Window/WindowEnums.hpp>
 #include <SFML/Window/WindowHandle.hpp>
 #import <SFML/Window/macOS/NSImage+raw.h>
@@ -86,7 +87,7 @@
 
         if (m_window == nil)
         {
-            sf::priv::err() << "No window was given to -[SFWindowController initWithWindow:]." ;
+            sf::priv::err() << "No window was given to -[SFWindowController initWithWindow:].";
             return self;
         }
 
@@ -96,7 +97,7 @@
         if (m_oglView == nil)
         {
             sf::priv::err() << "Could not create an instance of NSOpenGLView "
-                            << "in -[SFWindowController initWithWindow:]." ;
+                            << "in -[SFWindowController initWithWindow:].";
             return self;
         }
 
@@ -120,7 +121,7 @@
          * See https://lists.apple.com/archives/cocoa-dev/2011/Feb/msg00460.html
          * for more information.
          */
-        sf::priv::err() << "Cannot create a window from a worker thread. (OS X limitation)" ;
+        sf::priv::err() << "Cannot create a window from a worker thread. (OS X limitation)";
 
         return nil;
     }
@@ -149,7 +150,7 @@
 - (void)setupFullscreenViewWithMode:(const sf::VideoMode&)mode
 {
     // Create a screen-sized window on the main display
-    sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
+    sf::VideoMode desktop = sf::VideoModeUtils::getDesktopMode();
     sf::priv::scaleInXY(desktop.size, nil);
     NSRect windowRect = NSMakeRect(0, 0, desktop.size.x, desktop.size.y);
     m_window          = [[SFWindow alloc]
@@ -161,7 +162,7 @@
     if (m_window == nil)
     {
         sf::priv::err() << "Could not create an instance of NSWindow "
-                        << "in -[SFWindowController setupFullscreenViewWithMode:]." ;
+                        << "in -[SFWindowController setupFullscreenViewWithMode:].";
         return;
     }
 
@@ -185,7 +186,7 @@
     if (masterView == nil)
     {
         sf::priv::err() << "Could not create an instance of SFBlackView "
-                        << "in -[SFWindowController setupFullscreenViewWithMode:]." ;
+                        << "in -[SFWindowController setupFullscreenViewWithMode:].";
         return;
     }
 
@@ -201,7 +202,7 @@
     if (m_oglView == nil)
     {
         sf::priv::err() << "Could not create an instance of NSOpenGLView "
-                        << "in -[SFWindowController setupFullscreenViewWithMode:]." ;
+                        << "in -[SFWindowController setupFullscreenViewWithMode:].";
         return;
     }
 
@@ -247,7 +248,7 @@
     if (m_window == nil)
     {
         sf::priv::err() << "Could not create an instance of NSWindow "
-                        << "in -[SFWindowController setupWindowWithMode:andStyle:]." ;
+                        << "in -[SFWindowController setupWindowWithMode:andStyle:].";
 
         return;
     }
@@ -258,7 +259,7 @@
     if (m_oglView == nil)
     {
         sf::priv::err() << "Could not create an instance of NSOpenGLView "
-                        << "in -[SFWindowController setupWindowWithMode:andStyle:]." ;
+                        << "in -[SFWindowController setupWindowWithMode:andStyle:].";
 
         return;
     }
@@ -409,7 +410,7 @@
     {
         // Special case when fullscreen: only resize the opengl view
         // and make sure the requested size is not bigger than the window.
-        sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
+        sf::VideoMode desktop = sf::VideoModeUtils::getDesktopMode();
         sf::priv::scaleInXY(desktop.size, nil);
 
         size.x = std::min(size.x, desktop.size.x);
@@ -551,7 +552,7 @@
          * See https://lists.apple.com/archives/cocoa-dev/2011/Feb/msg00460.html
          * for more information.
          */
-        sf::priv::err() << "Cannot fetch event from a worker thread. (OS X restriction)" ;
+        sf::priv::err() << "Cannot fetch event from a worker thread. (OS X restriction)";
 
         return;
     }

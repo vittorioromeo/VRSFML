@@ -15,6 +15,7 @@
 
 #include <algorithm>
 #include <fstream>
+#include <vector>
 
 #include <cstddef>
 #include <cstdint>
@@ -92,10 +93,7 @@ SoundFileWriterWav::~SoundFileWriterWav()
 
 
 ////////////////////////////////////////////////////////////
-bool SoundFileWriterWav::open(const Path&                      filename,
-                              unsigned int                     sampleRate,
-                              unsigned int                     channelCount,
-                              const std::vector<SoundChannel>& channelMap)
+bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, unsigned int channelCount, const ChannelMap& channelMap)
 {
     auto channelMask = 0u;
 

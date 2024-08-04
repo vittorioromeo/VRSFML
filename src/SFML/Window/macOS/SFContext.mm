@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Window/VideoModeUtils.hpp>
 #include <SFML/Window/macOS/AutoreleasePoolWrapper.hpp>
 #include <SFML/Window/macOS/SFContext.hpp>
 #include <SFML/Window/macOS/WindowImplCocoa.hpp>
@@ -22,7 +23,7 @@ SFContext::SFContext(SFContext* shared)
     const AutoreleasePool pool;
     // Create the context
     createContext(shared,
-                  VideoMode::getDesktopMode().bitsPerPixel,
+                  VideoModeUtils::getDesktopMode().bitsPerPixel,
                   ContextSettings{0 /* depthBits */, 0 /* stencilBits */, 0 /* antialiasingLevel */});
 }
 
@@ -48,7 +49,7 @@ SFContext::SFContext(SFContext* shared, const ContextSettings& settings, Vector2
     WindowImplCocoa::setUpProcess();
 
     // Create the context.
-    createContext(shared, VideoMode::getDesktopMode().bitsPerPixel, settings);
+    createContext(shared, VideoModeUtils::getDesktopMode().bitsPerPixel, settings);
 
     // Create a dummy window/view pair (hidden) and assign it our context.
     m_window = [[NSWindow alloc]
@@ -205,7 +206,7 @@ void SFContext::createContext(SFContext* shared, unsigned int bitsPerPixel, cons
     {
         if (!(m_settings.attributeFlags & ContextSettings::Attribute::Core))
         {
-            priv::err() << "Warning. Compatibility profile not supported on this platform." ;
+            priv::err() << "Warning. Compatibility profile not supported on this platform.";
             m_settings.attributeFlags |= ContextSettings::Attribute::Core;
         }
         m_settings.majorVersion = 3;
@@ -216,7 +217,7 @@ void SFContext::createContext(SFContext* shared, unsigned int bitsPerPixel, cons
 
     if (!!(m_settings.attributeFlags & ContextSettings::Attribute::Debug))
     {
-        priv::err() << "Warning. OpenGL debugging not supported on this platform." ;
+        priv::err() << "Warning. OpenGL debugging not supported on this platform.";
         m_settings.attributeFlags &= ~static_cast<unsigned int>(ContextSettings::Attribute::Debug);
     }
 
@@ -230,7 +231,7 @@ void SFContext::createContext(SFContext* shared, unsigned int bitsPerPixel, cons
 
     if (pixFmt == nil)
     {
-        priv::err() << "Error. Unable to find a suitable pixel format." ;
+        priv::err() << "Error. Unable to find a suitable pixel format.";
         return;
     }
 
@@ -243,7 +244,7 @@ void SFContext::createContext(SFContext* shared, unsigned int bitsPerPixel, cons
 
         if (sharedContext == [NSOpenGLContext currentContext])
         {
-            priv::err() << "Failed to deactivate shared context before sharing" ;
+            priv::err() << "Failed to deactivate shared context before sharing";
             return;
         }
     }
@@ -253,13 +254,13 @@ void SFContext::createContext(SFContext* shared, unsigned int bitsPerPixel, cons
 
     if (m_context == nil)
     {
-        priv::err() << "Error. Unable to create the context. Retrying without shared context." ;
+        priv::err() << "Error. Unable to create the context. Retrying without shared context.";
         m_context = [[NSOpenGLContext alloc] initWithFormat:pixFmt shareContext:nil];
 
         if (m_context == nil)
-            priv::err() << "Error. Unable to create the context." ;
+            priv::err() << "Error. Unable to create the context.";
         else
-            priv::err() << "Warning. New context created without shared context." ;
+            priv::err() << "Warning. New context created without shared context.";
     }
 
     // Free up.
