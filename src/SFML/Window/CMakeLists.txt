@@ -57,8 +57,8 @@ set(SRC
     ${INCROOT}/WindowHandle.hpp
     ${SRCROOT}/WindowImpl.cpp
     ${SRCROOT}/WindowImpl.hpp
-    ${SRCROOT}/GraphicsContext.cpp
-    ${INCROOT}/GraphicsContext.hpp
+    ${SRCROOT}/WindowContext.cpp
+    ${INCROOT}/WindowContext.hpp
     ${SRCROOT}/GLExtensions.hpp
     ${SRCROOT}/GLExtensions.cpp
     ${SRCROOT}/Stub/StubClipboardImpl.hpp

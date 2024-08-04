@@ -9,6 +9,8 @@
 
 #include <SFML/Base/Optional.hpp>
 
+#include <string>
+
 #include <cstring>
 
 

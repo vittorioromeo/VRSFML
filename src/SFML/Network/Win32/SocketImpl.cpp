@@ -60,6 +60,43 @@ AddrLength SockAddrIn::size() const
 
 
 ////////////////////////////////////////////////////////////
+struct FDSet::Impl
+{
+    fd_set set{};
+};
+
+
+////////////////////////////////////////////////////////////
+FDSet::FDSet() = default;
+
+
+////////////////////////////////////////////////////////////
+FDSet::~FDSet() = default;
+
+
+////////////////////////////////////////////////////////////
+FDSet::FDSet(const FDSet&) = default;
+
+
+////////////////////////////////////////////////////////////
+FDSet& FDSet::operator=(const FDSet&) = default;
+
+
+////////////////////////////////////////////////////////////
+void* FDSet::asPtr()
+{
+    return &m_impl->set;
+}
+
+
+////////////////////////////////////////////////////////////
+const void* FDSet::asPtr() const
+{
+    return &m_impl->set;
+}
+
+
+////////////////////////////////////////////////////////////
 SockAddrIn SocketImpl::createAddress(std::uint32_t address, unsigned short port)
 {
     auto addr            = sockaddr_in();
@@ -300,30 +337,52 @@ base::Optional<unsigned long> SocketImpl::convertToHostname(const char* address)
 
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
-///
-////////////////////////////////////////////////////////////
-bool SocketImpl::fdIsSet(SocketHandle handle, const void* fdSet)
+bool SocketImpl::fdIsSet(SocketHandle handle, const FDSet& fdSet)
 {
-    return FD_ISSET(handle, static_cast<const fd_set*>(fdSet));
+    return FD_ISSET(handle, static_cast<const fd_set*>(fdSet.asPtr()));
 }
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
-///
-////////////////////////////////////////////////////////////
-void SocketImpl::fdClear(SocketHandle handle, void* fdSet)
+void SocketImpl::fdClear(SocketHandle handle, FDSet& fdSet)
 {
-    FD_CLR(handle, static_cast<fd_set*>(fdSet));
+    FD_CLR(handle, static_cast<fd_set*>(fdSet.asPtr()));
 }
 
+
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
-///
-////////////////////////////////////////////////////////////
-void SocketImpl::fdZero(void* fdSet)
+void SocketImpl::fdZero(FDSet& fdSet)
 {
-    FD_ZERO(static_cast<fd_set*>(fdSet));
+    FD_ZERO(static_cast<fd_set*>(fdSet.asPtr()));
+}
+
+
+////////////////////////////////////////////////////////////
+int SocketImpl::getFDSetSize()
+{
+    return FD_SETSIZE;
+}
+
+
+////////////////////////////////////////////////////////////
+void SocketImpl::fdSet(SocketHandle handle, FDSet& fdSet)
+{
+    FD_SET(handle, static_cast<fd_set*>(fdSet.asPtr()));
+}
+
+
+////////////////////////////////////////////////////////////
+int SocketImpl::select(int nfds, FDSet* readfds, FDSet* writefds, FDSet* exceptfds, long long timeoutUs)
+{
+    // Setup the timeout
+    timeval time{};
+    time.tv_sec  = static_cast<long>(timeoutUs / 1000000);
+    time.tv_usec = static_cast<int>(timeoutUs % 1000000);
+
+    return ::select(nfds,
+                    static_cast<fd_set*>(readfds->asPtr()),
+                    static_cast<fd_set*>(writefds->asPtr()),
+                    static_cast<fd_set*>(exceptfds->asPtr()),
+                    timeoutUs == 0ll ? nullptr : &time);
 }
 
 

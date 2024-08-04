@@ -34,7 +34,7 @@ public:
     /// \param shared Context to share the new one with (can be a null pointer)
     ///
     ////////////////////////////////////////////////////////////
-    EglContext(GraphicsContext& graphicsContext, std::uint64_t id, EglContext* shared);
+    EglContext(WindowContext& windowContext, std::uint64_t id, EglContext* shared);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context attached to a window
@@ -45,7 +45,7 @@ public:
     /// \param bitsPerPixel Pixel depth, in bits per pixel
     ///
     ////////////////////////////////////////////////////////////
-    EglContext(GraphicsContext&       graphicsContext,
+    EglContext(WindowContext&         windowContext,
                std::uint64_t          id,
                EglContext*            shared,
                const ContextSettings& settings,
@@ -61,11 +61,7 @@ public:
     /// \param size     Back buffer width and height, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    EglContext(GraphicsContext&       graphicsContext,
-               std::uint64_t          id,
-               EglContext*            shared,
-               const ContextSettings& settings,
-               Vector2u               size);
+    EglContext(WindowContext& windowContext, std::uint64_t id, EglContext* shared, const ContextSettings& settings, Vector2u size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor

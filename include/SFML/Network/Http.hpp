@@ -10,7 +10,11 @@
 
 #include <SFML/Base/InPlacePImpl.hpp>
 
+#if __has_include(<bits/stringfwd.h>)
+#include <bits/stringfwd.h>
+#else
 #include <string>
+#endif
 
 
 namespace sf
@@ -53,7 +57,10 @@ public:
         /// \param body   Content of the request's body
         ///
         ////////////////////////////////////////////////////////////
-        [[nodiscard]] Request(const std::string& uri = "/", Method method = Method::Get, const std::string& body = "");
+        [[nodiscard]] Request(const std::string& uri, Method method, const std::string& body);
+        [[nodiscard]] Request(const std::string& uri, Method method);
+        [[nodiscard]] Request(const std::string& uri);
+        [[nodiscard]] Request();
 
         ////////////////////////////////////////////////////////////
         /// \brief Destructor

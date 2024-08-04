@@ -502,7 +502,7 @@ public:
 
 protected:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
+    /// \brief Constructor from graphics context
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit RenderTarget(GraphicsContext& graphicsContext);
@@ -517,7 +517,7 @@ protected:
     void initialize();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the graphics context (used by derived types)
+    /// \brief Get the window context (used by derived types)
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] GraphicsContext& getGraphicsContext();

@@ -14,7 +14,24 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Config.hpp>
 
-#include <SFML/System/Win32/WindowsHeader.hpp>
+#ifndef WINAPI
+#if defined(_ARM_)
+#define WINAPI
+#else
+#define WINAPI __stdcall
+#endif
+#endif
+
+#define DECLARE_HANDLE(name) \
+    struct name##__          \
+    {                        \
+        int unused;          \
+    };                       \
+    typedef struct name##__* name
+
+DECLARE_HANDLE(HINSTANCE);
+using LPSTR = char*;
+using INT   = int;
 
 #include <cstdlib> // for `__argc` and `__argv`
 

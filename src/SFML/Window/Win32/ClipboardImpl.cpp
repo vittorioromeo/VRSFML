@@ -10,6 +10,8 @@
 #include <SFML/System/String.hpp>
 #include <SFML/System/Win32/WindowsHeader.hpp>
 
+#include <string>
+
 #include <cstring>
 
 

@@ -13,6 +13,8 @@ set(SRC
     ${INCROOT}/Font.hpp
     ${SRCROOT}/Glsl.cpp
     ${INCROOT}/Glsl.hpp
+    ${SRCROOT}/GraphicsContext.cpp
+    ${INCROOT}/GraphicsContext.hpp
     ${INCROOT}/Glsl.inl
     ${INCROOT}/Glyph.hpp
     ${SRCROOT}/Image.cpp

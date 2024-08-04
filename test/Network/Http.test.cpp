@@ -2,6 +2,7 @@
 
 #include <Doctest.hpp>
 
+#include <string>
 #include <type_traits>
 
 TEST_CASE("[Network] sf::Http")

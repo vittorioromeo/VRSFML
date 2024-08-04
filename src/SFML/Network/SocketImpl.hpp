@@ -93,6 +93,26 @@ public:
 };
 
 ////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
+class FDSet
+{
+public:
+    FDSet();
+    ~FDSet();
+
+    FDSet(const FDSet&);
+    FDSet& operator=(const FDSet&);
+
+    [[nodiscard]] void*       asPtr();
+    [[nodiscard]] const void* asPtr() const;
+
+    struct Impl;
+    base::InPlacePImpl<Impl, 768> m_impl;
+};
+
+////////////////////////////////////////////////////////////
 /// \brief Helper class implementing all the non-portable
 ///        socket stuff
 ///
@@ -313,19 +333,37 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static bool fdIsSet(SocketHandle handle, const void* fdSet);
+    [[nodiscard]] static bool fdIsSet(SocketHandle handle, const FDSet& fdSet);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static void fdClear(SocketHandle handle, void* fdSet);
+    [[nodiscard]] static void fdClear(SocketHandle handle, FDSet& fdSet);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static void fdZero(void* fdSet);
+    [[nodiscard]] static void fdZero(FDSet& fdSet);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static int getFDSetSize();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static void fdSet(SocketHandle handle, FDSet& fdSet);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static int select(int nfds, FDSet* readfds, FDSet* writefds, FDSet* exceptfds, long long timeoutUs);
 };
 
 } // namespace sf::priv

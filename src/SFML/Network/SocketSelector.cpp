@@ -14,18 +14,6 @@
 #endif
 
 
-// -------------
-#if defined(SFML_SYSTEM_WINDOWS)
-
-// TODO P1: these ones can be removed as well with more PImpl
-#include <SFML/System/Win32/WindowsHeader.hpp>
-
-#include <winsock2.h>
-#include <ws2tcpip.h>
-
-#endif
-// -------------
-
 namespace sf
 {
 ////////////////////////////////////////////////////////////
@@ -35,10 +23,10 @@ SocketSelector::~SocketSelector() = default;
 ////////////////////////////////////////////////////////////
 struct SocketSelector::Impl
 {
-    fd_set allSockets{};   //!< Set containing all the sockets handles
-    fd_set socketsReady{}; //!< Set containing handles of the sockets that are ready
-    int    maxSocket{};    //!< Maximum socket handle
-    int    socketCount{};  //!< Number of socket handles
+    priv::FDSet allSockets;    //!< Set containing all the sockets handles
+    priv::FDSet socketsReady;  //!< Set containing handles of the sockets that are ready
+    int         maxSocket{};   //!< Maximum socket handle
+    int         socketCount{}; //!< Number of socket handles
 };
 
 
@@ -74,7 +62,7 @@ void SocketSelector::add(Socket& socket)
 
 #if defined(SFML_SYSTEM_WINDOWS)
 
-        if (m_impl->socketCount >= FD_SETSIZE)
+        if (m_impl->socketCount >= priv::SocketImpl::getFDSetSize())
         {
             priv::err() << "The socket can't be added to the selector because the "
                         << "selector is full. This is a limitation of your operating "
@@ -82,14 +70,14 @@ void SocketSelector::add(Socket& socket)
             return;
         }
 
-        if (priv::SocketImpl::fdIsSet(handle, &m_impl->allSockets))
+        if (priv::SocketImpl::fdIsSet(handle, m_impl->allSockets))
             return;
 
         ++m_impl->socketCount;
 
 #else
 
-        if (handle >= FD_SETSIZE)
+        if (handle >= priv::SocketImpl::getFDSetSize())
         {
             priv::err() << "The socket can't be added to the selector because its "
                         << "ID is too high. This is a limitation of your operating "
@@ -103,7 +91,7 @@ void SocketSelector::add(Socket& socket)
 
 #endif
 
-        FD_SET(handle, &m_impl->allSockets);
+        priv::SocketImpl::fdSet(handle, m_impl->allSockets);
     }
 }
 
@@ -117,20 +105,20 @@ void SocketSelector::remove(Socket& socket)
 
 #if defined(SFML_SYSTEM_WINDOWS)
 
-        if (!priv::SocketImpl::fdIsSet(handle, &m_impl->allSockets))
+        if (!priv::SocketImpl::fdIsSet(handle, m_impl->allSockets))
             return;
 
         --m_impl->socketCount;
 
 #else
 
-        if (handle >= FD_SETSIZE)
+        if (handle >= priv::SocketImpl::getFDSetSize())
             return;
 
 #endif
 
-        priv::SocketImpl::fdClear(handle, &m_impl->allSockets);
-        priv::SocketImpl::fdClear(handle, &m_impl->socketsReady);
+        priv::SocketImpl::fdClear(handle, m_impl->allSockets);
+        priv::SocketImpl::fdClear(handle, m_impl->socketsReady);
     }
 }
 
@@ -138,8 +126,8 @@ void SocketSelector::remove(Socket& socket)
 ////////////////////////////////////////////////////////////
 void SocketSelector::clear()
 {
-    priv::SocketImpl::fdZero(&m_impl->allSockets);
-    priv::SocketImpl::fdZero(&m_impl->socketsReady);
+    priv::SocketImpl::fdZero(m_impl->allSockets);
+    priv::SocketImpl::fdZero(m_impl->socketsReady);
 
     m_impl->maxSocket   = 0;
     m_impl->socketCount = 0;
@@ -152,14 +140,13 @@ bool SocketSelector::wait(Time timeout)
     // Initialize the set that will contain the sockets that are ready
     m_impl->socketsReady = m_impl->allSockets;
 
-    // Setup the timeout
-    timeval time{};
-    time.tv_sec  = static_cast<long>(timeout.asMicroseconds() / 1000000);
-    time.tv_usec = static_cast<int>(timeout.asMicroseconds() % 1000000);
-
     // Wait until one of the sockets is ready for reading, or timeout is reached
     // The first parameter is ignored on Windows
-    const int count = select(m_impl->maxSocket + 1, &m_impl->socketsReady, nullptr, nullptr, timeout != Time::Zero ? &time : nullptr);
+    const int count = priv::SocketImpl::select(m_impl->maxSocket + 1,
+                                               &m_impl->socketsReady,
+                                               nullptr,
+                                               nullptr,
+                                               timeout.asMicroseconds());
 
     return count > 0;
 }
@@ -174,12 +161,12 @@ bool SocketSelector::isReady(Socket& socket) const
 
 #if !defined(SFML_SYSTEM_WINDOWS)
 
-        if (handle >= FD_SETSIZE)
+        if (handle >= priv::SocketImpl::getFDSetSize())
             return false;
 
 #endif
 
-        return priv::SocketImpl::fdIsSet(handle, &m_impl->socketsReady) != 0;
+        return priv::SocketImpl::fdIsSet(handle, m_impl->socketsReady) != 0;
     }
 
     return false;

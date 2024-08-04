@@ -595,7 +595,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    GraphicsContext* m_graphicsContext; //!< The graphics context
+    GraphicsContext* m_graphicsContext; //!< The window context
     Vector2u         m_size;            //!< Public texture size
     Vector2u         m_actualSize;      //!< Actual texture size (can be greater than public size because of padding)
     unsigned int     m_texture{};       //!< Internal texture identifier

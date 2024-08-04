@@ -1,4 +1,5 @@
 #include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/GraphicsContext.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/Vertex.hpp>
 
@@ -9,9 +10,9 @@
 #include <SFML/Network/Packet.hpp>
 #include <SFML/Network/UdpSocket.hpp>
 
-#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/Window.hpp>
+#include <SFML/Window/WindowContext.hpp>
 
 #include <SFML/System/Rect.hpp>
 #include <SFML/System/String.hpp>

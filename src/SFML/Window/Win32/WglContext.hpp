@@ -13,7 +13,7 @@
 
 namespace sf
 {
-class GraphicsContext;
+class WindowContext;
 struct ContextSettings;
 
 namespace priv
@@ -33,7 +33,7 @@ public:
     /// \param shared Context to share the new one with (can be a null pointer)
     ///
     ////////////////////////////////////////////////////////////
-    WglContext(GraphicsContext& graphicsContext, std::uint64_t id, WglContext* shared);
+    WglContext(WindowContext& windowContext, std::uint64_t id, WglContext* shared);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context attached to a window
@@ -44,7 +44,7 @@ public:
     /// \param bitsPerPixel Pixel depth, in bits per pixel
     ///
     ////////////////////////////////////////////////////////////
-    WglContext(GraphicsContext&  graphicsContext,
+    WglContext(WindowContext&    windowContext,
                std::uint64_t     id,
                WglContext*       shared,
                ContextSettings   settings,
@@ -59,7 +59,7 @@ public:
     /// \param size     Back buffer width and height, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    WglContext(GraphicsContext& graphicsContext, std::uint64_t id, WglContext* shared, ContextSettings settings, Vector2u size);
+    WglContext(WindowContext& windowContext, std::uint64_t id, WglContext* shared, ContextSettings settings, Vector2u size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -142,7 +142,7 @@ private:
     /// \param settings Creation parameters
     ///
     ////////////////////////////////////////////////////////////
-    explicit WglContext(GraphicsContext&   graphicsContext,
+    explicit WglContext(WindowContext&     windowContext,
                         std::uint64_t      id,
                         WglContext*        shared,
                         ContextSettings&   settings,

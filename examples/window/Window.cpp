@@ -4,10 +4,10 @@
 #include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/EventUtils.hpp>
-#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/Window.hpp>
+#include <SFML/Window/WindowContext.hpp>
 #include <SFML/Window/WindowEnums.hpp>
 
 #include <SFML/System/Clock.hpp>
@@ -32,15 +32,15 @@
 ////////////////////////////////////////////////////////////
 int main()
 {
-    // Create the graphics context
-    sf::GraphicsContext graphicsContext;
+    // Create the window context
+    sf::WindowContext windowContext;
 
     // Request a 24-bits depth buffer when creating the window
     sf::ContextSettings contextSettings;
     contextSettings.depthBits = 24;
 
     // Create the main window (becomes active OpenGL context on construction)
-    sf::Window window(graphicsContext,
+    sf::Window window(windowContext,
                       sf::VideoMode({640, 480}),
                       "SFML window with OpenGL",
                       sf::Style::Default,
@@ -48,7 +48,7 @@ int main()
                       contextSettings);
 
     // Load OpenGL or OpenGL ES entry points using glad
-    graphicsContext.loadGLEntryPointsViaGLAD();
+    windowContext.loadGLEntryPointsViaGLAD();
 
     // Set the color and depth clear values
 #ifdef SFML_OPENGL_ES

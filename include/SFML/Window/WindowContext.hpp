@@ -21,15 +21,11 @@
 namespace sf::priv
 {
 class GlContext;
-class RenderTextureImplDefault;
-class RenderTextureImplFBO;
 class WindowImpl;
 } // namespace sf::priv
 
 namespace sf
 {
-class RenderTarget; // TODO P1: needed?
-class Shader;       // TODO P1: needed?
 class Window;
 struct ContextSettings;
 using GlFunctionPointer = void (*)();
@@ -41,20 +37,20 @@ struct TestContext;
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-class [[nodiscard]] GraphicsContext
+class [[nodiscard]] WindowContext
 {
 public:
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit GraphicsContext();
+    [[nodiscard]] explicit WindowContext();
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    ~GraphicsContext();
+    ~WindowContext();
 
     ////////////////////////////////////////////////////////////
     /// \brief Check whether a given OpenGL extension is available
@@ -115,17 +111,15 @@ public:
     using GLLoadFn = GlFunctionPointer (*)(const char*);
     [[nodiscard]] GLLoadFn getGLLoadFn() const;
 
-private:
+protected:
     ////////////////////////////////////////////////////////////
     /// Friend declarations
     ///
     ////////////////////////////////////////////////////////////
     friend priv::GlContext;
     friend Window;
-    friend priv::RenderTextureImplDefault;
-    friend priv::RenderTextureImplFBO;
+
     friend TestContext;
-    friend RenderTarget; // TODO P1: needed?
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -260,17 +254,13 @@ private:
     ////////////////////////////////////////////////////////////
     struct Impl;
     base::UniquePtr<Impl> m_impl;
-
-public: // TODO P0: cleanup lifetime of shaders
-    int builtInShaderState{0};
-    void (*builtInShaderDestroyFn)(){};
 };
 
 } // namespace sf
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::GraphicsContext
+/// \class sf::WindowContext
 /// \ingroup window
 ///
 /// TODO P1: docs

@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Graphics/GraphicsContext.hpp>
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/RenderTextureImplFBO.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>

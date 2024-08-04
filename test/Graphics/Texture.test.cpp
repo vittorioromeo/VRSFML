@@ -1,9 +1,8 @@
 #include <SFML/Graphics/Texture.hpp>
 
 // Other 1st party headers
+#include <SFML/Graphics/GraphicsContext.hpp>
 #include <SFML/Graphics/Image.hpp>
-
-#include <SFML/Window/GraphicsContext.hpp>
 
 #include <SFML/System/FileInputStream.hpp>
 #include <SFML/System/Path.hpp>

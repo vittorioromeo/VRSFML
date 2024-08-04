@@ -5,10 +5,10 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/GLExtensions.hpp>
 #include <SFML/Window/GlContext.hpp>
-#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/VideoModeUtils.hpp>
 #include <SFML/Window/Window.hpp>
+#include <SFML/Window/WindowContext.hpp>
 #include <SFML/Window/WindowImpl.hpp>
 
 #include <SFML/System/Clock.hpp>
@@ -25,13 +25,13 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct Window::Window::Impl
 {
-    GraphicsContext*                 graphicsContext;
+    WindowContext*                   windowContext;
     base::UniquePtr<priv::GlContext> glContext;      //!< Platform-specific implementation of the OpenGL context
     Clock                            clock;          //!< Clock for measuring the elapsed time between frames
     Time                             frameTimeLimit; //!< Current framerate limit
 
-    explicit Impl(GraphicsContext& theGraphicsContext, base::UniquePtr<priv::GlContext>&& theContext) :
-    graphicsContext(&theGraphicsContext),
+    explicit Impl(WindowContext& theWindowContext, base::UniquePtr<priv::GlContext>&& theContext) :
+    windowContext(&theWindowContext),
     glContext(SFML_BASE_MOVE(theContext))
     {
     }
@@ -40,12 +40,12 @@ struct Window::Window::Impl
 
 ////////////////////////////////////////////////////////////
 template <typename TWindowBaseArg>
-Window::Window(GraphicsContext&       graphicsContext,
+Window::Window(WindowContext&         windowContext,
                const ContextSettings& settings,
                TWindowBaseArg&&       windowBaseArg,
                unsigned int           bitsPerPixel) :
 WindowBase(SFML_BASE_FORWARD(windowBaseArg)),
-m_impl(graphicsContext, graphicsContext.createGlContext(settings, *WindowBase::m_impl, bitsPerPixel))
+m_impl(windowContext, windowContext.createGlContext(settings, *WindowBase::m_impl, bitsPerPixel))
 {
     // Perform common initializations
     SFML_BASE_ASSERT(m_impl->glContext != nullptr);
@@ -61,46 +61,46 @@ m_impl(graphicsContext, graphicsContext.createGlContext(settings, *WindowBase::m
 
 
 ////////////////////////////////////////////////////////////
-Window::Window(GraphicsContext&       graphicsContext,
+Window::Window(WindowContext&         windowContext,
                VideoMode              mode,
                const String&          title,
                Style                  style,
                State                  state,
                const ContextSettings& settings) :
-Window(graphicsContext, settings, priv::WindowImpl::create(mode, title, style, state, settings), mode.bitsPerPixel)
+Window(windowContext, settings, priv::WindowImpl::create(mode, title, style, state, settings), mode.bitsPerPixel)
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-Window::Window(GraphicsContext& graphicsContext, VideoMode mode, const String& title, State state, const ContextSettings& settings) :
-Window(graphicsContext, mode, title, sf::Style::Default, state, settings)
+Window::Window(WindowContext& windowContext, VideoMode mode, const String& title, State state, const ContextSettings& settings) :
+Window(windowContext, mode, title, sf::Style::Default, state, settings)
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-Window::Window(GraphicsContext& graphicsContext, WindowHandle handle, const ContextSettings& settings) :
-Window(graphicsContext, settings, handle, VideoModeUtils::getDesktopMode().bitsPerPixel)
+Window::Window(WindowContext& windowContext, WindowHandle handle, const ContextSettings& settings) :
+Window(windowContext, settings, handle, VideoModeUtils::getDesktopMode().bitsPerPixel)
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-Window::Window(GraphicsContext&       graphicsContext,
+Window::Window(WindowContext&         windowContext,
                VideoMode              mode,
                const char*            title,
                Style                  style,
                State                  state,
                const ContextSettings& settings) :
-Window(graphicsContext, mode, String(title), style, state, settings)
+Window(windowContext, mode, String(title), style, state, settings)
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-Window::Window(GraphicsContext& graphicsContext, VideoMode mode, const char* title, State state, const ContextSettings& settings) :
-Window(graphicsContext, mode, String(title), state, settings)
+Window::Window(WindowContext& windowContext, VideoMode mode, const char* title, State state, const ContextSettings& settings) :
+Window(windowContext, mode, String(title), state, settings)
 {
 }
 
@@ -145,7 +145,7 @@ bool Window::setActive(bool active) const
 {
     SFML_BASE_ASSERT(m_impl->glContext != nullptr);
 
-    if (m_impl->graphicsContext->setActiveThreadLocalGlContext(*m_impl->glContext, active))
+    if (m_impl->windowContext->setActiveThreadLocalGlContext(*m_impl->glContext, active))
         return true;
 
     priv::err() << "Failed to activate the window's context";

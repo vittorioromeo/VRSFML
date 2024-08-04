@@ -6,13 +6,11 @@
 #include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/GlContext.hpp>
 #include <SFML/Window/GlContextTypeImpl.hpp>
-#include <SFML/Window/GraphicsContext.hpp>
+#include <SFML/Window/WindowContext.hpp>
 
 #include <SFML/System/Err.hpp>
 
 #include <glad/gl.h>
-
-#include <ios>
 
 #include <cctype>
 #include <cstdlib>
@@ -24,7 +22,7 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 GlContext::~GlContext()
 {
-    m_graphicsContext.onGlContextDestroyed(*this);
+    m_windowContext.onGlContextDestroyed(*this);
 }
 
 
@@ -43,9 +41,9 @@ const ContextSettings& GlContext::getSettings() const
 
 
 ////////////////////////////////////////////////////////////
-GlContext::GlContext(GraphicsContext& graphicsContext, std::uint64_t id, const ContextSettings& settings) :
+GlContext::GlContext(WindowContext& windowContext, std::uint64_t id, const ContextSettings& settings) :
 m_settings(settings),
-m_graphicsContext(graphicsContext),
+m_windowContext(windowContext),
 m_id{id}
 {
 }
@@ -91,7 +89,7 @@ int GlContext::evaluateFormat(
 ////////////////////////////////////////////////////////////
 bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettings& requestedSettings)
 {
-    SFML_BASE_ASSERT(m_graphicsContext.getActiveThreadLocalGlContextPtr() == this);
+    SFML_BASE_ASSERT(m_windowContext.getActiveThreadLocalGlContextPtr() == this);
 
     const auto& derivedSharedGlContext = static_cast<const DerivedGlContextType&>(sharedGlContext);
 
@@ -120,7 +118,7 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
         if (glGetErrorFunc() != GL_NO_ERROR)                     \
         {                                                        \
             /* err() << "Inner GL error: '" #__VA_ARGS__ "'"; */ \
-        };                                                       \
+        }                                                        \
                                                                  \
     } while (false)
 
@@ -134,7 +132,7 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
         if (glGetErrorFunc() != GL_NO_ERROR)                     \
         {                                                        \
             /* err() << "Inner GL error: '" #__VA_ARGS__ "'"; */ \
-        };                                                       \
+        }                                                        \
                                                                  \
         return result;                                           \
     }()
@@ -307,6 +305,8 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
 ////////////////////////////////////////////////////////////
 void GlContext::checkSettings(const ContextSettings& requestedSettings) const
 {
+    const auto boolToString = [](bool b) { return b ? "true" : "false"; };
+
     // Perform checks to inform the user if they are getting a context they might not have expected
     const int version = static_cast<int>(m_settings.majorVersion * 10u + m_settings.minorVersion);
     const int requestedVersion = static_cast<int>(requestedSettings.majorVersion * 10u + requestedSettings.minorVersion);
@@ -319,18 +319,22 @@ void GlContext::checkSettings(const ContextSettings& requestedSettings) const
         err() << "Warning: The created OpenGL context does not fully meet the settings that were requested" << '\n'
               << "Requested: version = " << requestedSettings.majorVersion << "." << requestedSettings.minorVersion
               << " ; depth bits = " << requestedSettings.depthBits << " ; stencil bits = " << requestedSettings.stencilBits
-              << " ; AA level = " << requestedSettings.antialiasingLevel << std::boolalpha << " ; core = "
-              << ((requestedSettings.attributeFlags & ContextSettings::Attribute::Core) != ContextSettings::Attribute{0u})
+              << " ; AA level = " << requestedSettings.antialiasingLevel << " ; core = "
+              << boolToString((requestedSettings.attributeFlags & ContextSettings::Attribute::Core) !=
+                              ContextSettings::Attribute{0u})
               << " ; debug = "
-              << ((requestedSettings.attributeFlags & ContextSettings::Attribute::Debug) != ContextSettings::Attribute{0u})
-              << " ; sRGB = " << requestedSettings.sRgbCapable << std::noboolalpha << '\n'
+              << boolToString((requestedSettings.attributeFlags & ContextSettings::Attribute::Debug) !=
+                              ContextSettings::Attribute{0u})
+              << " ; sRGB = " << requestedSettings.sRgbCapable << '\n'
               << "Created: version = " << m_settings.majorVersion << "." << m_settings.minorVersion
               << " ; depth bits = " << m_settings.depthBits << " ; stencil bits = " << m_settings.stencilBits
-              << " ; AA level = " << m_settings.antialiasingLevel << std::boolalpha << " ; core = "
-              << ((m_settings.attributeFlags & ContextSettings::Attribute::Core) != ContextSettings::Attribute{0u})
+              << " ; AA level = " << m_settings.antialiasingLevel << " ; core = "
+              << boolToString((m_settings.attributeFlags & ContextSettings::Attribute::Core) !=
+                              ContextSettings::Attribute{0u})
               << " ; debug = "
-              << ((m_settings.attributeFlags & ContextSettings::Attribute::Debug) != ContextSettings::Attribute{0u})
-              << " ; sRGB = " << m_settings.sRgbCapable << std::noboolalpha;
+              << boolToString((m_settings.attributeFlags & ContextSettings::Attribute::Debug) !=
+                              ContextSettings::Attribute{0u})
+              << " ; sRGB = " << m_settings.sRgbCapable;
     }
 }
 

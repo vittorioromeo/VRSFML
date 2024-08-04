@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Graphics/GraphicsContext.hpp>
 #include <SFML/Graphics/RenderTextureImplDefault.hpp>
 #include <SFML/Graphics/TextureSaver.hpp>
 
@@ -10,7 +11,6 @@
 #include <SFML/Window/GLCheck.hpp>
 #include <SFML/Window/GLExtensions.hpp>
 #include <SFML/Window/GlContext.hpp>
-#include <SFML/Window/GraphicsContext.hpp>
 
 #include <SFML/Base/UniquePtr.hpp>
 

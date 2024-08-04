@@ -1,10 +1,9 @@
 #include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/GraphicsContext.hpp>
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Vertex.hpp>
-
-#include <SFML/Window/GraphicsContext.hpp>
 
 #include <Doctest.hpp>
 

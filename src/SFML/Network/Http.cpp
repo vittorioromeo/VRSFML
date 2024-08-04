@@ -17,6 +17,7 @@
 #include <limits>
 #include <map>
 #include <sstream>
+#include <string>
 
 #include <cctype>
 #include <cstddef>
@@ -76,6 +77,24 @@ Http::Request::Request(const std::string& uri, Method method, const std::string&
 {
     setUri(uri);
     setBody(body);
+}
+
+
+////////////////////////////////////////////////////////////
+Http::Request::Request(const std::string& uri, Method method) : Http::Request::Request(uri, method, "")
+{
+}
+
+
+////////////////////////////////////////////////////////////
+Http::Request::Request(const std::string& uri) : Http::Request::Request(uri, Method::Get, "")
+{
+}
+
+
+////////////////////////////////////////////////////////////
+Http::Request::Request() : Http::Request::Request("/", Method::Get, "")
+{
 }
 
 
