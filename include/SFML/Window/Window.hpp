@@ -14,7 +14,7 @@
 
 namespace sf
 {
-class GraphicsContext;
+class WindowContext;
 
 namespace priv
 {
@@ -49,14 +49,14 @@ public:
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Window(GraphicsContext&       graphicsContext,
+    [[nodiscard]] explicit Window(WindowContext&         windowContext,
                                   VideoMode              mode,
                                   const String&          title,
                                   Style                  style    = Style::Default,
                                   State                  state    = State::Windowed,
                                   const ContextSettings& settings = ContextSettings());
 
-    [[nodiscard]] explicit Window(GraphicsContext&       graphicsContext,
+    [[nodiscard]] explicit Window(WindowContext&         windowContext,
                                   VideoMode              mode,
                                   const char*            title,
                                   Style                  style    = Style::Default,
@@ -80,13 +80,13 @@ public:
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Window(GraphicsContext&       graphicsContext,
+    [[nodiscard]] explicit Window(WindowContext&         windowContext,
                                   VideoMode              mode,
                                   const String&          title,
                                   State                  state,
                                   const ContextSettings& settings = ContextSettings());
 
-    [[nodiscard]] explicit Window(GraphicsContext&       graphicsContext,
+    [[nodiscard]] explicit Window(WindowContext&         windowContext,
                                   VideoMode              mode,
                                   const char*            title,
                                   State                  state,
@@ -106,7 +106,7 @@ public:
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Window(GraphicsContext&       graphicsContext,
+    [[nodiscard]] explicit Window(WindowContext&         windowContext,
                                   WindowHandle           handle,
                                   const ContextSettings& settings = ContextSettings());
 
@@ -223,7 +223,7 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     template <typename TWindowBaseArg>
-    [[nodiscard]] explicit Window(GraphicsContext&       graphicsContext,
+    [[nodiscard]] explicit Window(WindowContext&         windowContext,
                                   const ContextSettings& settings,
                                   TWindowBaseArg&&       windowBaseArg,
                                   unsigned int           bitsPerPixel);

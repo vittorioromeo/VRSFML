@@ -5,6 +5,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/BlendMode.hpp>
 #include <SFML/Graphics/CoordinateType.hpp>
+#include <SFML/Graphics/GraphicsContext.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Shader.hpp>
@@ -18,8 +19,6 @@
 
 #include <SFML/Window/GLCheck.hpp>
 #include <SFML/Window/GLExtensions.hpp>
-#include <SFML/Window/GlContextTypeImpl.hpp>
-#include <SFML/Window/GraphicsContext.hpp>
 
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Rect.hpp>
@@ -184,160 +183,16 @@ using ContextRenderTargetMap = std::unordered_map<std::uint64_t, std::uint64_t>;
 
 
 ////////////////////////////////////////////////////////////
-constexpr const char* defaultTexturedShaderVertexSrc = R"glsl(#version 300 es
-
-#ifdef GL_ES
-precision mediump float;
-#endif
-
-uniform mat4 sf_u_projectionMatrix;
-uniform mat4 sf_u_modelViewMatrix;
-uniform mat4 sf_u_textureMatrix;
-
-in vec2 sf_a_position;
-in vec4 sf_a_color;
-in vec2 sf_a_texCoord;
-
-out vec4 sf_v_color;
-out vec2 sf_v_texCoord;
-
-void main()
-{
-    gl_Position = sf_u_projectionMatrix * sf_u_modelViewMatrix * vec4(sf_a_position, 0.0, 1.0);
-    sf_v_color = sf_a_color;
-    sf_v_texCoord = (sf_u_textureMatrix * vec4(sf_a_texCoord, 0.0, 1.0)).xy;
-}
-
-)glsl";
-
-
-////////////////////////////////////////////////////////////
-constexpr const char* defaultTexturedShaderFragmentSrc = R"glsl(#version 300 es
-
-#ifdef GL_ES
-precision mediump float;
-#endif
-
-uniform sampler2D sf_u_texture;
-
-in vec4 sf_v_color;
-in vec2 sf_v_texCoord;
-
-out vec4 sf_fragColor;
-
-void main()
-{
-    sf_fragColor = sf_v_color * texture(sf_u_texture, sf_v_texCoord.st);
-}
-
-)glsl";
-
-
-////////////////////////////////////////////////////////////
-constexpr const char* defaultUntexturedShaderVertexSrc = R"glsl(#version 300 es
-
-#ifdef GL_ES
-precision mediump float;
-#endif
-
-uniform mat4 sf_u_projectionMatrix;
-uniform mat4 sf_u_modelViewMatrix;
-
-in vec2 sf_a_position;
-in vec4 sf_a_color;
-
-out vec4 sf_v_color;
-
-void main()
-{
-    gl_Position = sf_u_projectionMatrix * sf_u_modelViewMatrix * vec4(sf_a_position, 0.0, 1.0);
-    sf_v_color = sf_a_color;
-}
-
-)glsl";
-
-
-////////////////////////////////////////////////////////////
-constexpr const char* defaultUntexturedShaderFragmentSrc = R"glsl(#version 300 es
-
-#ifdef GL_ES
-precision mediump float;
-#endif
-
-in vec4 sf_v_color;
-
-out vec4 sf_fragColor;
-
-void main()
-{
-    sf_fragColor = sf_v_color;
-}
-
-)glsl";
-
-
-////////////////////////////////////////////////////////////
-[[nodiscard]] sf::Shader createBuiltInShader(sf::GraphicsContext& graphicsContext, const char* vertexSrc, const char* fragmentSrc)
-{
-    auto shader = sf::Shader::loadFromMemory(graphicsContext, vertexSrc, fragmentSrc).value();
-    SFML_BASE_ASSERT(glCheckExpr(glIsProgram(shader.getNativeHandle())));
-
-    if (const sf::base::Optional ulTexture = shader.getUniformLocation("sf_u_texture"))
-        shader.setUniform(*ulTexture, sf::Shader::CurrentTexture);
-
-    return shader;
-}
-
-
-////////////////////////////////////////////////////////////
-struct [[nodiscard]] BuiltInShaders
-{
-    sf::Shader texturedShader;
-    sf::Shader untexturedShader;
-};
-
-
-////////////////////////////////////////////////////////////
-[[nodiscard]] sf::base::Optional<BuiltInShaders>& getBuiltInShaders(sf::GraphicsContext& graphicsContext)
-{
-    // TODO P0: rewrite to WindowContext and GraphicsContext:WindowContext
-
-    SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
-
-    static sf::base::Optional<BuiltInShaders> builtInShaders;
-
-    if (graphicsContext.builtInShaderState == 0)
-    {
-        SFML_BASE_ASSERT(!builtInShaders.hasValue());
-
-        builtInShaders
-            .emplace(createBuiltInShader(graphicsContext, defaultTexturedShaderVertexSrc, defaultTexturedShaderFragmentSrc),
-                     createBuiltInShader(graphicsContext, defaultUntexturedShaderVertexSrc, defaultUntexturedShaderFragmentSrc));
-
-        graphicsContext.builtInShaderState = 1;
-
-        graphicsContext.builtInShaderDestroyFn = [] { builtInShaders.reset(); };
-    }
-
-    if (graphicsContext.builtInShaderState == 1)
-        return builtInShaders;
-
-    SFML_BASE_ASSERT(graphicsContext.builtInShaderState == 2);
-    throw 100; // TODO P0: ...
-}
-
-
-////////////////////////////////////////////////////////////
 sf::Shader& getShader(sf::GraphicsContext& graphicsContext, const sf::Shader* statesShader, const sf::Texture* statesTexture)
 {
     if (statesShader != nullptr)
         return *const_cast<sf::Shader*>(statesShader); // TODO P0: nasty cast...
 
     if (statesShader == nullptr && statesTexture == nullptr)
-        return getBuiltInShaders(graphicsContext)->untexturedShader;
+        return graphicsContext.getBuiltInUntexturedShader();
 
     SFML_BASE_ASSERT(statesShader == nullptr && statesTexture != nullptr);
-    return getBuiltInShaders(graphicsContext)->texturedShader;
+    return graphicsContext.getBuiltInTexturedShader();
 }
 
 } // namespace RenderTargetImpl
@@ -493,7 +348,7 @@ struct RenderTarget::Impl
     {
     }
 
-    GraphicsContext* graphicsContext; //!< The graphics context
+    GraphicsContext* graphicsContext; //!< The window context
     View             defaultView;     //!< Default view
     View             view;            //!< Current view
     StatesCache      cache{};         //!< Render states cache

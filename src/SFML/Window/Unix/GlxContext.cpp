@@ -133,7 +133,7 @@ GlxContext::GlxContext(GlxContext* shared, const ContextSettings& settings, Vect
 GlxContext::~GlxContext()
 {
     // Notify unshared OpenGL resources of context destruction
-    m_graphicsContext.cleanupUnsharedFrameBuffers(*this);
+    m_windowContext.cleanupUnsharedFrameBuffers(*this);
 
     // Destroy the context
     if (m_context)

@@ -1,11 +1,11 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 
 // Other 1st party headers
+#include <SFML/Graphics/GraphicsContext.hpp>
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/View.hpp>
 
-#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/VideoMode.hpp>
 
 #include <SFML/System/String.hpp>

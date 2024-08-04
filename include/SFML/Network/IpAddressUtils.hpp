@@ -10,7 +10,12 @@
 
 #include <SFML/Base/Optional.hpp>
 
+#if __has_include(<bits/stringfwd.h>)
+#include <bits/stringfwd.h>
+#else
 #include <string>
+#endif
+
 #include <string_view>
 
 

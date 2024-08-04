@@ -9,12 +9,12 @@
 #if 1
 
 #include <SFML/Graphics/Font.hpp>
+#include <SFML/Graphics/GraphicsContext.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Text.hpp>
 
 #include <SFML/Window/Event.hpp>
-#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/VideoMode.hpp>
 
 #include <SFML/System/Path.hpp>
@@ -131,10 +131,9 @@ int main()
 #elif defined(BARABARAR)
 
 #include <SFML/Graphics/Font.hpp>
+#include <SFML/Graphics/GraphicsContext.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/Graphics/Text.hpp>
-
-#include <SFML/Window/GraphicsContext.hpp>
 
 #include <SFML/System/Path.hpp>
 #include <SFML/System/String.hpp>
@@ -213,10 +212,9 @@ int main()
 #else
 
 #include <SFML/Graphics/Font.hpp>
+#include <SFML/Graphics/GraphicsContext.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/Graphics/Text.hpp>
-
-#include <SFML/Window/GraphicsContext.hpp>
 
 #include <SFML/System/Path.hpp>
 #include <SFML/System/String.hpp>

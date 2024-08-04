@@ -17,7 +17,7 @@
 namespace sf
 {
 using GlFunctionPointer = void (*)();
-class GraphicsContext;
+class WindowContext;
 } // namespace sf
 
 
@@ -95,7 +95,7 @@ protected:
     /// This constructor is meant for derived classes only.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit GlContext(GraphicsContext& graphicsContext, std::uint64_t id, const ContextSettings& settings);
+    [[nodiscard]] explicit GlContext(WindowContext& windowContext, std::uint64_t id, const ContextSettings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Activate the context as the current target
@@ -146,11 +146,11 @@ protected:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    ContextSettings  m_settings; //!< Creation settings of the context
-    GraphicsContext& m_graphicsContext;
+    ContextSettings m_settings; //!< Creation settings of the context
+    WindowContext&  m_windowContext;
 
 private:
-    friend GraphicsContext;
+    friend WindowContext;
 
     ////////////////////////////////////////////////////////////
     /// \brief Check whether the context is compatible with the requested settings

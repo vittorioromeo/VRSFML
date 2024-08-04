@@ -7,16 +7,15 @@
 #include <SFML/System/Export.hpp>
 
 #include <SFML/Base/InPlacePImpl.hpp>
+#include <SFML/Base/SizeT.hpp>
 
-#if defined(__GLIBCXX__) && __has_include(<bits/localefwd.h>) && __has_include(<bits/stringfwd.h>)
+#if __has_include(<bits/localefwd.h>) && __has_include(<bits/stringfwd.h>)
 #include <bits/localefwd.h>
 #include <bits/stringfwd.h>
 #else
 #include <locale>
 #include <string>
 #endif
-
-#include <cstddef>
 
 
 namespace sf
@@ -44,7 +43,7 @@ public:
     ////////////////////////////////////////////////////////////
     // NOLINTBEGIN(readability-identifier-naming)
     /// Represents an invalid position in the string
-    static const std::size_t InvalidPos;
+    static const base::SizeT InvalidPos;
     // NOLINTEND(readability-identifier-naming)
 
     ////////////////////////////////////////////////////////////
@@ -289,7 +288,7 @@ public:
     /// \return Character at position \a index
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] char32_t operator[](std::size_t index) const;
+    [[nodiscard]] char32_t operator[](base::SizeT index) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Overload of [] operator to access a character by its position
@@ -302,7 +301,7 @@ public:
     /// \return Reference to the character at position \a index
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] char32_t& operator[](std::size_t index);
+    [[nodiscard]] char32_t& operator[](base::SizeT index);
 
     ////////////////////////////////////////////////////////////
     /// \brief Clear the string
@@ -322,7 +321,7 @@ public:
     /// \see isEmpty
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::size_t getSize() const;
+    [[nodiscard]] base::SizeT getSize() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Check whether the string is empty or not
@@ -344,7 +343,7 @@ public:
     /// \param count    Number of characters to erase
     ///
     ////////////////////////////////////////////////////////////
-    void erase(std::size_t position, std::size_t count = 1);
+    void erase(base::SizeT position, base::SizeT count = 1);
 
     ////////////////////////////////////////////////////////////
     /// \brief Insert one or more characters into the string
@@ -356,7 +355,7 @@ public:
     /// \param str      Characters to insert
     ///
     ////////////////////////////////////////////////////////////
-    void insert(std::size_t position, const String& str);
+    void insert(base::SizeT position, const String& str);
 
     ////////////////////////////////////////////////////////////
     /// \brief Find a sequence of one or more characters in the string
@@ -370,7 +369,7 @@ public:
     /// \return Position of \a str in the string, or String::InvalidPos if not found
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::size_t find(const String& str, std::size_t start = 0) const;
+    [[nodiscard]] base::SizeT find(const String& str, base::SizeT start = 0) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Replace a substring with another string
@@ -384,7 +383,7 @@ public:
     /// \param replaceWith String that replaces the given substring.
     ///
     ////////////////////////////////////////////////////////////
-    void replace(std::size_t position, std::size_t length, const String& replaceWith);
+    void replace(base::SizeT position, base::SizeT length, const String& replaceWith);
 
     ////////////////////////////////////////////////////////////
     /// \brief Replace all occurrences of a substring with a replacement string
@@ -413,7 +412,7 @@ public:
     /// \return String object containing a substring of this object
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] String substring(std::size_t position, std::size_t length = InvalidPos) const;
+    [[nodiscard]] String substring(base::SizeT position, base::SizeT length = InvalidPos) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a pointer to the C-style array of characters

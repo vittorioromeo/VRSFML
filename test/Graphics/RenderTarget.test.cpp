@@ -1,7 +1,6 @@
+#include <SFML/Graphics/GraphicsContext.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/View.hpp>
-
-#include <SFML/Window/GraphicsContext.hpp>
 
 #include <Doctest.hpp>
 

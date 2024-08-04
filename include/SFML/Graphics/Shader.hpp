@@ -652,16 +652,6 @@ public:
 
 private:
     ////////////////////////////////////////////////////////////
-    /// \brief Ensures that the system supports shaders
-    ///
-    /// This function should always be called before using
-    /// the shader features. If it fails the application is
-    /// aborted.
-    ///
-    ////////////////////////////////////////////////////////////
-    static void ensureIsAvailable(GraphicsContext& graphicsContext);
-
-    ////////////////////////////////////////////////////////////
     /// \brief Compile the shader(s) and create the program
     ///
     /// If one of the arguments is a null pointer, the corresponding shader

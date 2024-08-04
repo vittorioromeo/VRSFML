@@ -4,12 +4,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Graphics/GraphicsContext.hpp>
 #include <SFML/Graphics/Shader.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
 #include <SFML/Window/GLCheck.hpp>
 #include <SFML/Window/GLExtensions.hpp>
-#include <SFML/Window/GraphicsContext.hpp>
 
 #include <SFML/System/Err.hpp>
 #include <SFML/System/InputStream.hpp>
@@ -826,9 +826,6 @@ void Shader::bind() const
 {
     SFML_BASE_ASSERT(m_impl->graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
-    // Make sure that we can use shaders
-    ensureIsAvailable(*m_impl->graphicsContext);
-
     if (m_impl->shaderProgram == 0)
     {
         // Bind no shader
@@ -859,31 +856,8 @@ void Shader::unbind([[maybe_unused]] GraphicsContext& graphicsContext)
 
 
 ////////////////////////////////////////////////////////////
-void Shader::ensureIsAvailable([[maybe_unused]] GraphicsContext& graphicsContext)
-{
-#ifndef SFML_OPENGL_ES
-
-    static const bool available = [&]
-    {
-        SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
-        return GLEXT_multitexture && GLEXT_shader_objects && GLEXT_vertex_shader && GLEXT_fragment_shader;
-    }();
-
-    if (!available)
-    {
-        priv::err() << "[[SFML FATAL ERROR]]: your system doesn't support shaders";
-        std::abort();
-    }
-
-#endif
-}
-
-
-////////////////////////////////////////////////////////////
 bool Shader::isGeometryAvailable([[maybe_unused]] GraphicsContext& graphicsContext)
 {
-    ensureIsAvailable(graphicsContext);
-
     static const bool available = [&]
     {
         SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
@@ -909,9 +883,6 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
 {
     SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
 
-    // First make sure that we can use shaders
-    ensureIsAvailable(graphicsContext);
-
     // Make sure we can use geometry shaders
     if (geometryShaderCode.data() != nullptr && !isGeometryAvailable(graphicsContext))
     {
@@ -928,29 +899,7 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
 
 #ifdef SFML_OPENGL_ES
     if (vertexShaderCode.data() == nullptr)
-    {
-        vertexShaderCode = R"glsl(#version 300 es
-
-#ifdef GL_ES
-precision mediump float;
-#endif
-
-uniform mat4 sf_u_projectionMatrix;
-uniform mat4 sf_u_modelViewMatrix;
-
-in vec2 sf_a_position;
-in vec4 sf_a_color;
-
-out vec4 sf_v_color;
-
-void main()
-{
-    gl_Position = sf_u_projectionMatrix * sf_u_modelViewMatrix * vec4(sf_a_position, 0.0, 1.0);
-    sf_v_color = sf_a_color;
-}
-
-        )glsl";
-    }
+        vertexShaderCode = graphicsContext.getBuiltInTexturedShaderVertexSrc();
 #endif
 
     // Create the vertex shader if needed
@@ -1014,27 +963,7 @@ void main()
 
 #ifdef SFML_OPENGL_ES
     if (fragmentShaderCode.data() == nullptr)
-    {
-        fragmentShaderCode = R"glsl(#version 300 es
-
-#ifdef GL_ES
-precision mediump float;
-#endif
-
-uniform sampler2D sf_u_texture;
-
-in vec4 sf_v_color;
-in vec2 sf_v_texCoord;
-
-out vec4 sf_fragColor;
-
-void main()
-{
-    sf_fragColor = sf_v_color * texture(sf_u_texture, sf_v_texCoord.st);
-}
-
-        )glsl";
-    }
+        fragmentShaderCode = graphicsContext.getBuiltInTexturedShaderFragmentSrc();
 #endif
 
     // Create the fragment shader if needed

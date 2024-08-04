@@ -6,10 +6,9 @@
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/FontInfo.hpp>
 #include <SFML/Graphics/Glyph.hpp>
+#include <SFML/Graphics/GraphicsContext.hpp>
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/Texture.hpp>
-
-#include <SFML/Window/GraphicsContext.hpp>
 #ifdef SFML_SYSTEM_ANDROID
 #include <SFML/System/Android/ResourceStream.hpp>
 #endif
@@ -146,7 +145,7 @@ struct Font::Impl
 
     using PageTable = std::unordered_map<unsigned int, Page>; //!< Table mapping a character size to its page (texture)
 
-    GraphicsContext*             graphicsContext; //!< The graphics context
+    GraphicsContext*             graphicsContext; //!< The window context
     std::shared_ptr<FontHandles> fontHandles;     //!< Shared information about the internal font instance
     bool                         isSmooth{true};  //!< Status of the smooth filter
     FontInfo                     info;            //!< Information about the font

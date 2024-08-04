@@ -1625,10 +1625,10 @@ void WindowImplX11::updateLastInputTime(::Time time)
 void WindowImplX11::createHiddenCursor()
 {
     // Create the cursor's pixmap (1x1 pixels)
-    const Pixmap cursorPixmap    = XCreatePixmap(m_display.get(), m_window, 1, 1, 1);
-    GC           graphicsContext = XCreateGC(m_display.get(), cursorPixmap, 0, nullptr);
-    XDrawPoint(m_display.get(), cursorPixmap, graphicsContext, 0, 0);
-    XFreeGC(m_display.get(), graphicsContext);
+    const Pixmap cursorPixmap  = XCreatePixmap(m_display.get(), m_window, 1, 1, 1);
+    GC           windowContext = XCreateGC(m_display.get(), cursorPixmap, 0, nullptr);
+    XDrawPoint(m_display.get(), cursorPixmap, windowContext, 0, 0);
+    XFreeGC(m_display.get(), windowContext);
 
     // Create the cursor, using the pixmap as both the shape and the mask of the cursor
     XColor color;

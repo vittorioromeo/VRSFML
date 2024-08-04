@@ -10,7 +10,7 @@
 #include <SFML/Window/GLExtensions.hpp>
 #include <SFML/Window/GlContext.hpp>
 #include <SFML/Window/GlContextTypeImpl.hpp>
-#include <SFML/Window/GraphicsContext.hpp>
+#include <SFML/Window/WindowContext.hpp>
 
 #include <SFML/System/Err.hpp>
 
@@ -21,7 +21,6 @@
 #include <glad/gl.h>
 
 #include <atomic>
-#include <iostream>
 #include <mutex>
 #include <string>
 #include <vector>
@@ -60,7 +59,7 @@ namespace
         if (glGetErrorFunc() != GL_NO_ERROR)                     \
         {                                                        \
             /* err() << "Inner GL error: '" #__VA_ARGS__ "'"; */ \
-        };                                                       \
+        }                                                        \
                                                                  \
     } while (false)
 
@@ -74,7 +73,7 @@ namespace
         if (glGetErrorFunc() != GL_NO_ERROR)                     \
         {                                                        \
             /* err() << "Inner GL error: '" #__VA_ARGS__ "'"; */ \
-        };                                                       \
+        }                                                        \
                                                                  \
         return result;                                           \
     }()
@@ -130,7 +129,7 @@ thread_local constinit struct
 
 
 ////////////////////////////////////////////////////////////
-constinit bool graphicsContextAlive{false};
+constinit bool windowContextAlive{false};
 
 
 ////////////////////////////////////////////////////////////
@@ -175,65 +174,65 @@ void extensionSanityCheck()
     if (id == 131169 || id == 131185 || id == 131218 || id == 131204)
         return;
 
-    std::cout << "---------------" << '\n' << "Debug message (" << id << "): " << message << '\n';
+    priv::err(true /* multiLine */) << "---------------" << '\n' << "Debug message (" << id << "): " << message << '\n';
 
     // clang-format off
     switch (source)
     {
-        case GL_DEBUG_SOURCE_API:             std::cout << "Source: API";             break;
-        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   std::cout << "Source: Window System";   break;
-        case GL_DEBUG_SOURCE_SHADER_COMPILER: std::cout << "Source: Shader Compiler"; break;
-        case GL_DEBUG_SOURCE_THIRD_PARTY:     std::cout << "Source: Third Party";     break;
-        case GL_DEBUG_SOURCE_APPLICATION:     std::cout << "Source: Application";     break;
-        case GL_DEBUG_SOURCE_OTHER:           std::cout << "Source: Other";           break;
+        case GL_DEBUG_SOURCE_API:             priv::err(true /* multiLine */) << "Source: API";             break;
+        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   priv::err(true /* multiLine */) << "Source: Window System";   break;
+        case GL_DEBUG_SOURCE_SHADER_COMPILER: priv::err(true /* multiLine */) << "Source: Shader Compiler"; break;
+        case GL_DEBUG_SOURCE_THIRD_PARTY:     priv::err(true /* multiLine */) << "Source: Third Party";     break;
+        case GL_DEBUG_SOURCE_APPLICATION:     priv::err(true /* multiLine */) << "Source: Application";     break;
+        case GL_DEBUG_SOURCE_OTHER:           priv::err(true /* multiLine */) << "Source: Other";           break;
     }
     // clang-format on
 
-    std::cout << '\n';
+    priv::err(true /* multiLine */) << '\n';
 
     // clang-format off
     switch (type)
     {
-        case GL_DEBUG_TYPE_ERROR:               std::cout << "Type: Error";                break;
-        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: std::cout << "Type: Deprecated Behaviour"; break;
-        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  std::cout << "Type: Undefined Behaviour";  break;
-        case GL_DEBUG_TYPE_PORTABILITY:         std::cout << "Type: Portability";          break;
-        case GL_DEBUG_TYPE_PERFORMANCE:         std::cout << "Type: Performance";          break;
-        case GL_DEBUG_TYPE_MARKER:              std::cout << "Type: Marker";               break;
-        case GL_DEBUG_TYPE_PUSH_GROUP:          std::cout << "Type: Push Group";           break;
-        case GL_DEBUG_TYPE_POP_GROUP:           std::cout << "Type: Pop Group";            break;
-        case GL_DEBUG_TYPE_OTHER:               std::cout << "Type: Other";                break;
+        case GL_DEBUG_TYPE_ERROR:               priv::err(true /* multiLine */) << "Type: Error";                break;
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: priv::err(true /* multiLine */) << "Type: Deprecated Behaviour"; break;
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  priv::err(true /* multiLine */) << "Type: Undefined Behaviour";  break;
+        case GL_DEBUG_TYPE_PORTABILITY:         priv::err(true /* multiLine */) << "Type: Portability";          break;
+        case GL_DEBUG_TYPE_PERFORMANCE:         priv::err(true /* multiLine */) << "Type: Performance";          break;
+        case GL_DEBUG_TYPE_MARKER:              priv::err(true /* multiLine */) << "Type: Marker";               break;
+        case GL_DEBUG_TYPE_PUSH_GROUP:          priv::err(true /* multiLine */) << "Type: Push Group";           break;
+        case GL_DEBUG_TYPE_POP_GROUP:           priv::err(true /* multiLine */) << "Type: Pop Group";            break;
+        case GL_DEBUG_TYPE_OTHER:               priv::err(true /* multiLine */) << "Type: Other";                break;
     }
     // clang-format on
 
-    std::cout << '\n';
+    priv::err(true /* multiLine */) << '\n';
 
     // clang-format off
     switch (severity)
     {
-        case GL_DEBUG_SEVERITY_HIGH:         std::cout << "Severity: high";         break;
-        case GL_DEBUG_SEVERITY_MEDIUM:       std::cout << "Severity: medium";       break;
-        case GL_DEBUG_SEVERITY_LOW:          std::cout << "Severity: low";          break;
-        case GL_DEBUG_SEVERITY_NOTIFICATION: std::cout << "Severity: notification"; break;
+        case GL_DEBUG_SEVERITY_HIGH:         priv::err(true /* multiLine */) << "Severity: high";         break;
+        case GL_DEBUG_SEVERITY_MEDIUM:       priv::err(true /* multiLine */) << "Severity: medium";       break;
+        case GL_DEBUG_SEVERITY_LOW:          priv::err(true /* multiLine */) << "Severity: low";          break;
+        case GL_DEBUG_SEVERITY_NOTIFICATION: priv::err(true /* multiLine */) << "Severity: notification"; break;
     }
     // clang-format on
 
-    std::cout << '\n' << std::endl;
+    priv::err() << '\n';
 }
 
 } // namespace
 
 
 ////////////////////////////////////////////////////////////
-struct GraphicsContext::Impl
+struct WindowContext::Impl
 {
     ////////////////////////////////////////////////////////////
     struct ClearAliveFlag
     {
         ~ClearAliveFlag()
         {
-            SFML_BASE_ASSERT(graphicsContextAlive);
-            graphicsContextAlive = false;
+            SFML_BASE_ASSERT(windowContextAlive);
+            windowContextAlive = false;
         }
     };
 
@@ -265,34 +264,30 @@ struct GraphicsContext::Impl
     template <typename... SharedGlContextArgs>
     explicit Impl(SharedGlContextArgs&&... args) : sharedGlContext(SFML_BASE_FORWARD(args)...)
     {
-        SFML_BASE_ASSERT(!graphicsContextAlive &&
-                         "An `sf::GraphicsContext` object is already alive, only one can exist at a time");
+        SFML_BASE_ASSERT(!windowContextAlive &&
+                         "An `sf::WindowContext` object is already alive, only one can exist at a time");
 
-        graphicsContextAlive = true;
+        windowContextAlive = true;
     }
 };
 
 
 ////////////////////////////////////////////////////////////
-GraphicsContext::GraphicsContext() : m_impl(base::makeUnique<Impl>(*this, 1u /* id */, nullptr /* shared */))
+WindowContext::WindowContext() : m_impl(base::makeUnique<Impl>(*this, 1u /* id */, nullptr /* shared */))
 {
     SFML_BASE_ASSERT(!hasActiveThreadLocalOrSharedGlContext());
 
     if (!setActiveThreadLocalGlContextToSharedContext(true))
-        priv::err() << "Could not enable shared context in GraphicsContext()";
+        priv::err() << "Could not enable shared context in WindowContext()";
 
     SFML_BASE_ASSERT(isActiveGlContextSharedContext());
 
     if (!m_impl->sharedGlContext.initialize(m_impl->sharedGlContext, ContextSettings{}))
-        priv::err() << "Could not initialize shared context in GraphicsContext()";
+        priv::err() << "Could not initialize shared context in WindowContext()";
 
     m_impl->extensions = loadExtensions(m_impl->sharedGlContext);
 
     SFML_BASE_ASSERT(isActiveGlContextSharedContext());
-
-    // TODO P0: better shader lifetime management
-    // m_impl->builtInShader = createBuiltInShader(*this);
-    // SFML_BASE_ASSERT(m_impl->builtInShader.hasValue());
 
     ensureExtensionsInit();
 
@@ -305,7 +300,7 @@ GraphicsContext::GraphicsContext() : m_impl(base::makeUnique<Impl>(*this, 1u /* 
 
 
 ////////////////////////////////////////////////////////////
-void GraphicsContext::ensureExtensionsInit() const
+void WindowContext::ensureExtensionsInit() const
 {
     SFML_BASE_ASSERT(hasActiveThreadLocalOrSharedGlContext());
 
@@ -347,21 +342,11 @@ void GraphicsContext::ensureExtensionsInit() const
 }
 
 ////////////////////////////////////////////////////////////
-GraphicsContext::~GraphicsContext()
+WindowContext::~WindowContext()
 {
     SFML_BASE_ASSERT(m_impl->unsharedFrameBuffers.empty());
 
     SFML_BASE_ASSERT(hasActiveThreadLocalOrSharedGlContext());
-
-    SFML_BASE_ASSERT(builtInShaderState != 2);
-
-    if (builtInShaderState == 1)
-    {
-        SFML_BASE_ASSERT(builtInShaderDestroyFn != nullptr);
-        builtInShaderState = 2;
-
-        builtInShaderDestroyFn();
-    }
 
     activeGlContext.id  = 0u;
     activeGlContext.ptr = nullptr;
@@ -371,7 +356,7 @@ GraphicsContext::~GraphicsContext()
 
 
 ////////////////////////////////////////////////////////////
-void GraphicsContext::registerUnsharedFrameBuffer(std::uint64_t glContextId, unsigned int frameBufferId, UnsharedDeleteFn deleteFn)
+void WindowContext::registerUnsharedFrameBuffer(std::uint64_t glContextId, unsigned int frameBufferId, UnsharedDeleteFn deleteFn)
 {
     SFML_BASE_ASSERT(getActiveThreadLocalGlContextId() == glContextId);
 
@@ -381,7 +366,7 @@ void GraphicsContext::registerUnsharedFrameBuffer(std::uint64_t glContextId, uns
 
 
 ////////////////////////////////////////////////////////////
-void GraphicsContext::unregisterUnsharedFrameBuffer(std::uint64_t glContextId, unsigned int frameBufferId)
+void WindowContext::unregisterUnsharedFrameBuffer(std::uint64_t glContextId, unsigned int frameBufferId)
 {
     // If we're not on the right context, wait for the cleanup later on
     if (getActiveThreadLocalGlContextId() != glContextId)
@@ -405,7 +390,7 @@ void GraphicsContext::unregisterUnsharedFrameBuffer(std::uint64_t glContextId, u
 
 
 ////////////////////////////////////////////////////////////
-void GraphicsContext::cleanupUnsharedFrameBuffers(priv::GlContext& glContext)
+void WindowContext::cleanupUnsharedFrameBuffers(priv::GlContext& glContext)
 {
     // Save the current context so we can restore it later
     priv::GlContext* glContextToRestore = activeGlContext.ptr;
@@ -448,33 +433,33 @@ void GraphicsContext::cleanupUnsharedFrameBuffers(priv::GlContext& glContext)
 
 
 ////////////////////////////////////////////////////////////
-const priv::GlContext* GraphicsContext::getActiveThreadLocalGlContextPtr() const
+const priv::GlContext* WindowContext::getActiveThreadLocalGlContextPtr() const
 {
-    SFML_BASE_ASSERT(graphicsContextAlive);
+    SFML_BASE_ASSERT(windowContextAlive);
     return activeGlContext.ptr;
 }
 
 
 ////////////////////////////////////////////////////////////
-std::uint64_t GraphicsContext::getActiveThreadLocalGlContextId() const
+std::uint64_t WindowContext::getActiveThreadLocalGlContextId() const
 {
-    SFML_BASE_ASSERT(graphicsContextAlive);
+    SFML_BASE_ASSERT(windowContextAlive);
     return activeGlContext.id;
 }
 
 
 ////////////////////////////////////////////////////////////
-bool GraphicsContext::hasActiveThreadLocalGlContext() const
+bool WindowContext::hasActiveThreadLocalGlContext() const
 {
-    SFML_BASE_ASSERT(graphicsContextAlive);
+    SFML_BASE_ASSERT(windowContextAlive);
     return activeGlContext.id != 0;
 }
 
 
 ////////////////////////////////////////////////////////////
-bool GraphicsContext::setActiveThreadLocalGlContext(priv::GlContext& glContext, bool active)
+bool WindowContext::setActiveThreadLocalGlContext(priv::GlContext& glContext, bool active)
 {
-    SFML_BASE_ASSERT(graphicsContextAlive);
+    SFML_BASE_ASSERT(windowContextAlive);
 
     // If `glContext` is already the active one on this thread, don't do anything
     if (active && glContext.m_id == activeGlContext.id)
@@ -493,7 +478,7 @@ bool GraphicsContext::setActiveThreadLocalGlContext(priv::GlContext& glContext, 
     // Activate/deactivate the context
     if (!glContext.makeCurrent(active))
     {
-        priv::err() << "`glContext.makeCurrent` failure in `GraphicsContext::setActiveThreadLocalGlContext`";
+        priv::err() << "`glContext.makeCurrent` failure in `WindowContext::setActiveThreadLocalGlContext`";
         return false;
     }
 
@@ -505,14 +490,14 @@ bool GraphicsContext::setActiveThreadLocalGlContext(priv::GlContext& glContext, 
 
 
 ////////////////////////////////////////////////////////////
-bool GraphicsContext::setActiveThreadLocalGlContextToSharedContext(bool active)
+bool WindowContext::setActiveThreadLocalGlContextToSharedContext(bool active)
 {
     return setActiveThreadLocalGlContext(m_impl->sharedGlContext, active);
 }
 
 
 ////////////////////////////////////////////////////////////
-void GraphicsContext::onGlContextDestroyed(priv::GlContext& glContext)
+void WindowContext::onGlContextDestroyed(priv::GlContext& glContext)
 {
     // If `glContext` is not the active one on this thread, don't do anything
     if (glContext.m_id != activeGlContext.id)
@@ -520,30 +505,30 @@ void GraphicsContext::onGlContextDestroyed(priv::GlContext& glContext)
 
     if (!setActiveThreadLocalGlContextToSharedContext(true))
     {
-        priv::err() << "Failed to enable shared GL context in `GraphicsContext::onGlContextDestroyed`";
+        priv::err() << "Failed to enable shared GL context in `WindowContext::onGlContextDestroyed`";
         SFML_BASE_ASSERT(false);
     }
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool GraphicsContext::hasActiveThreadLocalOrSharedGlContext() const
+[[nodiscard]] bool WindowContext::hasActiveThreadLocalOrSharedGlContext() const
 {
-    SFML_BASE_ASSERT(graphicsContextAlive);
+    SFML_BASE_ASSERT(windowContextAlive);
     return activeGlContext.id != 0u && activeGlContext.ptr != nullptr;
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool GraphicsContext::isActiveGlContextSharedContext() const
+[[nodiscard]] bool WindowContext::isActiveGlContextSharedContext() const
 {
-    SFML_BASE_ASSERT(graphicsContextAlive);
+    SFML_BASE_ASSERT(windowContextAlive);
     return activeGlContext.id == 1u && activeGlContext.ptr == &m_impl->sharedGlContext;
 }
 
 
 ////////////////////////////////////////////////////////////
-void GraphicsContext::loadGLEntryPointsViaGLAD() const
+void WindowContext::loadGLEntryPointsViaGLAD() const
 {
 #ifdef SFML_OPENGL_ES
     gladLoadGLES2(getGLLoadFn());
@@ -554,23 +539,23 @@ void GraphicsContext::loadGLEntryPointsViaGLAD() const
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] GraphicsContext::GLLoadFn GraphicsContext::getGLLoadFn() const
+[[nodiscard]] WindowContext::GLLoadFn WindowContext::getGLLoadFn() const
 {
-    static const sf::GraphicsContext* lastGraphicsContext;
-    lastGraphicsContext = this;
+    static const sf::WindowContext* lastWindowContext;
+    lastWindowContext = this;
 
     return [](const char* name)
     {
-        SFML_BASE_ASSERT(graphicsContextAlive);
-        return lastGraphicsContext->getFunction(name);
+        SFML_BASE_ASSERT(windowContextAlive);
+        return lastWindowContext->getFunction(name);
     };
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename... GLContextArgs>
-[[nodiscard]] base::UniquePtr<priv::GlContext> GraphicsContext::createGlContextImpl(const ContextSettings& contextSettings,
-                                                                                    GLContextArgs&&... args)
+[[nodiscard]] base::UniquePtr<priv::GlContext> WindowContext::createGlContextImpl(const ContextSettings& contextSettings,
+                                                                                  GLContextArgs&&... args)
 {
     // TODO P0: maybe graphicscontext should take a contextsetttings for teh shared context??
     // If use_count is 2 (GlResource + sharedContext) we know that we are inside sf::Context or sf::Window
@@ -591,7 +576,7 @@ template <typename... GLContextArgs>
     //     sharedGlContext.emplace(nullptr, sharedSettings, Vector2u{1, 1});
     //     if (!sharedGlContext.initialize(sharedSettings))
     //     {
-    //        priv::err() << "Could not initialize shared context in GraphicsContext::createGlContext()";
+    //        priv::err() << "Could not initialize shared context in WindowContext::createGlContext()";
     //         return nullptr;
     //     }
 
@@ -602,7 +587,7 @@ template <typename... GLContextArgs>
     const std::lock_guard lock(m_impl->sharedGlContextMutex);
 
     if (!setActiveThreadLocalGlContextToSharedContext(true))
-        priv::err() << "Error enabling shared GL context in GraphicsContext::createGlContext()";
+        priv::err() << "Error enabling shared GL context in WindowContext::createGlContext()";
 
     auto glContext = base::makeUnique<DerivedGlContextType>(*this,
                                                             m_impl->nextThreadLocalGlContextId.fetch_add(1u),
@@ -610,7 +595,7 @@ template <typename... GLContextArgs>
                                                             SFML_BASE_FORWARD(args)...);
 
     if (!setActiveThreadLocalGlContextToSharedContext(false))
-        priv::err() << "Error disabling shared GL context in GraphicsContext::createGlContext()";
+        priv::err() << "Error disabling shared GL context in WindowContext::createGlContext()";
 
     if (!setActiveThreadLocalGlContext(*glContext, true))
     {
@@ -620,7 +605,7 @@ template <typename... GLContextArgs>
 
     if (!glContext->initialize(m_impl->sharedGlContext, contextSettings))
     {
-        priv::err() << "Error initializing newly created GL context in GraphicsContext::createGlContext()";
+        priv::err() << "Error initializing newly created GL context in WindowContext::createGlContext()";
         return nullptr;
     }
 
@@ -630,37 +615,37 @@ template <typename... GLContextArgs>
 
 
 ////////////////////////////////////////////////////////////
-base::UniquePtr<priv::GlContext> GraphicsContext::createGlContext()
+base::UniquePtr<priv::GlContext> WindowContext::createGlContext()
 {
     return createGlContextImpl(ContextSettings{});
 }
 
 
 ////////////////////////////////////////////////////////////
-base::UniquePtr<priv::GlContext> GraphicsContext::createGlContext(const ContextSettings&  contextSettings,
-                                                                  const priv::WindowImpl& owner,
-                                                                  unsigned int            bitsPerPixel)
+base::UniquePtr<priv::GlContext> WindowContext::createGlContext(const ContextSettings&  contextSettings,
+                                                                const priv::WindowImpl& owner,
+                                                                unsigned int            bitsPerPixel)
 {
     return createGlContextImpl(contextSettings, contextSettings, owner, bitsPerPixel);
 }
 
 
 ////////////////////////////////////////////////////////////
-base::UniquePtr<priv::GlContext> GraphicsContext::createGlContext(const ContextSettings& contextSettings, const Vector2u& size)
+base::UniquePtr<priv::GlContext> WindowContext::createGlContext(const ContextSettings& contextSettings, const Vector2u& size)
 {
     return createGlContextImpl(contextSettings, contextSettings, size);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool GraphicsContext::isExtensionAvailable(const char* name) const
+bool WindowContext::isExtensionAvailable(const char* name) const
 {
     return base::find(m_impl->extensions.begin(), m_impl->extensions.end(), name) != m_impl->extensions.end();
 }
 
 
 ////////////////////////////////////////////////////////////
-GlFunctionPointer GraphicsContext::getFunction(const char* name) const
+GlFunctionPointer WindowContext::getFunction(const char* name) const
 {
     return m_impl->sharedGlContext.getFunction(name);
 }

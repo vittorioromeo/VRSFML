@@ -5,8 +5,8 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/EglContext.hpp>
-#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/VideoModeUtils.hpp>
+#include <SFML/Window/WindowContext.hpp>
 #include <SFML/Window/WindowImpl.hpp>
 
 #include <SFML/System/Err.hpp>
@@ -15,9 +15,10 @@
 #include <SFML/Base/Assert.hpp>
 
 #include <memory>
-#include <mutex>
 #ifdef SFML_SYSTEM_ANDROID
 #include <SFML/System/Android/Activity.hpp>
+
+#include <mutex>
 #endif
 #if defined(SFML_SYSTEM_LINUX) && !defined(SFML_USE_DRM)
 #include <SFML/Window/Unix/Utils.hpp>
@@ -107,8 +108,8 @@ bool ensureInit()
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-EglContext::EglContext(GraphicsContext& graphicsContext, std::uint64_t id, EglContext* shared) :
-GlContext(graphicsContext, id, {})
+EglContext::EglContext(WindowContext& windowContext, std::uint64_t id, EglContext* shared) :
+GlContext(windowContext, id, {})
 {
     EglContextImpl::ensureInit();
 
@@ -137,13 +138,13 @@ GlContext(graphicsContext, id, {})
 
 
 ////////////////////////////////////////////////////////////
-EglContext::EglContext(GraphicsContext&                   graphicsContext,
+EglContext::EglContext(WindowContext&                     windowContext,
                        std::uint64_t                      id,
                        EglContext*                        shared,
                        const ContextSettings&             settings,
                        [[maybe_unused]] const WindowImpl& owner,
                        unsigned int                       bitsPerPixel) :
-GlContext(graphicsContext, id, settings)
+GlContext(windowContext, id, settings)
 {
     EglContextImpl::ensureInit();
 
@@ -177,12 +178,12 @@ GlContext(graphicsContext, id, settings)
 
 
 ////////////////////////////////////////////////////////////
-EglContext::EglContext(GraphicsContext& graphicsContext,
-                       std::uint64_t    id,
+EglContext::EglContext(WindowContext& windowContext,
+                       std::uint64_t  id,
                        EglContext* /*shared*/,
                        const ContextSettings& /*settings*/,
                        Vector2u /*size*/) :
-GlContext(graphicsContext, id, {})
+GlContext(windowContext, id, {})
 {
     EglContextImpl::ensureInit();
 
@@ -196,7 +197,7 @@ GlContext(graphicsContext, id, {})
 EglContext::~EglContext()
 {
     // Notify unshared OpenGL resources of context destruction
-    m_graphicsContext.cleanupUnsharedFrameBuffers(*this);
+    m_windowContext.cleanupUnsharedFrameBuffers(*this);
 
     // Deactivate the current context
     EGLContext currentContext = EGL_NO_CONTEXT;
@@ -294,7 +295,7 @@ void EglContext::destroySurface()
 {
     // Seems to only be called by `WindowImplAndroid`
 
-    if (!m_graphicsContext.setActiveThreadLocalGlContext(*this, false))
+    if (!m_windowContext.setActiveThreadLocalGlContext(*this, false))
         err() << "Failure to disable EGL context in `EglContext::destroySurface`";
 
     eglCheck(eglDestroySurface(m_display, m_surface));

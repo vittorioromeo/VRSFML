@@ -5,11 +5,11 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/GlContext.hpp>
-#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/VideoModeUtils.hpp>
 #include <SFML/Window/Win32/Utils.hpp>
 #include <SFML/Window/Win32/WglContext.hpp>
+#include <SFML/Window/WindowContext.hpp>
 #include <SFML/Window/WindowImpl.hpp>
 
 #include <SFML/System/Err.hpp>
@@ -94,12 +94,12 @@ void ensureWGLExtensionsInit(sf::priv::WglContext& wglContext, HDC deviceContext
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-WglContext::WglContext(GraphicsContext&   graphicsContext,
+WglContext::WglContext(WindowContext&     windowContext,
                        std::uint64_t      id,
                        WglContext*        shared,
                        ContextSettings&   settings,
                        const SurfaceData& surfaceData) :
-GlContext(graphicsContext, id, settings),
+GlContext(windowContext, id, settings),
 m_surfaceData(surfaceData),
 m_context(createContext(m_settings, m_surfaceData, shared))
 {
@@ -115,31 +115,27 @@ m_context(createContext(m_settings, m_surfaceData, shared))
 
 
 ////////////////////////////////////////////////////////////
-WglContext::WglContext(GraphicsContext&  graphicsContext,
+WglContext::WglContext(WindowContext&    windowContext,
                        std::uint64_t     id,
                        WglContext*       shared,
                        ContextSettings   settings,
                        const WindowImpl& owner,
                        unsigned int      bitsPerPixel) :
-WglContext(graphicsContext, id, shared, settings, createSurface(settings, owner.getNativeHandle(), bitsPerPixel))
+WglContext(windowContext, id, shared, settings, createSurface(settings, owner.getNativeHandle(), bitsPerPixel))
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-WglContext::WglContext(GraphicsContext& graphicsContext,
-                       std::uint64_t    id,
-                       WglContext*      shared,
-                       ContextSettings  settings,
-                       Vector2u         size) :
-WglContext(graphicsContext, id, shared, settings, createSurface(settings, shared, size, VideoModeUtils::getDesktopMode().bitsPerPixel))
+WglContext::WglContext(WindowContext& windowContext, std::uint64_t id, WglContext* shared, ContextSettings settings, Vector2u size) :
+WglContext(windowContext, id, shared, settings, createSurface(settings, shared, size, VideoModeUtils::getDesktopMode().bitsPerPixel))
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-WglContext::WglContext(GraphicsContext& graphicsContext, std::uint64_t id, WglContext* shared) :
-WglContext(graphicsContext, id, shared, ContextSettings{}, {1u, 1u})
+WglContext::WglContext(WindowContext& windowContext, std::uint64_t id, WglContext* shared) :
+WglContext(windowContext, id, shared, ContextSettings{}, {1u, 1u})
 {
 }
 
@@ -148,7 +144,7 @@ WglContext(graphicsContext, id, shared, ContextSettings{}, {1u, 1u})
 WglContext::~WglContext()
 {
     // Notify unshared OpenGL resources of context destruction
-    m_graphicsContext.cleanupUnsharedFrameBuffers(*this);
+    m_windowContext.cleanupUnsharedFrameBuffers(*this);
 
     // Destroy the OpenGL context
     if (m_context)

@@ -3,13 +3,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Graphics/GraphicsContext.hpp>
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/TextureSaver.hpp>
 
 #include <SFML/Window/GLCheck.hpp>
 #include <SFML/Window/GLExtensions.hpp>
-#include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/Window.hpp>
 
 #include <SFML/System/Err.hpp>

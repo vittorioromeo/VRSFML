@@ -3,13 +3,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Graphics/GraphicsContext.hpp>
 #include <SFML/Graphics/RenderTextureImplFBO.hpp>
 
 #include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/GLCheck.hpp>
 #include <SFML/Window/GLExtensions.hpp>
 #include <SFML/Window/GlContext.hpp>
-#include <SFML/Window/GraphicsContext.hpp>
 
 #include <SFML/System/Err.hpp>
 
@@ -44,7 +44,7 @@ struct RenderTextureImplFBO::Impl
 
     using FrameBufferIdMap = std::unordered_map<std::uint64_t, unsigned int>;
 
-    GraphicsContext* graphicsContext; //!< The graphics context
+    GraphicsContext* graphicsContext; //!< The window context
 
     FrameBufferIdMap frameBuffers; //!< OpenGL frame buffer objects per context
     FrameBufferIdMap multisampleFrameBuffers; //!< base::Optional per-context OpenGL frame buffer objects with multisample attachments

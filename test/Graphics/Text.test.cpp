@@ -1,6 +1,5 @@
+#include <SFML/Graphics/GraphicsContext.hpp>
 #include <SFML/Graphics/Text.hpp>
-
-#include <SFML/Window/GraphicsContext.hpp>
 
 // Other 1st party headers
 #include <SFML/Graphics/Color.hpp>

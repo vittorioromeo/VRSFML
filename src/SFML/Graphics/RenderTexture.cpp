@@ -3,12 +3,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Graphics/GraphicsContext.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/Graphics/RenderTextureImplDefault.hpp>
 #include <SFML/Graphics/RenderTextureImplFBO.hpp>
-
-#include <SFML/Window/GraphicsContext.hpp>
 
 #include <SFML/System/Err.hpp>
 
