@@ -63,17 +63,22 @@ struct WorkItem
 
 struct ThreadPool
 {
-    std::deque<WorkItem>      workQueue;
-    std::vector<std::jthread> threads;
-    int                       pendingWorkCount    = 0;
-    bool                      workPending         = true;
-    bool                      bufferUploadPending = false;
-    std::recursive_mutex      workQueueMutex;
+    std::deque<WorkItem>     workQueue;
+    std::vector<std::thread> threads;
+    int                      pendingWorkCount    = 0;
+    bool                     workPending         = true;
+    bool                     bufferUploadPending = false;
+    std::recursive_mutex     workQueueMutex;
 
     ~ThreadPool()
     {
-        const std::lock_guard lock(workQueueMutex);
-        workPending = false;
+        {
+            const std::lock_guard lock(workQueueMutex);
+            workPending = false;
+        }
+
+        for (std::thread& t : threads)
+            t.join();
     }
 };
 

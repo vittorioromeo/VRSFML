@@ -356,4 +356,91 @@ int SocketImpl::select(SocketHandle handle, long long timeoutUs)
     return ::select(static_cast<int>(handle + 1), nullptr, &selector, nullptr, &time);
 }
 
+
+////////////////////////////////////////////////////////////
+bool SocketImpl::fdIsSet(SocketHandle handle, const FDSet& fdSet)
+{
+    return FD_ISSET(handle, static_cast<const fd_set*>(fdSet.asPtr()));
+}
+
+////////////////////////////////////////////////////////////
+void SocketImpl::fdClear(SocketHandle handle, FDSet& fdSet)
+{
+    FD_CLR(handle, static_cast<fd_set*>(fdSet.asPtr()));
+}
+
+
+////////////////////////////////////////////////////////////
+void SocketImpl::fdZero(FDSet& fdSet)
+{
+    FD_ZERO(static_cast<fd_set*>(fdSet.asPtr()));
+}
+
+
+////////////////////////////////////////////////////////////
+int SocketImpl::getFDSetSize()
+{
+    return FD_SETSIZE;
+}
+
+
+////////////////////////////////////////////////////////////
+void SocketImpl::fdSet(SocketHandle handle, FDSet& fdSet)
+{
+    FD_SET(handle, static_cast<fd_set*>(fdSet.asPtr()));
+}
+
+
+////////////////////////////////////////////////////////////
+int SocketImpl::select(int nfds, FDSet* readfds, FDSet* writefds, FDSet* exceptfds, long long timeoutUs)
+{
+    // Setup the timeout
+    timeval time{};
+    time.tv_sec  = static_cast<long>(timeoutUs / 1000000);
+    time.tv_usec = static_cast<int>(timeoutUs % 1000000);
+
+    return ::select(nfds,
+                    static_cast<fd_set*>(readfds->asPtr()),
+                    static_cast<fd_set*>(writefds->asPtr()),
+                    static_cast<fd_set*>(exceptfds->asPtr()),
+                    timeoutUs == 0ll ? nullptr : &time);
+}
+
+////////////////////////////////////////////////////////////
+struct FDSet::Impl
+{
+    fd_set set{};
+};
+
+
+////////////////////////////////////////////////////////////
+FDSet::FDSet() = default;
+
+
+////////////////////////////////////////////////////////////
+FDSet::~FDSet() = default;
+
+
+////////////////////////////////////////////////////////////
+FDSet::FDSet(const FDSet&) = default;
+
+
+////////////////////////////////////////////////////////////
+FDSet& FDSet::operator=(const FDSet&) = default;
+
+
+////////////////////////////////////////////////////////////
+void* FDSet::asPtr()
+{
+    return &m_impl->set;
+}
+
+
+////////////////////////////////////////////////////////////
+const void* FDSet::asPtr() const
+{
+    return &m_impl->set;
+}
+
+
 } // namespace sf::priv

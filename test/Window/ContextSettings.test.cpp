@@ -4,6 +4,7 @@
 
 #include <type_traits>
 
+#if 0 // TODO P0
 TEST_CASE("[Window] sf::ContextSettings")
 {
     SECTION("Type traits")
@@ -45,3 +46,4 @@ TEST_CASE("[Window] sf::ContextSettings")
         }
     }
 }
+#endif

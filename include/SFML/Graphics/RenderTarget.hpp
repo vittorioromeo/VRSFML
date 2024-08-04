@@ -433,56 +433,10 @@ public:
     [[nodiscard]] virtual bool setActive(bool active = true);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Save the current OpenGL render states and matrices
-    ///
-    /// This function can be used when you mix SFML drawing
-    /// and direct OpenGL rendering. Combined with popGLStates,
-    /// it ensures that:
-    /// \li SFML's internal states are not messed up by your OpenGL code
-    /// \li your OpenGL states are not modified by a call to a SFML function
-    ///
-    /// More specifically, it must be used around code that
-    /// calls Draw functions. Example:
-    /// \code
-    /// // OpenGL code here...
-    /// window.pushGLStates();
-    /// window.draw(...);
-    /// window.draw(...);
-    /// window.popGLStates();
-    /// // OpenGL code here...
-    /// \endcode
-    ///
-    /// Note that this function is quite expensive: it saves all the
-    /// possible OpenGL states and matrices, even the ones you
-    /// don't care about. Therefore it should be used wisely.
-    /// It is provided for convenience, but the best results will
-    /// be achieved if you handle OpenGL states yourself (because
-    /// you know which states have really changed, and need to be
-    /// saved and restored). Take a look at the resetGLStates
-    /// function if you do so.
-    ///
-    /// \see popGLStates
-    ///
-    ////////////////////////////////////////////////////////////
-    void pushGLStates();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Restore the previously saved OpenGL render states and matrices
-    ///
-    /// See the description of pushGLStates to get a detailed
-    /// description of these functions.
-    ///
-    /// \see pushGLStates
-    ///
-    ////////////////////////////////////////////////////////////
-    void popGLStates();
-
-    ////////////////////////////////////////////////////////////
     /// \brief Reset the internal OpenGL states so that the target is ready for drawing
     ///
     /// This function can be used when you mix SFML drawing
-    /// and direct OpenGL rendering, if you choose not to use
-    /// pushGLStates/popGLStates. It makes sure that all OpenGL
+    /// and direct OpenGL rendering. It makes sure that all OpenGL
     /// states needed by SFML are set, so that subsequent draw()
     /// calls will work as expected.
     ///
@@ -630,8 +584,7 @@ private:
 /// On top of that, render targets are still able to render direct
 /// OpenGL stuff. It is even possible to mix together OpenGL calls
 /// and regular SFML drawing commands. When doing so, make sure that
-/// OpenGL states are not messed up by calling the
-/// pushGLStates/popGLStates functions.
+/// OpenGL states are not messed up by calling `resetGLStates`.
 ///
 /// While render targets are moveable, it is not valid to move them
 /// between threads. This will cause your program to crash. The

@@ -526,14 +526,10 @@ void Texture::update(const Texture& texture, Vector2u dest)
     SFML_BASE_ASSERT(texture.m_texture);
     SFML_BASE_ASSERT(glCheckExpr(glIsTexture(texture.m_texture)));
 
-#ifndef SFML_OPENGL_ES // TODO P0: I think this can be removed now
-
     SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
     if (GLEXT_framebuffer_object && GLEXT_framebuffer_blit)
     {
-        SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
-
         // Save the current bindings so we can restore them after we are done
         const auto readFramebuffer = priv::getGLInteger(GLEXT_GL_READ_FRAMEBUFFER_BINDING);
         const auto drawFramebuffer = priv::getGLInteger(GLEXT_GL_DRAW_FRAMEBUFFER_BINDING);
@@ -625,8 +621,6 @@ void Texture::update(const Texture& texture, Vector2u dest)
 
         return;
     }
-
-#endif // SFML_OPENGL_ES
 
     update(texture.copyToImage(), dest);
 }

@@ -690,33 +690,6 @@ bool RenderTarget::setActive(bool active)
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::pushGLStates() // TODO P0: remove?
-{
-    if (RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) || setActive(true))
-    {
-#ifdef SFML_DEBUG
-        // make sure that the user didn't leave an unchecked OpenGL error
-        const GLenum error = glGetError();
-        if (error != GL_NO_ERROR)
-        {
-            priv::err() << "OpenGL error (" << error << ") detected in user code, "
-                        << "you should check for errors with glGetError()";
-        }
-#endif
-    }
-
-    resetGLStates();
-}
-
-
-////////////////////////////////////////////////////////////
-void RenderTarget::popGLStates() // TODO P0: remove?
-{
-    (void)(RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) || setActive(true));
-}
-
-
-////////////////////////////////////////////////////////////
 void RenderTarget::resetGLStates()
 {
     // Check here to make sure a context change does not happen after activate(true)
@@ -733,6 +706,15 @@ void RenderTarget::resetGLStates()
 
     if (RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) || setActive(true))
     {
+#ifdef SFML_DEBUG
+        // Make sure that the user didn't leave an unchecked OpenGL error
+        if (const GLenum error = glGetError(); error != GL_NO_ERROR)
+        {
+            priv::err() << "OpenGL error (" << error
+                        << ") detected in user code, you should check for errors with glGetError()";
+        }
+#endif
+
         // Make sure that the texture unit which is active is the number 0
         if (GLEXT_multitexture)
         {

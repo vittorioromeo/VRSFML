@@ -20,6 +20,7 @@ namespace sf::priv
 
 // In debug mode, perform a test on every OpenGL call
 // The do-while loop is needed so that glCheck can be used as a single statement in if/else branches
+
 #define glCheck(...)                                                        \
     do                                                                      \
     {                                                                       \
@@ -48,11 +49,44 @@ namespace sf::priv
         return result;                                                      \
     }()
 
+// The variants below are expected to fail, but we don't want to pollute the state of
+// `glGetError` so we have to call it anyway
+
+#define glCheckIgnoreWithFunc(errorFunc, ...)         \
+    do                                                \
+    {                                                 \
+        SFML_BASE_ASSERT(errorFunc() == GL_NO_ERROR); \
+                                                      \
+        __VA_ARGS__;                                  \
+                                                      \
+        while (errorFunc() != GL_NO_ERROR)            \
+        {                                             \
+            /* no-op */                               \
+        }                                             \
+    } while (false)
+
+#define glCheckIgnoreExprWithFunc(errorFunc, ...)     \
+    [&]                                               \
+    {                                                 \
+        SFML_BASE_ASSERT(errorFunc() == GL_NO_ERROR); \
+                                                      \
+        auto result = __VA_ARGS__;                    \
+                                                      \
+        while (errorFunc() != GL_NO_ERROR)            \
+        {                                             \
+            /* no-op */                               \
+        }                                             \
+                                                      \
+        return result;                                \
+    }()
+
 #else
 
 // Else, we don't add any overhead
-#define glCheck(...)     (__VA_ARGS__)
-#define glCheckExpr(...) (__VA_ARGS__)
+#define glCheck(...)                   (__VA_ARGS__)
+#define glCheckExpr(...)               (__VA_ARGS__)
+#define glCheckIgnoreWithFunc(...)     (__VA_ARGS__)
+#define glCheckIgnoreExprWithFunc(...) (__VA_ARGS__)
 
 #endif
 

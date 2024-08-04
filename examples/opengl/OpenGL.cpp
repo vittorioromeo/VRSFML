@@ -312,9 +312,8 @@ int main()
             }
 
             // Draw the background
-            window->pushGLStates();
+            window->resetGLStates();
             window->draw(background, backgroundTexture);
-            window->popGLStates();
 
             // Clear the depth buffer
             glClear(GL_DEPTH_BUFFER_BIT);
@@ -350,11 +349,10 @@ int main()
             }
 
             // Draw some text on top of our OpenGL object
-            window->pushGLStates();
+            window->resetGLStates();
             window->draw(text);
             window->draw(sRgbInstructions);
             window->draw(mipmapInstructions);
-            window->popGLStates();
 
             // Finally, display the rendered frame on screen
             window->display();

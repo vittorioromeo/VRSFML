@@ -34,6 +34,8 @@ set(SRC
     ${SRCROOT}/Keyboard.cpp
     ${INCROOT}/Mouse.hpp
     ${SRCROOT}/Mouse.cpp
+    ${INCROOT}/GameLoop.hpp
+    ${SRCROOT}/GameLoop.cpp
     ${INCROOT}/Touch.hpp
     ${SRCROOT}/Touch.cpp
     ${INCROOT}/Sensor.hpp
