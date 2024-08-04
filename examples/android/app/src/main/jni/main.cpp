@@ -9,6 +9,7 @@
 #include <SFML/Window/EventUtils.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/VideoMode.hpp>
+#include <SFML/Window/VideoModeUtils.hpp>
 
 #include <SFML/System/Path.hpp>
 #include <SFML/System/Sleep.hpp>
@@ -93,7 +94,7 @@ int main(int, char**)
     // Create the graphics context
     sf::GraphicsContext graphicsContext;
 
-    sf::VideoMode screen(sf::VideoMode::getDesktopMode());
+    sf::VideoMode screen(sf::VideoModeUtils::getDesktopMode());
 
     sf::RenderWindow window(graphicsContext, screen, "");
     window.setFramerateLimit(30);

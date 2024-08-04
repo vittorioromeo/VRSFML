@@ -1,12 +1,12 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
+#include <SFML/Audio/ChannelMap.hpp>
 #include <SFML/Audio/SoundChannel.hpp>
 
 #include <SFML/System/LifetimeDependee.hpp>
@@ -14,8 +14,6 @@
 #include <SFML/Base/InPlacePImpl.hpp>
 #include <SFML/Base/Optional.hpp>
 #include <SFML/Base/PassKey.hpp>
-
-#include <vector>
 
 #include <cstddef>
 #include <cstdint>
@@ -120,11 +118,11 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<SoundBuffer> loadFromSamples(
-        const std::int16_t*              samples,
-        std::uint64_t                    sampleCount,
-        unsigned int                     channelCount,
-        unsigned int                     sampleRate,
-        const std::vector<SoundChannel>& channelMap);
+        const std::int16_t* samples,
+        std::uint64_t       sampleCount,
+        unsigned int        channelCount,
+        unsigned int        sampleRate,
+        const ChannelMap&   channelMap);
 
     ////////////////////////////////////////////////////////////
     /// \brief Save the sound buffer to an audio file
@@ -206,7 +204,7 @@ public:
     /// \see getSampleRate, getChannelCount, getDuration
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::vector<SoundChannel> getChannelMap() const;
+    [[nodiscard]] ChannelMap getChannelMap() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the total duration of the sound
@@ -238,18 +236,19 @@ public:
     /// \brief Construct from vector of samples
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit SoundBuffer(base::PassKey<SoundBuffer>&&, std::vector<std::int16_t>&& samples);
+    [[nodiscard]] explicit SoundBuffer(base::PassKey<SoundBuffer>&&, void* samplesVectorPtr);
 
 private:
     ////////////////////////////////////////////////////////////
     /// \brief Load the sound buffer taking ownership of a vector of audio samples
     ///
     ////////////////////////////////////////////////////////////
+    template <typename TVector>
     [[nodiscard]] static base::Optional<SoundBuffer> loadFromSamplesImpl(
-        std::vector<std::int16_t>&&      samples,
-        unsigned int                     channelCount,
-        unsigned int                     sampleRate,
-        const std::vector<SoundChannel>& channelMap);
+        TVector&&         samples,
+        unsigned int      channelCount,
+        unsigned int      sampleRate,
+        const ChannelMap& channelMap);
 
     ////////////////////////////////////////////////////////////
     /// \brief Initialize the internal state after loading a new sound
@@ -271,7 +270,7 @@ private:
     /// \return True on success, false if any error happened
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool update(unsigned int channelCount, unsigned int sampleRate, const std::vector<SoundChannel>& channelMap);
+    [[nodiscard]] bool update(unsigned int channelCount, unsigned int sampleRate, const ChannelMap& channelMap);
 
     ////////////////////////////////////////////////////////////
     /// \brief Add a sound to the list of sounds that use this buffer

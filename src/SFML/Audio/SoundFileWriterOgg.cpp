@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Audio/ChannelMap.hpp>
 #include <SFML/Audio/SoundFileWriterOgg.hpp>
 
 #include <SFML/System/Err.hpp>
@@ -52,12 +53,9 @@ SoundFileWriterOgg::~SoundFileWriterOgg()
 
 
 ////////////////////////////////////////////////////////////
-bool SoundFileWriterOgg::open(const Path&                      filename,
-                              unsigned int                     sampleRate,
-                              unsigned int                     channelCount,
-                              const std::vector<SoundChannel>& channelMap)
+bool SoundFileWriterOgg::open(const Path& filename, unsigned int sampleRate, unsigned int channelCount, const ChannelMap& channelMap)
 {
-    std::vector<SoundChannel> targetChannelMap;
+    ChannelMap targetChannelMap;
 
     // For Vorbis channel mapping refer to: https://xiph.org/vorbis/doc/Vorbis_I_spec.html#x1-810004.3.9
     switch (channelCount)

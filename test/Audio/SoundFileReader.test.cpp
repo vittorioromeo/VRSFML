@@ -2,6 +2,8 @@
 
 #include <Doctest.hpp>
 
+#include <type_traits>
+
 TEST_CASE("[Audio] sf::SoundFileReader")
 {
     SECTION("Type traits")

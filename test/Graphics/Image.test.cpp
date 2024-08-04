@@ -1,4 +1,5 @@
 #include <SFML/Graphics/Image.hpp>
+#include <SFML/Graphics/ImageUtils.hpp>
 
 // Other 1st party headers
 #include <SFML/System/FileInputStream.hpp>
@@ -174,7 +175,8 @@ TEST_CASE("[Graphics] sf::Image")
 
         SECTION("Successful load")
         {
-            const auto memory = sf::Image::create({24, 24}, sf::Color::Green).value().saveToMemory(sf::Image::SaveFormat::PNG);
+            const auto memory = sf::ImageUtils::saveToMemory(sf::Image::create({24, 24}, sf::Color::Green).value(),
+                                                             sf::ImageUtils::SaveFormat::PNG);
 
             const auto image = sf::Image::loadFromMemory(memory.data(), memory.size()).value();
             CHECK(image.getSize() == sf::Vector2u{24, 24});
@@ -200,14 +202,14 @@ TEST_CASE("[Graphics] sf::Image")
 
         SECTION("No extension")
         {
-            CHECK(!image.saveToFile("wheresmyextension"));
-            CHECK(!image.saveToFile("pls/add/extension"));
+            CHECK(!sf::ImageUtils::saveToFile(image, "wheresmyextension"));
+            CHECK(!sf::ImageUtils::saveToFile(image, "pls/add/extension"));
         }
 
         SECTION("Invalid extension")
         {
-            CHECK(!image.saveToFile("test.ps"));
-            CHECK(!image.saveToFile("test.foo"));
+            CHECK(!sf::ImageUtils::saveToFile(image, "test.ps"));
+            CHECK(!sf::ImageUtils::saveToFile(image, "test.foo"));
         }
 
         SECTION("Successful save")
@@ -217,19 +219,19 @@ TEST_CASE("[Graphics] sf::Image")
             SECTION("To .bmp")
             {
                 filename /= "test.bmp";
-                CHECK(image.saveToFile(filename));
+                CHECK(sf::ImageUtils::saveToFile(image, filename));
             }
 
             SECTION("To .tga")
             {
                 filename /= "test.tga";
-                CHECK(image.saveToFile(filename));
+                CHECK(sf::ImageUtils::saveToFile(image, filename));
             }
 
             SECTION("To .png")
             {
                 filename /= "test.png";
-                CHECK(image.saveToFile(filename));
+                CHECK(sf::ImageUtils::saveToFile(image, filename));
             }
 
             // Cannot test JPEG encoding due to it triggering UB in stbiw__jpg_writeBits
@@ -252,7 +254,7 @@ TEST_CASE("[Graphics] sf::Image")
 
             SECTION("To bmp")
             {
-                output = image.saveToMemory(sf::Image::SaveFormat::BMP);
+                output = sf::ImageUtils::saveToMemory(image, sf::ImageUtils::SaveFormat::BMP);
                 REQUIRE(output.size() == 1146);
                 CHECK(output[0] == 66);
                 CHECK(output[1] == 77);
@@ -266,7 +268,7 @@ TEST_CASE("[Graphics] sf::Image")
 
             SECTION("To tga")
             {
-                output = image.saveToMemory(sf::Image::SaveFormat::TGA);
+                output = sf::ImageUtils::saveToMemory(image, sf::ImageUtils::SaveFormat::TGA);
                 REQUIRE(output.size() == 98);
                 CHECK(output[0] == 0);
                 CHECK(output[1] == 0);
@@ -276,7 +278,7 @@ TEST_CASE("[Graphics] sf::Image")
 
             SECTION("To png")
             {
-                output = image.saveToMemory(sf::Image::SaveFormat::PNG);
+                output = sf::ImageUtils::saveToMemory(image, sf::ImageUtils::SaveFormat::PNG);
                 REQUIRE(output.size() == 92);
                 CHECK(output[0] == 137);
                 CHECK(output[1] == 80);

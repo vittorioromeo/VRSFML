@@ -12,6 +12,7 @@
 #include <SFML/Window/SensorImpl.hpp>
 #include <SFML/Window/SensorManager.hpp>
 #include <SFML/Window/VideoMode.hpp>
+#include <SFML/Window/VideoModeUtils.hpp>
 #include <SFML/Window/WindowImpl.hpp>
 
 #include <SFML/System/Err.hpp>
@@ -142,8 +143,8 @@ base::UniquePtr<WindowImpl> WindowImpl::create(VideoMode mode, const String& tit
             {
                 err() << "The requested video mode is not available, switching to a valid mode";
 
-                SFML_BASE_ASSERT(!VideoMode::getFullscreenModes().empty() && "No video modes available");
-                mode = VideoMode::getFullscreenModes()[0];
+                SFML_BASE_ASSERT(!VideoModeUtils::getFullscreenModes().empty() && "No video modes available");
+                mode = VideoModeUtils::getFullscreenModes()[0];
 
                 err() << "  VideoMode: { size: { " << mode.size.x << ", " << mode.size.y
                       << " }, bitsPerPixel: " << mode.bitsPerPixel << " }";

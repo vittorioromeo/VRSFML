@@ -13,6 +13,7 @@
 #include <SFML/Graphics/Transform.hpp>
 
 #include <SFML/Audio/AudioContext.hpp>
+#include <SFML/Audio/AudioContextUtils.hpp>
 #include <SFML/Audio/EffectProcessor.hpp>
 #include <SFML/Audio/Listener.hpp>
 #include <SFML/Audio/Music.hpp>
@@ -1084,7 +1085,7 @@ int main()
     // Create the playback device and listener
     // TODO P1: docs
     auto audioContext          = sf::AudioContext::create().value();
-    auto playbackDeviceHandles = audioContext.getAvailablePlaybackDeviceHandles();
+    auto playbackDeviceHandles = sf::AudioContextUtils::getAvailablePlaybackDeviceHandles(audioContext);
 
     std::size_t currentPlaybackDeviceIndex = 0;
 
@@ -1217,7 +1218,8 @@ int main()
 
                         // We need to query the list every time we want to change
                         // since new devices could have been added in the mean time
-                        auto newPlaybackDeviceHandles = audioContext.getAvailablePlaybackDeviceHandles();
+                        auto newPlaybackDeviceHandles = sf::AudioContextUtils::getAvailablePlaybackDeviceHandles(
+                            audioContext);
 
                         // TODO P1: cleanup
                         if (playbackDeviceHandles != newPlaybackDeviceHandles)

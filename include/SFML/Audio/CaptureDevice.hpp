@@ -1,12 +1,12 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
+#include <SFML/Audio/ChannelMap.hpp>
 #include <SFML/Audio/SoundChannel.hpp>
 
 #include <SFML/System/LifetimeDependant.hpp>
@@ -14,8 +14,6 @@
 
 #include <SFML/Base/Optional.hpp>
 #include <SFML/Base/UniquePtr.hpp>
-
-#include <vector>
 
 #include <cstddef>
 #include <cstdint>
@@ -131,7 +129,7 @@ public:
     /// \return Map of position in sample frame to sound channel
     ///
     ////////////////////////////////////////////////////////////
-    const std::vector<SoundChannel>& getChannelMap() const;
+    const ChannelMap& getChannelMap() const;
 
 private:
     friend SoundRecorder;

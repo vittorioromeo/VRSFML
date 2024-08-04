@@ -5,10 +5,9 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/VideoModeImpl.hpp>
+#include <SFML/Window/VideoModeUtils.hpp>
 
 #include <SFML/Base/Algorithm.hpp>
-
-#include <algorithm>
 
 
 namespace sf
@@ -20,31 +19,9 @@ VideoMode::VideoMode(Vector2u modeSize, unsigned int modeBitsPerPixel) : size(mo
 
 
 ////////////////////////////////////////////////////////////
-VideoMode VideoMode::getDesktopMode()
-{
-    // Directly forward to the OS-specific implementation
-    return priv::VideoModeImpl::getDesktopMode();
-}
-
-
-////////////////////////////////////////////////////////////
-const std::vector<VideoMode>& VideoMode::getFullscreenModes()
-{
-    static const auto modes = []
-    {
-        std::vector<VideoMode> result = priv::VideoModeImpl::getFullscreenModes();
-        std::sort(result.begin(), result.end(), [](const auto& lhs, const auto& rhs) { return lhs > rhs; });
-        return result;
-    }();
-
-    return modes;
-}
-
-
-////////////////////////////////////////////////////////////
 bool VideoMode::isValid() const
 {
-    const std::vector<VideoMode>& modes = getFullscreenModes();
+    const std::vector<VideoMode>& modes = VideoModeUtils::getFullscreenModes();
 
     return base::find(modes.begin(), modes.end(), *this) != modes.end();
 }

@@ -20,6 +20,7 @@
 #include <SFML/Base/Macros.hpp>
 
 #include <atomic>
+#include <vector>
 
 #include <cstring>
 

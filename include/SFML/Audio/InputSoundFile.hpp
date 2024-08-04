@@ -1,19 +1,17 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
+#include <SFML/Audio/ChannelMap.hpp>
 #include <SFML/Audio/SoundChannel.hpp>
 
 #include <SFML/Base/Optional.hpp>
 #include <SFML/Base/PassKey.hpp>
 #include <SFML/Base/UniquePtr.hpp>
-
-#include <vector>
 
 #include <cstddef>
 #include <cstdint>
@@ -138,7 +136,7 @@ public:
     /// \see getSampleRate, getChannelCount, getDuration
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const std::vector<SoundChannel>& getChannelMap() const;
+    [[nodiscard]] const ChannelMap& getChannelMap() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the total duration of the sound file
@@ -240,7 +238,7 @@ public:
                                  base::UniquePtr<InputStream, StreamDeleter>&& stream,
                                  std::uint64_t                                 sampleCount,
                                  unsigned int                                  sampleRate,
-                                 std::vector<SoundChannel>&&                   channelMap);
+                                 ChannelMap&&                                  channelMap);
 
 private:
     ////////////////////////////////////////////////////////////
@@ -248,10 +246,10 @@ private:
     ////////////////////////////////////////////////////////////
     base::UniquePtr<SoundFileReader> m_reader; //!< Reader that handles I/O on the file's format
     base::UniquePtr<InputStream, StreamDeleter> m_stream{nullptr, false}; //!< Input stream used to access the file's data
-    std::uint64_t             m_sampleOffset{};                           //!< Sample Read Position
-    std::uint64_t             m_sampleCount{};                            //!< Total number of samples in the file
-    unsigned int              m_sampleRate{};                             //!< Number of samples per second
-    std::vector<SoundChannel> m_channelMap; //!< The map of position in sample frame to sound channel
+    std::uint64_t m_sampleOffset{};                                       //!< Sample Read Position
+    std::uint64_t m_sampleCount{};                                        //!< Total number of samples in the file
+    unsigned int  m_sampleRate{};                                         //!< Number of samples per second
+    ChannelMap    m_channelMap; //!< The map of position in sample frame to sound channel
 };
 
 } // namespace sf

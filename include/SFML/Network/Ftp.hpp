@@ -1,6 +1,5 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -187,7 +186,6 @@ public:
         ////////////////////////////////////////////////////////////
         Path m_directory; //!< Directory extracted from the response message
     };
-
 
     ////////////////////////////////////////////////////////////
     /// \brief Specialization of FTP response returning a

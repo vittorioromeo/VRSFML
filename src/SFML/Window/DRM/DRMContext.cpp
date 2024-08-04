@@ -5,6 +5,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/DRM/DRMContext.hpp>
 #include <SFML/Window/DRM/WindowImplDRM.hpp>
+#include <SFML/Window/VideoModeUtils.hpp>
 
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Sleep.hpp>
@@ -498,16 +499,16 @@ DRMContext::DRMContext(DRMContext* shared)
     m_display = getInitializedDisplay();
 
     // Get the best EGL config matching the default video settings
-    m_config = getBestConfig(m_display, VideoMode::getDesktopMode().bitsPerPixel, ContextSettings{});
+    m_config = getBestConfig(m_display, VideoModeUtils::getDesktopMode().bitsPerPixel, ContextSettings{});
     updateSettings();
 
     // Create EGL context
     createContext(shared);
 
     if (shared)
-        createSurface(shared->m_size, VideoMode::getDesktopMode().bitsPerPixel, false);
+        createSurface(shared->m_size, VideoModeUtils::getDesktopMode().bitsPerPixel, false);
     else // create a surface to force the GL to initialize (seems to be required for glGetString() etc )
-        createSurface({1, 1}, VideoMode::getDesktopMode().bitsPerPixel, false);
+        createSurface({1, 1}, VideoModeUtils::getDesktopMode().bitsPerPixel, false);
 }
 
 
@@ -540,12 +541,12 @@ DRMContext::DRMContext(DRMContext* shared, const ContextSettings& settings, Vect
     m_display = getInitializedDisplay();
 
     // Get the best EGL config matching the requested video settings
-    m_config = getBestConfig(m_display, VideoMode::getDesktopMode().bitsPerPixel, settings);
+    m_config = getBestConfig(m_display, VideoModeUtils::getDesktopMode().bitsPerPixel, settings);
     updateSettings();
 
     // Create EGL context
     createContext(shared);
-    createSurface(size, VideoMode::getDesktopMode().bitsPerPixel, false);
+    createSurface(size, VideoModeUtils::getDesktopMode().bitsPerPixel, false);
 }
 
 

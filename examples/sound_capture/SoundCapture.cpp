@@ -2,6 +2,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/AudioContext.hpp>
+#include <SFML/Audio/AudioContextUtils.hpp>
 #include <SFML/Audio/CaptureDevice.hpp>
 #include <SFML/Audio/CaptureDeviceHandle.hpp>
 #include <SFML/Audio/PlaybackDevice.hpp>
@@ -30,7 +31,7 @@ int main()
     auto audioContext = sf::AudioContext::create().value();
 
     // Get the available capture devices
-    auto deviceHandles = audioContext.getAvailableCaptureDeviceHandles();
+    auto deviceHandles = sf::AudioContextUtils::getAvailableCaptureDeviceHandles(audioContext);
 
     // Check if any device can capture audio
     if (deviceHandles.empty())

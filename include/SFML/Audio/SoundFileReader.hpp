@@ -1,17 +1,15 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
+#include <SFML/Audio/ChannelMap.hpp>
 #include <SFML/Audio/SoundChannel.hpp>
 
 #include <SFML/Base/Optional.hpp>
-
-#include <vector>
 
 #include <cstdint>
 
@@ -40,10 +38,10 @@ public:
     ////////////////////////////////////////////////////////////
     struct Info
     {
-        std::uint64_t             sampleCount{};  //!< Total number of samples in the file
-        unsigned int              channelCount{}; //!< Number of channels of the sound
-        unsigned int              sampleRate{};   //!< Samples rate of the sound, in samples per second
-        std::vector<SoundChannel> channelMap;     //!< Map of position in sample frame to sound channel
+        std::uint64_t sampleCount{};  //!< Total number of samples in the file
+        unsigned int  channelCount{}; //!< Number of channels of the sound
+        unsigned int  sampleRate{};   //!< Samples rate of the sound, in samples per second
+        ChannelMap    channelMap;     //!< Map of position in sample frame to sound channel
     };
 
     ////////////////////////////////////////////////////////////

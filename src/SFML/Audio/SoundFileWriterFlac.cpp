@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Audio/ChannelMap.hpp>
 #include <SFML/Audio/SoundFileWriterFlac.hpp>
 
 #include <SFML/System/Err.hpp>
@@ -15,6 +16,7 @@
 
 #include <FLAC/stream_encoder.h>
 #include <string>
+#include <vector>
 
 
 namespace sf::priv
@@ -57,12 +59,9 @@ bool SoundFileWriterFlac::check(const Path& filename)
 
 
 ////////////////////////////////////////////////////////////
-bool SoundFileWriterFlac::open(const Path&                      filename,
-                               unsigned int                     sampleRate,
-                               unsigned int                     channelCount,
-                               const std::vector<SoundChannel>& channelMap)
+bool SoundFileWriterFlac::open(const Path& filename, unsigned int sampleRate, unsigned int channelCount, const ChannelMap& channelMap)
 {
-    std::vector<SoundChannel> targetChannelMap;
+    ChannelMap targetChannelMap;
 
     // For FLAC channel mapping refer to: https://xiph.org/flac/format.html#frame_header
     switch (channelCount)

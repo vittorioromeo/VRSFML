@@ -1,19 +1,17 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Audio/Export.hpp>
 
+#include <SFML/Audio/ChannelMap.hpp>
 #include <SFML/Audio/SoundChannel.hpp>
 #include <SFML/Audio/SoundSource.hpp>
 
 #include <SFML/Base/Optional.hpp>
 #include <SFML/Base/UniquePtr.hpp>
-
-#include <vector>
 
 #include <cstddef>
 #include <cstdint>
@@ -134,7 +132,7 @@ public:
     /// \return Map of position in sample frame to sound channel
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::vector<SoundChannel> getChannelMap() const;
+    [[nodiscard]] ChannelMap getChannelMap() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current status of the stream (stopped, paused, playing)
@@ -204,7 +202,7 @@ protected:
     /// \param channelMap   Map of position in sample frame to sound channel
     ///
     ////////////////////////////////////////////////////////////
-    void initialize(unsigned int channelCount, unsigned int sampleRate, const std::vector<SoundChannel>& channelMap);
+    void initialize(unsigned int channelCount, unsigned int sampleRate, const ChannelMap& channelMap);
 
     ////////////////////////////////////////////////////////////
     /// \brief Request a new chunk of audio samples from the stream source

@@ -5,11 +5,15 @@ set(SRCROOT ${PROJECT_SOURCE_DIR}/src/SFML/Audio)
 set(SRC
     ${INCROOT}/AudioContext.hpp
     ${SRCROOT}/AudioContext.cpp
+    ${INCROOT}/AudioContextUtils.hpp
+    ${SRCROOT}/AudioContextUtils.cpp
     ${INCROOT}/AudioDeviceHandle.hpp
     ${SRCROOT}/AudioDeviceHandle.cpp
     ${SRCROOT}/CaptureDevice.cpp
     ${INCROOT}/CaptureDevice.hpp
     ${INCROOT}/CaptureDeviceHandle.hpp
+    ${SRCROOT}/ChannelMap.cpp
+    ${INCROOT}/ChannelMap.hpp
     ${INCROOT}/Export.hpp
     ${SRCROOT}/Listener.cpp
     ${INCROOT}/Listener.hpp

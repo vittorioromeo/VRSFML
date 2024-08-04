@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Audio/ChannelMap.hpp>
 #include <SFML/Audio/InputSoundFile.hpp>
 #include <SFML/Audio/SoundFileFactory.hpp>
 #include <SFML/Audio/SoundFileReader.hpp>
@@ -175,7 +176,7 @@ std::uint64_t InputSoundFile::getSampleCount() const
 ////////////////////////////////////////////////////////////
 unsigned int InputSoundFile::getChannelCount() const
 {
-    return static_cast<unsigned int>(m_channelMap.size());
+    return static_cast<unsigned int>(m_channelMap.getSize());
 }
 
 
@@ -187,7 +188,7 @@ unsigned int InputSoundFile::getSampleRate() const
 
 
 ////////////////////////////////////////////////////////////
-const std::vector<SoundChannel>& InputSoundFile::getChannelMap() const
+const ChannelMap& InputSoundFile::getChannelMap() const
 {
     return m_channelMap;
 }
@@ -197,11 +198,11 @@ const std::vector<SoundChannel>& InputSoundFile::getChannelMap() const
 Time InputSoundFile::getDuration() const
 {
     // Make sure we don't divide by 0
-    if (m_channelMap.empty() || m_sampleRate == 0)
+    if (m_channelMap.isEmpty() || m_sampleRate == 0)
         return Time::Zero;
 
-    return seconds(
-        static_cast<float>(m_sampleCount) / static_cast<float>(m_channelMap.size()) / static_cast<float>(m_sampleRate));
+    return seconds(static_cast<float>(m_sampleCount) / static_cast<float>(m_channelMap.getSize()) /
+                   static_cast<float>(m_sampleRate));
 }
 
 
@@ -209,11 +210,11 @@ Time InputSoundFile::getDuration() const
 Time InputSoundFile::getTimeOffset() const
 {
     // Make sure we don't divide by 0
-    if (m_channelMap.empty() || m_sampleRate == 0)
+    if (m_channelMap.isEmpty() || m_sampleRate == 0)
         return Time::Zero;
 
-    return seconds(
-        static_cast<float>(m_sampleOffset) / static_cast<float>(m_channelMap.size()) / static_cast<float>(m_sampleRate));
+    return seconds(static_cast<float>(m_sampleOffset) / static_cast<float>(m_channelMap.getSize()) /
+                   static_cast<float>(m_sampleRate));
 }
 
 
@@ -229,11 +230,11 @@ void InputSoundFile::seek(std::uint64_t sampleOffset)
 {
     SFML_BASE_ASSERT(m_reader != nullptr);
 
-    if (!m_channelMap.empty())
+    if (!m_channelMap.isEmpty())
     {
         // The reader handles an overrun gracefully, but we
         // pre-check to keep our known position consistent
-        m_sampleOffset = base::min(sampleOffset / m_channelMap.size() * m_channelMap.size(), m_sampleCount);
+        m_sampleOffset = base::min(sampleOffset / m_channelMap.getSize() * m_channelMap.getSize(), m_sampleCount);
         m_reader->seek(m_sampleOffset);
     }
 }
@@ -242,7 +243,7 @@ void InputSoundFile::seek(std::uint64_t sampleOffset)
 ////////////////////////////////////////////////////////////
 void InputSoundFile::seek(Time timeOffset)
 {
-    seek(static_cast<std::size_t>(timeOffset.asSeconds() * static_cast<float>(m_sampleRate)) * m_channelMap.size());
+    seek(static_cast<std::size_t>(timeOffset.asSeconds() * static_cast<float>(m_sampleRate)) * m_channelMap.getSize());
 }
 
 
@@ -265,7 +266,7 @@ InputSoundFile::InputSoundFile(base::PassKey<InputSoundFile>&&,
                                base::UniquePtr<InputStream, StreamDeleter>&& stream,
                                std::uint64_t                                 sampleCount,
                                unsigned int                                  sampleRate,
-                               std::vector<SoundChannel>&&                   channelMap) :
+                               ChannelMap&&                                  channelMap) :
 m_reader(SFML_BASE_MOVE(reader)),
 m_stream(SFML_BASE_MOVE(stream)),
 m_sampleCount(sampleCount),

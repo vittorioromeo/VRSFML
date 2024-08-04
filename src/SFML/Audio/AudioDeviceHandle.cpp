@@ -41,6 +41,13 @@ AudioDeviceHandle{maDeviceInfo}
 
 
 ////////////////////////////////////////////////////////////
+AudioDeviceHandle::AudioDeviceHandle(base::PassKey<AudioContextUtils>&&, const void* maDeviceInfo) :
+AudioDeviceHandle{maDeviceInfo}
+{
+}
+
+
+////////////////////////////////////////////////////////////
 AudioDeviceHandle::AudioDeviceHandle(base::PassKey<PlaybackDevice>&&, const void* maDeviceInfo) :
 AudioDeviceHandle{maDeviceInfo}
 {

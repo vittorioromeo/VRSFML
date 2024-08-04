@@ -1,6 +1,5 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -12,10 +11,17 @@
 #include <SFML/Base/Optional.hpp>
 
 #include <iosfwd>
-#include <string>
-#include <string_view>
 
 #include <cstdint>
+
+
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+namespace sf
+{
+class IpAddressUtils;
+} // namespace sf
 
 
 namespace sf
@@ -28,23 +34,10 @@ class SFML_NETWORK_API IpAddress
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Construct the address from a null-terminated string view
-    ///
-    /// Here \a address can be either a decimal address
-    /// (ex: "192.168.1.56") or a network name (ex: "localhost").
-    ///
-    /// \param address IP address or network name
-    ///
-    /// \return Address if provided argument was valid, otherwise `base::nullOpt`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<IpAddress> resolve(std::string_view address);
-
-    ////////////////////////////////////////////////////////////
     /// \brief Construct the address from 4 bytes
     ///
     /// Calling IpAddress(a, b, c, d) is equivalent to calling
-    /// IpAddress::resolve("a.b.c.d"), but safer as it doesn't
+    /// IpAddressUtils::resolve("a.b.c.d"), but safer as it doesn't
     /// have to parse a string to get the address components.
     ///
     /// \param byte0 First byte of the address
@@ -69,20 +62,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit IpAddress(std::uint32_t address);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get a string representation of the address
-    ///
-    /// The returned string is the decimal representation of the
-    /// IP address (like "192.168.1.56"), even if it was constructed
-    /// from a host name.
-    ///
-    /// \return String representation of the address
-    ///
-    /// \see toInteger
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string toString() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get an integer representation of the address
@@ -150,6 +129,7 @@ public:
     // NOLINTEND(readability-identifier-naming)
 
 private:
+    friend IpAddressUtils;
     friend SFML_NETWORK_API bool operator<(IpAddress left, IpAddress right);
 
     ////////////////////////////////////////////////////////////
@@ -260,12 +240,12 @@ SFML_NETWORK_API std::ostream& operator<<(std::ostream& stream, IpAddress addres
 ///
 /// Usage example:
 /// \code
-/// auto a2 = sf::IpAddress::resolve("127.0.0.1");      // the local host address
+/// auto a2 = sf::IpAddressUtils::resolve("127.0.0.1");      // the local host address
 /// auto a3 = sf::IpAddress::Broadcast;                 // the broadcast address
 /// sf::IpAddress a4(192, 168, 1, 56);                  // a local address
-/// auto a5 = sf::IpAddress::resolve("my_computer");    // a local address created from a network name
-/// auto a6 = sf::IpAddress::resolve("89.54.1.169");    // a distant address
-/// auto a7 = sf::IpAddress::resolve("www.google.com"); // a distant address created from a network name
+/// auto a5 = sf::IpAddressUtils::resolve("my_computer");    // a local address created from a network name
+/// auto a6 = sf::IpAddressUtils::resolve("89.54.1.169");    // a distant address
+/// auto a7 = sf::IpAddressUtils::resolve("www.google.com"); // a distant address created from a network name
 /// auto a8 = sf::IpAddress::getLocalAddress();         // my address on the local network
 /// auto a9 = sf::IpAddress::getPublicAddress();        // my address on the internet
 /// \endcode
