@@ -296,9 +296,8 @@ private:
 ///     ...
 ///
 ///     // Draw a background sprite
-///     window.pushGLStates();
+///     window.resetGLStates();
 ///     window.draw(sprite, texture);
-///     window.popGLStates();
 ///
 ///     // Draw a 3D object using OpenGL
 ///     glBegin(GL_TRIANGLES);
@@ -307,9 +306,8 @@ private:
 ///     glEnd();
 ///
 ///     // Draw text on top of the 3D object
-///     window.pushGLStates();
+///     window.resetGLStates();
 ///     window.draw(text);
-///     window.popGLStates();
 ///
 ///     // Finally, display the rendered frame on screen
 ///     window.display();

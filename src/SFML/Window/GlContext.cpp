@@ -4,6 +4,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/ContextSettings.hpp>
+#include <SFML/Window/GLCheck.hpp>
 #include <SFML/Window/GlContext.hpp>
 #include <SFML/Window/GlContextTypeImpl.hpp>
 #include <SFML/Window/WindowContext.hpp>
@@ -107,37 +108,6 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
         return false;
     }
 
-// These functions are expected to fail, but we don't want to pollute the state of `glGetError` so we have to call it anyway
-#define SFML_PRIV_GLCHECK_INNER(...)                             \
-    do                                                           \
-    {                                                            \
-        SFML_BASE_ASSERT(glGetErrorFunc() == GL_NO_ERROR);       \
-                                                                 \
-        __VA_ARGS__;                                             \
-                                                                 \
-        if (glGetErrorFunc() != GL_NO_ERROR)                     \
-        {                                                        \
-            /* err() << "Inner GL error: '" #__VA_ARGS__ "'"; */ \
-        }                                                        \
-                                                                 \
-    } while (false)
-
-#define SFML_PRIV_GLCHECK_INNER_EXPR(...)                        \
-    [&]                                                          \
-    {                                                            \
-        SFML_BASE_ASSERT(glGetErrorFunc() == GL_NO_ERROR);       \
-                                                                 \
-        auto result = __VA_ARGS__;                               \
-                                                                 \
-        if (glGetErrorFunc() != GL_NO_ERROR)                     \
-        {                                                        \
-            /* err() << "Inner GL error: '" #__VA_ARGS__ "'"; */ \
-        }                                                        \
-                                                                 \
-        return result;                                           \
-    }()
-
-
 #if defined(SFML_SYSTEM_EMSCRIPTEN)
 
     // Hardcoded for WebGL 2.0
@@ -166,7 +136,8 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
         m_settings.majorVersion = 1;
         m_settings.minorVersion = 1;
 
-        if (const char* version = reinterpret_cast<const char*>(SFML_PRIV_GLCHECK_INNER_EXPR(glGetStringFunc(GL_VERSION))))
+        if (const char* version = reinterpret_cast<const char*>(
+                glCheckIgnoreExprWithFunc(glGetErrorFunc, glGetStringFunc(GL_VERSION))))
         {
             // OpenGL ES Common Lite profile: The beginning of the returned string is "OpenGL ES-CL major.minor"
             // OpenGL ES Common profile:      The beginning of the returned string is "OpenGL ES-CM major.minor"
@@ -228,7 +199,7 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
     {
         // Retrieve the context flags
         int flags = 0;
-        SFML_PRIV_GLCHECK_INNER(glGetIntegervFunc(GL_CONTEXT_FLAGS, &flags));
+        glCheckIgnoreWithFunc(glGetErrorFunc, glGetIntegervFunc(GL_CONTEXT_FLAGS, &flags));
 
         if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
             m_settings.attributeFlags |= ContextSettings::Attribute::Debug;
@@ -243,7 +214,7 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
             if (glGetStringiFunc)
             {
                 int numExtensions = 0;
-                SFML_PRIV_GLCHECK_INNER(glGetIntegervFunc(GL_NUM_EXTENSIONS, &numExtensions));
+                glCheckIgnoreWithFunc(glGetErrorFunc, glGetIntegervFunc(GL_NUM_EXTENSIONS, &numExtensions));
 
                 for (unsigned int i = 0; i < static_cast<unsigned int>(numExtensions); ++i)
                 {
@@ -261,7 +232,7 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
         {
             // Retrieve the context profile
             int profile = 0;
-            SFML_PRIV_GLCHECK_INNER(glGetIntegervFunc(GL_CONTEXT_PROFILE_MASK, &profile));
+            glCheckIgnoreWithFunc(glGetErrorFunc, glGetIntegervFunc(GL_CONTEXT_PROFILE_MASK, &profile));
 
             if (profile & GL_CONTEXT_CORE_PROFILE_BIT)
                 m_settings.attributeFlags |= ContextSettings::Attribute::Core;
@@ -273,7 +244,7 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
     // Enable anti-aliasing if requested by the user and supported
     if ((requestedSettings.antialiasingLevel > 0) && (m_settings.antialiasingLevel > 0))
     {
-        SFML_PRIV_GLCHECK_INNER(glEnableFunc(GL_MULTISAMPLE));
+        glCheckIgnoreWithFunc(glGetErrorFunc, glEnableFunc(GL_MULTISAMPLE));
     }
     else
     {
@@ -283,10 +254,10 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
     // Enable sRGB if requested by the user and supported
     if (requestedSettings.sRgbCapable && m_settings.sRgbCapable)
     {
-        SFML_PRIV_GLCHECK_INNER(glEnableFunc(GL_FRAMEBUFFER_SRGB));
+        glCheckIgnoreWithFunc(glGetErrorFunc, glEnableFunc(GL_FRAMEBUFFER_SRGB));
 
         // Check to see if the enable was successful
-        if (SFML_PRIV_GLCHECK_INNER_EXPR(glIsEnabledFunc(GL_FRAMEBUFFER_SRGB)) == GL_FALSE)
+        if (glCheckIgnoreExprWithFunc(glGetErrorFunc, glIsEnabledFunc(GL_FRAMEBUFFER_SRGB)) == GL_FALSE)
         {
             err() << "Warning: Failed to enable GL_FRAMEBUFFER_SRGB";
             m_settings.sRgbCapable = false;
@@ -298,7 +269,6 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
     }
 
     return true;
-#undef SFML_PRIV_GLCHECK_INNER
 }
 
 

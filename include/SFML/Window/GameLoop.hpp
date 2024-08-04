@@ -1,8 +1,5 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
-
-// TODO P0: cleanup
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -11,18 +8,7 @@
 
 #include <SFML/Base/Macros.hpp>
 #include <SFML/Base/Traits/IsRvalueReference.hpp>
-
-#ifdef SFML_SYSTEM_EMSCRIPTEN
-#include <emscripten.h>
-#endif
-
-
-////////////////////////////////////////////////////////////
-// Forward declarations TODO P1: docs
-////////////////////////////////////////////////////////////
-namespace sf
-{
-} // namespace sf
+#include <SFML/Base/Traits/RemoveCVRef.hpp>
 
 
 namespace sf::GameLoop::priv
@@ -41,42 +27,24 @@ enum class [[nodiscard]] ControlFlow
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-struct Runner
-{
-    template <typename F>
-    void operator|(F&& func);
-};
+void runImpl(ControlFlow (*func)());
 
 } // namespace sf::GameLoop::priv
 
 
 namespace sf::GameLoop
 {
-
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
+[[nodiscard]] priv::ControlFlow continueLoop();
 
 ////////////////////////////////////////////////////////////
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] inline priv::ControlFlow continueLoop()
-{
-    return priv::ControlFlow::Continue;
-}
-
-
-////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] inline priv::ControlFlow breakLoop()
-{
-#ifdef SFML_SYSTEM_EMSCRIPTEN
-    emscripten_cancel_main_loop();
-#endif
-
-    return priv::ControlFlow::Break;
-}
-
+[[nodiscard]] priv::ControlFlow breakLoop();
 
 ////////////////////////////////////////////////////////////
 /// \brief TODO P1: docs
@@ -85,26 +53,18 @@ namespace sf::GameLoop
 template <typename F>
 void run(F&& func)
 {
-#ifdef SFML_SYSTEM_EMSCRIPTEN
     if constexpr (base::isRvalueReference<F>)
     {
-        thread_local F pinnedFunc;
+        thread_local SFML_BASE_REMOVE_CVREF(F) pinnedFunc;
         pinnedFunc = SFML_BASE_MOVE(func);
-
-        emscripten_set_main_loop([] { (void)pinnedFunc(); }, 0 /* fps */, true /* infinite loop */);
+        priv::runImpl([]() -> priv::ControlFlow { return pinnedFunc(); });
     }
     else
     {
         thread_local F* pinnedFunc;
         pinnedFunc = &func;
-
-        emscripten_set_main_loop([] { (void)(*pinnedFunc)(); }, 0 /* fps */, true /* infinite loop */);
+        priv::runImpl([]() -> priv::ControlFlow { return (*pinnedFunc)(); });
     }
-#else
-    while (true)
-        if (func() == priv::ControlFlow::Break)
-            break;
-#endif
 }
 
 } // namespace sf::GameLoop
@@ -113,19 +73,38 @@ void run(F&& func)
 namespace sf::GameLoop::priv
 {
 ////////////////////////////////////////////////////////////
-template <typename F>
-void Runner::operator|(F&& func)
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
+struct Runner
 {
-    run(SFML_BASE_FORWARD(func));
-}
+    template <typename F>
+    void operator|(F&& func)
+    {
+        run(SFML_BASE_FORWARD(func));
+    }
+};
 
 } // namespace sf::GameLoop::priv
 
+
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(bugprone-macro-parentheses)
 #define SFML_GAME_LOOP ::sf::GameLoop::priv::Runner{} | [&]
 
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
 #define SFML_GAME_LOOP_BREAK return ::sf::GameLoop::breakLoop()
 
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
 #define SFML_GAME_LOOP_CONTINUE return ::sf::GameLoop::continueLoop()
 
 
