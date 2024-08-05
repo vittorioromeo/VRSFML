@@ -4,8 +4,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/RenderTextureImpl.hpp>
-
 #include <SFML/System/Vector2.hpp>
 
 #include <SFML/Base/InPlacePImpl.hpp>
@@ -19,11 +17,11 @@ struct ContextSettings;
 namespace priv
 {
 ////////////////////////////////////////////////////////////
-/// \brief Specialization of RenderTextureImpl using the
+/// \brief Render texture implementation using the
 ///        FrameBuffer Object OpenGL extension
 ///
 ////////////////////////////////////////////////////////////
-class RenderTextureImplFBO : public RenderTextureImpl
+class RenderTextureImplFBO
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -36,7 +34,31 @@ public:
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    ~RenderTextureImplFBO() override;
+    ~RenderTextureImplFBO();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    RenderTextureImplFBO(const RenderTextureImplFBO&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    RenderTextureImplFBO& operator=(const RenderTextureImplFBO&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    RenderTextureImplFBO(RenderTextureImplFBO&&) noexcept;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    RenderTextureImplFBO& operator=(RenderTextureImplFBO&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Check whether the system supports FBOs or not
@@ -60,7 +82,6 @@ public:
     ////////////////////////////////////////////////////////////
     static void unbind();
 
-private:
     ////////////////////////////////////////////////////////////
     /// \brief Create the render texture implementation
     ///
@@ -71,7 +92,7 @@ private:
     /// \return True if creation has been successful
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool create(Vector2u size, unsigned int textureId, const ContextSettings& settings) override;
+    [[nodiscard]] bool create(Vector2u size, unsigned int textureId, const ContextSettings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create an FBO in the current context
@@ -89,7 +110,7 @@ private:
     /// \return True on success, false on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool activate(bool active) override;
+    [[nodiscard]] bool activate(bool active);
 
     ////////////////////////////////////////////////////////////
     /// \brief Tell if the render-texture will use sRGB encoding when drawing on it
@@ -100,7 +121,7 @@ private:
     /// \return True if the render-texture use sRGB encoding, false otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isSrgb() const override;
+    [[nodiscard]] bool isSrgb() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the pixels of the target texture
@@ -108,8 +129,9 @@ private:
     /// \param textureId OpenGL identifier of the target texture
     ///
     ////////////////////////////////////////////////////////////
-    void updateTexture(unsigned textureId) override;
+    void updateTexture(unsigned textureId);
 
+private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////

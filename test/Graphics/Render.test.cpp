@@ -4,6 +4,7 @@
 #include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/Graphics/StencilMode.hpp>
+#include <SFML/Graphics/Texture.hpp>
 
 #include <Doctest.hpp>
 

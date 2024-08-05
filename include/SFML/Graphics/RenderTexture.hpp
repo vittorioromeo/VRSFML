@@ -7,7 +7,6 @@
 #include <SFML/Graphics/Export.hpp>
 
 #include <SFML/Graphics/RenderTarget.hpp>
-#include <SFML/Graphics/Texture.hpp>
 
 #include <SFML/Window/ContextSettings.hpp>
 
@@ -15,17 +14,12 @@
 
 #include <SFML/Base/Optional.hpp>
 #include <SFML/Base/PassKey.hpp>
-#include <SFML/Base/UniquePtr.hpp>
 
 
 namespace sf
 {
 class GraphicsContext;
-
-namespace priv
-{
-class RenderTextureImpl;
-}
+class Texture;
 
 ////////////////////////////////////////////////////////////
 /// \brief Target for off-screen 2D rendering into a texture
@@ -227,14 +221,18 @@ public:
     /// \brief Construct from texture
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit RenderTexture(base::PassKey<RenderTexture>&&, GraphicsContext& graphicsContext, Texture&& texture);
+    template <typename TRenderTextureImplTag>
+    [[nodiscard]] explicit RenderTexture(base::PassKey<RenderTexture>&&,
+                                         GraphicsContext&      graphicsContext,
+                                         TRenderTextureImplTag renderTextureImplTag,
+                                         Texture&&             texture);
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    base::UniquePtr<priv::RenderTextureImpl> m_impl;    //!< Platform/hardware specific implementation
-    Texture                                  m_texture; //!< Target texture to draw on
+    struct Impl;
+    base::InPlacePImpl<Impl, 384> m_impl; //!< Implementation details
 };
 
 } // namespace sf
