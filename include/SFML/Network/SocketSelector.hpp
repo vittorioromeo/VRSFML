@@ -68,10 +68,12 @@ public:
     ///
     /// \param socket Reference to the socket to add
     ///
+    /// \return `false` if an error occurs, `true` otherwise
+    ///
     /// \see remove, clear
     ///
     ////////////////////////////////////////////////////////////
-    void add(Socket& socket);
+    [[nodiscard]] bool add(Socket& socket);
 
     ////////////////////////////////////////////////////////////
     /// \brief Remove a socket from the selector
@@ -81,10 +83,12 @@ public:
     ///
     /// \param socket Reference to the socket to remove
     ///
+    /// \return `false` if an error occurs, `true` otherwise
+    ///
     /// \see add, clear
     ///
     ////////////////////////////////////////////////////////////
-    void remove(Socket& socket);
+    [[nodiscard]] bool remove(Socket& socket);
 
     ////////////////////////////////////////////////////////////
     /// \brief Remove all the sockets stored in the selector

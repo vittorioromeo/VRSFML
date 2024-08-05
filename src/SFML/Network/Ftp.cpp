@@ -10,6 +10,7 @@
 #include <SFML/System/Path.hpp>
 
 #include <SFML/Base/Algorithm.hpp>
+#include <SFML/Base/Assert.hpp>
 #include <SFML/Base/Macros.hpp>
 
 #include <fstream>
@@ -128,6 +129,11 @@ const std::vector<std::string>& Ftp::ListingResponse::getListing() const
     return m_listing;
 }
 
+////////////////////////////////////////////////////////////
+Ftp::Ftp() : m_commandSocket(/* isBlocking */ true)
+{
+}
+
 
 ////////////////////////////////////////////////////////////
 Ftp::~Ftp()
@@ -172,7 +178,10 @@ Ftp::Response Ftp::disconnect()
     // Send the exit command
     Response response = sendCommand("QUIT");
     if (response.isOk())
-        m_commandSocket.disconnect();
+    {
+        const bool rc = m_commandSocket.disconnect();
+        SFML_BASE_ASSERT(rc);
+    }
 
     return response;
 }
@@ -500,7 +509,7 @@ Ftp::Response Ftp::getResponse()
 
 
 ////////////////////////////////////////////////////////////
-Ftp::DataChannel::DataChannel(Ftp& owner) : m_ftp(owner)
+Ftp::DataChannel::DataChannel(Ftp& owner) : m_ftp(owner), m_dataSocket(/* isBlocking */ true)
 {
 }
 
@@ -588,7 +597,8 @@ void Ftp::DataChannel::receive(std::ostream& stream)
     }
 
     // Close the data socket
-    m_dataSocket.disconnect();
+    const bool rc = m_dataSocket.disconnect();
+    SFML_BASE_ASSERT(rc);
 }
 
 
@@ -626,7 +636,8 @@ void Ftp::DataChannel::send(std::istream& stream)
     }
 
     // Close the data socket
-    m_dataSocket.disconnect();
+    const bool rc = m_dataSocket.disconnect();
+    SFML_BASE_ASSERT(rc);
 }
 
 } // namespace sf

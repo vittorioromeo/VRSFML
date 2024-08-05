@@ -33,7 +33,7 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
     {
         SECTION("Invalid filename")
         {
-            CHECK(!sf::Font::openFromFile(graphicsContext, "does/not/exist.ttf"));
+            CHECK(!sf::Font::openFromFile(graphicsContext, "does/not/exist.ttf").hasValue());
         }
 
         SECTION("Valid file")
@@ -67,9 +67,9 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
     {
         SECTION("Invalid data and size")
         {
-            CHECK(!sf::Font::openFromMemory(graphicsContext, nullptr, 1));
+            CHECK(!sf::Font::openFromMemory(graphicsContext, nullptr, 1).hasValue());
             const std::byte testByte{0xCD};
-            CHECK(!sf::Font::openFromMemory(graphicsContext, &testByte, 0));
+            CHECK(!sf::Font::openFromMemory(graphicsContext, &testByte, 0).hasValue());
         }
 
         SECTION("Valid data")

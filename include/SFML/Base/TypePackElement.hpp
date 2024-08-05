@@ -1,6 +1,11 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include <SFML/Base/SizeT.hpp>
+
 
 #if __has_builtin(__type_pack_element)
 
@@ -11,8 +16,8 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-template <decltype(sizeof(int)) N, typename... Ts>
-using typePackElement = SFML_BASE_TYPE_PACK_ELEMENT(N, Ts...);
+template <SizeT N, typename... Ts>
+using TypePackElement = SFML_BASE_TYPE_PACK_ELEMENT(N, Ts...);
 
 } // namespace sf::base
 
@@ -29,7 +34,7 @@ struct TypeWrapper
 
 
 ////////////////////////////////////////////////////////////
-template <decltype(sizeof(int)) N,
+template <SizeT N,
           typename T0 = void,
           typename T1 = void,
           typename T2 = void,
@@ -65,11 +70,11 @@ namespace sf::base
 {
 ////////////////////////////////////////////////////////////
 template <SizeT N, typename... Ts>
-using typePackElement = typename decltype(typePackElementImpl<N, Ts...>())::type;
+using TypePackElement = typename decltype(typePackElementImpl<N, Ts...>())::type;
 
 
 ////////////////////////////////////////////////////////////
-#define SFML_BASE_TYPE_PACK_ELEMENT(N, ...) ::sf::base::typePackElement<N, __VA_ARGS__>
+#define SFML_BASE_TYPE_PACK_ELEMENT(N, ...) ::sf::base::TypePackElement<N, __VA_ARGS__>
 
 } // namespace sf::base
 

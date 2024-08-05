@@ -21,7 +21,7 @@
 void runTcpServer(unsigned short port)
 {
     // Create a server socket to accept new connections
-    sf::TcpListener listener;
+    sf::TcpListener listener(/* isBlocking */ true);
 
     // Listen to the given port for incoming connections
     if (listener.listen(port) != sf::Socket::Status::Done)
@@ -29,7 +29,7 @@ void runTcpServer(unsigned short port)
     std::cout << "Server is listening to port " << port << ", waiting for connections... " << std::endl;
 
     // Wait for a connection
-    sf::TcpSocket socket;
+    sf::TcpSocket socket(/* isBlocking */ true);
     if (listener.accept(socket) != sf::Socket::Status::Done)
         return;
     std::cout << "Client connected: " << socket.getRemoteAddress().value() << std::endl;
@@ -65,7 +65,7 @@ void runTcpClient(unsigned short port)
     } while (!server.hasValue());
 
     // Create a socket for communicating with the server
-    sf::TcpSocket socket;
+    sf::TcpSocket socket(/* isBlocking */ true);
 
     // Connect to the server
     if (socket.connect(server.value(), port) != sf::Socket::Status::Done)

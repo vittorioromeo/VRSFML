@@ -73,9 +73,9 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
             REQUIRE(elapsed < sf::TimeChronoUtil::toDuration(timeout + sf::milliseconds(50)));
 
             if (elapsed <= sf::TimeChronoUtil::toDuration(timeout))
-                CHECK(event);
+                CHECK(event.hasValue());
             else
-                CHECK(!event);
+                CHECK(!event.hasValue());
         }
     }
 

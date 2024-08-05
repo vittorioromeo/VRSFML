@@ -29,13 +29,9 @@
 #include "TargetConditionals.h"
 
 #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
-
-// iOS
 #define SFML_SYSTEM_IOS
 
 #elif TARGET_OS_MAC
-
-// macOS
 #define SFML_SYSTEM_MACOS
 
 #else
@@ -49,33 +45,25 @@
 
 // UNIX system, see which one it is
 #if defined(__ANDROID__)
-
-// Android
 #define SFML_SYSTEM_ANDROID
 
 #elif defined(__linux__)
-
-// Linux
 #define SFML_SYSTEM_LINUX
+#define SFML_SYSTEM_LINUX_OR_BSD
 
 #elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-
-// FreeBSD
 #define SFML_SYSTEM_FREEBSD
+#define SFML_SYSTEM_LINUX_OR_BSD
 
 #elif defined(__OpenBSD__)
-
-// OpenBSD
 #define SFML_SYSTEM_OPENBSD
+#define SFML_SYSTEM_LINUX_OR_BSD
 
 #elif defined(__NetBSD__)
-
-// NetBSD
 #define SFML_SYSTEM_NETBSD
+#define SFML_SYSTEM_LINUX_OR_BSD
 
 #elif defined(__EMSCRIPTEN__)
-
-// Emscripten
 #define SFML_SYSTEM_EMSCRIPTEN
 
 #else

@@ -224,7 +224,7 @@ base::Optional<Font> Font::openFromFile(GraphicsContext& graphicsContext, const 
         return base::nullOpt;
     }
 
-    return sf::base::makeOptional<Font>(base::PassKey<Font>{}, graphicsContext, &fontHandles, face->family_name);
+    return base::makeOptional<Font>(base::PassKey<Font>{}, graphicsContext, &fontHandles, face->family_name);
 
 #else
 
@@ -279,7 +279,7 @@ base::Optional<Font> Font::openFromMemory(GraphicsContext& graphicsContext, cons
         return base::nullOpt;
     }
 
-    return sf::base::makeOptional<Font>(base::PassKey<Font>{}, graphicsContext, &fontHandles, face->family_name);
+    return base::makeOptional<Font>(base::PassKey<Font>{}, graphicsContext, &fontHandles, face->family_name);
 }
 
 
@@ -341,7 +341,7 @@ base::Optional<Font> Font::openFromStream(GraphicsContext& graphicsContext, Inpu
         return base::nullOpt;
     }
 
-    return sf::base::makeOptional<Font>(base::PassKey<Font>{}, graphicsContext, &fontHandles, face->family_name);
+    return base::makeOptional<Font>(base::PassKey<Font>{}, graphicsContext, &fontHandles, face->family_name);
 }
 
 
@@ -731,7 +731,7 @@ IntRect Font::findGlyphRect(GraphicsContext& graphicsContext, Page& page, Vector
             {
                 // Make the texture 2 times bigger
                 auto newTexture = sf::Texture::create(graphicsContext, textureSize * 2u);
-                if (!newTexture)
+                if (!newTexture.hasValue())
                 {
                     priv::err() << "Failed to create new page texture";
                     return rect;
@@ -829,7 +829,7 @@ base::Optional<Font::Page> Font::Page::create(GraphicsContext& graphicsContext, 
     }
 
     texture->setSmooth(smooth);
-    return sf::base::makeOptional<Page>(SFML_BASE_MOVE(*texture));
+    return base::makeOptional<Page>(SFML_BASE_MOVE(*texture));
 }
 
 

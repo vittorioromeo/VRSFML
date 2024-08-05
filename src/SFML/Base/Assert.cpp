@@ -3,9 +3,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Config.hpp>
+
 #include <SFML/Base/Assert.hpp>
 
-#ifndef NDEBUG
+#ifdef SFML_DEBUG
 
 #ifdef SFML_ENABLE_STACK_TRACES
 #include <cpptrace/cpptrace.hpp>

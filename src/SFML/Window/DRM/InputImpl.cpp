@@ -657,7 +657,7 @@ base::Optional<Event> checkEvent()
 
     if (!eventQueue.empty())
     {
-        auto event = sf::base::makeOptional(eventQueue.front());
+        auto event = base::makeOptional(eventQueue.front());
         eventQueue.pop();
 
         return event;
@@ -673,7 +673,7 @@ base::Optional<Event> checkEvent()
     // sure of a good way to handle generating multiple events at once.)
     if (!eventQueue.empty())
     {
-        auto event = sf::base::makeOptional(eventQueue.front());
+        auto event = base::makeOptional(eventQueue.front());
         eventQueue.pop();
 
         return event;

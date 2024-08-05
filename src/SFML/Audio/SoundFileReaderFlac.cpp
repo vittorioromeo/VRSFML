@@ -349,7 +349,7 @@ base::Optional<SoundFileReader::Info> SoundFileReaderFlac::open(InputStream& str
     }
 
     // Retrieve the sound properties
-    return sf::base::makeOptional(m_impl->clientData.info); // was filled in the "metadata" callback
+    return base::makeOptional(m_impl->clientData.info); // was filled in the "metadata" callback
 }
 
 

@@ -52,7 +52,7 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
     {
         SECTION("Invalid file")
         {
-            CHECK(!sf::Music::openFromFile("does/not/exist.wav"));
+            CHECK(!sf::Music::openFromFile("does/not/exist.wav").hasValue());
         }
 
         SECTION("Valid file")
@@ -77,7 +77,7 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
 
         SECTION("Invalid buffer")
         {
-            CHECK(!sf::Music::openFromMemory(memory.data(), memory.size()));
+            CHECK(!sf::Music::openFromMemory(memory.data(), memory.size()).hasValue());
         }
 
         SECTION("Valid buffer")

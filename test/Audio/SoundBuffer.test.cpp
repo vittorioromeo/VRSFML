@@ -56,7 +56,7 @@ TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
     {
         SECTION("Invalid filename")
         {
-            CHECK(!sf::SoundBuffer::loadFromFile("does/not/exist.wav"));
+            CHECK(!sf::SoundBuffer::loadFromFile("does/not/exist.wav").hasValue());
         }
 
         SECTION("Valid file")
@@ -75,7 +75,7 @@ TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
         SECTION("Invalid memory")
         {
             constexpr std::byte memory[5]{};
-            CHECK(!sf::SoundBuffer::loadFromMemory(memory, 5));
+            CHECK(!sf::SoundBuffer::loadFromMemory(memory, 5).hasValue());
         }
 
         SECTION("Valid memory")

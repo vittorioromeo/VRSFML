@@ -34,7 +34,7 @@ base::Optional<std::size_t> MemoryInputStream::read(void* data, std::size_t size
         m_offset += count;
     }
 
-    return sf::base::makeOptional(count);
+    return base::makeOptional(count);
 }
 
 
@@ -42,21 +42,21 @@ base::Optional<std::size_t> MemoryInputStream::read(void* data, std::size_t size
 base::Optional<std::size_t> MemoryInputStream::seek(std::size_t position)
 {
     m_offset = position < m_size ? position : m_size;
-    return sf::base::makeOptional(m_offset);
+    return base::makeOptional(m_offset);
 }
 
 
 ////////////////////////////////////////////////////////////
 base::Optional<std::size_t> MemoryInputStream::tell()
 {
-    return sf::base::makeOptional(m_offset);
+    return base::makeOptional(m_offset);
 }
 
 
 ////////////////////////////////////////////////////////////
 base::Optional<std::size_t> MemoryInputStream::getSize()
 {
-    return sf::base::makeOptional(m_size);
+    return base::makeOptional(m_size);
 }
 
 } // namespace sf

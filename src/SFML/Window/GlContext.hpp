@@ -23,8 +23,6 @@ class WindowContext;
 
 namespace sf::priv
 {
-class WindowImpl;
-
 ////////////////////////////////////////////////////////////
 /// \brief Abstract class representing an OpenGL context
 ///

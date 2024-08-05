@@ -11,6 +11,7 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/StringUtils.hpp>
 
+#include <SFML/Base/Assert.hpp>
 #include <SFML/Base/Optional.hpp>
 
 #include <iterator>
@@ -342,6 +343,10 @@ struct Http::Impl
     base::Optional<IpAddress> host;       //!< Web host address
     std::string               hostName;   //!< Web host name
     unsigned short            port{};     //!< Port used for connection with host
+
+    explicit Impl() : connection(/* isBlocking */ true)
+    {
+    }
 };
 
 
@@ -453,7 +458,8 @@ Http::Response Http::sendRequest(const Http::Request& request, Time timeout)
         }
 
         // Close the connection
-        m_impl->connection.disconnect();
+        const bool rc = m_impl->connection.disconnect();
+        SFML_BASE_ASSERT(rc);
     }
 
     return received;

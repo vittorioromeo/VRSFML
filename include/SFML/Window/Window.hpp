@@ -16,11 +16,6 @@ namespace sf
 {
 class WindowContext;
 
-namespace priv
-{
-class WindowImpl;
-} // namespace priv
-
 ////////////////////////////////////////////////////////////
 /// \brief Window that serves as a target for OpenGL rendering
 ///

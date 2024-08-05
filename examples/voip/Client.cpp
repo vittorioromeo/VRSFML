@@ -10,6 +10,7 @@
 #include <SFML/Network/Socket.hpp>
 #include <SFML/Network/TcpSocket.hpp>
 
+#include <SFML/Base/Assert.hpp>
 #include <SFML/Base/Optional.hpp>
 
 #include <iostream>
@@ -36,7 +37,10 @@ public:
     /// \param port Port of the remote host
     ///
     ////////////////////////////////////////////////////////////
-    explicit NetworkRecorder(sf::IpAddress host, unsigned short port) : m_host(host), m_port(port)
+    explicit NetworkRecorder(sf::IpAddress host, unsigned short port) :
+    m_host(host),
+    m_port(port),
+    m_socket(/* isBlocking */ true)
     {
     }
 
@@ -100,7 +104,9 @@ private:
         }
 
         // Close the socket
-        m_socket.disconnect();
+        const bool rc = m_socket.disconnect();
+        SFML_BASE_ASSERT(rc);
+
         return true;
     }
 

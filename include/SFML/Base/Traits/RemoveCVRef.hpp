@@ -33,3 +33,12 @@ template <typename T> struct RemoveCVRefImpl<const volatile T&&> { using type = 
 #define SFML_BASE_REMOVE_CVREF(...) typename ::sf::base::priv::RemoveCVRefImpl<__VA_ARGS__>::type
 
 #endif
+
+
+namespace sf::base
+{
+////////////////////////////////////////////////////////////
+template <typename T>
+using RemoveCVRef = SFML_BASE_REMOVE_CVREF(T);
+
+} // namespace sf::base

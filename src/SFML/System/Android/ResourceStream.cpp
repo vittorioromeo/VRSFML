@@ -8,6 +8,8 @@
 #include <SFML/System/Android/ResourceStream.hpp>
 #include <SFML/System/Path.hpp>
 
+#include <SFML/Base/Optional.hpp>
+
 #include <mutex>
 
 
@@ -28,9 +30,7 @@ ResourceStream::ResourceStream(const Path& filename)
 base::Optional<std::size_t> ResourceStream::read(void* data, std::size_t size)
 {
     const auto numBytesRead = AAsset_read(m_file.get(), data, size);
-    if (numBytesRead < 0)
-        return base::nullOpt;
-    return numBytesRead;
+    return numBytesRead < 0 ? base::nullOpt : base::makeOptional<std::size_t>(numBytesRead);
 }
 
 
@@ -38,9 +38,7 @@ base::Optional<std::size_t> ResourceStream::read(void* data, std::size_t size)
 base::Optional<std::size_t> ResourceStream::seek(std::size_t position)
 {
     const auto newPosition = AAsset_seek(m_file.get(), static_cast<off_t>(position), SEEK_SET);
-    if (newPosition < 0)
-        return base::nullOpt;
-    return newPosition;
+    return newPosition < 0 ? base::nullOpt : base::makeOptional<std::size_t>(newPosition);
 }
 
 

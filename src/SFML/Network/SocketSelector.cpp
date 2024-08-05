@@ -54,72 +54,85 @@ SocketSelector& SocketSelector::operator=(SocketSelector&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-void SocketSelector::add(Socket& socket)
+bool SocketSelector::add(Socket& socket)
 {
     const SocketHandle handle = socket.getNativeHandle();
-    if (handle != priv::SocketImpl::invalidSocket())
+
+    if (handle == priv::SocketImpl::invalidSocket())
     {
+        priv::err() << "Attempted to add invalid socket to socket selector";
+        return false;
+    }
 
 #if defined(SFML_SYSTEM_WINDOWS)
 
-        if (m_impl->socketCount >= priv::SocketImpl::getFDSetSize())
-        {
-            priv::err() << "The socket can't be added to the selector because the "
-                        << "selector is full. This is a limitation of your operating "
-                        << "system's FD_SETSIZE setting.";
-            return;
-        }
+    if (m_impl->socketCount >= priv::SocketImpl::getFDSetSize())
+    {
+        priv::err() << "The socket can't be added to the selector because the selector is full. This is a limitation "
+                       "of your operating system's FD_SETSIZE setting.";
 
-        if (priv::SocketImpl::fdIsSet(handle, m_impl->allSockets))
-            return;
+        return false;
+    }
 
-        ++m_impl->socketCount;
+    if (priv::SocketImpl::fdIsSet(handle, m_impl->allSockets))
+        return true; // Already added
+
+    ++m_impl->socketCount;
 
 #else
 
-        if (handle >= priv::SocketImpl::getFDSetSize())
-        {
-            priv::err() << "The socket can't be added to the selector because its "
-                        << "ID is too high. This is a limitation of your operating "
-                        << "system's FD_SETSIZE setting.";
-            return;
-        }
+    if (handle >= priv::SocketImpl::getFDSetSize())
+    {
+        priv::err() << "The socket can't be added to the selector because its ID is too high. This is a limitation of "
+                       "your operating system's FD_SETSIZE setting.";
 
-        // SocketHandle is an int in POSIX
-        if (m_impl->maxSocket < handle)
-            m_impl->maxSocket = handle;
+        return false;
+    }
+
+    // SocketHandle is an int in POSIX
+    if (m_impl->maxSocket < handle)
+        m_impl->maxSocket = handle;
 
 #endif
 
-        priv::SocketImpl::fdSet(handle, m_impl->allSockets);
-    }
+    priv::SocketImpl::fdSet(handle, m_impl->allSockets);
+    return true;
 }
 
 
 ////////////////////////////////////////////////////////////
-void SocketSelector::remove(Socket& socket)
+bool SocketSelector::remove(Socket& socket)
 {
     const SocketHandle handle = socket.getNativeHandle();
-    if (handle != priv::SocketImpl::invalidSocket())
+
+    if (handle == priv::SocketImpl::invalidSocket())
     {
+        priv::err() << "Attempted to remove invalid socket from socket selector";
+        return false;
+    }
 
 #if defined(SFML_SYSTEM_WINDOWS)
 
-        if (!priv::SocketImpl::fdIsSet(handle, m_impl->allSockets))
-            return;
+    if (!priv::SocketImpl::fdIsSet(handle, m_impl->allSockets))
+        return true; // Already removed or never added
 
-        --m_impl->socketCount;
+    --m_impl->socketCount;
 
 #else
 
-        if (handle >= priv::SocketImpl::getFDSetSize())
-            return;
+    if (handle >= priv::SocketImpl::getFDSetSize())
+    {
+        priv::err() << "The socket can't be removed from the selector because its ID is too high. This is a limitation "
+                       "of your operating system's FD_SETSIZE setting.";
+
+        return false;
+    }
 
 #endif
 
-        priv::SocketImpl::fdClear(handle, m_impl->allSockets);
-        priv::SocketImpl::fdClear(handle, m_impl->socketsReady);
-    }
+    priv::SocketImpl::fdClear(handle, m_impl->allSockets);
+    priv::SocketImpl::fdClear(handle, m_impl->socketsReady);
+    return true;
 }
 
 
@@ -156,20 +169,26 @@ bool SocketSelector::wait(Time timeout)
 bool SocketSelector::isReady(Socket& socket) const
 {
     const SocketHandle handle = socket.getNativeHandle();
-    if (handle != priv::SocketImpl::invalidSocket())
+
+    if (handle == priv::SocketImpl::invalidSocket())
     {
+        priv::err() << "Attempted to check readiness of invalid socket in socket selector";
+        return false;
+    }
 
 #if !defined(SFML_SYSTEM_WINDOWS)
 
-        if (handle >= priv::SocketImpl::getFDSetSize())
-            return false;
+    if (handle >= priv::SocketImpl::getFDSetSize())
+    {
+        priv::err() << "The socket can't be checked for readiness in the selector because its ID is too high. This is "
+                       "a limitation of your operating system's FD_SETSIZE setting.";
+
+        return false;
+    }
 
 #endif
 
-        return priv::SocketImpl::fdIsSet(handle, m_impl->socketsReady) != 0;
-    }
-
-    return false;
+    return priv::SocketImpl::fdIsSet(handle, m_impl->socketsReady) != 0;
 }
 
 } // namespace sf

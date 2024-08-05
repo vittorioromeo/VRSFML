@@ -90,8 +90,8 @@ TEST_CASE("[Graphics] sf::Image")
     {
         SECTION("Invalid file")
         {
-            CHECK(!sf::Image::loadFromFile("."));
-            CHECK(!sf::Image::loadFromFile("this/does/not/exist.jpg"));
+            CHECK(!sf::Image::loadFromFile(".").hasValue());
+            CHECK(!sf::Image::loadFromFile("this/does/not/exist.jpg").hasValue());
         }
 
         SECTION("Successful load")
@@ -147,13 +147,13 @@ TEST_CASE("[Graphics] sf::Image")
     {
         SECTION("Invalid pointer")
         {
-            CHECK(!sf::Image::loadFromMemory(nullptr, 1));
+            CHECK(!sf::Image::loadFromMemory(nullptr, 1).hasValue());
         }
 
         SECTION("Invalid size")
         {
             const std::byte testByte{0xAB};
-            CHECK(!sf::Image::loadFromMemory(&testByte, 0));
+            CHECK(!sf::Image::loadFromMemory(&testByte, 0).hasValue());
         }
 
         SECTION("Failed load")
@@ -170,7 +170,7 @@ TEST_CASE("[Graphics] sf::Image")
                 memory = {1, 2, 3, 4};
             }
 
-            CHECK(!sf::Image::loadFromMemory(memory.data(), memory.size()));
+            CHECK(!sf::Image::loadFromMemory(memory.data(), memory.size()).hasValue());
         }
 
         SECTION("Successful load")

@@ -937,7 +937,7 @@ public:
         // Use the vertex shader SPIR-V code to create a vertex shader module
         {
             auto file = sf::FileInputStream::open("resources/shader.vert.spv");
-            if (!file)
+            if (!file.hasValue())
             {
                 vulkanAvailable = false;
                 return;
@@ -965,7 +965,7 @@ public:
         // Use the fragment shader SPIR-V code to create a fragment shader module
         {
             auto file = sf::FileInputStream::open("resources/shader.frag.spv");
-            if (!file)
+            if (!file.hasValue())
             {
                 vulkanAvailable = false;
                 return;
@@ -1816,7 +1816,7 @@ public:
         // Load the image data
         const auto maybeImageData = sf::Image::loadFromFile("resources/logo.png");
 
-        if (!maybeImageData)
+        if (!maybeImageData.hasValue())
         {
             vulkanAvailable = false;
             return;

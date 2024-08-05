@@ -62,7 +62,7 @@ base::Optional<Cursor> Cursor::loadFromPixels(const std::uint8_t* pixels, Vector
 ////////////////////////////////////////////////////////////
 base::Optional<Cursor> Cursor::loadFromSystem(Type type)
 {
-    auto cursor = sf::base::makeOptional<Cursor>(base::PassKey<Cursor>{}); // Use a single local variable for NRVO
+    auto cursor = base::makeOptional<Cursor>(base::PassKey<Cursor>{}); // Use a single local variable for NRVO
 
     if (!cursor->m_impl->loadFromSystem(type))
     {

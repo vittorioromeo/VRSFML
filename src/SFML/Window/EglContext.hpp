@@ -25,6 +25,8 @@
 
 namespace sf::priv
 {
+class WindowImpl;
+
 class EglContext : public GlContext
 {
 public:

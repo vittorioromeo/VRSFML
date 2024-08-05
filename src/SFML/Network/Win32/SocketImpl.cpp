@@ -228,11 +228,7 @@ int SocketImpl::select(SocketHandle handle, long long timeoutUs)
 base::Optional<std::uint32_t> SocketImpl::inetAddr(const char* data)
 {
     const std::uint32_t ip = ::inet_addr(data);
-
-    if (ip == INADDR_NONE)
-        return base::nullOpt;
-
-    return base::makeOptional<std::uint32_t>(ip);
+    return ip == INADDR_NONE ? base::nullOpt : base::makeOptional<std::uint32_t>(ip);
 }
 
 
@@ -389,6 +385,7 @@ int SocketImpl::select(int nfds, FDSet* readfds, FDSet* writefds, FDSet* exceptf
 ////////////////////////////////////////////////////////////
 void SocketImpl::close(SocketHandle sock)
 {
+    SFML_BASE_ASSERT(sock != invalidSocket());
     closesocket(sock);
 }
 

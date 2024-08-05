@@ -25,7 +25,7 @@ struct UdpSocket::Impl
 
 
 ////////////////////////////////////////////////////////////
-UdpSocket::UdpSocket() : Socket(Type::Udp)
+UdpSocket::UdpSocket(bool isBlocking) : Socket(Type::Udp, isBlocking)
 {
 }
 
@@ -44,19 +44,7 @@ UdpSocket& UdpSocket::operator=(UdpSocket&&) noexcept = default;
 ////////////////////////////////////////////////////////////
 unsigned short UdpSocket::getLocalPort() const
 {
-    if (getNativeHandle() != priv::SocketImpl::invalidSocket())
-    {
-        // Retrieve information about the local end of the socket
-        priv::SockAddrIn address{};
-        auto             size = address.size();
-        if (priv::SocketImpl::getSockName(getNativeHandle(), address, size))
-        {
-            return priv::SocketImpl::ntohs(address.sinPort());
-        }
-    }
-
-    // We failed to retrieve the port
-    return 0;
+    return getLocalPortImpl("UDP socket");
 }
 
 
@@ -64,10 +52,12 @@ unsigned short UdpSocket::getLocalPort() const
 Socket::Status UdpSocket::bind(unsigned short port, IpAddress address)
 {
     // Close the socket if it is already bound
-    close();
+    if (getNativeHandle() != priv::SocketImpl::invalidSocket())
+        (void)close(); // Intentionally discard
 
     // Create the internal socket if it doesn't exist
-    create();
+    if (!create())
+        return Status::Error;
 
     // Check if the address is valid
     if (address == IpAddress::Broadcast)
@@ -86,10 +76,9 @@ Socket::Status UdpSocket::bind(unsigned short port, IpAddress address)
 
 
 ////////////////////////////////////////////////////////////
-void UdpSocket::unbind()
+bool UdpSocket::unbind()
 {
-    // Simply close the socket
-    close();
+    return close();
 }
 
 
@@ -97,13 +86,15 @@ void UdpSocket::unbind()
 Socket::Status UdpSocket::send(const void* data, std::size_t size, IpAddress remoteAddress, unsigned short remotePort)
 {
     // Create the internal socket if it doesn't exist
-    create();
+    if (!create())
+        return Status::Error;
 
     // Make sure that all the data will fit in one datagram
     if (size > MaxDatagramSize)
     {
-        priv::err() << "Cannot send data over the network "
-                    << "(the number of bytes to send is greater than sf::UdpSocket::MaxDatagramSize)";
+        priv::err() << "Cannot send data over the network (the number of bytes to send is greater than "
+                       "sf::UdpSocket::MaxDatagramSize)";
+
         return Status::Error;
     }
 
@@ -213,6 +204,5 @@ Socket::Status UdpSocket::receive(Packet& packet, base::Optional<IpAddress>& rem
 
     return status;
 }
-
 
 } // namespace sf

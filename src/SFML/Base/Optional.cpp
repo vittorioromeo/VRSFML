@@ -20,6 +20,7 @@ void throwIfNotEngaged()
 {
     std::printf("\n[[SFML OPTIONAL FAILURE]]: not engaged!\n");
 
+// TODO P1: avoid repetition
 #ifdef SFML_ENABLE_STACK_TRACES
     std::puts("");
     cpptrace::generate_trace().print();

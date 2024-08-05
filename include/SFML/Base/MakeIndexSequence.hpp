@@ -1,7 +1,11 @@
 #pragma once
-#include <SFML/Base/IndexSequence.hpp>
-
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include <SFML/Base/IndexSequence.hpp>
+#include <SFML/Base/SizeT.hpp>
 
 
 #if __has_builtin(__integer_pack)
@@ -13,7 +17,7 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-template <decltype(sizeof(int)) N>
+template <SizeT N>
 using MakeIndexSequence = SFML_BASE_MAKE_INTEGER_SEQUENCE(N);
 
 } // namespace sf::base
@@ -35,8 +39,8 @@ struct MakeIndexSequenceHelper
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-template <decltype(sizeof(int)) N>
-using MakeIndexSequence = typename __make_integer_seq<priv::MakeIndexSequenceHelper, decltype(sizeof(int)), N>::type;
+template <SizeT N>
+using MakeIndexSequence = typename __make_integer_seq<priv::MakeIndexSequenceHelper, SizeT, N>::type;
 
 } // namespace sf::base
 
@@ -52,7 +56,7 @@ using MakeIndexSequence = typename __make_integer_seq<priv::MakeIndexSequenceHel
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-template <decltype(sizeof(int)) N>
+template <SizeT N>
 using MakeIndexSequence = std::make_index_sequence<N>;
 
 } // namespace sf::base

@@ -98,7 +98,7 @@ SoundFileReaderWav::SoundFileReaderWav() = default;
 ////////////////////////////////////////////////////////////
 SoundFileReaderWav::~SoundFileReaderWav()
 {
-    if (m_impl->decoder)
+    if (m_impl->decoder.hasValue())
     {
         if (const ma_result result = ma_decoder_uninit(m_impl->decoder.asPtr()); result != MA_SUCCESS)
             priv::MiniaudioUtils::fail("uninitialize wav decoder", result);
@@ -109,7 +109,7 @@ SoundFileReaderWav::~SoundFileReaderWav()
 ////////////////////////////////////////////////////////////
 base::Optional<SoundFileReader::Info> SoundFileReaderWav::open(InputStream& stream)
 {
-    if (m_impl->decoder)
+    if (m_impl->decoder.hasValue())
     {
         if (const ma_result result = ma_decoder_uninit(m_impl->decoder.asPtr()); result != MA_SUCCESS)
         {
@@ -163,7 +163,7 @@ base::Optional<SoundFileReader::Info> SoundFileReaderWav::open(InputStream& stre
     for (auto i = 0u; i < m_impl->channelCount; ++i)
         soundChannels.append(priv::MiniaudioUtils::miniaudioChannelToSoundChannel(std::uint8_t{channelMap[i]}));
 
-    return sf::base::makeOptional<Info>(
+    return base::makeOptional<Info>(
         {frameCount * m_impl->channelCount, m_impl->channelCount, sampleRate, SFML_BASE_MOVE(soundChannels)});
 }
 

@@ -19,5 +19,4 @@ namespace sf::base
 template <typename T>
 inline constexpr bool isFloatingPoint = SFML_BASE_IS_FLOATING_POINT(T);
 
-
 } // namespace sf::base

@@ -110,7 +110,7 @@ struct SoundStream::Impl
                 // If we are looping and at the end of the loop, set the cursor back to the beginning of the loop
                 if (!impl.streaming && impl.owner->getLoop())
                 {
-                    if (const auto seekPositionAfterLoop = impl.owner->onLoop())
+                    if (const base::Optional seekPositionAfterLoop = impl.owner->onLoop())
                     {
                         impl.streaming        = true;
                         impl.samplesProcessed = *seekPositionAfterLoop;
@@ -395,7 +395,7 @@ void SoundStream::setEffectProcessor(EffectProcessor effectProcessor)
 base::Optional<std::uint64_t> SoundStream::onLoop()
 {
     onSeek(Time::Zero);
-    return sf::base::makeOptional(std::uint64_t{0});
+    return base::makeOptional(std::uint64_t{0});
 }
 
 

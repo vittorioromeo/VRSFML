@@ -38,7 +38,7 @@ public:
     /// Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    NetworkAudioStream()
+    NetworkAudioStream() : m_listener(/* isBlocking */ true), m_client(/* isBlocking */ true)
     {
         // Set the sound parameters
         initialize(1, 44100, {sf::SoundChannel::Mono});

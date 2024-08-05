@@ -29,28 +29,16 @@ namespace sf::base::priv
 
 namespace sf::base
 {
+// clang-format off
 ////////////////////////////////////////////////////////////
-struct BadOptionalAccess
-{
-};
-
-
-////////////////////////////////////////////////////////////
-inline constexpr struct InPlace
-{
-} inPlace;
+struct BadOptionalAccess { };
 
 
 ////////////////////////////////////////////////////////////
-inline constexpr struct NullOpt
-{
-} nullOpt;
-
-
-////////////////////////////////////////////////////////////
-inline constexpr struct FromFunc
-{
-} fromFunc;
+inline constexpr struct InPlace  { } inPlace;
+inline constexpr struct NullOpt  { } nullOpt;
+inline constexpr struct FromFunc { } fromFunc;
+// clang-format on
 
 
 ////////////////////////////////////////////////////////////

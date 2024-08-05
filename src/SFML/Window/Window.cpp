@@ -45,7 +45,7 @@ Window::Window(WindowContext&         windowContext,
                TWindowBaseArg&&       windowBaseArg,
                unsigned int           bitsPerPixel) :
 WindowBase(SFML_BASE_FORWARD(windowBaseArg)),
-m_impl(windowContext, windowContext.createGlContext(settings, *WindowBase::m_impl, bitsPerPixel))
+m_impl(windowContext, windowContext.createGlContext(settings, getWindowImpl(), bitsPerPixel))
 {
     // Perform common initializations
     SFML_BASE_ASSERT(m_impl->glContext != nullptr);

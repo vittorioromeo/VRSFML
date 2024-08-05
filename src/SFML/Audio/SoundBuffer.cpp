@@ -74,7 +74,7 @@ SoundBuffer::~SoundBuffer()
 ////////////////////////////////////////////////////////////
 base::Optional<SoundBuffer> SoundBuffer::loadFromFile(const Path& filename)
 {
-    if (auto file = InputSoundFile::openFromFile(filename))
+    if (base::Optional file = InputSoundFile::openFromFile(filename))
         return initialize(*file);
 
     priv::err() << "Failed to open sound buffer from file";
@@ -85,7 +85,7 @@ base::Optional<SoundBuffer> SoundBuffer::loadFromFile(const Path& filename)
 ////////////////////////////////////////////////////////////
 base::Optional<SoundBuffer> SoundBuffer::loadFromMemory(const void* data, std::size_t sizeInBytes)
 {
-    if (auto file = InputSoundFile::openFromMemory(data, sizeInBytes))
+    if (base::Optional file = InputSoundFile::openFromMemory(data, sizeInBytes))
         return initialize(*file);
 
     priv::err() << "Failed to open sound buffer from memory";
@@ -96,7 +96,7 @@ base::Optional<SoundBuffer> SoundBuffer::loadFromMemory(const void* data, std::s
 ////////////////////////////////////////////////////////////
 base::Optional<SoundBuffer> SoundBuffer::loadFromStream(InputStream& stream)
 {
-    if (auto file = InputSoundFile::openFromStream(stream))
+    if (base::Optional file = InputSoundFile::openFromStream(stream))
         return initialize(*file);
 
     priv::err() << "Failed to open sound buffer from stream";
@@ -152,7 +152,7 @@ base::Optional<SoundBuffer> SoundBuffer::loadFromSamples(
 bool SoundBuffer::saveToFile(const Path& filename) const
 {
     // Create the sound file in write mode
-    if (auto file = OutputSoundFile::openFromFile(filename, getSampleRate(), getChannelCount(), getChannelMap()))
+    if (base::Optional file = OutputSoundFile::openFromFile(filename, getSampleRate(), getChannelCount(), getChannelMap()))
     {
         // Write the samples to the opened file
         file->write(m_impl->samples.data(), m_impl->samples.size());
@@ -236,9 +236,7 @@ base::Optional<SoundBuffer> SoundBuffer::initialize(InputSoundFile& file)
     std::vector<std::int16_t> samples(static_cast<std::size_t>(sampleCount));
 
     if (file.read(samples.data(), sampleCount) != sampleCount)
-    {
         return base::nullOpt;
-    }
 
     return loadFromSamplesImpl(SFML_BASE_MOVE(samples), file.getChannelCount(), file.getSampleRate(), file.getChannelMap());
 }

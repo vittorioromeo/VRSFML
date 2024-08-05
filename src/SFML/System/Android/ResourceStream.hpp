@@ -27,7 +27,7 @@ namespace sf::priv
 /// \brief Read from Android asset files
 ///
 ////////////////////////////////////////////////////////////
-class SFML_SYSTEM_API ResourceStream : public InputStream
+class SFML_SYSTEM_API ResourceStream final : public InputStream
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -36,7 +36,7 @@ public:
     /// \param filename Filename of the asset
     ///
     ////////////////////////////////////////////////////////////
-    ResourceStream(const Path& filename);
+    explicit ResourceStream(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Read data from the asset

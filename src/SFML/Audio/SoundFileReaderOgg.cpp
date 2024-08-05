@@ -38,14 +38,14 @@ int seek(void* data, ogg_int64_t signedOffset, int whence)
             offset = stream->getSize().value() - offset;
     }
     const sf::base::Optional position = stream->seek(offset);
-    return position ? static_cast<int>(*position) : -1;
+    return position.hasValue() ? static_cast<int>(*position) : -1;
 }
 
 long tell(void* data)
 {
     auto*                    stream   = static_cast<sf::InputStream*>(data);
     const sf::base::Optional position = stream->tell();
-    return position ? static_cast<long>(*position) : -1;
+    return position.hasValue() ? static_cast<long>(*position) : -1;
 }
 
 ov_callbacks callbacks = {&read, &seek, nullptr, &tell};

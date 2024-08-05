@@ -61,9 +61,9 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
     {
         SECTION("At least one zero dimension")
         {
-            CHECK(!sf::Texture::create(graphicsContext, {}));
-            CHECK(!sf::Texture::create(graphicsContext, {0, 1}));
-            CHECK(!sf::Texture::create(graphicsContext, {1, 0}));
+            CHECK(!sf::Texture::create(graphicsContext, {}).hasValue());
+            CHECK(!sf::Texture::create(graphicsContext, {0, 1}).hasValue());
+            CHECK(!sf::Texture::create(graphicsContext, {1, 0}).hasValue());
         }
 
         SECTION("Valid size")
@@ -75,8 +75,8 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
 
         SECTION("Too large")
         {
-            CHECK(!sf::Texture::create(graphicsContext, {100'000, 100'000}));
-            CHECK(!sf::Texture::create(graphicsContext, {1'000'000, 1'000'000}));
+            CHECK(!sf::Texture::create(graphicsContext, {100'000, 100'000}).hasValue());
+            CHECK(!sf::Texture::create(graphicsContext, {1'000'000, 1'000'000}).hasValue());
         }
     }
 

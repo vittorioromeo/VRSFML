@@ -2,17 +2,17 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
-#if __has_builtin(__underlying_type)
+#if __has_builtin(__is_reference)
 
 ////////////////////////////////////////////////////////////
-#define SFML_BASE_UNDERLYING_TYPE(...) __underlying_type(__VA_ARGS__)
+#define SFML_BASE_IS_REFERENCE(...) __is_reference(__VA_ARGS__)
 
 #else
 
 #include <type_traits>
 
 ////////////////////////////////////////////////////////////
-#define SFML_BASE_UNDERLYING_TYPE(...) typename ::std::underlying_type<__VA_ARGS__>::type
+#define SFML_BASE_IS_REFERENCE(...) ::std::is_reference<__VA_ARGS__>
 
 #endif
 
@@ -21,6 +21,6 @@ namespace sf::base
 {
 ////////////////////////////////////////////////////////////
 template <typename T>
-using UnderlyingType = SFML_BASE_UNDERLYING_TYPE(T);
+inline constexpr bool isReference = SFML_BASE_IS_REFERENCE(T);
 
 } // namespace sf::base

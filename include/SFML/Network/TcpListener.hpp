@@ -25,7 +25,7 @@ public:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] TcpListener();
+    [[nodiscard]] explicit TcpListener(bool isBlocking);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the port to which the socket is bound locally
@@ -73,7 +73,7 @@ public:
     /// \see listen
     ///
     ////////////////////////////////////////////////////////////
-    void close();
+    [[nodiscard]] bool close();
 
     ////////////////////////////////////////////////////////////
     /// \brief Accept a new connection

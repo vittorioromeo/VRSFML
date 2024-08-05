@@ -15,11 +15,12 @@ TEST_CASE("[Network] sf::TcpSocket")
         STATIC_CHECK(!std::is_copy_assignable_v<sf::TcpSocket>);
         STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::TcpSocket>);
         STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::TcpSocket>);
+        STATIC_CHECK(!std::has_virtual_destructor_v<sf::TcpSocket>);
     }
 
     SECTION("Construction")
     {
-        const sf::TcpSocket tcpSocket;
+        const sf::TcpSocket tcpSocket(/* isBlocking */ true);
         CHECK(tcpSocket.getLocalPort() == 0);
         CHECK(!tcpSocket.getRemoteAddress().hasValue());
         CHECK(tcpSocket.getRemotePort() == 0);

@@ -24,6 +24,7 @@ set(SRC_BASE
     ${BASE_INCROOT}/Traits/IsBaseOf.hpp
     ${BASE_INCROOT}/Traits/IsEnum.hpp
     ${BASE_INCROOT}/Traits/IsFloatingPoint.hpp
+    ${BASE_INCROOT}/Traits/IsReference.hpp
     ${BASE_INCROOT}/Traits/IsSame.hpp
     ${BASE_INCROOT}/Traits/IsTriviallyCopyable.hpp
     ${BASE_INCROOT}/Traits/IsTriviallyCopyAssignable.hpp

@@ -47,9 +47,9 @@ base::Optional<FileInputStream> FileInputStream::open(const Path& filename)
     if (priv::getActivityStatesPtr() != nullptr)
     {
         auto androidFile = base::makeUnique<priv::ResourceStream>(filename);
-        if (androidFile->tell().hasValue())
-            return sf::base::makeOptional<FileInputStream>(base::PassKey<FileInputStream>{}, SFML_BASE_MOVE(androidFile));
-        return base::nullOpt;
+        return androidFile->tell().hasValue()
+                   ? base::makeOptional<FileInputStream>(base::PassKey<FileInputStream>{}, SFML_BASE_MOVE(androidFile))
+                   : base::nullOpt;
     }
 #endif
 
@@ -58,7 +58,7 @@ base::Optional<FileInputStream> FileInputStream::open(const Path& filename)
 #else
     if (auto file = base::UniquePtr<std::FILE, FileCloser>(std::fopen(filename.c_str(), "rb")))
 #endif
-        return sf::base::makeOptional<FileInputStream>(base::PassKey<FileInputStream>{}, SFML_BASE_MOVE(file));
+        return base::makeOptional<FileInputStream>(base::PassKey<FileInputStream>{}, SFML_BASE_MOVE(file));
 
     return base::nullOpt;
 }
@@ -76,7 +76,7 @@ base::Optional<std::size_t> FileInputStream::read(void* data, std::size_t size)
 #endif
 
     SFML_BASE_ASSERT(m_file != nullptr);
-    return sf::base::makeOptional(std::fread(data, 1, size, m_file.get()));
+    return base::makeOptional(std::fread(data, 1, size, m_file.get()));
 }
 
 
@@ -114,7 +114,7 @@ base::Optional<std::size_t> FileInputStream::tell()
     SFML_BASE_ASSERT(m_file != nullptr);
 
     const auto position = std::ftell(m_file.get());
-    return position < 0 ? base::nullOpt : sf::base::makeOptional(static_cast<std::size_t>(position));
+    return position < 0 ? base::nullOpt : base::makeOptional(static_cast<std::size_t>(position));
 }
 
 
