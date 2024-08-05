@@ -15,6 +15,7 @@
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Text.hpp>
+#include <SFML/Graphics/Texture.hpp>
 
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/VideoMode.hpp>

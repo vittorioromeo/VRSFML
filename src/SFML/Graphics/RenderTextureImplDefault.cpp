@@ -29,6 +29,14 @@ RenderTextureImplDefault::~RenderTextureImplDefault() = default;
 
 
 ////////////////////////////////////////////////////////////
+RenderTextureImplDefault::RenderTextureImplDefault(RenderTextureImplDefault&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
+RenderTextureImplDefault& RenderTextureImplDefault::operator=(RenderTextureImplDefault&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
 unsigned int RenderTextureImplDefault::getMaximumAntialiasingLevel()
 {
     // If the system is so old that it doesn't support FBOs, chances are it is

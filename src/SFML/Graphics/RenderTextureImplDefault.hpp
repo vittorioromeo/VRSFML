@@ -4,8 +4,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/RenderTextureImpl.hpp>
-
 #include <SFML/System/Vector2.hpp>
 
 #include <SFML/Base/UniquePtr.hpp>
@@ -21,11 +19,10 @@ namespace priv
 class GlContext;
 
 ////////////////////////////////////////////////////////////
-/// \brief Default specialization of RenderTextureImpl,
-///        using an in-memory context
+/// \brief Render texture implementation using an in-memory context
 ///
 ////////////////////////////////////////////////////////////
-class RenderTextureImplDefault : public RenderTextureImpl
+class RenderTextureImplDefault
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -35,10 +32,34 @@ public:
     [[nodiscard]] RenderTextureImplDefault(GraphicsContext& graphicsContext);
 
     ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    RenderTextureImplDefault(const RenderTextureImplDefault&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    RenderTextureImplDefault& operator=(const RenderTextureImplDefault&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    RenderTextureImplDefault(RenderTextureImplDefault&&) noexcept;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    RenderTextureImplDefault& operator=(RenderTextureImplDefault&&) noexcept;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    ~RenderTextureImplDefault() override;
+    ~RenderTextureImplDefault();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the maximum anti-aliasing level supported by the system
@@ -48,7 +69,6 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static unsigned int getMaximumAntialiasingLevel();
 
-private:
     ////////////////////////////////////////////////////////////
     /// \brief Create the render texture implementation
     ///
@@ -59,7 +79,7 @@ private:
     /// \return True if creation has been successful
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool create(Vector2u size, unsigned int textureId, const ContextSettings& settings) override;
+    [[nodiscard]] bool create(Vector2u size, unsigned int textureId, const ContextSettings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Activate or deactivate the render texture for rendering
@@ -69,7 +89,7 @@ private:
     /// \return True on success, false on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool activate(bool active) override;
+    [[nodiscard]] bool activate(bool active);
 
     ////////////////////////////////////////////////////////////
     /// \brief Tell if the render-texture will use sRGB encoding when drawing on it
@@ -80,7 +100,7 @@ private:
     /// \return True if the render-texture use sRGB encoding, false otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isSrgb() const override;
+    [[nodiscard]] bool isSrgb() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the pixels of the target texture
@@ -88,8 +108,9 @@ private:
     /// \param textureId OpenGL identifier of the target texture
     ///
     ////////////////////////////////////////////////////////////
-    void updateTexture(unsigned textureId) override;
+    void updateTexture(unsigned textureId);
 
+private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////

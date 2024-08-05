@@ -1,3 +1,5 @@
+#include "SFML/Window/Event.hpp"
+
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
@@ -8,15 +10,32 @@
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/Graphics/RenderTextureImplDefault.hpp>
 #include <SFML/Graphics/RenderTextureImplFBO.hpp>
+#include <SFML/Graphics/Texture.hpp>
 
 #include <SFML/System/Err.hpp>
 
 #include <SFML/Base/Macros.hpp>
 #include <SFML/Base/UniquePtr.hpp>
+#include <SFML/Base/Variant.hpp>
 
 
 namespace sf
 {
+////////////////////////////////////////////////////////////
+struct RenderTexture::Impl
+{
+    sfvr::tinyvariant<priv::RenderTextureImplDefault, priv::RenderTextureImplFBO> renderTextureImpl; //!< Platform/hardware specific implementation
+    Texture texture; //!< Target texture to draw on
+
+    template <typename TRenderTextureImplTag>
+    explicit Impl(TRenderTextureImplTag theRenderTextureImplTag, GraphicsContext& graphicsContext, Texture&& theTexture) :
+    renderTextureImpl(theRenderTextureImplTag, graphicsContext),
+    texture(SFML_BASE_MOVE(theTexture))
+    {
+    }
+};
+
+
 ////////////////////////////////////////////////////////////
 RenderTexture::~RenderTexture() = default;
 
@@ -42,38 +61,43 @@ base::Optional<RenderTexture> RenderTexture::create(GraphicsContext& graphicsCon
         return result; // Empty optional
     }
 
-    auto& renderTexture = result.emplace(base::PassKey<RenderTexture>{}, graphicsContext, SFML_BASE_MOVE(*texture));
-
-    // We disable smoothing by default for render textures
-    renderTexture.setSmooth(false);
-
-    // Create the implementation
     if (priv::RenderTextureImplFBO::isAvailable(graphicsContext))
     {
         // Use frame-buffer object (FBO)
-        renderTexture.m_impl = base::makeUnique<priv::RenderTextureImplFBO>(graphicsContext);
+        result.emplace(base::PassKey<RenderTexture>{},
+                       graphicsContext,
+                       sfvr::inplace_type<priv::RenderTextureImplFBO>,
+                       SFML_BASE_MOVE(*texture));
 
         // Mark the texture as being a framebuffer object attachment
-        renderTexture.m_texture.m_fboAttachment = true;
+        result->m_impl->texture.m_fboAttachment = true;
     }
     else
     {
         // Use default implementation
-        renderTexture.m_impl = base::makeUnique<priv::RenderTextureImplDefault>(graphicsContext);
+        result.emplace(base::PassKey<RenderTexture>{},
+                       graphicsContext,
+                       sfvr::inplace_type<priv::RenderTextureImplDefault>,
+                       SFML_BASE_MOVE(*texture));
     }
+
+    // We disable smoothing by default for render textures
+    result->setSmooth(false);
 
     // Initialize the render texture
     // We pass the actual size of our texture since OpenGL ES requires that all attachments have identical sizes
-    if (!renderTexture.m_impl->create(renderTexture.m_texture.m_actualSize, renderTexture.m_texture.m_texture, settings))
+    if (!result->m_impl->renderTextureImpl.linear_visit(
+            [&](auto&& impl)
+            { return impl.create(result->m_impl->texture.m_actualSize, result->m_impl->texture.m_texture, settings); }))
     {
-        priv::err() << "Impossible to create render texture (failed to create render texture impl)";
+        priv::err() << "Impossible to create render texture (failed to create render texture renderTextureImpl)";
 
         result.reset();
         return result; // Empty optional
     }
 
     // We can now initialize the render target part
-    renderTexture.initialize();
+    result->initialize();
 
     return result;
 }
@@ -82,47 +106,44 @@ base::Optional<RenderTexture> RenderTexture::create(GraphicsContext& graphicsCon
 ////////////////////////////////////////////////////////////
 unsigned int RenderTexture::getMaximumAntialiasingLevel(GraphicsContext& graphicsContext)
 {
-    if (priv::RenderTextureImplFBO::isAvailable(graphicsContext))
-    {
-        return priv::RenderTextureImplFBO::getMaximumAntialiasingLevel(graphicsContext);
-    }
-
-    return priv::RenderTextureImplDefault::getMaximumAntialiasingLevel();
+    return priv::RenderTextureImplFBO::isAvailable(graphicsContext)
+               ? priv::RenderTextureImplFBO::getMaximumAntialiasingLevel(graphicsContext)
+               : priv::RenderTextureImplDefault::getMaximumAntialiasingLevel();
 }
 
 
 ////////////////////////////////////////////////////////////
 void RenderTexture::setSmooth(bool smooth)
 {
-    m_texture.setSmooth(smooth);
+    m_impl->texture.setSmooth(smooth);
 }
 
 
 ////////////////////////////////////////////////////////////
 bool RenderTexture::isSmooth() const
 {
-    return m_texture.isSmooth();
+    return m_impl->texture.isSmooth();
 }
 
 
 ////////////////////////////////////////////////////////////
 void RenderTexture::setRepeated(bool repeated)
 {
-    m_texture.setRepeated(repeated);
+    m_impl->texture.setRepeated(repeated);
 }
 
 
 ////////////////////////////////////////////////////////////
 bool RenderTexture::isRepeated() const
 {
-    return m_texture.isRepeated();
+    return m_impl->texture.isRepeated();
 }
 
 
 ////////////////////////////////////////////////////////////
 bool RenderTexture::generateMipmap()
 {
-    return m_texture.generateMipmap();
+    return m_impl->texture.generateMipmap();
 }
 
 
@@ -130,7 +151,7 @@ bool RenderTexture::generateMipmap()
 bool RenderTexture::setActive(bool active)
 {
     // Update RenderTarget tracking
-    if (m_impl->activate(active))
+    if (m_impl->renderTextureImpl.linear_visit([&](auto&& impl) { return impl.activate(active); }))
         return RenderTarget::setActive(active);
 
     return false;
@@ -154,37 +175,41 @@ void RenderTexture::display()
     }
 
     // Update the target texture
-    m_impl->updateTexture(m_texture.m_texture);
-    m_texture.m_pixelsFlipped = true;
-    m_texture.invalidateMipmap();
+    m_impl->renderTextureImpl.linear_visit([&](auto&& impl) { impl.updateTexture(m_impl->texture.m_texture); });
+    m_impl->texture.m_pixelsFlipped = true;
+    m_impl->texture.invalidateMipmap();
 }
 
 
 ////////////////////////////////////////////////////////////
 Vector2u RenderTexture::getSize() const
 {
-    return m_texture.getSize();
+    return m_impl->texture.getSize();
 }
 
 
 ////////////////////////////////////////////////////////////
 bool RenderTexture::isSrgb() const
 {
-    return m_impl->isSrgb();
+    return m_impl->renderTextureImpl.linear_visit([&](auto&& impl) { return impl.isSrgb(); });
 }
 
 
 ////////////////////////////////////////////////////////////
 const Texture& RenderTexture::getTexture() const
 {
-    return m_texture;
+    return m_impl->texture;
 }
 
 
 ////////////////////////////////////////////////////////////
-RenderTexture::RenderTexture(base::PassKey<RenderTexture>&&, GraphicsContext& graphicsContext, Texture&& texture) :
+template <typename TRenderTextureImplTag>
+RenderTexture::RenderTexture(base::PassKey<RenderTexture>&&,
+                             GraphicsContext&      graphicsContext,
+                             TRenderTextureImplTag renderTextureImplTag,
+                             Texture&&             texture) :
 RenderTarget(graphicsContext),
-m_texture(SFML_BASE_MOVE(texture))
+m_impl(renderTextureImplTag, graphicsContext, SFML_BASE_MOVE(texture))
 {
 }
 

@@ -95,6 +95,14 @@ RenderTextureImplFBO::~RenderTextureImplFBO()
 
 
 ////////////////////////////////////////////////////////////
+RenderTextureImplFBO::RenderTextureImplFBO(RenderTextureImplFBO&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
+RenderTextureImplFBO& RenderTextureImplFBO::operator=(RenderTextureImplFBO&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
 bool RenderTextureImplFBO::isAvailable([[maybe_unused]] GraphicsContext& graphicsContext)
 {
     SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
