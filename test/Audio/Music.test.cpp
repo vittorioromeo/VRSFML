@@ -67,7 +67,7 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
             CHECK(length == sf::microseconds(1990884));
             CHECK(music.getStatus() == sf::Music::Status::Stopped);
             CHECK(music.getPlayingOffset() == sf::Time::Zero);
-            CHECK(!music.getLoop());
+            CHECK(!music.isLooping());
         }
     }
 
@@ -94,7 +94,7 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
             CHECK(length == sf::microseconds(1990884));
             CHECK(music.getStatus() == sf::Music::Status::Stopped);
             CHECK(music.getPlayingOffset() == sf::Time::Zero);
-            CHECK(!music.getLoop());
+            CHECK(!music.isLooping());
         }
     }
 
@@ -148,6 +148,6 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
         CHECK(length == sf::seconds(2));
         CHECK(music.getStatus() == sf::Music::Status::Stopped);
         CHECK(music.getPlayingOffset() == sf::Time::Zero);
-        CHECK(!music.getLoop());
+        CHECK(!music.isLooping());
     }
 }
