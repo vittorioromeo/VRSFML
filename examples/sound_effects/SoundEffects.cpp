@@ -109,7 +109,7 @@ public:
         m_listenerShape.setFillColor(sf::Color::Red);
 
         // Set the music to loop
-        m_music.setLoop(true);
+        m_music.setLooping(true);
 
         // Set attenuation to a nice value
         m_music.setAttenuation(0.04f);
@@ -170,7 +170,7 @@ public:
     m_music(std::move(music))
     {
         // Set the music to loop
-        m_music.setLoop(true);
+        m_music.setLooping(true);
 
         // We don't care about attenuation in this effect
         m_music.setAttenuation(0.f);
@@ -281,7 +281,7 @@ public:
         makeCone(m_soundConeInner, innerConeAngle);
 
         // Set the music to loop
-        m_music.setLoop(true);
+        m_music.setLooping(true);
 
         // Set attenuation factor
         m_music.setAttenuation(m_attenuation);
@@ -682,7 +682,7 @@ protected:
         m_instructions.setPosition({windowWidth / 2.f - 250.f, windowHeight * 3.f / 4.f});
 
         // Set the music to loop
-        m_music.setLoop(true);
+        m_music.setLooping(true);
 
         // Set attenuation to a nice value
         m_music.setAttenuation(0.0f);

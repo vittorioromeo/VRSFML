@@ -322,7 +322,7 @@ private:
 /// music.setPosition({0, 1, 10}); // change its 3D position
 /// music.setPitch(2);             // increase the pitch
 /// music.setVolume(50);           // reduce the volume
-/// music.setLoop(true);           // make it loop
+/// music.setLooping(true);        // make it loop
 ///
 /// // Create an audio context and get the default playback device
 /// auto audioContext = sf::AudioContext::create().value();
