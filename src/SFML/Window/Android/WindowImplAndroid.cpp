@@ -305,7 +305,7 @@ int WindowImplAndroid::processEvent(int /* fd */, int /* events */, void* /* dat
 ////////////////////////////////////////////////////////////
 int WindowImplAndroid::processScrollEvent(AInputEvent* inputEvent, ActivityStates& states)
 {
-    // Prepare the Java virtual machine
+    // Prepare the Java VM
     jint lResult = 0;
 
     JavaVM* lJavaVM = states.activity->vm;
