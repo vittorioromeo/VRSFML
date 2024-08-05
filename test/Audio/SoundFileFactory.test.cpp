@@ -1,8 +1,7 @@
-#include "SFML/Audio/ChannelMap.hpp"
-
 #include <SFML/Audio/SoundFileFactory.hpp>
 
 // Other 1st party headers
+#include <SFML/Audio/ChannelMap.hpp>
 #include <SFML/Audio/SoundChannel.hpp>
 #include <SFML/Audio/SoundFileReader.hpp>
 #include <SFML/Audio/SoundFileWriter.hpp>
@@ -138,7 +137,7 @@ TEST_CASE("[Audio] sf::SoundFileFactory")
             stream = sf::FileInputStream::open("Audio/killdeer.wav");
         }
 
-        REQUIRE(stream);
+        REQUIRE(stream.hasValue());
         CHECK(sf::SoundFileFactory::createReaderFromStream(*stream));
     }
 

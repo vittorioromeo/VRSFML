@@ -29,7 +29,7 @@ TEST_CASE("[Audio] sf::InputSoundFile")
     {
         SECTION("Invalid file")
         {
-            CHECK(!sf::InputSoundFile::openFromFile("does/not/exist.wav"));
+            CHECK(!sf::InputSoundFile::openFromFile("does/not/exist.wav").hasValue());
         }
 
         SECTION("Valid file")

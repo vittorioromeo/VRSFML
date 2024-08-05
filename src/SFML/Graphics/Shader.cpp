@@ -586,7 +586,7 @@ base::Optional<Shader::UniformLocation> Shader::getUniformLocation(std::string_v
     if (const auto it = m_impl->uniforms.find(uniformName); it != m_impl->uniforms.end())
     {
         // Already in cache, return it
-        return it->second == -1 ? base::nullOpt : sf::base::makeOptional(UniformLocation{it->second});
+        return it->second == -1 ? base::nullOpt : base::makeOptional(UniformLocation{it->second});
     }
 
     // Use thread-local string buffer to get a null-terminated uniform name
@@ -598,7 +598,7 @@ base::Optional<Shader::UniformLocation> Shader::getUniformLocation(std::string_v
     const int location = GLEXT_glGetUniformLocation(castToGlHandle(m_impl->shaderProgram), uniformNameBuffer.c_str());
     m_impl->uniforms.emplace(uniformName, location);
 
-    return location == -1 ? base::nullOpt : sf::base::makeOptional(UniformLocation{location});
+    return location == -1 ? base::nullOpt : base::makeOptional(UniformLocation{location});
 }
 
 
@@ -1015,7 +1015,7 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
     // in all contexts immediately (solves problems in multi-threaded apps)
     glCheck(glFlush());
 
-    return sf::base::makeOptional<Shader>(base::PassKey<Shader>{}, graphicsContext, castFromGlHandle(shaderProgram));
+    return base::makeOptional<Shader>(base::PassKey<Shader>{}, graphicsContext, castFromGlHandle(shaderProgram));
 }
 
 

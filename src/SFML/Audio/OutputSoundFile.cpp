@@ -50,7 +50,7 @@ base::Optional<OutputSoundFile> OutputSoundFile::openFromFile(
         return base::nullOpt;
     }
 
-    return sf::base::makeOptional<OutputSoundFile>(base::PassKey<OutputSoundFile>{}, SFML_BASE_MOVE(writer));
+    return base::makeOptional<OutputSoundFile>(base::PassKey<OutputSoundFile>{}, SFML_BASE_MOVE(writer));
 }
 
 

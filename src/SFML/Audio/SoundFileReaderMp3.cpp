@@ -55,7 +55,7 @@ namespace
 {
     auto*                    stream   = static_cast<sf::InputStream*>(data);
     const sf::base::Optional position = stream->seek(static_cast<std::size_t>(offset));
-    return position ? 0 : -1;
+    return position.hasValue() ? 0 : -1;
 }
 
 

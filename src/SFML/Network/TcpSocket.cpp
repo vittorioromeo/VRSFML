@@ -1,3 +1,5 @@
+#include "SFML/Base/Optional.hpp"
+
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
@@ -57,7 +59,7 @@ struct TcpSocket::Impl
 
 
 ////////////////////////////////////////////////////////////
-TcpSocket::TcpSocket() : Socket(Type::Tcp)
+TcpSocket::TcpSocket(bool isBlocking) : Socket(Type::Tcp, isBlocking)
 {
 }
 
@@ -77,57 +79,53 @@ TcpSocket& TcpSocket::operator=(TcpSocket&&) noexcept = default;
 ////////////////////////////////////////////////////////////
 unsigned short TcpSocket::getLocalPort() const
 {
-    if (getNativeHandle() != priv::SocketImpl::invalidSocket())
-    {
-        // Retrieve information about the local end of the socket
-        priv::SockAddrIn address{};
-        auto             size = address.size();
-        if (priv::SocketImpl::getSockName(getNativeHandle(), address, size))
-        {
-            return priv::SocketImpl::ntohs(address.sinPort());
-        }
-    }
-
-    // We failed to retrieve the port
-    return 0;
+    return getLocalPortImpl("TCP socket");
 }
 
 
 ////////////////////////////////////////////////////////////
 base::Optional<IpAddress> TcpSocket::getRemoteAddress() const
 {
-    if (getNativeHandle() != priv::SocketImpl::invalidSocket())
+    if (getNativeHandle() == priv::SocketImpl::invalidSocket())
     {
-        // Retrieve information about the remote end of the socket
-        priv::SockAddrIn address{};
-        auto             size = address.size();
-        if (priv::SocketImpl::getPeerName(getNativeHandle(), address, size))
-        {
-            return sf::base::makeOptional<IpAddress>(priv::SocketImpl::ntohl(address));
-        }
+        priv::err() << "Attempted to get remote address of invalid TCP socket";
+        return base::nullOpt;
     }
 
-    // We failed to retrieve the address
-    return base::nullOpt;
+    // Retrieve information about the remote end of the socket
+    priv::SockAddrIn address{};
+    auto             size = address.size();
+
+    if (!priv::SocketImpl::getPeerName(getNativeHandle(), address, size))
+    {
+        priv::err() << "Failed to retrieve remote address of invalid TCP socket";
+        return base::nullOpt;
+    }
+
+    return base::makeOptional<IpAddress>(priv::SocketImpl::ntohl(address));
 }
 
 
 ////////////////////////////////////////////////////////////
 unsigned short TcpSocket::getRemotePort() const
 {
-    if (getNativeHandle() != priv::SocketImpl::invalidSocket())
+    if (getNativeHandle() == priv::SocketImpl::invalidSocket())
     {
-        // Retrieve information about the remote end of the socket
-        priv::SockAddrIn address{};
-        auto             size = address.size();
-        if (priv::SocketImpl::getPeerName(getNativeHandle(), address, size))
-        {
-            return priv::SocketImpl::ntohs(address.sinPort());
-        }
+        priv::err() << "Attempted to get remote port of invalid TCP socket";
+        return 0;
     }
 
-    // We failed to retrieve the port
-    return 0;
+    // Retrieve information about the remote end of the socket
+    priv::SockAddrIn address{};
+    auto             size = address.size();
+
+    if (!priv::SocketImpl::getPeerName(getNativeHandle(), address, size))
+    {
+        priv::err() << "Failed to retrieve remote port of TCP socket";
+        return 0;
+    }
+
+    return priv::SocketImpl::ntohs(address.sinPort());
 }
 
 
@@ -135,10 +133,12 @@ unsigned short TcpSocket::getRemotePort() const
 Socket::Status TcpSocket::connect(IpAddress remoteAddress, unsigned short remotePort, Time timeout)
 {
     // Disconnect the socket if it is already connected
-    disconnect();
+    if (getNativeHandle() != priv::SocketImpl::invalidSocket())
+        (void)disconnect(); // Intentionally discard
 
     // Create the internal socket if it doesn't exist
-    create();
+    if (!create())
+        return Status::Error;
 
     // Create the remote address
     priv::SockAddrIn address = priv::SocketImpl::createAddress(remoteAddress.toInteger(), remotePort);
@@ -158,17 +158,17 @@ Socket::Status TcpSocket::connect(IpAddress remoteAddress, unsigned short remote
     // ----- We're using a timeout: we'll need a few tricks to make it work -----
 
     // Save the previous blocking state
-    const bool blocking = isBlocking();
+    const bool savedBlockingState = isBlocking();
 
     // Switch to non-blocking to enable our connection timeout
-    if (blocking)
+    if (savedBlockingState)
         setBlocking(false);
 
     // Try to connect to the remote address
     if (priv::SocketImpl::connect(getNativeHandle(), address))
     {
         // We got instantly connected! (it may no happen a lot...)
-        setBlocking(blocking);
+        setBlocking(savedBlockingState);
         return Status::Done;
     }
 
@@ -176,7 +176,7 @@ Socket::Status TcpSocket::connect(IpAddress remoteAddress, unsigned short remote
     Status status = priv::SocketImpl::getErrorStatus();
 
     // If we were in non-blocking mode, return immediately
-    if (!blocking)
+    if (!savedBlockingState)
         return status;
 
     // Otherwise, wait until something happens to our socket (success, timeout or error)
@@ -187,16 +187,9 @@ Socket::Status TcpSocket::connect(IpAddress remoteAddress, unsigned short remote
         {
             // At this point the connection may have been either accepted or refused.
             // To know whether it's a success or a failure, we must check the address of the connected peer
-            if (getRemoteAddress().hasValue())
-            {
-                // Connection accepted
-                status = Status::Done;
-            }
-            else
-            {
-                // Connection refused
-                status = priv::SocketImpl::getErrorStatus();
-            }
+
+            status = getRemoteAddress().hasValue() ? Status::Done                        // Connection accepted
+                                                   : priv::SocketImpl::getErrorStatus(); // Connection refused
         }
         else
         {
@@ -213,13 +206,15 @@ Socket::Status TcpSocket::connect(IpAddress remoteAddress, unsigned short remote
 
 
 ////////////////////////////////////////////////////////////
-void TcpSocket::disconnect()
+bool TcpSocket::disconnect()
 {
     // Close the socket
-    close();
+    const bool result = close();
 
     // Reset the pending packet data
-    m_impl->pendingPacket = PendingPacket();
+    m_impl->pendingPacket = PendingPacket{};
+
+    return result;
 }
 
 
@@ -300,10 +295,9 @@ Socket::Status TcpSocket::receive(void* data, std::size_t size, std::size_t& rec
         received = static_cast<std::size_t>(sizeReceived);
         return Status::Done;
     }
+
     if (sizeReceived == 0)
-    {
         return Socket::Status::Disconnected;
-    }
 
     return priv::SocketImpl::getErrorStatus();
 }

@@ -37,8 +37,8 @@ base::Optional<Rect<T>> findIntersection(const Rect<T>& rect0, const Rect<T>& re
     // If the intersection is valid (positive non zero area), then there is an intersection
     if ((interLeft < interRight) && (interTop < interBottom))
     {
-        return sf::base::makeOptional<Rect<T>>(Vector2<T>{interLeft, interTop},
-                                               Vector2<T>{interRight - interLeft, interBottom - interTop});
+        return base::makeOptional<Rect<T>>(Vector2<T>{interLeft, interTop},
+                                           Vector2<T>{interRight - interLeft, interBottom - interTop});
     }
 
     return base::nullOpt;

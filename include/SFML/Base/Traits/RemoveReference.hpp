@@ -24,3 +24,12 @@ template <typename T> struct RemoveReferenceImpl<T&&> { using type = T; };
 #define SFML_BASE_REMOVE_REFERENCE(...) typename ::sf::base::priv::RemoveReferenceImpl<__VA_ARGS__>::type
 
 #endif
+
+
+namespace sf::base
+{
+////////////////////////////////////////////////////////////
+template <typename T>
+using RemoveReference = SFML_BASE_REMOVE_REFERENCE(T);
+
+} // namespace sf::base

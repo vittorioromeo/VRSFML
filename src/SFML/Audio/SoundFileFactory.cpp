@@ -69,7 +69,7 @@ base::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromFilename(cons
 {
     // Wrap the input file into a file stream
     auto stream = FileInputStream::open(filename);
-    if (!stream)
+    if (!stream.hasValue())
     {
         priv::err() << "Failed to open sound file (couldn't open stream)\n" << priv::PathDebugFormatter{filename};
         return nullptr;

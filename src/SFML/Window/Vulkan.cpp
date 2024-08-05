@@ -11,8 +11,7 @@
 
 #include <SFML/Window/VulkanImpl.hpp>
 
-#elif defined(SFML_SYSTEM_LINUX) || defined(SFML_SYSTEM_FREEBSD) || defined(SFML_SYSTEM_OPENBSD) || \
-    defined(SFML_SYSTEM_NETBSD)
+#elif defined(SFML_SYSTEM_LINUX_OR_BSD)
 
 #ifdef SFML_USE_DRM
 #define SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE

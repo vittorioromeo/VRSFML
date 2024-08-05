@@ -9,7 +9,7 @@
 class TestSocket : public sf::Socket
 {
 public:
-    TestSocket() : sf::Socket(sf::Socket::Type::Udp)
+    TestSocket() : sf::Socket(sf::Socket::Type::Udp, /* isBlocking */ true)
     {
     }
 
@@ -27,6 +27,7 @@ TEST_CASE("[Network] sf::Socket")
         STATIC_CHECK(!std::is_copy_assignable_v<sf::Socket>);
         STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Socket>);
         STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Socket>);
+        STATIC_CHECK(!std::has_virtual_destructor_v<sf::Socket>);
     }
 
     SECTION("Constants")
@@ -49,7 +50,7 @@ TEST_CASE("[Network] sf::Socket")
         {
             TestSocket movedTestSocket;
             movedTestSocket.setBlocking(false);
-            movedTestSocket.create();
+            CHECK(movedTestSocket.create());
             const TestSocket testSocket(SFML_BASE_MOVE(movedTestSocket));
             CHECK(!testSocket.isBlocking());
             CHECK(testSocket.getNativeHandle() != invalidHandle);
@@ -59,7 +60,7 @@ TEST_CASE("[Network] sf::Socket")
         {
             TestSocket movedTestSocket;
             movedTestSocket.setBlocking(false);
-            movedTestSocket.create();
+            CHECK(movedTestSocket.create());
             TestSocket testSocket;
             testSocket = SFML_BASE_MOVE(movedTestSocket);
             CHECK(!testSocket.isBlocking());
@@ -77,12 +78,12 @@ TEST_CASE("[Network] sf::Socket")
     SECTION("create()")
     {
         TestSocket testSocket;
-        testSocket.create();
+        CHECK(testSocket.create());
         CHECK(testSocket.isBlocking());
         CHECK(testSocket.getNativeHandle() != invalidHandle);
 
         // Recreate socket to ensure nothing changed
-        testSocket.create();
+        CHECK(!testSocket.create()); // Fails because socket was already created
         CHECK(testSocket.isBlocking());
         CHECK(testSocket.getNativeHandle() != invalidHandle);
     }
@@ -90,15 +91,15 @@ TEST_CASE("[Network] sf::Socket")
     SECTION("close()")
     {
         TestSocket testSocket;
-        testSocket.create();
+        CHECK(testSocket.create());
         CHECK(testSocket.isBlocking());
         CHECK(testSocket.getNativeHandle() != invalidHandle);
-        testSocket.close();
+        CHECK(testSocket.close());
         CHECK(testSocket.isBlocking());
         CHECK(testSocket.getNativeHandle() == invalidHandle);
 
         // Reclose socket to ensure nothing changed
-        testSocket.close();
+        CHECK(!testSocket.close()); // Fails because socket was already closed
         CHECK(testSocket.isBlocking());
         CHECK(testSocket.getNativeHandle() == invalidHandle);
     }

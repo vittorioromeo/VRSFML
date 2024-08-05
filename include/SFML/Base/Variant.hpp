@@ -2,16 +2,18 @@
 
 // NOLINTBEGIN
 
-
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow"
 
 #include <SFML/Base/Assert.hpp>
+#include <SFML/Base/Launder.hpp>
 #include <SFML/Base/MakeIndexSequence.hpp>
 #include <SFML/Base/OverloadSet.hpp>
 #include <SFML/Base/PlacementNew.hpp>
 #include <SFML/Base/SizeT.hpp>
+#include <SFML/Base/Traits/IsReference.hpp>
 #include <SFML/Base/Traits/IsSame.hpp>
+#include <SFML/Base/Traits/RemoveCVRef.hpp>
 #include <SFML/Base/TypePackElement.hpp>
 
 namespace sfvr::impl
@@ -35,12 +37,8 @@ template <auto X, auto... Xs>
     decltype(X) rest[]{Xs...};
 
     for (auto value : rest)
-    {
-        if (value > result)
-        {
+        if (result < value)
             result = value;
-        }
-    }
 
     return result;
 }
@@ -81,51 +79,6 @@ template <SizeT>
 struct inplace_index_t
 {
 };
-
-template <typename T>
-struct uncvref
-{
-    using type = T;
-};
-template <typename T>
-struct uncvref<T&>
-{
-    using type = T;
-};
-template <typename T>
-struct uncvref<T&&>
-{
-    using type = T;
-};
-template <typename T>
-struct uncvref<const T&>
-{
-    using type = T;
-};
-template <typename T>
-struct uncvref<const T&&>
-{
-    using type = T;
-};
-
-template <typename T>
-using uncvref_t = typename uncvref<T>::type;
-
-template <typename T>
-inline constexpr bool is_reference = false;
-
-template <typename T>
-inline constexpr bool is_reference<T&> = true;
-
-template <typename T>
-inline constexpr bool is_reference<T&&> = true;
-
-
-template <typename T>
-inline constexpr bool is_void = false;
-
-template <>
-inline constexpr bool is_void<void> = true;
 
 struct void_type
 {
@@ -344,14 +297,14 @@ public:
     {
         TINYVARIANT_DO_WITH_CURRENT_INDEX(I,
                                           SFML_BASE_PLACEMENT_NEW(_buffer) nth_type<I>(static_cast<const nth_type<I>&>(
-                                              *reinterpret_cast<const nth_type<I>*>(rhs._buffer))));
+                                              *SFML_BASE_LAUNDER_CAST(const nth_type<I>*, rhs._buffer))));
     }
 
     [[gnu::always_inline]] tinyvariant(tinyvariant&& rhs) noexcept : _index{rhs._index}
     {
         TINYVARIANT_DO_WITH_CURRENT_INDEX(I,
-                                          SFML_BASE_PLACEMENT_NEW(_buffer) nth_type<I>(
-                                              static_cast<nth_type<I>&&>(*reinterpret_cast<nth_type<I>*>(rhs._buffer))));
+                                          SFML_BASE_PLACEMENT_NEW(_buffer) nth_type<I>(static_cast<nth_type<I>&&>(
+                                              *SFML_BASE_LAUNDER_CAST(nth_type<I>*, rhs._buffer))));
     }
 
     // Avoid forwarding constructor hijack.
@@ -373,9 +326,7 @@ public:
     [[gnu::always_inline]] tinyvariant& operator=(const tinyvariant& rhs)
     {
         if (this == &rhs)
-        {
             return *this;
-        }
 
         TINYVARIANT_DO_WITH_CURRENT_INDEX(I, destroy_at<I>());
 
@@ -415,7 +366,7 @@ public:
     {
         TINYVARIANT_DO_WITH_CURRENT_INDEX(I, destroy_at<I>());
 
-        using type = impl::uncvref_t<T>;
+        using type = SFML_BASE_REMOVE_CVREF(T);
 
         SFML_BASE_PLACEMENT_NEW(_buffer) type{static_cast<T&&>(x)};
         _index = index_of<type>;
@@ -437,19 +388,19 @@ public:
     template <typename T>
     [[nodiscard, gnu::always_inline]] T& as() & noexcept
     {
-        return *(reinterpret_cast<T*>(_buffer));
+        return *SFML_BASE_LAUNDER_CAST(T*, _buffer);
     }
 
     template <typename T>
     [[nodiscard, gnu::always_inline]] const T& as() const& noexcept
     {
-        return *(reinterpret_cast<const T*>(_buffer));
+        return *SFML_BASE_LAUNDER_CAST(const T*, _buffer);
     }
 
     template <typename T>
     [[nodiscard, gnu::always_inline]] T&& as() && noexcept
     {
-        return static_cast<T&&>(*(reinterpret_cast<T*>(_buffer)));
+        return static_cast<T&&>(*SFML_BASE_LAUNDER_CAST(T*, _buffer));
     }
 
     template <impl::SizeT I>
@@ -524,13 +475,13 @@ public:
     template <typename Visitor, typename R = decltype(impl::declval<Visitor>()(impl::declval<nth_type<0>>()))>
     [[nodiscard, gnu::always_inline]] R linear_visit(Visitor&& visitor) &
     {
-        if constexpr (impl::is_reference<R>)
+        if constexpr (SFML_BASE_IS_REFERENCE(R))
         {
-            impl::uncvref_t<R>* ret;
+            SFML_BASE_REMOVE_CVREF(R) * ret;
             TINYVARIANT_DO_WITH_CURRENT_INDEX(I, ret = &(visitor(get_by_index<I>())));
             return static_cast<R>(*ret);
         }
-        else if constexpr (impl::is_void<R>)
+        else if constexpr (SFML_BASE_IS_SAME(R, void))
         {
             TINYVARIANT_DO_WITH_CURRENT_INDEX(I, (visitor(get_by_index<I>())));
         }
@@ -543,7 +494,7 @@ public:
 
             TINYVARIANT_DO_WITH_CURRENT_INDEX(I, SFML_BASE_PLACEMENT_NEW(ret_buffer) R(visitor(get_by_index<I>())));
 
-            return *(reinterpret_cast<R*>(ret_buffer));
+            return *(SFML_BASE_LAUNDER_CAST(R*, ret_buffer));
         }
     }
 
@@ -551,13 +502,13 @@ public:
     template <typename Visitor, typename R = decltype(impl::declval<Visitor>()(impl::declval<nth_type<0>>()))>
     [[nodiscard, gnu::always_inline]] R linear_visit(Visitor&& visitor) const&
     {
-        if constexpr (impl::is_reference<R>)
+        if constexpr (SFML_BASE_IS_REFERENCE(R))
         {
-            impl::uncvref_t<R>* ret;
+            SFML_BASE_REMOVE_CVREF(R) * ret;
             TINYVARIANT_DO_WITH_CURRENT_INDEX(I, ret = &(visitor(get_by_index<I>())));
             return static_cast<R>(*ret);
         }
-        else if constexpr (impl::is_void<R>)
+        else if constexpr (SFML_BASE_IS_SAME(R, void))
         {
             TINYVARIANT_DO_WITH_CURRENT_INDEX(I, (visitor(get_by_index<I>())));
         }
@@ -570,7 +521,7 @@ public:
 
             TINYVARIANT_DO_WITH_CURRENT_INDEX(I, SFML_BASE_PLACEMENT_NEW(ret_buffer) R(visitor(get_by_index<I>())));
 
-            return *(reinterpret_cast<R*>(ret_buffer));
+            return *(SFML_BASE_LAUNDER_CAST(R*, ret_buffer));
         }
     }
 
@@ -592,10 +543,6 @@ public:
 #undef TINYVARIANT_DO_WITH_CURRENT_INDEX
 #undef TINYVARIANT_DO_WITH_CURRENT_INDEX_OBJ
 #undef TINYVARIANT_STATIC_ASSERT_INDEX_VALIDITY
-
-#undef TINYVARIANT_USE_STD_INDEX_SEQUENCE
-#undef TINYVARIANT_USE_INTEGER_PACK
-#undef TINYVARIANT_USE_MAKE_INTEGER_SEQ
 
 } // namespace sfvr
 

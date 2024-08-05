@@ -176,6 +176,7 @@ SocketHandle SocketImpl::invalidSocket()
 ////////////////////////////////////////////////////////////
 void SocketImpl::close(SocketHandle sock)
 {
+    SFML_BASE_ASSERT(sock != invalidSocket());
     ::close(sock);
 }
 
@@ -183,17 +184,11 @@ void SocketImpl::close(SocketHandle sock)
 ////////////////////////////////////////////////////////////
 void SocketImpl::setBlocking(SocketHandle sock, bool block)
 {
-    const int status = fcntl(sock, F_GETFL);
-    if (block)
-    {
-        if (fcntl(sock, F_SETFL, status & ~O_NONBLOCK) == -1)
-            priv::err() << "Failed to set file status flags: " << errno;
-    }
-    else
-    {
-        if (fcntl(sock, F_SETFL, status | O_NONBLOCK) == -1)
-            priv::err() << "Failed to set file status flags: " << errno;
-    }
+    const int  status    = fcntl(sock, F_GETFL);
+    const auto blockFlag = block ? (status & ~O_NONBLOCK) : (status | O_NONBLOCK);
+
+    if (fcntl(sock, F_SETFL, blockFlag) == -1)
+        priv::err() << "Failed to set file status flags: " << errno;
 }
 
 
@@ -226,11 +221,7 @@ Socket::Status SocketImpl::getErrorStatus()
 base::Optional<std::uint32_t> SocketImpl::inetAddr(const char* data)
 {
     const std::uint32_t ip = ::inet_addr(data);
-
-    if (ip == INADDR_NONE)
-        return base::nullOpt;
-
-    return base::makeOptional<std::uint32_t>(ip);
+    return ip == INADDR_NONE ? base::nullOpt : base::makeOptional<std::uint32_t>(ip);
 }
 
 

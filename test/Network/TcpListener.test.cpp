@@ -19,13 +19,13 @@ TEST_CASE("[Network] sf::TcpListener")
 
     SECTION("Construction")
     {
-        const sf::TcpListener tcpListener;
+        const sf::TcpListener tcpListener(/* isBlocking */ true);
         CHECK(tcpListener.getLocalPort() == 0);
     }
 
     SECTION("listen()")
     {
-        sf::TcpListener tcpListener;
+        sf::TcpListener tcpListener(/* isBlocking */ true);
 
         SECTION("Valid")
         {
@@ -42,17 +42,17 @@ TEST_CASE("[Network] sf::TcpListener")
 
     SECTION("close()")
     {
-        sf::TcpListener tcpListener;
+        sf::TcpListener tcpListener(/* isBlocking */ true);
         CHECK(tcpListener.listen(0) == sf::Socket::Status::Done);
         CHECK(tcpListener.getLocalPort() != 0);
-        tcpListener.close();
+        CHECK(tcpListener.close());
         CHECK(tcpListener.getLocalPort() == 0);
     }
 
     SECTION("accept()")
     {
-        sf::TcpListener tcpListener;
-        sf::TcpSocket   tcpSocket;
+        sf::TcpListener tcpListener(/* isBlocking */ true);
+        sf::TcpSocket   tcpSocket(/* isBlocking */ true);
         CHECK(tcpListener.accept(tcpSocket) == sf::Socket::Status::Error);
     }
 }

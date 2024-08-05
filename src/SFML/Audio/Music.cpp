@@ -104,7 +104,7 @@ base::Optional<Music> Music::tryOpenFromInputSoundFile(base::Optional<InputSound
         return base::nullOpt;
     }
 
-    return sf::base::makeOptional<Music>(base::PassKey<Music>{}, SFML_BASE_MOVE(*optFile));
+    return base::makeOptional<Music>(base::PassKey<Music>{}, SFML_BASE_MOVE(*optFile));
 }
 
 
@@ -210,14 +210,14 @@ base::Optional<std::uint64_t> Music::onLoop()
         // Looping is enabled, and either we're at the loop end, or we're at the EOF
         // when it's equivalent to the loop end (loop end takes priority). Send us to loop begin
         m_impl->file.seek(m_impl->loopSpan.offset);
-        return sf::base::makeOptional(m_impl->file.getSampleOffset());
+        return base::makeOptional(m_impl->file.getSampleOffset());
     }
 
     if (getLoop() && (currentOffset >= m_impl->file.getSampleCount()))
     {
         // If we're at the EOF, reset to 0
         m_impl->file.seek(0);
-        return sf::base::makeOptional(std::uint64_t{0});
+        return base::makeOptional(std::uint64_t{0});
     }
 
     return base::nullOpt;

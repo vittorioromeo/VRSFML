@@ -35,7 +35,7 @@ int main()
     [[maybe_unused]] const sf::Ftp       ftp;
     [[maybe_unused]] const sf::Http      http;
     [[maybe_unused]] const sf::Packet    packet;
-    [[maybe_unused]] const sf::UdpSocket udpSocket;
+    [[maybe_unused]] const sf::UdpSocket udpSocket(/* isBlocking */ true);
 
     // System
     [[maybe_unused]] const sf::Angle  angle;

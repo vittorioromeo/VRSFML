@@ -13,7 +13,7 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-TcpListener::TcpListener() : Socket(Type::Tcp)
+TcpListener::TcpListener(bool isBlocking) : Socket(Type::Tcp, isBlocking)
 {
 }
 
@@ -21,19 +21,7 @@ TcpListener::TcpListener() : Socket(Type::Tcp)
 ////////////////////////////////////////////////////////////
 unsigned short TcpListener::getLocalPort() const
 {
-    if (getNativeHandle() != priv::SocketImpl::invalidSocket())
-    {
-        // Retrieve information about the local end of the socket
-        priv::SockAddrIn address{};
-        auto             size = address.size();
-        if (priv::SocketImpl::getSockName(getNativeHandle(), address, size))
-        {
-            return priv::SocketImpl::ntohs(address.sinPort());
-        }
-    }
-
-    // We failed to retrieve the port
-    return 0;
+    return getLocalPortImpl("TCP listener");
 }
 
 
@@ -41,10 +29,12 @@ unsigned short TcpListener::getLocalPort() const
 Socket::Status TcpListener::listen(unsigned short port, IpAddress address)
 {
     // Close the socket if it is already bound
-    close();
+    if (getNativeHandle() != priv::SocketImpl::invalidSocket())
+        (void)close(); // Intentionally discard
 
     // Create the internal socket if it doesn't exist
-    create();
+    if (!create())
+        return Status::Error;
 
     // Check if the address is valid
     if (address == IpAddress::Broadcast)
@@ -72,10 +62,10 @@ Socket::Status TcpListener::listen(unsigned short port, IpAddress address)
 
 
 ////////////////////////////////////////////////////////////
-void TcpListener::close()
+bool TcpListener::close()
 {
     // Simply close the socket
-    Socket::close();
+    return Socket::close();
 }
 
 
@@ -99,10 +89,13 @@ Socket::Status TcpListener::accept(TcpSocket& socket)
         return priv::SocketImpl::getErrorStatus();
 
     // Initialize the new connected socket
-    socket.close();
-    socket.create(remote);
+    if (socket.getNativeHandle() != priv::SocketImpl::invalidSocket())
+        (void)socket.close(); // Intentionally discard
 
-    return Status::Done;
+    if (socket.create(remote))
+        return Status::Done;
+
+    return Status::Error;
 }
 
 } // namespace sf

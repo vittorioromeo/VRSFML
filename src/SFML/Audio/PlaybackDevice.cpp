@@ -105,7 +105,7 @@ base::Optional<PlaybackDevice> PlaybackDevice::createDefault(AudioContext& audio
     if (!defaultPlaybackDeviceHandle.hasValue())
         return base::nullOpt;
 
-    return sf::base::makeOptional<PlaybackDevice>(audioContext, *defaultPlaybackDeviceHandle);
+    return base::makeOptional<PlaybackDevice>(audioContext, *defaultPlaybackDeviceHandle);
 }
 
 

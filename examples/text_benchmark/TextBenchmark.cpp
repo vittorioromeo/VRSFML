@@ -6,6 +6,8 @@
 
 #include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/EventUtils.hpp>
+
+#include <SFML/Base/Optional.hpp>
 #if 1
 
 #include <SFML/Graphics/Font.hpp>
@@ -64,7 +66,7 @@ int main()
 
     while (true)
     {
-        while (auto event = window.pollEvent())
+        while (sf::base::Optional event = window.pollEvent())
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return EXIT_SUCCESS;
@@ -169,7 +171,7 @@ int main()
 
     while (true)
     {
-        while (auto event = window.pollEvent())
+        while (sf::base::Optional event = window.pollEvent())
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return EXIT_SUCCESS;

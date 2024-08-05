@@ -12,6 +12,7 @@
 #include <SFML/System/Time.hpp>
 #include <SFML/System/Vector2.hpp>
 
+#include <SFML/Base/InPlacePImpl.hpp>
 #include <SFML/Base/Optional.hpp>
 #include <SFML/Base/UniquePtr.hpp>
 
@@ -482,6 +483,12 @@ private:
     friend class Window;
 
     ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    priv::WindowImpl& getWindowImpl();
+
+    ////////////////////////////////////////////////////////////
     /// \brief Construct a window base from the inner implementation
     ///
     ////////////////////////////////////////////////////////////
@@ -504,8 +511,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    base::UniquePtr<priv::WindowImpl> m_impl; //!< Platform-specific implementation of the window
-    Vector2u                          m_size; //!< Current size of the window
+    struct Impl;
+    base::InPlacePImpl<Impl, 32> m_impl; //!< Implementation details
 };
 
 } // namespace sf

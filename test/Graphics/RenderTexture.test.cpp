@@ -28,14 +28,13 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
 
     SECTION("create()")
     {
-        CHECK(!sf::RenderTexture::create(graphicsContext, {1'000'000, 1'000'000}));
+        CHECK(!sf::RenderTexture::create(graphicsContext, {1'000'000, 1'000'000}).hasValue());
 
-        CHECK(sf::RenderTexture::create(graphicsContext,
-                                        {100, 100},
-                                        sf::ContextSettings{8 /* depthBits */, 0 /* stencilBits */}));
-        CHECK(sf::RenderTexture::create(graphicsContext,
-                                        {100, 100},
-                                        sf::ContextSettings{0 /* depthBits */, 8 /* stencilBits */}));
+        CHECK(sf::RenderTexture::create(graphicsContext, {100, 100}, sf::ContextSettings{8 /* depthBits */, 0 /* stencilBits */})
+                  .hasValue());
+
+        CHECK(sf::RenderTexture::create(graphicsContext, {100, 100}, sf::ContextSettings{0 /* depthBits */, 8 /* stencilBits */})
+                  .hasValue());
 
         const auto renderTexture = sf::RenderTexture::create(graphicsContext, {360, 480}).value();
         CHECK(renderTexture.getSize() == sf::Vector2u{360, 480});

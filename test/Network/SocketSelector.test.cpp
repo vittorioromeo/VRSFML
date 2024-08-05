@@ -17,7 +17,7 @@ TEST_CASE("[Network] sf::SocketSelector")
         STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::SocketSelector>);
     }
 
-    sf::UdpSocket socket;
+    sf::UdpSocket socket(/* isBlocking */ true);
 
     SECTION("Construction")
     {

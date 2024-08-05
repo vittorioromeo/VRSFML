@@ -84,7 +84,7 @@ base::Optional<IpAddress> IpAddress::getLocalAddress()
     priv::SocketImpl::close(sock);
 
     // Finally build the IP address
-    return sf::base::makeOptional<IpAddress>(priv::SocketImpl::ntohl(address.sAddr()));
+    return base::makeOptional<IpAddress>(priv::SocketImpl::ntohl(address.sAddr()));
 }
 
 

@@ -3,6 +3,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Config.hpp>
+
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/GLExtensions.hpp>
 #include <SFML/Window/Joystick.hpp>
@@ -14,6 +16,7 @@
 #include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/VideoModeUtils.hpp>
 #include <SFML/Window/WindowImpl.hpp>
+#include <SFML/Window/WindowImplType.hpp>
 
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Sleep.hpp>
@@ -27,62 +30,6 @@
 
 #include <chrono>
 #include <queue>
-
-#if defined(SFML_SYSTEM_WINDOWS)
-
-#include <SFML/Window/Win32/WindowImplWin32.hpp>
-using WindowImplType = sf::priv::WindowImplWin32;
-
-#include <SFML/Window/VulkanImpl.hpp>
-
-#elif defined(SFML_SYSTEM_LINUX) || defined(SFML_SYSTEM_FREEBSD) || defined(SFML_SYSTEM_OPENBSD) || \
-    defined(SFML_SYSTEM_NETBSD)
-
-#if defined(SFML_USE_DRM)
-
-#include <SFML/Window/DRM/WindowImplDRM.hpp>
-using WindowImplType = sf::priv::WindowImplDRM;
-
-#define SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
-
-#else
-
-#include <SFML/Window/Unix/WindowImplX11.hpp>
-using WindowImplType = sf::priv::WindowImplX11;
-
-#include <SFML/Window/VulkanImpl.hpp>
-
-#endif
-
-#elif defined(SFML_SYSTEM_MACOS)
-
-#include <SFML/Window/macOS/WindowImplCocoa.hpp>
-using WindowImplType = sf::priv::WindowImplCocoa;
-
-#define SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
-
-#elif defined(SFML_SYSTEM_IOS)
-
-#include <SFML/Window/iOS/WindowImplUIKit.hpp>
-using WindowImplType = sf::priv::WindowImplUIKit;
-
-#define SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
-
-#elif defined(SFML_SYSTEM_ANDROID)
-
-#include <SFML/Window/Android/WindowImplAndroid.hpp>
-using WindowImplType = sf::priv::WindowImplAndroid;
-
-#define SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
-
-#elif defined(SFML_SYSTEM_EMSCRIPTEN)
-
-#include <SFML/Window/Emscripten/WindowImplEmscripten.hpp>
-using WindowImplType = sf::priv::WindowImplEmscripten;
-
-#define SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
-
-#endif
 
 
 namespace

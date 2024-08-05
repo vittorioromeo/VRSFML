@@ -73,7 +73,7 @@ base::Optional<PlaybackDeviceHandle> AudioContextUtils::getDefaultPlaybackDevice
 {
     for (const PlaybackDeviceHandle& deviceHandle : getAvailablePlaybackDeviceHandles(audioContext))
         if (deviceHandle.isDefault())
-            return sf::base::makeOptional(deviceHandle);
+            return base::makeOptional(deviceHandle);
 
     return base::nullOpt;
 }
@@ -96,7 +96,7 @@ base::Optional<CaptureDeviceHandle> AudioContextUtils::getDefaultCaptureDeviceHa
 {
     for (const CaptureDeviceHandle& deviceHandle : getAvailableCaptureDeviceHandles(audioContext))
         if (deviceHandle.isDefault())
-            return sf::base::makeOptional(deviceHandle);
+            return base::makeOptional(deviceHandle);
 
     return base::nullOpt;
 }

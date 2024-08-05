@@ -111,7 +111,7 @@ base::Optional<CaptureDevice> CaptureDevice::createDefault(AudioContext& audioCo
     if (!defaultCaptureDeviceHandle.hasValue())
         return base::nullOpt;
 
-    return sf::base::makeOptional<CaptureDevice>(audioContext, *defaultCaptureDeviceHandle);
+    return base::makeOptional<CaptureDevice>(audioContext, *defaultCaptureDeviceHandle);
 }
 
 

@@ -70,7 +70,7 @@ base::Optional<InputSoundFile> InputSoundFile::openFromFile(const Path& filename
 
     // Open the file
     auto fileInputStream = FileInputStream::open(filename);
-    if (!fileInputStream)
+    if (!fileInputStream.hasValue())
     {
         priv::err() << "Failed to open input sound file from file (couldn't open file input stream)\n"
                     << priv::PathDebugFormatter{filename};
@@ -83,7 +83,7 @@ base::Optional<InputSoundFile> InputSoundFile::openFromFile(const Path& filename
 
     // Pass the stream to the reader
     auto info = reader->open(*file);
-    if (!info)
+    if (!info.hasValue())
     {
         priv::err() << "Failed to open input sound file from file (reader open failure)\n"
                     << priv::PathDebugFormatter{filename};
@@ -91,12 +91,12 @@ base::Optional<InputSoundFile> InputSoundFile::openFromFile(const Path& filename
         return base::nullOpt;
     }
 
-    return sf::base::makeOptional<InputSoundFile>(base::PassKey<InputSoundFile>{},
-                                                  SFML_BASE_MOVE(reader),
-                                                  SFML_BASE_MOVE(file),
-                                                  info->sampleCount,
-                                                  info->sampleRate,
-                                                  SFML_BASE_MOVE(info->channelMap));
+    return base::makeOptional<InputSoundFile>(base::PassKey<InputSoundFile>{},
+                                              SFML_BASE_MOVE(reader),
+                                              SFML_BASE_MOVE(file),
+                                              info->sampleCount,
+                                              info->sampleRate,
+                                              SFML_BASE_MOVE(info->channelMap));
 }
 
 
@@ -115,19 +115,19 @@ base::Optional<InputSoundFile> InputSoundFile::openFromMemory(const void* data, 
     auto memory = base::makeUnique<MemoryInputStream>(data, sizeInBytes);
 
     // Pass the stream to the reader
-    auto info = reader->open(*memory);
-    if (!info)
+    base::Optional info = reader->open(*memory);
+    if (!info.hasValue())
     {
         priv::err() << "Failed to open input sound file from memory (reader open failure)";
         return base::nullOpt;
     }
 
-    return sf::base::makeOptional<InputSoundFile>(base::PassKey<InputSoundFile>{},
-                                                  SFML_BASE_MOVE(reader),
-                                                  SFML_BASE_MOVE(memory),
-                                                  info->sampleCount,
-                                                  info->sampleRate,
-                                                  SFML_BASE_MOVE(info->channelMap));
+    return base::makeOptional<InputSoundFile>(base::PassKey<InputSoundFile>{},
+                                              SFML_BASE_MOVE(reader),
+                                              SFML_BASE_MOVE(memory),
+                                              info->sampleCount,
+                                              info->sampleRate,
+                                              SFML_BASE_MOVE(info->channelMap));
 }
 
 
@@ -150,19 +150,19 @@ base::Optional<InputSoundFile> InputSoundFile::openFromStream(InputStream& strea
     }
 
     // Pass the stream to the reader
-    auto info = reader->open(stream);
-    if (!info)
+    base::Optional info = reader->open(stream);
+    if (!info.hasValue())
     {
         priv::err() << "Failed to open input sound file from stream (reader open failure)";
         return base::nullOpt;
     }
 
-    return sf::base::makeOptional<InputSoundFile>(base::PassKey<InputSoundFile>{},
-                                                  SFML_BASE_MOVE(reader),
-                                                  base::UniquePtr<InputStream, StreamDeleter>{&stream, false},
-                                                  info->sampleCount,
-                                                  info->sampleRate,
-                                                  SFML_BASE_MOVE(info->channelMap));
+    return base::makeOptional<InputSoundFile>(base::PassKey<InputSoundFile>{},
+                                              SFML_BASE_MOVE(reader),
+                                              base::UniquePtr<InputStream, StreamDeleter>{&stream, false},
+                                              info->sampleCount,
+                                              info->sampleRate,
+                                              SFML_BASE_MOVE(info->channelMap));
 }
 
 

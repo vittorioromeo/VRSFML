@@ -69,7 +69,7 @@ m_sRgb(rhs.m_sRgb),
 m_isRepeated(rhs.m_isRepeated),
 m_cacheId(TextureImpl::getUniqueId())
 {
-    if (auto texture = create(*m_graphicsContext, rhs.getSize(), rhs.isSrgb()))
+    if (base::Optional texture = create(*m_graphicsContext, rhs.getSize(), rhs.isSrgb()))
     {
         *this = SFML_BASE_MOVE(*texture);
         update(rhs);
@@ -256,7 +256,7 @@ base::Optional<Texture> Texture::create(GraphicsContext& graphicsContext, Vector
 ////////////////////////////////////////////////////////////
 base::Optional<Texture> Texture::loadFromFile(GraphicsContext& graphicsContext, const Path& filename, bool sRgb, const IntRect& area)
 {
-    if (const auto image = sf::Image::loadFromFile(filename))
+    if (const base::Optional image = sf::Image::loadFromFile(filename))
         return loadFromImage(graphicsContext, *image, sRgb, area);
 
     priv::err() << "Failed to load texture from file";
@@ -272,7 +272,7 @@ base::Optional<Texture> Texture::loadFromMemory(
     bool             sRgb,
     const IntRect&   area)
 {
-    if (const auto image = sf::Image::loadFromMemory(data, size))
+    if (const base::Optional image = sf::Image::loadFromMemory(data, size))
         return loadFromImage(graphicsContext, *image, sRgb, area);
 
     priv::err() << "Failed to load texture from memory";
@@ -283,7 +283,7 @@ base::Optional<Texture> Texture::loadFromMemory(
 ////////////////////////////////////////////////////////////
 base::Optional<Texture> Texture::loadFromStream(GraphicsContext& graphicsContext, InputStream& stream, bool sRgb, const IntRect& area)
 {
-    if (const auto image = sf::Image::loadFromStream(stream))
+    if (const base::Optional image = sf::Image::loadFromStream(stream))
         return loadFromImage(graphicsContext, *image, sRgb, area);
 
     priv::err() << "Failed to load texture from stream";

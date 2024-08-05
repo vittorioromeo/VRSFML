@@ -12,7 +12,7 @@
 // Copyright (C) 2024 Marco Antognini (antognini.marco@gmail.com)
 // Copyright (C) 2013-2013 David Demelier (demelier.david@gmail.com)
 // Copyright (C) 2024 Andrew Mickelson
-// Copyright (C) 2024 The SFML Team
+// Copyright (C) 2024 The SFML Team (https://github.com/SFML/SFML?tab=readme-ov-file#authors)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.

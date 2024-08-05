@@ -19,7 +19,7 @@
 void runUdpServer(unsigned short port)
 {
     // Create a socket to receive a message from anyone
-    sf::UdpSocket socket;
+    sf::UdpSocket socket(/* isBlocking */ true);
 
     // Listen to messages on the specified port
     if (socket.bind(port) != sf::Socket::Status::Done)
@@ -58,7 +58,7 @@ void runUdpClient(unsigned short port)
     } while (!server.hasValue());
 
     // Create a socket for communicating with the server
-    sf::UdpSocket socket;
+    sf::UdpSocket socket(/* isBlocking */ true);
 
     // Send a message to the server
     const char out[] = "Hi, I'm a client";

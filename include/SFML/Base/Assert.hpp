@@ -1,7 +1,13 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
-#ifndef NDEBUG
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include <SFML/Config.hpp>
+
+
+#ifdef SFML_DEBUG
 
 namespace sf::base::priv
 {

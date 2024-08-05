@@ -24,8 +24,7 @@
 
 #include <GL/gl.h>
 
-#elif defined(SFML_SYSTEM_LINUX) || defined(SFML_SYSTEM_FREEBSD) || defined(SFML_SYSTEM_OPENBSD) || \
-    defined(SFML_SYSTEM_NETBSD)
+#elif defined(SFML_SYSTEM_LINUX_OR_BSD)
 
 #if defined(SFML_OPENGL_ES)
 #include <GLES3/gl3.h>

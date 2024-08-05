@@ -17,7 +17,6 @@ namespace sf::priv
 class GlContext;
 class RenderTextureImplDefault;
 class RenderTextureImplFBO;
-class WindowImpl;
 } // namespace sf::priv
 
 namespace sf
