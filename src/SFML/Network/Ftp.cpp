@@ -179,7 +179,7 @@ Ftp::Response Ftp::disconnect()
     Response response = sendCommand("QUIT");
     if (response.isOk())
     {
-        const bool rc = m_commandSocket.disconnect();
+        [[maybe_unused]] const bool rc = m_commandSocket.disconnect();
         SFML_BASE_ASSERT(rc);
     }
 
@@ -597,7 +597,7 @@ void Ftp::DataChannel::receive(std::ostream& stream)
     }
 
     // Close the data socket
-    const bool rc = m_dataSocket.disconnect();
+    [[maybe_unused]] const bool rc = m_dataSocket.disconnect();
     SFML_BASE_ASSERT(rc);
 }
 
@@ -636,7 +636,7 @@ void Ftp::DataChannel::send(std::istream& stream)
     }
 
     // Close the data socket
-    const bool rc = m_dataSocket.disconnect();
+    [[maybe_unused]] const bool rc = m_dataSocket.disconnect();
     SFML_BASE_ASSERT(rc);
 }
 

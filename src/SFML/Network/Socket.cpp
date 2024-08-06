@@ -27,7 +27,7 @@ Socket::~Socket()
 {
     if (m_socket != priv::SocketImpl::invalidSocket())
     {
-        const bool rc = close();
+        [[maybe_unused]] const bool rc = close();
         SFML_BASE_ASSERT(rc);
     }
 }
@@ -50,7 +50,7 @@ Socket& Socket::operator=(Socket&& rhs) noexcept
 
     if (m_socket != priv::SocketImpl::invalidSocket())
     {
-        const bool rc = close();
+        [[maybe_unused]] const bool rc = close();
         SFML_BASE_ASSERT(rc);
     }
 

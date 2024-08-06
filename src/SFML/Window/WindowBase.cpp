@@ -1,3 +1,5 @@
+#include "SFML/System/Vector2.hpp"
+
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
@@ -42,7 +44,7 @@ priv::WindowImpl& WindowBase::getWindowImpl()
 
 
 ////////////////////////////////////////////////////////////
-WindowBase::WindowBase(base::UniquePtr<priv::WindowImpl>&& impl) : m_impl(SFML_BASE_MOVE(impl))
+WindowBase::WindowBase(base::UniquePtr<priv::WindowImpl>&& impl) : m_impl(SFML_BASE_MOVE(impl), Vector2u{})
 {
     // Setup default behaviors (to get a consistent behavior across different implementations)
     setVisible(true);

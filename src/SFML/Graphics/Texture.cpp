@@ -942,7 +942,7 @@ void Texture::bind([[maybe_unused]] GraphicsContext& graphicsContext, const Text
 
 
 ////////////////////////////////////////////////////////////
-unsigned int Texture::getMaximumSize(GraphicsContext& graphicsContext)
+unsigned int Texture::getMaximumSize([[maybe_unused]] GraphicsContext& graphicsContext)
 {
     SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
 
