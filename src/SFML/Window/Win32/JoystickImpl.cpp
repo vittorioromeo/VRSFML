@@ -15,7 +15,8 @@
 
 #include <SFML/Base/Algorithm.hpp>
 #include <SFML/Base/EnumArray.hpp>
-#include <SFML/Base/Math.hpp>
+#include <SFML/Base/Math/Cos.hpp>
+#include <SFML/Base/Math/Sin.hpp>
 
 #include <dinput.h>
 #include <mmsystem.h>

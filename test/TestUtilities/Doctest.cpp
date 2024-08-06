@@ -1,4 +1,4 @@
-#include <SFML/Base/Math.hpp>
+#include <SFML/Base/Math/Fabs.hpp>
 
 #include <Doctest.hpp>
 

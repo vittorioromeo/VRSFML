@@ -25,7 +25,7 @@
 
 #include <SFML/Base/EnumArray.hpp>
 #include <SFML/Base/Macros.hpp>
-#include <SFML/Base/Math.hpp>
+#include <SFML/Base/Math/Fabs.hpp>
 #include <SFML/Base/UniquePtr.hpp>
 
 #include <chrono>

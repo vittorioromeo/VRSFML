@@ -8,8 +8,7 @@
 #include <SFML/Window/macOS/WindowImplCocoa.hpp>
 
 #include <SFML/Base/Algorithm.hpp>
-#include <SFML/Base/Math.hpp>
-
+#include <SFML/Base/Math/Fabs.hpp>
 #include <SFML/Base/Optional.hpp>
 
 

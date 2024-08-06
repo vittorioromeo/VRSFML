@@ -25,7 +25,7 @@
 
 #include <SFML/Base/Algorithm.hpp>
 #include <SFML/Base/Assert.hpp>
-#include <SFML/Base/Math.hpp>
+#include <SFML/Base/Math/Lround.hpp>
 #include <SFML/Base/Optional.hpp>
 
 #include <mutex>

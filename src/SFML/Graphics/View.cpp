@@ -6,7 +6,7 @@
 #include <SFML/Graphics/View.hpp>
 
 #include <SFML/Base/Assert.hpp>
-#include <SFML/Base/Math.hpp>
+
 
 
 namespace sf

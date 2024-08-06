@@ -7,7 +7,10 @@
 #include <SFML/System/Vector2.hpp> // NOLINT(misc-header-include-cycle)
 
 #include <SFML/Base/Assert.hpp>
-#include <SFML/Base/Math.hpp>
+#include <SFML/Base/Math/Atan2.hpp>
+#include <SFML/Base/Math/Cos.hpp>
+#include <SFML/Base/Math/Sin.hpp>
+#include <SFML/Base/Math/Sqrt.hpp>
 #include <SFML/Base/Traits/IsFloatingPoint.hpp>
 
 

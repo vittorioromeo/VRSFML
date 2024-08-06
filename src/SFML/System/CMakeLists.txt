@@ -14,7 +14,28 @@ set(SRC_BASE
     ${BASE_INCROOT}/Launder.hpp
     ${BASE_INCROOT}/Macros.hpp
     ${BASE_INCROOT}/MakeIndexSequence.hpp
-    ${BASE_INCROOT}/Math.hpp
+    ${BASE_INCROOT}/Math/Acos.hpp
+    ${BASE_INCROOT}/Math/Asin.hpp
+    ${BASE_INCROOT}/Math/Atan.hpp
+    ${BASE_INCROOT}/Math/Atan2.hpp
+    ${BASE_INCROOT}/Math/Ceil.hpp
+    ${BASE_INCROOT}/Math/Cos.hpp
+    ${BASE_INCROOT}/Math/Cosh.hpp
+    ${BASE_INCROOT}/Math/Exp.hpp
+    ${BASE_INCROOT}/Math/Fabs.hpp
+    ${BASE_INCROOT}/Math/Floor.hpp
+    ${BASE_INCROOT}/Math/Fmod.hpp
+    ${BASE_INCROOT}/Math/Frexp.hpp
+    ${BASE_INCROOT}/Math/Impl.hpp
+    ${BASE_INCROOT}/Math/ImplBuiltinWrapper.hpp
+    ${BASE_INCROOT}/Math/ImplStdForwarder.hpp
+    ${BASE_INCROOT}/Math/ImplUndef.hpp
+    ${BASE_INCROOT}/Math/Ldexp.hpp
+    ${BASE_INCROOT}/Math/Log.hpp
+    ${BASE_INCROOT}/Math/Log10.hpp
+    ${BASE_INCROOT}/Math/Lround.hpp
+    ${BASE_INCROOT}/Math/Sin.hpp
+    ${BASE_INCROOT}/Math/Sqrt.hpp
     ${BASE_INCROOT}/MaxAlignT.hpp
     ${BASE_INCROOT}/Optional.hpp
     ${BASE_INCROOT}/OverloadSet.hpp

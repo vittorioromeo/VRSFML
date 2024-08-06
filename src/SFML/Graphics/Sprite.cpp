@@ -5,7 +5,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Sprite.hpp>
 
-#include <SFML/Base/Math.hpp>
+#include <SFML/Base/Math/Fabs.hpp>
 
 
 namespace sf
