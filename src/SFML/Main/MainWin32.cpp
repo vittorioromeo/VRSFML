@@ -22,11 +22,9 @@
 #endif
 #endif
 
+#undef DECLARE_HANDLE
 #define DECLARE_HANDLE(name) \
-    struct name##__          \
-    {                        \
-        int unused;          \
-    };                       \
+    struct name##__;         \
     typedef struct name##__* name
 
 DECLARE_HANDLE(HINSTANCE);

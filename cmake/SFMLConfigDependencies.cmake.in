@@ -47,6 +47,10 @@ if(SFML_STATIC_LIBRARIES)
         endif()
     endif()
 
+    find_dependency(Vorbis)
+    find_dependency(FLAC)
+
+
     # SFML::Graphics
     list(FIND SFML_FIND_COMPONENTS "Graphics" FIND_SFML_GRAPHICS_COMPONENT_INDEX)
     if(FIND_SFML_GRAPHICS_COMPONENT_INDEX GREATER -1)
@@ -77,10 +81,14 @@ if(SFML_STATIC_LIBRARIES)
             endif()
             find_dependency(OpenGL COMPONENTS OpenGL)
         endif()
+
+        find_dependency(EGL)
+        find_dependency(GLES)
     endif()
 
     # SFML::System
     find_dependency(Threads)
+    find_dependency(cpptrace)
 
     if(FIND_SFML_DEPENDENCIES_NOTFOUND)
         set(FIND_SFML_ERROR "SFML found but some of its dependencies are missing (${FIND_SFML_DEPENDENCIES_NOTFOUND})")
