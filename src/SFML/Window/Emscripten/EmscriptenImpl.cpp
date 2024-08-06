@@ -19,7 +19,7 @@
 #include <SFML/System/String.hpp>
 #include <SFML/System/StringUtfUtils.hpp>
 
-#include <SFML/Base/Math.hpp>
+#include <SFML/Base/Math/Fabs.hpp>
 
 #include <emscripten.h>
 #include <emscripten/html5.h>

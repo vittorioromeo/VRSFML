@@ -14,7 +14,6 @@ namespace sf::base
 {
 ////////////////////////////////////////////////////////////
 template <typename T, SizeT BufferSize>
-// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 class InPlacePImpl
 {
 private:

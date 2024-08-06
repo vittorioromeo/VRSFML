@@ -18,7 +18,7 @@
 #include <SFML/System/PathUtils.hpp>
 
 #include <SFML/Base/Macros.hpp>
-#include <SFML/Base/Math.hpp>
+#include <SFML/Base/Math/Floor.hpp>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H

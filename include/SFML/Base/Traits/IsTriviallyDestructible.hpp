@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 #if __has_builtin(__is_trivially_destructible)
 
 ////////////////////////////////////////////////////////////

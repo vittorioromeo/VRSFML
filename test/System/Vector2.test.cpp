@@ -1,7 +1,8 @@
 #include <SFML/System/Angle.hpp>
 #include <SFML/System/Vector2.hpp>
 
-#include <SFML/Base/Math.hpp>
+
+#include <SFML/Base/Math/Sqrt.hpp>
 
 #include <Doctest.hpp>
 

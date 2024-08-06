@@ -17,7 +17,9 @@
 #include <SFML/System/String.hpp>
 
 #include <SFML/Base/Macros.hpp>
-#include <SFML/Base/Math.hpp>
+#include <SFML/Base/Math/Ceil.hpp>
+#include <SFML/Base/Math/Fabs.hpp>
+#include <SFML/Base/Math/Floor.hpp>
 
 #include <vector>
 

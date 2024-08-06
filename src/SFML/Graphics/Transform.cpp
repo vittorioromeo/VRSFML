@@ -7,7 +7,8 @@
 
 #include <SFML/System/Angle.hpp>
 
-#include <SFML/Base/Math.hpp>
+#include <SFML/Base/Math/Cos.hpp>
+#include <SFML/Base/Math/Sin.hpp>
 
 
 namespace sf
