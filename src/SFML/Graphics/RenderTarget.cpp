@@ -971,7 +971,6 @@ void RenderTarget::setupDraw(bool useVertexCache, const RenderStates& states)
 
     Shader& usedShader = RenderTargetImpl::getShader(*m_impl->graphicsContext, states.shader, states.texture);
 
-
     if (useVertexCache)
     {
         usedShader.setUniform(usedShader.getUniformLocation("sf_u_modelViewMatrix").value(),

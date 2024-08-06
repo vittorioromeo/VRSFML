@@ -43,6 +43,7 @@ set(SRC_BASE
     ${BASE_INCROOT}/PlacementNew.hpp
     ${BASE_INCROOT}/SizeT.hpp
     ${BASE_INCROOT}/Traits/IsBaseOf.hpp
+    ${BASE_INCROOT}/Traits/IsConvertible.hpp
     ${BASE_INCROOT}/Traits/IsEnum.hpp
     ${BASE_INCROOT}/Traits/IsFloatingPoint.hpp
     ${BASE_INCROOT}/Traits/IsReference.hpp
