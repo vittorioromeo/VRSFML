@@ -1,3 +1,5 @@
+#include "SFML/System/Vector2.hpp"
+
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
@@ -35,7 +37,7 @@ struct CircleShape::Impl
 
 
 ////////////////////////////////////////////////////////////
-CircleShape::CircleShape(float radius, std::size_t pointCount) : m_impl(radius)
+CircleShape::CircleShape(float radius, std::size_t pointCount) : m_impl(radius, std::vector<Vector2f>{})
 {
     update(radius, pointCount);
 }

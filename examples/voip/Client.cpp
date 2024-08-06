@@ -104,7 +104,7 @@ private:
         }
 
         // Close the socket
-        const bool rc = m_socket.disconnect();
+        [[maybe_unused]] const bool rc = m_socket.disconnect();
         SFML_BASE_ASSERT(rc);
 
         return true;

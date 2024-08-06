@@ -339,13 +339,13 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static void fdClear(SocketHandle handle, FDSet& fdSet);
+    static void fdClear(SocketHandle handle, FDSet& fdSet);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static void fdZero(FDSet& fdSet);
+    static void fdZero(FDSet& fdSet);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -357,7 +357,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static void fdSet(SocketHandle handle, FDSet& fdSet);
+    static void fdSet(SocketHandle handle, FDSet& fdSet);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs

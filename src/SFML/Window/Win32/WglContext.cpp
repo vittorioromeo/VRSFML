@@ -18,6 +18,7 @@
 #include <SFML/Base/Assert.hpp>
 
 #include <mutex>
+#include <string> // Needed by `getErrorString`
 #include <vector>
 #include <windef.h>
 

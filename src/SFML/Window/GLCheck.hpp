@@ -39,14 +39,14 @@ namespace sf::priv
     {                                                                       \
         SFML_BASE_ASSERT(glGetError() == GL_NO_ERROR);                      \
                                                                             \
-        auto result = __VA_ARGS__;                                          \
+        auto _glCheckExprResult = __VA_ARGS__;                              \
                                                                             \
         while (!::sf::priv::glCheckError(__FILE__, __LINE__, #__VA_ARGS__)) \
         {                                                                   \
             /* no-op */                                                     \
         }                                                                   \
                                                                             \
-        return result;                                                      \
+        return _glCheckExprResult;                                          \
     }()
 
 // The variants below are expected to fail, but we don't want to pollute the state of
@@ -70,23 +70,23 @@ namespace sf::priv
     {                                                 \
         SFML_BASE_ASSERT(errorFunc() == GL_NO_ERROR); \
                                                       \
-        auto result = __VA_ARGS__;                    \
+        auto _glCheckExprResult = __VA_ARGS__;        \
                                                       \
         while (errorFunc() != GL_NO_ERROR)            \
         {                                             \
             /* no-op */                               \
         }                                             \
                                                       \
-        return result;                                \
+        return _glCheckExprResult;                    \
     }()
 
 #else
 
 // Else, we don't add any overhead
-#define glCheck(...)                   (__VA_ARGS__)
-#define glCheckExpr(...)               (__VA_ARGS__)
-#define glCheckIgnoreWithFunc(...)     (__VA_ARGS__)
-#define glCheckIgnoreExprWithFunc(...) (__VA_ARGS__)
+#define glCheck(...)                              (__VA_ARGS__)
+#define glCheckExpr(...)                          (__VA_ARGS__)
+#define glCheckIgnoreWithFunc(errorFunc, ...)     (__VA_ARGS__)
+#define glCheckIgnoreExprWithFunc(errorFunc, ...) (__VA_ARGS__)
 
 #endif
 

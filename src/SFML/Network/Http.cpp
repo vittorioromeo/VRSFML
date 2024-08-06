@@ -458,7 +458,7 @@ Http::Response Http::sendRequest(const Http::Request& request, Time timeout)
         }
 
         // Close the connection
-        const bool rc = m_impl->connection.disconnect();
+        [[maybe_unused]] const bool rc = m_impl->connection.disconnect();
         SFML_BASE_ASSERT(rc);
     }
 

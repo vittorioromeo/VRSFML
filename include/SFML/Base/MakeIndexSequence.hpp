@@ -11,7 +11,7 @@
 #if __has_builtin(__integer_pack)
 
 ////////////////////////////////////////////////////////////
-#define SFML_BASE_MAKE_INTEGER_SEQUENCE(N) ::sf::base::IndexSequence<__integer_pack(N)>
+#define SFML_BASE_MAKE_INTEGER_SEQUENCE(N) ::sf::base::IndexSequence<__integer_pack(N)...>
 
 
 namespace sf::base
