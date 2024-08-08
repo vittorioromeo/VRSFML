@@ -262,7 +262,7 @@ void requestFullscreen()
                                                           .canvasResizedCallbackUserData = nullptr,
                                                           .canvasResizedCallbackTargetThread = {}};
 
-    emscripten_request_fullscreen_strategy("#canvas", EM_FALSE /* deferUntilInEventHandler */, &fullscreenStrategy);
+    emscripten_request_fullscreen_strategy("#canvas", /* deferUntilInEventHandler */ EM_FALSE, &fullscreenStrategy);
 }
 
 [[nodiscard]] EM_BOOL keyCallback(int eventType, const EmscriptenKeyboardEvent* e, void* /* userData */)
@@ -981,8 +981,8 @@ void JoystickImpl::initialize()
     if (callbacksSet)
         return;
 
-    EMSCRIPTEN_TRY(emscripten_set_gamepadconnected_callback(nullptr, true /* useCapture */, gamepadCallback));
-    EMSCRIPTEN_TRY(emscripten_set_gamepaddisconnected_callback(nullptr, true /* useCapture */, gamepadCallback));
+    EMSCRIPTEN_TRY(emscripten_set_gamepadconnected_callback(nullptr, /* useCapture */ true, gamepadCallback));
+    EMSCRIPTEN_TRY(emscripten_set_gamepaddisconnected_callback(nullptr, /* useCapture */ true, gamepadCallback));
 
     callbacksSet = true;
 }

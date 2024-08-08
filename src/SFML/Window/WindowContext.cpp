@@ -242,7 +242,7 @@ struct WindowContext::Impl
 
 
 ////////////////////////////////////////////////////////////
-WindowContext::WindowContext() : m_impl(base::makeUnique<Impl>(*this, 1u /* id */, nullptr /* shared */))
+WindowContext::WindowContext() : m_impl(base::makeUnique<Impl>(*this, /* id */ 1u, /* shared */ nullptr))
 {
     SFML_BASE_ASSERT(!hasActiveThreadLocalOrSharedGlContext());
 

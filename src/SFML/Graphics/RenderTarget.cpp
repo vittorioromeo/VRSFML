@@ -387,7 +387,7 @@ RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
 
     // Apply the view (scissor testing can affect clearing)
     if (!m_impl->cache.enable || m_impl->cache.viewChanged)
-        applyCurrentView(nullptr /* statesShader */, nullptr /* statesTexture */);
+        applyCurrentView(/* statesShader */ nullptr, /* statesTexture */ nullptr);
 
     return true;
 }
@@ -617,7 +617,7 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, std::size_t firstVerte
         VertexBuffer::bind(*m_impl->graphicsContext, &vertexBuffer);
 
         // Always enable texture coordinates
-        setupVertexAttribPointers(true /* enableTexCoordsArray */,
+        setupVertexAttribPointers(/* enableTexCoordsArray */ true,
                                   m_impl->cache.sfAttribPositionIdx,
                                   m_impl->cache.sfAttribColorIdx,
                                   m_impl->cache.sfAttribTexCoordIdx);

@@ -29,7 +29,7 @@ int main()
                             "SFML Stencil",
                             sf::Style::Titlebar | sf::Style::Close,
                             sf::State::Windowed,
-                            sf::ContextSettings{0 /* depthBits */, 8 /* stencilBits */});
+                            sf::ContextSettings{/* depthBits */ 0, /* stencilBits */ 8});
 
     window.setVerticalSyncEnabled(true);
 

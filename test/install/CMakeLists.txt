@@ -17,7 +17,7 @@ if(PROJECT_IS_TOP_LEVEL)
 endif()
 
 add_executable(test-sfml-install Install.cpp)
-target_link_libraries(test-sfml-install PRIVATE SFML::Graphics SFML::Network SFML::Audio)
+target_link_libraries(test-sfml-install PRIVATE SFML::ImGui SFML::Graphics SFML::Network SFML::Audio)
 
 if (SFML_ENABLE_PCH)
     target_precompile_headers(test-sfml-install REUSE_FROM sfml-system)
