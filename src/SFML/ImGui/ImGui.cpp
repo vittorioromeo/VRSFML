@@ -21,14 +21,15 @@
 #include <SFML/System/String.hpp>
 #include <SFML/System/StringUtfUtils.hpp>
 
-#include <SFML/OpenGL.hpp>
-#include <algorithm>
+#include <SFML/Base/Algorithm.hpp>
+#include <SFML/Base/Assert.hpp>
+#include <SFML/Base/Math/Fabs.hpp>
+#include <SFML/Base/UniquePtr.hpp>
+
 #include <imgui.h>
-#include <memory>
+
 #include <vector>
 
-#include <cassert>
-#include <cmath>   // abs
 #include <cstring> // memcpy
 
 #if defined(__APPLE__)
@@ -122,6 +123,8 @@ int closeKeyboardIME()
 #endif
 #endif
 
+// TODO P0: move backend stuff to its own Cpp
+// TODO P0: cleanup and rename funcs, etc
 // NOLINTBEGIN
 
 #define IMGUI_IMPL_OPENGL_ES3
@@ -321,14 +324,14 @@ bool ImGui_ImplOpenGL3_Init(const char* glsl_version)
     const char* gl_version_str = (const char*)glGetString(GL_VERSION);
     GLint       major          = 0;
     GLint       minor          = 0;
-    glGetIntegerv(GL_MAJOR_VERSION, &major);
-    glGetIntegerv(GL_MINOR_VERSION, &minor);
+    glCheckIgnoreWithFunc(glGetError, glGetIntegerv(GL_MAJOR_VERSION, &major));
+    glCheckIgnoreWithFunc(glGetError, glGetIntegerv(GL_MINOR_VERSION, &minor));
     if (major == 0 && minor == 0)
         sscanf(gl_version_str, "%d.%d", &major, &minor); // Query GL_VERSION in desktop GL 2.x, the string will start with "<major>.<minor>"
     bd->GlVersion = (GLuint)(major * 100 + minor * 10);
 #if defined(GL_CONTEXT_PROFILE_MASK)
     if (bd->GlVersion >= 320)
-        glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &bd->GlProfileMask);
+        glCheck(glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &bd->GlProfileMask));
     bd->GlProfileIsCompat = (bd->GlProfileMask & GL_CONTEXT_COMPATIBILITY_PROFILE_BIT) != 0;
 #endif
 
@@ -390,7 +393,7 @@ bool ImGui_ImplOpenGL3_Init(const char* glsl_version)
     // Make an arbitrary GL call (we don't actually need the result)
     // IF YOU GET A CRASH HERE: it probably means the OpenGL function loader didn't do its job. Let us know!
     GLint current_texture;
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &current_texture);
+    glCheck(glGetIntegerv(GL_TEXTURE_BINDING_2D, &current_texture));
 
     // Detect extensions we support
 #ifdef IMGUI_IMPL_OPENGL_MAY_HAVE_POLYGON_MODE
@@ -399,7 +402,7 @@ bool ImGui_ImplOpenGL3_Init(const char* glsl_version)
     bd->HasClipOrigin = (bd->GlVersion >= 450);
 #ifdef IMGUI_IMPL_OPENGL_HAS_EXTENSIONS
     GLint num_extensions = 0;
-    glGetIntegerv(GL_NUM_EXTENSIONS, &num_extensions);
+    glCheck(glGetIntegerv(GL_NUM_EXTENSIONS, &num_extensions));
     for (GLint i = 0; i < num_extensions; i++)
     {
         const char* extension = (const char*)glGetStringi(GL_EXTENSIONS, i);
@@ -1199,8 +1202,8 @@ struct ImGuiWindowContext
     ImGuiWindowContext& operator=(const ImGuiWindowContext&) = delete; // non copyable
 };
 
-std::vector<std::unique_ptr<ImGuiWindowContext>> sWindowContexts;
-ImGuiWindowContext*                              sCurrWindowCtx = nullptr;
+std::vector<sf::base::UniquePtr<ImGuiWindowContext>> sWindowContexts; // TODO P0: change to C-style array of optionals
+ImGuiWindowContext*                                  sCurrWindowCtx = nullptr;
 
 struct SpriteTextureData
 {
@@ -1246,294 +1249,6 @@ SpriteTextureData getSpriteTextureData(const sf::Sprite& sprite, const sf::Textu
             toImVec2((textureRect.position + textureRect.size).cwiseDiv(textureSize)),
             convertGLTextureHandleToImTextureID(texture.getNativeHandle())};
 }
-
-GLuint convertImTextureIDToGLTextureHandle(ImTextureID textureID)
-{
-    GLuint glTextureHandle = 0;
-    std::memcpy(&glTextureHandle, &textureID, sizeof(GLuint));
-    return glTextureHandle;
-}
-
-
-// NOLINTBEGIN
-
-
-////////////////////////////////////////////////////////////
-template <auto FnGen, auto FnBind, auto FnGet, auto FnDelete>
-class OpenGLRAII
-{
-public:
-    [[nodiscard]] explicit OpenGLRAII()
-    {
-        SFML_BASE_ASSERT(m_id == 0u);
-        FnGen(m_id);
-        SFML_BASE_ASSERT(m_id != 0u);
-    }
-
-    [[nodiscard]] bool isBound() const
-    {
-        int out{};
-        FnGet(out);
-        return out != 0u;
-    }
-
-    void bind() const
-    {
-        SFML_BASE_ASSERT(m_id != 0u);
-        FnBind(m_id);
-
-        SFML_BASE_ASSERT(isBound());
-    }
-
-    ~OpenGLRAII()
-    {
-        if (m_id != 0u)
-            FnDelete(m_id);
-    }
-
-    OpenGLRAII(const OpenGLRAII&)            = delete;
-    OpenGLRAII& operator=(const OpenGLRAII&) = delete;
-
-    OpenGLRAII(OpenGLRAII&& rhs) noexcept : m_id(sf::base::exchange(rhs.m_id, 0u))
-    {
-    }
-
-    OpenGLRAII& operator=(OpenGLRAII&& rhs) noexcept
-    {
-        if (&rhs == this)
-            return *this;
-
-        m_id = sf::base::exchange(rhs.m_id, 0u);
-        return *this;
-    }
-
-private:
-    unsigned int m_id{};
-};
-
-
-////////////////////////////////////////////////////////////
-using VAO = OpenGLRAII<[](auto& id) { glCheck(glGenVertexArrays(1, &id)); },
-                       [](auto id) { glCheck(glBindVertexArray(id)); },
-                       [](auto& id) { glCheck(glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &id)); },
-                       [](auto& id) { glCheck(glDeleteVertexArrays(1, &id)); }>;
-
-
-////////////////////////////////////////////////////////////
-using VBO = OpenGLRAII<[](auto& id) { glCheck(glGenBuffers(1, &id)); },
-                       [](auto id) { glCheck(glBindBuffer(GL_ARRAY_BUFFER, id)); },
-                       [](auto& id) { glCheck(glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &id)); },
-                       [](auto& id) { glCheck(glDeleteBuffers(1, &id)); }>;
-
-
-// copied from imgui/backends/imgui_impl_opengl2.cpp
-void SetupRenderState(ImDrawData* draw_data, int fb_width, int fb_height)
-{
-    // static VAO imguivao; //!< Vertex array object associated with the render target
-    // static VBO imguivbo; //!< Vertex buffer object associated with the render target
-
-    // imguivao.bind();
-    // imguivbo.bind();
-
-    glCheck(glUseProgram(0));
-    glCheck(glBindVertexArray(0));
-    glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
-
-    // Setup render state: alpha-blending enabled, no face culling, no depth testing, scissor
-    // enabled, vertex/texcoord/color pointers, polygon fill.
-    glCheck(glEnable(GL_BLEND));
-    glCheck(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-    // glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA); //
-    // In order to composite our output buffer we need to preserve alpha
-    glCheck(glDisable(GL_CULL_FACE));
-    glCheck(glDisable(GL_DEPTH_TEST));
-    glCheck(glDisable(GL_STENCIL_TEST));
-    glCheck(glDisable(GL_LIGHTING));
-    glCheck(glDisable(GL_COLOR_MATERIAL));
-    glCheck(glEnable(GL_SCISSOR_TEST));
-    glCheck(glEnableClientState(GL_VERTEX_ARRAY));
-    glCheck(glEnableClientState(GL_TEXTURE_COORD_ARRAY));
-    glCheck(glEnableClientState(GL_COLOR_ARRAY));
-    glCheck(glDisableClientState(GL_NORMAL_ARRAY));
-    glCheck(glEnable(GL_TEXTURE_2D));
-    glCheck(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
-    glCheck(glShadeModel(GL_SMOOTH));
-    glCheck(glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE));
-
-    // Setup viewport, orthographic projection matrix
-    // Our visible imgui space lies from draw_data->DisplayPos (top left) to
-    // draw_data->DisplayPos+data_data->DisplaySize (bottom right). DisplayPos is (0,0) for single
-    // viewport apps.
-    glCheck(glViewport(0, 0, (GLsizei)fb_width, (GLsizei)fb_height));
-    glCheck(glMatrixMode(GL_PROJECTION));
-    glCheck(glPushMatrix());
-    glCheck(glLoadIdentity());
-#ifdef GL_VERSION_ES_CL_1_1
-    glCheck(glOrthof(draw_data->DisplayPos.x,
-                     draw_data->DisplayPos.x + draw_data->DisplaySize.x,
-                     draw_data->DisplayPos.y + draw_data->DisplaySize.y,
-                     draw_data->DisplayPos.y,
-                     -1.0f,
-                     +1.0f));
-#else
-    glCheck(glOrtho(draw_data->DisplayPos.x,
-                    draw_data->DisplayPos.x + draw_data->DisplaySize.x,
-                    draw_data->DisplayPos.y + draw_data->DisplaySize.y,
-                    draw_data->DisplayPos.y,
-                    -1.0f,
-                    +1.0f));
-#endif
-    glCheck(glMatrixMode(GL_MODELVIEW));
-    glCheck(glPushMatrix());
-    glCheck(glLoadIdentity());
-}
-
-// Rendering callback
-void RenderDrawLists(ImDrawData* draw_data)
-{
-    ImGui::GetDrawData();
-    if (draw_data->CmdListsCount == 0)
-    {
-        return;
-    }
-
-    const ImGuiIO& io = ImGui::GetIO();
-    SFML_BASE_ASSERT(io.Fonts->TexID != (ImTextureID) nullptr); // You forgot to create and set font texture
-
-    // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates !=
-    // framebuffer coordinates)
-    const int fb_width  = (int)(draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
-    const int fb_height = (int)(draw_data->DisplaySize.y * draw_data->FramebufferScale.y);
-    if (fb_width == 0 || fb_height == 0)
-        return;
-    draw_data->ScaleClipRects(io.DisplayFramebufferScale);
-
-    // Backup GL state
-    // Backup GL state
-    GLint last_program = 0;
-    glCheck(glGetIntegerv(GL_CURRENT_PROGRAM, &last_program));
-    GLint last_texture = 0;
-    glCheck(glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture));
-#ifndef SFML_SYSTEM_EMSCRIPTEN
-    GLint last_polygon_mode[2];
-    glCheck(glGetIntegerv(GL_POLYGON_MODE, last_polygon_mode));
-#endif
-    GLint last_viewport[4];
-    glCheck(glGetIntegerv(GL_VIEWPORT, last_viewport));
-    GLint last_scissor_box[4];
-    glCheck(glGetIntegerv(GL_SCISSOR_BOX, last_scissor_box));
-#ifndef SFML_SYSTEM_EMSCRIPTEN
-    GLint last_shade_model = 0;
-    glCheck(glGetIntegerv(GL_SHADE_MODEL, &last_shade_model));
-#endif
-    GLint last_tex_env_mode = 0;
-    glCheck(glGetTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &last_tex_env_mode));
-    GLint last_vertex_array;
-    glCheck(glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &last_vertex_array));
-    GLint last_array_buffer;
-    glCheck(glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &last_array_buffer));
-    GLint last_element_array_buffer;
-    glCheck(glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &last_element_array_buffer));
-
-    glCheck(glPushAttrib(GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT | GL_TRANSFORM_BIT));
-
-    // Setup desired GL state
-    SetupRenderState(draw_data, fb_width, fb_height);
-
-    // Will project scissor/clipping rectangles into framebuffer space
-    const ImVec2 clip_off   = draw_data->DisplayPos;       // (0,0) unless using multi-viewports
-    const ImVec2 clip_scale = draw_data->FramebufferScale; // (1,1) unless using retina display
-                                                           // which are often (2,2)
-
-    // Render command lists
-    for (int n = 0; n < draw_data->CmdListsCount; n++)
-    {
-        const ImDrawList* cmd_list   = draw_data->CmdLists[n];
-        const ImDrawVert* vtx_buffer = cmd_list->VtxBuffer.Data;
-        const ImDrawIdx*  idx_buffer = cmd_list->IdxBuffer.Data;
-        glCheck(glVertexPointer(2,
-                                GL_FLOAT,
-                                sizeof(ImDrawVert),
-                                (const GLvoid*)((const char*)vtx_buffer + IM_OFFSETOF(ImDrawVert, pos))));
-        glCheck(glTexCoordPointer(2,
-                                  GL_FLOAT,
-                                  sizeof(ImDrawVert),
-                                  (const GLvoid*)((const char*)vtx_buffer + IM_OFFSETOF(ImDrawVert, uv))));
-        glCheck(glColorPointer(4,
-                               GL_UNSIGNED_BYTE,
-                               sizeof(ImDrawVert),
-                               (const GLvoid*)((const char*)vtx_buffer + IM_OFFSETOF(ImDrawVert, col))));
-
-        for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
-        {
-            const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
-            if (pcmd->UserCallback)
-            {
-                // User callback, registered via ImDrawList::AddCallback()
-                // (ImDrawCallback_ResetRenderState is a special callback value used by the user to
-                // request the renderer to reset render state.)
-                if (pcmd->UserCallback == ImDrawCallback_ResetRenderState)
-                    SetupRenderState(draw_data, fb_width, fb_height);
-                else
-                    pcmd->UserCallback(cmd_list, pcmd);
-            }
-            else
-            {
-                // Project scissor/clipping rectangles into framebuffer space
-                ImVec4 clip_rect;
-                clip_rect.x = (pcmd->ClipRect.x - clip_off.x) * clip_scale.x;
-                clip_rect.y = (pcmd->ClipRect.y - clip_off.y) * clip_scale.y;
-                clip_rect.z = (pcmd->ClipRect.z - clip_off.x) * clip_scale.x;
-                clip_rect.w = (pcmd->ClipRect.w - clip_off.y) * clip_scale.y;
-
-                if (clip_rect.x < static_cast<float>(fb_width) && clip_rect.y < static_cast<float>(fb_height) &&
-                    clip_rect.z >= 0.0f && clip_rect.w >= 0.0f)
-                {
-                    // Apply scissor/clipping rectangle
-                    glCheck(glScissor((int)clip_rect.x,
-                                      (int)(static_cast<float>(fb_height) - clip_rect.w),
-                                      (int)(clip_rect.z - clip_rect.x),
-                                      (int)(clip_rect.w - clip_rect.y)));
-
-                    // Bind texture, Draw
-                    const GLuint textureHandle = convertImTextureIDToGLTextureHandle(pcmd->TextureId);
-                    glCheck(glBindTexture(GL_TEXTURE_2D, textureHandle));
-                    glCheck(glDrawElements(GL_TRIANGLES,
-                                           (GLsizei)pcmd->ElemCount,
-                                           sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT,
-                                           idx_buffer + pcmd->IdxOffset));
-                }
-            }
-        }
-    }
-
-    // Restore modified GL state
-    glCheck(glDisableClientState(GL_COLOR_ARRAY));
-    glCheck(glDisableClientState(GL_TEXTURE_COORD_ARRAY));
-    glCheck(glDisableClientState(GL_VERTEX_ARRAY));
-    glCheck(glUseProgram(last_program));
-    glCheck(glBindTexture(GL_TEXTURE_2D, (GLuint)last_texture));
-    glCheck(glMatrixMode(GL_MODELVIEW));
-    glCheck(glPopMatrix());
-    glCheck(glMatrixMode(GL_PROJECTION));
-    glCheck(glPopMatrix());
-    glCheck(glPopAttrib());
-#ifndef SFML_SYSTEM_EMSCRIPTEN
-    glCheck(glPolygonMode(GL_FRONT, (GLenum)last_polygon_mode[0]));
-    glCheck(glPolygonMode(GL_BACK, (GLenum)last_polygon_mode[1]));
-#endif
-    glCheck(glViewport(last_viewport[0], last_viewport[1], (GLsizei)last_viewport[2], (GLsizei)last_viewport[3]));
-    glCheck(glScissor(last_scissor_box[0], last_scissor_box[1], (GLsizei)last_scissor_box[2], (GLsizei)last_scissor_box[3]));
-#ifndef SFML_SYSTEM_EMSCRIPTEN
-    glCheck(glShadeModel((GLenum)last_shade_model));
-#endif
-    glCheck(glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, last_tex_env_mode));
-    glCheck(glBindVertexArray(last_vertex_array));
-    glCheck(glBindBuffer(GL_ARRAY_BUFFER, last_array_buffer));
-    glCheck(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, last_element_array_buffer));
-    glCheck(glDisable(GL_SCISSOR_TEST));
-}
-// NOLINTEND
 
 void initDefaultJoystickMapping()
 {
@@ -1596,7 +1311,7 @@ void updateJoystickAxis(ImGuiIO& io, ImGuiKey key, sf::Joystick::Axis axis, floa
     const bool passedThreshold = (pos > threshold) == (maxThreshold > threshold);
     if (passedThreshold && sCurrWindowCtx->windowHasFocus)
     {
-        io.AddKeyAnalogEvent(key, true, std::abs(pos / 100.f));
+        io.AddKeyAnalogEvent(key, true, sf::base::fabs(pos / 100.f));
     }
     else
     {
@@ -1856,11 +1571,10 @@ bool Init(sf::GraphicsContext& graphicsContext, sf::Window& window, sf::RenderTa
 
 bool Init(sf::GraphicsContext& graphicsContext, sf::Window& window, const sf::Vector2f& displaySize, bool loadDefaultFont)
 {
-    sWindowContexts.emplace_back(std::make_unique<ImGuiWindowContext>(&window));
+    sWindowContexts.emplace_back(sf::base::makeUnique<ImGuiWindowContext>(&window));
 
     sCurrWindowCtx = sWindowContexts.back().get();
     ::ImGui::SetCurrentContext(sCurrWindowCtx->imContext);
-
 
 
     ImGuiIO& io = ::ImGui::GetIO();
@@ -1899,16 +1613,16 @@ bool Init(sf::GraphicsContext& graphicsContext, sf::Window& window, const sf::Ve
         (void)UpdateFontTexture(graphicsContext);
     }
 
-     ImGui_ImplOpenGL3_Init(nullptr);
+    ImGui_ImplOpenGL3_Init(nullptr);
 
     return true;
 }
 
 void SetCurrentWindow(const sf::Window& window)
 {
-    auto found = std::find_if(sWindowContexts.begin(),
+    auto found = base::findIf(sWindowContexts.begin(),
                               sWindowContexts.end(),
-                              [&](std::unique_ptr<ImGuiWindowContext>& ctx)
+                              [&](sf::base::UniquePtr<ImGuiWindowContext>& ctx)
                               { return ctx->window->getNativeHandle() == window.getNativeHandle(); });
     SFML_BASE_ASSERT(found != sWindowContexts.end() &&
                      "Failed to find the window. Forgot to call Init for the "
@@ -2147,9 +1861,9 @@ void Shutdown(const sf::Window& window)
     const bool needReplacement = (sCurrWindowCtx->window->getNativeHandle() == window.getNativeHandle());
 
     // remove window's context
-    auto found = std::find_if(sWindowContexts.begin(),
+    auto found = base::findIf(sWindowContexts.begin(),
                               sWindowContexts.end(),
-                              [&](std::unique_ptr<ImGuiWindowContext>& ctx)
+                              [&](sf::base::UniquePtr<ImGuiWindowContext>& ctx)
                               { return ctx->window->getNativeHandle() == window.getNativeHandle(); });
     SFML_BASE_ASSERT(found != sWindowContexts.end() && "Window wasn't inited properly: forgot to call Init(window)?");
     sWindowContexts.erase(found); // s_currWindowCtx can become invalid here!
@@ -2175,6 +1889,8 @@ void Shutdown(const sf::Window& window)
 
 void Shutdown()
 {
+    ImGui_ImplOpenGL3_Shutdown(); // TODO P0: probably need to do the same for multiwindow above??
+
     sCurrWindowCtx = nullptr;
     ::ImGui::SetCurrentContext(nullptr);
 
