@@ -456,8 +456,8 @@ public:
     ///
     /// \param cursor Native system cursor type to display
     ///
-    /// \see sf::Cursor::createFromSystem
-    /// \see sf::Cursor::createFromPixels
+    /// \see sf::Cursor::loadFromSystem
+    /// \see sf::Cursor::loadFromPixels
     ///
     ////////////////////////////////////////////////////////////
     void setMouseCursor(const Cursor& cursor);
