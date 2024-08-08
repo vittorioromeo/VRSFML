@@ -9,6 +9,7 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 
 #include <SFML/Window/Event.hpp>
+#include <SFML/Window/GameLoop.hpp>
 #include <SFML/Window/VideoMode.hpp>
 
 #include <SFML/System/Clock.hpp>
@@ -27,7 +28,7 @@ int main()
     shape.setFillColor(sf::Color::Green);
 
     sf::Clock deltaClock;
-    while (true)
+    SFML_GAME_LOOP
     {
         while (const auto event = window.pollEvent())
         {
@@ -35,7 +36,7 @@ int main()
 
             if (event->is<sf::Event::Closed>())
             {
-                return 0;
+                SFML_GAME_LOOP_BREAK;
             }
         }
 
@@ -51,7 +52,9 @@ int main()
         window.draw(shape, nullptr /* texture */);
         sf::ImGui::Render(window);
         window.display();
-    }
+
+        SFML_GAME_LOOP_CONTINUE;
+    };
 
     sf::ImGui::Shutdown();
 }
