@@ -22,7 +22,7 @@ TEST_CASE("[Graphics] sf::Sprite", runDisplayTests())
         STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Sprite>);
     }
 
-    const sf::Texture texture(sf::Vector2u(64, 64));
+    const auto texture = sf::Texture::create({64, 64}).value();
 
     SECTION("Construction")
     {
@@ -60,7 +60,7 @@ TEST_CASE("[Graphics] sf::Sprite", runDisplayTests())
     SECTION("Set/get texture")
     {
         sf::Sprite        sprite(texture);
-        const sf::Texture otherTexture(sf::Vector2u(64, 64));
+        const sf::Texture otherTexture = sf::Texture::create({64, 64}).value();
         sprite.setTexture(otherTexture);
         CHECK(&sprite.getTexture() == &otherTexture);
     }

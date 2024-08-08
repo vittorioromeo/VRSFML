@@ -48,7 +48,7 @@ SoundBufferRecorder::~SoundBufferRecorder()
 bool SoundBufferRecorder::onStart()
 {
     m_samples.clear();
-    m_buffer = {};
+    m_buffer = SoundBuffer();
 
     return true;
 }

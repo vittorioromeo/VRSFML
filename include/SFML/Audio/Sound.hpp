@@ -274,7 +274,7 @@ private:
 ///
 /// Usage example:
 /// \code
-/// const sf::SoundBuffer buffer("sound.wav");
+/// const auto buffer = sf::SoundBuffer::createFromFile("sound.wav").value();
 /// sf::Sound sound(buffer);
 /// sound.play();
 /// \endcode
