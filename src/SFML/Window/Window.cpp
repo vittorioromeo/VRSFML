@@ -106,7 +106,12 @@ Window(windowContext, mode, String(title), state, settings)
 
 
 ////////////////////////////////////////////////////////////
-Window::~Window() = default;
+Window::~Window()
+{
+    // Need to activate window context during destruction to avoid GL errors
+    [[maybe_unused]] const bool rc = setActive(true);
+    SFML_BASE_ASSERT(rc);
+}
 
 
 ////////////////////////////////////////////////////////////

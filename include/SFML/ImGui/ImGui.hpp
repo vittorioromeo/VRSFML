@@ -1,6 +1,4 @@
 #pragma once
-#include "imgui_internal.h"
-
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
@@ -46,63 +44,51 @@ public:
     ImGuiContext(ImGuiContext&&) noexcept;
     ImGuiContext& operator=(ImGuiContext&&) noexcept;
 
-    void processEvent(const Event&);
+    [[nodiscard]] bool init(RenderWindow& window, bool loadDefaultFont = true);
+    [[nodiscard]] bool init(Window& window, RenderTarget& target, bool loadDefaultFont = true);
+    [[nodiscard]] bool init(Window& window, Vector2f displaySize, bool loadDefaultFont = true);
+
+    void processEvent(const Window& window, const Event& event);
+
+    void update(RenderWindow& window, Time dt);
+    void update(Window& window, RenderTarget& target, Time dt);
+    void update(Vector2i mousePos, Vector2f displaySize, Time dt);
+
+    void render(RenderWindow& window);
+    void render(RenderTarget& target);
+    void render();
+
+    void shutdown(const Window& window);
+
+    void setActiveJoystickId(unsigned int joystickId);
+    void setJoystickDPadThreshold(float threshold);
+    void setJoystickLStickThreshold(float threshold);
+    void setJoystickRStickThreshold(float threshold);
+    void setJoystickLTriggerThreshold(float threshold);
+    void setJoystickRTriggerThreshold(float threshold);
+
+    void setJoystickMapping(int key, unsigned int joystickButton);
+    void setDPadXAxis(Joystick::Axis dPadXAxis, bool inverted = false);
+    void setDPadYAxis(Joystick::Axis dPadYAxis, bool inverted = false);
+    void setLStickXAxis(Joystick::Axis lStickXAxis, bool inverted = false);
+    void setLStickYAxis(Joystick::Axis lStickYAxis, bool inverted = false);
+    void setRStickXAxis(Joystick::Axis rStickXAxis, bool inverted = false);
+    void setRStickYAxis(Joystick::Axis rStickYAxis, bool inverted = false);
+    void setLTriggerAxis(Joystick::Axis lTriggerAxis);
+    void setRTriggerAxis(Joystick::Axis rTriggerAxis);
+
+    void setCurrentWindow(const Window& window);
 
 private:
+    // Shuts down all ImGui contexts
+    void shutdown();
+
     struct Impl;
-    base::InPlacePImpl<Impl, 16> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
 };
 
 
-[[nodiscard]] SFML_GRAPHICS_API bool Init(sf::GraphicsContext& graphicsContext,
-                                          sf::RenderWindow&    window,
-                                          bool                 loadDefaultFont = true);
-
-[[nodiscard]] SFML_GRAPHICS_API bool Init(sf::GraphicsContext& graphicsContext,
-                                          sf::Window&          window,
-                                          sf::RenderTarget&    target,
-                                          bool                 loadDefaultFont = true);
-
-[[nodiscard]] SFML_GRAPHICS_API bool Init(sf::GraphicsContext& graphicsContext,
-                                          sf::Window&          window,
-                                          sf::Vector2f         displaySize,
-                                          bool                 loadDefaultFont = true);
-
-SFML_GRAPHICS_API void SetCurrentWindow(const sf::Window& window);
-SFML_GRAPHICS_API void ProcessEvent(const sf::Window& window, const sf::Event& event);
-
-SFML_GRAPHICS_API void Update(sf::RenderWindow& window, sf::Time dt);
-SFML_GRAPHICS_API void Update(sf::Window& window, sf::RenderTarget& target, sf::Time dt);
-SFML_GRAPHICS_API void Update(sf::Vector2i mousePos, sf::Vector2f displaySize, sf::Time dt);
-
-SFML_GRAPHICS_API void Render(sf::RenderWindow& window);
-SFML_GRAPHICS_API void Render(sf::RenderTarget& target);
-SFML_GRAPHICS_API void Render();
-
-SFML_GRAPHICS_API void Shutdown(const sf::Window& window);
-// Shuts down all ImGui contexts
-SFML_GRAPHICS_API void Shutdown();
-
-[[nodiscard]] SFML_GRAPHICS_API bool UpdateFontTexture(sf::GraphicsContext& graphicsContext);
-[[nodiscard]] SFML_GRAPHICS_API sf::base::Optional<sf::Texture>& GetFontTexture();
-
 // joystick functions
-SFML_GRAPHICS_API void SetActiveJoystickId(unsigned int joystickId);
-SFML_GRAPHICS_API void SetJoystickDPadThreshold(float threshold);
-SFML_GRAPHICS_API void SetJoystickLStickThreshold(float threshold);
-SFML_GRAPHICS_API void SetJoystickRStickThreshold(float threshold);
-SFML_GRAPHICS_API void SetJoystickLTriggerThreshold(float threshold);
-SFML_GRAPHICS_API void SetJoystickRTriggerThreshold(float threshold);
-
-SFML_GRAPHICS_API void SetJoystickMapping(int key, unsigned int joystickButton);
-SFML_GRAPHICS_API void SetDPadXAxis(sf::Joystick::Axis dPadXAxis, bool inverted = false);
-SFML_GRAPHICS_API void SetDPadYAxis(sf::Joystick::Axis dPadYAxis, bool inverted = false);
-SFML_GRAPHICS_API void SetLStickXAxis(sf::Joystick::Axis lStickXAxis, bool inverted = false);
-SFML_GRAPHICS_API void SetLStickYAxis(sf::Joystick::Axis lStickYAxis, bool inverted = false);
-SFML_GRAPHICS_API void SetRStickXAxis(sf::Joystick::Axis rStickXAxis, bool inverted = false);
-SFML_GRAPHICS_API void SetRStickYAxis(sf::Joystick::Axis rStickYAxis, bool inverted = false);
-SFML_GRAPHICS_API void SetLTriggerAxis(sf::Joystick::Axis lTriggerAxis);
-SFML_GRAPHICS_API void SetRTriggerAxis(sf::Joystick::Axis rTriggerAxis);
 
 // custom SFML overloads for ImGui widgets
 

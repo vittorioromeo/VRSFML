@@ -1,3 +1,6 @@
+#include "SFML/Base/Optional.hpp"
+
+#include <GL/gl.h>
 #if 1
 
 #include "imgui.h" // necessary for ImGui::*, imgui-SFML.h doesn't include imgui.h
@@ -17,13 +20,107 @@
 
 int main()
 {
-    sf::GraphicsContext graphicsContext;
-    // TODO P0: sf::ImGui::ImGuiContext imGuiContext(graphicsContext);
+    sf::GraphicsContext     graphicsContext;
+    sf::ImGui::ImGuiContext imGuiContext(graphicsContext);
 
+#if 0
+    sf::RenderWindow window(graphicsContext, sf::VideoMode({1280, 720}), "ImGui + SFML = <3");
+    sf::base::Optional<sf::RenderWindow>
+        childWindow(sf::base::inPlace, graphicsContext, sf::VideoMode({640, 480}), "ImGui-SFML Child window");
+
+    window.clear();
+    window.display();
+
+    childWindow.reset();
+
+    window.clear();
+    window.display();
+
+#else
+
+#if 1
+    sf::RenderWindow window(graphicsContext, sf::VideoMode({1280, 720}), "ImGui + SFML = <3");
+    window.setFramerateLimit(60);
+    if (!imGuiContext.init(window))
+        return -1;
+
+    sf::base::Optional<sf::RenderWindow>
+        childWindow(sf::base::inPlace, graphicsContext, sf::VideoMode({640, 480}), "ImGui-SFML Child window");
+    childWindow->setFramerateLimit(60);
+    if (!imGuiContext.init(*childWindow))
+        return -1;
+
+    sf::Clock deltaClock;
+    SFML_GAME_LOOP
+    {
+        // Main window event processing
+        while (const auto event = window.pollEvent())
+        {
+            imGuiContext.processEvent(window, *event);
+
+            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+                SFML_GAME_LOOP_BREAK;
+        }
+
+        // Update
+        const sf::Time dt = deltaClock.restart();
+        imGuiContext.update(window, dt);
+
+        // Add ImGui widgets in the first window
+        imGuiContext.setCurrentWindow(window);
+        ImGui::Begin("Hello, world!");
+        ImGui::Button("Look at this pretty button");
+        ImGui::End();
+
+        ImGui::ShowDemoWindow();
+
+        // Main window drawing
+        sf::CircleShape shape(100.f);
+        shape.setFillColor(sf::Color::Green);
+
+        window.clear();
+        window.draw(shape, /* texture */ nullptr);
+        imGuiContext.render(window);
+        window.display();
+
+        // Child window event processing
+        if (childWindow.hasValue())
+        {
+            while (const auto event = childWindow->pollEvent())
+            {
+                imGuiContext.processEvent(*childWindow, *event);
+
+                if (event->is<sf::Event::Closed>())
+                {
+                    imGuiContext.shutdown(*childWindow);
+                    childWindow.reset();
+                    SFML_GAME_LOOP_CONTINUE;
+                }
+            }
+
+            imGuiContext.update(*childWindow, dt);
+
+            imGuiContext.setCurrentWindow(*childWindow);
+            ImGui::Begin("Works in a second window!");
+            ImGui::Button("Example button");
+            ImGui::End();
+
+            sf::CircleShape shape2(50.f);
+            shape2.setFillColor(sf::Color::Red);
+
+            childWindow->clear();
+            childWindow->draw(shape2, /* texture */ nullptr);
+            imGuiContext.render(*childWindow);
+            childWindow->display();
+        }
+
+        SFML_GAME_LOOP_CONTINUE;
+    };
+#else
     sf::RenderWindow window(graphicsContext, sf::VideoMode({640, 480}), "ImGui + SFML = <3");
     window.setFramerateLimit(60);
 
-    if (!sf::ImGui::Init(graphicsContext, window))
+    if (!imGuiContext.init(window))
         return -1;
 
     sf::CircleShape shape(100.f);
@@ -35,13 +132,13 @@ int main()
     {
         while (const auto event = window.pollEvent())
         {
-            sf::ImGui::ProcessEvent(window, *event);  // TODO P0: imGuiContext.processEvent(window, *event);
+            imGuiContext.processEvent(window, *event);
 
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 SFML_GAME_LOOP_BREAK;
         }
 
-        sf::ImGui::Update(window, deltaClock.restart()); // TODO P0: imGuiContext.update(window, deltaClock.restart());
+        imGuiContext.update(window, deltaClock.restart());
 
         ImGui::ShowDemoWindow();
 
@@ -51,13 +148,13 @@ int main()
 
         window.clear();
         window.draw(shape, nullptr /* texture */);
-        sf::ImGui::Render(window); // TODO P0: imGuiContext.renderOnto(window);
+        imGuiContext.render(window);
         window.display();
 
         SFML_GAME_LOOP_CONTINUE;
     };
-
-    sf::ImGui::Shutdown();
+#endif
+#endif
 }
 
 

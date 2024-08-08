@@ -10,6 +10,8 @@
 
 #include <SFML/System/String.hpp>
 
+#include <SFML/Base/Optional.hpp>
+
 #include <Doctest.hpp>
 
 #include <GraphicsUtil.hpp>
@@ -103,5 +105,68 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
         window.clear(sf::Color::Blue);
         CHECK(texture.update(window));
         CHECK(texture.copyToImage().getPixel(sf::Vector2u{196, 196}) == sf::Color::Blue);
+    }
+
+    SECTION("Multiple windows 1")
+    {
+        sf::RenderWindow window(graphicsContext, sf::VideoMode({256, 256}), "A");
+
+        sf::base::Optional<sf::RenderWindow>
+            childWindow(sf::base::inPlace, graphicsContext, sf::VideoMode({256, 256}), "B");
+
+        window.clear();
+        window.display();
+
+        childWindow.reset();
+
+        window.clear();
+        window.display();
+    }
+
+    SECTION("Multiple windows 2")
+    {
+        sf::RenderWindow window(graphicsContext, sf::VideoMode({256, 256}), "A");
+
+        sf::base::Optional<sf::RenderWindow>
+            childWindow(sf::base::inPlace, graphicsContext, sf::VideoMode({256, 256}), "B");
+
+        window.clear();
+        window.display();
+
+        childWindow->clear();
+        childWindow->display();
+
+        window.clear();
+        window.display();
+    }
+
+    SECTION("Multiple windows 3")
+    {
+        sf::RenderWindow window(graphicsContext, sf::VideoMode({256, 256}), "A");
+
+        sf::base::Optional<sf::RenderWindow>
+            childWindow(sf::base::inPlace, graphicsContext, sf::VideoMode({256, 256}), "B");
+
+        childWindow->clear();
+        childWindow->display();
+
+        window.clear();
+        window.display();
+    }
+
+    SECTION("Multiple windows 4")
+    {
+        sf::RenderWindow window(graphicsContext, sf::VideoMode({256, 256}), "A");
+
+        sf::base::Optional<sf::RenderWindow>
+            childWindow(sf::base::inPlace, graphicsContext, sf::VideoMode({256, 256}), "B");
+
+        childWindow->clear();
+        childWindow->display();
+
+        childWindow.reset();
+
+        window.clear();
+        window.display();
     }
 }
