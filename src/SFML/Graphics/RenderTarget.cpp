@@ -380,7 +380,10 @@ RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
 [[nodiscard]] bool RenderTarget::clearImpl()
 {
     if (!RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) && !setActive(true))
+    {
+        priv::err() << "Failed to activate render target in `clearImpl`";
         return false;
+    }
 
     // Unbind texture to fix RenderTexture preventing clear
     applyTexture(nullptr);

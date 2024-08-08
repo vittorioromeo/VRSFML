@@ -476,6 +476,10 @@ void WindowContext::onGlContextDestroyed(priv::GlContext& glContext)
         priv::err() << "Failed to enable shared GL context in `WindowContext::onGlContextDestroyed`";
         SFML_BASE_ASSERT(false);
     }
+
+    // TODO P0: needed for emscripten shader example, why ?
+    while (glGetError() != GL_NO_ERROR)
+        ;
 }
 
 

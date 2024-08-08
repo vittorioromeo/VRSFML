@@ -3,6 +3,8 @@ set(SRCROOT ${PROJECT_SOURCE_DIR}/src/SFML/ImGui)
 
 # all source files
 set(SRC
+    ${SRCROOT}/Backend.hpp
+    ${SRCROOT}/Backend.cpp
     ${INCROOT}/ImGui.hpp
     ${SRCROOT}/ImGui.cpp
 )

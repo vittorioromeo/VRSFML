@@ -95,6 +95,23 @@ RenderTarget(graphicsContext)
 
 
 ////////////////////////////////////////////////////////////
+RenderWindow::RenderWindow(RenderWindow&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
+RenderWindow& RenderWindow::operator=(RenderWindow&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
+RenderWindow::~RenderWindow()
+{
+    // Need to activate window context during destruction to avoid GL errors
+    [[maybe_unused]] const bool rc = setActive(true);
+    SFML_BASE_ASSERT(rc);
+}
+
+
+////////////////////////////////////////////////////////////
 Vector2u RenderWindow::getSize() const
 {
     return Window::getSize();

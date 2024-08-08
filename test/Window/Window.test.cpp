@@ -6,6 +6,8 @@
 
 #include <SFML/System/String.hpp>
 
+#include <SFML/Base/Optional.hpp>
+
 #include <Doctest.hpp>
 
 #include <SystemUtil.hpp>
@@ -88,5 +90,44 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
             CHECK(window.getSettings().stencilBits >= 1);
             CHECK(window.getSettings().antialiasingLevel >= 1);
         }
+    }
+
+    SECTION("Multiple windows 1")
+    {
+        sf::Window                     window(windowContext, sf::VideoMode({256, 256}), "A");
+        sf::base::Optional<sf::Window> childWindow(sf::base::inPlace, windowContext, sf::VideoMode({256, 256}), "B");
+
+        window.display();
+        childWindow.reset();
+        window.display();
+    }
+
+    SECTION("Multiple windows 2")
+    {
+        sf::Window                     window(windowContext, sf::VideoMode({256, 256}), "A");
+        sf::base::Optional<sf::Window> childWindow(sf::base::inPlace, windowContext, sf::VideoMode({256, 256}), "B");
+
+        window.display();
+        childWindow->display();
+        window.display();
+    }
+
+    SECTION("Multiple windows 3")
+    {
+        sf::Window                     window(windowContext, sf::VideoMode({256, 256}), "A");
+        sf::base::Optional<sf::Window> childWindow(sf::base::inPlace, windowContext, sf::VideoMode({256, 256}), "B");
+
+        childWindow->display();
+        window.display();
+    }
+
+    SECTION("Multiple windows 4")
+    {
+        sf::Window                     window(windowContext, sf::VideoMode({256, 256}), "A");
+        sf::base::Optional<sf::Window> childWindow(sf::base::inPlace, windowContext, sf::VideoMode({256, 256}), "B");
+
+        childWindow->display();
+        childWindow.reset();
+        window.display();
     }
 }
