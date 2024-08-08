@@ -222,6 +222,7 @@ if(SFML_OS_ANDROID AND DEFINED ENV{LIBCXX_SHARED_SO})
         adb push $<TARGET_FILE:test-sfml-window>   ${TARGET_DIR}\n\
         adb push $<TARGET_FILE:SFML::Audio>        ${TARGET_DIR}\n\
         adb push $<TARGET_FILE:SFML::Graphics>     ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:SFML::ImGui>        ${TARGET_DIR}\n\
         adb push $<TARGET_FILE:SFML::Network>      ${TARGET_DIR}\n\
         adb push $<TARGET_FILE:SFML::System>       ${TARGET_DIR}\n\
         adb push $<TARGET_FILE:SFML::Window>       ${TARGET_DIR}\n\

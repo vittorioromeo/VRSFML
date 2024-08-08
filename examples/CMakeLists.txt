@@ -44,6 +44,7 @@ if(SFML_BUILD_GRAPHICS)
         add_subdirectory(cocoa)
     endif()
 endif()
+
 if(SFML_BUILD_GRAPHICS AND SFML_BUILD_AUDIO)
     add_subdirectory(tennis)
     add_subdirectory(sound_effects)

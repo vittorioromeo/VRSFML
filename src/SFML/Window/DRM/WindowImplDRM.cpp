@@ -49,10 +49,10 @@ WindowImplDRM::WindowImplDRM(WindowHandle /*handle*/)
 
 ////////////////////////////////////////////////////////////
 WindowImplDRM::WindowImplDRM(VideoMode mode,
-                             const String& /*title*/,
-                             Style /*style*/,
-                             State /*state*/,
-                             const ContextSettings& /*settings*/) :
+                             const String& /* title */,
+                             Style /* style */,
+                             State /* state */,
+                             const ContextSettings& /* settings */) :
 m_size(mode.size)
 {
     InputImpl::setTerminalConfig();

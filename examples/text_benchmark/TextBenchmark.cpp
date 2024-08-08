@@ -1,3 +1,65 @@
+#if 1
+
+#include "imgui.h" // necessary for ImGui::*, imgui-SFML.h doesn't include imgui.h
+
+#include <SFML/ImGui/ImGui.hpp>
+
+#include <SFML/Graphics/CircleShape.hpp>
+#include <SFML/Graphics/GraphicsContext.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
+
+#include <SFML/Window/Event.hpp>
+#include <SFML/Window/VideoMode.hpp>
+
+#include <SFML/System/Clock.hpp>
+
+int main()
+{
+    sf::GraphicsContext graphicsContext;
+
+    sf::RenderWindow window(graphicsContext, sf::VideoMode({640, 480}), "ImGui + SFML = <3");
+    window.setFramerateLimit(60);
+
+    if (!sf::ImGui::Init(graphicsContext, window))
+        return -1;
+
+    sf::CircleShape shape(100.f);
+    shape.setFillColor(sf::Color::Green);
+
+    sf::Clock deltaClock;
+    while (true)
+    {
+        while (const auto event = window.pollEvent())
+        {
+            sf::ImGui::ProcessEvent(window, *event);
+
+            if (event->is<sf::Event::Closed>())
+            {
+                return 0;
+            }
+        }
+
+        sf::ImGui::Update(window, deltaClock.restart());
+
+        ImGui::ShowDemoWindow();
+
+        ImGui::Begin("Hello, world!");
+        ImGui::Button("Look at this pretty button");
+        ImGui::End();
+
+        window.clear();
+        window.draw(shape, nullptr /* texture */);
+        sf::ImGui::Render(window);
+        window.display();
+    }
+
+    sf::ImGui::Shutdown();
+}
+
+
+#else
+
+
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/PrimitiveType.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
@@ -245,4 +307,5 @@ int main()
     renderTexture.display();
 }
 
+#endif
 #endif

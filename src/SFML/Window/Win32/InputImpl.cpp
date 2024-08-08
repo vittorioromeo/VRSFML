@@ -715,7 +715,7 @@ void setMousePosition(Vector2i position, const WindowBase& relativeTo)
 
 
 ////////////////////////////////////////////////////////////
-bool isTouchDown(unsigned int /*finger*/)
+bool isTouchDown(unsigned int /* finger */)
 {
     // Not applicable
     return false;
@@ -723,7 +723,7 @@ bool isTouchDown(unsigned int /*finger*/)
 
 
 ////////////////////////////////////////////////////////////
-Vector2i getTouchPosition(unsigned int /*finger*/)
+Vector2i getTouchPosition(unsigned int /* finger */)
 {
     // Not applicable
     return {};
@@ -731,7 +731,7 @@ Vector2i getTouchPosition(unsigned int /*finger*/)
 
 
 ////////////////////////////////////////////////////////////
-Vector2i getTouchPosition(unsigned int /*finger*/, const WindowBase& /*relativeTo*/)
+Vector2i getTouchPosition(unsigned int /* finger */, const WindowBase& /* relativeTo */)
 {
     // Not applicable
     return {};

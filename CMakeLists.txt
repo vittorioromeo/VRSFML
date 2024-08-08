@@ -80,6 +80,7 @@ endif()
 # add options to select which modules to build
 sfml_set_option(SFML_BUILD_WINDOW TRUE BOOL "TRUE to build SFML's Window module. This setting is ignored, if the graphics module is built.")
 sfml_set_option(SFML_BUILD_GRAPHICS TRUE BOOL "TRUE to build SFML's Graphics module.")
+sfml_set_option(SFML_BUILD_IMGUI TRUE BOOL "TRUE to build SFML's ImGui module.")
 sfml_set_option(SFML_BUILD_AUDIO TRUE BOOL "TRUE to build SFML's Audio module.")
 sfml_set_option(SFML_BUILD_NETWORK TRUE BOOL "TRUE to build SFML's Network module.")
 
@@ -135,6 +136,12 @@ endif()
 if(SFML_BUILD_GRAPHICS AND NOT SFML_BUILD_WINDOW)
     message(WARNING "You're trying to build SFML's Graphics module without the Window module. Forcing building of the Window module as a dependency.")
     set(SFML_BUILD_WINDOW TRUE)
+endif()
+
+# force building sfml-graphics, if sfml-imgui module is built
+if(SFML_BUILD_IMGUI AND NOT SFML_BUILD_GRAPHICS)
+    message(WARNING "You're trying to build SFML's ImGui module without the Graphics module. Forcing building of the Graphics module as a dependency.")
+    set(SFML_BUILD_GRAPHICS TRUE)
 endif()
 
 # use bundled dependencies by default on these systems and system dependencies by default on all others (maintains old behavior)
@@ -372,6 +379,14 @@ else()
                            VERBATIM)
     endif()
 
+    # add imgui module headers if enabled
+    if(SFML_BUILD_IMGUI)
+        add_custom_command(TARGET SFML POST_BUILD COMMAND cp -r
+                           ${PROJECT_SOURCE_DIR}/include/SFML/ImGui
+                           $<TARGET_FILE_DIR:SFML>/Headers
+                           VERBATIM)
+    endif()
+
      # add audio module headers if enabled
     if(SFML_BUILD_AUDIO)
         add_custom_command(TARGET SFML POST_BUILD COMMAND cp -r
@@ -459,7 +474,7 @@ sfml_set_option(SFML_BUILD_TEST_SUITE FALSE BOOL "TRUE to build the SFML test su
 sfml_set_option(SFML_ENABLE_COVERAGE FALSE BOOL "TRUE to enable coverage reporting, FALSE to ignore it")
 
 if(SFML_BUILD_TEST_SUITE)
-    if(SFML_BUILD_WINDOW AND SFML_BUILD_GRAPHICS AND SFML_BUILD_NETWORK AND SFML_BUILD_AUDIO)
+    if(SFML_BUILD_WINDOW AND SFML_BUILD_GRAPHICS AND SFML_BUILD_IMGUI AND SFML_BUILD_NETWORK AND SFML_BUILD_AUDIO)
         enable_testing()
         add_subdirectory(test)
     else()

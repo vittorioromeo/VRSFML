@@ -499,7 +499,7 @@ Out Utf<16>::toUtf32(In begin, In end, Out output)
 
 ////////////////////////////////////////////////////////////
 template <typename In>
-In Utf<32>::decode(In begin, In /*end*/, std::uint32_t& output, std::uint32_t /*replacement*/)
+In Utf<32>::decode(In begin, In /* end */, std::uint32_t& output, std::uint32_t /* replacement */)
 {
     output = *begin++;
     return begin;
@@ -508,7 +508,7 @@ In Utf<32>::decode(In begin, In /*end*/, std::uint32_t& output, std::uint32_t /*
 
 ////////////////////////////////////////////////////////////
 template <typename Out>
-Out Utf<32>::encode(std::uint32_t input, Out output, std::uint32_t /*replacement*/)
+Out Utf<32>::encode(std::uint32_t input, Out output, std::uint32_t /* replacement */)
 {
     *output++ = input;
     return output;
@@ -517,7 +517,7 @@ Out Utf<32>::encode(std::uint32_t input, Out output, std::uint32_t /*replacement
 
 ////////////////////////////////////////////////////////////
 template <typename In>
-In Utf<32>::next(In begin, In /*end*/)
+In Utf<32>::next(In begin, In /* end */)
 {
     return ++begin;
 }

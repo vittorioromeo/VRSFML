@@ -180,9 +180,9 @@ GlContext(windowContext, id, settings)
 ////////////////////////////////////////////////////////////
 EglContext::EglContext(WindowContext& windowContext,
                        std::uint64_t  id,
-                       EglContext* /*shared*/,
-                       const ContextSettings& /*settings*/,
-                       Vector2u /*size*/) :
+                       EglContext* /* shared */,
+                       const ContextSettings& /* settings */,
+                       Vector2u /* size */) :
 GlContext(windowContext, id, {})
 {
     EglContextImpl::ensureInit();

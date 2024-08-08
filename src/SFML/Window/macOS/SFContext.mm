@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/VideoModeUtils.hpp>
 #include <SFML/Window/macOS/AutoreleasePoolWrapper.hpp>
 #include <SFML/Window/macOS/SFContext.hpp>
@@ -24,7 +25,7 @@ SFContext::SFContext(SFContext* shared)
     // Create the context
     createContext(shared,
                   VideoModeUtils::getDesktopMode().bitsPerPixel,
-                  ContextSettings{0 /* depthBits */, 0 /* stencilBits */, 0 /* antialiasingLevel */});
+                  ContextSettings{/* depthBits */ 0, /* stencilBits */ 0, /* antialiasingLevel */ 0});
 }
 
 
