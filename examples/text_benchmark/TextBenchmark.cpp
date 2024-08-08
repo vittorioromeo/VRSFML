@@ -1,4 +1,3 @@
-#include "SFML/Base/Optional.hpp"
 
 #include <GL/gl.h>
 #if 1
@@ -17,6 +16,8 @@
 #include <SFML/Window/VideoMode.hpp>
 
 #include <SFML/System/Clock.hpp>
+
+#include <SFML/Base/Optional.hpp>
 
 int main()
 {
