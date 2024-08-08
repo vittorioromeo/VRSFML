@@ -469,7 +469,7 @@ private:
 /// Usage example:
 /// \code
 /// // Open a font
-/// const sf::Font font("arial.ttf");
+/// const auto font = sf::Font::createFromFile("arial.ttf").value();
 ///
 /// // Create a text
 /// sf::Text text(font, "hello");

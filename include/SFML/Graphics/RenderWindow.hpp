@@ -87,7 +87,7 @@ public:
                  const String&          title,
                  std::uint32_t          style    = Style::Default,
                  State                  state    = State::Windowed,
-                 const ContextSettings& settings = {});
+                 const ContextSettings& settings = ContextSettings());
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a new window
@@ -106,7 +106,7 @@ public:
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    RenderWindow(VideoMode mode, const String& title, State state, const ContextSettings& settings = {});
+    RenderWindow(VideoMode mode, const String& title, State state, const ContextSettings& settings = ContextSettings());
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control
@@ -124,7 +124,7 @@ public:
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    explicit RenderWindow(WindowHandle handle, const ContextSettings& settings = {});
+    explicit RenderWindow(WindowHandle handle, const ContextSettings& settings = ContextSettings());
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the size of the rendering region of the window
@@ -266,9 +266,9 @@ private:
 /// sf::RenderWindow window(sf::VideoMode({800, 600}), "SFML OpenGL");
 ///
 /// // Create a sprite and a text to display
-/// const sf::Texture texture("circle.png");
+/// const auto texture = sf::Texture::createFromFile("circle.png").value();
 /// sf::Sprite sprite(texture);
-/// const sf::Font font("arial.ttf");
+/// const auto font = sf::Font::createFromFile("arial.ttf").value();
 /// sf::Text text(font);
 /// ...
 ///
