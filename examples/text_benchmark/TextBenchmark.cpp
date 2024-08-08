@@ -9,6 +9,7 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 
 #include <SFML/Window/Event.hpp>
+#include <SFML/Window/EventUtils.hpp>
 #include <SFML/Window/GameLoop.hpp>
 #include <SFML/Window/VideoMode.hpp>
 
@@ -17,6 +18,7 @@
 int main()
 {
     sf::GraphicsContext graphicsContext;
+    // TODO P0: sf::ImGui::ImGuiContext imGuiContext(graphicsContext);
 
     sf::RenderWindow window(graphicsContext, sf::VideoMode({640, 480}), "ImGui + SFML = <3");
     window.setFramerateLimit(60);
@@ -28,19 +30,18 @@ int main()
     shape.setFillColor(sf::Color::Green);
 
     sf::Clock deltaClock;
+
     SFML_GAME_LOOP
     {
         while (const auto event = window.pollEvent())
         {
-            sf::ImGui::ProcessEvent(window, *event);
+            sf::ImGui::ProcessEvent(window, *event);  // TODO P0: imGuiContext.processEvent(window, *event);
 
-            if (event->is<sf::Event::Closed>())
-            {
+            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 SFML_GAME_LOOP_BREAK;
-            }
         }
 
-        sf::ImGui::Update(window, deltaClock.restart());
+        sf::ImGui::Update(window, deltaClock.restart()); // TODO P0: imGuiContext.update(window, deltaClock.restart());
 
         ImGui::ShowDemoWindow();
 
@@ -50,7 +51,7 @@ int main()
 
         window.clear();
         window.draw(shape, nullptr /* texture */);
-        sf::ImGui::Render(window);
+        sf::ImGui::Render(window); // TODO P0: imGuiContext.renderOnto(window);
         window.display();
 
         SFML_GAME_LOOP_CONTINUE;
