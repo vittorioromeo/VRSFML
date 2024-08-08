@@ -116,7 +116,7 @@ IncludeCategories:
   - Priority: 10
     Regex: '^<SFML\/Base'
   - Priority: 11
-    Regex: '^<(glad|gl|X11|jni|android|stb_|GLES2|vorbis|miniaudio|doctest|Doctest)'
+    Regex: '^<(imgui|glad|gl|X11|jni|android|stb_|GLES2|vorbis|miniaudio|doctest|Doctest)'
   - Priority: 12
     Regex: '^<(AudioUtil|SystemUtil|GraphicsUtil|WindowUtil|StringifyVectorUtil|StringifyOptionalUtil|StringifyPathUtil|StringifyStringUtil|StringifyArrayUtil|LoadIntoMemoryUtil)'
   - Priority: 13

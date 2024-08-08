@@ -24,7 +24,7 @@ namespace sf::priv
 #define glCheck(...)                                                        \
     do                                                                      \
     {                                                                       \
-        if(false)SFML_BASE_ASSERT(glGetError() == GL_NO_ERROR);                      \
+        SFML_BASE_ASSERT(glGetError() == GL_NO_ERROR);                      \
                                                                             \
         __VA_ARGS__;                                                        \
                                                                             \
@@ -37,7 +37,7 @@ namespace sf::priv
 #define glCheckExpr(...)                                                    \
     [&]                                                                     \
     {                                                                       \
-        if(false)SFML_BASE_ASSERT(glGetError() == GL_NO_ERROR);                      \
+        SFML_BASE_ASSERT(glGetError() == GL_NO_ERROR);                      \
                                                                             \
         auto _glCheckExprResult = __VA_ARGS__;                              \
                                                                             \
@@ -55,7 +55,7 @@ namespace sf::priv
 #define glCheckIgnoreWithFunc(errorFunc, ...)         \
     do                                                \
     {                                                 \
-        if(false)SFML_BASE_ASSERT(errorFunc() == GL_NO_ERROR); \
+        SFML_BASE_ASSERT(errorFunc() == GL_NO_ERROR); \
                                                       \
         __VA_ARGS__;                                  \
                                                       \
@@ -68,7 +68,7 @@ namespace sf::priv
 #define glCheckIgnoreExprWithFunc(errorFunc, ...)     \
     [&]                                               \
     {                                                 \
-        if(false)SFML_BASE_ASSERT(errorFunc() == GL_NO_ERROR); \
+        SFML_BASE_ASSERT(errorFunc() == GL_NO_ERROR); \
                                                       \
         auto _glCheckExprResult = __VA_ARGS__;        \
                                                       \

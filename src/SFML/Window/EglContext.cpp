@@ -258,6 +258,7 @@ void EglContext::display()
 ////////////////////////////////////////////////////////////
 void EglContext::setVerticalSyncEnabled(bool enabled)
 {
+    // TODO P0: "emscripten_set_main_loop_timing: Cannot set timing mode for main loop since a main loop does not exist! Call emscripten_set_main_loop first to set one up"
     eglCheck(eglSwapInterval(m_display, enabled ? 1 : 0));
 }
 
