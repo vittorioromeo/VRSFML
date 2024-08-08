@@ -1,4 +1,6 @@
 #pragma once
+#include "imgui_internal.h"
+
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
@@ -14,6 +16,7 @@
 #include <SFML/System/Time.hpp>
 #include <SFML/System/Vector2.hpp>
 
+#include <SFML/Base/InPlacePImpl.hpp>
 #include <SFML/Base/Optional.hpp>
 
 namespace sf
@@ -31,6 +34,26 @@ class Window;
 
 namespace sf::ImGui
 {
+class [[nodiscard]] ImGuiContext
+{
+public:
+    [[nodiscard]] explicit ImGuiContext(GraphicsContext& graphicsContext);
+    ~ImGuiContext();
+
+    ImGuiContext(const ImGuiContext&)            = delete;
+    ImGuiContext& operator=(const ImGuiContext&) = delete;
+
+    ImGuiContext(ImGuiContext&&) noexcept;
+    ImGuiContext& operator=(ImGuiContext&&) noexcept;
+
+    void processEvent(const Event&);
+
+private:
+    struct Impl;
+    base::InPlacePImpl<Impl, 16> m_impl; //!< Implementation details
+};
+
+
 [[nodiscard]] SFML_GRAPHICS_API bool Init(sf::GraphicsContext& graphicsContext,
                                           sf::RenderWindow&    window,
                                           bool                 loadDefaultFont = true);
@@ -42,7 +65,7 @@ namespace sf::ImGui
 
 [[nodiscard]] SFML_GRAPHICS_API bool Init(sf::GraphicsContext& graphicsContext,
                                           sf::Window&          window,
-                                          const sf::Vector2f&  displaySize,
+                                          sf::Vector2f         displaySize,
                                           bool                 loadDefaultFont = true);
 
 SFML_GRAPHICS_API void SetCurrentWindow(const sf::Window& window);
@@ -50,7 +73,7 @@ SFML_GRAPHICS_API void ProcessEvent(const sf::Window& window, const sf::Event& e
 
 SFML_GRAPHICS_API void Update(sf::RenderWindow& window, sf::Time dt);
 SFML_GRAPHICS_API void Update(sf::Window& window, sf::RenderTarget& target, sf::Time dt);
-SFML_GRAPHICS_API void Update(const sf::Vector2i& mousePos, const sf::Vector2f& displaySize, sf::Time dt);
+SFML_GRAPHICS_API void Update(sf::Vector2i mousePos, sf::Vector2f displaySize, sf::Time dt);
 
 SFML_GRAPHICS_API void Render(sf::RenderWindow& window);
 SFML_GRAPHICS_API void Render(sf::RenderTarget& target);
@@ -61,7 +84,7 @@ SFML_GRAPHICS_API void Shutdown(const sf::Window& window);
 SFML_GRAPHICS_API void Shutdown();
 
 [[nodiscard]] SFML_GRAPHICS_API bool UpdateFontTexture(sf::GraphicsContext& graphicsContext);
-SFML_GRAPHICS_API sf::base::Optional<sf::Texture>& GetFontTexture();
+[[nodiscard]] SFML_GRAPHICS_API sf::base::Optional<sf::Texture>& GetFontTexture();
 
 // joystick functions
 SFML_GRAPHICS_API void SetActiveJoystickId(unsigned int joystickId);
@@ -85,65 +108,65 @@ SFML_GRAPHICS_API void SetRTriggerAxis(sf::Joystick::Axis rTriggerAxis);
 
 // Image overloads for sf::Texture
 SFML_GRAPHICS_API void Image(const sf::Texture& texture,
-                             const sf::Color&   tintColor   = sf::Color::White,
-                             const sf::Color&   borderColor = sf::Color::Transparent);
-SFML_GRAPHICS_API void Image(const sf::Texture&  texture,
-                             const sf::Vector2f& size,
-                             const sf::Color&    tintColor   = sf::Color::White,
-                             const sf::Color&    borderColor = sf::Color::Transparent);
+                             sf::Color          tintColor   = sf::Color::White,
+                             sf::Color          borderColor = sf::Color::Transparent);
+SFML_GRAPHICS_API void Image(const sf::Texture& texture,
+                             sf::Vector2f       size,
+                             sf::Color          tintColor   = sf::Color::White,
+                             sf::Color          borderColor = sf::Color::Transparent);
 
 // Image overloads for sf::RenderTexture
 SFML_GRAPHICS_API void Image(const sf::RenderTexture& texture,
-                             const sf::Color&         tintColor   = sf::Color::White,
-                             const sf::Color&         borderColor = sf::Color::Transparent);
+                             sf::Color                tintColor   = sf::Color::White,
+                             sf::Color                borderColor = sf::Color::Transparent);
 SFML_GRAPHICS_API void Image(const sf::RenderTexture& texture,
-                             const sf::Vector2f&      size,
-                             const sf::Color&         tintColor   = sf::Color::White,
-                             const sf::Color&         borderColor = sf::Color::Transparent);
+                             sf::Vector2f             size,
+                             sf::Color                tintColor   = sf::Color::White,
+                             sf::Color                borderColor = sf::Color::Transparent);
 
 // Image overloads for sf::Sprite
 SFML_GRAPHICS_API void Image(const sf::Sprite&  sprite,
                              const sf::Texture& texture,
-                             const sf::Color&   tintColor   = sf::Color::White,
-                             const sf::Color&   borderColor = sf::Color::Transparent);
-SFML_GRAPHICS_API void Image(const sf::Sprite&   sprite,
-                             const sf::Texture&  texture,
-                             const sf::Vector2f& size,
-                             const sf::Color&    tintColor   = sf::Color::White,
-                             const sf::Color&    borderColor = sf::Color::Transparent);
+                             sf::Color          tintColor   = sf::Color::White,
+                             sf::Color          borderColor = sf::Color::Transparent);
+SFML_GRAPHICS_API void Image(const sf::Sprite&  sprite,
+                             const sf::Texture& texture,
+                             sf::Vector2f       size,
+                             sf::Color          tintColor   = sf::Color::White,
+                             sf::Color          borderColor = sf::Color::Transparent);
 
 // ImageButton overloads for sf::Texture
-SFML_GRAPHICS_API bool ImageButton(const char*         id,
-                                   const sf::Texture&  texture,
-                                   const sf::Vector2f& size,
-                                   const sf::Color&    bgColor   = sf::Color::Transparent,
-                                   const sf::Color&    tintColor = sf::Color::White);
+[[nodiscard]] SFML_GRAPHICS_API bool ImageButton(
+    const char*        id,
+    const sf::Texture& texture,
+    sf::Vector2f       size,
+    sf::Color          bgColor   = sf::Color::Transparent,
+    sf::Color          tintColor = sf::Color::White);
 
 // ImageButton overloads for sf::RenderTexture
-SFML_GRAPHICS_API bool ImageButton(const char*              id,
-                                   const sf::RenderTexture& texture,
-                                   const sf::Vector2f&      size,
-                                   const sf::Color&         bgColor   = sf::Color::Transparent,
-                                   const sf::Color&         tintColor = sf::Color::White);
+[[nodiscard]] SFML_GRAPHICS_API bool ImageButton(
+    const char*              id,
+    const sf::RenderTexture& texture,
+    sf::Vector2f             size,
+    sf::Color                bgColor   = sf::Color::Transparent,
+    sf::Color                tintColor = sf::Color::White);
 
 // ImageButton overloads for sf::Sprite
-SFML_GRAPHICS_API bool ImageButton(const char*         id,
-                                   const sf::Sprite&   sprite,
-                                   const sf::Texture&  texture,
-                                   const sf::Vector2f& size,
-                                   const sf::Color&    bgColor   = sf::Color::Transparent,
-                                   const sf::Color&    tintColor = sf::Color::White);
+[[nodiscard]] SFML_GRAPHICS_API bool ImageButton(
+    const char*        id,
+    const sf::Sprite&  sprite,
+    const sf::Texture& texture,
+    sf::Vector2f       size,
+    sf::Color          bgColor   = sf::Color::Transparent,
+    sf::Color          tintColor = sf::Color::White);
 
 // Draw_list overloads. All positions are in relative coordinates (relative to top-left of the
 // current window)
-SFML_GRAPHICS_API void DrawLine(const sf::Vector2f& a, const sf::Vector2f& b, const sf::Color& col, float thickness = 1.0f);
+SFML_GRAPHICS_API void DrawLine(sf::Vector2f a, sf::Vector2f b, sf::Color col, float thickness = 1.0f);
 SFML_GRAPHICS_API void DrawRect(const sf::FloatRect& rect,
-                                const sf::Color&     color,
+                                sf::Color            color,
                                 float                rounding        = 0.0f,
                                 int                  roundingCorners = 0x0F,
                                 float                thickness       = 1.0f);
-SFML_GRAPHICS_API void DrawRectFilled(const sf::FloatRect& rect,
-                                      const sf::Color&     color,
-                                      float                rounding        = 0.0f,
-                                      int                  roundingCorners = 0x0F);
+SFML_GRAPHICS_API void DrawRectFilled(const sf::FloatRect& rect, sf::Color color, float rounding = 0.0f, int roundingCorners = 0x0F);
 } // namespace sf::ImGui
