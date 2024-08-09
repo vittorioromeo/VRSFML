@@ -1,0 +1,202 @@
+# Differences between upstream SFML and Vittorio's fork
+
+## User-facing changes
+
+- **Built-in Emscripten support:**
+    - SFML now works out-of-the-box with Emscripten.
+    - All existing examples and tests run flawlessly in the browser.
+    - No explicit `#ifdef SFML_SYSTEM_EMSCRIPTEN` is required anywhere in user code.
+
+- **Built-in ImGui support:**
+    - Adds a new `SFML::ImGui` module that depends on `SFML::Graphics`.
+    - Can be controlled via `SFML_BUILD_IMGUI`.
+
+- **Complete removal of legacy OpenGL:**
+    - SFML now internally uses modern OpenGL that is compatible with OpenGL 3.0 ES.
+    - OpenGL ES 3.0 is now supported on all platforms, including Windows via ANGLE.
+    - SFML provides built-in shaders that use the following API:
+        ```glsl
+        uniform mat4 sf_u_projectionMatrix;
+        uniform mat4 sf_u_textureMatrix;
+        uniform mat4 sf_u_modelViewMatrix;
+
+        in vec2 sf_a_position;
+        in vec4 sf_a_color;
+        in vec2 sf_a_texCoord;
+
+        out vec4 sf_v_color;
+        out vec2 sf_v_texCoord;
+        ```
+
+- **Support for simultaneous audio devices:**
+    - Upstream SFML does not support simulataneous different audio devices -- only one playback device and one capture device can be active at any time.
+    - This fork supports multiple different audio devices at the same time (see `multi_audio_device` example): this allows, for example, for game sounds to be played on speakers while multiplayer VOIP is played on headphones.
+
+- **Restore factory-based creation APIs for SFML resources:**
+    - Factory-based creation APIs considerably increased type-safety and usability of SFML resources as they completely eliminated the presence of an "empty state" and made it obvious to users where errors could occur, forcing them to decide between handling them, ignoring them, or propagating them.
+    - Despite many months of work and discussion, these APIs have been inexplicably reverted out of the blue with <https://github.com/SFML/SFML/pull/3152>, due to fear that users would find the migration from 2.x to 3.x more difficult.
+    - This fork does not include https://github.com/SFML/SFML/pull/3152 and moves forward with the vision of a safer and more pedagogically valuable version of SFML.
+
+- **Debug lifetime tracking for all SFML resources:**
+    - Catches common lifetime mistakes between dependee types (e.g. `sf::Font`) and dependant types (e.g. `sf::Text`) at run-time, providing the user with a readable error message.
+    - Enabled for debug builds by default, can be controlled via `SFML_ENABLE_LIFETIME_TRACKING`.
+    - Rejected for upstream inclusion in <https://github.com/SFML/SFML/pull/3097>.
+    - When enabled: zero compilation time impact, negligible low runtime performance impact.
+
+- **Compile-time enforced lifetime correctness for `sf::Texture` and its dependants (`sf::Sprite` and `sf::Shape`):**
+    - Rather than `sf::Sprite` and `sf::Shape` storing a `sf::Texture*` internally, which can easily become invalidated, the `sf::Texture*` is now passed at the point where it is required: the `sf::RenderTarget::draw` call.
+    - This prevents common lifetime issues that SFML users have frequently encountered (i.e. "the white square problem") at compile-time, without any extra overhead.
+    - This also promotes better code organization and a more linear lifetime hierarchy tree for our users.
+    - This was proposed for upstream SFML in two different forms (https://github.com/SFML/SFML/pull/3072 and https://github.com/SFML/SFML/pull/3080), but rejecetd with very unconvincing arguments.
+
+- **Removal of questionable polymorphic inheritance trees:**
+    - `sf::Drawable`, `sf::Shape`, and `sf::Transformable` have either been removed or made non-polymorphic.
+    - These inheritance trees do not provide any real world benefit and promote overuse of OOP.
+        - In practice, it's not useful to have something like `std::vector<std::unique_ptr<sf::Drawable>>`, and it actually leads newcomers to poor software engineering practices.
+        - If that sort of polymorphism is required in rare cases, it can always be obtained via `std::function` or other basic type erasure techniques.
+
+- **Removal of `sf::VertexArray` in lieu of `std::vector<sf::Vertex>`:**
+    - `sf::VertexArray` was just a wrapper over `std::vector<sf::Vertex>` that exposes a subset of `std::vector`'s API.
+    - `std::vector<sf::Vertex>` should be used instead, and users should be encouraged to do the same.
+    - This was proposed for upstream SFML in <https://github.com/SFML/SFML/pull/3118>, but rejected with very unconvincing arguments.
+
+- **Removal of global state whenever possible:**
+    - Upstream SFML is full of hidden global state: for example, any graphical resource or audio resource ends up interacting with a global registry (via `std::shared_ptr` and other expensive operations) on construction/destruction.
+    - This fork removes any such hidden global state, and requires the user to decide where these registries live via `sf::AudioContext` and `sf::GraphicsContext`.
+        - Generally, these context objects can be created at the beginning of `main` and passed downwards to the rest of the application.
+    - Not only this change increases run-time performance and decreases compilation time overhead, but it also simplifies the internal implementation of SFML reducing the risk of subtle global initializiation fiasco issues and promoting users to write simpler software with a clear hierarchical lifetime structure.
+
+- **New `SFML::Base` module:**
+    - New module containing abstractions and utilities generally useful in any C++ project.
+    - Significantly decreases reliance on the Standard Library, providing drop-in replacements that are much faster to compile and much more performant at run-time even with optimizations disabled.
+    - All components of `SFML::Base` have been carefully crafted to maximize compile-time thoughput, debug performance, and ease of use.
+
+- **`sf::Window` closed state has been removed:**
+    - Windows are now considered always "open".
+    - If a window needs to be closed/re-opened multiple times, it can be wrapped into an optional.
+    - As shown by the examples, this makes code simpler and removes another unnecessary "empty state".
+
+- **`sf::Socket` constructor now takes a `isBlocking` parameter:**
+    - Following the principle of being more explicit, users now have to explicitly decide whether they want their socket to be blocking or not on construction, rather than relying on the possibly wrong default of blocking mode.
+
+- **Removal of catch-all module-wide headers like `Audio.hpp` and `Window.hpp`:**
+    - These headers go against the principles of header hygiene, they promote poor practices and slow down users' projects compilation times.
+
+- **Simplified and polished examples:**
+    - All examples have been manually reviewed and polished to be as idiomatic and simple as possible, reducing needless use of inheritance/polymorphism and removing unnecessary layers of abstraction.
+
+## Implementation changes
+
+- **Changed C++ Standard to C++20:**
+    - Some features (e.g. designated initializers. `[[likely]]`, `char8_t`, `constinit`, aggregate initialization using parentheses, concepts) are now used throughout the library.
+
+- **External dependencies are now downloaded and built:**
+    - This work has been done by @binary1248 and will hopefully be merged into upstream SFML soon: <https://github.com/SFML/SFML/pull/3141>.
+
+- **Stack trace generation for errors and assertions:**
+    - Human-readable stack traces are generated on any `sf::priv::err()` error message or assertion failure.
+    - Internally uses `cpptrace`: <https://github.com/jeremy-rifkin/cpptrace>.
+    - Can be controlled via `SFML_ENABLE_STACK_TRACES`.
+
+- **Changed testing framework from Catch to Doctest:**
+    - Doctest used to be upstream SFML's testing framework as per my proposal.
+    - Doctest was changed to Catch2 in this PR <https://github.com/SFML/SFML/pull/2452> despite my objections.
+    - Doctest has almost feature-parity with Catch2 but an insanely better compilation time impact: <https://github.com/doctest/doctest/>.
+
+- **Massive compilation time speedup:**
+    - Thanks to copious use of PImpl and zero-allocation fast PImpl idioms, header hygiene, use of `SFML::Base` instead of the Standard Library, `extern template`, and many other techniques, this fork now compiles blazingly-fast compared to upstream SFML.
+
+- **`sf::priv::err()` enhancements:**
+    - Including `Err.h` does not expose any expensive `ios` or `iostream` Standard Library header.
+    - The end of a chain of streams is detected automatically, and a flush + newline is added at the end -- no need for `std::endl`!
+    - Stack trace support, see above.
+
+- **Other various improvements:**
+    - Optimize `sf::Shader` source loading performance by reading into thread-local vector.
+    - Optimize rendering of `sf::Text` with outlines: now takes a single draw call compared to upstream SFML's two draw calls.
+    - `sf::priv::Err` is now thread-safe.
+    - All factory functions have been improved to support RVO or NRVO, checked via GCC's `-Wnrvo` flag.
+    - Added `Vector2<T>::movedTowards(T r, Angle phi)` function.
+    - `sf::Vector2`, `sf::Vector3`, and `sf::Rect` are now aggregates.
+
+<!--
+
+## TODO
+
+- `SFML_OS_EMSCRIPTEN`
+    - All examples and tests work
+
+- `SFML_ENABLE_LIFETIME_TRACKING`
+- `SFML_BUILD_IMGUI`
+- `SFML_ENABLE_STACK_TRACES`
+- Doctest
+- C++20 support
+- Download dependencies
+- EGL support on Windows via ANGLE
+- Restore factory-based API
+- New `SFML::Base` module
+- Removal of global state whenever possible
+    - No more `sf::AudioResource` nor `sf::GlResource`
+- Massive compilation time speedup
+- Simplified and polished examples
+- Windows cannot be closed anymore, `isOpen` removed
+- Built-in shaders
+- No more legacy GL whatsoever
+- Safer APIs
+    - Sockets take blocking mode in ctor
+- Better `priv::err()`
+- Simultaneous multi-device sound API
+- Removal of `sf::Drawable`
+
+- Removal of catch-all headers like `Audio.hpp`
+- Widespread usage of fast PImpl
+- Much faster debug run-time performance
+- Ahead with upstream
+- Remove `sf::VertexArray`
+- sf::Sprite does not store sf::Texture*
+
+
+
+
+Add explicit template instantiations for vectors and rect
+
+Make `Transformable` non-polymorphic
+Make `Shape` non-polymorphic
+
+
+
+
+
+    // Create an audio context and get the default playback device
+    auto audioContext   = sf::AudioContext::create().value();
+    auto playbackDevice = sf::PlaybackDevice::createDefault(audioContext).value();
+
+
+
+      // Create the graphics context
+    sf::GraphicsContext graphicsContext;
+
+    // Create the window of the application with a stencil buffer
+    sf::RenderWindow window(graphicsContext,
+
+const auto font = sf::Font::openFromFile(graphicsContext, resourcesDir() / "tuffy.ttf").value();
+
+
+      SFML_GAME_LOOP
+    {
+        // Handle events
+        while (const sf::base::Optional event = window.pollEvent())
+        {
+            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+                SFML_GAME_LOOP_BREAK;
+        }
+
+                // Continue to the next frame
+        SFML_GAME_LOOP_CONTINUE;
+    };
+
+
+        window.draw(leftPaddle, /* texture */ nullptr);
+        window.draw(rightPaddle, /* texture */ nullptr);
+
+-->
