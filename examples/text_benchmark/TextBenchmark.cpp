@@ -55,7 +55,7 @@ int main()
     SFML_GAME_LOOP
     {
         // Main window event processing
-        while (const auto event = window.pollEvent())
+        while (const sf::base::Optional event = window.pollEvent())
         {
             imGuiContext.processEvent(window, *event);
 
@@ -87,7 +87,7 @@ int main()
         // Child window event processing
         if (childWindow.hasValue())
         {
-            while (const auto event = childWindow->pollEvent())
+            while (const sf::base::Optional event = childWindow->pollEvent())
             {
                 imGuiContext.processEvent(*childWindow, *event);
 
@@ -131,7 +131,7 @@ int main()
 
     SFML_GAME_LOOP
     {
-        while (const auto event = window.pollEvent())
+        while (const sf::base::Optional event = window.pollEvent())
         {
             imGuiContext.processEvent(window, *event);
 

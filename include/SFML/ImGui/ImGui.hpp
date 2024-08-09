@@ -35,31 +35,82 @@ namespace sf::ImGui
 class [[nodiscard]] ImGuiContext
 {
 public:
+    ////////////////////////////////////////////////////////////
+    /// \brief Constructor
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit ImGuiContext(GraphicsContext& graphicsContext);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Destructor
+    ///
+    ////////////////////////////////////////////////////////////
     ~ImGuiContext();
 
-    ImGuiContext(const ImGuiContext&)            = delete;
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    ImGuiContext(const ImGuiContext&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy assignment
+    ///
+    ////////////////////////////////////////////////////////////
     ImGuiContext& operator=(const ImGuiContext&) = delete;
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Move constructor
+    ///
+    ////////////////////////////////////////////////////////////
     ImGuiContext(ImGuiContext&&) noexcept;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move assignment operator
+    ///
+    ////////////////////////////////////////////////////////////
     ImGuiContext& operator=(ImGuiContext&&) noexcept;
 
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool init(RenderWindow& window, bool loadDefaultFont = true);
     [[nodiscard]] bool init(Window& window, RenderTarget& target, bool loadDefaultFont = true);
     [[nodiscard]] bool init(Window& window, Vector2f displaySize, bool loadDefaultFont = true);
 
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
     void processEvent(const Window& window, const Event& event);
 
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
     void update(RenderWindow& window, Time dt);
     void update(Window& window, RenderTarget& target, Time dt);
     void update(Vector2i mousePos, Vector2f displaySize, Time dt);
 
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
     void render(RenderWindow& window);
     void render(RenderTarget& target);
     void render();
 
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
     void shutdown(const Window& window);
 
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
     void setActiveJoystickId(unsigned int joystickId);
     void setJoystickDPadThreshold(float threshold);
     void setJoystickLStickThreshold(float threshold);
@@ -67,6 +118,10 @@ public:
     void setJoystickLTriggerThreshold(float threshold);
     void setJoystickRTriggerThreshold(float threshold);
 
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
     void setJoystickMapping(int key, unsigned int joystickButton);
     void setDPadXAxis(Joystick::Axis dPadXAxis, bool inverted = false);
     void setDPadYAxis(Joystick::Axis dPadYAxis, bool inverted = false);
@@ -77,7 +132,89 @@ public:
     void setLTriggerAxis(Joystick::Axis lTriggerAxis);
     void setRTriggerAxis(Joystick::Axis rTriggerAxis);
 
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
     void setCurrentWindow(const Window& window);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void image(const Texture& texture, Color tintColor = Color::White, Color borderColor = Color::Transparent);
+    void image(const Texture& texture, Vector2f size, Color tintColor = Color::White, Color borderColor = Color::Transparent);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void image(const RenderTexture& texture, Color tintColor = Color::White, Color borderColor = Color::Transparent);
+    void image(const RenderTexture& texture, Vector2f size, Color tintColor = Color::White, Color borderColor = Color::Transparent);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void image(const Sprite&  sprite,
+               const Texture& texture,
+               Color          tintColor   = Color::White,
+               Color          borderColor = Color::Transparent);
+
+    void image(const Sprite&  sprite,
+               const Texture& texture,
+               Vector2f       size,
+               Color          tintColor   = Color::White,
+               Color          borderColor = Color::Transparent);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool imageButton(const char*    id,
+                                   const Texture& texture,
+                                   Vector2f       size,
+                                   Color          bgColor   = Color::Transparent,
+                                   Color          tintColor = Color::White);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool imageButton(const char*          id,
+                                   const RenderTexture& texture,
+                                   Vector2f             size,
+                                   Color                bgColor   = Color::Transparent,
+                                   Color                tintColor = Color::White);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool imageButton(const char*    id,
+                                   const Sprite&  sprite,
+                                   const Texture& texture,
+                                   Vector2f       size,
+                                   Color          bgColor   = Color::Transparent,
+                                   Color          tintColor = Color::White);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void drawLine(Vector2f a, Vector2f b, Color col, float thickness = 1.0f);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void drawRect(const FloatRect& rect, Color color, float rounding = 0.0f, int roundingCorners = 0x0F, float thickness = 1.0f);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void drawRectFilled(const FloatRect& rect, Color color, float rounding = 0.0f, int roundingCorners = 0x0F);
 
 private:
     // Shuts down all ImGui contexts
@@ -87,72 +224,4 @@ private:
     base::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
 };
 
-
-// joystick functions
-
-// custom SFML overloads for ImGui widgets
-
-// Image overloads for sf::Texture
-SFML_GRAPHICS_API void Image(const sf::Texture& texture,
-                             sf::Color          tintColor   = sf::Color::White,
-                             sf::Color          borderColor = sf::Color::Transparent);
-SFML_GRAPHICS_API void Image(const sf::Texture& texture,
-                             sf::Vector2f       size,
-                             sf::Color          tintColor   = sf::Color::White,
-                             sf::Color          borderColor = sf::Color::Transparent);
-
-// Image overloads for sf::RenderTexture
-SFML_GRAPHICS_API void Image(const sf::RenderTexture& texture,
-                             sf::Color                tintColor   = sf::Color::White,
-                             sf::Color                borderColor = sf::Color::Transparent);
-SFML_GRAPHICS_API void Image(const sf::RenderTexture& texture,
-                             sf::Vector2f             size,
-                             sf::Color                tintColor   = sf::Color::White,
-                             sf::Color                borderColor = sf::Color::Transparent);
-
-// Image overloads for sf::Sprite
-SFML_GRAPHICS_API void Image(const sf::Sprite&  sprite,
-                             const sf::Texture& texture,
-                             sf::Color          tintColor   = sf::Color::White,
-                             sf::Color          borderColor = sf::Color::Transparent);
-SFML_GRAPHICS_API void Image(const sf::Sprite&  sprite,
-                             const sf::Texture& texture,
-                             sf::Vector2f       size,
-                             sf::Color          tintColor   = sf::Color::White,
-                             sf::Color          borderColor = sf::Color::Transparent);
-
-// ImageButton overloads for sf::Texture
-[[nodiscard]] SFML_GRAPHICS_API bool ImageButton(
-    const char*        id,
-    const sf::Texture& texture,
-    sf::Vector2f       size,
-    sf::Color          bgColor   = sf::Color::Transparent,
-    sf::Color          tintColor = sf::Color::White);
-
-// ImageButton overloads for sf::RenderTexture
-[[nodiscard]] SFML_GRAPHICS_API bool ImageButton(
-    const char*              id,
-    const sf::RenderTexture& texture,
-    sf::Vector2f             size,
-    sf::Color                bgColor   = sf::Color::Transparent,
-    sf::Color                tintColor = sf::Color::White);
-
-// ImageButton overloads for sf::Sprite
-[[nodiscard]] SFML_GRAPHICS_API bool ImageButton(
-    const char*        id,
-    const sf::Sprite&  sprite,
-    const sf::Texture& texture,
-    sf::Vector2f       size,
-    sf::Color          bgColor   = sf::Color::Transparent,
-    sf::Color          tintColor = sf::Color::White);
-
-// Draw_list overloads. All positions are in relative coordinates (relative to top-left of the
-// current window)
-SFML_GRAPHICS_API void DrawLine(sf::Vector2f a, sf::Vector2f b, sf::Color col, float thickness = 1.0f);
-SFML_GRAPHICS_API void DrawRect(const sf::FloatRect& rect,
-                                sf::Color            color,
-                                float                rounding        = 0.0f,
-                                int                  roundingCorners = 0x0F,
-                                float                thickness       = 1.0f);
-SFML_GRAPHICS_API void DrawRectFilled(const sf::FloatRect& rect, sf::Color color, float rounding = 0.0f, int roundingCorners = 0x0F);
 } // namespace sf::ImGui
