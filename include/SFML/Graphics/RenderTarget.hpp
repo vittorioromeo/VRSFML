@@ -493,7 +493,7 @@ private:
     /// \brief Apply the current view
     ///
     ////////////////////////////////////////////////////////////
-    void applyCurrentView(const Shader* statesShader, const Texture* statesTexture);
+    void applyCurrentView();
 
     ////////////////////////////////////////////////////////////
     /// \brief Apply a new blending mode

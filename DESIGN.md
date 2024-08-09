@@ -31,13 +31,15 @@
     <summary>📜 Code example</summary>
 
     ```cpp
-    sf::GraphicsContext     graphicsContext;
-    sf::ImGui::ImGuiContext imGuiContext(graphicsContext);
+    sf::GraphicsContext     graphicsContext;               // Holds all "global" OpenGL state
+    sf::ImGui::ImGuiContext imGuiContext(graphicsContext); // Holds all "global" ImGui state
 
     sf::RenderWindow window(graphicsContext, sf::VideoMode({640u, 480u}), "ImGui + SFML = <3");
+    sf::Clock deltaClock;
 
     SFML_GAME_LOOP
     {
+        // `sf::base::Optional` is a drop-in replacement for `std::optional`
         while (const sf::base::Optional event = window.pollEvent())
         {
             imGuiContext.processEvent(window, *event);
@@ -46,8 +48,10 @@
                 SFML_GAME_LOOP_BREAK;
         }
 
+        // Updates the ImGui state and sets `window` as the active ImGui window
         imGuiContext.update(window, deltaClock.restart());
 
+        // Native ImGui functions can be used after `imGuiContext.update`
         ImGui::Begin("Hello, world!");
         ImGui::Button("Look at this pretty button");
         ImGui::End();
