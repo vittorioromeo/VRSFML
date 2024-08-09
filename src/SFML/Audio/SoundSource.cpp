@@ -217,7 +217,7 @@ void SoundSource::setEffectProcessor(EffectProcessor effectProcessor)
 
 
 ////////////////////////////////////////////////////////////
-void SoundSource::setLoop(bool loop)
+void SoundSource::setLooping(bool loop)
 {
     m_impl->savedSettings.looping = loop;
 
@@ -358,7 +358,7 @@ EffectProcessor SoundSource::getEffectProcessor() const
 
 
 ////////////////////////////////////////////////////////////
-bool SoundSource::getLoop() const
+bool SoundSource::isLooping() const
 {
     return m_impl->savedSettings.looping;
 }
@@ -391,7 +391,7 @@ SoundSource& SoundSource::operator=(const SoundSource& right)
     setMaxGain(right.getMaxGain());
     setAttenuation(right.getAttenuation());
     setEffectProcessor(right.getEffectProcessor());
-    setLoop(right.getLoop());
+    setLooping(right.isLooping());
     setPlayingOffset(right.getPlayingOffset());
 
     return *this;
