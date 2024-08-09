@@ -19,7 +19,7 @@ int main()
     window.setVerticalSyncEnabled(true);
 
     // Open the application font
-    const sf::Font font("resources/tuffy.ttf");
+    const auto font = sf::Font::createFromFile("resources/tuffy.ttf").value();
 
     // Create the mouse position text
     sf::Text mousePosition(font, "", 20);

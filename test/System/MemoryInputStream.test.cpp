@@ -18,17 +18,8 @@ TEST_CASE("[System] sf::MemoryInputStream")
 
     using namespace std::literals::string_view_literals;
 
-    SECTION("Construction")
+    SECTION("open()")
     {
-        SECTION("Null data")
-        {
-            sf::MemoryInputStream memoryInputStream(nullptr, 0);
-            CHECK(memoryInputStream.read(nullptr, 0) == std::nullopt);
-            CHECK(memoryInputStream.seek(0) == std::nullopt);
-            CHECK(memoryInputStream.tell() == std::nullopt);
-            CHECK(memoryInputStream.getSize() == std::nullopt);
-        }
-
         static constexpr auto input = "hello world"sv;
 
         SECTION("Zero length")
