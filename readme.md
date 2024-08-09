@@ -1,5 +1,7 @@
 *(This is a fork of SFML by Vittorio Romeo.)*
 
+[**SEE MAJOR CHANGES AND DESIGN RATIONALE HERE.**](DESIGN.md)
+
 ---
 
 [![SFML logo](https://www.sfml-dev.org/images/logo.png)](https://www.sfml-dev.org)
