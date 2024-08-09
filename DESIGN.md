@@ -41,9 +41,9 @@
     - Catches common lifetime mistakes between dependee types (e.g. `sf::Font`) and dependant types (e.g. `sf::Text`) at run-time, providing the user with a readable error message.
     - Enabled for debug builds by default, can be controlled via `SFML_ENABLE_LIFETIME_TRACKING`.
     - Rejected for upstream inclusion in <https://github.com/SFML/SFML/pull/3097>.
-    - When enabled: zero compilation time impact, negligible low runtime performance impact.
+    - When enabled: zero compilation time impact, negligible runtime performance impact.
 
-- **Compile-time enforced lifetime correctness for `sf::Texture` and its dependants (`sf::Sprite` and `sf::Shape`):**
+- **Compile-time--enforced lifetime correctness for `sf::Texture` and its dependants (`sf::Sprite` and `sf::Shape`):**
     - Rather than `sf::Sprite` and `sf::Shape` storing a `sf::Texture*` internally, which can easily become invalidated, the `sf::Texture*` is now passed at the point where it is required: the `sf::RenderTarget::draw` call.
     - This prevents common lifetime issues that SFML users have frequently encountered (i.e. "the white square problem") at compile-time, without any extra overhead.
     - This also promotes better code organization and a more linear lifetime hierarchy tree for our users.
