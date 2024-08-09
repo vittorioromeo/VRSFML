@@ -107,7 +107,7 @@ Image& Image::operator=(Image&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Image> Image::create(Vector2u size, const Color& color)
+base::Optional<Image> Image::create(Vector2u size, Color color)
 {
     base::Optional<Image> result; // Use a single local variable for NRVO
 

@@ -82,7 +82,7 @@ public:
     /// \param color Fill color
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Image> create(Vector2u size, const Color& color = Color::Black);
+    [[nodiscard]] static base::Optional<Image> create(Vector2u size, Color color = Color::Black);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the image from an array of pixels
