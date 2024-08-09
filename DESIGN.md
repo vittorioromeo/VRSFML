@@ -20,6 +20,8 @@
         };
         ```
 
+<br>
+
 - ➡️ **Built-in ImGui support:**
     - Adds a new `SFML::ImGui` module that depends on `SFML::Graphics`.
     - Can be controlled via the CMake option `SFML_BUILD_IMGUI`.
@@ -60,6 +62,8 @@
 
     </details>
 
+<br>
+
 - ➡️ **Complete removal of legacy OpenGL:**
     - Upstream SFML still uses legacy OpenGL calls such as `glBegin` and `glEnd`.
     - This fork now internally uses modern OpenGL that is compatible with OpenGL 3.0 ES.
@@ -77,6 +81,8 @@
         out vec4 sf_v_color;
         out vec2 sf_v_texCoord;
         ```
+
+<br>
 
 - ➡️ **Support for simultaneous audio devices:**
     - Upstream SFML does not support simulataneous different audio devices -- only one playback device and one capture device can be active at any time.
@@ -111,6 +117,8 @@
 
     </details>
 
+<br>
+
 - ➡️ **Restore factory-based creation APIs for SFML resources:**
     - Factory-based creation APIs considerably increased type-safety and usability of SFML resources as they completely eliminated the presence of an "empty state" and made it obvious to users where errors could occur, forcing them to decide between handling them, ignoring them, or propagating them.
     - Despite many months of work and discussion, these APIs have been inexplicably reverted out of the blue with <https://github.com/SFML/SFML/pull/3152>, due to fear that users would find the migration from 2.x to 3.x more difficult.
@@ -133,6 +141,8 @@
     ```
 
     </details>
+
+<br>
 
 - ➡️ **Debug lifetime tracking for all SFML resources:**
     - Catches common lifetime mistakes between dependee types (e.g. `sf::Font`) and dependant types (e.g. `sf::Text`) at run-time, providing the user with a readable error message.
@@ -180,6 +190,8 @@
 
     </details>
 
+<br>
+
 - ➡️ **Compile-time--enforced lifetime correctness for `sf::Texture` and its dependants (`sf::Sprite` and `sf::Shape`):**
     - Rather than `sf::Sprite` and `sf::Shape` storing a `sf::Texture*` internally, which can easily become invalidated, the `sf::Texture*` is now passed at the point where it is required: the `sf::RenderTarget::draw` call.
     - This prevents common lifetime issues that SFML users have frequently encountered (i.e. "the white square problem") at compile-time, without any extra overhead.
@@ -209,22 +221,30 @@
 
     </details>
 
+<br>
+
 - ➡️ **Removal of polymorphic inheritance trees:**
     - `sf::Drawable`, `sf::Shape`, and `sf::Transformable` have either been removed or made non-polymorphic.
     - These inheritance trees promote overuse of OOP and dynamic allocation, and move users away from data-oriented design.
         - In practice, it's not useful to have something like `std::vector<std::unique_ptr<sf::Drawable>>`, and it actually leads newcomers to poor software engineering practices.
         - If that sort of polymorphism is required in rare cases, it can always be obtained via `std::function` or other basic type erasure techniques.
 
+<br>
+
 - ➡️ **Removal of `sf::VertexArray` in lieu of `std::vector<sf::Vertex>`:**
     - `sf::VertexArray` was just a wrapper over `std::vector<sf::Vertex>` that exposes a subset of `std::vector`'s API.
     - `std::vector<sf::Vertex>` should be used instead, and users should be encouraged to do the same.
     - This was proposed for upstream SFML in <https://github.com/SFML/SFML/pull/3118>, but rejected.
+
+<br>
 
 - ➡️ **Removal of global state whenever possible:**
     - Upstream SFML is full of hidden global state: for example, any graphical resource or audio resource ends up interacting with a global registry (via `std::shared_ptr` and other expensive operations) on construction/destruction.
     - This fork removes any such hidden global state, and requires the user to decide where these registries live via `sf::AudioContext` and `sf::GraphicsContext`.
         - Generally, these context objects can be created at the beginning of `main` and passed downwards to the rest of the application.
     - Not only this change increases run-time performance and decreases compilation time overhead, but it also simplifies the internal implementation of SFML reducing the risk of subtle global initializiation fiasco issues and promoting users to write simpler software with a clear hierarchical lifetime structure.
+
+<br>
 
 - ➡️ **New `SFML::Base` module:**
     - New module containing abstractions and utilities generally useful in any C++ project.
@@ -256,6 +276,8 @@
 
     </details>
 
+<br>
+
 - ➡️ **`sf::Window` closed state has been removed:**
     - Windows are now considered always "open".
     - If a window needs to be closed/re-opened multiple times, it can be wrapped into an optional.
@@ -284,6 +306,8 @@
 
     </details>
 
+<br>
+
 - ➡️ **`sf::Socket` constructor now takes a `isBlocking` parameter:**
     - Following the principle of being more explicit, users now have to explicitly decide whether they want their socket to be blocking or not on construction, rather than relying on the possibly wrong default of blocking mode.
 
@@ -301,8 +325,12 @@
 
     </details>
 
+<br>
+
 - ➡️ **Removal of catch-all module-wide headers like `Audio.hpp` and `Window.hpp`:**
     - These headers go against the principles of header hygiene, they promote poor practices and slow down users' projects compilation times.
+
+<br>
 
 - ➡️ **Simplified and polished examples:**
     - All examples have been manually reviewed and polished to be as idiomatic and simple as possible, reducing needless use of inheritance/polymorphism and removing unnecessary layers of abstraction.
@@ -312,26 +340,38 @@
 - ➡️ **Changed C++ Standard to C++20:**
     - Some features (e.g. designated initializers. `[[likely]]`, `char8_t`, `constinit`, aggregate initialization using parentheses, concepts) are now used throughout the library.
 
+<br>
+
 - ➡️ **External dependencies are now downloaded and built:**
     - This work has been done by @binary1248 and will hopefully be merged into upstream SFML soon: <https://github.com/SFML/SFML/pull/3141>.
+
+<br>
 
 - ➡️ **Stack trace generation for errors and assertions:**
     - Human-readable stack traces are generated on any `sf::priv::err()` error message or assertion failure.
     - Internally uses `cpptrace`: <https://github.com/jeremy-rifkin/cpptrace>.
     - Can be controlled via the CMake option `SFML_ENABLE_STACK_TRACES`.
 
+<br>
+
 - ➡️ **Changed testing framework from Catch to Doctest:**
     - Doctest used to be upstream SFML's testing framework as per my proposal.
     - Doctest was changed to Catch2 in this PR <https://github.com/SFML/SFML/pull/2452> despite my objections.
     - Doctest has almost feature-parity with Catch2 but an insanely better compilation time impact: <https://github.com/doctest/doctest/>.
 
+<br>
+
 - ➡️ **Massive compilation time speedup:**
     - Thanks to copious use of PImpl and zero-allocation fast PImpl idioms, header hygiene, use of `SFML::Base` instead of the Standard Library, `extern template`, and many other techniques, this fork now compiles blazingly-fast compared to upstream SFML.
+
+<br>
 
 - ➡️ **`sf::priv::err()` enhancements:**
     - Including `Err.h` does not expose any expensive `ios` or `iostream` Standard Library header.
     - The end of a chain of streams is detected automatically, and a flush + newline is added at the end -- no need for `std::endl`!
     - Stack trace support, see above.
+
+<br>
 
 - ➡️ **Other various improvements:**
     - Optimize `sf::Shader` source loading performance by reading into thread-local vector.
