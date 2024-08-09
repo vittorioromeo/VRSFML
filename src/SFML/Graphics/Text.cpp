@@ -35,7 +35,7 @@ void addLine(std::vector<sf::Vertex>& vertices,
              std::size_t&             index,
              float                    lineLength,
              float                    lineTop,
-             const sf::Color&         color,
+             sf::Color                color,
              float                    offset,
              float                    thickness,
              float                    outlineThickness = 0)
@@ -58,7 +58,7 @@ void addLine(std::vector<sf::Vertex>& vertices,
 void addGlyphQuad(std::vector<sf::Vertex>& vertices,
                   std::size_t&             index,
                   sf::Vector2f             position,
-                  const sf::Color&         color,
+                  sf::Color                color,
                   const sf::Glyph&         glyph,
                   float                    italicShear)
 {
@@ -221,7 +221,7 @@ void Text::setStyle(Text::Style style)
 
 
 ////////////////////////////////////////////////////////////
-void Text::setFillColor(const Color& color)
+void Text::setFillColor(Color color)
 {
     if (color == m_impl->fillColor)
         return;
@@ -239,7 +239,7 @@ void Text::setFillColor(const Color& color)
 
 
 ////////////////////////////////////////////////////////////
-void Text::setOutlineColor(const Color& color)
+void Text::setOutlineColor(Color color)
 {
     if (color == m_impl->outlineColor)
         return;
@@ -310,14 +310,14 @@ Text::Style Text::getStyle() const
 
 
 ////////////////////////////////////////////////////////////
-const Color& Text::getFillColor() const
+Color Text::getFillColor() const
 {
     return m_impl->fillColor;
 }
 
 
 ////////////////////////////////////////////////////////////
-const Color& Text::getOutlineColor() const
+Color Text::getOutlineColor() const
 {
     return m_impl->outlineColor;
 }

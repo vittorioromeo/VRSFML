@@ -125,7 +125,7 @@ const IntRect& Shape::getTextureRect() const
 
 
 ////////////////////////////////////////////////////////////
-void Shape::setFillColor(const Color& color)
+void Shape::setFillColor(Color color)
 {
     m_impl->fillColor = color;
     updateFillColors();
@@ -133,14 +133,14 @@ void Shape::setFillColor(const Color& color)
 
 
 ////////////////////////////////////////////////////////////
-const Color& Shape::getFillColor() const
+Color Shape::getFillColor() const
 {
     return m_impl->fillColor;
 }
 
 
 ////////////////////////////////////////////////////////////
-void Shape::setOutlineColor(const Color& color)
+void Shape::setOutlineColor(Color color)
 {
     m_impl->outlineColor = color;
     updateOutlineColors();
@@ -148,7 +148,7 @@ void Shape::setOutlineColor(const Color& color)
 
 
 ////////////////////////////////////////////////////////////
-const Color& Shape::getOutlineColor() const
+Color Shape::getOutlineColor() const
 {
     return m_impl->outlineColor;
 }

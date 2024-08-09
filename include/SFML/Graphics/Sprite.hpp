@@ -57,7 +57,7 @@ public:
     /// \see getColor
     ///
     ////////////////////////////////////////////////////////////
-    void setColor(const Color& color);
+    void setColor(Color color);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the sub-rectangle of the texture displayed by the sprite
@@ -77,7 +77,7 @@ public:
     /// \see setColor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const Color& getColor() const;
+    [[nodiscard]] Color getColor() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the local bounding rectangle of the entity
