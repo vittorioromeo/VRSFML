@@ -918,20 +918,23 @@ void ImGui_ImplOpenGL3_DestroyFontsTexture()
     GLuint        vert_handle                   = glCreateShader(GL_VERTEX_SHADER);
     glCheck(glShaderSource(vert_handle, 2, vertex_shader_with_version, nullptr));
     glCheck(glCompileShader(vert_handle));
-    CheckShader(vert_handle, "vertex shader");
+    if (!CheckShader(vert_handle, "vertex shader"))
+        return false;
 
     const GLchar* fragment_shader_with_version[2] = {bd->GlslVersionString, fragment_shader};
     GLuint        frag_handle                     = glCreateShader(GL_FRAGMENT_SHADER);
     glCheck(glShaderSource(frag_handle, 2, fragment_shader_with_version, nullptr));
     glCheck(glCompileShader(frag_handle));
-    CheckShader(frag_handle, "fragment shader");
+    if (!CheckShader(frag_handle, "fragment shader"))
+        return false;
 
     // Link
     bd->ShaderHandle = glCreateProgram();
     glCheck(glAttachShader(bd->ShaderHandle, vert_handle));
     glCheck(glAttachShader(bd->ShaderHandle, frag_handle));
     glCheck(glLinkProgram(bd->ShaderHandle));
-    CheckProgram(bd->ShaderHandle, "shader program");
+    if (!CheckProgram(bd->ShaderHandle, "shader program"))
+        return false;
 
     glCheck(glDetachShader(bd->ShaderHandle, vert_handle));
     glCheck(glDetachShader(bd->ShaderHandle, frag_handle));

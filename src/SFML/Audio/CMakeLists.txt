@@ -140,7 +140,7 @@ else()
         endif()
 
         # disable building dependencies as part of a unity build, they don't support it
-        set_target_properties(ogg FLAC vorbis vorbisenc vorbisfile PROPERTIES UNITY_BUILD OFF)
+        set_target_properties(ogg FLAC vorbis vorbisenc vorbisfile benchmark_residual PROPERTIES UNITY_BUILD OFF)
 
         sfml_set_stdlib(ogg)
         sfml_set_stdlib(FLAC)

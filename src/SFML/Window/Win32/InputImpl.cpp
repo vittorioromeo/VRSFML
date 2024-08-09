@@ -623,7 +623,7 @@ String getDescription(Keyboard::Scancode code)
     if (winCode == 0x76)
         winCode = 0x87;
 
-    const int result = GetKeyNameText(winCode << 16, name, bufSize);
+    const int result = GetKeyNameTextW(winCode << 16, name, bufSize);
     if (result > 0)
     {
         return name;
