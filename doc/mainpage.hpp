@@ -21,15 +21,15 @@
 ///     sf::RenderWindow window(sf::VideoMode({800, 600}), "SFML window");
 ///
 ///     // Load a sprite to display
-///     const sf::Texture texture("cute_image.jpg");
+///     const auto texture = sf::Texture::loadFromFile("cute_image.jpg").value();
 ///     sf::Sprite sprite(texture);
 ///
 ///     // Create a graphical text to display
-///     const sf::Font font("arial.ttf");
+///     const auto font = sf::Font::openFromFile("arial.ttf").value();
 ///     sf::Text text(font, "Hello SFML", 50);
 ///
 ///     // Load a music to play
-///     sf::Music music("nice_music.ogg");
+///     auto music = sf::Music::openFromFile("nice_music.ogg").value();
 ///
 ///     // Play the music
 ///     music.play();

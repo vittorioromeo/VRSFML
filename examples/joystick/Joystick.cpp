@@ -94,7 +94,7 @@ int main()
     window.setVerticalSyncEnabled(true);
 
     // Open the text font
-    const sf::Font font("resources/tuffy.ttf");
+    const auto font = sf::Font::createFromFile("resources/tuffy.ttf").value();
 
     // Set up our string conversion parameters
     sstr.precision(2);

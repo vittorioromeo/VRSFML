@@ -261,7 +261,7 @@ private:
 /// Usage example:
 /// \code
 /// // Load a texture
-/// const sf::Texture texture("texture.png");
+/// const auto texture = sf::Texture::createFromFile("texture.png").value();
 ///
 /// // Create a sprite
 /// sf::Sprite sprite(texture);

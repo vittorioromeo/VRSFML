@@ -44,14 +44,6 @@ RenderTexture::RenderTexture() = default;
 
 
 ////////////////////////////////////////////////////////////
-RenderTexture::RenderTexture(Vector2u size, const ContextSettings& settings)
-{
-    if (!resize(size, settings))
-        throw std::runtime_error("Failed to create render texture");
-}
-
-
-////////////////////////////////////////////////////////////
 RenderTexture::~RenderTexture() = default;
 
 
@@ -101,6 +93,18 @@ bool RenderTexture::resize(Vector2u size, const ContextSettings& settings)
     RenderTarget::initialize();
 
     return true;
+}
+
+
+////////////////////////////////////////////////////////////
+std::optional<RenderTexture> RenderTexture::create(Vector2u size, const ContextSettings& settings)
+{
+    auto renderTexture = std::make_optional<RenderTexture>();
+
+    if (!renderTexture->resize(size, settings))
+        return std::nullopt;
+
+    return renderTexture;
 }
 
 
@@ -165,26 +169,26 @@ bool RenderTexture::setActive(bool active)
 ////////////////////////////////////////////////////////////
 void RenderTexture::display()
 {
-    if (!m_impl)
-        return;
-
-    if (priv::RenderTextureImplFBO::isAvailable())
+    if (m_impl)
     {
-        // Perform a RenderTarget-only activation if we are using FBOs
-        if (!RenderTarget::setActive())
-            return;
-    }
-    else
-    {
-        // Perform a full activation if we are not using FBOs
-        if (!setActive())
-            return;
-    }
+        if (priv::RenderTextureImplFBO::isAvailable())
+        {
+            // Perform a RenderTarget-only activation if we are using FBOs
+            if (!RenderTarget::setActive())
+                return;
+        }
+        else
+        {
+            // Perform a full activation if we are not using FBOs
+            if (!setActive())
+                return;
+        }
 
-    // Update the target texture
-    m_impl->updateTexture(m_texture.m_texture);
-    m_texture.m_pixelsFlipped = true;
-    m_texture.invalidateMipmap();
+        // Update the target texture
+        m_impl->updateTexture(m_texture.m_texture);
+        m_texture.m_pixelsFlipped = true;
+        m_texture.invalidateMipmap();
+    }
 }
 
 
@@ -198,7 +202,7 @@ Vector2u RenderTexture::getSize() const
 ////////////////////////////////////////////////////////////
 bool RenderTexture::isSrgb() const
 {
-    assert(m_impl && "RenderTexture::isSrgb() Must first initialize render texture");
+    assert(m_impl && "Must call RenderTexture::create first");
     return m_impl->isSrgb();
 }
 
