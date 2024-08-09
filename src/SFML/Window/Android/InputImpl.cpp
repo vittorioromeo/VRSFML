@@ -143,7 +143,8 @@ void setVirtualKeyboardVisible(bool visible)
 ////////////////////////////////////////////////////////////
 bool isMouseButtonPressed(Mouse::Button button)
 {
-    ALooper_pollAll(0, nullptr, nullptr, nullptr);
+    while (ALooper_pollOnce(0, nullptr, nullptr, nullptr) >= 0)
+        ;
 
     ActivityStates&       states = getActivity();
     const std::lock_guard lock(states.mutex);
@@ -155,7 +156,8 @@ bool isMouseButtonPressed(Mouse::Button button)
 ////////////////////////////////////////////////////////////
 Vector2i getMousePosition()
 {
-    ALooper_pollAll(0, nullptr, nullptr, nullptr);
+    while (ALooper_pollOnce(0, nullptr, nullptr, nullptr) >= 0)
+        ;
 
     ActivityStates&       states = getActivity();
     const std::lock_guard lock(states.mutex);
@@ -188,7 +190,8 @@ void setMousePosition(Vector2i position, const WindowBase& /* relativeTo */)
 ////////////////////////////////////////////////////////////
 bool isTouchDown(unsigned int finger)
 {
-    ALooper_pollAll(0, nullptr, nullptr, nullptr);
+    while (ALooper_pollOnce(0, nullptr, nullptr, nullptr) >= 0)
+        ;
 
     ActivityStates&       states = getActivity();
     const std::lock_guard lock(states.mutex);
@@ -200,7 +203,8 @@ bool isTouchDown(unsigned int finger)
 ////////////////////////////////////////////////////////////
 Vector2i getTouchPosition(unsigned int finger)
 {
-    ALooper_pollAll(0, nullptr, nullptr, nullptr);
+    while (ALooper_pollOnce(0, nullptr, nullptr, nullptr) >= 0)
+        ;
 
     ActivityStates&       states = getActivity();
     const std::lock_guard lock(states.mutex);
