@@ -59,7 +59,6 @@
     ```
 
     </details>
-    <br>
 
 - ➡️ **Complete removal of legacy OpenGL:**
     - Upstream SFML still uses legacy OpenGL calls such as `glBegin` and `glEnd`.
@@ -111,7 +110,6 @@
     ```
 
     </details>
-    <br>
 
 - ➡️ **Restore factory-based creation APIs for SFML resources:**
     - Factory-based creation APIs considerably increased type-safety and usability of SFML resources as they completely eliminated the presence of an "empty state" and made it obvious to users where errors could occur, forcing them to decide between handling them, ignoring them, or propagating them.
@@ -135,7 +133,6 @@
     ```
 
     </details>
-    <br>
 
 - ➡️ **Debug lifetime tracking for all SFML resources:**
     - Catches common lifetime mistakes between dependee types (e.g. `sf::Font`) and dependant types (e.g. `sf::Text`) at run-time, providing the user with a readable error message.
@@ -182,7 +179,6 @@
     ```
 
     </details>
-    <br>
 
 - ➡️ **Compile-time--enforced lifetime correctness for `sf::Texture` and its dependants (`sf::Sprite` and `sf::Shape`):**
     - Rather than `sf::Sprite` and `sf::Shape` storing a `sf::Texture*` internally, which can easily become invalidated, the `sf::Texture*` is now passed at the point where it is required: the `sf::RenderTarget::draw` call.
@@ -212,7 +208,6 @@
     ```
 
     </details>
-    <br>
 
 - ➡️ **Removal of polymorphic inheritance trees:**
     - `sf::Drawable`, `sf::Shape`, and `sf::Transformable` have either been removed or made non-polymorphic.
@@ -258,7 +253,6 @@
     ```
 
     </details>
-    <br>
 
 - ➡️ **`sf::Window` closed state has been removed:**
     - Windows are now considered always "open".
@@ -285,7 +279,6 @@
     ```
 
     </details>
-    <br>
 
 - ➡️ **`sf::Socket` constructor now takes a `isBlocking` parameter:**
     - Following the principle of being more explicit, users now have to explicitly decide whether they want their socket to be blocking or not on construction, rather than relying on the possibly wrong default of blocking mode.
@@ -301,7 +294,6 @@
     ```
 
     </details>
-    <br>
 
 - ➡️ **Removal of catch-all module-wide headers like `Audio.hpp` and `Window.hpp`:**
     - These headers go against the principles of header hygiene, they promote poor practices and slow down users' projects compilation times.
