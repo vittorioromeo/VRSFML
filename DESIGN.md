@@ -231,6 +231,8 @@
     - Significantly decreases reliance on the Standard Library, providing drop-in replacements that are much faster to compile and much more performant at run-time even with optimizations disabled.
     - All components of `SFML::Base` have been carefully crafted to maximize compile-time thoughput, debug performance, and ease of use.
 
+    <details>
+
     <summary>📜 Code example</summary>
 
     ```cpp
@@ -259,6 +261,8 @@
     - If a window needs to be closed/re-opened multiple times, it can be wrapped into an optional.
     - As shown by the examples, this makes code simpler and removes another unnecessary "empty state".
 
+    <details>
+
     <summary>📜 Code example</summary>
 
     ```cpp
@@ -282,6 +286,8 @@
 
 - ➡️ **`sf::Socket` constructor now takes a `isBlocking` parameter:**
     - Following the principle of being more explicit, users now have to explicitly decide whether they want their socket to be blocking or not on construction, rather than relying on the possibly wrong default of blocking mode.
+
+    <details>
 
     <summary>📜 Code example</summary>
 
