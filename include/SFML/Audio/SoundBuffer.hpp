@@ -56,15 +56,6 @@ class SFML_AUDIO_API SoundBuffer
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// Construct an empty sound buffer that does not contain
-    /// any samples.
-    ///
-    ////////////////////////////////////////////////////////////
-    SoundBuffer() = default;
-
-    ////////////////////////////////////////////////////////////
     /// \brief Copy constructor
     ///
     /// \param copy Instance to copy
@@ -86,12 +77,12 @@ public:
     ///
     /// \param filename Path of the sound file to load
     ///
-    /// \return True if loading succeeded, false if it failed
+    /// \return Sound buffer if loading succeeded, `std::nullopt` if it failed
     ///
     /// \see loadFromMemory, loadFromStream, loadFromSamples, saveToFile
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool loadFromFile(const std::filesystem::path& filename);
+    [[nodiscard]] static std::optional<SoundBuffer> loadFromFile(const std::filesystem::path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the sound buffer from a file in memory
@@ -102,12 +93,12 @@ public:
     /// \param data        Pointer to the file data in memory
     /// \param sizeInBytes Size of the data to load, in bytes
     ///
-    /// \return True if loading succeeded, false if it failed
+    /// \return Sound buffer if loading succeeded, `std::nullopt` if it failed
     ///
     /// \see loadFromFile, loadFromStream, loadFromSamples
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool loadFromMemory(const void* data, std::size_t sizeInBytes);
+    [[nodiscard]] static std::optional<SoundBuffer> loadFromMemory(const void* data, std::size_t sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the sound buffer from a custom stream
@@ -117,12 +108,12 @@ public:
     ///
     /// \param stream Source stream to read from
     ///
-    /// \return True if loading succeeded, false if it failed
+    /// \return Sound buffer if loading succeeded, `std::nullopt` if it failed
     ///
     /// \see loadFromFile, loadFromMemory, loadFromSamples
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool loadFromStream(InputStream& stream);
+    [[nodiscard]] static std::optional<SoundBuffer> loadFromStream(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the sound buffer from an array of audio samples
@@ -135,80 +126,12 @@ public:
     /// \param sampleRate   Sample rate (number of samples to play per second)
     /// \param channelMap   Map of position in sample frame to sound channel
     ///
-    /// \return True if loading succeeded, false if it failed
+    /// \return Sound buffer if loading succeeded, `std::nullopt` if it failed
     ///
     /// \see loadFromFile, loadFromMemory, saveToFile
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool loadFromSamples(const std::int16_t*              samples,
-                                       std::uint64_t                    sampleCount,
-                                       unsigned int                     channelCount,
-                                       unsigned int                     sampleRate,
-                                       const std::vector<SoundChannel>& channelMap);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Create the sound buffer from a file
-    ///
-    /// See the documentation of sf::InputSoundFile for the list
-    /// of supported formats.
-    ///
-    /// \param filename Path of the sound file to load
-    ///
-    /// \return Sound buffer if loading succeeded, `std::nullopt` if it failed
-    ///
-    /// \see createFromMemory, createFromStream, createFromSamples, saveToFile
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<SoundBuffer> createFromFile(const std::filesystem::path& filename);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Create the sound buffer from a file in memory
-    ///
-    /// See the documentation of sf::InputSoundFile for the list
-    /// of supported formats.
-    ///
-    /// \param data        Pointer to the file data in memory
-    /// \param sizeInBytes Size of the data to load, in bytes
-    ///
-    /// \return Sound buffer if loading succeeded, `std::nullopt` if it failed
-    ///
-    /// \see createFromFile, createFromStream, createFromSamples
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<SoundBuffer> createFromMemory(const void* data, std::size_t sizeInBytes);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Create the sound buffer from a custom stream
-    ///
-    /// See the documentation of sf::InputSoundFile for the list
-    /// of supported formats.
-    ///
-    /// \param stream Source stream to read from
-    ///
-    /// \return Sound buffer if loading succeeded, `std::nullopt` if it failed
-    ///
-    /// \see createFromFile, createFromMemory, createFromSamples
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<SoundBuffer> createFromStream(InputStream& stream);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Create the sound buffer from an array of audio samples
-    ///
-    /// The assumed format of the audio samples is 16 bits signed integer.
-    ///
-    /// \param samples      Pointer to the array of samples in memory
-    /// \param sampleCount  Number of samples in the array
-    /// \param channelCount Number of channels (1 = mono, 2 = stereo, ...)
-    /// \param sampleRate   Sample rate (number of samples to play per second)
-    /// \param channelMap   Map of position in sample frame to sound channel
-    ///
-    /// \return Sound buffer if loading succeeded, `std::nullopt` if it failed
-    ///
-    /// \see createFromFile, createFromMemory, saveToFile
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<SoundBuffer> createFromSamples(
+    [[nodiscard]] static std::optional<SoundBuffer> loadFromSamples(
         const std::int16_t*              samples,
         std::uint64_t                    sampleCount,
         unsigned int                     channelCount,
@@ -225,7 +148,7 @@ public:
     ///
     /// \return True if saving succeeded, false if it failed
     ///
-    /// \see createFromFile, createFromMemory, createFromSamples
+    /// \see loadFromFile, loadFromMemory, loadFromSamples
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool saveToFile(const std::filesystem::path& filename) const;
@@ -321,6 +244,12 @@ private:
     friend class Sound;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Construct from vector of samples
+    ///
+    ////////////////////////////////////////////////////////////
+    explicit SoundBuffer(std::vector<std::int16_t>&& samples);
+
+    ////////////////////////////////////////////////////////////
     /// \brief Initialize the internal state after loading a new sound
     ///
     /// \param file Sound file providing access to the new loaded sound
@@ -328,7 +257,7 @@ private:
     /// \return True on successful initialization, false on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool initialize(InputSoundFile& file);
+    [[nodiscard]] static std::optional<SoundBuffer> initialize(InputSoundFile& file);
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the internal buffer with the cached audio samples
@@ -389,7 +318,7 @@ private:
 /// are like texture pixels, and a sf::SoundBuffer is similar to
 /// a sf::Texture.
 ///
-/// A sound buffer can be loaded from a file (see createFromFile()
+/// A sound buffer can be loaded from a file (see loadFromFile()
 /// for the complete list of supported formats), from memory, from
 /// a custom stream (see sf::InputStream) or directly from an array
 /// of samples. It can also be saved back to a file.
@@ -415,7 +344,7 @@ private:
 /// Usage example:
 /// \code
 /// // Load a new sound buffer from a file
-/// const auto buffer = sf::SoundBuffer::createFromFile("sound.wav").value();
+/// const auto buffer = sf::SoundBuffer::loadFromFile("sound.wav").value();
 ///
 /// // Create a sound source bound to the buffer
 /// sf::Sound sound1(buffer);

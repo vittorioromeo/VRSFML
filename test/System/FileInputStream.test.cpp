@@ -66,19 +66,11 @@ TEST_CASE("[System] sf::FileInputStream")
 
     SECTION("Type traits")
     {
+        STATIC_CHECK(!std::is_default_constructible_v<sf::FileInputStream>);
         STATIC_CHECK(!std::is_copy_constructible_v<sf::FileInputStream>);
         STATIC_CHECK(!std::is_copy_assignable_v<sf::FileInputStream>);
         STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::FileInputStream>);
         STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::FileInputStream>);
-    }
-
-    SECTION("Default constructor")
-    {
-        sf::FileInputStream fileInputStream;
-        CHECK(fileInputStream.read(nullptr, 0) == std::nullopt);
-        CHECK(fileInputStream.seek(0) == std::nullopt);
-        CHECK(fileInputStream.tell() == std::nullopt);
-        CHECK(fileInputStream.getSize() == std::nullopt);
     }
 
     const TemporaryFile temporaryFile("Hello world");
@@ -88,7 +80,7 @@ TEST_CASE("[System] sf::FileInputStream")
     {
         SECTION("Move constructor")
         {
-            auto                movedFileInputStream = sf::FileInputStream::create(temporaryFile.getPath()).value();
+            auto                movedFileInputStream = sf::FileInputStream::open(temporaryFile.getPath()).value();
             sf::FileInputStream fileInputStream      = std::move(movedFileInputStream);
             CHECK(fileInputStream.read(buffer, 6) == 6);
             CHECK(fileInputStream.tell() == 6);
@@ -98,9 +90,9 @@ TEST_CASE("[System] sf::FileInputStream")
 
         SECTION("Move assignment")
         {
-            auto                movedFileInputStream = sf::FileInputStream::create(temporaryFile.getPath()).value();
+            auto                movedFileInputStream = sf::FileInputStream::open(temporaryFile.getPath()).value();
             const TemporaryFile temporaryFile2("Hello world the sequel");
-            auto                fileInputStream = sf::FileInputStream::create(temporaryFile2.getPath()).value();
+            auto                fileInputStream = sf::FileInputStream::open(temporaryFile2.getPath()).value();
             fileInputStream                     = std::move(movedFileInputStream);
             CHECK(fileInputStream.read(buffer, 6) == 6);
             CHECK(fileInputStream.tell() == 6);
@@ -109,21 +101,9 @@ TEST_CASE("[System] sf::FileInputStream")
         }
     }
 
-    SECTION("Temporary file stream open")
+    SECTION("Temporary file stream")
     {
-        sf::FileInputStream fileInputStream;
-        REQUIRE(fileInputStream.open(temporaryFile.getPath()));
-        CHECK(fileInputStream.read(buffer, 5) == 5);
-        CHECK(fileInputStream.tell() == 5);
-        CHECK(fileInputStream.getSize() == 11);
-        CHECK(std::string_view(buffer, 5) == "Hello"sv);
-        CHECK(fileInputStream.seek(6) == 6);
-        CHECK(fileInputStream.tell() == 6);
-    }
-
-    SECTION("Temporary file stream create")
-    {
-        auto fileInputStream = sf::FileInputStream::create(temporaryFile.getPath()).value();
+        auto fileInputStream = sf::FileInputStream::open(temporaryFile.getPath()).value();
         CHECK(fileInputStream.read(buffer, 5) == 5);
         CHECK(fileInputStream.tell() == 5);
         CHECK(fileInputStream.getSize() == 11);

@@ -34,15 +34,9 @@
 #include <memory>
 #include <ostream>
 
-#include <cassert>
-
 
 namespace sf
 {
-////////////////////////////////////////////////////////////
-RenderTexture::RenderTexture() = default;
-
-
 ////////////////////////////////////////////////////////////
 RenderTexture::~RenderTexture() = default;
 
@@ -56,53 +50,43 @@ RenderTexture& RenderTexture::operator=(RenderTexture&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-bool RenderTexture::resize(Vector2u size, const ContextSettings& settings)
+std::optional<RenderTexture> RenderTexture::create(Vector2u size, const ContextSettings& settings)
 {
     // Create the texture
-    // Set texture to be in sRGB scale if requested
-    if (!m_texture.resize(size, settings.sRgbCapable))
+    auto texture = sf::Texture::create(size, settings.sRgbCapable);
+    if (!texture)
     {
         err() << "Impossible to create render texture (failed to create the target texture)" << std::endl;
-        return false;
+        return std::nullopt;
     }
 
+    RenderTexture renderTexture(std::move(*texture));
+
     // We disable smoothing by default for render textures
-    setSmooth(false);
+    renderTexture.setSmooth(false);
 
     // Create the implementation
     if (priv::RenderTextureImplFBO::isAvailable())
     {
         // Use frame-buffer object (FBO)
-        m_impl = std::make_unique<priv::RenderTextureImplFBO>();
+        renderTexture.m_impl = std::make_unique<priv::RenderTextureImplFBO>();
 
         // Mark the texture as being a framebuffer object attachment
-        m_texture.m_fboAttachment = true;
+        renderTexture.m_texture.m_fboAttachment = true;
     }
     else
     {
         // Use default implementation
-        m_impl = std::make_unique<priv::RenderTextureImplDefault>();
+        renderTexture.m_impl = std::make_unique<priv::RenderTextureImplDefault>();
     }
 
     // Initialize the render texture
     // We pass the actual size of our texture since OpenGL ES requires that all attachments have identical sizes
-    if (!m_impl->create(m_texture.m_actualSize, m_texture.m_texture, settings))
-        return false;
+    if (!renderTexture.m_impl->create(renderTexture.m_texture.m_actualSize, renderTexture.m_texture.m_texture, settings))
+        return std::nullopt;
 
     // We can now initialize the render target part
-    RenderTarget::initialize();
-
-    return true;
-}
-
-
-////////////////////////////////////////////////////////////
-std::optional<RenderTexture> RenderTexture::create(Vector2u size, const ContextSettings& settings)
-{
-    auto renderTexture = std::make_optional<RenderTexture>();
-
-    if (!renderTexture->resize(size, settings))
-        return std::nullopt;
+    renderTexture.initialize();
 
     return renderTexture;
 }
@@ -159,7 +143,7 @@ bool RenderTexture::generateMipmap()
 bool RenderTexture::setActive(bool active)
 {
     // Update RenderTarget tracking
-    if (m_impl && m_impl->activate(active))
+    if (m_impl->activate(active))
         return RenderTarget::setActive(active);
 
     return false;
@@ -169,26 +153,23 @@ bool RenderTexture::setActive(bool active)
 ////////////////////////////////////////////////////////////
 void RenderTexture::display()
 {
-    if (m_impl)
+    if (priv::RenderTextureImplFBO::isAvailable())
     {
-        if (priv::RenderTextureImplFBO::isAvailable())
-        {
-            // Perform a RenderTarget-only activation if we are using FBOs
-            if (!RenderTarget::setActive())
-                return;
-        }
-        else
-        {
-            // Perform a full activation if we are not using FBOs
-            if (!setActive())
-                return;
-        }
-
-        // Update the target texture
-        m_impl->updateTexture(m_texture.m_texture);
-        m_texture.m_pixelsFlipped = true;
-        m_texture.invalidateMipmap();
+        // Perform a RenderTarget-only activation if we are using FBOs
+        if (!RenderTarget::setActive())
+            return;
     }
+    else
+    {
+        // Perform a full activation if we are not using FBOs
+        if (!setActive())
+            return;
+    }
+
+    // Update the target texture
+    m_impl->updateTexture(m_texture.m_texture);
+    m_texture.m_pixelsFlipped = true;
+    m_texture.invalidateMipmap();
 }
 
 
@@ -202,7 +183,6 @@ Vector2u RenderTexture::getSize() const
 ////////////////////////////////////////////////////////////
 bool RenderTexture::isSrgb() const
 {
-    assert(m_impl && "Must call RenderTexture::create first");
     return m_impl->isSrgb();
 }
 
@@ -212,5 +192,12 @@ const Texture& RenderTexture::getTexture() const
 {
     return m_texture;
 }
+
+
+////////////////////////////////////////////////////////////
+RenderTexture::RenderTexture(Texture&& texture) : m_texture(std::move(texture))
+{
+}
+
 
 } // namespace sf

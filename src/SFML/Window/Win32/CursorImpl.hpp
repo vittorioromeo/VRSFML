@@ -74,7 +74,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Create a cursor with the provided image
     ///
-    /// Refer to sf::Cursor::createFromPixels().
+    /// Refer to sf::Cursor::loadFromPixels().
     ///
     ////////////////////////////////////////////////////////////
     bool loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vector2u hotspot);
@@ -82,7 +82,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Create a native system cursor
     ///
-    /// Refer to sf::Cursor::createFromSystem().
+    /// Refer to sf::Cursor::loadFromSystem().
     ///
     ////////////////////////////////////////////////////////////
     bool loadFromSystem(Cursor::Type type);
