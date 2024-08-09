@@ -92,6 +92,8 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
         }
     }
 
+// Creating multiple windows in Emscripten is not supported
+#ifndef SFML_SYSTEM_EMSCRIPTEN
     SECTION("Multiple windows 1")
     {
         sf::Window                     window(windowContext, sf::VideoMode({256, 256}), "A");
@@ -130,4 +132,5 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
         childWindow.reset();
         window.display();
     }
+#endif
 }

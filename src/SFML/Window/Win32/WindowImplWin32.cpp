@@ -12,6 +12,7 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/String.hpp>
 #include <SFML/System/Utf.hpp>
+#include <SFML/System/Win32/WindowsHeader.hpp>
 
 // dbt.h is lowercase here, as a cross-compile on linux with mingw-w64
 // expects lowercase, and a native compile on windows, whether via msvc
@@ -48,7 +49,7 @@ const GUID guidDevinterfaceHid = {0x4d1e55b2, 0xf16f, 0x11cf, {0x88, 0xcb, 0x00,
 void setProcessDpiAware()
 {
     // Try SetProcessDpiAwareness first
-    HINSTANCE shCoreDll = LoadLibrary(L"Shcore.dll");
+    HINSTANCE shCoreDll = LoadLibraryW(L"Shcore.dll");
 
     if (shCoreDll)
     {
@@ -88,7 +89,7 @@ void setProcessDpiAware()
 
     // Fall back to SetProcessDPIAware if SetProcessDpiAwareness
     // is not available on this system
-    HINSTANCE user32Dll = LoadLibrary(L"user32.dll");
+    HINSTANCE user32Dll = LoadLibraryW(L"user32.dll");
 
     if (user32Dll)
     {
@@ -474,7 +475,7 @@ void WindowImplWin32::registerWindowClass()
 ////////////////////////////////////////////////////////////
 void WindowImplWin32::switchToFullscreen(const VideoMode& mode)
 {
-    DEVMODE devMode;
+    DEVMODEW devMode;
     devMode.dmSize       = sizeof(devMode);
     devMode.dmPelsWidth  = mode.size.x;
     devMode.dmPelsHeight = mode.size.y;

@@ -107,6 +107,8 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
         CHECK(texture.copyToImage().getPixel(sf::Vector2u{196, 196}) == sf::Color::Blue);
     }
 
+// Creating multiple windows in Emscripten is not supported
+#ifndef SFML_SYSTEM_EMSCRIPTEN
     SECTION("Multiple windows 1")
     {
         sf::RenderWindow window(graphicsContext, sf::VideoMode({256, 256}), "A");
@@ -169,4 +171,5 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
         window.clear();
         window.display();
     }
+#endif
 }

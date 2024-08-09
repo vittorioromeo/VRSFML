@@ -502,7 +502,7 @@ void JoystickImpl::updateConnectionsDInput()
     // Enumerate devices
     const HRESULT result = directInput->EnumDevices(
         DI8DEVCLASS_GAMECTRL,
-        [](const DIDEVICEINSTANCE* deviceInstance, void*)
+        [](const DIDEVICEINSTANCEW* deviceInstance, void*)
         {
             for (JoystickRecord& record : joystickList)
             {
@@ -740,7 +740,7 @@ bool JoystickImpl::openDInput(unsigned int index)
 
             // Enumerate device objects (axes/povs/buttons)
             result = m_impl->device->EnumObjects(
-                [](const DIDEVICEOBJECTINSTANCE* deviceObjectInstance, void* userData)
+                [](const DIDEVICEOBJECTINSTANCEW* deviceObjectInstance, void* userData)
                 {
                     auto& joystick = *reinterpret_cast<sf::priv::JoystickImpl*>(userData);
 
