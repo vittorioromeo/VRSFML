@@ -412,7 +412,9 @@ function(sfml_add_test target SOURCES DEPENDS)
     endif()
 
     # Add the test
-    doctest_discover_tests(${target} WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+    if(NOT SFML_OS_EMSCRIPTEN)
+        doctest_discover_tests(${target} WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+    endif()
 endfunction()
 
 # Generate a SFMLConfig.cmake file (and associated files) from the targets registered against

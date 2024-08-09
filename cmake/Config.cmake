@@ -107,6 +107,7 @@ elseif(${EMSCRIPTEN})
         -sSTACK_SIZE=4mb           # Set the total stack size
         -sUSE_PTHREADS=1           # Enable threading support
         -sWASM=1                   # Compile code to WebAssembly
+        --emrun                    # Add native support for `emrun` (I/O capture)
     )
 
     set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS})

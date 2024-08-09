@@ -207,22 +207,33 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] StatesCache
 {
-    bool           enable{};                //!< Is the cache enabled?
-    bool           glStatesSet{};           //!< Are our internal GL states set yet?
-    bool           viewChanged{};           //!< Has the current view changed since last draw?
-    bool           scissorEnabled{};        //!< Is scissor testing enabled?
-    bool           stencilEnabled{};        //!< Is stencil testing enabled?
-    BlendMode      lastBlendMode;           //!< Cached blending mode
-    StencilMode    lastStencilMode;         //!< Cached stencil
-    std::uint64_t  lastTextureId{};         //!< Cached texture
-    CoordinateType lastCoordinateType{};    //!< Texture coordinate type
-    bool           texCoordsArrayEnabled{}; //!< Is GL_TEXTURE_COORD_ARRAY client state enabled?
-    bool           useVertexCache{};        //!< Did we previously use the vertex cache?
-    Vertex         vertexCache[4]{};        //!< Pre-transformed vertices cache
-    GLuint         lastUsedProgramId;       //!< GL id of the last used shader program
-    GLint          sfAttribPositionIdx;     //!< Index of the "sf_a_position" attribute
-    GLint          sfAttribColorIdx;        //!< Index of the "sf_a_color" attribute
-    GLint          sfAttribTexCoordIdx;     //!< Index of the "sf_a_texCoord" attribute
+    bool enable{};      //!< Is the cache enabled?
+    bool glStatesSet{}; //!< Are our internal GL states set yet?
+
+    bool viewChanged{}; //!< Has the current view changed since last draw?
+
+    bool scissorEnabled{}; //!< Is scissor testing enabled?
+    bool stencilEnabled{}; //!< Is stencil testing enabled?
+
+    BlendMode      lastBlendMode;        //!< Cached blending mode
+    StencilMode    lastStencilMode;      //!< Cached stencil
+    std::uint64_t  lastTextureId{};      //!< Cached texture
+    CoordinateType lastCoordinateType{}; //!< Texture coordinate type
+
+    bool texCoordsArrayEnabled{}; //!< Is GL_TEXTURE_COORD_ARRAY client state enabled?
+
+    bool   useVertexCache{}; //!< Did we previously use the vertex cache?
+    Vertex vertexCache[4]{}; //!< Pre-transformed vertices cache
+
+    GLuint lastUsedProgramId; //!< GL id of the last used shader program
+
+    GLint sfAttribPositionIdx; //!< Index of the "sf_a_position" attribute
+    GLint sfAttribColorIdx;    //!< Index of the "sf_a_color" attribute
+    GLint sfAttribTexCoordIdx; //!< Index of the "sf_a_texCoord" attribute
+
+    base::Optional<Shader::UniformLocation> ulProjectionMatrix; //!< Built-in projection matrix uniform location
+    base::Optional<Shader::UniformLocation> ulTextureMatrix;    //!< Built-in texture matrix uniform location
+    base::Optional<Shader::UniformLocation> ulModelViewMatrix;  //!< Built-in model-view matrix uniform location
 };
 
 
@@ -390,7 +401,7 @@ RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
 
     // Apply the view (scissor testing can affect clearing)
     if (!m_impl->cache.enable || m_impl->cache.viewChanged)
-        applyCurrentView(/* statesShader */ nullptr, /* statesTexture */ nullptr);
+        applyCurrentView();
 
     return true;
 }
@@ -803,7 +814,7 @@ GraphicsContext& RenderTarget::getGraphicsContext()
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::applyCurrentView(const Shader* statesShader, const Texture* statesTexture)
+void RenderTarget::applyCurrentView()
 {
     // Set the viewport
     const IntRect viewport    = getViewport(m_impl->view);
@@ -831,11 +842,6 @@ void RenderTarget::applyCurrentView(const Shader* statesShader, const Texture* s
             m_impl->cache.scissorEnabled = true;
         }
     }
-
-    // Set the projection matrix
-    Shader& shader = RenderTargetImpl::getShader(*m_impl->graphicsContext, statesShader, statesTexture);
-    shader.setUniform(shader.getUniformLocation("sf_u_projectionMatrix").value(),
-                      Glsl::Mat4(m_impl->view.getTransform().getMatrix()));
 
     m_impl->cache.viewChanged = false;
 }
@@ -974,20 +980,45 @@ void RenderTarget::setupDraw(bool useVertexCache, const RenderStates& states)
 
     Shader& usedShader = RenderTargetImpl::getShader(*m_impl->graphicsContext, states.shader, states.texture);
 
-    if (useVertexCache)
+    // Apply the shader
+    applyShader(&usedShader);
+
+    // Bind GL objects
+    m_impl->vao.bind();
+    m_impl->vbo.bind();
+
+    // Update cache
+    const auto usedNativeHandle = usedShader.getNativeHandle();
+    if (m_impl->cache.lastUsedProgramId != usedNativeHandle)
     {
-        usedShader.setUniform(usedShader.getUniformLocation("sf_u_modelViewMatrix").value(),
-                              Glsl::Mat4(Transform::Identity.getMatrix()));
-    }
-    else
-    {
-        usedShader.setUniform(usedShader.getUniformLocation("sf_u_modelViewMatrix").value(),
-                              Glsl::Mat4(states.transform.getMatrix()));
+        m_impl->cache.lastUsedProgramId = usedNativeHandle;
+
+        const auto updateCacheAttrib = [&](GLint& cacheAttrib, const char* attribName)
+        {
+            cacheAttrib = glCheckExpr(glGetAttribLocation(usedNativeHandle, attribName));
+
+            if (cacheAttrib >= 0)
+                glCheck(glEnableVertexAttribArray(static_cast<GLuint>(cacheAttrib)));
+        };
+
+        updateCacheAttrib(m_impl->cache.sfAttribPositionIdx, "sf_a_position");
+        updateCacheAttrib(m_impl->cache.sfAttribColorIdx, "sf_a_color");
+        updateCacheAttrib(m_impl->cache.sfAttribTexCoordIdx, "sf_a_texCoord");
+
+        m_impl->cache.ulProjectionMatrix = usedShader.getUniformLocation("sf_u_projectionMatrix");
+        m_impl->cache.ulTextureMatrix    = usedShader.getUniformLocation("sf_u_textureMatrix");
+        m_impl->cache.ulModelViewMatrix  = usedShader.getUniformLocation("sf_u_modelViewMatrix");
     }
 
+    usedShader.setUniform(m_impl->cache.ulModelViewMatrix.value(),
+                          Glsl::Mat4(useVertexCache ? Transform::Identity.getMatrix() : states.transform.getMatrix()));
+
     // Apply the view
-    // if (!m_impl->cache.enable || m_impl->cache.viewChanged) // TODO P0: uncommenting breaks island example IMPORATNT!!
-    applyCurrentView(states.shader, states.texture);
+    if (!m_impl->cache.enable || m_impl->cache.viewChanged)
+        applyCurrentView();
+
+    // Set the projection matrix
+    usedShader.setUniform(m_impl->cache.ulProjectionMatrix.value(), Glsl::Mat4(m_impl->view.getTransform().getMatrix()));
 
     // Apply the blend mode
     if (!m_impl->cache.enable || (states.blendMode != m_impl->cache.lastBlendMode))
@@ -1022,34 +1053,9 @@ void RenderTarget::setupDraw(bool useVertexCache, const RenderStates& states)
     // Update shader texture matrix
     if (states.texture != nullptr)
     {
-        const base::Optional ulTextureMatrix = usedShader.getUniformLocation("sf_u_textureMatrix");
-        if (ulTextureMatrix.hasValue()) // Might be optimized out sometimes...?
-            usedShader.setUniform(*ulTextureMatrix, states.texture->getMatrix(m_impl->cache.lastCoordinateType));
-    }
-
-    // Apply the shader
-    applyShader(&usedShader);
-
-    m_impl->vao.bind();
-    m_impl->vbo.bind();
-
-    // Update cache
-    const auto usedNativeHandle = usedShader.getNativeHandle();
-    if (m_impl->cache.lastUsedProgramId != usedNativeHandle)
-    {
-        m_impl->cache.lastUsedProgramId = usedNativeHandle;
-
-        const auto updateCacheAttrib = [&](GLint& cacheAttrib, const char* attribName)
-        {
-            cacheAttrib = glCheckExpr(glGetAttribLocation(usedNativeHandle, attribName));
-
-            if (cacheAttrib >= 0)
-                glCheck(glEnableVertexAttribArray(static_cast<GLuint>(cacheAttrib)));
-        };
-
-        updateCacheAttrib(m_impl->cache.sfAttribPositionIdx, "sf_a_position");
-        updateCacheAttrib(m_impl->cache.sfAttribColorIdx, "sf_a_color");
-        updateCacheAttrib(m_impl->cache.sfAttribTexCoordIdx, "sf_a_texCoord");
+        if (m_impl->cache.ulTextureMatrix.hasValue()) // Might be optimized out sometimes...?
+            usedShader.setUniform(*m_impl->cache.ulTextureMatrix,
+                                  states.texture->getMatrix(m_impl->cache.lastCoordinateType));
     }
 }
 
