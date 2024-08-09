@@ -1,5 +1,3 @@
-#include "SFML/Base/Optional.hpp"
-
 #include <SFML/Config.hpp>
 
 #include <SFML/ImGui/Backend.hpp>
@@ -28,6 +26,7 @@
 #include <SFML/Base/Algorithm.hpp>
 #include <SFML/Base/Assert.hpp>
 #include <SFML/Base/Math/Fabs.hpp>
+#include <SFML/Base/Optional.hpp>
 #include <SFML/Base/UniquePtr.hpp>
 
 #include <imgui.h>
@@ -48,6 +47,8 @@
 #include <android/native_activity.h>
 #include <jni.h>
 
+
+////////////////////////////////////////////////////////////
 [[nodiscard]] int keyboardIMEImpl(int value)
 {
     ANativeActivity* activity = sf::getNativeActivity();
@@ -89,11 +90,15 @@
     return EXIT_SUCCESS;
 }
 
+
+////////////////////////////////////////////////////////////
 [[nodiscard]] int openKeyboardIME()
 {
     return keyboardIMEImpl(2);
 }
 
+
+////////////////////////////////////////////////////////////
 [[nodiscard]] int closeKeyboardIME()
 {
     return keyboardIMEImpl(1);
@@ -111,31 +116,42 @@ namespace sf::ImGui
 
 namespace
 {
+////////////////////////////////////////////////////////////
 [[nodiscard, gnu::const]] constexpr ImColor toImColor(Color c)
 {
     return {static_cast<int>(c.r), static_cast<int>(c.g), static_cast<int>(c.b), static_cast<int>(c.a)};
 }
 
+
+////////////////////////////////////////////////////////////
 [[nodiscard, gnu::const]] constexpr ImVec2 toImVec2(Vector2f v)
 {
     return {v.x, v.y};
 }
 
+
+////////////////////////////////////////////////////////////
 [[nodiscard, gnu::const]] constexpr Vector2f toSfVector2f(ImVec2 v)
 {
     return {v.x, v.y};
 }
 
+
+////////////////////////////////////////////////////////////
 [[nodiscard]] ImVec2 getTopLeftAbsolute(const FloatRect& rect)
 {
     return toImVec2(toSfVector2f(::ImGui::GetCursorScreenPos()) + rect.position);
 }
 
+
+////////////////////////////////////////////////////////////
 [[nodiscard]] ImVec2 getDownRightAbsolute(const FloatRect& rect)
 {
     return toImVec2(toSfVector2f(::ImGui::GetCursorScreenPos()) + rect.position + rect.size);
 }
 
+
+////////////////////////////////////////////////////////////
 [[nodiscard, gnu::const]] constexpr ImGuiKey keycodeToImGuiKey(Keyboard::Key code)
 {
     // clang-format off
@@ -254,6 +270,8 @@ namespace
     return ImGuiKey_None;
 }
 
+
+////////////////////////////////////////////////////////////
 [[nodiscard, gnu::const]] constexpr ImGuiKey keycodeToImGuiMod(Keyboard::Key code)
 {
     switch (code)
@@ -277,6 +295,8 @@ namespace
     return ImGuiKey_None;
 }
 
+
+////////////////////////////////////////////////////////////
 [[nodiscard]] ImTextureID convertGLTextureHandleToImTextureID(GLuint glTextureHandle)
 {
     ImTextureID textureID = nullptr;
@@ -284,6 +304,8 @@ namespace
     return textureID;
 }
 
+
+////////////////////////////////////////////////////////////
 [[nodiscard]] base::Optional<Texture> createImGuiDefaultFontTexture(GraphicsContext& graphicsContext)
 {
     ImGuiIO&       io     = ::ImGui::GetIO();
@@ -306,6 +328,8 @@ namespace
     return newTexture;
 }
 
+
+////////////////////////////////////////////////////////////
 struct [[nodiscard]] StickInfo
 {
     Joystick::Axis xAxis{Joystick::Axis::X};
@@ -317,15 +341,20 @@ struct [[nodiscard]] StickInfo
     float threshold{15};
 };
 
+
+////////////////////////////////////////////////////////////
 struct [[nodiscard]] TriggerInfo
 {
     Joystick::Axis axis{Joystick::Axis::Z};
     float          threshold{0};
 };
 
-// data
+
+////////////////////////////////////////////////////////////
 constexpr unsigned int nullJoystickId = Joystick::Count;
 
+
+////////////////////////////////////////////////////////////
 [[nodiscard]] unsigned int getConnectedJoystickId()
 {
     for (unsigned int i = 0; i < static_cast<unsigned int>(Joystick::Count); ++i)
@@ -335,6 +364,8 @@ constexpr unsigned int nullJoystickId = Joystick::Count;
     return nullJoystickId;
 }
 
+
+////////////////////////////////////////////////////////////
 struct [[nodiscard]] ImGuiPerWindowContext
 {
     const Window*   window;
@@ -366,10 +397,12 @@ struct [[nodiscard]] ImGuiPerWindowContext
 #endif
 #endif
 
+    ////////////////////////////////////////////////////////////
     explicit ImGuiPerWindowContext(const Window& w) : window(&w), windowHasFocus(window->hasFocus())
     {
     }
 
+    ////////////////////////////////////////////////////////////
     ~ImGuiPerWindowContext()
     {
         ::ImGui::SetCurrentContext(imContext);
@@ -377,12 +410,15 @@ struct [[nodiscard]] ImGuiPerWindowContext
         ::ImGui::DestroyContext(imContext);
     }
 
-    ImGuiPerWindowContext(const ImGuiPerWindowContext&)            = delete; // non construction-copyable
-    ImGuiPerWindowContext& operator=(const ImGuiPerWindowContext&) = delete; // non copyable
+    ////////////////////////////////////////////////////////////
+    ImGuiPerWindowContext(const ImGuiPerWindowContext&)            = delete;
+    ImGuiPerWindowContext& operator=(const ImGuiPerWindowContext&) = delete;
 
+    ////////////////////////////////////////////////////////////
     using SetClipboardTextFn = void (*)(void*, const char*);
     using GetClipboardTextFn = const char* (*)(void*);
 
+    ////////////////////////////////////////////////////////////
     void init(GraphicsContext&   graphicsContext,
               Vector2f           displaySize,
               bool               loadDefaultFont,
@@ -429,6 +465,8 @@ struct [[nodiscard]] ImGuiPerWindowContext
         priv::ImGui_ImplOpenGL3_Init(nullptr);
     }
 
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool updateFontTexture(GraphicsContext& graphicsContext)
     {
         base::Optional<Texture> newTexture = createImGuiDefaultFontTexture(graphicsContext);
@@ -444,11 +482,15 @@ struct [[nodiscard]] ImGuiPerWindowContext
         return true;
     }
 
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] base::Optional<Texture>& getFontTexture()
     {
         return fontTexture;
     }
 
+
+    ////////////////////////////////////////////////////////////
     void updateJoystickButtonState(ImGuiIO& io) const
     {
         for (int i = 0; i < static_cast<int>(Joystick::ButtonCount); ++i)
@@ -464,6 +506,7 @@ struct [[nodiscard]] ImGuiPerWindowContext
         }
     }
 
+    ////////////////////////////////////////////////////////////
     void updateJoystickAxis(ImGuiIO& io, ImGuiKey key, Joystick::Axis axis, float threshold, float maxThreshold, bool inverted = false) const
     {
         float pos = Joystick::getAxisPosition(joystickId, axis);
@@ -476,12 +519,16 @@ struct [[nodiscard]] ImGuiPerWindowContext
         io.AddKeyAnalogEvent(key, passedThresholdAndHasFocus, passedThresholdAndHasFocus ? base::fabs(pos / 100.f) : 0.f);
     }
 
+
+    ////////////////////////////////////////////////////////////
     void updateJoystickAxisPair(ImGuiIO& io, ImGuiKey key1, ImGuiKey key2, Joystick::Axis axis, float threshold, bool inverted = false) const
     {
         updateJoystickAxis(io, key1, axis, -threshold, -100, inverted);
         updateJoystickAxis(io, key2, axis, threshold, 100, inverted);
     }
 
+
+    ////////////////////////////////////////////////////////////
     void updateJoystickDPadState(ImGuiIO& io) const
     {
         updateJoystickAxisPair(io,
@@ -499,6 +546,8 @@ struct [[nodiscard]] ImGuiPerWindowContext
                                dPadInfo.yInverted);
     }
 
+
+    ////////////////////////////////////////////////////////////
     void updateJoystickAxisState(ImGuiIO& io) const
     {
         updateJoystickAxisPair(io,
@@ -533,11 +582,15 @@ struct [[nodiscard]] ImGuiPerWindowContext
         updateJoystickAxis(io, ImGuiKey_GamepadR2, rTriggerInfo.axis, rTriggerInfo.threshold, 100, false);
     }
 
+
+    ////////////////////////////////////////////////////////////
     void loadMouseCursor(ImGuiMouseCursor imguiCursorType, Cursor::Type sfmlCursorType)
     {
         mouseCursors[imguiCursorType] = Cursor::loadFromSystem(sfmlCursorType);
     }
 
+
+    ////////////////////////////////////////////////////////////
     void processEvent(const Event& event)
     {
         ImGuiIO& io = ::ImGui::GetIO();
@@ -654,12 +707,16 @@ struct [[nodiscard]] ImGuiPerWindowContext
         }
     }
 
+
+    ////////////////////////////////////////////////////////////
     void updateMouseCursor(Window& theWindow, const ImGuiMouseCursor cursor) const
     {
         theWindow.setMouseCursorVisible(true);
         theWindow.setMouseCursor(mouseCursors[cursor] ? *mouseCursors[cursor] : *mouseCursors[ImGuiMouseCursor_Arrow]);
     }
 
+
+    ////////////////////////////////////////////////////////////
     void update(Window& theWindow, RenderTarget& target, Time dt)
     {
         // update OS/hardware mouse cursor if imgui isn't drawing a software cursor
@@ -684,6 +741,8 @@ struct [[nodiscard]] ImGuiPerWindowContext
         }
     }
 
+
+    ////////////////////////////////////////////////////////////
     void update(Vector2i mousePos, Vector2f displaySize, Time dt)
     {
         ImGuiIO& io    = ::ImGui::GetIO();
@@ -741,42 +800,56 @@ struct [[nodiscard]] ImGuiPerWindowContext
         ::ImGui::NewFrame();
     }
 
+
+    ////////////////////////////////////////////////////////////
     void setActiveJoystickId(unsigned int newJoystickId)
     {
         SFML_BASE_ASSERT(newJoystickId < Joystick::Count);
         joystickId = newJoystickId;
     }
 
+
+    ////////////////////////////////////////////////////////////
     void setJoystickDPadThreshold(float threshold)
     {
         SFML_BASE_ASSERT(threshold >= 0.f && threshold <= 100.f);
         dPadInfo.threshold = threshold;
     }
 
+
+    ////////////////////////////////////////////////////////////
     void setJoystickLStickThreshold(float threshold)
     {
         SFML_BASE_ASSERT(threshold >= 0.f && threshold <= 100.f);
         lStickInfo.threshold = threshold;
     }
 
+
+    ////////////////////////////////////////////////////////////
     void setJoystickRStickThreshold(float threshold)
     {
         SFML_BASE_ASSERT(threshold >= 0.f && threshold <= 100.f);
         rStickInfo.threshold = threshold;
     }
 
+
+    ////////////////////////////////////////////////////////////
     void setJoystickLTriggerThreshold(float threshold)
     {
         SFML_BASE_ASSERT(threshold >= -100.f && threshold <= 100.f);
         lTriggerInfo.threshold = threshold;
     }
 
+
+    ////////////////////////////////////////////////////////////
     void setJoystickRTriggerThreshold(float threshold)
     {
         SFML_BASE_ASSERT(threshold >= -100.f && threshold <= 100.f);
         rTriggerInfo.threshold = threshold;
     }
 
+
+    ////////////////////////////////////////////////////////////
     void setJoystickMapping(int key, unsigned int joystickButton)
     {
         SFML_BASE_ASSERT(joystickButton < Joystick::ButtonCount);
@@ -814,52 +887,70 @@ struct [[nodiscard]] ImGuiPerWindowContext
         joystickMapping[joystickButton] = finalKey;
     }
 
+
+    ////////////////////////////////////////////////////////////
     void setDPadXAxis(Joystick::Axis dPadXAxis, bool inverted = false)
     {
         dPadInfo.xAxis     = dPadXAxis;
         dPadInfo.xInverted = inverted;
     }
 
+
+    ////////////////////////////////////////////////////////////
     void setDPadYAxis(Joystick::Axis dPadYAxis, bool inverted = false)
     {
         dPadInfo.yAxis     = dPadYAxis;
         dPadInfo.yInverted = inverted;
     }
 
+
+    ////////////////////////////////////////////////////////////
     void setLStickXAxis(Joystick::Axis lStickXAxis, bool inverted = false)
     {
         lStickInfo.xAxis     = lStickXAxis;
         lStickInfo.xInverted = inverted;
     }
 
+
+    ////////////////////////////////////////////////////////////
     void setLStickYAxis(Joystick::Axis lStickYAxis, bool inverted = false)
     {
         lStickInfo.yAxis     = lStickYAxis;
         lStickInfo.yInverted = inverted;
     }
 
+
+    ////////////////////////////////////////////////////////////
     void setRStickXAxis(Joystick::Axis rStickXAxis, bool inverted = false)
     {
         rStickInfo.xAxis     = rStickXAxis;
         rStickInfo.xInverted = inverted;
     }
 
+
+    ////////////////////////////////////////////////////////////
     void setRStickYAxis(Joystick::Axis rStickYAxis, bool inverted = false)
     {
         rStickInfo.yAxis     = rStickYAxis;
         rStickInfo.yInverted = inverted;
     }
 
+
+    ////////////////////////////////////////////////////////////
     void setLTriggerAxis(Joystick::Axis lTriggerAxis)
     {
         rTriggerInfo.axis = lTriggerAxis;
     }
 
+
+    ////////////////////////////////////////////////////////////
     void setRTriggerAxis(Joystick::Axis rTriggerAxis)
     {
         rTriggerInfo.axis = rTriggerAxis;
     }
 
+
+    ////////////////////////////////////////////////////////////
     void initDefaultJoystickMapping()
     {
         setJoystickMapping(ImGuiKey_GamepadFaceDown, 0);
@@ -897,6 +988,7 @@ struct [[nodiscard]] ImGuiPerWindowContext
 };
 
 
+////////////////////////////////////////////////////////////
 struct [[nodiscard]] SpriteTextureData
 {
     ImVec2      uv0;
@@ -904,6 +996,8 @@ struct [[nodiscard]] SpriteTextureData
     ImTextureID textureID{};
 };
 
+
+////////////////////////////////////////////////////////////
 [[nodiscard]] SpriteTextureData getSpriteTextureData(const Sprite& sprite, const Texture& texture)
 {
     const auto textureSize(texture.getSize().to<Vector2f>());
@@ -916,20 +1010,25 @@ struct [[nodiscard]] SpriteTextureData
 
 } // namespace
 
+
+////////////////////////////////////////////////////////////
 struct ImGuiContext::Impl
 {
     GraphicsContext* graphicsContext;
 
-    // TODO P0: change to C-style array of optionals
     std::vector<base::UniquePtr<ImGuiPerWindowContext>> perWindowContexts;
 
     ImGuiPerWindowContext* currentPerWindowContext = nullptr;
     std::string            clipboardText;
 
+
+    ////////////////////////////////////////////////////////////
     explicit Impl(GraphicsContext& theGraphicsContext) : graphicsContext(&theGraphicsContext)
     {
     }
 
+
+    ////////////////////////////////////////////////////////////
     void updateMouseCursor(Window& window) const
     {
         const ImGuiIO& io = ::ImGui::GetIO();
@@ -1133,27 +1232,31 @@ void ImGuiContext::shutdown()
 }
 
 
-/////////////// Image Overloads for Texture
-
-void Image(const Texture& texture, Color tintColor, Color borderColor)
+////////////////////////////////////////////////////////////
+void ImGuiContext::image(const Texture& texture, Color tintColor, Color borderColor)
 {
-    Image(texture, texture.getSize().to<Vector2f>(), tintColor, borderColor);
+    image(texture, texture.getSize().to<Vector2f>(), tintColor, borderColor);
 }
 
-void Image(const Texture& texture, Vector2f size, Color tintColor, Color borderColor)
+
+////////////////////////////////////////////////////////////
+void ImGuiContext::image(const Texture& texture, Vector2f size, Color tintColor, Color borderColor)
 {
     ImTextureID textureID = convertGLTextureHandleToImTextureID(texture.getNativeHandle());
 
     ::ImGui::Image(textureID, toImVec2(size), ImVec2(0, 0), ImVec2(1, 1), toImColor(tintColor), toImColor(borderColor));
 }
 
-/////////////// Image Overloads for RenderTexture
-void Image(const RenderTexture& texture, Color tintColor, Color borderColor)
+
+////////////////////////////////////////////////////////////
+void ImGuiContext::image(const RenderTexture& texture, Color tintColor, Color borderColor)
 {
-    Image(texture, texture.getSize().to<Vector2f>(), tintColor, borderColor);
+    image(texture, texture.getSize().to<Vector2f>(), tintColor, borderColor);
 }
 
-void Image(const RenderTexture& texture, Vector2f size, Color tintColor, Color borderColor)
+
+////////////////////////////////////////////////////////////
+void ImGuiContext::image(const RenderTexture& texture, Vector2f size, Color tintColor, Color borderColor)
 {
     ImTextureID textureID = convertGLTextureHandleToImTextureID(texture.getTexture().getNativeHandle());
 
@@ -1168,30 +1271,32 @@ void Image(const RenderTexture& texture, Vector2f size, Color tintColor, Color b
                    toImColor(borderColor));
 }
 
-/////////////// Image Overloads for Sprite
 
-void Image(const Sprite& sprite, const Texture& texture, Color tintColor, Color borderColor)
+////////////////////////////////////////////////////////////
+void ImGuiContext::image(const Sprite& sprite, const Texture& texture, Color tintColor, Color borderColor)
 {
-    Image(sprite, texture, sprite.getGlobalBounds().size, tintColor, borderColor);
+    image(sprite, texture, sprite.getGlobalBounds().size, tintColor, borderColor);
 }
 
-void Image(const Sprite& sprite, const Texture& texture, Vector2f size, Color tintColor, Color borderColor)
+
+////////////////////////////////////////////////////////////
+void ImGuiContext::image(const Sprite& sprite, const Texture& texture, Vector2f size, Color tintColor, Color borderColor)
 {
     const auto [uv0, uv1, textureID] = getSpriteTextureData(sprite, texture);
     ::ImGui::Image(textureID, toImVec2(size), uv0, uv1, toImColor(tintColor), toImColor(borderColor));
 }
 
-/////////////// Image Button Overloads for Texture
 
-bool ImageButton(const char* id, const Texture& texture, Vector2f size, Color bgColor, Color tintColor)
+////////////////////////////////////////////////////////////
+bool ImGuiContext::imageButton(const char* id, const Texture& texture, Vector2f size, Color bgColor, Color tintColor)
 {
     const ImTextureID textureID = convertGLTextureHandleToImTextureID(texture.getNativeHandle());
     return ::ImGui::ImageButton(id, textureID, toImVec2(size), ImVec2(0, 0), ImVec2(1, 1), toImColor(bgColor), toImColor(tintColor));
 }
 
-/////////////// Image Button Overloads for RenderTexture
 
-bool ImageButton(const char* id, const RenderTexture& texture, Vector2f size, Color bgColor, Color tintColor)
+////////////////////////////////////////////////////////////
+bool ImGuiContext::imageButton(const char* id, const RenderTexture& texture, Vector2f size, Color bgColor, Color tintColor)
 {
     const ImTextureID textureID = convertGLTextureHandleToImTextureID(texture.getTexture().getNativeHandle());
 
@@ -1205,17 +1310,17 @@ bool ImageButton(const char* id, const RenderTexture& texture, Vector2f size, Co
                                 toImColor(tintColor));
 }
 
-/////////////// Image Button Overloads for Sprite
 
-bool ImageButton(const char* id, const Sprite& sprite, const Texture& texture, Vector2f size, Color bgColor, Color tintColor)
+////////////////////////////////////////////////////////////
+bool ImGuiContext::imageButton(const char* id, const Sprite& sprite, const Texture& texture, Vector2f size, Color bgColor, Color tintColor)
 {
     const auto [uv0, uv1, textureID] = getSpriteTextureData(sprite, texture);
     return ::ImGui::ImageButton(id, textureID, toImVec2(size), uv0, uv1, toImColor(bgColor), toImColor(tintColor));
 }
 
-/////////////// Draw_list Overloads
 
-void DrawLine(Vector2f a, Vector2f b, Color color, float thickness)
+////////////////////////////////////////////////////////////
+void ImGuiContext::drawLine(Vector2f a, Vector2f b, Color color, float thickness)
 {
     ImDrawList* const drawList = ::ImGui::GetWindowDrawList();
     SFML_BASE_ASSERT(drawList != nullptr);
@@ -1228,7 +1333,9 @@ void DrawLine(Vector2f a, Vector2f b, Color color, float thickness)
                       thickness);
 }
 
-void DrawRect(const FloatRect& rect, Color color, float rounding, int roundingCorners, float thickness)
+
+////////////////////////////////////////////////////////////
+void ImGuiContext::drawRect(const FloatRect& rect, Color color, float rounding, int roundingCorners, float thickness)
 {
     ImDrawList* const drawList = ::ImGui::GetWindowDrawList();
     SFML_BASE_ASSERT(drawList != nullptr);
@@ -1241,7 +1348,9 @@ void DrawRect(const FloatRect& rect, Color color, float rounding, int roundingCo
                       thickness);
 }
 
-void DrawRectFilled(const FloatRect& rect, Color color, float rounding, int roundingCorners)
+
+////////////////////////////////////////////////////////////
+void ImGuiContext::drawRectFilled(const FloatRect& rect, Color color, float rounding, int roundingCorners)
 {
     ImDrawList* const drawList = ::ImGui::GetWindowDrawList();
     SFML_BASE_ASSERT(drawList != nullptr);

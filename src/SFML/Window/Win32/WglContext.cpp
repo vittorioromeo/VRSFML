@@ -147,11 +147,6 @@ WglContext::~WglContext()
     // Notify unshared OpenGL resources of context destruction
     m_windowContext.cleanupUnsharedFrameBuffers(*this);
 
-
-    // TODO P0: needed for emscripten shader example, why ?
-    while (glGetError() != GL_NO_ERROR)
-        ;
-
     // Destroy the OpenGL context
     if (m_context)
     {

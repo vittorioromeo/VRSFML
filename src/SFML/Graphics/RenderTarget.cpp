@@ -986,7 +986,7 @@ void RenderTarget::setupDraw(bool useVertexCache, const RenderStates& states)
     }
 
     // Apply the view
-    // if (!m_impl->cache.enable || m_impl->cache.viewChanged) // TODO P0: uncommenting breaks island example
+    // if (!m_impl->cache.enable || m_impl->cache.viewChanged) // TODO P0: uncommenting breaks island example IMPORATNT!!
     applyCurrentView(states.shader, states.texture);
 
     // Apply the blend mode
