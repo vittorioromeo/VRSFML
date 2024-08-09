@@ -108,7 +108,7 @@ struct SoundStream::Impl
                 impl.sampleBufferCursor = 0;
 
                 // If we are looping and at the end of the loop, set the cursor back to the beginning of the loop
-                if (!impl.streaming && impl.owner->getLoop())
+                if (!impl.streaming && impl.owner->isLooping())
                 {
                     if (const base::Optional seekPositionAfterLoop = impl.owner->onLoop())
                     {

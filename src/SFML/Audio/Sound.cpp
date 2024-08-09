@@ -86,7 +86,7 @@ struct Sound::Impl
         impl.cursor += static_cast<std::size_t>(sampleCount);
 
         // If we are looping and at the end of the sound, set the cursor back to the start
-        if (impl.owner->getLoop() && (impl.cursor >= buffer->getSampleCount()))
+        if (impl.owner->isLooping() && (impl.cursor >= buffer->getSampleCount()))
             impl.cursor = 0;
 
         return MA_SUCCESS;

@@ -343,7 +343,7 @@ public:
     ///
     /// If set, the sound will restart from beginning after
     /// reaching the end and so on, until it is stopped or
-    /// setLoop(false) is called.
+    /// setLooping(false) is called.
     /// The default looping state for sound is false.
     ///
     /// \param loop True to play in loop, false to play once
@@ -351,7 +351,7 @@ public:
     /// \see getLoop
     ///
     ////////////////////////////////////////////////////////////
-    void setLoop(bool loop);
+    void setLooping(bool loop);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current playing position of the sound
@@ -547,7 +547,7 @@ public:
     /// \see setLoop
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool getLoop() const;
+    [[nodiscard]] bool isLooping() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current playing position of the sound
