@@ -397,7 +397,7 @@ RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::clear(const Color& color)
+void RenderTarget::clear(Color color)
 {
     if (!clearImpl())
         return;
@@ -419,7 +419,7 @@ void RenderTarget::clearStencil(StencilValue stencilValue)
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::clear(const Color& color, StencilValue stencilValue)
+void RenderTarget::clear(Color color, StencilValue stencilValue)
 {
     if (!clearImpl())
         return;

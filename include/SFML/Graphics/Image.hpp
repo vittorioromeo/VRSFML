@@ -169,7 +169,7 @@ public:
     /// \param alpha Alpha value to assign to transparent pixels
     ///
     ////////////////////////////////////////////////////////////
-    void createMaskFromColor(const Color& color, std::uint8_t alpha = 0);
+    void createMaskFromColor(Color color, std::uint8_t alpha = 0);
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy pixels from another image onto this one
@@ -218,7 +218,7 @@ public:
     /// \see getPixel
     ///
     ////////////////////////////////////////////////////////////
-    void setPixel(Vector2u coords, const Color& color);
+    void setPixel(Vector2u coords, Color color);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the color of a pixel

@@ -284,7 +284,7 @@ Vector2u Image::getSize() const
 
 
 ////////////////////////////////////////////////////////////
-void Image::createMaskFromColor(const Color& color, std::uint8_t alpha)
+void Image::createMaskFromColor(Color color, std::uint8_t alpha)
 {
     // Make sure that the image is not empty
     SFML_BASE_ASSERT(!m_impl->pixels.empty());
@@ -393,7 +393,7 @@ bool Image::copy(const Image& source, Vector2u dest, const IntRect& sourceRect, 
 
 
 ////////////////////////////////////////////////////////////
-void Image::setPixel(Vector2u coords, const Color& color)
+void Image::setPixel(Vector2u coords, Color color)
 {
     SFML_BASE_ASSERT(coords.x < m_impl->size.x && "Image::setPixel() x coordinate is out of bounds");
     SFML_BASE_ASSERT(coords.y < m_impl->size.y && "Image::setPixel() y coordinate is out of bounds");
