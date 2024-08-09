@@ -3,7 +3,7 @@
 ## User-facing changes
 
 - ➡️ **Built-in Emscripten support:**
-    - SFML now works out-of-the-box with [Emscripten](https://emscripten.org/).
+    - This fork now works out-of-the-box with [Emscripten](https://emscripten.org/).
     - All existing examples and tests run flawlessly in the browser.
     - No explicit `#ifdef SFML_SYSTEM_EMSCRIPTEN` is required anywhere in user code.
     - Game loops are abstracted as follows:
@@ -121,7 +121,7 @@
 
 - ➡️ **Restore factory-based creation APIs for SFML resources:**
     - Factory-based creation APIs considerably increased type-safety and usability of SFML resources as they completely eliminated the presence of an "empty state" and made it obvious to users where errors could occur, forcing them to decide between handling them, ignoring them, or propagating them.
-    - Despite many months of work and discussion, these APIs have been inexplicably reverted out of the blue with <https://github.com/SFML/SFML/pull/3152>, due to fear that users would find the migration from 2.x to 3.x more difficult.
+    - Despite many months of work and discussion on factory-based APIs, factory-based have been reverted into legacy APIs with <https://github.com/SFML/SFML/pull/3152>, due to fear that users would find the migration from 2.x to 3.x too difficult.
     - This fork does not include https://github.com/SFML/SFML/pull/3152 and moves forward with the vision of a safer and more pedagogically valuable version of SFML.
 
     <details>
