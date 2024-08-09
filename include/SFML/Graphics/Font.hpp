@@ -74,80 +74,7 @@ public:
     };
 
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// Construct an empty font that does not contain any glyphs.
-    ///
-    ////////////////////////////////////////////////////////////
-    Font() = default;
-
-    ////////////////////////////////////////////////////////////
     /// \brief Open the font from a file
-    ///
-    /// The supported font formats are: TrueType, Type 1, CFF,
-    /// OpenType, SFNT, X11 PCF, Windows FNT, BDF, PFR and Type 42.
-    /// Note that this function knows nothing about the standard
-    /// fonts installed on the user's system, thus you can't
-    /// load them directly.
-    ///
-    /// \warning SFML cannot preload all the font data in this
-    /// function, so the file has to remain accessible until
-    /// the sf::Font object loads a new font or is destroyed.
-    ///
-    /// \param filename Path of the font file to load
-    ///
-    /// \return True if loading succeeded, false if it failed
-    ///
-    /// \see openFromMemory, openFromStream
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool openFromFile(const std::filesystem::path& filename);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Open the font from a file in memory
-    ///
-    /// The supported font formats are: TrueType, Type 1, CFF,
-    /// OpenType, SFNT, X11 PCF, Windows FNT, BDF, PFR and Type 42.
-    ///
-    /// \warning SFML cannot preload all the font data in this
-    /// function, so the buffer pointed by \a data has to remain
-    /// valid until the sf::Font object loads a new font or
-    /// is destroyed.
-    ///
-    /// \param data        Pointer to the file data in memory
-    /// \param sizeInBytes Size of the data to load, in bytes
-    ///
-    /// \return True if loading succeeded, false if it failed
-    ///
-    /// \see openFromFile, openFromStream
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool openFromMemory(const void* data, std::size_t sizeInBytes);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Open the font from a custom stream
-    ///
-    /// The supported font formats are: TrueType, Type 1, CFF,
-    /// OpenType, SFNT, X11 PCF, Windows FNT, BDF, PFR and Type 42.
-    /// Warning: SFML cannot preload all the font data in this
-    /// function, so the contents of \a stream have to remain
-    /// valid as long as the font is used.
-    ///
-    /// \warning SFML cannot preload all the font data in this
-    /// function, so the stream has to remain accessible until
-    /// the sf::Font object loads a new font or is destroyed.
-    ///
-    /// \param stream Source stream to read from
-    ///
-    /// \return True if loading succeeded, false if it failed
-    ///
-    /// \see openFromFile, openFromMemory
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool openFromStream(InputStream& stream);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Create the font from a file
     ///
     /// The supported font formats are: TrueType, Type 1, CFF,
     /// OpenType, SFNT, X11 PCF, Windows FNT, BDF, PFR and Type 42.
@@ -163,13 +90,13 @@ public:
     ///
     /// \return Font if opening succeeded, `std::nullopt` if it failed
     ///
-    /// \see createFromMemory, createFromStream
+    /// \see openFromMemory, openFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Font> createFromFile(const std::filesystem::path& filename);
+    [[nodiscard]] static std::optional<Font> openFromFile(const std::filesystem::path& filename);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Create the font from a file in memory
+    /// \brief Open the font from a file in memory
     ///
     /// The supported font formats are: TrueType, Type 1, CFF,
     /// OpenType, SFNT, X11 PCF, Windows FNT, BDF, PFR and Type 42.
@@ -183,13 +110,13 @@ public:
     ///
     /// \return Font if opening succeeded, `std::nullopt` if it failed
     ///
-    /// \see createFromFile, createFromStream
+    /// \see openFromFile, openFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Font> createFromMemory(const void* data, std::size_t sizeInBytes);
+    [[nodiscard]] static std::optional<Font> openFromMemory(const void* data, std::size_t sizeInBytes);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Create the font from a custom stream
+    /// \brief Open the font from a custom stream
     ///
     /// The supported font formats are: TrueType, Type 1, CFF,
     /// OpenType, SFNT, X11 PCF, Windows FNT, BDF, PFR and Type 42.
@@ -202,10 +129,10 @@ public:
     ///
     /// \return Font if opening succeeded, `std::nullopt` if it failed
     ///
-    /// \see createFromFile, createFromMemory
+    /// \see openFromFile, openFromMemory
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::optional<Font> createFromStream(InputStream& stream);
+    [[nodiscard]] static std::optional<Font> openFromStream(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the font information
@@ -388,19 +315,14 @@ private:
     ////////////////////////////////////////////////////////////
     struct Page
     {
-        explicit Page(bool smooth);
+        [[nodiscard]] static std::optional<Page> create(bool smooth);
+        explicit Page(Texture&& texture);
 
         GlyphTable       glyphs;     //!< Table mapping code points to their corresponding glyph
         Texture          texture;    //!< Texture containing the pixels of the glyphs
         unsigned int     nextRow{3}; //!< Y position of the next new row in the texture
         std::vector<Row> rows;       //!< List containing the position of all the existing rows
     };
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Free all the internal resources
-    ///
-    ////////////////////////////////////////////////////////////
-    void cleanup();
 
     ////////////////////////////////////////////////////////////
     /// \brief Find or create the glyphs page corresponding to the given character size
@@ -453,6 +375,12 @@ private:
     using PageTable = std::unordered_map<unsigned int, Page>; //!< Table mapping a character size to its page (texture)
 
     ////////////////////////////////////////////////////////////
+    /// \brief Create a font from font handles and a family name
+    ///
+    ////////////////////////////////////////////////////////////
+    Font(std::shared_ptr<FontHandles>&& fontHandles, std::string&& familyName);
+
+    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     std::shared_ptr<FontHandles> m_fontHandles;    //!< Shared information about the internal font instance
@@ -474,7 +402,7 @@ private:
 ///
 /// Fonts can be opened from a file, from memory or from a custom
 /// stream, and supports the most common types of fonts. See
-/// the createFromFile function for the complete list of supported formats.
+/// the openFromFile function for the complete list of supported formats.
 ///
 /// Once it is opened, a sf::Font instance provides three
 /// types of information about the font:
@@ -505,7 +433,7 @@ private:
 /// Usage example:
 /// \code
 /// // Open a new font
-/// const auto font = sf::Font::createFromFile("arial.ttf").value();
+/// const auto font = sf::Font::openFromFile("arial.ttf").value();
 ///
 /// // Create a text which uses our font
 /// sf::Text text1(font);
