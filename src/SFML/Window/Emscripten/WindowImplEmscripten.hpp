@@ -11,6 +11,7 @@
 
 namespace sf
 {
+struct WindowSettings;
 class String;
 } // namespace sf
 
@@ -35,14 +36,10 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Create the window implementation
     ///
-    /// \param mode     Video mode to use
-    /// \param title    Title of the window
-    /// \param style    Window style
-    /// \param state    Window state
-    /// \param settings Additional settings for the underlying OpenGL context
+    /// \param windowSettings Window settings
     ///
     ////////////////////////////////////////////////////////////
-    explicit WindowImplEmscripten(VideoMode mode, const String& title, Style style, State state, const ContextSettings& settings);
+    explicit WindowImplEmscripten(const WindowSettings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor

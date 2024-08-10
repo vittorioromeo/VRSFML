@@ -4,6 +4,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/CursorImpl.hpp>
+#include <SFML/Window/WindowSettings.hpp>
 #include <SFML/Window/macOS/AutoreleasePoolWrapper.hpp>
 #import <SFML/Window/macOS/SFApplication.h>
 #import <SFML/Window/macOS/SFApplicationDelegate.h>
@@ -96,8 +97,7 @@ WindowImplCocoa::WindowImplCocoa(WindowHandle handle)
 
         sf::priv::err() << "Cannot import this Window Handle because it is neither "
                         << "a <NSWindow*> nor <NSView*> object "
-                        << "(or any of their subclasses). You gave a <" <<
-            [[nsHandle className] UTF8String] << "> object." ;
+                        << "(or any of their subclasses). You gave a <" << [[nsHandle className] UTF8String] << "> object.";
         return;
     }
 
@@ -109,14 +109,17 @@ WindowImplCocoa::WindowImplCocoa(WindowHandle handle)
 
 
 ////////////////////////////////////////////////////////////
-WindowImplCocoa::WindowImplCocoa(VideoMode mode, const String& title, Style style, State state, const ContextSettings& /*settings*/)
+WindowImplCocoa::WindowImplCocoa(const WindowSettings& windowSettings)
 {
     const AutoreleasePool pool;
     // Transform the app process.
     setUpProcess();
 
-    m_delegate = [[SFWindowController alloc] initWithMode:mode andStyle:style andState:state];
-    [m_delegate changeTitle:sfStringToNSString(title)];
+    m_delegate = [[SFWindowController alloc]
+        initWithMode:VideoMode{windowSettings.size, windowSettings.bitsPerPixel}
+            andStyle:windowSettings.style
+            andState:windowSettings.state];
+    [m_delegate changeTitle:sfStringToNSString(windowSettings.title)];
     [m_delegate setRequesterTo:this];
 
     // Finally, set up keyboard helper

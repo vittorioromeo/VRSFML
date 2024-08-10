@@ -17,6 +17,7 @@
 #include <SFML/Window/VideoModeUtils.hpp>
 #include <SFML/Window/WindowImpl.hpp>
 #include <SFML/Window/WindowImplType.hpp>
+#include <SFML/Window/WindowSettings.hpp>
 
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Sleep.hpp>
@@ -72,47 +73,49 @@ struct WindowImpl::Impl
 
 
 ////////////////////////////////////////////////////////////
-base::UniquePtr<WindowImpl> WindowImpl::create(VideoMode mode, const String& title, Style style, State state, const ContextSettings& settings)
+base::UniquePtr<WindowImpl> WindowImpl::create(WindowSettings windowSettings)
 {
     // Fullscreen style requires some tests
-    if (state == State::Fullscreen)
+    if (windowSettings.state == State::Fullscreen)
     {
         // Make sure there's not already a fullscreen window (only one is allowed)
         if (WindowImplImpl::fullscreenWindow != nullptr)
         {
             err() << "Creating two fullscreen windows is not allowed, switching to windowed mode";
-            state = State::Windowed;
+            windowSettings.state = State::Windowed;
         }
         else
         {
+            VideoMode videoMode{windowSettings.size, windowSettings.bitsPerPixel};
+
             // Make sure that the chosen video mode is compatible
-            if (!mode.isValid())
+            if (!videoMode.isValid())
             {
                 err() << "The requested video mode is not available, switching to a valid mode";
 
                 SFML_BASE_ASSERT(!VideoModeUtils::getFullscreenModes().empty() && "No video modes available");
-                mode = VideoModeUtils::getFullscreenModes()[0];
+                videoMode = VideoModeUtils::getFullscreenModes()[0];
 
-                err() << "  VideoMode: { size: { " << mode.size.x << ", " << mode.size.y
-                      << " }, bitsPerPixel: " << mode.bitsPerPixel << " }";
+                err() << "  VideoMode: { size: { " << videoMode.size.x << ", " << videoMode.size.y
+                      << " }, bitsPerPixel: " << videoMode.bitsPerPixel << " }";
             }
         }
     }
 
 // Check validity of style according to the underlying platform
 #if defined(SFML_SYSTEM_IOS) || defined(SFML_SYSTEM_ANDROID)
-    if (state == State::Fullscreen)
-        style &= ~static_cast<std::uint32_t>(Style::Titlebar);
+    if (windowSettings.state == State::Fullscreen)
+        windowSettings.style &= ~static_cast<std::uint32_t>(Style::Titlebar);
     else
-        style |= Style::Titlebar;
+        windowSettings.style |= Style::Titlebar;
 #else
-    if (!!(style & Style::Close) || !!(style & Style::Resize))
-        style |= Style::Titlebar;
+    if (!!(windowSettings.style & Style::Close) || !!(windowSettings.style & Style::Resize))
+        windowSettings.style |= Style::Titlebar;
 #endif
 
-    auto windowImpl = base::makeUnique<WindowImplType>(mode, title, style, state, settings);
+    auto windowImpl = base::makeUnique<WindowImplType>(windowSettings);
 
-    if (state == State::Fullscreen)
+    if (windowSettings.state == State::Fullscreen)
         WindowImplImpl::fullscreenWindow = windowImpl.get();
 
     return windowImpl;

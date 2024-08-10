@@ -10,7 +10,7 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/GameLoop.hpp>
 #include <SFML/Window/Keyboard.hpp>
-#include <SFML/Window/VideoMode.hpp>
+#include <SFML/Window/WindowSettings.hpp>
 
 #include <SFML/System/Path.hpp>
 #include <SFML/System/String.hpp>
@@ -364,9 +364,9 @@ private:
     ////////////////////////////////////////////////////////////
     sf::GraphicsContext      m_graphicsContext;
     sf::RenderWindow         m_window{m_graphicsContext,
-                              sf::VideoMode({800u, 600u}),
-                              "SFML Event Handling",
-                              sf::Style::Titlebar | sf::Style::Close};
+                                      {.size{800u, 600u},
+                                       .title = "SFML Event Handling",
+                                       .style = sf::Style::Titlebar | sf::Style::Close}};
     const sf::Font           m_font{sf::Font::openFromFile(m_graphicsContext, "resources/tuffy.ttf").value()};
     sf::Text                 m_logText{m_font, "", 20};
     sf::Text                 m_handlerText{m_font, "Current Handler: Classic", 24};

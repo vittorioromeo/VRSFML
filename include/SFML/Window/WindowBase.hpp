@@ -9,6 +9,7 @@
 #include <SFML/Window/WindowEnums.hpp>
 #include <SFML/Window/WindowHandle.hpp>
 
+#include <SFML/System/String.hpp>
 #include <SFML/System/Time.hpp>
 #include <SFML/System/Vector2.hpp>
 
@@ -21,9 +22,9 @@
 
 namespace sf
 {
+struct WindowSettings;
 class Cursor;
 class String;
-class VideoMode;
 
 namespace priv
 {
@@ -60,26 +61,7 @@ public:
     /// \param state %Window state
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowBase(VideoMode     mode,
-                                      const String& title,
-                                      Style         style = Style::Default,
-                                      State         state = State::Windowed);
-
-    [[nodiscard]] explicit WindowBase(VideoMode mode, const char* title, Style style = Style::Default, State state = State::Windowed);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct a new window
-    ///
-    /// This constructor creates the window with the size and pixel
-    /// depth defined in \a mode.
-    ///
-    /// \param mode  Video mode to use (defines the width, height and depth of the rendering area of the window)
-    /// \param title Title of the window
-    /// \param state %Window state
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowBase(VideoMode mode, const String& title, State state);
-    [[nodiscard]] explicit WindowBase(VideoMode mode, const char* title, State state);
+    [[nodiscard]] explicit WindowBase(const WindowSettings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control
@@ -536,7 +518,7 @@ private:
 /// Usage example:
 /// \code
 /// // Declare and create a new window
-/// sf::WindowBase window(sf::VideoMode({800, 600}), "SFML window");
+/// sf::WindowBase window({.size{800u, 600u}, .title = "SFML Window"});
 ///
 /// // The main loop - ends as soon as the window is closed
 /// while (true)

@@ -21,8 +21,8 @@
 #include <SFML/Window/EventUtils.hpp>
 #include <SFML/Window/GameLoop.hpp>
 #include <SFML/Window/Touch.hpp>
-#include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/WindowEnums.hpp>
+#include <SFML/Window/WindowSettings.hpp>
 
 #include <SFML/System/Angle.hpp>
 #include <SFML/System/Clock.hpp>
@@ -60,19 +60,19 @@ int main()
     std::mt19937       rng(rd());
 
     // Define some constants
-    const float        gameWidth  = 800;
-    const float        gameHeight = 600;
-    const sf::Vector2f paddleSize(25, 100);
-    const float        ballRadius = 10.f;
+    constexpr sf::Vector2f gameSize{800.f, 600.f};
+    constexpr sf::Vector2f paddleSize{25.f, 100.f};
+    constexpr float        ballRadius = 10.f;
 
     // Create the graphics context
     sf::GraphicsContext graphicsContext;
 
     // Create the window of the application
     sf::RenderWindow window(graphicsContext,
-                            sf::VideoMode({static_cast<unsigned int>(gameWidth), static_cast<unsigned int>(gameHeight)}, 32),
-                            "SFML Tennis",
-                            sf::Style::Titlebar | sf::Style::Close);
+                            {.size         = gameSize.to<sf::Vector2u>(),
+                             .bitsPerPixel = 32u,
+                             .title        = "SFML Tennis",
+                             .style        = sf::Style::Titlebar | sf::Style::Close});
 
     window.setVerticalSyncEnabled(true);
 
@@ -91,19 +91,15 @@ int main()
 
     // Create the left paddle
     sf::RectangleShape leftPaddle;
-    leftPaddle.setSize(paddleSize - sf::Vector2f{3, 3});
-    leftPaddle.setOutlineThickness(3);
+    leftPaddle.setSize(paddleSize - sf::Vector2f{3.f, 3.f});
+    leftPaddle.setOutlineThickness(3.f);
     leftPaddle.setOutlineColor(sf::Color::Black);
-    leftPaddle.setFillColor(sf::Color(100, 100, 200));
+    leftPaddle.setFillColor({100u, 100u, 200u});
     leftPaddle.setOrigin(paddleSize / 2.f);
 
     // Create the right paddle
-    sf::RectangleShape rightPaddle;
-    rightPaddle.setSize(paddleSize - sf::Vector2f{3, 3});
-    rightPaddle.setOutlineThickness(3);
-    rightPaddle.setOutlineColor(sf::Color::Black);
-    rightPaddle.setFillColor(sf::Color(200, 100, 100));
-    rightPaddle.setOrigin(paddleSize / 2.f);
+    sf::RectangleShape rightPaddle = leftPaddle;
+    rightPaddle.setFillColor({200u, 100u, 100u});
 
     // Create the ball
     sf::CircleShape ball;
@@ -118,7 +114,7 @@ int main()
 
     // Initialize the pause message
     sf::Text pauseMessage(font);
-    pauseMessage.setCharacterSize(40);
+    pauseMessage.setCharacterSize(40.f);
     pauseMessage.setPosition({170.f, 200.f});
     pauseMessage.setFillColor(sf::Color::White);
 
@@ -128,12 +124,14 @@ int main()
     pauseMessage.setString("Welcome to SFML Tennis!\n\nPress space to start the game.");
 #endif
 
+    // Define game constants
+    constexpr float paddleSpeed = 400.f;
+    constexpr float ballSpeed   = 400.f;
+
     // Define the paddles properties
     sf::Clock      aiTimer;
     const sf::Time aiTime           = sf::seconds(0.1f);
-    const float    paddleSpeed      = 400.f;
     float          rightPaddleSpeed = 0.f;
-    const float    ballSpeed        = 400.f;
     sf::Angle      ballAngle        = sf::degrees(0); // to be changed later
 
     sf::Clock clock;
@@ -159,9 +157,9 @@ int main()
                     clock.restart();
 
                     // Reset the position of the paddles and ball
-                    leftPaddle.setPosition({10.f + paddleSize.x / 2.f, gameHeight / 2.f});
-                    rightPaddle.setPosition({gameWidth - 10.f - paddleSize.x / 2.f, gameHeight / 2.f});
-                    ball.setPosition({gameWidth / 2.f, gameHeight / 2.f});
+                    leftPaddle.setPosition({10.f + paddleSize.x / 2.f, gameSize.y / 2.f});
+                    rightPaddle.setPosition({gameSize.x - 10.f - paddleSize.x / 2.f, gameSize.y / 2.f});
+                    ball.setPosition(gameSize / 2.f);
 
                     // Reset the ball angle
                     do
@@ -174,12 +172,7 @@ int main()
 
             // Window size changed, adjust view appropriately
             if (event->is<sf::Event::Resized>())
-            {
-                sf::View view;
-                view.setSize({gameWidth, gameHeight});
-                view.setCenter({gameWidth / 2.f, gameHeight / 2.f});
-                window.setView(view);
-            }
+                window.setView({/* center */ gameSize / 2.f, /* size */ gameSize});
         }
 
         if (isPlaying)
@@ -192,7 +185,7 @@ int main()
                 leftPaddle.move({0.f, -paddleSpeed * deltaTime});
             }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down) &&
-                (leftPaddle.getPosition().y + paddleSize.y / 2 < gameHeight - 5.f))
+                (leftPaddle.getPosition().y + paddleSize.y / 2 < gameSize.y - 5.f))
             {
                 leftPaddle.move({0.f, paddleSpeed * deltaTime});
             }
@@ -206,7 +199,7 @@ int main()
 
             // Move the computer's paddle
             if (((rightPaddleSpeed < 0.f) && (rightPaddle.getPosition().y - paddleSize.y / 2 > 5.f)) ||
-                ((rightPaddleSpeed > 0.f) && (rightPaddle.getPosition().y + paddleSize.y / 2 < gameHeight - 5.f)))
+                ((rightPaddleSpeed > 0.f) && (rightPaddle.getPosition().y + paddleSize.y / 2 < gameSize.y - 5.f)))
             {
                 rightPaddle.move({0.f, rightPaddleSpeed * deltaTime});
             }
@@ -238,22 +231,23 @@ int main()
                 isPlaying = false;
                 pauseMessage.setString("You Lost!\n\n" + inputString);
             }
-            if (ball.getPosition().x + ballRadius > gameWidth)
+            else if (ball.getPosition().x + ballRadius > gameSize.x)
             {
                 isPlaying = false;
                 pauseMessage.setString("You Won!\n\n" + inputString);
             }
+
             if (ball.getPosition().y - ballRadius < 0.f)
             {
                 ballSound.play(playbackDevice);
                 ballAngle = -ballAngle;
                 ball.setPosition({ball.getPosition().x, ballRadius + 0.1f});
             }
-            if (ball.getPosition().y + ballRadius > gameHeight)
+            else if (ball.getPosition().y + ballRadius > gameSize.y)
             {
                 ballSound.play(playbackDevice);
                 ballAngle = -ballAngle;
-                ball.setPosition({ball.getPosition().x, gameHeight - ballRadius - 0.1f});
+                ball.setPosition({ball.getPosition().x, gameSize.y - ballRadius - 0.1f});
             }
 
             std::uniform_real_distribution<float> dist(0, 20);
@@ -291,7 +285,7 @@ int main()
         }
 
         // Clear the window
-        window.clear(sf::Color(50, 50, 50));
+        window.clear({50u, 50u, 50u});
 
         if (isPlaying)
         {

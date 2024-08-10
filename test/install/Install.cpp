@@ -13,6 +13,7 @@
 #include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/Window.hpp>
 #include <SFML/Window/WindowContext.hpp>
+#include <SFML/Window/WindowSettings.hpp>
 
 #include <SFML/System/Rect.hpp>
 #include <SFML/System/String.hpp>
@@ -43,6 +44,6 @@ int main()
     [[maybe_unused]] const sf::Time   time;
 
     // Window
-    [[maybe_unused]] const sf::VideoMode videoMode;
-    [[maybe_unused]] const sf::Window    window(graphicsContext, sf::VideoMode{{0u, 0u}}, "");
+    [[maybe_unused]] const sf::VideoMode videoMode{{0u, 0u}};
+    [[maybe_unused]] const sf::Window    window(graphicsContext, {.size{0u, 0u}, .title = ""});
 }

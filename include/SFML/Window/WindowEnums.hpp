@@ -1,9 +1,13 @@
 #pragma once
-#include <SFML/Base/EnumClassBitwiseOps.hpp>
-
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include <SFML/Base/EnumClassBitwiseOps.hpp>
+
 #include <cstdint>
+
 
 namespace sf
 {

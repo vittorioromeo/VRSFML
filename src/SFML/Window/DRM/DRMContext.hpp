@@ -7,7 +7,6 @@
 #include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/EGLCheck.hpp>
 #include <SFML/Window/GlContext.hpp>
-#include <SFML/Window/VideoMode.hpp>
 
 #include <glad/egl.h>
 

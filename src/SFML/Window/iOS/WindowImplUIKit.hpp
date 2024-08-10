@@ -34,14 +34,10 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Create the window implementation
     ///
-    /// \param mode     Video mode to use
-    /// \param title    Title of the window
-    /// \param style    Window style
-    /// \param state    Window state
-    /// \param settings Additional settings for the underlying OpenGL context
+    /// \param windowSettings Window settings
     ///
     ////////////////////////////////////////////////////////////
-    WindowImplUIKit(VideoMode mode, const String& title, Style style, State state, const ContextSettings& settings);
+    WindowImplUIKit(const WindowSettings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the OS-specific handle of the window

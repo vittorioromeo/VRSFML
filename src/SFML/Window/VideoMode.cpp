@@ -13,7 +13,7 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-VideoMode::VideoMode(Vector2u modeSize, unsigned int modeBitsPerPixel) : size(modeSize), bitsPerPixel(modeBitsPerPixel)
+VideoMode::VideoMode(Vector2u theSize, unsigned int theBitsPerPixel) : size(theSize), bitsPerPixel(theBitsPerPixel)
 {
 }
 

@@ -19,21 +19,13 @@ class SFML_WINDOW_API VideoMode
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// This constructors initializes all members to 0.
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] VideoMode() = default;
-
-    ////////////////////////////////////////////////////////////
     /// \brief Construct the video mode with its attributes
     ///
-    /// \param modeSize         Width and height in pixels
-    /// \param modeBitsPerPixel Pixel depths in bits per pixel
+    /// \param theSize         Width and height in pixels
+    /// \param theBitsPerPixel Pixel depths in bits per pixel
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit VideoMode(Vector2u modeSize, unsigned int modeBitsPerPixel = 32);
+    [[nodiscard]] explicit VideoMode(Vector2u theSize, unsigned int theBitsPerPixel = 32);
 
     ////////////////////////////////////////////////////////////
     /// \brief Tell whether or not the video mode is valid

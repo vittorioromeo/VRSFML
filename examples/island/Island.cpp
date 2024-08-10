@@ -15,7 +15,7 @@
 #include <SFML/Window/EventUtils.hpp>
 #include <SFML/Window/GameLoop.hpp>
 #include <SFML/Window/Keyboard.hpp>
-#include <SFML/Window/VideoMode.hpp>
+#include <SFML/Window/WindowSettings.hpp>
 
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Path.hpp>
@@ -137,7 +137,9 @@ int main()
     const auto font = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf").value();
 
     // Create the window of the application
-    sf::RenderWindow window(graphicsContext, sf::VideoMode(windowSize), "SFML Island", sf::Style::Titlebar | sf::Style::Close);
+    sf::RenderWindow window(graphicsContext,
+                            {.size{windowSize}, .title = "SFML Island", .style = sf::Style::Titlebar | sf::Style::Close});
+
     window.setVerticalSyncEnabled(true);
 
     // Create all of our graphics resources

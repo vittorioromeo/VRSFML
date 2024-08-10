@@ -10,6 +10,7 @@
 #include <SFML/Window/EventUtils.hpp>
 #include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/VideoModeUtils.hpp>
+#include <SFML/Window/WindowSettings.hpp>
 
 #include <SFML/System/Path.hpp>
 #include <SFML/System/Sleep.hpp>
@@ -94,15 +95,15 @@ int main(int, char**)
     // Create the graphics context
     sf::GraphicsContext graphicsContext;
 
-    sf::VideoMode screen(sf::VideoModeUtils::getDesktopMode());
+    const auto [size, bitsPerPixel] = sf::VideoModeUtils::getDesktopMode();
 
-    sf::RenderWindow window(graphicsContext, screen, "");
+    sf::RenderWindow window(graphicsContext, {.size = size, .bitsPerPixel = bitsPerPixel});
     window.setFramerateLimit(30);
 
     const auto texture = sf::Texture::loadFromFile(graphicsContext, "image.png").value();
 
     sf::Sprite image(texture.getRect());
-    image.setPosition(screen.size.to<sf::Vector2f>() / 2.f);
+    image.setPosition(size.to<sf::Vector2f>() / 2.f);
     image.setOrigin(texture.getSize().to<sf::Vector2f>() / 2.f);
 
     const auto font = sf::Font::openFromFile(graphicsContext, "tuffy.ttf").value();
@@ -129,9 +130,9 @@ int main(int, char**)
 
             if (const auto* resized = event->getIf<sf::Event::Resized>())
             {
-                const auto size = resized->size.to<sf::Vector2f>();
-                view.setSize(size);
-                view.setCenter(size / 2.f);
+                const auto fSize = resized->size.to<sf::Vector2f>();
+                view.setSize(fSize);
+                view.setCenter(fSize / 2.f);
                 window.setView(view);
             }
             else if (event->is<sf::Event::FocusLost>())

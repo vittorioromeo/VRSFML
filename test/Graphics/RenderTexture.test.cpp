@@ -31,10 +31,10 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
     {
         CHECK(!sf::RenderTexture::create(graphicsContext, {1'000'000, 1'000'000}).hasValue());
 
-        CHECK(sf::RenderTexture::create(graphicsContext, {100, 100}, sf::ContextSettings{/* depthBits */ 8, /* stencilBits */ 0})
+        CHECK(sf::RenderTexture::create(graphicsContext, {100, 100}, sf::ContextSettings{.depthBits = 8, .stencilBits = 0})
                   .hasValue());
 
-        CHECK(sf::RenderTexture::create(graphicsContext, {100, 100}, sf::ContextSettings{/* depthBits */ 0, /* stencilBits */ 8})
+        CHECK(sf::RenderTexture::create(graphicsContext, {100, 100}, sf::ContextSettings{.depthBits = 0, .stencilBits = 8})
                   .hasValue());
 
         const auto renderTexture = sf::RenderTexture::create(graphicsContext, {360, 480}).value();

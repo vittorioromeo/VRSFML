@@ -5,6 +5,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/EglContext.hpp>
+#include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/VideoModeUtils.hpp>
 #include <SFML/Window/WindowContext.hpp>
 #include <SFML/Window/WindowImpl.hpp>

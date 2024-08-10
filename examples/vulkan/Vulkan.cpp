@@ -11,9 +11,9 @@
 #include <SFML/Window/EventUtils.hpp>
 #include <SFML/Window/GameLoop.hpp>
 #include <SFML/Window/Keyboard.hpp>
-#include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/Vulkan.hpp>
 #include <SFML/Window/WindowBase.hpp>
+#include <SFML/Window/WindowSettings.hpp>
 
 #include <SFML/System/Angle.hpp>
 #include <SFML/System/Clock.hpp>
@@ -2583,7 +2583,7 @@ public:
 
 private:
     // NOLINTBEGIN(readability-identifier-naming)
-    sf::WindowBase window{sf::VideoMode({800, 600}), "SFML window with Vulkan", sf::Style::Default};
+    sf::WindowBase window{{.size{800u, 600u}, .title = "SFML window with Vulkan", .style = sf::Style::Default}};
 
     bool vulkanAvailable{sf::Vulkan::isAvailable()};
 

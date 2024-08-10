@@ -9,7 +9,7 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/EventUtils.hpp>
 #include <SFML/Window/GameLoop.hpp>
-#include <SFML/Window/VideoMode.hpp>
+#include <SFML/Window/WindowSettings.hpp>
 
 #include <cstdlib>
 
@@ -25,11 +25,11 @@ int main()
 
     // Create the window of the application with a stencil buffer
     sf::RenderWindow window(graphicsContext,
-                            sf::VideoMode({600, 600}),
-                            "SFML Stencil",
-                            sf::Style::Titlebar | sf::Style::Close,
-                            sf::State::Windowed,
-                            sf::ContextSettings{/* depthBits */ 0, /* stencilBits */ 8});
+                            {.size{600u, 600u},
+                             .title = "SFML Stencil",
+                             .style = sf::Style::Titlebar | sf::Style::Close,
+                             .state = sf::State::Windowed,
+                             .contextSettings{.depthBits = 0, .stencilBits = 8}});
 
     window.setVerticalSyncEnabled(true);
 

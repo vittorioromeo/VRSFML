@@ -10,7 +10,7 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/EventUtils.hpp>
 #include <SFML/Window/GameLoop.hpp>
-#include <SFML/Window/VideoMode.hpp>
+#include <SFML/Window/WindowSettings.hpp>
 
 #include <SFML/System/Path.hpp>
 #include <SFML/System/String.hpp>
@@ -32,9 +32,9 @@ int main()
 
     // Create the main window
     sf::RenderWindow window(graphicsContext,
-                            sf::VideoMode({800u, 600u}),
-                            "SFML Raw Mouse Input",
-                            sf::Style::Titlebar | sf::Style::Close);
+                            {.size{800u, 600u},
+                             .title = "SFML Raw Mouse Input",
+                             .style = sf::Style::Titlebar | sf::Style::Close});
 
     window.setVerticalSyncEnabled(true);
 

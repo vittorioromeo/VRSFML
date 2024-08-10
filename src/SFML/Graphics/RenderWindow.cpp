@@ -11,7 +11,6 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/GLCheck.hpp>
 #include <SFML/Window/GLExtensions.hpp>
-#include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/WindowBase.hpp>
 
 #include <SFML/System/String.hpp>
@@ -36,51 +35,12 @@ void retrieveWindowFrameBufferId(sf::GraphicsContext& graphicsContext, unsigned 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-RenderWindow::RenderWindow(GraphicsContext&       graphicsContext,
-                           VideoMode              mode,
-                           const String&          title,
-                           Style                  style,
-                           State                  state,
-                           const ContextSettings& settings) :
-Window(graphicsContext, mode, title, style, state, settings),
+RenderWindow::RenderWindow(GraphicsContext& graphicsContext, const WindowSettings& windowSettings) :
+Window(graphicsContext, windowSettings),
 RenderTarget(graphicsContext)
 {
     retrieveWindowFrameBufferId(getGraphicsContext(), m_defaultFrameBuffer);
     RenderTarget::initialize(); // Just initialize the render target part
-}
-
-
-////////////////////////////////////////////////////////////
-RenderWindow::RenderWindow(GraphicsContext&       graphicsContext,
-                           VideoMode              mode,
-                           const char*            title,
-                           Style                  style,
-                           State                  state,
-                           const ContextSettings& settings) :
-RenderWindow(graphicsContext, mode, String(title), style, state, settings)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-RenderWindow::RenderWindow(GraphicsContext&       graphicsContext,
-                           VideoMode              mode,
-                           const String&          title,
-                           State                  state,
-                           const ContextSettings& settings) :
-RenderWindow(graphicsContext, mode, title, sf::Style::Default, state, settings)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-RenderWindow::RenderWindow(GraphicsContext&       graphicsContext,
-                           VideoMode              mode,
-                           const char*            title,
-                           State                  state,
-                           const ContextSettings& settings) :
-RenderWindow(graphicsContext, mode, String(title), state, settings)
-{
 }
 
 

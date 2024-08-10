@@ -32,14 +32,14 @@ This PR is related to the issue #
 ```cpp
 #include <SFML/Graphics/RenderWindow.hpp>
 
-#include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/Event.hpp>
+#include <SFML/Window/WindowSettings.hpp>
 
 #include <SFML/Base/Optional.hpp>
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode({1280, 720}), "Minimal, complete and verifiable example");
+    sf::RenderWindow window({.size{1280u, 720u}, .title = "Minimal, complete and verifiable example"});
     window.setFramerateLimit(60);
 
     while (true)

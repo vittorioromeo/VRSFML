@@ -191,7 +191,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API StencilMode
 /// Usage example:
 /// \code
 /// // Make sure we create a RenderTarget with a stencil buffer by specifying it via the context settings
-/// sf::RenderWindow window(sf::VideoMode({250, 200}), "Stencil Window", sf::Style::Default, sf::ContextSettings{0, 8});
+/// sf::RenderWindow window({.size{250u, 200u}, .title = "Stencil Window", .contextSettings{.depthBits = 0, .stencilBits = 8});
 ///
 /// ...
 ///

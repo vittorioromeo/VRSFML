@@ -16,7 +16,7 @@
 #include <SFML/Window/EventUtils.hpp>
 #include <SFML/Window/Mouse.hpp>
 #include <SFML/Window/Touch.hpp>
-#include <SFML/Window/VideoMode.hpp>
+#include <SFML/Window/WindowSettings.hpp>
 
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Path.hpp>
@@ -55,11 +55,11 @@ sf::base::Optional<sf::RenderWindow> recreateWindow(sf::GraphicsContext&       g
     // Create the main window
     sf::base::Optional<sf::RenderWindow> window(sf::base::inPlace,
                                                 graphicsContext,
-                                                sf::VideoMode({800, 600}),
-                                                "SFML graphics with OpenGL",
-                                                sf::Style::Default,
-                                                sf::State::Windowed,
-                                                contextSettings);
+                                                sf::WindowSettings{.size{800u, 600u},
+                                                                   .title           = "SFML graphics with OpenGL",
+                                                                   .style           = sf::Style::Default,
+                                                                   .state           = sf::State::Windowed,
+                                                                   .contextSettings = contextSettings});
 
     window->setVerticalSyncEnabled(true);
     window->setMinimumSize({400u, 300u});

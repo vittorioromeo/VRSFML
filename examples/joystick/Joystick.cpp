@@ -12,7 +12,7 @@
 #include <SFML/Window/Joystick.hpp>
 #include <SFML/Window/JoystickIdentification.hpp>
 #include <SFML/Window/Keyboard.hpp>
-#include <SFML/Window/VideoMode.hpp>
+#include <SFML/Window/WindowSettings.hpp>
 
 #include <SFML/System/Path.hpp>
 
@@ -106,7 +106,8 @@ int main()
     sf::GraphicsContext graphicsContext;
 
     // Create the window of the application
-    sf::RenderWindow window(graphicsContext, sf::VideoMode({400, 775}), "Joystick", sf::Style::Close);
+    sf::RenderWindow window(graphicsContext, {.size{400, 775}, .title = "Joystick", .style = sf::Style::Close});
+
     window.setVerticalSyncEnabled(true);
 
     // Open the text font

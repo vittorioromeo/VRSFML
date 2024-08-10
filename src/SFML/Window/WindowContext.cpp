@@ -534,12 +534,12 @@ template <typename... GLContextArgs>
     //     !(sharedGlContext.m_settings.attributeFlags & ContextSettings::Attribute::Core))
     // {
     //     // Re-create our shared context as a core context
-    //     const ContextSettings sharedSettings{/* depthBits */ 0,
-    //                                          /* stencilBits */ 0,
-    //                                          /* antialiasingLevel */ 0,
-    //                                          settings.majorVersion,
-    //                                          settings.minorVersion,
-    //                                          settings.attributeFlags};
+    //     const ContextSettings sharedSettings{.depthBits = 0,
+    //                                          .stencilBits = 0,
+    //                                          .antialiasingLevel = 0,
+    //                                          .majorVersion = settings.majorVersion,
+    //                                          .minorVersion = settings.minorVersion,
+    //                                          .attributeFlags = settings.attributeFlags};
 
     //     sharedGlContext.emplace(nullptr, sharedSettings, Vector2u{1, 1});
     //     if (!sharedGlContext.initialize(sharedSettings))

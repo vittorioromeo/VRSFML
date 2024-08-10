@@ -11,6 +11,7 @@
 #include <SFML/Window/Unix/Utils.hpp>
 #include <SFML/Window/Unix/WindowImplX11.hpp>
 #include <SFML/Window/VideoModeUtils.hpp>
+#include <SFML/Window/WindowSettings.hpp>
 
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Sleep.hpp>
@@ -465,8 +466,8 @@ WindowImplX11::WindowImplX11(WindowHandle handle) : m_isExternal(true)
 
 
 ////////////////////////////////////////////////////////////
-WindowImplX11::WindowImplX11(VideoMode mode, const String& title, Style style, State state, const ContextSettings& settings) :
-m_fullscreen(state == State::Fullscreen),
+WindowImplX11::WindowImplX11(const WindowSettings& windowSettings) :
+m_fullscreen(windowSettings.state == State::Fullscreen),
 m_cursorGrabbed(m_fullscreen)
 {
     using namespace WindowImplX11Impl;
@@ -488,17 +489,17 @@ m_cursorGrabbed(m_fullscreen)
     else
     {
         const Vector2i displaySize(DisplayWidth(m_display.get(), m_screen), DisplayHeight(m_display.get(), m_screen));
-        windowPosition = displaySize - mode.size.to<Vector2i>() / 2;
+        windowPosition = displaySize - windowSettings.size.to<Vector2i>() / 2;
     }
 
-    const unsigned int width  = mode.size.x;
-    const unsigned int height = mode.size.y;
+    const unsigned int width  = windowSettings.size.x;
+    const unsigned int height = windowSettings.size.y;
 
     Visual* visual = nullptr;
     int     depth  = 0;
 
-    // Check if the user chose to not create an OpenGL context (settings.attributeFlags will be 0xFFFFFFFF)
-    if (settings.attributeFlags == 0xFFFFFFFF)
+    // Check if the user chose to not create an OpenGL context (windowSettings.contextSettings.attributeFlags will be 0xFFFFFFFF)
+    if (windowSettings.contextSettings.attributeFlags == 0xFFFFFFFF)
     {
         // Choose default visual since the user is going to use their own rendering API
         visual = DefaultVisual(m_display.get(), m_screen);
@@ -506,8 +507,12 @@ m_cursorGrabbed(m_fullscreen)
     }
     else
     {
+        // TODO P1: is this path ever reached? If not, we can get rid of `const ContextSettings&` from all window impls
+
         // Choose the visual according to the context settings
-        const XVisualInfo visualInfo = DerivedGlContextType::selectBestVisual(m_display.get(), mode.bitsPerPixel, settings);
+        const XVisualInfo visualInfo = DerivedGlContextType::selectBestVisual(m_display.get(),
+                                                                              windowSettings.bitsPerPixel,
+                                                                              windowSettings.contextSettings);
 
         visual = visualInfo.visual;
         depth  = visualInfo.depth;
@@ -585,19 +590,19 @@ m_cursorGrabbed(m_fullscreen)
                 unsigned long state{};
             } hints;
 
-            if (!!(style & Style::Titlebar))
+            if (!!(windowSettings.style & Style::Titlebar))
             {
                 hints.decorations |= MWM_DECOR_BORDER | MWM_DECOR_TITLE | MWM_DECOR_MINIMIZE | MWM_DECOR_MENU;
                 hints.functions |= MWM_FUNC_MOVE | MWM_FUNC_MINIMIZE;
             }
 
-            if (!!(style & Style::Resize))
+            if (!!(windowSettings.style & Style::Resize))
             {
                 hints.decorations |= MWM_DECOR_MAXIMIZE | MWM_DECOR_RESIZEH;
                 hints.functions |= MWM_FUNC_MAXIMIZE | MWM_FUNC_RESIZE;
             }
 
-            if (!!(style & Style::Close))
+            if (!!(windowSettings.style & Style::Close))
             {
                 hints.decorations |= 0;
                 hints.functions |= MWM_FUNC_CLOSE;
@@ -615,7 +620,7 @@ m_cursorGrabbed(m_fullscreen)
     }
 
     // This is a hack to force some windows managers to disable resizing
-    if (!(style & Style::Resize))
+    if (!(windowSettings.style & Style::Resize))
     {
         m_useSizeHints = true;
         XSizeHints sizeHints{};

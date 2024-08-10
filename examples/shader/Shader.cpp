@@ -18,7 +18,7 @@
 #include <SFML/Window/GameLoop.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/Mouse.hpp>
-#include <SFML/Window/VideoMode.hpp>
+#include <SFML/Window/WindowSettings.hpp>
 
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Path.hpp>
@@ -479,7 +479,9 @@ int main()
     instructions.setOutlineColor(sf::Color::Red);
 
     // Create the main window
-    sf::RenderWindow window(graphicsContext, sf::VideoMode({800, 600}), "SFML Shader", sf::Style::Titlebar | sf::Style::Close);
+    sf::RenderWindow window(graphicsContext,
+                            {.size{800u, 600u}, .title = "SFML Shader", .style = sf::Style::Titlebar | sf::Style::Close});
+
     window.setVerticalSyncEnabled(true);
 
     // Start the game loop

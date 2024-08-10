@@ -1,5 +1,3 @@
-#include "SFML/System/Vector2.hpp"
-
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
@@ -8,6 +6,7 @@
 #include <SFML/Graphics/CircleShape.hpp>
 
 #include <SFML/System/Angle.hpp>
+#include <SFML/System/Vector2.hpp>
 
 #include <vector>
 
