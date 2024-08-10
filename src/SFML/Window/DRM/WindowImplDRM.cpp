@@ -8,6 +8,7 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/InputImpl.hpp>
 #include <SFML/Window/WindowEnums.hpp>
+#include <SFML/Window/WindowSettings.hpp>
 
 #include <SFML/System/Err.hpp>
 
@@ -48,12 +49,7 @@ WindowImplDRM::WindowImplDRM(WindowHandle /*handle*/)
 
 
 ////////////////////////////////////////////////////////////
-WindowImplDRM::WindowImplDRM(VideoMode mode,
-                             const String& /* title */,
-                             Style /* style */,
-                             State /* state */,
-                             const ContextSettings& /* settings */) :
-m_size(mode.size)
+WindowImplDRM::WindowImplDRM(const WindowSettings& windowSettings) : m_size(windowSettings.size)
 {
     InputImpl::setTerminalConfig();
 }

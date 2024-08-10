@@ -22,10 +22,9 @@
 
 namespace sf
 {
-struct ContextSettings;
+struct WindowSettings;
 class String;
 class Time;
-class VideoMode;
 
 namespace Vulkan
 {
@@ -55,11 +54,7 @@ public:
     /// \return Pointer to the created window
     ///
     ////////////////////////////////////////////////////////////
-    static base::UniquePtr<WindowImpl> create(VideoMode              mode,
-                                              const String&          title,
-                                              Style                  style,
-                                              State                  state,
-                                              const ContextSettings& settings);
+    static base::UniquePtr<WindowImpl> create(WindowSettings windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new window depending on to the current OS

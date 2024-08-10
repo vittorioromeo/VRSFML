@@ -10,6 +10,7 @@
 #include <SFML/Window/Window.hpp>
 #include <SFML/Window/WindowContext.hpp>
 #include <SFML/Window/WindowImpl.hpp>
+#include <SFML/Window/WindowSettings.hpp>
 
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Err.hpp>
@@ -61,20 +62,8 @@ m_impl(windowContext, windowContext.createGlContext(settings, getWindowImpl(), b
 
 
 ////////////////////////////////////////////////////////////
-Window::Window(WindowContext&         windowContext,
-               VideoMode              mode,
-               const String&          title,
-               Style                  style,
-               State                  state,
-               const ContextSettings& settings) :
-Window(windowContext, settings, priv::WindowImpl::create(mode, title, style, state, settings), mode.bitsPerPixel)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-Window::Window(WindowContext& windowContext, VideoMode mode, const String& title, State state, const ContextSettings& settings) :
-Window(windowContext, mode, title, sf::Style::Default, state, settings)
+Window::Window(WindowContext& windowContext, const WindowSettings& windowSettings) :
+Window(windowContext, windowSettings.contextSettings, priv::WindowImpl::create(windowSettings), windowSettings.bitsPerPixel)
 {
 }
 
@@ -82,25 +71,6 @@ Window(windowContext, mode, title, sf::Style::Default, state, settings)
 ////////////////////////////////////////////////////////////
 Window::Window(WindowContext& windowContext, WindowHandle handle, const ContextSettings& settings) :
 Window(windowContext, settings, handle, VideoModeUtils::getDesktopMode().bitsPerPixel)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-Window::Window(WindowContext&         windowContext,
-               VideoMode              mode,
-               const char*            title,
-               Style                  style,
-               State                  state,
-               const ContextSettings& settings) :
-Window(windowContext, mode, String(title), style, state, settings)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-Window::Window(WindowContext& windowContext, VideoMode mode, const char* title, State state, const ContextSettings& settings) :
-Window(windowContext, mode, String(title), state, settings)
 {
 }
 

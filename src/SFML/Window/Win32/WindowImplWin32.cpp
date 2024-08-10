@@ -8,6 +8,7 @@
 #include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/Win32/WindowImplWin32.hpp>
 #include <SFML/Window/WindowEnums.hpp>
+#include <SFML/Window/WindowSettings.hpp>
 
 #include <SFML/System/Err.hpp>
 #include <SFML/System/String.hpp>
@@ -146,9 +147,9 @@ WindowImplWin32::WindowImplWin32(WindowHandle handle) : m_handle(handle)
 
 
 ////////////////////////////////////////////////////////////
-WindowImplWin32::WindowImplWin32(VideoMode mode, const String& title, Style style, State state, const ContextSettings& /*settings*/) :
-m_lastSize(mode.size),
-m_fullscreen(state == State::Fullscreen),
+WindowImplWin32::WindowImplWin32(const WindowSettings& windowSettings) :
+m_lastSize(windowSettings.size),
+m_fullscreen(windowSettings.state == State::Fullscreen),
 m_cursorGrabbed(m_fullscreen)
 {
     // Set that this process is DPI aware and can handle DPI scaling
@@ -160,24 +161,24 @@ m_cursorGrabbed(m_fullscreen)
 
     // Compute position and size
     HDC       screenDC   = GetDC(nullptr);
-    const int left       = (GetDeviceCaps(screenDC, HORZRES) - static_cast<int>(mode.size.x)) / 2;
-    const int top        = (GetDeviceCaps(screenDC, VERTRES) - static_cast<int>(mode.size.y)) / 2;
-    auto [width, height] = mode.size.to<Vector2i>();
+    const int left       = (GetDeviceCaps(screenDC, HORZRES) - static_cast<int>(windowSettings.size.x)) / 2;
+    const int top        = (GetDeviceCaps(screenDC, VERTRES) - static_cast<int>(windowSettings.size.y)) / 2;
+    auto [width, height] = windowSettings.size.to<Vector2i>();
     ReleaseDC(nullptr, screenDC);
 
     // Choose the window style according to the Style parameter
     DWORD win32Style = WS_VISIBLE;
-    if (style == Style::None)
+    if (windowSettings.style == Style::None)
     {
         win32Style |= WS_POPUP;
     }
     else
     {
-        if (!!(style & Style::Titlebar))
+        if (!!(windowSettings.style & Style::Titlebar))
             win32Style |= WS_CAPTION | WS_MINIMIZEBOX;
-        if (!!(style & Style::Resize))
+        if (!!(windowSettings.style & Style::Resize))
             win32Style |= WS_THICKFRAME | WS_MAXIMIZEBOX;
-        if (!!(style & Style::Close))
+        if (!!(windowSettings.style & Style::Close))
             win32Style |= WS_SYSMENU;
     }
 
@@ -192,7 +193,7 @@ m_cursorGrabbed(m_fullscreen)
 
     // Create the window
     m_handle = CreateWindowW(className,
-                             title.toWideString().c_str(),
+                             windowSettings.title.toWideString().c_str(),
                              win32Style,
                              left,
                              top,
@@ -223,11 +224,11 @@ m_cursorGrabbed(m_fullscreen)
 
     // By default, the OS limits the size of the window the the desktop size,
     // we have to resize it after creation to apply the real size
-    setSize(mode.size);
+    setSize(windowSettings.size);
 
     // Switch to fullscreen if requested
     if (m_fullscreen)
-        switchToFullscreen(mode);
+        switchToFullscreen(VideoMode{windowSettings.size, windowSettings.bitsPerPixel});
 
     // Increment window count
     ++windowCount;

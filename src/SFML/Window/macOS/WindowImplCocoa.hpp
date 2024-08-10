@@ -33,6 +33,7 @@ using NSOpenGLContextRef    = void*;
 
 namespace sf
 {
+struct WindowSettings;
 class String;
 
 namespace priv
@@ -62,7 +63,7 @@ public:
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    WindowImplCocoa(VideoMode mode, const String& title, Style style, State state, const ContextSettings& settings);
+    WindowImplCocoa(const WindowSettings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor

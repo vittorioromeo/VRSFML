@@ -19,7 +19,7 @@ TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
     {
         auto renderTexture = sf::RenderTexture::create(graphicsContext,
                                                        {100, 100},
-                                                       sf::ContextSettings{/* depthBits */ 0, /* stencilBits */ 8})
+                                                       sf::ContextSettings{.depthBits = 0, .stencilBits = 8})
                                  .value();
 
         renderTexture.clear(sf::Color::Red, 127);

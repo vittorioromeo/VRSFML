@@ -258,7 +258,7 @@ private:
 ///
 /// \code
 /// // Create a new render-window
-/// sf::RenderWindow window(sf::VideoMode({800, 600}), "SFML window");
+/// sf::RenderWindow window({.size{800u, 600u}, .title = "SFML Window"});
 ///
 /// // Create a new render-texture
 /// auto renderTexture = sf::RenderTexture::create(graphicsContext, {500, 500}).value();

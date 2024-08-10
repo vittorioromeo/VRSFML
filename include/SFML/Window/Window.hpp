@@ -26,66 +26,10 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Construct a new window
     ///
-    /// This constructor creates the window with the size and pixel
-    /// depth defined in \a mode. An optional style can be passed to
-    /// customize the look and behavior of the window (borders,
-    /// title bar, resizable, closable, ...). An optional state can
-    /// be provided. If \a state is State::Fullscreen, then \a mode
-    /// must be a valid video mode.
-    ///
-    /// The last parameter is an optional structure specifying
-    /// advanced OpenGL context settings such as antialiasing,
-    /// depth-buffer bits, etc.
-    ///
-    /// \param mode     Video mode to use (defines the width, height and depth of the rendering area of the window)
-    /// \param title    Title of the window
-    /// \param style    %Window style, a bitwise OR combination of sf::Style enumerators
-    /// \param state    %Window state
-    /// \param settings Additional settings for the underlying OpenGL context
+    /// Creates the render window with the specified \a windowSettings.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Window(WindowContext&         windowContext,
-                                  VideoMode              mode,
-                                  const String&          title,
-                                  Style                  style    = Style::Default,
-                                  State                  state    = State::Windowed,
-                                  const ContextSettings& settings = ContextSettings());
-
-    [[nodiscard]] explicit Window(WindowContext&         windowContext,
-                                  VideoMode              mode,
-                                  const char*            title,
-                                  Style                  style    = Style::Default,
-                                  State                  state    = State::Windowed,
-                                  const ContextSettings& settings = ContextSettings());
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct a new window
-    ///
-    /// This constructor creates the window with the size and pixel
-    /// depth defined in \a mode. If \a state is State::Fullscreen,
-    /// then \a mode must be a valid video mode.
-    ///
-    /// The last parameter is an optional structure specifying
-    /// advanced OpenGL context settings such as antialiasing,
-    /// depth-buffer bits, etc.
-    ///
-    /// \param mode     Video mode to use (defines the width, height and depth of the rendering area of the window)
-    /// \param title    Title of the window
-    /// \param state    %Window state
-    /// \param settings Additional settings for the underlying OpenGL context
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Window(WindowContext&         windowContext,
-                                  VideoMode              mode,
-                                  const String&          title,
-                                  State                  state,
-                                  const ContextSettings& settings = ContextSettings());
-
-    [[nodiscard]] explicit Window(WindowContext&         windowContext,
-                                  VideoMode              mode,
-                                  const char*            title,
-                                  State                  state,
-                                  const ContextSettings& settings = ContextSettings());
+    [[nodiscard]] Window(WindowContext& windowContext, const WindowSettings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control
@@ -270,7 +214,7 @@ private:
 /// Usage example:
 /// \code
 /// // Declare and create a new window
-/// sf::Window window(sf::VideoMode({800, 600}), "SFML window");
+/// sf::Window window({.size{800u, 600u}, .title = "SFML Window"});
 ///
 /// // Limit the framerate to 60 frames per second (this step is optional)
 /// window.setFramerateLimit(60);

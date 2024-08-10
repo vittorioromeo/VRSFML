@@ -25,7 +25,7 @@ SFContext::SFContext(SFContext* shared)
     // Create the context
     createContext(shared,
                   VideoModeUtils::getDesktopMode().bitsPerPixel,
-                  ContextSettings{/* depthBits */ 0, /* stencilBits */ 0, /* antialiasingLevel */ 0});
+                  ContextSettings{.depthBits = 0, .stencilBits = 0, .antialiasingLevel = 0});
 }
 
 

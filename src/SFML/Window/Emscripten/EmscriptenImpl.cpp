@@ -14,6 +14,7 @@
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/VideoModeImpl.hpp>
 #include <SFML/Window/WindowEnums.hpp>
+#include <SFML/Window/WindowSettings.hpp>
 
 #include <SFML/System/Err.hpp>
 #include <SFML/System/String.hpp>
@@ -700,12 +701,7 @@ WindowImplEmscripten::WindowImplEmscripten(WindowHandle /* handle */) : m_keyRep
 
 
 ////////////////////////////////////////////////////////////
-WindowImplEmscripten::WindowImplEmscripten(VideoMode mode,
-                                           const String& /* title */,
-                                           Style /* style */,
-                                           State state,
-                                           const ContextSettings& /* settings */) :
-m_keyRepeatEnabled(true)
+WindowImplEmscripten::WindowImplEmscripten(const WindowSettings& windowSettings) : m_keyRepeatEnabled(true)
 {
     if (window != nullptr)
     {
@@ -717,9 +713,9 @@ m_keyRepeatEnabled(true)
 
     window = this;
 
-    setSize(mode.size);
+    setSize(windowSettings.size);
 
-    if (state == State::Fullscreen)
+    if (windowSettings.state == State::Fullscreen)
         fullscreenPending = true;
 }
 

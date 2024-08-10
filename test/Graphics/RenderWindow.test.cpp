@@ -6,7 +6,7 @@
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/View.hpp>
 
-#include <SFML/Window/VideoMode.hpp>
+#include <SFML/Window/WindowSettings.hpp>
 
 #include <SFML/System/String.hpp>
 
@@ -38,11 +38,12 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
         SECTION("Style, state, and settings")
         {
             const sf::RenderWindow window(graphicsContext,
-                                          sf::VideoMode(sf::Vector2u{256, 256}, 24),
-                                          "Window Title",
-                                          sf::Style::Default,
-                                          sf::State::Windowed,
-                                          sf::ContextSettings{});
+                                          {.size{256u, 256u},
+                                           .bitsPerPixel = 24,
+                                           .title        = "RenderWindow Tests",
+                                           .style        = sf::Style::Default,
+                                           .state        = sf::State::Windowed});
+
             CHECK(window.getSize() == sf::Vector2u{256, 256});
 #ifndef SFML_SYSTEM_EMSCRIPTEN
             CHECK(window.getNativeHandle() != sf::WindowHandle());
@@ -60,11 +61,10 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 
         SECTION("State and settings")
         {
-            const sf::RenderWindow window(graphicsContext,
-                                          sf::VideoMode(sf::Vector2u{240, 300}, 24),
-                                          "Window Title",
-                                          sf::State::Windowed,
-                                          sf::ContextSettings{});
+            const sf::RenderWindow
+                window(graphicsContext,
+                       {.size{240u, 300u}, .bitsPerPixel = 24, .title = "RenderWindow Tests", .state = sf::State::Windowed});
+
             CHECK(window.getSize() == sf::Vector2u{240, 300});
 #ifndef SFML_SYSTEM_EMSCRIPTEN
             CHECK(window.getNativeHandle() != sf::WindowHandle());
@@ -85,11 +85,12 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
     SECTION("Clear")
     {
         sf::RenderWindow window(graphicsContext,
-                                sf::VideoMode(sf::Vector2u{256, 256}, 24),
-                                "Window Title",
-                                sf::Style::Default,
-                                sf::State::Windowed,
-                                sf::ContextSettings{});
+                                {.size{256u, 256u},
+                                 .bitsPerPixel = 24,
+                                 .title        = "RenderWindow Tests",
+                                 .style        = sf::Style::Default,
+                                 .state        = sf::State::Windowed});
+
         REQUIRE(window.getSize() == sf::Vector2u{256, 256});
 
         auto texture = sf::Texture::create(graphicsContext, sf::Vector2u{256, 256}).value();
@@ -111,10 +112,11 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 #ifndef SFML_SYSTEM_EMSCRIPTEN
     SECTION("Multiple windows 1")
     {
-        sf::RenderWindow window(graphicsContext, sf::VideoMode({256, 256}), "A");
+        sf::RenderWindow window(graphicsContext, {.size{256u, 256u}, .title = "A"});
 
-        sf::base::Optional<sf::RenderWindow>
-            childWindow(sf::base::inPlace, graphicsContext, sf::VideoMode({256, 256}), "B");
+        sf::base::Optional<sf::RenderWindow> childWindow(sf::base::inPlace,
+                                                         graphicsContext,
+                                                         sf::WindowSettings{.size{256u, 256u}, .title = "B"});
 
         window.clear();
         window.display();
@@ -127,10 +129,11 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 
     SECTION("Multiple windows 2")
     {
-        sf::RenderWindow window(graphicsContext, sf::VideoMode({256, 256}), "A");
+        sf::RenderWindow window(graphicsContext, {.size{256u, 256u}, .title = "A"});
 
-        sf::base::Optional<sf::RenderWindow>
-            childWindow(sf::base::inPlace, graphicsContext, sf::VideoMode({256, 256}), "B");
+        sf::base::Optional<sf::RenderWindow> childWindow(sf::base::inPlace,
+                                                         graphicsContext,
+                                                         sf::WindowSettings{.size{256u, 256u}, .title = "B"});
 
         window.clear();
         window.display();
@@ -144,10 +147,11 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 
     SECTION("Multiple windows 3")
     {
-        sf::RenderWindow window(graphicsContext, sf::VideoMode({256, 256}), "A");
+        sf::RenderWindow window(graphicsContext, {.size{256u, 256u}, .title = "A"});
 
-        sf::base::Optional<sf::RenderWindow>
-            childWindow(sf::base::inPlace, graphicsContext, sf::VideoMode({256, 256}), "B");
+        sf::base::Optional<sf::RenderWindow> childWindow(sf::base::inPlace,
+                                                         graphicsContext,
+                                                         sf::WindowSettings{.size{256u, 256u}, .title = "B"});
 
         childWindow->clear();
         childWindow->display();
@@ -158,10 +162,11 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 
     SECTION("Multiple windows 4")
     {
-        sf::RenderWindow window(graphicsContext, sf::VideoMode({256, 256}), "A");
+        sf::RenderWindow window(graphicsContext, {.size{256u, 256u}, .title = "A"});
 
-        sf::base::Optional<sf::RenderWindow>
-            childWindow(sf::base::inPlace, graphicsContext, sf::VideoMode({256, 256}), "B");
+        sf::base::Optional<sf::RenderWindow> childWindow(sf::base::inPlace,
+                                                         graphicsContext,
+                                                         sf::WindowSettings{.size{256u, 256u}, .title = "B"});
 
         childWindow->clear();
         childWindow->display();

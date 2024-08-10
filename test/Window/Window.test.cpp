@@ -2,7 +2,7 @@
 #include <SFML/Window/WindowContext.hpp>
 
 // Other 1st party headers
-#include <SFML/Window/VideoMode.hpp>
+#include <SFML/Window/WindowSettings.hpp>
 
 #include <SFML/System/String.hpp>
 
@@ -32,7 +32,8 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
     {
         SECTION("Mode and title constructor")
         {
-            const sf::Window window(windowContext, sf::VideoMode({360, 240}), "Window Tests");
+            const sf::Window window(windowContext, {.size{360u, 240u}, .title = "Window Tests"});
+
             CHECK(window.getSize() == sf::Vector2u{360, 240});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
             CHECK(window.getSettings().attributeFlags == sf::ContextSettings{}.attributeFlags);
@@ -40,7 +41,8 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
         SECTION("Mode, title, and style constructor")
         {
-            const sf::Window window(windowContext, sf::VideoMode({360, 240}), "Window Tests", sf::Style::Resize);
+            const sf::Window window(windowContext, {.size{360u, 240u}, .title = "Window Tests", .style = sf::Style::Resize});
+
             CHECK(window.getSize() == sf::Vector2u{360, 240});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
             CHECK(window.getSettings().attributeFlags == sf::ContextSettings{}.attributeFlags);
@@ -48,7 +50,12 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
         SECTION("Mode, title, style, and state constructor")
         {
-            const sf::Window window(windowContext, sf::VideoMode({360, 240}), "Window Tests", sf::Style::Resize, sf::State::Windowed);
+            const sf::Window window(windowContext,
+                                    {.size{360u, 240u},
+                                     .title = "Window Tests",
+                                     .style = sf::Style::Resize,
+                                     .state = sf::State::Windowed});
+
             CHECK(window.getSize() == sf::Vector2u{360, 240});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
             CHECK(window.getSettings().attributeFlags == sf::ContextSettings{}.attributeFlags);
@@ -57,11 +64,12 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
         SECTION("Mode, title, style, state, and context settings constructor")
         {
             const sf::Window window(windowContext,
-                                    sf::VideoMode({360, 240}),
-                                    "Window Tests",
-                                    sf::Style::Resize,
-                                    sf::State::Windowed,
-                                    sf::ContextSettings{/* depthBits*/ 1, /* stencilBits */ 1, /* antialiasingLevel */ 1});
+                                    {.size{360u, 240u},
+                                     .title = "Window Tests",
+                                     .style = sf::Style::Resize,
+                                     .state = sf::State::Windowed,
+                                     .contextSettings{.depthBits = 1, .stencilBits = 1, .antialiasingLevel = 1}});
+
             CHECK(window.getSize() == sf::Vector2u{360, 240});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
             CHECK(window.getSettings().depthBits >= 1);
@@ -71,7 +79,9 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
         SECTION("Mode, title, and state")
         {
-            const sf::Window window(windowContext, sf::VideoMode({360, 240}), "Window Tests", sf::State::Windowed);
+            const sf::Window window(windowContext,
+                                    {.size{360u, 240u}, .title = "Window Tests", .state = sf::State::Windowed});
+
             CHECK(window.getSize() == sf::Vector2u{360, 240});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
             CHECK(window.getSettings().attributeFlags == sf::ContextSettings{}.attributeFlags);
@@ -80,10 +90,11 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
         SECTION("Mode, title, state, and context settings constructor")
         {
             const sf::Window window(windowContext,
-                                    sf::VideoMode({360, 240}),
-                                    "Window Tests",
-                                    sf::State::Windowed,
-                                    sf::ContextSettings{/* depthBits*/ 1, /* stencilBits */ 1, /* antialiasingLevel */ 1});
+                                    {.size{360u, 240u},
+                                     .title = "Window Tests",
+                                     .state = sf::State::Windowed,
+                                     .contextSettings{.depthBits = 1, .stencilBits = 1, .antialiasingLevel = 1}});
+
             CHECK(window.getSize() == sf::Vector2u{360, 240});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
             CHECK(window.getSettings().depthBits >= 1);
@@ -96,8 +107,11 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 #ifndef SFML_SYSTEM_EMSCRIPTEN
     SECTION("Multiple windows 1")
     {
-        sf::Window                     window(windowContext, sf::VideoMode({256, 256}), "A");
-        sf::base::Optional<sf::Window> childWindow(sf::base::inPlace, windowContext, sf::VideoMode({256, 256}), "B");
+        sf::Window window(windowContext, {.size{256u, 256u}, .title = "A"});
+
+        sf::base::Optional<sf::Window> childWindow(sf::base::inPlace,
+                                                   windowContext,
+                                                   sf::WindowSettings{.size{256u, 256u}, .title = "B"});
 
         window.display();
         childWindow.reset();
@@ -106,8 +120,11 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
     SECTION("Multiple windows 2")
     {
-        sf::Window                     window(windowContext, sf::VideoMode({256, 256}), "A");
-        sf::base::Optional<sf::Window> childWindow(sf::base::inPlace, windowContext, sf::VideoMode({256, 256}), "B");
+        sf::Window window(windowContext, {.size{256u, 256u}, .title = "A"});
+
+        sf::base::Optional<sf::Window> childWindow(sf::base::inPlace,
+                                                   windowContext,
+                                                   sf::WindowSettings{.size{256u, 256u}, .title = "B"});
 
         window.display();
         childWindow->display();
@@ -116,8 +133,11 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
     SECTION("Multiple windows 3")
     {
-        sf::Window                     window(windowContext, sf::VideoMode({256, 256}), "A");
-        sf::base::Optional<sf::Window> childWindow(sf::base::inPlace, windowContext, sf::VideoMode({256, 256}), "B");
+        sf::Window window(windowContext, {.size{256u, 256u}, .title = "A"});
+
+        sf::base::Optional<sf::Window> childWindow(sf::base::inPlace,
+                                                   windowContext,
+                                                   sf::WindowSettings{.size{256u, 256u}, .title = "B"});
 
         childWindow->display();
         window.display();
@@ -125,8 +145,11 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
     SECTION("Multiple windows 4")
     {
-        sf::Window                     window(windowContext, sf::VideoMode({256, 256}), "A");
-        sf::base::Optional<sf::Window> childWindow(sf::base::inPlace, windowContext, sf::VideoMode({256, 256}), "B");
+        sf::Window window(windowContext, {.size{256u, 256u}, .title = "A"});
+
+        sf::base::Optional<sf::Window> childWindow(sf::base::inPlace,
+                                                   windowContext,
+                                                   sf::WindowSettings{.size{256u, 256u}, .title = "B"});
 
         childWindow->display();
         childWindow.reset();

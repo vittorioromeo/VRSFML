@@ -1,5 +1,3 @@
-#include "SFML/Base/Optional.hpp"
-
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
@@ -13,6 +11,7 @@
 #include <SFML/System/Err.hpp>
 
 #include <SFML/Base/Algorithm.hpp>
+#include <SFML/Base/Optional.hpp>
 
 #include <vector>
 

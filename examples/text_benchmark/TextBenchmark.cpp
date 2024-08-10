@@ -13,7 +13,7 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/EventUtils.hpp>
 #include <SFML/Window/GameLoop.hpp>
-#include <SFML/Window/VideoMode.hpp>
+#include <SFML/Window/WindowSettings.hpp>
 
 #include <SFML/System/Clock.hpp>
 
@@ -25,9 +25,12 @@ int main()
     sf::ImGui::ImGuiContext imGuiContext(graphicsContext);
 
 #if 0
-    sf::RenderWindow window(graphicsContext, sf::VideoMode({1280, 720}), "ImGui + SFML = <3");
-    sf::base::Optional<sf::RenderWindow>
-        childWindow(sf::base::inPlace, graphicsContext, sf::VideoMode({640, 480}), "ImGui-SFML Child window");
+    sf::RenderWindow window(graphicsContext, {.size{1280u, 720u}, .title = "ImGui + SFML = <3"});
+
+    sf::base::Optional<sf::RenderWindow> childWindow(sf::base::inPlace,
+                                                     graphicsContext,
+                                                     sf::WindowSettings{.size{640u, 480u},
+                                                                        .title = "ImGui-SFML Child window"});
 
     window.clear();
     window.display();
@@ -40,13 +43,14 @@ int main()
 #else
 
 #if 1
-    sf::RenderWindow window(graphicsContext, sf::VideoMode({1280, 720}), "ImGui + SFML = <3");
+    sf::RenderWindow window(graphicsContext, {.size{1280u, 720u}, .title = "ImGui + SFML = <3"});
     window.setFramerateLimit(60);
     if (!imGuiContext.init(window))
         return -1;
 
-    sf::base::Optional<sf::RenderWindow>
-        childWindow(sf::base::inPlace, graphicsContext, sf::VideoMode({640, 480}), "ImGui-SFML Child window");
+    sf::base::Optional<sf::RenderWindow> childWindow(sf::base::inPlace,
+                                                     graphicsContext,
+                                                     sf::WindowSettings{.size{640u, 480u}, .title = "ImGui-SFML Child window"});
     childWindow->setFramerateLimit(60);
     if (!imGuiContext.init(*childWindow))
         return -1;
@@ -118,7 +122,7 @@ int main()
         SFML_GAME_LOOP_CONTINUE;
     };
 #else
-    sf::RenderWindow window(graphicsContext, sf::VideoMode({640, 480}), "ImGui + SFML = <3");
+    sf::RenderWindow window(graphicsContext, {.size{640u, 480u}, .title = "ImGui + SFML = <3"});
     window.setFramerateLimit(60);
 
     if (!imGuiContext.init(window))
@@ -182,7 +186,6 @@ int main()
 #include <SFML/Graphics/Texture.hpp>
 
 #include <SFML/Window/Event.hpp>
-#include <SFML/Window/VideoMode.hpp>
 
 #include <SFML/System/Path.hpp>
 #include <SFML/System/String.hpp>
@@ -209,11 +212,11 @@ int main()
     // TODO P0: aa level of 4 causes glcheck assert fail on opengl
 
     sf::RenderWindow window(graphicsContext,
-                            sf::VideoMode(screenSize),
-                            "Window",
-                            sf::Style::Default,
-                            sf::State::Windowed,
-                            sf::ContextSettings(0, 0, 4));
+                            {.size{screenSize},
+                             .title = "Window",
+                             .style = sf::Style::Default,
+                             .state = sf::State::Windowed,
+                             .contextSettings(0, 0, 4)});
 
     window.setVerticalSyncEnabled(true);
 
@@ -311,7 +314,9 @@ int main()
 {
     sf::GraphicsContext graphicsContext;
 
-    sf::RenderWindow window(graphicsContext, sf::VideoMode({800u, 600u}), "Test", sf::Style::Titlebar | sf::Style::Close);
+    sf::RenderWindow window(graphicsContext,
+                            {.size{800u, 600u}, .title = "Test", .style = sf::Style::Titlebar | sf::Style::Close});
+
     window.setVerticalSyncEnabled(false);
 
     const auto font = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf").value();

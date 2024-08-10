@@ -26,7 +26,7 @@
 #include <SFML/Window/EventUtils.hpp>
 #include <SFML/Window/GameLoop.hpp>
 #include <SFML/Window/Keyboard.hpp>
-#include <SFML/Window/VideoMode.hpp>
+#include <SFML/Window/WindowSettings.hpp>
 
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Path.hpp>
@@ -1064,9 +1064,9 @@ int main()
 
     // Create the main window
     sf::RenderWindow window(graphicsContext,
-                            sf::VideoMode({windowWidth, windowHeight}),
-                            "SFML Sound Effects",
-                            sf::Style::Titlebar | sf::Style::Close);
+                            {.size{windowWidth, windowHeight},
+                             .title = "SFML Sound Effects",
+                             .style = sf::Style::Titlebar | sf::Style::Close});
 
     window.setVerticalSyncEnabled(true);
 

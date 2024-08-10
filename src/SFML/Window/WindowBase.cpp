@@ -1,5 +1,3 @@
-#include "SFML/System/Vector2.hpp"
-
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
@@ -8,14 +6,15 @@
 #include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/Cursor.hpp>
 #include <SFML/Window/Event.hpp>
-#include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/Vulkan.hpp>
 #include <SFML/Window/WindowBase.hpp>
 #include <SFML/Window/WindowEnums.hpp>
 #include <SFML/Window/WindowHandle.hpp>
 #include <SFML/Window/WindowImpl.hpp>
+#include <SFML/Window/WindowSettings.hpp>
 
 #include <SFML/System/String.hpp>
+#include <SFML/System/Vector2.hpp>
 
 #include <SFML/Base/Algorithm.hpp>
 #include <SFML/Base/Assert.hpp>
@@ -25,6 +24,25 @@
 #include <climits>
 #include <cstdlib>
 
+
+namespace
+{
+////////////////////////////////////////////////////////////
+[[nodiscard]] sf::WindowSettings nullifyContextSettings(sf::WindowSettings windowSettings)
+{
+    windowSettings.contextSettings = sf::ContextSettings{.depthBits         = 0,
+                                                         .stencilBits       = 0,
+                                                         .antialiasingLevel = 0,
+                                                         .majorVersion      = 0,
+                                                         .minorVersion      = 0,
+                                                         .attributeFlags = sf::ContextSettings::Attribute{0xFFFFFFFFu},
+                                                         .sRgbCapable    = false};
+
+    return windowSettings;
+}
+
+
+} // namespace
 
 namespace sf
 {
@@ -57,44 +75,13 @@ WindowBase::WindowBase(base::UniquePtr<priv::WindowImpl>&& impl) : m_impl(SFML_B
 
 
 ////////////////////////////////////////////////////////////
-WindowBase::WindowBase(VideoMode mode, const String& title, Style style, State state) :
-WindowBase(priv::WindowImpl::create(mode,
-                                    title,
-                                    style,
-                                    state,
-                                    ContextSettings{/* depthBits */ 0,
-                                                    /* stencilBits */ 0,
-                                                    /* antialiasingLevel */ 0,
-                                                    /* majorVersion */ 0,
-                                                    /* minorVersion */ 0,
-                                                    /* attributeFlags */ ContextSettings::Attribute{0xFFFFFFFFu},
-                                                    /* sRgbCapable */ false}))
+WindowBase::WindowBase(const WindowSettings& windowSettings) :
+WindowBase(priv::WindowImpl::create(nullifyContextSettings(windowSettings)))
 {
 }
-
-
-////////////////////////////////////////////////////////////
-WindowBase::WindowBase(VideoMode mode, const String& title, State state) :
-WindowBase(mode, title, Style::Default, state)
-{
-}
-
 
 ////////////////////////////////////////////////////////////
 WindowBase::WindowBase(WindowHandle handle) : WindowBase(priv::WindowImpl::create(handle))
-{
-}
-
-
-////////////////////////////////////////////////////////////
-WindowBase::WindowBase(VideoMode mode, const char* title, Style style, State state) :
-WindowBase(mode, String(title), style, state)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-WindowBase::WindowBase(VideoMode mode, const char* title, State state) : WindowBase(mode, String(title), state)
 {
 }
 

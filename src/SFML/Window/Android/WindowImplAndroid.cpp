@@ -1,12 +1,12 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
-
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/Android/WindowImplAndroid.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/WindowEnums.hpp>
+#include <SFML/Window/WindowSettings.hpp>
 
 #include <SFML/System/Err.hpp>
 
@@ -34,17 +34,12 @@ WindowImplAndroid::WindowImplAndroid(WindowHandle /* handle */)
 
 
 ////////////////////////////////////////////////////////////
-WindowImplAndroid::WindowImplAndroid(VideoMode mode,
-                                     const String& /* title */,
-                                     Style /* style */,
-                                     State state,
-                                     const ContextSettings& /* settings */) :
-m_size(mode.size)
+WindowImplAndroid::WindowImplAndroid(const WindowSettings& windowSettings) : m_size(windowSettings.size)
 {
     ActivityStates&       states = getActivity();
     const std::lock_guard lock(states.mutex);
 
-    if (state == State::Fullscreen)
+    if (windowSettings.state == State::Fullscreen)
         states.fullscreen = true;
 
     WindowImplAndroid::singleInstance = this;

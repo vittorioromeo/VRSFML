@@ -7,7 +7,6 @@
 #include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/EGLCheck.hpp>
 #include <SFML/Window/GlContext.hpp>
-#include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/WindowEnums.hpp> // Prevent conflict with macro None from Xlib
 
 // TODO P0:
@@ -36,7 +35,7 @@ public:
     /// \param shared Context to share the new one with (can be a null pointer)
     ///
     ////////////////////////////////////////////////////////////
-    EglContext(WindowContext& windowContext, std::uint64_t id, EglContext* shared);
+    explicit EglContext(WindowContext& windowContext, std::uint64_t id, EglContext* shared);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context attached to a window
@@ -47,12 +46,12 @@ public:
     /// \param bitsPerPixel Pixel depth, in bits per pixel
     ///
     ////////////////////////////////////////////////////////////
-    EglContext(WindowContext&         windowContext,
-               std::uint64_t          id,
-               EglContext*            shared,
-               const ContextSettings& settings,
-               const WindowImpl&      owner,
-               unsigned int           bitsPerPixel);
+    explicit EglContext(WindowContext&         windowContext,
+                        std::uint64_t          id,
+                        EglContext*            shared,
+                        const ContextSettings& settings,
+                        const WindowImpl&      owner,
+                        unsigned int           bitsPerPixel);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context that embeds its own rendering target
@@ -63,7 +62,11 @@ public:
     /// \param size     Back buffer width and height, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    EglContext(WindowContext& windowContext, std::uint64_t id, EglContext* shared, const ContextSettings& settings, Vector2u size);
+    explicit EglContext(WindowContext&         windowContext,
+                        std::uint64_t          id,
+                        EglContext*            shared,
+                        const ContextSettings& settings,
+                        Vector2u               size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor

@@ -34,7 +34,7 @@
     sf::GraphicsContext     graphicsContext;               // Holds all "global" OpenGL state
     sf::ImGui::ImGuiContext imGuiContext(graphicsContext); // Holds all "global" ImGui state
 
-    sf::RenderWindow window(graphicsContext, sf::VideoMode({640u, 480u}), "ImGui + SFML = <3");
+    sf::RenderWindow window(graphicsContext, {.size{640u, 480u}, .title = "ImGui + SFML = <3"});
     sf::Clock deltaClock;
 
     SFML_GAME_LOOP

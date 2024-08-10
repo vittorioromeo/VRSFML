@@ -4,6 +4,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/WindowEnums.hpp>
+#include <SFML/Window/WindowSettings.hpp>
 #include <SFML/Window/iOS/SFAppDelegate.hpp>
 #include <SFML/Window/iOS/SFView.hpp>
 #include <SFML/Window/iOS/SFViewController.hpp>
@@ -25,15 +26,16 @@ WindowImplUIKit::WindowImplUIKit(WindowHandle /* handle */)
 
 
 ////////////////////////////////////////////////////////////
-WindowImplUIKit::WindowImplUIKit(VideoMode mode, const String& /* title */, Style style, State state, const ContextSettings& /* settings */)
+WindowImplUIKit::WindowImplUIKit(const WindowSettings& windowSettings)
 {
     m_backingScale = static_cast<float>([SFAppDelegate getInstance].backingScaleFactor);
 
     // Apply the fullscreen flag
-    [UIApplication sharedApplication].statusBarHidden = !(style & Style::Titlebar) || (state == State::Fullscreen);
+    [UIApplication sharedApplication].statusBarHidden = !(windowSettings.style & Style::Titlebar) ||
+                                                        (windowSettings.state == State::Fullscreen);
 
     // Set the orientation according to the requested size
-    if (mode.size.x > mode.size.y)
+    if (windowSettings.size.x > windowSettings.size.y)
         [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationLandscapeLeft];
     else
         [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationPortrait];
@@ -55,7 +57,7 @@ WindowImplUIKit::WindowImplUIKit(VideoMode mode, const String& /* title */, Styl
     // Create the view controller
     m_viewController                      = [SFViewController alloc];
     m_viewController.view                 = m_view;
-    m_viewController.orientationCanChange = style & Style::Resize;
+    m_viewController.orientationCanChange = windowSettings.style & Style::Resize;
     m_window.rootViewController           = m_viewController;
 
     // Make it the current window
