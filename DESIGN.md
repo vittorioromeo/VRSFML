@@ -1,3 +1,5 @@
+<!-- TODO: WindowSettings -->
+
 # Differences between upstream SFML and Vittorio's fork
 
 ## User-facing changes
