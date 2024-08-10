@@ -1,3 +1,5 @@
+#include "SFML/Base/IndexSequence.hpp"
+
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
@@ -25,11 +27,11 @@
 
 #include <SFML/Base/Algorithm.hpp>
 #include <SFML/Base/Assert.hpp>
+#include <SFML/Base/MakeIndexSequence.hpp>
 #include <SFML/Base/Math/Lround.hpp>
 #include <SFML/Base/Optional.hpp>
 
-#include <mutex>
-#include <unordered_map>
+#include <atomic>
 
 #include <cstddef>
 #include <cstdint>
@@ -40,38 +42,39 @@ namespace
 // A nested named namespace is used here to allow unity builds of SFML.
 namespace RenderTargetImpl
 {
-// Mutex to protect ID generation and our context-RenderTarget-map
-[[nodiscard]] std::recursive_mutex& getMutex()
-{
-    static std::recursive_mutex mutex;
-    return mutex;
-}
+// TODO P1: docs
+using IdType = std::uint64_t;
 
 // Unique identifier, used for identifying RenderTargets when
 // tracking the currently active RenderTarget within a given context
-[[nodiscard]] std::uint64_t getUniqueId()
-{
-    const std::lock_guard lock(getMutex());
-    static std::uint64_t  id = 1; // start at 1, zero is "no RenderTarget"
-    return id++;
-}
+constinit std::atomic<IdType> nextUniqueId{1ul};
 
-// Map to help us detect whether a different RenderTarget
-// has been activated within a single context
-using ContextRenderTargetMap = std::unordered_map<std::uint64_t, std::uint64_t>;
-[[nodiscard]] ContextRenderTargetMap& getContextRenderTargetMap()
+// TODO P1: docs
+constexpr auto invalidId{static_cast<IdType>(-1ul)};
+
+// TODO P1: docs
+constexpr std::size_t maxIdCount{256ul};
+
+// Map to help us detect whether a different RenderTarget has been activated within a single context
+template <typename>
+struct ContextRenderTargetMap;
+
+template <auto... Is>
+struct ContextRenderTargetMap<sf::base::IndexSequence<Is...>>
 {
-    static ContextRenderTargetMap contextRenderTargetMap;
-    return contextRenderTargetMap;
-}
+    std::atomic<IdType> data[maxIdCount]{((void)Is, invalidId)...};
+};
+
+constinit ContextRenderTargetMap<SFML_BASE_MAKE_INDEX_SEQUENCE(maxIdCount)> contextRenderTargetMap{};
 
 // Check if a RenderTarget with the given ID is active in the current context
-[[nodiscard]] bool isActive(sf::GraphicsContext& graphicsContext, std::uint64_t id)
+[[nodiscard]] bool isActive(sf::GraphicsContext& graphicsContext, IdType id)
 {
-    const auto& contextRenderTargetMap = getContextRenderTargetMap();
+    const IdType contextId = graphicsContext.getActiveThreadLocalGlContextId();
+    SFML_BASE_ASSERT(contextId < maxIdCount);
 
-    const auto it = contextRenderTargetMap.find(graphicsContext.getActiveThreadLocalGlContextId());
-    return (it != contextRenderTargetMap.end()) && (it->second == id);
+    const auto renderTargetId = contextRenderTargetMap.data[contextId].load();
+    return (renderTargetId != invalidId) && (renderTargetId == id);
 }
 
 // Convert an sf::BlendMode::Factor constant to the corresponding OpenGL constant.
@@ -242,21 +245,21 @@ template <auto FnGen, auto FnBind, auto FnGet, auto FnDelete>
 class OpenGLRAII
 {
 public:
-    [[nodiscard]] explicit OpenGLRAII(GraphicsContext&)
+    [[nodiscard, gnu::always_inline]] explicit OpenGLRAII(GraphicsContext&)
     {
         SFML_BASE_ASSERT(m_id == 0u);
         FnGen(m_id);
         SFML_BASE_ASSERT(m_id != 0u);
     }
 
-    [[nodiscard]] bool isBound() const
+    [[nodiscard, gnu::always_inline]] bool isBound() const
     {
         int out{};
         FnGet(out);
         return out != 0u;
     }
 
-    void bind() const
+    [[gnu::always_inline]] void bind() const
     {
         SFML_BASE_ASSERT(m_id != 0u);
         FnBind(m_id);
@@ -264,7 +267,7 @@ public:
         SFML_BASE_ASSERT(isBound());
     }
 
-    ~OpenGLRAII()
+    [[gnu::always_inline]] ~OpenGLRAII()
     {
         if (m_id != 0u)
             FnDelete(m_id);
@@ -273,11 +276,11 @@ public:
     OpenGLRAII(const OpenGLRAII&)            = delete;
     OpenGLRAII& operator=(const OpenGLRAII&) = delete;
 
-    OpenGLRAII(OpenGLRAII&& rhs) noexcept : m_id(base::exchange(rhs.m_id, 0u))
+    [[gnu::always_inline]] OpenGLRAII(OpenGLRAII&& rhs) noexcept : m_id(base::exchange(rhs.m_id, 0u))
     {
     }
 
-    OpenGLRAII& operator=(OpenGLRAII&& rhs) noexcept
+    [[gnu::always_inline]] OpenGLRAII& operator=(OpenGLRAII&& rhs) noexcept
     {
         if (&rhs == this)
             return *this;
@@ -359,13 +362,13 @@ struct RenderTarget::Impl
     {
     }
 
-    GraphicsContext* graphicsContext; //!< The window context
-    View             defaultView;     //!< Default view
-    View             view;            //!< Current view
-    StatesCache      cache{};         //!< Render states cache
-    std::uint64_t    id{};            //!< Unique number that identifies the render target
-    VAO              vao;             //!< Vertex array object associated with the render target
-    VBO              vbo;             //!< Vertex buffer object associated with the render target
+    GraphicsContext*         graphicsContext; //!< The window context
+    View                     defaultView;     //!< Default view
+    View                     view;            //!< Current view
+    StatesCache              cache{};         //!< Render states cache
+    RenderTargetImpl::IdType id{};            //!< Unique number that identifies the render target
+    VAO                      vao;             //!< Vertex array object associated with the render target
+    VBO                      vbo;             //!< Vertex buffer object associated with the render target
 };
 
 
@@ -536,6 +539,7 @@ void RenderTarget::draw(const Sprite& sprite, const Texture& texture, const Rend
     statesCopy.transform *= sprite.getTransform();
     statesCopy.coordinateType = CoordinateType::Pixels;
 
+    // TODO P1: consider making vertices here on demand? Also better for batching I guess. But need to pretransform?
     draw(sprite.m_vertices, PrimitiveType::TriangleStrip, statesCopy);
 }
 
@@ -666,28 +670,25 @@ bool RenderTarget::setActive(bool active)
         return true;
 
     // Mark this RenderTarget as active or no longer active in the tracking map
-    const std::lock_guard lock(RenderTargetImpl::getMutex());
+    const RenderTargetImpl::IdType contextId = m_impl->graphicsContext->getActiveThreadLocalGlContextId();
 
-    const std::uint64_t contextId = m_impl->graphicsContext->getActiveThreadLocalGlContextId();
-
-    auto& contextRenderTargetMap = RenderTargetImpl::getContextRenderTargetMap();
-
-    const auto it = contextRenderTargetMap.find(contextId);
+    SFML_BASE_ASSERT(contextId < RenderTargetImpl::maxIdCount);
+    std::atomic<RenderTargetImpl::IdType>& renderTargetId = RenderTargetImpl::contextRenderTargetMap.data[contextId];
 
     // Deactivation
     if (!active)
     {
-        SFML_BASE_ASSERT(it != contextRenderTargetMap.end());
-        contextRenderTargetMap.erase(it);
+        SFML_BASE_ASSERT(renderTargetId.load() != RenderTargetImpl::invalidId);
+        renderTargetId.store(RenderTargetImpl::invalidId);
 
         m_impl->cache.enable = false;
         return true;
     }
 
     // First ever activation
-    if (it == contextRenderTargetMap.end())
+    if (renderTargetId.load() == RenderTargetImpl::invalidId)
     {
-        contextRenderTargetMap[contextId] = m_impl->id;
+        renderTargetId.store(m_impl->id);
 
         m_impl->cache.glStatesSet = false;
         m_impl->cache.enable      = false;
@@ -695,8 +696,9 @@ bool RenderTarget::setActive(bool active)
     }
 
     // Activation on a different context
-    SFML_BASE_ASSERT(it->second != m_impl->id);
-    it->second = m_impl->id;
+    SFML_BASE_ASSERT(renderTargetId.load() != RenderTargetImpl::invalidId);
+    SFML_BASE_ASSERT(renderTargetId.load() != m_impl->id);
+    renderTargetId.store(m_impl->id);
 
     m_impl->cache.enable = false;
     return true;
@@ -802,7 +804,7 @@ void RenderTarget::initialize()
 
     // Generate a unique ID for this RenderTarget to track
     // whether it is active within a specific context
-    m_impl->id = RenderTargetImpl::getUniqueId();
+    m_impl->id = RenderTargetImpl::nextUniqueId.fetch_add(1u, std::memory_order_relaxed);
 }
 
 
@@ -926,6 +928,7 @@ void RenderTarget::applyStencilMode(const StencilMode& mode)
         glCheck(glStencilOp(GL_KEEP,
                             stencilOperationToGlConstant(mode.stencilUpdateOperation),
                             stencilOperationToGlConstant(mode.stencilUpdateOperation)));
+
         glCheck(glStencilFunc(stencilFunctionToGlConstant(mode.stencilComparison),
                               static_cast<int>(mode.stencilReference.value),
                               mode.stencilMask.value));
