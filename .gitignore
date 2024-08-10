@@ -3,6 +3,7 @@
 .vs/
 
 build2/
+buildrel/
 .vscode/
 build/
 build/installed/

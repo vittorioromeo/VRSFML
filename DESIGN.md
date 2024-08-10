@@ -275,7 +275,7 @@
     constexpr auto result = sf::base::cos(3.14f);
 
     // Fast index sequences (uses compiler built-in if available)
-    constexpr auto indexSequence = SFML_BASE_MAKE_INTEGER_SEQUENCE(32);
+    constexpr auto indexSequence = SFML_BASE_MAKE_INDEX_SEQUENCE(32);
 
     // ...and much more...
     ```

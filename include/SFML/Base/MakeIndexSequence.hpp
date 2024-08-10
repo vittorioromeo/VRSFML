@@ -11,14 +11,14 @@
 #if __has_builtin(__integer_pack)
 
 ////////////////////////////////////////////////////////////
-#define SFML_BASE_MAKE_INTEGER_SEQUENCE(N) ::sf::base::IndexSequence<__integer_pack(N)...>
+#define SFML_BASE_MAKE_INDEX_SEQUENCE(N) ::sf::base::IndexSequence<__integer_pack(N)...>
 
 
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
 template <SizeT N>
-using MakeIndexSequence = SFML_BASE_MAKE_INTEGER_SEQUENCE(N);
+using MakeIndexSequence = SFML_BASE_MAKE_INDEX_SEQUENCE(N);
 
 } // namespace sf::base
 
@@ -46,7 +46,7 @@ using MakeIndexSequence = typename __make_integer_seq<priv::MakeIndexSequenceHel
 
 
 ////////////////////////////////////////////////////////////
-#define SFML_BASE_MAKE_INTEGER_SEQUENCE(N) ::sf::base::MakeIndexSequence<N>
+#define SFML_BASE_MAKE_INDEX_SEQUENCE(N) ::sf::base::MakeIndexSequence<N>
 
 #else
 
@@ -63,6 +63,6 @@ using MakeIndexSequence = std::make_index_sequence<N>;
 
 
 ////////////////////////////////////////////////////////////
-#define SFML_BASE_MAKE_INTEGER_SEQUENCE(N) ::sf::base::MakeIndexSequence<N>
+#define SFML_BASE_MAKE_INDEX_SEQUENCE(N) ::sf::base::MakeIndexSequence<N>
 
 #endif
