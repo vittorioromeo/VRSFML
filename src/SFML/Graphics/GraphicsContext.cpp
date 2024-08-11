@@ -25,8 +25,7 @@ constexpr const char* builtInTexturedShaderVertexSrc = R"glsl(#version 300 es
 precision mediump float;
 #endif
 
-uniform mat4 sf_u_projectionMatrix;
-uniform mat4 sf_u_modelViewMatrix;
+uniform mat4 sf_u_modelViewProjectionMatrix;
 uniform mat4 sf_u_textureMatrix;
 
 in vec2 sf_a_position;
@@ -38,7 +37,7 @@ out vec2 sf_v_texCoord;
 
 void main()
 {
-    gl_Position = sf_u_projectionMatrix * sf_u_modelViewMatrix * vec4(sf_a_position, 0.0, 1.0);
+    gl_Position = sf_u_modelViewProjectionMatrix * vec4(sf_a_position, 0.0, 1.0);
     sf_v_color = sf_a_color;
     sf_v_texCoord = (sf_u_textureMatrix * vec4(sf_a_texCoord, 0.0, 1.0)).xy;
 }
@@ -75,8 +74,7 @@ constexpr const char* builtInUntexturedShaderVertexSrc = R"glsl(#version 300 es
 precision mediump float;
 #endif
 
-uniform mat4 sf_u_projectionMatrix;
-uniform mat4 sf_u_modelViewMatrix;
+uniform mat4 sf_u_modelViewProjectionMatrix;
 
 in vec2 sf_a_position;
 in vec4 sf_a_color;
@@ -85,7 +83,7 @@ out vec4 sf_v_color;
 
 void main()
 {
-    gl_Position = sf_u_projectionMatrix * sf_u_modelViewMatrix * vec4(sf_a_position, 0.0, 1.0);
+    gl_Position = sf_u_modelViewProjectionMatrix * vec4(sf_a_position, 0.0, 1.0);
     sf_v_color = sf_a_color;
 }
 

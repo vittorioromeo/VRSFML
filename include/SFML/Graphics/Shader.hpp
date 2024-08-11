@@ -17,13 +17,21 @@
 #include <cstddef>
 
 
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
 namespace sf
 {
 class GraphicsContext;
 class InputStream;
 class Path;
+class RenderTarget;
 class Texture;
+} // namespace sf
 
+
+namespace sf
+{
 ////////////////////////////////////////////////////////////
 /// \brief Shader class (vertex, geometry and fragment)
 ///
@@ -651,6 +659,14 @@ public:
     [[nodiscard]] explicit Shader(base::PassKey<Shader>&&, GraphicsContext& graphicsContext, unsigned int shaderProgram);
 
 private:
+    friend RenderTarget;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief More efficient but less safe way of setting 4x4 matrix uniform
+    ///
+    ////////////////////////////////////////////////////////////
+    void setMat4Uniform(UniformLocation location, const float* matrixPtr);
+
     ////////////////////////////////////////////////////////////
     /// \brief Compile the shader(s) and create the program
     ///

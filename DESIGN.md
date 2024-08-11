@@ -76,9 +76,8 @@
     - OpenGL ES 3.0 is now supported on all platforms, including Windows via ANGLE.
     - This fork provides built-in shaders that use the following API:
         ```glsl
-        uniform mat4 sf_u_projectionMatrix;
         uniform mat4 sf_u_textureMatrix;
-        uniform mat4 sf_u_modelViewMatrix;
+        uniform mat4 sf_u_modelViewProjectionMatrix;
 
         in vec2 sf_a_position;
         in vec4 sf_a_color;

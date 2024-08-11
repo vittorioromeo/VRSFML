@@ -101,21 +101,7 @@ constexpr FloatRect Transform::transformRect(const FloatRect& rectangle) const
 ////////////////////////////////////////////////////////////
 constexpr Transform& Transform::combine(const Transform& transform)
 {
-    const auto& a = m_matrix;
-    const auto& b = transform.m_matrix;
-
-    // clang-format off
-    *this = Transform(a[0] * b[0]  + a[4] * b[1]  + a[12] * b[3],
-                      a[0] * b[4]  + a[4] * b[5]  + a[12] * b[7],
-                      a[0] * b[12] + a[4] * b[13] + a[12] * b[15],
-                      a[1] * b[0]  + a[5] * b[1]  + a[13] * b[3],
-                      a[1] * b[4]  + a[5] * b[5]  + a[13] * b[7],
-                      a[1] * b[12] + a[5] * b[13] + a[13] * b[15],
-                      a[3] * b[0]  + a[7] * b[1]  + a[15] * b[3],
-                      a[3] * b[4]  + a[7] * b[5]  + a[15] * b[7],
-                      a[3] * b[12] + a[7] * b[13] + a[15] * b[15]);
-    // clang-format on
-
+    *this = sf::operator*(*this, transform);
     return *this;
 }
 
@@ -162,7 +148,20 @@ constexpr Transform& Transform::scale(Vector2f factors, Vector2f center)
 ////////////////////////////////////////////////////////////
 constexpr Transform operator*(const Transform& left, const Transform& right)
 {
-    return Transform(left).combine(right);
+    const float* a = left.getMatrix();
+    const float* b = right.getMatrix();
+
+    // clang-format off
+    return {a[0] * b[0]  + a[4] * b[1]  + a[12] * b[3],
+            a[0] * b[4]  + a[4] * b[5]  + a[12] * b[7],
+            a[0] * b[12] + a[4] * b[13] + a[12] * b[15],
+            a[1] * b[0]  + a[5] * b[1]  + a[13] * b[3],
+            a[1] * b[4]  + a[5] * b[5]  + a[13] * b[7],
+            a[1] * b[12] + a[5] * b[13] + a[13] * b[15],
+            a[3] * b[0]  + a[7] * b[1]  + a[15] * b[3],
+            a[3] * b[4]  + a[7] * b[5]  + a[15] * b[7],
+            a[3] * b[12] + a[7] * b[13] + a[15] * b[15]};
+    // clang-format on
 }
 
 
