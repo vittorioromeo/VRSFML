@@ -7,7 +7,7 @@
 #include <SFML/System/Vector2.hpp>
 #include <SFML/System/Vector3.hpp>
 
-#include <cstddef>
+#include <SFML/Base/SizeT.hpp>
 
 
 namespace sf
@@ -15,11 +15,11 @@ namespace sf
 namespace priv
 {
 // Forward declarations
-template <std::size_t Columns, std::size_t Rows>
-struct Matrix;
+template <base::SizeT Columns, base::SizeT Rows>
+struct [[nodiscard]] Matrix;
 
 template <typename T>
-struct Vector4;
+struct [[nodiscard]] Vector4;
 
 } // namespace priv
 

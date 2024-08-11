@@ -703,10 +703,17 @@ void Shader::setUniform(UniformLocation location, const Glsl::Mat3& matrix)
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation location, const Glsl::Mat4& matrix)
+void Shader::setMat4Uniform(UniformLocation location, const float* matrixPtr)
 {
     const UniformBinder binder{*this};
-    glCheck(GLEXT_glUniformMatrix4fv(location.m_value, 1, GL_FALSE, matrix.array));
+    glCheck(GLEXT_glUniformMatrix4fv(location.m_value, 1, GL_FALSE, matrixPtr));
+}
+
+
+////////////////////////////////////////////////////////////
+void Shader::setUniform(UniformLocation location, const Glsl::Mat4& matrix)
+{
+    setMat4Uniform(location, matrix.array);
 }
 
 

@@ -4,8 +4,7 @@
 precision mediump float;
 #endif
 
-uniform mat4 sf_u_projectionMatrix;
-uniform mat4 sf_u_modelViewMatrix;
+uniform mat4 sf_u_modelViewProjectionMatrix;
 uniform mat4 sf_u_textureMatrix;
 
 in vec2 sf_a_position;
@@ -17,7 +16,7 @@ out vec2 sf_v_texCoord;
 
 void main()
 {
-    gl_Position   = sf_u_projectionMatrix * sf_u_modelViewMatrix * vec4(sf_a_position, 0.0, 1.0);
+    gl_Position   = sf_u_modelViewProjectionMatrix * vec4(sf_a_position, 0.0, 1.0);
     sf_v_texCoord = (sf_u_textureMatrix * vec4(sf_a_texCoord, 0.0, 1.0)).xy;
     sf_v_color    = sf_a_color;
 }

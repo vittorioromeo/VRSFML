@@ -7,7 +7,6 @@
 #include <SFML/Graphics/Export.hpp>
 
 #include <SFML/Graphics/CoordinateType.hpp>
-#include <SFML/Graphics/Glsl.hpp>
 
 #include <SFML/System/LifetimeDependee.hpp>
 #include <SFML/System/Rect.hpp>
@@ -540,16 +539,16 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static unsigned int getMaximumSize(GraphicsContext& graphicsContext);
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Compute and return the texture matrix (used by shaders)
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] Glsl::Mat4 getMatrix(CoordinateType coordinateType) const;
-
 private:
     friend class Text;
     friend class RenderTexture;
     friend class RenderTarget;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Compute and return the texture matrix (used by shaders)
+    ///
+    ////////////////////////////////////////////////////////////
+    void getMatrix(float (&target)[16], CoordinateType coordinateType) const;
 
 public:
     ////////////////////////////////////////////////////////////

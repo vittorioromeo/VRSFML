@@ -8,7 +8,7 @@
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/Glsl.hpp> // NOLINT(misc-header-include-cycle)
 
-#include <cstddef>
+#include <cstring>
 
 
 namespace sf
@@ -29,15 +29,18 @@ void SFML_GRAPHICS_API copyMatrix(const Transform& source, Matrix<4, 4>& dest);
 /// \brief Copy array-based matrix with given number of elements
 ///
 ////////////////////////////////////////////////////////////
-void SFML_GRAPHICS_API copyMatrix(const float* source, std::size_t elements, float* dest);
+[[gnu::always_inline]] inline void SFML_GRAPHICS_API copyMatrix(const float* source, base::SizeT elements, float* dest)
+{
+    std::memcpy(dest, source, elements * sizeof(float));
+}
 
 
 ////////////////////////////////////////////////////////////
 /// \brief Matrix type, used to set uniforms in GLSL
 ///
 ////////////////////////////////////////////////////////////
-template <std::size_t Columns, std::size_t Rows>
-struct Matrix
+template <base::SizeT Columns, base::SizeT Rows>
+struct [[nodiscard]] Matrix
 {
     ////////////////////////////////////////////////////////////
     /// \brief Construct from raw data
@@ -47,7 +50,7 @@ struct Matrix
     ///                are copied to the instance.
     ///
     ////////////////////////////////////////////////////////////
-    explicit Matrix(const float* pointer)
+    [[nodiscard, gnu::always_inline]] explicit Matrix(const float* pointer)
     {
         copyMatrix(pointer, Columns * Rows, array);
     }
@@ -61,7 +64,7 @@ struct Matrix
     /// \param transform Object containing a transform.
     ///
     ////////////////////////////////////////////////////////////
-    Matrix(const Transform& transform)
+    [[gnu::always_inline]] Matrix(const Transform& transform)
     {
         copyMatrix(transform, *this);
     }
@@ -74,13 +77,13 @@ struct Matrix
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-struct Vector4
+struct [[nodiscard]] Vector4
 {
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor, creates a zero vector
     ///
     ////////////////////////////////////////////////////////////
-    constexpr Vector4() = default;
+    [[nodiscard]] constexpr Vector4() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from 4 vector components
@@ -95,7 +98,7 @@ struct Vector4
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow"
 #endif
-    constexpr Vector4(T x, T y, T z, T w) : x(x), y(y), z(z), w(w)
+    [[nodiscard, gnu::always_inline]] constexpr Vector4(T x, T y, T z, T w) : x(x), y(y), z(z), w(w)
     {
     }
 #if defined(__GNUC__)
@@ -109,7 +112,7 @@ struct Vector4
     ///
     ////////////////////////////////////////////////////////////
     template <typename U>
-    constexpr explicit Vector4(const Vector4<U>& other) :
+    [[nodiscard, gnu::always_inline]] constexpr explicit Vector4(const Vector4<U>& other) :
     x(static_cast<T>(other.x)),
     y(static_cast<T>(other.y)),
     z(static_cast<T>(other.z)),
@@ -126,7 +129,7 @@ struct Vector4
     /// \param color Color instance
     ///
     ////////////////////////////////////////////////////////////
-    constexpr Vector4(Color color);
+    [[nodiscard]] constexpr Vector4(Color color);
 
     T x{}; //!< 1st component (X) of the 4D vector
     T y{}; //!< 2nd component (Y) of the 4D vector

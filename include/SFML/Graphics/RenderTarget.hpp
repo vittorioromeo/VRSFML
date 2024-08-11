@@ -301,7 +301,7 @@ public:
     /// \param texture Texture associated with the sprite
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Sprite& sprite, const Texture& texture, const RenderStates& states = getDefaultRenderStates());
+    void draw(const Sprite& sprite, const Texture& texture, RenderStates states = getDefaultRenderStates());
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted overload of `draw` for sprites without a texture

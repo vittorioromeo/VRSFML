@@ -1,5 +1,3 @@
-#include "SFML/Base/IndexSequence.hpp"
-
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
@@ -27,7 +25,6 @@
 
 #include <SFML/Base/Algorithm.hpp>
 #include <SFML/Base/Assert.hpp>
-#include <SFML/Base/MakeIndexSequence.hpp>
 #include <SFML/Base/Math/Lround.hpp>
 #include <SFML/Base/Optional.hpp>
 
@@ -42,38 +39,29 @@ namespace
 // A nested named namespace is used here to allow unity builds of SFML.
 namespace RenderTargetImpl
 {
-// TODO P1: docs
+// Type alias for a render target or context id
 using IdType = std::uint64_t;
 
 // Unique identifier, used for identifying RenderTargets when
 // tracking the currently active RenderTarget within a given context
 constinit std::atomic<IdType> nextUniqueId{1ul};
 
-// TODO P1: docs
-constexpr auto invalidId{static_cast<IdType>(-1ul)};
+// Invalid/null render target or context id value
+constexpr IdType invalidId{0ul};
 
-// TODO P1: docs
+// Maximum supported number of render targets or contexts
 constexpr std::size_t maxIdCount{256ul};
 
 // Map to help us detect whether a different RenderTarget has been activated within a single context
-template <typename>
-struct ContextRenderTargetMap;
+constinit std::atomic<IdType> contextRenderTargetMap[maxIdCount]{};
 
-template <auto... Is>
-struct ContextRenderTargetMap<sf::base::IndexSequence<Is...>>
-{
-    std::atomic<IdType> data[maxIdCount]{((void)Is, invalidId)...};
-};
-
-constinit ContextRenderTargetMap<SFML_BASE_MAKE_INDEX_SEQUENCE(maxIdCount)> contextRenderTargetMap{};
-
-// Check if a RenderTarget with the given ID is active in the current context
+// Check if a render target with the given ID is active in the current context
 [[nodiscard]] bool isActive(sf::GraphicsContext& graphicsContext, IdType id)
 {
     const IdType contextId = graphicsContext.getActiveThreadLocalGlContextId();
     SFML_BASE_ASSERT(contextId < maxIdCount);
 
-    const auto renderTargetId = contextRenderTargetMap.data[contextId].load();
+    const auto renderTargetId = contextRenderTargetMap[contextId].load();
     return (renderTargetId != invalidId) && (renderTargetId == id);
 }
 
@@ -228,15 +216,14 @@ struct [[nodiscard]] StatesCache
     bool   useVertexCache{}; //!< Did we previously use the vertex cache?
     Vertex vertexCache[4]{}; //!< Pre-transformed vertices cache
 
-    GLuint lastUsedProgramId; //!< GL id of the last used shader program
+    GLuint lastUsedProgramId{}; //!< GL id of the last used shader program
 
-    GLint sfAttribPositionIdx; //!< Index of the "sf_a_position" attribute
-    GLint sfAttribColorIdx;    //!< Index of the "sf_a_color" attribute
-    GLint sfAttribTexCoordIdx; //!< Index of the "sf_a_texCoord" attribute
+    GLint sfAttribPositionIdx{}; //!< Index of the "sf_a_position" attribute
+    GLint sfAttribColorIdx{};    //!< Index of the "sf_a_color" attribute
+    GLint sfAttribTexCoordIdx{}; //!< Index of the "sf_a_texCoord" attribute
 
-    base::Optional<Shader::UniformLocation> ulProjectionMatrix; //!< Built-in projection matrix uniform location
-    base::Optional<Shader::UniformLocation> ulTextureMatrix;    //!< Built-in texture matrix uniform location
-    base::Optional<Shader::UniformLocation> ulModelViewMatrix;  //!< Built-in model-view matrix uniform location
+    base::Optional<Shader::UniformLocation> ulTextureMatrix;             //!< Built-in texture matrix uniform location
+    base::Optional<Shader::UniformLocation> ulModelViewProjectionMatrix; //!< Built-in model-view-projection matrix uniform location
 };
 
 
@@ -400,7 +387,7 @@ RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
     }
 
     // Unbind texture to fix RenderTexture preventing clear
-    applyTexture(nullptr);
+    applyTexture(/* texture */ nullptr);
 
     // Apply the view (scissor testing can affect clearing)
     if (!m_impl->cache.enable || m_impl->cache.viewChanged)
@@ -531,16 +518,14 @@ Vector2i RenderTarget::mapCoordsToPixel(Vector2f point, const View& view) const
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::draw(const Sprite& sprite, const Texture& texture, const RenderStates& states)
+void RenderTarget::draw(const Sprite& sprite, const Texture& texture, RenderStates states)
 {
-    auto statesCopy = states;
-
-    statesCopy.texture = &texture;
-    statesCopy.transform *= sprite.getTransform();
-    statesCopy.coordinateType = CoordinateType::Pixels;
+    states.texture = &texture;
+    states.transform *= sprite.getTransform();
+    states.coordinateType = CoordinateType::Pixels;
 
     // TODO P1: consider making vertices here on demand? Also better for batching I guess. But need to pretransform?
-    draw(sprite.m_vertices, PrimitiveType::TriangleStrip, statesCopy);
+    draw(sprite.m_vertices, PrimitiveType::TriangleStrip, states);
 }
 
 
@@ -639,6 +624,7 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, std::size_t firstVerte
                                   m_impl->cache.sfAttribPositionIdx,
                                   m_impl->cache.sfAttribColorIdx,
                                   m_impl->cache.sfAttribTexCoordIdx);
+
         drawPrimitives(vertexBuffer.getPrimitiveType(), firstVertex, vertexCount);
 
         // Unbind vertex buffer
@@ -673,7 +659,7 @@ bool RenderTarget::setActive(bool active)
     const RenderTargetImpl::IdType contextId = m_impl->graphicsContext->getActiveThreadLocalGlContextId();
 
     SFML_BASE_ASSERT(contextId < RenderTargetImpl::maxIdCount);
-    std::atomic<RenderTargetImpl::IdType>& renderTargetId = RenderTargetImpl::contextRenderTargetMap.data[contextId];
+    std::atomic<RenderTargetImpl::IdType>& renderTargetId = RenderTargetImpl::contextRenderTargetMap[contextId];
 
     // Deactivation
     if (!active)
@@ -763,8 +749,8 @@ void RenderTarget::resetGLStates()
         // Apply the default SFML states
         applyBlendMode(BlendAlpha);
         applyStencilMode(StencilMode());
-        applyTexture(nullptr);
-        applyShader(nullptr);
+        applyTexture(/* texture */ nullptr);
+        applyShader(/* shader */ nullptr);
 
         if (vertexBufferAvailable)
             glCheck(VertexBuffer::bind(*m_impl->graphicsContext, nullptr));
@@ -945,7 +931,7 @@ void RenderTarget::applyTexture(const Texture* texture, CoordinateType coordinat
 {
     Texture::bind(*m_impl->graphicsContext, texture);
 
-    m_impl->cache.lastTextureId      = texture ? texture->m_cacheId : 0;
+    m_impl->cache.lastTextureId      = texture != nullptr ? texture->m_cacheId : 0ul;
     m_impl->cache.lastCoordinateType = coordinateType;
 }
 
@@ -991,8 +977,10 @@ void RenderTarget::setupDraw(bool useVertexCache, const RenderStates& states)
     m_impl->vbo.bind();
 
     // Update cache
-    const auto usedNativeHandle = usedShader.getNativeHandle();
-    if (m_impl->cache.lastUsedProgramId != usedNativeHandle)
+    const auto usedNativeHandle  = usedShader.getNativeHandle();
+    const bool usedShaderChanged = m_impl->cache.lastUsedProgramId != usedNativeHandle;
+
+    if (usedShaderChanged)
     {
         m_impl->cache.lastUsedProgramId = usedNativeHandle;
 
@@ -1008,20 +996,18 @@ void RenderTarget::setupDraw(bool useVertexCache, const RenderStates& states)
         updateCacheAttrib(m_impl->cache.sfAttribColorIdx, "sf_a_color");
         updateCacheAttrib(m_impl->cache.sfAttribTexCoordIdx, "sf_a_texCoord");
 
-        m_impl->cache.ulProjectionMatrix = usedShader.getUniformLocation("sf_u_projectionMatrix");
-        m_impl->cache.ulTextureMatrix    = usedShader.getUniformLocation("sf_u_textureMatrix");
-        m_impl->cache.ulModelViewMatrix  = usedShader.getUniformLocation("sf_u_modelViewMatrix");
+        m_impl->cache.ulTextureMatrix             = usedShader.getUniformLocation("sf_u_textureMatrix");
+        m_impl->cache.ulModelViewProjectionMatrix = usedShader.getUniformLocation("sf_u_modelViewProjectionMatrix");
     }
-
-    usedShader.setUniform(m_impl->cache.ulModelViewMatrix.value(),
-                          Glsl::Mat4(useVertexCache ? Transform::Identity.getMatrix() : states.transform.getMatrix()));
 
     // Apply the view
     if (!m_impl->cache.enable || m_impl->cache.viewChanged)
         applyCurrentView();
 
-    // Set the projection matrix
-    usedShader.setUniform(m_impl->cache.ulProjectionMatrix.value(), Glsl::Mat4(m_impl->view.getTransform().getMatrix()));
+    // Set the model-view-projection matrix
+    const Transform& modelViewMatrix(useVertexCache ? Transform::Identity : states.transform);
+    usedShader.setMat4Uniform(*m_impl->cache.ulModelViewProjectionMatrix,
+                              (m_impl->view.getTransform() * modelViewMatrix).getMatrix());
 
     // Apply the blend mode
     if (!m_impl->cache.enable || (states.blendMode != m_impl->cache.lastBlendMode))
@@ -1036,6 +1022,8 @@ void RenderTarget::setupDraw(bool useVertexCache, const RenderStates& states)
         glCheck(glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE));
 
     // Apply the texture
+    bool textureChanged = false;
+
     if (!m_impl->cache.enable || (states.texture && states.texture->m_fboAttachment))
     {
         // If the texture is an FBO attachment, always rebind it
@@ -1044,21 +1032,31 @@ void RenderTarget::setupDraw(bool useVertexCache, const RenderStates& states)
         // This saves us from having to call glFlush() in
         // RenderTextureImplFBO which can be quite costly
         // See: https://www.khronos.org/opengl/wiki/Memory_Model
-        applyTexture(states.texture, states.coordinateType);
+        applyTexture(states.texture, states.coordinateType); // TODO P0: wtf
+        textureChanged = true;
     }
     else
     {
         const std::uint64_t textureId = states.texture ? states.texture->m_cacheId : 0;
         if (textureId != m_impl->cache.lastTextureId || states.coordinateType != m_impl->cache.lastCoordinateType)
+        {
             applyTexture(states.texture, states.coordinateType);
+            textureChanged = true;
+        }
     }
 
-    // Update shader texture matrix
-    if (states.texture != nullptr)
+    // Update the texture matrix
+    if (textureChanged && states.texture != nullptr && m_impl->cache.ulTextureMatrix.hasValue())
     {
-        if (m_impl->cache.ulTextureMatrix.hasValue()) // Might be optimized out sometimes...?
-            usedShader.setUniform(*m_impl->cache.ulTextureMatrix,
-                                  states.texture->getMatrix(m_impl->cache.lastCoordinateType));
+        // clang-format off
+        float textureMatrixBuffer[]{1.f, 0.f, 0.f, 0.f,
+                                    0.f, 1.f, 0.f, 0.f,
+                                    0.f, 0.f, 1.f, 0.f,
+                                    0.f, 0.f, 0.f, 1.f};
+        // clang-format on
+
+        states.texture->getMatrix(textureMatrixBuffer, m_impl->cache.lastCoordinateType);
+        usedShader.setMat4Uniform(*m_impl->cache.ulTextureMatrix, textureMatrixBuffer);
     }
 }
 
@@ -1080,12 +1078,12 @@ void RenderTarget::drawPrimitives(PrimitiveType type, std::size_t firstVertex, s
 void RenderTarget::cleanupDraw(const RenderStates& states)
 {
     // Unbind the shader, if any
-    applyShader(nullptr);
+    applyShader(/* shader */ nullptr);
 
     // If the texture we used to draw belonged to a RenderTexture, then forcibly unbind that texture.
     // This prevents a bug where some drivers do not clear RenderTextures properly.
     if (states.texture && states.texture->m_fboAttachment)
-        applyTexture(nullptr);
+        applyTexture(/* texture */ nullptr);
 
     // Mask the color buffer back on if necessary
     if (states.stencilMode.stencilOnly)

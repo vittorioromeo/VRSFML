@@ -952,38 +952,20 @@ unsigned int Texture::getMaximumSize([[maybe_unused]] GraphicsContext& graphicsC
 
 
 ////////////////////////////////////////////////////////////
-Glsl::Mat4 Texture::getMatrix(CoordinateType coordinateType) const
+void Texture::getMatrix(float (&target)[16], CoordinateType coordinateType) const
 {
-    SFML_BASE_ASSERT(m_texture);
-    SFML_BASE_ASSERT(glCheckExpr(glIsTexture(m_texture)));
+    // If non-normalized coordinates (= pixels) are requested, we need to
+    // setup scale factors that convert the range [0 .. size] to [0 .. 1]ù
 
-    // clang-format off
-    float matrix[] = {1.f, 0.f, 0.f, 0.f,
-                      0.f, 1.f, 0.f, 0.f,
-                      0.f, 0.f, 1.f, 0.f,
-                      0.f, 0.f, 0.f, 1.f};
-    // clang-format on
+    // If pixels are flipped we must invert the Y axis
+    const float pixelFlippedMult = m_pixelsFlipped ? -1.f : 1.f;
 
-    // Check if we need to define a special texture matrix
-    if ((coordinateType == CoordinateType::Pixels) || m_pixelsFlipped)
-    {
-        // If non-normalized coordinates (= pixels) are requested, we need to
-        // setup scale factors that convert the range [0 .. size] to [0 .. 1]
-        if (coordinateType == CoordinateType::Pixels)
-        {
-            matrix[0] = 1.f / static_cast<float>(m_actualSize.x);
-            matrix[5] = 1.f / static_cast<float>(m_actualSize.y);
-        }
+    target[0] = coordinateType == CoordinateType::Pixels ? 1.f / static_cast<float>(m_actualSize.x) : 1.f;
 
-        // If pixels are flipped we must invert the Y axis
-        if (m_pixelsFlipped)
-        {
-            matrix[5]  = -matrix[5];
-            matrix[13] = static_cast<float>(m_size.y) / static_cast<float>(m_actualSize.y);
-        }
-    }
+    target[5] = (coordinateType == CoordinateType::Pixels ? 1.f / static_cast<float>(m_actualSize.y) : 1.f) *
+                pixelFlippedMult;
 
-    return Glsl::Mat4(matrix);
+    target[13] = m_pixelsFlipped ? static_cast<float>(m_size.y) / static_cast<float>(m_actualSize.y) : 0.f;
 }
 
 
