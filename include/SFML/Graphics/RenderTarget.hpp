@@ -518,7 +518,13 @@ private:
     /// \param coordinateType The texture coordinate type to use
     ///
     ////////////////////////////////////////////////////////////
-    void applyTexture(const Texture* texture, CoordinateType coordinateType = CoordinateType::Pixels);
+    void applyTexture(const Texture& texture, CoordinateType coordinateType);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Unbind any bound texture
+    ///
+    ////////////////////////////////////////////////////////////
+    void unapplyTexture();
 
     ////////////////////////////////////////////////////////////
     /// \brief Apply a new shader

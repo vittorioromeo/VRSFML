@@ -22,6 +22,7 @@ class RenderTextureImplFBO;
 namespace sf
 {
 class Shader;
+class Texture;
 } // namespace sf
 
 
@@ -37,8 +38,8 @@ public:
     explicit GraphicsContext();
     ~GraphicsContext();
 
-    [[nodiscard]] sf::Shader& getBuiltInTexturedShader();
-    [[nodiscard]] sf::Shader& getBuiltInUntexturedShader();
+    [[nodiscard]] Shader&  getBuiltInTexturedShader();
+    [[nodiscard]] Texture& getBuiltInWhiteDotTexture();
 
 private:
     friend Shader;
@@ -54,7 +55,7 @@ private:
     /// Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 320> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 512> m_impl; //!< Implementation details
 };
 
 } // namespace sf
