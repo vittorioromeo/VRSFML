@@ -1035,7 +1035,7 @@ void Shader::bindTextures() const
         const auto index = static_cast<GLsizei>(i + 1);
         glCheck(GLEXT_glUniform1i(it->first, index));
         glCheck(GLEXT_glActiveTexture(GLEXT_GL_TEXTURE0 + static_cast<GLenum>(index)));
-        Texture::bind(*m_impl->graphicsContext, it->second);
+        it->second->bind(*m_impl->graphicsContext);
         ++it;
     }
 

@@ -174,16 +174,10 @@ constinit std::atomic<IdType> contextRenderTargetMap[maxIdCount]{};
 
 
 ////////////////////////////////////////////////////////////
-sf::Shader& getShader(sf::GraphicsContext& graphicsContext, const sf::Shader* statesShader, const sf::Texture* statesTexture)
+sf::Shader& getShader(sf::GraphicsContext& graphicsContext, const sf::Shader* statesShader)
 {
-    if (statesShader != nullptr)
-        return *const_cast<sf::Shader*>(statesShader); // TODO P0: nasty cast...
-
-    if (statesShader == nullptr && statesTexture == nullptr)
-        return graphicsContext.getBuiltInUntexturedShader();
-
-    SFML_BASE_ASSERT(statesShader == nullptr && statesTexture != nullptr);
-    return graphicsContext.getBuiltInTexturedShader();
+    return statesShader != nullptr ? *const_cast<sf::Shader*>(statesShader) // TODO P0: nasty cast...
+                                   : graphicsContext.getBuiltInTexturedShader();
 }
 
 } // namespace RenderTargetImpl
@@ -210,8 +204,6 @@ struct [[nodiscard]] StatesCache
     StencilMode    lastStencilMode;      //!< Cached stencil
     std::uint64_t  lastTextureId{};      //!< Cached texture
     CoordinateType lastCoordinateType{}; //!< Texture coordinate type
-
-    bool texCoordsArrayEnabled{}; //!< Is GL_TEXTURE_COORD_ARRAY client state enabled?
 
     bool   useVertexCache{}; //!< Did we previously use the vertex cache?
     Vertex vertexCache[4]{}; //!< Pre-transformed vertices cache
@@ -296,10 +288,7 @@ using VBO = OpenGLRAII<[](auto& id) { glCheck(glGenBuffers(1, &id)); },
 
 
 ////////////////////////////////////////////////////////////
-void setupVertexAttribPointers(bool        enableTexCoordsArray,
-                               const GLint sfAttribPositionIdx,
-                               const GLint sfAttribColorIdx,
-                               const GLint sfAttribTexCoordIdx)
+void setupVertexAttribPointers(const GLint sfAttribPositionIdx, const GLint sfAttribColorIdx, const GLint sfAttribTexCoordIdx)
 {
 #define SFML_PRIV_OFFSETOF(...) reinterpret_cast<const void*>(offsetof(__VA_ARGS__))
 
@@ -324,7 +313,7 @@ void setupVertexAttribPointers(bool        enableTexCoordsArray,
                                       /*     offset */ SFML_PRIV_OFFSETOF(Vertex, color)));
     }
 
-    if (enableTexCoordsArray && sfAttribTexCoordIdx >= 0)
+    if (sfAttribTexCoordIdx >= 0)
     {
         glCheck(glEnableVertexAttribArray(static_cast<GLuint>(sfAttribTexCoordIdx)));
         glCheck(glVertexAttribPointer(/*      index */ static_cast<GLuint>(sfAttribTexCoordIdx),
@@ -387,7 +376,7 @@ RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
     }
 
     // Unbind texture to fix RenderTexture preventing clear
-    applyTexture(/* texture */ nullptr);
+    unapplyTexture();
 
     // Apply the view (scissor testing can affect clearing)
     if (!m_impl->cache.enable || m_impl->cache.viewChanged)
@@ -562,15 +551,12 @@ void RenderTarget::draw(const Vertex* vertices, std::size_t vertexCount, Primiti
 
         setupDraw(useVertexCache, states);
 
-        // Check if texture coordinates array is needed, and update client state accordingly
-        const bool enableTexCoordsArray = states.texture || states.shader;
 
         // If we pre-transform the vertices, we must use our internal vertex cache
         const auto* data = reinterpret_cast<const char*>(useVertexCache ? m_impl->cache.vertexCache : vertices);
 
         glCheck(glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeof(Vertex) * vertexCount), data, GL_STATIC_DRAW));
-        setupVertexAttribPointers(enableTexCoordsArray,
-                                  m_impl->cache.sfAttribPositionIdx,
+        setupVertexAttribPointers(m_impl->cache.sfAttribPositionIdx,
                                   m_impl->cache.sfAttribColorIdx,
                                   m_impl->cache.sfAttribTexCoordIdx);
 
@@ -578,8 +564,7 @@ void RenderTarget::draw(const Vertex* vertices, std::size_t vertexCount, Primiti
         cleanupDraw(states);
 
         // Update the cache
-        m_impl->cache.useVertexCache        = useVertexCache;
-        m_impl->cache.texCoordsArrayEnabled = enableTexCoordsArray;
+        m_impl->cache.useVertexCache = useVertexCache;
     }
 }
 
@@ -620,8 +605,7 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, std::size_t firstVerte
         VertexBuffer::bind(*m_impl->graphicsContext, &vertexBuffer);
 
         // Always enable texture coordinates
-        setupVertexAttribPointers(/* enableTexCoordsArray */ true,
-                                  m_impl->cache.sfAttribPositionIdx,
+        setupVertexAttribPointers(m_impl->cache.sfAttribPositionIdx,
                                   m_impl->cache.sfAttribColorIdx,
                                   m_impl->cache.sfAttribTexCoordIdx);
 
@@ -633,8 +617,7 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, std::size_t firstVerte
         cleanupDraw(states);
 
         // Update the cache
-        m_impl->cache.useVertexCache        = false;
-        m_impl->cache.texCoordsArrayEnabled = true;
+        m_impl->cache.useVertexCache = false;
     }
 }
 
@@ -749,13 +732,11 @@ void RenderTarget::resetGLStates()
         // Apply the default SFML states
         applyBlendMode(BlendAlpha);
         applyStencilMode(StencilMode());
-        applyTexture(/* texture */ nullptr);
+        unapplyTexture();
         applyShader(/* shader */ nullptr);
 
         if (vertexBufferAvailable)
             glCheck(VertexBuffer::bind(*m_impl->graphicsContext, nullptr));
-
-        m_impl->cache.texCoordsArrayEnabled = true;
 
         m_impl->cache.useVertexCache = false;
 
@@ -927,12 +908,22 @@ void RenderTarget::applyStencilMode(const StencilMode& mode)
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::applyTexture(const Texture* texture, CoordinateType coordinateType)
+void RenderTarget::applyTexture(const Texture& texture, CoordinateType coordinateType)
 {
-    Texture::bind(*m_impl->graphicsContext, texture);
+    texture.bind(*m_impl->graphicsContext);
 
-    m_impl->cache.lastTextureId      = texture != nullptr ? texture->m_cacheId : 0ul;
+    m_impl->cache.lastTextureId      = texture.m_cacheId;
     m_impl->cache.lastCoordinateType = coordinateType;
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::unapplyTexture()
+{
+    Texture::unbind(*m_impl->graphicsContext);
+
+    m_impl->cache.lastTextureId      = 0ul;
+    m_impl->cache.lastCoordinateType = CoordinateType::Pixels;
 }
 
 
@@ -967,7 +958,7 @@ void RenderTarget::setupDraw(bool useVertexCache, const RenderStates& states)
     if (!m_impl->cache.glStatesSet)
         resetGLStates();
 
-    Shader& usedShader = RenderTargetImpl::getShader(*m_impl->graphicsContext, states.shader, states.texture);
+    Shader& usedShader = RenderTargetImpl::getShader(*m_impl->graphicsContext, states.shader);
 
     // Apply the shader
     applyShader(&usedShader);
@@ -1022,41 +1013,37 @@ void RenderTarget::setupDraw(bool useVertexCache, const RenderStates& states)
         glCheck(glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE));
 
     // Apply the texture
-    bool textureChanged = false;
+    const Texture& usedTexture = states.texture != nullptr ? *states.texture
+                                                           : getGraphicsContext().getBuiltInWhiteDotTexture();
 
-    if (!m_impl->cache.enable || (states.texture && states.texture->m_fboAttachment))
+    const std::uint64_t usedTextureId = usedTexture.m_cacheId;
+
+    // If the texture is an FBO attachment, always rebind it in order to inform the OpenGL driver that we
+    // want changes made to it in other contexts to be visible here as well This saves us from having to
+    // call `glFlush()` in `RenderTextureImplFBO` which can be quite costly
+    //
+    // See: https://www.khronos.org/opengl/wiki/Memory_Model
+
+    const bool mustApplyTexture = !m_impl->cache.enable || usedTexture.m_fboAttachment ||
+                                  usedTextureId != m_impl->cache.lastTextureId ||
+                                  states.coordinateType != m_impl->cache.lastCoordinateType;
+
+    if (mustApplyTexture)
     {
-        // If the texture is an FBO attachment, always rebind it
-        // in order to inform the OpenGL driver that we want changes
-        // made to it in other contexts to be visible here as well
-        // This saves us from having to call glFlush() in
-        // RenderTextureImplFBO which can be quite costly
-        // See: https://www.khronos.org/opengl/wiki/Memory_Model
-        applyTexture(states.texture, states.coordinateType); // TODO P0: wtf
-        textureChanged = true;
-    }
-    else
-    {
-        const std::uint64_t textureId = states.texture ? states.texture->m_cacheId : 0;
-        if (textureId != m_impl->cache.lastTextureId || states.coordinateType != m_impl->cache.lastCoordinateType)
+        applyTexture(usedTexture, states.coordinateType);
+
+        if (m_impl->cache.ulTextureMatrix.hasValue())
         {
-            applyTexture(states.texture, states.coordinateType);
-            textureChanged = true;
+            // clang-format off
+            float textureMatrixBuffer[]{1.f, 0.f, 0.f, 0.f,
+                                        0.f, 1.f, 0.f, 0.f,
+                                        0.f, 0.f, 1.f, 0.f,
+                                        0.f, 0.f, 0.f, 1.f};
+            // clang-format on
+
+            usedTexture.getMatrix(textureMatrixBuffer, m_impl->cache.lastCoordinateType);
+            usedShader.setMat4Uniform(*m_impl->cache.ulTextureMatrix, textureMatrixBuffer);
         }
-    }
-
-    // Update the texture matrix
-    if (textureChanged && states.texture != nullptr && m_impl->cache.ulTextureMatrix.hasValue())
-    {
-        // clang-format off
-        float textureMatrixBuffer[]{1.f, 0.f, 0.f, 0.f,
-                                    0.f, 1.f, 0.f, 0.f,
-                                    0.f, 0.f, 1.f, 0.f,
-                                    0.f, 0.f, 0.f, 1.f};
-        // clang-format on
-
-        states.texture->getMatrix(textureMatrixBuffer, m_impl->cache.lastCoordinateType);
-        usedShader.setMat4Uniform(*m_impl->cache.ulTextureMatrix, textureMatrixBuffer);
     }
 }
 
@@ -1083,7 +1070,7 @@ void RenderTarget::cleanupDraw(const RenderStates& states)
     // If the texture we used to draw belonged to a RenderTexture, then forcibly unbind that texture.
     // This prevents a bug where some drivers do not clear RenderTextures properly.
     if (states.texture && states.texture->m_fboAttachment)
-        applyTexture(/* texture */ nullptr);
+        unapplyTexture();
 
     // Mask the color buffer back on if necessary
     if (states.stencilMode.stencilOnly)

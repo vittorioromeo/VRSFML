@@ -230,22 +230,20 @@ void Shape::update(const sf::Vector2f* points, const std::size_t pointCount)
 
 
 ////////////////////////////////////////////////////////////
-void Shape::drawOnto(RenderTarget& renderTarget, const Texture* texture, const RenderStates& states) const
+void Shape::drawOnto(RenderTarget& renderTarget, const Texture* texture, RenderStates states) const
 {
-    RenderStates statesCopy = states;
-
-    statesCopy.transform *= getTransform();
-    statesCopy.coordinateType = CoordinateType::Pixels;
+    states.transform *= getTransform();
+    states.coordinateType = CoordinateType::Pixels;
 
     // Render the inside
-    statesCopy.texture = texture;
-    renderTarget.draw(m_impl->vertices, PrimitiveType::TriangleFan, statesCopy);
+    states.texture = texture;
+    renderTarget.draw(m_impl->vertices, PrimitiveType::TriangleFan, states);
 
     // Render the outline
     if (m_impl->outlineThickness != 0)
     {
-        statesCopy.texture = nullptr;
-        renderTarget.draw(m_impl->outlineVertices, PrimitiveType::TriangleStrip, statesCopy);
+        states.texture = nullptr;
+        renderTarget.draw(m_impl->outlineVertices, PrimitiveType::TriangleStrip, states);
     }
 }
 

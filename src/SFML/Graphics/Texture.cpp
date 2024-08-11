@@ -922,24 +922,21 @@ void Texture::invalidateMipmap()
 
 
 ////////////////////////////////////////////////////////////
-void Texture::bind([[maybe_unused]] GraphicsContext& graphicsContext, const Texture* texture)
+void Texture::bind([[maybe_unused]] GraphicsContext& graphicsContext) const
 {
     SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(m_texture);
 
-    if (texture)
-    {
-        SFML_BASE_ASSERT(texture->m_texture);
-
-        // Bind the texture
-        glCheck(glBindTexture(GL_TEXTURE_2D, texture->m_texture));
-    }
-    else
-    {
-        // Bind no texture
-        glCheck(glBindTexture(GL_TEXTURE_2D, 0));
-    }
+    glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
 }
 
+
+////////////////////////////////////////////////////////////
+void Texture::unbind([[maybe_unused]] GraphicsContext& graphicsContext)
+{
+    SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
+    glCheck(glBindTexture(GL_TEXTURE_2D, 0));
+}
 
 ////////////////////////////////////////////////////////////
 unsigned int Texture::getMaximumSize([[maybe_unused]] GraphicsContext& graphicsContext)

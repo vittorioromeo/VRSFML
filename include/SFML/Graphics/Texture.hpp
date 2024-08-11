@@ -504,11 +504,11 @@ public:
     /// \code
     /// sf::Texture t1, t2;
     /// ...
-    /// sf::Texture::bind(&t1);
+    /// t1.bind(graphicsContext);
     /// // draw OpenGL stuff that use t1...
-    /// sf::Texture::bind(&t2);
+    /// t2.bind(graphicsContext);
     /// // draw OpenGL stuff that use t2...
-    /// sf::Texture::bind(nullptr);
+    /// sf::Texture::unbind(graphicsContext);
     /// // draw OpenGL stuff that use no texture...
     /// \endcode
     ///
@@ -525,7 +525,13 @@ public:
     /// \param coordinateType Type of texture coordinates to use
     ///
     ////////////////////////////////////////////////////////////
-    static void bind(GraphicsContext& graphicsContext, const Texture* texture);
+    void bind(GraphicsContext& graphicsContext) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    static void unbind(GraphicsContext& graphicsContext);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the maximum texture size allowed
@@ -722,9 +728,9 @@ SFML_GRAPHICS_API void swap(Texture& left, Texture& right) noexcept;
 /// sf::Texture can also be used directly as a raw texture for
 /// custom OpenGL geometry.
 /// \code
-/// sf::Texture::bind(&texture);
+/// texture.bind(graphicsContext);
 /// ... render OpenGL geometry ...
-/// sf::Texture::bind(nullptr);
+/// sf::Texture::unbind(graphicsContext);
 /// \endcode
 ///
 /// \see sf::Sprite, sf::Image, sf::RenderTexture

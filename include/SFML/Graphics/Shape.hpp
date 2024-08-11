@@ -217,7 +217,7 @@ private:
     /// \brief Draws the shape on `renderTarget` with the given `texture` and `states`
     ///
     ////////////////////////////////////////////////////////////
-    void drawOnto(RenderTarget& renderTarget, const Texture* texture, const RenderStates& states) const;
+    void drawOnto(RenderTarget& renderTarget, const Texture* texture, RenderStates states) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the fill vertices' color

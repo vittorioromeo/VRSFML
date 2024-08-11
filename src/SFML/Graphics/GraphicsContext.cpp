@@ -4,7 +4,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/GraphicsContext.hpp>
+#include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/Shader.hpp>
+#include <SFML/Graphics/Texture.hpp>
 
 #include <SFML/Window/GLCheck.hpp>
 
@@ -19,7 +21,7 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-constexpr const char* builtInTexturedShaderVertexSrc = R"glsl(#version 300 es
+constexpr const char* builtInShaderVertexSrc = R"glsl(#version 300 es
 
 #ifdef GL_ES
 precision mediump float;
@@ -46,7 +48,7 @@ void main()
 
 
 ////////////////////////////////////////////////////////////
-constexpr const char* builtInTexturedShaderFragmentSrc = R"glsl(#version 300 es
+constexpr const char* builtInShaderFragmentSrc = R"glsl(#version 300 es
 
 #ifdef GL_ES
 precision mediump float;
@@ -62,48 +64,6 @@ out vec4 sf_fragColor;
 void main()
 {
     sf_fragColor = sf_v_color * texture(sf_u_texture, sf_v_texCoord.st);
-}
-
-)glsl";
-
-
-////////////////////////////////////////////////////////////
-constexpr const char* builtInUntexturedShaderVertexSrc = R"glsl(#version 300 es
-
-#ifdef GL_ES
-precision mediump float;
-#endif
-
-uniform mat4 sf_u_modelViewProjectionMatrix;
-
-in vec2 sf_a_position;
-in vec4 sf_a_color;
-
-out vec4 sf_v_color;
-
-void main()
-{
-    gl_Position = sf_u_modelViewProjectionMatrix * vec4(sf_a_position, 0.0, 1.0);
-    sf_v_color = sf_a_color;
-}
-
-)glsl";
-
-
-////////////////////////////////////////////////////////////
-constexpr const char* builtInUntexturedShaderFragmentSrc = R"glsl(#version 300 es
-
-#ifdef GL_ES
-precision mediump float;
-#endif
-
-in vec4 sf_v_color;
-
-out vec4 sf_fragColor;
-
-void main()
-{
-    sf_fragColor = sf_v_color;
 }
 
 )glsl";
@@ -129,8 +89,8 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct GraphicsContext::Impl
 {
-    base::Optional<sf::Shader> builtInTexturedShader;
-    base::Optional<sf::Shader> builtInUntexturedShader;
+    base::Optional<Shader>  builtInShader;
+    base::Optional<Texture> builtInWhiteDotTexture;
 };
 
 
@@ -151,11 +111,9 @@ GraphicsContext::GraphicsContext()
     }
 #endif
 
-    m_impl->builtInTexturedShader.emplace(
-        createBuiltInShader(*this, builtInTexturedShaderVertexSrc, builtInTexturedShaderFragmentSrc));
+    m_impl->builtInShader.emplace(createBuiltInShader(*this, builtInShaderVertexSrc, builtInShaderFragmentSrc));
 
-    m_impl->builtInUntexturedShader.emplace(
-        createBuiltInShader(*this, builtInUntexturedShaderVertexSrc, builtInUntexturedShaderFragmentSrc));
+    m_impl->builtInWhiteDotTexture = Texture::loadFromImage(*this, *Image::create({1u, 1u}, Color::White));
 }
 
 
@@ -164,30 +122,30 @@ GraphicsContext::~GraphicsContext() = default;
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::Shader& GraphicsContext::getBuiltInTexturedShader()
+[[nodiscard]] Shader& GraphicsContext::getBuiltInTexturedShader()
 {
-    return *m_impl->builtInTexturedShader;
+    return *m_impl->builtInShader;
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::Shader& GraphicsContext::getBuiltInUntexturedShader()
+[[nodiscard]] Texture& GraphicsContext::getBuiltInWhiteDotTexture()
 {
-    return *m_impl->builtInUntexturedShader;
+    return *m_impl->builtInWhiteDotTexture;
 }
 
 
 ////////////////////////////////////////////////////////////
 const char* GraphicsContext::getBuiltInTexturedShaderVertexSrc() const
 {
-    return builtInTexturedShaderVertexSrc;
+    return builtInShaderVertexSrc;
 }
 
 
 ////////////////////////////////////////////////////////////
 const char* GraphicsContext::getBuiltInTexturedShaderFragmentSrc() const
 {
-    return builtInTexturedShaderFragmentSrc;
+    return builtInShaderFragmentSrc;
 }
 
 } // namespace sf

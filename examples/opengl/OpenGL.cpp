@@ -98,7 +98,7 @@ sf::base::Optional<sf::RenderWindow> recreateWindow(sf::GraphicsContext&       g
 
     // Bind the texture
     glEnable(GL_TEXTURE_2D);
-    sf::Texture::bind(graphicsContext, &texture);
+    texture.bind(graphicsContext);
 
     // Define a 3D cube (6 faces made of 2 triangles composed by 3 vertices)
     // clang-format off
@@ -244,7 +244,7 @@ int main()
                         texture = sf::Texture::loadFromFile(graphicsContext, resourcesDir() / "logo.png").value();
 
                         // Rebind the texture
-                        sf::Texture::bind(graphicsContext, &texture);
+                        texture.bind(graphicsContext);
 
                         mipmapEnabled = false;
                     }
