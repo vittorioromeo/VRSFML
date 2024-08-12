@@ -1,11 +1,6 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
-////////////////////////////////////////////////////////////
-// Headers
-////////////////////////////////////////////////////////////
-#include <SFML/Window/GLExtensions.hpp>
-
 
 namespace sf::priv
 {
@@ -36,7 +31,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    GLint m_textureBinding{}; //!< Texture binding to restore
+    int m_textureBinding{}; //!< Texture binding to restore
 };
 
 } // namespace sf::priv

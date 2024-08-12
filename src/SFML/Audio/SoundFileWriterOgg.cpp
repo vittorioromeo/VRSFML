@@ -16,6 +16,7 @@
 
 #include <vorbis/vorbisenc.h>
 
+#include <algorithm>
 #include <fstream>
 #include <random>
 

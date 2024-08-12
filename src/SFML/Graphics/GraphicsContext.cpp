@@ -9,6 +9,7 @@
 #include <SFML/Graphics/Texture.hpp>
 
 #include <SFML/Window/GLCheck.hpp>
+#include <SFML/Window/GLExtensions.hpp>
 
 #include <SFML/System/Err.hpp>
 

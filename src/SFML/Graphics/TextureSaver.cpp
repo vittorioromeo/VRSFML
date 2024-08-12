@@ -11,7 +11,7 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-TextureSaver::TextureSaver() : m_textureBinding(priv::getGLInteger(GL_TEXTURE_BINDING_2D))
+TextureSaver::TextureSaver() : m_textureBinding(static_cast<int>(priv::getGLInteger(GL_TEXTURE_BINDING_2D)))
 {
 }
 
