@@ -707,7 +707,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 192> m_impl; //!< Implementation details
 };
 
 } // namespace sf

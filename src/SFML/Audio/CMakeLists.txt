@@ -112,6 +112,7 @@ else()
             GIT_SHALLOW ON
             # patch CMAKE_DEBUG_POSTFIX into the Ogg CMake configuration
             PATCH_COMMAND ${CMAKE_COMMAND} -DOGG_DIR=${FETCHCONTENT_BASE_DIR}/ogg-src -P ${CMAKE_CURRENT_LIST_DIR}/../../../tools/ogg/PatchOgg.cmake)
+
         FetchContent_Declare(flac
             GIT_REPOSITORY https://github.com/xiph/flac.git
             GIT_TAG 1.4.3
@@ -121,6 +122,7 @@ else()
             # - installing FLAC++ headers even though BUILD_CXXLIBS is OFF
             # - add CMAKE_DEBUG_POSTFIX
             PATCH_COMMAND ${CMAKE_COMMAND} -DFLAC_DIR=${FETCHCONTENT_BASE_DIR}/flac-src -P ${CMAKE_CURRENT_LIST_DIR}/../../../tools/flac/PatchFLAC.cmake)
+
         FetchContent_Declare(vorbis
             GIT_REPOSITORY https://github.com/xiph/vorbis.git
             GIT_TAG v1.3.7
@@ -129,6 +131,8 @@ else()
             # - Vorbis doesn't check if the Ogg::ogg target exists before calling find_package
             # - add CMAKE_DEBUG_POSTFIX
             PATCH_COMMAND ${CMAKE_COMMAND} -DVORBIS_DIR=${FETCHCONTENT_BASE_DIR}/vorbis-src -P ${CMAKE_CURRENT_LIST_DIR}/../../../tools/vorbis/PatchVorbis.cmake)
+
+
         FetchContent_MakeAvailable(ogg flac vorbis)
 
         set_target_properties(ogg FLAC vorbis vorbisenc vorbisfile PROPERTIES FOLDER "Dependencies")
@@ -154,6 +158,10 @@ else()
         # _FILE_OFFSET_BITS=64 is not supported with older (<24) Android API levels
         if(SFML_OS_ANDROID)
             target_compile_definitions(FLAC PRIVATE _FILE_OFFSET_BITS=32)
+        endif()
+
+        if(SFML_COMPILER_GCC OR SFML_COMPILER_CLANG)
+            target_compile_options(FLAC PRIVATE -Wno-cast-function-type)
         endif()
 
         # aliases were introduced only after 1.3.7 was released
