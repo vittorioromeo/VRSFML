@@ -35,6 +35,7 @@
 #include <SFML/Base/UniquePtr.hpp>
 
 #include <algorithm>
+#include <atomic>
 #include <chrono>
 #include <mutex>
 #include <string>
@@ -55,5 +56,14 @@
 #ifdef SFML_BUILD_TEST_SUITE
 #include <doctest/parts/doctest_fwd.h>
 #endif // SFML_BUILD_TEST_SUITE
+
+#ifdef SFML_BUILD_AUDIO
+#include <miniaudio.h>
+#endif
+
+#ifdef SFML_BUILD_WINDOW
+#include <SFML/Window/Event.hpp>
+// #include <SFML/Window/GLExtensions.hpp> (TODO P1: not working due to vulkan example)
+#endif
 
 #endif // SFML_ENABLE_PCH

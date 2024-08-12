@@ -25,7 +25,7 @@
         "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
         "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_CXX_EXTENSIONS": "OFF",
-        "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace -Wall -Wextra -Wpedantic -Wno-ignored-attributes -Wno-unused-command-line-argument",
+        "CMAKE_CXX_FLAGS": "-stdlib=libc++ -fuse-ld=lld -ftime-trace -Wall -Wextra -Wpedantic -Wno-ignored-attributes -Wno-unused-command-line-argument",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "SFML_BUILD_EXAMPLES": "ON",
         "SFML_BUILD_TEST_SUITE": "ON",
@@ -96,6 +96,27 @@
         "SFML_ENABLE_PCH": "OFF",
         "SFML_ENABLE_STACK_TRACES": "OFF",
         "SFML_ENABLE_STDLIB_ASSERTIONS": "OFF",
+        "SFML_WARNINGS_AS_ERRORS": "OFF"
+      }
+    },
+    {
+      "name": "vrdevcompilebench",
+      "binaryDir": "build",
+      "installDir": "${sourceDir}/build/install",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "DEBUG",
+        "CMAKE_COLOR_DIAGNOSTICS": "ON",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_CXX_EXTENSIONS": "OFF",
+        "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace -Wall -Wextra -Wpedantic -Wno-ignored-attributes -Wno-unused-command-line-argument",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "SFML_BUILD_EXAMPLES": "ON",
+        "SFML_BUILD_TEST_SUITE": "ON",
+        "SFML_ENABLE_LIFETIME_TRACKING": "ON",
+        "SFML_ENABLE_PCH": "ON",
+        "SFML_ENABLE_STACK_TRACES": "OFF",
+        "SFML_ENABLE_STDLIB_ASSERTIONS": "ON",
         "SFML_WARNINGS_AS_ERRORS": "OFF"
       }
     }

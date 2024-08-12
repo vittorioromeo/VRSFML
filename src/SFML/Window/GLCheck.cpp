@@ -15,6 +15,13 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
+unsigned int glGetErrorImpl()
+{
+    return glGetError();
+}
+
+
+////////////////////////////////////////////////////////////
 bool glCheckError(const char* file, unsigned int line, const char* expression)
 {
     const auto logError = [&](const char* error, const char* description)

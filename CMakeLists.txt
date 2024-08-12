@@ -46,6 +46,14 @@ if(SFML_OS_ANDROID)
     set(BUILD_SHARED_LIBS TRUE)
 endif()
 
+# suppress annoying warnings on windows
+if(SFML_OS_WINDOWS)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+    endif()
+
+# avoid transitive includes with libc++
+add_definitions(-D_LIBCPP_REMOVE_TRANSITIVE_INCLUDES)
+
 # add an option to enable stack traces on assertions
 sfml_set_option(SFML_ENABLE_STACK_TRACES $<CONFIG:Debug> BOOL "TRUE to enable lifetime tracking, FALSE to disable it")
 if(SFML_ENABLE_STACK_TRACES)
@@ -86,6 +94,26 @@ sfml_set_option(SFML_BUILD_GRAPHICS TRUE BOOL "TRUE to build SFML's Graphics mod
 sfml_set_option(SFML_BUILD_IMGUI TRUE BOOL "TRUE to build SFML's ImGui module.")
 sfml_set_option(SFML_BUILD_AUDIO TRUE BOOL "TRUE to build SFML's Audio module.")
 sfml_set_option(SFML_BUILD_NETWORK TRUE BOOL "TRUE to build SFML's Network module.")
+
+if(SFML_BUILD_WINDOW)
+    add_definitions(-DSFML_BUILD_WINDOW)
+endif()
+
+if(SFML_BUILD_GRAPHICS)
+    add_definitions(-DSFML_BUILD_GRAPHICS)
+endif()
+
+if(SFML_BUILD_IMGUI)
+    add_definitions(-DSFML_BUILD_IMGUI)
+endif()
+
+if(SFML_BUILD_AUDIO)
+    add_definitions(-DSFML_BUILD_AUDIO)
+endif()
+
+if(SFML_BUILD_NETWORK)
+    add_definitions(-DSFML_BUILD_NETWORK)
+endif()
 
 if(SFML_BUILD_WINDOW)
     # add an option for choosing the OpenGL implementation
