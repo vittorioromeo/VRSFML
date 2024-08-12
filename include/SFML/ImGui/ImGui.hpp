@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Export.hpp>
+#include <SFML/ImGui/Export.hpp>
 
 #include <SFML/Graphics/Color.hpp>
 
@@ -32,7 +32,7 @@ class Window;
 
 namespace sf::ImGui
 {
-class [[nodiscard]] ImGuiContext
+class SFML_IMGUI_API [[nodiscard]] ImGuiContext
 {
 public:
     ////////////////////////////////////////////////////////////

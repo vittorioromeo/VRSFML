@@ -18,9 +18,7 @@
 
 namespace sfvr::impl
 {
-
-using SizeT = sf::base::SizeT;
-
+using sf::base::SizeT;
 } // namespace sfvr::impl
 
 namespace sfvr::impl
