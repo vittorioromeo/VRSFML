@@ -20,6 +20,7 @@
 #include <SFML/Base/Macros.hpp>
 
 #include <atomic>
+#include <utility>
 #include <vector>
 
 #include <cstring>
@@ -406,7 +407,7 @@ Image Texture::copyToImage() const
             auto       reverseRowIterator = pixels.begin() + (stride * static_cast<std::ptrdiff_t>(m_size.y - 1));
             for (unsigned int i = 0; i < m_size.y / 2; ++i)
             {
-                std::swap_ranges(currentRowIterator, nextRowIterator, reverseRowIterator);
+                base::swapRanges(currentRowIterator, nextRowIterator, reverseRowIterator);
                 currentRowIterator = nextRowIterator;
                 nextRowIterator += stride;
                 reverseRowIterator -= stride;

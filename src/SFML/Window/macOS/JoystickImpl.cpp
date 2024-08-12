@@ -10,7 +10,7 @@
 
 #include <SFML/System/Err.hpp>
 
-#include <algorithm>
+#include <algorithm> // std::sort
 
 
 namespace

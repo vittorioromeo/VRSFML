@@ -1,12 +1,13 @@
 #include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/VideoModeUtils.hpp>
 
+#include <SFML/Base/Algorithm.hpp>
+
 #include <Doctest.hpp>
 
 #include <SystemUtil.hpp>
 #include <WindowUtil.hpp>
 
-#include <algorithm>
 #include <type_traits>
 #include <vector>
 
@@ -40,7 +41,7 @@ TEST_CASE("[Window] sf::VideoMode" * doctest::skip(skipDisplayTests))
     SECTION("getFullscreenModes()")
     {
         const auto& modes = sf::VideoModeUtils::getFullscreenModes();
-        CHECK(std::is_sorted(modes.begin(), modes.end(), [](const auto& lhs, const auto& rhs) { return lhs > rhs; }));
+        CHECK(sf::base::isSorted(modes.begin(), modes.end(), [](const auto& lhs, const auto& rhs) { return lhs > rhs; }));
     }
 
     SECTION("Operators")

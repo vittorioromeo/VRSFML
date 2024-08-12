@@ -25,7 +25,7 @@
         "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
         "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_CXX_EXTENSIONS": "OFF",
-        "CMAKE_CXX_FLAGS": "-stdlib=libc++ -fuse-ld=lld -ftime-trace -Wall -Wextra -Wpedantic -Wno-ignored-attributes -Wno-unused-command-line-argument",
+        "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace -Wall -Wextra -Wpedantic -Wno-ignored-attributes -Wno-unused-command-line-argument",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "SFML_BUILD_EXAMPLES": "ON",
         "SFML_BUILD_TEST_SUITE": "ON",

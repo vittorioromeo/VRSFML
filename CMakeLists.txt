@@ -49,7 +49,7 @@ endif()
 # suppress annoying warnings on windows
 if(SFML_OS_WINDOWS)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-    endif()
+endif()
 
 # avoid transitive includes with libc++
 add_definitions(-D_LIBCPP_REMOVE_TRANSITIVE_INCLUDES)

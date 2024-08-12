@@ -7,9 +7,7 @@
 #include <SFML/Window/VideoModeImpl.hpp>
 #include <SFML/Window/VideoModeUtils.hpp>
 
-#include <SFML/Base/Algorithm.hpp>
-
-#include <algorithm>
+#include <algorithm> // std::sort
 
 
 namespace sf

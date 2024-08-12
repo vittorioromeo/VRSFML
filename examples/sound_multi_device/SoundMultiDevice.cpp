@@ -14,7 +14,6 @@
 #include <SFML/System/Sleep.hpp>
 #include <SFML/System/Time.hpp>
 
-#include <algorithm>
 #include <iostream>
 
 
@@ -52,10 +51,16 @@ int main()
     const char  messageIcons[]{'-', '\\', '|', '/'};
     std::size_t messageIconIndex = 0u;
 
-    while (std::any_of(sources,
-                       sources + 4,
-                       [](const sf::SoundSource* soundSource)
-                       { return soundSource->getStatus() == sf::SoundSource::Status::Playing; }))
+    const auto anySourcePlaying = [&]
+    {
+        for (const sf::SoundSource* source : sources)
+            if (source->getStatus() == sf::SoundSource::Status::Playing)
+                return true;
+
+        return false;
+    };
+
+    while (anySourcePlaying())
     {
         // Leave some CPU time for other processes
         sf::sleep(sf::milliseconds(100));

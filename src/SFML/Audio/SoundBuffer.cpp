@@ -21,7 +21,6 @@
 
 namespace sf
 {
-
 ////////////////////////////////////////////////////////////
 using SoundList = std::unordered_set<Sound*>; //!< Set of unique sound instances
 
