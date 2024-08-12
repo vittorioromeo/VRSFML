@@ -16,7 +16,7 @@
 
 #include <vorbis/vorbisenc.h>
 
-#include <algorithm>
+#include <algorithm> // std::is_permutation
 #include <fstream>
 #include <random>
 

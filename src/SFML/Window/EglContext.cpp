@@ -29,6 +29,7 @@
 
 // TODO P0:
 #ifndef SFML_SYSTEM_EMSCRIPTEN
+
 // We check for this definition in order to avoid multiple definitions of GLAD
 // entities during unity builds of SFML.
 #ifndef GLAD_EGL_IMPLEMENTATION_INCLUDED
@@ -36,6 +37,11 @@
 #define GLAD_EGL_IMPLEMENTATION
 #include <glad/egl.h>
 #endif
+
+#else
+
+#include <SFML/Window/Emscripten/WindowImplEmscripten.hpp>
+
 #endif
 
 namespace
@@ -259,8 +265,24 @@ void EglContext::display()
 ////////////////////////////////////////////////////////////
 void EglContext::setVerticalSyncEnabled(bool enabled)
 {
-    // TODO P0: "emscripten_set_main_loop_timing: Cannot set timing mode for main loop since a main loop does not exist! Call emscripten_set_main_loop first to set one up"
+#ifndef SFML_SYSTEM_EMSCRIPTEN
     eglCheck(eglSwapInterval(m_display, enabled ? 1 : 0));
+#else
+    // On Emscripten, calls to `eglSwapInterval` need to be delayed until the main loop
+    // has actually been created via `emscripten_set_main_loop`.
+
+    // We are going to assume there's always going to be only one window and one
+    // relevant `EglContext`, so we can use global state to store the information
+    // until `vsyncEnablerFn` gets invoked.
+
+    thread_local EGLDisplay tlDisplay;
+    thread_local bool       tlEnabled;
+
+    tlDisplay = m_display;
+    tlEnabled = enabled;
+
+    WindowImplEmscripten::vsyncEnablerFn = [] { eglCheck(eglSwapInterval(tlDisplay, tlEnabled ? 1 : 0)); };
+#endif
 }
 
 

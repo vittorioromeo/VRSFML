@@ -15,7 +15,7 @@
 #include <SFML/Base/UniquePtr.hpp>
 
 #include <FLAC/stream_encoder.h>
-#include <algorithm>
+#include <algorithm> // std::is_permutation
 #include <string>
 #include <vector>
 

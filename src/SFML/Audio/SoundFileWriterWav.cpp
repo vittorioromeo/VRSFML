@@ -13,7 +13,7 @@
 #include <SFML/Base/Algorithm.hpp>
 #include <SFML/Base/Assert.hpp>
 
-#include <algorithm>
+#include <algorithm> // std::sort, std::adjacent_find
 #include <fstream>
 #include <vector>
 
@@ -115,24 +115,27 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
     else
     {
         // For WAVE channel mapping refer to: https://learn.microsoft.com/en-us/previous-versions/windows/hardware/design/dn653308(v=vs.85)#default-channel-ordering
-        static constexpr auto speakerFrontLeft          = 0x1u;
-        static constexpr auto speakerFrontRight         = 0x2u;
-        static constexpr auto speakerFrontCenter        = 0x4u;
-        static constexpr auto speakerLowFrequency       = 0x8u;
-        static constexpr auto speakerBackLeft           = 0x10u;
-        static constexpr auto speakerBackRight          = 0x20u;
-        static constexpr auto speakerFrontLeftOfCenter  = 0x40u;
-        static constexpr auto speakerFrontRightOfCenter = 0x80u;
-        static constexpr auto speakerBackCenter         = 0x100u;
-        static constexpr auto speakerSideLeft           = 0x200u;
-        static constexpr auto speakerSideRight          = 0x400u;
-        static constexpr auto speakerTopCenter          = 0x800u;
-        static constexpr auto speakerTopFrontLeft       = 0x1000u;
-        static constexpr auto speakerTopFrontCenter     = 0x2000u;
-        static constexpr auto speakerTopFrontRight      = 0x4000u;
-        static constexpr auto speakerTopBackLeft        = 0x8000u;
-        static constexpr auto speakerTopBackCenter      = 0x10000u;
-        static constexpr auto speakerTopBackRight       = 0x20000u;
+        enum : unsigned int
+        {
+            speakerFrontLeft          = 0x1u,
+            speakerFrontRight         = 0x2u,
+            speakerFrontCenter        = 0x4u,
+            speakerLowFrequency       = 0x8u,
+            speakerBackLeft           = 0x10u,
+            speakerBackRight          = 0x20u,
+            speakerFrontLeftOfCenter  = 0x40u,
+            speakerFrontRightOfCenter = 0x80u,
+            speakerBackCenter         = 0x100u,
+            speakerSideLeft           = 0x200u,
+            speakerSideRight          = 0x400u,
+            speakerTopCenter          = 0x800u,
+            speakerTopFrontLeft       = 0x1000u,
+            speakerTopFrontCenter     = 0x2000u,
+            speakerTopFrontRight      = 0x4000u,
+            speakerTopBackLeft        = 0x8000u,
+            speakerTopBackCenter      = 0x10000u,
+            speakerTopBackRight       = 0x20000u
+        };
 
         struct SupportedChannel
         {

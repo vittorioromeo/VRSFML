@@ -27,7 +27,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -443,7 +442,7 @@ void Image::flipHorizontally()
 
         for (std::size_t x = 0; x < m_impl->size.x / 2; ++x)
         {
-            std::swap_ranges(left, left + 4, right);
+            base::swapRanges(left, left + 4, right);
 
             left += 4;
             right -= 4;
@@ -464,7 +463,7 @@ void Image::flipVertically()
 
     for (std::size_t y = 0; y < m_impl->size.y / 2; ++y)
     {
-        std::swap_ranges(top, top + rowSize, bottom);
+        base::swapRanges(top, top + rowSize, bottom);
 
         top += rowSize;
         bottom -= rowSize;

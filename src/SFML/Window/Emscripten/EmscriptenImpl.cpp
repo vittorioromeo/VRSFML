@@ -7,6 +7,8 @@
 #include <SFML/Window/Emscripten/JoystickImpl.hpp>
 #include <SFML/Window/Emscripten/WindowImplEmscripten.hpp>
 #include <SFML/Window/Event.hpp>
+#include <SFML/Window/GLCheck.hpp>
+#include <SFML/Window/GLExtensions.hpp>
 #include <SFML/Window/InputImpl.hpp>
 #include <SFML/Window/JoystickAxis.hpp>
 #include <SFML/Window/JoystickIdentification.hpp>
@@ -218,6 +220,8 @@ std::unordered_map<unsigned int, sf::Vector2i> touchStatus;
 
 bool updatePluggedList()
 {
+    SFML_BASE_ASSERT(window != nullptr);
+
     const int numJoysticks = emscripten_get_num_gamepads();
 
     if (numJoysticks == EMSCRIPTEN_RESULT_NOT_SUPPORTED)
@@ -333,10 +337,10 @@ void requestFullscreen()
 
 [[nodiscard]] EM_BOOL mouseCallback(int eventType, const EmscriptenMouseEvent* e, void* /* userData */)
 {
-    mousePosition = {e->targetX, e->targetY};
-
     if (!window)
         return EM_FALSE;
+
+    mousePosition = {e->targetX, e->targetY};
 
     const auto handleMouseEvent = [&]<typename TEvent, bool TDown>
     {
@@ -688,6 +692,15 @@ void setCallbacks()
 }
 
 } // namespace
+
+
+void killWindow() // TODO P0:
+{
+    glCheck(glClearColor(0.f, 0.f, 0.f, 1.f));
+    glCheck(glClear(GL_COLOR_BUFFER_BIT));
+
+    window = nullptr;
+}
 
 
 namespace sf::priv
