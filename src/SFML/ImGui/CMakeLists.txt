@@ -37,7 +37,6 @@ if(SFML_USE_SYSTEM_DEPS)
 else()
     # use an immediately invoked function to scope option variables we have to set
     function(sfml_add_imgui_dependencies)
-        include(FetchContent)
 
         # remember whether we are building SFML as a shared library
         if(BUILD_SHARED_LIBS)
@@ -47,11 +46,7 @@ else()
         set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
         set(BUILD_SHARED_LIBS OFF)
 
-        FetchContent_Declare(ImGui
-            GIT_REPOSITORY https://github.com/ocornut/imgui.git
-            GIT_TAG v1.91.0
-            GIT_SHALLOW ON)
-        FetchContent_MakeAvailable(ImGui)
+        CPMAddPackage("gh:ocornut/imgui#v1.91.0")
 
         # imgui has no CMake support, so we create our own target
 

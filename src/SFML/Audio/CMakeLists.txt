@@ -85,8 +85,6 @@ if(SFML_USE_SYSTEM_DEPS)
 else()
     # use an immediately invoked function to scope option variables we have to set
     function(sfml_add_audio_dependencies)
-        include(FetchContent)
-
         # remember whether we are building SFML as a shared library
         if(BUILD_SHARED_LIBS)
             set(SFML_BUILD_SHARED_LIBS ON)
@@ -106,34 +104,31 @@ else()
         set(WITH_STACK_PROTECTOR OFF)
         set(WITH_AVX OFF) # LLVM/Clang on Windows has issues with AVX2
 
-        FetchContent_Declare(ogg
-            GIT_REPOSITORY https://github.com/xiph/ogg.git
+        CPMAddPackage(
+            NAME ogg
+            GITHUB_REPOSITORY xiph/ogg
             GIT_TAG v1.3.5
-            GIT_SHALLOW ON
             # patch CMAKE_DEBUG_POSTFIX into the Ogg CMake configuration
             PATCH_COMMAND ${CMAKE_COMMAND} -DOGG_DIR=${FETCHCONTENT_BASE_DIR}/ogg-src -P ${CMAKE_CURRENT_LIST_DIR}/../../../tools/ogg/PatchOgg.cmake)
 
-        FetchContent_Declare(flac
-            GIT_REPOSITORY https://github.com/xiph/flac.git
+        CPMAddPackage(
+            NAME flac
+            GITHUB_REPOSITORY xiph/flac
             GIT_TAG 1.4.3
-            GIT_SHALLOW ON
             # patch out the annoying parts of the FLAC CMake configuration:
             # - adding unnecessary libraries that aren't even used
             # - installing FLAC++ headers even though BUILD_CXXLIBS is OFF
             # - add CMAKE_DEBUG_POSTFIX
             PATCH_COMMAND ${CMAKE_COMMAND} -DFLAC_DIR=${FETCHCONTENT_BASE_DIR}/flac-src -P ${CMAKE_CURRENT_LIST_DIR}/../../../tools/flac/PatchFLAC.cmake)
 
-        FetchContent_Declare(vorbis
-            GIT_REPOSITORY https://github.com/xiph/vorbis.git
+        CPMAddPackage(
+            NAME vorbis
+            GITHUB_REPOSITORY xiph/vorbis
             GIT_TAG v1.3.7
-            GIT_SHALLOW ON
             # patch out the annoying parts of the Vorbis CMake configuration:
             # - Vorbis doesn't check if the Ogg::ogg target exists before calling find_package
             # - add CMAKE_DEBUG_POSTFIX
             PATCH_COMMAND ${CMAKE_COMMAND} -DVORBIS_DIR=${FETCHCONTENT_BASE_DIR}/vorbis-src -P ${CMAKE_CURRENT_LIST_DIR}/../../../tools/vorbis/PatchVorbis.cmake)
-
-
-        FetchContent_MakeAvailable(ogg flac vorbis)
 
         set_target_properties(ogg FLAC vorbis vorbisenc vorbisfile PROPERTIES FOLDER "Dependencies")
 

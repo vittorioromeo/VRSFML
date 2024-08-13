@@ -104,8 +104,6 @@ if(SFML_USE_SYSTEM_DEPS)
 else()
     # use an immediately invoked function to scope option variables we have to set
     function(sfml_add_graphics_dependencies)
-        include(FetchContent)
-
         # remember whether we are building SFML as a shared library
         if(BUILD_SHARED_LIBS)
             set(SFML_BUILD_SHARED_LIBS ON)
@@ -120,11 +118,7 @@ else()
         set(FT_DISABLE_BROTLI ON)
         set(FT_ENABLE_ERROR_STRINGS ON)
 
-        FetchContent_Declare(Freetype
-            GIT_REPOSITORY https://github.com/freetype/freetype.git
-            GIT_TAG VER-2-13-2
-            GIT_SHALLOW ON)
-        FetchContent_MakeAvailable(Freetype)
+        CPMAddPackage("gh:freetype/freetype#VER-2-13-2")
 
         set_target_properties(freetype PROPERTIES FOLDER "Dependencies")
 
