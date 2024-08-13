@@ -11,81 +11,80 @@
 #include <SFML/Base/Traits/RemoveCVRef.hpp>
 
 
-namespace sf::GameLoop::priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-enum class [[nodiscard]] ControlFlow
+class GameLoop
 {
-    Continue,
-    Break
-};
-
-////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
-///
-////////////////////////////////////////////////////////////
-void runImpl(ControlFlow (*func)());
-
-} // namespace sf::GameLoop::priv
-
-
-namespace sf::GameLoop
-{
-////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] priv::ControlFlow continueLoop();
-
-////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] priv::ControlFlow breakLoop();
-
-////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
-///
-////////////////////////////////////////////////////////////
-template <typename F>
-void run(F&& func)
-{
-    if constexpr (base::isRvalueReference<F>)
+public:
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    enum class [[nodiscard]] ControlFlow
     {
-        thread_local SFML_BASE_REMOVE_CVREF(F) pinnedFunc;
-        pinnedFunc = SFML_BASE_MOVE(func);
-        priv::runImpl([]() -> priv::ControlFlow { return pinnedFunc(); });
-    }
-    else
-    {
-        thread_local F* pinnedFunc;
-        pinnedFunc = &func;
-        priv::runImpl([]() -> priv::ControlFlow { return (*pinnedFunc)(); });
-    }
-}
+        Continue,
+        Break
+    };
 
-} // namespace sf::GameLoop
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static ControlFlow continueLoop();
 
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static ControlFlow breakLoop();
 
-namespace sf::GameLoop::priv
-{
-////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
-///
-////////////////////////////////////////////////////////////
-struct Runner
-{
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    static void runImpl(ControlFlow (*func)());
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
     template <typename F>
-    void operator|(F&& func)
+    static void run(F&& func)
     {
-        run(SFML_BASE_FORWARD(func));
+        if constexpr (base::isRvalueReference<F>)
+        {
+            thread_local SFML_BASE_REMOVE_CVREF(F) pinnedFunc;
+            pinnedFunc = SFML_BASE_MOVE(func);
+            runImpl([]() -> ControlFlow { return pinnedFunc(); });
+        }
+        else
+        {
+            thread_local F* pinnedFunc;
+            pinnedFunc = &func;
+            runImpl([]() -> ControlFlow { return (*pinnedFunc)(); });
+        }
     }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    struct Runner
+    {
+        template <typename F>
+        void operator|(F&& func)
+        {
+            run(SFML_BASE_FORWARD(func));
+        }
+    };
 };
 
-} // namespace sf::GameLoop::priv
+} // namespace sf::priv
 
 
 ////////////////////////////////////////////////////////////
@@ -93,19 +92,19 @@ struct Runner
 ///
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(bugprone-macro-parentheses)
-#define SFML_GAME_LOOP ::sf::GameLoop::priv::Runner{} | [&]
+#define SFML_GAME_LOOP ::sf::priv::GameLoop::Runner{} | [&]
 
 ////////////////////////////////////////////////////////////
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-#define SFML_GAME_LOOP_BREAK return ::sf::GameLoop::breakLoop()
+#define SFML_GAME_LOOP_BREAK return ::sf::priv::GameLoop::breakLoop()
 
 ////////////////////////////////////////////////////////////
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-#define SFML_GAME_LOOP_CONTINUE return ::sf::GameLoop::continueLoop()
+#define SFML_GAME_LOOP_CONTINUE return ::sf::priv::GameLoop::continueLoop()
 
 
 ////////////////////////////////////////////////////////////

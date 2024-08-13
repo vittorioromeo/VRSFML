@@ -4,12 +4,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/GameLoop.hpp>
 #include <SFML/Window/WindowImpl.hpp>
 
 #include <cstdint>
-
-void killWindow(); // TODO P0:
 
 
 namespace sf
@@ -17,12 +14,6 @@ namespace sf
 struct WindowSettings;
 class String;
 } // namespace sf
-
-
-namespace sf::priv
-{
-class EglContext;
-} // namespace sf::priv
 
 
 namespace sf::priv
@@ -192,15 +183,10 @@ protected:
     void processEvents() override;
 
 private:
-    friend EglContext;
-    friend void sf::GameLoop::priv::runImpl(sf::GameLoop::priv::ControlFlow (*func)());
-
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     bool m_keyRepeatEnabled; ///< Automatic key-repeat state for keydown events
-
-    static thread_local inline void (*vsyncEnablerFn)(){nullptr}; ///< TODO P1: docs
 };
 
 } // namespace sf::priv

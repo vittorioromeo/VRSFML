@@ -40,7 +40,7 @@
 
 #else
 
-#include <SFML/Window/Emscripten/WindowImplEmscripten.hpp>
+#include <SFML/Window/Emscripten/EmscriptenImpl.hpp>
 
 #endif
 
@@ -275,13 +275,8 @@ void EglContext::setVerticalSyncEnabled(bool enabled)
     // relevant `EglContext`, so we can use global state to store the information
     // until `vsyncEnablerFn` gets invoked.
 
-    thread_local EGLDisplay tlDisplay;
-    thread_local bool       tlEnabled;
-
-    tlDisplay = m_display;
-    tlEnabled = enabled;
-
-    WindowImplEmscripten::vsyncEnablerFn = [] { eglCheck(eglSwapInterval(tlDisplay, tlEnabled ? 1 : 0)); };
+    EmscriptenImpl::setVSyncEnabler(
+        [cDisplay = m_display, cEnabled = enabled] { eglCheck(eglSwapInterval(cDisplay, cEnabled ? 1 : 0)); });
 #endif
 }
 

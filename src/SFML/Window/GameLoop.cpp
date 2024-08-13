@@ -11,57 +11,47 @@
 #include <SFML/Base/Traits/IsRvalueReference.hpp>
 
 #ifdef SFML_SYSTEM_EMSCRIPTEN
-#include <SFML/Window/Emscripten/WindowImplEmscripten.hpp>
+#include <SFML/Window/Emscripten/EmscriptenImpl.hpp>
 
 #include <emscripten.h>
 #endif
 
 void killWindow(); // TODO P0:
 
-namespace sf::GameLoop
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-priv::ControlFlow continueLoop()
+GameLoop::ControlFlow GameLoop::continueLoop()
 {
-    return priv::ControlFlow::Continue;
+    return ControlFlow::Continue;
 }
 
 
 ////////////////////////////////////////////////////////////
-priv::ControlFlow breakLoop()
+GameLoop::ControlFlow GameLoop::breakLoop()
 {
-    return priv::ControlFlow::Break;
+    return ControlFlow::Break;
 }
 
-} // namespace sf::GameLoop
 
-
-namespace sf::GameLoop::priv
-{
 ////////////////////////////////////////////////////////////
-void runImpl(ControlFlow (*func)())
+void GameLoop::runImpl(GameLoop::ControlFlow (*func)())
 {
 #ifdef SFML_SYSTEM_EMSCRIPTEN
     struct FuncHolder
     {
         ControlFlow (*heldFunc)();
-        void (*vsyncEnablerFunc)();
-    } funcHolder{func, sf::priv::WindowImplEmscripten::vsyncEnablerFn};
+    } funcHolder{func};
 
     emscripten_set_main_loop_arg(
         [](void* arg)
         {
-            auto& [heldFunc, vsyncEnablerFunc] = *static_cast<FuncHolder*>(arg);
-
-            if (vsyncEnablerFunc != nullptr) [[unlikely]]
-            {
-                vsyncEnablerFunc();
-                vsyncEnablerFunc = nullptr;
-            }
+            auto& [heldFunc] = *static_cast<FuncHolder*>(arg);
+            EmscriptenImpl::invokeAndClearVSyncEnabler();
 
             if (heldFunc() == ControlFlow::Break)
             {
-                killWindow(); // TODO P0:
+                EmscriptenImpl::killWindow();
                 emscripten_cancel_main_loop();
             }
         },
@@ -75,4 +65,4 @@ void runImpl(ControlFlow (*func)())
 #endif
 }
 
-} // namespace sf::GameLoop::priv
+} // namespace sf::priv

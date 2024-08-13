@@ -1,16 +1,10 @@
-include(FetchContent)
-
 add_subdirectory(install)
 set_target_warnings(test-sfml-install)
 
 set(DOCTEST_NO_INSTALL ON CACHE BOOL "")
 
-FetchContent_Declare(doctest
-    GIT_REPOSITORY https://github.com/doctest/doctest
-    GIT_TAG v2.4.11
-    GIT_SHALLOW ON)
+CPMAddPackage("gh:doctest/doctest#v2.4.11")
 
-FetchContent_MakeAvailable(doctest)
 include(${doctest_SOURCE_DIR}/scripts/cmake/doctest.cmake)
 
 # Build doctest in C++20 mode to enable C++20 features
