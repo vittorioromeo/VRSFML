@@ -38,10 +38,6 @@
 #include <glad/egl.h>
 #endif
 
-#else
-
-#include <SFML/Window/Emscripten/EmscriptenImpl.hpp>
-
 #endif
 
 namespace
@@ -263,20 +259,10 @@ void EglContext::display()
 
 
 ////////////////////////////////////////////////////////////
-void EglContext::setVerticalSyncEnabled(bool enabled)
+void EglContext::setVerticalSyncEnabled([[maybe_unused]] bool enabled)
 {
 #ifndef SFML_SYSTEM_EMSCRIPTEN
     eglCheck(eglSwapInterval(m_display, enabled ? 1 : 0));
-#else
-    // On Emscripten, calls to `eglSwapInterval` need to be delayed until the main loop
-    // has actually been created via `emscripten_set_main_loop`.
-
-    // We are going to assume there's always going to be only one window and one
-    // relevant `EglContext`, so we can use global state to store the information
-    // until `vsyncEnablerFn` gets invoked.
-
-    EmscriptenImpl::setVSyncEnabler(
-        [cDisplay = m_display, cEnabled = enabled] { eglCheck(eglSwapInterval(cDisplay, cEnabled ? 1 : 0)); });
 #endif
 }
 
@@ -285,9 +271,9 @@ void EglContext::setVerticalSyncEnabled(bool enabled)
 void EglContext::createContext(EglContext* shared)
 {
 #ifndef SFML_SYSTEM_EMSCRIPTEN
-    const EGLint contextVersion[] = {EGL_CONTEXT_MAJOR_VERSION, 3, EGL_CONTEXT_MINOR_VERSION, 1, EGL_NONE};
+    constexpr EGLint contextVersion[] = {EGL_CONTEXT_MAJOR_VERSION, 3, EGL_CONTEXT_MINOR_VERSION, 1, EGL_NONE};
 #else
-    const EGLint contextVersion[] = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE, EGL_NONE};
+    constexpr EGLint contextVersion[] = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE, EGL_NONE};
 #endif
 
     EGLContext toShared = shared != nullptr ? shared->m_context : EGL_NO_CONTEXT;

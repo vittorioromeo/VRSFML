@@ -31,6 +31,7 @@
 #include <SFML/System/Time.hpp>
 #include <SFML/System/Vector2.hpp>
 
+#include <iostream>
 #include <random>
 #include <string>
 
@@ -143,7 +144,7 @@ int main()
         while (const sf::base::Optional event = window.pollEvent())
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                SFML_GAME_LOOP_BREAK;
+                return EXIT_SUCCESS;
 
             // Space key pressed: play
             if ((event->is<sf::Event::KeyPressed>() &&
@@ -303,10 +304,9 @@ int main()
 
         // Display things on screen
         window.display();
-
-        // Continue to next frame
-        SFML_GAME_LOOP_CONTINUE;
     };
+
+    std::cout << "CLEANING UP" << std::endl;
 
     return EXIT_SUCCESS;
 }

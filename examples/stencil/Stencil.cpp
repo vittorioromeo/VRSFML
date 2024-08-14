@@ -54,7 +54,7 @@ int main()
         while (const sf::base::Optional event = window.pollEvent())
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                SFML_GAME_LOOP_BREAK;
+                return EXIT_SUCCESS;
         }
 
         // When drawing using a 2D API, we normally resort to what is known as the "painter's algorithm".
@@ -148,9 +148,6 @@ int main()
 
         // Display things on screen
         window.display();
-
-        // Continue to the next frame
-        SFML_GAME_LOOP_CONTINUE;
     };
 
     return EXIT_SUCCESS;

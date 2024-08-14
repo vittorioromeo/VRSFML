@@ -64,7 +64,7 @@ int main()
             imGuiContext.processEvent(window, *event);
 
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                SFML_GAME_LOOP_BREAK;
+                return EXIT_SUCCESS;
         }
 
         // Update
@@ -99,7 +99,7 @@ int main()
                 {
                     imGuiContext.shutdown(*childWindow);
                     childWindow.reset();
-                    SFML_GAME_LOOP_CONTINUE;
+                    continue;
                 }
             }
 
@@ -118,8 +118,6 @@ int main()
             imGuiContext.render(*childWindow);
             childWindow->display();
         }
-
-        SFML_GAME_LOOP_CONTINUE;
     };
 #else
     sf::RenderWindow window(graphicsContext, {.size{640u, 480u}, .title = "ImGui + SFML = <3"});
@@ -140,7 +138,7 @@ int main()
             imGuiContext.processEvent(window, *event);
 
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                SFML_GAME_LOOP_BREAK;
+                return EXIT_SUCCESS;
         }
 
         imGuiContext.update(window, deltaClock.restart());
@@ -155,8 +153,6 @@ int main()
         window.draw(shape, nullptr /* texture */);
         imGuiContext.render(window);
         window.display();
-
-        SFML_GAME_LOOP_CONTINUE;
     };
 #endif
 #endif

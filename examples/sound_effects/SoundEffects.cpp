@@ -1173,7 +1173,7 @@ int main()
         while (const sf::base::Optional event = window.pollEvent())
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                SFML_GAME_LOOP_BREAK;
+                return EXIT_SUCCESS;
 
             if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
             {
@@ -1285,9 +1285,6 @@ int main()
 
         // Finally, display the rendered frame on screen
         window.display();
-
-        // Continue to the next frame
-        SFML_GAME_LOOP_CONTINUE;
     };
 
     // Stop effect so that tone generators don't have to keep generating data while being destroyed

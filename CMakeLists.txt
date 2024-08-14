@@ -1,12 +1,4 @@
-if(CMAKE_HOST_WIN32)
-    # We require a CMake version greater than or equal to 3.24 on Windows in order to
-    # support specifying target_include_directories with SYSTEM for Visual Studio Generators
-    # see: https://cmake.org/cmake/help/latest/release/3.24.html#generators
-    cmake_minimum_required(VERSION 3.24)
-else()
-    # For all other systems, 3.22 will suffice
-    cmake_minimum_required(VERSION 3.22)
-endif()
+cmake_minimum_required(VERSION 3.24)
 
 # define a macro that helps defining an option
 macro(sfml_set_option var default type docstring)
@@ -262,7 +254,7 @@ if(SFML_BUILD_TEST_SUITE)
     # `add_definitions` must be called before `add_subdirectory`
     add_definitions(-DSFML_BUILD_TEST_SUITE)
     # add_definitions(-DDOCTEST_CONFIG_NO_INCLUDE_IOSTREAM=1)
-    add_definitions(-DDOCTEST_CONFIG_SUPER_FAST_ASSERTS=1)
+    add_definitions(-DDOCTEST_CONFIG_SUPER_FAST_ASSERTS)
 
     set(SFML_ENABLE_STDLIB_ASSERTIONS ON)
 endif()

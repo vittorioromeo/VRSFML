@@ -280,7 +280,7 @@ public:
                 runHandlerForward();
 
             if (m_mustClose)
-                SFML_GAME_LOOP_BREAK;
+                return;
 
             // Limit the log to 24 entries
             if (m_log.size() > 24u)
@@ -299,9 +299,6 @@ public:
             m_window.draw(m_handlerText);
             m_window.draw(m_instructions);
             m_window.display();
-
-            // Continue to the next frame
-            SFML_GAME_LOOP_CONTINUE;
         };
     }
 

@@ -2560,7 +2560,7 @@ public:
             while (const sf::base::Optional event = window.pollEvent())
             {
                 if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                    SFML_GAME_LOOP_BREAK;
+                    return;
 
                 // Re-create the swapchain when the window is resized
                 if (event->is<sf::Event::Resized>())
@@ -2575,9 +2575,6 @@ public:
                 // Render the frame
                 draw();
             }
-
-            // Continue to the next frame
-            SFML_GAME_LOOP_CONTINUE;
         };
     }
 

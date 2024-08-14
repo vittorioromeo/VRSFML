@@ -493,7 +493,7 @@ int main()
         while (const sf::base::Optional event = window.pollEvent())
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                SFML_GAME_LOOP_BREAK;
+                return EXIT_SUCCESS;
 
             if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
             {
@@ -561,8 +561,5 @@ int main()
 
         // Finally, display the rendered frame on screen
         window.display();
-
-        // Continue to next frame
-        SFML_GAME_LOOP_CONTINUE;
     };
 }
