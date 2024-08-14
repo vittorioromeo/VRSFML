@@ -241,7 +241,7 @@ protected:
     /// allow implementation of custom loop points. Otherwise,
     /// it just calls onSeek(Time::Zero) and returns 0.
     ///
-    /// \return The seek position after looping (or base::nullOpt if there's no loop)
+    /// \return The seek position after looping (or `base::nullOpt` if there's no loop)
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] virtual base::Optional<std::uint64_t> onLoop();

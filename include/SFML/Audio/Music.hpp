@@ -274,7 +274,7 @@ protected:
     /// the seek position for a loop. We then determine whether we are looping on a
     /// loop point or the end-of-file, perform the seek, and return the new position.
     ///
-    /// \return The seek position after looping (or base::nullOpt if there's no loop)
+    /// \return The seek position after looping (or `base::nullOpt` if there's no loop)
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] base::Optional<std::uint64_t> onLoop() override;

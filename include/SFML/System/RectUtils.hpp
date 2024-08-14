@@ -18,7 +18,7 @@ namespace sf
 ///
 /// \param rectangle Rectangle to test
 ///
-/// \return Intersection rectangle if intersecting, base::nullOpt otherwise
+/// \return Intersection rectangle if intersecting, `base::nullOpt` otherwise
 ///
 /// \see contains
 ///
