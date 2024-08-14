@@ -80,7 +80,7 @@
 ///
 /// \param event a mouse button event
 ///
-/// \return Left, Right, ..., or base::nullOpt if the button is unknown
+/// \return Left, Right, ..., or `base::nullOpt` if the button is unknown
 ///
 ////////////////////////////////////////////////////////////
 + (base::Optional<sf::Mouse::Button>)mouseButtonFromEvent:(NSEvent*)event;

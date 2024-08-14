@@ -102,7 +102,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Set the minimum window rendering region size
     ///
-    /// Pass base::nullOpt to unset the minimum size
+    /// Pass `base::nullOpt` to unset the minimum size
     ///
     /// \param minimumSize New minimum size, in pixels
     ///
@@ -112,7 +112,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Set the maximum window rendering region size
     ///
-    /// Pass base::nullOpt to unset the maximum size
+    /// Pass `base::nullOpt` to unset the maximum size
     ///
     /// \param maximumSize New maximum size, in pixels
     ///
