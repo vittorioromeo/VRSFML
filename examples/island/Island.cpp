@@ -213,7 +213,7 @@ int main()
         while (const sf::base::Optional event = window.pollEvent())
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                SFML_GAME_LOOP_BREAK;
+                return EXIT_SUCCESS;
 
             // Arrow key pressed:
             if (event->is<sf::Event::KeyPressed>())
@@ -261,7 +261,7 @@ int main()
                     if (!terrain.update(terrainStagingBuffer.data()))
                     {
                         std::cerr << "Failed to update vertex buffer" << std::endl;
-                        SFML_GAME_LOOP_BREAK;
+                        return EXIT_SUCCESS;
                     }
 
                     threadPool.bufferUploadPending = false;
@@ -288,9 +288,6 @@ int main()
 
         // Display things on screen
         window.display();
-
-        // Continue to next frame
-        SFML_GAME_LOOP_CONTINUE;
     };
 }
 

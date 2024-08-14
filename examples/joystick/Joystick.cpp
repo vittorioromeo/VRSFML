@@ -176,7 +176,7 @@ int main()
         while (const sf::base::Optional event = window.pollEvent())
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                SFML_GAME_LOOP_BREAK;
+                return EXIT_SUCCESS;
 
             if (const auto* joystickButtonPressed = event->getIf<sf::Event::JoystickButtonPressed>())
             {
@@ -249,8 +249,5 @@ int main()
 
         // Display things on screen
         window.display();
-
-        // Continue to the next frame
-        SFML_GAME_LOOP_CONTINUE;
     };
 }

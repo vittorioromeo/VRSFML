@@ -4,7 +4,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Emscripten/EmscriptenImpl.hpp>
 #include <SFML/Window/Emscripten/JoystickImpl.hpp>
 #include <SFML/Window/Emscripten/WindowImplEmscripten.hpp>
 #include <SFML/Window/Event.hpp>
@@ -698,34 +697,6 @@ void setCallbacks()
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-void EmscriptenImpl::setVSyncEnabler(const VSyncEnabler& vSyncEnabler)
-{
-    tlVSyncEnabler = vSyncEnabler;
-}
-
-
-////////////////////////////////////////////////////////////
-void EmscriptenImpl::invokeAndClearVSyncEnabler()
-{
-    if (!tlVSyncEnabler) [[likely]]
-        return;
-
-    tlVSyncEnabler();
-    tlVSyncEnabler = {};
-}
-
-
-////////////////////////////////////////////////////////////
-void EmscriptenImpl::killWindow()
-{
-    glCheck(glClearColor(0.f, 0.f, 0.f, 1.f));
-    glCheck(glClear(GL_COLOR_BUFFER_BIT));
-
-    window = nullptr;
-}
-
-
-////////////////////////////////////////////////////////////
 WindowImplEmscripten::WindowImplEmscripten(WindowHandle /* handle */) : m_keyRepeatEnabled(true)
 {
     err() << "Creating a window from a WindowHandle unsupported";
@@ -756,6 +727,9 @@ WindowImplEmscripten::WindowImplEmscripten(const WindowSettings& windowSettings)
 ////////////////////////////////////////////////////////////
 WindowImplEmscripten::~WindowImplEmscripten()
 {
+    glCheck(glClearColor(0.f, 0.f, 0.f, 1.f));
+    glCheck(glClear(GL_COLOR_BUFFER_BIT));
+
     window = nullptr;
 }
 

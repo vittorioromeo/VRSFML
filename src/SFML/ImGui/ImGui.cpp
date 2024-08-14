@@ -424,11 +424,11 @@ struct [[nodiscard]] ImGuiPerWindowContext
     using GetClipboardTextFn = const char* (*)(void*);
 
     ////////////////////////////////////////////////////////////
-    void init(GraphicsContext&   graphicsContext,
-              Vector2f           displaySize,
-              bool               loadDefaultFont,
-              SetClipboardTextFn setClipboardTextFn,
-              GetClipboardTextFn getClipboardTextFn)
+    [[nodiscard]] bool init(GraphicsContext&   graphicsContext,
+                            Vector2f           displaySize,
+                            bool               loadDefaultFont,
+                            SetClipboardTextFn setClipboardTextFn,
+                            GetClipboardTextFn getClipboardTextFn)
     {
         ImGuiIO& io = ::ImGui::GetIO();
 
@@ -462,12 +462,14 @@ struct [[nodiscard]] ImGuiPerWindowContext
         {
             // this will load default font automatically
             // No need to call AddDefaultFont
-            // TODO P0: propagate result, test emscripten
-            (void)updateFontTexture(graphicsContext);
+            if (!updateFontTexture(graphicsContext))
+                return false;
         }
 
         ::ImGui::SetCurrentContext(imContext);
         priv::ImGui_ImplOpenGL3_Init(nullptr);
+
+        return true;
     }
 
 
@@ -1098,7 +1100,7 @@ bool ImGuiContext::init(Window& window, Vector2f displaySize, bool loadDefaultFo
     thread_local std::string* clipboardTextPtr;
     clipboardTextPtr = &m_impl->clipboardText;
 
-    m_impl->currentPerWindowContext->init(
+    return m_impl->currentPerWindowContext->init(
         *m_impl->graphicsContext,
 
         displaySize,
@@ -1113,8 +1115,6 @@ bool ImGuiContext::init(Window& window, Vector2f displaySize, bool loadDefaultFo
             clipboardTextPtr->assign(tmp.begin(), tmp.end());
             return clipboardTextPtr->c_str();
         });
-
-    return true;
 }
 
 

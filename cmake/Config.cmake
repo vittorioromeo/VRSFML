@@ -77,9 +77,20 @@ elseif(${EMSCRIPTEN})
     # TODO P0:
     set(CMAKE_EXECUTABLE_SUFFIX ".html")
 
-    set(SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS
+    set(SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS_DEBUG
         -g3          # Enable debug mode
         -gsource-map # Generate a source map using LLVM debug information
+        -O0          # Disable optimizations
+    )
+
+    set(SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS_RELEASE
+        -O3          # Enable optimizations
+    )
+
+    set(SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS
+        $<$<CONFIG:Debug>:${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS_DEBUG}>
+        $<$<CONFIG:Release>:${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS_RELEASE}>
+
         -pthread     # Enable threading support
     )
 
@@ -87,34 +98,47 @@ elseif(${EMSCRIPTEN})
     # -sGL_ASSERTIONS=1          # Adds extra checks for error situations in the GL library
     # -sDETERMINISTIC=1          # Force `Date.now()`, `Math.random`, etc. to return deterministic results
     # -fwasm-exceptions          # TODO P0: -fwasm-exceptions seems to break examples
+    # -sEXCEPTION_DEBUG=1        # Print out exceptions in emscriptened code (SPEWS WARNINGS)
+    # -sGL_DEBUG=1               # Enables more verbose debug printing of WebGL related operations (SPEWS WARNINGS)
 
-    set(SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS
+    set(SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_DEBUG
         -g3                                 # Enable debug mode
         -gsource-map                        # Generate a source map using LLVM debug information
-        -pthread                            # Enable threading support
-        -sALLOW_MEMORY_GROWTH=1             # Grow the memory arrays at runtime
+
         -sASSERTIONS=2                      # Add runtime assertions
         -sCHECK_NULL_WRITES=1               # Help detect `NULL` pointer usage
+        -sSAFE_HEAP=1                       # Check each write to the heap
+        -sSTACK_OVERFLOW_CHECK=1            # Adds a security cookie at the top of the stack
+    )
+
+    set(SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_RELEASE
+        -SMINIFY_HTML=1                     # Runs generated `.html` file through `html-minifier`
+    )
+
+    set(SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS
+        $<$<CONFIG:Debug>:${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_DEBUG}>
+        $<$<CONFIG:Release>:${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_RELEASE}>
+
+        -pthread                            # Enable threading support
+
+        -Wno-limited-postlink-optimizations # warning: running limited binaryen optimizations because DWARF info requested (or indirectly required)
+        -Wno-pthreads-mem-growth            # warning: -pthread + ALLOW_MEMORY_GROWTH may run non-wasm code slowly, see https://github.com/WebAssembly/design/issues/1271
+
+        -sALLOW_MEMORY_GROWTH=1             # Grow the memory arrays at runtime
+        -sASYNCIFY_IGNORE_INDIRECT=1        # TODO P0:
+        -sEXIT_RUNTIME=1                    # TODO P0:
         -sFETCH=1                           # Enables `emscripten_fetch` API
         -sFORCE_FILESYSTEM=1                # Makes full filesystem support be included
         -sFULL_ES3=1                        # Forces support for all GLES3 features, not just the WebGL2-friendly subset
-        -sGL_DEBUG=1                        # Enables more verbose debug printing of WebGL related operations
-        -sEXCEPTION_DEBUG=1                 # Print out exceptions in emscriptened code
+        -sJSPI=1                            # TODO P0:
         -sMAX_WEBGL_VERSION=2               # Specifies the highest WebGL version to target
         -sMIN_WEBGL_VERSION=2               # Specifies the lowest WebGL version to target
-        -sSAFE_HEAP=1                       # Check each write to the heap
-        -sSTACK_OVERFLOW_CHECK=1            # Adds a security cookie at the top of the stack
         -sSTACK_SIZE=4mb                    # Set the total stack size
         -sUSE_PTHREADS=1                    # Enable threading support
         -sWASM=1                            # Compile code to WebAssembly
+
         --emrun                             # Add native support for `emrun` (I/O capture)
-        -Wno-pthreads-mem-growth            # warning: -pthread + ALLOW_MEMORY_GROWTH may run non-wasm code slowly, see https://github.com/WebAssembly/design/issues/1271
-        -Wno-limited-postlink-optimizations # warning: running limited binaryen optimizations because DWARF info requested (or indirectly required)
     )
-
-    # set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS})
-    # set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} ${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS})
-
 else()
     message(FATAL_ERROR "Unsupported operating system or environment")
     return()

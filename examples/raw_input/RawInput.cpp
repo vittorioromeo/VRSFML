@@ -57,7 +57,7 @@ int main()
         while (const sf::base::Optional event = window.pollEvent())
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                SFML_GAME_LOOP_BREAK;
+                return EXIT_SUCCESS;
 
             static const auto vec2ToString = [](const sf::Vector2i vec2)
             { return '(' + std::to_string(vec2.x) + ", " + std::to_string(vec2.y) + ')'; };
@@ -85,8 +85,5 @@ int main()
         }
 
         window.display();
-
-        // Continue to the next frame
-        SFML_GAME_LOOP_CONTINUE;
     };
 }

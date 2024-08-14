@@ -13,12 +13,9 @@
         SFML_GAME_LOOP
         {
             if (/* ...must close... */)
-                SFML_GAME_LOOP_BREAK;
+                return EXIT_SUCCESS;
 
             // ...user code here...
-
-            // Continue to the next frame
-            SFML_GAME_LOOP_CONTINUE;
         };
         ```
 
@@ -47,7 +44,7 @@
             imGuiContext.processEvent(window, *event);
 
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                SFML_GAME_LOOP_BREAK;
+                return EXIT_SUCCESS;
         }
 
         // Updates the ImGui state and sets `window` as the active ImGui window
@@ -61,8 +58,6 @@
         window.clear();
         imGuiContext.render(window);
         window.display();
-
-        SFML_GAME_LOOP_CONTINUE;
     };
     ```
 
@@ -448,19 +443,6 @@ Make `Shape` non-polymorphic
 
 const auto font = sf::Font::openFromFile(graphicsContext, resourcesDir() / "tuffy.ttf").value();
 
-
-      SFML_GAME_LOOP
-    {
-        // Handle events
-        while (const sf::base::Optional event = window.pollEvent())
-        {
-            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                SFML_GAME_LOOP_BREAK;
-        }
-
-                // Continue to the next frame
-        SFML_GAME_LOOP_CONTINUE;
-    };
 
 
         window.draw(leftPaddle, /* texture */ nullptr);
