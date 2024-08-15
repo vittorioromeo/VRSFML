@@ -74,7 +74,7 @@ struct Sound::Impl
             return MA_NO_DATA_AVAILABLE;
 
         // Determine how many frames we can read
-        *framesRead = base::min(frameCount, (buffer->getSampleCount() - impl.cursor) / buffer->getChannelCount());
+        *framesRead = base::min(frameCount, static_cast<ma_uint64>((buffer->getSampleCount() - impl.cursor) / buffer->getChannelCount()));
 
         // Copy the samples to the output
         const auto sampleCount = *framesRead * buffer->getChannelCount();

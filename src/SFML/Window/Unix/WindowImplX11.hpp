@@ -18,6 +18,12 @@
 #include <cstdint>
 
 
+namespace sf
+{
+class VideoMode;
+}
+
+
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////

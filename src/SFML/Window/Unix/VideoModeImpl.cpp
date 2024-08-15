@@ -110,7 +110,7 @@ std::vector<VideoMode> VideoModeImpl::getFullscreenModes()
 ////////////////////////////////////////////////////////////
 VideoMode VideoModeImpl::getDesktopMode()
 {
-    VideoMode desktopMode;
+    VideoMode desktopMode{{0u, 0u}, 0u}; // TODO P0:
 
     // Open a connection with the X server
     if (const auto display = openDisplay())

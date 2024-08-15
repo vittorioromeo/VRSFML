@@ -1,3 +1,9 @@
+#if 1 // TODO P0:
+
+int main() {} 
+
+#else
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -219,6 +225,7 @@ int main()
     XMapWindow(display, window);
     XFlush(display);
 
+    {
     // Create our SFML views
     sf::Window sfmlView1(view1);
     sf::Window sfmlView2(view2);
@@ -288,8 +295,7 @@ int main()
     }
 
     // Close our SFML views before destroying the underlying window
-    sfmlView1.close();
-    sfmlView2.close();
+    }
 
     // Destroy the window
     XDestroyWindow(display, window);
@@ -297,3 +303,5 @@ int main()
     // Close the display
     XCloseDisplay(display);
 }
+
+#endif

@@ -33,7 +33,7 @@ public:
     /// \param shared Context to share the new one with (can be a null pointer)
     ///
     ////////////////////////////////////////////////////////////
-    WglContext(WindowContext& windowContext, std::uint64_t id, WglContext* shared);
+    [[nodiscard]] explicit WglContext(WindowContext& windowContext, std::uint64_t id, WglContext* shared);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context attached to a window
@@ -44,7 +44,7 @@ public:
     /// \param bitsPerPixel Pixel depth, in bits per pixel
     ///
     ////////////////////////////////////////////////////////////
-    WglContext(WindowContext&    windowContext,
+    [[nodiscard]] explicit WglContext(WindowContext&    windowContext,
                std::uint64_t     id,
                WglContext*       shared,
                ContextSettings   settings,
@@ -59,7 +59,7 @@ public:
     /// \param size     Back buffer width and height, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    WglContext(WindowContext& windowContext, std::uint64_t id, WglContext* shared, ContextSettings settings, Vector2u size);
+    [[nodiscard]] explicit WglContext(WindowContext& windowContext, std::uint64_t id, WglContext* shared, ContextSettings settings, Vector2u size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -75,7 +75,7 @@ public:
     /// \return Address of the OpenGL function, 0 on failure
     ///
     ////////////////////////////////////////////////////////////
-    GlFunctionPointer getFunction(const char* name) const;
+    [[nodiscard]] GlFunctionPointer getFunction(const char* name) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Activate the context as the current target for rendering
@@ -85,7 +85,7 @@ public:
     /// \return True on success, false if any error happened
     ///
     ////////////////////////////////////////////////////////////
-    bool makeCurrent(bool current) override;
+    [[nodiscard]] bool makeCurrent(bool current) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Display what has been rendered to the context so far
@@ -117,7 +117,7 @@ public:
     /// \return The best pixel format
     ///
     ////////////////////////////////////////////////////////////
-    static int selectBestPixelFormat(HDC                    deviceContext,
+    [[nodiscard]] static int selectBestPixelFormat(HDC                    deviceContext,
                                      unsigned int           bitsPerPixel,
                                      const ContextSettings& settings,
                                      bool                   pbuffer = false);

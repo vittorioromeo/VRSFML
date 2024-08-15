@@ -6,6 +6,8 @@
 ////////////////////////////////////////////////////////////
 #include <linux/input.h>
 
+#include <SFML/Window/JoystickIdentification.hpp>
+
 
 namespace sf::priv
 {
