@@ -2,26 +2,26 @@
 
 #include <Doctest.hpp>
 
+#include <CommonTraits.hpp>
 #include <GraphicsUtil.hpp>
 
-#include <type_traits>
 #include <vector>
 
 TEST_CASE("[Graphics] sf::Color")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(std::is_copy_constructible_v<sf::Color>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::Color>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Color>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Color>);
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Color));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Color));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Color));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Color));
 
-        STATIC_CHECK(!std::is_trivial_v<sf::Color>); // because of member initializers
-        STATIC_CHECK(std::is_standard_layout_v<sf::Color>);
-        STATIC_CHECK(std::is_aggregate_v<sf::Color>);
-        STATIC_CHECK(std::is_trivially_copyable_v<sf::Color>);
-        STATIC_CHECK(std::is_trivially_destructible_v<sf::Color>);
-        STATIC_CHECK(std::is_trivially_assignable_v<sf::Color, sf::Color>);
+        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::Color)); // because of member initializers
+        STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::Color));
+        STATIC_CHECK(SFML_BASE_IS_AGGREGATE(sf::Color));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::Color));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::Color));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::Color, sf::Color));
     }
 
     SECTION("Construction")

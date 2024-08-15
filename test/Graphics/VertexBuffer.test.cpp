@@ -4,11 +4,12 @@
 // Other 1st party headers
 #include <SFML/Graphics/Vertex.hpp>
 
+#include <SFML/Base/Traits/IsNothrowSwappable.hpp>
+
 #include <Doctest.hpp>
 
+#include <CommonTraits.hpp>
 #include <GraphicsUtil.hpp>
-
-#include <type_traits>
 
 // Skip these tests with [.display] because they produce flakey failures in CI when using xvfb-run
 TEST_CASE("[Graphics] sf::VertexBuffer", "[.display]")
@@ -17,13 +18,13 @@ TEST_CASE("[Graphics] sf::VertexBuffer", "[.display]")
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(std::is_copy_constructible_v<sf::VertexBuffer>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::VertexBuffer>);
-        STATIC_CHECK(std::is_move_constructible_v<sf::VertexBuffer>);
-        STATIC_CHECK(!std::is_nothrow_move_constructible_v<sf::VertexBuffer>);
-        STATIC_CHECK(std::is_move_assignable_v<sf::VertexBuffer>);
-        STATIC_CHECK(!std::is_nothrow_move_assignable_v<sf::VertexBuffer>);
-        STATIC_CHECK(std::is_nothrow_swappable_v<sf::VertexBuffer>);
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::VertexBuffer));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::VertexBuffer));
+        STATIC_CHECK(SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::VertexBuffer));
+        STATIC_CHECK(!SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::VertexBuffer));
+        STATIC_CHECK(SFML_BASE_IS_MOVE_ASSIGNABLE(sf::VertexBuffer));
+        STATIC_CHECK(!SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::VertexBuffer));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_SWAPPABLE(sf::VertexBuffer));
     }
 
     // Skip tests if vertex buffers aren't available

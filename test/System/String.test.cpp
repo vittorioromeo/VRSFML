@@ -5,12 +5,12 @@
 
 #include <Doctest.hpp>
 
+#include <CommonTraits.hpp>
 #include <GraphicsUtil.hpp>
 #include <StringifyStringUtil.hpp>
 
 #include <array>
 #include <sstream>
-#include <type_traits>
 
 namespace
 {
@@ -67,10 +67,10 @@ TEST_CASE("[System] sf::String")
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(std::is_copy_constructible_v<sf::String>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::String>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::String>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::String>);
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::String));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::String));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::String));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::String));
     }
 
     SECTION("Construction")

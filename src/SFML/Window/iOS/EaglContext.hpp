@@ -46,7 +46,7 @@ public:
     /// \param bitsPerPixel Pixel depth, in bits per pixel
     ///
     ////////////////////////////////////////////////////////////
-    EaglContext(EaglContext* shared, const ContextSettings& settings, const WindowImpl& owner, unsigned int bitsPerPixel);
+    EaglContext(EaglContext* shared, const ContextSettings& contextSettings, const WindowImpl& owner, unsigned int bitsPerPixel);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context that embeds its own rendering target
@@ -56,7 +56,7 @@ public:
     /// \param size     Back buffer width and height, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    EaglContext(EaglContext* shared, const ContextSettings& settings, Vector2u size);
+    EaglContext(EaglContext* shared, const ContextSettings& contextSettings, Vector2u size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -129,7 +129,7 @@ private:
     void createContext(EaglContext*           shared,
                        const WindowImplUIKit& window,
                        unsigned int           bitsPerPixel,
-                       const ContextSettings& settings);
+                       const ContextSettings& contextSettings);
 
     ////////////////////////////////////////////////////////////
     // Member data

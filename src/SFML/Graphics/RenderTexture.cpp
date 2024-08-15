@@ -47,12 +47,14 @@ RenderTexture& RenderTexture::operator=(RenderTexture&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<RenderTexture> RenderTexture::create(GraphicsContext& graphicsContext, Vector2u size, const ContextSettings& settings)
+base::Optional<RenderTexture> RenderTexture::create(GraphicsContext&       graphicsContext,
+                                                    Vector2u               size,
+                                                    const ContextSettings& contextSettings)
 {
     base::Optional<RenderTexture> result; // Use a single local variable for NRVO
 
     // Create the texture
-    auto texture = sf::Texture::create(graphicsContext, size, settings.sRgbCapable);
+    auto texture = sf::Texture::create(graphicsContext, size, contextSettings.sRgbCapable);
     if (!texture.hasValue())
     {
         priv::err() << "Impossible to create render texture (failed to create the target texture)";
@@ -85,8 +87,9 @@ base::Optional<RenderTexture> RenderTexture::create(GraphicsContext& graphicsCon
     // Initialize the render texture
     // We pass the actual size of our texture since OpenGL ES requires that all attachments have identical sizes
     if (!result->m_impl->renderTextureImpl.linear_visit(
-            [&](auto&& impl)
-            { return impl.create(result->m_impl->texture.m_actualSize, result->m_impl->texture.m_texture, settings); }))
+            [&](auto&& impl) {
+                return impl.create(result->m_impl->texture.m_actualSize, result->m_impl->texture.m_texture, contextSettings);
+            }))
     {
         priv::err() << "Impossible to create render texture (failed to create render texture renderTextureImpl)";
 

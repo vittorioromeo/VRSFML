@@ -4,7 +4,7 @@
 
 #include <Doctest.hpp>
 
-#include <type_traits>
+#include <CommonTraits.hpp>
 
 class TestSocket : public sf::Socket
 {
@@ -22,12 +22,12 @@ TEST_CASE("[Network] sf::Socket")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(!std::is_constructible_v<sf::Socket>);
-        STATIC_CHECK(!std::is_copy_constructible_v<sf::Socket>);
-        STATIC_CHECK(!std::is_copy_assignable_v<sf::Socket>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Socket>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Socket>);
-        STATIC_CHECK(!std::has_virtual_destructor_v<sf::Socket>);
+        STATIC_CHECK(!SFML_BASE_IS_CONSTRUCTIBLE(sf::Socket));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Socket));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::Socket));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Socket));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Socket));
+        STATIC_CHECK(!SFML_BASE_HAS_VIRTUAL_DESTRUCTOR(sf::Socket));
     }
 
     SECTION("Constants")

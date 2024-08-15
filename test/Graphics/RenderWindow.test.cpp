@@ -14,10 +14,9 @@
 
 #include <Doctest.hpp>
 
+#include <CommonTraits.hpp>
 #include <GraphicsUtil.hpp>
 #include <WindowUtil.hpp>
-
-#include <type_traits>
 
 
 TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
@@ -26,11 +25,11 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(std::has_virtual_destructor_v<sf::RenderWindow>); // because of RenderTarget, not WindowBase
-        STATIC_CHECK(!std::is_copy_constructible_v<sf::RenderWindow>);
-        STATIC_CHECK(!std::is_copy_assignable_v<sf::RenderWindow>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::RenderWindow>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::RenderWindow>);
+        STATIC_CHECK(SFML_BASE_HAS_VIRTUAL_DESTRUCTOR(sf::RenderWindow)); // because of RenderTarget, not WindowBase
+        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::RenderWindow));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::RenderWindow));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::RenderWindow));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::RenderWindow));
     }
 
     SECTION("Construction")

@@ -63,7 +63,7 @@ void ensureInit()
             sf::priv::EaglContext::getFunction("glRenderbufferStorageOES"));
     }
 }
-}
+} // namespace
 
 
 namespace sf::priv
@@ -83,19 +83,22 @@ EaglContext::EaglContext(EaglContext* shared) : m_context(nil)
 
 
 ////////////////////////////////////////////////////////////
-EaglContext::EaglContext(EaglContext* shared, const ContextSettings& settings, const WindowImpl& owner, unsigned int bitsPerPixel) :
+EaglContext::EaglContext(EaglContext*           shared,
+                         const ContextSettings& contextSettings,
+                         const WindowImpl&      owner,
+                         unsigned int           bitsPerPixel) :
 m_context(nil)
 {
     ensureInit();
 
     const auto& window = static_cast<const WindowImplUIKit&>(owner);
 
-    createContext(shared, window, bitsPerPixel, settings);
+    createContext(shared, window, bitsPerPixel, contextSettings);
 }
 
 
 ////////////////////////////////////////////////////////////
-EaglContext::EaglContext(EaglContext* /* shared */, const ContextSettings& /* settings */, Vector2u /* size */) :
+EaglContext::EaglContext(EaglContext* /* shared */, const ContextSettings& /* contextSettings */, Vector2u /* size */) :
 m_context(nil)
 {
     ensureInit();
@@ -252,10 +255,10 @@ void EaglContext::setVerticalSyncEnabled(bool enabled)
 void EaglContext::createContext(EaglContext*           shared,
                                 const WindowImplUIKit& window,
                                 unsigned int /* bitsPerPixel */,
-                                const ContextSettings& settings)
+                                const ContextSettings& contextSettings)
 {
     // Save the settings
-    m_settings = settings;
+    m_settings = contextSettings;
 
     // Adjust the depth buffer format to those available
     if (m_settings.depthBits > 16)

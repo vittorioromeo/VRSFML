@@ -6,20 +6,20 @@
 
 #include <Doctest.hpp>
 
+#include <CommonTraits.hpp>
 #include <GraphicsUtil.hpp>
 #include <StringifyVectorUtil.hpp>
 
-#include <type_traits>
 #include <vector>
 
 TEST_CASE("[Graphics] sf::Transform")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(std::is_copy_constructible_v<sf::Transform>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::Transform>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Transform>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Transform>);
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Transform));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Transform));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Transform));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Transform));
     }
 
     SECTION("Construction")

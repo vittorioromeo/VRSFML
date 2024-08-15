@@ -14,10 +14,9 @@
 
 #include <Doctest.hpp>
 
+#include <CommonTraits.hpp>
 #include <GraphicsUtil.hpp>
 #include <WindowUtil.hpp>
-
-#include <type_traits>
 
 TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
 {
@@ -25,12 +24,12 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!std::is_constructible_v<sf::Text, sf::Font&&, sf::String, unsigned int>);
-        STATIC_CHECK(!std::is_constructible_v<sf::Text, const sf::Font&&, sf::String, unsigned int>);
-        STATIC_CHECK(std::is_copy_constructible_v<sf::Text>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::Text>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Text>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Text>);
+        STATIC_CHECK(!SFML_BASE_IS_CONSTRUCTIBLE(sf::Text, sf::Font&&, sf::String, unsigned int));
+        STATIC_CHECK(!SFML_BASE_IS_CONSTRUCTIBLE(sf::Text, const sf::Font&&, sf::String, unsigned int));
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Text));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Text));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Text));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Text));
     }
 
     const auto font = sf::Font::openFromFile(graphicsContext, "Graphics/tuffy.ttf").value();

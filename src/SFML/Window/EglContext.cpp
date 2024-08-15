@@ -119,8 +119,8 @@ GlContext(windowContext, id, {})
     // Get the initialized EGL display
     m_display = EglContextImpl::getInitializedDisplay();
 
-    // Get the best EGL config matching the default video settings
-    m_config = getBestConfig(m_display, VideoModeUtils::getDesktopMode().bitsPerPixel, ContextSettings());
+    // Get the best EGL config matching the default video contextSettings
+    m_config = getBestConfig(m_display, VideoModeUtils::getDesktopMode().bitsPerPixel, ContextSettings{});
     updateSettings();
 
 #ifndef SFML_SYSTEM_EMSCRIPTEN
@@ -144,10 +144,10 @@ GlContext(windowContext, id, {})
 EglContext::EglContext(WindowContext&                     windowContext,
                        std::uint64_t                      id,
                        EglContext*                        shared,
-                       const ContextSettings&             settings,
+                       const ContextSettings&             contextSettings,
                        [[maybe_unused]] const WindowImpl& owner,
                        unsigned int                       bitsPerPixel) :
-GlContext(windowContext, id, settings)
+GlContext(windowContext, id, contextSettings)
 {
     EglContextImpl::ensureInit();
 
@@ -164,8 +164,8 @@ GlContext(windowContext, id, settings)
     // Get the initialized EGL display
     m_display = EglContextImpl::getInitializedDisplay();
 
-    // Get the best EGL config matching the requested video settings
-    m_config = getBestConfig(m_display, bitsPerPixel, settings);
+    // Get the best EGL config matching the requested video contextSettings
+    m_config = getBestConfig(m_display, bitsPerPixel, contextSettings);
     updateSettings();
 
     // Create EGL context
@@ -184,14 +184,15 @@ GlContext(windowContext, id, settings)
 EglContext::EglContext(WindowContext& windowContext,
                        std::uint64_t  id,
                        EglContext* /* shared */,
-                       const ContextSettings& /* settings */,
+                       const ContextSettings& /* contextSettings */,
                        Vector2u /* size */) :
 GlContext(windowContext, id, {})
 {
     EglContextImpl::ensureInit();
 
     // TODO P0: this gets called from `RenderTextureImplDefault`
-    sf::priv::err() << "Warning: context has not been initialized. The constructor EglContext(shared, settings, size) "
+    sf::priv::err() << "Warning: context has not been initialized. The constructor EglContext(shared, contextSettings, "
+                       "size) "
                        "is currently not implemented.";
 }
 
@@ -309,7 +310,7 @@ void EglContext::destroySurface()
 
 
 ////////////////////////////////////////////////////////////
-EGLConfig EglContext::getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const ContextSettings& settings)
+EGLConfig EglContext::getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const ContextSettings& contextSettings)
 {
 #ifndef SFML_SYSTEM_EMSCRIPTEN
     EglContextImpl::ensureInit();
@@ -360,7 +361,7 @@ EGLConfig EglContext::getBestConfig(EGLDisplay display, unsigned int bitsPerPixe
         // Evaluate the config
         const int color = red + green + blue + alpha;
         const int score = GlContext::evaluateFormat(bitsPerPixel,
-                                                    settings,
+                                                    contextSettings,
                                                     color,
                                                     depth,
                                                     stencil,
@@ -380,7 +381,7 @@ EGLConfig EglContext::getBestConfig(EGLDisplay display, unsigned int bitsPerPixe
 
     return bestConfig;
 #else
-    // Set our video settings constraint
+    // Set our video contextSettings constraint
     const EGLint attributes[] =
         {EGL_BUFFER_SIZE,
          static_cast<EGLint>(bitsPerPixel),
@@ -391,11 +392,11 @@ EGLConfig EglContext::getBestConfig(EGLDisplay display, unsigned int bitsPerPixe
          EGL_GREEN_SIZE,
          8,
          EGL_DEPTH_SIZE,
-         static_cast<EGLint>(settings.depthBits),
+         static_cast<EGLint>(contextSettings.depthBits),
          EGL_STENCIL_SIZE,
-         static_cast<EGLint>(settings.stencilBits),
+         static_cast<EGLint>(contextSettings.stencilBits),
          EGL_SAMPLE_BUFFERS,
-         static_cast<EGLint>(settings.antialiasingLevel),
+         static_cast<EGLint>(contextSettings.antialiasingLevel),
          EGL_SURFACE_TYPE,
          EGL_RENDERABLE_TYPE,
          EGL_OPENGL_ES_BIT,
@@ -405,7 +406,7 @@ EGLConfig EglContext::getBestConfig(EGLDisplay display, unsigned int bitsPerPixe
     EGLint    configCount;
     EGLConfig config;
 
-    // Ask EGL for the best config matching our video settings
+    // Ask EGL for the best config matching our video contextSettings
     eglCheck(eglChooseConfig(display, attributes, &config, 1, &configCount));
 
     if (configCount == 0)
@@ -429,7 +430,7 @@ void EglContext::updateSettings()
     EGLBoolean result = EGL_FALSE;
     EGLint     tmp    = 0;
 
-    // Update the internal context settings with the current config
+    // Update the internal context contextSettings with the current config
     eglCheck(result = eglGetConfigAttrib(m_display, m_config, EGL_DEPTH_SIZE, &tmp));
 
     if (result != EGL_FALSE)
@@ -454,15 +455,15 @@ void EglContext::updateSettings()
 
 #if defined(SFML_SYSTEM_LINUX) && !defined(SFML_USE_DRM)
 ////////////////////////////////////////////////////////////
-XVisualInfo EglContext::selectBestVisual(::Display* xDisplay, unsigned int bitsPerPixel, const ContextSettings& settings)
+XVisualInfo EglContext::selectBestVisual(::Display* xDisplay, unsigned int bitsPerPixel, const ContextSettings& contextSettings)
 {
     EglContextImpl::ensureInit();
 
     // Get the initialized EGL display
     EGLDisplay display = EglContextImpl::getInitializedDisplay();
 
-    // Get the best EGL config matching the default video settings
-    EGLConfig config = getBestConfig(display, bitsPerPixel, settings);
+    // Get the best EGL config matching the default video contextSettings
+    EGLConfig config = getBestConfig(display, bitsPerPixel, contextSettings);
 
     // Retrieve the visual id associated with this EGL config
     EGLint nativeVisualId = 0;

@@ -4,25 +4,24 @@
 
 #include <Doctest.hpp>
 
+#include <CommonTraits.hpp>
 #include <SystemUtil.hpp>
-
-#include <type_traits>
 
 TEMPLATE_TEST_CASE("[Graphics] sf::Rect", "", int, float)
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(std::is_copy_constructible_v<sf::Rect<TestType>>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::Rect<TestType>>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Rect<TestType>>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Rect<TestType>>);
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Rect<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Rect<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Rect<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Rect<TestType>));
 
-        STATIC_CHECK(!std::is_trivial_v<sf::Rect<TestType>>); // because of member initializers
-        STATIC_CHECK(std::is_standard_layout_v<sf::Rect<TestType>>);
-        STATIC_CHECK(std::is_aggregate_v<sf::Rect<TestType>>);
-        STATIC_CHECK(std::is_trivially_copyable_v<sf::Rect<TestType>>);
-        STATIC_CHECK(std::is_trivially_destructible_v<sf::Rect<TestType>>);
-        STATIC_CHECK(std::is_trivially_assignable_v<sf::Rect<TestType>, sf::Rect<TestType>>);
+        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::Rect<TestType>)); // because of member initializers
+        STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::Rect<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_AGGREGATE(sf::Rect<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::Rect<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::Rect<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::Rect<TestType>, sf::Rect<TestType>));
     }
 
     SECTION("Construction")

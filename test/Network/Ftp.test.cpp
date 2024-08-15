@@ -2,29 +2,28 @@
 
 #include <Doctest.hpp>
 
+#include <CommonTraits.hpp>
 #include <StringifyPathUtil.hpp>
 #include <StringifyVectorUtil.hpp>
-
-#include <type_traits>
 
 TEST_CASE("[Network] sf::Ftp")
 {
     SECTION("Type traits")
     {
-        static_assert(!std::is_copy_constructible_v<sf::Ftp>);
-        static_assert(!std::is_copy_assignable_v<sf::Ftp>);
-        static_assert(!std::is_nothrow_move_constructible_v<sf::Ftp>);
-        static_assert(!std::is_nothrow_move_assignable_v<sf::Ftp>);
+        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Ftp));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::Ftp));
+        STATIC_CHECK(!SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Ftp));
+        STATIC_CHECK(!SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Ftp));
     }
 
     SECTION("Response")
     {
         SECTION("Type traits")
         {
-            static_assert(std::is_copy_constructible_v<sf::Ftp::Response>);
-            static_assert(std::is_copy_assignable_v<sf::Ftp::Response>);
-            static_assert(std::is_nothrow_move_constructible_v<sf::Ftp::Response>);
-            static_assert(std::is_nothrow_move_assignable_v<sf::Ftp::Response>);
+            STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Ftp::Response));
+            STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Ftp::Response));
+            STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Ftp::Response));
+            STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Ftp::Response));
         }
 
         SECTION("Construction")

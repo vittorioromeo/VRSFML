@@ -2,18 +2,18 @@
 
 #include <Doctest.hpp>
 
-#include <type_traits>
+#include <CommonTraits.hpp>
 
 TEST_CASE("[Audio] sf::SoundFileReader")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(!std::is_constructible_v<sf::SoundFileReader>);
-        STATIC_CHECK(!std::is_copy_constructible_v<sf::SoundFileReader>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::SoundFileReader>);
-        STATIC_CHECK(!std::is_nothrow_move_constructible_v<sf::SoundFileReader>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::SoundFileReader>);
-        STATIC_CHECK(std::has_virtual_destructor_v<sf::SoundFileReader>);
+        STATIC_CHECK(!SFML_BASE_IS_CONSTRUCTIBLE(sf::SoundFileReader));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::SoundFileReader));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::SoundFileReader));
+        STATIC_CHECK(!SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::SoundFileReader));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::SoundFileReader));
+        STATIC_CHECK(SFML_BASE_HAS_VIRTUAL_DESTRUCTOR(sf::SoundFileReader));
     }
 
     SECTION("Info")

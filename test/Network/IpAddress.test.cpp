@@ -5,9 +5,10 @@
 
 #include <Doctest.hpp>
 
+#include <CommonTraits.hpp>
+
 #include <sstream>
 #include <string_view>
-#include <type_traits>
 
 using namespace std::string_literals;
 using namespace std::string_view_literals;
@@ -16,11 +17,11 @@ TEST_CASE("[Network] sf::IpAddress")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(std::is_copy_constructible_v<sf::IpAddress>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::IpAddress>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::IpAddress>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::IpAddress>);
-        STATIC_CHECK(std::is_trivially_copyable_v<sf::IpAddress>);
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::IpAddress));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::IpAddress));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::IpAddress));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::IpAddress));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::IpAddress));
     }
 
     SECTION("Construction")

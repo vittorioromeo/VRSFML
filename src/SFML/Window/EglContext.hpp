@@ -49,7 +49,7 @@ public:
     explicit EglContext(WindowContext&         windowContext,
                         std::uint64_t          id,
                         EglContext*            shared,
-                        const ContextSettings& settings,
+                        const ContextSettings& contextSettings,
                         const WindowImpl&      owner,
                         unsigned int           bitsPerPixel);
 
@@ -65,7 +65,7 @@ public:
     explicit EglContext(WindowContext&         windowContext,
                         std::uint64_t          id,
                         EglContext*            shared,
-                        const ContextSettings& settings,
+                        const ContextSettings& contextSettings,
                         Vector2u               size);
 
     ////////////////////////////////////////////////////////////
@@ -154,7 +154,7 @@ public:
     /// \return The best EGL config
     ///
     ////////////////////////////////////////////////////////////
-    static EGLConfig getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const ContextSettings& settings);
+    static EGLConfig getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const ContextSettings& contextSettings);
 
 #if defined(SFML_SYSTEM_LINUX) && !defined(SFML_USE_DRM)
     ////////////////////////////////////////////////////////////
@@ -167,7 +167,7 @@ public:
     /// \return The best visual
     ///
     ////////////////////////////////////////////////////////////
-    static XVisualInfo selectBestVisual(::Display* display, unsigned int bitsPerPixel, const ContextSettings& settings);
+    static XVisualInfo selectBestVisual(::Display* display, unsigned int bitsPerPixel, const ContextSettings& contextSettings);
 #endif
 
 private:

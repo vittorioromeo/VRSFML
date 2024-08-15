@@ -2,18 +2,17 @@
 
 #include <Doctest.hpp>
 
+#include <CommonTraits.hpp>
 #include <GraphicsUtil.hpp>
-
-#include <type_traits>
 
 TEST_CASE("[Graphics] sf::BlendMode")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(std::is_copy_constructible_v<sf::BlendMode>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::BlendMode>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::BlendMode>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::BlendMode>);
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::BlendMode));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::BlendMode));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::BlendMode));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::BlendMode));
     }
 
     SECTION("Construction")

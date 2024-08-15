@@ -77,7 +77,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<RenderTexture> create(GraphicsContext&       graphicsContext,
                                                               Vector2u               size,
-                                                              const ContextSettings& settings = {});
+                                                              const ContextSettings& contextSettings = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the maximum anti-aliasing level supported by the system

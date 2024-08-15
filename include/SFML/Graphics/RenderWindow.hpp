@@ -56,7 +56,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit RenderWindow(GraphicsContext&       graphicsContext,
                                         WindowHandle           handle,
-                                        const ContextSettings& settings = ContextSettings());
+                                        const ContextSettings& contextSettings = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy constructor

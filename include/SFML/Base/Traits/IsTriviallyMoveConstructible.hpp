@@ -12,7 +12,7 @@
 #include <type_traits>
 
 ////////////////////////////////////////////////////////////
-#define SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(...) ::std::is_trivially_move_constructible<__VA_ARGS__>
+#define SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(...) ::std::is_trivially_move_constructible_v<__VA_ARGS__>
 
 #endif
 

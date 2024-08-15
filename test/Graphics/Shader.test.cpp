@@ -10,8 +10,9 @@
 
 #include <Doctest.hpp>
 
+#include <CommonTraits.hpp>
+
 #include <string_view>
-#include <type_traits>
 
 namespace
 {
@@ -155,11 +156,11 @@ TEST_CASE("[Graphics] sf::Shader" * doctest::skip(skipShaderFullTest))
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!std::is_default_constructible_v<sf::Shader>);
-        STATIC_CHECK(!std::is_copy_constructible_v<sf::Shader>);
-        STATIC_CHECK(!std::is_copy_assignable_v<sf::Shader>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Shader>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Shader>);
+        STATIC_CHECK(!SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::Shader));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Shader));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::Shader));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Shader));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Shader));
     }
 
     SECTION("Move semantics")

@@ -3,10 +3,10 @@
 
 #include <Doctest.hpp>
 
+#include <CommonTraits.hpp>
 #include <SystemUtil.hpp>
 
 #include <chrono>
-#include <type_traits>
 
 using namespace std::chrono_literals;
 
@@ -14,11 +14,11 @@ TEST_CASE("[System] sf::Time")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(std::is_copy_constructible_v<sf::Time>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::Time>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Time>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Time>);
-        STATIC_CHECK(std::is_trivially_copyable_v<sf::Time>);
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Time));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Time));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Time));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Time));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::Time));
     }
 
     SECTION("Construction")

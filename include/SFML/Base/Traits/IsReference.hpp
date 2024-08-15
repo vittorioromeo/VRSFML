@@ -12,7 +12,7 @@
 #include <type_traits>
 
 ////////////////////////////////////////////////////////////
-#define SFML_BASE_IS_REFERENCE(...) ::std::is_reference<__VA_ARGS__>
+#define SFML_BASE_IS_REFERENCE(...) ::std::is_reference_v<__VA_ARGS__>
 
 #endif
 

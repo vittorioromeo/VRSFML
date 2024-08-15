@@ -93,7 +93,7 @@ protected:
     /// This constructor is meant for derived classes only.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit GlContext(WindowContext& windowContext, std::uint64_t id, const ContextSettings& settings);
+    [[nodiscard]] explicit GlContext(WindowContext& windowContext, std::uint64_t id, const ContextSettings& contextSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Activate the context as the current target
@@ -127,7 +127,7 @@ protected:
     ///
     ////////////////////////////////////////////////////////////
     static int evaluateFormat(unsigned int           bitsPerPixel,
-                              const ContextSettings& settings,
+                              const ContextSettings& contextSettings,
                               int                    colorBits,
                               int                    depthBits,
                               int                    stencilBits,

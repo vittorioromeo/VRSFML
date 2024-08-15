@@ -79,7 +79,7 @@ public:
     /// \return True if creation has been successful
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool create(Vector2u size, unsigned int textureId, const ContextSettings& settings);
+    [[nodiscard]] bool create(Vector2u size, unsigned int textureId, const ContextSettings& contextSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Activate or deactivate the render texture for rendering
@@ -108,7 +108,7 @@ public:
     /// \param textureId OpenGL identifier of the target texture
     ///
     ////////////////////////////////////////////////////////////
-    void updateTexture(unsigned textureId);
+    void updateTexture(unsigned textureId) const;
 
 private:
     ////////////////////////////////////////////////////////////

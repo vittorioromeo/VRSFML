@@ -2,9 +2,8 @@
 
 #include <Doctest.hpp>
 
+#include <CommonTraits.hpp>
 #include <SystemUtil.hpp>
-
-#include <type_traits>
 
 namespace
 {
@@ -44,11 +43,11 @@ TEST_CASE("[Window] sf::Event")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(!std::is_default_constructible_v<sf::Event>);
-        STATIC_CHECK(std::is_copy_constructible_v<sf::Event>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::Event>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Event>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Event>);
+        STATIC_CHECK(!SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::Event));
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Event));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Event));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Event));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Event));
     }
 
     SECTION("Construction")
@@ -219,11 +218,11 @@ TEST_CASE("[Window] sf::Event")
     SECTION("Subtypes")
     {
         // Empty structs
-        STATIC_CHECK(std::is_empty_v<sf::Event::Closed>);
-        STATIC_CHECK(std::is_empty_v<sf::Event::FocusLost>);
-        STATIC_CHECK(std::is_empty_v<sf::Event::FocusGained>);
-        STATIC_CHECK(std::is_empty_v<sf::Event::MouseEntered>);
-        STATIC_CHECK(std::is_empty_v<sf::Event::MouseLeft>);
+        STATIC_CHECK(SFML_BASE_IS_EMPTY(sf::Event::Closed));
+        STATIC_CHECK(SFML_BASE_IS_EMPTY(sf::Event::FocusLost));
+        STATIC_CHECK(SFML_BASE_IS_EMPTY(sf::Event::FocusGained));
+        STATIC_CHECK(SFML_BASE_IS_EMPTY(sf::Event::MouseEntered));
+        STATIC_CHECK(SFML_BASE_IS_EMPTY(sf::Event::MouseLeft));
 
         // Non-empty structs
         const sf::Event::Resized resized;

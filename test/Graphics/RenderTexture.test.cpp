@@ -8,11 +8,10 @@
 
 #include <Doctest.hpp>
 
+#include <CommonTraits.hpp>
 #include <StringifyOptionalUtil.hpp>
 #include <SystemUtil.hpp>
 #include <WindowUtil.hpp>
-
-#include <type_traits>
 
 TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
 {
@@ -20,11 +19,11 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!std::is_default_constructible_v<sf::RenderTexture>);
-        STATIC_CHECK(!std::is_copy_constructible_v<sf::RenderTexture>);
-        STATIC_CHECK(!std::is_copy_assignable_v<sf::RenderTexture>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::RenderTexture>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::RenderTexture>);
+        STATIC_CHECK(!SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::RenderTexture));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::RenderTexture));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::RenderTexture));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::RenderTexture));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::RenderTexture));
     }
 
     SECTION("create()")

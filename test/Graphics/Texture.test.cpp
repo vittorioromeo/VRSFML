@@ -8,14 +8,14 @@
 #include <SFML/System/Path.hpp>
 
 #include <SFML/Base/Macros.hpp>
+#include <SFML/Base/Traits/IsNothrowSwappable.hpp>
 
 #include <Doctest.hpp>
 
+#include <CommonTraits.hpp>
 #include <GraphicsUtil.hpp>
 #include <LoadIntoMemoryUtil.hpp>
 #include <WindowUtil.hpp>
-
-#include <type_traits>
 
 TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
 {
@@ -23,12 +23,12 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!std::is_default_constructible_v<sf::Texture>);
-        STATIC_CHECK(std::is_copy_constructible_v<sf::Texture>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::Texture>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Texture>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Texture>);
-        STATIC_CHECK(std::is_nothrow_swappable_v<sf::Texture>);
+        STATIC_CHECK(!SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::Texture));
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Texture));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Texture));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Texture));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Texture));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_SWAPPABLE(sf::Texture));
     }
 
     SECTION("Move semantics")

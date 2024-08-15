@@ -47,13 +47,13 @@ unsigned int RenderTextureImplDefault::getMaximumAntialiasingLevel()
 
 
 ////////////////////////////////////////////////////////////
-bool RenderTextureImplDefault::create(Vector2u size, unsigned int, const ContextSettings& settings)
+bool RenderTextureImplDefault::create(Vector2u size, unsigned int, const ContextSettings& contextSettings)
 {
     // Store the dimensions
     m_size = size;
 
     // Create the in-memory OpenGL context
-    m_glContext = m_graphicsContext->createGlContext(settings, size);
+    m_glContext = m_graphicsContext->createGlContext(contextSettings, size);
     SFML_BASE_ASSERT(m_glContext != nullptr);
 
     return true;
@@ -75,7 +75,7 @@ bool RenderTextureImplDefault::isSrgb() const
 
 
 ////////////////////////////////////////////////////////////
-void RenderTextureImplDefault::updateTexture(unsigned int textureId)
+void RenderTextureImplDefault::updateTexture(unsigned int textureId) const
 {
     // Make sure that the current texture binding will be preserved
     const TextureSaver save;

@@ -12,7 +12,7 @@
 #include <type_traits>
 
 ////////////////////////////////////////////////////////////
-#define SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(...) ::std::is_trivially_copy_assignable<__VA_ARGS__>
+#define SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(...) ::std::is_trivially_copy_assignable_v<__VA_ARGS__>
 
 #endif
 

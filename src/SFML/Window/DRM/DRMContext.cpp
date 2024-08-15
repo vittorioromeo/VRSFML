@@ -513,7 +513,7 @@ DRMContext::DRMContext(DRMContext* shared)
 
 
 ////////////////////////////////////////////////////////////
-DRMContext::DRMContext(DRMContext* shared, const ContextSettings& settings, const WindowImpl& owner, unsigned int bitsPerPixel)
+DRMContext::DRMContext(DRMContext* shared, const ContextSettings& contextSettings, const WindowImpl& owner, unsigned int bitsPerPixel)
 {
     contextCount++;
 
@@ -521,7 +521,7 @@ DRMContext::DRMContext(DRMContext* shared, const ContextSettings& settings, cons
     m_display = getInitializedDisplay();
 
     // Get the best EGL config matching the requested video settings
-    m_config = getBestConfig(m_display, bitsPerPixel, settings);
+    m_config = getBestConfig(m_display, bitsPerPixel, contextSettings);
     updateSettings();
 
     // Create EGL context
@@ -533,7 +533,7 @@ DRMContext::DRMContext(DRMContext* shared, const ContextSettings& settings, cons
 
 
 ////////////////////////////////////////////////////////////
-DRMContext::DRMContext(DRMContext* shared, const ContextSettings& settings, Vector2u size)
+DRMContext::DRMContext(DRMContext* shared, const ContextSettings& contextSettings, Vector2u size)
 {
     contextCount++;
 
@@ -541,7 +541,7 @@ DRMContext::DRMContext(DRMContext* shared, const ContextSettings& settings, Vect
     m_display = getInitializedDisplay();
 
     // Get the best EGL config matching the requested video settings
-    m_config = getBestConfig(m_display, VideoModeUtils::getDesktopMode().bitsPerPixel, settings);
+    m_config = getBestConfig(m_display, VideoModeUtils::getDesktopMode().bitsPerPixel, contextSettings);
     updateSettings();
 
     // Create EGL context
@@ -731,18 +731,18 @@ void DRMContext::destroySurface()
 
 
 ////////////////////////////////////////////////////////////
-EGLConfig DRMContext::getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const ContextSettings& settings)
+EGLConfig DRMContext::getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const ContextSettings& contextSettings)
 {
     // Set our video settings constraint
     const EGLint attributes[] =
         {EGL_BUFFER_SIZE,
          static_cast<EGLint>(bitsPerPixel),
          EGL_DEPTH_SIZE,
-         static_cast<EGLint>(settings.depthBits),
+         static_cast<EGLint>(contextSettings.depthBits),
          EGL_STENCIL_SIZE,
-         static_cast<EGLint>(settings.stencilBits),
+         static_cast<EGLint>(contextSettings.stencilBits),
          EGL_SAMPLE_BUFFERS,
-         static_cast<EGLint>(settings.antialiasingLevel),
+         static_cast<EGLint>(contextSettings.antialiasingLevel),
          EGL_BLUE_SIZE,
          8,
          EGL_GREEN_SIZE,
@@ -778,7 +778,7 @@ void DRMContext::updateSettings()
 {
     EGLint tmp = 0;
 
-    // Update the internal context settings with the current config
+    // Update the internal context contextSettings with the current config
     eglCheck(eglGetConfigAttrib(m_display, m_config, EGL_DEPTH_SIZE, &tmp));
     m_settings.depthBits = static_cast<unsigned int>(tmp);
 
