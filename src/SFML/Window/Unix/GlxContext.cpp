@@ -449,7 +449,7 @@ void GlxContext::updateSettingsFromWindow()
 ////////////////////////////////////////////////////////////
 void GlxContext::createSurface(GlxContext* shared, Vector2u size, unsigned int bitsPerPixel)
 {
-    // Choose the visual according to the context contextSettings
+    // Choose the visual according to the context settings
     XVisualInfo visualInfo = selectBestVisual(m_display.get(), bitsPerPixel, m_settings);
 
     // Check if the shared context already exists and pbuffers are supported
@@ -546,7 +546,7 @@ void GlxContext::createSurface(::Window window)
 ////////////////////////////////////////////////////////////
 void GlxContext::createContext(GlxContext* shared)
 {
-    // Get a working copy of the context contextSettings
+    // Get a working copy of the context settings
     const ContextSettings contextSettings = m_settings;
 
     X11Ptr<XVisualInfo> visualInfo;

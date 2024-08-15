@@ -508,6 +508,8 @@ void requestFullscreen()
 
 [[nodiscard]] EM_BOOL fullscreenchangeCallback(int eventType, const EmscriptenFullscreenChangeEvent* /* e */, void* /* userData */)
 {
+throw 100;
+
     if (!window)
         return EM_FALSE;
 
@@ -687,6 +689,11 @@ void setCallbacks()
     EMSCRIPTEN_TRY(emscripten_set_touchend_callback(canvasTarget, nullUserData, useCapture, touchCallback));
     EMSCRIPTEN_TRY(emscripten_set_touchmove_callback(canvasTarget, nullUserData, useCapture, touchCallback));
     EMSCRIPTEN_TRY(emscripten_set_touchcancel_callback(canvasTarget, nullUserData, useCapture, touchCallback));
+    EMSCRIPTEN_TRY(
+        emscripten_set_fullscreenchange_callback(canvasTarget, nullUserData, useCapture, fullscreenchangeCallback));
+    EMSCRIPTEN_TRY(
+        emscripten_set_pointerlockchange_callback(canvasTarget, nullUserData, useCapture, pointerlockchangeCallback));
+    EMSCRIPTEN_TRY(emscripten_set_visibilitychange_callback(nullUserData, useCapture, visibilitychangeCallback));
 
     callbacksSet = true;
 }
