@@ -45,11 +45,11 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit WglContext(WindowContext&    windowContext,
-               std::uint64_t     id,
-               WglContext*       shared,
-               ContextSettings   settings,
-               const WindowImpl& owner,
-               unsigned int      bitsPerPixel);
+                                      std::uint64_t     id,
+                                      WglContext*       shared,
+                                      ContextSettings   settings,
+                                      const WindowImpl& owner,
+                                      unsigned int      bitsPerPixel);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context that embeds its own rendering target
@@ -59,7 +59,11 @@ public:
     /// \param size     Back buffer width and height, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WglContext(WindowContext& windowContext, std::uint64_t id, WglContext* shared, ContextSettings settings, Vector2u size);
+    [[nodiscard]] explicit WglContext(WindowContext&  windowContext,
+                                      std::uint64_t   id,
+                                      WglContext*     shared,
+                                      ContextSettings settings,
+                                      Vector2u        size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -118,9 +122,9 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static int selectBestPixelFormat(HDC                    deviceContext,
-                                     unsigned int           bitsPerPixel,
-                                     const ContextSettings& settings,
-                                     bool                   pbuffer = false);
+                                                   unsigned int           bitsPerPixel,
+                                                   const ContextSettings& settings,
+                                                   bool                   pbuffer = false);
 
 private:
     ////////////////////////////////////////////////////////////
