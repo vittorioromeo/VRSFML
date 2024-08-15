@@ -32,6 +32,7 @@ struct XDeleter<XcursorImage>
 ////////////////////////////////////////////////////////////
 CursorImpl::CursorImpl() : m_display(openDisplay())
 {
+    SFML_BASE_ASSERT(m_display != nullptr);
 }
 
 
@@ -192,11 +193,11 @@ bool CursorImpl::isColorCursorSupported()
 ////////////////////////////////////////////////////////////
 void CursorImpl::release()
 {
-    if (m_cursor != None)
-    {
-        XFreeCursor(m_display.get(), m_cursor);
-        m_cursor = None;
-    }
+    if (m_cursor == None || m_display == nullptr)
+        return;
+
+    XFreeCursor(m_display.get(), m_cursor);
+    m_cursor = None;
 }
 
 
