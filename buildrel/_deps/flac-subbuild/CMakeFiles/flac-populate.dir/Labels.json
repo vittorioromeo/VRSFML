@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/flac-subbuild/CMakeFiles/flac-populate"
+		},
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/flac-subbuild/CMakeFiles/flac-populate.rule"
+		},
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/flac-subbuild/CMakeFiles/flac-populate-complete.rule"
+		},
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/flac-subbuild/flac-populate-prefix/src/flac-populate-stamp/flac-populate-build.rule"
+		},
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/flac-subbuild/flac-populate-prefix/src/flac-populate-stamp/flac-populate-configure.rule"
+		},
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/flac-subbuild/flac-populate-prefix/src/flac-populate-stamp/flac-populate-download.rule"
+		},
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/flac-subbuild/flac-populate-prefix/src/flac-populate-stamp/flac-populate-install.rule"
+		},
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/flac-subbuild/flac-populate-prefix/src/flac-populate-stamp/flac-populate-mkdir.rule"
+		},
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/flac-subbuild/flac-populate-prefix/src/flac-populate-stamp/flac-populate-patch.rule"
+		},
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/flac-subbuild/flac-populate-prefix/src/flac-populate-stamp/flac-populate-test.rule"
+		},
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/flac-subbuild/flac-populate-prefix/src/flac-populate-stamp/flac-populate-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"flac-populate"
+		],
+		"name" : "flac-populate"
+	}
+}

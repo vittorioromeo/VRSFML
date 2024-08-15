@@ -1,0 +1,21 @@
+# ninja log v6
+1	36	7450158038587326	freetype-populate-prefix/src/freetype-populate-stamp/freetype-populate-mkdir	d5d45b4369e36a12
+1	36	7450158038587326	C:/OHWorkspace/SFML/buildrel/_deps/freetype-subbuild/freetype-populate-prefix/src/freetype-populate-stamp/freetype-populate-mkdir	d5d45b4369e36a12
+37	8780	7450158126018607	freetype-populate-prefix/src/freetype-populate-stamp/freetype-populate-download	3cbe564739ae8295
+37	8780	7450158126018607	C:/OHWorkspace/SFML/buildrel/_deps/freetype-subbuild/freetype-populate-prefix/src/freetype-populate-stamp/freetype-populate-download	3cbe564739ae8295
+8780	8895	7450158126047629	freetype-populate-prefix/src/freetype-populate-stamp/freetype-populate-update	eaa34df665e3ddf3
+8780	8895	7450158126047629	C:/OHWorkspace/SFML/buildrel/_deps/freetype-subbuild/freetype-populate-prefix/src/freetype-populate-stamp/freetype-populate-update	eaa34df665e3ddf3
+8895	8926	7450158127481878	freetype-populate-prefix/src/freetype-populate-stamp/freetype-populate-patch	793bf74763693c10
+8895	8926	7450158127481878	C:/OHWorkspace/SFML/buildrel/_deps/freetype-subbuild/freetype-populate-prefix/src/freetype-populate-stamp/freetype-populate-patch	793bf74763693c10
+8926	8959	7450158127816552	freetype-populate-prefix/src/freetype-populate-stamp/freetype-populate-configure	d375f3ca23f50ec3
+8926	8959	7450158127816552	C:/OHWorkspace/SFML/buildrel/_deps/freetype-subbuild/freetype-populate-prefix/src/freetype-populate-stamp/freetype-populate-configure	d375f3ca23f50ec3
+8960	8989	7450158128111518	freetype-populate-prefix/src/freetype-populate-stamp/freetype-populate-build	240867c9fa36eebf
+8960	8989	7450158128111518	C:/OHWorkspace/SFML/buildrel/_deps/freetype-subbuild/freetype-populate-prefix/src/freetype-populate-stamp/freetype-populate-build	240867c9fa36eebf
+8989	9018	7450158128399930	freetype-populate-prefix/src/freetype-populate-stamp/freetype-populate-install	4470b35dd0f451f6
+8989	9018	7450158128399930	C:/OHWorkspace/SFML/buildrel/_deps/freetype-subbuild/freetype-populate-prefix/src/freetype-populate-stamp/freetype-populate-install	4470b35dd0f451f6
+9018	9046	7450158128678728	freetype-populate-prefix/src/freetype-populate-stamp/freetype-populate-test	582e6aa427e4fabb
+9018	9046	7450158128678728	C:/OHWorkspace/SFML/buildrel/_deps/freetype-subbuild/freetype-populate-prefix/src/freetype-populate-stamp/freetype-populate-test	582e6aa427e4fabb
+9046	9086	7450158129079268	CMakeFiles/freetype-populate-complete	92dd846f9aaee06
+9046	9086	7450158129079268	freetype-populate-prefix/src/freetype-populate-stamp/freetype-populate-done	92dd846f9aaee06
+9046	9086	7450158129079268	C:/OHWorkspace/SFML/buildrel/_deps/freetype-subbuild/CMakeFiles/freetype-populate-complete	92dd846f9aaee06
+9046	9086	7450158129079268	C:/OHWorkspace/SFML/buildrel/_deps/freetype-subbuild/freetype-populate-prefix/src/freetype-populate-stamp/freetype-populate-done	92dd846f9aaee06

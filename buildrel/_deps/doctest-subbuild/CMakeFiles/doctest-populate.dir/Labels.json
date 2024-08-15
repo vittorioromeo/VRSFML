@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/doctest-subbuild/CMakeFiles/doctest-populate"
+		},
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/doctest-subbuild/CMakeFiles/doctest-populate.rule"
+		},
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/doctest-subbuild/CMakeFiles/doctest-populate-complete.rule"
+		},
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/doctest-subbuild/doctest-populate-prefix/src/doctest-populate-stamp/doctest-populate-build.rule"
+		},
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/doctest-subbuild/doctest-populate-prefix/src/doctest-populate-stamp/doctest-populate-configure.rule"
+		},
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/doctest-subbuild/doctest-populate-prefix/src/doctest-populate-stamp/doctest-populate-download.rule"
+		},
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/doctest-subbuild/doctest-populate-prefix/src/doctest-populate-stamp/doctest-populate-install.rule"
+		},
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/doctest-subbuild/doctest-populate-prefix/src/doctest-populate-stamp/doctest-populate-mkdir.rule"
+		},
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/doctest-subbuild/doctest-populate-prefix/src/doctest-populate-stamp/doctest-populate-patch.rule"
+		},
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/doctest-subbuild/doctest-populate-prefix/src/doctest-populate-stamp/doctest-populate-test.rule"
+		},
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/doctest-subbuild/doctest-populate-prefix/src/doctest-populate-stamp/doctest-populate-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"doctest-populate"
+		],
+		"name" : "doctest-populate"
+	}
+}

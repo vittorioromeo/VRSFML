@@ -1,0 +1,14 @@
+# Target labels
+ vorbis-populate
+# Source files and their labels
+C:/OHWorkspace/SFML/buildrel/_deps/vorbis-subbuild/CMakeFiles/vorbis-populate
+C:/OHWorkspace/SFML/buildrel/_deps/vorbis-subbuild/CMakeFiles/vorbis-populate.rule
+C:/OHWorkspace/SFML/buildrel/_deps/vorbis-subbuild/CMakeFiles/vorbis-populate-complete.rule
+C:/OHWorkspace/SFML/buildrel/_deps/vorbis-subbuild/vorbis-populate-prefix/src/vorbis-populate-stamp/vorbis-populate-build.rule
+C:/OHWorkspace/SFML/buildrel/_deps/vorbis-subbuild/vorbis-populate-prefix/src/vorbis-populate-stamp/vorbis-populate-configure.rule
+C:/OHWorkspace/SFML/buildrel/_deps/vorbis-subbuild/vorbis-populate-prefix/src/vorbis-populate-stamp/vorbis-populate-download.rule
+C:/OHWorkspace/SFML/buildrel/_deps/vorbis-subbuild/vorbis-populate-prefix/src/vorbis-populate-stamp/vorbis-populate-install.rule
+C:/OHWorkspace/SFML/buildrel/_deps/vorbis-subbuild/vorbis-populate-prefix/src/vorbis-populate-stamp/vorbis-populate-mkdir.rule
+C:/OHWorkspace/SFML/buildrel/_deps/vorbis-subbuild/vorbis-populate-prefix/src/vorbis-populate-stamp/vorbis-populate-patch.rule
+C:/OHWorkspace/SFML/buildrel/_deps/vorbis-subbuild/vorbis-populate-prefix/src/vorbis-populate-stamp/vorbis-populate-test.rule
+C:/OHWorkspace/SFML/buildrel/_deps/vorbis-subbuild/vorbis-populate-prefix/src/vorbis-populate-stamp/vorbis-populate-update.rule

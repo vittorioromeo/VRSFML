@@ -1,0 +1,1747 @@
+
+---
+events:
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineSystem.cmake:205 (message)"
+      - "CMakeLists.txt:32 (project)"
+    message: |
+      The system is: Windows - 10.0.26120 - AMD64
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:32 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+      Compiler: C:/msys64/ucrt64/bin/clang++.exe 
+      Build flags: -fuse-ld=lld;-ftime-trace;-Wall;-Wextra;-Wpedantic;-Wno-ignored-attributes;-Wno-unused-command-line-argument;-Ofast
+      Id flags:  
+      
+      The output was:
+      0
+      
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "a-CMakeCXXCompilerId.json"
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "a.exe"
+      
+      The CXX compiler identification could not be found in:
+        C:/OHWorkspace/SFML/buildrel/CMakeFiles/3.30.1/CompilerIdCXX/a-CMakeCXXCompilerId.json
+      
+      The CXX compiler identification is Clang, found in:
+        C:/OHWorkspace/SFML/buildrel/CMakeFiles/3.30.1/CompilerIdCXX/a.exe
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:74 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:32 (project)"
+    checks:
+      - "Detecting CXX compiler ABI info"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-1ez3qv"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-1ez3qv"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_CXX_FLAGS: "-fuse-ld=lld -ftime-trace -Wall -Wextra -Wpedantic -Wno-ignored-attributes -Wno-unused-command-line-argument -Ofast"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_CXX_SCAN_FOR_MODULES: "OFF"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "CMAKE_CXX_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-1ez3qv'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_68c3c
+        [1/2] C:\\msys64\\ucrt64\\bin\\clang++.exe   -fuse-ld=lld -ftime-trace -Wall -Wextra -Wpedantic -Wno-ignored-attributes -Wno-unused-command-line-argument -Ofast  -std=c++17   -v -MD -MT CMakeFiles/cmTC_68c3c.dir/CMakeCXXCompilerABI.cpp.obj -MF CMakeFiles\\cmTC_68c3c.dir\\CMakeCXXCompilerABI.cpp.obj.d -o CMakeFiles/cmTC_68c3c.dir/CMakeCXXCompilerABI.cpp.obj -c C:/msys64/ucrt64/share/cmake/Modules/CMakeCXXCompilerABI.cpp
+        clang version 18.1.8
+        Target: x86_64-w64-windows-gnu
+        Thread model: posix
+        InstalledDir: C:/msys64/ucrt64/bin
+         (in-process)
+         "C:/msys64/ucrt64/bin/clang++.exe" -cc1 -triple x86_64-w64-windows-gnu -emit-obj -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=none -menable-no-infs -menable-no-nans -fapprox-func -funsafe-math-optimizations -fno-signed-zeros -mreassociate -freciprocal-math -ffp-contract=fast -fno-rounding-math -ffast-math -ffinite-math-only -complex-range=limited -mconstructor-aliases -mms-bitfields -funwind-tables=2 -fno-use-init-array -target-cpu x86-64 -tune-cpu generic -debugger-tuning=gdb -fdebug-compilation-dir=C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-1ez3qv -v -fcoverage-compilation-dir=C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-1ez3qv -resource-dir C:/msys64/ucrt64/lib/clang/18 -dependency-file "CMakeFiles\\\\cmTC_68c3c.dir\\\\CMakeCXXCompilerABI.cpp.obj.d" -MT CMakeFiles/cmTC_68c3c.dir/CMakeCXXCompilerABI.cpp.obj -sys-header-deps -internal-isystem C:/msys64/ucrt64/x86_64-w64-mingw32/include/c++ -internal-isystem C:/msys64/ucrt64/x86_64-w64-mingw32/include/c++/x86_64-w64-mingw32 -internal-isystem C:/msys64/ucrt64/x86_64-w64-mingw32/include/c++/backward -internal-isystem C:/msys64/ucrt64/x86_64-w64-mingw32/include/c++/14.2.0 -internal-isystem C:/msys64/ucrt64/x86_64-w64-mingw32/include/c++/14.2.0/x86_64-w64-mingw32 -internal-isystem C:/msys64/ucrt64/x86_64-w64-mingw32/include/c++/14.2.0/backward -internal-isystem C:/msys64/ucrt64/include/c++/14.2.0 -internal-isystem C:/msys64/ucrt64/include/c++/14.2.0/x86_64-w64-mingw32 -internal-isystem C:/msys64/ucrt64/include/c++/14.2.0/backward -internal-isystem C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/c++ -internal-isystem C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/c++/x86_64-w64-mingw32 -internal-isystem C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/c++/backward -internal-isystem C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14.2.0 -internal-isystem C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14.2.0/x86_64-w64-mingw32 -internal-isystem C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14.2.0/backward -internal-isystem C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14.2 -internal-isystem C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14.2/x86_64-w64-mingw32 -internal-isystem C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14.2/backward -internal-isystem C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14 -internal-isystem C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14/x86_64-w64-mingw32 -internal-isystem C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14/backward -internal-isystem C:/msys64/ucrt64/lib/clang/18/include -internal-isystem C:/msys64/ucrt64/x86_64-w64-mingw32/include -internal-isystem C:/msys64/ucrt64/x86_64-w64-mingw32/usr/include -internal-isystem C:/msys64/ucrt64/include -Ofast -Wall -Wextra -Wpedantic -Wno-ignored-attributes -Wno-unused-command-line-argument -std=c++17 -fdeprecated-macro -ferror-limit 19 -femulated-tls -ftime-trace=CMakeFiles/cmTC_68c3c.dir/CMakeCXXCompilerABI.cpp.json -fno-use-cxa-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -exception-model=seh -vectorize-loops -vectorize-slp -faddrsig -o CMakeFiles/cmTC_68c3c.dir/CMakeCXXCompilerABI.cpp.obj -x c++ C:/msys64/ucrt64/share/cmake/Modules/CMakeCXXCompilerABI.cpp
+        clang -cc1 version 18.1.8 based upon LLVM 18.1.8 default target x86_64-w64-windows-gnu
+        ignoring nonexistent directory "C:/msys64/ucrt64/x86_64-w64-mingw32/include/c++"
+        ignoring nonexistent directory "C:/msys64/ucrt64/x86_64-w64-mingw32/include/c++/x86_64-w64-mingw32"
+        ignoring nonexistent directory "C:/msys64/ucrt64/x86_64-w64-mingw32/include/c++/backward"
+        ignoring nonexistent directory "C:/msys64/ucrt64/x86_64-w64-mingw32/include/c++/14.2.0"
+        ignoring nonexistent directory "C:/msys64/ucrt64/x86_64-w64-mingw32/include/c++/14.2.0/x86_64-w64-mingw32"
+        ignoring nonexistent directory "C:/msys64/ucrt64/x86_64-w64-mingw32/include/c++/14.2.0/backward"
+        ignoring nonexistent directory "C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/c++"
+        ignoring nonexistent directory "C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/c++/x86_64-w64-mingw32"
+        ignoring nonexistent directory "C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/c++/backward"
+        ignoring nonexistent directory "C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14.2.0"
+        ignoring nonexistent directory "C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14.2.0/x86_64-w64-mingw32"
+        ignoring nonexistent directory "C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14.2.0/backward"
+        ignoring nonexistent directory "C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14.2"
+        ignoring nonexistent directory "C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14.2/x86_64-w64-mingw32"
+        ignoring nonexistent directory "C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14.2/backward"
+        ignoring nonexistent directory "C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14"
+        ignoring nonexistent directory "C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14/x86_64-w64-mingw32"
+        ignoring nonexistent directory "C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14/backward"\x0d
+        ignoring nonexistent directory "C:/msys64/ucrt64/x86_64-w64-mingw32/include"\x0d
+        ignoring nonexistent directory "C:/msys64/ucrt64/x86_64-w64-mingw32/usr/include"\x0d
+        #include "..." search starts here:\x0d
+        #include <...> search starts here:\x0d
+         C:/msys64/ucrt64/include/c++/14.2.0\x0d
+         C:/msys64/ucrt64/include/c++/14.2.0/x86_64-w64-mingw32\x0d
+         C:/msys64/ucrt64/include/c++/14.2.0/backward\x0d
+         C:/msys64/ucrt64/lib/clang/18/include\x0d
+         C:/msys64/ucrt64/include\x0d
+        End of search list.\x0d
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\clang++.exe -fuse-ld=lld -ftime-trace -Wall -Wextra -Wpedantic -Wno-ignored-attributes -Wno-unused-command-line-argument -Ofast -v -Wl,-v CMakeFiles/cmTC_68c3c.dir/CMakeCXXCompilerABI.cpp.obj -o cmTC_68c3c.exe -Wl,--out-implib,libcmTC_68c3c.dll.a -Wl,--major-image-version,0,--minor-image-version,0   && cd ."
+        clang version 18.1.8
+        Target: x86_64-w64-windows-gnu
+        Thread model: posix
+        InstalledDir: C:/msys64/ucrt64/bin
+         "C:/msys64/ucrt64/bin/ld.lld" -m i386pep -Bdynamic -o cmTC_68c3c.exe C:/msys64/ucrt64/lib/crt2.o C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/crtbegin.o -LC:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0 -LC:/msys64/ucrt64/x86_64-w64-mingw32/lib -LC:/msys64/ucrt64/x86_64-w64-mingw32/mingw/lib -LC:/msys64/ucrt64/lib -v CMakeFiles/cmTC_68c3c.dir/CMakeCXXCompilerABI.cpp.obj --out-implib libcmTC_68c3c.dll.a --major-image-version 0 --minor-image-version 0 -lstdc++ -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lpthread -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/crtfastmath.o C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/crtend.o\x0d
+        LLD 18.1.8 (compatible with GNU linkers)
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:182 (message)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:32 (project)"
+    message: |
+      Parsed CXX implicit include dir info: rv=done
+        found start of include info
+        found start of implicit include info
+          add: [C:/msys64/ucrt64/include/c++/14.2.0]
+          add: [C:/msys64/ucrt64/include/c++/14.2.0/x86_64-w64-mingw32]
+          add: [C:/msys64/ucrt64/include/c++/14.2.0/backward]
+          add: [C:/msys64/ucrt64/lib/clang/18/include]
+          add: [C:/msys64/ucrt64/include]
+        end of search list found
+        collapse include dir [C:/msys64/ucrt64/include/c++/14.2.0] ==> [C:/msys64/ucrt64/include/c++/14.2.0]
+        collapse include dir [C:/msys64/ucrt64/include/c++/14.2.0/x86_64-w64-mingw32] ==> [C:/msys64/ucrt64/include/c++/14.2.0/x86_64-w64-mingw32]
+        collapse include dir [C:/msys64/ucrt64/include/c++/14.2.0/backward] ==> [C:/msys64/ucrt64/include/c++/14.2.0/backward]
+        collapse include dir [C:/msys64/ucrt64/lib/clang/18/include] ==> [C:/msys64/ucrt64/lib/clang/18/include]
+        collapse include dir [C:/msys64/ucrt64/include] ==> [C:/msys64/ucrt64/include]
+        implicit include dirs: [C:/msys64/ucrt64/include/c++/14.2.0;C:/msys64/ucrt64/include/c++/14.2.0/x86_64-w64-mingw32;C:/msys64/ucrt64/include/c++/14.2.0/backward;C:/msys64/ucrt64/lib/clang/18/include;C:/msys64/ucrt64/include]
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:218 (message)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:32 (project)"
+    message: |
+      Parsed CXX implicit link information:
+        link line regex: [^( *|.*[/\\])(ld[0-9]*(\\.[a-z]+)?|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        linker tool regex: [^[ 	]*(->|")?[ 	]*(([^"]*[/\\])?(ld[0-9]*(\\.[a-z]+)?))("|,| |$)]
+        ignore line: [Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-1ez3qv']
+        ignore line: []
+        ignore line: [Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_68c3c]
+        ignore line: [[1/2] C:\\msys64\\ucrt64\\bin\\clang++.exe   -fuse-ld=lld -ftime-trace -Wall -Wextra -Wpedantic -Wno-ignored-attributes -Wno-unused-command-line-argument -Ofast  -std=c++17   -v -MD -MT CMakeFiles/cmTC_68c3c.dir/CMakeCXXCompilerABI.cpp.obj -MF CMakeFiles\\cmTC_68c3c.dir\\CMakeCXXCompilerABI.cpp.obj.d -o CMakeFiles/cmTC_68c3c.dir/CMakeCXXCompilerABI.cpp.obj -c C:/msys64/ucrt64/share/cmake/Modules/CMakeCXXCompilerABI.cpp]
+        ignore line: [clang version 18.1.8]
+        ignore line: [Target: x86_64-w64-windows-gnu]
+        ignore line: [Thread model: posix]
+        ignore line: [InstalledDir: C:/msys64/ucrt64/bin]
+        ignore line: [ (in-process)]
+        ignore line: [ "C:/msys64/ucrt64/bin/clang++.exe" -cc1 -triple x86_64-w64-windows-gnu -emit-obj -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=none -menable-no-infs -menable-no-nans -fapprox-func -funsafe-math-optimizations -fno-signed-zeros -mreassociate -freciprocal-math -ffp-contract=fast -fno-rounding-math -ffast-math -ffinite-math-only -complex-range=limited -mconstructor-aliases -mms-bitfields -funwind-tables=2 -fno-use-init-array -target-cpu x86-64 -tune-cpu generic -debugger-tuning=gdb -fdebug-compilation-dir=C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-1ez3qv -v -fcoverage-compilation-dir=C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-1ez3qv -resource-dir C:/msys64/ucrt64/lib/clang/18 -dependency-file "CMakeFiles\\\\cmTC_68c3c.dir\\\\CMakeCXXCompilerABI.cpp.obj.d" -MT CMakeFiles/cmTC_68c3c.dir/CMakeCXXCompilerABI.cpp.obj -sys-header-deps -internal-isystem C:/msys64/ucrt64/x86_64-w64-mingw32/include/c++ -internal-isystem C:/msys64/ucrt64/x86_64-w64-mingw32/include/c++/x86_64-w64-mingw32 -internal-isystem C:/msys64/ucrt64/x86_64-w64-mingw32/include/c++/backward -internal-isystem C:/msys64/ucrt64/x86_64-w64-mingw32/include/c++/14.2.0 -internal-isystem C:/msys64/ucrt64/x86_64-w64-mingw32/include/c++/14.2.0/x86_64-w64-mingw32 -internal-isystem C:/msys64/ucrt64/x86_64-w64-mingw32/include/c++/14.2.0/backward -internal-isystem C:/msys64/ucrt64/include/c++/14.2.0 -internal-isystem C:/msys64/ucrt64/include/c++/14.2.0/x86_64-w64-mingw32 -internal-isystem C:/msys64/ucrt64/include/c++/14.2.0/backward -internal-isystem C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/c++ -internal-isystem C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/c++/x86_64-w64-mingw32 -internal-isystem C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/c++/backward -internal-isystem C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14.2.0 -internal-isystem C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14.2.0/x86_64-w64-mingw32 -internal-isystem C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14.2.0/backward -internal-isystem C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14.2 -internal-isystem C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14.2/x86_64-w64-mingw32 -internal-isystem C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14.2/backward -internal-isystem C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14 -internal-isystem C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14/x86_64-w64-mingw32 -internal-isystem C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14/backward -internal-isystem C:/msys64/ucrt64/lib/clang/18/include -internal-isystem C:/msys64/ucrt64/x86_64-w64-mingw32/include -internal-isystem C:/msys64/ucrt64/x86_64-w64-mingw32/usr/include -internal-isystem C:/msys64/ucrt64/include -Ofast -Wall -Wextra -Wpedantic -Wno-ignored-attributes -Wno-unused-command-line-argument -std=c++17 -fdeprecated-macro -ferror-limit 19 -femulated-tls -ftime-trace=CMakeFiles/cmTC_68c3c.dir/CMakeCXXCompilerABI.cpp.json -fno-use-cxa-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -exception-model=seh -vectorize-loops -vectorize-slp -faddrsig -o CMakeFiles/cmTC_68c3c.dir/CMakeCXXCompilerABI.cpp.obj -x c++ C:/msys64/ucrt64/share/cmake/Modules/CMakeCXXCompilerABI.cpp]
+        ignore line: [clang -cc1 version 18.1.8 based upon LLVM 18.1.8 default target x86_64-w64-windows-gnu]
+        ignore line: [ignoring nonexistent directory "C:/msys64/ucrt64/x86_64-w64-mingw32/include/c++"]
+        ignore line: [ignoring nonexistent directory "C:/msys64/ucrt64/x86_64-w64-mingw32/include/c++/x86_64-w64-mingw32"]
+        ignore line: [ignoring nonexistent directory "C:/msys64/ucrt64/x86_64-w64-mingw32/include/c++/backward"]
+        ignore line: [ignoring nonexistent directory "C:/msys64/ucrt64/x86_64-w64-mingw32/include/c++/14.2.0"]
+        ignore line: [ignoring nonexistent directory "C:/msys64/ucrt64/x86_64-w64-mingw32/include/c++/14.2.0/x86_64-w64-mingw32"]
+        ignore line: [ignoring nonexistent directory "C:/msys64/ucrt64/x86_64-w64-mingw32/include/c++/14.2.0/backward"]
+        ignore line: [ignoring nonexistent directory "C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/c++"]
+        ignore line: [ignoring nonexistent directory "C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/c++/x86_64-w64-mingw32"]
+        ignore line: [ignoring nonexistent directory "C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/c++/backward"]
+        ignore line: [ignoring nonexistent directory "C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14.2.0"]
+        ignore line: [ignoring nonexistent directory "C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14.2.0/x86_64-w64-mingw32"]
+        ignore line: [ignoring nonexistent directory "C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14.2.0/backward"]
+        ignore line: [ignoring nonexistent directory "C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14.2"]
+        ignore line: [ignoring nonexistent directory "C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14.2/x86_64-w64-mingw32"]
+        ignore line: [ignoring nonexistent directory "C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14.2/backward"]
+        ignore line: [ignoring nonexistent directory "C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14"]
+        ignore line: [ignoring nonexistent directory "C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14/x86_64-w64-mingw32"]
+        ignore line: [ignoring nonexistent directory "C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/g++-v14/backward"\x0d]
+        ignore line: [ignoring nonexistent directory "C:/msys64/ucrt64/x86_64-w64-mingw32/include"\x0d]
+        ignore line: [ignoring nonexistent directory "C:/msys64/ucrt64/x86_64-w64-mingw32/usr/include"\x0d]
+        ignore line: [#include "..." search starts here:\x0d]
+        ignore line: [#include <...> search starts here:\x0d]
+        ignore line: [ C:/msys64/ucrt64/include/c++/14.2.0\x0d]
+        ignore line: [ C:/msys64/ucrt64/include/c++/14.2.0/x86_64-w64-mingw32\x0d]
+        ignore line: [ C:/msys64/ucrt64/include/c++/14.2.0/backward\x0d]
+        ignore line: [ C:/msys64/ucrt64/lib/clang/18/include\x0d]
+        ignore line: [ C:/msys64/ucrt64/include\x0d]
+        ignore line: [End of search list.\x0d]
+        ignore line: [[2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\clang++.exe -fuse-ld=lld -ftime-trace -Wall -Wextra -Wpedantic -Wno-ignored-attributes -Wno-unused-command-line-argument -Ofast -v -Wl,-v CMakeFiles/cmTC_68c3c.dir/CMakeCXXCompilerABI.cpp.obj -o cmTC_68c3c.exe -Wl,--out-implib,libcmTC_68c3c.dll.a -Wl,--major-image-version,0,--minor-image-version,0   && cd ."]
+        ignore line: [clang version 18.1.8]
+        ignore line: [Target: x86_64-w64-windows-gnu]
+        ignore line: [Thread model: posix]
+        ignore line: [InstalledDir: C:/msys64/ucrt64/bin]
+        link line: [ "C:/msys64/ucrt64/bin/ld.lld" -m i386pep -Bdynamic -o cmTC_68c3c.exe C:/msys64/ucrt64/lib/crt2.o C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/crtbegin.o -LC:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0 -LC:/msys64/ucrt64/x86_64-w64-mingw32/lib -LC:/msys64/ucrt64/x86_64-w64-mingw32/mingw/lib -LC:/msys64/ucrt64/lib -v CMakeFiles/cmTC_68c3c.dir/CMakeCXXCompilerABI.cpp.obj --out-implib libcmTC_68c3c.dll.a --major-image-version 0 --minor-image-version 0 -lstdc++ -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lpthread -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/crtfastmath.o C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/crtend.o\x0d]
+          arg [C:/msys64/ucrt64/bin/ld.lld] ==> ignore
+          arg [-m] ==> ignore
+          arg [i386pep] ==> ignore
+          arg [-Bdynamic] ==> search dynamic
+          arg [-o] ==> ignore
+          arg [cmTC_68c3c.exe] ==> ignore
+          arg [C:/msys64/ucrt64/lib/crt2.o] ==> obj [C:/msys64/ucrt64/lib/crt2.o]
+          arg [C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/crtbegin.o] ==> obj [C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/crtbegin.o]
+          arg [-LC:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0] ==> dir [C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0]
+          arg [-LC:/msys64/ucrt64/x86_64-w64-mingw32/lib] ==> dir [C:/msys64/ucrt64/x86_64-w64-mingw32/lib]
+          arg [-LC:/msys64/ucrt64/x86_64-w64-mingw32/mingw/lib] ==> dir [C:/msys64/ucrt64/x86_64-w64-mingw32/mingw/lib]
+          arg [-LC:/msys64/ucrt64/lib] ==> dir [C:/msys64/ucrt64/lib]
+          arg [-v] ==> ignore
+          arg [CMakeFiles/cmTC_68c3c.dir/CMakeCXXCompilerABI.cpp.obj] ==> ignore
+          arg [--out-implib] ==> ignore
+          arg [libcmTC_68c3c.dll.a] ==> ignore
+          arg [--major-image-version] ==> ignore
+          arg [0] ==> ignore
+          arg [--minor-image-version] ==> ignore
+          arg [0] ==> ignore
+          arg [-lstdc++] ==> lib [stdc++]
+          arg [-lmingw32] ==> lib [mingw32]
+          arg [-lgcc_s] ==> lib [gcc_s]
+          arg [-lgcc] ==> lib [gcc]
+          arg [-lmoldname] ==> lib [moldname]
+          arg [-lmingwex] ==> lib [mingwex]
+          arg [-lmsvcrt] ==> lib [msvcrt]
+          arg [-lpthread] ==> lib [pthread]
+          arg [-ladvapi32] ==> lib [advapi32]
+          arg [-lshell32] ==> lib [shell32]
+          arg [-luser32] ==> lib [user32]
+          arg [-lkernel32] ==> lib [kernel32]
+          arg [-lmingw32] ==> lib [mingw32]
+          arg [-lgcc_s] ==> lib [gcc_s]
+          arg [-lgcc] ==> lib [gcc]
+          arg [-lmoldname] ==> lib [moldname]
+          arg [-lmingwex] ==> lib [mingwex]
+          arg [-lmsvcrt] ==> lib [msvcrt]
+          arg [-lkernel32] ==> lib [kernel32]
+          arg [C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/crtfastmath.o] ==> obj [C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/crtfastmath.o]
+          arg [C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/crtend.o] ==> obj [C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/crtend.o]
+        linker tool for 'CXX': C:/msys64/ucrt64/bin/ld.lld
+        remove lib [msvcrt]
+        remove lib [msvcrt]
+        collapse library dir [C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0] ==> [C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0]
+        collapse library dir [C:/msys64/ucrt64/x86_64-w64-mingw32/lib] ==> [C:/msys64/ucrt64/x86_64-w64-mingw32/lib]
+        collapse library dir [C:/msys64/ucrt64/x86_64-w64-mingw32/mingw/lib] ==> [C:/msys64/ucrt64/x86_64-w64-mingw32/mingw/lib]
+        collapse library dir [C:/msys64/ucrt64/lib] ==> [C:/msys64/ucrt64/lib]
+        implicit libs: [stdc++;mingw32;gcc_s;gcc;moldname;mingwex;pthread;advapi32;shell32;user32;kernel32;mingw32;gcc_s;gcc;moldname;mingwex;kernel32]
+        implicit objs: [C:/msys64/ucrt64/lib/crt2.o;C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/crtbegin.o;C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/crtfastmath.o;C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/crtend.o]
+        implicit dirs: [C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0;C:/msys64/ucrt64/x86_64-w64-mingw32/lib;C:/msys64/ucrt64/x86_64-w64-mingw32/mingw/lib;C:/msys64/ucrt64/lib]
+        implicit fwks: []
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/Internal/CMakeDetermineLinkerId.cmake:40 (message)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:255 (cmake_determine_linker_id)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:32 (project)"
+    message: |
+      Running the CXX compiler's linker: "C:/msys64/ucrt64/bin/ld.lld" "-v"
+      LLD 18.1.8 (compatible with GNU linkers)
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckCXXSourceCompiles.cmake:52 (cmake_check_source_compiles)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/FindThreads.cmake:99 (CHECK_CXX_SOURCE_COMPILES)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/FindThreads.cmake:163 (_threads_check_libc)"
+      - "src/SFML/System/CMakeLists.txt:164 (find_package)"
+    checks:
+      - "Performing Test CMAKE_HAVE_LIBC_PTHREAD"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-ahb28f"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-ahb28f"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_CXX_FLAGS: "-fuse-ld=lld -ftime-trace -Wall -Wextra -Wpedantic -Wno-ignored-attributes -Wno-unused-command-line-argument -Ofast"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "CMAKE_HAVE_LIBC_PTHREAD"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-ahb28f'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_25cae
+        [1/2] C:\\msys64\\ucrt64\\bin\\clang++.exe -DCMAKE_HAVE_LIBC_PTHREAD  -fuse-ld=lld -ftime-trace -Wall -Wextra -Wpedantic -Wno-ignored-attributes -Wno-unused-command-line-argument -Ofast  -std=c++17 -MD -MT CMakeFiles/cmTC_25cae.dir/src.cxx.obj -MF CMakeFiles\\cmTC_25cae.dir\\src.cxx.obj.d -o CMakeFiles/cmTC_25cae.dir/src.cxx.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-ahb28f/src.cxx
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\clang++.exe -fuse-ld=lld -ftime-trace -Wall -Wextra -Wpedantic -Wno-ignored-attributes -Wno-unused-command-line-argument -Ofast  CMakeFiles/cmTC_25cae.dir/src.cxx.obj -o cmTC_25cae.exe -Wl,--out-implib,libcmTC_25cae.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckIncludeFileCXX.cmake:89 (try_compile)"
+      - "src/SFML/Window/CMakeLists.txt:325 (check_include_file_cxx)"
+    checks:
+      - "Looking for C++ include dinput.h"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-lb30n8"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-lb30n8"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_CXX_FLAGS: "-fuse-ld=lld -ftime-trace -Wall -Wextra -Wpedantic -Wno-ignored-attributes -Wno-unused-command-line-argument -Ofast"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "DINPUT_H_FOUND"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-lb30n8'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_a7b71
+        [1/2] C:\\msys64\\ucrt64\\bin\\clang++.exe   -fuse-ld=lld -ftime-trace -Wall -Wextra -Wpedantic -Wno-ignored-attributes -Wno-unused-command-line-argument -Ofast  -std=c++17 -MD -MT CMakeFiles/cmTC_a7b71.dir/CheckIncludeFile.cxx.obj -MF CMakeFiles\\cmTC_a7b71.dir\\CheckIncludeFile.cxx.obj.d -o CMakeFiles/cmTC_a7b71.dir/CheckIncludeFile.cxx.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-lb30n8/CheckIncludeFile.cxx
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\clang++.exe -fuse-ld=lld -ftime-trace -Wall -Wextra -Wpedantic -Wno-ignored-attributes -Wno-unused-command-line-argument -Ofast  CMakeFiles/cmTC_a7b71.dir/CheckIncludeFile.cxx.obj -o cmTC_a7b71.exe -Wl,--out-implib,libcmTC_a7b71.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "buildrel/_deps/freetype-src/CMakeLists.txt:163 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+      Compiler: C:/msys64/ucrt64/bin/cc.exe 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "a.exe"
+      
+      The C compiler identification is GNU, found in:
+        C:/OHWorkspace/SFML/buildrel/CMakeFiles/3.30.1/CompilerIdC/a.exe
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:74 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "buildrel/_deps/freetype-src/CMakeLists.txt:163 (project)"
+    checks:
+      - "Detecting C compiler ABI info"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-90nnuh"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-90nnuh"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "CMAKE_C_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-90nnuh'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_5a6f7
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe   -v -o CMakeFiles/cmTC_5a6f7.dir/CMakeCCompilerABI.c.obj -c C:/msys64/ucrt64/share/cmake/Modules/CMakeCCompilerABI.c
+        Using built-in specs.
+        COLLECT_GCC=C:\\msys64\\ucrt64\\bin\\cc.exe
+        Target: x86_64-w64-mingw32
+        Configured with: ../gcc-14.2.0/configure --prefix=/ucrt64 --with-local-prefix=/ucrt64/local --build=x86_64-w64-mingw32 --host=x86_64-w64-mingw32 --target=x86_64-w64-mingw32 --with-native-system-header-dir=/ucrt64/include --libexecdir=/ucrt64/lib --enable-bootstrap --enable-checking=release --with-arch=nocona --with-tune=generic --enable-languages=c,lto,c++,fortran,ada,objc,obj-c++,rust,jit --enable-shared --enable-static --enable-libatomic --enable-threads=posix --enable-graphite --enable-fully-dynamic-string --enable-libstdcxx-filesystem-ts --enable-libstdcxx-time --disable-libstdcxx-pch --enable-lto --enable-libgomp --disable-libssp --disable-multilib --disable-rpath --disable-win32-registry --disable-nls --disable-werror --disable-symvers --with-libiconv --with-system-zlib --with-gmp=/ucrt64 --with-mpfr=/ucrt64 --with-mpc=/ucrt64 --with-isl=/ucrt64 --with-pkgversion='Rev1, Built by MSYS2 project' --with-bugurl=https://github.com/msys2/MINGW-packages/issues --with-gnu-as --with-gnu-ld --disable-libstdcxx-debug --enable-plugin --with-boot-ldflags=-static-libstdc++ --with-stage1-ldflags=-static-libstdc++
+        Thread model: posix
+        Supported LTO compression algorithms: zlib zstd
+        gcc version 14.2.0 (Rev1, Built by MSYS2 project) 
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_5a6f7.dir/CMakeCCompilerABI.c.obj' '-c' '-mtune=generic' '-march=nocona' '-dumpdir' 'CMakeFiles/cmTC_5a6f7.dir/'
+         C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/cc1.exe -quiet -v -iprefix C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/ -D_REENTRANT C:/msys64/ucrt64/share/cmake/Modules/CMakeCCompilerABI.c -quiet -dumpdir CMakeFiles/cmTC_5a6f7.dir/ -dumpbase CMakeCCompilerABI.c.c -dumpbase-ext .c -mtune=generic -march=nocona -version -o C:\\msys64\\tmp\\ccJTljKQ.s
+        GNU C17 (Rev1, Built by MSYS2 project) version 14.2.0 (x86_64-w64-mingw32)
+        	compiled by GNU C version 14.2.0, GMP version 6.3.0, MPFR version 4.2.1, MPC version 1.3.1, isl version isl-0.26-GMP
+        
+        GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+        ignoring nonexistent directory "C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/include"
+        ignoring duplicate directory "C:/msys64/ucrt64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/14.2.0/include"
+        ignoring nonexistent directory "D:/a/msys64/ucrt64/include"
+        ignoring nonexistent directory "/ucrt64/include"
+        ignoring duplicate directory "C:/msys64/ucrt64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/14.2.0/include-fixed"
+        ignoring nonexistent directory "C:/msys64/ucrt64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/include"
+        ignoring nonexistent directory "D:/a/msys64/ucrt64/include"
+        #include "..." search starts here:
+        #include <...> search starts here:
+         C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/include
+         C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../include
+         C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/include-fixed
+        End of search list.
+        Compiler executable checksum: ba3cc7c3374bc623df33c4b63149777f
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_5a6f7.dir/CMakeCCompilerABI.c.obj' '-c' '-mtune=generic' '-march=nocona' '-dumpdir' 'CMakeFiles/cmTC_5a6f7.dir/'
+         C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/bin/as.exe -v -o CMakeFiles/cmTC_5a6f7.dir/CMakeCCompilerABI.c.obj C:\\msys64\\tmp\\ccJTljKQ.s
+        GNU assembler version 2.42 (x86_64-w64-mingw32) using BFD version (GNU Binutils) 2.42
+        COMPILER_PATH=C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/;C:/msys64/ucrt64/bin/../lib/gcc/;C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/bin/
+        LIBRARY_PATH=C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/;C:/msys64/ucrt64/bin/../lib/gcc/;C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/lib/../lib/;C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../lib/;C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/lib/;C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../\x0d
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_5a6f7.dir/CMakeCCompilerABI.c.obj' '-c' '-mtune=generic' '-march=nocona' '-dumpdir' 'CMakeFiles/cmTC_5a6f7.dir/CMakeCCompilerABI.c.'\x0d
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe  -v -Wl,-v CMakeFiles/cmTC_5a6f7.dir/CMakeCCompilerABI.c.obj -o cmTC_5a6f7.exe -Wl,--out-implib,libcmTC_5a6f7.dll.a -Wl,--major-image-version,0,--minor-image-version,0   && cd ."
+        Using built-in specs.
+        COLLECT_GCC=C:\\msys64\\ucrt64\\bin\\cc.exe
+        COLLECT_LTO_WRAPPER=C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/lto-wrapper.exe
+        Target: x86_64-w64-mingw32
+        Configured with: ../gcc-14.2.0/configure --prefix=/ucrt64 --with-local-prefix=/ucrt64/local --build=x86_64-w64-mingw32 --host=x86_64-w64-mingw32 --target=x86_64-w64-mingw32 --with-native-system-header-dir=/ucrt64/include --libexecdir=/ucrt64/lib --enable-bootstrap --enable-checking=release --with-arch=nocona --with-tune=generic --enable-languages=c,lto,c++,fortran,ada,objc,obj-c++,rust,jit --enable-shared --enable-static --enable-libatomic --enable-threads=posix --enable-graphite --enable-fully-dynamic-string --enable-libstdcxx-filesystem-ts --enable-libstdcxx-time --disable-libstdcxx-pch --enable-lto --enable-libgomp --disable-libssp --disable-multilib --disable-rpath --disable-win32-registry --disable-nls --disable-werror --disable-symvers --with-libiconv --with-system-zlib --with-gmp=/ucrt64 --with-mpfr=/ucrt64 --with-mpc=/ucrt64 --with-isl=/ucrt64 --with-pkgversion='Rev1, Built by MSYS2 project' --with-bugurl=https://github.com/msys2/MINGW-packages/issues --with-gnu-as --with-gnu-ld --disable-libstdcxx-debug --enable-plugin --with-boot-ldflags=-static-libstdc++ --with-stage1-ldflags=-static-libstdc++
+        Thread model: posix
+        Supported LTO compression algorithms: zlib zstd
+        gcc version 14.2.0 (Rev1, Built by MSYS2 project) 
+        COMPILER_PATH=C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/;C:/msys64/ucrt64/bin/../lib/gcc/;C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/bin/
+        LIBRARY_PATH=C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/;C:/msys64/ucrt64/bin/../lib/gcc/;C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/lib/../lib/;C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../lib/;C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/lib/;C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../
+        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_5a6f7.exe' '-mtune=generic' '-march=nocona' '-dumpdir' 'cmTC_5a6f7.'
+         C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/collect2.exe -plugin C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/liblto_plugin.dll -plugin-opt=C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\\msys64\\tmp\\ccvw3LRV.res -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_eh -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lpthread -plugin-opt=-pass-through=-ladvapi32 -plugin-opt=-pass-through=-lshell32 -plugin-opt=-pass-through=-luser32 -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_eh -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -m i386pep -Bdynamic -o cmTC_5a6f7.exe C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../lib/crt2.o C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/crtbegin.o -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0 -LC:/msys64/ucrt64/bin/../lib/gcc -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/lib/../lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../.. -v CMakeFiles/cmTC_5a6f7.dir/CMakeCCompilerABI.c.obj --out-implib libcmTC_5a6f7.dll.a --major-image-version 0 --minor-image-version 0 -lmingw32 -lgcc -lgcc_eh -lmingwex -lmsvcrt -lkernel32 -lpthread -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc -lgcc_eh -lmingwex -lmsvcrt -lkernel32 C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../lib/default-manifest.o C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/crtend.o
+        collect2 version 14.2.0
+        C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe -plugin C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/liblto_plugin.dll -plugin-opt=C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\\msys64\\tmp\\ccvw3LRV.res -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_eh -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lpthread -plugin-opt=-pass-through=-ladvapi32 -plugin-opt=-pass-through=-lshell32 -plugin-opt=-pass-through=-luser32 -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_eh -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -m i386pep -Bdynamic -o cmTC_5a6f7.exe C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../lib/crt2.o C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/crtbegin.o -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0 -LC:/msys64/ucrt64/bin/../lib/gcc -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/lib/../lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../.. -v CMakeFiles/cmTC_5a6f7.dir/CMakeCCompilerABI.c.obj --out-implib libcmTC_5a6f7.dll.a --major-image-version 0 --minor-image-version 0 -lmingw32 -lgcc -lgcc_eh -lmingwex -lmsvcrt -lkernel32 -lpthread -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc -lgcc_eh -lmingwex -lmsvcrt -lkernel32 C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../lib/default-manifest.o C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/crtend.o\x0d
+        GNU ld (GNU Binutils) 2.42\x0d
+        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_5a6f7.exe' '-mtune=generic' '-march=nocona' '-dumpdir' 'cmTC_5a6f7.'\x0d
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:182 (message)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "buildrel/_deps/freetype-src/CMakeLists.txt:163 (project)"
+    message: |
+      Parsed C implicit include dir info: rv=done
+        found start of include info
+        found start of implicit include info
+          add: [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/include]
+          add: [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../include]
+          add: [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/include-fixed]
+        end of search list found
+        collapse include dir [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/include] ==> [C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include]
+        collapse include dir [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../include] ==> [C:/msys64/ucrt64/include]
+        collapse include dir [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/include-fixed] ==> [C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include-fixed]
+        implicit include dirs: [C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include;C:/msys64/ucrt64/include;C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include-fixed]
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:218 (message)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "buildrel/_deps/freetype-src/CMakeLists.txt:163 (project)"
+    message: |
+      Parsed C implicit link information:
+        link line regex: [^( *|.*[/\\])(ld[0-9]*(\\.[a-z]+)?|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        linker tool regex: [^[ 	]*(->|")?[ 	]*(([^"]*[/\\])?(ld[0-9]*(\\.[a-z]+)?))("|,| |$)]
+        ignore line: [Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-90nnuh']
+        ignore line: []
+        ignore line: [Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_5a6f7]
+        ignore line: [[1/2] C:\\msys64\\ucrt64\\bin\\cc.exe   -v -o CMakeFiles/cmTC_5a6f7.dir/CMakeCCompilerABI.c.obj -c C:/msys64/ucrt64/share/cmake/Modules/CMakeCCompilerABI.c]
+        ignore line: [Using built-in specs.]
+        ignore line: [COLLECT_GCC=C:\\msys64\\ucrt64\\bin\\cc.exe]
+        ignore line: [Target: x86_64-w64-mingw32]
+        ignore line: [Configured with: ../gcc-14.2.0/configure --prefix=/ucrt64 --with-local-prefix=/ucrt64/local --build=x86_64-w64-mingw32 --host=x86_64-w64-mingw32 --target=x86_64-w64-mingw32 --with-native-system-header-dir=/ucrt64/include --libexecdir=/ucrt64/lib --enable-bootstrap --enable-checking=release --with-arch=nocona --with-tune=generic --enable-languages=c,lto,c++,fortran,ada,objc,obj-c++,rust,jit --enable-shared --enable-static --enable-libatomic --enable-threads=posix --enable-graphite --enable-fully-dynamic-string --enable-libstdcxx-filesystem-ts --enable-libstdcxx-time --disable-libstdcxx-pch --enable-lto --enable-libgomp --disable-libssp --disable-multilib --disable-rpath --disable-win32-registry --disable-nls --disable-werror --disable-symvers --with-libiconv --with-system-zlib --with-gmp=/ucrt64 --with-mpfr=/ucrt64 --with-mpc=/ucrt64 --with-isl=/ucrt64 --with-pkgversion='Rev1, Built by MSYS2 project' --with-bugurl=https://github.com/msys2/MINGW-packages/issues --with-gnu-as --with-gnu-ld --disable-libstdcxx-debug --enable-plugin --with-boot-ldflags=-static-libstdc++ --with-stage1-ldflags=-static-libstdc++]
+        ignore line: [Thread model: posix]
+        ignore line: [Supported LTO compression algorithms: zlib zstd]
+        ignore line: [gcc version 14.2.0 (Rev1  Built by MSYS2 project) ]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_5a6f7.dir/CMakeCCompilerABI.c.obj' '-c' '-mtune=generic' '-march=nocona' '-dumpdir' 'CMakeFiles/cmTC_5a6f7.dir/']
+        ignore line: [ C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/cc1.exe -quiet -v -iprefix C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/ -D_REENTRANT C:/msys64/ucrt64/share/cmake/Modules/CMakeCCompilerABI.c -quiet -dumpdir CMakeFiles/cmTC_5a6f7.dir/ -dumpbase CMakeCCompilerABI.c.c -dumpbase-ext .c -mtune=generic -march=nocona -version -o C:\\msys64\\tmp\\ccJTljKQ.s]
+        ignore line: [GNU C17 (Rev1  Built by MSYS2 project) version 14.2.0 (x86_64-w64-mingw32)]
+        ignore line: [	compiled by GNU C version 14.2.0  GMP version 6.3.0  MPFR version 4.2.1  MPC version 1.3.1  isl version isl-0.26-GMP]
+        ignore line: []
+        ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+        ignore line: [ignoring nonexistent directory "C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/include"]
+        ignore line: [ignoring duplicate directory "C:/msys64/ucrt64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/14.2.0/include"]
+        ignore line: [ignoring nonexistent directory "D:/a/msys64/ucrt64/include"]
+        ignore line: [ignoring nonexistent directory "/ucrt64/include"]
+        ignore line: [ignoring duplicate directory "C:/msys64/ucrt64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/14.2.0/include-fixed"]
+        ignore line: [ignoring nonexistent directory "C:/msys64/ucrt64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/include"]
+        ignore line: [ignoring nonexistent directory "D:/a/msys64/ucrt64/include"]
+        ignore line: [#include "..." search starts here:]
+        ignore line: [#include <...> search starts here:]
+        ignore line: [ C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/include]
+        ignore line: [ C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../include]
+        ignore line: [ C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/include-fixed]
+        ignore line: [End of search list.]
+        ignore line: [Compiler executable checksum: ba3cc7c3374bc623df33c4b63149777f]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_5a6f7.dir/CMakeCCompilerABI.c.obj' '-c' '-mtune=generic' '-march=nocona' '-dumpdir' 'CMakeFiles/cmTC_5a6f7.dir/']
+        ignore line: [ C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/bin/as.exe -v -o CMakeFiles/cmTC_5a6f7.dir/CMakeCCompilerABI.c.obj C:\\msys64\\tmp\\ccJTljKQ.s]
+        ignore line: [GNU assembler version 2.42 (x86_64-w64-mingw32) using BFD version (GNU Binutils) 2.42]
+        ignore line: [COMPILER_PATH=C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/]
+        ignore line: [C:/msys64/ucrt64/bin/../lib/gcc/]
+        ignore line: [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/bin/]
+        ignore line: [LIBRARY_PATH=C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/]
+        ignore line: [C:/msys64/ucrt64/bin/../lib/gcc/]
+        ignore line: [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/lib/../lib/]
+        ignore line: [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../lib/]
+        ignore line: [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/lib/]
+        ignore line: [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../\x0d]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_5a6f7.dir/CMakeCCompilerABI.c.obj' '-c' '-mtune=generic' '-march=nocona' '-dumpdir' 'CMakeFiles/cmTC_5a6f7.dir/CMakeCCompilerABI.c.'\x0d]
+        ignore line: [[2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe  -v -Wl -v CMakeFiles/cmTC_5a6f7.dir/CMakeCCompilerABI.c.obj -o cmTC_5a6f7.exe -Wl --out-implib libcmTC_5a6f7.dll.a -Wl --major-image-version 0 --minor-image-version 0   && cd ."]
+        ignore line: [Using built-in specs.]
+        ignore line: [COLLECT_GCC=C:\\msys64\\ucrt64\\bin\\cc.exe]
+        ignore line: [COLLECT_LTO_WRAPPER=C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/lto-wrapper.exe]
+        ignore line: [Target: x86_64-w64-mingw32]
+        ignore line: [Configured with: ../gcc-14.2.0/configure --prefix=/ucrt64 --with-local-prefix=/ucrt64/local --build=x86_64-w64-mingw32 --host=x86_64-w64-mingw32 --target=x86_64-w64-mingw32 --with-native-system-header-dir=/ucrt64/include --libexecdir=/ucrt64/lib --enable-bootstrap --enable-checking=release --with-arch=nocona --with-tune=generic --enable-languages=c,lto,c++,fortran,ada,objc,obj-c++,rust,jit --enable-shared --enable-static --enable-libatomic --enable-threads=posix --enable-graphite --enable-fully-dynamic-string --enable-libstdcxx-filesystem-ts --enable-libstdcxx-time --disable-libstdcxx-pch --enable-lto --enable-libgomp --disable-libssp --disable-multilib --disable-rpath --disable-win32-registry --disable-nls --disable-werror --disable-symvers --with-libiconv --with-system-zlib --with-gmp=/ucrt64 --with-mpfr=/ucrt64 --with-mpc=/ucrt64 --with-isl=/ucrt64 --with-pkgversion='Rev1, Built by MSYS2 project' --with-bugurl=https://github.com/msys2/MINGW-packages/issues --with-gnu-as --with-gnu-ld --disable-libstdcxx-debug --enable-plugin --with-boot-ldflags=-static-libstdc++ --with-stage1-ldflags=-static-libstdc++]
+        ignore line: [Thread model: posix]
+        ignore line: [Supported LTO compression algorithms: zlib zstd]
+        ignore line: [gcc version 14.2.0 (Rev1  Built by MSYS2 project) ]
+        ignore line: [COMPILER_PATH=C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/]
+        ignore line: [C:/msys64/ucrt64/bin/../lib/gcc/]
+        ignore line: [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/bin/]
+        ignore line: [LIBRARY_PATH=C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/]
+        ignore line: [C:/msys64/ucrt64/bin/../lib/gcc/]
+        ignore line: [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/lib/../lib/]
+        ignore line: [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../lib/]
+        ignore line: [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/lib/]
+        ignore line: [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_5a6f7.exe' '-mtune=generic' '-march=nocona' '-dumpdir' 'cmTC_5a6f7.']
+        link line: [ C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/collect2.exe -plugin C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/liblto_plugin.dll -plugin-opt=C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\\msys64\\tmp\\ccvw3LRV.res -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_eh -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lpthread -plugin-opt=-pass-through=-ladvapi32 -plugin-opt=-pass-through=-lshell32 -plugin-opt=-pass-through=-luser32 -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_eh -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -m i386pep -Bdynamic -o cmTC_5a6f7.exe C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../lib/crt2.o C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/crtbegin.o -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0 -LC:/msys64/ucrt64/bin/../lib/gcc -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/lib/../lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../.. -v CMakeFiles/cmTC_5a6f7.dir/CMakeCCompilerABI.c.obj --out-implib libcmTC_5a6f7.dll.a --major-image-version 0 --minor-image-version 0 -lmingw32 -lgcc -lgcc_eh -lmingwex -lmsvcrt -lkernel32 -lpthread -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc -lgcc_eh -lmingwex -lmsvcrt -lkernel32 C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../lib/default-manifest.o C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/crtend.o]
+          arg [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/collect2.exe] ==> ignore
+          arg [-plugin] ==> ignore
+          arg [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/liblto_plugin.dll] ==> ignore
+          arg [-plugin-opt=C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/lto-wrapper.exe] ==> ignore
+          arg [-plugin-opt=-fresolution=C:\\msys64\\tmp\\ccvw3LRV.res] ==> ignore
+          arg [-plugin-opt=-pass-through=-lmingw32] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc_eh] ==> ignore
+          arg [-plugin-opt=-pass-through=-lmingwex] ==> ignore
+          arg [-plugin-opt=-pass-through=-lmsvcrt] ==> ignore
+          arg [-plugin-opt=-pass-through=-lkernel32] ==> ignore
+          arg [-plugin-opt=-pass-through=-lpthread] ==> ignore
+          arg [-plugin-opt=-pass-through=-ladvapi32] ==> ignore
+          arg [-plugin-opt=-pass-through=-lshell32] ==> ignore
+          arg [-plugin-opt=-pass-through=-luser32] ==> ignore
+          arg [-plugin-opt=-pass-through=-lkernel32] ==> ignore
+          arg [-plugin-opt=-pass-through=-lmingw32] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc_eh] ==> ignore
+          arg [-plugin-opt=-pass-through=-lmingwex] ==> ignore
+          arg [-plugin-opt=-pass-through=-lmsvcrt] ==> ignore
+          arg [-plugin-opt=-pass-through=-lkernel32] ==> ignore
+          arg [-m] ==> ignore
+          arg [i386pep] ==> ignore
+          arg [-Bdynamic] ==> search dynamic
+          arg [-o] ==> ignore
+          arg [cmTC_5a6f7.exe] ==> ignore
+          arg [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../lib/crt2.o] ==> obj [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../lib/crt2.o]
+          arg [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/crtbegin.o] ==> obj [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/crtbegin.o]
+          arg [-LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0] ==> dir [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0]
+          arg [-LC:/msys64/ucrt64/bin/../lib/gcc] ==> dir [C:/msys64/ucrt64/bin/../lib/gcc]
+          arg [-LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/lib/../lib] ==> dir [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/lib/../lib]
+          arg [-LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../lib] ==> dir [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../lib]
+          arg [-LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/lib] ==> dir [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/lib]
+          arg [-LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../..] ==> dir [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../..]
+          arg [-v] ==> ignore
+          arg [CMakeFiles/cmTC_5a6f7.dir/CMakeCCompilerABI.c.obj] ==> ignore
+          arg [--out-implib] ==> ignore
+          arg [libcmTC_5a6f7.dll.a] ==> ignore
+          arg [--major-image-version] ==> ignore
+          arg [0] ==> ignore
+          arg [--minor-image-version] ==> ignore
+          arg [0] ==> ignore
+          arg [-lmingw32] ==> lib [mingw32]
+          arg [-lgcc] ==> lib [gcc]
+          arg [-lgcc_eh] ==> lib [gcc_eh]
+          arg [-lmingwex] ==> lib [mingwex]
+          arg [-lmsvcrt] ==> lib [msvcrt]
+          arg [-lkernel32] ==> lib [kernel32]
+          arg [-lpthread] ==> lib [pthread]
+          arg [-ladvapi32] ==> lib [advapi32]
+          arg [-lshell32] ==> lib [shell32]
+          arg [-luser32] ==> lib [user32]
+          arg [-lkernel32] ==> lib [kernel32]
+          arg [-lmingw32] ==> lib [mingw32]
+          arg [-lgcc] ==> lib [gcc]
+          arg [-lgcc_eh] ==> lib [gcc_eh]
+          arg [-lmingwex] ==> lib [mingwex]
+          arg [-lmsvcrt] ==> lib [msvcrt]
+          arg [-lkernel32] ==> lib [kernel32]
+          arg [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../lib/default-manifest.o] ==> obj [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../lib/default-manifest.o]
+          arg [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/crtend.o] ==> obj [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/crtend.o]
+        ignore line: [collect2 version 14.2.0]
+        ignore line: [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe -plugin C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/liblto_plugin.dll -plugin-opt=C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\\msys64\\tmp\\ccvw3LRV.res -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_eh -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lpthread -plugin-opt=-pass-through=-ladvapi32 -plugin-opt=-pass-through=-lshell32 -plugin-opt=-pass-through=-luser32 -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_eh -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -m i386pep -Bdynamic -o cmTC_5a6f7.exe C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../lib/crt2.o C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/crtbegin.o -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0 -LC:/msys64/ucrt64/bin/../lib/gcc -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/lib/../lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../.. -v CMakeFiles/cmTC_5a6f7.dir/CMakeCCompilerABI.c.obj --out-implib libcmTC_5a6f7.dll.a --major-image-version 0 --minor-image-version 0 -lmingw32 -lgcc -lgcc_eh -lmingwex -lmsvcrt -lkernel32 -lpthread -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc -lgcc_eh -lmingwex -lmsvcrt -lkernel32 C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../lib/default-manifest.o C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/crtend.o\x0d]
+        linker tool for 'C': C:/msys64/ucrt64/x86_64-w64-mingw32/bin/ld.exe
+        remove lib [gcc_eh]
+        remove lib [msvcrt]
+        remove lib [gcc_eh]
+        remove lib [msvcrt]
+        collapse obj [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../lib/crt2.o] ==> [C:/msys64/ucrt64/lib/crt2.o]
+        collapse obj [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/crtbegin.o] ==> [C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/crtbegin.o]
+        collapse obj [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../lib/default-manifest.o] ==> [C:/msys64/ucrt64/lib/default-manifest.o]
+        collapse obj [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/crtend.o] ==> [C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/crtend.o]
+        collapse library dir [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0] ==> [C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0]
+        collapse library dir [C:/msys64/ucrt64/bin/../lib/gcc] ==> [C:/msys64/ucrt64/lib/gcc]
+        collapse library dir [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/lib/../lib] ==> [C:/msys64/ucrt64/x86_64-w64-mingw32/lib]
+        collapse library dir [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../lib] ==> [C:/msys64/ucrt64/lib]
+        collapse library dir [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/lib] ==> [C:/msys64/ucrt64/x86_64-w64-mingw32/lib]
+        collapse library dir [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../..] ==> [C:/msys64/ucrt64/lib]
+        implicit libs: [mingw32;gcc;mingwex;kernel32;pthread;advapi32;shell32;user32;kernel32;mingw32;gcc;mingwex;kernel32]
+        implicit objs: [C:/msys64/ucrt64/lib/crt2.o;C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/crtbegin.o;C:/msys64/ucrt64/lib/default-manifest.o;C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/crtend.o]
+        implicit dirs: [C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0;C:/msys64/ucrt64/lib/gcc;C:/msys64/ucrt64/x86_64-w64-mingw32/lib;C:/msys64/ucrt64/lib]
+        implicit fwks: []
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/Internal/CMakeDetermineLinkerId.cmake:40 (message)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:255 (cmake_determine_linker_id)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "buildrel/_deps/freetype-src/CMakeLists.txt:163 (project)"
+    message: |
+      Running the C compiler's linker: "C:/msys64/ucrt64/x86_64-w64-mingw32/bin/ld.exe" "-v"
+      GNU ld (GNU Binutils) 2.42
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckIncludeFiles.cmake:132 (try_compile)"
+      - "buildrel/_deps/ogg-src/CMakeLists.txt:57 (check_include_files)"
+    checks:
+      - "Looking for include file inttypes.h"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-5hjo0l"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-5hjo0l"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "INCLUDE_INTTYPES_H"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-5hjo0l'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_99ebf
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe    -o CMakeFiles/cmTC_99ebf.dir/INCLUDE_INTTYPES_H.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-5hjo0l/INCLUDE_INTTYPES_H.c
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe   CMakeFiles/cmTC_99ebf.dir/INCLUDE_INTTYPES_H.c.obj -o cmTC_99ebf.exe -Wl,--out-implib,libcmTC_99ebf.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckIncludeFiles.cmake:132 (try_compile)"
+      - "buildrel/_deps/ogg-src/CMakeLists.txt:58 (check_include_files)"
+    checks:
+      - "Looking for include file stdint.h"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-2exikh"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-2exikh"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "INCLUDE_STDINT_H"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-2exikh'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_ee347
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe    -o CMakeFiles/cmTC_ee347.dir/INCLUDE_STDINT_H.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-2exikh/INCLUDE_STDINT_H.c
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe   CMakeFiles/cmTC_ee347.dir/INCLUDE_STDINT_H.c.obj -o cmTC_ee347.exe -Wl,--out-implib,libcmTC_ee347.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckIncludeFiles.cmake:132 (try_compile)"
+      - "buildrel/_deps/ogg-src/CMakeLists.txt:59 (check_include_files)"
+    checks:
+      - "Looking for include file sys/types.h"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-pnn71y"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-pnn71y"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "INCLUDE_SYS_TYPES_H"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-pnn71y'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_8d229
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe    -o CMakeFiles/cmTC_8d229.dir/INCLUDE_SYS_TYPES_H.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-pnn71y/INCLUDE_SYS_TYPES_H.c
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe   CMakeFiles/cmTC_8d229.dir/INCLUDE_SYS_TYPES_H.c.obj -o cmTC_8d229.exe -Wl,--out-implib,libcmTC_8d229.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckIncludeFile.cmake:90 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckTypeSize.cmake:251 (check_include_file)"
+      - "buildrel/_deps/ogg-src/cmake/CheckSizes.cmake:3 (check_type_size)"
+      - "buildrel/_deps/ogg-src/CMakeLists.txt:69 (include)"
+    checks:
+      - "Looking for sys/types.h"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-gc5ti8"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-gc5ti8"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/ogg-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_SYS_TYPES_H"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-gc5ti8'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_a0b61
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe    -o CMakeFiles/cmTC_a0b61.dir/CheckIncludeFile.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-gc5ti8/CheckIncludeFile.c
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe   CMakeFiles/cmTC_a0b61.dir/CheckIncludeFile.c.obj -o cmTC_a0b61.exe -Wl,--out-implib,libcmTC_a0b61.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckIncludeFile.cmake:90 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckTypeSize.cmake:252 (check_include_file)"
+      - "buildrel/_deps/ogg-src/cmake/CheckSizes.cmake:3 (check_type_size)"
+      - "buildrel/_deps/ogg-src/CMakeLists.txt:69 (include)"
+    checks:
+      - "Looking for stdint.h"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-hl05xd"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-hl05xd"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/ogg-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_STDINT_H"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-hl05xd'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_6376a
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe    -o CMakeFiles/cmTC_6376a.dir/CheckIncludeFile.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-hl05xd/CheckIncludeFile.c
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe   CMakeFiles/cmTC_6376a.dir/CheckIncludeFile.c.obj -o cmTC_6376a.exe -Wl,--out-implib,libcmTC_6376a.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckIncludeFile.cmake:90 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckTypeSize.cmake:253 (check_include_file)"
+      - "buildrel/_deps/ogg-src/cmake/CheckSizes.cmake:3 (check_type_size)"
+      - "buildrel/_deps/ogg-src/CMakeLists.txt:69 (include)"
+    checks:
+      - "Looking for stddef.h"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-nhopmq"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-nhopmq"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/ogg-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_STDDEF_H"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-nhopmq'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_ba65a
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe    -o CMakeFiles/cmTC_ba65a.dir/CheckIncludeFile.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-nhopmq/CheckIncludeFile.c
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe   CMakeFiles/cmTC_ba65a.dir/CheckIncludeFile.c.obj -o cmTC_ba65a.exe -Wl,--out-implib,libcmTC_ba65a.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckTypeSize.cmake:147 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckTypeSize.cmake:272 (__check_type_size_impl)"
+      - "buildrel/_deps/ogg-src/cmake/CheckSizes.cmake:3 (check_type_size)"
+      - "buildrel/_deps/ogg-src/CMakeLists.txt:69 (include)"
+    checks:
+      - "Check size of int16_t"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-dmle9r"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-dmle9r"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/ogg-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_INT16_SIZE"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-dmle9r'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_e1bba
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe    -o CMakeFiles/cmTC_e1bba.dir/INT16_SIZE.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-dmle9r/INT16_SIZE.c
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe   CMakeFiles/cmTC_e1bba.dir/INT16_SIZE.c.obj -o cmTC_e1bba.exe -Wl,--out-implib,libcmTC_e1bba.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckTypeSize.cmake:147 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckTypeSize.cmake:272 (__check_type_size_impl)"
+      - "buildrel/_deps/ogg-src/cmake/CheckSizes.cmake:4 (check_type_size)"
+      - "buildrel/_deps/ogg-src/CMakeLists.txt:69 (include)"
+    checks:
+      - "Check size of uint16_t"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-7ktltk"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-7ktltk"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/ogg-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_UINT16_SIZE"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-7ktltk'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_e1057
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe    -o CMakeFiles/cmTC_e1057.dir/UINT16_SIZE.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-7ktltk/UINT16_SIZE.c
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe   CMakeFiles/cmTC_e1057.dir/UINT16_SIZE.c.obj -o cmTC_e1057.exe -Wl,--out-implib,libcmTC_e1057.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckTypeSize.cmake:147 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckTypeSize.cmake:272 (__check_type_size_impl)"
+      - "buildrel/_deps/ogg-src/cmake/CheckSizes.cmake:5 (check_type_size)"
+      - "buildrel/_deps/ogg-src/CMakeLists.txt:69 (include)"
+    checks:
+      - "Check size of u_int16_t"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-xvf55s"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-xvf55s"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/ogg-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_U_INT16_SIZE"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-xvf55s'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_09c26
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe    -o CMakeFiles/cmTC_09c26.dir/U_INT16_SIZE.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-xvf55s/U_INT16_SIZE.c
+        FAILED: CMakeFiles/cmTC_09c26.dir/U_INT16_SIZE.c.obj 
+        C:\\msys64\\ucrt64\\bin\\cc.exe    -o CMakeFiles/cmTC_09c26.dir/U_INT16_SIZE.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-xvf55s/U_INT16_SIZE.c
+        C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-xvf55s/U_INT16_SIZE.c:27:22: error: 'u_int16_t' undeclared here (not in a function); did you mean 'uint16_t'?
+           27 | #define SIZE (sizeof(u_int16_t))
+              |                      ^~~~~~~~~
+        C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-xvf55s/U_INT16_SIZE.c:29:12: note: in expansion of macro 'SIZE'
+           29 |   ('0' + ((SIZE / 10000)%10)),
+              |            ^~~~
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: 1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckTypeSize.cmake:147 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckTypeSize.cmake:272 (__check_type_size_impl)"
+      - "buildrel/_deps/ogg-src/cmake/CheckSizes.cmake:6 (check_type_size)"
+      - "buildrel/_deps/ogg-src/CMakeLists.txt:69 (include)"
+    checks:
+      - "Check size of int32_t"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-rzab2z"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-rzab2z"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/ogg-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_INT32_SIZE"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-rzab2z'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_da294
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe    -o CMakeFiles/cmTC_da294.dir/INT32_SIZE.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-rzab2z/INT32_SIZE.c
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe   CMakeFiles/cmTC_da294.dir/INT32_SIZE.c.obj -o cmTC_da294.exe -Wl,--out-implib,libcmTC_da294.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckTypeSize.cmake:147 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckTypeSize.cmake:272 (__check_type_size_impl)"
+      - "buildrel/_deps/ogg-src/cmake/CheckSizes.cmake:7 (check_type_size)"
+      - "buildrel/_deps/ogg-src/CMakeLists.txt:69 (include)"
+    checks:
+      - "Check size of uint32_t"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-trnlv0"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-trnlv0"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/ogg-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_UINT32_SIZE"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-trnlv0'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_8d505
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe    -o CMakeFiles/cmTC_8d505.dir/UINT32_SIZE.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-trnlv0/UINT32_SIZE.c
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe   CMakeFiles/cmTC_8d505.dir/UINT32_SIZE.c.obj -o cmTC_8d505.exe -Wl,--out-implib,libcmTC_8d505.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckTypeSize.cmake:147 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckTypeSize.cmake:272 (__check_type_size_impl)"
+      - "buildrel/_deps/ogg-src/cmake/CheckSizes.cmake:8 (check_type_size)"
+      - "buildrel/_deps/ogg-src/CMakeLists.txt:69 (include)"
+    checks:
+      - "Check size of u_int32_t"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-dqjqm2"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-dqjqm2"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/ogg-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_U_INT32_SIZE"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-dqjqm2'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_fd871
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe    -o CMakeFiles/cmTC_fd871.dir/U_INT32_SIZE.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-dqjqm2/U_INT32_SIZE.c
+        FAILED: CMakeFiles/cmTC_fd871.dir/U_INT32_SIZE.c.obj 
+        C:\\msys64\\ucrt64\\bin\\cc.exe    -o CMakeFiles/cmTC_fd871.dir/U_INT32_SIZE.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-dqjqm2/U_INT32_SIZE.c
+        C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-dqjqm2/U_INT32_SIZE.c:27:22: error: 'u_int32_t' undeclared here (not in a function); did you mean 'uint32_t'?
+           27 | #define SIZE (sizeof(u_int32_t))
+              |                      ^~~~~~~~~
+        C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-dqjqm2/U_INT32_SIZE.c:29:12: note: in expansion of macro 'SIZE'
+           29 |   ('0' + ((SIZE / 10000)%10)),
+              |            ^~~~
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: 1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckTypeSize.cmake:147 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckTypeSize.cmake:272 (__check_type_size_impl)"
+      - "buildrel/_deps/ogg-src/cmake/CheckSizes.cmake:9 (check_type_size)"
+      - "buildrel/_deps/ogg-src/CMakeLists.txt:69 (include)"
+    checks:
+      - "Check size of int64_t"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-l818ta"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-l818ta"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/ogg-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_INT64_SIZE"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-l818ta'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_4643c
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe    -o CMakeFiles/cmTC_4643c.dir/INT64_SIZE.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-l818ta/INT64_SIZE.c
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe   CMakeFiles/cmTC_4643c.dir/INT64_SIZE.c.obj -o cmTC_4643c.exe -Wl,--out-implib,libcmTC_4643c.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckTypeSize.cmake:147 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckTypeSize.cmake:272 (__check_type_size_impl)"
+      - "buildrel/_deps/ogg-src/cmake/CheckSizes.cmake:10 (check_type_size)"
+      - "buildrel/_deps/ogg-src/CMakeLists.txt:69 (include)"
+    checks:
+      - "Check size of short"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-ztlh40"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-ztlh40"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/ogg-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_SHORT_SIZE"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-ztlh40'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_7c003
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe    -o CMakeFiles/cmTC_7c003.dir/SHORT_SIZE.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-ztlh40/SHORT_SIZE.c
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe   CMakeFiles/cmTC_7c003.dir/SHORT_SIZE.c.obj -o cmTC_7c003.exe -Wl,--out-implib,libcmTC_7c003.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckTypeSize.cmake:147 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckTypeSize.cmake:272 (__check_type_size_impl)"
+      - "buildrel/_deps/ogg-src/cmake/CheckSizes.cmake:11 (check_type_size)"
+      - "buildrel/_deps/ogg-src/CMakeLists.txt:69 (include)"
+    checks:
+      - "Check size of int"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-28gizm"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-28gizm"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/ogg-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_INT_SIZE"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-28gizm'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_336f9
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe    -o CMakeFiles/cmTC_336f9.dir/INT_SIZE.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-28gizm/INT_SIZE.c
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe   CMakeFiles/cmTC_336f9.dir/INT_SIZE.c.obj -o cmTC_336f9.exe -Wl,--out-implib,libcmTC_336f9.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckTypeSize.cmake:147 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckTypeSize.cmake:272 (__check_type_size_impl)"
+      - "buildrel/_deps/ogg-src/cmake/CheckSizes.cmake:12 (check_type_size)"
+      - "buildrel/_deps/ogg-src/CMakeLists.txt:69 (include)"
+    checks:
+      - "Check size of long"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-svurgw"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-svurgw"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/ogg-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_LONG_SIZE"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-svurgw'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_4435e
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe    -o CMakeFiles/cmTC_4435e.dir/LONG_SIZE.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-svurgw/LONG_SIZE.c
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe   CMakeFiles/cmTC_4435e.dir/LONG_SIZE.c.obj -o cmTC_4435e.exe -Wl,--out-implib,libcmTC_4435e.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckTypeSize.cmake:147 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckTypeSize.cmake:272 (__check_type_size_impl)"
+      - "buildrel/_deps/ogg-src/cmake/CheckSizes.cmake:13 (check_type_size)"
+      - "buildrel/_deps/ogg-src/CMakeLists.txt:69 (include)"
+    checks:
+      - "Check size of long long"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-macqri"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-macqri"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/ogg-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_LONG_LONG_SIZE"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-macqri'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_0a23a
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe    -o CMakeFiles/cmTC_0a23a.dir/LONG_LONG_SIZE.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-macqri/LONG_LONG_SIZE.c
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe   CMakeFiles/cmTC_0a23a.dir/LONG_LONG_SIZE.c.obj -o cmTC_0a23a.exe -Wl,--out-implib,libcmTC_0a23a.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckCSourceCompiles.cmake:52 (cmake_check_source_compiles)"
+      - "buildrel/_deps/flac-src/cmake/UseSystemExtensions.cmake:3 (check_c_source_compiles)"
+      - "buildrel/_deps/flac-src/CMakeLists.txt:107 (include)"
+    checks:
+      - "Performing Test HAVE_MBSTATE"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-ti7wi6"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-ti7wi6"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: "-Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline "
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/flac-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_MBSTATE"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-ti7wi6'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_8a689
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe -DHAVE_MBSTATE  -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline -o CMakeFiles/cmTC_8a689.dir/src.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-ti7wi6/src.c
+        C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-ti7wi6/src.c:4:9: warning: function declaration isn't a prototype [-Wstrict-prototypes]
+            4 |     int main() { return 0; }
+              |         ^~~~
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline  CMakeFiles/cmTC_8a689.dir/src.c.obj -o cmTC_8a689.exe -Wl,--out-implib,libcmTC_8a689.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckCSourceCompiles.cmake:52 (cmake_check_source_compiles)"
+      - "buildrel/_deps/flac-src/cmake/UseSystemExtensions.cmake:16 (check_c_source_compiles)"
+      - "buildrel/_deps/flac-src/CMakeLists.txt:107 (include)"
+    checks:
+      - "Performing Test DODEFINE_EXTENSIONS"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-70gcvr"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-70gcvr"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: "-Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline "
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/flac-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "DODEFINE_EXTENSIONS"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-70gcvr'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_4820a
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe -DDODEFINE_EXTENSIONS  -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline -o CMakeFiles/cmTC_4820a.dir/src.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-70gcvr/src.c
+        C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-70gcvr/src.c:36:9: warning: function declaration isn't a prototype [-Wstrict-prototypes]
+           36 |     int main() { return 0; }
+              |         ^~~~
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline  CMakeFiles/cmTC_4820a.dir/src.c.obj -o cmTC_4820a.exe -Wl,--out-implib,libcmTC_4820a.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckIncludeFile.cmake:90 (try_compile)"
+      - "buildrel/_deps/flac-src/CMakeLists.txt:111 (check_include_file)"
+    checks:
+      - "Looking for byteswap.h"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-s7ddq7"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-s7ddq7"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: "-Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline "
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/flac-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_BYTESWAP_H"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-s7ddq7'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_87680
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe   -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline -o CMakeFiles/cmTC_87680.dir/CheckIncludeFile.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-s7ddq7/CheckIncludeFile.c
+        FAILED: CMakeFiles/cmTC_87680.dir/CheckIncludeFile.c.obj 
+        C:\\msys64\\ucrt64\\bin\\cc.exe   -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline -o CMakeFiles/cmTC_87680.dir/CheckIncludeFile.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-s7ddq7/CheckIncludeFile.c
+        C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-s7ddq7/CheckIncludeFile.c:1:10: fatal error: byteswap.h: No such file or directory
+            1 | #include <byteswap.h>
+              |          ^~~~~~~~~~~~
+        compilation terminated.\x0d
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: 1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckIncludeFile.cmake:90 (try_compile)"
+      - "buildrel/_deps/flac-src/CMakeLists.txt:112 (check_include_file)"
+    checks:
+      - "Looking for inttypes.h"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-oom2l7"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-oom2l7"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: "-Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline "
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/flac-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_INTTYPES_H"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-oom2l7'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_76bb3
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe   -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline -o CMakeFiles/cmTC_76bb3.dir/CheckIncludeFile.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-oom2l7/CheckIncludeFile.c
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline  CMakeFiles/cmTC_76bb3.dir/CheckIncludeFile.c.obj -o cmTC_76bb3.exe -Wl,--out-implib,libcmTC_76bb3.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckIncludeFile.cmake:90 (try_compile)"
+      - "buildrel/_deps/flac-src/CMakeLists.txt:114 (check_include_file)"
+    checks:
+      - "Looking for stdbool.h"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-7ji5vu"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-7ji5vu"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: "-Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline "
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/flac-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_STDBOOL_H"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-7ji5vu'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_92da2
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe   -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline -o CMakeFiles/cmTC_92da2.dir/CheckIncludeFile.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-7ji5vu/CheckIncludeFile.c
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline  CMakeFiles/cmTC_92da2.dir/CheckIncludeFile.c.obj -o cmTC_92da2.exe -Wl,--out-implib,libcmTC_92da2.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckIncludeFile.cmake:90 (try_compile)"
+      - "buildrel/_deps/flac-src/CMakeLists.txt:115 (check_include_file)"
+    checks:
+      - "Looking for arm_neon.h"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-s7snw4"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-s7snw4"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: "-Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline "
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/flac-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "FLAC__HAS_NEONINTRIN"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-s7snw4'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_61bc8
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe   -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline -o CMakeFiles/cmTC_61bc8.dir/CheckIncludeFile.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-s7snw4/CheckIncludeFile.c
+        FAILED: CMakeFiles/cmTC_61bc8.dir/CheckIncludeFile.c.obj 
+        C:\\msys64\\ucrt64\\bin\\cc.exe   -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline -o CMakeFiles/cmTC_61bc8.dir/CheckIncludeFile.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-s7snw4/CheckIncludeFile.c
+        C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-s7snw4/CheckIncludeFile.c:1:10: fatal error: arm_neon.h: No such file or directory
+            1 | #include <arm_neon.h>
+              |          ^~~~~~~~~~~~
+        compilation terminated.\x0d
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: 1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckIncludeFile.cmake:90 (try_compile)"
+      - "buildrel/_deps/flac-src/CMakeLists.txt:124 (check_include_file)"
+    checks:
+      - "Looking for x86intrin.h"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-b3ymaf"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-b3ymaf"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: "-Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline "
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/flac-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "FLAC__HAS_X86INTRIN"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-b3ymaf'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_00508
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe   -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline -o CMakeFiles/cmTC_00508.dir/CheckIncludeFile.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-b3ymaf/CheckIncludeFile.c
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline  CMakeFiles/cmTC_00508.dir/CheckIncludeFile.c.obj -o cmTC_00508.exe -Wl,--out-implib,libcmTC_00508.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckFunctionExists.cmake:86 (try_compile)"
+      - "buildrel/_deps/flac-src/CMakeLists.txt:127 (check_function_exists)"
+    checks:
+      - "Looking for fseeko"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-f19b67"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-f19b67"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: "-Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline "
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/flac-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_FSEEKO"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-f19b67'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_4ef91
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe   -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline  -DCHECK_FUNCTION_EXISTS=fseeko -o CMakeFiles/cmTC_4ef91.dir/CheckFunctionExists.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-f19b67/CheckFunctionExists.c
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline  -DCHECK_FUNCTION_EXISTS=fseeko  CMakeFiles/cmTC_4ef91.dir/CheckFunctionExists.c.obj -o cmTC_4ef91.exe -Wl,--out-implib,libcmTC_4ef91.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckCSourceCompiles.cmake:52 (cmake_check_source_compiles)"
+      - "buildrel/_deps/flac-src/CMakeLists.txt:129 (check_c_source_compiles)"
+    checks:
+      - "Performing Test HAVE_BSWAP16"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-c0hggb"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-c0hggb"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: "-Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline "
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/flac-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_BSWAP16"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-c0hggb'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_a18cb
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe -DHAVE_BSWAP16  -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline -o CMakeFiles/cmTC_a18cb.dir/src.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-c0hggb/src.c
+        C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-c0hggb/src.c:1:5: warning: function declaration isn't a prototype [-Wstrict-prototypes]
+            1 | int main() { return __builtin_bswap16 (0) ; }
+              |     ^~~~
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline  CMakeFiles/cmTC_a18cb.dir/src.c.obj -o cmTC_a18cb.exe -Wl,--out-implib,libcmTC_a18cb.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckCSourceCompiles.cmake:52 (cmake_check_source_compiles)"
+      - "buildrel/_deps/flac-src/CMakeLists.txt:130 (check_c_source_compiles)"
+    checks:
+      - "Performing Test HAVE_BSWAP32"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-afw259"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-afw259"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: "-Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline "
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/flac-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_BSWAP32"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-afw259'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_8070f
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe -DHAVE_BSWAP32  -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline -o CMakeFiles/cmTC_8070f.dir/src.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-afw259/src.c
+        C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-afw259/src.c:1:5: warning: function declaration isn't a prototype [-Wstrict-prototypes]
+            1 | int main() { return __builtin_bswap32 (0) ; }
+              |     ^~~~
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline  CMakeFiles/cmTC_8070f.dir/src.c.obj -o cmTC_8070f.exe -Wl,--out-implib,libcmTC_8070f.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckCSourceCompiles.cmake:52 (cmake_check_source_compiles)"
+      - "buildrel/_deps/flac-src/CMakeLists.txt:131 (check_c_source_compiles)"
+    checks:
+      - "Performing Test HAVE_LANGINFO_CODESET"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-idrg3z"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-idrg3z"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: "-Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline "
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/flac-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_LANGINFO_CODESET"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-idrg3z'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_af42a
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe -DHAVE_LANGINFO_CODESET  -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline -o CMakeFiles/cmTC_af42a.dir/src.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-idrg3z/src.c
+        FAILED: CMakeFiles/cmTC_af42a.dir/src.c.obj 
+        C:\\msys64\\ucrt64\\bin\\cc.exe -DHAVE_LANGINFO_CODESET  -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline -o CMakeFiles/cmTC_af42a.dir/src.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-idrg3z/src.c
+        C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-idrg3z/src.c:2:14: fatal error: langinfo.h: No such file or directory
+            2 |     #include <langinfo.h>
+              |              ^~~~~~~~~~~~
+        compilation terminated.\x0d
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: 1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/Internal/CheckCompilerFlag.cmake:18 (cmake_check_source_compiles)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckCCompilerFlag.cmake:51 (cmake_check_compiler_flag)"
+      - "buildrel/_deps/flac-src/CMakeLists.txt:142 (check_c_compiler_flag)"
+    checks:
+      - "Performing Test HAVE_WERROR_FLAG"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-6waj6h"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-6waj6h"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: "-Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline "
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/flac-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_WERROR_FLAG"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-6waj6h'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_ff2c1
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe -DHAVE_WERROR_FLAG  -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline     -Werror -o CMakeFiles/cmTC_ff2c1.dir/src.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-6waj6h/src.c
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline  CMakeFiles/cmTC_ff2c1.dir/src.c.obj -o cmTC_ff2c1.exe -Wl,--out-implib,libcmTC_ff2c1.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/Internal/CheckCompilerFlag.cmake:18 (cmake_check_source_compiles)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckCCompilerFlag.cmake:51 (cmake_check_compiler_flag)"
+      - "buildrel/_deps/flac-src/CMakeLists.txt:143 (check_c_compiler_flag)"
+    checks:
+      - "Performing Test HAVE_DECL_AFTER_STMT_FLAG"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-pkm0hg"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-pkm0hg"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: "-Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline "
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/flac-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_DECL_AFTER_STMT_FLAG"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-pkm0hg'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_2f7ce
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe -DHAVE_DECL_AFTER_STMT_FLAG  -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline     -Wdeclaration-after-statement -o CMakeFiles/cmTC_2f7ce.dir/src.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-pkm0hg/src.c
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline  CMakeFiles/cmTC_2f7ce.dir/src.c.obj -o cmTC_2f7ce.exe -Wl,--out-implib,libcmTC_2f7ce.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/Internal/CheckCompilerFlag.cmake:18 (cmake_check_source_compiles)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckCCompilerFlag.cmake:51 (cmake_check_compiler_flag)"
+      - "buildrel/_deps/flac-src/CMakeLists.txt:144 (check_c_compiler_flag)"
+    checks:
+      - "Performing Test HAVE_STACKREALIGN_FLAG"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-z6y3op"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-z6y3op"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: "-Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline "
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/flac-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_STACKREALIGN_FLAG"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-z6y3op'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_6905b
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe -DHAVE_STACKREALIGN_FLAG  -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline     -mstackrealign -o CMakeFiles/cmTC_6905b.dir/src.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-z6y3op/src.c
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline  CMakeFiles/cmTC_6905b.dir/src.c.obj -o cmTC_6905b.exe -Wl,--out-implib,libcmTC_6905b.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/Internal/CheckCompilerFlag.cmake:18 (cmake_check_source_compiles)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckCXXCompilerFlag.cmake:34 (cmake_check_compiler_flag)"
+      - "buildrel/_deps/flac-src/CMakeLists.txt:145 (check_cxx_compiler_flag)"
+    checks:
+      - "Performing Test HAVE_WEFFCXX_FLAG"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-7ghqeb"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-7ghqeb"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_CXX_FLAGS: "-Wall -Wextra -Wcast-align -Wshadow -Wwrite-strings -Wctor-dtor-privacy -Wnon-virtual-dtor -Wreorder -Wsign-promo -Wundef -fuse-ld=lld -ftime-trace -Wall -Wextra -Wpedantic -Wno-ignored-attributes -Wno-unused-command-line-argument -Ofast"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/flac-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_WEFFCXX_FLAG"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-7ghqeb'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_3c345
+        [1/2] C:\\msys64\\ucrt64\\bin\\clang++.exe -DHAVE_WEFFCXX_FLAG  -Wall -Wextra -Wcast-align -Wshadow -Wwrite-strings -Wctor-dtor-privacy -Wnon-virtual-dtor -Wreorder -Wsign-promo -Wundef -fuse-ld=lld -ftime-trace -Wall -Wextra -Wpedantic -Wno-ignored-attributes -Wno-unused-command-line-argument -Ofast  -std=c++17   -Weffc++ -MD -MT CMakeFiles/cmTC_3c345.dir/src.cxx.obj -MF CMakeFiles\\cmTC_3c345.dir\\src.cxx.obj.d -o CMakeFiles/cmTC_3c345.dir/src.cxx.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-7ghqeb/src.cxx
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\clang++.exe -Wall -Wextra -Wcast-align -Wshadow -Wwrite-strings -Wctor-dtor-privacy -Wnon-virtual-dtor -Wreorder -Wsign-promo -Wundef -fuse-ld=lld -ftime-trace -Wall -Wextra -Wpedantic -Wno-ignored-attributes -Wno-unused-command-line-argument -Ofast  CMakeFiles/cmTC_3c345.dir/src.cxx.obj -o cmTC_3c345.exe -Wl,--out-implib,libcmTC_3c345.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckIncludeFile.cmake:90 (try_compile)"
+      - "buildrel/_deps/flac-src/src/libFLAC/CMakeLists.txt:3 (check_include_file)"
+    checks:
+      - "Looking for cpuid.h"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-fqacyl"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-fqacyl"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: "-Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline "
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/flac-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_CPUID_H"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-fqacyl'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_87c76
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe   -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline -o CMakeFiles/cmTC_87c76.dir/CheckIncludeFile.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-fqacyl/CheckIncludeFile.c
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline  CMakeFiles/cmTC_87c76.dir/CheckIncludeFile.c.obj -o cmTC_87c76.exe -Wl,--out-implib,libcmTC_87c76.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckIncludeFile.cmake:90 (try_compile)"
+      - "buildrel/_deps/flac-src/src/libFLAC/CMakeLists.txt:4 (check_include_file)"
+    checks:
+      - "Looking for sys/param.h"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-9rkck0"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-9rkck0"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: "-Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline "
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/flac-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_SYS_PARAM_H"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-9rkck0'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_c72c7
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe   -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline -o CMakeFiles/cmTC_c72c7.dir/CheckIncludeFile.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-9rkck0/CheckIncludeFile.c
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline  CMakeFiles/cmTC_c72c7.dir/CheckIncludeFile.c.obj -o cmTC_c72c7.exe -Wl,--out-implib,libcmTC_c72c7.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckFunctionExists.cmake:86 (try_compile)"
+      - "buildrel/_deps/flac-src/src/libFLAC/CMakeLists.txt:7 (check_function_exists)"
+    checks:
+      - "Looking for lround"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-l3zkzd"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-l3zkzd"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: "-Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline "
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/flac-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_LROUND"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-l3zkzd'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_f55d2
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe   -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline  -DCHECK_FUNCTION_EXISTS=lround -o CMakeFiles/cmTC_f55d2.dir/CheckFunctionExists.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-l3zkzd/CheckFunctionExists.c
+        <command-line>: warning: conflicting types for built-in function 'lround'; expected 'long int(double)' [-Wbuiltin-declaration-mismatch]
+        C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-l3zkzd/CheckFunctionExists.c:7:3: note: in expansion of macro 'CHECK_FUNCTION_EXISTS'
+            7 |   CHECK_FUNCTION_EXISTS(void);
+              |   ^~~~~~~~~~~~~~~~~~~~~
+        C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-l3zkzd/CheckFunctionExists.c:1:1: note: 'lround' is declared in header '<math.h>'
+          +++ |+#include <math.h>
+            1 | #ifdef CHECK_FUNCTION_EXISTS
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline  -DCHECK_FUNCTION_EXISTS=lround  CMakeFiles/cmTC_f55d2.dir/CheckFunctionExists.c.obj -o cmTC_f55d2.exe -Wl,--out-implib,libcmTC_f55d2.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lm  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "buildrel/_deps/flac-src/cmake/CheckCPUArch.cmake:6 (try_compile)"
+      - "buildrel/_deps/flac-src/cmake/CheckCPUArch.cmake:18 (_CHECK_CPU_ARCH)"
+      - "buildrel/_deps/flac-src/src/libFLAC/CMakeLists.txt:13 (check_cpu_arch_x64)"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/_deps/flac-build/CMakeFiles/CMakeTmp"
+      binary: "C:/OHWorkspace/SFML/buildrel/_deps/flac-build/CMakeFiles/CMakeTmp"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: "-Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline "
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/flac-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_FLAC__CPU_X86_64"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/_deps/flac-build/CMakeFiles/CMakeTmp'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_d4262
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe   -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline -o CMakeFiles/cmTC_d4262.dir/CheckCPUArch.c.obj -c C:/OHWorkspace/SFML/buildrel/_deps/flac-build/CMakeFiles/CMakeTmp/CheckCPUArch.c
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline  CMakeFiles/cmTC_d4262.dir/CheckCPUArch.c.obj -o cmTC_d4262.exe -Wl,--out-implib,libcmTC_d4262.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/Internal/CheckCompilerFlag.cmake:18 (cmake_check_source_compiles)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckCCompilerFlag.cmake:51 (cmake_check_compiler_flag)"
+      - "buildrel/_deps/flac-src/src/libFLAC/CMakeLists.txt:101 (check_c_compiler_flag)"
+    checks:
+      - "Performing Test HAVE_ASSOC_MATH"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-ijt3jf"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-ijt3jf"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: "-Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline "
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/flac-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_ASSOC_MATH"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-ijt3jf'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_cb5df
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe -DHAVE_ASSOC_MATH  -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline     -fassociative-math -fno-signed-zeros -fno-trapping-math -freciprocal-math -o CMakeFiles/cmTC_cb5df.dir/src.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-ijt3jf/src.c
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline  CMakeFiles/cmTC_cb5df.dir/src.c.obj -o cmTC_cb5df.exe -Wl,--out-implib,libcmTC_cb5df.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lm  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckFunctionExists.cmake:86 (try_compile)"
+      - "buildrel/_deps/flac-src/microbench/CMakeLists.txt:6 (check_function_exists)"
+    checks:
+      - "Looking for clock_gettime"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-p9e9nm"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-p9e9nm"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: "-Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline "
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/flac-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_CLOCK_GETTIME"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-p9e9nm'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_b9ce1
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe   -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline  -DCHECK_FUNCTION_EXISTS=clock_gettime -o CMakeFiles/cmTC_b9ce1.dir/CheckFunctionExists.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-p9e9nm/CheckFunctionExists.c
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline  -DCHECK_FUNCTION_EXISTS=clock_gettime  CMakeFiles/cmTC_b9ce1.dir/CheckFunctionExists.c.obj -o cmTC_b9ce1.exe -Wl,--out-implib,libcmTC_b9ce1.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lrt  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        FAILED: cmTC_b9ce1.exe 
+        C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wnested-externs -Wshadow -Wundef -Wmissing-declarations -Winline  -DCHECK_FUNCTION_EXISTS=clock_gettime  CMakeFiles/cmTC_b9ce1.dir/CheckFunctionExists.c.obj -o cmTC_b9ce1.exe -Wl,--out-implib,libcmTC_b9ce1.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lrt  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe: cannot find -lrt: No such file or directory\x0d
+        collect2.exe: error: ld returned 1 exit status
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: 1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckLibraryExists.cmake:69 (try_compile)"
+      - "buildrel/_deps/vorbis-src/CMakeLists.txt:62 (check_library_exists)"
+    checks:
+      - "Looking for floor in m"
+    directories:
+      source: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-i9rp6l"
+      binary: "C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-i9rp6l"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "C:/msys64/ucrt64/bin/clang-scan-deps.exe"
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/OHWorkspace/SFML/cmake/Modules/;C:/OHWorkspace/SFML/buildrel/_deps/vorbis-src/cmake"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "13.0"
+    buildResult:
+      variable: "HAVE_LIBM"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-i9rp6l'
+        
+        Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v cmTC_09e0a
+        [1/2] C:\\msys64\\ucrt64\\bin\\cc.exe   -DCHECK_FUNCTION_EXISTS=floor -o CMakeFiles/cmTC_09e0a.dir/CheckFunctionExists.c.obj -c C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-i9rp6l/CheckFunctionExists.c
+        <command-line>: warning: conflicting types for built-in function 'floor'; expected 'double(double)' [-Wbuiltin-declaration-mismatch]
+        C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-i9rp6l/CheckFunctionExists.c:7:3: note: in expansion of macro 'CHECK_FUNCTION_EXISTS'
+            7 |   CHECK_FUNCTION_EXISTS(void);
+              |   ^~~~~~~~~~~~~~~~~~~~~
+        C:/OHWorkspace/SFML/buildrel/CMakeFiles/CMakeScratch/TryCompile-i9rp6l/CheckFunctionExists.c:1:1: note: 'floor' is declared in header '<math.h>'
+          +++ |+#include <math.h>
+            1 | #ifdef CHECK_FUNCTION_EXISTS
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\msys64\\ucrt64\\bin\\cc.exe -DCHECK_FUNCTION_EXISTS=floor  CMakeFiles/cmTC_09e0a.dir/CheckFunctionExists.c.obj -o cmTC_09e0a.exe -Wl,--out-implib,libcmTC_09e0a.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lm  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+        
+      exitCode: 0
+...

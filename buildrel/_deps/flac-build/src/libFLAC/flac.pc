@@ -1,0 +1,12 @@
+prefix=C:/OHWorkspace/SFML/buildrel/install
+exec_prefix=C:/OHWorkspace/SFML/buildrel/install
+libdir=C:/OHWorkspace/SFML/buildrel/install/lib
+includedir=C:/OHWorkspace/SFML/buildrel/install/include
+
+Name: FLAC
+Description: Free Lossless Audio Codec Library
+Version: 1.4.3
+Requires.private: ogg
+Libs: -L${libdir} -lFLAC
+Libs.private: -lm
+Cflags: -I${includedir}

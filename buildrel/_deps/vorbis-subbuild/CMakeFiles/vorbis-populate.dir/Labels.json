@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/vorbis-subbuild/CMakeFiles/vorbis-populate"
+		},
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/vorbis-subbuild/CMakeFiles/vorbis-populate.rule"
+		},
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/vorbis-subbuild/CMakeFiles/vorbis-populate-complete.rule"
+		},
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/vorbis-subbuild/vorbis-populate-prefix/src/vorbis-populate-stamp/vorbis-populate-build.rule"
+		},
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/vorbis-subbuild/vorbis-populate-prefix/src/vorbis-populate-stamp/vorbis-populate-configure.rule"
+		},
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/vorbis-subbuild/vorbis-populate-prefix/src/vorbis-populate-stamp/vorbis-populate-download.rule"
+		},
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/vorbis-subbuild/vorbis-populate-prefix/src/vorbis-populate-stamp/vorbis-populate-install.rule"
+		},
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/vorbis-subbuild/vorbis-populate-prefix/src/vorbis-populate-stamp/vorbis-populate-mkdir.rule"
+		},
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/vorbis-subbuild/vorbis-populate-prefix/src/vorbis-populate-stamp/vorbis-populate-patch.rule"
+		},
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/vorbis-subbuild/vorbis-populate-prefix/src/vorbis-populate-stamp/vorbis-populate-test.rule"
+		},
+		{
+			"file" : "C:/OHWorkspace/SFML/buildrel/_deps/vorbis-subbuild/vorbis-populate-prefix/src/vorbis-populate-stamp/vorbis-populate-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"vorbis-populate"
+		],
+		"name" : "vorbis-populate"
+	}
+}

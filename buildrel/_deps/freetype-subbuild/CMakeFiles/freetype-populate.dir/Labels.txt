@@ -1,0 +1,14 @@
+# Target labels
+ freetype-populate
+# Source files and their labels
+C:/OHWorkspace/SFML/buildrel/_deps/freetype-subbuild/CMakeFiles/freetype-populate
+C:/OHWorkspace/SFML/buildrel/_deps/freetype-subbuild/CMakeFiles/freetype-populate.rule
+C:/OHWorkspace/SFML/buildrel/_deps/freetype-subbuild/CMakeFiles/freetype-populate-complete.rule
+C:/OHWorkspace/SFML/buildrel/_deps/freetype-subbuild/freetype-populate-prefix/src/freetype-populate-stamp/freetype-populate-build.rule
+C:/OHWorkspace/SFML/buildrel/_deps/freetype-subbuild/freetype-populate-prefix/src/freetype-populate-stamp/freetype-populate-configure.rule
+C:/OHWorkspace/SFML/buildrel/_deps/freetype-subbuild/freetype-populate-prefix/src/freetype-populate-stamp/freetype-populate-download.rule
+C:/OHWorkspace/SFML/buildrel/_deps/freetype-subbuild/freetype-populate-prefix/src/freetype-populate-stamp/freetype-populate-install.rule
+C:/OHWorkspace/SFML/buildrel/_deps/freetype-subbuild/freetype-populate-prefix/src/freetype-populate-stamp/freetype-populate-mkdir.rule
+C:/OHWorkspace/SFML/buildrel/_deps/freetype-subbuild/freetype-populate-prefix/src/freetype-populate-stamp/freetype-populate-patch.rule
+C:/OHWorkspace/SFML/buildrel/_deps/freetype-subbuild/freetype-populate-prefix/src/freetype-populate-stamp/freetype-populate-test.rule
+C:/OHWorkspace/SFML/buildrel/_deps/freetype-subbuild/freetype-populate-prefix/src/freetype-populate-stamp/freetype-populate-update.rule

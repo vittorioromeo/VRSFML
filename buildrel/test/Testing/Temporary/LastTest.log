@@ -1,0 +1,1308 @@
+Start testing: Aug 10 19:59 W. Europe Daylight Time
+----------------------------------------------------------
+1/57 Testing: [Base] Base/Algorithm.hpp
+1/57 Test: [Base] Base/Algorithm.hpp
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-base.exe" "--test-case=[Base] Base/Algorithm.hpp"
+Directory: C:/OHWorkspace/SFML/test
+"[Base] Base/Algorithm.hpp" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 0 skipped
+[doctest] assertions: 34 | 34 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"[Base] Base/Algorithm.hpp" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Base] Base/Algorithm.hpp" time elapsed: 00:00:00
+----------------------------------------------------------
+
+2/57 Testing: [System] sf::Angle
+2/57 Test: [System] sf::Angle
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-system.exe" "--test-case=[System] sf::Angle"
+Directory: C:/OHWorkspace/SFML/test
+"[System] sf::Angle" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 14 skipped
+[doctest] assertions: 47 | 47 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"[System] sf::Angle" end time: Aug 10 19:59 W. Europe Daylight Time
+"[System] sf::Angle" time elapsed: 00:00:00
+----------------------------------------------------------
+
+3/57 Testing: [System] sf::Clock
+3/57 Test: [System] sf::Clock
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-system.exe" "--test-case=[System] sf::Clock"
+Directory: C:/OHWorkspace/SFML/test
+"[System] sf::Clock" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 14 skipped
+[doctest] assertions: 13 | 13 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"[System] sf::Clock" end time: Aug 10 19:59 W. Europe Daylight Time
+"[System] sf::Clock" time elapsed: 00:00:00
+----------------------------------------------------------
+
+4/57 Testing: [System] SFML/Config.hpp
+4/57 Test: [System] SFML/Config.hpp
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-system.exe" "--test-case=[System] SFML/Config.hpp"
+Directory: C:/OHWorkspace/SFML/test
+"[System] SFML/Config.hpp" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases: 1 | 1 passed | 0 failed | 14 skipped
+[doctest] assertions: 0 | 0 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"[System] SFML/Config.hpp" end time: Aug 10 19:59 W. Europe Daylight Time
+"[System] SFML/Config.hpp" time elapsed: 00:00:00
+----------------------------------------------------------
+
+5/57 Testing: [System] sf::err
+5/57 Test: [System] sf::err
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-system.exe" "--test-case=[System] sf::err"
+Directory: C:/OHWorkspace/SFML/test
+"[System] sf::err" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[[SFML ERROR]]: SFML is a simple, fast, cross-platform and object-oriented multimedia API.It provides access to windowing, graphics, audio and network.It is written in C++, and has bindings for various languages such as C, .Net, Ruby, Python.
+[[SFML ERROR]]: We'll never be able to observe this
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases: 1 | 1 passed | 0 failed | 14 skipped
+[doctest] assertions: 6 | 6 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"[System] sf::err" end time: Aug 10 19:59 W. Europe Daylight Time
+"[System] sf::err" time elapsed: 00:00:00
+----------------------------------------------------------
+
+6/57 Testing: [System] sf::FileInputStream
+6/57 Test: [System] sf::FileInputStream
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-system.exe" "--test-case=[System] sf::FileInputStream"
+Directory: C:/OHWorkspace/SFML/test
+"[System] sf::FileInputStream" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 14 skipped
+[doctest] assertions: 14 | 14 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"[System] sf::FileInputStream" end time: Aug 10 19:59 W. Europe Daylight Time
+"[System] sf::FileInputStream" time elapsed: 00:00:00
+----------------------------------------------------------
+
+7/57 Testing: [System] sf::MemoryInputStream
+7/57 Test: [System] sf::MemoryInputStream
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-system.exe" "--test-case=[System] sf::MemoryInputStream"
+Directory: C:/OHWorkspace/SFML/test
+"[System] sf::MemoryInputStream" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 14 skipped
+[doctest] assertions: 24 | 24 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"[System] sf::MemoryInputStream" end time: Aug 10 19:59 W. Europe Daylight Time
+"[System] sf::MemoryInputStream" time elapsed: 00:00:00
+----------------------------------------------------------
+
+8/57 Testing: [Graphics] sf::Rect<int>
+8/57 Test: [Graphics] sf::Rect<int>
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-system.exe" "--test-case=[Graphics] sf::Rect<int>"
+Directory: C:/OHWorkspace/SFML/test
+"[Graphics] sf::Rect<int>" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases: 1 | 1 passed | 0 failed | 14 skipped
+[doctest] assertions: 2 | 2 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"[Graphics] sf::Rect<int>" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Graphics] sf::Rect<int>" time elapsed: 00:00:00
+----------------------------------------------------------
+
+9/57 Testing: [Graphics] sf::Rect<float>
+9/57 Test: [Graphics] sf::Rect<float>
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-system.exe" "--test-case=[Graphics] sf::Rect<float>"
+Directory: C:/OHWorkspace/SFML/test
+"[Graphics] sf::Rect<float>" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases: 1 | 1 passed | 0 failed | 14 skipped
+[doctest] assertions: 2 | 2 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"[Graphics] sf::Rect<float>" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Graphics] sf::Rect<float>" time elapsed: 00:00:00
+----------------------------------------------------------
+
+10/57 Testing: [System] sf::sleep
+10/57 Test: [System] sf::sleep
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-system.exe" "--test-case=[System] sf::sleep"
+Directory: C:/OHWorkspace/SFML/test
+"[System] sf::sleep" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases: 1 | 1 passed | 0 failed | 14 skipped
+[doctest] assertions: 3 | 3 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.04 sec
+----------------------------------------------------------
+Test Passed.
+"[System] sf::sleep" end time: Aug 10 19:59 W. Europe Daylight Time
+"[System] sf::sleep" time elapsed: 00:00:00
+----------------------------------------------------------
+
+11/57 Testing: [System] sf::String
+11/57 Test: [System] sf::String
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-system.exe" "--test-case=[System] sf::String"
+Directory: C:/OHWorkspace/SFML/test
+"[System] sf::String" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:   1 |   1 passed | 0 failed | 14 skipped
+[doctest] assertions: 203 | 203 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"[System] sf::String" end time: Aug 10 19:59 W. Europe Daylight Time
+"[System] sf::String" time elapsed: 00:00:00
+----------------------------------------------------------
+
+12/57 Testing: [System] sf::Time
+12/57 Test: [System] sf::Time
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-system.exe" "--test-case=[System] sf::Time"
+Directory: C:/OHWorkspace/SFML/test
+"[System] sf::Time" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases: 1 | 1 passed | 0 failed | 14 skipped
+[doctest] assertions: 8 | 8 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"[System] sf::Time" end time: Aug 10 19:59 W. Europe Daylight Time
+"[System] sf::Time" time elapsed: 00:00:00
+----------------------------------------------------------
+
+13/57 Testing: [System] sf::Vector2<int>
+13/57 Test: [System] sf::Vector2<int>
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-system.exe" "--test-case=[System] sf::Vector2<int>"
+Directory: C:/OHWorkspace/SFML/test
+"[System] sf::Vector2<int>" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:   1 |   1 passed | 0 failed | 14 skipped
+[doctest] assertions: 106 | 106 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"[System] sf::Vector2<int>" end time: Aug 10 19:59 W. Europe Daylight Time
+"[System] sf::Vector2<int>" time elapsed: 00:00:00
+----------------------------------------------------------
+
+14/57 Testing: [System] sf::Vector2<float>
+14/57 Test: [System] sf::Vector2<float>
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-system.exe" "--test-case=[System] sf::Vector2<float>"
+Directory: C:/OHWorkspace/SFML/test
+"[System] sf::Vector2<float>" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:   1 |   1 passed | 0 failed | 14 skipped
+[doctest] assertions: 106 | 106 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"[System] sf::Vector2<float>" end time: Aug 10 19:59 W. Europe Daylight Time
+"[System] sf::Vector2<float>" time elapsed: 00:00:00
+----------------------------------------------------------
+
+15/57 Testing: [System] sf::Vector3<int>
+15/57 Test: [System] sf::Vector3<int>
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-system.exe" "--test-case=[System] sf::Vector3<int>"
+Directory: C:/OHWorkspace/SFML/test
+"[System] sf::Vector3<int>" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 14 skipped
+[doctest] assertions: 48 | 48 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"[System] sf::Vector3<int>" end time: Aug 10 19:59 W. Europe Daylight Time
+"[System] sf::Vector3<int>" time elapsed: 00:00:00
+----------------------------------------------------------
+
+16/57 Testing: [System] sf::Vector3<float>
+16/57 Test: [System] sf::Vector3<float>
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-system.exe" "--test-case=[System] sf::Vector3<float>"
+Directory: C:/OHWorkspace/SFML/test
+"[System] sf::Vector3<float>" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 14 skipped
+[doctest] assertions: 48 | 48 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"[System] sf::Vector3<float>" end time: Aug 10 19:59 W. Europe Daylight Time
+"[System] sf::Vector3<float>" time elapsed: 00:00:00
+----------------------------------------------------------
+
+17/57 Testing: [Window] sf::Event
+17/57 Test: [Window] sf::Event
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-window.exe" "--test-case=[Window] sf::Event"
+Directory: C:/OHWorkspace/SFML/test
+"[Window] sf::Event" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:   1 |   1 passed | 0 failed | 9 skipped
+[doctest] assertions: 134 | 134 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"[Window] sf::Event" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Window] sf::Event" time elapsed: 00:00:00
+----------------------------------------------------------
+
+18/57 Testing: [Window] sf::Joystick
+18/57 Test: [Window] sf::Joystick
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-window.exe" "--test-case=[Window] sf::Joystick"
+Directory: C:/OHWorkspace/SFML/test
+"[Window] sf::Joystick" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:   1 |   1 passed | 0 failed | 9 skipped
+[doctest] assertions: 427 | 427 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.09 sec
+----------------------------------------------------------
+Test Passed.
+"[Window] sf::Joystick" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Window] sf::Joystick" time elapsed: 00:00:00
+----------------------------------------------------------
+
+19/57 Testing: [Window] sf::Vulkan
+19/57 Test: [Window] sf::Vulkan
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-window.exe" "--test-case=[Window] sf::Vulkan"
+Directory: C:/OHWorkspace/SFML/test
+"[Window] sf::Vulkan" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases: 1 | 1 passed | 0 failed | 9 skipped
+[doctest] assertions: 5 | 5 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.05 sec
+----------------------------------------------------------
+Test Passed.
+"[Window] sf::Vulkan" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Window] sf::Vulkan" time elapsed: 00:00:00
+----------------------------------------------------------
+
+20/57 Testing: [Graphics] sf::BlendMode
+20/57 Test: [Graphics] sf::BlendMode
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-graphics.exe" "--test-case=[Graphics] sf::BlendMode"
+Directory: C:/OHWorkspace/SFML/test
+"[Graphics] sf::BlendMode" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 25 skipped
+[doctest] assertions: 72 | 72 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"[Graphics] sf::BlendMode" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Graphics] sf::BlendMode" time elapsed: 00:00:00
+----------------------------------------------------------
+
+21/57 Testing: [Graphics] sf::CircleShape
+21/57 Test: [Graphics] sf::CircleShape
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-graphics.exe" "--test-case=[Graphics] sf::CircleShape"
+Directory: C:/OHWorkspace/SFML/test
+"[Graphics] sf::CircleShape" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:   1 |   1 passed | 0 failed | 25 skipped
+[doctest] assertions: 101 | 101 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"[Graphics] sf::CircleShape" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Graphics] sf::CircleShape" time elapsed: 00:00:00
+----------------------------------------------------------
+
+22/57 Testing: [Graphics] sf::Color
+22/57 Test: [Graphics] sf::Color
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-graphics.exe" "--test-case=[Graphics] sf::Color"
+Directory: C:/OHWorkspace/SFML/test
+"[Graphics] sf::Color" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 25 skipped
+[doctest] assertions: 18 | 18 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"[Graphics] sf::Color" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Graphics] sf::Color" time elapsed: 00:00:00
+----------------------------------------------------------
+
+23/57 Testing: [Graphics] sf::ConvexShape
+23/57 Test: [Graphics] sf::ConvexShape
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-graphics.exe" "--test-case=[Graphics] sf::ConvexShape"
+Directory: C:/OHWorkspace/SFML/test
+"[Graphics] sf::ConvexShape" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 25 skipped
+[doctest] assertions: 90 | 90 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"[Graphics] sf::ConvexShape" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Graphics] sf::ConvexShape" time elapsed: 00:00:00
+----------------------------------------------------------
+
+24/57 Testing: [Graphics] sf::CoordinateType
+24/57 Test: [Graphics] sf::CoordinateType
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-graphics.exe" "--test-case=[Graphics] sf::CoordinateType"
+Directory: C:/OHWorkspace/SFML/test
+"[Graphics] sf::CoordinateType" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases: 1 | 1 passed | 0 failed | 25 skipped
+[doctest] assertions: 0 | 0 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"[Graphics] sf::CoordinateType" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Graphics] sf::CoordinateType" time elapsed: 00:00:00
+----------------------------------------------------------
+
+25/57 Testing: [Graphics] sf::Font
+25/57 Test: [Graphics] sf::Font
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-graphics.exe" "--test-case=[Graphics] sf::Font"
+Directory: C:/OHWorkspace/SFML/test
+"[Graphics] sf::Font" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[[SFML ERROR]]: Failed to load font (failed to create the font face)
+    Provided path: does/not/exist.ttf
+    Absolute path: "C:\\OHWorkspace\\SFML\\test\\does\\not\\exist.ttf"
+[[SFML ERROR]]: Failed to load font from memory (failed to create the font face)
+[[SFML ERROR]]: Failed to load font from memory (failed to create the font face)
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 25 skipped
+[doctest] assertions: 61 | 61 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.22 sec
+----------------------------------------------------------
+Test Passed.
+"[Graphics] sf::Font" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Graphics] sf::Font" time elapsed: 00:00:00
+----------------------------------------------------------
+
+26/57 Testing: [Graphics] sf::Glsl
+26/57 Test: [Graphics] sf::Glsl
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-graphics.exe" "--test-case=[Graphics] sf::Glsl"
+Directory: C:/OHWorkspace/SFML/test
+"[Graphics] sf::Glsl" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 25 skipped
+[doctest] assertions: 50 | 50 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"[Graphics] sf::Glsl" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Graphics] sf::Glsl" time elapsed: 00:00:00
+----------------------------------------------------------
+
+27/57 Testing: [Graphics] sf::Glyph
+27/57 Test: [Graphics] sf::Glyph
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-graphics.exe" "--test-case=[Graphics] sf::Glyph"
+Directory: C:/OHWorkspace/SFML/test
+"[Graphics] sf::Glyph" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases: 1 | 1 passed | 0 failed | 25 skipped
+[doctest] assertions: 0 | 0 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"[Graphics] sf::Glyph" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Graphics] sf::Glyph" time elapsed: 00:00:00
+----------------------------------------------------------
+
+28/57 Testing: [Graphics] sf::Image
+28/57 Test: [Graphics] sf::Image
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-graphics.exe" "--test-case=[Graphics] sf::Image"
+Directory: C:/OHWorkspace/SFML/test
+"[Graphics] sf::Image" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[[SFML ERROR]]: Failed to create image, invalid size (zero) provided
+[[SFML ERROR]]: Failed to create image, invalid size (zero) provided
+[[SFML ERROR]]: Failed to load image
+    Provided path: .
+    Absolute path: "C:\\OHWorkspace\\SFML\\test"
+Reason: Unable to open file
+[[SFML ERROR]]: Failed to load image
+    Provided path: this/does/not/exist.jpg
+    Absolute path: "C:\\OHWorkspace\\SFML\\test\\this\\does\\not\\exist.jpg"
+Reason: Unable to open file
+[[SFML ERROR]]: Failed to load image from memory, no data provided
+[[SFML ERROR]]: Failed to load image from memory, no data provided
+[[SFML ERROR]]: Failed to load image from memory, no data provided
+[[SFML ERROR]]: Failed to load image from memory. Reason: Image not of any known type, or corrupt
+[[SFML ERROR]]: Image file extension "" not supported
+
+[[SFML ERROR]]: Failed to save image
+    Provided path: wheresmyextension
+    Absolute path: "C:\\OHWorkspace\\SFML\\test\\wheresmyextension"
+[[SFML ERROR]]: Image file extension "" not supported
+
+[[SFML ERROR]]: Failed to save image
+    Provided path: pls/add/extension
+    Absolute path: "C:\\OHWorkspace\\SFML\\test\\pls\\add\\extension"
+[[SFML ERROR]]: Image file extension ".ps" not supported
+
+[[SFML ERROR]]: Failed to save image
+    Provided path: test.ps
+    Absolute path: "C:\\OHWorkspace\\SFML\\test\\test.ps"
+[[SFML ERROR]]: Image file extension ".foo" not supported
+
+[[SFML ERROR]]: Failed to save image
+    Provided path: test.foo
+    Absolute path: "C:\\OHWorkspace\\SFML\\test\\test.foo"
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:   1 |   1 passed | 0 failed | 25 skipped
+[doctest] assertions: 990 | 990 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.03 sec
+----------------------------------------------------------
+Test Passed.
+"[Graphics] sf::Image" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Graphics] sf::Image" time elapsed: 00:00:00
+----------------------------------------------------------
+
+29/57 Testing: [Graphics] sf::RectangleShape
+29/57 Test: [Graphics] sf::RectangleShape
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-graphics.exe" "--test-case=[Graphics] sf::RectangleShape"
+Directory: C:/OHWorkspace/SFML/test
+"[Graphics] sf::RectangleShape" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 25 skipped
+[doctest] assertions: 16 | 16 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"[Graphics] sf::RectangleShape" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Graphics] sf::RectangleShape" time elapsed: 00:00:00
+----------------------------------------------------------
+
+30/57 Testing: [Graphics] Render Tests
+30/57 Test: [Graphics] Render Tests
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-graphics.exe" "--test-case=[Graphics] Render Tests"
+Directory: C:/OHWorkspace/SFML/test
+"[Graphics] Render Tests" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 25 skipped
+[doctest] assertions: 25 | 25 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.23 sec
+----------------------------------------------------------
+Test Passed.
+"[Graphics] Render Tests" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Graphics] Render Tests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+31/57 Testing: [Graphics] sf::RenderStates
+31/57 Test: [Graphics] sf::RenderStates
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-graphics.exe" "--test-case=[Graphics] sf::RenderStates"
+Directory: C:/OHWorkspace/SFML/test
+"[Graphics] sf::RenderStates" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 25 skipped
+[doctest] assertions: 47 | 47 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"[Graphics] sf::RenderStates" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Graphics] sf::RenderStates" time elapsed: 00:00:00
+----------------------------------------------------------
+
+32/57 Testing: [Graphics] sf::RenderTarget
+32/57 Test: [Graphics] sf::RenderTarget
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-graphics.exe" "--test-case=[Graphics] sf::RenderTarget"
+Directory: C:/OHWorkspace/SFML/test
+"[Graphics] sf::RenderTarget" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 25 skipped
+[doctest] assertions: 39 | 39 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.19 sec
+----------------------------------------------------------
+Test Passed.
+"[Graphics] sf::RenderTarget" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Graphics] sf::RenderTarget" time elapsed: 00:00:00
+----------------------------------------------------------
+
+33/57 Testing: [Graphics] sf::RenderTexture
+33/57 Test: [Graphics] sf::RenderTexture
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-graphics.exe" "--test-case=[Graphics] sf::RenderTexture"
+Directory: C:/OHWorkspace/SFML/test
+"[Graphics] sf::RenderTexture" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[[SFML ERROR]]: Failed to create texture, its internal size is too high (1048576x1048576, maximum is 16384x16384)
+[[SFML ERROR]]: Impossible to create render texture (failed to create the target texture)
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 25 skipped
+[doctest] assertions: 12 | 12 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.12 sec
+----------------------------------------------------------
+Test Passed.
+"[Graphics] sf::RenderTexture" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Graphics] sf::RenderTexture" time elapsed: 00:00:00
+----------------------------------------------------------
+
+34/57 Testing: [Graphics] sf::RenderWindow
+34/57 Test: [Graphics] sf::RenderWindow
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-graphics.exe" "--test-case=[Graphics] sf::RenderWindow"
+Directory: C:/OHWorkspace/SFML/test
+"[Graphics] sf::RenderWindow" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 25 skipped
+[doctest] assertions: 25 | 25 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.34 sec
+----------------------------------------------------------
+Test Passed.
+"[Graphics] sf::RenderWindow" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Graphics] sf::RenderWindow" time elapsed: 00:00:00
+----------------------------------------------------------
+
+35/57 Testing: [Graphics] sf::Shader
+35/57 Test: [Graphics] sf::Shader
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-graphics.exe" "--test-case=[Graphics] sf::Shader"
+Directory: C:/OHWorkspace/SFML/test
+"[Graphics] sf::Shader" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[[SFML ERROR]]: Failed to open shader file
+[[SFML ERROR]]: Failed to open shader file
+    Provided path: does-not-exist.vert
+    Absolute path: "C:\\OHWorkspace\\SFML\\test\\does-not-exist.vert"
+[[SFML ERROR]]: Failed to open shader file
+[[SFML ERROR]]: Failed to open vertex shader file
+    Provided path: does-not-exist.vert
+    Absolute path: "C:\\OHWorkspace\\SFML\\test\\does-not-exist.vert"
+[[SFML ERROR]]: Failed to open shader file
+[[SFML ERROR]]: Failed to open fragment shader file
+    Provided path: does-not-exist.frag
+    Absolute path: "C:\\OHWorkspace\\SFML\\test\\does-not-exist.frag"
+[[SFML ERROR]]: Failed to open shader file
+[[SFML ERROR]]: Failed to open vertex shader file
+    Provided path: does-not-exist.vert
+    Absolute path: "C:\\OHWorkspace\\SFML\\test\\does-not-exist.vert"
+[[SFML ERROR]]: Failed to open shader file
+[[SFML ERROR]]: Failed to open geometry shader file
+    Provided path: does-not-exist.geom
+    Absolute path: "C:\\OHWorkspace\\SFML\\test\\does-not-exist.geom"
+[[SFML ERROR]]: Failed to open shader file
+[[SFML ERROR]]: Failed to open fragment shader file
+    Provided path: does-not-exist.frag
+    Absolute path: "C:\\OHWorkspace\\SFML\\test\\does-not-exist.frag"
+[[SFML ERROR]]: Failed to create a shader: your system doesn't support geometry shaders (you should test Shader::isGeometryAvailable() before trying to use geometry shaders)
+[[SFML ERROR]]: Failed to create a shader: your system doesn't support geometry shaders (you should test Shader::isGeometryAvailable() before trying to use geometry shaders)
+[[SFML ERROR]]: Failed to create a shader: your system doesn't support geometry shaders (you should test Shader::isGeometryAvailable() before trying to use geometry shaders)
+[[SFML ERROR]]: Failed to read vertex shader from stream
+[[SFML ERROR]]: Failed to read vertex shader from stream
+[[SFML ERROR]]: Failed to read fragment shader from stream
+[[SFML ERROR]]: Failed to read vertex shader from stream
+[[SFML ERROR]]: Failed to read geometry shader from stream
+[[SFML ERROR]]: Failed to read fragment shader from stream
+[[SFML ERROR]]: Failed to create a shader: your system doesn't support geometry shaders (you should test Shader::isGeometryAvailable() before trying to use geometry shaders)
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 25 skipped
+[doctest] assertions: 30 | 30 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.23 sec
+----------------------------------------------------------
+Test Passed.
+"[Graphics] sf::Shader" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Graphics] sf::Shader" time elapsed: 00:00:00
+----------------------------------------------------------
+
+36/57 Testing: [Graphics] sf::Shape
+36/57 Test: [Graphics] sf::Shape
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-graphics.exe" "--test-case=[Graphics] sf::Shape"
+Directory: C:/OHWorkspace/SFML/test
+"[Graphics] sf::Shape" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 25 skipped
+[doctest] assertions: 18 | 18 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"[Graphics] sf::Shape" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Graphics] sf::Shape" time elapsed: 00:00:00
+----------------------------------------------------------
+
+37/57 Testing: [Graphics] sf::Sprite
+37/57 Test: [Graphics] sf::Sprite
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-graphics.exe" "--test-case=[Graphics] sf::Sprite"
+Directory: C:/OHWorkspace/SFML/test
+"[Graphics] sf::Sprite" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 25 skipped
+[doctest] assertions: 10 | 10 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.14 sec
+----------------------------------------------------------
+Test Passed.
+"[Graphics] sf::Sprite" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Graphics] sf::Sprite" time elapsed: 00:00:00
+----------------------------------------------------------
+
+38/57 Testing: [Graphics] sf::StencilMode
+38/57 Test: [Graphics] sf::StencilMode
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-graphics.exe" "--test-case=[Graphics] sf::StencilMode"
+Directory: C:/OHWorkspace/SFML/test
+"[Graphics] sf::StencilMode" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 25 skipped
+[doctest] assertions: 14 | 14 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"[Graphics] sf::StencilMode" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Graphics] sf::StencilMode" time elapsed: 00:00:00
+----------------------------------------------------------
+
+39/57 Testing: [Graphics] sf::Text
+39/57 Test: [Graphics] sf::Text
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-graphics.exe" "--test-case=[Graphics] sf::Text"
+Directory: C:/OHWorkspace/SFML/test
+"[Graphics] sf::Text" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 25 skipped
+[doctest] assertions: 63 | 63 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.26 sec
+----------------------------------------------------------
+Test Passed.
+"[Graphics] sf::Text" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Graphics] sf::Text" time elapsed: 00:00:00
+----------------------------------------------------------
+
+40/57 Testing: [Graphics] sf::Texture
+40/57 Test: [Graphics] sf::Texture
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-graphics.exe" "--test-case=[Graphics] sf::Texture"
+Directory: C:/OHWorkspace/SFML/test
+"[Graphics] sf::Texture" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[[SFML ERROR]]: Failed to create texture, invalid size (0x0)
+[[SFML ERROR]]: Failed to create texture, invalid size (0x1)
+[[SFML ERROR]]: Failed to create texture, invalid size (1x0)
+[[SFML ERROR]]: Failed to create texture, its internal size is too high (131072x131072, maximum is 16384x16384)
+[[SFML ERROR]]: Failed to create texture, its internal size is too high (1048576x1048576, maximum is 16384x16384)
+[[SFML ERROR]]: OpenGL ES extension EXT_sRGB unavailable
+[[SFML ERROR]]: Automatic sRGB to linear conversion disabled
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 25 skipped
+[doctest] assertions: 68 | 68 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.33 sec
+----------------------------------------------------------
+Test Passed.
+"[Graphics] sf::Texture" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Graphics] sf::Texture" time elapsed: 00:00:00
+----------------------------------------------------------
+
+41/57 Testing: [Graphics] sf::Transform
+41/57 Test: [Graphics] sf::Transform
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-graphics.exe" "--test-case=[Graphics] sf::Transform"
+Directory: C:/OHWorkspace/SFML/test
+"[Graphics] sf::Transform" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 25 skipped
+[doctest] assertions: 20 | 20 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"[Graphics] sf::Transform" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Graphics] sf::Transform" time elapsed: 00:00:00
+----------------------------------------------------------
+
+42/57 Testing: [Graphics] sf::Transformable
+42/57 Test: [Graphics] sf::Transformable
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-graphics.exe" "--test-case=[Graphics] sf::Transformable"
+Directory: C:/OHWorkspace/SFML/test
+"[Graphics] sf::Transformable" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 25 skipped
+[doctest] assertions: 57 | 57 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"[Graphics] sf::Transformable" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Graphics] sf::Transformable" time elapsed: 00:00:00
+----------------------------------------------------------
+
+43/57 Testing: [Graphics] sf::Vertex
+43/57 Test: [Graphics] sf::Vertex
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-graphics.exe" "--test-case=[Graphics] sf::Vertex"
+Directory: C:/OHWorkspace/SFML/test
+"[Graphics] sf::Vertex" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases: 1 | 1 passed | 0 failed | 25 skipped
+[doctest] assertions: 0 | 0 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"[Graphics] sf::Vertex" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Graphics] sf::Vertex" time elapsed: 00:00:00
+----------------------------------------------------------
+
+44/57 Testing: [Graphics] sf::VertexBuffer[.display]
+44/57 Test: [Graphics] sf::VertexBuffer[.display]
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-graphics.exe" "--test-case=[Graphics] sf::VertexBuffer[.display]"
+Directory: C:/OHWorkspace/SFML/test
+"[Graphics] sf::VertexBuffer[.display]" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 25 skipped
+[doctest] assertions: 55 | 55 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.23 sec
+----------------------------------------------------------
+Test Passed.
+"[Graphics] sf::VertexBuffer[.display]" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Graphics] sf::VertexBuffer[.display]" time elapsed: 00:00:00
+----------------------------------------------------------
+
+45/57 Testing: [Graphics] sf::View
+45/57 Test: [Graphics] sf::View
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-graphics.exe" "--test-case=[Graphics] sf::View"
+Directory: C:/OHWorkspace/SFML/test
+"[Graphics] sf::View" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 25 skipped
+[doctest] assertions: 48 | 48 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"[Graphics] sf::View" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Graphics] sf::View" time elapsed: 00:00:00
+----------------------------------------------------------
+
+46/57 Testing: [Network] sf::Ftp
+46/57 Test: [Network] sf::Ftp
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-network.exe" "--test-case=[Network] sf::Ftp"
+Directory: C:/OHWorkspace/SFML/test
+"[Network] sf::Ftp" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 8 skipped
+[doctest] assertions: 26 | 26 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"[Network] sf::Ftp" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Network] sf::Ftp" time elapsed: 00:00:00
+----------------------------------------------------------
+
+47/57 Testing: [Network] sf::Http
+47/57 Test: [Network] sf::Http
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-network.exe" "--test-case=[Network] sf::Http"
+Directory: C:/OHWorkspace/SFML/test
+"[Network] sf::Http" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases: 1 | 1 passed | 0 failed | 8 skipped
+[doctest] assertions: 5 | 5 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"[Network] sf::Http" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Network] sf::Http" time elapsed: 00:00:00
+----------------------------------------------------------
+
+48/57 Testing: [Network] sf::IpAddress
+48/57 Test: [Network] sf::IpAddress
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-network.exe" "--test-case=[Network] sf::IpAddress"
+Directory: C:/OHWorkspace/SFML/test
+"[Network] sf::IpAddress" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 8 skipped
+[doctest] assertions: 74 | 74 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.16 sec
+----------------------------------------------------------
+Test Passed.
+"[Network] sf::IpAddress" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Network] sf::IpAddress" time elapsed: 00:00:00
+----------------------------------------------------------
+
+49/57 Testing: [Network] sf::Packet
+49/57 Test: [Network] sf::Packet
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-network.exe" "--test-case=[Network] sf::Packet"
+Directory: C:/OHWorkspace/SFML/test
+"[Network] sf::Packet" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:   1 |   1 passed | 0 failed | 8 skipped
+[doctest] assertions: 543 | 543 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"[Network] sf::Packet" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Network] sf::Packet" time elapsed: 00:00:00
+----------------------------------------------------------
+
+50/57 Testing: [Network] sf::Socket
+50/57 Test: [Network] sf::Socket
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-network.exe" "--test-case=[Network] sf::Socket"
+Directory: C:/OHWorkspace/SFML/test
+"[Network] sf::Socket" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[[SFML ERROR]]: Attempted to create a previously created socket
+[[SFML ERROR]]: Attempted to close an invalid socket
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 8 skipped
+[doctest] assertions: 24 | 24 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"[Network] sf::Socket" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Network] sf::Socket" time elapsed: 00:00:00
+----------------------------------------------------------
+
+51/57 Testing: [Network] sf::SocketSelector
+51/57 Test: [Network] sf::SocketSelector
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-network.exe" "--test-case=[Network] sf::SocketSelector"
+Directory: C:/OHWorkspace/SFML/test
+"[Network] sf::SocketSelector" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[[SFML ERROR]]: Attempted to check readiness of invalid socket in socket selector
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases: 1 | 1 passed | 0 failed | 8 skipped
+[doctest] assertions: 1 | 1 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"[Network] sf::SocketSelector" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Network] sf::SocketSelector" time elapsed: 00:00:00
+----------------------------------------------------------
+
+52/57 Testing: [Network] sf::TcpListener
+52/57 Test: [Network] sf::TcpListener
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-network.exe" "--test-case=[Network] sf::TcpListener"
+Directory: C:/OHWorkspace/SFML/test
+"[Network] sf::TcpListener" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[[SFML ERROR]]: Attempted to get local port of invalid TCP listener
+[[SFML ERROR]]: Failed to retrieve local port ofTCP listener
+[[SFML ERROR]]: Attempted to get local port of invalid TCP listener
+[[SFML ERROR]]: Failed to accept a new connection, the socket is not listening
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 8 skipped
+[doctest] assertions: 10 | 10 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"[Network] sf::TcpListener" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Network] sf::TcpListener" time elapsed: 00:00:00
+----------------------------------------------------------
+
+53/57 Testing: [Network] sf::TcpSocket
+53/57 Test: [Network] sf::TcpSocket
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-network.exe" "--test-case=[Network] sf::TcpSocket"
+Directory: C:/OHWorkspace/SFML/test
+"[Network] sf::TcpSocket" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[[SFML ERROR]]: Attempted to get local port of invalid TCP socket
+[[SFML ERROR]]: Attempted to get remote address of invalid TCP socket
+[[SFML ERROR]]: Attempted to get remote port of invalid TCP socket
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases: 1 | 1 passed | 0 failed | 8 skipped
+[doctest] assertions: 3 | 3 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"[Network] sf::TcpSocket" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Network] sf::TcpSocket" time elapsed: 00:00:00
+----------------------------------------------------------
+
+54/57 Testing: [Network] sf::UdpSocket
+54/57 Test: [Network] sf::UdpSocket
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-network.exe" "--test-case=[Network] sf::UdpSocket"
+Directory: C:/OHWorkspace/SFML/test
+"[Network] sf::UdpSocket" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[[SFML ERROR]]: Attempted to get local port of invalid UDP socket
+[[SFML ERROR]]: Attempted to get local port of invalid UDP socket
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases: 1 | 1 passed | 0 failed | 8 skipped
+[doctest] assertions: 6 | 6 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"[Network] sf::UdpSocket" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Network] sf::UdpSocket" time elapsed: 00:00:00
+----------------------------------------------------------
+
+55/57 Testing: [Audio] sf::InputSoundFile
+55/57 Test: [Audio] sf::InputSoundFile
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-audio.exe" "--test-case=[Audio] sf::InputSoundFile"
+Directory: C:/OHWorkspace/SFML/test
+"[Audio] sf::InputSoundFile" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[[SFML ERROR]]: Failed to open sound file (couldn't open stream)
+    Provided path: does/not/exist.wav
+    Absolute path: "C:\\OHWorkspace\\SFML\\test\\does\\not\\exist.wav"
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 7 skipped
+[doctest] assertions: 83 | 83 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"[Audio] sf::InputSoundFile" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Audio] sf::InputSoundFile" time elapsed: 00:00:00
+----------------------------------------------------------
+
+56/57 Testing: [Audio] sf::SoundFileFactory
+56/57 Test: [Audio] sf::SoundFileFactory
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-audio.exe" "--test-case=[Audio] sf::SoundFileFactory"
+Directory: C:/OHWorkspace/SFML/test
+"[Audio] sf::SoundFileFactory" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[[SFML ERROR]]: Failed to open sound file (couldn't open stream)
+    Provided path: does/not/exist.wav
+    Absolute path: "C:\\OHWorkspace\\SFML\\test\\does\\not\\exist.wav"
+[[SFML ERROR]]: Failed to open sound file (format not supported)
+    Provided path: cannot/write/to.txt
+    Absolute path: "C:\\OHWorkspace\\SFML\\test\\cannot\\write\\to.txt"
+[[SFML ERROR]]: Failed to open sound file (format not supported)
+    Provided path: file.mp3
+    Absolute path: "C:\\OHWorkspace\\SFML\\test\\file.mp3"
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 7 skipped
+[doctest] assertions: 24 | 24 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"[Audio] sf::SoundFileFactory" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Audio] sf::SoundFileFactory" time elapsed: 00:00:00
+----------------------------------------------------------
+
+57/57 Testing: [Audio] sf::SoundFileReader
+57/57 Test: [Audio] sf::SoundFileReader
+Command: "C:/OHWorkspace/SFML/buildrel/bin/test-sfml-audio.exe" "--test-case=[Audio] sf::SoundFileReader"
+Directory: C:/OHWorkspace/SFML/test
+"[Audio] sf::SoundFileReader" start time: Aug 10 19:59 W. Europe Daylight Time
+Output:
+----------------------------------------------------------
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases: 1 | 1 passed | 0 failed | 7 skipped
+[doctest] assertions: 3 | 3 passed | 0 failed |
+[doctest] Status: SUCCESS!
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"[Audio] sf::SoundFileReader" end time: Aug 10 19:59 W. Europe Daylight Time
+"[Audio] sf::SoundFileReader" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Aug 10 19:59 W. Europe Daylight Time

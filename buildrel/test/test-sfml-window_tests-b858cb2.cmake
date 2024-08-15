@@ -1,0 +1,7 @@
+add_test( [==[[Window] sf::Event]==] C:/OHWorkspace/SFML/buildrel/bin/test-sfml-window.exe [==[--test-case=[Window] sf::Event]==])
+set_tests_properties( [==[[Window] sf::Event]==] PROPERTIES WORKING_DIRECTORY C:/OHWorkspace/SFML/test LABELS)
+add_test( [==[[Window] sf::Joystick]==] C:/OHWorkspace/SFML/buildrel/bin/test-sfml-window.exe [==[--test-case=[Window] sf::Joystick]==])
+set_tests_properties( [==[[Window] sf::Joystick]==] PROPERTIES WORKING_DIRECTORY C:/OHWorkspace/SFML/test LABELS)
+add_test( [==[[Window] sf::Vulkan]==] C:/OHWorkspace/SFML/buildrel/bin/test-sfml-window.exe [==[--test-case=[Window] sf::Vulkan]==])
+set_tests_properties( [==[[Window] sf::Vulkan]==] PROPERTIES WORKING_DIRECTORY C:/OHWorkspace/SFML/test LABELS)
+set( test-sfml-window_TESTS [==[[Window] sf::Event]==] [==[[Window] sf::Joystick]==] [==[[Window] sf::Vulkan]==])

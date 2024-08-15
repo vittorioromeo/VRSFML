@@ -1,0 +1,21 @@
+# ninja log v6
+0	37	7450158195099904	ogg-populate-prefix/src/ogg-populate-stamp/ogg-populate-mkdir	2ee6527d65370252
+0	37	7450158195099904	C:/OHWorkspace/SFML/buildrel/_deps/ogg-subbuild/ogg-populate-prefix/src/ogg-populate-stamp/ogg-populate-mkdir	2ee6527d65370252
+37	1672	7450158211450497	ogg-populate-prefix/src/ogg-populate-stamp/ogg-populate-download	4b51cf0fa24684d2
+37	1672	7450158211450497	C:/OHWorkspace/SFML/buildrel/_deps/ogg-subbuild/ogg-populate-prefix/src/ogg-populate-stamp/ogg-populate-download	4b51cf0fa24684d2
+1672	1786	7450158211483793	ogg-populate-prefix/src/ogg-populate-stamp/ogg-populate-update	adaf2a428f829db5
+1672	1786	7450158211483793	C:/OHWorkspace/SFML/buildrel/_deps/ogg-subbuild/ogg-populate-prefix/src/ogg-populate-stamp/ogg-populate-update	adaf2a428f829db5
+1786	1816	7450158212892123	ogg-populate-prefix/src/ogg-populate-stamp/ogg-populate-patch	88d76c30cf9cff55
+1786	1816	7450158212892123	C:/OHWorkspace/SFML/buildrel/_deps/ogg-subbuild/ogg-populate-prefix/src/ogg-populate-stamp/ogg-populate-patch	88d76c30cf9cff55
+1816	1846	7450158213181001	ogg-populate-prefix/src/ogg-populate-stamp/ogg-populate-configure	3b7c35402c4a9e91
+1816	1846	7450158213181001	C:/OHWorkspace/SFML/buildrel/_deps/ogg-subbuild/ogg-populate-prefix/src/ogg-populate-stamp/ogg-populate-configure	3b7c35402c4a9e91
+1846	1875	7450158213484948	ogg-populate-prefix/src/ogg-populate-stamp/ogg-populate-build	59ab958e5a319541
+1846	1875	7450158213484948	C:/OHWorkspace/SFML/buildrel/_deps/ogg-subbuild/ogg-populate-prefix/src/ogg-populate-stamp/ogg-populate-build	59ab958e5a319541
+1875	1904	7450158213774582	ogg-populate-prefix/src/ogg-populate-stamp/ogg-populate-install	85081238c1621b88
+1875	1904	7450158213774582	C:/OHWorkspace/SFML/buildrel/_deps/ogg-subbuild/ogg-populate-prefix/src/ogg-populate-stamp/ogg-populate-install	85081238c1621b88
+1905	1933	7450158214066356	ogg-populate-prefix/src/ogg-populate-stamp/ogg-populate-test	5e83d4c00523413
+1905	1933	7450158214066356	C:/OHWorkspace/SFML/buildrel/_deps/ogg-subbuild/ogg-populate-prefix/src/ogg-populate-stamp/ogg-populate-test	5e83d4c00523413
+1933	1973	7450158214465281	CMakeFiles/ogg-populate-complete	657301ed25fd385a
+1933	1973	7450158214465281	ogg-populate-prefix/src/ogg-populate-stamp/ogg-populate-done	657301ed25fd385a
+1933	1973	7450158214465281	C:/OHWorkspace/SFML/buildrel/_deps/ogg-subbuild/CMakeFiles/ogg-populate-complete	657301ed25fd385a
+1933	1973	7450158214465281	C:/OHWorkspace/SFML/buildrel/_deps/ogg-subbuild/ogg-populate-prefix/src/ogg-populate-stamp/ogg-populate-done	657301ed25fd385a

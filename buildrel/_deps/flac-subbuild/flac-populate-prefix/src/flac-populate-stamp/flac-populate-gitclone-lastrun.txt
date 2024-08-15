@@ -1,0 +1,15 @@
+# This is a generated file and its contents are an internal implementation detail.
+# The download step will be re-executed if anything in this file changes.
+# No other meaning or use of this file is supported.
+
+method=git
+command=C:/msys64/ucrt64/bin/cmake.exe;-DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE;-P;C:/OHWorkspace/SFML/buildrel/_deps/flac-subbuild/flac-populate-prefix/tmp/flac-populate-gitclone.cmake
+source_dir=C:/OHWorkspace/SFML/buildrel/_deps/flac-src
+work_dir=C:/OHWorkspace/SFML/buildrel/_deps
+repository=https://github.com/xiph/flac.git
+remote=origin
+init_submodules=TRUE
+recurse_submodules=--recursive
+submodules=
+CMP0097=NEW
+      

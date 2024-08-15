@@ -1,0 +1,7 @@
+add_test( [==[[Audio] sf::InputSoundFile]==] C:/OHWorkspace/SFML/buildrel/bin/test-sfml-audio.exe [==[--test-case=[Audio] sf::InputSoundFile]==])
+set_tests_properties( [==[[Audio] sf::InputSoundFile]==] PROPERTIES WORKING_DIRECTORY C:/OHWorkspace/SFML/test LABELS)
+add_test( [==[[Audio] sf::SoundFileFactory]==] C:/OHWorkspace/SFML/buildrel/bin/test-sfml-audio.exe [==[--test-case=[Audio] sf::SoundFileFactory]==])
+set_tests_properties( [==[[Audio] sf::SoundFileFactory]==] PROPERTIES WORKING_DIRECTORY C:/OHWorkspace/SFML/test LABELS)
+add_test( [==[[Audio] sf::SoundFileReader]==] C:/OHWorkspace/SFML/buildrel/bin/test-sfml-audio.exe [==[--test-case=[Audio] sf::SoundFileReader]==])
+set_tests_properties( [==[[Audio] sf::SoundFileReader]==] PROPERTIES WORKING_DIRECTORY C:/OHWorkspace/SFML/test LABELS)
+set( test-sfml-audio_TESTS [==[[Audio] sf::InputSoundFile]==] [==[[Audio] sf::SoundFileFactory]==] [==[[Audio] sf::SoundFileReader]==])

@@ -1,0 +1,14 @@
+# Target labels
+ ogg-populate
+# Source files and their labels
+C:/OHWorkspace/SFML/buildrel/_deps/ogg-subbuild/CMakeFiles/ogg-populate
+C:/OHWorkspace/SFML/buildrel/_deps/ogg-subbuild/CMakeFiles/ogg-populate.rule
+C:/OHWorkspace/SFML/buildrel/_deps/ogg-subbuild/CMakeFiles/ogg-populate-complete.rule
+C:/OHWorkspace/SFML/buildrel/_deps/ogg-subbuild/ogg-populate-prefix/src/ogg-populate-stamp/ogg-populate-build.rule
+C:/OHWorkspace/SFML/buildrel/_deps/ogg-subbuild/ogg-populate-prefix/src/ogg-populate-stamp/ogg-populate-configure.rule
+C:/OHWorkspace/SFML/buildrel/_deps/ogg-subbuild/ogg-populate-prefix/src/ogg-populate-stamp/ogg-populate-download.rule
+C:/OHWorkspace/SFML/buildrel/_deps/ogg-subbuild/ogg-populate-prefix/src/ogg-populate-stamp/ogg-populate-install.rule
+C:/OHWorkspace/SFML/buildrel/_deps/ogg-subbuild/ogg-populate-prefix/src/ogg-populate-stamp/ogg-populate-mkdir.rule
+C:/OHWorkspace/SFML/buildrel/_deps/ogg-subbuild/ogg-populate-prefix/src/ogg-populate-stamp/ogg-populate-patch.rule
+C:/OHWorkspace/SFML/buildrel/_deps/ogg-subbuild/ogg-populate-prefix/src/ogg-populate-stamp/ogg-populate-test.rule
+C:/OHWorkspace/SFML/buildrel/_deps/ogg-subbuild/ogg-populate-prefix/src/ogg-populate-stamp/ogg-populate-update.rule

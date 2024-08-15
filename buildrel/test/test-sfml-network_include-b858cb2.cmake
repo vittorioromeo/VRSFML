@@ -1,0 +1,5 @@
+if(EXISTS "C:/OHWorkspace/SFML/buildrel/test/test-sfml-network_tests-b858cb2.cmake")
+  include("C:/OHWorkspace/SFML/buildrel/test/test-sfml-network_tests-b858cb2.cmake")
+else()
+  add_test(test-sfml-network_NOT_BUILT-b858cb2 test-sfml-network_NOT_BUILT-b858cb2)
+endif()
