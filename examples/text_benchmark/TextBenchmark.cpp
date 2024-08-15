@@ -120,7 +120,7 @@ int main()
         }
     };
 #else
-    sf::RenderWindow window(graphicsContext, {.size{640u, 480u}, .title = "ImGui + SFML = <3"});
+    sf::RenderWindow window(graphicsContext, {.size{640u, 480u}, .title = "ImGui + SFML = <3", .style = sf::Style::Resize});
     window.setFramerateLimit(60);
 
     if (!imGuiContext.init(window))
