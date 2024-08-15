@@ -66,9 +66,15 @@ namespace sf::priv
 // Types
 ////////////////////////////////////////////////////////////
 #if defined(SFML_SYSTEM_WINDOWS)
-using AddrLength = int;
+using AddrLength    = int;
+using NetworkLong   = unsigned long;
+using NetworkLong   = unsigned short;
+using NetworkSSizeT = int;
 #else
-using AddrLength = socklen_t;
+using AddrLength    = socklen_t;
+using NetworkLong   = std::uint32_t;
+using NetworkShort  = std::uint16_t;
+using NetworkSSizeT = ssize_t;
 #endif
 
 ////////////////////////////////////////////////////////////
@@ -84,8 +90,8 @@ public:
     SockAddrIn(const SockAddrIn&);
     SockAddrIn(const sockaddr_in&);
 
-    [[nodiscard]] unsigned short sinPort() const;
-    [[nodiscard]] unsigned long  sAddr() const;
+    [[nodiscard]] NetworkShort sinPort() const;
+    [[nodiscard]] NetworkLong  sAddr() const;
 
     [[nodiscard]] AddrLength size() const;
 
@@ -108,6 +114,7 @@ public:
     [[nodiscard]] void*       asPtr();
     [[nodiscard]] const void* asPtr() const;
 
+private:
     struct Impl;
     base::InPlacePImpl<Impl, 768> m_impl;
 };
@@ -192,31 +199,31 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static unsigned long ntohl(unsigned long netlong);
+    [[nodiscard]] static NetworkLong ntohl(NetworkLong netlong);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static unsigned short ntohs(unsigned short netshort);
+    [[nodiscard]] static NetworkShort ntohs(NetworkShort netshort);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static unsigned long ntohl(SockAddrIn addr);
+    [[nodiscard]] static NetworkLong ntohl(SockAddrIn addr);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static unsigned short htons(unsigned short hostshort);
+    [[nodiscard]] static NetworkShort htons(NetworkShort hostshort);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static unsigned long htonl(unsigned long hostlong);
+    [[nodiscard]] static NetworkLong htonl(NetworkLong hostlong);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -278,31 +285,37 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static int send(SocketHandle handle, const char* buf, int len, int flags);
+    [[nodiscard]] static NetworkSSizeT send(SocketHandle handle, const char* buf, SocketImpl::Size len, int flags);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static int sendTo(SocketHandle handle, const char* buf, int len, int flags, SockAddrIn& address);
+    [[nodiscard]] static NetworkSSizeT sendTo(SocketHandle handle, const char* buf, SocketImpl::Size len, int flags, SockAddrIn& address);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static int recv(SocketHandle handle, char* buf, int len, int flags);
+    [[nodiscard]] static NetworkSSizeT recv(SocketHandle handle, char* buf, SocketImpl::Size len, int flags);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static int recvFrom(SocketHandle handle, char* buf, int len, int flags, SockAddrIn& address, AddrLength& length);
+    [[nodiscard]] static NetworkSSizeT recvFrom(
+        SocketHandle     handle,
+        char*            buf,
+        SocketImpl::Size len,
+        int              flags,
+        SockAddrIn&      address,
+        AddrLength&      length);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<unsigned long> convertToHostname(const char* address);
+    [[nodiscard]] static base::Optional<NetworkLong> convertToHostname(const char* address);
 
     ////////////////////////////////////////////////////////////
     /// \brief Close and destroy a socket

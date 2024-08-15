@@ -493,7 +493,7 @@ XVisualInfo EglContext::selectBestVisual(::Display* xDisplay, unsigned int bitsP
     }
 
     // Pick up the best one
-    return availableVisuals[0];
+    return availableVisuals.get()[0];
 }
 #endif
 
