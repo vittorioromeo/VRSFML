@@ -191,9 +191,8 @@ GlContext(windowContext, id, {})
     EglContextImpl::ensureInit();
 
     // TODO P0: this gets called from `RenderTextureImplDefault`
-    sf::priv::err() << "Warning: context has not been initialized. The constructor EglContext(shared, contextSettings, "
-                       "size) "
-                       "is currently not implemented.";
+    sf::priv::err() << "Warning: context has not been initialized. The constructor EglContext(shared, "
+                       "contextSettings, size) is currently not implemented.";
 }
 
 
