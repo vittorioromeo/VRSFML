@@ -157,7 +157,7 @@ public:
     /// \param format Encoding format to use
     ///
     /// \return Buffer with encoded data if saving was successful,
-    ///     otherwise std::nullopt
+    ///     otherwise `std::nullopt`
     ///
     /// \see create, loadFromFile, loadFromMemory, saveToFile
     ///
