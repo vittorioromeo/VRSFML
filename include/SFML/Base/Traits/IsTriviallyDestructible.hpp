@@ -17,7 +17,7 @@
 #include <type_traits>
 
 ////////////////////////////////////////////////////////////
-#define SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(...) ::std::is_trivially_destructible<__VA_ARGS__>
+#define SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(...) ::std::is_trivially_destructible_v<__VA_ARGS__>
 
 #endif
 

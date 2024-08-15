@@ -30,11 +30,11 @@ SFContext::SFContext(SFContext* shared)
 
 
 ////////////////////////////////////////////////////////////
-SFContext::SFContext(SFContext* shared, const ContextSettings& settings, const WindowImpl& owner, unsigned int bitsPerPixel)
+SFContext::SFContext(SFContext* shared, const ContextSettings& contextSettings, const WindowImpl& owner, unsigned int bitsPerPixel)
 {
     const AutoreleasePool pool;
     // Create the context.
-    createContext(shared, bitsPerPixel, settings);
+    createContext(shared, bitsPerPixel, contextSettings);
 
     // Apply context.
     const auto& ownerCocoa = static_cast<const WindowImplCocoa&>(owner);
@@ -43,14 +43,14 @@ SFContext::SFContext(SFContext* shared, const ContextSettings& settings, const W
 
 
 ////////////////////////////////////////////////////////////
-SFContext::SFContext(SFContext* shared, const ContextSettings& settings, Vector2u size)
+SFContext::SFContext(SFContext* shared, const ContextSettings& contextSettings, Vector2u size)
 {
     const AutoreleasePool pool;
     // Ensure the process is setup in order to create a valid window.
     WindowImplCocoa::setUpProcess();
 
     // Create the context.
-    createContext(shared, VideoModeUtils::getDesktopMode().bitsPerPixel, settings);
+    createContext(shared, VideoModeUtils::getDesktopMode().bitsPerPixel, contextSettings);
 
     // Create a dummy window/view pair (hidden) and assign it our context.
     m_window = [[NSWindow alloc]
@@ -131,11 +131,11 @@ void SFContext::setVerticalSyncEnabled(bool enabled)
 
 
 ////////////////////////////////////////////////////////////
-void SFContext::createContext(SFContext* shared, unsigned int bitsPerPixel, const ContextSettings& settings)
+void SFContext::createContext(SFContext* shared, unsigned int bitsPerPixel, const ContextSettings& contextSettings)
 {
     const AutoreleasePool pool;
-    // Save the settings. (OpenGL version is updated elsewhere.)
-    m_settings = settings;
+    // Save the contextSettings. (OpenGL version is updated elsewhere.)
+    m_settings = contextSettings;
 
     // Choose the attributes of OGL context.
     std::vector<NSOpenGLPixelFormatAttribute> attrs;

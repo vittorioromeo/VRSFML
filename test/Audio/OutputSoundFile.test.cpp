@@ -1,9 +1,9 @@
 #include <SFML/Audio/OutputSoundFile.hpp>
 
-#include <type_traits>
+#include <CommonTraits.hpp>
 
-static_assert(!std::is_default_constructible_v<sf::OutputSoundFile>);
-static_assert(!std::is_copy_constructible_v<sf::OutputSoundFile>);
-static_assert(!std::is_copy_assignable_v<sf::OutputSoundFile>);
-static_assert(std::is_nothrow_move_constructible_v<sf::OutputSoundFile>);
-static_assert(std::is_nothrow_move_assignable_v<sf::OutputSoundFile>);
+static_assert(!SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::OutputSoundFile));
+static_assert(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::OutputSoundFile));
+static_assert(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::OutputSoundFile));
+static_assert(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::OutputSoundFile));
+static_assert(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::OutputSoundFile));

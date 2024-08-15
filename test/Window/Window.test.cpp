@@ -10,10 +10,9 @@
 
 #include <Doctest.hpp>
 
+#include <CommonTraits.hpp>
 #include <SystemUtil.hpp>
 #include <WindowUtil.hpp>
-
-#include <type_traits>
 
 TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 {
@@ -21,11 +20,11 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!std::has_virtual_destructor_v<sf::Window>);
-        STATIC_CHECK(!std::is_copy_constructible_v<sf::Window>);
-        STATIC_CHECK(!std::is_copy_assignable_v<sf::Window>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Window>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Window>);
+        STATIC_CHECK(!SFML_BASE_HAS_VIRTUAL_DESTRUCTOR(sf::Window));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Window));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::Window));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Window));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Window));
     }
 
     SECTION("Construction")

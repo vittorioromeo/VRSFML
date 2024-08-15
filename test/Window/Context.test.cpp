@@ -11,10 +11,10 @@
 
 #include <Doctest.hpp>
 
+#include <CommonTraits.hpp>
 #include <WindowUtil.hpp>
 
 #include <string>
-#include <type_traits>
 
 #if defined(SFML_SYSTEM_WINDOWS)
 #define GLAPI __stdcall
@@ -77,10 +77,10 @@ TEST_CASE("[Window] TestContext" * doctest::skip(skipDisplayTests))
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!std::is_copy_constructible_v<TestContext>);
-        STATIC_CHECK(!std::is_copy_assignable_v<TestContext>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<TestContext>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<TestContext>);
+        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(TestContext));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(TestContext));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(TestContext));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(TestContext));
     }
 
     SECTION("Construction")

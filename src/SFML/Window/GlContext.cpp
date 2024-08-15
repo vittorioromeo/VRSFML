@@ -42,8 +42,8 @@ const ContextSettings& GlContext::getSettings() const
 
 
 ////////////////////////////////////////////////////////////
-GlContext::GlContext(WindowContext& windowContext, std::uint64_t id, const ContextSettings& settings) :
-m_settings(settings),
+GlContext::GlContext(WindowContext& windowContext, std::uint64_t id, const ContextSettings& contextSettings) :
+m_settings(contextSettings),
 m_windowContext(windowContext),
 m_id{id}
 {
@@ -53,7 +53,7 @@ m_id{id}
 ////////////////////////////////////////////////////////////
 int GlContext::evaluateFormat(
     unsigned int           bitsPerPixel,
-    const ContextSettings& settings,
+    const ContextSettings& contextSettings,
     int                    colorBits,
     int                    depthBits,
     int                    stencilBits,
@@ -62,11 +62,11 @@ int GlContext::evaluateFormat(
     bool                   sRgb)
 {
     int colorDiff        = static_cast<int>(bitsPerPixel) - colorBits;
-    int depthDiff        = static_cast<int>(settings.depthBits) - depthBits;
-    int stencilDiff      = static_cast<int>(settings.stencilBits) - stencilBits;
-    int antialiasingDiff = static_cast<int>(settings.antialiasingLevel) - antialiasing;
+    int depthDiff        = static_cast<int>(contextSettings.depthBits) - depthBits;
+    int stencilDiff      = static_cast<int>(contextSettings.stencilBits) - stencilBits;
+    int antialiasingDiff = static_cast<int>(contextSettings.antialiasingLevel) - antialiasing;
 
-    // Weight sub-scores so that better settings don't score equally as bad as worse settings
+    // Weight sub-scores so that better contextSettings don't score equally as bad as worse contextSettings
     colorDiff *= ((colorDiff > 0) ? 100'000 : 1);
     depthDiff *= ((depthDiff > 0) ? 100'000 : 1);
     stencilDiff *= ((stencilDiff > 0) ? 100'000 : 1);
@@ -76,7 +76,7 @@ int GlContext::evaluateFormat(
     int score = std::abs(colorDiff) + std::abs(depthDiff) + std::abs(stencilDiff) + std::abs(antialiasingDiff);
 
     // If the user wants an sRGB capable format, try really hard to get one
-    if (settings.sRgbCapable && !sRgb)
+    if (contextSettings.sRgbCapable && !sRgb)
         score += 10'000'000;
 
     // Make sure we prefer hardware acceleration over features
@@ -193,7 +193,7 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
     // states that it will not be a compatibility profile context regardless of the requested
     // profile unless ARB_compatibility is present.
 
-    m_settings.attributeFlags = ContextSettings::Attribute::Default;
+    m_settings.attributeFlags = requestedSettings.attributeFlags;
 
     if (m_settings.majorVersion >= 3)
     {

@@ -2,23 +2,22 @@
 
 #include <Doctest.hpp>
 
+#include <CommonTraits.hpp>
 #include <SystemUtil.hpp>
-
-#include <type_traits>
 
 TEST_CASE("[System] sf::Angle")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(std::is_copy_constructible_v<sf::Angle>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::Angle>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Angle>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Angle>);
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Angle));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Angle));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Angle));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Angle));
 
-        STATIC_CHECK(!std::is_aggregate_v<sf::Angle>);
-        STATIC_CHECK(std::is_trivially_copyable_v<sf::Angle>);
-        STATIC_CHECK(std::is_trivially_destructible_v<sf::Angle>);
-        STATIC_CHECK(std::is_trivially_assignable_v<sf::Angle, sf::Angle>);
+        STATIC_CHECK(!SFML_BASE_IS_AGGREGATE(sf::Angle));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::Angle));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::Angle));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::Angle, sf::Angle));
     }
 
     SECTION("Construction")

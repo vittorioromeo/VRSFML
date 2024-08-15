@@ -28,31 +28,54 @@ struct ContextSettings
     {
         Default = 0,      //!< Non-debug, compatibility context (this and the core attribute are mutually exclusive)
         Core    = 1 << 0, //!< Core attribute
-        Debug   = 1 << 2  //!< Debug attribute
+        Debug   = 1 << 2, //!< Debug attribute
+
+        DefaultAndDebug = Default | Debug,
+        CoreAndDebug    = Core | Debug,
     };
+
+#if defined(SFML_SYSTEM_EMSCRIPTEN)
+
+    static inline constexpr auto defaultMajorVersion = 2u;
+    static inline constexpr auto defaultMinorVersion = 0u;
+#ifdef SFML_DEBUG
+    static inline constexpr auto defaultAttributeFlags = Attribute::DefaultAndDebug;
+#else
+    static inline constexpr auto defaultAttributeFlags = Attribute::Default;
+#endif
+
+#elif defined(SFML_OPENGL_ES)
+
+    static inline constexpr auto defaultMajorVersion = 3u;
+    static inline constexpr auto defaultMinorVersion = 1u;
+#ifdef SFML_DEBUG
+    static inline constexpr auto defaultAttributeFlags = Attribute::CoreAndDebug;
+#else
+    static inline constexpr auto defaultAttributeFlags = Attribute::Core;
+#endif
+
+#else
+
+    static inline constexpr auto defaultMajorVersion = 4u;
+    static inline constexpr auto defaultMinorVersion = 1u;
+#ifdef SFML_DEBUG
+    static inline constexpr auto defaultAttributeFlags = Attribute::CoreAndDebug;
+#else
+    static inline constexpr auto defaultAttributeFlags = Attribute::Core;
+#endif
+
+#endif
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    unsigned int depthBits{};         //!< Bits of the depth buffer
-    unsigned int stencilBits{};       //!< Bits of the stencil buffer
-    unsigned int antialiasingLevel{}; //!< Level of antialiasing
-    // TODO P0: review all these defaults, also for desktop, also maybe use macros or constexpr values
-#ifndef SFML_SYSTEM_EMSCRIPTEN
-    unsigned int majorVersion{1}; //!< Major number of the context version to create
-    unsigned int minorVersion{1}; //!< Minor number of the context version to create
-#else
-    unsigned int majorVersion{2}; //!< Major number of the context version to create
-    unsigned int minorVersion{0}; //!< Minor number of the context version to create
-#endif
-    Attribute attributeFlags{
-#if !defined(SFML_OPENGL_ES) || defined(SFML_SYSTEM_EMSCRIPTEN)
-        Attribute::Default
-#else
-        Attribute::Core
-#endif
-    }; //!< The attribute flags to create the context with
-    bool sRgbCapable{}; //!< Whether the context framebuffer is sRGB capable
+    unsigned int depthBits{};                           //!< Bits of the depth buffer
+    unsigned int stencilBits{};                         //!< Bits of the stencil buffer
+    unsigned int antialiasingLevel{};                   //!< Level of antialiasing
+    unsigned int majorVersion{defaultMajorVersion};     //!< Major number of the context version to create
+    unsigned int minorVersion{defaultMinorVersion};     //!< Minor number of the context version to create
+    Attribute    attributeFlags{defaultAttributeFlags}; //!< The attribute flags to create the context with
+    bool         sRgbCapable{};                         //!< Whether the context framebuffer is sRGB capable
 };
 
 SFML_BASE_DEFINE_ENUM_CLASS_BITWISE_OPS(ContextSettings::Attribute);

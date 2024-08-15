@@ -8,22 +8,21 @@
 #include <Doctest.hpp>
 
 #include <AudioUtil.hpp>
+#include <CommonTraits.hpp>
 #include <LoadIntoMemoryUtil.hpp>
 #include <SystemUtil.hpp>
-
-#include <type_traits>
 
 TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(!std::is_default_constructible_v<sf::SoundBuffer>);
-        static_assert(std::is_copy_constructible_v<sf::SoundBuffer>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::SoundBuffer>);
-        STATIC_CHECK(std::is_move_constructible_v<sf::SoundBuffer>);
-        STATIC_CHECK(!std::is_nothrow_move_constructible_v<sf::SoundBuffer>);
-        STATIC_CHECK(std::is_move_assignable_v<sf::SoundBuffer>);
-        STATIC_CHECK(!std::is_nothrow_move_assignable_v<sf::SoundBuffer>);
+        STATIC_CHECK(!SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::SoundBuffer));
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::SoundBuffer));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::SoundBuffer));
+        STATIC_CHECK(SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::SoundBuffer));
+        STATIC_CHECK(!SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::SoundBuffer));
+        STATIC_CHECK(SFML_BASE_IS_MOVE_ASSIGNABLE(sf::SoundBuffer));
+        STATIC_CHECK(!SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::SoundBuffer));
     }
 
     SECTION("Copy semantics")

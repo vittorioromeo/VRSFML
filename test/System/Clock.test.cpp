@@ -4,10 +4,10 @@
 
 #include <Doctest.hpp>
 
+#include <CommonTraits.hpp>
 #include <SystemUtil.hpp>
 
 #include <chrono>
-#include <type_traits>
 
 TEST_CASE("[System] sf::Clock")
 {
@@ -15,10 +15,10 @@ TEST_CASE("[System] sf::Clock")
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(std::is_copy_constructible_v<sf::Clock>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::Clock>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Clock>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Clock>);
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Clock));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Clock));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Clock));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Clock));
     }
 
     SECTION("Construction")

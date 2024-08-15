@@ -47,7 +47,7 @@ public:
     [[nodiscard]] explicit WglContext(WindowContext&    windowContext,
                                       std::uint64_t     id,
                                       WglContext*       shared,
-                                      ContextSettings   settings,
+                                      ContextSettings   contextSettings,
                                       const WindowImpl& owner,
                                       unsigned int      bitsPerPixel);
 
@@ -62,7 +62,7 @@ public:
     [[nodiscard]] explicit WglContext(WindowContext&  windowContext,
                                       std::uint64_t   id,
                                       WglContext*     shared,
-                                      ContextSettings settings,
+                                      ContextSettings contextSettings,
                                       Vector2u        size);
 
     ////////////////////////////////////////////////////////////
@@ -123,7 +123,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static int selectBestPixelFormat(HDC                    deviceContext,
                                                    unsigned int           bitsPerPixel,
-                                                   const ContextSettings& settings,
+                                                   const ContextSettings& contextSettings,
                                                    bool                   pbuffer = false);
 
 private:
@@ -158,7 +158,7 @@ private:
     /// \param bitsPerPixel Pixel depth, in bits per pixel
     ///
     ////////////////////////////////////////////////////////////
-    static void setDevicePixelFormat(const ContextSettings& settings, HDC deviceContext, unsigned int bitsPerPixel);
+    static void setDevicePixelFormat(const ContextSettings& contextSettings, HDC deviceContext, unsigned int bitsPerPixel);
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the context settings from the selected pixel format

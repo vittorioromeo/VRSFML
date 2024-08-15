@@ -50,7 +50,7 @@ public:
     [[nodiscard]] explicit GlxContext(WindowContext&         windowContext,
                                       std::uint64_t          id,
                                       GlxContext*            shared,
-                                      const ContextSettings& settings,
+                                      const ContextSettings& contextSettings,
                                       const WindowImpl&      owner,
                                       unsigned int           bitsPerPixel);
 
@@ -65,7 +65,7 @@ public:
     [[nodiscard]] explicit GlxContext(WindowContext&         windowContext,
                                       std::uint64_t          id,
                                       GlxContext*            shared,
-                                      const ContextSettings& settings,
+                                      const ContextSettings& contextSettings,
                                       Vector2u               size);
 
     ////////////////////////////////////////////////////////////
@@ -123,7 +123,7 @@ public:
     /// \return The best visual
     ///
     ////////////////////////////////////////////////////////////
-    static XVisualInfo selectBestVisual(::Display* display, unsigned int bitsPerPixel, const ContextSettings& settings);
+    static XVisualInfo selectBestVisual(::Display* display, unsigned int bitsPerPixel, const ContextSettings& contextSettings);
 
 private:
     ////////////////////////////////////////////////////////////

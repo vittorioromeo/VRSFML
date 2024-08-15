@@ -55,7 +55,7 @@ public:
     /// \param bitsPerPixel Pixel depth, in bits per pixel
     ///
     ////////////////////////////////////////////////////////////
-    SFContext(SFContext* shared, const ContextSettings& settings, const WindowImpl& owner, unsigned int bitsPerPixel);
+    SFContext(SFContext* shared, const ContextSettings& contextSettings, const WindowImpl& owner, unsigned int bitsPerPixel);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context that embeds its own rendering target
@@ -65,7 +65,7 @@ public:
     /// \param size     Back buffer width and height, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    SFContext(SFContext* shared, const ContextSettings& settings, Vector2u size);
+    SFContext(SFContext* shared, const ContextSettings& contextSettings, Vector2u size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -124,7 +124,7 @@ private:
     /// \param settings     Creation parameters
     ///
     ////////////////////////////////////////////////////////////
-    void createContext(SFContext* shared, unsigned int bitsPerPixel, const ContextSettings& settings);
+    void createContext(SFContext* shared, unsigned int bitsPerPixel, const ContextSettings& contextSettings);
 
     ////////////////////////////////////////////////////////////
     // Member data

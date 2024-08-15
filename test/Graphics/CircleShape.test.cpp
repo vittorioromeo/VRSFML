@@ -2,18 +2,17 @@
 
 #include <Doctest.hpp>
 
+#include <CommonTraits.hpp>
 #include <SystemUtil.hpp>
-
-#include <type_traits>
 
 TEST_CASE("[Graphics] sf::CircleShape")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(std::is_copy_constructible_v<sf::CircleShape>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::CircleShape>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::CircleShape>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::CircleShape>);
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::CircleShape));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::CircleShape));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::CircleShape));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::CircleShape));
     }
 
     SECTION("Default constructor")

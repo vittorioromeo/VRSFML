@@ -2,16 +2,18 @@
 
 #include <Doctest.hpp>
 
+#include <CommonTraits.hpp>
+
 #include <string_view>
 
 TEST_CASE("[System] sf::MemoryInputStream")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(std::is_copy_constructible_v<sf::MemoryInputStream>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::MemoryInputStream>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::MemoryInputStream>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::MemoryInputStream>);
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::MemoryInputStream));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::MemoryInputStream));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::MemoryInputStream));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::MemoryInputStream));
     }
 
     using namespace std::literals::string_view_literals;

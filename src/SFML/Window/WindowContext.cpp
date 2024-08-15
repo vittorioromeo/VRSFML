@@ -530,16 +530,16 @@ template <typename... GLContextArgs>
     // Only in this situation we allow the user to indirectly re-create the shared context as a core context
 
     // // Check if we need to convert our shared context into a core context
-    // if ((SharedContext::getUseCount() == 2) && (settings.attributeFlags & ContextSettings::Attribute::Core) &&
+    // if ((SharedContext::getUseCount() == 2) && (contextSettings.attributeFlags & ContextSettings::Attribute::Core) &&
     //     !(sharedGlContext.m_settings.attributeFlags & ContextSettings::Attribute::Core))
     // {
     //     // Re-create our shared context as a core context
     //     const ContextSettings sharedSettings{.depthBits = 0,
     //                                          .stencilBits = 0,
     //                                          .antialiasingLevel = 0,
-    //                                          .majorVersion = settings.majorVersion,
-    //                                          .minorVersion = settings.minorVersion,
-    //                                          .attributeFlags = settings.attributeFlags};
+    //                                          .majorVersion = contextSettings.majorVersion,
+    //                                          .minorVersion = contextSettings.minorVersion,
+    //                                          .attributeFlags = contextSettings.attributeFlags};
 
     //     sharedGlContext.emplace(nullptr, sharedSettings, Vector2u{1, 1});
     //     if (!sharedGlContext.initialize(sharedSettings))

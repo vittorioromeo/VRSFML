@@ -42,18 +42,33 @@ set(SRC_BASE
     ${BASE_INCROOT}/PassKey.hpp
     ${BASE_INCROOT}/PlacementNew.hpp
     ${BASE_INCROOT}/SizeT.hpp
+    ${BASE_INCROOT}/Traits/HasVirtualDestructor.hpp
+    ${BASE_INCROOT}/Traits/IsAggregate.hpp
     ${BASE_INCROOT}/Traits/IsBaseOf.hpp
+    ${BASE_INCROOT}/Traits/IsConstructible.hpp
     ${BASE_INCROOT}/Traits/IsConvertible.hpp
+    ${BASE_INCROOT}/Traits/IsCopyAssignable.hpp
+    ${BASE_INCROOT}/Traits/IsCopyConstructible.hpp
+    ${BASE_INCROOT}/Traits/IsDefaultConstructible.hpp
+    ${BASE_INCROOT}/Traits/IsEmpty.hpp
     ${BASE_INCROOT}/Traits/IsEnum.hpp
     ${BASE_INCROOT}/Traits/IsFloatingPoint.hpp
+    ${BASE_INCROOT}/Traits/IsMoveAssignable.hpp
+    ${BASE_INCROOT}/Traits/IsMoveConstructible.hpp
+    ${BASE_INCROOT}/Traits/IsNothrowMoveAssignable.hpp
+    ${BASE_INCROOT}/Traits/IsNothrowMoveConstructible.hpp
+    ${BASE_INCROOT}/Traits/IsNothrowSwappable.hpp
     ${BASE_INCROOT}/Traits/IsReference.hpp
+    ${BASE_INCROOT}/Traits/IsRvalueReference.hpp
     ${BASE_INCROOT}/Traits/IsSame.hpp
+    ${BASE_INCROOT}/Traits/IsStandardLayout.hpp
+    ${BASE_INCROOT}/Traits/IsTrivial.hpp
+    ${BASE_INCROOT}/Traits/IsTriviallyAssignable.hpp
     ${BASE_INCROOT}/Traits/IsTriviallyCopyable.hpp
     ${BASE_INCROOT}/Traits/IsTriviallyCopyAssignable.hpp
     ${BASE_INCROOT}/Traits/IsTriviallyCopyConstructible.hpp
     ${BASE_INCROOT}/Traits/IsTriviallyDestructible.hpp
     ${BASE_INCROOT}/Traits/IsTriviallyMoveAssignable.hpp
-    ${BASE_INCROOT}/Traits/IsTriviallyMoveConstructible.hpp
     ${BASE_INCROOT}/Traits/IsTriviallyMoveConstructible.hpp
     ${BASE_INCROOT}/Traits/RemoveCVRef.hpp
     ${BASE_INCROOT}/Traits/RemoveReference.hpp

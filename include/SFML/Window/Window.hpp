@@ -47,7 +47,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit Window(WindowContext&         windowContext,
                                   WindowHandle           handle,
-                                  const ContextSettings& settings = ContextSettings());
+                                  const ContextSettings& contextSettings = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -163,7 +163,7 @@ private:
     ////////////////////////////////////////////////////////////
     template <typename TWindowBaseArg>
     [[nodiscard]] explicit Window(WindowContext&         windowContext,
-                                  const ContextSettings& settings,
+                                  const ContextSettings& contextSettings,
                                   TWindowBaseArg&&       windowBaseArg,
                                   unsigned int           bitsPerPixel);
 

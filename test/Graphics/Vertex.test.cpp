@@ -2,19 +2,18 @@
 
 #include <Doctest.hpp>
 
+#include <CommonTraits.hpp>
 #include <GraphicsUtil.hpp>
-
-#include <type_traits>
 
 TEST_CASE("[Graphics] sf::Vertex")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(std::is_copy_constructible_v<sf::Vertex>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::Vertex>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Vertex>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Vertex>);
-        STATIC_CHECK(std::is_aggregate_v<sf::Vertex>);
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Vertex));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Vertex));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Vertex));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Vertex));
+        STATIC_CHECK(SFML_BASE_IS_AGGREGATE(sf::Vertex));
     }
 
     SECTION("Construction")

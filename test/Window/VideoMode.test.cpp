@@ -5,20 +5,20 @@
 
 #include <Doctest.hpp>
 
+#include <CommonTraits.hpp>
 #include <SystemUtil.hpp>
 #include <WindowUtil.hpp>
 
-#include <type_traits>
 #include <vector>
 
 TEST_CASE("[Window] sf::VideoMode" * doctest::skip(skipDisplayTests))
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(std::is_copy_constructible_v<sf::VideoMode>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::VideoMode>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::VideoMode>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::VideoMode>);
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::VideoMode));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::VideoMode));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::VideoMode));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::VideoMode));
     }
 
     SECTION("Construction")

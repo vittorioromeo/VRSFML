@@ -8,10 +8,9 @@
 
 #include <Doctest.hpp>
 
+#include <CommonTraits.hpp>
 #include <GraphicsUtil.hpp>
 #include <WindowUtil.hpp>
-
-#include <type_traits>
 
 TEST_CASE("[Graphics] sf::Sprite" * doctest::skip(skipDisplayTests))
 {
@@ -19,10 +18,10 @@ TEST_CASE("[Graphics] sf::Sprite" * doctest::skip(skipDisplayTests))
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(std::is_copy_constructible_v<sf::Sprite>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::Sprite>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Sprite>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Sprite>);
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Sprite));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Sprite));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Sprite));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Sprite));
     }
 
     const auto texture = sf::Texture::create(graphicsContext, {64, 64}).value();

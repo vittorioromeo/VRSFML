@@ -98,13 +98,13 @@ GlxContext(windowContext, id, shared, {}, {1, 1})
 GlxContext::GlxContext(WindowContext&         windowContext,
                        std::uint64_t          id,
                        GlxContext*            shared,
-                       const ContextSettings& settings,
+                       const ContextSettings& contextSettings,
                        const WindowImpl&      owner,
                        unsigned int /*bitsPerPixel*/) :
-GlContext(windowContext, id, settings)
+GlContext(windowContext, id, contextSettings)
 {
     // Save the creation settings
-    m_settings = settings;
+    m_settings = contextSettings;
 
     // Open the connection with the X server
     m_display = openDisplay();
@@ -124,12 +124,12 @@ GlContext(windowContext, id, settings)
 GlxContext::GlxContext(WindowContext&         windowContext,
                        std::uint64_t          id,
                        GlxContext*            shared,
-                       const ContextSettings& settings,
+                       const ContextSettings& contextSettings,
                        Vector2u               size) :
-GlContext(windowContext, id, settings)
+GlContext(windowContext, id, contextSettings)
 {
     // Save the creation settings
-    m_settings = settings;
+    m_settings = contextSettings;
 
     // Open the connection with the X server
     m_display = openDisplay();
@@ -284,7 +284,7 @@ void GlxContext::setVerticalSyncEnabled(bool enabled)
 
 
 ////////////////////////////////////////////////////////////
-XVisualInfo GlxContext::selectBestVisual(::Display* display, unsigned int bitsPerPixel, const ContextSettings& settings)
+XVisualInfo GlxContext::selectBestVisual(::Display* display, unsigned int bitsPerPixel, const ContextSettings& contextSettings)
 {
     // Make sure that extensions are initialized
     ensureExtensionsInit(display, DefaultScreen(display));
@@ -356,7 +356,7 @@ XVisualInfo GlxContext::selectBestVisual(::Display* display, unsigned int bitsPe
             // Evaluate the visual
             const int color = red + green + blue + alpha;
             const int score = GlContext::evaluateFormat(bitsPerPixel,
-                                                        settings,
+                                                        contextSettings,
                                                         color,
                                                         depth,
                                                         stencil,
@@ -384,7 +384,7 @@ XVisualInfo GlxContext::selectBestVisual(::Display* display, unsigned int bitsPe
 ////////////////////////////////////////////////////////////
 void GlxContext::updateSettingsFromVisualInfo(XVisualInfo* visualInfo)
 {
-    // Update the creation settings from the chosen format
+    // Update the creation contextSettings from the chosen format
     int depth         = 0;
     int stencil       = 0;
     int multiSampling = 0;
@@ -449,7 +449,7 @@ void GlxContext::updateSettingsFromWindow()
 ////////////////////////////////////////////////////////////
 void GlxContext::createSurface(GlxContext* shared, Vector2u size, unsigned int bitsPerPixel)
 {
-    // Choose the visual according to the context settings
+    // Choose the visual according to the context contextSettings
     XVisualInfo visualInfo = selectBestVisual(m_display.get(), bitsPerPixel, m_settings);
 
     // Check if the shared context already exists and pbuffers are supported
@@ -546,8 +546,8 @@ void GlxContext::createSurface(::Window window)
 ////////////////////////////////////////////////////////////
 void GlxContext::createContext(GlxContext* shared)
 {
-    // Get a working copy of the context settings
-    const ContextSettings settings = m_settings;
+    // Get a working copy of the context contextSettings
+    const ContextSettings contextSettings = m_settings;
 
     X11Ptr<XVisualInfo> visualInfo;
 
@@ -705,7 +705,7 @@ void GlxContext::createContext(GlxContext* shared)
                     // If the minor version is not 0, we decrease it and try again
                     --m_settings.minorVersion;
 
-                    m_settings.attributeFlags = settings.attributeFlags;
+                    m_settings.attributeFlags = contextSettings.attributeFlags;
                 }
                 else
                 {
@@ -713,7 +713,7 @@ void GlxContext::createContext(GlxContext* shared)
                     --m_settings.majorVersion;
                     m_settings.minorVersion = 9;
 
-                    m_settings.attributeFlags = settings.attributeFlags;
+                    m_settings.attributeFlags = contextSettings.attributeFlags;
                 }
             }
         }

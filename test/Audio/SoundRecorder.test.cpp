@@ -1,9 +1,9 @@
 #include <SFML/Audio/SoundRecorder.hpp>
 
-#include <type_traits>
+#include <CommonTraits.hpp>
 
-static_assert(!std::is_constructible_v<sf::SoundRecorder>);
-static_assert(!std::is_copy_constructible_v<sf::SoundRecorder>);
-static_assert(!std::is_copy_assignable_v<sf::SoundRecorder>);
-static_assert(!std::is_nothrow_move_constructible_v<sf::SoundRecorder>);
-static_assert(!std::is_nothrow_move_assignable_v<sf::SoundRecorder>);
+static_assert(!SFML_BASE_IS_CONSTRUCTIBLE(sf::SoundRecorder));
+static_assert(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::SoundRecorder));
+static_assert(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::SoundRecorder));
+static_assert(!SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::SoundRecorder));
+static_assert(!SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::SoundRecorder));

@@ -4,10 +4,9 @@
 
 #include <Doctest.hpp>
 
+#include <CommonTraits.hpp>
 #include <GraphicsUtil.hpp>
 #include <SystemUtil.hpp>
-
-#include <type_traits>
 
 class RenderTarget : public sf::RenderTarget
 {
@@ -29,11 +28,11 @@ TEST_CASE("[Graphics] sf::RenderTarget")
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!std::is_constructible_v<sf::RenderTarget>);
-        STATIC_CHECK(!std::is_copy_constructible_v<sf::RenderTarget>);
-        STATIC_CHECK(!std::is_copy_assignable_v<sf::RenderTarget>);
-        STATIC_CHECK(!std::is_nothrow_move_constructible_v<sf::RenderTarget>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::RenderTarget>);
+        STATIC_CHECK(!SFML_BASE_IS_CONSTRUCTIBLE(sf::RenderTarget));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::RenderTarget));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::RenderTarget));
+        STATIC_CHECK(!SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::RenderTarget));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::RenderTarget));
     }
 
     SECTION("Construction")

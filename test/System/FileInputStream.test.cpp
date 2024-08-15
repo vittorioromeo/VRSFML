@@ -6,13 +6,13 @@
 
 #include <Doctest.hpp>
 
+#include <CommonTraits.hpp>
 #include <StringifyOptionalUtil.hpp>
 
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <string_view>
-#include <type_traits>
 
 namespace
 {
@@ -68,11 +68,11 @@ TEST_CASE("[System] sf::FileInputStream")
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!std::is_default_constructible_v<sf::FileInputStream>);
-        STATIC_CHECK(!std::is_copy_constructible_v<sf::FileInputStream>);
-        STATIC_CHECK(!std::is_copy_assignable_v<sf::FileInputStream>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::FileInputStream>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::FileInputStream>);
+        STATIC_CHECK(!SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::FileInputStream));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::FileInputStream));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::FileInputStream));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::FileInputStream));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::FileInputStream));
     }
 
     const TemporaryFile temporaryFile("Hello world");

@@ -703,7 +703,7 @@ void RenderTarget::resetGLStates()
         // Make sure that the texture unit which is active is the number 0
         if (GLEXT_multitexture)
         {
-            glCheck(GLEXT_glClientActiveTexture(GLEXT_GL_TEXTURE0));
+            // glCheck(GLEXT_glClientActiveTexture(GLEXT_GL_TEXTURE0));
             glCheck(GLEXT_glActiveTexture(GLEXT_GL_TEXTURE0));
         }
 

@@ -52,7 +52,7 @@ public:
     /// \param bitsPerPixel Pixel depth, in bits per pixel
     ///
     ////////////////////////////////////////////////////////////
-    DRMContext(DRMContext* shared, const ContextSettings& settings, const WindowImpl& owner, unsigned int bitsPerPixel);
+    DRMContext(DRMContext* shared, const ContextSettings& contextSettings, const WindowImpl& owner, unsigned int bitsPerPixel);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context that embeds its own rendering target
@@ -62,7 +62,7 @@ public:
     /// \param size     Back buffer width and height, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    DRMContext(DRMContext* shared, const ContextSettings& settings, Vector2u size);
+    DRMContext(DRMContext* shared, const ContextSettings& contextSettings, Vector2u size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -139,7 +139,7 @@ public:
     /// \return The best EGL config
     ///
     ////////////////////////////////////////////////////////////
-    static EGLConfig getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const ContextSettings& settings);
+    static EGLConfig getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const ContextSettings& contextSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the address of an OpenGL function

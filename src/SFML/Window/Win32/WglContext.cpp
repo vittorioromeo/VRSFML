@@ -98,9 +98,9 @@ namespace sf::priv
 WglContext::WglContext(WindowContext&     windowContext,
                        std::uint64_t      id,
                        WglContext*        shared,
-                       ContextSettings&   settings,
+                       ContextSettings&   contextSettings,
                        const SurfaceData& surfaceData) :
-GlContext(windowContext, id, settings),
+GlContext(windowContext, id, contextSettings),
 m_surfaceData(surfaceData),
 m_context(createContext(m_settings, m_surfaceData, shared))
 {
@@ -108,9 +108,9 @@ m_context(createContext(m_settings, m_surfaceData, shared))
 
     if (shared == nullptr && m_context)
     {
-        makeCurrent(true);
+        (void)makeCurrent(true);
         WglContextImpl::ensureWGLExtensionsInit(*this, m_surfaceData.deviceContext);
-        makeCurrent(false);
+        (void)makeCurrent(false);
     }
 }
 
@@ -119,17 +119,25 @@ m_context(createContext(m_settings, m_surfaceData, shared))
 WglContext::WglContext(WindowContext&    windowContext,
                        std::uint64_t     id,
                        WglContext*       shared,
-                       ContextSettings   settings,
+                       ContextSettings   contextSettings,
                        const WindowImpl& owner,
                        unsigned int      bitsPerPixel) :
-WglContext(windowContext, id, shared, settings, createSurface(settings, owner.getNativeHandle(), bitsPerPixel))
+WglContext(windowContext, id, shared, contextSettings, createSurface(contextSettings, owner.getNativeHandle(), bitsPerPixel))
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-WglContext::WglContext(WindowContext& windowContext, std::uint64_t id, WglContext* shared, ContextSettings settings, Vector2u size) :
-WglContext(windowContext, id, shared, settings, createSurface(settings, shared, size, VideoModeUtils::getDesktopMode().bitsPerPixel))
+WglContext::WglContext(WindowContext&  windowContext,
+                       std::uint64_t   id,
+                       WglContext*     shared,
+                       ContextSettings contextSettings,
+                       Vector2u        size) :
+WglContext(windowContext,
+           id,
+           shared,
+           contextSettings,
+           createSurface(contextSettings, shared, size, VideoModeUtils::getDesktopMode().bitsPerPixel))
 {
 }
 
@@ -256,7 +264,7 @@ void WglContext::setVerticalSyncEnabled(bool enabled)
 
 
 ////////////////////////////////////////////////////////////
-int WglContext::selectBestPixelFormat(HDC deviceContext, unsigned int bitsPerPixel, const ContextSettings& settings, bool pbuffer)
+int WglContext::selectBestPixelFormat(HDC deviceContext, unsigned int bitsPerPixel, const ContextSettings& contextSettings, bool pbuffer)
 {
     // Selecting a pixel format can be an expensive process on some implementations
     // Since the same pixel format should always be selected for a specific combination of inputs
@@ -281,9 +289,9 @@ int WglContext::selectBestPixelFormat(HDC deviceContext, unsigned int bitsPerPix
 
         for (const auto& entry : pixelFormatCache)
         {
-            if (bitsPerPixel == entry.bitsPerPixel && settings.depthBits == entry.depthBits &&
-                settings.stencilBits == entry.stencilBits && settings.antialiasingLevel == entry.antialiasingLevel &&
-                pbuffer == entry.pbuffer)
+            if (bitsPerPixel == entry.bitsPerPixel && contextSettings.depthBits == entry.depthBits &&
+                contextSettings.stencilBits == entry.stencilBits &&
+                contextSettings.antialiasingLevel == entry.antialiasingLevel && pbuffer == entry.pbuffer)
                 return entry.bestFormat;
         }
     }
@@ -384,7 +392,7 @@ int WglContext::selectBestPixelFormat(HDC deviceContext, unsigned int bitsPerPix
                 // Evaluate the current configuration
                 const int color = values[0] + values[1] + values[2] + values[3];
                 const int score = GlContext::evaluateFormat(bitsPerPixel,
-                                                            settings,
+                                                            contextSettings,
                                                             color,
                                                             values[4],
                                                             values[5],
@@ -415,8 +423,8 @@ int WglContext::selectBestPixelFormat(HDC deviceContext, unsigned int bitsPerPix
         descriptor.dwFlags      = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
         descriptor.iPixelType   = PFD_TYPE_RGBA;
         descriptor.cColorBits   = static_cast<BYTE>(bitsPerPixel);
-        descriptor.cDepthBits   = static_cast<BYTE>(settings.depthBits);
-        descriptor.cStencilBits = static_cast<BYTE>(settings.stencilBits);
+        descriptor.cDepthBits   = static_cast<BYTE>(contextSettings.depthBits);
+        descriptor.cStencilBits = static_cast<BYTE>(contextSettings.stencilBits);
         descriptor.cAlphaBits   = bitsPerPixel == 32 ? 8 : 0;
 
         // Get the pixel format that best matches our requirements
@@ -427,8 +435,12 @@ int WglContext::selectBestPixelFormat(HDC deviceContext, unsigned int bitsPerPix
     {
         const std::lock_guard lock(cacheMutex);
 
-        pixelFormatCache
-            .emplace_back(bitsPerPixel, settings.depthBits, settings.stencilBits, settings.antialiasingLevel, pbuffer, bestFormat);
+        pixelFormatCache.emplace_back(bitsPerPixel,
+                                      contextSettings.depthBits,
+                                      contextSettings.stencilBits,
+                                      contextSettings.antialiasingLevel,
+                                      pbuffer,
+                                      bestFormat);
     }
 
     return bestFormat;
@@ -436,9 +448,9 @@ int WglContext::selectBestPixelFormat(HDC deviceContext, unsigned int bitsPerPix
 
 
 ////////////////////////////////////////////////////////////
-void WglContext::setDevicePixelFormat(const ContextSettings& settings, HDC deviceContext, unsigned int bitsPerPixel)
+void WglContext::setDevicePixelFormat(const ContextSettings& contextSettings, HDC deviceContext, unsigned int bitsPerPixel)
 {
-    const int bestFormat = selectBestPixelFormat(deviceContext, bitsPerPixel, settings);
+    const int bestFormat = selectBestPixelFormat(deviceContext, bitsPerPixel, contextSettings);
 
     if (bestFormat == 0)
     {
@@ -466,7 +478,7 @@ void WglContext::setDevicePixelFormat(const ContextSettings& settings, HDC devic
 
 
 ////////////////////////////////////////////////////////////
-void WglContext::updateSettingsFromPixelFormat(ContextSettings& settings, HDC deviceContext)
+void WglContext::updateSettingsFromPixelFormat(ContextSettings& contextSettings, HDC deviceContext)
 {
     const int format = GetPixelFormat(deviceContext);
 
@@ -501,9 +513,9 @@ void WglContext::updateSettingsFromPixelFormat(ContextSettings& settings, HDC de
 
     if (!GLAD_WGL_ARB_pixel_format)
     {
-        settings.depthBits         = actualFormat.cDepthBits;
-        settings.stencilBits       = actualFormat.cStencilBits;
-        settings.antialiasingLevel = 0;
+        contextSettings.depthBits         = actualFormat.cDepthBits;
+        contextSettings.stencilBits       = actualFormat.cStencilBits;
+        contextSettings.antialiasingLevel = 0;
 
         return;
     }
@@ -513,15 +525,15 @@ void WglContext::updateSettingsFromPixelFormat(ContextSettings& settings, HDC de
 
     if (wglGetPixelFormatAttribivARB(deviceContext, format, PFD_MAIN_PLANE, 2, attributes, values) == TRUE)
     {
-        settings.depthBits   = static_cast<unsigned int>(values[0]);
-        settings.stencilBits = static_cast<unsigned int>(values[1]);
+        contextSettings.depthBits   = static_cast<unsigned int>(values[0]);
+        contextSettings.stencilBits = static_cast<unsigned int>(values[1]);
     }
     else
     {
         err() << "Failed to retrieve pixel format information: " << getErrorString(GetLastError());
 
-        settings.depthBits   = actualFormat.cDepthBits;
-        settings.stencilBits = actualFormat.cStencilBits;
+        contextSettings.depthBits   = actualFormat.cDepthBits;
+        contextSettings.stencilBits = actualFormat.cStencilBits;
     }
 
     if (GLAD_WGL_ARB_multisample)
@@ -531,18 +543,18 @@ void WglContext::updateSettingsFromPixelFormat(ContextSettings& settings, HDC de
 
         if (wglGetPixelFormatAttribivARB(deviceContext, format, PFD_MAIN_PLANE, 2, sampleAttributes, sampleValues) == TRUE)
         {
-            settings.antialiasingLevel = static_cast<unsigned int>(sampleValues[0] ? sampleValues[1] : 0);
+            contextSettings.antialiasingLevel = static_cast<unsigned int>(sampleValues[0] ? sampleValues[1] : 0);
         }
         else
         {
             err() << "Failed to retrieve pixel format multisampling information: " << getErrorString(GetLastError());
 
-            settings.antialiasingLevel = 0;
+            contextSettings.antialiasingLevel = 0;
         }
     }
     else
     {
-        settings.antialiasingLevel = 0;
+        contextSettings.antialiasingLevel = 0;
     }
 
     if (GLAD_WGL_ARB_framebuffer_sRGB || GLAD_WGL_EXT_framebuffer_sRGB)
@@ -553,24 +565,27 @@ void WglContext::updateSettingsFromPixelFormat(ContextSettings& settings, HDC de
         if (wglGetPixelFormatAttribivARB(deviceContext, format, PFD_MAIN_PLANE, 1, &sRgbCapableAttribute, &sRgbCapableValue) ==
             TRUE)
         {
-            settings.sRgbCapable = (sRgbCapableValue == TRUE);
+            contextSettings.sRgbCapable = (sRgbCapableValue == TRUE);
         }
         else
         {
             err() << "Failed to retrieve pixel format sRGB capability information: " << getErrorString(GetLastError());
 
-            settings.sRgbCapable = false;
+            contextSettings.sRgbCapable = false;
         }
     }
     else
     {
-        settings.sRgbCapable = false;
+        contextSettings.sRgbCapable = false;
     }
 }
 
 
 ////////////////////////////////////////////////////////////
-WglContext::SurfaceData WglContext::createSurface(ContextSettings& settings, WglContext* shared, Vector2u size, unsigned int bitsPerPixel)
+WglContext::SurfaceData WglContext::createSurface(ContextSettings& contextSettings,
+                                                  WglContext*      shared,
+                                                  Vector2u         size,
+                                                  unsigned int     bitsPerPixel)
 {
     // If pbuffers are not available we use a hidden window as the off-screen surface to draw to
     const auto createHiddenWindow = [](ContextSettings& xSettings, const Vector2u& xSize, unsigned int xBitsPerPixel) -> SurfaceData
@@ -607,12 +622,12 @@ WglContext::SurfaceData WglContext::createSurface(ContextSettings& settings, Wgl
 
     // Check if the shared context already exists and pbuffers are supported
     if (!shared || !shared->m_surfaceData.deviceContext || !GLAD_WGL_ARB_pbuffer)
-        return createHiddenWindow(settings, size, bitsPerPixel);
+        return createHiddenWindow(contextSettings, size, bitsPerPixel);
 
-    const int bestFormat = selectBestPixelFormat(shared->m_surfaceData.deviceContext, bitsPerPixel, settings, true);
+    const int bestFormat = selectBestPixelFormat(shared->m_surfaceData.deviceContext, bitsPerPixel, contextSettings, true);
 
     if (bestFormat <= 0)
-        return createHiddenWindow(settings, size, bitsPerPixel);
+        return createHiddenWindow(contextSettings, size, bitsPerPixel);
 
     const int attributes[] = {0, 0};
 
@@ -625,7 +640,7 @@ WglContext::SurfaceData WglContext::createSurface(ContextSettings& settings, Wgl
     if (!pbuffer)
     {
         err() << "Failed to create pixel buffer: " << getErrorString(GetLastError());
-        return createHiddenWindow(settings, size, bitsPerPixel);
+        return createHiddenWindow(contextSettings, size, bitsPerPixel);
     }
 
     const HDC deviceContextHandle = wglGetPbufferDCARB(pbuffer);
@@ -635,11 +650,11 @@ WglContext::SurfaceData WglContext::createSurface(ContextSettings& settings, Wgl
         err() << "Failed to retrieve pixel buffer device context: " << getErrorString(GetLastError());
 
         wglDestroyPbufferARB(pbuffer);
-        return createHiddenWindow(settings, size, bitsPerPixel);
+        return createHiddenWindow(contextSettings, size, bitsPerPixel);
     }
 
     // Update context settings from the selected pixel format
-    updateSettingsFromPixelFormat(settings, deviceContextHandle);
+    updateSettingsFromPixelFormat(contextSettings, deviceContextHandle);
 
     return SurfaceData{.window        = shared->m_surfaceData.window,
                        .pbuffer       = pbuffer,
@@ -649,22 +664,22 @@ WglContext::SurfaceData WglContext::createSurface(ContextSettings& settings, Wgl
 
 
 ////////////////////////////////////////////////////////////
-WglContext::SurfaceData WglContext::createSurface(ContextSettings& settings, HWND window, unsigned int bitsPerPixel)
+WglContext::SurfaceData WglContext::createSurface(ContextSettings& contextSettings, HWND window, unsigned int bitsPerPixel)
 {
     const HDC deviceContextHandle = GetDC(window);
 
     // Set the pixel format of the device context
-    setDevicePixelFormat(settings, deviceContextHandle, bitsPerPixel);
+    setDevicePixelFormat(contextSettings, deviceContextHandle, bitsPerPixel);
 
     // Update context settings from the selected pixel format
-    updateSettingsFromPixelFormat(settings, deviceContextHandle);
+    updateSettingsFromPixelFormat(contextSettings, deviceContextHandle);
 
     return SurfaceData{.window = window, .pbuffer = {}, .deviceContext = deviceContextHandle, .ownsWindow = false};
 }
 
 
 ////////////////////////////////////////////////////////////
-HGLRC WglContext::createContext(ContextSettings& settings, const SurfaceData& surfaceData, WglContext* shared)
+HGLRC WglContext::createContext(ContextSettings& contextSettings, const SurfaceData& surfaceData, WglContext* shared)
 {
     const auto createContextViaAttributes =
         [](ContextSettings&           xSettings,
@@ -778,20 +793,20 @@ HGLRC WglContext::createContext(ContextSettings& settings, const SurfaceData& su
     HGLRC sharedContext = shared ? shared->m_context : nullptr;
 
     // Get a working copy of the context settings attribute flags
-    const ContextSettings::Attribute originalAttributeFlags = settings.attributeFlags;
+    const ContextSettings::Attribute originalAttributeFlags = contextSettings.attributeFlags;
 
     if (GLAD_WGL_ARB_create_context)
     {
-        HGLRC resultViaAttributes = createContextViaAttributes(settings, surfaceData, shared, sharedContext, originalAttributeFlags);
+        HGLRC resultViaAttributes = createContextViaAttributes(contextSettings, surfaceData, shared, sharedContext, originalAttributeFlags);
 
         if (resultViaAttributes)
             return resultViaAttributes;
     }
 
     // set the context version to 1.1 (arbitrary) and disable flags
-    settings.majorVersion   = 1;
-    settings.minorVersion   = 1;
-    settings.attributeFlags = ContextSettings::Attribute::Default;
+    contextSettings.majorVersion   = 1;
+    contextSettings.minorVersion   = 1;
+    contextSettings.attributeFlags = ContextSettings::Attribute::Default;
 
     // If wglCreateContextAttribsARB failed or unavailable, use wglCreateContext
     HGLRC result = wglCreateContext(surfaceData.deviceContext);

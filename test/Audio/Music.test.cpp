@@ -11,10 +11,9 @@
 #include <Doctest.hpp>
 
 #include <AudioUtil.hpp>
+#include <CommonTraits.hpp>
 #include <LoadIntoMemoryUtil.hpp>
 #include <SystemUtil.hpp>
-
-#include <type_traits>
 
 
 TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
@@ -24,17 +23,17 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!std::is_copy_constructible_v<sf::Music>);
-        STATIC_CHECK(!std::is_copy_assignable_v<sf::Music>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Music>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Music>);
-        STATIC_CHECK(std::has_virtual_destructor_v<sf::Music>);
+        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Music));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::Music));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Music));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Music));
+        STATIC_CHECK(SFML_BASE_HAS_VIRTUAL_DESTRUCTOR(sf::Music));
 
-        STATIC_CHECK(!std::is_copy_constructible_v<sf::Music>);
-        STATIC_CHECK(!std::is_copy_assignable_v<sf::Music>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Music>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Music>);
-        STATIC_CHECK(std::has_virtual_destructor_v<sf::Music>);
+        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Music));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::Music));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Music));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Music));
+        STATIC_CHECK(SFML_BASE_HAS_VIRTUAL_DESTRUCTOR(sf::Music));
     }
 
     SECTION("Span")

@@ -45,8 +45,8 @@ RenderTarget(graphicsContext)
 
 
 ////////////////////////////////////////////////////////////
-RenderWindow::RenderWindow(GraphicsContext& graphicsContext, WindowHandle handle, const ContextSettings& settings) :
-Window(graphicsContext, handle, settings),
+RenderWindow::RenderWindow(GraphicsContext& graphicsContext, WindowHandle handle, const ContextSettings& contextSettings) :
+Window(graphicsContext, handle, contextSettings),
 RenderTarget(graphicsContext)
 {
     retrieveWindowFrameBufferId(getGraphicsContext(), m_defaultFrameBuffer);

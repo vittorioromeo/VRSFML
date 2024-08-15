@@ -5,16 +5,16 @@
 
 #include <Doctest.hpp>
 
-#include <type_traits>
+#include <CommonTraits.hpp>
 
 TEST_CASE("[Network] sf::TcpListener")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(!std::is_copy_constructible_v<sf::TcpListener>);
-        STATIC_CHECK(!std::is_copy_assignable_v<sf::TcpListener>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::TcpListener>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::TcpListener>);
+        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::TcpListener));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::TcpListener));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::TcpListener));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::TcpListener));
     }
 
     SECTION("Construction")

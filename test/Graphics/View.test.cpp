@@ -2,18 +2,17 @@
 
 #include <Doctest.hpp>
 
+#include <CommonTraits.hpp>
 #include <GraphicsUtil.hpp>
-
-#include <type_traits>
 
 TEST_CASE("[Graphics] sf::View")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(std::is_copy_constructible_v<sf::View>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::View>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::View>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::View>);
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::View));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::View));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::View));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::View));
     }
 
     SECTION("Construction")
