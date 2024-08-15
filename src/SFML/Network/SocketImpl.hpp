@@ -68,7 +68,7 @@ namespace sf::priv
 #if defined(SFML_SYSTEM_WINDOWS)
 using AddrLength    = int;
 using NetworkLong   = unsigned long;
-using NetworkLong   = unsigned short;
+using NetworkShort  = unsigned short;
 using NetworkSSizeT = int;
 #else
 using AddrLength    = socklen_t;
