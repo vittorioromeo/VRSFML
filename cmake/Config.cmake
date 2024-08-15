@@ -130,7 +130,7 @@ elseif(${EMSCRIPTEN})
         -sFETCH=1                           # Enables `emscripten_fetch` API
         -sFORCE_FILESYSTEM=1                # Makes full filesystem support be included
         -sFULL_ES3=1                        # Forces support for all GLES3 features, not just the WebGL2-friendly subset
-        -sJSPI=1                            # TODO P0:
+        -sJSPI=1                            # TODO P0: not supported on most browsers yet
         -sMAX_WEBGL_VERSION=2               # Specifies the highest WebGL version to target
         -sMIN_WEBGL_VERSION=2               # Specifies the lowest WebGL version to target
         -sSTACK_SIZE=4mb                    # Set the total stack size

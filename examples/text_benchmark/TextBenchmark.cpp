@@ -212,7 +212,7 @@ int main()
                              .title = "Window",
                              .style = sf::Style::Default,
                              .state = sf::State::Windowed,
-                             .contextSettings(0, 0, 4)});
+                             .contextSettings{.depthBits = 0, .stencilBits = 0, .antialiasingLevel = 4}});
 
     window.setVerticalSyncEnabled(true);
 

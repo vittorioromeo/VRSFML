@@ -40,18 +40,18 @@ bool                 glxErrorOccurred = false;
 void ensureExtensionsInit(::Display* display, int screen)
 {
     static bool initialized = false;
-    if (!initialized)
-    {
-        initialized = true;
+    if (initialized)
+        return;
 
-        // We don't check the return value since the extension
-        // flags are cleared even if loading fails
-        gladLoaderLoadGLX(display, screen);
+    initialized = true;
 
-        auto f = [](const char* name) { return glXGetProcAddress(reinterpret_cast<const GLubyte*>(name)); };
-        gladLoadGLX(display, screen, f);
-        // gladLoadGLX(display, screen, sf::priv::GlxContext::getFunction); // TODO P0:
-    }
+    // We don't check the return value since the extension
+    // flags are cleared even if loading fails
+    gladLoaderLoadGLX(display, screen);
+
+    auto f = [](const char* name) { return glXGetProcAddress(reinterpret_cast<const GLubyte*>(name)); };
+    gladLoadGLX(display, screen, f);
+    // gladLoadGLX(display, screen, sf::priv::GlxContext::getFunction); // TODO P0:
 }
 
 
