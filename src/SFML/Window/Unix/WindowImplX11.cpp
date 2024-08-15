@@ -350,8 +350,8 @@ bool isWMAbsolutePositionGood()
         return false;
 
     return sf::base::anyOf(std::begin(wmAbsPosGood),
-                       std::end(wmAbsPosGood),
-                       [&](const sf::String& name) { return name == windowManagerName; });
+                           std::end(wmAbsPosGood),
+                           [&](const sf::String& name) { return name == windowManagerName; });
 }
 
 // Initialize raw mouse input
@@ -1746,7 +1746,8 @@ bool WindowImplX11::processEvent(XEvent& windowEvent)
             // ConfigureNotify can be triggered for other reasons, check if the size has actually changed
             if ((windowEvent.xconfigure.width != m_previousSize.x) || (windowEvent.xconfigure.height != m_previousSize.y))
             {
-                pushEvent(Event::Resized{Vector2{windowEvent.xconfigure.width, windowEvent.xconfigure.height}.to<Vector2u>()});
+                pushEvent(
+                    Event::Resized{Vector2{windowEvent.xconfigure.width, windowEvent.xconfigure.height}.to<Vector2u>()});
 
                 m_previousSize.x = windowEvent.xconfigure.width;
                 m_previousSize.y = windowEvent.xconfigure.height;

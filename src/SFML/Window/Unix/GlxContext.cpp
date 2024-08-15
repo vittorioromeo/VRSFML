@@ -48,8 +48,8 @@ void ensureExtensionsInit(::Display* display, int screen)
         // flags are cleared even if loading fails
         gladLoaderLoadGLX(display, screen);
 
-    auto f = [](const char* name){ return glXGetProcAddress(reinterpret_cast<const GLubyte*>(name)); };
-    gladLoadGLX(display, screen, f);
+        auto f = [](const char* name) { return glXGetProcAddress(reinterpret_cast<const GLubyte*>(name)); };
+        gladLoadGLX(display, screen, f);
         // gladLoadGLX(display, screen, sf::priv::GlxContext::getFunction); // TODO P0:
     }
 }
@@ -88,13 +88,20 @@ private:
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-GlxContext::GlxContext(WindowContext& windowContext, std::uint64_t id, GlxContext* shared) : GlxContext(windowContext, id, shared, {}, {1, 1})
+GlxContext::GlxContext(WindowContext& windowContext, std::uint64_t id, GlxContext* shared) :
+GlxContext(windowContext, id, shared, {}, {1, 1})
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-GlxContext::GlxContext(WindowContext& windowContext, std::uint64_t id, GlxContext* shared, const ContextSettings& settings, const WindowImpl& owner, unsigned int /*bitsPerPixel*/) : GlContext(windowContext, id, settings)
+GlxContext::GlxContext(WindowContext&         windowContext,
+                       std::uint64_t          id,
+                       GlxContext*            shared,
+                       const ContextSettings& settings,
+                       const WindowImpl&      owner,
+                       unsigned int /*bitsPerPixel*/) :
+GlContext(windowContext, id, settings)
 {
     // Save the creation settings
     m_settings = settings;
@@ -114,7 +121,12 @@ GlxContext::GlxContext(WindowContext& windowContext, std::uint64_t id, GlxContex
 
 
 ////////////////////////////////////////////////////////////
-GlxContext::GlxContext(WindowContext& windowContext, std::uint64_t id, GlxContext* shared, const ContextSettings& settings, Vector2u size) : GlContext(windowContext, id, settings)
+GlxContext::GlxContext(WindowContext&         windowContext,
+                       std::uint64_t          id,
+                       GlxContext*            shared,
+                       const ContextSettings& settings,
+                       Vector2u               size) :
+GlContext(windowContext, id, settings)
 {
     // Save the creation settings
     m_settings = settings;

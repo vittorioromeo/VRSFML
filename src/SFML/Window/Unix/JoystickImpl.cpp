@@ -375,7 +375,7 @@ std::string getJoystickName(unsigned int index)
     if (fd >= 0)
     {
         // Get the name
-        char name[128]{};
+        char      name[128]{};
         const int result = ioctl(fd, JSIOCGNAME(128), name);
 
         ::close(fd);

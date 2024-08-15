@@ -13,7 +13,7 @@
 #include <memory>
 
 
-namespace sf 
+namespace sf
 {
 class WindowContext;
 }
@@ -36,7 +36,7 @@ public:
     /// \param shared Context to share the new one with (can be a null pointer)
     ///
     ////////////////////////////////////////////////////////////
-  [[nodiscard]] explicit   GlxContext(WindowContext& windowContext, std::uint64_t id, GlxContext* shared);
+    [[nodiscard]] explicit GlxContext(WindowContext& windowContext, std::uint64_t id, GlxContext* shared);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context attached to a window
@@ -47,7 +47,12 @@ public:
     /// \param bitsPerPixel Pixel depth, in bits per pixel
     ///
     ////////////////////////////////////////////////////////////
-   [[nodiscard]] explicit  GlxContext(WindowContext& windowContext, std::uint64_t id, GlxContext* shared, const ContextSettings& settings, const WindowImpl& owner, unsigned int bitsPerPixel);
+    [[nodiscard]] explicit GlxContext(WindowContext&         windowContext,
+                                      std::uint64_t          id,
+                                      GlxContext*            shared,
+                                      const ContextSettings& settings,
+                                      const WindowImpl&      owner,
+                                      unsigned int           bitsPerPixel);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context that embeds its own rendering target
@@ -57,7 +62,11 @@ public:
     /// \param size     Back buffer width and height, in pixels
     ///
     ////////////////////////////////////////////////////////////
-  [[nodiscard]] explicit   GlxContext(WindowContext& windowContext, std::uint64_t id, GlxContext* shared, const ContextSettings& settings, Vector2u size);
+    [[nodiscard]] explicit GlxContext(WindowContext&         windowContext,
+                                      std::uint64_t          id,
+                                      GlxContext*            shared,
+                                      const ContextSettings& settings,
+                                      Vector2u               size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -73,7 +82,7 @@ public:
     /// \return Address of the OpenGL function, 0 on failure
     ///
     ////////////////////////////////////////////////////////////
-   [[nodiscard]]  GlFunctionPointer getFunction(const char* name) const;
+    [[nodiscard]] GlFunctionPointer getFunction(const char* name) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Activate the context as the current target for rendering
@@ -83,7 +92,7 @@ public:
     /// \return True on success, false if any error happened
     ///
     ////////////////////////////////////////////////////////////
-   [[nodiscard]]  bool makeCurrent(bool current) override;
+    [[nodiscard]] bool makeCurrent(bool current) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Display what has been rendered to the context so far
