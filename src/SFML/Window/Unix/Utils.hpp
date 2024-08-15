@@ -47,5 +47,5 @@ struct XDeleter
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-using X11Ptr = UniquePtr<RemoveArrayExtents<T>, XDeleter<RemoveArrayExtents<T>>>;
+using X11Ptr = base::UniquePtr<RemoveArrayExtents<T>, XDeleter<RemoveArrayExtents<T>>>;
 } // namespace sf::priv

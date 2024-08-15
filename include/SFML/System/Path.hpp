@@ -17,7 +17,7 @@ namespace sf
 class [[nodiscard]] Path
 {
 public:
-#ifdef SFML_SYSTEM_EMSCRIPTEN
+#if defined(SFML_SYSTEM_EMSCRIPTEN) || defined(SFML_SYSTEM_LINUX_OR_BSD)
     using value_type = char;
 #else
     using value_type = wchar_t;

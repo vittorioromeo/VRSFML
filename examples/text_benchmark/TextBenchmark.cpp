@@ -64,7 +64,7 @@ int main()
             imGuiContext.processEvent(window, *event);
 
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                return EXIT_SUCCESS;
+                return 0;
         }
 
         // Update

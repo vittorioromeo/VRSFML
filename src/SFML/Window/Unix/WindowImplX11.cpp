@@ -10,6 +10,7 @@
 #include <SFML/Window/Unix/KeyboardImpl.hpp>
 #include <SFML/Window/Unix/Utils.hpp>
 #include <SFML/Window/Unix/WindowImplX11.hpp>
+#include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/VideoModeUtils.hpp>
 #include <SFML/Window/WindowSettings.hpp>
 
@@ -102,7 +103,7 @@ Bool checkEvent(::Display*, XEvent* event, XPointer userData)
 }
 
 // Find the name of the current executable
-Path findExecutableName()
+sf::Path findExecutableName()
 {
     // We use /proc/self/cmdline to get the command line
     // the user used to invoke this instance of the application
@@ -128,7 +129,7 @@ Path findExecutableName()
         buffer[offset] = 0;
 
         // Remove the path to keep the executable name only
-        return basename(buffer.data());
+        return static_cast<const char*>(basename(buffer.data()));
     }
 
     // Default fallback name
@@ -348,7 +349,7 @@ bool isWMAbsolutePositionGood()
     if (!ewmhSupported())
         return false;
 
-    return base::anyOf(std::begin(wmAbsPosGood),
+    return sf::base::anyOf(std::begin(wmAbsPosGood),
                        std::end(wmAbsPosGood),
                        [&](const sf::String& name) { return name == windowManagerName; });
 }
@@ -498,8 +499,8 @@ m_cursorGrabbed(m_fullscreen)
     Visual* visual = nullptr;
     int     depth  = 0;
 
-    // Check if the user chose to not create an OpenGL context (windowSettings.contextSettings.attributeFlags will be 0xFFFFFFFF)
-    if (windowSettings.contextSettings.attributeFlags == 0xFFFFFFFF)
+    // Check if the user chose to not create an OpenGL context (windowSettings.contextSettings.attributeFlags will be 0xFFFFFFFF) // TODO: P0?
+    if (windowSettings.contextSettings.attributeFlags == ContextSettings::Attribute{0xFFFFFFFF})
     {
         // Choose default visual since the user is going to use their own rendering API
         visual = DefaultVisual(m_display.get(), m_screen);
@@ -646,7 +647,7 @@ m_cursorGrabbed(m_fullscreen)
     // The class name identifies a class of windows that
     // "are of the same type". We simply use the initial window name as
     // the class name.
-    std::string       ansiTitle = title.toAnsiString();
+    std::string       ansiTitle = windowSettings.title.toAnsiString();
     std::vector<char> windowClass(ansiTitle.size() + 1, 0);
     base::copy(ansiTitle.begin(), ansiTitle.end(), windowClass.begin());
     hint.res_class = windowClass.data();
@@ -654,7 +655,7 @@ m_cursorGrabbed(m_fullscreen)
     XSetClassHint(m_display.get(), m_window, &hint);
 
     // Set the window's name
-    setTitle(title);
+    setTitle(windowSettings.title);
 
     // Do some common initializations
     initialize();
@@ -670,7 +671,7 @@ m_cursorGrabbed(m_fullscreen)
         sizeHints.flags &= ~(PMinSize | PMaxSize);
         XSetWMNormalHints(m_display.get(), m_window, &sizeHints);
 
-        setVideoMode(mode);
+        setVideoMode(VideoMode{windowSettings.size, windowSettings.bitsPerPixel});
         switchToFullscreen();
     }
 }
@@ -930,7 +931,7 @@ void WindowImplX11::setTitle(const String& title)
                     useUtf8,
                     8,
                     PropModeReplace,
-                    utf8Title.c_str(),
+                    reinterpret_cast<const unsigned char*>(utf8Title.c_str()),
                     static_cast<int>(utf8Title.size()));
 
     // Set the _NET_WM_ICON_NAME atom, which specifies a UTF-8 encoded window title.
@@ -941,7 +942,7 @@ void WindowImplX11::setTitle(const String& title)
                     useUtf8,
                     8,
                     PropModeReplace,
-                    utf8Title.c_str(),
+                    reinterpret_cast<const unsigned char*>(utf8Title.c_str()),
                     static_cast<int>(utf8Title.size()));
 
     // Set the non-Unicode title as a fallback for window managers who don't support _NET_WM_NAME.
@@ -1745,7 +1746,7 @@ bool WindowImplX11::processEvent(XEvent& windowEvent)
             // ConfigureNotify can be triggered for other reasons, check if the size has actually changed
             if ((windowEvent.xconfigure.width != m_previousSize.x) || (windowEvent.xconfigure.height != m_previousSize.y))
             {
-                pushEvent(Event::Resized{Vector2u(Vector2(windowEvent.xconfigure.width, windowEvent.xconfigure.height))});
+                pushEvent(Event::Resized{Vector2{windowEvent.xconfigure.width, windowEvent.xconfigure.height}.to<Vector2u>()});
 
                 m_previousSize.x = windowEvent.xconfigure.width;
                 m_previousSize.y = windowEvent.xconfigure.height;
