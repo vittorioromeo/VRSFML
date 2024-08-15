@@ -542,15 +542,15 @@ void RenderTarget::draw(const Vertex* vertices, std::size_t vertexCount, Primiti
             // Pre-transform the vertices and store them into the vertex cache
             for (std::size_t i = 0; i < vertexCount; ++i)
             {
-                Vertex& vertex   = m_impl->cache.vertexCache[i];
-                vertex.position  = states.transform * vertices[i].position;
-                vertex.color     = vertices[i].color;
-                vertex.texCoords = vertices[i].texCoords;
+                auto& [position, color, texCoords] = m_impl->cache.vertexCache[i];
+
+                position  = states.transform * vertices[i].position;
+                color     = vertices[i].color;
+                texCoords = vertices[i].texCoords;
             }
         }
 
         setupDraw(useVertexCache, states);
-
 
         // If we pre-transform the vertices, we must use our internal vertex cache
         const auto* data = reinterpret_cast<const char*>(useVertexCache ? m_impl->cache.vertexCache : vertices);

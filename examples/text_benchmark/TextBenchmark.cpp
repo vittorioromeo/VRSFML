@@ -42,7 +42,7 @@ int main()
 
 #else
 
-#if 1
+#if 0
     sf::RenderWindow window(graphicsContext, {.size{1280u, 720u}, .title = "ImGui + SFML = <3"});
     window.setFramerateLimit(60);
     if (!imGuiContext.init(window))
@@ -138,7 +138,7 @@ int main()
             imGuiContext.processEvent(window, *event);
 
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                return EXIT_SUCCESS;
+                return 0;
         }
 
         imGuiContext.update(window, deltaClock.restart());

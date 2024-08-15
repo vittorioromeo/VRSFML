@@ -39,14 +39,14 @@ SockAddrIn::SockAddrIn(const sockaddr_in& in) : m_impl(in)
 
 
 ////////////////////////////////////////////////////////////
-unsigned short SockAddrIn::sinPort() const
+NetworkShort SockAddrIn::sinPort() const
 {
     return m_impl->sin_port;
 }
 
 
 ////////////////////////////////////////////////////////////
-unsigned long SockAddrIn::sAddr() const
+NetworkLong SockAddrIn::sAddr() const
 {
     return m_impl->sin_addr.s_addr;
 }
@@ -132,35 +132,35 @@ bool SocketImpl::connect(SocketHandle handle, SockAddrIn& address)
 
 
 ////////////////////////////////////////////////////////////
-unsigned long SocketImpl::ntohl(unsigned long netlong)
+NetworkLong SocketImpl::ntohl(NetworkLong netlong)
 {
     return ::ntohl(netlong);
 }
 
 
 ////////////////////////////////////////////////////////////
-unsigned short SocketImpl::ntohs(unsigned short netshort)
+NetworkShort SocketImpl::ntohs(NetworkShort netshort)
 {
     return ::ntohs(netshort);
 }
 
 
 ////////////////////////////////////////////////////////////
-unsigned long SocketImpl::ntohl(SockAddrIn addr)
+NetworkLong SocketImpl::ntohl(SockAddrIn addr)
 {
     return ::ntohl(addr.m_impl->sin_addr.s_addr);
 }
 
 
 ////////////////////////////////////////////////////////////
-unsigned short SocketImpl::htons(unsigned short hostshort)
+NetworkShort SocketImpl::htons(NetworkShort hostshort)
 {
     return ::htons(hostshort);
 }
 
 
 ////////////////////////////////////////////////////////////
-unsigned long SocketImpl::htonl(unsigned long hostlong)
+NetworkLong SocketImpl::htonl(NetworkLong hostlong)
 {
     return ::htonl(hostlong);
 }
@@ -277,14 +277,14 @@ bool SocketImpl::enableBroadcast(SocketHandle handle)
 
 
 ////////////////////////////////////////////////////////////
-int SocketImpl::send(SocketHandle handle, const char* buf, int len, int flags)
+NetworkSSizeT SocketImpl::send(SocketHandle handle, const char* buf, SocketImpl::Size len, int flags)
 {
     return ::send(handle, buf, static_cast<std::size_t>(len), flags);
 }
 
 
 ////////////////////////////////////////////////////////////
-int SocketImpl::sendTo(SocketHandle handle, const char* buf, int len, int flags, SockAddrIn& address)
+NetworkSSizeT SocketImpl::sendTo(SocketHandle handle, const char* buf, SocketImpl::Size len, int flags, SockAddrIn& address)
 {
     return ::sendto(handle,
                     buf,
@@ -295,21 +295,21 @@ int SocketImpl::sendTo(SocketHandle handle, const char* buf, int len, int flags,
 }
 
 ////////////////////////////////////////////////////////////
-int SocketImpl::recv(SocketHandle handle, char* buf, int len, int flags)
+NetworkSSizeT SocketImpl::recv(SocketHandle handle, char* buf, SocketImpl::Size len, int flags)
 {
     return ::recv(handle, buf, static_cast<std::size_t>(len), flags);
 }
 
 
 ////////////////////////////////////////////////////////////
-int SocketImpl::recvFrom(SocketHandle handle, char* buf, int len, int flags, SockAddrIn& address, AddrLength& length)
+NetworkSSizeT SocketImpl::recvFrom(SocketHandle handle, char* buf, SocketImpl::Size len, int flags, SockAddrIn& address, AddrLength& length)
 {
     return ::recvfrom(handle, buf, static_cast<std::size_t>(len), flags, reinterpret_cast<sockaddr*>(&*address.m_impl), &length);
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<unsigned long> SocketImpl::convertToHostname(const char* address)
+base::Optional<NetworkLong> SocketImpl::convertToHostname(const char* address)
 {
     addrinfo hints{}; // Zero-initialize
     hints.ai_family = AF_INET;
@@ -323,7 +323,7 @@ base::Optional<unsigned long> SocketImpl::convertToHostname(const char* address)
         const std::uint32_t ip = sin.sin_addr.s_addr;
         freeaddrinfo(result);
 
-        return base::makeOptional<unsigned long>(ip);
+        return base::makeOptional<NetworkLong>(ip);
     }
 
     return base::nullOpt;

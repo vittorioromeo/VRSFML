@@ -37,18 +37,18 @@ std::shared_ptr<Display> openDisplay()
     const std::lock_guard lock(UnixDisplayImpl::mutex);
 
     auto sharedDisplay = UnixDisplayImpl::weakSharedDisplay.lock();
-    if (!sharedDisplay)
-    {
-        sharedDisplay.reset(XOpenDisplay(nullptr), XCloseDisplay);
-        UnixDisplayImpl::weakSharedDisplay = sharedDisplay;
+    if (sharedDisplay != nullptr)
+        return sharedDisplay;
 
-        // Opening display failed: The best we can do at the moment is to output a meaningful error message
-        // and cause an abnormal program termination
-        if (!sharedDisplay)
-        {
-            priv::err() << "Failed to open X11 display; make sure the DISPLAY environment variable is set correctly";
-            std::abort();
-        }
+    sharedDisplay.reset(XOpenDisplay(nullptr), XCloseDisplay);
+    UnixDisplayImpl::weakSharedDisplay = sharedDisplay;
+
+    // Opening display failed: The best we can do at the moment is to output a meaningful error message
+    // and cause an abnormal program termination
+    if (sharedDisplay == nullptr)
+    {
+        priv::err() << "Failed to open X11 display; make sure the DISPLAY environment variable is set correctly";
+        std::abort();
     }
 
     return sharedDisplay;
@@ -61,7 +61,7 @@ std::shared_ptr<_XIM> openXim()
     const std::lock_guard lock(UnixDisplayImpl::mutex);
 
     SFML_BASE_ASSERT(!UnixDisplayImpl::weakSharedDisplay.expired() &&
-           "Display is not initialized. Call priv::openDisplay() to initialize it.");
+                     "Display is not initialized. Call priv::openDisplay() to initialize it.");
 
     static std::weak_ptr<_XIM> xim;
 
