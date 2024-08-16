@@ -260,7 +260,7 @@ WindowContext::WindowContext() : m_impl(base::makeUnique<Impl>(*this, /* id */ 1
 
     ensureExtensionsInit();
 
-    // TODO P0: needed for emscripten shader example, why ?
+    // Need to drain errors here or subsequent assertion will fail on Emscripten, unsure why
     while (glGetError() != GL_NO_ERROR)
         ;
 

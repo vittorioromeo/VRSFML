@@ -38,7 +38,7 @@ public:
     explicit GraphicsContext();
     ~GraphicsContext();
 
-    [[nodiscard]] Shader&  getBuiltInTexturedShader();
+    [[nodiscard]] Shader&  getBuiltInShader();
     [[nodiscard]] Texture& getBuiltInWhiteDotTexture();
 
 private:
@@ -48,8 +48,8 @@ private:
 
     using WindowContext::createGlContext; // Needed by befriended render texture implementations
 
-    [[nodiscard]] const char* getBuiltInTexturedShaderVertexSrc() const;
-    [[nodiscard]] const char* getBuiltInTexturedShaderFragmentSrc() const;
+    [[nodiscard]] const char* getBuiltInShaderVertexSrc() const;
+    [[nodiscard]] const char* getBuiltInShaderFragmentSrc() const;
 
     ////////////////////////////////////////////////////////////
     /// Member data

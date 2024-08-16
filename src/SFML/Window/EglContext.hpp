@@ -9,12 +9,12 @@
 #include <SFML/Window/GlContext.hpp>
 #include <SFML/Window/WindowEnums.hpp> // Prevent conflict with macro None from Xlib
 
-// TODO P0:
-#ifndef SFML_SYSTEM_EMSCRIPTEN
-#include <glad/egl.h>
-#else
+// Emscripten does not use GLAD
+#ifdef SFML_SYSTEM_EMSCRIPTEN
 #define KHRONOS_APIENTRY
 #include <EGL/egl.h>
+#else
+#include <glad/egl.h>
 #endif
 
 #if defined(SFML_SYSTEM_LINUX) && !defined(SFML_USE_DRM)

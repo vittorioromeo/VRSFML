@@ -11,12 +11,12 @@
 
 #include <SFML/Base/Assert.hpp>
 
-// TODO P0:
-#ifndef SFML_SYSTEM_EMSCRIPTEN
-#include <glad/egl.h>
-#else
+// Emscripten does not use GLAD
+#ifdef SFML_SYSTEM_EMSCRIPTEN
 #define KHRONOS_APIENTRY
 #include <EGL/egl.h>
+#else
+#include <glad/egl.h>
 #endif
 
 

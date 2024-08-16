@@ -328,7 +328,7 @@ public:
     /// \return Location ID of the uniform, or `sf::base::nullOpt` if not found
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<UniformLocation> getUniformLocation(std::string_view uniformName);
+    [[nodiscard]] base::Optional<UniformLocation> getUniformLocation(std::string_view uniformName) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p float uniform
@@ -337,7 +337,7 @@ public:
     /// \param x    Value of the float scalar
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(UniformLocation location, float x);
+    void setUniform(UniformLocation location, float x) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p vec2 uniform
@@ -346,7 +346,7 @@ public:
     /// \param vector Value of the vec2 vector
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(UniformLocation location, Glsl::Vec2 vector);
+    void setUniform(UniformLocation location, Glsl::Vec2 vector) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p vec3 uniform
@@ -355,7 +355,7 @@ public:
     /// \param vector Value of the vec3 vector
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(UniformLocation location, const Glsl::Vec3& vector);
+    void setUniform(UniformLocation location, const Glsl::Vec3& vector) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p vec4 uniform
@@ -373,7 +373,7 @@ public:
     /// \param vector Value of the vec4 vector
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(UniformLocation location, const Glsl::Vec4& vector);
+    void setUniform(UniformLocation location, const Glsl::Vec4& vector) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p int uniform
@@ -382,7 +382,7 @@ public:
     /// \param x    Value of the int scalar
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(UniformLocation location, int x);
+    void setUniform(UniformLocation location, int x) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p ivec2 uniform
@@ -391,7 +391,7 @@ public:
     /// \param vector Value of the ivec2 vector
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(UniformLocation location, Glsl::Ivec2 vector);
+    void setUniform(UniformLocation location, Glsl::Ivec2 vector) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p ivec3 uniform
@@ -400,7 +400,7 @@ public:
     /// \param vector Value of the ivec3 vector
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(UniformLocation location, const Glsl::Ivec3& vector);
+    void setUniform(UniformLocation location, const Glsl::Ivec3& vector) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p ivec4 uniform
@@ -417,7 +417,7 @@ public:
     /// \param vector Value of the ivec4 vector
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(UniformLocation location, const Glsl::Ivec4& vector);
+    void setUniform(UniformLocation location, const Glsl::Ivec4& vector) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p bool uniform
@@ -426,7 +426,7 @@ public:
     /// \param x    Value of the bool scalar
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(UniformLocation location, bool x);
+    void setUniform(UniformLocation location, bool x) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p bvec2 uniform
@@ -435,7 +435,7 @@ public:
     /// \param vector Value of the bvec2 vector
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(UniformLocation location, Glsl::Bvec2 vector);
+    void setUniform(UniformLocation location, Glsl::Bvec2 vector) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p bvec3 uniform
@@ -444,7 +444,7 @@ public:
     /// \param vector Value of the bvec3 vector
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(UniformLocation location, const Glsl::Bvec3& vector);
+    void setUniform(UniformLocation location, const Glsl::Bvec3& vector) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p bvec4 uniform
@@ -453,7 +453,7 @@ public:
     /// \param vector Value of the bvec4 vector
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(UniformLocation location, const Glsl::Bvec4& vector);
+    void setUniform(UniformLocation location, const Glsl::Bvec4& vector) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p mat3 matrix
@@ -462,7 +462,7 @@ public:
     /// \param matrix Value of the mat3 matrix
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(UniformLocation location, const Glsl::Mat3& matrix);
+    void setUniform(UniformLocation location, const Glsl::Mat3& matrix) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p mat4 matrix
@@ -471,7 +471,7 @@ public:
     /// \param matrix Value of the mat4 matrix
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(UniformLocation location, const Glsl::Mat4& matrix);
+    void setUniform(UniformLocation location, const Glsl::Mat4& matrix) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify a texture as \p sampler2D uniform
@@ -503,7 +503,7 @@ public:
     /// \param texture Texture to assign
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool setUniform(UniformLocation location, const Texture& texture);
+    [[nodiscard]] bool setUniform(UniformLocation location, const Texture& texture) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Disallow setting from a temporary texture
@@ -665,7 +665,7 @@ private:
     /// \brief More efficient but less safe way of setting 4x4 matrix uniform
     ///
     ////////////////////////////////////////////////////////////
-    void setMat4Uniform(UniformLocation location, const float* matrixPtr);
+    void setMat4Uniform(UniformLocation location, const float* matrixPtr) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Compile the shader(s) and create the program

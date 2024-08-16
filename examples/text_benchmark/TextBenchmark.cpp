@@ -42,7 +42,7 @@ int main()
 
 #else
 
-#if 0
+#if 1
     sf::RenderWindow window(graphicsContext, {.size{1280u, 720u}, .title = "ImGui + SFML = <3"});
     window.setFramerateLimit(60);
     if (!imGuiContext.init(window))
@@ -88,24 +88,23 @@ int main()
         imGuiContext.render(window);
         window.display();
 
-        // Child window event processing
-        if (childWindow.hasValue())
+        const auto processChildWindow = [&](sf::RenderWindow& childWindowRef)
         {
-            while (const sf::base::Optional event = childWindow->pollEvent())
+            while (const sf::base::Optional event = childWindowRef.pollEvent())
             {
-                imGuiContext.processEvent(*childWindow, *event);
+                imGuiContext.processEvent(childWindowRef, *event);
 
                 if (event->is<sf::Event::Closed>())
                 {
-                    imGuiContext.shutdown(*childWindow);
+                    imGuiContext.shutdown(childWindowRef);
                     childWindow.reset();
-                    continue;
+                    return;
                 }
             }
 
-            imGuiContext.update(*childWindow, dt);
+            imGuiContext.update(childWindowRef, dt);
 
-            imGuiContext.setCurrentWindow(*childWindow);
+            imGuiContext.setCurrentWindow(childWindowRef);
             ImGui::Begin("Works in a second window!");
             ImGui::Button("Example button");
             ImGui::End();
@@ -113,11 +112,15 @@ int main()
             sf::CircleShape shape2(50.f);
             shape2.setFillColor(sf::Color::Red);
 
-            childWindow->clear();
-            childWindow->draw(shape2, /* texture */ nullptr);
-            imGuiContext.render(*childWindow);
-            childWindow->display();
-        }
+            childWindowRef.clear();
+            childWindowRef.draw(shape2, /* texture */ nullptr);
+            imGuiContext.render(childWindowRef);
+            childWindowRef.display();
+        };
+
+        // Child window event processing
+        if (childWindow.hasValue())
+            processChildWindow(*childWindow);
     };
 #else
     sf::RenderWindow window(graphicsContext, {.size{640u, 480u}, .title = "ImGui + SFML = <3", .style = sf::Style::Resize});
