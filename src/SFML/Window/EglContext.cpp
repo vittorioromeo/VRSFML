@@ -27,7 +27,7 @@
 #include <X11/Xlib.h>
 #endif
 
-// TODO P0:
+// I guess Emscripten provides its own EGL definitions and adding our own causes issues.
 #ifndef SFML_SYSTEM_EMSCRIPTEN
 
 // We check for this definition in order to avoid multiple definitions of GLAD
@@ -209,7 +209,8 @@ EglContext::~EglContext()
     if (currentContext == m_context)
         eglCheck(eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT));
 
-// TODO P0: for some reason this breaks graphics tests
+// Destroying the context on Emscripten seem to make every subsequent GL call fail,
+// even if switching to another context...
 #ifndef SFML_SYSTEM_EMSCRIPTEN
     if (m_context != EGL_NO_CONTEXT)
         eglCheck(eglDestroyContext(m_display, m_context));

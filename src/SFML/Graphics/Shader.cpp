@@ -216,8 +216,10 @@ struct Shader::Impl
     GraphicsContext* graphicsContext;
     unsigned int     shaderProgram{};    //!< OpenGL identifier for the program
     int              currentTexture{-1}; //!< Location of the current texture in the shader
-    TextureTable     textures;           //!< Texture variables in the shader, mapped to their location
-    UniformTable     uniforms;           //!< Parameters location cache
+
+    // TODO P1: protect with mutex? Change API?
+    mutable TextureTable textures; //!< Texture variables in the shader, mapped to their location
+    mutable UniformTable uniforms; //!< Parameters location cache
 
     explicit Impl(GraphicsContext& theGraphicsContext, unsigned int theShaderProgram) :
     graphicsContext(&theGraphicsContext),
@@ -251,11 +253,10 @@ public:
     /// \brief Constructor: set up state before uniform is set
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] explicit UniformBinder(Shader& shader) :
-    m_currentProgram(static_cast<GLEXT_GLhandle>(castToGlHandle(shader.m_impl->shaderProgram)))
+    [[nodiscard, gnu::always_inline]] explicit UniformBinder(unsigned int shaderProgram) :
+    m_currentProgram(static_cast<GLEXT_GLhandle>(castToGlHandle(shaderProgram)))
     {
         SFML_BASE_ASSERT(m_currentProgram != 0);
-
 
 // Enable program object
 #ifndef SFML_OPENGL_ES
@@ -580,7 +581,7 @@ base::Optional<Shader> Shader::loadFromStream(GraphicsContext& graphicsContext,
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Shader::UniformLocation> Shader::getUniformLocation(std::string_view uniformName)
+base::Optional<Shader::UniformLocation> Shader::getUniformLocation(std::string_view uniformName) const
 {
     // Check the cache
     if (const auto it = m_impl->uniforms.find(uniformName); it != m_impl->uniforms.end())
@@ -603,125 +604,124 @@ base::Optional<Shader::UniformLocation> Shader::getUniformLocation(std::string_v
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation location, float x)
+void Shader::setUniform(UniformLocation location, float x) const
 {
-    const UniformBinder binder{*this};
+    const UniformBinder binder{m_impl->shaderProgram};
     glCheck(GLEXT_glUniform1f(location.m_value, x));
 }
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation location, Glsl::Vec2 v)
+void Shader::setUniform(UniformLocation location, Glsl::Vec2 v) const
 {
-    const UniformBinder binder{*this};
+    const UniformBinder binder{m_impl->shaderProgram};
     glCheck(GLEXT_glUniform2f(location.m_value, v.x, v.y));
 }
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation location, const Glsl::Vec3& v)
+void Shader::setUniform(UniformLocation location, const Glsl::Vec3& v) const
 {
-    const UniformBinder binder{*this};
+    const UniformBinder binder{m_impl->shaderProgram};
     glCheck(GLEXT_glUniform3f(location.m_value, v.x, v.y, v.z));
 }
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation location, const Glsl::Vec4& v)
+void Shader::setUniform(UniformLocation location, const Glsl::Vec4& v) const
 {
-    const UniformBinder binder{*this};
+    const UniformBinder binder{m_impl->shaderProgram};
     glCheck(GLEXT_glUniform4f(location.m_value, v.x, v.y, v.z, v.w));
 }
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation location, int x)
+void Shader::setUniform(UniformLocation location, int x) const
 {
-    const UniformBinder binder{*this};
+    const UniformBinder binder{m_impl->shaderProgram};
     glCheck(GLEXT_glUniform1i(location.m_value, x));
 }
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation location, Glsl::Ivec2 v)
+void Shader::setUniform(UniformLocation location, Glsl::Ivec2 v) const
 {
-    const UniformBinder binder{*this};
+    const UniformBinder binder{m_impl->shaderProgram};
     glCheck(GLEXT_glUniform2i(location.m_value, v.x, v.y));
 }
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation location, const Glsl::Ivec3& v)
+void Shader::setUniform(UniformLocation location, const Glsl::Ivec3& v) const
 {
-    const UniformBinder binder{*this};
+    const UniformBinder binder{m_impl->shaderProgram};
     glCheck(GLEXT_glUniform3i(location.m_value, v.x, v.y, v.z));
 }
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation location, const Glsl::Ivec4& v)
+void Shader::setUniform(UniformLocation location, const Glsl::Ivec4& v) const
 {
-    const UniformBinder binder{*this};
+    const UniformBinder binder{m_impl->shaderProgram};
     glCheck(GLEXT_glUniform4i(location.m_value, v.x, v.y, v.z, v.w));
 }
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation location, bool x)
+void Shader::setUniform(UniformLocation location, bool x) const
 {
     return setUniform(location, static_cast<int>(x));
 }
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation location, Glsl::Bvec2 v)
+void Shader::setUniform(UniformLocation location, Glsl::Bvec2 v) const
 {
     return setUniform(location, v.to<Glsl::Ivec2>());
 }
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation location, const Glsl::Bvec3& v)
+void Shader::setUniform(UniformLocation location, const Glsl::Bvec3& v) const
 {
     return setUniform(location, v.to<Glsl::Ivec3>());
 }
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation location, const Glsl::Bvec4& v)
+void Shader::setUniform(UniformLocation location, const Glsl::Bvec4& v) const
 {
     return setUniform(location, Glsl::Ivec4(v));
 }
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation location, const Glsl::Mat3& matrix)
+void Shader::setUniform(UniformLocation location, const Glsl::Mat3& matrix) const
 {
-    const UniformBinder binder{*this};
+    const UniformBinder binder{m_impl->shaderProgram};
     glCheck(GLEXT_glUniformMatrix3fv(location.m_value, 1, GL_FALSE, matrix.array));
 }
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setMat4Uniform(UniformLocation location, const float* matrixPtr)
+void Shader::setMat4Uniform(UniformLocation location, const float* matrixPtr) const
 {
-    const UniformBinder binder{*this};
+    const UniformBinder binder{m_impl->shaderProgram};
     glCheck(GLEXT_glUniformMatrix4fv(location.m_value, 1, GL_FALSE, matrixPtr));
 }
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniform(UniformLocation location, const Glsl::Mat4& matrix)
+void Shader::setUniform(UniformLocation location, const Glsl::Mat4& matrix) const
 {
     setMat4Uniform(location, matrix.array);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool Shader::setUniform(UniformLocation location, const Texture& texture)
+bool Shader::setUniform(UniformLocation location, const Texture& texture) const
 {
     SFML_BASE_ASSERT(m_impl->shaderProgram);
-
     SFML_BASE_ASSERT(m_impl->graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
     // Store the location -> texture mapping
@@ -736,7 +736,7 @@ bool Shader::setUniform(UniformLocation location, const Texture& texture)
     if (m_impl->textures.size() + 1 >= getMaxTextureUnits())
     {
         priv::err() << "Impossible to use texture \"" << location.m_value << '"'
-                    << " for shader: all available texture units are used";
+                    << " \"for shader: all available texture units are used";
 
         return false;
     }
@@ -750,7 +750,6 @@ bool Shader::setUniform(UniformLocation location, const Texture& texture)
 void Shader::setUniform(UniformLocation location, CurrentTextureType)
 {
     SFML_BASE_ASSERT(m_impl->shaderProgram);
-
     SFML_BASE_ASSERT(m_impl->graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
     // Find the location of the variable in the shader
@@ -761,7 +760,7 @@ void Shader::setUniform(UniformLocation location, CurrentTextureType)
 ////////////////////////////////////////////////////////////
 void Shader::setUniformArray(UniformLocation location, const float* scalarArray, std::size_t length)
 {
-    const UniformBinder binder{*this};
+    const UniformBinder binder{m_impl->shaderProgram};
     glCheck(GLEXT_glUniform1fv(location.m_value, static_cast<GLsizei>(length), scalarArray));
 }
 
@@ -770,7 +769,7 @@ void Shader::setUniformArray(UniformLocation location, const float* scalarArray,
 void Shader::setUniformArray(UniformLocation location, const Glsl::Vec2* vectorArray, std::size_t length)
 {
     std::vector<float>  contiguous = flatten(vectorArray, length);
-    const UniformBinder binder{*this};
+    const UniformBinder binder{m_impl->shaderProgram};
     glCheck(GLEXT_glUniform2fv(location.m_value, static_cast<GLsizei>(length), contiguous.data()));
 }
 
@@ -779,7 +778,7 @@ void Shader::setUniformArray(UniformLocation location, const Glsl::Vec2* vectorA
 void Shader::setUniformArray(UniformLocation location, const Glsl::Vec3* vectorArray, std::size_t length)
 {
     std::vector<float>  contiguous = flatten(vectorArray, length);
-    const UniformBinder binder{*this};
+    const UniformBinder binder{m_impl->shaderProgram};
     glCheck(GLEXT_glUniform3fv(location.m_value, static_cast<GLsizei>(length), contiguous.data()));
 }
 
@@ -788,7 +787,7 @@ void Shader::setUniformArray(UniformLocation location, const Glsl::Vec3* vectorA
 void Shader::setUniformArray(UniformLocation location, const Glsl::Vec4* vectorArray, std::size_t length)
 {
     std::vector<float>  contiguous = flatten(vectorArray, length);
-    const UniformBinder binder{*this};
+    const UniformBinder binder{m_impl->shaderProgram};
     glCheck(GLEXT_glUniform4fv(location.m_value, static_cast<GLsizei>(length), contiguous.data()));
 }
 
@@ -802,7 +801,7 @@ void Shader::setUniformArray(UniformLocation location, const Glsl::Mat3* matrixA
     for (std::size_t i = 0; i < length; ++i)
         priv::copyMatrix(matrixArray[i].array, matrixSize, &contiguous[matrixSize * i]);
 
-    const UniformBinder binder{*this};
+    const UniformBinder binder{m_impl->shaderProgram};
     glCheck(GLEXT_glUniformMatrix3fv(location.m_value, static_cast<GLsizei>(length), GL_FALSE, contiguous.data()));
 }
 
@@ -816,7 +815,7 @@ void Shader::setUniformArray(UniformLocation location, const Glsl::Mat4* matrixA
     for (std::size_t i = 0; i < length; ++i)
         priv::copyMatrix(matrixArray[i].array, matrixSize, &contiguous[matrixSize * i]);
 
-    const UniformBinder binder{*this};
+    const UniformBinder binder{m_impl->shaderProgram};
     glCheck(GLEXT_glUniformMatrix4fv(location.m_value, static_cast<GLsizei>(length), GL_FALSE, contiguous.data()));
 }
 
@@ -906,7 +905,7 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
 
 #ifdef SFML_OPENGL_ES
     if (vertexShaderCode.data() == nullptr)
-        vertexShaderCode = graphicsContext.getBuiltInTexturedShaderVertexSrc();
+        vertexShaderCode = graphicsContext.getBuiltInShaderVertexSrc();
 #endif
 
     // Create the vertex shader if needed
@@ -970,7 +969,7 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
 
 #ifdef SFML_OPENGL_ES
     if (fragmentShaderCode.data() == nullptr)
-        fragmentShaderCode = graphicsContext.getBuiltInTexturedShaderFragmentSrc();
+        fragmentShaderCode = graphicsContext.getBuiltInShaderFragmentSrc();
 #endif
 
     // Create the fragment shader if needed

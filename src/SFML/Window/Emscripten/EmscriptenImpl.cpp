@@ -508,7 +508,7 @@ void requestFullscreen()
 
 [[nodiscard]] EM_BOOL fullscreenchangeCallback(int eventType, const EmscriptenFullscreenChangeEvent* /* e */, void* /* userData */)
 {
-throw 100;
+    throw 100;
 
     if (!window)
         return EM_FALSE;

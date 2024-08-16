@@ -74,9 +74,6 @@ elseif(${EMSCRIPTEN})
     # use the OpenGL ES implementation on Emscripten
     set(OPENGL_ES 1)
 
-    # TODO P0:
-    set(CMAKE_EXECUTABLE_SUFFIX ".html")
-
     set(SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS_DEBUG
         -g3          # Enable debug mode
         -gsource-map # Generate a source map using LLVM debug information
@@ -97,7 +94,7 @@ elseif(${EMSCRIPTEN})
     # -sEXCEPTION_STACK_TRACES=1 # Exceptions will contain stack traces and uncaught exceptions will display stack traces
     # -sGL_ASSERTIONS=1          # Adds extra checks for error situations in the GL library
     # -sDETERMINISTIC=1          # Force `Date.now()`, `Math.random`, etc. to return deterministic results
-    # -fwasm-exceptions          # TODO P0: -fwasm-exceptions seems to break examples
+    # -fwasm-exceptions          # TODO P1: -fwasm-exceptions seems to break examples
     # -sEXCEPTION_DEBUG=1        # Print out exceptions in emscriptened code (SPEWS WARNINGS)
     # -sGL_DEBUG=1               # Enables more verbose debug printing of WebGL related operations (SPEWS WARNINGS)
 
@@ -112,12 +109,26 @@ elseif(${EMSCRIPTEN})
     )
 
     set(SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_RELEASE
+        -O3                                 # Enable advanced linker optimizations
+
         -SMINIFY_HTML=1                     # Runs generated `.html` file through `html-minifier`
+    )
+
+    set(SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_ASYNCIFY
+        -sASYNCIFY=1                        # Support async operations in the compiled code (used for game loop)
+        -sASYNCIFY_IGNORE_INDIRECT=1        # Assume indirect calls can’t lead to an unwind/rewind of the stack (faster)
+    )
+
+    set(SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_JSPI
+        -sJSPI=1                            # Use VM support for the JavaScript Promise Integration proposal
     )
 
     set(SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS
         $<$<CONFIG:Debug>:${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_DEBUG}>
         $<$<CONFIG:Release>:${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_RELEASE}>
+
+        ${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_ASYNCIFY}
+        # ${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_JSPI}
 
         -pthread                            # Enable threading support
 
@@ -125,12 +136,10 @@ elseif(${EMSCRIPTEN})
         -Wno-pthreads-mem-growth            # warning: -pthread + ALLOW_MEMORY_GROWTH may run non-wasm code slowly, see https://github.com/WebAssembly/design/issues/1271
 
         -sALLOW_MEMORY_GROWTH=1             # Grow the memory arrays at runtime
-        -sASYNCIFY_IGNORE_INDIRECT=1        # TODO P0:
-        -sEXIT_RUNTIME=1                    # TODO P0:
+        -sEXIT_RUNTIME=1                    # Execute cleanup (e.g. `atexit`) after `main` completes
         -sFETCH=1                           # Enables `emscripten_fetch` API
         -sFORCE_FILESYSTEM=1                # Makes full filesystem support be included
         -sFULL_ES3=1                        # Forces support for all GLES3 features, not just the WebGL2-friendly subset
-        -sJSPI=1                            # TODO P0: not supported on most browsers yet
         -sMAX_WEBGL_VERSION=2               # Specifies the highest WebGL version to target
         -sMIN_WEBGL_VERSION=2               # Specifies the lowest WebGL version to target
         -sSTACK_SIZE=4mb                    # Set the total stack size

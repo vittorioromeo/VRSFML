@@ -335,8 +335,12 @@ TEST_CASE("[System] sf::String")
         CHECK(string.substring(0) == "let's get some substrings");
         CHECK(string.substring(10) == "some substrings");
         CHECK(string.substring(10, 4) == "some");
+
+// Exceptions not supported on Emscripten
+#ifndef SFML_SYSTEM_EMSCRIPTEN
         CHECK_THROWS_AS((void)string.substring(1'000), std::out_of_range);
         CHECK_THROWS_AS((void)string.substring(420, 69), std::out_of_range);
+#endif
     }
 
     SECTION("begin() and end() const")

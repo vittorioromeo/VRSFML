@@ -81,6 +81,7 @@ macro(sfml_add_library module)
     if(SFML_OS_EMSCRIPTEN)
         target_compile_options(${target} PRIVATE ${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS})
         target_link_options(${target} PRIVATE ${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS})
+        set_target_properties(${target} PROPERTIES SUFFIX ".html")
     endif()
 
     # enable C++20 support
@@ -335,12 +336,12 @@ macro(sfml_add_example target)
     if(SFML_OS_EMSCRIPTEN)
         target_compile_options(${target} PRIVATE ${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS})
         target_link_options(${target} PRIVATE ${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS})
+        set_target_properties(${target} PROPERTIES SUFFIX ".html")
 
         foreach(RESOURCE ${GLOBBED_RESOURCES})
             target_link_options(${target} PRIVATE "SHELL:--preload-file ${RESOURCE}")
         endforeach()
     endif()
-
     if(SFML_OS_IOS)
         sfml_set_common_ios_properties(${target})
     endif()
@@ -366,6 +367,12 @@ function(sfml_add_test target SOURCES DEPENDS)
     if(SFML_OS_EMSCRIPTEN)
         target_compile_options(${target} PRIVATE ${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS})
         target_link_options(${target} PRIVATE ${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS})
+
+        if (${target} STREQUAL "test-sfml-graphics")
+            set_target_properties(${target} PROPERTIES SUFFIX ".html")
+        else()
+            set_target_properties(${target} PROPERTIES SUFFIX ".js")
+        endif()
     endif()
 
     # enable precompiled headers

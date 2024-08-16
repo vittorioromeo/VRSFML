@@ -113,17 +113,21 @@ GraphicsContext::GraphicsContext()
 #endif
 
     m_impl->builtInShader.emplace(createBuiltInShader(*this, builtInShaderVertexSrc, builtInShaderFragmentSrc));
-
     m_impl->builtInWhiteDotTexture = Texture::loadFromImage(*this, *Image::create({1u, 1u}, Color::White));
 }
 
 
 ////////////////////////////////////////////////////////////
-GraphicsContext::~GraphicsContext() = default;
+GraphicsContext::~GraphicsContext()
+{
+    // Need to activate shared context during destruction to avoid GL errors when destroying texture and shader
+    [[maybe_unused]] const bool rc = setActiveThreadLocalGlContextToSharedContext(true);
+    SFML_BASE_ASSERT(rc);
+}
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] Shader& GraphicsContext::getBuiltInTexturedShader()
+[[nodiscard]] Shader& GraphicsContext::getBuiltInShader()
 {
     return *m_impl->builtInShader;
 }
@@ -137,14 +141,14 @@ GraphicsContext::~GraphicsContext() = default;
 
 
 ////////////////////////////////////////////////////////////
-const char* GraphicsContext::getBuiltInTexturedShaderVertexSrc() const
+const char* GraphicsContext::getBuiltInShaderVertexSrc() const
 {
     return builtInShaderVertexSrc;
 }
 
 
 ////////////////////////////////////////////////////////////
-const char* GraphicsContext::getBuiltInTexturedShaderFragmentSrc() const
+const char* GraphicsContext::getBuiltInShaderFragmentSrc() const
 {
     return builtInShaderFragmentSrc;
 }

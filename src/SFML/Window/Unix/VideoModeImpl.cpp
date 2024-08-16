@@ -110,60 +110,56 @@ std::vector<VideoMode> VideoModeImpl::getFullscreenModes()
 ////////////////////////////////////////////////////////////
 VideoMode VideoModeImpl::getDesktopMode()
 {
-    VideoMode desktopMode{{0u, 0u}, 0u}; // TODO P0:
+    VideoMode desktopMode{{0u, 0u}, 0u}; // TODO P1: avoid null state
 
     // Open a connection with the X server
-    if (const auto display = openDisplay())
-    {
-        // Retrieve the default screen number
-        const int screen = DefaultScreen(display.get());
-
-        // Check if the XRandR extension is present
-        int version = 0;
-        if (XQueryExtension(display.get(), "RANDR", &version, &version, &version))
-        {
-            // Get the current configuration
-            const auto config = X11Ptr<XRRScreenConfiguration>(
-                XRRGetScreenInfo(display.get(), RootWindow(display.get(), screen)));
-            if (config)
-            {
-                // Get the current video mode
-                Rotation  currentRotation = 0;
-                const int currentMode     = XRRConfigCurrentConfiguration(config.get(), &currentRotation);
-
-                // Get the available screen sizes
-                int            nbSizes = 0;
-                XRRScreenSize* sizes   = XRRConfigSizes(config.get(), &nbSizes);
-                if (sizes && (nbSizes > 0))
-                {
-                    desktopMode = VideoMode({static_cast<unsigned int>(sizes[currentMode].width),
-                                             static_cast<unsigned int>(sizes[currentMode].height)},
-                                            static_cast<unsigned int>(DefaultDepth(display.get(), screen)));
-
-                    Rotation modeRotation = 0;
-                    XRRConfigRotations(config.get(), &modeRotation);
-
-                    if (modeRotation == RR_Rotate_90 || modeRotation == RR_Rotate_270)
-                        std::swap(desktopMode.size.x, desktopMode.size.y);
-                }
-            }
-            else
-            {
-                // Failed to get the screen configuration
-                priv::err() << "Failed to retrieve the screen configuration while trying to get the desktop video "
-                               "modes";
-            }
-        }
-        else
-        {
-            // XRandr extension is not supported: we cannot get the video modes
-            priv::err() << "Failed to use the XRandR extension while trying to get the desktop video modes";
-        }
-    }
-    else
+    const std::shared_ptr<Display> display = openDisplay();
+    if (display == nullptr)
     {
         // We couldn't connect to the X server
         priv::err() << "Failed to connect to the X server while trying to get the desktop video modes";
+        return desktopMode;
+    }
+
+    // Retrieve the default screen number
+    const int screen = DefaultScreen(display.get());
+
+    // Check if the XRandR extension is present
+    int version = 0;
+    if (!XQueryExtension(display.get(), "RANDR", &version, &version, &version))
+    {
+        // XRandr extension is not supported: we cannot get the video modes
+        priv::err() << "Failed to use the XRandR extension while trying to get the desktop video modes";
+        return desktopMode;
+    }
+
+    // Get the current configuration
+    const auto config = X11Ptr<XRRScreenConfiguration>(XRRGetScreenInfo(display.get(), RootWindow(display.get(), screen)));
+    if (config == nullptr)
+    {
+        // Failed to get the screen configuration
+        priv::err() << "Failed to retrieve the screen configuration while trying to get the desktop video modes";
+        return desktopMode;
+    }
+
+    // Get the current video mode
+    Rotation  currentRotation = 0;
+    const int currentMode     = XRRConfigCurrentConfiguration(config.get(), &currentRotation);
+
+    // Get the available screen sizes
+    int            nbSizes = 0;
+    XRRScreenSize* sizes   = XRRConfigSizes(config.get(), &nbSizes);
+    if (sizes && (nbSizes > 0))
+    {
+        desktopMode = VideoMode({static_cast<unsigned int>(sizes[currentMode].width),
+                                 static_cast<unsigned int>(sizes[currentMode].height)},
+                                static_cast<unsigned int>(DefaultDepth(display.get(), screen)));
+
+        Rotation modeRotation = 0;
+        XRRConfigRotations(config.get(), &modeRotation);
+
+        if (modeRotation == RR_Rotate_90 || modeRotation == RR_Rotate_270)
+            std::swap(desktopMode.size.x, desktopMode.size.y);
     }
 
     return desktopMode;

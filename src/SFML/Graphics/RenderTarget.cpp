@@ -172,14 +172,6 @@ constinit std::atomic<IdType> contextRenderTargetMap[maxIdCount]{};
     return GL_ALWAYS;
 }
 
-
-////////////////////////////////////////////////////////////
-sf::Shader& getShader(sf::GraphicsContext& graphicsContext, const sf::Shader* statesShader)
-{
-    return statesShader != nullptr ? *const_cast<sf::Shader*>(statesShader) // TODO P0: nasty cast...
-                                   : graphicsContext.getBuiltInTexturedShader();
-}
-
 } // namespace RenderTargetImpl
 } // namespace
 
@@ -958,7 +950,7 @@ void RenderTarget::setupDraw(bool useVertexCache, const RenderStates& states)
     if (!m_impl->cache.glStatesSet)
         resetGLStates();
 
-    Shader& usedShader = RenderTargetImpl::getShader(*m_impl->graphicsContext, states.shader);
+    const Shader& usedShader = states.shader != nullptr ? *states.shader : m_impl->graphicsContext->getBuiltInShader();
 
     // Apply the shader
     applyShader(&usedShader);
