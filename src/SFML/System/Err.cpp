@@ -7,9 +7,7 @@
 #include <SFML/System/Path.hpp>
 #include <SFML/System/PathUtils.hpp>
 
-#ifdef SFML_ENABLE_STACK_TRACES
-#include <cpptrace/cpptrace.hpp>
-#endif
+#include <SFML/Base/StackTrace.hpp>
 
 #include <atomic>
 #include <iostream>
@@ -49,8 +47,8 @@ ErrStream::Guard::~Guard()
     if (!m_multiLine)
     {
 #ifdef SFML_ENABLE_STACK_TRACES
-        m_stream << "\n\n";
-        cpptrace::generate_trace().print();
+        m_stream << '\n';
+        base::priv::printStackTrace();
 #endif
 
         m_stream << '\n' << std::flush;
