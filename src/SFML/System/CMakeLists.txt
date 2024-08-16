@@ -80,6 +80,8 @@ set(SRC_BASE
     # sources
     ${BASE_SRCROOT}/Assert.cpp
     ${BASE_SRCROOT}/Optional.cpp
+    ${BASE_SRCROOT}/StackTrace.cpp
+    ${BASE_SRCROOT}/StackTrace.hpp
 )
 
 
