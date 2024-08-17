@@ -2,11 +2,14 @@
 .idea/
 .vs/
 
+
 build2/
 buildrel/
+build*/
 .vscode/
 build/
 build/installed/
 cmake-build-*/
 CMakeUserPresets.json
 buildarm/
+-.json

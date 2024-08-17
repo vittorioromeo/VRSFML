@@ -108,6 +108,7 @@ else()
             NAME ogg
             GITHUB_REPOSITORY xiph/ogg
             GIT_TAG v1.3.5
+            SYSTEM TRUE
             # patch CMAKE_DEBUG_POSTFIX into the Ogg CMake configuration
             PATCH_COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/../../../tools/ogg/PatchOgg.cmake
         )
@@ -116,6 +117,7 @@ else()
             NAME flac
             GITHUB_REPOSITORY xiph/flac
             GIT_TAG 1.4.3
+            SYSTEM TRUE
             # patch out the annoying parts of the FLAC CMake configuration:
             # - adding unnecessary libraries that aren't even used
             # - installing FLAC++ headers even though BUILD_CXXLIBS is OFF
@@ -127,6 +129,7 @@ else()
             NAME vorbis
             GITHUB_REPOSITORY xiph/vorbis
             GIT_TAG v1.3.7
+            SYSTEM TRUE
             # patch out the annoying parts of the Vorbis CMake configuration:
             # - Vorbis doesn't check if the Ogg::ogg target exists before calling find_package
             # - add CMAKE_DEBUG_POSTFIX

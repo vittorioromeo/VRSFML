@@ -46,6 +46,9 @@
 #pragma GCC diagnostic ignored "-Wpragmas"                // warning: unknown option after '#pragma GCC diagnostic' kind
 #pragma GCC diagnostic ignored "-Wunknown-warning-option" // warning: unknown warning group 'xxx'
 #pragma GCC diagnostic ignored "-Wcast-function-type" // warning: cast between incompatible function types (for loader)
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wnull-dereference"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif
 
 // Vertex arrays are not supported on ES2/WebGL1 unless Emscripten which uses an extension
@@ -514,14 +517,23 @@ void ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
                 bd->IndexBufferSize = idx_buffer_size;
                 glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, bd->IndexBufferSize, nullptr, GL_STREAM_DRAW));
             }
-            glCheck(glBufferSubData(GL_ARRAY_BUFFER, 0, vtx_buffer_size, (const GLvoid*)cmd_list->VtxBuffer.Data));
-            glCheck(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, idx_buffer_size, (const GLvoid*)cmd_list->IdxBuffer.Data));
+            glCheck(
+                glBufferSubData(GL_ARRAY_BUFFER, 0, vtx_buffer_size, reinterpret_cast<const GLvoid*>(cmd_list->VtxBuffer.Data)));
+            glCheck(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER,
+                                    0,
+                                    idx_buffer_size,
+                                    reinterpret_cast<const GLvoid*>(cmd_list->IdxBuffer.Data)));
         }
         else
         {
-            glCheck(glBufferData(GL_ARRAY_BUFFER, vtx_buffer_size, (const GLvoid*)cmd_list->VtxBuffer.Data, GL_STREAM_DRAW));
-            glCheck(
-                glBufferData(GL_ELEMENT_ARRAY_BUFFER, idx_buffer_size, (const GLvoid*)cmd_list->IdxBuffer.Data, GL_STREAM_DRAW));
+            glCheck(glBufferData(GL_ARRAY_BUFFER,
+                                 vtx_buffer_size,
+                                 reinterpret_cast<const GLvoid*>(cmd_list->VtxBuffer.Data),
+                                 GL_STREAM_DRAW));
+            glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                                 idx_buffer_size,
+                                 reinterpret_cast<const GLvoid*>(cmd_list->IdxBuffer.Data),
+                                 GL_STREAM_DRAW));
         }
 
         for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)

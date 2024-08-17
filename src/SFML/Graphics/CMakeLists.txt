@@ -118,7 +118,12 @@ else()
         set(FT_DISABLE_BROTLI ON)
         set(FT_ENABLE_ERROR_STRINGS ON)
 
-        CPMAddPackage("gh:freetype/freetype#VER-2-13-2")
+        CPMAddPackage(
+            NAME freetype
+            GITHUB_REPOSITORY freetype/freetype
+            GIT_TAG VER-2-13-2
+            SYSTEM TRUE
+        )
 
         set_target_properties(freetype PROPERTIES FOLDER "Dependencies")
 

@@ -46,7 +46,12 @@ else()
         set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
         set(BUILD_SHARED_LIBS OFF)
 
-        CPMAddPackage("gh:ocornut/imgui#v1.91.0")
+        CPMAddPackage(
+            NAME imgui
+            GITHUB_REPOSITORY ocornut/imgui
+            GIT_TAG v1.91.0
+            SYSTEM TRUE
+        )
 
         # imgui has no CMake support, so we create our own target
 
@@ -75,8 +80,8 @@ else()
         set_target_properties(imgui PROPERTIES FOLDER "Dependencies")
 
         target_include_directories(imgui
-                                   PUBLIC $<BUILD_INTERFACE:${IMGUI_INCLUDE_DIRS}>
-                                          $<INSTALL_INTERFACE:include>)
+                                   SYSTEM PUBLIC $<BUILD_INTERFACE:${IMGUI_INCLUDE_DIRS}>
+                                                 $<INSTALL_INTERFACE:include>)
 
         # add flags required for emscripten support (e.g. pthread)
         if(SFML_OS_EMSCRIPTEN)
