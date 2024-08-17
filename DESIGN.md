@@ -74,7 +74,7 @@
         uniform mat4 sf_u_textureMatrix;
         uniform mat4 sf_u_modelViewProjectionMatrix;
 
-        in vec2 sf_a_position;
+            ;
         in vec4 sf_a_color;
         in vec2 sf_a_texCoord;
 

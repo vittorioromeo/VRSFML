@@ -339,7 +339,7 @@ macro(sfml_add_example target)
         set_target_properties(${target} PROPERTIES SUFFIX ".html")
 
         foreach(RESOURCE ${GLOBBED_RESOURCES})
-            target_link_options(${target} PRIVATE "SHELL:--preload-file ${RESOURCE}")
+            target_link_options(${target} PRIVATE "SHELL:--embed-file ${RESOURCE}")
         endforeach()
     endif()
     if(SFML_OS_IOS)

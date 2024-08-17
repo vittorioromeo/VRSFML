@@ -89,6 +89,8 @@ elseif(${EMSCRIPTEN})
         $<$<CONFIG:Release>:${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS_RELEASE}>
 
         -pthread     # Enable threading support
+
+        --shell-file=${CMAKE_SOURCE_DIR}/emscripten/shell.html
     )
 
     # -sEXCEPTION_STACK_TRACES=1 # Exceptions will contain stack traces and uncaught exceptions will display stack traces
@@ -147,6 +149,8 @@ elseif(${EMSCRIPTEN})
         -sWASM=1                            # Compile code to WebAssembly
 
         --emrun                             # Add native support for `emrun` (I/O capture)
+
+        --shell-file=${CMAKE_SOURCE_DIR}/emscripten/shell.html
     )
 else()
     message(FATAL_ERROR "Unsupported operating system or environment")

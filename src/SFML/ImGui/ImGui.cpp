@@ -326,7 +326,7 @@ namespace
     if (!newTexture.hasValue())
     {
         sf::priv::err() << "Failed to create default ImGui font texture";
-        return base::nullOpt;
+        return newTexture; // Empty optional
     }
 
     newTexture->update(pixels);

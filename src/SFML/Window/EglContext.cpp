@@ -420,12 +420,12 @@ EGLConfig EglContext::getBestConfig(EGLDisplay display, unsigned int bitsPerPixe
 ////////////////////////////////////////////////////////////
 void EglContext::updateSettings()
 {
-    m_settings.majorVersion = 1;
-    m_settings.minorVersion = 1;
-    m_settings.attributeFlags = ContextSettings::Attribute::Default | ContextSettings::Attribute::Debug; // TODO P0: needed?
-    m_settings.depthBits         = 0;
-    m_settings.stencilBits       = 0;
-    m_settings.antialiasingLevel = 0;
+    m_settings.majorVersion      = 1u;
+    m_settings.minorVersion      = 1u;
+    m_settings.attributeFlags    = ContextSettings::Attribute::Default;
+    m_settings.depthBits         = 0u;
+    m_settings.stencilBits       = 0u;
+    m_settings.antialiasingLevel = 0u;
 
     EGLBoolean result = EGL_FALSE;
     EGLint     tmp    = 0;

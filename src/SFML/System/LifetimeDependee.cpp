@@ -13,6 +13,7 @@
 #include <SFML/Base/Assert.hpp>
 #include <SFML/Base/Launder.hpp>
 #include <SFML/Base/PlacementNew.hpp>
+#include <SFML/Base/StackTrace.hpp>
 
 #include <atomic>
 #include <string>
@@ -206,6 +207,8 @@ LifetimeDependee::~LifetimeDependee()
                                     << " objects depending on them to avoid these sort of issues.";
 
     priv::err() << '\n';
+
+    base::priv::printStackTrace();
     std::abort();
 }
 

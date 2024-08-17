@@ -3,7 +3,13 @@ set_target_warnings(test-sfml-install)
 
 set(DOCTEST_NO_INSTALL ON CACHE BOOL "")
 
-CPMAddPackage("gh:doctest/doctest#v2.4.11")
+
+CPMAddPackage(
+    NAME doctest
+    GITHUB_REPOSITORY doctest/doctest
+    GIT_TAG v2.4.11
+    SYSTEM TRUE
+)
 
 include(${doctest_SOURCE_DIR}/scripts/cmake/doctest.cmake)
 
@@ -167,7 +173,7 @@ if(SFML_OS_EMSCRIPTEN)
         Graphics/tuffy.ttf)
 
     foreach(RESOURCE ${GRAPHICS_TEST_RESOURCES})
-        target_link_options(test-sfml-graphics PRIVATE "SHELL:--preload-file ${RESOURCE}")
+        target_link_options(test-sfml-graphics PRIVATE "SHELL:--embed-file ${RESOURCE}")
     endforeach()
 endif()
 

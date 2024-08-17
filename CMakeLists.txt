@@ -61,7 +61,12 @@ sfml_set_option(SFML_ENABLE_STACK_TRACES $<CONFIG:Debug> BOOL "TRUE to enable li
 if(SFML_ENABLE_STACK_TRACES)
     add_definitions(-DSFML_ENABLE_STACK_TRACES)
 
-    CPMAddPackage("gh:jeremy-rifkin/cpptrace#v0.6.2")
+    CPMAddPackage(
+        NAME cpptrace
+        GITHUB_REPOSITORY jeremy-rifkin/cpptrace
+        GIT_TAG v0.6.2
+        SYSTEM TRUE
+    )
 
     set_target_properties(libzstd_static PROPERTIES UNITY_BUILD OFF)
     set_target_properties(dwarf PROPERTIES UNITY_BUILD OFF)
