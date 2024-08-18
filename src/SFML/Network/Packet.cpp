@@ -3,11 +3,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Network/Packet.hpp>
-#include <SFML/Network/SocketImpl.hpp>
+#include "SFML/Network/Packet.hpp"
+#include "SFML/Network/SocketImpl.hpp"
 
-#include <SFML/System/String.hpp>
-#include <SFML/System/Utils.hpp>
+#include "SFML/System/String.hpp"
+#include "SFML/System/Utils.hpp"
 
 #include <string>
 #include <vector>

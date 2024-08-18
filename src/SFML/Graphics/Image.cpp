@@ -3,25 +3,23 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Image.hpp>
+#include "SFML/Graphics/Image.hpp"
 
-#include <SFML/System/Err.hpp>
-#include <SFML/System/InputStream.hpp>
-#include <SFML/System/Path.hpp>
-#include <SFML/System/PathUtils.hpp>
-#include <SFML/System/StringUtils.hpp>
-#include <SFML/System/Vector2.hpp>
+#include "SFML/System/Err.hpp"
+#include "SFML/System/InputStream.hpp"
+#include "SFML/System/Path.hpp"
+#include "SFML/System/PathUtils.hpp"
+#include "SFML/System/Vector2.hpp"
 
-#include <SFML/Base/Algorithm.hpp>
-#include <SFML/Base/Assert.hpp>
-#include <SFML/Base/Macros.hpp>
-#include <SFML/Base/Optional.hpp>
-#include <SFML/Base/PassKey.hpp>
-#include <SFML/Base/UniquePtr.hpp>
+#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 
 #ifdef SFML_SYSTEM_ANDROID
-#include <SFML/System/Android/Activity.hpp>
-#include <SFML/System/Android/ResourceStream.hpp>
+#include "SFML/System/Android/Activity.hpp"
+#include "SFML/System/Android/ResourceStream.hpp"
 #endif
 
 #define STB_IMAGE_IMPLEMENTATION

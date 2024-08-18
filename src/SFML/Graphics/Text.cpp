@@ -3,23 +3,23 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Color.hpp>
-#include <SFML/Graphics/Font.hpp>
-#include <SFML/Graphics/Glyph.hpp>
-#include <SFML/Graphics/PrimitiveType.hpp>
-#include <SFML/Graphics/RenderStates.hpp>
-#include <SFML/Graphics/RenderTarget.hpp>
-#include <SFML/Graphics/Text.hpp>
-#include <SFML/Graphics/Texture.hpp>
-#include <SFML/Graphics/Vertex.hpp>
+#include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/Font.hpp"
+#include "SFML/Graphics/Glyph.hpp"
+#include "SFML/Graphics/PrimitiveType.hpp"
+#include "SFML/Graphics/RenderStates.hpp"
+#include "SFML/Graphics/RenderTarget.hpp"
+#include "SFML/Graphics/Text.hpp"
+#include "SFML/Graphics/Texture.hpp"
+#include "SFML/Graphics/Vertex.hpp"
 
-#include <SFML/System/Rect.hpp>
-#include <SFML/System/String.hpp>
+#include "SFML/System/Rect.hpp"
+#include "SFML/System/String.hpp"
 
-#include <SFML/Base/Macros.hpp>
-#include <SFML/Base/Math/Ceil.hpp>
-#include <SFML/Base/Math/Fabs.hpp>
-#include <SFML/Base/Math/Floor.hpp>
+#include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Math/Ceil.hpp"
+#include "SFML/Base/Math/Fabs.hpp"
+#include "SFML/Base/Math/Floor.hpp"
 
 #include <vector>
 

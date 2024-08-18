@@ -48,12 +48,12 @@ body:
               2.
 
               ```cpp
-              #include <SFML/Graphics/RenderWindow.hpp>
+              #include "SFML/Graphics/RenderWindow.hpp"
 
-              #include <SFML/Window/Event.hpp>
-              #include <SFML/Window/WindowSettings.hpp>
+              #include "SFML/Window/Event.hpp"
+              #include "SFML/Window/WindowSettings.hpp"
 
-              #include <SFML/Base/Optional.hpp>
+              #include "SFML/Base/Optional.hpp"
 
               int main()
               {

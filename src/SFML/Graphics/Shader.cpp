@@ -4,24 +4,24 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/GraphicsContext.hpp>
-#include <SFML/Graphics/Shader.hpp>
-#include <SFML/Graphics/Texture.hpp>
+#include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/Shader.hpp"
+#include "SFML/Graphics/Texture.hpp"
 
-#include <SFML/Window/GLCheck.hpp>
-#include <SFML/Window/GLExtensions.hpp>
+#include "SFML/Window/GLCheck.hpp"
+#include "SFML/Window/GLExtensions.hpp"
 
-#include <SFML/System/Err.hpp>
-#include <SFML/System/InputStream.hpp>
-#include <SFML/System/Path.hpp>
-#include <SFML/System/PathUtils.hpp>
-#include <SFML/System/Vector2.hpp>
-#include <SFML/System/Vector3.hpp>
+#include "SFML/System/Err.hpp"
+#include "SFML/System/InputStream.hpp"
+#include "SFML/System/Path.hpp"
+#include "SFML/System/PathUtils.hpp"
+#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vector3.hpp"
 
-#include <SFML/Base/Algorithm.hpp>
-#include <SFML/Base/Assert.hpp>
-#include <SFML/Base/Macros.hpp>
-#include <SFML/Base/Optional.hpp>
+#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Optional.hpp"
 
 #include <fstream>
 #include <string>

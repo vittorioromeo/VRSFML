@@ -4,10 +4,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/Export.hpp>
+#include "SFML/Audio/Export.hpp"
 
-#include <SFML/System/Angle.hpp>
-#include <SFML/System/Vector3.hpp>
+#include "SFML/System/Angle.hpp"
+#include "SFML/System/Vector3.hpp"
 
 
 namespace sf
@@ -18,7 +18,7 @@ namespace sf
 ///        playback device
 ///
 ////////////////////////////////////////////////////////////
-struct Listener
+struct SFML_AUDIO_API Listener
 {
     ////////////////////////////////////////////////////////////
     /// \brief Structure defining the properties of a directional cone

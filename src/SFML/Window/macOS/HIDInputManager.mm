@@ -3,9 +3,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/macOS/HIDInputManager.hpp>
+#include "SFML/Window/macOS/HIDInputManager.hpp"
 
-#include <SFML/System/Err.hpp>
+#include "SFML/System/Err.hpp"
 
 #include <AppKit/AppKit.h>
 

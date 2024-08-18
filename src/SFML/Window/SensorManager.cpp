@@ -3,9 +3,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/SensorManager.hpp>
+#include "SFML/Window/SensorManager.hpp"
 
-#include <SFML/System/Err.hpp>
+#include "SFML/System/Err.hpp"
 
 
 namespace sf::priv

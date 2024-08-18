@@ -4,16 +4,14 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Config.hpp>
+#include "SFML/Window/ContextSettings.hpp"
 
-#include <SFML/Window/ContextSettings.hpp>
-
-#include <SFML/System/Vector2.hpp>
-
-#include <SFML/Base/InPlacePImpl.hpp>
-#include <SFML/Base/UniquePtr.hpp>
+#include <cstdint>
 
 
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
 namespace sf
 {
 using GlFunctionPointer = void (*)();

@@ -4,9 +4,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/SoundFileWriter.hpp>
+#include "SFML/Audio/SoundFileWriter.hpp"
 
-#include <SFML/Base/InPlacePImpl.hpp>
+#include "SFML/Base/InPlacePImpl.hpp"
 
 #include <cstdint>
 

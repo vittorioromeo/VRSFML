@@ -4,12 +4,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/EGLCheck.hpp>
+#include "SFML/Window/EGLCheck.hpp"
 
-#include <SFML/System/Err.hpp>
-#include <SFML/System/Path.hpp>
-
-#include <SFML/Base/Assert.hpp>
+#include "SFML/System/Err.hpp"
+#include "SFML/System/Path.hpp"
 
 // Emscripten does not use GLAD
 #ifdef SFML_SYSTEM_EMSCRIPTEN

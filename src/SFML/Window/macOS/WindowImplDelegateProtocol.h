@@ -3,11 +3,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Config.hpp>
+#include "SFML/Config.hpp"
 
-#include <SFML/Window/WindowHandle.hpp>
+#include "SFML/Window/WindowHandle.hpp"
 
-#include <SFML/System/Vector2.hpp>
+#include "SFML/System/Vector2.hpp"
 
 #import <AppKit/AppKit.h>
 

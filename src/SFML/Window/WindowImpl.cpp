@@ -3,31 +3,29 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Config.hpp>
+#include "SFML/Config.hpp"
 
-#include <SFML/Window/Event.hpp>
-#include <SFML/Window/GLExtensions.hpp>
-#include <SFML/Window/Joystick.hpp>
-#include <SFML/Window/JoystickImpl.hpp>
-#include <SFML/Window/JoystickManager.hpp>
-#include <SFML/Window/Sensor.hpp>
-#include <SFML/Window/SensorImpl.hpp>
-#include <SFML/Window/SensorManager.hpp>
-#include <SFML/Window/VideoMode.hpp>
-#include <SFML/Window/VideoModeUtils.hpp>
-#include <SFML/Window/WindowImpl.hpp>
-#include <SFML/Window/WindowImplType.hpp>
-#include <SFML/Window/WindowSettings.hpp>
+#include "SFML/Window/Event.hpp"
+#include "SFML/Window/Joystick.hpp"
+#include "SFML/Window/JoystickImpl.hpp"
+#include "SFML/Window/JoystickManager.hpp"
+#include "SFML/Window/Sensor.hpp"
+#include "SFML/Window/SensorManager.hpp"
+#include "SFML/Window/VideoMode.hpp"
+#include "SFML/Window/VideoModeUtils.hpp"
+#include "SFML/Window/WindowImpl.hpp"
+#include "SFML/Window/WindowImplType.hpp"
+#include "SFML/Window/WindowSettings.hpp"
 
-#include <SFML/System/Err.hpp>
-#include <SFML/System/Sleep.hpp>
-#include <SFML/System/Time.hpp>
-#include <SFML/System/TimeChronoUtil.hpp>
+#include "SFML/System/Err.hpp"
+#include "SFML/System/Sleep.hpp"
+#include "SFML/System/Time.hpp"
+#include "SFML/System/TimeChronoUtil.hpp"
 
-#include <SFML/Base/EnumArray.hpp>
-#include <SFML/Base/Macros.hpp>
-#include <SFML/Base/Math/Fabs.hpp>
-#include <SFML/Base/UniquePtr.hpp>
+#include "SFML/Base/EnumArray.hpp"
+#include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Math/Fabs.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 
 #include <chrono>
 #include <queue>

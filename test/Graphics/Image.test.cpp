@@ -1,9 +1,10 @@
-#include <SFML/Graphics/Image.hpp>
-#include <SFML/Graphics/ImageUtils.hpp>
+#include "SFML/Graphics/Image.hpp"
+
+#include "SFML/Graphics/ImageUtils.hpp"
 
 // Other 1st party headers
-#include <SFML/System/FileInputStream.hpp>
-#include <SFML/System/Path.hpp>
+#include "SFML/System/FileInputStream.hpp"
+#include "SFML/System/Path.hpp"
 
 #include <Doctest.hpp>
 

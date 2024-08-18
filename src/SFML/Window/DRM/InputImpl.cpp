@@ -3,14 +3,14 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Event.hpp>
-#include <SFML/Window/InputImpl.hpp>
+#include "SFML/Window/Event.hpp"
+#include "SFML/Window/InputImpl.hpp"
 
-#include <SFML/System/Err.hpp>
+#include "SFML/System/Err.hpp"
 
-#include <SFML/Base/Algorithm.hpp>
-#include <SFML/Base/EnumArray.hpp>
-#include <SFML/Base/Optional.hpp>
+#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/EnumArray.hpp"
+#include "SFML/Base/Optional.hpp"
 
 #include <fcntl.h>
 #include <linux/input.h>

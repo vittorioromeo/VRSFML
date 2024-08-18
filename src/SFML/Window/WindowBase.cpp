@@ -3,23 +3,22 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/ContextSettings.hpp>
-#include <SFML/Window/Cursor.hpp>
-#include <SFML/Window/Event.hpp>
-#include <SFML/Window/Vulkan.hpp>
-#include <SFML/Window/WindowBase.hpp>
-#include <SFML/Window/WindowEnums.hpp>
-#include <SFML/Window/WindowHandle.hpp>
-#include <SFML/Window/WindowImpl.hpp>
-#include <SFML/Window/WindowSettings.hpp>
+#include "SFML/Window/ContextSettings.hpp"
+#include "SFML/Window/Cursor.hpp"
+#include "SFML/Window/Event.hpp"
+#include "SFML/Window/Vulkan.hpp"
+#include "SFML/Window/WindowBase.hpp"
+#include "SFML/Window/WindowHandle.hpp"
+#include "SFML/Window/WindowImpl.hpp"
+#include "SFML/Window/WindowSettings.hpp"
 
-#include <SFML/System/String.hpp>
-#include <SFML/System/Vector2.hpp>
+#include "SFML/System/String.hpp"
+#include "SFML/System/Vector2.hpp"
 
-#include <SFML/Base/Algorithm.hpp>
-#include <SFML/Base/Assert.hpp>
-#include <SFML/Base/Macros.hpp>
-#include <SFML/Base/Optional.hpp>
+#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Optional.hpp"
 
 #include <climits>
 #include <cstdlib>

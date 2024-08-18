@@ -4,16 +4,14 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Config.hpp>
+#include "SFML/Window/JoystickAxis.hpp"
+#include "SFML/Window/Keyboard.hpp"
+#include "SFML/Window/Mouse.hpp"
+#include "SFML/Window/Sensor.hpp"
 
-#include <SFML/Window/JoystickAxis.hpp>
-#include <SFML/Window/Keyboard.hpp>
-#include <SFML/Window/Mouse.hpp>
-#include <SFML/Window/Sensor.hpp>
+#include "SFML/System/Vector2.hpp"
 
-#include <SFML/System/Vector2.hpp>
-
-#include <SFML/Base/Variant.hpp>
+#include "SFML/Base/Variant.hpp"
 
 #include <cstdint>
 
@@ -393,7 +391,7 @@ extern template class SFML_PRIV_EVENT_VARIANT_TYPE;
 
 SFML_PRIV_EVENTS_X_MACRO(SFML_PRIV_EVENT_X_EXTERN_TEMPLATE_GETIF, SFML_PRIV_EVENT_X_SEMICOLON);
 
-#include <SFML/Window/Event.inl>
+#include "SFML/Window/Event.inl"
 
 ////////////////////////////////////////////////////////////
 /// \class sf::Event

@@ -1,18 +1,18 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
+#include "SFML/Copyright.hpp" // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/EffectProcessor.hpp>
-#include <SFML/Audio/MiniaudioUtils.hpp>
-#include <SFML/Audio/PlaybackDevice.hpp>
-#include <SFML/Audio/SavedSettings.hpp>
-#include <SFML/Audio/SoundChannel.hpp>
+#include "SFML/Audio/EffectProcessor.hpp"
+#include "SFML/Audio/MiniaudioUtils.hpp"
+#include "SFML/Audio/PlaybackDevice.hpp"
+#include "SFML/Audio/SavedSettings.hpp"
+#include "SFML/Audio/SoundChannel.hpp"
 
-#include <SFML/System/Err.hpp>
-#include <SFML/System/Time.hpp>
+#include "SFML/System/Err.hpp"
+#include "SFML/System/Time.hpp"
 
-#include <SFML/Base/Assert.hpp>
+#include "SFML/Base/Assert.hpp"
 
 #include <miniaudio.h>
 
@@ -47,7 +47,10 @@ struct MiniaudioUtils::SoundBase::Impl
     std::vector<ma_channel> soundChannelMap; //!< The map of position in sample frame to sound channel (miniaudio channels)
     ma_sound        sound{};                 //!< The sound
     EffectProcessor effectProcessor;         //!< The effect processor
-    PlaybackDevice::ResourceEntryIndex resourceEntryIndex; //!< Index of the resource entry registered with the PlaybackDevice
+
+    PlaybackDevice::ResourceEntryIndex resourceEntryIndex{static_cast<PlaybackDevice::ResourceEntryIndex>(
+        -1)}; //!< Index of the resource entry registered with the PlaybackDevice
+
     SavedSettings savedSettings; //!< Saved settings used to restore ma_sound state in case we need to recreate it
 
     [[maybe_unused]] bool effectNodeUninitialized{}; //!< Failsafe debug boolean to check if `onProcess` is called after destruction

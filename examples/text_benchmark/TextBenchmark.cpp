@@ -1,28 +1,28 @@
 
-#include <SFML/Graphics/CircleShape.hpp>
-#include <SFML/Graphics/Font.hpp>
-#include <SFML/Graphics/GraphicsContext.hpp>
-#include <SFML/Graphics/Image.hpp>
-#include <SFML/Graphics/PrimitiveType.hpp>
-#include <SFML/Graphics/RenderStates.hpp>
-#include <SFML/Graphics/RenderTexture.hpp>
-#include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Graphics/Sprite.hpp>
-#include <SFML/Graphics/Text.hpp>
-#include <SFML/Graphics/Texture.hpp>
-#include <SFML/Graphics/Vertex.hpp>
+#include "SFML/Graphics/CircleShape.hpp"
+#include "SFML/Graphics/Font.hpp"
+#include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/Image.hpp"
+#include "SFML/Graphics/PrimitiveType.hpp"
+#include "SFML/Graphics/RenderStates.hpp"
+#include "SFML/Graphics/RenderTexture.hpp"
+#include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/Sprite.hpp"
+#include "SFML/Graphics/Text.hpp"
+#include "SFML/Graphics/Texture.hpp"
+#include "SFML/Graphics/Vertex.hpp"
 
-#include <SFML/Window/ContextSettings.hpp>
-#include <SFML/Window/Event.hpp>
-#include <SFML/Window/EventUtils.hpp>
-#include <SFML/Window/GameLoop.hpp>
-#include <SFML/Window/WindowSettings.hpp>
+#include "SFML/Window/ContextSettings.hpp"
+#include "SFML/Window/Event.hpp"
+#include "SFML/Window/EventUtils.hpp"
+#include "SFML/Window/GameLoop.hpp"
+#include "SFML/Window/WindowSettings.hpp"
 
-#include <SFML/System/Clock.hpp>
-#include <SFML/System/Path.hpp>
-#include <SFML/System/String.hpp>
+#include "SFML/System/Clock.hpp"
+#include "SFML/System/Path.hpp"
+#include "SFML/System/String.hpp"
 
-#include <SFML/Base/Optional.hpp>
+#include "SFML/Base/Optional.hpp"
 
 #include <GL/gl.h>
 
@@ -138,13 +138,13 @@ int main()
 
 #elif defined(BARABARAR)
 
-#include <SFML/Graphics/Font.hpp>
-#include <SFML/Graphics/GraphicsContext.hpp>
-#include <SFML/Graphics/RenderTexture.hpp>
-#include <SFML/Graphics/Text.hpp>
+#include "SFML/Graphics/Font.hpp"
+#include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/RenderTexture.hpp"
+#include "SFML/Graphics/Text.hpp"
 
-#include <SFML/System/Path.hpp>
-#include <SFML/System/String.hpp>
+#include "SFML/System/Path.hpp"
+#include "SFML/System/String.hpp"
 
 #include <sstream>
 
@@ -221,13 +221,13 @@ int main()
 
 #else
 
-#include <SFML/Graphics/Font.hpp>
-#include <SFML/Graphics/GraphicsContext.hpp>
-#include <SFML/Graphics/RenderTexture.hpp>
-#include <SFML/Graphics/Text.hpp>
+#include "SFML/Graphics/Font.hpp"
+#include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/RenderTexture.hpp"
+#include "SFML/Graphics/Text.hpp"
 
-#include <SFML/System/Path.hpp>
-#include <SFML/System/String.hpp>
+#include "SFML/System/Path.hpp"
+#include "SFML/System/String.hpp"
 
 #include <cstdlib>
 

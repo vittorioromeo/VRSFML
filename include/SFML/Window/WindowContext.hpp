@@ -4,13 +4,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Export.hpp>
+#include "SFML/System/Vector2.hpp"
 
-#include <SFML/System/Vector2.hpp>
-
-#include <SFML/Base/InPlacePImpl.hpp>
-#include <SFML/Base/Optional.hpp>
-#include <SFML/Base/UniquePtr.hpp>
+#include "SFML/Base/UniquePtr.hpp"
 
 #include <cstdint>
 

@@ -1,7 +1,7 @@
-#include <SFML/Network/Packet.hpp>
+#include "SFML/Network/Packet.hpp"
 
 // Other 1st party headers
-#include <SFML/System/String.hpp>
+#include "SFML/System/String.hpp"
 
 #include <Doctest.hpp>
 

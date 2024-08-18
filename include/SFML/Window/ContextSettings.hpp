@@ -4,9 +4,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Config.hpp>
+#include "SFML/Config.hpp"
 
-#include <SFML/Base/EnumClassBitwiseOps.hpp>
+#include "SFML/Base/EnumClassBitwiseOps.hpp"
 
 #include <cstdint>
 

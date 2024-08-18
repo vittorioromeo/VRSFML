@@ -1,7 +1,7 @@
-#include <SFML/Graphics/ConvexShape.hpp>
+#include "SFML/Graphics/ConvexShape.hpp"
 
 // Other 1st party headers
-#include <SFML/Graphics/CircleShape.hpp>
+#include "SFML/Graphics/CircleShape.hpp"
 
 #include <Doctest.hpp>
 

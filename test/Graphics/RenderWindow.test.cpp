@@ -1,16 +1,16 @@
-#include <SFML/Graphics/RenderWindow.hpp>
+#include "SFML/Graphics/RenderWindow.hpp"
 
 // Other 1st party headers
-#include <SFML/Graphics/GraphicsContext.hpp>
-#include <SFML/Graphics/Image.hpp>
-#include <SFML/Graphics/Texture.hpp>
-#include <SFML/Graphics/View.hpp>
+#include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/Image.hpp"
+#include "SFML/Graphics/Texture.hpp"
+#include "SFML/Graphics/View.hpp"
 
-#include <SFML/Window/WindowSettings.hpp>
+#include "SFML/Window/WindowSettings.hpp"
 
-#include <SFML/System/String.hpp>
+#include "SFML/System/String.hpp"
 
-#include <SFML/Base/Optional.hpp>
+#include "SFML/Base/Optional.hpp"
 
 #include <Doctest.hpp>
 

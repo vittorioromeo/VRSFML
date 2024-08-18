@@ -1,16 +1,16 @@
-#include <SFML/Audio/SoundFileFactory.hpp>
+#include "SFML/Audio/SoundFileFactory.hpp"
 
 // Other 1st party headers
-#include <SFML/Audio/ChannelMap.hpp>
-#include <SFML/Audio/SoundChannel.hpp>
-#include <SFML/Audio/SoundFileReader.hpp>
-#include <SFML/Audio/SoundFileWriter.hpp>
+#include "SFML/Audio/ChannelMap.hpp"
+#include "SFML/Audio/SoundChannel.hpp"
+#include "SFML/Audio/SoundFileReader.hpp"
+#include "SFML/Audio/SoundFileWriter.hpp"
 
-#include <SFML/System/FileInputStream.hpp>
-#include <SFML/System/InputStream.hpp>
-#include <SFML/System/Path.hpp>
+#include "SFML/System/FileInputStream.hpp"
+#include "SFML/System/InputStream.hpp"
+#include "SFML/System/Path.hpp"
 
-#include <SFML/Base/Optional.hpp>
+#include "SFML/Base/Optional.hpp"
 
 #include <Doctest.hpp>
 

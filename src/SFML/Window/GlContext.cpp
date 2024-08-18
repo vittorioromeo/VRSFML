@@ -3,13 +3,15 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/ContextSettings.hpp>
-#include <SFML/Window/GLCheck.hpp>
-#include <SFML/Window/GlContext.hpp>
-#include <SFML/Window/GlContextTypeImpl.hpp>
-#include <SFML/Window/WindowContext.hpp>
+#include "SFML/Config.hpp"
 
-#include <SFML/System/Err.hpp>
+#include "SFML/Window/ContextSettings.hpp"
+#include "SFML/Window/GLCheck.hpp"
+#include "SFML/Window/GlContext.hpp"
+#include "SFML/Window/GlContextTypeImpl.hpp"
+#include "SFML/Window/WindowContext.hpp"
+
+#include "SFML/System/Err.hpp"
 
 #include <glad/gl.h>
 

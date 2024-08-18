@@ -4,8 +4,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Base/Assert.hpp>
-#include <SFML/Base/Traits/IsBaseOf.hpp>
+#include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Traits/IsBaseOf.hpp"
 
 
 namespace sf::base

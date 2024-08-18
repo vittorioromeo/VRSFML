@@ -3,12 +3,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Android/WindowImplAndroid.hpp>
-#include <SFML/Window/Event.hpp>
-#include <SFML/Window/WindowEnums.hpp>
-#include <SFML/Window/WindowSettings.hpp>
+#include "SFML/Window/Android/WindowImplAndroid.hpp"
+#include "SFML/Window/Event.hpp"
+#include "SFML/Window/WindowEnums.hpp"
+#include "SFML/Window/WindowSettings.hpp"
 
-#include <SFML/System/Err.hpp>
+#include "SFML/System/Err.hpp"
 
 #include <android/looper.h>
 

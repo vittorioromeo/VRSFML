@@ -1,7 +1,8 @@
-#include <SFML/System/String.hpp>
-#include <SFML/System/StringUtfUtils.hpp>
+#include "SFML/System/String.hpp"
 
-#include <SFML/Base/Assert.hpp>
+#include "SFML/System/StringUtfUtils.hpp"
+
+#include "SFML/Base/Assert.hpp"
 
 #include <Doctest.hpp>
 

@@ -3,12 +3,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/SensorImpl.hpp>
+#include "SFML/Window/SensorImpl.hpp"
 
-#include <SFML/System/Time.hpp>
+#include "SFML/System/Time.hpp"
 
-#include <SFML/Base/EnumArray.hpp>
-#include <SFML/Base/Optional.hpp>
+#include "SFML/Base/EnumArray.hpp"
+#include "SFML/Base/Optional.hpp"
 
 #include <android/looper.h>
 

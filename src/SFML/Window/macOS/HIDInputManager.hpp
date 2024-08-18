@@ -4,8 +4,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/JoystickImpl.hpp>
-#include <SFML/Window/Keyboard.hpp>
+#include "SFML/Window/JoystickImpl.hpp"
+#include "SFML/Window/Keyboard.hpp"
 
 #include <IOKit/hid/IOHIDDevice.h>
 #include <IOKit/hid/IOHIDManager.h>

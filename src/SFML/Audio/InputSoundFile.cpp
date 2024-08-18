@@ -3,22 +3,22 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/ChannelMap.hpp>
-#include <SFML/Audio/InputSoundFile.hpp>
-#include <SFML/Audio/SoundFileFactory.hpp>
-#include <SFML/Audio/SoundFileReader.hpp>
+#include "SFML/Audio/ChannelMap.hpp"
+#include "SFML/Audio/InputSoundFile.hpp"
+#include "SFML/Audio/SoundFileFactory.hpp"
+#include "SFML/Audio/SoundFileReader.hpp"
 
-#include <SFML/System/Err.hpp>
-#include <SFML/System/FileInputStream.hpp>
-#include <SFML/System/InputStream.hpp>
-#include <SFML/System/MemoryInputStream.hpp>
-#include <SFML/System/Path.hpp>
-#include <SFML/System/PathUtils.hpp>
-#include <SFML/System/Time.hpp>
+#include "SFML/System/Err.hpp"
+#include "SFML/System/FileInputStream.hpp"
+#include "SFML/System/InputStream.hpp"
+#include "SFML/System/MemoryInputStream.hpp"
+#include "SFML/System/Path.hpp"
+#include "SFML/System/PathUtils.hpp"
+#include "SFML/System/Time.hpp"
 
-#include <SFML/Base/Algorithm.hpp>
-#include <SFML/Base/Assert.hpp>
-#include <SFML/Base/Macros.hpp>
+#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Macros.hpp"
 
 #include <cstdint>
 

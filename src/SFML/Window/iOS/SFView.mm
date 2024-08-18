@@ -3,10 +3,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/iOS/SFAppDelegate.hpp>
-#include <SFML/Window/iOS/SFView.hpp>
+#include "SFML/Window/iOS/SFAppDelegate.hpp"
+#include "SFML/Window/iOS/SFView.hpp"
 
-#include <SFML/System/Utf.hpp>
+#include "SFML/System/Utf.hpp"
 
 #include <QuartzCore/CAEAGLLayer.h>
 

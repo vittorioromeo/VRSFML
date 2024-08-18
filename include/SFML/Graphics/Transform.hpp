@@ -4,10 +4,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Export.hpp>
+#include "SFML/Graphics/Export.hpp"
 
-#include <SFML/System/Rect.hpp>
-#include <SFML/System/Vector2.hpp>
+#include "SFML/System/Rect.hpp"
+#include "SFML/System/Vector2.hpp"
 
 
 namespace sf
@@ -322,7 +322,7 @@ constexpr Transform& operator*=(Transform& left, const Transform& right);
 
 } // namespace sf
 
-#include <SFML/Graphics/Transform.inl>
+#include "SFML/Graphics/Transform.inl"
 
 
 ////////////////////////////////////////////////////////////

@@ -3,11 +3,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Unix/Display.hpp>
+#include "SFML/Window/Unix/Display.hpp"
 
-#include <SFML/System/Err.hpp>
+#include "SFML/System/Err.hpp"
 
-#include <SFML/Base/Assert.hpp>
+#include "SFML/Base/Assert.hpp"
 
 #include <X11/keysym.h>
 

@@ -4,15 +4,14 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/Export.hpp>
+#include "SFML/Audio/Export.hpp"
 
-#include <SFML/Audio/ChannelMap.hpp>
-#include <SFML/Audio/SoundChannel.hpp>
-#include <SFML/Audio/SoundStream.hpp>
+#include "SFML/Audio/ChannelMap.hpp"
+#include "SFML/Audio/SoundStream.hpp"
 
-#include <SFML/Base/Optional.hpp>
-#include <SFML/Base/PassKey.hpp>
-#include <SFML/Base/UniquePtr.hpp>
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 
 #include <cstddef>
 #include <cstdint>
@@ -32,7 +31,7 @@ class Time;
 
 namespace sf
 {
-class Music : public SoundStream
+class SFML_AUDIO_API Music : public SoundStream
 {
 public:
     ////////////////////////////////////////////////////////////

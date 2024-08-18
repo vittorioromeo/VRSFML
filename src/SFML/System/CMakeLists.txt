@@ -115,7 +115,6 @@ set(SRC
     ${INCROOT}/Utf.hpp
     ${INCROOT}/Utf.inl
     ${SRCROOT}/Utils.hpp
-    ${SRCROOT}/Utils.cpp
     ${SRCROOT}/Vector2.cpp
     ${INCROOT}/Vector2.hpp
     ${INCROOT}/Vector2.inl

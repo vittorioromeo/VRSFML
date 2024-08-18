@@ -1,38 +1,38 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/CircleShape.hpp>
-#include <SFML/Graphics/ConvexShape.hpp>
-#include <SFML/Graphics/Font.hpp>
-#include <SFML/Graphics/GraphicsContext.hpp>
-#include <SFML/Graphics/RenderStates.hpp>
-#include <SFML/Graphics/RenderTarget.hpp>
-#include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Graphics/Sprite.hpp>
-#include <SFML/Graphics/Text.hpp>
-#include <SFML/Graphics/Texture.hpp>
-#include <SFML/Graphics/Transform.hpp>
+#include "SFML/Graphics/CircleShape.hpp"
+#include "SFML/Graphics/ConvexShape.hpp"
+#include "SFML/Graphics/Font.hpp"
+#include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/RenderStates.hpp"
+#include "SFML/Graphics/RenderTarget.hpp"
+#include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/Sprite.hpp"
+#include "SFML/Graphics/Text.hpp"
+#include "SFML/Graphics/Texture.hpp"
+#include "SFML/Graphics/Transform.hpp"
 
-#include <SFML/Audio/AudioContext.hpp>
-#include <SFML/Audio/AudioContextUtils.hpp>
-#include <SFML/Audio/EffectProcessor.hpp>
-#include <SFML/Audio/Listener.hpp>
-#include <SFML/Audio/Music.hpp>
-#include <SFML/Audio/PlaybackDevice.hpp>
-#include <SFML/Audio/PlaybackDeviceHandle.hpp>
-#include <SFML/Audio/SoundStream.hpp>
+#include "SFML/Audio/AudioContext.hpp"
+#include "SFML/Audio/AudioContextUtils.hpp"
+#include "SFML/Audio/EffectProcessor.hpp"
+#include "SFML/Audio/Listener.hpp"
+#include "SFML/Audio/Music.hpp"
+#include "SFML/Audio/PlaybackDevice.hpp"
+#include "SFML/Audio/PlaybackDeviceHandle.hpp"
+#include "SFML/Audio/SoundStream.hpp"
 
-#include <SFML/Window/Event.hpp>
-#include <SFML/Window/EventUtils.hpp>
-#include <SFML/Window/GameLoop.hpp>
-#include <SFML/Window/Keyboard.hpp>
-#include <SFML/Window/WindowSettings.hpp>
+#include "SFML/Window/Event.hpp"
+#include "SFML/Window/EventUtils.hpp"
+#include "SFML/Window/GameLoop.hpp"
+#include "SFML/Window/Keyboard.hpp"
+#include "SFML/Window/WindowSettings.hpp"
 
-#include <SFML/System/Clock.hpp>
-#include <SFML/System/Path.hpp>
-#include <SFML/System/String.hpp>
-#include <SFML/System/Time.hpp>
-#include <SFML/System/Vector2.hpp>
+#include "SFML/System/Clock.hpp"
+#include "SFML/System/Path.hpp"
+#include "SFML/System/String.hpp"
+#include "SFML/System/Time.hpp"
+#include "SFML/System/Vector2.hpp"
 
 #include <algorithm>
 #include <array>

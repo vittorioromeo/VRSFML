@@ -3,11 +3,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/String.hpp>
-#include <SFML/System/StringUtfUtils.hpp> // NOLINT(misc-header-include-cycle)
-#include <SFML/System/Utf.hpp>
+#include "SFML/System/String.hpp"
+#include "SFML/System/StringUtfUtils.hpp" // NOLINT(misc-header-include-cycle)
+#include "SFML/System/Utf.hpp"
 
-#include <SFML/Base/Algorithm.hpp>
+#include "SFML/Base/Algorithm.hpp"
 
 
 namespace sf

@@ -3,9 +3,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Sprite.hpp>
+#include "SFML/Graphics/Sprite.hpp"
 
-#include <SFML/Base/Math/Fabs.hpp>
+#include "SFML/Base/Math/Fabs.hpp"
 
 
 namespace sf

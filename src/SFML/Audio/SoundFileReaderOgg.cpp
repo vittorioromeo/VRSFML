@@ -3,12 +3,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/SoundFileReaderOgg.hpp>
+#include "SFML/Audio/SoundFileReaderOgg.hpp"
 
-#include <SFML/System/Err.hpp>
-#include <SFML/System/InputStream.hpp>
+#include "SFML/System/Err.hpp"
+#include "SFML/System/InputStream.hpp"
 
-#include <SFML/Base/Assert.hpp>
+#include "SFML/Base/Assert.hpp"
 
 #include <vorbis/vorbisfile.h>
 

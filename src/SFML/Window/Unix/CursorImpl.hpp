@@ -4,10 +4,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Cursor.hpp>
-#include <SFML/Window/WindowEnums.hpp> // Prevent conflict with macro None from Xlib
+#include "SFML/Window/Cursor.hpp"
+#include "SFML/Window/WindowEnums.hpp" // Prevent conflict with macro None from Xlib
 
-#include <SFML/System/Vector2.hpp>
+#include "SFML/System/Vector2.hpp"
 
 #include <X11/Xlib.h>
 

@@ -1,4 +1,4 @@
-#include <SFML/Audio/SoundBufferRecorder.hpp>
+#include "SFML/Audio/SoundBufferRecorder.hpp"
 
 #include <CommonTraits.hpp>
 

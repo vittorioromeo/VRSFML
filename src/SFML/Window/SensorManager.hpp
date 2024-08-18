@@ -4,10 +4,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Sensor.hpp>
-#include <SFML/Window/SensorImpl.hpp>
+#include "SFML/Window/Sensor.hpp"
+#include "SFML/Window/SensorImpl.hpp"
 
-#include <SFML/Base/EnumArray.hpp>
+#include "SFML/Base/EnumArray.hpp"
 
 
 namespace sf::priv

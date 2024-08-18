@@ -3,12 +3,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Network/Socket.hpp>
-#include <SFML/Network/SocketImpl.hpp>
+#include "SFML/Network/Socket.hpp"
+#include "SFML/Network/SocketImpl.hpp"
 
-#include <SFML/System/Err.hpp>
+#include "SFML/System/Err.hpp"
 
-#include <SFML/Base/Algorithm.hpp>
+#include "SFML/Base/Algorithm.hpp"
 
 
 namespace sf

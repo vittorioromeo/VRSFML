@@ -3,8 +3,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/InputImpl.hpp>
-#include <SFML/Window/Touch.hpp>
+#include "SFML/Window/InputImpl.hpp"
+#include "SFML/Window/Touch.hpp"
 
 
 namespace sf

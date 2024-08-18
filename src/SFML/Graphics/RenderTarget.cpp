@@ -3,30 +3,30 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/BlendMode.hpp>
-#include <SFML/Graphics/CoordinateType.hpp>
-#include <SFML/Graphics/GraphicsContext.hpp>
-#include <SFML/Graphics/RenderStates.hpp>
-#include <SFML/Graphics/RenderTarget.hpp>
-#include <SFML/Graphics/Shader.hpp>
-#include <SFML/Graphics/Shape.hpp>
-#include <SFML/Graphics/Sprite.hpp>
-#include <SFML/Graphics/StencilMode.hpp>
-#include <SFML/Graphics/Texture.hpp>
-#include <SFML/Graphics/Vertex.hpp>
-#include <SFML/Graphics/VertexBuffer.hpp>
-#include <SFML/Graphics/View.hpp>
+#include "SFML/Graphics/BlendMode.hpp"
+#include "SFML/Graphics/CoordinateType.hpp"
+#include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/RenderStates.hpp"
+#include "SFML/Graphics/RenderTarget.hpp"
+#include "SFML/Graphics/Shader.hpp"
+#include "SFML/Graphics/Shape.hpp"
+#include "SFML/Graphics/Sprite.hpp"
+#include "SFML/Graphics/StencilMode.hpp"
+#include "SFML/Graphics/Texture.hpp"
+#include "SFML/Graphics/Vertex.hpp"
+#include "SFML/Graphics/VertexBuffer.hpp"
+#include "SFML/Graphics/View.hpp"
 
-#include <SFML/Window/GLCheck.hpp>
-#include <SFML/Window/GLExtensions.hpp>
+#include "SFML/Window/GLCheck.hpp"
+#include "SFML/Window/GLExtensions.hpp"
 
-#include <SFML/System/Err.hpp>
-#include <SFML/System/Rect.hpp>
+#include "SFML/System/Err.hpp"
+#include "SFML/System/Rect.hpp"
 
-#include <SFML/Base/Algorithm.hpp>
-#include <SFML/Base/Assert.hpp>
-#include <SFML/Base/Math/Lround.hpp>
-#include <SFML/Base/Optional.hpp>
+#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Math/Lround.hpp"
+#include "SFML/Base/Optional.hpp"
 
 #include <atomic>
 

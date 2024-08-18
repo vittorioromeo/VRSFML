@@ -3,8 +3,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/JoystickIdentification.hpp>
-#include <SFML/Window/JoystickManager.hpp>
+#include "SFML/Window/JoystickIdentification.hpp"
+#include "SFML/Window/JoystickManager.hpp"
 
 
 namespace sf

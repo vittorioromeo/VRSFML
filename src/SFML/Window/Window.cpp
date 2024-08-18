@@ -3,22 +3,20 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/GLExtensions.hpp>
-#include <SFML/Window/GlContext.hpp>
-#include <SFML/Window/VideoMode.hpp>
-#include <SFML/Window/VideoModeUtils.hpp>
-#include <SFML/Window/Window.hpp>
-#include <SFML/Window/WindowContext.hpp>
-#include <SFML/Window/WindowImpl.hpp>
-#include <SFML/Window/WindowSettings.hpp>
+#include "SFML/Window/GlContext.hpp"
+#include "SFML/Window/VideoMode.hpp"
+#include "SFML/Window/VideoModeUtils.hpp"
+#include "SFML/Window/Window.hpp"
+#include "SFML/Window/WindowContext.hpp"
+#include "SFML/Window/WindowImpl.hpp"
+#include "SFML/Window/WindowSettings.hpp"
 
-#include <SFML/System/Clock.hpp>
-#include <SFML/System/Err.hpp>
-#include <SFML/System/Sleep.hpp>
-#include <SFML/System/String.hpp>
-#include <SFML/System/Time.hpp>
+#include "SFML/System/Clock.hpp"
+#include "SFML/System/Err.hpp"
+#include "SFML/System/Sleep.hpp"
+#include "SFML/System/Time.hpp"
 
-#include <SFML/Base/Macros.hpp>
+#include "SFML/Base/Macros.hpp"
 
 
 namespace sf

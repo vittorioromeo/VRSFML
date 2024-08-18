@@ -3,33 +3,33 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/CursorImpl.hpp>
-#include <SFML/Window/InputImpl.hpp>
-#include <SFML/Window/Unix/ClipboardImpl.hpp>
-#include <SFML/Window/Unix/Display.hpp>
-#include <SFML/Window/Unix/KeyboardImpl.hpp>
-#include <SFML/Window/Unix/Utils.hpp>
-#include <SFML/Window/Unix/WindowImplX11.hpp>
-#include <SFML/Window/VideoMode.hpp>
-#include <SFML/Window/VideoModeUtils.hpp>
-#include <SFML/Window/WindowSettings.hpp>
+#include "SFML/Window/CursorImpl.hpp"
+#include "SFML/Window/InputImpl.hpp"
+#include "SFML/Window/Unix/ClipboardImpl.hpp"
+#include "SFML/Window/Unix/Display.hpp"
+#include "SFML/Window/Unix/KeyboardImpl.hpp"
+#include "SFML/Window/Unix/Utils.hpp"
+#include "SFML/Window/Unix/WindowImplX11.hpp"
+#include "SFML/Window/VideoMode.hpp"
+#include "SFML/Window/VideoModeUtils.hpp"
+#include "SFML/Window/WindowSettings.hpp"
 
-#include <SFML/System/Err.hpp>
-#include <SFML/System/Sleep.hpp>
-#include <SFML/System/String.hpp>
-#include <SFML/System/StringUtfUtils.hpp>
-#include <SFML/System/Time.hpp>
-#include <SFML/System/Utf.hpp>
+#include "SFML/System/Err.hpp"
+#include "SFML/System/Sleep.hpp"
+#include "SFML/System/String.hpp"
+#include "SFML/System/StringUtfUtils.hpp"
+#include "SFML/System/Time.hpp"
+#include "SFML/System/Utf.hpp"
 
-#include <SFML/Base/Algorithm.hpp>
+#include "SFML/Base/Algorithm.hpp"
 
 #include <X11/Xlibint.h>
 #undef min // Defined by `Xlibint.h`, conflicts with standard headers
 #undef max // Defined by `Xlibint.h`, conflicts with standard headers
 
-#include <SFML/System/Path.hpp>
+#include "SFML/System/Path.hpp"
 
-#include <SFML/Base/Assert.hpp>
+#include "SFML/Base/Assert.hpp"
 
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
@@ -51,10 +51,10 @@
 #include <cstring>
 
 #ifdef SFML_OPENGL_ES
-#include <SFML/Window/EglContext.hpp>
+#include "SFML/Window/EglContext.hpp"
 using DerivedGlContextType = sf::priv::EglContext;
 #else
-#include <SFML/Window/Unix/GlxContext.hpp>
+#include "SFML/Window/Unix/GlxContext.hpp"
 using DerivedGlContextType = sf::priv::GlxContext;
 #endif
 

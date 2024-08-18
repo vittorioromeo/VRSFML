@@ -3,10 +3,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/CircleShape.hpp>
+#include "SFML/Graphics/CircleShape.hpp"
 
-#include <SFML/System/Angle.hpp>
-#include <SFML/System/Vector2.hpp>
+#include "SFML/System/Angle.hpp"
+#include "SFML/System/Vector2.hpp"
 
 #include <vector>
 

@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/SoundFileFactory.hpp> // NOLINT(misc-header-include-cycle)
+#include "SFML/Audio/SoundFileFactory.hpp" // NOLINT(misc-header-include-cycle)
 
 
 namespace sf::priv

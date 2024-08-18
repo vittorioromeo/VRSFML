@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/Export.hpp>
+#include "SFML/Config.hpp"
 
 
 namespace sf
@@ -379,7 +379,7 @@ extern template class sf::Vector2<bool>;
 extern template class sf::Vector2<int>;
 extern template class sf::Vector2<unsigned int>;
 
-#include <SFML/System/Vector2.inl>
+#include "SFML/System/Vector2.inl"
 
 
 ////////////////////////////////////////////////////////////

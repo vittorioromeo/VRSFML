@@ -3,9 +3,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Stub/StubCursorImpl.hpp>
+#include "SFML/Window/Stub/StubCursorImpl.hpp"
 
-#include <SFML/System/Err.hpp>
+#include "SFML/System/Err.hpp"
 
 
 namespace sf::priv

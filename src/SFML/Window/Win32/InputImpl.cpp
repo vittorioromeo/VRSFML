@@ -3,14 +3,15 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/InputImpl.hpp>
-#include <SFML/Window/Window.hpp>
+#include "SFML/Window/InputImpl.hpp"
+#include "SFML/Window/WindowBase.hpp"
+#include "SFML/Window/WindowHandle.hpp"
 
-#include <SFML/System/String.hpp>
-#include <SFML/System/Win32/WindowsHeader.hpp>
+#include "SFML/System/String.hpp"
+#include "SFML/System/Win32/WindowsHeader.hpp"
 
-#include <SFML/Base/EnumArray.hpp>
-#include <SFML/Base/Optional.hpp>
+#include "SFML/Base/EnumArray.hpp"
+#include "SFML/Base/Optional.hpp"
 
 
 namespace

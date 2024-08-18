@@ -4,9 +4,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Export.hpp>
+#include "SFML/Graphics/Export.hpp"
 
-#include <SFML/Graphics/PrimitiveType.hpp>
+#include "SFML/Graphics/PrimitiveType.hpp"
 
 #include <cstddef>
 

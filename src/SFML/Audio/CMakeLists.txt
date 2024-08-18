@@ -15,7 +15,6 @@ set(SRC
     ${SRCROOT}/ChannelMap.cpp
     ${INCROOT}/ChannelMap.hpp
     ${INCROOT}/Export.hpp
-    ${SRCROOT}/Listener.cpp
     ${INCROOT}/Listener.hpp
     ${SRCROOT}/Miniaudio.cpp
     ${SRCROOT}/MiniaudioUtils.hpp

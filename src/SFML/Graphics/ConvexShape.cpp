@@ -3,9 +3,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/ConvexShape.hpp>
+#include "SFML/Graphics/ConvexShape.hpp"
 
-#include <SFML/Base/Assert.hpp>
+#include "SFML/Base/Assert.hpp"
 
 #include <vector>
 

@@ -3,11 +3,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/Vector3.hpp> // NOLINTNEXTLINE(misc-header-include-cycle)
+#include "SFML/System/Vector3.hpp" // NOLINTNEXTLINE(misc-header-include-cycle)
 
-#include <SFML/Base/Assert.hpp>
-#include <SFML/Base/Math/Sqrt.hpp>
-#include <SFML/Base/Traits/IsFloatingPoint.hpp>
+#include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Math/Sqrt.hpp"
+#include "SFML/Base/Traits/IsFloatingPoint.hpp"
+
 
 namespace sf
 {

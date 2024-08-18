@@ -4,12 +4,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Export.hpp>
+#include "SFML/Graphics/Export.hpp"
 
-#include <SFML/Graphics/BlendMode.hpp>
-#include <SFML/Graphics/CoordinateType.hpp>
-#include <SFML/Graphics/StencilMode.hpp>
-#include <SFML/Graphics/Transform.hpp>
+#include "SFML/Graphics/BlendMode.hpp"
+#include "SFML/Graphics/CoordinateType.hpp"
+#include "SFML/Graphics/StencilMode.hpp"
+#include "SFML/Graphics/Transform.hpp"
 
 
 namespace sf

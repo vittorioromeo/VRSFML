@@ -4,8 +4,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Event.hpp>
-#include <SFML/Window/WindowImpl.hpp>
+#include "SFML/Window/Event.hpp"
+#include "SFML/Window/WindowImpl.hpp"
 
 namespace sf::priv
 {

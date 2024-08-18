@@ -1,6 +1,7 @@
-#include <SFML/System/Rect.hpp>
-#include <SFML/System/RectUtils.hpp>
-#include <SFML/System/Vector2.hpp>
+#include "SFML/System/Rect.hpp"
+
+#include "SFML/System/RectUtils.hpp"
+#include "SFML/System/Vector2.hpp"
 
 #include <Doctest.hpp>
 

@@ -3,18 +3,17 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/GraphicsContext.hpp>
-#include <SFML/Graphics/RenderTarget.hpp>
-#include <SFML/Graphics/RenderTexture.hpp>
-#include <SFML/Graphics/RenderTextureImplDefault.hpp>
-#include <SFML/Graphics/RenderTextureImplFBO.hpp>
-#include <SFML/Graphics/Texture.hpp>
+#include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/RenderTarget.hpp"
+#include "SFML/Graphics/RenderTexture.hpp"
+#include "SFML/Graphics/RenderTextureImplDefault.hpp"
+#include "SFML/Graphics/RenderTextureImplFBO.hpp"
+#include "SFML/Graphics/Texture.hpp"
 
-#include <SFML/System/Err.hpp>
+#include "SFML/System/Err.hpp"
 
-#include <SFML/Base/Macros.hpp>
-#include <SFML/Base/UniquePtr.hpp>
-#include <SFML/Base/Variant.hpp>
+#include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Variant.hpp"
 
 
 namespace sf

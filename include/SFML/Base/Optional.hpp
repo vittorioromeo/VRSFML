@@ -4,28 +4,25 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/Export.hpp>
-
-#include <SFML/Base/Assert.hpp>
-#include <SFML/Base/Launder.hpp>
-#include <SFML/Base/Macros.hpp>
-#include <SFML/Base/PlacementNew.hpp>
-#include <SFML/Base/Traits/IsCopyAssignable.hpp>
-#include <SFML/Base/Traits/IsCopyConstructible.hpp>
-#include <SFML/Base/Traits/IsMoveAssignable.hpp>
-#include <SFML/Base/Traits/IsMoveConstructible.hpp>
-#include <SFML/Base/Traits/IsTriviallyCopyAssignable.hpp>
-#include <SFML/Base/Traits/IsTriviallyCopyConstructible.hpp>
-#include <SFML/Base/Traits/IsTriviallyCopyable.hpp>
-#include <SFML/Base/Traits/IsTriviallyDestructible.hpp>
-#include <SFML/Base/Traits/IsTriviallyMoveAssignable.hpp>
-#include <SFML/Base/Traits/IsTriviallyMoveConstructible.hpp>
-#include <SFML/Base/Traits/RemoveCVRef.hpp>
+#include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Launder.hpp"
+#include "SFML/Base/Macros.hpp"
+#include "SFML/Base/PlacementNew.hpp"
+#include "SFML/Base/Traits/IsCopyAssignable.hpp"
+#include "SFML/Base/Traits/IsCopyConstructible.hpp"
+#include "SFML/Base/Traits/IsMoveAssignable.hpp"
+#include "SFML/Base/Traits/IsMoveConstructible.hpp"
+#include "SFML/Base/Traits/IsTriviallyCopyAssignable.hpp"
+#include "SFML/Base/Traits/IsTriviallyCopyConstructible.hpp"
+#include "SFML/Base/Traits/IsTriviallyDestructible.hpp"
+#include "SFML/Base/Traits/IsTriviallyMoveAssignable.hpp"
+#include "SFML/Base/Traits/IsTriviallyMoveConstructible.hpp"
+#include "SFML/Base/Traits/RemoveCVRef.hpp"
 
 
 namespace sf::base::priv
 {
-////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////// ///
 [[gnu::cold]] void throwIfNotEngaged();
 
 } // namespace sf::base::priv

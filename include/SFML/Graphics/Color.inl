@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Color.hpp> // NOLINT(misc-header-include-cycle)
+#include "SFML/Graphics/Color.hpp" // NOLINT(misc-header-include-cycle)
 
 
 namespace sf

@@ -3,19 +3,19 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/CursorImpl.hpp>
-#include <SFML/Window/WindowSettings.hpp>
-#include <SFML/Window/macOS/AutoreleasePoolWrapper.hpp>
+#include "SFML/Window/CursorImpl.hpp"
+#include "SFML/Window/WindowSettings.hpp"
+#include "SFML/Window/macOS/AutoreleasePoolWrapper.hpp"
 #import <SFML/Window/macOS/SFApplication.h>
 #import <SFML/Window/macOS/SFApplicationDelegate.h>
 #import <SFML/Window/macOS/SFKeyboardModifiersHelper.h>
 #import <SFML/Window/macOS/SFViewController.h>
 #import <SFML/Window/macOS/SFWindowController.h>
 #import <SFML/Window/macOS/Scaling.h>
-#include <SFML/Window/macOS/WindowImplCocoa.hpp>
+#include "SFML/Window/macOS/WindowImplCocoa.hpp"
 
-#include <SFML/System/Err.hpp>
-#include <SFML/System/String.hpp>
+#include "SFML/System/Err.hpp"
+#include "SFML/System/String.hpp"
 
 #include <limits>
 

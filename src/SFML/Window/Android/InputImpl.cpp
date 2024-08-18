@@ -3,10 +3,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/InputImpl.hpp>
+#include "SFML/Window/InputImpl.hpp"
 
-#include <SFML/System/Android/Activity.hpp>
-#include <SFML/System/Err.hpp>
+#include "SFML/System/Android/Activity.hpp"
+#include "SFML/System/Err.hpp"
 
 #include <jni.h>
 

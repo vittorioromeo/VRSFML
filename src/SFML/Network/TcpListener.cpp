@@ -3,11 +3,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Network/SocketImpl.hpp>
-#include <SFML/Network/TcpListener.hpp>
-#include <SFML/Network/TcpSocket.hpp>
+#include "SFML/Network/SocketImpl.hpp"
+#include "SFML/Network/TcpListener.hpp"
+#include "SFML/Network/TcpSocket.hpp"
 
-#include <SFML/System/Err.hpp>
+#include "SFML/System/Err.hpp"
 
 
 namespace sf

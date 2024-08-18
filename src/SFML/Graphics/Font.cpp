@@ -3,22 +3,22 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Font.hpp>
-#include <SFML/Graphics/FontInfo.hpp>
-#include <SFML/Graphics/Glyph.hpp>
-#include <SFML/Graphics/GraphicsContext.hpp>
-#include <SFML/Graphics/Image.hpp>
-#include <SFML/Graphics/Texture.hpp>
+#include "SFML/Graphics/Font.hpp"
+#include "SFML/Graphics/FontInfo.hpp"
+#include "SFML/Graphics/Glyph.hpp"
+#include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/Image.hpp"
+#include "SFML/Graphics/Texture.hpp"
 #ifdef SFML_SYSTEM_ANDROID
-#include <SFML/System/Android/ResourceStream.hpp>
+#include "SFML/System/Android/ResourceStream.hpp"
 #endif
-#include <SFML/System/Err.hpp>
-#include <SFML/System/InputStream.hpp>
-#include <SFML/System/Path.hpp>
-#include <SFML/System/PathUtils.hpp>
+#include "SFML/System/Err.hpp"
+#include "SFML/System/InputStream.hpp"
+#include "SFML/System/Path.hpp"
+#include "SFML/System/PathUtils.hpp"
 
-#include <SFML/Base/Macros.hpp>
-#include <SFML/Base/Math/Floor.hpp>
+#include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Math/Floor.hpp"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -27,7 +27,7 @@
 #include FT_BITMAP_H
 #include FT_STROKER_H
 
-#include <SFML/Base/Assert.hpp>
+#include "SFML/Base/Assert.hpp"
 
 #include <memory>
 #include <unordered_map>

@@ -3,19 +3,18 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/ContextSettings.hpp>
-#include <SFML/Window/GlContext.hpp>
-#include <SFML/Window/VideoMode.hpp>
-#include <SFML/Window/VideoModeUtils.hpp>
-#include <SFML/Window/Win32/Utils.hpp>
-#include <SFML/Window/Win32/WglContext.hpp>
-#include <SFML/Window/WindowContext.hpp>
-#include <SFML/Window/WindowImpl.hpp>
+#include "SFML/Window/ContextSettings.hpp"
+#include "SFML/Window/GlContext.hpp"
+#include "SFML/Window/VideoMode.hpp"
+#include "SFML/Window/VideoModeUtils.hpp"
+#include "SFML/Window/Win32/Utils.hpp"
+#include "SFML/Window/Win32/WglContext.hpp"
+#include "SFML/Window/WindowContext.hpp"
+#include "SFML/Window/WindowImpl.hpp"
 
-#include <SFML/System/Err.hpp>
-#include <SFML/System/String.hpp>
+#include "SFML/System/Err.hpp"
 
-#include <SFML/Base/Assert.hpp>
+#include "SFML/Base/Assert.hpp"
 
 #include <mutex>
 #include <string> // Needed by `getErrorString`

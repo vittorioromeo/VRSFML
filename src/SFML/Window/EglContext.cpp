@@ -4,25 +4,25 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/EglContext.hpp>
-#include <SFML/Window/VideoMode.hpp>
-#include <SFML/Window/VideoModeUtils.hpp>
-#include <SFML/Window/WindowContext.hpp>
-#include <SFML/Window/WindowImpl.hpp>
+#include "SFML/Window/EGLCheck.hpp"
+#include "SFML/Window/EglContext.hpp"
+#include "SFML/Window/VideoMode.hpp"
+#include "SFML/Window/VideoModeUtils.hpp"
+#include "SFML/Window/WindowContext.hpp"
+#include "SFML/Window/WindowImpl.hpp"
 
-#include <SFML/System/Err.hpp>
-#include <SFML/System/Sleep.hpp>
+#include "SFML/System/Err.hpp"
 
-#include <SFML/Base/Assert.hpp>
+#include "SFML/Base/Assert.hpp"
 
 #include <memory>
 #ifdef SFML_SYSTEM_ANDROID
-#include <SFML/System/Android/Activity.hpp>
+#include "SFML/System/Android/Activity.hpp"
 
 #include <mutex>
 #endif
 #if defined(SFML_SYSTEM_LINUX) && !defined(SFML_USE_DRM)
-#include <SFML/Window/Unix/Utils.hpp>
+#include "SFML/Window/Unix/Utils.hpp"
 
 #include <X11/Xlib.h>
 #endif
@@ -39,6 +39,7 @@
 #endif
 
 #endif
+
 
 namespace
 {

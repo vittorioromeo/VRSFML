@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/macOS/AutoreleasePoolWrapper.hpp>
+#include "SFML/Window/macOS/AutoreleasePoolWrapper.hpp"
 
 #import <Foundation/Foundation.h>
 

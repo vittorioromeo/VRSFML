@@ -9,30 +9,30 @@
 // Precompiled Headers
 ////////////////////////////////////////////////////////////
 
-#include <SFML/Config.hpp>
+#include "SFML/Config.hpp"
 
 #ifdef SFML_SYSTEM_WINDOWS
 
-#include <SFML/System/Win32/WindowsHeader.hpp>
+#include "SFML/System/Win32/WindowsHeader.hpp"
 
 #include <dinput.h>
 #include <mmsystem.h>
 
 #endif // SFML_SYSTEM_WINDOWS
 
-#include <SFML/System/Err.hpp>
-#include <SFML/System/Path.hpp>
-#include <SFML/System/Rect.hpp>
-#include <SFML/System/String.hpp>
-#include <SFML/System/Time.hpp>
-#include <SFML/System/Vector2.hpp>
+#include "SFML/System/Err.hpp"
+#include "SFML/System/Path.hpp"
+#include "SFML/System/Rect.hpp"
+#include "SFML/System/String.hpp"
+#include "SFML/System/Time.hpp"
+#include "SFML/System/Vector2.hpp"
 
-#include <SFML/Base/Algorithm.hpp>
-#include <SFML/Base/Assert.hpp>
-#include <SFML/Base/InPlacePImpl.hpp>
-#include <SFML/Base/Macros.hpp>
-#include <SFML/Base/Optional.hpp>
-#include <SFML/Base/UniquePtr.hpp>
+#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Assert.hpp"
+#include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 
 #include <algorithm>
 #include <atomic>
@@ -62,8 +62,8 @@
 #endif
 
 #ifdef SFML_BUILD_WINDOW
-#include <SFML/Window/Event.hpp>
-// #include <SFML/Window/GLExtensions.hpp> (TODO P1: not working due to vulkan example)
+#include "SFML/Window/Event.hpp"
+// #include "SFML/Window/GLExtensions.hpp" (TODO P1: not working due to vulkan example)
 #endif
 
 #endif // SFML_ENABLE_PCH

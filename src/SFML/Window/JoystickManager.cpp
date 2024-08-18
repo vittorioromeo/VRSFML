@@ -3,11 +3,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/JoystickIdentification.hpp>
-#include <SFML/Window/JoystickImpl.hpp>
-#include <SFML/Window/JoystickManager.hpp>
+#include "SFML/Window/JoystickIdentification.hpp"
+#include "SFML/Window/JoystickImpl.hpp"
+#include "SFML/Window/JoystickManager.hpp"
 
-#include <SFML/Base/Assert.hpp>
+#include "SFML/Base/Assert.hpp"
 
 
 namespace sf::priv

@@ -1,17 +1,20 @@
-#include <SFML/Base/Optional.hpp>
-#include <SFML/Base/Traits/IsCopyAssignable.hpp>
-#include <SFML/Base/Traits/IsCopyConstructible.hpp>
-#include <SFML/Base/Traits/IsMoveAssignable.hpp>
-#include <SFML/Base/Traits/IsMoveConstructible.hpp>
-#include <SFML/Base/Traits/IsTrivial.hpp>
-#include <SFML/Base/Traits/IsTriviallyCopyConstructible.hpp>
-#include <SFML/Base/Traits/IsTriviallyCopyable.hpp>
-#include <SFML/Base/Traits/IsTriviallyMoveAssignable.hpp>
-#include <SFML/Base/Traits/IsTriviallyMoveConstructible.hpp>
+#include "SFML/Base/Optional.hpp"
+
+#include "SFML/Base/Traits/IsCopyAssignable.hpp"
+#include "SFML/Base/Traits/IsCopyConstructible.hpp"
+#include "SFML/Base/Traits/IsMoveAssignable.hpp"
+#include "SFML/Base/Traits/IsMoveConstructible.hpp"
+#include "SFML/Base/Traits/IsTrivial.hpp"
+#include "SFML/Base/Traits/IsTriviallyCopyConstructible.hpp"
+#include "SFML/Base/Traits/IsTriviallyCopyable.hpp"
+#include "SFML/Base/Traits/IsTriviallyMoveAssignable.hpp"
+#include "SFML/Base/Traits/IsTriviallyMoveConstructible.hpp"
 
 #include <Doctest.hpp>
 
 namespace
+{
+namespace OptionalTest // to support unity builds
 {
 struct Trivial
 {
@@ -63,8 +66,6 @@ struct MoveOnly
     MoveOnly(MoveOnly&&) noexcept            = default;
     MoveOnly& operator=(MoveOnly&&) noexcept = default;
 };
-
-} // namespace
 
 
 TEST_CASE("[Base] Base/Optional.hpp")
@@ -120,3 +121,6 @@ TEST_CASE("[Base] Base/Optional.hpp")
         STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::base::Optional<MoveOnly>));
     }
 }
+
+} // namespace OptionalTest
+} // namespace

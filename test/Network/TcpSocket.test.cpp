@@ -1,7 +1,7 @@
-#include <SFML/Network/TcpSocket.hpp>
+#include "SFML/Network/TcpSocket.hpp"
 
 // Other 1st party headers
-#include <SFML/Network/IpAddress.hpp>
+#include "SFML/Network/IpAddress.hpp"
 
 #include <Doctest.hpp>
 

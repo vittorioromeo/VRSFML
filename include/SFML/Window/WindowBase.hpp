@@ -4,40 +4,45 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Export.hpp>
+#include "SFML/Window/Export.hpp"
 
-#include <SFML/Window/WindowEnums.hpp>
-#include <SFML/Window/WindowHandle.hpp>
+#include "SFML/Window/WindowHandle.hpp"
 
-#include <SFML/System/String.hpp>
-#include <SFML/System/Time.hpp>
-#include <SFML/System/Vector2.hpp>
+#include "SFML/System/String.hpp"
+#include "SFML/System/Time.hpp"
+#include "SFML/System/Vector2.hpp"
 
-#include <SFML/Base/InPlacePImpl.hpp>
-#include <SFML/Base/Optional.hpp>
-#include <SFML/Base/UniquePtr.hpp>
+#include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 
 #include <cstdint>
 
 
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
 namespace sf
 {
-struct WindowSettings;
 class Cursor;
+class Event;
 class String;
+struct WindowSettings;
+} // namespace sf
 
-namespace priv
+namespace sf::priv
 {
 class WindowImpl;
-} // namespace priv
+} // namespace sf::priv
 
-namespace Vulkan
+namespace sf::Vulkan
 {
 struct VulkanSurfaceData;
-} // namespace Vulkan
+} // namespace sf::Vulkan
 
-class Event;
 
+namespace sf
+{
 ////////////////////////////////////////////////////////////
 /// \brief Window that serves as a base for other windows
 ///
@@ -499,7 +504,7 @@ private:
 
 } // namespace sf
 
-#include <SFML/Window/WindowBase.inl>
+#include "SFML/Window/WindowBase.inl"
 
 ////////////////////////////////////////////////////////////
 /// \class sf::WindowBase

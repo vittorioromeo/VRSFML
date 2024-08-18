@@ -4,12 +4,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Export.hpp>
+#include "SFML/Graphics/Export.hpp"
 
-#include <SFML/Graphics/Transformable.hpp>
-#include <SFML/Graphics/Vertex.hpp>
+#include "SFML/Graphics/Transformable.hpp"
+#include "SFML/Graphics/Vertex.hpp"
 
-#include <SFML/System/Rect.hpp>
+#include "SFML/System/Rect.hpp"
 
 
 namespace sf

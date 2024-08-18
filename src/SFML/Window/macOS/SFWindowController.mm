@@ -3,19 +3,19 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/VideoMode.hpp>
-#include <SFML/Window/VideoModeUtils.hpp>
-#include <SFML/Window/WindowEnums.hpp>
-#include <SFML/Window/WindowHandle.hpp>
+#include "SFML/Window/VideoMode.hpp"
+#include "SFML/Window/VideoModeUtils.hpp"
+#include "SFML/Window/WindowEnums.hpp"
+#include "SFML/Window/WindowHandle.hpp"
 #import <SFML/Window/macOS/NSImage+raw.h>
 #import <SFML/Window/macOS/SFApplication.h>
 #import <SFML/Window/macOS/SFOpenGLView.h>
 #import <SFML/Window/macOS/SFWindow.h>
 #import <SFML/Window/macOS/SFWindowController.h>
 #import <SFML/Window/macOS/Scaling.h>
-#include <SFML/Window/macOS/WindowImplCocoa.hpp>
+#include "SFML/Window/macOS/WindowImplCocoa.hpp"
 
-#include <SFML/System/Err.hpp>
+#include "SFML/System/Err.hpp"
 
 #include <ApplicationServices/ApplicationServices.h>
 #import <OpenGL/OpenGL.h>

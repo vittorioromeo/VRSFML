@@ -1,4 +1,4 @@
-#include <SFML/Graphics/BlendMode.hpp>
+#include "SFML/Graphics/BlendMode.hpp"
 
 #include <Doctest.hpp>
 

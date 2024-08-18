@@ -1,8 +1,9 @@
-#include <SFML/Audio/AudioContext.hpp>
-#include <SFML/Audio/PlaybackDevice.hpp>
-#include <SFML/Audio/SoundStream.hpp>
+#include "SFML/Audio/SoundStream.hpp"
 
-#include <SFML/System/Time.hpp>
+#include "SFML/Audio/AudioContext.hpp"
+#include "SFML/Audio/PlaybackDevice.hpp"
+
+#include "SFML/System/Time.hpp"
 
 #include <Doctest.hpp>
 

@@ -3,13 +3,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/InputImpl.hpp>
-#include <SFML/Window/Unix/Display.hpp>
-#include <SFML/Window/Unix/KeyboardImpl.hpp>
-#include <SFML/Window/WindowBase.hpp>
-#include <SFML/Window/WindowHandle.hpp>
+#include "SFML/Window/InputImpl.hpp"
+#include "SFML/Window/Unix/Display.hpp"
+#include "SFML/Window/Unix/KeyboardImpl.hpp"
+#include "SFML/Window/WindowBase.hpp"
+#include "SFML/Window/WindowHandle.hpp"
 
-#include <SFML/System/String.hpp>
+#include "SFML/System/String.hpp"
 
 #include <X11/Xlib.h>
 #include <X11/keysym.h>

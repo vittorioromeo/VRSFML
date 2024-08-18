@@ -3,8 +3,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/Android/Activity.hpp>
-#include <SFML/System/NativeActivity.hpp>
+#include "SFML/System/Android/Activity.hpp"
+#include "SFML/System/NativeActivity.hpp"
+
 
 namespace sf
 {

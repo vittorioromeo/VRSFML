@@ -3,11 +3,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/Err.hpp>
-#include <SFML/System/Path.hpp>
-#include <SFML/System/PathUtils.hpp>
+#include "SFML/System/Err.hpp"
+#include "SFML/System/Path.hpp"
+#include "SFML/System/PathUtils.hpp"
 
-#include <SFML/Base/StackTrace.hpp>
+#include "SFML/Base/StackTrace.hpp"
 
 #include <atomic>
 #include <iostream>

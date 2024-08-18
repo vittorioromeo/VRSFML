@@ -1,12 +1,13 @@
-#include <SFML/Window/Window.hpp>
-#include <SFML/Window/WindowContext.hpp>
+#include "SFML/Window/Window.hpp"
+
+#include "SFML/Window/WindowContext.hpp"
 
 // Other 1st party headers
-#include <SFML/Window/WindowSettings.hpp>
+#include "SFML/Window/WindowSettings.hpp"
 
-#include <SFML/System/String.hpp>
+#include "SFML/System/String.hpp"
 
-#include <SFML/Base/Optional.hpp>
+#include "SFML/Base/Optional.hpp"
 
 #include <Doctest.hpp>
 

@@ -1,7 +1,8 @@
-#include <SFML/Window/VideoMode.hpp>
-#include <SFML/Window/VideoModeUtils.hpp>
+#include "SFML/Window/VideoMode.hpp"
 
-#include <SFML/Base/Algorithm.hpp>
+#include "SFML/Window/VideoModeUtils.hpp"
+
+#include "SFML/Base/Algorithm.hpp"
 
 #include <Doctest.hpp>
 

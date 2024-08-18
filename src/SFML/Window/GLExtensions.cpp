@@ -3,8 +3,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/GLCheck.hpp>
-#include <SFML/Window/GLExtensions.hpp>
+#include "SFML/Window/GLCheck.hpp"
+#include "SFML/Window/GLExtensions.hpp"
 
 
 // We check for this definition in order to avoid multiple definitions of GLAD

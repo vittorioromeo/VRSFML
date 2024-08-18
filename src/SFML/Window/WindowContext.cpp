@@ -3,20 +3,20 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Export.hpp>
+#include "SFML/Config.hpp"
 
-#include <SFML/Window/ContextSettings.hpp>
-#include <SFML/Window/GLCheck.hpp>
-#include <SFML/Window/GLExtensions.hpp>
-#include <SFML/Window/GlContext.hpp>
-#include <SFML/Window/GlContextTypeImpl.hpp>
-#include <SFML/Window/WindowContext.hpp>
+#include "SFML/Window/ContextSettings.hpp"
+#include "SFML/Window/GLCheck.hpp"
+#include "SFML/Window/GLExtensions.hpp"
+#include "SFML/Window/GlContext.hpp"
+#include "SFML/Window/GlContextTypeImpl.hpp"
+#include "SFML/Window/WindowContext.hpp"
 
-#include <SFML/System/Err.hpp>
+#include "SFML/System/Err.hpp"
 
-#include <SFML/Base/Algorithm.hpp>
-#include <SFML/Base/Assert.hpp>
-#include <SFML/Base/UniquePtr.hpp>
+#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Assert.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 
 #include <glad/gl.h>
 

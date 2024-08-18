@@ -1,35 +1,35 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/CircleShape.hpp>
-#include <SFML/Graphics/Font.hpp>
-#include <SFML/Graphics/GraphicsContext.hpp>
-#include <SFML/Graphics/Image.hpp>
-#include <SFML/Graphics/RectangleShape.hpp>
-#include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Graphics/Sprite.hpp>
-#include <SFML/Graphics/Text.hpp>
-#include <SFML/Graphics/Texture.hpp>
-#include <SFML/Graphics/View.hpp>
+#include "SFML/Graphics/CircleShape.hpp"
+#include "SFML/Graphics/Font.hpp"
+#include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/Image.hpp"
+#include "SFML/Graphics/RectangleShape.hpp"
+#include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/Sprite.hpp"
+#include "SFML/Graphics/Text.hpp"
+#include "SFML/Graphics/Texture.hpp"
+#include "SFML/Graphics/View.hpp"
 
-#include <SFML/Audio/AudioContext.hpp>
-#include <SFML/Audio/PlaybackDevice.hpp>
-#include <SFML/Audio/Sound.hpp>
-#include <SFML/Audio/SoundBuffer.hpp>
+#include "SFML/Audio/AudioContext.hpp"
+#include "SFML/Audio/PlaybackDevice.hpp"
+#include "SFML/Audio/Sound.hpp"
+#include "SFML/Audio/SoundBuffer.hpp"
 
-#include <SFML/Window/Event.hpp>
-#include <SFML/Window/EventUtils.hpp>
-#include <SFML/Window/GameLoop.hpp>
-#include <SFML/Window/Touch.hpp>
-#include <SFML/Window/WindowEnums.hpp>
-#include <SFML/Window/WindowSettings.hpp>
+#include "SFML/Window/Event.hpp"
+#include "SFML/Window/EventUtils.hpp"
+#include "SFML/Window/GameLoop.hpp"
+#include "SFML/Window/Touch.hpp"
+#include "SFML/Window/WindowEnums.hpp"
+#include "SFML/Window/WindowSettings.hpp"
 
-#include <SFML/System/Angle.hpp>
-#include <SFML/System/Clock.hpp>
-#include <SFML/System/Path.hpp>
-#include <SFML/System/String.hpp>
-#include <SFML/System/Time.hpp>
-#include <SFML/System/Vector2.hpp>
+#include "SFML/System/Angle.hpp"
+#include "SFML/System/Clock.hpp"
+#include "SFML/System/Path.hpp"
+#include "SFML/System/String.hpp"
+#include "SFML/System/Time.hpp"
+#include "SFML/System/Vector2.hpp"
 
 #include <iostream>
 #include <random>
@@ -39,7 +39,7 @@
 #include <cstdlib>
 
 #ifdef SFML_SYSTEM_IOS
-#include <SFML/Main.hpp>
+#include "SFML/Main.hpp"
 #endif
 
 sf::Path resourcesDir()

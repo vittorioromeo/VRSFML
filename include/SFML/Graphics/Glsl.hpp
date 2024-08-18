@@ -4,10 +4,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/Vector2.hpp>
-#include <SFML/System/Vector3.hpp>
+#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vector3.hpp"
 
-#include <SFML/Base/SizeT.hpp>
+#include "SFML/Base/SizeT.hpp"
 
 
 namespace sf
@@ -167,7 +167,7 @@ using Mat4  = priv::Matrix<4, 4>;
 } // namespace Glsl
 } // namespace sf
 
-#include <SFML/Graphics/Glsl.inl>
+#include "SFML/Graphics/Glsl.inl"
 
 
 ////////////////////////////////////////////////////////////

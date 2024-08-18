@@ -2,15 +2,13 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
-// Headers
+// Forward declarations
 ////////////////////////////////////////////////////////////
-#include <SFML/Config.hpp>
-
-
 namespace sf
 {
 class Time;
 }
+
 
 namespace sf::priv
 {

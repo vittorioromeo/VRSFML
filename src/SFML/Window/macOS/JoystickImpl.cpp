@@ -3,12 +3,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/JoystickImpl.hpp>
-#include <SFML/Window/macOS/AutoreleasePoolWrapper.hpp>
-#include <SFML/Window/macOS/HIDInputManager.hpp>
-#include <SFML/Window/macOS/HIDJoystickManager.hpp>
+#include "SFML/Window/JoystickImpl.hpp"
+#include "SFML/Window/macOS/AutoreleasePoolWrapper.hpp"
+#include "SFML/Window/macOS/HIDInputManager.hpp"
+#include "SFML/Window/macOS/HIDJoystickManager.hpp"
 
-#include <SFML/System/Err.hpp>
+#include "SFML/System/Err.hpp"
 
 #include <algorithm> // std::sort
 

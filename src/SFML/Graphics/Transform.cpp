@@ -3,12 +3,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Transform.hpp>
+#include "SFML/Graphics/Transform.hpp"
 
-#include <SFML/System/Angle.hpp>
+#include "SFML/System/Angle.hpp"
 
-#include <SFML/Base/Math/Cos.hpp>
-#include <SFML/Base/Math/Sin.hpp>
+#include "SFML/Base/Math/Cos.hpp"
+#include "SFML/Base/Math/Sin.hpp"
 
 
 namespace sf

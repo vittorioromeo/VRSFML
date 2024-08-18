@@ -6,9 +6,9 @@
 #import <SFML/Window/macOS/SFOpenGLView+mouse_priv.h>
 #import <SFML/Window/macOS/SFOpenGLView.h>
 #import <SFML/Window/macOS/SFSilentResponder.h>
-#include <SFML/Window/macOS/WindowImplCocoa.hpp>
+#include "SFML/Window/macOS/WindowImplCocoa.hpp"
 
-#include <SFML/System/Err.hpp>
+#include "SFML/System/Err.hpp"
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 

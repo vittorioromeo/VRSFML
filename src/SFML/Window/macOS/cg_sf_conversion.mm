@@ -4,7 +4,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #import <SFML/Window/macOS/Scaling.h>
-#include <SFML/Window/macOS/cg_sf_conversion.hpp>
+#include "SFML/Window/macOS/cg_sf_conversion.hpp"
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 

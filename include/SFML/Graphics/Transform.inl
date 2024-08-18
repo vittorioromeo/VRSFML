@@ -3,9 +3,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Transform.hpp> // NOLINT(misc-header-include-cycle)
+#include "SFML/Graphics/Transform.hpp" // NOLINT(misc-header-include-cycle)
 
-#include <SFML/Base/SizeT.hpp>
+#include "SFML/Base/SizeT.hpp"
 
 
 namespace sf

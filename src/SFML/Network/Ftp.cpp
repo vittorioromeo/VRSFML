@@ -3,15 +3,15 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Network/Ftp.hpp>
-#include <SFML/Network/IpAddress.hpp>
+#include "SFML/Network/Ftp.hpp"
+#include "SFML/Network/IpAddress.hpp"
 
-#include <SFML/System/Err.hpp>
-#include <SFML/System/Path.hpp>
+#include "SFML/System/Err.hpp"
+#include "SFML/System/Path.hpp"
 
-#include <SFML/Base/Algorithm.hpp>
-#include <SFML/Base/Assert.hpp>
-#include <SFML/Base/Macros.hpp>
+#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Macros.hpp"
 
 #include <fstream>
 #include <sstream>

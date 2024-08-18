@@ -4,13 +4,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Export.hpp>
+#include "SFML/Graphics/Export.hpp"
 
-#include <SFML/Graphics/Glsl.hpp>
+#include "SFML/Graphics/Glsl.hpp"
 
-#include <SFML/Base/InPlacePImpl.hpp>
-#include <SFML/Base/Optional.hpp>
-#include <SFML/Base/PassKey.hpp>
+#include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
 
 #include <string_view>
 

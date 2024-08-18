@@ -4,9 +4,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Event.hpp>
-#include <SFML/Window/WindowEnums.hpp>
-#include <SFML/Window/WindowImpl.hpp>
+#include "SFML/Window/Event.hpp"
+#include "SFML/Window/WindowEnums.hpp"
+#include "SFML/Window/WindowImpl.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"

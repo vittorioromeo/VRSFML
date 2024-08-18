@@ -3,13 +3,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Cursor.hpp>
-#include <SFML/Window/CursorImpl.hpp>
+#include "SFML/Window/Cursor.hpp"
+#include "SFML/Window/CursorImpl.hpp"
 
-#include <SFML/System/Err.hpp>
-#include <SFML/System/Vector2.hpp>
-
-#include <SFML/Base/UniquePtr.hpp>
+#include "SFML/System/Err.hpp"
+#include "SFML/System/Vector2.hpp"
 
 
 namespace sf

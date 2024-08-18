@@ -4,9 +4,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/JoystickImpl.hpp>
+#include "SFML/Window/JoystickImpl.hpp"
 
-#include <SFML/Base/InPlacePImpl.hpp>
+#include "SFML/Base/InPlacePImpl.hpp"
 
 
 namespace sf::Joystick

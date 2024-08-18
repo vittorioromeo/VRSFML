@@ -1,7 +1,11 @@
 #pragma once
-#include <SFML/System/Export.hpp>
-
+#pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include "SFML/System/Export.hpp"
 
 
 namespace sf
@@ -280,7 +284,7 @@ extern template class sf::Vector3<bool>;
 extern template class sf::Vector3<int>;
 extern template class sf::Vector3<unsigned int>;
 
-#include <SFML/System/Vector3.inl>
+#include "SFML/System/Vector3.inl"
 
 
 ////////////////////////////////////////////////////////////

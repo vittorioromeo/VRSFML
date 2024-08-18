@@ -4,11 +4,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/Android/Activity.hpp>
-#include <SFML/System/Android/ResourceStream.hpp>
-#include <SFML/System/Path.hpp>
+#include "SFML/System/Android/Activity.hpp"
+#include "SFML/System/Android/ResourceStream.hpp"
+#include "SFML/System/Path.hpp"
 
-#include <SFML/Base/Optional.hpp>
+#include "SFML/Base/Optional.hpp"
 
 #include <mutex>
 

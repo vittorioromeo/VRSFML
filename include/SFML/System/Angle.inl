@@ -3,9 +3,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/Angle.hpp> // NOLINT(misc-header-include-cycle)
+#include "SFML/System/Angle.hpp" // NOLINT(misc-header-include-cycle)
 
-#include <SFML/Base/Assert.hpp>
+#include "SFML/Base/Assert.hpp"
 
 
 namespace sf::priv

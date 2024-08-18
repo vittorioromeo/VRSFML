@@ -4,10 +4,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/ContextSettings.hpp>
-#include <SFML/Window/EGLCheck.hpp>
-#include <SFML/Window/GlContext.hpp>
-#include <SFML/Window/WindowEnums.hpp> // Prevent conflict with macro None from Xlib
+#include "SFML/Window/ContextSettings.hpp"
+#include "SFML/Window/GlContext.hpp"
+
+#include "SFML/System/Vector2.hpp"
 
 // Emscripten does not use GLAD
 #ifdef SFML_SYSTEM_EMSCRIPTEN
@@ -21,6 +21,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #endif
+
 
 namespace sf::priv
 {

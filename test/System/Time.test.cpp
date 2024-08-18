@@ -1,5 +1,6 @@
-#include <SFML/System/Time.hpp>
-#include <SFML/System/TimeChronoUtil.hpp>
+#include "SFML/System/Time.hpp"
+
+#include "SFML/System/TimeChronoUtil.hpp"
 
 #include <Doctest.hpp>
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SFML/System/Path.hpp>
+#include "SFML/System/Path.hpp"
 
 #include <doctest/parts/doctest_fwd.h>
 

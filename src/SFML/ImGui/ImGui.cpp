@@ -3,36 +3,33 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Config.hpp>
+#include "SFML/ImGui/Backend.hpp"
+#include "SFML/ImGui/ImGui.hpp"
 
-#include <SFML/ImGui/Backend.hpp>
-#include <SFML/ImGui/ImGui.hpp>
+#include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/RenderTarget.hpp"
+#include "SFML/Graphics/RenderTexture.hpp"
+#include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/Sprite.hpp"
+#include "SFML/Graphics/Texture.hpp"
 
-#include <SFML/Graphics/Color.hpp>
-#include <SFML/Graphics/GraphicsContext.hpp>
-#include <SFML/Graphics/RenderTarget.hpp>
-#include <SFML/Graphics/RenderTexture.hpp>
-#include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Graphics/Sprite.hpp>
-#include <SFML/Graphics/Texture.hpp>
+#include "SFML/Window/Clipboard.hpp"
+#include "SFML/Window/Cursor.hpp"
+#include "SFML/Window/Event.hpp"
+#include "SFML/Window/Joystick.hpp"
+#include "SFML/Window/Touch.hpp"
+#include "SFML/Window/Window.hpp"
 
-#include <SFML/Window/Clipboard.hpp>
-#include <SFML/Window/Cursor.hpp>
-#include <SFML/Window/Event.hpp>
-#include <SFML/Window/GLCheck.hpp>
-#include <SFML/Window/GLExtensions.hpp>
-#include <SFML/Window/Touch.hpp>
-#include <SFML/Window/Window.hpp>
+#include "SFML/System/Err.hpp"
+#include "SFML/System/String.hpp"
+#include "SFML/System/StringUtfUtils.hpp"
 
-#include <SFML/System/Err.hpp>
-#include <SFML/System/String.hpp>
-#include <SFML/System/StringUtfUtils.hpp>
-
-#include <SFML/Base/Algorithm.hpp>
-#include <SFML/Base/Assert.hpp>
-#include <SFML/Base/Math/Fabs.hpp>
-#include <SFML/Base/Optional.hpp>
-#include <SFML/Base/UniquePtr.hpp>
+#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Math/Fabs.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 
 #include <imgui.h>
 
@@ -47,7 +44,7 @@
 #ifdef ANDROID
 #ifdef USE_JNI
 
-#include <SFML/System/NativeActivity.hpp>
+#include "SFML/System/NativeActivity.hpp"
 
 #include <android/native_activity.h>
 #include <jni.h>
@@ -114,7 +111,7 @@
 
 // TODO P0: cleanup and rename funcs, etc
 
-static_assert(sizeof(GLuint) <= sizeof(ImTextureID), "ImTextureID is not large enough to fit GLuint.");
+static_assert(sizeof(unsigned int) <= sizeof(ImTextureID), "ImTextureID is not large enough to fit unsigned int.");
 
 namespace sf::ImGui
 {
@@ -302,10 +299,10 @@ namespace
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] ImTextureID convertGLTextureHandleToImTextureID(GLuint glTextureHandle)
+[[nodiscard]] ImTextureID convertGLTextureHandleToImTextureID(unsigned int glTextureHandle)
 {
     ImTextureID textureID = nullptr;
-    std::memcpy(&textureID, &glTextureHandle, sizeof(GLuint));
+    std::memcpy(&textureID, &glTextureHandle, sizeof(unsigned int));
     return textureID;
 }
 

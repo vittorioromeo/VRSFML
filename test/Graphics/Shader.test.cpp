@@ -1,12 +1,12 @@
-#include <SFML/Graphics/Shader.hpp>
+#include "SFML/Graphics/Shader.hpp"
 
 // Other 1st party headers
-#include <SFML/Graphics/GraphicsContext.hpp>
+#include "SFML/Graphics/GraphicsContext.hpp"
 
-#include <SFML/System/FileInputStream.hpp>
-#include <SFML/System/Path.hpp>
+#include "SFML/System/FileInputStream.hpp"
+#include "SFML/System/Path.hpp"
 
-#include <SFML/Base/Macros.hpp>
+#include "SFML/Base/Macros.hpp"
 
 #include <Doctest.hpp>
 

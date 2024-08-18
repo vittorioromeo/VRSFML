@@ -3,8 +3,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/macOS/AutoreleasePoolWrapper.hpp>
-#include <SFML/Window/macOS/CursorImpl.hpp>
+#include "SFML/Window/macOS/AutoreleasePoolWrapper.hpp"
+#include "SFML/Window/macOS/CursorImpl.hpp"
 #import <SFML/Window/macOS/NSImage+raw.h>
 
 #import <AppKit/AppKit.h>

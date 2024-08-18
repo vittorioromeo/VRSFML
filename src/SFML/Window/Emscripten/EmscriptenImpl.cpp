@@ -4,25 +4,25 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Emscripten/JoystickImpl.hpp>
-#include <SFML/Window/Emscripten/WindowImplEmscripten.hpp>
-#include <SFML/Window/Event.hpp>
-#include <SFML/Window/GLCheck.hpp>
-#include <SFML/Window/GLExtensions.hpp>
-#include <SFML/Window/InputImpl.hpp>
-#include <SFML/Window/JoystickAxis.hpp>
-#include <SFML/Window/JoystickIdentification.hpp>
-#include <SFML/Window/JoystickImpl.hpp>
-#include <SFML/Window/Keyboard.hpp>
-#include <SFML/Window/VideoModeImpl.hpp>
-#include <SFML/Window/WindowEnums.hpp>
-#include <SFML/Window/WindowSettings.hpp>
+#include "SFML/Window/Emscripten/JoystickImpl.hpp"
+#include "SFML/Window/Emscripten/WindowImplEmscripten.hpp"
+#include "SFML/Window/Event.hpp"
+#include "SFML/Window/GLCheck.hpp"
+#include "SFML/Window/GLExtensions.hpp"
+#include "SFML/Window/InputImpl.hpp"
+#include "SFML/Window/JoystickAxis.hpp"
+#include "SFML/Window/JoystickIdentification.hpp"
+#include "SFML/Window/JoystickImpl.hpp"
+#include "SFML/Window/Keyboard.hpp"
+#include "SFML/Window/VideoModeImpl.hpp"
+#include "SFML/Window/WindowEnums.hpp"
+#include "SFML/Window/WindowSettings.hpp"
 
-#include <SFML/System/Err.hpp>
-#include <SFML/System/String.hpp>
-#include <SFML/System/StringUtfUtils.hpp>
+#include "SFML/System/Err.hpp"
+#include "SFML/System/String.hpp"
+#include "SFML/System/StringUtfUtils.hpp"
 
-#include <SFML/Base/Math/Fabs.hpp>
+#include "SFML/Base/Math/Fabs.hpp"
 
 #include <emscripten.h>
 #include <emscripten/html5.h>

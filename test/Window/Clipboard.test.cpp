@@ -1,7 +1,7 @@
-#include <SFML/Window/Clipboard.hpp>
+#include "SFML/Window/Clipboard.hpp"
 
 // Other 1st party headers
-#include <SFML/System/String.hpp>
+#include "SFML/System/String.hpp"
 
 #include <Doctest.hpp>
 

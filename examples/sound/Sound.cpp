@@ -1,16 +1,17 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/AudioContext.hpp>
-#include <SFML/Audio/Music.hpp>
-#include <SFML/Audio/PlaybackDevice.hpp>
-#include <SFML/Audio/PlaybackDeviceHandle.hpp>
-#include <SFML/Audio/Sound.hpp>
-#include <SFML/Audio/SoundBuffer.hpp>
+#include "SFML/Audio/Sound.hpp"
 
-#include <SFML/System/Path.hpp>
-#include <SFML/System/Sleep.hpp>
-#include <SFML/System/Time.hpp>
+#include "SFML/Audio/AudioContext.hpp"
+#include "SFML/Audio/Music.hpp"
+#include "SFML/Audio/PlaybackDevice.hpp"
+#include "SFML/Audio/PlaybackDeviceHandle.hpp"
+#include "SFML/Audio/SoundBuffer.hpp"
+
+#include "SFML/System/Path.hpp"
+#include "SFML/System/Sleep.hpp"
+#include "SFML/System/Time.hpp"
 
 #include <iostream>
 
