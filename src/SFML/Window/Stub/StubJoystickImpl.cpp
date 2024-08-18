@@ -3,10 +3,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/JoystickIdentification.hpp>
-#include <SFML/Window/Stub/StubJoystickImpl.hpp>
+#include "SFML/Window/JoystickIdentification.hpp"
+#include "SFML/Window/Stub/StubJoystickImpl.hpp"
 
-#include <SFML/System/Err.hpp>
+#include "SFML/System/Err.hpp"
 
 
 namespace sf::priv

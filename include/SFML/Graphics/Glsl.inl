@@ -3,10 +3,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Export.hpp>
+#include "SFML/Graphics/Export.hpp"
 
-#include <SFML/Graphics/Color.hpp>
-#include <SFML/Graphics/Glsl.hpp> // NOLINT(misc-header-include-cycle)
+#include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/Glsl.hpp" // NOLINT(misc-header-include-cycle)
 
 #include <cstring>
 

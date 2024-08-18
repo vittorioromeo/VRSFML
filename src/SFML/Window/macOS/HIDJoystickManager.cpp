@@ -3,8 +3,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/macOS/HIDInputManager.hpp>
-#include <SFML/Window/macOS/HIDJoystickManager.hpp>
+#include "SFML/Window/macOS/HIDInputManager.hpp"
+#include "SFML/Window/macOS/HIDJoystickManager.hpp"
 
 #include <array>
 

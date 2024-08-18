@@ -3,13 +3,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/VideoMode.hpp>
-#include <SFML/Window/VideoModeUtils.hpp>
-#include <SFML/Window/macOS/AutoreleasePoolWrapper.hpp>
-#include <SFML/Window/macOS/SFContext.hpp>
-#include <SFML/Window/macOS/WindowImplCocoa.hpp>
+#include "SFML/Window/VideoMode.hpp"
+#include "SFML/Window/VideoModeUtils.hpp"
+#include "SFML/Window/macOS/AutoreleasePoolWrapper.hpp"
+#include "SFML/Window/macOS/SFContext.hpp"
+#include "SFML/Window/macOS/WindowImplCocoa.hpp"
 
-#include <SFML/System/Err.hpp>
+#include "SFML/System/Err.hpp"
 
 #include <dlfcn.h>
 

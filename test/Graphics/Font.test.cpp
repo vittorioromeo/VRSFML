@@ -1,12 +1,13 @@
-#include <SFML/Graphics/Font.hpp>
-#include <SFML/Graphics/FontInfo.hpp>
-#include <SFML/Graphics/Glyph.hpp>
-#include <SFML/Graphics/GraphicsContext.hpp>
-#include <SFML/Graphics/Texture.hpp>
+#include "SFML/Graphics/Font.hpp"
+
+#include "SFML/Graphics/FontInfo.hpp"
+#include "SFML/Graphics/Glyph.hpp"
+#include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/Texture.hpp"
 
 // Other 1st party headers
-#include <SFML/System/FileInputStream.hpp>
-#include <SFML/System/Path.hpp>
+#include "SFML/System/FileInputStream.hpp"
+#include "SFML/System/Path.hpp"
 
 #include <Doctest.hpp>
 

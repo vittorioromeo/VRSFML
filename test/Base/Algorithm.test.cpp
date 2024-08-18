@@ -1,4 +1,4 @@
-#include <SFML/Base/Algorithm.hpp>
+#include "SFML/Base/Algorithm.hpp"
 
 #include <Doctest.hpp>
 

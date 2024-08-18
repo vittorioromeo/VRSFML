@@ -5,11 +5,11 @@
 ////////////////////////////////////////////////////////////
 #import <SFML/Window/macOS/SFOpenGLView+mouse_priv.h>
 #import <SFML/Window/macOS/SFOpenGLView.h>
-#include <SFML/Window/macOS/WindowImplCocoa.hpp>
+#include "SFML/Window/macOS/WindowImplCocoa.hpp"
 
-#include <SFML/Base/Algorithm.hpp>
-#include <SFML/Base/Math/Fabs.hpp>
-#include <SFML/Base/Optional.hpp>
+#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Math/Fabs.hpp"
+#include "SFML/Base/Optional.hpp"
 
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"

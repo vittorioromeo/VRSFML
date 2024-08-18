@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include <SFML/System/Rect.hpp>
+#include "SFML/System/Rect.hpp"
 
-#include <SFML/Base/UniquePtr.hpp>
+#include "SFML/Base/UniquePtr.hpp"
 
 #include <iosfwd>
 

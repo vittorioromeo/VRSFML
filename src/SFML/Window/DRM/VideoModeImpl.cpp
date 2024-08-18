@@ -3,10 +3,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/DRM/DRMContext.hpp>
-#include <SFML/Window/VideoModeImpl.hpp>
+#include "SFML/Window/DRM/DRMContext.hpp"
+#include "SFML/Window/VideoModeImpl.hpp"
 
-#include <SFML/System/Err.hpp>
+#include "SFML/System/Err.hpp"
 
 
 namespace sf::priv

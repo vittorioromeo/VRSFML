@@ -3,14 +3,14 @@
 
 
 ////////////////////////////////////////////////////////////
-#include <SFML/Base/Math/Impl.hpp>
+#include "SFML/Base/Math/Impl.hpp"
 
 
 ////////////////////////////////////////////////////////////
 #if SFML_BASE_PRIV_HAS_MATH_BUILTIN(exp)
-#include <SFML/Base/Math/ImplBuiltinWrapper.hpp>
+#include "SFML/Base/Math/ImplBuiltinWrapper.hpp"
 #else
-#include <SFML/Base/Math/ImplStdForwarder.hpp>
+#include "SFML/Base/Math/ImplStdForwarder.hpp"
 #endif
 
 
@@ -19,4 +19,4 @@ SFML_BASE_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_1ARG(exp)
 
 
 ////////////////////////////////////////////////////////////
-#include <SFML/Base/Math/ImplUndef.hpp>
+#include "SFML/Base/Math/ImplUndef.hpp"

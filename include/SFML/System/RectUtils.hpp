@@ -4,11 +4,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/Export.hpp>
+#include "SFML/System/Export.hpp"
 
-#include <SFML/System/Rect.hpp>
+#include "SFML/System/Rect.hpp"
 
-#include <SFML/Base/Optional.hpp>
+#include "SFML/Base/Optional.hpp"
 
 
 namespace sf
@@ -29,7 +29,7 @@ template <typename T>
 } // namespace sf
 
 
-#include <SFML/System/RectUtils.inl>
+#include "SFML/System/RectUtils.inl"
 
 
 ////////////////////////////////////////////////////////////

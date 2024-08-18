@@ -3,11 +3,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/JoystickImpl.hpp>
+#include "SFML/Window/JoystickImpl.hpp"
 
-#include <SFML/System/Err.hpp>
+#include "SFML/System/Err.hpp"
 
-#include <SFML/Base/UniquePtr.hpp>
+#include "SFML/Base/UniquePtr.hpp"
 
 #include <fcntl.h>
 #include <libudev.h>

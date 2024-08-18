@@ -4,9 +4,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Event.hpp>
-#include <SFML/Window/WindowImpl.hpp>
-#include <SFML/Window/iOS/ObjCType.hpp>
+#include "SFML/Window/Event.hpp"
+#include "SFML/Window/WindowImpl.hpp"
+#include "SFML/Window/iOS/ObjCType.hpp"
 
 
 SFML_DECLARE_OBJC_CLASS(UIWindow);

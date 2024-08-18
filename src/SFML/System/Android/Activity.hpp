@@ -4,21 +4,22 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/EglContext.hpp>
-#include <SFML/Window/Event.hpp>
+#include "SFML/Window/EglContext.hpp"
+#include "SFML/Window/Event.hpp"
 
-#include <SFML/Base/EnumArray.hpp>
+#include "SFML/Base/EnumArray.hpp"
 
 #include <android/configuration.h>
 #include <android/native_activity.h>
 
-#include <fstream>
 #include <mutex>
+#include <streambuf>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 #include <cstddef>
+
 
 class SFML_SYSTEM_API LogcatStream : public std::streambuf
 {

@@ -4,11 +4,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Network/Socket.hpp>
-#include <SFML/Network/SocketHandle.hpp>
+#include "SFML/Network/Socket.hpp"
+#include "SFML/Network/SocketHandle.hpp"
 
-#include <SFML/Base/InPlacePImpl.hpp>
-#include <SFML/Base/Optional.hpp>
+#include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/Optional.hpp"
 
 #if defined(SFML_SYSTEM_WINDOWS)
 

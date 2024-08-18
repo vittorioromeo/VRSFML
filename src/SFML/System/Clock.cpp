@@ -3,12 +3,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/Clock.hpp>
-#include <SFML/System/Time.hpp>
-#include <SFML/System/TimeChronoUtil.hpp>
+#include "SFML/System/Clock.hpp"
+#include "SFML/System/Time.hpp"
+#include "SFML/System/TimeChronoUtil.hpp"
 
 #ifdef SFML_SYSTEM_ANDROID
-#include <SFML/System/SuspendAwareClock.hpp>
+#include "SFML/System/SuspendAwareClock.hpp"
 #endif
 
 #include <chrono>

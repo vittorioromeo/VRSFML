@@ -4,11 +4,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Config.hpp>
+#include "SFML/Config.hpp"
 
-#include <SFML/Window/Joystick.hpp>
+#include "SFML/Window/Joystick.hpp"
 
-#include <SFML/Base/EnumArray.hpp>
+#include "SFML/Base/EnumArray.hpp"
 
 
 namespace sf::priv
@@ -40,19 +40,19 @@ struct JoystickState
 
 #if defined(SFML_SYSTEM_WINDOWS)
 
-#include <SFML/Window/Win32/JoystickImpl.hpp>
+#include "SFML/Window/Win32/JoystickImpl.hpp"
 
 #elif defined(SFML_SYSTEM_LINUX)
 
-#include <SFML/Window/Unix/JoystickImpl.hpp>
+#include "SFML/Window/Unix/JoystickImpl.hpp"
 
 #elif defined(SFML_SYSTEM_FREEBSD)
 
-#include <SFML/Window/FreeBSD/JoystickImpl.hpp>
+#include "SFML/Window/FreeBSD/JoystickImpl.hpp"
 
 #elif defined(SFML_SYSTEM_OPENBSD) || defined(SFML_SYSTEM_IOS) || defined(SFML_SYSTEM_ANDROID)
 
-#include <SFML/Window/Stub/StubJoystickImpl.hpp>
+#include "SFML/Window/Stub/StubJoystickImpl.hpp"
 namespace sf::priv
 {
 using JoystickImpl = StubJoystickImpl;
@@ -60,14 +60,14 @@ using JoystickImpl = StubJoystickImpl;
 
 #elif defined(SFML_SYSTEM_NETBSD)
 
-#include <SFML/Window/NetBSD/JoystickImpl.hpp>
+#include "SFML/Window/NetBSD/JoystickImpl.hpp"
 
 #elif defined(SFML_SYSTEM_MACOS)
 
-#include <SFML/Window/macOS/JoystickImpl.hpp>
+#include "SFML/Window/macOS/JoystickImpl.hpp"
 
 #elif defined(SFML_SYSTEM_EMSCRIPTEN)
 
-#include <SFML/Window/Emscripten/JoystickImpl.hpp>
+#include "SFML/Window/Emscripten/JoystickImpl.hpp"
 
 #endif

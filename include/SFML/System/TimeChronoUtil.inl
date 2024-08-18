@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/TimeChronoUtil.hpp> // NOLINT(misc-header-include-cycle)
+#include "SFML/System/TimeChronoUtil.hpp" // NOLINT(misc-header-include-cycle)
 
 #include <chrono>
 

@@ -4,9 +4,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/Export.hpp>
+#include "SFML/Audio/Export.hpp"
 
-#include <SFML/Base/FixedFunction.hpp>
+#include "SFML/Base/FixedFunction.hpp"
 
 
 namespace sf::priv

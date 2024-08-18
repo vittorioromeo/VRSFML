@@ -1,14 +1,14 @@
-#include <SFML/Graphics/Texture.hpp>
+#include "SFML/Graphics/Texture.hpp"
 
 // Other 1st party headers
-#include <SFML/Graphics/GraphicsContext.hpp>
-#include <SFML/Graphics/Image.hpp>
+#include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/Image.hpp"
 
-#include <SFML/System/FileInputStream.hpp>
-#include <SFML/System/Path.hpp>
+#include "SFML/System/FileInputStream.hpp"
+#include "SFML/System/Path.hpp"
 
-#include <SFML/Base/Macros.hpp>
-#include <SFML/Base/Traits/IsNothrowSwappable.hpp>
+#include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Traits/IsNothrowSwappable.hpp"
 
 #include <Doctest.hpp>
 

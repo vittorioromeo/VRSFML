@@ -1,4 +1,4 @@
-#include <SFML/Config.hpp>
+#include "SFML/Config.hpp"
 
 #include <Doctest.hpp>
 

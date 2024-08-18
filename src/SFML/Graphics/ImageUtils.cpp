@@ -3,20 +3,15 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Image.hpp>
-#include <SFML/Graphics/ImageUtils.hpp>
+#include "SFML/Graphics/Image.hpp"
+#include "SFML/Graphics/ImageUtils.hpp"
 
-#include <SFML/System/Err.hpp>
-#include <SFML/System/InputStream.hpp>
-#include <SFML/System/Path.hpp>
-#include <SFML/System/PathUtils.hpp>
-#include <SFML/System/StringUtils.hpp>
-#include <SFML/System/Vector2.hpp>
+#include "SFML/System/Err.hpp"
+#include "SFML/System/Path.hpp"
+#include "SFML/System/PathUtils.hpp"
+#include "SFML/System/Vector2.hpp"
 
-#include <SFML/Base/Algorithm.hpp>
-#include <SFML/Base/Assert.hpp>
-#include <SFML/Base/Macros.hpp>
-#include <SFML/Base/Optional.hpp>
+#include "SFML/Base/Assert.hpp"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>

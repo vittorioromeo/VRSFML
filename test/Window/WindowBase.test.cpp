@@ -1,11 +1,10 @@
-#include <SFML/Window/WindowBase.hpp>
+#include "SFML/Window/WindowBase.hpp"
 
 // Other 1st party headers
-#include <SFML/Window/Event.hpp>
-#include <SFML/Window/WindowSettings.hpp>
+#include "SFML/Window/Event.hpp"
+#include "SFML/Window/WindowSettings.hpp"
 
-#include <SFML/System/String.hpp>
-#include <SFML/System/TimeChronoUtil.hpp>
+#include "SFML/System/TimeChronoUtil.hpp"
 
 #include <Doctest.hpp>
 

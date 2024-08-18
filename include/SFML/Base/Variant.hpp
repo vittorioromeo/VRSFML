@@ -5,16 +5,15 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow"
 
-#include <SFML/Base/Assert.hpp>
-#include <SFML/Base/Launder.hpp>
-#include <SFML/Base/MakeIndexSequence.hpp>
-#include <SFML/Base/OverloadSet.hpp>
-#include <SFML/Base/PlacementNew.hpp>
-#include <SFML/Base/SizeT.hpp>
-#include <SFML/Base/Traits/IsReference.hpp>
-#include <SFML/Base/Traits/IsSame.hpp>
-#include <SFML/Base/Traits/RemoveCVRef.hpp>
-#include <SFML/Base/TypePackElement.hpp>
+#include "SFML/Base/Launder.hpp"
+#include "SFML/Base/MakeIndexSequence.hpp"
+#include "SFML/Base/OverloadSet.hpp"
+#include "SFML/Base/PlacementNew.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Traits/IsReference.hpp"
+#include "SFML/Base/Traits/IsSame.hpp"
+#include "SFML/Base/Traits/RemoveCVRef.hpp"
+#include "SFML/Base/TypePackElement.hpp"
 
 namespace sfvr::impl
 {

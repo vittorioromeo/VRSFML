@@ -4,16 +4,15 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Export.hpp>
+#include "SFML/Graphics/Export.hpp"
 
-#include <SFML/Graphics/RenderTarget.hpp>
+#include "SFML/Graphics/RenderTarget.hpp"
 
-#include <SFML/Window/ContextSettings.hpp>
-#include <SFML/Window/Window.hpp>
-#include <SFML/Window/WindowEnums.hpp>
-#include <SFML/Window/WindowHandle.hpp>
+#include "SFML/Window/ContextSettings.hpp"
+#include "SFML/Window/Window.hpp"
+#include "SFML/Window/WindowHandle.hpp"
 
-#include <SFML/System/Vector2.hpp>
+#include "SFML/System/Vector2.hpp"
 
 
 namespace sf

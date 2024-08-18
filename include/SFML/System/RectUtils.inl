@@ -3,9 +3,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/RectUtils.hpp> // NOLINT(misc-header-include-cycle)
+#include "SFML/System/RectUtils.hpp" // NOLINT(misc-header-include-cycle)
 
-#include <SFML/Base/Algorithm.hpp>
+#include "SFML/Base/Algorithm.hpp"
 
 
 namespace sf

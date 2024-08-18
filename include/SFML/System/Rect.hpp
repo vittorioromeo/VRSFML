@@ -4,9 +4,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/Export.hpp>
-
-#include <SFML/System/Vector2.hpp>
+#include "SFML/System/Vector2.hpp"
 
 
 namespace sf
@@ -94,7 +92,7 @@ using FloatRect = Rect<float>;
 
 } // namespace sf
 
-#include <SFML/System/Rect.inl>
+#include "SFML/System/Rect.inl"
 
 
 ////////////////////////////////////////////////////////////

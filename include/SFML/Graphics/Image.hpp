@@ -4,16 +4,16 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Export.hpp>
+#include "SFML/Graphics/Export.hpp"
 
-#include <SFML/Graphics/Color.hpp>
+#include "SFML/Graphics/Color.hpp"
 
-#include <SFML/System/Rect.hpp>
-#include <SFML/System/Vector2.hpp>
+#include "SFML/System/Rect.hpp"
+#include "SFML/System/Vector2.hpp"
 
-#include <SFML/Base/InPlacePImpl.hpp>
-#include <SFML/Base/Optional.hpp>
-#include <SFML/Base/PassKey.hpp>
+#include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
 
 #include <cstddef>
 #include <cstdint>

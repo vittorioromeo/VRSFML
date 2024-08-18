@@ -4,10 +4,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/Export.hpp>
+#include "SFML/Audio/Export.hpp"
 
-#include <SFML/Audio/ChannelMap.hpp>
-#include <SFML/Audio/SoundChannel.hpp>
+#include "SFML/Audio/ChannelMap.hpp"
 
 #include <cstdint>
 

@@ -1,17 +1,17 @@
-#include <SFML/Base/Traits/IsBaseOf.hpp>
-#include <SFML/Base/Traits/IsEnum.hpp>
-#include <SFML/Base/Traits/IsFloatingPoint.hpp>
-#include <SFML/Base/Traits/IsRvalueReference.hpp>
-#include <SFML/Base/Traits/IsSame.hpp>
-#include <SFML/Base/Traits/IsTriviallyCopyAssignable.hpp>
-#include <SFML/Base/Traits/IsTriviallyCopyConstructible.hpp>
-#include <SFML/Base/Traits/IsTriviallyCopyable.hpp>
-#include <SFML/Base/Traits/IsTriviallyDestructible.hpp>
-#include <SFML/Base/Traits/IsTriviallyMoveAssignable.hpp>
-#include <SFML/Base/Traits/IsTriviallyMoveConstructible.hpp>
-#include <SFML/Base/Traits/RemoveCVRef.hpp>
-#include <SFML/Base/Traits/RemoveReference.hpp>
-#include <SFML/Base/Traits/UnderlyingType.hpp>
+#include "SFML/Base/Traits/IsBaseOf.hpp"
+#include "SFML/Base/Traits/IsEnum.hpp"
+#include "SFML/Base/Traits/IsFloatingPoint.hpp"
+#include "SFML/Base/Traits/IsRvalueReference.hpp"
+#include "SFML/Base/Traits/IsSame.hpp"
+#include "SFML/Base/Traits/IsTriviallyCopyAssignable.hpp"
+#include "SFML/Base/Traits/IsTriviallyCopyConstructible.hpp"
+#include "SFML/Base/Traits/IsTriviallyCopyable.hpp"
+#include "SFML/Base/Traits/IsTriviallyDestructible.hpp"
+#include "SFML/Base/Traits/IsTriviallyMoveAssignable.hpp"
+#include "SFML/Base/Traits/IsTriviallyMoveConstructible.hpp"
+#include "SFML/Base/Traits/RemoveCVRef.hpp"
+#include "SFML/Base/Traits/RemoveReference.hpp"
+#include "SFML/Base/Traits/UnderlyingType.hpp"
 
 
 namespace

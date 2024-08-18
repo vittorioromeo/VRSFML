@@ -1,10 +1,11 @@
-#include <SFML/Graphics/GraphicsContext.hpp>
-#include <SFML/Graphics/Sprite.hpp>
+#include "SFML/Graphics/Sprite.hpp"
+
+#include "SFML/Graphics/GraphicsContext.hpp"
 
 // Other 1st party headers
-#include <SFML/Graphics/Texture.hpp>
+#include "SFML/Graphics/Texture.hpp"
 
-#include <SFML/Base/Optional.hpp>
+#include "SFML/Base/Optional.hpp"
 
 #include <Doctest.hpp>
 

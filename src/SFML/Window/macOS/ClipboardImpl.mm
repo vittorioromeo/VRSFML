@@ -3,11 +3,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/macOS/AutoreleasePoolWrapper.hpp>
-#include <SFML/Window/macOS/ClipboardImpl.hpp>
+#include "SFML/Window/macOS/AutoreleasePoolWrapper.hpp"
+#include "SFML/Window/macOS/ClipboardImpl.hpp"
 
-#include <SFML/System/String.hpp>
-#include <SFML/System/StringUtfUtils.hpp>
+#include "SFML/System/String.hpp"
+#include "SFML/System/StringUtfUtils.hpp"
 
 #import <AppKit/AppKit.h>
 

@@ -5,10 +5,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/Export.hpp>
-
-#include <SFML/System/LifetimeDependant.hpp>
-#include <SFML/System/LifetimeDependee.hpp>
+#include "SFML/System/LifetimeDependant.hpp"
+#include "SFML/System/LifetimeDependee.hpp"
 
 
 namespace sf::priv

@@ -3,15 +3,15 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/SoundFileWriterWav.hpp>
+#include "SFML/Audio/SoundFileWriterWav.hpp"
 
-#include <SFML/System/Err.hpp>
-#include <SFML/System/Path.hpp>
-#include <SFML/System/PathUtils.hpp>
-#include <SFML/System/StringUtils.hpp>
+#include "SFML/System/Err.hpp"
+#include "SFML/System/Path.hpp"
+#include "SFML/System/PathUtils.hpp"
+#include "SFML/System/StringUtils.hpp"
 
-#include <SFML/Base/Algorithm.hpp>
-#include <SFML/Base/Assert.hpp>
+#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Assert.hpp"
 
 #include <algorithm> // std::sort, std::adjacent_find
 #include <fstream>

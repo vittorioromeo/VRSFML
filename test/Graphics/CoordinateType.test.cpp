@@ -1,4 +1,4 @@
-#include <SFML/Graphics/CoordinateType.hpp>
+#include "SFML/Graphics/CoordinateType.hpp"
 
 #include <Doctest.hpp>
 

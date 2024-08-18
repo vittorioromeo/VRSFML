@@ -3,8 +3,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Unix/Display.hpp>
-#include <SFML/Window/VulkanImpl.hpp>
+#include "SFML/Window/Unix/Display.hpp"
+#include "SFML/Window/VulkanImpl.hpp"
 
 #include <dlfcn.h>
 #include <string_view>

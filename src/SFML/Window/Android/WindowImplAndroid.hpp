@@ -4,11 +4,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/EglContext.hpp>
-#include <SFML/Window/Event.hpp>
-#include <SFML/Window/WindowImpl.hpp>
+#include "SFML/Window/EglContext.hpp"
+#include "SFML/Window/Event.hpp"
+#include "SFML/Window/WindowImpl.hpp"
 
-#include <SFML/System/Android/Activity.hpp>
+#include "SFML/System/Android/Activity.hpp"
 
 #include <android/input.h>
 

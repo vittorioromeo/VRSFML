@@ -1,4 +1,4 @@
-#include <SFML/System/MemoryInputStream.hpp>
+#include "SFML/System/MemoryInputStream.hpp"
 
 #include <Doctest.hpp>
 

@@ -3,10 +3,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Stub/StubClipboardImpl.hpp>
+#include "SFML/Window/Stub/StubClipboardImpl.hpp"
 
-#include <SFML/System/Err.hpp>
-#include <SFML/System/String.hpp>
+#include "SFML/System/Err.hpp"
+#include "SFML/System/String.hpp"
 
 
 namespace sf::priv

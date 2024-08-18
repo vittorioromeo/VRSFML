@@ -4,11 +4,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/Android/Activity.hpp>
+#include "SFML/System/Android/Activity.hpp"
 
-#include <SFML/Base/Assert.hpp>
+#include "SFML/Base/Assert.hpp"
 
 #include <android/log.h>
+
 
 #define LOGE(...) ((void)__android_log_print(ANDROID_LOG_INFO, "sfml-error", __VA_ARGS__))
 
@@ -43,8 +44,9 @@ void resetActivity(ActivityStates* initializedStates)
 ActivityStates& getActivity()
 {
     ActivityStates* const states = getActivityStatesPtr();
-    assert(states != nullptr &&
-           "Cannot dereference null activity states pointer. Call priv::resetActivity() to initialize it.");
+    SFML_BASE_ASSERT(states != nullptr &&
+                     "Cannot dereference null activity states pointer. Call priv::resetActivity() to initialize it.");
+
     return *states;
 }
 

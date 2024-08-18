@@ -3,13 +3,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Unix/ClipboardImpl.hpp>
-#include <SFML/Window/Unix/Display.hpp>
+#include "SFML/Window/Unix/ClipboardImpl.hpp"
+#include "SFML/Window/Unix/Display.hpp"
 
-#include <SFML/System/Clock.hpp>
-#include <SFML/System/Err.hpp>
-#include <SFML/System/StringUtfUtils.hpp>
-#include <SFML/System/Time.hpp>
+#include "SFML/System/Clock.hpp"
+#include "SFML/System/Err.hpp"
+#include "SFML/System/StringUtfUtils.hpp"
+#include "SFML/System/Time.hpp"
 
 #include <X11/Xatom.h>
 

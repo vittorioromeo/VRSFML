@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Export.hpp>
+#include "SFML/Graphics/Export.hpp"
 
 #include <cstdint>
 
@@ -15,7 +15,7 @@ namespace sf
 /// \brief Utility class for manipulating RGBA colors
 ///
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] Color
+struct SFML_GRAPHICS_API [[nodiscard]] Color
 {
     ////////////////////////////////////////////////////////////
     /// \brief Construct the color from 32-bit unsigned integer
@@ -184,7 +184,7 @@ struct [[nodiscard]] Color
 
 } // namespace sf
 
-#include <SFML/Graphics/Color.inl>
+#include "SFML/Graphics/Color.inl"
 
 
 ////////////////////////////////////////////////////////////

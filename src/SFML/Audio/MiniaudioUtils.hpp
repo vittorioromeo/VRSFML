@@ -4,12 +4,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/PlaybackDevice.hpp>
-#include <SFML/Audio/SoundChannel.hpp>
+#include "SFML/Audio/PlaybackDevice.hpp"
+#include "SFML/Audio/SoundChannel.hpp"
 
-#include <SFML/System/LifetimeDependant.hpp>
+#include "SFML/System/LifetimeDependant.hpp"
 
-#include <SFML/Base/InPlacePImpl.hpp>
+#include "SFML/Base/InPlacePImpl.hpp"
 
 #include <cfloat>
 #include <cstdint>

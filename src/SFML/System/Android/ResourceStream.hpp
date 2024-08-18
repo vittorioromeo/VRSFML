@@ -4,15 +4,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/Export.hpp>
+#include "SFML/System/Export.hpp"
 
-#include <SFML/System/InputStream.hpp>
+#include "SFML/System/InputStream.hpp"
 
-#include <SFML/Base/UniquePtr.hpp>
+#include "SFML/Base/UniquePtr.hpp"
 
 #include <android/asset_manager.h>
-
-#include <string>
 
 
 namespace sf
@@ -87,7 +85,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    UniquePtr<AAsset, AAssetDeleter> m_file; ///< The asset file to read
+    base::UniquePtr<AAsset, AAssetDeleter> m_file; ///< The asset file to read
 };
 
 } // namespace sf::priv

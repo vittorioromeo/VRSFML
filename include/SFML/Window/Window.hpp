@@ -4,12 +4,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/ContextSettings.hpp>
-#include <SFML/Window/WindowBase.hpp>
-#include <SFML/Window/WindowEnums.hpp>
-#include <SFML/Window/WindowHandle.hpp>
+#include "SFML/Window/ContextSettings.hpp"
+#include "SFML/Window/WindowBase.hpp"
+#include "SFML/Window/WindowHandle.hpp"
 
-#include <SFML/Base/InPlacePImpl.hpp>
+#include "SFML/Base/InPlacePImpl.hpp"
 
 
 namespace sf

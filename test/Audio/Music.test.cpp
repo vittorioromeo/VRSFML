@@ -1,12 +1,13 @@
-#include <SFML/Audio/AudioContext.hpp>
-#include <SFML/Audio/Music.hpp>
-#include <SFML/Audio/PlaybackDevice.hpp>
+#include "SFML/Audio/Music.hpp"
+
+#include "SFML/Audio/AudioContext.hpp"
+#include "SFML/Audio/PlaybackDevice.hpp"
 
 // Other 1st party headers
-#include <SFML/System/FileInputStream.hpp>
-#include <SFML/System/Path.hpp>
-#include <SFML/System/Sleep.hpp>
-#include <SFML/System/Time.hpp>
+#include "SFML/System/FileInputStream.hpp"
+#include "SFML/System/Path.hpp"
+#include "SFML/System/Sleep.hpp"
+#include "SFML/System/Time.hpp"
 
 #include <Doctest.hpp>
 

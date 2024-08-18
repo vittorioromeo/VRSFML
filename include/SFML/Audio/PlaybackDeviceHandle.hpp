@@ -4,9 +4,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/Export.hpp>
+#include "SFML/Audio/Export.hpp"
 
-#include <SFML/Audio/AudioDeviceHandle.hpp>
+#include "SFML/Audio/AudioDeviceHandle.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -21,7 +21,7 @@ class PlaybackDevice;
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-class PlaybackDeviceHandle : public priv::StronglyTypedDeviceHandle<PlaybackDevice>
+class SFML_AUDIO_API PlaybackDeviceHandle : public priv::StronglyTypedDeviceHandle<PlaybackDevice>
 {
     using priv::StronglyTypedDeviceHandle<PlaybackDevice>::StronglyTypedDeviceHandle;
 };

@@ -1,17 +1,18 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/ContextSettings.hpp>
-#include <SFML/Window/Event.hpp>
-#include <SFML/Window/EventUtils.hpp>
-#include <SFML/Window/Keyboard.hpp>
-#include <SFML/Window/Window.hpp>
-#include <SFML/Window/WindowContext.hpp>
-#include <SFML/Window/WindowEnums.hpp>
-#include <SFML/Window/WindowSettings.hpp>
+#include "SFML/Window/Window.hpp"
 
-#include <SFML/System/Clock.hpp>
-#include <SFML/System/Time.hpp>
+#include "SFML/Window/ContextSettings.hpp"
+#include "SFML/Window/Event.hpp"
+#include "SFML/Window/EventUtils.hpp"
+#include "SFML/Window/Keyboard.hpp"
+#include "SFML/Window/WindowContext.hpp"
+#include "SFML/Window/WindowEnums.hpp"
+#include "SFML/Window/WindowSettings.hpp"
+
+#include "SFML/System/Clock.hpp"
+#include "SFML/System/Time.hpp"
 
 #include <cstdlib>
 
@@ -19,7 +20,7 @@
 #include <gl.h>
 
 #ifdef SFML_SYSTEM_IOS
-#include <SFML/Main.hpp>
+#include "SFML/Main.hpp"
 #endif
 
 #include <array>

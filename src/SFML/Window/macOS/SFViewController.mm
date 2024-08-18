@@ -6,9 +6,9 @@
 #import <SFML/Window/macOS/SFApplication.h>
 #import <SFML/Window/macOS/SFOpenGLView.h>
 #import <SFML/Window/macOS/SFViewController.h>
-#include <SFML/Window/macOS/WindowImplCocoa.hpp>
+#include "SFML/Window/macOS/WindowImplCocoa.hpp"
 
-#include <SFML/System/Err.hpp>
+#include "SFML/System/Err.hpp"
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 

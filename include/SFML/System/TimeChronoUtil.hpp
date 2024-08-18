@@ -4,9 +4,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/Export.hpp>
+#include "SFML/System/Export.hpp"
 
-#include <SFML/System/Time.hpp>
+#include "SFML/System/Time.hpp"
 
 #include <chrono>
 
@@ -17,7 +17,7 @@ namespace sf
 /// \brief Interoperability utilities between `sf::Time` and `<chrono>`
 ///
 ////////////////////////////////////////////////////////////
-class TimeChronoUtil
+class SFML_SYSTEM_API TimeChronoUtil
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -47,7 +47,7 @@ public:
 
 } // namespace sf
 
-#include <SFML/System/TimeChronoUtil.inl>
+#include "SFML/System/TimeChronoUtil.inl"
 
 
 ////////////////////////////////////////////////////////////

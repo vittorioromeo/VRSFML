@@ -4,7 +4,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #import <SFML/Window/macOS/SFKeyboardModifiersHelper.h>
-#include <SFML/Window/macOS/WindowImplCocoa.hpp>
+#include "SFML/Window/macOS/WindowImplCocoa.hpp"
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 

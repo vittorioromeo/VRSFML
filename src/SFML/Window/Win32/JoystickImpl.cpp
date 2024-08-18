@@ -3,20 +3,20 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/JoystickIdentification.hpp>
-#include <SFML/Window/JoystickImpl.hpp>
-#include <SFML/Window/Win32/JoystickImpl.hpp>
-#include <SFML/Window/Win32/Utils.hpp>
+#include "SFML/Window/JoystickIdentification.hpp"
+#include "SFML/Window/JoystickImpl.hpp"
+#include "SFML/Window/Win32/JoystickImpl.hpp"
+#include "SFML/Window/Win32/Utils.hpp"
 
-#include <SFML/System/Clock.hpp>
-#include <SFML/System/Err.hpp>
-#include <SFML/System/Time.hpp>
-#include <SFML/System/Win32/WindowsHeader.hpp>
+#include "SFML/System/Clock.hpp"
+#include "SFML/System/Err.hpp"
+#include "SFML/System/Time.hpp"
+#include "SFML/System/Win32/WindowsHeader.hpp"
 
-#include <SFML/Base/Algorithm.hpp>
-#include <SFML/Base/EnumArray.hpp>
-#include <SFML/Base/Math/Cos.hpp>
-#include <SFML/Base/Math/Sin.hpp>
+#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/EnumArray.hpp"
+#include "SFML/Base/Math/Cos.hpp"
+#include "SFML/Base/Math/Sin.hpp"
 
 #include <dinput.h>
 #include <mmsystem.h>

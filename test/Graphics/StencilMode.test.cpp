@@ -1,4 +1,4 @@
-#include <SFML/Graphics/StencilMode.hpp>
+#include "SFML/Graphics/StencilMode.hpp"
 
 #include <Doctest.hpp>
 

@@ -1,32 +1,33 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Font.hpp>
-#include <SFML/Graphics/GraphicsContext.hpp>
-#include <SFML/Graphics/RenderStates.hpp>
-#include <SFML/Graphics/RenderTarget.hpp>
-#include <SFML/Graphics/RenderTexture.hpp>
-#include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Graphics/Shader.hpp>
-#include <SFML/Graphics/Sprite.hpp>
-#include <SFML/Graphics/Text.hpp>
-#include <SFML/Graphics/Texture.hpp>
-#include <SFML/Graphics/Vertex.hpp>
+#include "SFML/Graphics/Shader.hpp"
 
-#include <SFML/Window/Event.hpp>
-#include <SFML/Window/EventUtils.hpp>
-#include <SFML/Window/GameLoop.hpp>
-#include <SFML/Window/Keyboard.hpp>
-#include <SFML/Window/Mouse.hpp>
-#include <SFML/Window/WindowSettings.hpp>
+#include "SFML/Graphics/Font.hpp"
+#include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/RenderStates.hpp"
+#include "SFML/Graphics/RenderTarget.hpp"
+#include "SFML/Graphics/RenderTexture.hpp"
+#include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/Sprite.hpp"
+#include "SFML/Graphics/Text.hpp"
+#include "SFML/Graphics/Texture.hpp"
+#include "SFML/Graphics/Vertex.hpp"
 
-#include <SFML/System/Clock.hpp>
-#include <SFML/System/Path.hpp>
-#include <SFML/System/String.hpp>
-#include <SFML/System/Time.hpp>
+#include "SFML/Window/Event.hpp"
+#include "SFML/Window/EventUtils.hpp"
+#include "SFML/Window/GameLoop.hpp"
+#include "SFML/Window/Keyboard.hpp"
+#include "SFML/Window/Mouse.hpp"
+#include "SFML/Window/WindowSettings.hpp"
 
-#include <SFML/Base/Assert.hpp>
-#include <SFML/Base/Optional.hpp>
+#include "SFML/System/Clock.hpp"
+#include "SFML/System/Path.hpp"
+#include "SFML/System/String.hpp"
+#include "SFML/System/Time.hpp"
+
+#include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Optional.hpp"
 
 #include <array>
 #include <random>

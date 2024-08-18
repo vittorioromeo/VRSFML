@@ -4,15 +4,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/Export.hpp>
-
-#include <SFML/Base/Assert.hpp>
-#include <SFML/Base/Macros.hpp>
-#include <SFML/Base/MaxAlignT.hpp>
-#include <SFML/Base/PlacementNew.hpp>
-#include <SFML/Base/SizeT.hpp>
-#include <SFML/Base/Traits/IsRvalueReference.hpp>
-#include <SFML/Base/Traits/RemoveReference.hpp>
+#include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Macros.hpp"
+#include "SFML/Base/MaxAlignT.hpp"
+#include "SFML/Base/PlacementNew.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Traits/IsRvalueReference.hpp"
+#include "SFML/Base/Traits/RemoveReference.hpp"
 
 
 namespace sf::base

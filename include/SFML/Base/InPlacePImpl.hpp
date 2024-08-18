@@ -4,10 +4,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Base/Launder.hpp>
-#include <SFML/Base/MaxAlignT.hpp>
-#include <SFML/Base/PlacementNew.hpp>
-#include <SFML/Base/SizeT.hpp>
+#include "SFML/Base/Launder.hpp"
+#include "SFML/Base/MaxAlignT.hpp"
+#include "SFML/Base/PlacementNew.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 
 namespace sf::base

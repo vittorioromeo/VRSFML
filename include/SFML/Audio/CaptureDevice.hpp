@@ -4,16 +4,15 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/Export.hpp>
+#include "SFML/Audio/Export.hpp"
 
-#include <SFML/Audio/ChannelMap.hpp>
-#include <SFML/Audio/SoundChannel.hpp>
+#include "SFML/Audio/ChannelMap.hpp"
 
-#include <SFML/System/LifetimeDependant.hpp>
-#include <SFML/System/LifetimeDependee.hpp>
+#include "SFML/System/LifetimeDependant.hpp"
+#include "SFML/System/LifetimeDependee.hpp"
 
-#include <SFML/Base/Optional.hpp>
-#include <SFML/Base/UniquePtr.hpp>
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 
 #include <cstddef>
 #include <cstdint>
@@ -33,7 +32,7 @@ class SoundRecorder;
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-class CaptureDevice
+class SFML_AUDIO_API CaptureDevice
 {
 public:
     ////////////////////////////////////////////////////////////

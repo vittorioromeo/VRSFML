@@ -3,13 +3,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/GLCheck.hpp>
-#include <SFML/Window/GLExtensions.hpp>
+#include "SFML/Window/GLCheck.hpp"
+#include "SFML/Window/GLExtensions.hpp"
 
-#include <SFML/System/Err.hpp>
-#include <SFML/System/Path.hpp>
-
-#include <SFML/Base/Assert.hpp>
+#include "SFML/System/Err.hpp"
+#include "SFML/System/Path.hpp"
 
 
 namespace sf::priv

@@ -1,4 +1,4 @@
-#include <SFML/Graphics/Vertex.hpp>
+#include "SFML/Graphics/Vertex.hpp"
 
 #include <Doctest.hpp>
 

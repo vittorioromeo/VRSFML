@@ -3,19 +3,19 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/FileInputStream.hpp>
+#include "SFML/System/FileInputStream.hpp"
 
-#include <SFML/Base/Optional.hpp>
+#include "SFML/Base/Optional.hpp"
 
 #ifdef SFML_SYSTEM_ANDROID
-#include <SFML/System/Android/Activity.hpp>
-#include <SFML/System/Android/ResourceStream.hpp>
+#include "SFML/System/Android/Activity.hpp"
+#include "SFML/System/Android/ResourceStream.hpp"
 #endif
 
-#include <SFML/System/Path.hpp>
+#include "SFML/System/Path.hpp"
 
-#include <SFML/Base/Assert.hpp>
-#include <SFML/Base/Macros.hpp>
+#include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Macros.hpp"
 
 #include <cstddef>
 

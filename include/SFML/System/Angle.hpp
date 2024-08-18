@@ -1,11 +1,6 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
-////////////////////////////////////////////////////////////
-// Headers
-////////////////////////////////////////////////////////////
-#include <SFML/System/Export.hpp>
-
 
 namespace sf
 {
@@ -454,7 +449,7 @@ namespace Literals
 } // namespace Literals
 } // namespace sf
 
-#include <SFML/System/Angle.inl>
+#include "SFML/System/Angle.inl"
 
 
 ////////////////////////////////////////////////////////////

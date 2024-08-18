@@ -4,7 +4,7 @@
 
 #import "NSString+stdstring.h"
 
-#include <SFML/System/Path.hpp>
+#include "SFML/System/Path.hpp"
 
 // These define are used for converting the color of the NSPopUpButton
 #define BLUE  @"Blue"

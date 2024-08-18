@@ -3,8 +3,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/Time.hpp>
-#include <SFML/System/Unix/SleepImpl.hpp>
+#include "SFML/System/Time.hpp"
+#include "SFML/System/Unix/SleepImpl.hpp"
 
 #include <cerrno>
 #include <ctime>

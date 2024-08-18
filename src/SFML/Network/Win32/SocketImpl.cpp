@@ -3,11 +3,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Network/SocketImpl.hpp>
+#include "SFML/Network/SocketImpl.hpp"
 
-#include <SFML/System/Win32/WindowsHeader.hpp>
+#include "SFML/System/Win32/WindowsHeader.hpp"
 
-#include <SFML/Base/Optional.hpp>
+#include "SFML/Base/Optional.hpp"
 
 #include <winsock2.h>
 #include <ws2tcpip.h>

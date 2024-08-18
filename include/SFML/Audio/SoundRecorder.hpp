@@ -4,11 +4,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/Export.hpp>
+#include "SFML/Audio/Export.hpp"
 
-#include <SFML/Audio/SoundChannel.hpp>
-
-#include <SFML/System/LifetimeDependant.hpp>
+#include "SFML/System/LifetimeDependant.hpp"
 
 #include <cstddef>
 #include <cstdint>

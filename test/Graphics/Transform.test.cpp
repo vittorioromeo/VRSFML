@@ -1,8 +1,8 @@
-#include <SFML/Graphics/Transform.hpp>
+#include "SFML/Graphics/Transform.hpp"
 
-#include <SFML/System/Angle.hpp>
+#include "SFML/System/Angle.hpp"
 
-#include <SFML/Base/Assert.hpp>
+#include "SFML/Base/Assert.hpp"
 
 #include <Doctest.hpp>
 

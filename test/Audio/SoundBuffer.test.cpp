@@ -1,9 +1,9 @@
-#include <SFML/Audio/SoundBuffer.hpp>
+#include "SFML/Audio/SoundBuffer.hpp"
 
 // Other 1st party headers
-#include <SFML/System/FileInputStream.hpp>
-#include <SFML/System/Path.hpp>
-#include <SFML/System/Time.hpp>
+#include "SFML/System/FileInputStream.hpp"
+#include "SFML/System/Path.hpp"
+#include "SFML/System/Time.hpp"
 
 #include <Doctest.hpp>
 

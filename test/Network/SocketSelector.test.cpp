@@ -1,7 +1,7 @@
-#include <SFML/Network/SocketSelector.hpp>
+#include "SFML/Network/SocketSelector.hpp"
 
 // Other 1st party headers
-#include <SFML/Network/UdpSocket.hpp>
+#include "SFML/Network/UdpSocket.hpp"
 
 #include <Doctest.hpp>
 

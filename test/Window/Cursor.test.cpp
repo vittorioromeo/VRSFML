@@ -1,4 +1,4 @@
-#include <SFML/Window/Cursor.hpp>
+#include "SFML/Window/Cursor.hpp"
 
 #include <Doctest.hpp>
 

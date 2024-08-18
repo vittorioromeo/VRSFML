@@ -1,5 +1,6 @@
-#include <SFML/Window/Joystick.hpp>
-#include <SFML/Window/JoystickIdentification.hpp>
+#include "SFML/Window/Joystick.hpp"
+
+#include "SFML/Window/JoystickIdentification.hpp"
 
 #include <Doctest.hpp>
 

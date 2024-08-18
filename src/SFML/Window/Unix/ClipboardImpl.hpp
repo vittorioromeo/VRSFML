@@ -4,9 +4,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/WindowEnums.hpp> // Prevent conflict with macro None from Xlib
+#include "SFML/Window/WindowEnums.hpp" // Prevent conflict with macro None from Xlib
 
-#include <SFML/System/String.hpp>
+#include "SFML/System/String.hpp"
 
 #include <X11/Xlib.h>
 

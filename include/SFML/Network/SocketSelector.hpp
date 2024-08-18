@@ -4,11 +4,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Network/Export.hpp>
+#include "SFML/Network/Export.hpp"
 
-#include <SFML/System/Time.hpp>
+#include "SFML/System/Time.hpp"
 
-#include <SFML/Base/InPlacePImpl.hpp>
+#include "SFML/Base/InPlacePImpl.hpp"
 
 
 namespace sf

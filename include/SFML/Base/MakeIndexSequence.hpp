@@ -4,8 +4,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Base/IndexSequence.hpp>
-#include <SFML/Base/SizeT.hpp>
+#include "SFML/Base/IndexSequence.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 
 #if __has_builtin(__integer_pack)

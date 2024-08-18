@@ -4,16 +4,16 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Export.hpp>
+#include "SFML/Graphics/Export.hpp"
 
-#include <SFML/Graphics/RenderTarget.hpp>
+#include "SFML/Graphics/RenderTarget.hpp"
 
-#include <SFML/Window/ContextSettings.hpp>
+#include "SFML/Window/ContextSettings.hpp"
 
-#include <SFML/System/Vector2.hpp>
+#include "SFML/System/Vector2.hpp"
 
-#include <SFML/Base/Optional.hpp>
-#include <SFML/Base/PassKey.hpp>
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
 
 
 namespace sf

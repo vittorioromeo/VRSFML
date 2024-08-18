@@ -1,8 +1,8 @@
-#include <SFML/System/Sleep.hpp>
+#include "SFML/System/Sleep.hpp"
 
 // Other 1st party headers
-#include <SFML/System/Time.hpp>
-#include <SFML/System/TimeChronoUtil.hpp>
+#include "SFML/System/Time.hpp"
+#include "SFML/System/TimeChronoUtil.hpp"
 
 #include <Doctest.hpp>
 

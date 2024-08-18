@@ -1,10 +1,11 @@
-#include <SFML/Graphics/Color.hpp>
-#include <SFML/Graphics/Shape.hpp>
+#include "SFML/Graphics/Shape.hpp"
+
+#include "SFML/Graphics/Color.hpp"
 
 // Other 1st party headers
-#include <SFML/Graphics/Texture.hpp>
+#include "SFML/Graphics/Texture.hpp"
 
-#include <SFML/System/Rect.hpp>
+#include "SFML/System/Rect.hpp"
 
 #include <Doctest.hpp>
 

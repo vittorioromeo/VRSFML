@@ -3,9 +3,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/VideoMode.hpp>
-#include <SFML/Window/VideoModeImpl.hpp>
-#include <SFML/Window/VideoModeUtils.hpp>
+#include "SFML/Window/VideoMode.hpp"
+#include "SFML/Window/VideoModeImpl.hpp"
+#include "SFML/Window/VideoModeUtils.hpp"
 
 #include <algorithm> // std::sort
 

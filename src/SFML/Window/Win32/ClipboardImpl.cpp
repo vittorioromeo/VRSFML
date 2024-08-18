@@ -3,12 +3,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Win32/ClipboardImpl.hpp>
-#include <SFML/Window/Win32/Utils.hpp>
+#include "SFML/Window/Win32/ClipboardImpl.hpp"
+#include "SFML/Window/Win32/Utils.hpp"
 
-#include <SFML/System/Err.hpp>
-#include <SFML/System/String.hpp>
-#include <SFML/System/Win32/WindowsHeader.hpp>
+#include "SFML/System/Err.hpp"
+#include "SFML/System/String.hpp"
+#include "SFML/System/Win32/WindowsHeader.hpp"
 
 #include <string>
 

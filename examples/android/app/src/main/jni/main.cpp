@@ -1,21 +1,21 @@
-#include <SFML/Graphics/Font.hpp>
-#include <SFML/Graphics/GraphicsContext.hpp>
-#include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Graphics/Sprite.hpp>
-#include <SFML/Graphics/Text.hpp>
-#include <SFML/Graphics/Texture.hpp>
-#include <SFML/Graphics/View.hpp>
+#include "SFML/Graphics/Font.hpp"
+#include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/Sprite.hpp"
+#include "SFML/Graphics/Text.hpp"
+#include "SFML/Graphics/Texture.hpp"
+#include "SFML/Graphics/View.hpp"
 
-#include <SFML/Window/Event.hpp>
-#include <SFML/Window/EventUtils.hpp>
-#include <SFML/Window/VideoMode.hpp>
-#include <SFML/Window/VideoModeUtils.hpp>
-#include <SFML/Window/WindowSettings.hpp>
+#include "SFML/Window/Event.hpp"
+#include "SFML/Window/EventUtils.hpp"
+#include "SFML/Window/VideoMode.hpp"
+#include "SFML/Window/VideoModeUtils.hpp"
+#include "SFML/Window/WindowSettings.hpp"
 
-#include <SFML/System/Path.hpp>
-#include <SFML/System/Sleep.hpp>
+#include "SFML/System/Path.hpp"
+#include "SFML/System/Sleep.hpp"
 
-#include <SFML/Base/Optional.hpp>
+#include "SFML/Base/Optional.hpp"
 
 #include <cstdlib>
 
@@ -31,7 +31,7 @@
 
 // Since we want to get the native activity from SFML, we'll have to use an
 // extra header here:
-#include <SFML/System/NativeActivity.hpp>
+#include "SFML/System/NativeActivity.hpp"
 
 // NDK/JNI sub example - call Java code from native code
 int vibrate(sf::Time duration)

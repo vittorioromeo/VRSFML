@@ -1,10 +1,11 @@
-#include <SFML/Graphics/GraphicsContext.hpp>
-#include <SFML/Graphics/VertexBuffer.hpp>
+#include "SFML/Graphics/VertexBuffer.hpp"
+
+#include "SFML/Graphics/GraphicsContext.hpp"
 
 // Other 1st party headers
-#include <SFML/Graphics/Vertex.hpp>
+#include "SFML/Graphics/Vertex.hpp"
 
-#include <SFML/Base/Traits/IsNothrowSwappable.hpp>
+#include "SFML/Base/Traits/IsNothrowSwappable.hpp"
 
 #include <Doctest.hpp>
 

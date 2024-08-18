@@ -4,18 +4,14 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Config.hpp>
+#include "SFML/Window/Event.hpp"
+#include "SFML/Window/WindowHandle.hpp"
 
-#include <SFML/Window/Event.hpp>
-#include <SFML/Window/WindowEnums.hpp>
-#include <SFML/Window/WindowHandle.hpp>
+#include "SFML/System/Vector2.hpp"
 
-#include <SFML/System/Vector2.hpp>
-#include <SFML/System/Vector3.hpp>
-
-#include <SFML/Base/InPlacePImpl.hpp>
-#include <SFML/Base/Optional.hpp>
-#include <SFML/Base/UniquePtr.hpp>
+#include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 
 #include <cstdint>
 

@@ -1,11 +1,11 @@
-#include <SFML/System/Angle.hpp>
-#include <SFML/System/Rect.hpp>
-#include <SFML/System/String.hpp>
-#include <SFML/System/Time.hpp>
-#include <SFML/System/Vector2.hpp>
-#include <SFML/System/Vector3.hpp>
+#include "SFML/System/Angle.hpp"
+#include "SFML/System/Rect.hpp"
+#include "SFML/System/String.hpp"
+#include "SFML/System/Time.hpp"
+#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vector3.hpp"
 
-#include <SFML/Base/Assert.hpp>
+#include "SFML/Base/Assert.hpp"
 
 #include <Doctest.hpp>
 

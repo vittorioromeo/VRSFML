@@ -3,15 +3,15 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/InputImpl.hpp>
-#include <SFML/Window/VideoMode.hpp>
-#include <SFML/Window/VideoModeUtils.hpp>
-#include <SFML/Window/Window.hpp>
-#include <SFML/Window/macOS/AutoreleasePoolWrapper.hpp>
-#include <SFML/Window/macOS/HIDInputManager.hpp>
+#include "SFML/Window/InputImpl.hpp"
+#include "SFML/Window/VideoMode.hpp"
+#include "SFML/Window/VideoModeUtils.hpp"
+#include "SFML/Window/Window.hpp"
+#include "SFML/Window/macOS/AutoreleasePoolWrapper.hpp"
+#include "SFML/Window/macOS/HIDInputManager.hpp"
 #import <SFML/Window/macOS/SFOpenGLView.h>
 
-#include <SFML/System/Err.hpp>
+#include "SFML/System/Err.hpp"
 
 #import <AppKit/AppKit.h>
 

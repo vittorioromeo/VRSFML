@@ -3,9 +3,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Export.hpp>
+#include "SFML/Config.hpp"
 
-#include <SFML/Window/GameLoop.hpp>
+#include "SFML/Window/GameLoop.hpp"
 
 #ifdef SFML_SYSTEM_EMSCRIPTEN
 #include <emscripten.h>

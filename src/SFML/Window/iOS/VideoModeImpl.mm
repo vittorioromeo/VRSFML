@@ -3,8 +3,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/VideoModeImpl.hpp>
-#include <SFML/Window/iOS/SFAppDelegate.hpp>
+#include "SFML/Window/VideoModeImpl.hpp"
+#include "SFML/Window/iOS/SFAppDelegate.hpp"
 
 #include <UIKit/UIKit.h>
 

@@ -1,6 +1,6 @@
-#include <SFML/Network/Socket.hpp>
+#include "SFML/Network/Socket.hpp"
 
-#include <SFML/Base/Macros.hpp>
+#include "SFML/Base/Macros.hpp"
 
 #include <Doctest.hpp>
 

@@ -4,9 +4,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/Export.hpp>
+#include "SFML/Audio/Export.hpp"
 
-#include <SFML/Audio/AudioDeviceHandle.hpp>
+#include "SFML/Audio/AudioDeviceHandle.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -21,7 +21,7 @@ class CaptureDevice;
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-class CaptureDeviceHandle : public priv::StronglyTypedDeviceHandle<CaptureDevice>
+class SFML_AUDIO_API CaptureDeviceHandle : public priv::StronglyTypedDeviceHandle<CaptureDevice>
 {
     using priv::StronglyTypedDeviceHandle<CaptureDevice>::StronglyTypedDeviceHandle;
 };

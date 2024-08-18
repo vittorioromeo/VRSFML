@@ -4,13 +4,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Keyboard.hpp>
-#include <SFML/Window/WindowEnums.hpp>
-#include <SFML/Window/WindowHandle.hpp>
-#include <SFML/Window/WindowImpl.hpp>
+#include "SFML/Window/Keyboard.hpp"
+#include "SFML/Window/WindowHandle.hpp"
+#include "SFML/Window/WindowImpl.hpp"
 
-#include <SFML/System/Vector2.hpp>
-#include <SFML/System/Win32/WindowsHeader.hpp>
+#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Win32/WindowsHeader.hpp"
 
 #include <cstdint>
 

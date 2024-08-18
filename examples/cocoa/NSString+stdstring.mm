@@ -2,8 +2,8 @@
 
 #import "NSString+stdstring.h"
 
-#include <SFML/Base/Algorithm.hpp>
-#include <SFML/System/Utf.hpp>
+#include "SFML/Base/Algorithm.hpp"
+#include "SFML/System/Utf.hpp"
 
 @implementation NSString (NSString_stdstring)
 

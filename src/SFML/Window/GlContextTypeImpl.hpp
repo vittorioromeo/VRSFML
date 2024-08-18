@@ -4,6 +4,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Config.hpp"
+
 #include <glad/gl.h>
 
 
@@ -11,12 +13,12 @@
 
 #if defined(SFML_OPENGL_ES)
 
-#include <SFML/Window/EglContext.hpp>
+#include "SFML/Window/EglContext.hpp"
 using DerivedGlContextType = sf::priv::EglContext;
 
 #else
 
-#include <SFML/Window/Win32/WglContext.hpp>
+#include "SFML/Window/Win32/WglContext.hpp"
 using DerivedGlContextType = sf::priv::WglContext;
 
 #endif
@@ -25,39 +27,39 @@ using DerivedGlContextType = sf::priv::WglContext;
 
 #if defined(SFML_USE_DRM)
 
-#include <SFML/Window/DRM/DRMContext.hpp>
+#include "SFML/Window/DRM/DRMContext.hpp"
 using DerivedGlContextType = sf::priv::DRMContext;
 
 #elif defined(SFML_OPENGL_ES)
 
-#include <SFML/Window/EglContext.hpp>
+#include "SFML/Window/EglContext.hpp"
 using DerivedGlContextType = sf::priv::EglContext;
 
 #else
 
-#include <SFML/Window/Unix/GlxContext.hpp>
+#include "SFML/Window/Unix/GlxContext.hpp"
 using DerivedGlContextType = sf::priv::GlxContext;
 
 #endif
 
 #elif defined(SFML_SYSTEM_MACOS)
 
-#include <SFML/Window/macOS/SFContext.hpp>
+#include "SFML/Window/macOS/SFContext.hpp"
 using DerivedGlContextType = sf::priv::SFContext;
 
 #elif defined(SFML_SYSTEM_IOS)
 
-#include <SFML/Window/iOS/EaglContext.hpp>
+#include "SFML/Window/iOS/EaglContext.hpp"
 using DerivedGlContextType = sf::priv::EaglContext;
 
 #elif defined(SFML_SYSTEM_ANDROID)
 
-#include <SFML/Window/EglContext.hpp>
+#include "SFML/Window/EglContext.hpp"
 using DerivedGlContextType = sf::priv::EglContext;
 
 #elif defined(SFML_SYSTEM_EMSCRIPTEN)
 
-#include <SFML/Window/EglContext.hpp>
+#include "SFML/Window/EglContext.hpp"
 using DerivedGlContextType = sf::priv::EglContext;
 
 #endif

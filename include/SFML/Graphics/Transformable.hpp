@@ -4,11 +4,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Export.hpp>
+#include "SFML/Graphics/Export.hpp"
 
-#include <SFML/Graphics/Transform.hpp>
+#include "SFML/Graphics/Transform.hpp"
 
-#include <SFML/System/Angle.hpp>
+#include "SFML/System/Angle.hpp"
 
 
 namespace sf

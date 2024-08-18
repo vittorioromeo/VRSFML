@@ -28,13 +28,13 @@
 #undef NOMINMAX
 #undef MINIMP3_NO_STDIO
 
-#include <SFML/Audio/SoundFileReaderMp3.hpp>
+#include "SFML/Audio/SoundFileReaderMp3.hpp"
 
-#include <SFML/System/Err.hpp>
-#include <SFML/System/InputStream.hpp>
+#include "SFML/System/Err.hpp"
+#include "SFML/System/InputStream.hpp"
 
-#include <SFML/Base/Algorithm.hpp>
-#include <SFML/Base/Assert.hpp>
+#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Assert.hpp"
 
 #include <cstdint>
 #include <cstring>

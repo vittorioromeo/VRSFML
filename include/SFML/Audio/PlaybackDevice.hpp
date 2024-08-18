@@ -4,13 +4,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/Export.hpp>
+#include "SFML/Audio/Export.hpp"
 
-#include <SFML/System/LifetimeDependant.hpp>
-#include <SFML/System/LifetimeDependee.hpp>
+#include "SFML/System/LifetimeDependant.hpp"
+#include "SFML/System/LifetimeDependee.hpp"
 
-#include <SFML/Base/Optional.hpp>
-#include <SFML/Base/UniquePtr.hpp>
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -34,7 +34,7 @@ struct Listener;
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-class PlaybackDevice
+class SFML_AUDIO_API PlaybackDevice
 {
 public:
     ////////////////////////////////////////////////////////////

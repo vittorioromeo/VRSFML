@@ -4,11 +4,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Event.hpp>
-#include <SFML/Window/WindowEnums.hpp> // Prevent conflict with macro None from Xlib
-#include <SFML/Window/WindowImpl.hpp>
+#include "SFML/Window/Event.hpp"
+#include "SFML/Window/WindowEnums.hpp" // Prevent conflict with macro None from Xlib
+#include "SFML/Window/WindowImpl.hpp"
 
-#include <SFML/Base/Optional.hpp>
+#include "SFML/Base/Optional.hpp"
 
 #include <X11/Xlib.h>
 #include <X11/extensions/Xrandr.h>
