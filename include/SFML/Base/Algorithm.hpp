@@ -38,17 +38,6 @@ template <typename Iter, typename TargetIter>
 
 
 ////////////////////////////////////////////////////////////
-template <typename T, typename Vector>
-[[gnu::always_inline]] inline void appendRangeIntoVector(const T* rangeBegin, const T* rangeEnd, Vector& target)
-{
-    target.reserve(target.size() + static_cast<decltype(target.size())>(rangeEnd - rangeBegin));
-
-    for (; rangeBegin != rangeEnd; ++rangeBegin)
-        target.push_back(*rangeBegin);
-}
-
-
-////////////////////////////////////////////////////////////
 template <typename Iter, typename T>
 [[gnu::always_inline, gnu::pure]] constexpr Iter find(Iter rangeBegin, Iter rangeEnd, const T& target) noexcept
 {

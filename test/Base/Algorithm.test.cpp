@@ -33,20 +33,6 @@ TEST_CASE("[Base] Base/Algorithm.hpp")
         CHECK(target[3] == 3);
     }
 
-    SECTION("Append Range Into Vector")
-    {
-        const int        values[]{0, 1, 2, 3};
-        std::vector<int> target{-1};
-
-        sf::base::appendRangeIntoVector(values, values + 4, target);
-
-        CHECK(target[0] == -1);
-        CHECK(target[1] == 0);
-        CHECK(target[2] == 1);
-        CHECK(target[3] == 2);
-        CHECK(target[4] == 3);
-    }
-
     SECTION("Find/FindIf/AnyOf")
     {
         const int values[]{0, 1, 2, 3, 4, 5, 6, 7};
