@@ -34,7 +34,7 @@ void bufferFromCallback(void* context, void* data, int size)
     const auto* source = static_cast<std::uint8_t*>(data);
     auto*       dest   = static_cast<std::vector<std::uint8_t>*>(context);
 
-    sf::base::appendRangeIntoVector(source, source + size, *dest);
+    dest->insert(dest->end(), source, source + size);
 }
 
 } // namespace

@@ -74,7 +74,7 @@
         uniform mat4 sf_u_textureMatrix;
         uniform mat4 sf_u_modelViewProjectionMatrix;
 
-            ;
+        in vec2 sf_a_position;
         in vec4 sf_a_color;
         in vec2 sf_a_texCoord;
 
@@ -348,7 +348,7 @@
 <br>
 
 - ➡️ **Stack trace generation for errors and assertions:**
-    - Human-readable stack traces are generated on any `sf::priv::err()` error message or assertion failure.
+    - Human-readable stack traces are generated on any `sf::priv::err()` error message, assertion failure, or lifetime tracking error.
     - Internally uses `cpptrace`: <https://github.com/jeremy-rifkin/cpptrace>.
     - Can be controlled via the CMake option `SFML_ENABLE_STACK_TRACES`.
 

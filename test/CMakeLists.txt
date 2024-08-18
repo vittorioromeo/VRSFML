@@ -85,8 +85,9 @@ endif()
 set(BASE_SRC
     Base/Algorithm.test.cpp
     Base/MaxAlignT.test.cpp
-    Base/Traits.test.cpp
+    Base/Optional.test.cpp
     Base/SizeT.test.cpp
+    Base/Traits.test.cpp
 )
 sfml_add_test(test-sfml-base "${BASE_SRC}" "")
 
