@@ -13,7 +13,6 @@
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/GameLoop.hpp"
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
@@ -207,7 +206,7 @@ int main()
     std::ostringstream osstr;
     sf::Clock          clock;
 
-    SFML_GAME_LOOP
+    while (true)
     {
         // Handle events
         while (const sf::base::Optional event = window.pollEvent())
@@ -288,7 +287,7 @@ int main()
 
         // Display things on screen
         window.display();
-    };
+    }
 }
 
 

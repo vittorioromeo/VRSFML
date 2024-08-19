@@ -6,7 +6,6 @@
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/GameLoop.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Clock.hpp"
@@ -31,7 +30,7 @@ int main()
 
     sf::Clock deltaClock;
 
-    SFML_GAME_LOOP
+    while (true)
     {
         while (const sf::base::Optional event = window.pollEvent())
         {
@@ -53,5 +52,5 @@ int main()
         window.draw(shape, nullptr /* texture */);
         imGuiContext.render(window);
         window.display();
-    };
+    }
 }

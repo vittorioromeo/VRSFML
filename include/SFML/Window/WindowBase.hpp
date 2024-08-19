@@ -181,7 +181,7 @@ public:
     /// \code
     /// // Only provide handlers for concrete event types
     /// window.pollAndHandleEvents(
-    ///     [&](const sf::Event::Closed&) { /* handle event */ },
+    ///     [&](sf::Event::Closed) { /* handle event */ },
     ///     [&](const sf::Event::KeyPressed& keyPress) { /* handle event */ }
     /// );
     /// \endcode
@@ -211,7 +211,7 @@ public:
     /// \code
     /// // Provide handlers for concrete types and fall back to generic handler
     /// window.pollAndHandleEvents(
-    ///     [&](const sf::Event::Closed&) { /* handle event */ },
+    ///     [&](sf::Event::Closed) { /* handle event */ },
     ///     [&](const sf::Event::KeyPressed& keyPress) { /* handle event */ },
     ///     [&](const auto& event) { /* handle all other events */ }
     /// );

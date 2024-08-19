@@ -353,14 +353,14 @@ struct [[nodiscard]] TriggerInfo
 
 
 ////////////////////////////////////////////////////////////
-constexpr unsigned int nullJoystickId = Joystick::Count;
+constexpr unsigned int nullJoystickId = Joystick::MaxCount;
 
 
 ////////////////////////////////////////////////////////////
 [[nodiscard]] unsigned int getConnectedJoystickId()
 {
-    for (unsigned int i = 0; i < static_cast<unsigned int>(Joystick::Count); ++i)
-        if (Joystick::isConnected(i))
+    for (unsigned int i = 0; i < static_cast<unsigned int>(Joystick::MaxCount); ++i)
+        if (Joystick::query(i).hasValue())
             return i;
 
     return nullJoystickId;
@@ -384,7 +384,7 @@ struct [[nodiscard]] ImGuiPerWindowContext
     Vector2i touchPos;
 
     unsigned int joystickId{getConnectedJoystickId()};
-    ImGuiKey     joystickMapping[Joystick::ButtonCount] = {ImGuiKey_None};
+    ImGuiKey     joystickMapping[Joystick::MaxButtonCount] = {ImGuiKey_None};
     StickInfo    dPadInfo;
     StickInfo    lStickInfo;
     StickInfo    rStickInfo;
@@ -497,14 +497,14 @@ struct [[nodiscard]] ImGuiPerWindowContext
     ////////////////////////////////////////////////////////////
     void updateJoystickButtonState(ImGuiIO& io) const
     {
-        for (int i = 0; i < static_cast<int>(Joystick::ButtonCount); ++i)
+        for (int i = 0; i < static_cast<int>(Joystick::MaxButtonCount); ++i)
         {
             const ImGuiKey key = joystickMapping[i];
 
             if (key == ImGuiKey_None)
                 continue;
 
-            const bool isPressed = Joystick::isButtonPressed(joystickId, static_cast<unsigned>(i));
+            const bool isPressed = Joystick::query(joystickId)->isButtonPressed(static_cast<unsigned>(i));
             if (windowHasFocus || !isPressed)
                 io.AddKeyEvent(key, isPressed);
         }
@@ -513,7 +513,7 @@ struct [[nodiscard]] ImGuiPerWindowContext
     ////////////////////////////////////////////////////////////
     void updateJoystickAxis(ImGuiIO& io, ImGuiKey key, Joystick::Axis axis, float threshold, float maxThreshold, bool inverted = false) const
     {
-        float pos = Joystick::getAxisPosition(joystickId, axis);
+        float pos = Joystick::query(joystickId)->getAxisPosition(axis);
         if (inverted)
             pos = -pos;
 
@@ -706,8 +706,10 @@ struct [[nodiscard]] ImGuiPerWindowContext
         else if (const auto* joystickDisconnected = event.getIf<Event::JoystickDisconnected>())
         {
             if (joystickId == joystickDisconnected->joystickId)
+            {
                 // used gamepad was disconnected
                 joystickId = getConnectedJoystickId();
+            }
         }
     }
 
@@ -808,7 +810,7 @@ struct [[nodiscard]] ImGuiPerWindowContext
     ////////////////////////////////////////////////////////////
     void setActiveJoystickId(unsigned int newJoystickId)
     {
-        SFML_BASE_ASSERT(newJoystickId < Joystick::Count);
+        SFML_BASE_ASSERT(newJoystickId < Joystick::MaxCount);
         joystickId = newJoystickId;
     }
 
@@ -856,7 +858,7 @@ struct [[nodiscard]] ImGuiPerWindowContext
     ////////////////////////////////////////////////////////////
     void setJoystickMapping(int key, unsigned int joystickButton)
     {
-        SFML_BASE_ASSERT(joystickButton < Joystick::ButtonCount);
+        SFML_BASE_ASSERT(joystickButton < Joystick::MaxButtonCount);
 
         // This function now expects ImGuiKey_* values.
         // For partial backwards compatibility, also expect some ImGuiNavInput_* values.

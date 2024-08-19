@@ -1,5 +1,5 @@
 # CLI based examples
-if(NOT SFML_OS_IOS)
+if(NOT SFML_OS_IOS AND NOT SFML_OS_EMSCRIPTEN)
     if(SFML_BUILD_NETWORK)
         add_subdirectory(ftp)
         add_subdirectory(sockets)
@@ -26,12 +26,15 @@ if(SFML_BUILD_GRAPHICS)
 
     if(NOT SFML_OS_IOS)
         add_subdirectory(imgui_minimal)
-        add_subdirectory(imgui_multiple_windows)
         add_subdirectory(island)
         add_subdirectory(joystick)
         add_subdirectory(shader)
         add_subdirectory(text_benchmark)
-        add_subdirectory(vulkan)
+
+        if (NOT SFML_OS_EMSCRIPTEN)
+            add_subdirectory(imgui_multiple_windows)
+            add_subdirectory(vulkan)
+        endif()
     endif()
 
     if(SFML_OS_WINDOWS)

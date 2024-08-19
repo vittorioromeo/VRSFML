@@ -30,7 +30,7 @@ namespace sf
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-class SFML_AUDIO_API [[nodiscard]] AudioContextUtils
+class [[nodiscard]] SFML_AUDIO_API AudioContextUtils
 {
 public:
     ////////////////////////////////////////////////////////////

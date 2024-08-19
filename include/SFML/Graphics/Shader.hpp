@@ -68,7 +68,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     // NOLINTNEXTLINE(readability-identifier-naming)
-    static inline CurrentTextureType CurrentTexture;
+    static inline constexpr CurrentTextureType CurrentTexture;
 
     ////////////////////////////////////////////////////////////
     /// \brief Type-safe wrapper over a non-null shader uniform location

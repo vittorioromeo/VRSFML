@@ -32,15 +32,11 @@ bool eglCheckError(const char* file, unsigned int line, const char* expression)
         return false;
     };
 
-    // Obtain information about the success or failure of the most recent EGL
-    // function called in the current thread
-    const EGLint errorCode = eglGetError();
-
-    if (errorCode == EGL_SUCCESS)
-        return true;
-
-    switch (errorCode)
+    switch (eglGetError())
     {
+        case EGL_SUCCESS:
+            return true;
+
         case EGL_NOT_INITIALIZED:
             return logError("EGL_NOT_INITIALIZED",
                             "EGL is not initialized, or could not be initialized, for the specified display");
@@ -72,7 +68,6 @@ bool eglCheckError(const char* file, unsigned int line, const char* expression)
             return logError("EGL_BAD_DISPLAY",
                             "an EGLDisplay argument does not name a valid EGLDisplay; or, EGL is not initialized "
                             "on the specified EGLDisplay");
-
 
         case EGL_BAD_SURFACE:
             return logError("EGL_BAD_SURFACE",

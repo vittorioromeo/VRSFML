@@ -49,7 +49,7 @@ void StubJoystickImpl::close()
 
 
 ////////////////////////////////////////////////////////////
-JoystickCaps StubJoystickImpl::getCapabilities() const
+JoystickCapabilities StubJoystickImpl::getCapabilities() const
 {
     // err() << "Joystick API not implemented";
     return {};
@@ -57,10 +57,12 @@ JoystickCaps StubJoystickImpl::getCapabilities() const
 
 
 ////////////////////////////////////////////////////////////
-Joystick::Identification StubJoystickImpl::getIdentification() const
+const JoystickIdentification& StubJoystickImpl::getIdentification() const
 {
     // err() << "Joystick API not implemented";
-    return {};
+
+    static JoystickIdentification result;
+    return result;
 }
 
 

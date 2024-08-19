@@ -8,16 +8,6 @@
     - This fork now works out-of-the-box with [Emscripten](https://emscripten.org/).
     - All existing examples and tests run flawlessly in the browser.
     - No explicit `#ifdef SFML_SYSTEM_EMSCRIPTEN` is required anywhere in user code.
-    - Game loops are abstracted as follows:
-        ```cpp
-        SFML_GAME_LOOP
-        {
-            if (/* ...must close... */)
-                return EXIT_SUCCESS;
-
-            // ...user code here...
-        };
-        ```
 
 <br>
 
@@ -36,7 +26,7 @@
     sf::RenderWindow window(graphicsContext, {.size{640u, 480u}, .title = "ImGui + SFML = <3"});
     sf::Clock deltaClock;
 
-    SFML_GAME_LOOP
+    while (true)
     {
         // `sf::base::Optional` is a drop-in replacement for `std::optional`
         while (const sf::base::Optional event = window.pollEvent())
@@ -58,7 +48,7 @@
         window.clear();
         imGuiContext.render(window);
         window.display();
-    };
+    }
     ```
 
     </details>
@@ -380,6 +370,8 @@
     - All factory functions have been improved to support RVO or NRVO, checked via GCC's `-Wnrvo` flag.
     - Added `Vector2<T>::movedTowards(T r, Angle phi)` function.
     - `sf::Vector2`, `sf::Vector3`, and `sf::Rect` are now aggregates.
+    - Removed catch-all headers such as `SFML/Audio.hpp` to promote good header hygiene in user projects.
+
 
 <!--
 

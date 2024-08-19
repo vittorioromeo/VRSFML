@@ -190,8 +190,8 @@ public:
     ////////////////////////////////////////////////////////////
     struct JoystickButtonPressed
     {
-        unsigned int joystickId{}; //!< Index of the joystick (in range [0 .. Joystick::Count - 1])
-        unsigned int button{}; //!< Index of the button that has been pressed (in range [0 .. Joystick::ButtonCount - 1])
+        unsigned int joystickId{}; //!< Index of the joystick (in range [0 .. Joystick::MaxCount - 1])
+        unsigned int button{}; //!< Index of the button that has been pressed (in range [0 .. Joystick::MaxButtonCount - 1])
     };
 
     ////////////////////////////////////////////////////////////
@@ -200,8 +200,8 @@ public:
     ////////////////////////////////////////////////////////////
     struct JoystickButtonReleased
     {
-        unsigned int joystickId{}; //!< Index of the joystick (in range [0 .. Joystick::Count - 1])
-        unsigned int button{}; //!< Index of the button that has been released (in range [0 .. Joystick::ButtonCount - 1])
+        unsigned int joystickId{}; //!< Index of the joystick (in range [0 .. Joystick::MaxCount - 1])
+        unsigned int button{}; //!< Index of the button that has been released (in range [0 .. Joystick::MaxButtonCount - 1])
     };
 
     ////////////////////////////////////////////////////////////
@@ -210,7 +210,7 @@ public:
     ////////////////////////////////////////////////////////////
     struct JoystickMoved
     {
-        unsigned int   joystickId{}; //!< Index of the joystick (in range [0 .. Joystick::Count - 1])
+        unsigned int   joystickId{}; //!< Index of the joystick (in range [0 .. Joystick::MaxCount - 1])
         Joystick::Axis axis{};       //!< Axis on which the joystick moved
         float          position{};   //!< New position on the axis (in range [-100 .. 100])
     };
@@ -221,7 +221,7 @@ public:
     ////////////////////////////////////////////////////////////
     struct JoystickConnected
     {
-        unsigned int joystickId{}; //!< Index of the joystick (in range [0 .. Joystick::Count - 1])
+        unsigned int joystickId{}; //!< Index of the joystick (in range [0 .. Joystick::MaxCount - 1])
     };
 
     ////////////////////////////////////////////////////////////
@@ -230,7 +230,7 @@ public:
     ////////////////////////////////////////////////////////////
     struct JoystickDisconnected
     {
-        unsigned int joystickId{}; //!< Index of the joystick (in range [0 .. Joystick::Count - 1])
+        unsigned int joystickId{}; //!< Index of the joystick (in range [0 .. Joystick::MaxCount - 1])
     };
 
     ////////////////////////////////////////////////////////////

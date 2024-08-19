@@ -63,7 +63,7 @@ public:
     /// \return Joystick capabilities
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] JoystickCaps getCapabilities() const;
+    [[nodiscard]] JoystickCapabilities getCapabilities() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the joystick identification
@@ -71,7 +71,7 @@ public:
     /// \return Joystick identification
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Joystick::Identification getIdentification() const;
+    [[nodiscard]] const JoystickIdentification& getIdentification() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the joystick and get its new state
@@ -85,13 +85,13 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    int                      m_file;           ///< File descriptor of the joystick
-    report_desc_t            m_desc;           ///< USB report descriptor
-    int                      m_id;             ///< USB id
-    std::vector<char>        m_buffer;         ///< USB HID buffer
-    int                      m_length;         ///< Buffer length
-    Joystick::Identification m_identification; ///< Joystick identification
-    JoystickState            m_state;          ///< Current state of the joystick
+    int                    m_file;           ///< File descriptor of the joystick
+    report_desc_t          m_desc;           ///< USB report descriptor
+    int                    m_id;             ///< USB id
+    std::vector<char>      m_buffer;         ///< USB HID buffer
+    int                    m_length;         ///< Buffer length
+    JoystickIdentification m_identification; ///< Joystick identification
+    JoystickState          m_state;          ///< Current state of the joystick
 };
 
 } // namespace sf::priv

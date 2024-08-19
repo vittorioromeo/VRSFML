@@ -4,54 +4,128 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Joystick.hpp"
+#include "SFML/Window/JoystickIdentification.hpp"
 #include "SFML/Window/JoystickImpl.hpp"
 #include "SFML/Window/JoystickManager.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Optional.hpp"
+
+
+namespace
+{
+////////////////////////////////////////////////////////////
+[[nodiscard]] bool isConnectedImpl(sf::priv::JoystickManager& joystickManager, unsigned int joystickId)
+{
+    return joystickManager.getState(joystickId).connected;
+}
+
+} // namespace
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-bool Joystick::isConnected(unsigned int joystick)
-{
-    return priv::JoystickManager::getInstance().getState(joystick).connected;
-}
-
-
-////////////////////////////////////////////////////////////
-unsigned int Joystick::getButtonCount(unsigned int joystick)
-{
-    return priv::JoystickManager::getInstance().getCapabilities(joystick).buttonCount;
-}
-
-
-////////////////////////////////////////////////////////////
-bool Joystick::hasAxis(unsigned int joystick, Axis axis)
-{
-    return priv::JoystickManager::getInstance().getCapabilities(joystick).axes[axis];
-}
-
-
-////////////////////////////////////////////////////////////
-bool Joystick::isButtonPressed(unsigned int joystick, unsigned int button)
-{
-    SFML_BASE_ASSERT(button < Joystick::ButtonCount && "Button must be less than Joystick::ButtonCount");
-    return priv::JoystickManager::getInstance().getState(joystick).buttons[button];
-}
-
-
-////////////////////////////////////////////////////////////
-float Joystick::getAxisPosition(unsigned int joystick, Axis axis)
-{
-    return priv::JoystickManager::getInstance().getState(joystick).axes[axis];
-}
-
-
-////////////////////////////////////////////////////////////
 void Joystick::update()
 {
     priv::JoystickManager::getInstance().update();
+}
+
+
+////////////////////////////////////////////////////////////
+Joystick::Query::Query(priv::JoystickManager& joystickManager, unsigned int joystickId) :
+m_joystickManager(joystickManager),
+m_joystickId(joystickId)
+{
+    SFML_BASE_ASSERT(isConnected() && "Created query for unconnected joystick");
+}
+
+
+////////////////////////////////////////////////////////////
+unsigned int Joystick::Query::getIndex() const
+{
+    SFML_BASE_ASSERT(isConnected() && "Query on unconnected joystick: get index");
+    return m_joystickId;
+}
+
+
+////////////////////////////////////////////////////////////
+const String& Joystick::Query::getName() const
+{
+    return getIdentification().name;
+}
+
+
+////////////////////////////////////////////////////////////
+unsigned int Joystick::Query::getVendorId() const
+{
+    return getIdentification().vendorId;
+}
+
+
+////////////////////////////////////////////////////////////
+unsigned int Joystick::Query::getProductId() const
+{
+    return getIdentification().productId;
+}
+
+
+////////////////////////////////////////////////////////////
+const priv::JoystickIdentification& Joystick::Query::getIdentification() const
+{
+    SFML_BASE_ASSERT(isConnected() && "Query on unconnected joystick: get identification");
+    return m_joystickManager.getIdentification(m_joystickId);
+}
+
+
+////////////////////////////////////////////////////////////
+unsigned int Joystick::Query::getButtonCount() const
+{
+    SFML_BASE_ASSERT(isConnected() && "Query on unconnected joystick: get button count");
+    return m_joystickManager.getCapabilities(m_joystickId).buttonCount;
+}
+
+
+////////////////////////////////////////////////////////////
+bool Joystick::Query::hasAxis(Axis axis) const
+{
+    SFML_BASE_ASSERT(isConnected() && "Query on unconnected joystick: has axis");
+    return m_joystickManager.getCapabilities(m_joystickId).axes[axis];
+}
+
+
+////////////////////////////////////////////////////////////
+bool Joystick::Query::isButtonPressed(unsigned int button) const
+{
+    SFML_BASE_ASSERT(isConnected() && "Query on unconnected joystick: is button pressed");
+    return m_joystickManager.getState(m_joystickId).buttons[button];
+}
+
+
+////////////////////////////////////////////////////////////
+float Joystick::Query::getAxisPosition(Axis axis) const
+{
+    SFML_BASE_ASSERT(isConnected() && "Query on unconnected joystick: get axis position");
+    return m_joystickManager.getState(m_joystickId).axes[axis];
+}
+
+
+////////////////////////////////////////////////////////////
+bool Joystick::Query::isConnected() const
+{
+    return isConnectedImpl(m_joystickManager, m_joystickId);
+}
+
+
+////////////////////////////////////////////////////////////
+base::Optional<Joystick::Query> Joystick::query(unsigned int joystickId)
+{
+    auto& joystickManager = priv::JoystickManager::getInstance();
+
+    if (!isConnectedImpl(joystickManager, joystickId))
+        return base::nullOpt;
+
+    return base::makeOptionalFromFunc([&] { return Query{joystickManager, joystickId}; });
 }
 
 } // namespace sf

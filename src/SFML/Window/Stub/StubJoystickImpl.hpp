@@ -2,17 +2,19 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
-namespace sf::Joystick
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+namespace sf::priv
 {
-struct Identification;
-} // namespace sf::Joystick
+struct JoystickCapabilities;
+struct JoystickIdentification;
+struct JoystickState;
+} // namespace sf::priv
 
 
 namespace sf::priv
 {
-struct JoystickCaps;
-struct JoystickState;
-
 ////////////////////////////////////////////////////////////
 /// \brief Stub implementation of joystick
 ///
@@ -64,7 +66,7 @@ public:
     /// \return Joystick capabilities
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] JoystickCaps getCapabilities() const;
+    [[nodiscard]] JoystickCapabilities getCapabilities() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the joystick identification
@@ -72,7 +74,7 @@ public:
     /// \return Joystick identification
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Joystick::Identification getIdentification() const;
+    [[nodiscard]] const JoystickIdentification& getIdentification() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the joystick and get its new state

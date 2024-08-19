@@ -24,7 +24,6 @@
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/GameLoop.hpp"
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
@@ -1167,7 +1166,7 @@ int main()
 
     // Start the game loop
     const sf::Clock clock;
-    SFML_GAME_LOOP
+    while (true)
     {
         // Process events
         while (const sf::base::Optional event = window.pollEvent())
@@ -1285,7 +1284,7 @@ int main()
 
         // Finally, display the rendered frame on screen
         window.display();
-    };
+    }
 
     // Stop effect so that tone generators don't have to keep generating data while being destroyed
     effects[current]->stop();

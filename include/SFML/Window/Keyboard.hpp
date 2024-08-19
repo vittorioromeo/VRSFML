@@ -131,12 +131,10 @@ enum class Key
     Pause,        //!< The Pause key
 };
 
-////////////////////////////////////////////////////////////
-/// \brief The total number of keyboard keys, ignoring Key::Unknown
-///
-////////////////////////////////////////////////////////////
-// NOLINTNEXTLINE(readability-identifier-naming)
-static constexpr unsigned int KeyCount{static_cast<unsigned int>(Key::Pause) + 1};
+enum : unsigned int
+{
+    KeyCount = static_cast<unsigned int>(Key::Pause) + 1u //!< Total number of keyboard keys, ignoring `Key::Unknown`
+};
 
 ////////////////////////////////////////////////////////////
 /// \brief Scancodes
@@ -305,12 +303,10 @@ enum class Scan
 
 using Scancode = Scan;
 
-////////////////////////////////////////////////////////////
-/// \brief The total number of scancodes, ignoring Scan::Unknown
-///
-////////////////////////////////////////////////////////////
-// NOLINTNEXTLINE(readability-identifier-naming)
-static constexpr unsigned int ScancodeCount{static_cast<unsigned int>(Scan::LaunchMediaSelect) + 1};
+enum : unsigned int
+{
+    ScancodeCount = static_cast<unsigned int>(Scan::LaunchMediaSelect) + 1u //!< Total number of scancodes, ignoring `Scan::Unknown`
+};
 
 ////////////////////////////////////////////////////////////
 /// \brief Check if a key is pressed

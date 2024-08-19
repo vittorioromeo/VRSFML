@@ -31,14 +31,11 @@ bool glCheckError(const char* file, unsigned int line, const char* expression)
         return false;
     };
 
-    // Get the last error
-    const GLenum errorCode = glGetError();
-
-    if (errorCode == GL_NO_ERROR)
-        return true;
-
-    switch (errorCode)
+    switch (glGetError())
     {
+        case GL_NO_ERROR:
+            return true;
+
         case GL_INVALID_ENUM:
             return logError("GL_INVALID_ENUM", "An unacceptable value has been specified for an enumerated argument.");
 
