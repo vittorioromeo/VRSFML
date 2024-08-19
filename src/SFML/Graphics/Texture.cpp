@@ -187,49 +187,7 @@ base::Optional<Texture> Texture::create(GraphicsContext& graphicsContext, Vector
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
 
-    static const bool textureEdgeClamp = GLEXT_texture_edge_clamp || GLEXT_GL_VERSION_1_2 ||
-                                         graphicsContext.isExtensionAvailable("GL_EXT_texture_edge_clamp");
-
-    if (!textureEdgeClamp)
-    {
-        static bool warned = false;
-
-        if (!warned)
-        {
-            priv::err() << "OpenGL extension SGIS_texture_edge_clamp unavailable" << '\n'
-                        << "Artifacts may occur along texture edges" << '\n'
-                        << "Ensure that hardware acceleration is enabled if available";
-
-            warned = true;
-        }
-    }
-
-    static const bool textureSrgb = GLEXT_texture_sRGB;
-
-    if (texture.m_sRgb && !textureSrgb)
-    {
-        static bool warned = false;
-
-        if (!warned)
-        {
-#ifndef SFML_OPENGL_ES
-            priv::err(true /* multiLine */) << "OpenGL extension EXT_texture_sRGB unavailable" << '\n';
-#else
-            priv::err(true /* multiLine */) << "OpenGL ES extension EXT_sRGB unavailable" << '\n';
-#endif
-            priv::err() << "Automatic sRGB to linear conversion disabled";
-
-            warned = true;
-        }
-
-        texture.m_sRgb = false;
-    }
-
-#ifndef SFML_OPENGL_ES
-    const GLint textureWrapParam = textureEdgeClamp ? GLEXT_GL_CLAMP_TO_EDGE : GLEXT_GL_CLAMP;
-#else
     const GLint textureWrapParam = GLEXT_GL_CLAMP_TO_EDGE;
-#endif
 
     // Initialize the texture
     glCheck(glBindTexture(GL_TEXTURE_2D, texture.m_texture));

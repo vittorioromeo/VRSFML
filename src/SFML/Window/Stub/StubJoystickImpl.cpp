@@ -9,6 +9,14 @@
 #include "SFML/System/Err.hpp"
 
 
+namespace
+{
+////////////////////////////////////////////////////////////
+const sf::priv::JoystickIdentification emptyStubJoystickIdentification;
+
+} // namespace
+
+
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
@@ -60,9 +68,7 @@ JoystickCapabilities StubJoystickImpl::getCapabilities() const
 const JoystickIdentification& StubJoystickImpl::getIdentification() const
 {
     // err() << "Joystick API not implemented";
-
-    static JoystickIdentification result;
-    return result;
+    return emptyStubJoystickIdentification;
 }
 
 

@@ -410,6 +410,14 @@ void Text::draw(RenderTarget& target, RenderStates states) const
 
 
 ////////////////////////////////////////////////////////////
+[[nodiscard]] Text::VertexSpan Text::getVertices() const
+{
+    ensureGeometryUpdate();
+    return {m_impl->vertices.data(), m_impl->vertices.size()};
+}
+
+
+////////////////////////////////////////////////////////////
 void Text::ensureGeometryUpdate() const
 {
     // Do nothing, if geometry has not changed and the font texture has not changed

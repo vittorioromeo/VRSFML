@@ -3,10 +3,14 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Joystick.hpp"
 
+#include "SFML/Graphics/CoordinateType.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/PrimitiveType.hpp"
+#include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Text.hpp"
+#include "SFML/Graphics/Vertex.hpp"
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
@@ -20,6 +24,7 @@
 #include <sstream>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include <cstdlib>
 
@@ -35,6 +40,9 @@ int main()
 
     // Open the text font
     const auto font = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf").value();
+
+    constexpr auto characterSize   = 14u;
+    const auto     fontLineSpacing = font.getLineSpacing(characterSize);
 
     struct JoystickTexts
     {
@@ -73,7 +81,7 @@ int main()
     // Update joystick axes
     const auto updateAxes = [&](const sf::Joystick::Query& query)
     {
-        for (unsigned int j = 0; j < sf::Joystick::MaxAxisCount; ++j)
+        for (unsigned int j = 0; j < sf::Joystick::AxisCount; ++j)
             if (query.hasAxis(static_cast<sf::Joystick::Axis>(j)))
                 set(axisLabels[j], query.getAxisPosition(static_cast<sf::Joystick::Axis>(j)));
     };
@@ -104,6 +112,14 @@ int main()
         return true;
     };
 
+    const auto updateThresholdText = [&]
+    {
+        sstr.str("");
+        sstr << threshold << "  (Change with up/down arrow keys)";
+
+        texts.at("Threshold").value.setString(sstr.str());
+    };
+
     // Create the window of the application
     sf::RenderWindow window(graphicsContext, {.size{400, 775}, .title = "Joystick", .style = sf::Style::Close});
     window.setVerticalSyncEnabled(true);
@@ -112,48 +128,40 @@ int main()
     sstr.precision(2);
     sstr.setf(std::ios::fixed | std::ios::boolalpha);
 
+    // TODO P0:
+    const auto emplaceTexts = [&](const std::string& labelStr, const std::string& valueStr, const float yOffset) -> auto&
+    {
+        auto [it, success] = texts.emplace(labelStr,
+                                           JoystickTexts{{font, labelStr + ":", characterSize},
+                                                         {font, valueStr, characterSize}});
+
+        auto& [label, value] = it->second;
+        label.setPosition({5.f, 5.f + yOffset * fontLineSpacing});
+        value.setPosition({80.f, 5.f + yOffset * fontLineSpacing});
+
+        return it->second;
+    };
+
     // Set up our joystick identification sf::Text objects
     {
-        auto [it, success]   = texts.emplace("ID", JoystickTexts{{font, "<Not Connected>"}, {font}});
-        auto& [label, value] = it->second;
-        label.setPosition({5.f, 5.f});
-        value.setPosition({80.f, 5.f});
+        auto& [label, value] = emplaceTexts("ID", "", 0.f);
+        label.setString("<Not Connected>");
     }
 
     // Set up our threshold sf::Text objects
-    sstr.str("");
-    sstr << threshold << "  (Change with up/down arrow keys)";
-    {
-        auto [it, success]   = texts.emplace("Threshold", JoystickTexts{{font, "Threshold:"}, {font, sstr.str()}});
-        auto& [label, value] = it->second;
-        label.setPosition({5.f, 5.f + 2 * font.getLineSpacing(14)});
-        value.setPosition({80.f, 5.f + 2 * font.getLineSpacing(14)});
-    }
+    emplaceTexts("Threshold", "", 2.f);
+    updateThresholdText();
 
     // Set up our label-value sf::Text objects
-    for (unsigned int i = 0; i < sf::Joystick::MaxAxisCount; ++i)
-    {
-        auto [it, success]   = texts.emplace(axisLabels[i], JoystickTexts{{font, axisLabels[i] + ":"}, {font, "N/A"}});
-        auto& [label, value] = it->second;
-        label.setPosition({5.f, 5.f + (static_cast<float>(i + 4) * font.getLineSpacing(14))});
-        value.setPosition({80.f, 5.f + (static_cast<float>(i + 4) * font.getLineSpacing(14))});
-    }
+    for (unsigned int i = 0; i < sf::Joystick::AxisCount; ++i)
+        emplaceTexts(axisLabels[i], "N/A", static_cast<float>(i + 4));
 
-    for (unsigned int i = 0; i < sf::Joystick::MaxButtonCount; ++i)
+    for (unsigned int i = 0; i < sf::Joystick::ButtonCount; ++i)
     {
         sstr.str("");
         sstr << "Button " << i;
 
-        auto [it, success]   = texts.emplace(sstr.str(), JoystickTexts{{font, sstr.str() + ":"}, {font, "N/A"}});
-        auto& [label, value] = it->second;
-        label.setPosition({5.f, 5.f + (static_cast<float>(sf::Joystick::MaxAxisCount + i + 4) * font.getLineSpacing(14))});
-        value.setPosition({80.f, 5.f + (static_cast<float>(sf::Joystick::MaxAxisCount + i + 4) * font.getLineSpacing(14))});
-    }
-
-    for (auto& [label, joystickObject] : texts)
-    {
-        joystickObject.label.setCharacterSize(14);
-        joystickObject.value.setCharacterSize(14);
+        emplaceTexts(sstr.str(), "N/A", static_cast<float>(sf::Joystick::AxisCount + i + 4));
     }
 
     // Update initially displayed joystick values if a joystick is already connected on startup
@@ -195,44 +203,63 @@ int main()
                 label.setString("<Not Connected>");
                 value.setString("");
 
-                sstr.str("");
-                sstr << threshold << "  (Change with up/down arrow keys)";
-
-                texts.at("Threshold").value.setString(sstr.str());
+                updateThresholdText();
             }
         }
 
         // Update threshold if the user wants to change it
-        float newThreshold = threshold;
-
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up))
-            newThreshold += 0.1f;
-
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down))
-            newThreshold -= 0.1f;
-
-        newThreshold = std::clamp(newThreshold, 0.1f, 100.0f);
+        // clang-format off
+        const float newThreshold = std::clamp(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up)   ? threshold + 0.1f
+                                            : sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down) ? threshold - 0.1f
+                                            : threshold,
+                                        0.1f, 100.f);
+        // clang-format on
 
         if (newThreshold != threshold)
         {
             threshold = newThreshold;
             window.setJoystickThreshold(threshold);
 
-            sstr.str("");
-            sstr << threshold << "  (Change with up/down arrow keys)";
-
-            texts.at("Threshold").value.setString(sstr.str());
+            updateThresholdText();
         }
 
         // Clear the window
         window.clear();
 
         // Draw the label-value sf::Text objects
+#if 0
         for (const auto& [label, joystickObject] : texts)
         {
             window.draw(joystickObject.label);
             window.draw(joystickObject.value);
         }
+#else // TODO P0: batching experiments
+        static std::vector<sf::Vertex> batch;
+        batch.clear();
+
+        const auto addToBatch = [&](const sf::Text& text)
+        {
+            const auto [data, size] = text.getVertices();
+            const auto& transform   = text.getTransform();
+
+            auto it = batch.insert(batch.end(), data, data + size);
+            for (auto targetIt = it + static_cast<long long>(size); it != targetIt; ++it)
+                it->position = transform * it->position;
+        };
+
+        for (const auto& [label, joystickObject] : texts)
+        {
+            addToBatch(joystickObject.label);
+            addToBatch(joystickObject.value);
+        }
+
+        sf::RenderStates states;
+
+        states.texture        = &font.getTexture(characterSize);
+        states.coordinateType = sf::CoordinateType::Pixels;
+
+        window.draw(batch.data(), batch.size(), sf::PrimitiveType::Triangles, states);
+#endif
 
         // Display things on screen
         window.display();

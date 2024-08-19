@@ -9,8 +9,8 @@ TEST_CASE("[Window] sf::Joystick")
     SECTION("Constants")
     {
         STATIC_CHECK(sf::Joystick::MaxCount == 8);
-        STATIC_CHECK(sf::Joystick::MaxButtonCount == 32);
-        STATIC_CHECK(sf::Joystick::MaxAxisCount == 8);
+        STATIC_CHECK(sf::Joystick::ButtonCount == 32);
+        STATIC_CHECK(sf::Joystick::AxisCount == 8);
     }
 
     // By avoiding calling sf::Joystick::update() we can guarantee that

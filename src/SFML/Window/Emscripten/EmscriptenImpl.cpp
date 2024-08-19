@@ -1126,8 +1126,8 @@ JoystickCapabilities JoystickImpl::getCapabilities() const
     // Get the number of buttons
     capabilities.buttonCount = static_cast<unsigned int>(ge->numButtons);
 
-    if (capabilities.buttonCount > Joystick::MaxButtonCount)
-        capabilities.buttonCount = Joystick::MaxButtonCount;
+    if (capabilities.buttonCount > Joystick::ButtonCount)
+        capabilities.buttonCount = Joystick::ButtonCount;
 
     // Only support the "standard" mapping for now
     if (std::strcmp(ge->mapping, "standard") == 0)
@@ -1178,7 +1178,7 @@ JoystickState JoystickImpl::update()
 
     state.connected = true;
 
-    for (int i = 0; (i < ge->numButtons) && (i < static_cast<int>(Joystick::MaxButtonCount)); ++i)
+    for (int i = 0; (i < ge->numButtons) && (i < static_cast<int>(Joystick::ButtonCount)); ++i)
         state.buttons[i] = ge->digitalButton[i];
 
     if (std::strcmp(ge->mapping, "standard") == 0)

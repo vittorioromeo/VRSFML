@@ -38,9 +38,9 @@ namespace sf::Joystick
 ////////////////////////////////////////////////////////////
 enum : unsigned int
 {
-    MaxCount       = 8u,  //!< Maximum number of supported joysticks
-    MaxButtonCount = 32u, //!< Maximum number of supported buttons
-    MaxAxisCount   = 8u   //!< Maximum number of supported axes
+    MaxCount    = 8u,  //!< Maximum number of supported joysticks
+    ButtonCount = 32u, //!< Maximum number of supported buttons
+    AxisCount   = 8u   //!< Maximum number of supported axes
 };
 
 ////////////////////////////////////////////////////////////
@@ -185,8 +185,8 @@ private:
 ///
 /// SFML supports:
 /// \li 8 joysticks (sf::Joystick::MaxCount)
-/// \li 32 buttons per joystick (sf::Joystick::MaxButtonCount)
-/// \li 8 axes per joystick (sf::Joystick::MaxAxisCount)
+/// \li 32 buttons per joystick (sf::Joystick::ButtonCount)
+/// \li 8 axes per joystick (sf::Joystick::AxisCount)
 ///
 /// Unlike the keyboard or mouse, the state of joysticks is sometimes
 /// not directly available (depending on the OS), therefore an update()

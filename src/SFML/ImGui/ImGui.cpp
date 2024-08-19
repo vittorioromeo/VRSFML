@@ -384,7 +384,7 @@ struct [[nodiscard]] ImGuiPerWindowContext
     Vector2i touchPos;
 
     unsigned int joystickId{getConnectedJoystickId()};
-    ImGuiKey     joystickMapping[Joystick::MaxButtonCount] = {ImGuiKey_None};
+    ImGuiKey     joystickMapping[Joystick::ButtonCount] = {ImGuiKey_None};
     StickInfo    dPadInfo;
     StickInfo    lStickInfo;
     StickInfo    rStickInfo;
@@ -497,7 +497,7 @@ struct [[nodiscard]] ImGuiPerWindowContext
     ////////////////////////////////////////////////////////////
     void updateJoystickButtonState(ImGuiIO& io) const
     {
-        for (int i = 0; i < static_cast<int>(Joystick::MaxButtonCount); ++i)
+        for (int i = 0; i < static_cast<int>(Joystick::ButtonCount); ++i)
         {
             const ImGuiKey key = joystickMapping[i];
 
@@ -858,7 +858,7 @@ struct [[nodiscard]] ImGuiPerWindowContext
     ////////////////////////////////////////////////////////////
     void setJoystickMapping(int key, unsigned int joystickButton)
     {
-        SFML_BASE_ASSERT(joystickButton < Joystick::MaxButtonCount);
+        SFML_BASE_ASSERT(joystickButton < Joystick::ButtonCount);
 
         // This function now expects ImGuiKey_* values.
         // For partial backwards compatibility, also expect some ImGuiNavInput_* values.
