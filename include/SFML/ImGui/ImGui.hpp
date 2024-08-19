@@ -35,7 +35,7 @@ class Window;
 
 namespace sf::ImGui
 {
-class SFML_IMGUI_API [[nodiscard]] ImGuiContext
+class [[nodiscard]] SFML_IMGUI_API ImGuiContext
 {
 public:
     ////////////////////////////////////////////////////////////

@@ -17,10 +17,10 @@ namespace sf::priv
 /// \brief Structure holding a joystick's information
 ///
 ////////////////////////////////////////////////////////////
-struct JoystickCaps
+struct JoystickCapabilities
 {
-    unsigned int buttonCount{};                                        //!< Number of buttons supported by the joystick
-    base::EnumArray<Joystick::Axis, bool, Joystick::AxisCount> axes{}; //!< Support for each axis
+    unsigned int buttonCount{}; //!< Number of buttons supported by the joystick
+    base::EnumArray<Joystick::Axis, bool, Joystick::MaxAxisCount> axes{}; //!< Support for each axis
 };
 
 
@@ -30,9 +30,9 @@ struct JoystickCaps
 ////////////////////////////////////////////////////////////
 struct JoystickState
 {
-    bool                                                        connected{}; //!< Is the joystick currently connected?
-    base::EnumArray<Joystick::Axis, float, Joystick::AxisCount> axes{}; //!< Position of each axis, in range [-100, 100]
-    bool buttons[Joystick::ButtonCount]{};                              //!< Status of each button (true = pressed)
+    bool connected{};                                                      //!< Is the joystick currently connected?
+    base::EnumArray<Joystick::Axis, float, Joystick::MaxAxisCount> axes{}; //!< Position of each axis, in range [-100, 100]
+    bool buttons[Joystick::MaxButtonCount]{};                              //!< Status of each button (true = pressed)
 };
 
 } // namespace sf::priv

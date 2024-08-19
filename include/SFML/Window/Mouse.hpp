@@ -32,8 +32,10 @@ enum class Button
     Extra2  //!< The second extra mouse button
 };
 
-// NOLINTNEXTLINE(readability-identifier-naming)
-static constexpr unsigned int ButtonCount{5}; //!< The total number of mouse buttons
+enum : unsigned int
+{
+    ButtonCount = 5u //!< The total number of mouse buttons
+};
 
 ////////////////////////////////////////////////////////////
 /// \brief Mouse wheels

@@ -27,7 +27,7 @@ class PlaybackDeviceHandle;
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-class SFML_AUDIO_API [[nodiscard]] AudioDeviceHandle
+class [[nodiscard]] SFML_AUDIO_API AudioDeviceHandle
 {
 public:
     ////////////////////////////////////////////////////////////

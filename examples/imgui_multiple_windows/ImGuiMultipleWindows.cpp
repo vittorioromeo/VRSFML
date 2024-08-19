@@ -6,7 +6,6 @@
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/GameLoop.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Clock.hpp"
@@ -33,7 +32,7 @@ int main()
         return -1;
 
     sf::Clock deltaClock;
-    SFML_GAME_LOOP
+    while (true)
     {
         // Main window event processing
         while (const sf::base::Optional event = window.pollEvent())
@@ -98,5 +97,5 @@ int main()
         // Child window event processing
         if (childWindow.hasValue())
             processChildWindow(*childWindow);
-    };
+    }
 }

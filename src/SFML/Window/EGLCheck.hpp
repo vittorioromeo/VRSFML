@@ -26,9 +26,8 @@ namespace sf::priv
         __VA_ARGS__;                                                         \
                                                                              \
         while (!::sf::priv::eglCheckError(__FILE__, __LINE__, #__VA_ARGS__)) \
-        {                                                                    \
-            /* no-op */                                                      \
-        }                                                                    \
+            /* no-op */;                                                     \
+                                                                             \
     } while (false)
 
 #else

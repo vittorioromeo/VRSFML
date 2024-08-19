@@ -15,7 +15,7 @@ namespace sf
 /// \brief Utility class for manipulating RGBA colors
 ///
 ////////////////////////////////////////////////////////////
-struct SFML_GRAPHICS_API [[nodiscard]] Color
+struct [[nodiscard]] SFML_GRAPHICS_API Color
 {
     ////////////////////////////////////////////////////////////
     /// \brief Construct the color from 32-bit unsigned integer

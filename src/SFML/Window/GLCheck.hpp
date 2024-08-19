@@ -14,7 +14,7 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 /// Let's define a macro to quickly check every OpenGL API call
 ////////////////////////////////////////////////////////////
-#ifdef SFML_DEBUG
+#if defined(SFML_DEBUG) && !defined(SFML_SYSTEM_EMSCRIPTEN) // `glCheck` is prohibitively slow on Emscripten
 
 // In debug mode, perform a test on every OpenGL call
 // The do-while loop is needed so that glCheck can be used as a single statement in if/else branches
@@ -27,9 +27,8 @@ namespace sf::priv
         __VA_ARGS__;                                                            \
                                                                                 \
         while (!::sf::priv::glCheckError(__FILE__, __LINE__, #__VA_ARGS__))     \
-        {                                                                       \
-            /* no-op */                                                         \
-        }                                                                       \
+            /* no-op */;                                                        \
+                                                                                \
     } while (false)
 
 #define glCheckExpr(...)                                                        \
@@ -40,9 +39,7 @@ namespace sf::priv
         auto _glCheckExprResult = __VA_ARGS__;                                  \
                                                                                 \
         while (!::sf::priv::glCheckError(__FILE__, __LINE__, #__VA_ARGS__))     \
-        {                                                                       \
-            /* no-op */                                                         \
-        }                                                                       \
+            /* no-op */;                                                        \
                                                                                 \
         return _glCheckExprResult;                                              \
     }()
@@ -58,9 +55,8 @@ namespace sf::priv
         __VA_ARGS__;                                  \
                                                       \
         while (errorFunc() != GL_NO_ERROR)            \
-        {                                             \
-            /* no-op */                               \
-        }                                             \
+            /* no-op */;                              \
+                                                      \
     } while (false)
 
 #define glCheckIgnoreExprWithFunc(errorFunc, ...)     \
@@ -71,9 +67,7 @@ namespace sf::priv
         auto _glCheckExprResult = __VA_ARGS__;        \
                                                       \
         while (errorFunc() != GL_NO_ERROR)            \
-        {                                             \
-            /* no-op */                               \
-        }                                             \
+            /* no-op */;                              \
                                                       \
         return _glCheckExprResult;                    \
     }()

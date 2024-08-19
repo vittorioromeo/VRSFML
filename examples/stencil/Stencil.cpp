@@ -8,7 +8,6 @@
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/GameLoop.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
 #include <cstdlib>
@@ -48,7 +47,7 @@ int main()
     blue.setPosition({550, 470});
     blue.setRotation(sf::degrees(180));
 
-    SFML_GAME_LOOP
+    while (true)
     {
         // Handle events
         while (const sf::base::Optional event = window.pollEvent())
@@ -148,7 +147,7 @@ int main()
 
         // Display things on screen
         window.display();
-    };
+    }
 
     return EXIT_SUCCESS;
 }

@@ -156,12 +156,12 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
         sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests"});
 
         // Should compile if user provides only a specific handler
-        windowBase.pollAndHandleEvents([](const sf::Event::Closed&) {});
+        windowBase.pollAndHandleEvents([](sf::Event::Closed) {});
 
         // Should compile if user provides only a catch-all
         windowBase.pollAndHandleEvents([](const auto&) {});
 
         // Should compile if user provides both a specific handler and a catch-all
-        windowBase.pollAndHandleEvents([](const sf::Event::Closed&) {}, [](const auto&) {});
+        windowBase.pollAndHandleEvents([](sf::Event::Closed) {}, [](const auto&) {});
     };
 }

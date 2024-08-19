@@ -9,10 +9,14 @@
 #include "SFML/Base/InPlacePImpl.hpp"
 
 
-namespace sf::Joystick
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+namespace sf::priv
 {
-struct Identification;
-} // namespace sf::Joystick
+struct JoystickIdentification;
+} // namespace sf::priv
+
 
 namespace sf::priv
 {
@@ -93,7 +97,7 @@ public:
     /// \return Joystick capabilities
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] JoystickCaps getCapabilities() const;
+    [[nodiscard]] JoystickCapabilities getCapabilities() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the joystick identification
@@ -101,7 +105,7 @@ public:
     /// \return Joystick identification
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Joystick::Identification getIdentification() const;
+    [[nodiscard]] const JoystickIdentification& getIdentification() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the joystick and get its new state

@@ -96,7 +96,7 @@ namespace sf
 /// occur.
 ///
 ////////////////////////////////////////////////////////////
-class SFML_AUDIO_API [[nodiscard]] EffectProcessor : public priv::EffectProcessorImpl
+class [[nodiscard]] SFML_AUDIO_API EffectProcessor : public priv::EffectProcessorImpl
 {
 public:
     using priv::EffectProcessorImpl::EffectProcessorImpl;

@@ -9,7 +9,6 @@
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/GameLoop.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Path.hpp"
@@ -52,7 +51,7 @@ int main()
 
     std::vector<std::string> log;
 
-    SFML_GAME_LOOP
+    while (true)
     {
         while (const sf::base::Optional event = window.pollEvent())
         {
@@ -85,5 +84,5 @@ int main()
         }
 
         window.display();
-    };
+    }
 }

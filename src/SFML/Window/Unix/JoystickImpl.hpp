@@ -62,7 +62,7 @@ public:
     /// \return Joystick capabilities
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] JoystickCaps getCapabilities() const;
+    [[nodiscard]] JoystickCapabilities getCapabilities() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the joystick identification
@@ -70,7 +70,7 @@ public:
     /// \return Joystick identification
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Joystick::Identification getIdentification() const;
+    [[nodiscard]] const JoystickIdentification& getIdentification() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the joystick and get its new state
@@ -84,10 +84,10 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    int                      m_file{-1};           ///< File descriptor of the joystick
-    char                     m_mapping[ABS_CNT]{}; ///< Axes mapping (index to axis id)
-    JoystickState            m_state;              ///< Current state of the joystick
-    Joystick::Identification m_identification;     ///< Identification of the joystick
+    int                    m_file{-1};           ///< File descriptor of the joystick
+    char                   m_mapping[ABS_CNT]{}; ///< Axes mapping (index to axis id)
+    JoystickState          m_state;              ///< Current state of the joystick
+    JoystickIdentification m_identification;     ///< Identification of the joystick
 };
 
 } // namespace sf::priv

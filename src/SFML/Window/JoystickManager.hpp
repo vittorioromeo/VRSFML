@@ -7,21 +7,24 @@
 #include "SFML/Base/InPlacePImpl.hpp"
 
 
-namespace sf::Joystick
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+namespace sf::priv
 {
-struct Identification;
-} // namespace sf::Joystick
+struct JoystickCapabilities;
+struct JoystickIdentification;
+struct JoystickState;
+} // namespace sf::priv
+
 
 namespace sf::priv
 {
-struct JoystickCaps;
-struct JoystickState;
-
 ////////////////////////////////////////////////////////////
 /// \brief Global joystick manager
 ///
 ////////////////////////////////////////////////////////////
-class JoystickManager
+class [[nodiscard]] JoystickManager
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -42,7 +45,7 @@ public:
     /// \return Unique instance of the joystick manager
     ///
     ////////////////////////////////////////////////////////////
-    static JoystickManager& getInstance();
+    [[nodiscard]] static JoystickManager& getInstance();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the capabilities for an open joystick
@@ -52,7 +55,7 @@ public:
     /// \return Capabilities of the joystick
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const JoystickCaps& getCapabilities(unsigned int joystick) const;
+    [[nodiscard]] const JoystickCapabilities& getCapabilities(unsigned int joystickId) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current state of an open joystick
@@ -62,7 +65,7 @@ public:
     /// \return Current state of the joystick
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const JoystickState& getState(unsigned int joystick) const;
+    [[nodiscard]] const JoystickState& getState(unsigned int joystickId) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the identification for an open joystick
@@ -72,7 +75,7 @@ public:
     /// \return Identification for the joystick
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const Joystick::Identification& getIdentification(unsigned int joystick) const;
+    [[nodiscard]] const JoystickIdentification& getIdentification(unsigned int joystickId) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the state of all the joysticks
@@ -85,7 +88,7 @@ private:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    JoystickManager();
+    [[nodiscard]] explicit JoystickManager();
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor

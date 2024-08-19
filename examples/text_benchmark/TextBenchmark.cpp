@@ -15,7 +15,6 @@
 #include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/GameLoop.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Clock.hpp"

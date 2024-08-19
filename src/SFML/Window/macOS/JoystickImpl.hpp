@@ -65,7 +65,7 @@ public:
     /// \return Joystick capabilities
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] JoystickCaps getCapabilities() const;
+    [[nodiscard]] JoystickCapabilities getCapabilities() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the joystick identification
@@ -73,7 +73,7 @@ public:
     /// \return Joystick identification
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Joystick::Identification getIdentification() const;
+    [[nodiscard]] const JoystickIdentification& getIdentification() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the joystick and get its new state
@@ -91,14 +91,14 @@ private:
     using AxisMap       = std::unordered_map<Joystick::Axis, IOHIDElementRef>;
     using ButtonsVector = std::vector<IOHIDElementRef>;
 
-    AxisMap                  m_axis;           ///< Axes (but not POV/Hat) of the joystick
-    IOHIDElementRef          m_hat{};          ///< POV/Hat axis of the joystick
-    ButtonsVector            m_buttons;        ///< Buttons of the joystick
-    unsigned int             m_index{};        ///< SFML index
-    Joystick::Identification m_identification; ///< Joystick identification
+    AxisMap                m_axis;           ///< Axes (but not POV/Hat) of the joystick
+    IOHIDElementRef        m_hat{};          ///< POV/Hat axis of the joystick
+    ButtonsVector          m_buttons;        ///< Buttons of the joystick
+    unsigned int           m_index{};        ///< SFML index
+    JoystickIdentification m_identification; ///< Joystick identification
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    static inline std::array<Location, Joystick::Count> m_locationIDs{}; ///< Global Joystick register
+    static inline std::array<Location, Joystick::MaxCount> m_locationIDs{}; ///< Global Joystick register
     /// For a corresponding SFML index, m_locationIDs is either some USB
     /// location or 0 if there isn't currently a connected joystick device
 };

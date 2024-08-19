@@ -18,6 +18,11 @@
 
 #include "SFML/Base/Macros.hpp"
 
+#ifdef SFML_SYSTEM_EMSCRIPTEN
+#include <emscripten.h>
+#include <emscripten/html5.h>
+#endif
+
 
 namespace sf
 {
@@ -139,6 +144,10 @@ void Window::display()
         sleep(m_impl->frameTimeLimit - m_impl->clock.getElapsedTime());
         m_impl->clock.restart();
     }
+
+#ifdef SFML_SYSTEM_EMSCRIPTEN
+    emscripten_sleep(0u);
+#endif
 }
 
 } // namespace sf

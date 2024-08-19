@@ -107,7 +107,8 @@ TEST_CASE("[Base] Base/Optional.hpp")
         STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(MoveOnly));
         STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(MoveOnly));
 
-#ifndef __clang__ // TODO P1: clang bug
+// Clang bug, see https://stackoverflow.com/questions/78885178
+#ifndef __clang__
         STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::base::Optional<MoveOnly>));
 #endif
         STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::base::Optional<MoveOnly>));

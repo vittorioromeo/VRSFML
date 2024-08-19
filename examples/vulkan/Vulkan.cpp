@@ -9,7 +9,6 @@
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/GameLoop.hpp"
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/Vulkan.hpp"
 #include "SFML/Window/WindowBase.hpp"
@@ -2554,7 +2553,7 @@ public:
         const sf::Clock clock;
 
         // Start game loop
-        SFML_GAME_LOOP
+        while (true)
         {
             // Process events
             while (const sf::base::Optional event = window.pollEvent())
@@ -2575,7 +2574,7 @@ public:
                 // Render the frame
                 draw();
             }
-        };
+        }
     }
 
 private:

@@ -538,9 +538,9 @@ void JoystickImpl::close()
 
 
 ////////////////////////////////////////////////////////////
-JoystickCaps JoystickImpl::getCapabilities() const
+JoystickCapabilities JoystickImpl::getCapabilities() const
 {
-    JoystickCaps caps;
+    JoystickCapabilities caps;
 
     if (m_file < 0)
         return caps;
@@ -549,8 +549,8 @@ JoystickCaps JoystickImpl::getCapabilities() const
     char buttonCount = 0;
     ioctl(m_file, JSIOCGBUTTONS, &buttonCount);
     caps.buttonCount = static_cast<unsigned int>(buttonCount);
-    if (caps.buttonCount > Joystick::ButtonCount)
-        caps.buttonCount = Joystick::ButtonCount;
+    if (caps.buttonCount > Joystick::MaxButtonCount)
+        caps.buttonCount = Joystick::MaxButtonCount;
 
     // Get the supported axes
     char axesCount = 0;
@@ -580,7 +580,7 @@ JoystickCaps JoystickImpl::getCapabilities() const
 
 
 ////////////////////////////////////////////////////////////
-Joystick::Identification JoystickImpl::getIdentification() const
+const JoystickIdentification& JoystickImpl::getIdentification() const
 {
     return m_identification;
 }
@@ -647,7 +647,7 @@ JoystickState JoystickImpl::JoystickImpl::update()
             // A button was pressed
             case JS_EVENT_BUTTON:
             {
-                if (joyState.number < Joystick::ButtonCount)
+                if (joyState.number < Joystick::MaxButtonCount)
                     m_state.buttons[joyState.number] = (joyState.value != 0);
                 break;
             }

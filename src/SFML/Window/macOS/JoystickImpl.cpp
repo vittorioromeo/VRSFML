@@ -127,7 +127,7 @@ bool JoystickImpl::isConnected(unsigned int index)
                         const Location dloc = HIDInputManager::getLocationID(d);
 
                         bool foundJ = false;
-                        for (unsigned int j(0); !foundJ && j < Joystick::Count; ++j)
+                        for (unsigned int j(0); !foundJ && j < Joystick::MaxCount; ++j)
                         {
                             if (m_locationIDs[j] == dloc)
                                 foundJ = true;
@@ -279,8 +279,8 @@ bool JoystickImpl::open(unsigned int index)
                 break;
 
             case kHIDPage_Button:
-                if (m_buttons.size() < Joystick::ButtonCount) // If we have free slot...
-                    m_buttons.push_back(element);             // ...we add this element to the list
+                if (m_buttons.size() < Joystick::MaxButtonCount) // If we have free slot...
+                    m_buttons.push_back(element);                // ...we add this element to the list
                 // Else: too many buttons. We ignore this one.
                 break;
 
@@ -342,10 +342,10 @@ void JoystickImpl::close()
 
 
 ////////////////////////////////////////////////////////////
-JoystickCaps JoystickImpl::getCapabilities() const
+JoystickCapabilities JoystickImpl::getCapabilities() const
 {
     const AutoreleasePool pool;
-    JoystickCaps          caps;
+    JoystickCapabilities  caps;
 
     // Buttons:
     caps.buttonCount = static_cast<unsigned int>(m_buttons.size());
@@ -362,7 +362,7 @@ JoystickCaps JoystickImpl::getCapabilities() const
 
 
 ////////////////////////////////////////////////////////////
-Joystick::Identification JoystickImpl::getIdentification() const
+const JoystickIdentification& JoystickImpl::getIdentification() const
 {
     const AutoreleasePool pool;
     return m_identification;

@@ -47,7 +47,7 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 struct WindowImpl::JoystickStatesImpl
 {
-    JoystickState states[Joystick::Count]{}; //!< Previous state of the joysticks
+    JoystickState states[Joystick::MaxCount]{}; //!< Previous state of the joysticks
 };
 
 
@@ -58,8 +58,8 @@ struct WindowImpl::Impl
     base::UniquePtr<JoystickStatesImpl> joystickStatesImpl;             //!< Previous state of the joysticks (PImpl)
     base::EnumArray<Sensor::Type, Vector3f, Sensor::Count> sensorValue; //!< Previous value of the sensors
     float joystickThreshold{0.1f}; //!< Joystick threshold (minimum motion for "move" event to be generated)
-    base::EnumArray<Joystick::Axis, float, Joystick::AxisCount>
-        previousAxes[Joystick::Count]{}; //!< Position of each axis last time a move event triggered, in range [-100, 100]
+    base::EnumArray<Joystick::Axis, float, Joystick::MaxAxisCount>
+        previousAxes[Joystick::MaxCount]{}; //!< Position of each axis last time a move event triggered, in range [-100, 100]
     base::Optional<Vector2u> minimumSize; //!< Minimum window size
     base::Optional<Vector2u> maximumSize; //!< Maximum window size
 
@@ -132,7 +132,7 @@ WindowImpl::WindowImpl() : m_impl(base::makeUnique<JoystickStatesImpl>())
 {
     // Get the initial joystick states
     JoystickManager::getInstance().update();
-    for (unsigned int i = 0; i < Joystick::Count; ++i)
+    for (unsigned int i = 0; i < Joystick::MaxCount; ++i)
     {
         m_impl->joystickStatesImpl->states[i] = JoystickManager::getInstance().getState(i);
         m_impl->previousAxes[i].fill(0.f);
@@ -251,7 +251,7 @@ void WindowImpl::processJoystickEvents()
     // First update the global joystick states
     JoystickManager::getInstance().update();
 
-    for (unsigned int i = 0; i < Joystick::Count; ++i)
+    for (unsigned int i = 0; i < Joystick::MaxCount; ++i)
     {
         // Copy the previous state of the joystick and get the new one
         const JoystickState previousState     = m_impl->joystickStatesImpl->states[i];
@@ -274,10 +274,10 @@ void WindowImpl::processJoystickEvents()
         if (!connected)
             continue;
 
-        const JoystickCaps caps = JoystickManager::getInstance().getCapabilities(i);
+        const JoystickCapabilities caps = JoystickManager::getInstance().getCapabilities(i);
 
         // Axes
-        for (unsigned int j = 0; j < Joystick::AxisCount; ++j)
+        for (unsigned int j = 0; j < Joystick::MaxAxisCount; ++j)
         {
             const auto axis = static_cast<Joystick::Axis>(j);
             if (!caps.axes[axis])

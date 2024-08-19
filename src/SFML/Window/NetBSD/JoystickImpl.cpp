@@ -97,7 +97,7 @@ void updatePluggedList()
         unsigned int   joystickCount  = 0;
         struct dirent* directoryEntry = readdir(directory);
 
-        while (directoryEntry && joystickCount < sf::Joystick::Count)
+        while (directoryEntry && joystickCount < sf::Joystick::MaxCount)
         {
             if (!std::strncmp(directoryEntry->d_name, "uhid", 4))
             {
@@ -232,10 +232,10 @@ void JoystickImpl::close()
 
 
 ////////////////////////////////////////////////////////////
-JoystickCaps JoystickImpl::getCapabilities() const
+JoystickCapabilities JoystickImpl::getCapabilities() const
 {
-    JoystickCaps caps;
-    hid_item_t   item;
+    JoystickCapabilities caps;
+    hid_item_t           item;
 
     hid_data_t data = hid_start_parse(m_desc, 1 << hid_input, m_id);
 
@@ -272,7 +272,7 @@ JoystickCaps JoystickImpl::getCapabilities() const
 
 
 ////////////////////////////////////////////////////////////
-Joystick::Identification JoystickImpl::getIdentification() const
+const JoystickIdentification& JoystickImpl::getIdentification() const
 {
     return m_identification;
 }

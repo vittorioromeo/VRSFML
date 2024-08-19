@@ -8,7 +8,6 @@
 #include "SFML/Graphics/Text.hpp"
 
 #include "SFML/Window/Event.hpp"
-#include "SFML/Window/GameLoop.hpp"
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
@@ -65,7 +64,7 @@ public:
         {
         }
 
-        sf::base::Optional<std::string> operator()(const sf::Event::Closed&)
+        sf::base::Optional<std::string> operator()(sf::Event::Closed)
         {
             application.m_mustClose = true;
             return sf::base::nullOpt;
@@ -176,7 +175,7 @@ public:
     {
         // Overloaded visitation
         // A callable taking a concrete event type is provided per event type you want to handle
-        m_window.pollAndHandleEvents([&](const sf::Event::Closed&) { m_mustClose = true; },
+        m_window.pollAndHandleEvents([&](sf::Event::Closed) { m_mustClose = true; },
                                      [&](const sf::Event::KeyPressed& keyPress)
                                      {
                                          m_log.emplace_back(
@@ -266,7 +265,7 @@ public:
         // All the following forms of event handling have equivalent behavior
         // In your own code you should decide which form of event handling
         // suits your needs best and use a single form of event handling
-        SFML_GAME_LOOP
+        while (true)
         {
             if (m_handlerType == HandlerType::Classic)
                 runHandlerClassic();
@@ -299,7 +298,7 @@ public:
             m_window.draw(m_handlerText);
             m_window.draw(m_instructions);
             m_window.display();
-        };
+        }
     }
 
     // The following handle methods are called by the forwarding event handler implementation
@@ -307,7 +306,7 @@ public:
     // To handle any other events that are left, the templated handle method will be called
     // Overload resolution will prefer the handle methods that fit the event type better
     // before falling back to the templated method
-    void handle(const sf::Event::Closed&)
+    void handle(sf::Event::Closed)
     {
         m_mustClose = true;
     }

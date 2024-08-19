@@ -29,8 +29,10 @@ enum class Type
     Orientation       //!< Measures the absolute 3D orientation (radians)
 };
 
-// NOLINTNEXTLINE(readability-identifier-naming)
-static constexpr unsigned int Count{6}; //!< The total number of sensor types
+enum : unsigned int
+{
+    Count = 6u //!< The total number of sensor types
+};
 
 ////////////////////////////////////////////////////////////
 /// \brief Check if a sensor is available on the underlying platform
