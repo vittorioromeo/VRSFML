@@ -288,7 +288,7 @@ void setupVertexAttribPointers(const GLint sfAttribPositionIdx, const GLint sfAt
 
     glCheck(glEnableVertexAttribArray(static_cast<GLuint>(sfAttribPositionIdx)));
     glCheck(glVertexAttribPointer(/*      index */ static_cast<GLuint>(sfAttribPositionIdx),
-                                  /*       size */ 2,
+                                  /*       size */ 3,
                                   /*       type */ GL_FLOAT,
                                   /* normalized */ GL_FALSE,
                                   /*     stride */ sizeof(Vertex),
@@ -385,7 +385,7 @@ void RenderTarget::clear(Color color)
         return;
 
     glCheck(glClearColor(color.r / 255.f, color.g / 255.f, color.b / 255.f, color.a / 255.f));
-    glCheck(glClear(GL_COLOR_BUFFER_BIT));
+    glCheck(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 }
 
 
@@ -536,8 +536,9 @@ void RenderTarget::draw(const Vertex* vertices, std::size_t vertexCount, Primiti
             {
                 auto& [position, color, texCoords] = m_impl->cache.vertexCache[i];
 
-                position  = states.transform * vertices[i].position;
-                color     = vertices[i].color;
+                position.setXY(states.transform * vertices[i].position.xy());
+                position.z = vertices[i].position.z;
+
                 texCoords = vertices[i].texCoords;
             }
         }
@@ -702,7 +703,10 @@ void RenderTarget::resetGLStates()
         // Define the default OpenGL states
         glCheck(glDisable(GL_CULL_FACE));
         glCheck(glDisable(GL_STENCIL_TEST));
-        glCheck(glDisable(GL_DEPTH_TEST));
+        glCheck(glEnable(GL_DEPTH_TEST));
+        glCheck(glDepthFunc(GL_LESS));
+        glCheck(glDepthMask(true));
+        glCheck(glDepthRangef(0, 1));
         glCheck(glDisable(GL_SCISSOR_TEST));
         glCheck(glEnable(GL_BLEND));
         glCheck(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));

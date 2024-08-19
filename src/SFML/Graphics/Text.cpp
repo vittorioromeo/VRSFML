@@ -35,6 +35,7 @@ void addLine(std::vector<sf::Vertex>& vertices,
              std::size_t&             index,
              float                    lineLength,
              float                    lineTop,
+             float                    z,
              sf::Color                color,
              float                    offset,
              float                    thickness,
@@ -43,12 +44,12 @@ void addLine(std::vector<sf::Vertex>& vertices,
     const float top    = sf::base::floor(lineTop + offset - (thickness / 2) + 0.5f);
     const float bottom = top + sf::base::floor(thickness + 0.5f);
 
-    const sf::Vertex vertexData[] = {{{-outlineThickness, top - outlineThickness}, color, {1.0f, 1.0f}},
-                                     {{lineLength + outlineThickness, top - outlineThickness}, color, {1.0f, 1.0f}},
-                                     {{-outlineThickness, bottom + outlineThickness}, color, {1.0f, 1.0f}},
-                                     {{-outlineThickness, bottom + outlineThickness}, color, {1.0f, 1.0f}},
-                                     {{lineLength + outlineThickness, top - outlineThickness}, color, {1.0f, 1.0f}},
-                                     {{lineLength + outlineThickness, bottom + outlineThickness}, color, {1.0f, 1.0f}}};
+    const sf::Vertex vertexData[] = {{{-outlineThickness, top - outlineThickness, z}, color, {1.0f, 1.0f}},
+                                     {{lineLength + outlineThickness, top - outlineThickness, z}, color, {1.0f, 1.0f}},
+                                     {{-outlineThickness, bottom + outlineThickness, z}, color, {1.0f, 1.0f}},
+                                     {{-outlineThickness, bottom + outlineThickness, z}, color, {1.0f, 1.0f}},
+                                     {{lineLength + outlineThickness, top - outlineThickness, z}, color, {1.0f, 1.0f}},
+                                     {{lineLength + outlineThickness, bottom + outlineThickness, z}, color, {1.0f, 1.0f}}};
 
     std::memcpy(vertices.data() + index, vertexData, sizeof(sf::Vertex) * 6);
     index += 6;
@@ -58,6 +59,7 @@ void addLine(std::vector<sf::Vertex>& vertices,
 void addGlyphQuad(std::vector<sf::Vertex>& vertices,
                   std::size_t&             index,
                   sf::Vector2f             position,
+                  float                    z,
                   sf::Color                color,
                   const sf::Glyph&         glyph,
                   float                    italicShear)
@@ -70,12 +72,15 @@ void addGlyphQuad(std::vector<sf::Vertex>& vertices,
     const auto uv1 = glyph.textureRect.position.to<sf::Vector2f>() - padding;
     const auto uv2 = (glyph.textureRect.position + glyph.textureRect.size).to<sf::Vector2f>() + padding;
 
-    const sf::Vertex vertexData[] = {{position + sf::Vector2f(p1.x - italicShear * p1.y, p1.y), color, {uv1.x, uv1.y}},
-                                     {position + sf::Vector2f(p2.x - italicShear * p1.y, p1.y), color, {uv2.x, uv1.y}},
-                                     {position + sf::Vector2f(p1.x - italicShear * p2.y, p2.y), color, {uv1.x, uv2.y}},
-                                     {position + sf::Vector2f(p1.x - italicShear * p2.y, p2.y), color, {uv1.x, uv2.y}},
-                                     {position + sf::Vector2f(p2.x - italicShear * p1.y, p1.y), color, {uv2.x, uv1.y}},
-                                     {position + sf::Vector2f(p2.x - italicShear * p2.y, p2.y), color, {uv2.x, uv2.y}}};
+    const sf::Vector3f positionWithZ{position.x, position.y, z};
+
+    const sf::Vertex vertexData[] =
+        {{positionWithZ + sf::Vector3f(p1.x - italicShear * p1.y, p1.y), color, {uv1.x, uv1.y}},
+         {positionWithZ + sf::Vector3f(p2.x - italicShear * p1.y, p1.y), color, {uv2.x, uv1.y}},
+         {positionWithZ + sf::Vector3f(p1.x - italicShear * p2.y, p2.y), color, {uv1.x, uv2.y}},
+         {positionWithZ + sf::Vector3f(p1.x - italicShear * p2.y, p2.y), color, {uv1.x, uv2.y}},
+         {positionWithZ + sf::Vector3f(p2.x - italicShear * p1.y, p1.y), color, {uv2.x, uv1.y}},
+         {positionWithZ + sf::Vector3f(p2.x - italicShear * p2.y, p2.y), color, {uv2.x, uv2.y}}};
 
     std::memcpy(vertices.data() + index, vertexData, sizeof(sf::Vertex) * 6);
     index += 6;
@@ -550,10 +555,18 @@ void Text::ensureGeometryUpdate() const
 
     const auto addLines = [this, &currFillIndex, &currOutlineIndex, &x, &y, &underlineThickness](float offset)
     {
-        addLine(m_impl->vertices, currFillIndex, x, y, m_impl->fillColor, offset, underlineThickness);
+        addLine(m_impl->vertices, currFillIndex, x, y, getZ(), m_impl->fillColor, offset, underlineThickness);
 
         if (m_impl->outlineThickness != 0)
-            addLine(m_impl->vertices, currOutlineIndex, x, y, m_impl->outlineColor, offset, underlineThickness, m_impl->outlineThickness);
+            addLine(m_impl->vertices,
+                    currOutlineIndex,
+                    x,
+                    y,
+                    getZ(),
+                    m_impl->outlineColor,
+                    offset,
+                    underlineThickness,
+                    m_impl->outlineThickness);
     };
 
     for (const std::uint32_t curChar : m_impl->string)
@@ -613,14 +626,14 @@ void Text::ensureGeometryUpdate() const
             const Glyph& glyph = m_impl->font->getGlyph(curChar, m_impl->characterSize, isBold, m_impl->outlineThickness);
 
             // Add the outline glyph to the vertices
-            addGlyphQuad(m_impl->vertices, currOutlineIndex, Vector2f{x, y}, m_impl->outlineColor, glyph, italicShear);
+            addGlyphQuad(m_impl->vertices, currOutlineIndex, Vector2f{x, y}, getZ(), m_impl->outlineColor, glyph, italicShear);
         }
 
         // Extract the current glyph's description
         const Glyph& glyph = m_impl->font->getGlyph(curChar, m_impl->characterSize, isBold);
 
         // Add the glyph to the vertices
-        addGlyphQuad(m_impl->vertices, currFillIndex, Vector2f{x, y}, m_impl->fillColor, glyph, italicShear);
+        addGlyphQuad(m_impl->vertices, currFillIndex, Vector2f{x, y}, getZ(), m_impl->fillColor, glyph, italicShear);
 
         // Update the current bounds
         const Vector2f p1 = glyph.bounds.position;

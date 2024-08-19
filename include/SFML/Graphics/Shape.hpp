@@ -9,7 +9,6 @@
 #include "SFML/Graphics/Transformable.hpp"
 
 #include "SFML/System/Rect.hpp"
-#include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
 

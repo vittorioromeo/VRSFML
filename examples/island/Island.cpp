@@ -518,7 +518,7 @@ void processWorkItem(std::vector<sf::Vertex>& vertices, const WorkItem& workItem
             }
             else
             {
-                vertices[arrayIndexBase + 0].position  = sf::Vector2f(static_cast<float>(x) * scalingFactor.x,
+                vertices[arrayIndexBase + 0].position  = sf::Vector3f(static_cast<float>(x) * scalingFactor.x,
                                                                      static_cast<float>(y) * scalingFactor.y);
                 vertices[arrayIndexBase + 0].color     = getTerrainColor(getElevation(x, y), getMoisture(x, y));
                 vertices[arrayIndexBase + 0].texCoords = computeNormal(getElevation(x - 1, y),
@@ -534,7 +534,7 @@ void processWorkItem(std::vector<sf::Vertex>& vertices, const WorkItem& workItem
             }
             else
             {
-                vertices[arrayIndexBase + 1].position  = sf::Vector2f(static_cast<float>(x) * scalingFactor.x,
+                vertices[arrayIndexBase + 1].position  = sf::Vector3f(static_cast<float>(x) * scalingFactor.x,
                                                                      static_cast<float>(y + 1) * scalingFactor.y);
                 vertices[arrayIndexBase + 1].color     = getTerrainColor(getElevation(x, y + 1), getMoisture(x, y + 1));
                 vertices[arrayIndexBase + 1].texCoords = computeNormal(getElevation(x - 1, y + 1),
@@ -544,7 +544,7 @@ void processWorkItem(std::vector<sf::Vertex>& vertices, const WorkItem& workItem
             }
 
             // Bottom right corner (first triangle)
-            vertices[arrayIndexBase + 2].position = sf::Vector2f(static_cast<float>(x + 1) * scalingFactor.x,
+            vertices[arrayIndexBase + 2].position = sf::Vector3f(static_cast<float>(x + 1) * scalingFactor.x,
                                                                  static_cast<float>(y + 1) * scalingFactor.y);
             vertices[arrayIndexBase + 2].color = getTerrainColor(getElevation(x + 1, y + 1), getMoisture(x + 1, y + 1));
             vertices[arrayIndexBase + 2].texCoords = computeNormal(getElevation(x, y + 1),
@@ -565,7 +565,7 @@ void processWorkItem(std::vector<sf::Vertex>& vertices, const WorkItem& workItem
             }
             else
             {
-                vertices[arrayIndexBase + 5].position  = sf::Vector2f(static_cast<float>(x + 1) * scalingFactor.x,
+                vertices[arrayIndexBase + 5].position  = sf::Vector3f(static_cast<float>(x + 1) * scalingFactor.x,
                                                                      static_cast<float>(y) * scalingFactor.y);
                 vertices[arrayIndexBase + 5].color     = getTerrainColor(getElevation(x + 1, y), getMoisture(x + 1, y));
                 vertices[arrayIndexBase + 5].texCoords = computeNormal(getElevation(x, y),

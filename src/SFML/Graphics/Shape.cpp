@@ -46,7 +46,7 @@ namespace
 
     for (std::size_t i = 1; i < data.size(); ++i)
     {
-        const sf::Vector2f position = data[i].position;
+        const sf::Vector3f position = data[i].position;
 
         // Update left and right
         if (position.x < left)
@@ -163,7 +163,7 @@ void Shape::setOutlineThickness(float thickness)
     points.reserve(pointCount);
 
     for (std::size_t i = 0; i < pointCount; ++i)
-        points.push_back(m_impl->vertices[i + 1].position);
+        points.push_back(m_impl->vertices[i + 1].position.xy());
 
     update(points.data(), pointCount); // recompute everything because the whole shape must be offset
 }
@@ -205,7 +205,7 @@ void Shape::update(const sf::Vector2f* points, const std::size_t pointCount)
 
     // Position
     for (std::size_t i = 0; i < pointCount; ++i)
-        m_impl->vertices[i + 1].position = points[i];
+        m_impl->vertices[i + 1].position = {points[i].x, points[i].y, getZ()};
 
     m_impl->vertices[pointCount + 1].position = m_impl->vertices[1].position;
 
@@ -214,7 +214,7 @@ void Shape::update(const sf::Vector2f* points, const std::size_t pointCount)
     m_impl->insideBounds = getVertexRangeBounds(m_impl->vertices);
 
     // Compute the center and make it the first vertex
-    m_impl->vertices[0].position = m_impl->insideBounds.getCenter();
+    m_impl->vertices[0].position.setXY(m_impl->insideBounds.getCenter());
 
     // Color
     updateFillColors();
@@ -265,7 +265,7 @@ void Shape::updateTexCoords()
 
     for (Vertex& vertex : m_impl->vertices)
     {
-        const Vector2f ratio = (vertex.position - m_impl->insideBounds.position).cwiseDiv(safeInsideSize);
+        const Vector2f ratio = (vertex.position.xy() - m_impl->insideBounds.position).cwiseDiv(safeInsideSize);
         vertex.texCoords     = convertedTextureRect.position + convertedTextureRect.size.cwiseMul(ratio);
     }
 }
@@ -290,24 +290,25 @@ void Shape::updateOutline()
         const std::size_t index = i + 1;
 
         // Get the two segments shared by the current point
-        const Vector2f p0 = (i == 0) ? m_impl->vertices[count].position : m_impl->vertices[index - 1].position;
-        const Vector2f p1 = m_impl->vertices[index].position;
-        const Vector2f p2 = m_impl->vertices[index + 1].position;
+        const Vector3f p0 = (i == 0) ? m_impl->vertices[count].position : m_impl->vertices[index - 1].position;
+        const Vector3f p1 = m_impl->vertices[index].position;
+        const Vector3f p2 = m_impl->vertices[index + 1].position;
 
         // Compute their normal
-        Vector2f n1 = computeNormal(p0, p1);
-        Vector2f n2 = computeNormal(p1, p2);
+        Vector2f n1 = computeNormal(p0.xy(), p1.xy());
+        Vector2f n2 = computeNormal(p1.xy(), p2.xy());
 
         // Make sure that the normals point towards the outside of the shape
         // (this depends on the order in which the points were defined)
-        if (n1.dot(m_impl->vertices[0].position - p1) > 0)
+        if (n1.dot((m_impl->vertices[0].position - p1).xy()) > 0)
             n1 = -n1;
-        if (n2.dot(m_impl->vertices[0].position - p1) > 0)
+        if (n2.dot((m_impl->vertices[0].position - p1).xy()) > 0)
             n2 = -n2;
 
         // Combine them to get the extrusion direction
-        const float    factor = 1.f + (n1.x * n2.x + n1.y * n2.y);
-        const Vector2f normal = (n1 + n2) / factor;
+        const float factor = 1.f + (n1.x * n2.x + n1.y * n2.y);
+        Vector3f    normal;
+        normal.setXY((n1 + n2) / factor);
 
         // Update the outline points
         m_impl->outlineVertices[i * 2 + 0].position = p1;
