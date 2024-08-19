@@ -7,6 +7,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Export.hpp"
 
+#include "SFML/System/Vector2.hpp"
+
 
 namespace sf
 {
@@ -86,6 +88,18 @@ public:
     ////////////////////////////////////////////////////////////
     template <typename OtherVector3>
     [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr OtherVector3 to() const;
+
+    // TODO P0:
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Vector2<T> xy() const
+    {
+        return {x, y};
+    }
+
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr void setXY(Vector2<T> v)
+    {
+        x = v.x;
+        y = v.y;
+    }
 
     ////////////////////////////////////////////////////////////
     // Member data

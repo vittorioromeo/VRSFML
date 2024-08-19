@@ -53,6 +53,13 @@ void Transformable::setOrigin(Vector2f origin)
 
 
 ////////////////////////////////////////////////////////////
+void Transformable::setZ(float value)
+{
+    m_z = value;
+}
+
+
+////////////////////////////////////////////////////////////
 Vector2f Transformable::getPosition() const
 {
     return m_position;
@@ -77,6 +84,13 @@ Vector2f Transformable::getScale() const
 Vector2f Transformable::getOrigin() const
 {
     return m_origin;
+}
+
+
+////////////////////////////////////////////////////////////
+float Transformable::getZ() const
+{
+    return m_z;
 }
 
 

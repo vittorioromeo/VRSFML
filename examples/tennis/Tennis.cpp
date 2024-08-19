@@ -72,7 +72,8 @@ int main()
                             {.size         = gameSize.to<sf::Vector2u>(),
                              .bitsPerPixel = 32u,
                              .title        = "SFML Tennis",
-                             .style        = sf::Style::Titlebar | sf::Style::Close});
+                             .style        = sf::Style::Titlebar | sf::Style::Close,
+                             .contextSettings{.depthBits = 24u}});
 
     window.setVerticalSyncEnabled(true);
 
@@ -87,7 +88,8 @@ int main()
     // Create the SFML logo texture:
     const auto sfmlLogoTexture = sf::Texture::loadFromFile(graphicsContext, resourcesDir() / "sfml_logo.png").value();
     sf::Sprite sfmlLogo(sfmlLogoTexture.getRect());
-    sfmlLogo.setPosition({170.f, 50.f});
+    sfmlLogo.setPosition({170.f, 160.f});
+    sfmlLogo.setZ(0.1f);
 
     // Create the left paddle
     sf::RectangleShape leftPaddle;

@@ -85,6 +85,9 @@ public:
     ////////////////////////////////////////////////////////////
     void setOrigin(Vector2f origin);
 
+    // TODO P0:
+    void setZ(float value);
+
     ////////////////////////////////////////////////////////////
     /// \brief get the position of the object
     ///
@@ -126,6 +129,9 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Vector2f getOrigin() const;
+
+    // TODO P0:
+    [[nodiscard]] float getZ() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move the object by a given offset
@@ -202,6 +208,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     Vector2f          m_origin;                           //!< Origin of translation/rotation/scaling of the object
+    float             m_z{0.f};                           //!< TODO P0:
     Vector2f          m_position;                         //!< Position of the object in the 2D world
     Angle             m_rotation;                         //!< Orientation of the object
     Vector2f          m_scale{1, 1};                      //!< Scale of the object

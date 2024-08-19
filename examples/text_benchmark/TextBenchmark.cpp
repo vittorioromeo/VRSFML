@@ -84,22 +84,22 @@ int main()
 
         float xCenter = screenWidth / 2;
 
-        vertexArrays[0].emplace_back(sf::Vector2f{0, 0}, sf::Color::White, sf::Vector2f{0, 0});
-        vertexArrays[0].emplace_back(sf::Vector2f{xCenter, 0}, sf::Color::White, sf::Vector2f{xCenter, 0});
-        vertexArrays[0].emplace_back(sf::Vector2f{0, screenHeight}, sf::Color::White, sf::Vector2f{0, screenHeight});
+        vertexArrays[0].emplace_back(sf::Vector3f{0, 0}, sf::Color::White, sf::Vector2f{0, 0});
+        vertexArrays[0].emplace_back(sf::Vector3f{xCenter, 0}, sf::Color::White, sf::Vector2f{xCenter, 0});
+        vertexArrays[0].emplace_back(sf::Vector3f{0, screenHeight}, sf::Color::White, sf::Vector2f{0, screenHeight});
 
-        vertexArrays[0].emplace_back(sf::Vector2f{0, screenHeight}, sf::Color::White, sf::Vector2f{0, screenHeight});
-        vertexArrays[0].emplace_back(sf::Vector2f{xCenter, 0}, sf::Color::White, sf::Vector2f{xCenter, 0});
-        vertexArrays[0].emplace_back(sf::Vector2f{xCenter, screenHeight}, sf::Color::White, sf::Vector2f{xCenter, screenHeight});
+        vertexArrays[0].emplace_back(sf::Vector3f{0, screenHeight}, sf::Color::White, sf::Vector2f{0, screenHeight});
+        vertexArrays[0].emplace_back(sf::Vector3f{xCenter, 0}, sf::Color::White, sf::Vector2f{xCenter, 0});
+        vertexArrays[0].emplace_back(sf::Vector3f{xCenter, screenHeight}, sf::Color::White, sf::Vector2f{xCenter, screenHeight});
 
         // right half of screen
-        vertexArrays[1].emplace_back(sf::Vector2f{xCenter, 0}, sf::Color::White, sf::Vector2f{xCenter, 0});
-        vertexArrays[1].emplace_back(sf::Vector2f{screenWidth, 0}, sf::Color::White, sf::Vector2f{screenWidth, 0});
-        vertexArrays[1].emplace_back(sf::Vector2f{xCenter, screenHeight}, sf::Color::White, sf::Vector2f{xCenter, screenHeight});
+        vertexArrays[1].emplace_back(sf::Vector3f{xCenter, 0}, sf::Color::White, sf::Vector2f{xCenter, 0});
+        vertexArrays[1].emplace_back(sf::Vector3f{screenWidth, 0}, sf::Color::White, sf::Vector2f{screenWidth, 0});
+        vertexArrays[1].emplace_back(sf::Vector3f{xCenter, screenHeight}, sf::Color::White, sf::Vector2f{xCenter, screenHeight});
 
-        vertexArrays[1].emplace_back(sf::Vector2f{xCenter, screenHeight}, sf::Color::White, sf::Vector2f{xCenter, screenHeight});
-        vertexArrays[1].emplace_back(sf::Vector2f{screenWidth, 0}, sf::Color::White, sf::Vector2f{screenWidth, 0});
-        vertexArrays[1].emplace_back(sf::Vector2f{screenWidth, screenHeight},
+        vertexArrays[1].emplace_back(sf::Vector3f{xCenter, screenHeight}, sf::Color::White, sf::Vector2f{xCenter, screenHeight});
+        vertexArrays[1].emplace_back(sf::Vector3f{screenWidth, 0}, sf::Color::White, sf::Vector2f{screenWidth, 0});
+        vertexArrays[1].emplace_back(sf::Vector3f{screenWidth, screenHeight},
                                      sf::Color::White,
                                      sf::Vector2f{screenWidth, screenHeight});
 

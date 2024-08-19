@@ -33,7 +33,7 @@ precision mediump float;
 uniform mat4 sf_u_modelViewProjectionMatrix;
 uniform mat4 sf_u_textureMatrix;
 
-in vec2 sf_a_position;
+in vec3 sf_a_position;
 in vec4 sf_a_color;
 in vec2 sf_a_texCoord;
 
@@ -42,7 +42,7 @@ out vec2 sf_v_texCoord;
 
 void main()
 {
-    gl_Position = sf_u_modelViewProjectionMatrix * vec4(sf_a_position, 0.0, 1.0);
+    gl_Position = sf_u_modelViewProjectionMatrix * vec4(sf_a_position, 1.0);
     sf_v_color = sf_a_color;
     sf_v_texCoord = (sf_u_textureMatrix * vec4(sf_a_texCoord, 0.0, 1.0)).xy;
 }
@@ -67,6 +67,9 @@ out vec4 sf_fragColor;
 void main()
 {
     sf_fragColor = sf_v_color * texture(sf_u_texture, sf_v_texCoord.st);
+
+    if (sf_fragColor.a < 0.5)
+        discard;
 }
 
 )glsl";

@@ -4,6 +4,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Sprite.hpp"
+#include "SFML/Graphics/Transformable.hpp"
 
 #include "SFML/Base/Math/Fabs.hpp"
 
@@ -54,7 +55,7 @@ Color Sprite::getColor() const
 FloatRect Sprite::getLocalBounds() const
 {
     // Last vertex position is equal to texture rect size absolute value
-    return {{0.f, 0.f}, m_vertices[3].position};
+    return {{0.f, 0.f}, m_vertices[3].position.xy()};
 }
 
 
@@ -62,6 +63,14 @@ FloatRect Sprite::getLocalBounds() const
 FloatRect Sprite::getGlobalBounds() const
 {
     return getTransform().transformRect(getLocalBounds());
+}
+
+
+////////////////////////////////////////////////////////////
+void Sprite::setZ(float value)
+{
+    Transformable::setZ(value);
+    updateVertices();
 }
 
 
@@ -74,10 +83,10 @@ void Sprite::updateVertices()
     const Vector2f absSize(base::fabs(size.x), base::fabs(size.y));
 
     // Update positions
-    m_vertices[0].position = {0.f, 0.f};
-    m_vertices[1].position = {0.f, absSize.y};
-    m_vertices[2].position = {absSize.x, 0.f};
-    m_vertices[3].position = absSize;
+    m_vertices[0].position = {0.f, 0.f, getZ()};
+    m_vertices[1].position = {0.f, absSize.y, getZ()};
+    m_vertices[2].position = {absSize.x, 0.f, getZ()};
+    m_vertices[3].position = {absSize.x, absSize.y, getZ()};
 
     // Update texture coordinates
     m_vertices[0].texCoords = position;

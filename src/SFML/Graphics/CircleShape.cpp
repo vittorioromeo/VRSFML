@@ -36,7 +36,7 @@ struct CircleShape::Impl
 
 
 ////////////////////////////////////////////////////////////
-CircleShape::CircleShape(float radius, std::size_t pointCount) : m_impl(radius, std::vector<Vector2f>{})
+CircleShape::CircleShape(float radius, std::size_t pointCount) : m_impl(radius)
 {
     update(radius, pointCount);
 }

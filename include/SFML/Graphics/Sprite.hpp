@@ -107,6 +107,9 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] FloatRect getGlobalBounds() const;
 
+    // TODO P0:
+    void setZ(float value);
+
 private:
     friend RenderTarget;
 

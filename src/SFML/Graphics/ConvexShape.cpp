@@ -108,9 +108,7 @@ Vector2f ConvexShape::getGeometricCenter() const
             }
 
             if (twiceArea != 0.f)
-            {
                 return centroid / 3.f / twiceArea;
-            }
 
             // Fallback for no area - find the center of the bounding box
             auto minPoint = m_impl->points[0];

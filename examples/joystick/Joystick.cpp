@@ -244,7 +244,7 @@ int main()
 
             auto it = batch.insert(batch.end(), data, data + size);
             for (auto targetIt = it + static_cast<long long>(size); it != targetIt; ++it)
-                it->position = transform * it->position;
+                it->position.setXY(transform * it->position.xy());
         };
 
         for (const auto& [label, joystickObject] : texts)
