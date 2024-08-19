@@ -192,15 +192,15 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 struct JoystickImpl::Impl
 {
-    unsigned int          index{};                                       //!< Index of the joystick
-    JOYCAPS               caps{};                                        //!< Joystick capabilities
-    IDirectInputDevice8W* device{};                                      //!< DirectInput 8.x device
-    DIDEVCAPS             deviceCaps{};                                  //!< DirectInput device capabilities
-    base::EnumArray<Joystick::Axis, int, Joystick::MaxAxisCount> axes{}; //!< Offsets to the bytes containing the axes states, -1 if not available
-    int buttons[Joystick::MaxButtonCount]{}; //!< Offsets to the bytes containing the button states, -1 if not available
-    JoystickIdentification identification;   //!< Joystick identification
-    JoystickState          state;            //!< Buffered joystick state
-    bool                   buffered{};       //!< true if the device uses buffering, false if the device uses polling
+    unsigned int          index{};                                    //!< Index of the joystick
+    JOYCAPS               caps{};                                     //!< Joystick capabilities
+    IDirectInputDevice8W* device{};                                   //!< DirectInput 8.x device
+    DIDEVCAPS             deviceCaps{};                               //!< DirectInput device capabilities
+    base::EnumArray<Joystick::Axis, int, Joystick::AxisCount> axes{}; //!< Offsets to the bytes containing the axes states, -1 if not available
+    int buttons[Joystick::ButtonCount]{};  //!< Offsets to the bytes containing the button states, -1 if not available
+    JoystickIdentification identification; //!< Joystick identification
+    JoystickState          state;          //!< Buffered joystick state
+    bool                   buffered{};     //!< true if the device uses buffering, false if the device uses polling
 };
 
 
@@ -328,7 +328,7 @@ JoystickCapabilities JoystickImpl::getCapabilities() const
         }
 
         // Check which axes have valid offsets
-        for (unsigned int i = 0; i < Joystick::MaxAxisCount; ++i)
+        for (unsigned int i = 0; i < Joystick::AxisCount; ++i)
         {
             const auto axis = static_cast<Joystick::Axis>(i);
             caps.axes[axis] = (m_impl->axes[axis] != -1);
@@ -337,8 +337,8 @@ JoystickCapabilities JoystickImpl::getCapabilities() const
     else
     {
         caps.buttonCount = m_impl->caps.wNumButtons;
-        if (caps.buttonCount > Joystick::MaxButtonCount)
-            caps.buttonCount = Joystick::MaxButtonCount;
+        if (caps.buttonCount > Joystick::ButtonCount)
+            caps.buttonCount = Joystick::ButtonCount;
 
         caps.axes[Joystick::Axis::X]    = true;
         caps.axes[Joystick::Axis::Y]    = true;
@@ -416,7 +416,7 @@ JoystickState JoystickImpl::update()
         }
 
         // Buttons
-        for (unsigned int i = 0; i < Joystick::MaxButtonCount; ++i)
+        for (unsigned int i = 0; i < Joystick::ButtonCount; ++i)
             state.buttons[i] = (pos.dwButtons & (1u << i)) != 0;
     }
 
@@ -633,7 +633,7 @@ bool JoystickImpl::openDInput(unsigned int index)
                 const DWORD povType    = DIDFT_POV | DIDFT_OPTIONAL | DIDFT_ANYINSTANCE;
                 const DWORD buttonType = DIDFT_BUTTON | DIDFT_OPTIONAL | DIDFT_ANYINSTANCE;
 
-                static DIOBJECTDATAFORMAT data[8 * 4 + 4 + sf::Joystick::MaxButtonCount];
+                static DIOBJECTDATAFORMAT data[8 * 4 + 4 + sf::Joystick::ButtonCount];
 
                 for (int i = 0; i < 4; ++i)
                 {
@@ -694,7 +694,7 @@ bool JoystickImpl::openDInput(unsigned int index)
                     data[8 * 4 + i].dwFlags = 0;
                 }
 
-                for (unsigned int i = 0; i < sf::Joystick::MaxButtonCount; ++i)
+                for (unsigned int i = 0; i < sf::Joystick::ButtonCount; ++i)
                 {
                     data[8 * 4 + 4 + i].pguid   = nullptr;
                     data[8 * 4 + 4 + i].dwOfs   = static_cast<DWORD>(DIJOFS_BUTTON(i));
@@ -706,7 +706,7 @@ bool JoystickImpl::openDInput(unsigned int index)
                 format.dwObjSize  = sizeof(DIOBJECTDATAFORMAT);
                 format.dwFlags    = DIDFT_ABSAXIS;
                 format.dwDataSize = sizeof(DIJOYSTATE2);
-                format.dwNumObjs  = 8 * 4 + 4 + sf::Joystick::MaxButtonCount;
+                format.dwNumObjs  = 8 * 4 + 4 + sf::Joystick::ButtonCount;
                 format.rgodf      = data;
 
                 formatInitialized = true;
@@ -802,7 +802,7 @@ bool JoystickImpl::openDInput(unsigned int index)
                     if (DIDFT_GETTYPE(deviceObjectInstance->dwType) & DIDFT_BUTTON)
                     {
                         // Buttons
-                        for (unsigned int i = 0; i < sf::Joystick::MaxButtonCount; ++i)
+                        for (unsigned int i = 0; i < sf::Joystick::ButtonCount; ++i)
                         {
                             if (joystick.m_impl->buttons[i] == -1)
                             {
@@ -1002,7 +1002,7 @@ JoystickState JoystickImpl::updateDInputBuffered()
         bool eventHandled = false;
 
         // Get the current state of each axis
-        for (unsigned int j = 0; j < Joystick::MaxAxisCount; ++j)
+        for (unsigned int j = 0; j < Joystick::AxisCount; ++j)
         {
             const auto axis = static_cast<Joystick::Axis>(j);
             if (m_impl->axes[axis] == static_cast<int>(events[i].dwOfs))
@@ -1040,7 +1040,7 @@ JoystickState JoystickImpl::updateDInputBuffered()
             continue;
 
         // Get the current state of each button
-        for (unsigned int j = 0; j < Joystick::MaxButtonCount; ++j)
+        for (unsigned int j = 0; j < Joystick::ButtonCount; ++j)
         {
             if (m_impl->buttons[j] == static_cast<int>(events[i].dwOfs))
                 m_impl->state.buttons[j] = (events[i].dwData != 0);
@@ -1093,7 +1093,7 @@ JoystickState JoystickImpl::updateDInputPolled()
         }
 
         // Get the current state of each axis
-        for (unsigned int i = 0; i < Joystick::MaxAxisCount; ++i)
+        for (unsigned int i = 0; i < Joystick::AxisCount; ++i)
         {
             const auto axis = static_cast<Joystick::Axis>(i);
             if (m_impl->axes[axis] != -1)
@@ -1131,7 +1131,7 @@ JoystickState JoystickImpl::updateDInputPolled()
         }
 
         // Get the current state of each button
-        for (unsigned int i = 0; i < Joystick::MaxButtonCount; ++i)
+        for (unsigned int i = 0; i < Joystick::ButtonCount; ++i)
         {
             if (m_impl->buttons[i] != -1)
             {

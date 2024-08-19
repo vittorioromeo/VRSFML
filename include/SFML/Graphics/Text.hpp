@@ -7,6 +7,7 @@
 #include "SFML/Graphics/Export.hpp"
 
 #include "SFML/Graphics/Transformable.hpp"
+#include "SFML/Graphics/Vertex.hpp"
 
 #include "SFML/System/LifetimeDependant.hpp"
 #include "SFML/System/Rect.hpp"
@@ -408,6 +409,18 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void draw(RenderTarget& target, RenderStates states) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    struct VertexSpan
+    {
+        const Vertex* data;
+        std::size_t   size;
+    };
+
+    [[nodiscard]] VertexSpan getVertices() const;
 
 private:
     ////////////////////////////////////////////////////////////

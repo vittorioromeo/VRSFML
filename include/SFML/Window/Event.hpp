@@ -191,7 +191,7 @@ public:
     struct JoystickButtonPressed
     {
         unsigned int joystickId{}; //!< Index of the joystick (in range [0 .. Joystick::MaxCount - 1])
-        unsigned int button{}; //!< Index of the button that has been pressed (in range [0 .. Joystick::MaxButtonCount - 1])
+        unsigned int button{}; //!< Index of the button that has been pressed (in range [0 .. Joystick::ButtonCount - 1])
     };
 
     ////////////////////////////////////////////////////////////
@@ -201,7 +201,7 @@ public:
     struct JoystickButtonReleased
     {
         unsigned int joystickId{}; //!< Index of the joystick (in range [0 .. Joystick::MaxCount - 1])
-        unsigned int button{}; //!< Index of the button that has been released (in range [0 .. Joystick::MaxButtonCount - 1])
+        unsigned int button{}; //!< Index of the button that has been released (in range [0 .. Joystick::ButtonCount - 1])
     };
 
     ////////////////////////////////////////////////////////////

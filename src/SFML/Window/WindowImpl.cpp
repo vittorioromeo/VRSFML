@@ -54,16 +54,18 @@ struct WindowImpl::JoystickStatesImpl
 ////////////////////////////////////////////////////////////
 struct WindowImpl::Impl
 {
+    priv::JoystickManager*              joystickManager;                //!< Associated joystick manager
     std::queue<Event>                   events;                         //!< Queue of available events
     base::UniquePtr<JoystickStatesImpl> joystickStatesImpl;             //!< Previous state of the joysticks (PImpl)
     base::EnumArray<Sensor::Type, Vector3f, Sensor::Count> sensorValue; //!< Previous value of the sensors
     float joystickThreshold{0.1f}; //!< Joystick threshold (minimum motion for "move" event to be generated)
-    base::EnumArray<Joystick::Axis, float, Joystick::MaxAxisCount>
+    base::EnumArray<Joystick::Axis, float, Joystick::AxisCount>
         previousAxes[Joystick::MaxCount]{}; //!< Position of each axis last time a move event triggered, in range [-100, 100]
     base::Optional<Vector2u> minimumSize; //!< Minimum window size
     base::Optional<Vector2u> maximumSize; //!< Maximum window size
 
     explicit Impl(base::UniquePtr<JoystickStatesImpl>&& theJoystickStatesImpl) :
+    joystickManager{&priv::JoystickManager::getInstance()},
     joystickStatesImpl(SFML_BASE_MOVE(theJoystickStatesImpl))
     {
     }
@@ -131,10 +133,11 @@ base::UniquePtr<WindowImpl> WindowImpl::create(WindowHandle handle)
 WindowImpl::WindowImpl() : m_impl(base::makeUnique<JoystickStatesImpl>())
 {
     // Get the initial joystick states
-    JoystickManager::getInstance().update();
+    m_impl->joystickManager->update();
+
     for (unsigned int i = 0; i < Joystick::MaxCount; ++i)
     {
-        m_impl->joystickStatesImpl->states[i] = JoystickManager::getInstance().getState(i);
+        m_impl->joystickStatesImpl->states[i] = m_impl->joystickManager->getState(i);
         m_impl->previousAxes[i].fill(0.f);
     }
 
@@ -249,13 +252,13 @@ void WindowImpl::pushEvent(const Event& event)
 void WindowImpl::processJoystickEvents()
 {
     // First update the global joystick states
-    JoystickManager::getInstance().update();
+    m_impl->joystickManager->update();
 
     for (unsigned int i = 0; i < Joystick::MaxCount; ++i)
     {
         // Copy the previous state of the joystick and get the new one
         const JoystickState previousState     = m_impl->joystickStatesImpl->states[i];
-        m_impl->joystickStatesImpl->states[i] = JoystickManager::getInstance().getState(i);
+        m_impl->joystickStatesImpl->states[i] = m_impl->joystickManager->getState(i);
 
         // Connection state
         const bool connected = m_impl->joystickStatesImpl->states[i].connected;
@@ -274,10 +277,10 @@ void WindowImpl::processJoystickEvents()
         if (!connected)
             continue;
 
-        const JoystickCapabilities caps = JoystickManager::getInstance().getCapabilities(i);
+        const JoystickCapabilities caps = m_impl->joystickManager->getCapabilities(i);
 
         // Axes
-        for (unsigned int j = 0; j < Joystick::MaxAxisCount; ++j)
+        for (unsigned int j = 0; j < Joystick::AxisCount; ++j)
         {
             const auto axis = static_cast<Joystick::Axis>(j);
             if (!caps.axes[axis])
@@ -314,19 +317,20 @@ void WindowImpl::processJoystickEvents()
 void WindowImpl::processSensorEvents()
 {
     // First update the sensor states
-    SensorManager::getInstance().update();
+    auto& sensorManager = SensorManager::getInstance();
+    sensorManager.update();
 
     for (unsigned int i = 0; i < Sensor::Count; ++i)
     {
         const auto sensor = static_cast<Sensor::Type>(i);
 
         // Only process enabled sensors
-        if (!SensorManager::getInstance().isEnabled(sensor))
+        if (!sensorManager.isEnabled(sensor))
             continue;
 
         // Copy the previous value of the sensor and get the new one
         const Vector3f previousValue = m_impl->sensorValue[sensor];
-        m_impl->sensorValue[sensor]  = SensorManager::getInstance().getValue(sensor);
+        m_impl->sensorValue[sensor]  = sensorManager.getValue(sensor);
 
         // If the value has changed, trigger an event
         if (m_impl->sensorValue[sensor] != previousValue) // TODO P2: use a threshold?

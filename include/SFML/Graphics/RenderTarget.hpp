@@ -286,8 +286,8 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename DrawableObject>
-    auto draw(const DrawableObject& drawableObject, const RenderStates& states = getDefaultRenderStates())
-        -> decltype(drawableObject.draw(*this, states), void()) // for SFINAE
+    void draw(const DrawableObject& drawableObject, const RenderStates& states = getDefaultRenderStates())
+        requires(requires { drawableObject.draw(*this, states); })
     {
         drawableObject.draw(*this, states);
     }
@@ -348,9 +348,8 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename ContiguousVertexRange>
-    auto draw(const ContiguousVertexRange& vertices,
-              PrimitiveType                type,
-              const RenderStates& states = getDefaultRenderStates()) -> decltype(vertices.data(), vertices.size(), void()) // for SFINAE
+    void draw(const ContiguousVertexRange& vertices, PrimitiveType type, const RenderStates& states = getDefaultRenderStates())
+        requires(requires { draw(vertices.data(), vertices.size(), type, states); })
     {
         draw(vertices.data(), vertices.size(), type, states);
     }
@@ -363,10 +362,8 @@ public:
     /// \param states      Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    template <typename CStyleVertexArray, std::size_t N>
-    void draw(const CStyleVertexArray (&vertices)[N],
-              PrimitiveType       type,
-              const RenderStates& states = getDefaultRenderStates())
+    template <std::size_t N>
+    void draw(const Vertex (&vertices)[N], PrimitiveType type, const RenderStates& states = getDefaultRenderStates())
     {
         draw(vertices, N, type, states);
     }

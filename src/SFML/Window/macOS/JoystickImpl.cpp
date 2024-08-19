@@ -102,13 +102,13 @@ bool JoystickImpl::isConnected(unsigned int index)
                 ++openedCount;
         }
 
-
-        const unsigned int connectedCount = HIDJoystickManager::getInstance().getJoystickCount();
+        auto&              hidJoystickManager = HIDJoystickManager::getInstance();
+        const unsigned int connectedCount     = hidJoystickManager.getJoystickCount();
 
         if (connectedCount > openedCount)
         {
             // Get all devices
-            CFSetRef devices = HIDJoystickManager::getInstance().copyJoysticks();
+            CFSetRef devices = hidJoystickManager.copyJoysticks();
 
             if (devices != nullptr)
             {
@@ -279,8 +279,8 @@ bool JoystickImpl::open(unsigned int index)
                 break;
 
             case kHIDPage_Button:
-                if (m_buttons.size() < Joystick::MaxButtonCount) // If we have free slot...
-                    m_buttons.push_back(element);                // ...we add this element to the list
+                if (m_buttons.size() < Joystick::ButtonCount) // If we have free slot...
+                    m_buttons.push_back(element);             // ...we add this element to the list
                 // Else: too many buttons. We ignore this one.
                 break;
 
