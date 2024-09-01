@@ -85,6 +85,15 @@ public:
     String& operator=(String&&) noexcept;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Deleted nullptr constructor
+    ///
+    /// Disallow construction from nullptr literal
+    ///
+    ////////////////////////////////////////////////////////////
+    String(decltype(nullptr))                     = delete;
+    String(decltype(nullptr), const std::locale&) = delete;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Construct from a single ANSI character and a locale
     ///
     /// The source character is converted to UTF-32 according
