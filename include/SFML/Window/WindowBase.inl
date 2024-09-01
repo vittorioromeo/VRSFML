@@ -15,6 +15,10 @@ struct DelayOverloadResolution
     explicit(false) DelayOverloadResolution(const T&)
     {
     }
+
+#if defined(_MSC_VER) && !defined(__clang__)
+    unsigned char dummy; // Dummy variable to ensure that this struct is not empty thus avoiding a crash due to an MSVC bug
+#endif
 };
 
 } // namespace sf::priv

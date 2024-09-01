@@ -7,18 +7,18 @@
 #include "SFML/Window/VideoModeUtils.hpp"
 #include "SFML/Window/WindowEnums.hpp"
 #include "SFML/Window/WindowHandle.hpp"
-#import <SFML/Window/macOS/NSImage+raw.h>
-#import <SFML/Window/macOS/SFApplication.h>
-#import <SFML/Window/macOS/SFOpenGLView.h>
-#import <SFML/Window/macOS/SFWindow.h>
-#import <SFML/Window/macOS/SFWindowController.h>
-#import <SFML/Window/macOS/Scaling.h>
 #include "SFML/Window/macOS/WindowImplCocoa.hpp"
 
 #include "SFML/System/Err.hpp"
 
 #include <ApplicationServices/ApplicationServices.h>
 #import <OpenGL/OpenGL.h>
+#import <SFML/Window/macOS/NSImage+raw.h>
+#import <SFML/Window/macOS/SFApplication.h>
+#import <SFML/Window/macOS/SFOpenGLView.h>
+#import <SFML/Window/macOS/SFWindow.h>
+#import <SFML/Window/macOS/SFWindowController.h>
+#import <SFML/Window/macOS/Scaling.h>
 #include <algorithm>
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -150,10 +150,9 @@
 - (void)setupFullscreenViewWithMode:(const sf::VideoMode&)mode
 {
     // Create a screen-sized window on the main display
-    sf::VideoMode desktop = sf::VideoModeUtils::getDesktopMode();
-    sf::priv::scaleInXY(desktop.size, nil);
-    NSRect windowRect = NSMakeRect(0, 0, desktop.size.x, desktop.size.y);
-    m_window          = [[SFWindow alloc]
+    const sf::VideoMode desktop    = sf::VideoModeUtils::getDesktopMode();
+    NSRect              windowRect = NSMakeRect(0, 0, desktop.size.x, desktop.size.y);
+    m_window                       = [[SFWindow alloc]
         initWithContentRect:windowRect
                   styleMask:NSBorderlessWindowMask
                     backing:NSBackingStoreBuffered
@@ -410,8 +409,7 @@
     {
         // Special case when fullscreen: only resize the opengl view
         // and make sure the requested size is not bigger than the window.
-        sf::VideoMode desktop = sf::VideoModeUtils::getDesktopMode();
-        sf::priv::scaleInXY(desktop.size, nil);
+        const sf::VideoMode desktop = sf::VideoModeUtils::getDesktopMode();
 
         size.x = std::min(size.x, desktop.size.x);
         size.y = std::min(size.y, desktop.size.y);
