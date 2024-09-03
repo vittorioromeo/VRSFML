@@ -95,51 +95,53 @@ set(SRCROOT ${PROJECT_SOURCE_DIR}/src/SFML/System)
 set(SRC
     ${INCROOT}/Angle.hpp
     ${INCROOT}/Angle.inl
-    ${SRCROOT}/Clock.cpp
     ${INCROOT}/Clock.hpp
-    ${SRCROOT}/Err.cpp
     ${INCROOT}/Err.hpp
     ${INCROOT}/Export.hpp
+    ${INCROOT}/FileInputStream.hpp
     ${INCROOT}/InputStream.hpp
+    ${INCROOT}/LifetimeDependant.hpp
+    ${INCROOT}/LifetimeDependee.hpp
+    ${INCROOT}/MemoryInputStream.hpp
     ${INCROOT}/NativeActivity.hpp
-    ${SRCROOT}/Sleep.cpp
+    ${INCROOT}/Path.hpp
+    ${INCROOT}/Rect.hpp
+    ${INCROOT}/Rect.inl
+    ${INCROOT}/RectPacker.hpp
+    ${INCROOT}/RectUtils.hpp
+    ${INCROOT}/RectUtils.inl
     ${INCROOT}/Sleep.hpp
-    ${SRCROOT}/String.cpp
     ${INCROOT}/String.hpp
     ${INCROOT}/StringUtfUtils.hpp
     ${INCROOT}/StringUtfUtils.inl
+    ${INCROOT}/SuspendAwareClock.hpp
     ${INCROOT}/Time.hpp
     ${INCROOT}/Time.inl
     ${INCROOT}/TimeChronoUtil.hpp
     ${INCROOT}/TimeChronoUtil.inl
     ${INCROOT}/Utf.hpp
     ${INCROOT}/Utf.inl
-    ${SRCROOT}/Utils.hpp
-    ${SRCROOT}/Vector2.cpp
     ${INCROOT}/Vector2.hpp
     ${INCROOT}/Vector2.inl
-    ${SRCROOT}/Vector3.cpp
     ${INCROOT}/Vector3.hpp
     ${INCROOT}/Vector3.inl
+    ${SRCROOT}/Clock.cpp
+    ${SRCROOT}/Err.cpp
     ${SRCROOT}/FileInputStream.cpp
-    ${INCROOT}/FileInputStream.hpp
-    ${SRCROOT}/MemoryInputStream.cpp
-    ${INCROOT}/MemoryInputStream.hpp
-    ${INCROOT}/SuspendAwareClock.hpp
-    ${SRCROOT}/LifetimeDependee.cpp
-    ${INCROOT}/LifetimeDependee.hpp
     ${SRCROOT}/LifetimeDependant.cpp
-    ${INCROOT}/LifetimeDependant.hpp
-    ${SRCROOT}/StringUtils.hpp
-    ${SRCROOT}/StringUtils.cpp
-    ${INCROOT}/Path.hpp
+    ${SRCROOT}/LifetimeDependee.cpp
+    ${SRCROOT}/MemoryInputStream.cpp
     ${SRCROOT}/Path.cpp
     ${SRCROOT}/PathUtils.hpp
     ${SRCROOT}/Rect.cpp
-    ${INCROOT}/Rect.hpp
-    ${INCROOT}/Rect.inl
-    ${INCROOT}/RectUtils.hpp
-    ${INCROOT}/RectUtils.inl
+    ${SRCROOT}/RectPacker.cpp
+    ${SRCROOT}/Sleep.cpp
+    ${SRCROOT}/String.cpp
+    ${SRCROOT}/StringUtils.cpp
+    ${SRCROOT}/StringUtils.hpp
+    ${SRCROOT}/Utils.hpp
+    ${SRCROOT}/Vector2.cpp
+    ${SRCROOT}/Vector3.cpp
 )
 
 list(APPEND SRC ${SRC_BASE})
@@ -182,6 +184,9 @@ find_package(Threads REQUIRED)
 # define the sfml-system target
 sfml_add_library(System
                  SOURCES ${SRC} ${PLATFORM_SRC})
+
+# stb_rect_pack sources
+target_include_directories(sfml-system SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/extlibs/headers/stb_rect_pack")
 
 # enable precompiled headers
 if (SFML_ENABLE_PCH)

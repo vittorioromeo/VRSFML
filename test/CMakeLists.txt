@@ -99,6 +99,7 @@ set(SYSTEM_SRC
     System/FileInputStream.test.cpp
     System/MemoryInputStream.test.cpp
     System/Rect.test.cpp
+    System/RectPacker.test.cpp
     System/Sleep.test.cpp
     System/String.test.cpp
     System/Time.test.cpp
