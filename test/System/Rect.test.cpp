@@ -8,7 +8,7 @@
 #include <CommonTraits.hpp>
 #include <SystemUtil.hpp>
 
-TEMPLATE_TEST_CASE("[Graphics] sf::Rect", "", int, float)
+TEMPLATE_TEST_CASE("[System] sf::Rect", "", int, float)
 {
     SECTION("Type traits")
     {
