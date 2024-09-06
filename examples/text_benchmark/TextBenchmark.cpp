@@ -26,6 +26,7 @@
 #include <GL/gl.h>
 
 #include <array>
+#include <iostream>
 #include <sstream>
 #include <vector>
 
@@ -45,6 +46,9 @@ int main()
     const sf::Vector2u screenSize{static_cast<unsigned int>(screenWidth), static_cast<unsigned int>(screenHeight)};
 
     sf::GraphicsContext graphicsContext;
+
+    std::cout << sf::Texture::getMaximumSize(graphicsContext) << '\n';
+    return 0;
 
     // TODO P0: aa level of 4 causes glcheck assert fail on opengl
 

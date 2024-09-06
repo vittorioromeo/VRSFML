@@ -151,6 +151,7 @@ set(GRAPHICS_SRC
     Graphics/StencilMode.test.cpp
     Graphics/Text.test.cpp
     Graphics/Texture.test.cpp
+    Graphics/TextureAtlas.test.cpp
     Graphics/Transform.test.cpp
     Graphics/Transformable.test.cpp
     Graphics/Vertex.test.cpp
