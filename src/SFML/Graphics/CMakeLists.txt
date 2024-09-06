@@ -36,6 +36,8 @@ set(SRC
     ${INCROOT}/StencilMode.hpp
     ${SRCROOT}/Texture.cpp
     ${INCROOT}/Texture.hpp
+    ${SRCROOT}/TextureAtlas.cpp
+    ${INCROOT}/TextureAtlas.hpp
     ${SRCROOT}/TextureSaver.cpp
     ${SRCROOT}/TextureSaver.hpp
     ${SRCROOT}/Transform.cpp

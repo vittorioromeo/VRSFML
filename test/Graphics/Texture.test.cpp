@@ -181,8 +181,10 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
             auto texture = sf::Texture::create(graphicsContext, sf::Vector2u{2, 1}).value();
             texture.update(yellow, sf::Vector2u{1, 1}, sf::Vector2u{0, 0});
             texture.update(cyan, sf::Vector2u{1, 1}, sf::Vector2u{1, 0});
-            CHECK(texture.copyToImage().getPixel(sf::Vector2u{0, 0}) == sf::Color::Yellow);
-            CHECK(texture.copyToImage().getPixel(sf::Vector2u{1, 0}) == sf::Color::Cyan);
+
+            const auto textureAsImage = texture.copyToImage();
+            CHECK(textureAsImage.getPixel(sf::Vector2u{0, 0}) == sf::Color::Yellow);
+            CHECK(textureAsImage.getPixel(sf::Vector2u{1, 0}) == sf::Color::Cyan);
         }
 
         SECTION("Another texture")
@@ -201,10 +203,12 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
             otherTexture1.update(cyan);
             auto otherTexture2 = sf::Texture::create(graphicsContext, sf::Vector2u{1, 1}).value();
             otherTexture2.update(yellow);
-            texture.update(otherTexture1, sf::Vector2u{0, 0});
-            texture.update(otherTexture2, sf::Vector2u{1, 0});
-            CHECK(texture.copyToImage().getPixel(sf::Vector2u{0, 0}) == sf::Color::Cyan);
-            CHECK(texture.copyToImage().getPixel(sf::Vector2u{1, 0}) == sf::Color::Yellow);
+            CHECK(texture.update(otherTexture1, sf::Vector2u{0, 0}));
+            CHECK(texture.update(otherTexture2, sf::Vector2u{1, 0}));
+
+            const auto textureAsImage = texture.copyToImage();
+            CHECK(textureAsImage.getPixel(sf::Vector2u{0, 0}) == sf::Color::Cyan);
+            CHECK(textureAsImage.getPixel(sf::Vector2u{1, 0}) == sf::Color::Yellow);
         }
 
         SECTION("Image")
@@ -223,8 +227,10 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
             const auto image2 = sf::Image::create(sf::Vector2u{16, 16}, sf::Color::Green).value();
             texture.update(image1, sf::Vector2u{0, 0});
             texture.update(image2, sf::Vector2u{0, 16});
-            CHECK(texture.copyToImage().getPixel(sf::Vector2u{7, 7}) == sf::Color::Red);
-            CHECK(texture.copyToImage().getPixel(sf::Vector2u{7, 22}) == sf::Color::Green);
+
+            const auto textureAsImage = texture.copyToImage();
+            CHECK(textureAsImage.getPixel(sf::Vector2u{7, 7}) == sf::Color::Red);
+            CHECK(textureAsImage.getPixel(sf::Vector2u{7, 22}) == sf::Color::Green);
         }
     }
 

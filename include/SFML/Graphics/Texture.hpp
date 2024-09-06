@@ -293,7 +293,7 @@ public:
     /// \param dest    Coordinates of the destination position
     ///
     ////////////////////////////////////////////////////////////
-    void update(const Texture& texture, Vector2u dest);
+    [[nodiscard]] bool update(const Texture& texture, Vector2u dest);
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the texture from an image

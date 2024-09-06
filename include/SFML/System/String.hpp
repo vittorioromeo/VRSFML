@@ -498,7 +498,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 32> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 64> m_impl; //!< Implementation details
 };
 
 ////////////////////////////////////////////////////////////
