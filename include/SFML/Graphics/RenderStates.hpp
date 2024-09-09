@@ -24,80 +24,6 @@ class Texture;
 struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
 {
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// Constructing a default set of render states is equivalent
-    /// to using sf::RenderStates::Default.
-    /// The default set defines:
-    /// \li the BlendAlpha blend mode
-    /// \li the default StencilMode (no stencil)
-    /// \li the identity transform
-    /// \li a null texture
-    /// \li a null shader
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit RenderStates() = default;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct a default set of render states with a custom blend mode
-    ///
-    /// \param theBlendMode Blend mode to use
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit RenderStates(const BlendMode& theBlendMode);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct a default set of render states with a custom stencil mode
-    ///
-    /// \param theStencilMode Stencil mode to use
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit RenderStates(const StencilMode& theStencilMode);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct a default set of render states with a custom transform
-    ///
-    /// \param theTransform Transform to use
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit RenderStates(const Transform& theTransform);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct a default set of render states with a custom texture
-    ///
-    /// \param theTexture Texture to use
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit RenderStates(const Texture* theTexture);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct a default set of render states with a custom shader
-    ///
-    /// \param theShader Shader to use
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit RenderStates(const Shader* theShader);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct a set of render states with all its attributes
-    ///
-    /// \param theBlendMode      Blend mode to use
-    /// \param theStencilMode    Stencil mode to use
-    /// \param theTransform      Transform to use
-    /// \param theCoordinateType Texture coordinate type to use
-    /// \param theTexture        Texture to use
-    /// \param theShader         Shader to use
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit RenderStates(
-        const BlendMode&   theBlendMode,
-        const StencilMode& theStencilMode,
-        const Transform&   theTransform,
-        CoordinateType     theCoordinateType,
-        const Texture*     theTexture,
-        const Shader*      theShader);
-
-    ////////////////////////////////////////////////////////////
     // Static member data
     ////////////////////////////////////////////////////////////
     // NOLINTNEXTLINE(readability-identifier-naming)
@@ -106,9 +32,12 @@ struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    BlendMode      blendMode{BlendAlpha};                  //!< Blending mode
-    StencilMode    stencilMode;                            //!< Stencil mode
-    Transform      transform;                              //!< Transform
+    BlendMode   blendMode{BlendAlpha}; //!< Blending mode
+    StencilMode stencilMode{};         //!< Stencil mode
+
+    // NOLINTNEXTLINE(readability-redundant-member-init)
+    Transform transform{}; //!< Transform
+
     CoordinateType coordinateType{CoordinateType::Pixels}; //!< Texture coordinate type
     const Texture* texture{};                              //!< Texture
     const Shader*  shader{};                               //!< Shader

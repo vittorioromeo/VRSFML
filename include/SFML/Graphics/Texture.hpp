@@ -25,8 +25,7 @@ class GraphicsContext;
 class Image;
 class InputStream;
 class Path;
-class Shape;
-class Sprite;
+class TextureAtlas;
 class Window;
 
 ////////////////////////////////////////////////////////////
@@ -277,7 +276,7 @@ public:
     /// \param texture Source texture to copy to this texture
     ///
     ////////////////////////////////////////////////////////////
-    void update(const Texture& texture);
+    [[nodiscard]] bool update(const Texture& texture);
 
     ////////////////////////////////////////////////////////////
     /// \brief Update a part of this texture from another texture
@@ -611,12 +610,6 @@ private:
     bool             m_fboAttachment{}; //!< Is this texture owned by a framebuffer object?
     bool             m_hasMipmap{};     //!< Has the mipmap been generated?
     std::uint64_t    m_cacheId;         //!< Unique number that identifies the texture to the render target's cache
-
-    ////////////////////////////////////////////////////////////
-    // Lifetime tracking
-    ////////////////////////////////////////////////////////////
-    SFML_DEFINE_LIFETIME_DEPENDEE(Texture, Sprite);
-    SFML_DEFINE_LIFETIME_DEPENDEE(Texture, Shape);
 };
 
 ////////////////////////////////////////////////////////////

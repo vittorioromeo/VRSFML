@@ -44,7 +44,6 @@ int main()
                       {.size{640u, 480u},
                        .title           = "SFML window with OpenGL",
                        .style           = sf::Style::Default,
-                       .state           = sf::State::Windowed,
                        .contextSettings = contextSettings});
 
     // Load OpenGL or OpenGL ES entry points using glad

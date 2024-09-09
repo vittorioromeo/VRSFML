@@ -468,7 +468,7 @@ WindowImplX11::WindowImplX11(WindowHandle handle) : m_isExternal(true)
 
 ////////////////////////////////////////////////////////////
 WindowImplX11::WindowImplX11(const WindowSettings& windowSettings) :
-m_fullscreen(windowSettings.state == State::Fullscreen),
+m_fullscreen(windowSettings.fullscreen),
 m_cursorGrabbed(m_fullscreen)
 {
     using namespace WindowImplX11Impl;

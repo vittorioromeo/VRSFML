@@ -430,7 +430,7 @@ private:
     /// that the geometry is only updated when necessary.
     ///
     ////////////////////////////////////////////////////////////
-    void ensureGeometryUpdate() const;
+    void ensureGeometryUpdate(const Font& font) const;
 
     ////////////////////////////////////////////////////////////
     // Member data

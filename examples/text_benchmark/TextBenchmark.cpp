@@ -10,6 +10,7 @@
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/Texture.hpp"
+#include "SFML/Graphics/TextureAtlas.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
 #include "SFML/Window/ContextSettings.hpp"
@@ -40,6 +41,89 @@
 
 int main()
 {
+    sf::GraphicsContext graphicsContext;
+
+    sf::RenderWindow window(graphicsContext, {.size{800u, 600u}, .title = "Window", .style = sf::Style::Default});
+
+    auto textureAtlas = sf::TextureAtlas{sf::Texture::create(graphicsContext, {1024u, 1024u}).value()};
+
+    const auto font0 = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf", &textureAtlas).value();
+    const auto font1 = sf::Font::openFromFile(graphicsContext, "resources/mouldycheese.ttf", &textureAtlas).value();
+
+    sf::Text text0(font0, "Test", 128);
+    text0.setPosition({0u, 0u});
+
+    sf::Text text1(font0, "acbasdfbFOOBAR", 32);
+    text1.setPosition({128u, 0u});
+
+    sf::Text text2(font0, "ssdfbsdbfussy", 64);
+    text2.setPosition({0u, 128u});
+
+    sf::Text text3(font1, "Test", 128);
+    text3.setPosition({128u, 128u});
+
+    sf::Text text4(font1, "FOmfgj,ryfkmtdfOBAR", 32);
+    text4.setPosition({256u, 128u});
+
+    sf::Text text5(font1, "sussy", 64);
+    text5.setPosition({128u, 256u});
+
+    while (true)
+    {
+        while (sf::base::Optional event = window.pollEvent())
+        {
+            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+                return EXIT_SUCCESS;
+        }
+
+        window.clear();
+
+#if 0
+        window.draw(text0);
+        window.draw(text1);
+        window.draw(text2);
+        window.draw(text3);
+        window.draw(text4);
+        window.draw(text5);
+
+        sf::Sprite s{font0.getTexture(128).getRect()};
+        s.setPosition({400.f, 400.f});
+        window.draw(s, font0.getTexture(128));
+#else
+        static std::vector<sf::Vertex> batch;
+        batch.clear();
+
+        const auto addToBatch = [&](const sf::Text& text)
+        {
+            const auto [data, size] = text.getVertices();
+            const auto& transform   = text.getTransform();
+
+            auto it = batch.insert(batch.end(), data, data + size);
+            for (auto targetIt = it + static_cast<long long>(size); it != targetIt; ++it)
+                it->position = transform * it->position;
+        };
+
+        addToBatch(text0);
+        addToBatch(text1);
+        addToBatch(text2);
+        addToBatch(text3);
+        addToBatch(text4);
+        addToBatch(text5);
+
+        sf::RenderStates states{.coordinateType = sf::CoordinateType::Pixels, .texture = &textureAtlas.getTexture()};
+        window.draw(batch.data(), batch.size(), sf::PrimitiveType::Triangles, states);
+#endif
+
+        window.display();
+    }
+
+    return -100;
+}
+
+#elif defined(FOOOO)
+
+int main()
+{
     const float screenWidth  = 800.0f;
     const float screenHeight = 600.0f;
 
@@ -56,7 +140,6 @@ int main()
                             {.size{screenSize},
                              .title = "Window",
                              .style = sf::Style::Default,
-                             .state = sf::State::Windowed,
                              .contextSettings{.depthBits = 0, .stencilBits = 0, .antialiasingLevel = 4}});
 
     window.setVerticalSyncEnabled(true);

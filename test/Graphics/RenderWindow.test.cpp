@@ -36,12 +36,9 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
     {
         SECTION("Style, state, and settings")
         {
-            const sf::RenderWindow window(graphicsContext,
-                                          {.size{256u, 256u},
-                                           .bitsPerPixel = 24,
-                                           .title        = "RenderWindow Tests",
-                                           .style        = sf::Style::Default,
-                                           .state        = sf::State::Windowed});
+            const sf::RenderWindow
+                window(graphicsContext,
+                       {.size{256u, 256u}, .bitsPerPixel = 24, .title = "RenderWindow Tests", .style = sf::Style::Default});
 
             CHECK(window.getSize() == sf::Vector2u{256, 256});
 #ifndef SFML_SYSTEM_EMSCRIPTEN
@@ -60,9 +57,8 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 
         SECTION("State and settings")
         {
-            const sf::RenderWindow
-                window(graphicsContext,
-                       {.size{240u, 300u}, .bitsPerPixel = 24, .title = "RenderWindow Tests", .state = sf::State::Windowed});
+            const sf::RenderWindow window(graphicsContext,
+                                          {.size{240u, 300u}, .bitsPerPixel = 24, .title = "RenderWindow Tests"});
 
             CHECK(window.getSize() == sf::Vector2u{240, 300});
 #ifndef SFML_SYSTEM_EMSCRIPTEN
@@ -82,12 +78,9 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 
     SECTION("Clear")
     {
-        sf::RenderWindow window(graphicsContext,
-                                {.size{256u, 256u},
-                                 .bitsPerPixel = 24,
-                                 .title        = "RenderWindow Tests",
-                                 .style        = sf::Style::Default,
-                                 .state        = sf::State::Windowed});
+        sf::RenderWindow
+            window(graphicsContext,
+                   {.size{256u, 256u}, .bitsPerPixel = 24, .title = "RenderWindow Tests", .style = sf::Style::Default});
 
         REQUIRE(window.getSize() == sf::Vector2u{256, 256});
 

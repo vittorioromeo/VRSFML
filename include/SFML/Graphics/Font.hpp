@@ -7,8 +7,6 @@
 #include "SFML/Graphics/Export.hpp"
 
 #include "SFML/System/LifetimeDependee.hpp"
-#include "SFML/System/Rect.hpp"
-#include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Optional.hpp"
@@ -18,6 +16,9 @@
 #include <cstdint>
 
 
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
 #ifdef SFML_SYSTEM_ANDROID
 namespace sf::priv
 {
@@ -32,9 +33,14 @@ class InputStream;
 class Path;
 class Text;
 class Texture;
+class TextureAtlas;
 struct FontInfo;
 struct Glyph;
+} // namespace sf
 
+
+namespace sf
+{
 ////////////////////////////////////////////////////////////
 /// \brief Class for loading and manipulating character fonts
 ///
@@ -92,7 +98,9 @@ public:
     /// \see openFromMemory, openFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Font> openFromFile(GraphicsContext& graphicsContext, const Path& filename);
+    [[nodiscard]] static base::Optional<Font> openFromFile(GraphicsContext& graphicsContext,
+                                                           const Path&      filename,
+                                                           TextureAtlas*    textureAtlas = nullptr);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open the font from a file in memory
@@ -114,7 +122,8 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<Font> openFromMemory(GraphicsContext& graphicsContext,
                                                              const void*      data,
-                                                             std::size_t      sizeInBytes);
+                                                             std::size_t      sizeInBytes,
+                                                             TextureAtlas*    textureAtlas = nullptr);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open the font from a custom stream
@@ -133,7 +142,9 @@ public:
     /// \see openFromFile, openFromMemory
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Font> openFromStream(GraphicsContext& graphicsContext, InputStream& stream);
+    [[nodiscard]] static base::Optional<Font> openFromStream(GraphicsContext& graphicsContext,
+                                                             InputStream&     stream,
+                                                             TextureAtlas*    textureAtlas = nullptr);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the font information
@@ -299,46 +310,6 @@ private:
     [[nodiscard]] unsigned int getCharIndex(std::uint32_t codePoint) const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Structure defining a page of glyphs
-    ///
-    ////////////////////////////////////////////////////////////
-    struct Page;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Find or create the glyphs page corresponding to the given character size
-    ///
-    /// \param characterSize Reference character size
-    ///
-    /// \return The glyphs page corresponding to \a characterSize
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] Page& loadPage(GraphicsContext& graphicsContext, unsigned int characterSize) const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Load a new glyph and store it in the cache
-    ///
-    /// \param codePoint        Unicode code point of the character to load
-    /// \param characterSize    Reference character size
-    /// \param bold             Retrieve the bold version or the regular one?
-    /// \param outlineThickness Thickness of outline (when != 0 the glyph will not be filled)
-    ///
-    /// \return The glyph corresponding to \a codePoint and \a characterSize
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] Glyph loadGlyph(std::uint32_t codePoint, unsigned int characterSize, bool bold, float outlineThickness) const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Find a suitable rectangle within the texture for a glyph
-    ///
-    /// \param page Page of glyphs to search in
-    /// \param size Width and height of the rectangle
-    ///
-    /// \return Found rectangle within the texture
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] IntRect findGlyphRect(GraphicsContext& graphicsContext, Page& page, Vector2u size) const;
-
-    ////////////////////////////////////////////////////////////
     /// \brief Make sure that the given size is the current one
     ///
     /// \param characterSize Reference character size
@@ -348,11 +319,6 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool setCurrentSize(unsigned int characterSize) const;
 
-    ////////////////////////////////////////////////////////////
-    // Types
-    ////////////////////////////////////////////////////////////
-    struct FontHandles;
-
 public:
     ////////////////////////////////////////////////////////////
     /// \private
@@ -360,14 +326,18 @@ public:
     /// \brief Create a font from font handles and a family name
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Font(base::PassKey<Font>&&, GraphicsContext& graphicsContext, void* fontHandlesSharedPtr, const char* familyName);
+    [[nodiscard]] explicit Font(base::PassKey<Font>&&,
+                                GraphicsContext& graphicsContext,
+                                TextureAtlas*    textureAtlas,
+                                void*            fontHandlesSharedPtr,
+                                const char*      familyName);
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 256> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 65536> m_impl; //!< Implementation details
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking

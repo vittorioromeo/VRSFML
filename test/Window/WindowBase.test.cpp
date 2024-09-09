@@ -46,8 +46,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 
         SECTION("Mode, title, style, and state constructor")
         {
-            const sf::WindowBase windowBase(
-                {.size{360u, 240u}, .title = "WindowBase Tests", .style = sf::Style::Resize, .state = sf::State::Windowed});
+            const sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests", .style = sf::Style::Resize});
 
             CHECK(windowBase.getSize() == sf::Vector2u{360, 240});
             CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
@@ -55,7 +54,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 
         SECTION("Mode, title, and state constructor")
         {
-            const sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests", .state = sf::State::Windowed});
+            const sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests"});
 
             CHECK(windowBase.getSize() == sf::Vector2u{360, 240});
             CHECK(windowBase.getNativeHandle() != sf::WindowHandle());

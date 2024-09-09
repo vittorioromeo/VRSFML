@@ -50,11 +50,7 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
         SECTION("Mode, title, style, and state constructor")
         {
-            const sf::Window window(windowContext,
-                                    {.size{360u, 240u},
-                                     .title = "Window Tests",
-                                     .style = sf::Style::Resize,
-                                     .state = sf::State::Windowed});
+            const sf::Window window(windowContext, {.size{360u, 240u}, .title = "Window Tests", .style = sf::Style::Resize});
 
             CHECK(window.getSize() == sf::Vector2u{360, 240});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
@@ -67,7 +63,6 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
                                     {.size{360u, 240u},
                                      .title = "Window Tests",
                                      .style = sf::Style::Resize,
-                                     .state = sf::State::Windowed,
                                      .contextSettings{.depthBits = 1, .stencilBits = 1, .antialiasingLevel = 1}});
 
             CHECK(window.getSize() == sf::Vector2u{360, 240});
@@ -79,8 +74,7 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
         SECTION("Mode, title, and state")
         {
-            const sf::Window window(windowContext,
-                                    {.size{360u, 240u}, .title = "Window Tests", .state = sf::State::Windowed});
+            const sf::Window window(windowContext, {.size{360u, 240u}, .title = "Window Tests"});
 
             CHECK(window.getSize() == sf::Vector2u{360, 240});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
@@ -92,7 +86,6 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
             const sf::Window window(windowContext,
                                     {.size{360u, 240u},
                                      .title = "Window Tests",
-                                     .state = sf::State::Windowed,
                                      .contextSettings{.depthBits = 1, .stencilBits = 1, .antialiasingLevel = 1}});
 
             CHECK(window.getSize() == sf::Vector2u{360, 240});
