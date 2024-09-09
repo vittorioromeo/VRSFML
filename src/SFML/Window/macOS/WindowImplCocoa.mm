@@ -117,9 +117,11 @@ WindowImplCocoa::WindowImplCocoa(const WindowSettings& windowSettings)
     setUpProcess();
 
     m_delegate = [[SFWindowController alloc]
-        initWithMode:VideoMode{windowSettings.size, windowSettings.bitsPerPixel}
-            andStyle:windowSettings.style
-            andState:windowSettings.fullscreen ? sf::State::Fullscreen : sf::State::Windowed];
+          initWithMode:VideoMode{windowSettings.size, windowSettings.bitsPerPixel}
+        andHasTitlebar:windowSettings.hasTitleBar
+          andResizable:windowSettings.resizable
+           andClosable:windowSettings.closable
+         andFullscreen:windowSettings.fullscreen];
     [m_delegate changeTitle:sfStringToNSString(windowSettings.title)];
     [m_delegate setRequesterTo:this];
 

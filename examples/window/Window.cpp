@@ -8,7 +8,6 @@
 #include "SFML/Window/EventUtils.hpp"
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/WindowContext.hpp"
-#include "SFML/Window/WindowEnums.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Clock.hpp"

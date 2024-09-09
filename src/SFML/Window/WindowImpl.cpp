@@ -105,12 +105,12 @@ base::UniquePtr<WindowImpl> WindowImpl::create(WindowSettings windowSettings)
 // Check validity of style according to the underlying platform
 #if defined(SFML_SYSTEM_IOS) || defined(SFML_SYSTEM_ANDROID)
     if (windowSettings.fullscreen)
-        windowSettings.style &= ~static_cast<std::uint32_t>(Style::Titlebar);
+        windowSettings.hasTitlebar = false;
     else
-        windowSettings.style |= Style::Titlebar;
+        windowSettings.hasTitlebar = true;
 #else
-    if (!!(windowSettings.style & Style::Close) || !!(windowSettings.style & Style::Resize))
-        windowSettings.style |= Style::Titlebar;
+    if (windowSettings.closable || windowSettings.resizable)
+        windowSettings.hasTitlebar = true;
 #endif
 
     auto windowImpl = base::makeUnique<WindowImplType>(windowSettings);

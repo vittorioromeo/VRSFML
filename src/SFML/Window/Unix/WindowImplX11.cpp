@@ -591,19 +591,19 @@ m_cursorGrabbed(m_fullscreen)
                 unsigned long state{};
             } hints;
 
-            if (!!(windowSettings.style & Style::Titlebar))
+            if (windowSettings.hasTitlebar)
             {
                 hints.decorations |= MWM_DECOR_BORDER | MWM_DECOR_TITLE | MWM_DECOR_MINIMIZE | MWM_DECOR_MENU;
                 hints.functions |= MWM_FUNC_MOVE | MWM_FUNC_MINIMIZE;
             }
 
-            if (!!(windowSettings.style & Style::Resize))
+            if (windowSettings.resizable)
             {
                 hints.decorations |= MWM_DECOR_MAXIMIZE | MWM_DECOR_RESIZEH;
                 hints.functions |= MWM_FUNC_MAXIMIZE | MWM_FUNC_RESIZE;
             }
 
-            if (!!(windowSettings.style & Style::Close))
+            if (windowSettings.closable)
             {
                 hints.decorations |= 0;
                 hints.functions |= MWM_FUNC_CLOSE;
@@ -621,7 +621,7 @@ m_cursorGrabbed(m_fullscreen)
     }
 
     // This is a hack to force some windows managers to disable resizing
-    if (!(windowSettings.style & Style::Resize))
+    if (!windowSettings.resizable)
     {
         m_useSizeHints = true;
         XSizeHints sizeHints{};

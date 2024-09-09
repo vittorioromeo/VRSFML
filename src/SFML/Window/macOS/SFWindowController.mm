@@ -112,7 +112,11 @@
 
 
 ////////////////////////////////////////////////////////
-- (id)initWithMode:(const sf::VideoMode&)mode andStyle:(std::uint32_t)style andState:(sf::State)state
+- (id)initWithMode:(const sf::VideoMode&)mode
+    andHasTitlebar:(bool)hasTitleBar
+      andResizable:(bool)resizable
+       andClosable:(bool)closable
+     andFullscreen:(bool)fullscreen
 {
     // If we are not on the main thread we stop here and advice the user.
     if ([NSThread currentThread] != [NSThread mainThread])
@@ -131,14 +135,14 @@
         m_window        = nil;
         m_oglView       = nil;
         m_requester     = nil;
-        m_fullscreen    = (state == sf::State::Fullscreen) ? YES : NO;
+        m_fullscreen    = fullscreen ? YES : NO;
         m_restoreResize = NO;
         m_highDpi       = NO;
 
         if (m_fullscreen)
             [self setupFullscreenViewWithMode:mode];
         else
-            [self setupWindowWithMode:mode andStyle:style];
+            [self setupWindowWithMode:mode andHasTitlebar:hasTitleBar andResizable:resizable andClosable:closable];
 
         [m_oglView finishInit];
     }
@@ -212,7 +216,10 @@
 
 
 ////////////////////////////////////////////////////////
-- (void)setupWindowWithMode:(const sf::VideoMode&)mode andStyle:(std::uint32_t)style
+- (void)setupWindowWithMode:(const sf::VideoMode&)mode
+             andHasTitlebar:(bool)hasTitleBar
+               andResizable:(bool)resizable
+                andClosable:(bool)closable
 {
     // We know that sf::State is not Fullscreen
 
@@ -221,11 +228,11 @@
 
     // Convert the SFML window style to Cocoa window style.
     unsigned int nsStyle = NSBorderlessWindowMask;
-    if (style & sf::Style::Titlebar)
+    if (hasTitleBar)
         nsStyle |= NSTitledWindowMask | NSMiniaturizableWindowMask;
-    if (style & sf::Style::Resize)
+    if (resizable)
         nsStyle |= NSResizableWindowMask;
-    if (style & sf::Style::Close)
+    if (closable)
         nsStyle |= NSClosableWindowMask;
 
     // Create the window.

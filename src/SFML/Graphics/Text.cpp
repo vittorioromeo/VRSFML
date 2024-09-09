@@ -409,7 +409,7 @@ void Text::draw(RenderTarget& target, RenderStates states) const
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] Text::VertexSpan Text::getVertices() const
+[[nodiscard]] base::Span<Vertex> Text::getVertices() const
 {
     ensureGeometryUpdate(*m_impl->font);
 

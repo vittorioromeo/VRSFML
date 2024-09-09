@@ -5,7 +5,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Event.hpp"
-#include "SFML/Window/WindowEnums.hpp" // Prevent conflict with macro None from Xlib
 #include "SFML/Window/WindowImpl.hpp"
 
 #include "SFML/Base/Optional.hpp"

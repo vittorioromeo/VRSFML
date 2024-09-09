@@ -5,7 +5,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/GlContext.hpp"
-#include "SFML/Window/WindowEnums.hpp" // Prevent conflict with macro None from Xlib
 
 #include <X11/Xlib.h>
 #include <glad/glx.h>

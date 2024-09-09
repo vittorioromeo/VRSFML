@@ -50,6 +50,12 @@ int main()
     const auto font0 = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf", &textureAtlas).value();
     const auto font1 = sf::Font::openFromFile(graphicsContext, "resources/mouldycheese.ttf", &textureAtlas).value();
 
+    const auto sfmlLogoImage    = sf::Image::loadFromFile("resources/sfml_logo.png").value();
+    const auto sfmlLogoAtlasPos = textureAtlas.add(sfmlLogoImage).value();
+
+    sf::Sprite sfmlLogo(
+        {.position = sfmlLogoAtlasPos.to<sf::Vector2i>(), .size = sfmlLogoImage.getSize().to<sf::Vector2i>()});
+
     sf::Text text0(font0, "Test", 128);
     text0.setPosition({0u, 0u});
 
@@ -90,6 +96,29 @@ int main()
         s.setPosition({400.f, 400.f});
         window.draw(s, font0.getTexture(128));
 #else
+        {
+            auto batch = window.startBatchDraw({.texture = &textureAtlas.getTexture()});
+
+            batch.add(text0);
+            sfmlLogo.setPosition({170.f, 50.f});
+            batch.add(sfmlLogo);
+
+            batch.add(text1);
+            sfmlLogo.setPosition({100.f, 50.f});
+            batch.add(sfmlLogo);
+
+            batch.add(text2);
+            sfmlLogo.setPosition({300.f, 150.f});
+            batch.add(sfmlLogo);
+
+            batch.add(text3);
+            sfmlLogo.setPosition({250.f, 250.f});
+            batch.add(sfmlLogo);
+
+            batch.add(text4);
+            batch.add(text5);
+        }
+/*
         static std::vector<sf::Vertex> batch;
         batch.clear();
 
@@ -110,8 +139,10 @@ int main()
         addToBatch(text4);
         addToBatch(text5);
 
-        sf::RenderStates states{.coordinateType = sf::CoordinateType::Pixels, .texture = &textureAtlas.getTexture()};
-        window.draw(batch.data(), batch.size(), sf::PrimitiveType::Triangles, states);
+        window.draw(batch.data(),
+                    batch.size(),
+                    sf::PrimitiveType::Triangles,
+                    {.coordinateType = sf::CoordinateType::Pixels, .texture = &textureAtlas.getTexture()}); */
 #endif
 
         window.display();

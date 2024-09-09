@@ -13,6 +13,7 @@
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/StencilMode.hpp"
 #include "SFML/Graphics/Texture.hpp"
+#include "SFML/Graphics/Transform.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 #include "SFML/Graphics/VertexBuffer.hpp"
 #include "SFML/Graphics/View.hpp"
@@ -29,6 +30,7 @@
 #include "SFML/Base/Optional.hpp"
 
 #include <atomic>
+#include <vector>
 
 #include <cstddef>
 #include <cstdint>
@@ -337,6 +339,8 @@ struct RenderTarget::Impl
     RenderTargetImpl::IdType id{};            //!< Unique number that identifies the render target
     VAO                      vao;             //!< Vertex array object associated with the render target
     VBO                      vbo;             //!< Vertex buffer object associated with the render target
+
+    std::vector<Vertex> batchVertexCache; //!< TODO P0:
 };
 
 
@@ -737,6 +741,62 @@ void RenderTarget::resetGLStates()
 
         m_impl->cache.enable = true;
     }
+}
+
+
+////////////////////////////////////////////////////////////
+RenderTarget::BatchDraw::BatchDraw(const RenderStates& renderStates, RenderTarget& renderTarget) :
+m_renderStates(renderStates),
+m_renderTarget(renderTarget)
+{
+    m_renderTarget.m_impl->batchVertexCache.clear();
+}
+
+
+////////////////////////////////////////////////////////////
+RenderTarget::BatchDraw::~BatchDraw()
+{
+    const auto& vertices = m_renderTarget.m_impl->batchVertexCache;
+
+    m_renderTarget.draw(vertices.data(), vertices.size(), PrimitiveType::Triangles, m_renderStates);
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::BatchDraw::add(const Sprite& sprite)
+{
+    const auto [data, size]    = sprite.getVertices();
+    const Transform& transform = sprite.getTransform();
+
+    Vertex buffer[6];
+
+    buffer[0] = data[0];
+    buffer[1] = data[1];
+    buffer[2] = data[2];
+
+    buffer[3] = data[1];
+    buffer[4] = data[2];
+    buffer[5] = data[3];
+
+    addImpl(buffer, 6, transform);
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::BatchDraw::addImpl(const Vertex* data, base::SizeT size, const Transform& transform)
+{
+    auto& vertices = m_renderTarget.m_impl->batchVertexCache;
+
+    auto it = vertices.insert(vertices.end(), data, data + size);
+    for (auto targetIt = it + static_cast<long long>(size); it != targetIt; ++it)
+        it->position = transform * it->position;
+}
+
+
+////////////////////////////////////////////////////////////
+RenderTarget::BatchDraw RenderTarget::startBatchDraw(const RenderStates& renderStates)
+{
+    return BatchDraw(renderStates, *this);
 }
 
 

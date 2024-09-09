@@ -5,7 +5,6 @@
 // Headers
 ////////////////////////////////c////////////////////////////
 #include "SFML/Window/ContextSettings.hpp"
-#include "SFML/Window/WindowEnums.hpp"
 
 #include "SFML/System/String.hpp"
 #include "SFML/System/Vector2.hpp"
@@ -33,7 +32,6 @@ struct WindowSettings
     Vector2u        size;                     //!< Video mode width and height, in pixels
     unsigned int    bitsPerPixel{32u};        //!< Video mode pixel depth, in bits per pixels
     String          title{"Untitled Window"}; //!< Title of the window
-    Style           style{Style::Default};    //!< Window style, a bitwise OR combination of `sf::Style` enumerators
     bool            fullscreen{false};        //!< TODO P1: docs
     bool            resizable{true};          //!< TODO P1: docs
     bool            closable{true};           //!< TODO P1: docs
