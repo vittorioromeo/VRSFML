@@ -70,15 +70,18 @@ m_sRgb(rhs.m_sRgb),
 m_isRepeated(rhs.m_isRepeated),
 m_cacheId(TextureImpl::getUniqueId())
 {
-    if (base::Optional texture = create(*m_graphicsContext, rhs.getSize(), rhs.isSrgb()))
-    {
-        *this = SFML_BASE_MOVE(*texture);
-        update(rhs);
-    }
-    else
+    base::Optional texture = create(*m_graphicsContext, rhs.getSize(), rhs.isSrgb());
+
+    if (!texture.hasValue())
     {
         priv::err() << "Failed to copy texture, failed to create new texture";
+        return;
     }
+
+    *this = SFML_BASE_MOVE(*texture);
+
+    if (!update(rhs))
+        priv::err() << "Failed to copy texture, failed to update from new texture";
 }
 
 
@@ -466,10 +469,10 @@ void Texture::update(const std::uint8_t* pixels, Vector2u size, Vector2u dest)
 
 
 ////////////////////////////////////////////////////////////
-void Texture::update(const Texture& texture)
+bool Texture::update(const Texture& texture)
 {
     // Update the whole texture
-    update(texture, {0, 0});
+    return update(texture, {0, 0});
 }
 
 

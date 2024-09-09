@@ -785,7 +785,7 @@ WindowImplEmscripten::WindowImplEmscripten(const WindowSettings& windowSettings)
 
     setSize(windowSettings.size);
 
-    if (windowSettings.state == State::Fullscreen)
+    if (windowSettings.fullscreen)
         fullscreenPending = true;
 }
 

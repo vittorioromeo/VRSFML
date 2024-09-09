@@ -253,11 +253,7 @@ int main()
             addToBatch(joystickObject.value);
         }
 
-        sf::RenderStates states;
-
-        states.texture        = &font.getTexture(characterSize);
-        states.coordinateType = sf::CoordinateType::Pixels;
-
+        sf::RenderStates states{.coordinateType = sf::CoordinateType::Pixels, .texture = &font.getTexture(characterSize)};
         window.draw(batch.data(), batch.size(), sf::PrimitiveType::Triangles, states);
 #endif
 

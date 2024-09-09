@@ -192,7 +192,7 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
             auto otherTexture = sf::Texture::create(graphicsContext, sf::Vector2u{1, 1}).value();
             otherTexture.update(cyan);
             auto texture = sf::Texture::create(graphicsContext, sf::Vector2u{1, 1}).value();
-            texture.update(otherTexture);
+            CHECK(texture.update(otherTexture));
             CHECK(texture.copyToImage().getPixel(sf::Vector2u{0, 0}) == sf::Color::Cyan);
         }
 

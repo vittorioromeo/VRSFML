@@ -149,7 +149,7 @@ WindowImplWin32::WindowImplWin32(WindowHandle handle) : m_handle(handle)
 ////////////////////////////////////////////////////////////
 WindowImplWin32::WindowImplWin32(const WindowSettings& windowSettings) :
 m_lastSize(windowSettings.size),
-m_fullscreen(windowSettings.state == State::Fullscreen),
+m_fullscreen(windowSettings.fullscreen),
 m_cursorGrabbed(m_fullscreen)
 {
     // Set that this process is DPI aware and can handle DPI scaling

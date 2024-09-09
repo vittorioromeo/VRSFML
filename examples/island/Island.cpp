@@ -184,7 +184,7 @@ int main()
     statusText.setString("Generating Terrain...");
 
     // Set up the render states
-    terrainStates = sf::RenderStates(&terrainShader);
+    terrainStates = sf::RenderStates{.shader = &terrainShader};
 
     // Center the status text
     statusText.setPosition((windowSize.to<sf::Vector2f>() - statusText.getLocalBounds().size) / 2.f);

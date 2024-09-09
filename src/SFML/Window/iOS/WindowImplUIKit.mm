@@ -32,7 +32,7 @@ WindowImplUIKit::WindowImplUIKit(const WindowSettings& windowSettings)
 
     // Apply the fullscreen flag
     [UIApplication sharedApplication].statusBarHidden = !(windowSettings.style & Style::Titlebar) ||
-                                                        (windowSettings.state == State::Fullscreen);
+                                                        (windowSettings.fullscreen);
 
     // Set the orientation according to the requested size
     if (windowSettings.size.x > windowSettings.size.y)

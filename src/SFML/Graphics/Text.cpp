@@ -383,7 +383,7 @@ Vector2f Text::findCharacterPos(std::size_t index) const
 ////////////////////////////////////////////////////////////
 const FloatRect& Text::getLocalBounds() const
 {
-    ensureGeometryUpdate();
+    ensureGeometryUpdate(*m_impl->font);
 
     return m_impl->bounds;
 }
@@ -399,33 +399,35 @@ FloatRect Text::getGlobalBounds() const
 ////////////////////////////////////////////////////////////
 void Text::draw(RenderTarget& target, RenderStates states) const
 {
-    ensureGeometryUpdate();
-
     states.transform *= getTransform();
     states.texture        = &m_impl->font->getTexture(m_impl->characterSize);
     states.coordinateType = CoordinateType::Pixels;
 
-    target.draw(m_impl->vertices.data(), m_impl->vertices.size(), PrimitiveType::Triangles, states);
+    const auto [data, size] = getVertices();
+    target.draw(data, size, PrimitiveType::Triangles, states);
 }
 
 
 ////////////////////////////////////////////////////////////
 [[nodiscard]] Text::VertexSpan Text::getVertices() const
 {
-    ensureGeometryUpdate();
+    ensureGeometryUpdate(*m_impl->font);
+
     return {m_impl->vertices.data(), m_impl->vertices.size()};
 }
 
 
 ////////////////////////////////////////////////////////////
-void Text::ensureGeometryUpdate() const
+void Text::ensureGeometryUpdate(const Font& font) const
 {
+    const auto fontTextureCacheId = font.getTexture(m_impl->characterSize).m_cacheId;
+
     // Do nothing, if geometry has not changed and the font texture has not changed
-    if (!m_impl->geometryNeedUpdate && m_impl->font->getTexture(m_impl->characterSize).m_cacheId == m_impl->fontTextureId)
+    if (!m_impl->geometryNeedUpdate && fontTextureCacheId == m_impl->fontTextureId)
         return;
 
     // Save the current fonts texture id
-    m_impl->fontTextureId = m_impl->font->getTexture(m_impl->characterSize).m_cacheId;
+    m_impl->fontTextureId = fontTextureCacheId;
 
     // Mark geometry as updated
     m_impl->geometryNeedUpdate = false;
@@ -444,19 +446,19 @@ void Text::ensureGeometryUpdate() const
     const bool  isUnderlined       = !!(m_impl->style & Style::Underlined);
     const bool  isStrikeThrough    = !!(m_impl->style & Style::StrikeThrough);
     const float italicShear        = !!(m_impl->style & Style::Italic) ? degrees(12).asRadians() : 0.f;
-    const float underlineOffset    = m_impl->font->getUnderlinePosition(m_impl->characterSize);
-    const float underlineThickness = m_impl->font->getUnderlineThickness(m_impl->characterSize);
+    const float underlineOffset    = font.getUnderlinePosition(m_impl->characterSize);
+    const float underlineThickness = font.getUnderlineThickness(m_impl->characterSize);
 
     // Compute the location of the strike through dynamically
     // We use the center point of the lowercase 'x' glyph as the reference
     // We reuse the underline thickness as the thickness of the strike through as well
-    const float strikeThroughOffset = m_impl->font->getGlyph(U'x', m_impl->characterSize, isBold).bounds.getCenter().y;
+    const float strikeThroughOffset = font.getGlyph(U'x', m_impl->characterSize, isBold).bounds.getCenter().y;
 
     // Precompute the variables needed by the algorithm
-    float       whitespaceWidth = m_impl->font->getGlyph(U' ', m_impl->characterSize, isBold).advance;
+    float       whitespaceWidth = font.getGlyph(U' ', m_impl->characterSize, isBold).advance;
     const float letterSpacing   = (whitespaceWidth / 3.f) * (m_impl->letterSpacingFactor - 1.f);
     whitespaceWidth += letterSpacing;
-    const float lineSpacing = m_impl->font->getLineSpacing(m_impl->characterSize) * m_impl->lineSpacingFactor;
+    const float lineSpacing = font.getLineSpacing(m_impl->characterSize) * m_impl->lineSpacingFactor;
 
     // TODO P1: docs and cleanup
     std::size_t fillQuadCount    = 0;
@@ -563,7 +565,7 @@ void Text::ensureGeometryUpdate() const
             continue;
 
         // Apply the kerning offset
-        x += m_impl->font->getKerning(prevChar, curChar, m_impl->characterSize, isBold);
+        x += font.getKerning(prevChar, curChar, m_impl->characterSize, isBold);
 
         if (curChar == U'\n' && prevChar != U'\n')
         {
@@ -610,14 +612,14 @@ void Text::ensureGeometryUpdate() const
         // Apply the outline
         if (m_impl->outlineThickness != 0)
         {
-            const Glyph& glyph = m_impl->font->getGlyph(curChar, m_impl->characterSize, isBold, m_impl->outlineThickness);
+            const Glyph& glyph = font.getGlyph(curChar, m_impl->characterSize, isBold, m_impl->outlineThickness);
 
             // Add the outline glyph to the vertices
             addGlyphQuad(m_impl->vertices, currOutlineIndex, Vector2f{x, y}, m_impl->outlineColor, glyph, italicShear);
         }
 
         // Extract the current glyph's description
-        const Glyph& glyph = m_impl->font->getGlyph(curChar, m_impl->characterSize, isBold);
+        const Glyph& glyph = font.getGlyph(curChar, m_impl->characterSize, isBold);
 
         // Add the glyph to the vertices
         addGlyphQuad(m_impl->vertices, currFillIndex, Vector2f{x, y}, m_impl->fillColor, glyph, italicShear);

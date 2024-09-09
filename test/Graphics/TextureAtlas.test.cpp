@@ -29,8 +29,7 @@ TEST_CASE("[Graphics] sf::TextureAtlas" * doctest::skip(skipDisplayTests))
 
     SECTION("Add -- failure case")
     {
-        auto atlasTexture = sf::Texture::create(graphicsContext, {32u, 32u}).value();
-        auto textureAtlas = sf::TextureAtlas(atlasTexture);
+        auto textureAtlas = sf::TextureAtlas(sf::Texture::create(graphicsContext, {32u, 32u}).value());
 
         const auto p0 = textureAtlas.add(makeColoredTexture(sf::Color::Red));
         CHECK(!p0.hasValue());
@@ -38,23 +37,21 @@ TEST_CASE("[Graphics] sf::TextureAtlas" * doctest::skip(skipDisplayTests))
 
     SECTION("Add -- one texture")
     {
-        auto atlasTexture = sf::Texture::create(graphicsContext, atlasSize).value();
-        auto textureAtlas = sf::TextureAtlas(atlasTexture);
+        auto textureAtlas = sf::TextureAtlas(sf::Texture::create(graphicsContext, atlasSize).value());
 
         const auto p0 = textureAtlas.add(makeColoredTexture(sf::Color::Red));
         CHECK(p0.hasValue());
         CHECK(p0->x == 0u);
         CHECK(p0->y == 0u);
 
-        const auto atlasImage = atlasTexture.copyToImage();
+        const auto atlasImage = textureAtlas.getTexture().copyToImage();
         CHECK(atlasImage.getPixel({0u, 0u}) == sf::Color::Red);
         CHECK(atlasImage.getPixel({64u, 64u}) != sf::Color::Red);
     }
 
     SECTION("Add -- two textures")
     {
-        auto atlasTexture = sf::Texture::create(graphicsContext, atlasSize).value();
-        auto textureAtlas = sf::TextureAtlas(atlasTexture);
+        auto textureAtlas = sf::TextureAtlas(sf::Texture::create(graphicsContext, atlasSize).value());
 
         const auto p0 = textureAtlas.add(makeColoredTexture(sf::Color::Red));
         CHECK(p0.hasValue());
@@ -66,7 +63,7 @@ TEST_CASE("[Graphics] sf::TextureAtlas" * doctest::skip(skipDisplayTests))
         CHECK(p1->x == 64u);
         CHECK(p1->y == 0u);
 
-        const auto atlasImage = atlasTexture.copyToImage();
+        const auto atlasImage = textureAtlas.getTexture().copyToImage();
         CHECK(atlasImage.getPixel({0u, 0u}) == sf::Color::Red);
         CHECK(atlasImage.getPixel({64u, 0u}) == sf::Color::Blue);
 

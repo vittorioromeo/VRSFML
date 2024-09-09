@@ -39,7 +39,7 @@ WindowImplAndroid::WindowImplAndroid(const WindowSettings& windowSettings) : m_s
     ActivityStates&       states = getActivity();
     const std::lock_guard lock(states.mutex);
 
-    if (windowSettings.state == State::Fullscreen)
+    if (windowSettings.fullscreen)
         states.fullscreen = true;
 
     WindowImplAndroid::singleInstance = this;

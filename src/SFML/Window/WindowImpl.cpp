@@ -76,13 +76,13 @@ struct WindowImpl::Impl
 base::UniquePtr<WindowImpl> WindowImpl::create(WindowSettings windowSettings)
 {
     // Fullscreen style requires some tests
-    if (windowSettings.state == State::Fullscreen)
+    if (windowSettings.fullscreen)
     {
         // Make sure there's not already a fullscreen window (only one is allowed)
         if (WindowImplImpl::fullscreenWindow != nullptr)
         {
             err() << "Creating two fullscreen windows is not allowed, switching to windowed mode";
-            windowSettings.state = State::Windowed;
+            windowSettings.fullscreen = false;
         }
         else
         {
@@ -104,7 +104,7 @@ base::UniquePtr<WindowImpl> WindowImpl::create(WindowSettings windowSettings)
 
 // Check validity of style according to the underlying platform
 #if defined(SFML_SYSTEM_IOS) || defined(SFML_SYSTEM_ANDROID)
-    if (windowSettings.state == State::Fullscreen)
+    if (windowSettings.fullscreen)
         windowSettings.style &= ~static_cast<std::uint32_t>(Style::Titlebar);
     else
         windowSettings.style |= Style::Titlebar;
@@ -115,7 +115,7 @@ base::UniquePtr<WindowImpl> WindowImpl::create(WindowSettings windowSettings)
 
     auto windowImpl = base::makeUnique<WindowImplType>(windowSettings);
 
-    if (windowSettings.state == State::Fullscreen)
+    if (windowSettings.fullscreen)
         WindowImplImpl::fullscreenWindow = windowImpl.get();
 
     return windowImpl;
