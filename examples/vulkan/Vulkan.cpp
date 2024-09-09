@@ -2579,7 +2579,7 @@ public:
 
 private:
     // NOLINTBEGIN(readability-identifier-naming)
-    sf::WindowBase window{{.size{800u, 600u}, .title = "SFML window with Vulkan", .style = sf::Style::Default}};
+    sf::WindowBase window{{.size{800u, 600u}, .title = "SFML window with Vulkan"}};
 
     bool vulkanAvailable{sf::Vulkan::isAvailable()};
 

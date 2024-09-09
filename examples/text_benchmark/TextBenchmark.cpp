@@ -43,7 +43,7 @@ int main()
 {
     sf::GraphicsContext graphicsContext;
 
-    sf::RenderWindow window(graphicsContext, {.size{800u, 600u}, .title = "Window", .style = sf::Style::Default});
+    sf::RenderWindow window(graphicsContext, {.size{800u, 600u}, .title = "Window"});
 
     auto textureAtlas = sf::TextureAtlas{sf::Texture::create(graphicsContext, {1024u, 1024u}).value()};
 
@@ -139,7 +139,6 @@ int main()
     sf::RenderWindow window(graphicsContext,
                             {.size{screenSize},
                              .title = "Window",
-                             .style = sf::Style::Default,
                              .contextSettings{.depthBits = 0, .stencilBits = 0, .antialiasingLevel = 4}});
 
     window.setVerticalSyncEnabled(true);
@@ -238,8 +237,7 @@ int main()
 {
     sf::GraphicsContext graphicsContext;
 
-    sf::RenderWindow window(graphicsContext,
-                            {.size{800u, 600u}, .title = "Test", .style = sf::Style::Titlebar | sf::Style::Close});
+    sf::RenderWindow window(graphicsContext, {.size{800u, 600u}, .title = "Test", .resizable = false});
 
     window.setVerticalSyncEnabled(false);
 

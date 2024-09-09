@@ -34,7 +34,10 @@ struct WindowSettings
     unsigned int    bitsPerPixel{32u};        //!< Video mode pixel depth, in bits per pixels
     String          title{"Untitled Window"}; //!< Title of the window
     Style           style{Style::Default};    //!< Window style, a bitwise OR combination of `sf::Style` enumerators
-    bool            fullscreen{false};        //!< Window state
+    bool            fullscreen{false};        //!< TODO P1: docs
+    bool            resizable{true};          //!< TODO P1: docs
+    bool            closable{true};           //!< TODO P1: docs
+    bool            hasTitlebar{true};        //!< TODO P1: docs
     ContextSettings contextSettings{};        //!< Additional settings for the underlying OpenGL context
 };
 

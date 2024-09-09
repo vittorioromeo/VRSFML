@@ -38,7 +38,7 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
         {
             const sf::RenderWindow
                 window(graphicsContext,
-                       {.size{256u, 256u}, .bitsPerPixel = 24, .title = "RenderWindow Tests", .style = sf::Style::Default});
+                       {.size{256u, 256u}, .bitsPerPixel = 24, .title = "RenderWindow Tests"});
 
             CHECK(window.getSize() == sf::Vector2u{256, 256});
 #ifndef SFML_SYSTEM_EMSCRIPTEN
@@ -80,7 +80,7 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
     {
         sf::RenderWindow
             window(graphicsContext,
-                   {.size{256u, 256u}, .bitsPerPixel = 24, .title = "RenderWindow Tests", .style = sf::Style::Default});
+                   {.size{256u, 256u}, .bitsPerPixel = 24, .title = "RenderWindow Tests"});
 
         REQUIRE(window.getSize() == sf::Vector2u{256, 256});
 

@@ -26,7 +26,7 @@ int main()
     sf::RenderWindow window(graphicsContext,
                             {.size{600u, 600u},
                              .title = "SFML Stencil",
-                             .style = sf::Style::Titlebar | sf::Style::Close,
+                             .resizable = false,
                              .contextSettings{.depthBits = 0, .stencilBits = 8}});
 
     window.setVerticalSyncEnabled(true);

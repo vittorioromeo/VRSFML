@@ -121,7 +121,7 @@ int main()
     };
 
     // Create the window of the application
-    sf::RenderWindow window(graphicsContext, {.size{400, 775}, .title = "Joystick", .style = sf::Style::Close});
+    sf::RenderWindow window(graphicsContext, {.size{400, 775}, .title = "Joystick", .resizable = false});
     window.setVerticalSyncEnabled(true);
 
     // Set up our string conversion parameters

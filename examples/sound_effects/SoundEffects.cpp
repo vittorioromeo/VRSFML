@@ -1065,7 +1065,7 @@ int main()
     sf::RenderWindow window(graphicsContext,
                             {.size{windowWidth, windowHeight},
                              .title = "SFML Sound Effects",
-                             .style = sf::Style::Titlebar | sf::Style::Close});
+                             .resizable = false});
 
     window.setVerticalSyncEnabled(true);
 
