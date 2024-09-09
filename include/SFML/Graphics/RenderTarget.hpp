@@ -15,6 +15,7 @@
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 #include <cstddef>
 
@@ -450,6 +451,45 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void resetGLStates();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    class BatchDraw
+    {
+    public:
+        explicit BatchDraw(const RenderStates& renderStates, RenderTarget& renderTarget);
+        ~BatchDraw();
+
+        BatchDraw(const BatchDraw&) = delete;
+        BatchDraw(BatchDraw&&)      = delete;
+
+        template <typename BatchableObject>
+        void add(const BatchableObject& batchableObject)
+        {
+            const auto [data, size]    = batchableObject.getVertices();
+            const Transform& transform = batchableObject.getTransform();
+
+            addImpl(data, size, transform);
+        }
+
+        void add(const Sprite& sprite);
+
+    private:
+        void addImpl(const Vertex* data, base::SizeT size, const Transform& transform);
+
+        RenderStates  m_renderStates;
+        RenderTarget& m_renderTarget;
+    };
+
+    friend BatchDraw;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] BatchDraw startBatchDraw(const RenderStates& renderStates);
 
 protected:
     ////////////////////////////////////////////////////////////

@@ -15,7 +15,6 @@
 #include "SFML/Window/JoystickImpl.hpp"
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/VideoModeImpl.hpp"
-#include "SFML/Window/WindowEnums.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Err.hpp"

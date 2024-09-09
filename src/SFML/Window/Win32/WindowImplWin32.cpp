@@ -7,7 +7,6 @@
 #include "SFML/Window/JoystickImpl.hpp"
 #include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/Win32/WindowImplWin32.hpp"
-#include "SFML/Window/WindowEnums.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Err.hpp"
@@ -168,17 +167,17 @@ m_cursorGrabbed(m_fullscreen)
 
     // Choose the window style according to the Style parameter
     DWORD win32Style = WS_VISIBLE;
-    if (windowSettings.style == Style::None)
+    if (!windowSettings.hasTitlebar)
     {
         win32Style |= WS_POPUP;
     }
     else
     {
-        if (!!(windowSettings.style & Style::Titlebar))
+        if (windowSettings.hasTitlebar)
             win32Style |= WS_CAPTION | WS_MINIMIZEBOX;
-        if (!!(windowSettings.style & Style::Resize))
+        if (windowSettings.resizable)
             win32Style |= WS_THICKFRAME | WS_MAXIMIZEBOX;
-        if (!!(windowSettings.style & Style::Close))
+        if (windowSettings.closable)
             win32Style |= WS_SYSMENU;
     }
 

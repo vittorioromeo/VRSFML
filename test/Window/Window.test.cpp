@@ -41,7 +41,7 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
         SECTION("Mode, title, and style constructor")
         {
-            const sf::Window window(windowContext, {.size{360u, 240u}, .title = "Window Tests", .style = sf::Style::Resize});
+            const sf::Window window(windowContext, {.size{360u, 240u}, .title = "Window Tests"});
 
             CHECK(window.getSize() == sf::Vector2u{360, 240});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
@@ -50,7 +50,7 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
         SECTION("Mode, title, style, and state constructor")
         {
-            const sf::Window window(windowContext, {.size{360u, 240u}, .title = "Window Tests", .style = sf::Style::Resize});
+            const sf::Window window(windowContext, {.size{360u, 240u}, .title = "Window Tests"});
 
             CHECK(window.getSize() == sf::Vector2u{360, 240});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
@@ -62,7 +62,6 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
             const sf::Window window(windowContext,
                                     {.size{360u, 240u},
                                      .title = "Window Tests",
-                                     .style = sf::Style::Resize,
                                      .contextSettings{.depthBits = 1, .stencilBits = 1, .antialiasingLevel = 1}});
 
             CHECK(window.getSize() == sf::Vector2u{360, 240});

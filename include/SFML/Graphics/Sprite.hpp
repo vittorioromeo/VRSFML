@@ -11,6 +11,8 @@
 
 #include "SFML/System/Rect.hpp"
 
+#include "SFML/Base/Span.hpp"
+
 
 namespace sf
 {
@@ -106,6 +108,12 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] FloatRect getGlobalBounds() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] base::Span<const Vertex> getVertices() const;
 
 private:
     friend RenderTarget;

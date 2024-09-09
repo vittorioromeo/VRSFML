@@ -38,7 +38,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 
         SECTION("Mode, title, and style constructor")
         {
-            const sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests", .style = sf::Style::Resize});
+            const sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests"});
 
             CHECK(windowBase.getSize() == sf::Vector2u{360, 240});
             CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
@@ -46,7 +46,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 
         SECTION("Mode, title, style, and state constructor")
         {
-            const sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests", .style = sf::Style::Resize});
+            const sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests"});
 
             CHECK(windowBase.getSize() == sf::Vector2u{360, 240});
             CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
@@ -129,8 +129,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 
     SECTION("setMinimumSize()")
     {
-        sf::WindowBase windowBase(
-            {.size{100u, 100u}, .title = "WindowBase Tests" ^ sf::Style::Resize});
+        sf::WindowBase windowBase({.size{100u, 100u}, .title = "WindowBase Tests"});
 
         windowBase.setMinimumSize({200u, 300u});
         CHECK(windowBase.getSize() == sf::Vector2u{200, 300});
@@ -139,8 +138,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 
     SECTION("setMinimumSize()")
     {
-        sf::WindowBase windowBase(
-            {.size{400u, 400u}, .title = "WindowBase Tests" ^ sf::Style::Resize});
+        sf::WindowBase windowBase({.size{400u, 400u}, .title = "WindowBase Tests"});
 
         windowBase.setMaximumSize({200u, 300u});
         CHECK(windowBase.getSize() == sf::Vector2u{200, 300});

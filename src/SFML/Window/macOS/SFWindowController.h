@@ -5,6 +5,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/WindowEnums.hpp"
+
 #import <SFML/Window/macOS/WindowImplDelegateProtocol.h>
 
 ////////////////////////////////////////////////////////////
@@ -63,6 +64,6 @@ class WindowImplCocoa;
 /// \return an initialized controller
 ///
 ////////////////////////////////////////////////////////////
-- (id)initWithMode:(const sf::VideoMode&)mode andStyle:(std::uint32_t)style andState:(sf::State)state;
+- (id)initWithMode:(const sf::VideoMode&)mode andStyle:(std::uint32_t)style andFullscreen:(bool)fullscreen;
 
 @end

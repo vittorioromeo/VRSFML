@@ -31,8 +31,7 @@ WindowImplUIKit::WindowImplUIKit(const WindowSettings& windowSettings)
     m_backingScale = static_cast<float>([SFAppDelegate getInstance].backingScaleFactor);
 
     // Apply the fullscreen flag
-    [UIApplication sharedApplication].statusBarHidden = !(windowSettings.style & Style::Titlebar) ||
-                                                        (windowSettings.fullscreen);
+    [UIApplication sharedApplication].statusBarHidden = !windowSettings.hasTitlebar || (windowSettings.fullscreen);
 
     // Set the orientation according to the requested size
     if (windowSettings.size.x > windowSettings.size.y)
@@ -57,7 +56,7 @@ WindowImplUIKit::WindowImplUIKit(const WindowSettings& windowSettings)
     // Create the view controller
     m_viewController                      = [SFViewController alloc];
     m_viewController.view                 = m_view;
-    m_viewController.orientationCanChange = windowSettings.style & Style::Resize;
+    m_viewController.orientationCanChange = windowSettings.resizable;
     m_window.rootViewController           = m_viewController;
 
     // Make it the current window

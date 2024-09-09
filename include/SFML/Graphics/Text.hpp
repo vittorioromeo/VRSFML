@@ -15,6 +15,7 @@
 
 #include "SFML/Base/EnumClassBitwiseOps.hpp"
 #include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/Span.hpp"
 
 #include <cstddef>
 
@@ -414,13 +415,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    struct VertexSpan
-    {
-        const Vertex* data;
-        std::size_t   size;
-    };
-
-    [[nodiscard]] VertexSpan getVertices() const;
+    [[nodiscard]] base::Span<Vertex> getVertices() const;
 
 private:
     ////////////////////////////////////////////////////////////

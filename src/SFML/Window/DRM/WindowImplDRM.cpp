@@ -7,7 +7,6 @@
 #include "SFML/Window/DRM/WindowImplDRM.hpp"
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/InputImpl.hpp"
-#include "SFML/Window/WindowEnums.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Err.hpp"

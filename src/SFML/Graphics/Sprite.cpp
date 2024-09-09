@@ -66,6 +66,13 @@ FloatRect Sprite::getGlobalBounds() const
 
 
 ////////////////////////////////////////////////////////////
+base::Span<const Vertex> Sprite::getVertices() const
+{
+    return m_vertices;
+}
+
+
+////////////////////////////////////////////////////////////
 void Sprite::updateVertices()
 {
     const auto [position, size] = m_textureRect.to<FloatRect>();
