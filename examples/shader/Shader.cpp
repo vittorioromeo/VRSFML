@@ -480,7 +480,7 @@ int main()
 
     // Create the main window
     sf::RenderWindow window(graphicsContext,
-                            {.size{800u, 600u}, .title = "SFML Shader", .style = sf::Style::Titlebar | sf::Style::Close});
+                            {.size{800u, 600u}, .title = "SFML Shader", .resizable = false});
 
     window.setVerticalSyncEnabled(true);
 

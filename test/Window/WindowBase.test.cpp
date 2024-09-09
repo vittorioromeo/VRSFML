@@ -130,7 +130,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
     SECTION("setMinimumSize()")
     {
         sf::WindowBase windowBase(
-            {.size{100u, 100u}, .title = "WindowBase Tests", .style = sf::Style::Default ^ sf::Style::Resize});
+            {.size{100u, 100u}, .title = "WindowBase Tests" ^ sf::Style::Resize});
 
         windowBase.setMinimumSize({200u, 300u});
         CHECK(windowBase.getSize() == sf::Vector2u{200, 300});
@@ -140,7 +140,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
     SECTION("setMinimumSize()")
     {
         sf::WindowBase windowBase(
-            {.size{400u, 400u}, .title = "WindowBase Tests", .style = sf::Style::Default ^ sf::Style::Resize});
+            {.size{400u, 400u}, .title = "WindowBase Tests" ^ sf::Style::Resize});
 
         windowBase.setMaximumSize({200u, 300u});
         CHECK(windowBase.getSize() == sf::Vector2u{200, 300});

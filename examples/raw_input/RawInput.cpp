@@ -33,7 +33,7 @@ int main()
     sf::RenderWindow window(graphicsContext,
                             {.size{800u, 600u},
                              .title = "SFML Raw Mouse Input",
-                             .style = sf::Style::Titlebar | sf::Style::Close});
+                             .resizable = false});
 
     window.setVerticalSyncEnabled(true);
 

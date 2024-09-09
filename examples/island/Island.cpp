@@ -137,7 +137,7 @@ int main()
 
     // Create the window of the application
     sf::RenderWindow window(graphicsContext,
-                            {.size{windowSize}, .title = "SFML Island", .style = sf::Style::Titlebar | sf::Style::Close});
+                            {.size{windowSize}, .title = "SFML Island", .resizable = false});
 
     window.setVerticalSyncEnabled(true);
 

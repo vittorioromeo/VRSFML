@@ -41,10 +41,7 @@ int main()
 
     // Create the main window (becomes active OpenGL context on construction)
     sf::Window window(windowContext,
-                      {.size{640u, 480u},
-                       .title           = "SFML window with OpenGL",
-                       .style           = sf::Style::Default,
-                       .contextSettings = contextSettings});
+                      {.size{640u, 480u}, .title = "SFML window with OpenGL", .contextSettings = contextSettings});
 
     // Load OpenGL or OpenGL ES entry points using glad
     windowContext.loadGLEntryPointsViaGLAD();

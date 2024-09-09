@@ -57,7 +57,6 @@ sf::base::Optional<sf::RenderWindow> recreateWindow(sf::GraphicsContext&       g
                                                 graphicsContext,
                                                 sf::WindowSettings{.size{800u, 600u},
                                                                    .title           = "SFML graphics with OpenGL",
-                                                                   .style           = sf::Style::Default,
                                                                    .contextSettings = contextSettings});
 
     window->setVerticalSyncEnabled(true);
