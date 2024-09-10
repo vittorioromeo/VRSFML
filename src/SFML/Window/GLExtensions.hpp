@@ -331,7 +331,7 @@ inline int SF_GL_OES_vertex_buffer_object = 1;
 #define GLEXT_GL_SRGB8_ALPHA8                      GL_SRGB8_ALPHA8_EXT
 
 // Core since 3.0 - EXT_framebuffer_object
-#define GLEXT_framebuffer_object                   GLAD_GL_EXT_framebuffer_object
+#define GLEXT_framebuffer_object                   true
 #define GLEXT_glBindRenderbuffer                   glBindRenderbufferEXT
 #define GLEXT_glDeleteRenderbuffers                glDeleteRenderbuffersEXT
 #define GLEXT_glGenRenderbuffers                   glGenRenderbuffersEXT
@@ -352,11 +352,6 @@ inline int SF_GL_OES_vertex_buffer_object = 1;
 #define GLEXT_GL_FRAMEBUFFER_BINDING               GL_FRAMEBUFFER_BINDING_EXT
 #define GLEXT_GL_INVALID_FRAMEBUFFER_OPERATION     GL_INVALID_FRAMEBUFFER_OPERATION_EXT
 #define GLEXT_GL_STENCIL_ATTACHMENT                GL_STENCIL_ATTACHMENT_EXT
-
-#define GLEXT_framebuffer_object_dependencies                                                               \
-    GLAD_GL_EXT_framebuffer_object, glBindRenderbufferEXT, glDeleteRenderbuffersEXT, glGenRenderbuffersEXT, \
-        glRenderbufferStorageEXT, glBindFramebufferEXT, glDeleteFramebuffersEXT, glGenFramebuffersEXT,      \
-        glCheckFramebufferStatusEXT, glFramebufferTexture2DEXT, glFramebufferRenderbufferEXT, glGenerateMipmapEXT
 
 // Core since 3.0 - EXT_packed_depth_stencil
 #define GLEXT_packed_depth_stencil        GLAD_GL_EXT_packed_depth_stencil

@@ -61,14 +61,6 @@ public:
     RenderTextureImplFBO& operator=(RenderTextureImplFBO&&) noexcept;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Check whether the system supports FBOs or not
-    ///
-    /// \return True if FBO render textures are supported
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static bool isAvailable(GraphicsContext& graphicsContext);
-
-    ////////////////////////////////////////////////////////////
     /// \brief Get the maximum anti-aliasing level supported by the system
     ///
     /// \return The maximum anti-aliasing level supported by the system

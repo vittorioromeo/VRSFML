@@ -842,12 +842,6 @@ bool Texture::generateMipmap()
 
     SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
-    if (!GLEXT_framebuffer_object)
-    {
-        priv::err() << "Could not generate mipmap, missing GL extension";
-        return false;
-    }
-
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
 

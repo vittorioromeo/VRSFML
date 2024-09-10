@@ -17,14 +17,11 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-void retrieveWindowFrameBufferId(sf::GraphicsContext& graphicsContext, unsigned int& defaultFrameBuffer)
+void retrieveWindowFrameBufferId(unsigned int& defaultFrameBuffer)
 {
-    if (sf::priv::RenderTextureImplFBO::isAvailable(graphicsContext))
-    {
-        // Retrieve the framebuffer ID we have to bind when targeting the window for rendering
-        // We assume that this window's context is still active at this point
-        glCheck(glGetIntegerv(GLEXT_GL_DRAW_FRAMEBUFFER_BINDING, reinterpret_cast<GLint*>(&defaultFrameBuffer)));
-    }
+    // Retrieve the framebuffer ID we have to bind when targeting the window for rendering
+    // We assume that this window's context is still active at this point
+    glCheck(glGetIntegerv(GLEXT_GL_DRAW_FRAMEBUFFER_BINDING, reinterpret_cast<GLint*>(&defaultFrameBuffer)));
 }
 
 
@@ -37,7 +34,7 @@ RenderWindow::RenderWindow(GraphicsContext& graphicsContext, const WindowSetting
 Window(graphicsContext, windowSettings),
 RenderTarget(graphicsContext)
 {
-    retrieveWindowFrameBufferId(getGraphicsContext(), m_defaultFrameBuffer);
+    retrieveWindowFrameBufferId(m_defaultFrameBuffer);
     RenderTarget::initialize(); // Just initialize the render target part
 }
 
@@ -47,7 +44,7 @@ RenderWindow::RenderWindow(GraphicsContext& graphicsContext, WindowHandle handle
 Window(graphicsContext, handle, contextSettings),
 RenderTarget(graphicsContext)
 {
-    retrieveWindowFrameBufferId(getGraphicsContext(), m_defaultFrameBuffer);
+    retrieveWindowFrameBufferId(m_defaultFrameBuffer);
     RenderTarget::initialize(); // Just initialize the render target part
 }
 
@@ -101,7 +98,7 @@ bool RenderWindow::setActive(bool active)
 
     // If FBOs are available, make sure none are bound when we
     // try to draw to the default framebuffer of the RenderWindow
-    if (active && result && priv::RenderTextureImplFBO::isAvailable(getGraphicsContext()))
+    if (active && result)
     {
         glCheck(GLEXT_glBindFramebuffer(GLEXT_GL_FRAMEBUFFER, m_defaultFrameBuffer));
         return true;

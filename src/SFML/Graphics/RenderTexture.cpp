@@ -6,14 +6,12 @@
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderTexture.hpp"
-#include "SFML/Graphics/RenderTextureImplDefault.hpp"
 #include "SFML/Graphics/RenderTextureImplFBO.hpp"
 #include "SFML/Graphics/Texture.hpp"
 
 #include "SFML/System/Err.hpp"
 
 #include "SFML/Base/Macros.hpp"
-#include "SFML/Base/Variant.hpp"
 
 
 namespace sf
@@ -21,12 +19,11 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct RenderTexture::Impl
 {
-    sfvr::tinyvariant<priv::RenderTextureImplDefault, priv::RenderTextureImplFBO> renderTextureImpl; //!< Platform/hardware specific implementation
-    Texture texture; //!< Target texture to draw on
+    priv::RenderTextureImplFBO renderTextureImpl; //!< Platform/hardware specific implementation
+    Texture                    texture;           //!< Target texture to draw on
 
-    template <typename TRenderTextureImplTag>
-    explicit Impl(TRenderTextureImplTag theRenderTextureImplTag, GraphicsContext& graphicsContext, Texture&& theTexture) :
-    renderTextureImpl(theRenderTextureImplTag, graphicsContext),
+    explicit Impl(GraphicsContext& graphicsContext, Texture&& theTexture) :
+    renderTextureImpl(graphicsContext),
     texture(SFML_BASE_MOVE(theTexture))
     {
     }
@@ -60,35 +57,19 @@ base::Optional<RenderTexture> RenderTexture::create(GraphicsContext&       graph
         return result; // Empty optional
     }
 
-    if (priv::RenderTextureImplFBO::isAvailable(graphicsContext))
-    {
-        // Use frame-buffer object (FBO)
-        result.emplace(base::PassKey<RenderTexture>{},
-                       graphicsContext,
-                       sfvr::inplace_type<priv::RenderTextureImplFBO>,
-                       SFML_BASE_MOVE(*texture));
+    // Use frame-buffer object (FBO)
+    result.emplace(base::PassKey<RenderTexture>{}, graphicsContext, SFML_BASE_MOVE(*texture));
 
-        // Mark the texture as being a framebuffer object attachment
-        result->m_impl->texture.m_fboAttachment = true;
-    }
-    else
-    {
-        // Use default implementation
-        result.emplace(base::PassKey<RenderTexture>{},
-                       graphicsContext,
-                       sfvr::inplace_type<priv::RenderTextureImplDefault>,
-                       SFML_BASE_MOVE(*texture));
-    }
+    // Mark the texture as being a framebuffer object attachment
+    result->m_impl->texture.m_fboAttachment = true;
 
     // We disable smoothing by default for render textures
     result->setSmooth(false);
 
     // Initialize the render texture
     // We pass the actual size of our texture since OpenGL ES requires that all attachments have identical sizes
-    if (!result->m_impl->renderTextureImpl.linear_visit(
-            [&](auto&& impl) {
-                return impl.create(result->m_impl->texture.m_actualSize, result->m_impl->texture.m_texture, contextSettings);
-            }))
+    if (!result->m_impl->renderTextureImpl
+             .create(result->m_impl->texture.m_actualSize, result->m_impl->texture.m_texture, contextSettings))
     {
         priv::err() << "Impossible to create render texture (failed to create render texture renderTextureImpl)";
 
@@ -106,9 +87,7 @@ base::Optional<RenderTexture> RenderTexture::create(GraphicsContext&       graph
 ////////////////////////////////////////////////////////////
 unsigned int RenderTexture::getMaximumAntiAliasingLevel(GraphicsContext& graphicsContext)
 {
-    return priv::RenderTextureImplFBO::isAvailable(graphicsContext)
-               ? priv::RenderTextureImplFBO::getMaximumAntiAliasingLevel(graphicsContext)
-               : priv::RenderTextureImplDefault::getMaximumAntiAliasingLevel();
+    return priv::RenderTextureImplFBO::getMaximumAntiAliasingLevel(graphicsContext);
 }
 
 
@@ -151,7 +130,7 @@ bool RenderTexture::generateMipmap()
 bool RenderTexture::setActive(bool active)
 {
     // Update RenderTarget tracking
-    if (m_impl->renderTextureImpl.linear_visit([&](auto&& impl) { return impl.activate(active); }))
+    if (m_impl->renderTextureImpl.activate(active))
         return RenderTarget::setActive(active);
 
     return false;
@@ -161,21 +140,12 @@ bool RenderTexture::setActive(bool active)
 ////////////////////////////////////////////////////////////
 void RenderTexture::display()
 {
-    if (priv::RenderTextureImplFBO::isAvailable(getGraphicsContext()))
-    {
-        // Perform a RenderTarget-only activation if we are using FBOs
-        if (!RenderTarget::setActive())
-            return;
-    }
-    else
-    {
-        // Perform a full activation if we are not using FBOs
-        if (!setActive())
-            return;
-    }
+    // Perform a RenderTarget-only activation if we are using FBOs
+    if (!RenderTarget::setActive())
+        return;
 
     // Update the target texture
-    m_impl->renderTextureImpl.linear_visit([&](auto&& impl) { impl.updateTexture(m_impl->texture.m_texture); });
+    m_impl->renderTextureImpl.updateTexture(m_impl->texture.m_texture);
     m_impl->texture.m_pixelsFlipped = true;
     m_impl->texture.invalidateMipmap();
 }
@@ -191,7 +161,7 @@ Vector2u RenderTexture::getSize() const
 ////////////////////////////////////////////////////////////
 bool RenderTexture::isSrgb() const
 {
-    return m_impl->renderTextureImpl.linear_visit([&](auto&& impl) { return impl.isSrgb(); });
+    return m_impl->renderTextureImpl.isSrgb();
 }
 
 
@@ -203,13 +173,9 @@ const Texture& RenderTexture::getTexture() const
 
 
 ////////////////////////////////////////////////////////////
-template <typename TRenderTextureImplTag>
-RenderTexture::RenderTexture(base::PassKey<RenderTexture>&&,
-                             GraphicsContext&      graphicsContext,
-                             TRenderTextureImplTag renderTextureImplTag,
-                             Texture&&             texture) :
+RenderTexture::RenderTexture(base::PassKey<RenderTexture>&&, GraphicsContext& graphicsContext, Texture&& texture) :
 RenderTarget(graphicsContext),
-m_impl(renderTextureImplTag, graphicsContext, SFML_BASE_MOVE(texture))
+m_impl(graphicsContext, SFML_BASE_MOVE(texture))
 {
 }
 
