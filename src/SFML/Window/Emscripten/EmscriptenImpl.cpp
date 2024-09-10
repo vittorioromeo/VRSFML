@@ -22,6 +22,7 @@
 #include "SFML/System/StringUtfUtils.hpp"
 
 #include "SFML/Base/Math/Fabs.hpp"
+#include "SFML/Base/Memcpy.hpp"
 #include "SFML/Base/Optional.hpp"
 
 #include <emscripten.h>

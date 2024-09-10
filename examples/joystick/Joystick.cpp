@@ -227,35 +227,15 @@ int main()
         window.clear();
 
         // Draw the label-value sf::Text objects
-#if 0
-        for (const auto& [label, joystickObject] : texts)
         {
-            window.draw(joystickObject.label);
-            window.draw(joystickObject.value);
+            auto batch = window.startBatchDraw({.texture = &font.getTexture(characterSize)});
+
+            for (const auto& [label, joystickObject] : texts)
+            {
+                batch.add(joystickObject.label);
+                batch.add(joystickObject.value);
+            }
         }
-#else // TODO P0: batching experiments
-        static std::vector<sf::Vertex> batch;
-        batch.clear();
-
-        const auto addToBatch = [&](const sf::Text& text)
-        {
-            const auto [data, size] = text.getVertices();
-            const auto& transform   = text.getTransform();
-
-            auto it = batch.insert(batch.end(), data, data + size);
-            for (auto targetIt = it + static_cast<long long>(size); it != targetIt; ++it)
-                it->position = transform * it->position;
-        };
-
-        for (const auto& [label, joystickObject] : texts)
-        {
-            addToBatch(joystickObject.label);
-            addToBatch(joystickObject.value);
-        }
-
-        sf::RenderStates states{.coordinateType = sf::CoordinateType::Pixels, .texture = &font.getTexture(characterSize)};
-        window.draw(batch.data(), batch.size(), sf::PrimitiveType::Triangles, states);
-#endif
 
         // Display things on screen
         window.display();
