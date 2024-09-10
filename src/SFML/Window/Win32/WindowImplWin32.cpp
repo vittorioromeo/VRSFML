@@ -21,7 +21,6 @@
 #include <vector>
 
 #include <cstddef>
-#include <cstring>
 
 // MinGW lacks the definition of some Win32 constants
 #ifndef XBUTTON1

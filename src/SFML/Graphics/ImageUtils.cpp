@@ -15,11 +15,11 @@
 
 #define STB_IMAGE_WRITE_STATIC
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "SFML/Base/Memcpy.hpp"
+
 #include <stb_image_write.h>
 
 #include <string>
-
-#include <cstring>
 
 
 namespace

@@ -34,12 +34,11 @@
 #include FT_STROKER_H
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Memcpy.hpp"
 
 #include <memory>
 #include <unordered_map>
 #include <vector>
-
-#include <cstring>
 
 
 namespace
@@ -73,7 +72,7 @@ template <typename T, typename U>
 [[nodiscard, gnu::always_inline]] inline T reinterpret(const U& input)
 {
     T output;
-    std::memcpy(&output, &input, sizeof(U));
+    SFML_BASE_MEMCPY(&output, &input, sizeof(U));
     return output;
 }
 

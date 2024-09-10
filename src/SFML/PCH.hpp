@@ -31,6 +31,7 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Memcpy.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
@@ -45,7 +46,6 @@
 
 #include <cstdint>
 #include <cstdlib>
-#include <cstring>
 
 #ifdef SFML_BUILD_EXAMPLES
 #include <random>

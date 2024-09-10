@@ -14,10 +14,11 @@
 
 #include "SFML/System/Err.hpp"
 
+#include "SFML/Base/Memcpy.hpp"
+
 #include <utility>
 
 #include <cstddef>
-#include <cstring>
 
 
 namespace
@@ -228,7 +229,7 @@ bool VertexBuffer::update([[maybe_unused]] const VertexBuffer& vertexBuffer)
     void* source = nullptr;
     glCheck(source = glMapBuffer(GL_ARRAY_BUFFER, GL_READ_ONLY));
 
-    std::memcpy(destination, source, sizeof(Vertex) * vertexBuffer.m_size);
+    SFML_BASE_MEMCPY(destination, source, sizeof(Vertex) * vertexBuffer.m_size);
 
     GLboolean sourceResult = GL_FALSE;
     glCheck(sourceResult = glUnmapBuffer(GL_ARRAY_BUFFER));

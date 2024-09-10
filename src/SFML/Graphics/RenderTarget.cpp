@@ -6,6 +6,7 @@
 #include "SFML/Graphics/BlendMode.hpp"
 #include "SFML/Graphics/CoordinateType.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/Shader.hpp"
@@ -28,9 +29,9 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Math/Lround.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 
 #include <atomic>
-#include <vector>
 
 #include <cstddef>
 #include <cstdint>
@@ -41,22 +42,33 @@ namespace
 // A nested named namespace is used here to allow unity builds of SFML.
 namespace RenderTargetImpl
 {
+////////////////////////////////////////////////////////////
 // Type alias for a render target or context id
 using IdType = std::uint64_t;
 
+
+////////////////////////////////////////////////////////////
 // Unique identifier, used for identifying RenderTargets when
 // tracking the currently active RenderTarget within a given context
 constinit std::atomic<IdType> nextUniqueId{1ul};
 
+
+////////////////////////////////////////////////////////////
 // Invalid/null render target or context id value
 constexpr IdType invalidId{0ul};
 
+
+////////////////////////////////////////////////////////////
 // Maximum supported number of render targets or contexts
 constexpr std::size_t maxIdCount{256ul};
 
+
+////////////////////////////////////////////////////////////
 // Map to help us detect whether a different RenderTarget has been activated within a single context
 constinit std::atomic<IdType> contextRenderTargetMap[maxIdCount]{};
 
+
+////////////////////////////////////////////////////////////
 // Check if a render target with the given ID is active in the current context
 [[nodiscard]] bool isActive(sf::GraphicsContext& graphicsContext, IdType id)
 {
@@ -67,6 +79,8 @@ constinit std::atomic<IdType> contextRenderTargetMap[maxIdCount]{};
     return (renderTargetId != invalidId) && (renderTargetId == id);
 }
 
+
+////////////////////////////////////////////////////////////
 // Convert an sf::BlendMode::Factor constant to the corresponding OpenGL constant.
 [[nodiscard]] std::uint32_t factorToGlConstant(sf::BlendMode::Factor blendFactor)
 {
@@ -92,6 +106,7 @@ constinit std::atomic<IdType> contextRenderTargetMap[maxIdCount]{};
 }
 
 
+////////////////////////////////////////////////////////////
 // Convert an sf::BlendMode::Equation constant to the corresponding OpenGL constant.
 [[nodiscard]] std::uint32_t equationToGlConstant(sf::BlendMode::Equation blendEquation)
 {
@@ -131,6 +146,7 @@ constinit std::atomic<IdType> contextRenderTargetMap[maxIdCount]{};
 }
 
 
+////////////////////////////////////////////////////////////
 // Convert an UpdateOperation constant to the corresponding OpenGL constant.
 [[nodiscard]] std::uint32_t stencilOperationToGlConstant(sf::StencilUpdateOperation operation)
 {
@@ -152,6 +168,7 @@ constinit std::atomic<IdType> contextRenderTargetMap[maxIdCount]{};
 }
 
 
+////////////////////////////////////////////////////////////
 // Convert a Comparison constant to the corresponding OpenGL constant.
 [[nodiscard]] std::uint32_t stencilFunctionToGlConstant(sf::StencilComparison comparison)
 {
@@ -172,6 +189,25 @@ constinit std::atomic<IdType> contextRenderTargetMap[maxIdCount]{};
     sf::priv::err() << "Invalid value for sf::StencilComparison! Fallback to sf::StencilMode::Always.";
     SFML_BASE_ASSERT(false);
     return GL_ALWAYS;
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline]] constexpr GLenum primitiveTypeToOpenGLMode(sf::PrimitiveType type)
+{
+    constexpr GLenum modes[]{GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN};
+    return modes[static_cast<std::size_t>(type)];
+}
+
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline]] sf::IntRect getMultipliedBySizeAndRoundedRect(sf::Vector2u         renderTargetSize,
+                                                                                const sf::FloatRect& inputRect)
+{
+    const auto [width, height] = renderTargetSize.to<sf::Vector2f>();
+
+    return sf::Rect<long>({sf::base::lround(width * inputRect.position.x), sf::base::lround(height * inputRect.position.y)},
+                          {sf::base::lround(width * inputRect.size.x), sf::base::lround(height * inputRect.size.y)})
+        .to<sf::IntRect>();
 }
 
 } // namespace RenderTargetImpl
@@ -198,9 +234,6 @@ struct [[nodiscard]] StatesCache
     StencilMode    lastStencilMode;      //!< Cached stencil
     std::uint64_t  lastTextureId{};      //!< Cached texture
     CoordinateType lastCoordinateType{}; //!< Texture coordinate type
-
-    bool   useVertexCache{}; //!< Did we previously use the vertex cache?
-    Vertex vertexCache[4]{}; //!< Pre-transformed vertices cache
 
     GLuint lastUsedProgramId{}; //!< GL id of the last used shader program
 
@@ -282,6 +315,13 @@ using VBO = OpenGLRAII<[](auto& id) { glCheck(glGenBuffers(1, &id)); },
 
 
 ////////////////////////////////////////////////////////////
+using EBO = OpenGLRAII<[](auto& id) { glCheck(glGenBuffers(1, &id)); },
+                       [](auto id) { glCheck(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id)); },
+                       [](auto& id) { glCheck(glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &id)); },
+                       [](auto& id) { glCheck(glDeleteBuffers(1, &id)); }>;
+
+
+////////////////////////////////////////////////////////////
 void setupVertexAttribPointers(const GLint sfAttribPositionIdx, const GLint sfAttribColorIdx, const GLint sfAttribTexCoordIdx)
 {
 #define SFML_PRIV_OFFSETOF(...) reinterpret_cast<const void*>(offsetof(__VA_ARGS__))
@@ -328,19 +368,26 @@ struct RenderTarget::Impl
     explicit Impl(GraphicsContext& theGraphicsContext) :
     graphicsContext(&theGraphicsContext),
     vao(theGraphicsContext),
-    vbo(theGraphicsContext)
+    vbo(theGraphicsContext),
+    ebo(theGraphicsContext)
     {
     }
 
-    GraphicsContext*         graphicsContext; //!< The window context
-    View                     defaultView;     //!< Default view
-    View                     view;            //!< Current view
-    StatesCache              cache{};         //!< Render states cache
-    RenderTargetImpl::IdType id{};            //!< Unique number that identifies the render target
-    VAO                      vao;             //!< Vertex array object associated with the render target
-    VBO                      vbo;             //!< Vertex buffer object associated with the render target
+    GraphicsContext* graphicsContext; //!< The window context
 
-    std::vector<Vertex> batchVertexCache; //!< TODO P0:
+    View defaultView; //!< Default view
+    View view;        //!< Current view
+
+    StatesCache cache{}; //!< Render states cache
+
+    RenderTargetImpl::IdType id{}; //!< Unique number that identifies the render target
+
+    VAO vao; //!< Vertex array object associated with the render target
+    VBO vbo; //!< Vertex buffer object associated with the render target
+    EBO ebo; //!< Element index buffer object associated with the render target
+
+    base::TrivialVector<Vertex>         batchVertexCache; //!< TODO P0:
+    base::TrivialVector<unsigned short> batchIndexCache;  //!< TODO P0:
 };
 
 
@@ -441,24 +488,14 @@ const View& RenderTarget::getDefaultView() const
 ////////////////////////////////////////////////////////////
 IntRect RenderTarget::getViewport(const View& view) const
 {
-    const auto [width, height] = getSize().to<Vector2f>();
-    const FloatRect& viewport  = view.getViewport();
-
-    return Rect<long>({base::lround(width * viewport.position.x), base::lround(height * viewport.position.y)},
-                      {base::lround(width * viewport.size.x), base::lround(height * viewport.size.y)})
-        .to<IntRect>();
+    return RenderTargetImpl::getMultipliedBySizeAndRoundedRect(getSize(), view.getViewport());
 }
 
 
 ////////////////////////////////////////////////////////////
 IntRect RenderTarget::getScissor(const View& view) const
 {
-    const auto [width, height] = getSize().to<Vector2f>();
-    const FloatRect& scissor   = view.getScissor();
-
-    return Rect<long>({base::lround(width * scissor.position.x), base::lround(height * scissor.position.y)},
-                      {base::lround(width * scissor.size.x), base::lround(height * scissor.size.y)})
-        .to<IntRect>();
+    return RenderTargetImpl::getMultipliedBySizeAndRoundedRect(getSize(), view.getScissor());
 }
 
 
@@ -474,8 +511,8 @@ Vector2f RenderTarget::mapPixelToCoords(Vector2i point, const View& view) const
 {
     // First, convert from viewport coordinates to homogeneous coordinates
     const auto     viewport   = getViewport(view).to<FloatRect>();
-    const Vector2f normalized = Vector2f(-1, 1) +
-                                Vector2f(2, -2).cwiseMul(point.to<Vector2f>() - viewport.position).cwiseDiv(viewport.size);
+    const Vector2f normalized = Vector2f(-1.f, 1.f) +
+                                Vector2f(2.f, -2.f).cwiseMul(point.to<Vector2f>() - viewport.position).cwiseDiv(viewport.size);
 
     // Then transform by the inverse of the view matrix
     return view.getInverseTransform().transformPoint(normalized);
@@ -497,7 +534,8 @@ Vector2i RenderTarget::mapCoordsToPixel(Vector2f point, const View& view) const
 
     // Then convert to viewport coordinates
     const auto viewport = getViewport(view).to<FloatRect>();
-    return ((normalized.cwiseMul({1, -1}) + sf::Vector2f{1, 1}).cwiseDiv({2, 2}).cwiseMul(viewport.size) + viewport.position)
+    return ((normalized.cwiseMul({1.f, -1.f}) + sf::Vector2f{1.f, 1.f}).cwiseDiv({2.f, 2.f}).cwiseMul(viewport.size) +
+            viewport.position)
         .to<Vector2i>();
 }
 
@@ -524,44 +562,53 @@ void RenderTarget::draw(const Shape& shape, const Texture* texture, const Render
 ////////////////////////////////////////////////////////////
 void RenderTarget::draw(const Vertex* vertices, std::size_t vertexCount, PrimitiveType type, const RenderStates& states)
 {
-    // Nothing to draw?
-    if (vertices == nullptr || (vertexCount == 0))
+    // Nothing to draw or inactive target
+    if (vertices == nullptr || vertexCount == 0u ||
+        (!RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) && !setActive(true)))
         return;
 
-    if (RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) || setActive(true))
-    {
-        // Check if the vertex count is low enough so that we can pre-transform them
-        const bool useVertexCache = vertexCount <= base::getArraySize(m_impl->cache.vertexCache);
+    setupDraw(states);
 
-        if (useVertexCache)
-        {
-            // Pre-transform the vertices and store them into the vertex cache
-            for (std::size_t i = 0; i < vertexCount; ++i)
-            {
-                auto& [position, color, texCoords] = m_impl->cache.vertexCache[i];
+    glCheck(glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeof(Vertex) * vertexCount), vertices, GL_STATIC_DRAW));
 
-                position  = states.transform * vertices[i].position;
-                color     = vertices[i].color;
-                texCoords = vertices[i].texCoords;
-            }
-        }
+    setupVertexAttribPointers(m_impl->cache.sfAttribPositionIdx,
+                              m_impl->cache.sfAttribColorIdx,
+                              m_impl->cache.sfAttribTexCoordIdx);
 
-        setupDraw(useVertexCache, states);
+    drawPrimitives(type, 0u, vertexCount);
+    cleanupDraw(states);
+}
 
-        // If we pre-transform the vertices, we must use our internal vertex cache
-        const auto* data = reinterpret_cast<const char*>(useVertexCache ? m_impl->cache.vertexCache : vertices);
 
-        glCheck(glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeof(Vertex) * vertexCount), data, GL_STATIC_DRAW));
-        setupVertexAttribPointers(m_impl->cache.sfAttribPositionIdx,
-                                  m_impl->cache.sfAttribColorIdx,
-                                  m_impl->cache.sfAttribTexCoordIdx);
+////////////////////////////////////////////////////////////
+void RenderTarget::drawIndexedVertices(
+    const Vertex*         vertices,
+    std::size_t           vertexCount,
+    const unsigned short* indices,
+    std::size_t           indexCount,
+    PrimitiveType         type,
+    const RenderStates&   states)
+{
+    // Nothing to draw or inactive target
+    if (vertices == nullptr || vertexCount == 0u || indices == nullptr || indexCount == 0u ||
+        (!RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) && !setActive(true)))
+        return;
 
-        drawPrimitives(type, 0, vertexCount);
-        cleanupDraw(states);
+    setupDraw(states);
 
-        // Update the cache
-        m_impl->cache.useVertexCache = useVertexCache;
-    }
+    glCheck(glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeof(Vertex) * vertexCount), vertices, GL_STATIC_DRAW));
+
+    glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                         static_cast<GLsizeiptr>(sizeof(unsigned short) * indexCount),
+                         indices,
+                         GL_STATIC_DRAW));
+
+    setupVertexAttribPointers(m_impl->cache.sfAttribPositionIdx,
+                              m_impl->cache.sfAttribColorIdx,
+                              m_impl->cache.sfAttribTexCoordIdx);
+
+    drawIndexedPrimitives(type, indexCount);
+    cleanupDraw(states);
 }
 
 
@@ -589,32 +636,28 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, std::size_t firstVerte
     // Clamp vertexCount to something that makes sense
     vertexCount = base::min(vertexCount, vertexBuffer.getVertexCount() - firstVertex);
 
-    // Nothing to draw?
-    if (!vertexCount || !vertexBuffer.getNativeHandle())
+    // Nothing to draw or inactive target
+
+    if (!vertexCount || !vertexBuffer.getNativeHandle() ||
+        (!RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) && !setActive(true)))
         return;
 
-    if (RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) || setActive(true))
-    {
-        setupDraw(false, states);
+    setupDraw(states);
 
-        // Bind vertex buffer
-        VertexBuffer::bind(*m_impl->graphicsContext, &vertexBuffer);
+    // Bind vertex buffer
+    VertexBuffer::bind(*m_impl->graphicsContext, &vertexBuffer);
 
-        // Always enable texture coordinates
-        setupVertexAttribPointers(m_impl->cache.sfAttribPositionIdx,
-                                  m_impl->cache.sfAttribColorIdx,
-                                  m_impl->cache.sfAttribTexCoordIdx);
+    // Always enable texture coordinates
+    setupVertexAttribPointers(m_impl->cache.sfAttribPositionIdx,
+                              m_impl->cache.sfAttribColorIdx,
+                              m_impl->cache.sfAttribTexCoordIdx);
 
-        drawPrimitives(vertexBuffer.getPrimitiveType(), firstVertex, vertexCount);
+    drawPrimitives(vertexBuffer.getPrimitiveType(), firstVertex, vertexCount);
 
-        // Unbind vertex buffer
-        VertexBuffer::bind(*vertexBuffer.m_graphicsContext, nullptr);
+    // Unbind vertex buffer
+    VertexBuffer::bind(*vertexBuffer.m_graphicsContext, nullptr);
 
-        cleanupDraw(states);
-
-        // Update the cache
-        m_impl->cache.useVertexCache = false;
-    }
+    cleanupDraw(states);
 }
 
 
@@ -729,12 +772,10 @@ void RenderTarget::resetGLStates()
         applyBlendMode(BlendAlpha);
         applyStencilMode(StencilMode());
         unapplyTexture();
-        applyShader(/* shader */ nullptr);
+        unapplyShader();
 
         if (vertexBufferAvailable)
             glCheck(VertexBuffer::bind(*m_impl->graphicsContext, nullptr));
-
-        m_impl->cache.useVertexCache = false;
 
         // Set the default view
         setView(getView());
@@ -750,6 +791,7 @@ m_renderStates(renderStates),
 m_renderTarget(renderTarget)
 {
     m_renderTarget.m_impl->batchVertexCache.clear();
+    m_renderTarget.m_impl->batchIndexCache.clear();
 }
 
 
@@ -757,39 +799,99 @@ m_renderTarget(renderTarget)
 RenderTarget::BatchDraw::~BatchDraw()
 {
     const auto& vertices = m_renderTarget.m_impl->batchVertexCache;
+    const auto& indices  = m_renderTarget.m_impl->batchIndexCache;
 
-    m_renderTarget.draw(vertices.data(), vertices.size(), PrimitiveType::Triangles, m_renderStates);
+    m_renderTarget.drawIndexedVertices(vertices.data(),
+                                       vertices.size(),
+                                       indices.data(),
+                                       indices.size(),
+                                       PrimitiveType::Triangles,
+                                       m_renderStates);
 }
 
 
 ////////////////////////////////////////////////////////////
 void RenderTarget::BatchDraw::add(const Sprite& sprite)
 {
-    const auto [data, size]    = sprite.getVertices();
-    const Transform& transform = sprite.getTransform();
+    const auto [data, size] = sprite.getVertices();
 
-    Vertex buffer[6];
+    const auto& vertices  = m_renderTarget.m_impl->batchVertexCache;
+    auto&       indices   = m_renderTarget.m_impl->batchIndexCache;
+    const auto  nextIndex = static_cast<unsigned short>(vertices.size());
 
-    buffer[0] = data[0];
-    buffer[1] = data[1];
-    buffer[2] = data[2];
+    indices.reserveMore(6u);
 
-    buffer[3] = data[1];
-    buffer[4] = data[2];
-    buffer[5] = data[3];
+    indices.unsafePushBackMultiple(
+        // Triangle 0
+        nextIndex + 0u,
+        nextIndex + 1u,
+        nextIndex + 2u,
 
-    addImpl(buffer, 6, transform);
+        // Triangle 1
+        nextIndex + 1u,
+        nextIndex + 2u,
+        nextIndex + 3u);
+
+    appendPreTransformedVertices(data, size, sprite.getTransform());
 }
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::BatchDraw::addImpl(const Vertex* data, base::SizeT size, const Transform& transform)
+void RenderTarget::BatchDraw::add(const Shape& shape)
+{
+    auto& vertices = m_renderTarget.m_impl->batchVertexCache;
+    auto& indices  = m_renderTarget.m_impl->batchIndexCache;
+
+    if (const auto [fillData, fillSize] = shape.getFillVertices(); fillSize > 2u)
+    {
+        const auto nextFillIndex = static_cast<unsigned short>(vertices.size());
+
+        indices.reserveMore(fillSize * 3u);
+
+        for (unsigned short i = 1u; i < fillSize - 1; ++i)
+            indices.unsafePushBackMultiple(nextFillIndex, nextFillIndex + i, nextFillIndex + i + 1u);
+
+        appendPreTransformedVertices(fillData, fillSize, shape.getTransform());
+    }
+
+    if (const auto [outlineData, outlineSize] = shape.getOutlineVertices(); outlineSize > 2u)
+    {
+        const auto nextOutlineIndex = static_cast<unsigned short>(vertices.size());
+
+        indices.reserveMore(outlineSize * 3u);
+
+        for (unsigned short i = 0u; i < outlineSize - 2; ++i)
+            indices.unsafePushBackMultiple(nextOutlineIndex + i, nextOutlineIndex + i + 1u, nextOutlineIndex + i + 2u);
+
+        appendPreTransformedVertices(outlineData, outlineSize, shape.getTransform());
+    }
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::BatchDraw::addSubsequentIndices(base::SizeT count)
+{
+    auto& indices = m_renderTarget.m_impl->batchIndexCache;
+
+    const auto nextIndex = static_cast<unsigned short>(m_renderTarget.m_impl->batchVertexCache.size());
+
+    indices.reserveMore(count);
+
+    for (unsigned short i = 0; i < static_cast<unsigned short>(count); ++i)
+        indices.unsafeEmplaceBack(nextIndex + i);
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::BatchDraw::appendPreTransformedVertices(const Vertex* data, base::SizeT size, const Transform& transform)
 {
     auto& vertices = m_renderTarget.m_impl->batchVertexCache;
 
-    auto it = vertices.insert(vertices.end(), data, data + size);
-    for (auto targetIt = it + static_cast<long long>(size); it != targetIt; ++it)
-        it->position = transform * it->position;
+    vertices.reserveMore(size);
+    vertices.unsafeEmplaceRange(data, size);
+
+    for (auto i = vertices.size() - size; i < vertices.size(); ++i)
+        vertices[i].position = transform * vertices[i].position;
 }
 
 
@@ -980,17 +1082,16 @@ void RenderTarget::unapplyTexture()
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::applyShader(const Shader* shader)
+void RenderTarget::unapplyShader()
 {
-    if (shader != nullptr)
-        shader->bind();
-    else
-        Shader::unbind(*m_impl->graphicsContext);
+    Shader::unbind(*m_impl->graphicsContext);
+
+    m_impl->cache.lastUsedProgramId = 0u;
 }
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::setupDraw(bool useVertexCache, const RenderStates& states)
+void RenderTarget::setupDraw(const RenderStates& states)
 {
     // GL_FRAMEBUFFER_SRGB is not available on OpenGL ES
     // If a framebuffer supports sRGB, it will always be enabled on OpenGL ES
@@ -1013,11 +1114,12 @@ void RenderTarget::setupDraw(bool useVertexCache, const RenderStates& states)
     const Shader& usedShader = states.shader != nullptr ? *states.shader : m_impl->graphicsContext->getBuiltInShader();
 
     // Apply the shader
-    applyShader(&usedShader);
+    usedShader.bind();
 
     // Bind GL objects
     m_impl->vao.bind();
     m_impl->vbo.bind();
+    m_impl->ebo.bind();
 
     // Update cache
     const auto usedNativeHandle  = usedShader.getNativeHandle();
@@ -1048,7 +1150,7 @@ void RenderTarget::setupDraw(bool useVertexCache, const RenderStates& states)
         applyCurrentView();
 
     // Set the model-view-projection matrix
-    const Transform& modelViewMatrix(useVertexCache ? Transform::Identity : states.transform);
+    const Transform& modelViewMatrix(states.transform);
     usedShader.setMat4Uniform(*m_impl->cache.ulModelViewProjectionMatrix,
                               (m_impl->view.getTransform() * modelViewMatrix).getMatrix());
 
@@ -1103,13 +1205,23 @@ void RenderTarget::setupDraw(bool useVertexCache, const RenderStates& states)
 ////////////////////////////////////////////////////////////
 void RenderTarget::drawPrimitives(PrimitiveType type, std::size_t firstVertex, std::size_t vertexCount)
 {
-    // Find the OpenGL primitive type
-    static constexpr GLenum modes[] = {GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN};
-    const GLenum mode = modes[static_cast<std::size_t>(type)];
-
-    // Draw the primitives
     m_impl->vao.bind();
-    glCheck(glDrawArrays(mode, static_cast<GLint>(firstVertex), static_cast<GLsizei>(vertexCount)));
+
+    glCheck(glDrawArrays(RenderTargetImpl::primitiveTypeToOpenGLMode(type),
+                         static_cast<GLint>(firstVertex),
+                         static_cast<GLsizei>(vertexCount)));
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::drawIndexedPrimitives(PrimitiveType type, std::size_t indexCount)
+{
+    m_impl->vao.bind();
+
+    glCheck(glDrawElements(RenderTargetImpl::primitiveTypeToOpenGLMode(type),
+                           indexCount,
+                           GL_UNSIGNED_SHORT,
+                           /* index offset */ nullptr));
 }
 
 
@@ -1117,7 +1229,7 @@ void RenderTarget::drawPrimitives(PrimitiveType type, std::size_t firstVertex, s
 void RenderTarget::cleanupDraw(const RenderStates& states)
 {
     // Unbind the shader, if any
-    applyShader(/* shader */ nullptr);
+    unapplyShader();
 
     // If the texture we used to draw belonged to a RenderTexture, then forcibly unbind that texture.
     // This prevents a bug where some drivers do not clear RenderTextures properly.
@@ -1142,14 +1254,6 @@ void RenderTarget::cleanupDraw(const RenderStates& states)
 //   If SetView was called since last draw, the projection
 //   matrix is updated. We don't need more, the view doesn't
 //   change frequently.
-//
-// * Transform
-//   The transform matrix is usually expensive because each
-//   entity will most likely use a different transform. This can
-//   lead, in worst case, to changing it every 4 vertices.
-//   To avoid that, when the vertex count is low enough, we
-//   pre-transform them and therefore use an identity transform
-//   to render them.
 //
 // * Blending mode
 //   Since it overloads the == operator, we can easily check

@@ -27,8 +27,6 @@
 #include <mutex>
 #include <thread>
 
-#include <cstring>
-
 #define GLAD_EGL_IMPLEMENTATION
 #include <glad/egl.h>
 

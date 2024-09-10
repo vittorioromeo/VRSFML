@@ -9,11 +9,11 @@
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Strlen.hpp"
 
 #include <locale>
 #include <string>
 
-#include <cstring>
 #include <cwchar>
 
 
@@ -88,7 +88,7 @@ String::String(const char* ansiString, const std::locale& locale)
 {
     if (ansiString)
     {
-        const std::size_t length = std::strlen(ansiString);
+        const std::size_t length = SFML_BASE_STRLEN(ansiString);
         if (length > 0)
         {
             m_impl->string.reserve(length + 1);

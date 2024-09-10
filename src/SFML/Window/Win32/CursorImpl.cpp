@@ -8,8 +8,6 @@
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Win32/WindowsHeader.hpp"
 
-#include <cstring>
-
 
 namespace sf::priv
 {

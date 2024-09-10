@@ -136,8 +136,7 @@ int main()
     const auto font = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf").value();
 
     // Create the window of the application
-    sf::RenderWindow window(graphicsContext,
-                            {.size{windowSize}, .title = "SFML Island", .resizable = false});
+    sf::RenderWindow window(graphicsContext, {.size{windowSize}, .title = "SFML Island", .resizable = false});
 
     window.setVerticalSyncEnabled(true);
 

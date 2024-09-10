@@ -30,6 +30,7 @@
 #include "SFML/System/Path.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Memcpy.hpp"
 
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
@@ -47,8 +48,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <vector>
-
-#include <cstring>
 
 #ifdef SFML_OPENGL_ES
 #include "SFML/Window/EglContext.hpp"

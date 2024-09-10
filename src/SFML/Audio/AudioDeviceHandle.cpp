@@ -5,9 +5,9 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Audio/PlaybackDeviceHandle.hpp"
 
-#include <miniaudio.h>
+#include "SFML/Base/Memcmp.hpp"
 
-#include <cstring>
+#include <miniaudio.h>
 
 
 namespace sf::priv
@@ -102,7 +102,7 @@ bool operator==(const AudioDeviceHandle& lhs, const AudioDeviceHandle& rhs)
     // https://github.com/mackron/miniaudio/issues/866
 
     // NOLINTNEXTLINE(bugprone-suspicious-memory-comparison)
-    return std::memcmp(&lhs.m_impl->maDeviceInfo.id, &rhs.m_impl->maDeviceInfo.id, sizeof(ma_device_id)) == 0;
+    return SFML_BASE_MEMCMP(&lhs.m_impl->maDeviceInfo.id, &rhs.m_impl->maDeviceInfo.id, sizeof(ma_device_id)) == 0;
 }
 
 

@@ -7,9 +7,8 @@
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Memcpy.hpp"
 #include "SFML/Base/Optional.hpp"
-
-#include <cstring>
 
 
 namespace sf
@@ -30,7 +29,7 @@ base::Optional<std::size_t> MemoryInputStream::read(void* data, std::size_t size
 
     if (count > 0)
     {
-        std::memcpy(data, m_data + m_offset, static_cast<std::size_t>(count));
+        SFML_BASE_MEMCPY(data, m_data + m_offset, static_cast<std::size_t>(count));
         m_offset += count;
     }
 

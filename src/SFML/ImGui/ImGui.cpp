@@ -28,14 +28,14 @@
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
+#include "SFML/Base/Memcpy.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/Strlen.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <imgui.h>
 
 #include <vector>
-
-#include <cstring> // memcpy
 
 #if defined(__APPLE__)
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -302,7 +302,7 @@ namespace
 [[nodiscard]] ImTextureID convertGLTextureHandleToImTextureID(unsigned int glTextureHandle)
 {
     ImTextureID textureID = nullptr;
-    std::memcpy(&textureID, &glTextureHandle, sizeof(unsigned int));
+    SFML_BASE_MEMCPY(&textureID, &glTextureHandle, sizeof(unsigned int));
     return textureID;
 }
 
@@ -1106,7 +1106,7 @@ bool ImGuiContext::init(Window& window, Vector2f displaySize, bool loadDefaultFo
         loadDefaultFont,
 
         [](void* /*userData*/, const char* text)
-        { Clipboard::setString(StringUtfUtils::fromUtf8(text, text + std::strlen(text))); },
+        { Clipboard::setString(StringUtfUtils::fromUtf8(text, text + SFML_BASE_STRLEN(text))); },
 
         [](void* /*userData*/)
         {

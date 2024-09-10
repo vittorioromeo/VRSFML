@@ -10,9 +10,9 @@
 #include "SFML/System/String.hpp"
 #include "SFML/System/Win32/WindowsHeader.hpp"
 
-#include <string>
+#include "SFML/Base/Memcpy.hpp"
 
-#include <cstring>
+#include <string>
 
 
 namespace sf::priv
@@ -75,7 +75,7 @@ void ClipboardImpl::setString(const String& text)
 
     if (stringHandle)
     {
-        std::memcpy(GlobalLock(stringHandle), text.toWideString().data(), stringSize);
+        SFML_BASE_MEMCPY(GlobalLock(stringHandle), text.toWideString().data(), stringSize);
         GlobalUnlock(stringHandle);
         SetClipboardData(CF_UNICODETEXT, stringHandle);
     }

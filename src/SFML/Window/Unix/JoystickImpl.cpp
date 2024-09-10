@@ -7,6 +7,7 @@
 
 #include "SFML/System/Err.hpp"
 
+#include "SFML/Base/Memcpy.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <fcntl.h>
@@ -18,7 +19,6 @@
 #include <vector>
 
 #include <cerrno>
-#include <cstring>
 
 namespace
 {

@@ -11,11 +11,10 @@
 #include "SFML/System/Err.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Memcpy.hpp"
 #include "SFML/Base/Optional.hpp"
 
 #include <vector>
-
-#include <cstring>
 
 
 namespace sf
@@ -56,7 +55,7 @@ bool SoundBufferRecorder::onProcessSamples(const std::int16_t* samples, std::siz
     const std::size_t oldSize = m_impl->samples.size();
     m_impl->samples.resize(oldSize + sampleCount);
 
-    std::memcpy(m_impl->samples.data() + oldSize, samples, sampleCount * sizeof(std::int16_t));
+    SFML_BASE_MEMCPY(m_impl->samples.data() + oldSize, samples, sampleCount * sizeof(std::int16_t));
 
     return true;
 }

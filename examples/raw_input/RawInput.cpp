@@ -30,10 +30,7 @@ int main()
     sf::GraphicsContext graphicsContext;
 
     // Create the main window
-    sf::RenderWindow window(graphicsContext,
-                            {.size{800u, 600u},
-                             .title = "SFML Raw Mouse Input",
-                             .resizable = false});
+    sf::RenderWindow window(graphicsContext, {.size{800u, 600u}, .title = "SFML Raw Mouse Input", .resizable = false});
 
     window.setVerticalSyncEnabled(true);
 

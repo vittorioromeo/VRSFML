@@ -10,6 +10,7 @@
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/EnumArray.hpp"
+#include "SFML/Base/Memcpy.hpp"
 #include "SFML/Base/Optional.hpp"
 
 #include <fcntl.h>
@@ -25,7 +26,6 @@
 #include <cerrno>
 #include <cstdio>
 #include <cstdlib>
-#include <cstring>
 
 
 namespace

@@ -31,6 +31,8 @@
 #include <sstream>
 #include <vector>
 
+#include <cstddef>
+
 
 ////////////////////////////////////////////////////////////
 
@@ -53,6 +55,8 @@ int main()
     const auto sfmlLogoImage    = sf::Image::loadFromFile("resources/sfml_logo.png").value();
     const auto sfmlLogoAtlasPos = textureAtlas.add(sfmlLogoImage).value();
 
+    const auto whiteDotAtlasPos = textureAtlas.add(graphicsContext.getBuiltInWhiteDotTexture()).value();
+
     sf::Sprite sfmlLogo(
         {.position = sfmlLogoAtlasPos.to<sf::Vector2i>(), .size = sfmlLogoImage.getSize().to<sf::Vector2i>()});
 
@@ -74,6 +78,14 @@ int main()
     sf::Text text5(font1, "sussy", 64);
     text5.setPosition({128u, 256u});
 
+    sf::CircleShape circle0{45.f};
+    circle0.setPosition({350.f, 350.f});
+    circle0.setFillColor(sf::Color::Red);
+    circle0.setOutlineColor(sf::Color::Yellow);
+    circle0.setOutlineThickness(8.f);
+    circle0.setTextureRect({.position = whiteDotAtlasPos.to<sf::Vector2i>(), .size{1u, 1u}});
+    circle0.setOutlineTextureRect({.position = whiteDotAtlasPos.to<sf::Vector2i>(), .size{1u, 1u}});
+
     while (true)
     {
         while (sf::base::Optional event = window.pollEvent())
@@ -84,66 +96,37 @@ int main()
 
         window.clear();
 
-#if 0
-        window.draw(text0);
-        window.draw(text1);
-        window.draw(text2);
-        window.draw(text3);
-        window.draw(text4);
-        window.draw(text5);
-
-        sf::Sprite s{font0.getTexture(128).getRect()};
-        s.setPosition({400.f, 400.f});
-        window.draw(s, font0.getTexture(128));
-#else
         {
             auto batch = window.startBatchDraw({.texture = &textureAtlas.getTexture()});
 
             batch.add(text0);
+
             sfmlLogo.setPosition({170.f, 50.f});
+            sfmlLogo.setScale({1.5f, 1.5f});
             batch.add(sfmlLogo);
 
             batch.add(text1);
             sfmlLogo.setPosition({100.f, 50.f});
+            sfmlLogo.setScale({1.0f, 1.0f});
             batch.add(sfmlLogo);
 
             batch.add(text2);
             sfmlLogo.setPosition({300.f, 150.f});
+            sfmlLogo.setScale({1.5f, 1.5f});
             batch.add(sfmlLogo);
 
             batch.add(text3);
             sfmlLogo.setPosition({250.f, 250.f});
+            sfmlLogo.setScale({1.0f, 1.0f});
             batch.add(sfmlLogo);
 
             batch.add(text4);
             batch.add(text5);
+
+            batch.add(circle0);
         }
-/*
-        static std::vector<sf::Vertex> batch;
-        batch.clear();
 
-        const auto addToBatch = [&](const sf::Text& text)
-        {
-            const auto [data, size] = text.getVertices();
-            const auto& transform   = text.getTransform();
-
-            auto it = batch.insert(batch.end(), data, data + size);
-            for (auto targetIt = it + static_cast<long long>(size); it != targetIt; ++it)
-                it->position = transform * it->position;
-        };
-
-        addToBatch(text0);
-        addToBatch(text1);
-        addToBatch(text2);
-        addToBatch(text3);
-        addToBatch(text4);
-        addToBatch(text5);
-
-        window.draw(batch.data(),
-                    batch.size(),
-                    sf::PrimitiveType::Triangles,
-                    {.coordinateType = sf::CoordinateType::Pixels, .texture = &textureAtlas.getTexture()}); */
-#endif
+        // window.draw(circle0, /* texture */ nullptr);
 
         window.display();
     }

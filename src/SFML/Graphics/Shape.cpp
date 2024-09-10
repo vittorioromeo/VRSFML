@@ -72,14 +72,15 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct Shape::Impl
 {
-    IntRect             textureRect;                //!< Rectangle defining the area of the source texture to display
-    Color               fillColor{Color::White};    //!< Fill color
-    Color               outlineColor{Color::White}; //!< Outline color
-    float               outlineThickness{};         //!< Thickness of the shape's outline
-    std::vector<Vertex> vertices;                   //!< Vertex array containing the fill geometry
-    std::vector<Vertex> outlineVertices;            //!< Vertex array containing the outline geometry
-    FloatRect           insideBounds;               //!< Bounding rectangle of the inside (fill)
-    FloatRect           bounds;                     //!< Bounding rectangle of the whole shape (outline + fill)
+    IntRect textureRect;             //!< Rectangle defining the area of the source texture to display for the fill
+    IntRect outlineTextureRect;      //!< Rectangle defining the area of the source texture to display for the outline
+    Color   fillColor{Color::White}; //!< Fill color
+    Color   outlineColor{Color::White};  //!< Outline color
+    float   outlineThickness{};          //!< Thickness of the shape's outline
+    std::vector<Vertex> vertices;        //!< Vertex array containing the fill geometry
+    std::vector<Vertex> outlineVertices; //!< Vertex array containing the outline geometry
+    FloatRect           insideBounds;    //!< Bounding rectangle of the inside (fill)
+    FloatRect           bounds;          //!< Bounding rectangle of the whole shape (outline + fill)
 };
 
 
@@ -116,11 +117,25 @@ void Shape::setTextureRect(const IntRect& rect)
 
 
 ////////////////////////////////////////////////////////////
+void Shape::setOutlineTextureRect(const IntRect& rect)
+{
+    m_impl->outlineTextureRect = rect;
+    updateOutlineTexCoords();
+}
+
+
+////////////////////////////////////////////////////////////
 const IntRect& Shape::getTextureRect() const
 {
     return m_impl->textureRect;
 }
 
+
+////////////////////////////////////////////////////////////
+const IntRect& Shape::getOutlineTextureRect() const
+{
+    return m_impl->outlineTextureRect;
+}
 
 ////////////////////////////////////////////////////////////
 void Shape::setFillColor(Color color)
@@ -191,6 +206,20 @@ FloatRect Shape::getGlobalBounds() const
 
 
 ////////////////////////////////////////////////////////////
+[[nodiscard]] base::Span<const Vertex> Shape::getFillVertices() const
+{
+    return {m_impl->vertices.data(), m_impl->vertices.size()};
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] base::Span<const Vertex> Shape::getOutlineVertices() const
+{
+    return {m_impl->outlineVertices.data(), m_impl->outlineVertices.size()};
+}
+
+
+////////////////////////////////////////////////////////////
 void Shape::update(const sf::Vector2f* points, const std::size_t pointCount)
 {
     // Get the total number of points of the shape
@@ -232,17 +261,14 @@ void Shape::drawOnto(RenderTarget& renderTarget, const Texture* texture, RenderS
 {
     states.transform *= getTransform();
     states.coordinateType = CoordinateType::Pixels;
+    states.texture        = texture;
 
     // Render the inside
-    states.texture = texture;
     renderTarget.draw(m_impl->vertices, PrimitiveType::TriangleFan, states);
 
     // Render the outline
     if (m_impl->outlineThickness != 0)
-    {
-        states.texture = nullptr;
         renderTarget.draw(m_impl->outlineVertices, PrimitiveType::TriangleStrip, states);
-    }
 }
 
 
@@ -266,6 +292,23 @@ void Shape::updateTexCoords()
     for (Vertex& vertex : m_impl->vertices)
     {
         const Vector2f ratio = (vertex.position - m_impl->insideBounds.position).cwiseDiv(safeInsideSize);
+        vertex.texCoords     = convertedTextureRect.position + convertedTextureRect.size.cwiseMul(ratio);
+    }
+}
+
+
+////////////////////////////////////////////////////////////
+void Shape::updateOutlineTexCoords()
+{
+    const auto convertedTextureRect = m_impl->outlineTextureRect.to<FloatRect>();
+
+    // Make sure not to divide by zero when the points are aligned on a vertical or horizontal line
+    const Vector2f safeInsideSize(m_impl->bounds.size.x > 0 ? m_impl->bounds.size.x : 1.f,
+                                  m_impl->bounds.size.y > 0 ? m_impl->bounds.size.y : 1.f);
+
+    for (Vertex& vertex : m_impl->outlineVertices)
+    {
+        const Vector2f ratio = (vertex.position - m_impl->bounds.position).cwiseDiv(safeInsideSize);
         vertex.texCoords     = convertedTextureRect.position + convertedTextureRect.size.cwiseMul(ratio);
     }
 }

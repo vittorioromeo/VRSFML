@@ -13,12 +13,11 @@
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Memcpy.hpp"
 
 #include <miniaudio.h>
 
 #include <vector>
-
-#include <cstring>
 
 
 namespace sf::priv
@@ -194,7 +193,7 @@ void MiniaudioUtils::SoundBase::processEffect(const float**  framesIn,
     }
 
     const auto toProcess = std::min(frameCountIn, frameCountOut);
-    std::memcpy(framesOut[0], framesIn[0], toProcess * impl->effectNode.channelCount * sizeof(float));
+    SFML_BASE_MEMCPY(framesOut[0], framesIn[0], toProcess * impl->effectNode.channelCount * sizeof(float));
     frameCountIn  = toProcess;
     frameCountOut = toProcess;
 }

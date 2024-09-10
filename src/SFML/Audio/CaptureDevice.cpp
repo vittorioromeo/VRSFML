@@ -14,12 +14,11 @@
 #include "SFML/System/Err.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Memcpy.hpp"
 
 #include <miniaudio.h>
 
 #include <vector>
-
-#include <cstring>
 
 
 namespace sf
@@ -33,7 +32,7 @@ struct CaptureDevice::Impl
 
         // Copy the new samples into our temporary buffer
         impl.samples.resize(frameCount * impl.channelCount);
-        std::memcpy(impl.samples.data(), input, frameCount * impl.channelCount * sizeof(std::int16_t));
+        SFML_BASE_MEMCPY(impl.samples.data(), input, frameCount * impl.channelCount * sizeof(std::int16_t));
 
         // Notify the derived class of the availability of new samples
         SFML_BASE_ASSERT(impl.processSamplesFunc != nullptr &&

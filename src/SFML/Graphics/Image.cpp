@@ -24,12 +24,12 @@
 
 #define STB_IMAGE_STATIC
 #define STB_IMAGE_IMPLEMENTATION
+#include "SFML/Base/Memcpy.hpp"
+
 #include <stb_image.h>
 
 #include <string>
 #include <vector>
-
-#include <cstring>
 
 
 namespace
@@ -380,7 +380,7 @@ bool Image::copy(const Image& source, Vector2u dest, const IntRect& sourceRect, 
         // Optimized copy ignoring alpha values, row by row (faster)
         for (unsigned int i = 0; i < dstSize.y; ++i)
         {
-            std::memcpy(dstPixels, srcPixels, pitch);
+            SFML_BASE_MEMCPY(dstPixels, srcPixels, pitch);
             srcPixels += srcStride;
             dstPixels += dstStride;
         }

@@ -3,6 +3,8 @@
 // Other 1st party headers
 #include "SFML/System/String.hpp"
 
+#include "SFML/Base/Strlen.hpp"
+
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
@@ -14,7 +16,6 @@
 #include <vector>
 
 #include <cstddef>
-#include <cstring>
 #include <cwchar>
 
 #define CHECK_PACKET_STREAM_OPERATORS(expected)              \
@@ -244,7 +245,7 @@ TEST_CASE("[Network] sf::Packet")
         SECTION("char*")
         {
             const char string[] = "testing";
-            CHECK_PACKET_STRING_STREAM_OPERATORS(string, std::strlen(string) + 4);
+            CHECK_PACKET_STRING_STREAM_OPERATORS(string, SFML_BASE_STRLEN(string) + 4);
         }
 
         SECTION("std::string")
