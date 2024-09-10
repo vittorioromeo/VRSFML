@@ -12,6 +12,7 @@
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/Span.hpp"
 
 #include <cstddef>
 
@@ -25,6 +26,7 @@ class RenderTarget;
 class Texture;
 struct Color;
 struct RenderStates;
+struct Vertex;
 } // namespace sf
 
 
@@ -88,6 +90,20 @@ public:
     void setTextureRect(const IntRect& rect);
 
     ////////////////////////////////////////////////////////////
+    /// \brief Set the sub-rectangle of the texture that the shape outline will display
+    ///
+    /// The texture rect is useful when you don't want to display
+    /// the whole texture, but rather a part of it.
+    /// By default, the texture rect covers the entire texture.
+    ///
+    /// \param rect Rectangle defining the region of the texture to display
+    ///
+    /// \see getOutlineTextureRect
+    ///
+    ////////////////////////////////////////////////////////////
+    void setOutlineTextureRect(const IntRect& rect);
+
+    ////////////////////////////////////////////////////////////
     /// \brief Set the fill color of the shape
     ///
     /// This color is modulated (multiplied) with the shape's
@@ -140,6 +156,16 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const IntRect& getTextureRect() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the sub-rectangle of the texture displayed by the shape outline
+    ///
+    /// \return Texture rectangle of the shape outline
+    ///
+    /// \see setTextureRect
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] const IntRect& getOutlineTextureRect() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the fill color of the shape
@@ -206,6 +232,18 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] FloatRect getGlobalBounds() const;
 
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] base::Span<const Vertex> getFillVertices() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] base::Span<const Vertex> getOutlineVertices() const;
+
 protected:
     ////////////////////////////////////////////////////////////
     /// \brief Recompute the internal geometry of the shape
@@ -237,6 +275,12 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     void updateTexCoords();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Update the outline vertices' texture coordinates
+    ///
+    ////////////////////////////////////////////////////////////
+    void updateOutlineTexCoords();
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the outline vertices' position

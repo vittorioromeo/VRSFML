@@ -25,7 +25,7 @@ int main()
     // Create the window of the application with a stencil buffer
     sf::RenderWindow window(graphicsContext,
                             {.size{600u, 600u},
-                             .title = "SFML Stencil",
+                             .title     = "SFML Stencil",
                              .resizable = false,
                              .contextSettings{.depthBits = 0, .stencilBits = 8}});
 

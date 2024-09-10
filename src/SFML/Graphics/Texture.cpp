@@ -23,8 +23,6 @@
 #include <utility>
 #include <vector>
 
-#include <cstring>
-
 
 namespace
 {
@@ -408,7 +406,7 @@ Image Texture::copyToImage() const
 
         for (unsigned int i = 0; i < m_size.y; ++i)
         {
-            std::memcpy(dst, src, dstPitch);
+            SFML_BASE_MEMCPY(dst, src, dstPitch);
             src += srcPitch;
             dst += dstPitch;
         }

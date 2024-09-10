@@ -8,9 +8,9 @@
 
 #include "SFML/System/Utf.hpp"
 
-#include <QuartzCore/CAEAGLLayer.h>
+#include "SFML/Base/Strlen.hpp"
 
-#include <cstring>
+#include <QuartzCore/CAEAGLLayer.h>
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
@@ -55,7 +55,7 @@
     const char* utf8 = [text UTF8String];
 
     // Then convert to UTF-32 and notify the application delegate of each new character
-    const char* end = utf8 + std::strlen(utf8);
+    const char* end = utf8 + SFML_BASE_STRLEN(utf8);
     while (utf8 < end)
     {
         std::uint32_t character = 0;

@@ -7,8 +7,6 @@
 #include "SFML/Graphics/Glsl.hpp"
 #include "SFML/Graphics/Transform.hpp"
 
-#include <cstring>
-
 
 namespace sf::priv
 {

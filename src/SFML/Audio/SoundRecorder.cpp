@@ -12,8 +12,6 @@
 
 #include <miniaudio.h>
 
-#include <cstring>
-
 
 namespace sf
 {

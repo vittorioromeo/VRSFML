@@ -16,6 +16,7 @@
 
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Traits/IsBaseOf.hpp"
 
 #include <cstddef>
 
@@ -337,6 +338,18 @@ public:
               PrimitiveType       type,
               const RenderStates& states = getDefaultRenderStates());
 
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void drawIndexedVertices(const Vertex*         vertices,
+                             std::size_t           vertexCount,
+                             const unsigned short* indices,
+                             std::size_t           indexCount,
+                             PrimitiveType         type,
+                             const RenderStates&   states = getDefaultRenderStates());
+
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by a contiguous container of vertices
     ///
@@ -466,18 +479,21 @@ public:
         BatchDraw(BatchDraw&&)      = delete;
 
         template <typename BatchableObject>
-        void add(const BatchableObject& batchableObject)
+        void add(const BatchableObject& batchableObject) requires(!base::isBaseOf<Shape, BatchableObject>)
         {
             const auto [data, size]    = batchableObject.getVertices();
             const Transform& transform = batchableObject.getTransform();
 
-            addImpl(data, size, transform);
+            addSubsequentIndices(size);
+            appendPreTransformedVertices(data, size, transform);
         }
 
         void add(const Sprite& sprite);
+        void add(const Shape& shape);
 
     private:
-        void addImpl(const Vertex* data, base::SizeT size, const Transform& transform);
+        void addSubsequentIndices(base::SizeT count);
+        void appendPreTransformedVertices(const Vertex* data, base::SizeT size, const Transform& transform);
 
         RenderStates  m_renderStates;
         RenderTarget& m_renderTarget;
@@ -564,24 +580,21 @@ private:
     void unapplyTexture();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Apply a new shader
-    ///
-    /// \param shader Shader to apply
+    /// \brief Unbind any bound shader
     ///
     ////////////////////////////////////////////////////////////
-    void applyShader(const Shader* shader);
+    void unapplyShader();
 
     ////////////////////////////////////////////////////////////
     /// \brief Setup environment for drawing
     ///
-    /// \param useVertexCache Are we going to use the vertex cache?
     /// \param states         Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void setupDraw(bool useVertexCache, const RenderStates& states);
+    void setupDraw(const RenderStates& states);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Draw the primitives
+    /// \brief Draw non-indexed primitives
     ///
     /// \param type        Type of primitives to draw
     /// \param firstVertex Index of the first vertex to use when drawing
@@ -589,6 +602,15 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     void drawPrimitives(PrimitiveType type, std::size_t firstVertex, std::size_t vertexCount);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw indexed primitives
+    ///
+    /// \param type        Type of primitives to draw
+    /// \param indexCount  Number of indices to use when drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void drawIndexedPrimitives(PrimitiveType type, std::size_t indexCount);
 
     ////////////////////////////////////////////////////////////
     /// \brief Clean up environment after drawing

@@ -13,11 +13,14 @@
 
 #include "SFML/System/Err.hpp"
 
+#include "SFML/Base/Strlen.hpp"
+#include "SFML/Base/Strncmp.hpp"
+#include "SFML/Base/Strstr.hpp"
+
 #include <glad/gl.h>
 
 #include <cctype>
 #include <cstdlib>
-#include <cstring>
 
 
 namespace sf::priv
@@ -150,11 +153,12 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
             static const auto parseVersionString =
                 [](const char* versionString, const char* prefix, unsigned int& major, unsigned int& minor)
             {
-                const std::size_t prefixLength = std::strlen(prefix);
+                const std::size_t prefixLength = SFML_BASE_STRLEN(prefix);
 
-                if ((std::strlen(versionString) >= (prefixLength + 3)) &&
-                    (std::strncmp(versionString, prefix, prefixLength) == 0) && std::isdigit(versionString[prefixLength]) &&
-                    (versionString[prefixLength + 1] == '.') && std::isdigit(versionString[prefixLength + 2]))
+                if ((SFML_BASE_STRLEN(versionString) >= (prefixLength + 3)) &&
+                    (SFML_BASE_STRNCMP(versionString, prefix, prefixLength) == 0) &&
+                    std::isdigit(versionString[prefixLength]) && (versionString[prefixLength + 1] == '.') &&
+                    std::isdigit(versionString[prefixLength + 2]))
                 {
                     major = static_cast<unsigned int>(versionString[prefixLength] - '0');
                     minor = static_cast<unsigned int>(versionString[prefixLength + 2] - '0');
@@ -222,7 +226,7 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
                 {
                     const char* extensionString = reinterpret_cast<const char*>(glGetStringiFunc(GL_EXTENSIONS, i));
 
-                    if (std::strstr(extensionString, "GL_ARB_compatibility"))
+                    if (SFML_BASE_STRSTR(extensionString, "GL_ARB_compatibility"))
                     {
                         m_settings.attributeFlags &= ~ContextSettings::Attribute::Core;
                         break;

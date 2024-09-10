@@ -20,12 +20,12 @@
 #include "SFML/Base/Math/Ceil.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Math/Floor.hpp"
+#include "SFML/Base/Memcpy.hpp"
 
 #include <vector>
 
 #include <cstddef>
 #include <cstdint>
-#include <cstring>
 
 
 namespace
@@ -50,7 +50,7 @@ void addLine(std::vector<sf::Vertex>& vertices,
                                      {{lineLength + outlineThickness, top - outlineThickness}, color, {1.0f, 1.0f}},
                                      {{lineLength + outlineThickness, bottom + outlineThickness}, color, {1.0f, 1.0f}}};
 
-    std::memcpy(vertices.data() + index, vertexData, sizeof(sf::Vertex) * 6);
+    SFML_BASE_MEMCPY(vertices.data() + index, vertexData, sizeof(sf::Vertex) * 6);
     index += 6;
 }
 
@@ -77,7 +77,7 @@ void addGlyphQuad(std::vector<sf::Vertex>& vertices,
                                      {position + sf::Vector2f(p2.x - italicShear * p1.y, p1.y), color, {uv2.x, uv1.y}},
                                      {position + sf::Vector2f(p2.x - italicShear * p2.y, p2.y), color, {uv2.x, uv2.y}}};
 
-    std::memcpy(vertices.data() + index, vertexData, sizeof(sf::Vertex) * 6);
+    SFML_BASE_MEMCPY(vertices.data() + index, vertexData, sizeof(sf::Vertex) * 6);
     index += 6;
 }
 

@@ -12,6 +12,7 @@
 #include "SFML/System/Utf.hpp"
 
 #include "SFML/Base/EnumArray.hpp"
+#include "SFML/Base/Memcpy.hpp"
 
 #include <X11/XKBlib.h>
 #include <X11/Xlib.h>
@@ -21,8 +22,6 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
-
-#include <cstring>
 
 namespace
 {
@@ -460,7 +459,7 @@ void ensureMapping()
             continue;
         }
 
-        std::memcpy(name, descriptor->names->keys[keycode].name, XkbKeyNameLength);
+        SFML_BASE_MEMCPY(name, descriptor->names->keys[keycode].name, XkbKeyNameLength);
         name[XkbKeyNameLength] = '\0';
 
         const auto mappedScancode = nameScancodeMap.find(std::string(name));

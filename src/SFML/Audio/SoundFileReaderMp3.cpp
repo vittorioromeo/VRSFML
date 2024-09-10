@@ -35,9 +35,9 @@
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Memcmp.hpp"
 
 #include <cstdint>
-#include <cstring>
 
 
 namespace
@@ -62,7 +62,7 @@ namespace
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool hasValidId3Tag(const std::uint8_t* header)
 {
-    return std::memcmp(header, "ID3", 3) == 0 &&
+    return SFML_BASE_MEMCMP(header, "ID3", 3) == 0 &&
            !((header[5] & 15) || (header[6] & 0x80) || (header[7] & 0x80) || (header[8] & 0x80) || (header[9] & 0x80));
 }
 

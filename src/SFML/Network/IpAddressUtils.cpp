@@ -11,8 +11,6 @@
 
 #include <string>
 
-#include <cstring>
-
 
 namespace sf
 {

@@ -8,7 +8,7 @@
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Glsl.hpp" // NOLINT(misc-header-include-cycle)
 
-#include <cstring>
+#include "SFML/Base/Memcpy.hpp"
 
 
 namespace sf
@@ -31,7 +31,7 @@ void SFML_GRAPHICS_API copyMatrix(const Transform& source, Matrix<4, 4>& dest);
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline]] inline void SFML_GRAPHICS_API copyMatrix(const float* source, base::SizeT elements, float* dest)
 {
-    std::memcpy(dest, source, elements * sizeof(float));
+    SFML_BASE_MEMCPY(dest, source, elements * sizeof(float));
 }
 
 

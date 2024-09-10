@@ -678,7 +678,7 @@ void requestFullscreen()
         case EMSCRIPTEN_EVENT_GAMEPADCONNECTED:
         {
             bool previousConnected[sf::Joystick::MaxCount];
-            std::memcpy(previousConnected, joysticksConnected, sizeof(previousConnected));
+            SFML_BASE_MEMCPY(previousConnected, joysticksConnected, sizeof(previousConnected));
 
             if (!updatePluggedList())
                 sf::priv::err() << "Failed to update plugged list during gamepad connected event";
@@ -693,7 +693,7 @@ void requestFullscreen()
         case EMSCRIPTEN_EVENT_GAMEPADDISCONNECTED:
         {
             bool previousConnected[sf::Joystick::MaxCount];
-            std::memcpy(previousConnected, joysticksConnected, sizeof(previousConnected));
+            SFML_BASE_MEMCPY(previousConnected, joysticksConnected, sizeof(previousConnected));
 
             if (!updatePluggedList())
                 sf::priv::err() << "Failed to update plugged list during gamepad disconnected event";

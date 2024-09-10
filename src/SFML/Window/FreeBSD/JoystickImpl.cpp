@@ -5,6 +5,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/JoystickImpl.hpp"
 
+#include "SFML/Base/Memcpy.hpp"
 #include "SFML/Base/Optional.hpp"
 
 #include <dirent.h>
@@ -14,8 +15,6 @@
 #include <unistd.h>
 #include <unordered_map>
 #include <utility>
-
-#include <cstring>
 
 ////////////////////////////////////////////////////////////
 /// \brief This file implements FreeBSD driver joystick

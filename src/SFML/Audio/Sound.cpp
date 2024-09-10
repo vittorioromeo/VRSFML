@@ -16,11 +16,10 @@
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Memcpy.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <miniaudio.h>
-
-#include <cstring>
 
 
 namespace sf
@@ -78,9 +77,9 @@ struct Sound::Impl
         // Copy the samples to the output
         const auto sampleCount = *framesRead * buffer->getChannelCount();
 
-        std::memcpy(framesOut,
-                    buffer->getSamples() + impl.cursor,
-                    static_cast<std::size_t>(sampleCount) * sizeof(buffer->getSamples()[0]));
+        SFML_BASE_MEMCPY(framesOut,
+                         buffer->getSamples() + impl.cursor,
+                         static_cast<std::size_t>(sampleCount) * sizeof(buffer->getSamples()[0]));
 
         impl.cursor += static_cast<std::size_t>(sampleCount);
 

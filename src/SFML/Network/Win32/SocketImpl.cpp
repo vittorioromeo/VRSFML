@@ -7,13 +7,13 @@
 
 #include "SFML/System/Win32/WindowsHeader.hpp"
 
+#include "SFML/Base/Memcpy.hpp"
 #include "SFML/Base/Optional.hpp"
 
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
 #include <cstdint>
-#include <cstring>
 
 
 namespace sf::priv
@@ -320,7 +320,7 @@ base::Optional<NetworkLong> SocketImpl::convertToHostname(const char* address)
     if (getaddrinfo(address, nullptr, &hints, &result) == 0 && result != nullptr)
     {
         sockaddr_in sin{};
-        std::memcpy(&sin, result->ai_addr, sizeof(*result->ai_addr));
+        SFML_BASE_MEMCPY(&sin, result->ai_addr, sizeof(*result->ai_addr));
 
         const std::uint32_t ip = sin.sin_addr.s_addr;
         freeaddrinfo(result);

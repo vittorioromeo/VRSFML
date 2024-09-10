@@ -14,8 +14,6 @@
 
 #include <istream>
 
-#include <cstring>
-
 
 namespace sf
 {
