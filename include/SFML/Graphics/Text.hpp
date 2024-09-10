@@ -415,7 +415,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Span<Vertex> getVertices() const;
+    [[nodiscard]] base::Span<const Vertex> getVertices() const;
 
 private:
     ////////////////////////////////////////////////////////////

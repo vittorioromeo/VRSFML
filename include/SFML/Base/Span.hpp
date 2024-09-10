@@ -35,7 +35,7 @@ struct [[nodiscard]] Span
     //////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr Span(T* data, SizeT size) : m_data{data}, m_size{size}
     {
-        SFML_BASE_ASSERT(data != nullptr);
+        SFML_BASE_ASSERT(data != nullptr || (data == nullptr && size == 0u));
     }
 
     //////////////////////////////////////////

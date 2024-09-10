@@ -94,6 +94,16 @@ int main()
     leftPaddle.setFillColor({100u, 100u, 200u});
     leftPaddle.setOrigin(paddleSize / 2.f);
 
+    // TODO P1: consider
+    /*
+    sf::RectangleShape leftPaddle2{
+        {.size             = paddleSize - sf::Vector2f{3.f, 3.f},
+         .outlineThickness = 3.f,
+         .outlineColor     = sf::Color::Black,
+         .fillColor        = {100u, 100u, 200u},
+         .origin           = paddleSize / 2.f}};
+    */
+
     // Create the right paddle
     sf::RectangleShape rightPaddle = leftPaddle;
     rightPaddle.setFillColor({200u, 100u, 100u});
