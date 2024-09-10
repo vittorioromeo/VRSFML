@@ -498,7 +498,7 @@ void processWorkItem(std::vector<sf::Vertex>& vertices, const WorkItem& workItem
     const unsigned int rowEnd   = std::min(rowStart + rowBlockSize, resolution.y);
     const unsigned int rowCount = rowEnd - rowStart;
 
-    const auto scalingFactor = windowSize.to<sf::Vector2f>().cwiseDiv(resolution.to<sf::Vector2f>());
+    const auto scalingFactor = windowSize.to<sf::Vector2f>().componentWiseDiv(resolution.to<sf::Vector2f>());
 
     for (unsigned int y = rowStart; y < rowEnd; ++y)
     {

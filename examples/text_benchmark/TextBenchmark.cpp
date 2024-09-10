@@ -153,7 +153,7 @@ int main()
     sf::RenderWindow window(graphicsContext,
                             {.size{screenSize},
                              .title = "Window",
-                             .contextSettings{.depthBits = 0, .stencilBits = 0, .antialiasingLevel = 4}});
+                             .contextSettings{.depthBits = 0, .stencilBits = 0, .antiAliasingLevel = 4}});
 
     window.setVerticalSyncEnabled(true);
 

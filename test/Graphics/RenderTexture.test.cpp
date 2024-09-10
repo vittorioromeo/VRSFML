@@ -144,10 +144,10 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
         baseRenderTexture.clear();
 
         leftInnerRT.display();
-        baseRenderTexture.draw(leftVertexArray, sf::PrimitiveType::Triangles, sf::RenderStates{&leftInnerRT.getTexture()});
+        baseRenderTexture.draw(leftVertexArray, sf::PrimitiveType::Triangles, {.texture = &leftInnerRT.getTexture()});
 
         rightInnerRT.display();
-        baseRenderTexture.draw(rightVertexArray, sf::PrimitiveType::Triangles, sf::RenderStates{&rightInnerRT.getTexture()});
+        baseRenderTexture.draw(rightVertexArray, sf::PrimitiveType::Triangles, {.texture = &rightInnerRT.getTexture()});
 
         baseRenderTexture.display();
 

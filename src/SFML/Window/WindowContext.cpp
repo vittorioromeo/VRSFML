@@ -536,7 +536,7 @@ template <typename... GLContextArgs>
     //     // Re-create our shared context as a core context
     //     const ContextSettings sharedSettings{.depthBits = 0,
     //                                          .stencilBits = 0,
-    //                                          .antialiasingLevel = 0,
+    //                                          .antiAliasingLevel = 0,
     //                                          .majorVersion = contextSettings.majorVersion,
     //                                          .minorVersion = contextSettings.minorVersion,
     //                                          .attributeFlags = contextSettings.attributeFlags};
