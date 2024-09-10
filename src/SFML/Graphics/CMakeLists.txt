@@ -73,10 +73,7 @@ source_group("drawables" FILES ${DRAWABLES_SRC})
 # render-texture sources
 set(RENDER_TEXTURE_SRC
     ${SRCROOT}/RenderTextureImplFBO.cpp
-    ${SRCROOT}/RenderTextureImplFBO.cpp
     ${SRCROOT}/RenderTextureImplFBO.hpp
-    ${SRCROOT}/RenderTextureImplDefault.cpp
-    ${SRCROOT}/RenderTextureImplDefault.hpp
 )
 source_group("render texture" FILES ${RENDER_TEXTURE_SRC})
 

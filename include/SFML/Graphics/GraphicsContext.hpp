@@ -17,7 +17,6 @@
 namespace sf::priv
 {
 class GlContext;
-class RenderTextureImplDefault;
 class RenderTextureImplFBO;
 } // namespace sf::priv
 
@@ -45,7 +44,6 @@ public:
 
 private:
     friend Shader;
-    friend priv::RenderTextureImplDefault;
     friend priv::RenderTextureImplFBO;
 
     using WindowContext::createGlContext; // Needed by befriended render texture implementations

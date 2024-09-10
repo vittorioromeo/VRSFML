@@ -103,14 +103,6 @@ RenderTextureImplFBO& RenderTextureImplFBO::operator=(RenderTextureImplFBO&&) no
 
 
 ////////////////////////////////////////////////////////////
-bool RenderTextureImplFBO::isAvailable([[maybe_unused]] GraphicsContext& graphicsContext)
-{
-    SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
-    return GLEXT_framebuffer_object != 0;
-}
-
-
-////////////////////////////////////////////////////////////
 unsigned int RenderTextureImplFBO::getMaximumAntiAliasingLevel([[maybe_unused]] GraphicsContext& graphicsContext)
 {
 #ifdef SFML_OPENGL_ES

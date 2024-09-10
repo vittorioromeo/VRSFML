@@ -121,7 +121,6 @@ void extensionSanityCheck()
     check(GLEXT_vertex_buffer_object_dependencies);
     check(GLEXT_shader_objects_dependencies);
     check(GLEXT_blend_equation_separate_dependencies);
-    check(GLEXT_framebuffer_object_dependencies);
     check(GLEXT_framebuffer_blit_dependencies);
     check(GLEXT_framebuffer_multisample_dependencies);
     check(GLEXT_copy_buffer_dependencies);

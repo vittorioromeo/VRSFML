@@ -221,11 +221,7 @@ public:
     /// \brief Construct from texture
     ///
     ////////////////////////////////////////////////////////////
-    template <typename TRenderTextureImplTag>
-    [[nodiscard]] explicit RenderTexture(base::PassKey<RenderTexture>&&,
-                                         GraphicsContext&      graphicsContext,
-                                         TRenderTextureImplTag renderTextureImplTag,
-                                         Texture&&             texture);
+    [[nodiscard]] explicit RenderTexture(base::PassKey<RenderTexture>&&, GraphicsContext& graphicsContext, Texture&& texture);
 
 private:
     ////////////////////////////////////////////////////////////
