@@ -247,7 +247,7 @@ constexpr Vector2<T> Vector2<T>::projectedOnto(Vector2<T> axis) const
     static_assert(SFML_BASE_IS_FLOATING_POINT(T), "Vector2::projectedOnto() is only supported for floating point types");
 
     SFML_BASE_ASSERT(axis != Vector2<T>() && "Vector2::projectedOnto() cannot project onto a zero vector");
-    return dot(axis) / axis.lengthSq() * axis;
+    return dot(axis) / axis.lengthSquared() * axis;
 }
 
 

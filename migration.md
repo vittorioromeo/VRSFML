@@ -419,7 +419,7 @@ One viable option is to use `sf::PrimitiveType::Triangles` where two adjacent tr
 SFML 3 capitalizes the `A` of `aliasing` for all the APIs.
 
 * `sf::RenderTexture::getMaximumAntialiasingLevel()` becomes `sf::RenderTexture::getMaximumAntiAliasingLevel()`
-* `sf::ContextSettings::antialiasingLevel` becomes `sf::ContextSettings::antiAliasingLevel`
+* `sf::ContextSettings::antiAliasingLevel` becomes `sf::ContextSettings::antiAliasingLevel`
 
 ## Other Minor Changes
 

@@ -62,7 +62,7 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
             const sf::Window window(windowContext,
                                     {.size{360u, 240u},
                                      .title = "Window Tests",
-                                     .contextSettings{.depthBits = 1, .stencilBits = 1, .antialiasingLevel = 1}});
+                                     .contextSettings{.depthBits = 1, .stencilBits = 1, .antiAliasingLevel = 1}});
 
             CHECK(window.getSize() == sf::Vector2u{360, 240});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
@@ -85,7 +85,7 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
             const sf::Window window(windowContext,
                                     {.size{360u, 240u},
                                      .title = "Window Tests",
-                                     .contextSettings{.depthBits = 1, .stencilBits = 1, .antialiasingLevel = 1}});
+                                     .contextSettings{.depthBits = 1, .stencilBits = 1, .antiAliasingLevel = 1}});
 
             CHECK(window.getSize() == sf::Vector2u{360, 240});
             CHECK(window.getNativeHandle() != sf::WindowHandle());

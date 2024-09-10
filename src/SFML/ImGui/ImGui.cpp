@@ -1009,8 +1009,8 @@ struct [[nodiscard]] SpriteTextureData
     const auto textureSize(texture.getSize().to<Vector2f>());
     const auto textureRect(sprite.getTextureRect().to<FloatRect>());
 
-    return {toImVec2(textureRect.position.cwiseDiv(textureSize)),
-            toImVec2((textureRect.position + textureRect.size).cwiseDiv(textureSize)),
+    return {toImVec2(textureRect.position.componentWiseDiv(textureSize)),
+            toImVec2((textureRect.position + textureRect.size).componentWiseDiv(textureSize)),
             convertGLTextureHandleToImTextureID(texture.getNativeHandle())};
 }
 

@@ -397,7 +397,7 @@ EGLConfig EglContext::getBestConfig(EGLDisplay display, unsigned int bitsPerPixe
          EGL_STENCIL_SIZE,
          static_cast<EGLint>(contextSettings.stencilBits),
          EGL_SAMPLE_BUFFERS,
-         static_cast<EGLint>(contextSettings.antialiasingLevel),
+         static_cast<EGLint>(contextSettings.antiAliasingLevel),
          EGL_SURFACE_TYPE,
          EGL_RENDERABLE_TYPE,
          EGL_OPENGL_ES_BIT,
