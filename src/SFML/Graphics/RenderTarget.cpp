@@ -511,8 +511,9 @@ Vector2f RenderTarget::mapPixelToCoords(Vector2i point, const View& view) const
 {
     // First, convert from viewport coordinates to homogeneous coordinates
     const auto     viewport   = getViewport(view).to<FloatRect>();
-    const Vector2f normalized = Vector2f(-1.f, 1.f) +
-                                Vector2f(2.f, -2.f).cwiseMul(point.to<Vector2f>() - viewport.position).cwiseDiv(viewport.size);
+    const Vector2f normalized = Vector2f(-1.f, 1.f) + Vector2f(2.f, -2.f)
+                                                          .componentWiseMul(point.to<Vector2f>() - viewport.position)
+                                                          .componentWiseDiv(viewport.size);
 
     // Then transform by the inverse of the view matrix
     return view.getInverseTransform().transformPoint(normalized);
@@ -534,7 +535,9 @@ Vector2i RenderTarget::mapCoordsToPixel(Vector2f point, const View& view) const
 
     // Then convert to viewport coordinates
     const auto viewport = getViewport(view).to<FloatRect>();
-    return ((normalized.cwiseMul({1.f, -1.f}) + sf::Vector2f{1.f, 1.f}).cwiseDiv({2.f, 2.f}).cwiseMul(viewport.size) +
+    return ((normalized.componentWiseMul({1.f, -1.f}) + sf::Vector2f{1.f, 1.f})
+                .componentWiseDiv({2.f, 2.f})
+                .componentWiseMul(viewport.size) +
             viewport.position)
         .to<Vector2i>();
 }

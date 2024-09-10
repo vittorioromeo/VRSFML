@@ -273,7 +273,7 @@ int WglContext::selectBestPixelFormat(HDC deviceContext, unsigned int bitsPerPix
         unsigned int bitsPerPixel{};
         unsigned int depthBits{};
         unsigned int stencilBits{};
-        unsigned int antialiasingLevel{};
+        unsigned int antiAliasingLevel{};
         bool         pbuffer{};
         int          bestFormat{};
     };
@@ -290,7 +290,7 @@ int WglContext::selectBestPixelFormat(HDC deviceContext, unsigned int bitsPerPix
         {
             if (bitsPerPixel == entry.bitsPerPixel && contextSettings.depthBits == entry.depthBits &&
                 contextSettings.stencilBits == entry.stencilBits &&
-                contextSettings.antialiasingLevel == entry.antialiasingLevel && pbuffer == entry.pbuffer)
+                contextSettings.antiAliasingLevel == entry.antiAliasingLevel && pbuffer == entry.pbuffer)
                 return entry.bestFormat;
         }
     }
@@ -437,7 +437,7 @@ int WglContext::selectBestPixelFormat(HDC deviceContext, unsigned int bitsPerPix
         pixelFormatCache.emplace_back(bitsPerPixel,
                                       contextSettings.depthBits,
                                       contextSettings.stencilBits,
-                                      contextSettings.antialiasingLevel,
+                                      contextSettings.antiAliasingLevel,
                                       pbuffer,
                                       bestFormat);
     }
@@ -514,7 +514,7 @@ void WglContext::updateSettingsFromPixelFormat(ContextSettings& contextSettings,
     {
         contextSettings.depthBits         = actualFormat.cDepthBits;
         contextSettings.stencilBits       = actualFormat.cStencilBits;
-        contextSettings.antialiasingLevel = 0;
+        contextSettings.antiAliasingLevel = 0;
 
         return;
     }
@@ -542,18 +542,18 @@ void WglContext::updateSettingsFromPixelFormat(ContextSettings& contextSettings,
 
         if (wglGetPixelFormatAttribivARB(deviceContext, format, PFD_MAIN_PLANE, 2, sampleAttributes, sampleValues) == TRUE)
         {
-            contextSettings.antialiasingLevel = static_cast<unsigned int>(sampleValues[0] ? sampleValues[1] : 0);
+            contextSettings.antiAliasingLevel = static_cast<unsigned int>(sampleValues[0] ? sampleValues[1] : 0);
         }
         else
         {
             err() << "Failed to retrieve pixel format multisampling information: " << getErrorString(GetLastError());
 
-            contextSettings.antialiasingLevel = 0;
+            contextSettings.antiAliasingLevel = 0;
         }
     }
     else
     {
-        contextSettings.antialiasingLevel = 0;
+        contextSettings.antiAliasingLevel = 0;
     }
 
     if (GLAD_WGL_ARB_framebuffer_sRGB || GLAD_WGL_EXT_framebuffer_sRGB)

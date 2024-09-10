@@ -50,10 +50,10 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
         CHECK(!texture.isRepeated());
         CHECK(texture.getNativeHandle() != 0);
     }
-#if 0
-    SECTION("getMaximumAntialiasingLevel()")
+
+    SECTION("getMaximumAntiAliasingLevel()")
     {
-        CHECK(sf::RenderTexture::getMaximumAntialiasingLevel(graphicsContext) <= 64);
+        CHECK(sf::RenderTexture::getMaximumAntiAliasingLevel(graphicsContext) <= 64);
     }
 
     SECTION("Set/get smooth")
@@ -157,5 +157,4 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
         CHECK((finalImage.getPixel({0u, 0u}) == sf::Color::White));
         CHECK((finalImage.getPixel({static_cast<unsigned int>(width / 2.f) + 1u, 0u}) == sf::Color::Green));
     }
-#endif
 }

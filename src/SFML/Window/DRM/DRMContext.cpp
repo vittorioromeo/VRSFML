@@ -743,7 +743,7 @@ EGLConfig DRMContext::getBestConfig(EGLDisplay display, unsigned int bitsPerPixe
          EGL_STENCIL_SIZE,
          static_cast<EGLint>(contextSettings.stencilBits),
          EGL_SAMPLE_BUFFERS,
-         static_cast<EGLint>(contextSettings.antialiasingLevel),
+         static_cast<EGLint>(contextSettings.antiAliasingLevel),
          EGL_BLUE_SIZE,
          8,
          EGL_GREEN_SIZE,
@@ -787,7 +787,7 @@ void DRMContext::updateSettings()
     m_settings.stencilBits = static_cast<unsigned int>(tmp);
 
     eglCheck(eglGetConfigAttrib(m_display, m_config, EGL_SAMPLES, &tmp));
-    m_settings.antialiasingLevel = static_cast<unsigned int>(tmp);
+    m_settings.antiAliasingLevel = static_cast<unsigned int>(tmp);
 
     m_settings.majorVersion   = 1;
     m_settings.minorVersion   = 1;

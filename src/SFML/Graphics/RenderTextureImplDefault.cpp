@@ -37,8 +37,9 @@ RenderTextureImplDefault& RenderTextureImplDefault::operator=(RenderTextureImplD
 
 
 ////////////////////////////////////////////////////////////
-unsigned int RenderTextureImplDefault::getMaximumAntialiasingLevel()
+unsigned int RenderTextureImplDefault::getMaximumAntiAliasingLevel()
 {
+    // TODO P0: remove non-FBO support
     // If the system is so old that it doesn't support FBOs, chances are it is
     // also using either a software renderer or some CPU emulated support for AA
     // In order to not cripple performance in this rare case, we just return 0 here

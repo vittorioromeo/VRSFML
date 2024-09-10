@@ -68,7 +68,7 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
             CHECK(window.getNativeHandle() != sf::WindowHandle());
             CHECK(window.getSettings().depthBits >= 1);
             CHECK(window.getSettings().stencilBits >= 1);
-            CHECK(window.getSettings().antialiasingLevel >= 1);
+            CHECK(window.getSettings().antiAliasingLevel >= 1);
         }
 
         SECTION("Mode, title, and state")
@@ -91,7 +91,7 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
             CHECK(window.getNativeHandle() != sf::WindowHandle());
             CHECK(window.getSettings().depthBits >= 1);
             CHECK(window.getSettings().stencilBits >= 1);
-            CHECK(window.getSettings().antialiasingLevel >= 1);
+            CHECK(window.getSettings().antiAliasingLevel >= 1);
         }
     }
 

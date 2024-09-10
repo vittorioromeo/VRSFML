@@ -74,7 +74,7 @@ public:
     /// \return The maximum anti-aliasing level supported by the system
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static unsigned int getMaximumAntialiasingLevel(GraphicsContext& graphicsContext);
+    [[nodiscard]] static unsigned int getMaximumAntiAliasingLevel(GraphicsContext& graphicsContext);
 
     ////////////////////////////////////////////////////////////
     /// \brief Unbind the currently bound FBO

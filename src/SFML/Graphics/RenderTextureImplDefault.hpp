@@ -67,7 +67,7 @@ public:
     /// \return The maximum anti-aliasing level supported by the system
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static unsigned int getMaximumAntialiasingLevel();
+    [[nodiscard]] static unsigned int getMaximumAntiAliasingLevel();
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the render texture implementation

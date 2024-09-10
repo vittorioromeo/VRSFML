@@ -291,8 +291,8 @@ void Shape::updateTexCoords()
 
     for (Vertex& vertex : m_impl->vertices)
     {
-        const Vector2f ratio = (vertex.position - m_impl->insideBounds.position).cwiseDiv(safeInsideSize);
-        vertex.texCoords     = convertedTextureRect.position + convertedTextureRect.size.cwiseMul(ratio);
+        const Vector2f ratio = (vertex.position - m_impl->insideBounds.position).componentWiseDiv(safeInsideSize);
+        vertex.texCoords     = convertedTextureRect.position + convertedTextureRect.size.componentWiseMul(ratio);
     }
 }
 
@@ -308,8 +308,8 @@ void Shape::updateOutlineTexCoords()
 
     for (Vertex& vertex : m_impl->outlineVertices)
     {
-        const Vector2f ratio = (vertex.position - m_impl->bounds.position).cwiseDiv(safeInsideSize);
-        vertex.texCoords     = convertedTextureRect.position + convertedTextureRect.size.cwiseMul(ratio);
+        const Vector2f ratio = (vertex.position - m_impl->bounds.position).componentWiseDiv(safeInsideSize);
+        vertex.texCoords     = convertedTextureRect.position + convertedTextureRect.size.componentWiseMul(ratio);
     }
 }
 

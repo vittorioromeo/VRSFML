@@ -62,23 +62,23 @@ int GlContext::evaluateFormat(
     int                    colorBits,
     int                    depthBits,
     int                    stencilBits,
-    int                    antialiasing,
+    int                    antiAliasing,
     bool                   accelerated,
     bool                   sRgb)
 {
     int colorDiff        = static_cast<int>(bitsPerPixel) - colorBits;
     int depthDiff        = static_cast<int>(contextSettings.depthBits) - depthBits;
     int stencilDiff      = static_cast<int>(contextSettings.stencilBits) - stencilBits;
-    int antialiasingDiff = static_cast<int>(contextSettings.antialiasingLevel) - antialiasing;
+    int antiAliasingDiff = static_cast<int>(contextSettings.antiAliasingLevel) - antiAliasing;
 
     // Weight sub-scores so that better contextSettings don't score equally as bad as worse contextSettings
     colorDiff *= ((colorDiff > 0) ? 100'000 : 1);
     depthDiff *= ((depthDiff > 0) ? 100'000 : 1);
     stencilDiff *= ((stencilDiff > 0) ? 100'000 : 1);
-    antialiasingDiff *= ((antialiasingDiff > 0) ? 100'000 : 1);
+    antiAliasingDiff *= ((antiAliasingDiff > 0) ? 100'000 : 1);
 
     // Aggregate the scores
-    int score = std::abs(colorDiff) + std::abs(depthDiff) + std::abs(stencilDiff) + std::abs(antialiasingDiff);
+    int score = std::abs(colorDiff) + std::abs(depthDiff) + std::abs(stencilDiff) + std::abs(antiAliasingDiff);
 
     // If the user wants an sRGB capable format, try really hard to get one
     if (contextSettings.sRgbCapable && !sRgb)
@@ -248,13 +248,13 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
 #endif
 
     // Enable anti-aliasing if requested by the user and supported
-    if ((requestedSettings.antialiasingLevel > 0) && (m_settings.antialiasingLevel > 0))
+    if ((requestedSettings.antiAliasingLevel > 0) && (m_settings.antiAliasingLevel > 0))
     {
         glCheckIgnoreWithFunc(glGetErrorFunc, glEnableFunc(GL_MULTISAMPLE));
     }
     else
     {
-        m_settings.antialiasingLevel = 0;
+        m_settings.antiAliasingLevel = 0;
     }
 
     // Enable sRGB if requested by the user and supported
@@ -289,13 +289,13 @@ void GlContext::checkSettings(const ContextSettings& requestedSettings) const
 
     if ((m_settings.attributeFlags != requestedSettings.attributeFlags) || (version < requestedVersion) ||
         (m_settings.stencilBits < requestedSettings.stencilBits) ||
-        (m_settings.antialiasingLevel < requestedSettings.antialiasingLevel) ||
+        (m_settings.antiAliasingLevel < requestedSettings.antiAliasingLevel) ||
         (m_settings.depthBits < requestedSettings.depthBits) || (!m_settings.sRgbCapable && requestedSettings.sRgbCapable))
     {
         err() << "Warning: The created OpenGL context does not fully meet the settings that were requested" << '\n'
               << "Requested: version = " << requestedSettings.majorVersion << "." << requestedSettings.minorVersion
               << " ; depth bits = " << requestedSettings.depthBits << " ; stencil bits = " << requestedSettings.stencilBits
-              << " ; AA level = " << requestedSettings.antialiasingLevel << " ; core = "
+              << " ; AA level = " << requestedSettings.antiAliasingLevel << " ; core = "
               << boolToString((requestedSettings.attributeFlags & ContextSettings::Attribute::Core) !=
                               ContextSettings::Attribute{0u})
               << " ; debug = "
@@ -304,7 +304,7 @@ void GlContext::checkSettings(const ContextSettings& requestedSettings) const
               << " ; sRGB = " << requestedSettings.sRgbCapable << '\n'
               << "Created: version = " << m_settings.majorVersion << "." << m_settings.minorVersion
               << " ; depth bits = " << m_settings.depthBits << " ; stencil bits = " << m_settings.stencilBits
-              << " ; AA level = " << m_settings.antialiasingLevel << " ; core = "
+              << " ; AA level = " << m_settings.antiAliasingLevel << " ; core = "
               << boolToString((m_settings.attributeFlags & ContextSettings::Attribute::Core) !=
                               ContextSettings::Attribute{0u})
               << " ; debug = "

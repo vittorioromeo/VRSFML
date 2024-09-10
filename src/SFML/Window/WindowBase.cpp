@@ -31,7 +31,7 @@ namespace
 {
     windowSettings.contextSettings = sf::ContextSettings{.depthBits         = 0,
                                                          .stencilBits       = 0,
-                                                         .antialiasingLevel = 0,
+                                                         .antiAliasingLevel = 0,
                                                          .majorVersion      = 0,
                                                          .minorVersion      = 0,
                                                          .attributeFlags = sf::ContextSettings::Attribute{0xFFFFFFFFu},
