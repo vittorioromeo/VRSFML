@@ -25,7 +25,7 @@ SFContext::SFContext(SFContext* shared)
     // Create the context
     createContext(shared,
                   VideoModeUtils::getDesktopMode().bitsPerPixel,
-                  ContextSettings{.depthBits = 0, .stencilBits = 0, .antialiasingLevel = 0});
+                  ContextSettings{.depthBits = 0, .stencilBits = 0, .antiAliasingLevel = 0});
 }
 
 
@@ -158,7 +158,7 @@ void SFContext::createContext(SFContext* shared, unsigned int bitsPerPixel, cons
     attrs.push_back(NSOpenGLPFAStencilSize);
     attrs.push_back(static_cast<NSOpenGLPixelFormatAttribute>(m_settings.stencilBits));
 
-    if (m_settings.antialiasingLevel > 0)
+    if (m_settings.antiAliasingLevel > 0)
     {
         /*
          * Antialiasing techniques are described in the
@@ -180,7 +180,7 @@ void SFContext::createContext(SFContext* shared, unsigned int bitsPerPixel, cons
 
         // Antialiasing level
         attrs.push_back(NSOpenGLPFASamples);
-        attrs.push_back(static_cast<NSOpenGLPixelFormatAttribute>(m_settings.antialiasingLevel));
+        attrs.push_back(static_cast<NSOpenGLPixelFormatAttribute>(m_settings.antiAliasingLevel));
 
         // No software renderer - only hardware renderer
         attrs.push_back(NSOpenGLPFAAccelerated);
@@ -224,7 +224,7 @@ void SFContext::createContext(SFContext* shared, unsigned int bitsPerPixel, cons
 
     attrs.push_back(static_cast<NSOpenGLPixelFormatAttribute>(0)); // end of array
 
-    // All OS X pixel formats are sRGB capable
+    // All macOS pixel formats are sRGB capable
     m_settings.sRgbCapable = true;
 
     // Create the pixel format.

@@ -104,7 +104,7 @@ base::Optional<RenderTexture> RenderTexture::create(GraphicsContext&       graph
 
 
 ////////////////////////////////////////////////////////////
-unsigned int RenderTexture::getMaximumAntialiasingLevel(GraphicsContext& graphicsContext)
+unsigned int RenderTexture::getMaximumAntiAliasingLevel(GraphicsContext& graphicsContext)
 {
     return priv::RenderTextureImplFBO::isAvailable(graphicsContext)
                ? priv::RenderTextureImplFBO::getMaximumAntialiasingLevel(graphicsContext)

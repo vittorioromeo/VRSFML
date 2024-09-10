@@ -18,7 +18,7 @@ namespace sf
 {
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr T Vector2<T>::lengthSq() const
+constexpr T Vector2<T>::lengthSquared() const
 {
     return dot(*this);
 }
@@ -50,7 +50,7 @@ constexpr T Vector2<T>::cross(Vector2<T> rhs) const
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector2<T> Vector2<T>::cwiseMul(Vector2<T> rhs) const
+constexpr Vector2<T> Vector2<T>::componentWiseMul(Vector2<T> rhs) const
 {
     return Vector2<T>(x * rhs.x, y * rhs.y);
 }
@@ -58,10 +58,10 @@ constexpr Vector2<T> Vector2<T>::cwiseMul(Vector2<T> rhs) const
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector2<T> Vector2<T>::cwiseDiv(Vector2<T> rhs) const
+constexpr Vector2<T> Vector2<T>::componentWiseDiv(Vector2<T> rhs) const
 {
-    SFML_BASE_ASSERT(rhs.x != 0 && "Vector2::cwiseDiv() cannot divide by 0 (x coordinate)");
-    SFML_BASE_ASSERT(rhs.y != 0 && "Vector2::cwiseDiv() cannot divide by 0 (y coordinate)");
+    SFML_BASE_ASSERT(rhs.x != 0 && "Vector2::componentWiseDiv() cannot divide by 0 (x coordinate)");
+    SFML_BASE_ASSERT(rhs.y != 0 && "Vector2::componentWiseDiv() cannot divide by 0 (y coordinate)");
 
     return Vector2<T>(x / rhs.x, y / rhs.y);
 }

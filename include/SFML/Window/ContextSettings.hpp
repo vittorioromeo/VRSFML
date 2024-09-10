@@ -71,7 +71,7 @@ struct ContextSettings
     ////////////////////////////////////////////////////////////
     unsigned int depthBits{};                           //!< Bits of the depth buffer
     unsigned int stencilBits{};                         //!< Bits of the stencil buffer
-    unsigned int antialiasingLevel{};                   //!< Level of antialiasing
+    unsigned int antiAliasingLevel{};                   //!< Level of antialiasing
     unsigned int majorVersion{defaultMajorVersion};     //!< Major number of the context version to create
     unsigned int minorVersion{defaultMinorVersion};     //!< Minor number of the context version to create
     Attribute    attributeFlags{defaultAttributeFlags}; //!< The attribute flags to create the context with
@@ -99,7 +99,7 @@ SFML_BASE_DEFINE_ENUM_CLASS_BITWISE_OPS(ContextSettings::Attribute);
 /// of bits per pixel requested for the (respectively) depth
 /// and stencil buffers.
 ///
-/// antialiasingLevel represents the requested number of
+/// antiAliasingLevel represents the requested number of
 /// multisampling levels for anti-aliasing.
 ///
 /// majorVersion and minorVersion define the version of the
@@ -125,13 +125,13 @@ SFML_BASE_DEFINE_ENUM_CLASS_BITWISE_OPS(ContextSettings::Attribute);
 /// system, this might be required for advanced OpenGL debugging.
 /// OpenGL debugging is disabled by default.
 ///
-/// <b>Special Note for OS X:</b>
+/// <b>Special Note for macOS:</b>
 /// Apple only supports choosing between either a legacy context
 /// (OpenGL 2.1) or a core context (OpenGL version depends on the
 /// operating system version but is at least 3.2). Compatibility
 /// contexts are not supported. Further information is available on the
 /// <a href="https://developer.apple.com/opengl/capabilities/index.html">
-/// OpenGL Capabilities Tables</a> page. OS X also currently does
+/// OpenGL Capabilities Tables</a> page. macOS also currently does
 /// not support debug contexts.
 ///
 /// Please note that these values are only a hint.

@@ -532,7 +532,7 @@ int main()
         if (Effect* currentEffect = effects[current])
         {
             // Update the current example
-            const auto [x, y] = sf::Mouse::getPosition(window).to<sf::Vector2f>().cwiseDiv(
+            const auto [x, y] = sf::Mouse::getPosition(window).to<sf::Vector2f>().componentWiseDiv(
                 window.getSize().to<sf::Vector2f>());
             currentEffect->update(clock.getElapsedTime().asSeconds(), x, y);
 

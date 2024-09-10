@@ -22,7 +22,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Length of the vector <i><b>(floating-point)</b></i>.
     ///
-    /// If you are not interested in the actual length, but only in comparisons, consider using lengthSq().
+    /// If you are not interested in the actual length, but only in comparisons, consider using lengthSquared().
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] SFML_SYSTEM_API constexpr T length() const;
@@ -33,7 +33,7 @@ public:
     /// Suitable for comparisons, more efficient than length().
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] SFML_API_EXPORT constexpr T lengthSq() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] SFML_API_EXPORT constexpr T lengthSquared() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Vector with same direction but length 1 <i><b>(floating-point)</b></i>.
@@ -64,7 +64,7 @@ public:
     /// This operation is also known as the Hadamard or Schur product.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] SFML_API_EXPORT constexpr Vector3 cwiseMul(const Vector3& rhs) const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] SFML_API_EXPORT constexpr Vector3 componentWiseMul(const Vector3& rhs) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Component-wise division of \c *this and \c rhs.
@@ -76,7 +76,7 @@ public:
     /// \pre Neither component of \c rhs is zero.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] SFML_API_EXPORT constexpr Vector3 cwiseDiv(const Vector3& rhs) const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] SFML_API_EXPORT constexpr Vector3 componentWiseDiv(const Vector3& rhs) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert to another `Vector3` of type `OtherVector3`
