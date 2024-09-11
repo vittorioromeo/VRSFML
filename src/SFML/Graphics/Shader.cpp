@@ -147,8 +147,7 @@ struct [[nodiscard]] BufferSlice
 {
     const sf::base::SizeT vectorSize = 2;
 
-    sf::base::TrivialVector<float> contiguous;
-    contiguous.resize(vectorSize * length);
+    sf::base::TrivialVector<float> contiguous(vectorSize * length);
 
     for (sf::base::SizeT i = 0; i < length; ++i)
     {
@@ -164,8 +163,7 @@ struct [[nodiscard]] BufferSlice
 {
     const sf::base::SizeT vectorSize = 3;
 
-    sf::base::TrivialVector<float> contiguous;
-    contiguous.resize(vectorSize * length);
+    sf::base::TrivialVector<float> contiguous(vectorSize * length);
 
     for (sf::base::SizeT i = 0; i < length; ++i)
     {
@@ -182,8 +180,7 @@ struct [[nodiscard]] BufferSlice
 {
     const sf::base::SizeT vectorSize = 4;
 
-    sf::base::TrivialVector<float> contiguous;
-    contiguous.resize(vectorSize * length);
+    sf::base::TrivialVector<float> contiguous(vectorSize * length);
 
     for (sf::base::SizeT i = 0; i < length; ++i)
     {
@@ -810,8 +807,7 @@ void Shader::setUniformArray(UniformLocation location, const Glsl::Mat3* matrixA
 {
     const base::SizeT matrixSize = 3 * 3;
 
-    base::TrivialVector<float> contiguous;
-    contiguous.resize(matrixSize * length);
+    base::TrivialVector<float> contiguous(matrixSize * length);
 
     for (base::SizeT i = 0; i < length; ++i)
         priv::copyMatrix(matrixArray[i].array, matrixSize, &contiguous[matrixSize * i]);
@@ -826,8 +822,7 @@ void Shader::setUniformArray(UniformLocation location, const Glsl::Mat4* matrixA
 {
     const base::SizeT matrixSize = 4 * 4;
 
-    base::TrivialVector<float> contiguous;
-    contiguous.resize(matrixSize * length);
+    base::TrivialVector<float> contiguous(matrixSize * length);
 
     for (base::SizeT i = 0; i < length; ++i)
         priv::copyMatrix(matrixArray[i].array, matrixSize, &contiguous[matrixSize * i]);

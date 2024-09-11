@@ -118,25 +118,20 @@ base::Optional<Image> Image::create(Vector2u size, const std::uint8_t* pixels)
 
 
 ////////////////////////////////////////////////////////////
-Image::Image(base::PassKey<Image>&&, Vector2u size, base::SizeT pixelCount) : m_size(size)
+Image::Image(base::PassKey<Image>&&, Vector2u size, base::SizeT pixelCount) : m_size(size), m_pixels(pixelCount)
 {
     SFML_BASE_ASSERT(size.x > 0 && "Attempted to create an image with size.x == 0");
     SFML_BASE_ASSERT(size.y > 0 && "Attempted to create an image with size.y == 0");
-
-    m_pixels.resize(pixelCount);
 }
 
 
 ////////////////////////////////////////////////////////////
 Image::Image(base::PassKey<Image>&&, Vector2u size, const std::uint8_t* itBegin, const std::uint8_t* itEnd) :
-m_size(size)
+m_size(size),
+m_pixels(itBegin, static_cast<base::SizeT>(itEnd - itBegin))
 {
     SFML_BASE_ASSERT(size.x > 0 && "Attempted to create an image with size.x == 0");
     SFML_BASE_ASSERT(size.y > 0 && "Attempted to create an image with size.y == 0");
-
-    const auto pixelCount = static_cast<base::SizeT>(itEnd - itBegin);
-    m_pixels.reserve(pixelCount);
-    m_pixels.unsafeEmplaceRange(itBegin, pixelCount);
 }
 
 

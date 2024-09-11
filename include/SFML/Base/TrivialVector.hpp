@@ -6,7 +6,6 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Launder.hpp"
-#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Memcpy.hpp"
 #include "SFML/Base/PlacementNew.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -17,7 +16,6 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-
 template <typename TItem>
 class [[nodiscard]] TrivialVector
 {
@@ -46,7 +44,7 @@ private:
 
 public:
     ////////////////////////////////////////////////////////////
-    TrivialVector() = default;
+    [[nodiscard]] TrivialVector() = default;
 
 
     ////////////////////////////////////////////////////////////
@@ -57,12 +55,34 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] TrivialVector(const TrivialVector& rhs) :
+    [[nodiscard]] explicit TrivialVector(base::SizeT initialSize) :
+    m_data{new ItemUnion[initialSize]},
+    m_endSize{m_data + initialSize},
+    m_endCapacity{m_data + initialSize}
+    {
+        for (ItemUnion* p = m_data; p < m_endSize; ++p)
+            SFML_BASE_PLACEMENT_NEW(p) TItem();
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] explicit TrivialVector(const TItem* src, base::SizeT srcCount) :
+    m_data{new ItemUnion[srcCount]},
+    m_endSize{m_data + srcCount},
+    m_endCapacity{m_data + srcCount}
+    {
+        for (ItemUnion* p = m_data; p < m_endSize; ++p)
+            SFML_BASE_PLACEMENT_NEW(p) TItem(*src++);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline]] TrivialVector(const TrivialVector& rhs) :
     m_data{rhs.m_data == nullptr ? nullptr : new ItemUnion[rhs.size()]},
     m_endSize{m_data + rhs.size()},
     m_endCapacity{m_data + rhs.size()}
     {
-        SFML_BASE_MEMCPY(m_data, rhs.m_data, sizeof(TItem) * size());
+        SFML_BASE_MEMCPY(m_data, rhs.m_data, sizeof(TItem) * rhs.size());
     }
 
 
@@ -75,14 +95,14 @@ public:
         reserve(rhs.size());
         m_endSize = m_data + rhs.size();
 
-        SFML_BASE_MEMCPY(m_data, rhs.m_data, sizeof(TItem) * size());
+        SFML_BASE_MEMCPY(m_data, rhs.m_data, sizeof(TItem) * rhs.size());
 
         return *this;
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] TrivialVector(TrivialVector&& rhs) noexcept :
+    [[nodiscard, gnu::always_inline]] TrivialVector(TrivialVector&& rhs) noexcept :
     m_data{rhs.m_data},
     m_endSize{rhs.m_endSize},
     m_endCapacity{rhs.m_endCapacity}
@@ -117,7 +137,7 @@ public:
         reserve(n);
         m_endSize = m_data + n;
 
-        for (ItemUnion* p = m_data + oldSize; p < m_endSize; ++p)
+        for (auto* p = m_data + oldSize; p < m_endSize; ++p)
             SFML_BASE_PLACEMENT_NEW(p) TItem();
     }
 
@@ -130,7 +150,7 @@ public:
         if (capacity() >= targetCapacity) [[likely]]
             return;
 
-        reserve(static_cast<SizeT>(static_cast<float>(capacity()) * 1.5f) + n);
+        reserve(static_cast<SizeT>(static_cast<float>(targetCapacity) * 1.5f) + n);
     }
 
 
@@ -216,7 +236,7 @@ public:
         SFML_BASE_ASSERT(m_data != nullptr);
         SFML_BASE_ASSERT(m_endSize != nullptr);
 
-        SFML_BASE_PLACEMENT_NEW(m_endSize++) TItem(static_cast<TItem>(SFML_BASE_FORWARD(xs))...);
+        SFML_BASE_PLACEMENT_NEW(m_endSize++) TItem(static_cast<Ts&&>(xs)...);
     }
 
 
@@ -228,7 +248,7 @@ public:
         SFML_BASE_ASSERT(m_data != nullptr);
         SFML_BASE_ASSERT(m_endSize != nullptr);
 
-        (SFML_BASE_PLACEMENT_NEW(m_endSize++) TItem(static_cast<TItem>(SFML_BASE_FORWARD(items))), ...);
+        (SFML_BASE_PLACEMENT_NEW(m_endSize++) TItem(static_cast<TItems&&>(items)), ...);
     }
 
 

@@ -13,8 +13,7 @@ sf::base::TrivialVector<unsigned char> loadIntoMemory(const char* path)
     const auto size = file.tellg();
     file.seekg(0, std::ios::beg);
 
-    sf::base::TrivialVector<unsigned char> buffer;
-    buffer.resize(static_cast<sf::base::SizeT>(size));
+    sf::base::TrivialVector<unsigned char> buffer(static_cast<sf::base::SizeT>(size));
 
     [[maybe_unused]] const auto& result = file.read(reinterpret_cast<char*>(buffer.data()),
                                                     static_cast<std::streamsize>(size));

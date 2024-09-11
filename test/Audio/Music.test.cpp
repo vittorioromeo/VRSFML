@@ -76,8 +76,7 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("openFromMemory()")
     {
-        sf::base::TrivialVector<unsigned char> memory;
-        memory.resize(10);
+        sf::base::TrivialVector<unsigned char> memory(10);
         SFML_BASE_MEMSET(memory.data(), 0xCA, 10);
 
         SECTION("Invalid buffer")
