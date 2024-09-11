@@ -321,7 +321,7 @@ EGLConfig EglContext::getBestConfig(EGLDisplay display, unsigned int bitsPerPixe
     eglCheck(eglGetConfigs(display, nullptr, 0, &configCount));
 
     // Retrieve the list of available configs
-    const auto configs = std::make_unique<EGLConfig[]>(static_cast<std::size_t>(configCount));
+    const auto configs = std::make_unique<EGLConfig[]>(static_cast<base::SizeT>(configCount));
 
     eglCheck(eglGetConfigs(display, configs.get(), configCount, &configCount));
 
@@ -329,7 +329,7 @@ EGLConfig EglContext::getBestConfig(EGLDisplay display, unsigned int bitsPerPixe
     int       bestScore = 0x7FFFFFFF;
     EGLConfig bestConfig{};
 
-    for (std::size_t i = 0; i < static_cast<std::size_t>(configCount); ++i)
+    for (base::SizeT i = 0; i < static_cast<base::SizeT>(configCount); ++i)
     {
         // Check mandatory attributes
         int surfaceType    = 0;

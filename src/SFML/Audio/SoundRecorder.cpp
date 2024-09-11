@@ -63,7 +63,7 @@ bool SoundRecorder::start(CaptureDevice& captureDevice, unsigned int sampleRate)
     SFML_UPDATE_LIFETIME_DEPENDANT(CaptureDevice, SoundRecorder, this, m_lastCaptureDevice);
 
     captureDevice.setProcessSamplesFunc(this,
-                                        [](void* userData, const std::int16_t* samples, std::size_t sampleCount) {
+                                        [](void* userData, const std::int16_t* samples, base::SizeT sampleCount) {
                                             return static_cast<SoundRecorder*>(userData)->onProcessSamples(samples,
                                                                                                            sampleCount);
                                         });

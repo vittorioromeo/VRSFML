@@ -88,7 +88,7 @@ String::String(const char* ansiString, const std::locale& locale)
 {
     if (ansiString)
     {
-        const std::size_t length = SFML_BASE_STRLEN(ansiString);
+        const base::SizeT length = SFML_BASE_STRLEN(ansiString);
         if (length > 0)
         {
             m_impl->string.reserve(length + 1);
@@ -117,7 +117,7 @@ String::String(const wchar_t* wideString)
 {
     if (wideString)
     {
-        const std::size_t length = std::wcslen(wideString);
+        const base::SizeT length = std::wcslen(wideString);
         if (length > 0)
         {
             m_impl->string.reserve(length + 1);
@@ -242,7 +242,7 @@ String& String::operator+=(const String& right)
 
 
 ////////////////////////////////////////////////////////////
-char32_t String::operator[](std::size_t index) const
+char32_t String::operator[](base::SizeT index) const
 {
     SFML_BASE_ASSERT(index < m_impl->string.size() && "Index is out of bounds");
     return m_impl->string[index];
@@ -250,7 +250,7 @@ char32_t String::operator[](std::size_t index) const
 
 
 ////////////////////////////////////////////////////////////
-char32_t& String::operator[](std::size_t index)
+char32_t& String::operator[](base::SizeT index)
 {
     SFML_BASE_ASSERT(index < m_impl->string.size() && "Index is out of bounds");
     return m_impl->string[index];
@@ -265,7 +265,7 @@ void String::clear()
 
 
 ////////////////////////////////////////////////////////////
-std::size_t String::getSize() const
+base::SizeT String::getSize() const
 {
     return m_impl->string.size();
 }
@@ -279,28 +279,28 @@ bool String::isEmpty() const
 
 
 ////////////////////////////////////////////////////////////
-void String::erase(std::size_t position, std::size_t count)
+void String::erase(base::SizeT position, base::SizeT count)
 {
     m_impl->string.erase(position, count);
 }
 
 
 ////////////////////////////////////////////////////////////
-void String::insert(std::size_t position, const String& str)
+void String::insert(base::SizeT position, const String& str)
 {
     m_impl->string.insert(position, str.m_impl->string);
 }
 
 
 ////////////////////////////////////////////////////////////
-std::size_t String::find(const String& str, std::size_t start) const
+base::SizeT String::find(const String& str, base::SizeT start) const
 {
     return m_impl->string.find(str.m_impl->string, start);
 }
 
 
 ////////////////////////////////////////////////////////////
-void String::replace(std::size_t position, std::size_t length, const String& replaceWith)
+void String::replace(base::SizeT position, base::SizeT length, const String& replaceWith)
 {
     m_impl->string.replace(position, length, replaceWith.m_impl->string);
 }
@@ -309,9 +309,9 @@ void String::replace(std::size_t position, std::size_t length, const String& rep
 ////////////////////////////////////////////////////////////
 void String::replace(const String& searchFor, const String& replaceWith)
 {
-    const std::size_t step = replaceWith.getSize();
-    const std::size_t len  = searchFor.getSize();
-    std::size_t       pos  = find(searchFor);
+    const base::SizeT step = replaceWith.getSize();
+    const base::SizeT len  = searchFor.getSize();
+    base::SizeT       pos  = find(searchFor);
 
     // Replace each occurrence of search
     while (pos != InvalidPos)
@@ -323,7 +323,7 @@ void String::replace(const String& searchFor, const String& replaceWith)
 
 
 ////////////////////////////////////////////////////////////
-String String::substring(std::size_t position, std::size_t length) const
+String String::substring(base::SizeT position, base::SizeT length) const
 {
     return m_impl->string.substr(position, length);
 }
@@ -424,6 +424,6 @@ String operator+(const String& left, const String& right)
 
 
 ////////////////////////////////////////////////////////////
-const std::size_t String::InvalidPos{std::u32string::npos};
+const base::SizeT String::InvalidPos{std::u32string::npos};
 
 } // namespace sf

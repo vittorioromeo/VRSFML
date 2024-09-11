@@ -101,7 +101,7 @@
         playbackDevices.emplace_back(audioContext, deviceHandle);
 
     // Play multiple sources simultaneously on separate playback devices
-    for (std::size_t i = 0u; i < playbackDevices.size(); ++i)
+    for (base::SizeT i = 0u; i < playbackDevices.size(); ++i)
         sources[i % 3]->play(playbackDevices[i]);
     ```
 

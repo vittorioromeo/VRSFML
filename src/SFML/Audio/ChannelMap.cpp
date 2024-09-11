@@ -49,7 +49,7 @@ ChannelMap& ChannelMap::operator=(ChannelMap&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] std::size_t ChannelMap::getSize() const
+[[nodiscard]] base::SizeT ChannelMap::getSize() const
 {
     return m_impl->channels.size();
 }
@@ -91,14 +91,14 @@ ChannelMap& ChannelMap::operator=(ChannelMap&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] const SoundChannel& ChannelMap::operator[](std::size_t index) const
+[[nodiscard]] const SoundChannel& ChannelMap::operator[](base::SizeT index) const
 {
     return m_impl->channels.at(index);
 }
 
 
 ////////////////////////////////////////////////////////////
-void ChannelMap::reserve(std::size_t count)
+void ChannelMap::reserve(base::SizeT count)
 {
     m_impl->channels.reserve(count);
 }

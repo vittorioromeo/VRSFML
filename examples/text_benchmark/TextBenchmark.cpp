@@ -86,6 +86,9 @@ int main()
     circle0.setTextureRect({.position = whiteDotAtlasPos.to<sf::Vector2i>(), .size{1u, 1u}});
     circle0.setOutlineTextureRect({.position = whiteDotAtlasPos.to<sf::Vector2i>(), .size{1u, 1u}});
 
+    // Create drawable batch to optimize rendering
+    sf::DrawableBatch drawableBatch;
+
     while (true)
     {
         while (sf::base::Optional event = window.pollEvent())
@@ -97,33 +100,35 @@ int main()
         window.clear();
 
         {
-            auto batch = window.startBatchDraw({.texture = &textureAtlas.getTexture()});
+            drawableBatch.clear();
 
-            batch.add(text0);
+            drawableBatch.add(text0);
 
             sfmlLogo.setPosition({170.f, 50.f});
             sfmlLogo.setScale({1.5f, 1.5f});
-            batch.add(sfmlLogo);
+            drawableBatch.add(sfmlLogo);
 
-            batch.add(text1);
+            drawableBatch.add(text1);
             sfmlLogo.setPosition({100.f, 50.f});
             sfmlLogo.setScale({1.0f, 1.0f});
-            batch.add(sfmlLogo);
+            drawableBatch.add(sfmlLogo);
 
-            batch.add(text2);
+            drawableBatch.add(text2);
             sfmlLogo.setPosition({300.f, 150.f});
             sfmlLogo.setScale({1.5f, 1.5f});
-            batch.add(sfmlLogo);
+            drawableBatch.add(sfmlLogo);
 
-            batch.add(text3);
+            drawableBatch.add(text3);
             sfmlLogo.setPosition({250.f, 250.f});
             sfmlLogo.setScale({1.0f, 1.0f});
-            batch.add(sfmlLogo);
+            drawableBatch.add(sfmlLogo);
 
-            batch.add(text4);
-            batch.add(text5);
+            drawableBatch.add(text4);
+            drawableBatch.add(text5);
 
-            batch.add(circle0);
+            drawableBatch.add(circle0);
+
+            window.draw(drawableBatch, {.texture = &textureAtlas.getTexture()});
         }
 
         // window.draw(circle0, /* texture */ nullptr);

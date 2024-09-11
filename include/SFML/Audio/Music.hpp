@@ -11,9 +11,9 @@
 
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
-#include <cstddef>
 #include <cstdint>
 
 
@@ -100,7 +100,7 @@ public:
     /// \see openFromFile, openFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Music> openFromMemory(const void* data, std::size_t sizeInBytes);
+    [[nodiscard]] static base::Optional<Music> openFromMemory(const void* data, base::SizeT sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a music from an audio file in a custom stream

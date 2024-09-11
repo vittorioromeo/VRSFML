@@ -12,8 +12,7 @@
 
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Optional.hpp"
-
-#include <cstddef>
+#include "SFML/Base/SizeT.hpp"
 
 
 namespace sf
@@ -126,7 +125,7 @@ public:
     /// \brief Send raw data to the remote peer
     ///
     /// To be able to handle partial sends over non-blocking
-    /// sockets, use the send(const void*, std::size_t, std::size_t&)
+    /// sockets, use the send(const void*, base::SizeT, base::SizeT&)
     /// overload instead.
     /// This function will fail if the socket is not connected.
     ///
@@ -138,7 +137,7 @@ public:
     /// \see receive
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Status send(const void* data, std::size_t size);
+    [[nodiscard]] Status send(const void* data, base::SizeT size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Send raw data to the remote peer
@@ -154,7 +153,7 @@ public:
     /// \see receive
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Status send(const void* data, std::size_t size, std::size_t& sent);
+    [[nodiscard]] Status send(const void* data, base::SizeT size, base::SizeT& sent);
 
     ////////////////////////////////////////////////////////////
     /// \brief Receive raw data from the remote peer
@@ -172,7 +171,7 @@ public:
     /// \see send
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Status receive(void* data, std::size_t size, std::size_t& received);
+    [[nodiscard]] Status receive(void* data, base::SizeT size, base::SizeT& received);
 
     ////////////////////////////////////////////////////////////
     /// \brief Send a formatted packet of data to the remote peer
@@ -269,7 +268,7 @@ private:
 ///
 /// // Receive an answer from the server
 /// char buffer[1024];
-/// std::size_t received = 0;
+/// base::SizeT received = 0;
 /// socket.receive(buffer, sizeof(buffer), received);
 /// std::cout << "The server said: " << buffer << '\n';
 ///
@@ -286,7 +285,7 @@ private:
 ///
 /// // Receive a message from the client
 /// char buffer[1024];
-/// std::size_t received = 0;
+/// base::SizeT received = 0;
 /// socket.receive(buffer, sizeof(buffer), received);
 /// std::cout << "The client said: " << buffer << '\n';
 ///

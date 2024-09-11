@@ -9,8 +9,7 @@
 #include "SFML/System/Export.hpp"
 
 #include "SFML/Base/Optional.hpp"
-
-#include <cstddef>
+#include "SFML/Base/SizeT.hpp"
 
 
 namespace sf
@@ -40,7 +39,7 @@ public:
     /// \return The number of bytes actually read, or `base::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual base::Optional<std::size_t> read(void* data, std::size_t size) = 0;
+    [[nodiscard]] virtual base::Optional<base::SizeT> read(void* data, base::SizeT size) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current reading position
@@ -50,7 +49,7 @@ public:
     /// \return The position actually sought to, or `base::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual base::Optional<std::size_t> seek(std::size_t position) = 0;
+    [[nodiscard]] virtual base::Optional<base::SizeT> seek(base::SizeT position) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current reading position in the stream
@@ -58,7 +57,7 @@ public:
     /// \return The current position, or `base::nullOpt` on error.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual base::Optional<std::size_t> tell() = 0;
+    [[nodiscard]] virtual base::Optional<base::SizeT> tell() = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the stream
@@ -66,7 +65,7 @@ public:
     /// \return The total number of bytes available in the stream, or `base::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual base::Optional<std::size_t> getSize() = 0;
+    [[nodiscard]] virtual base::Optional<base::SizeT> getSize() = 0;
 };
 
 } // namespace sf
@@ -98,13 +97,13 @@ public:
 ///
 ///     [[nodiscard]] bool open(const Path& filename);
 ///
-///     [[nodiscard]] sf::base::Optional<std::size_t> read(void* data, std::size_t size);
+///     [[nodiscard]] sf::base::Optional<base::SizeT> read(void* data, base::SizeT size);
 ///
-///     [[nodiscard]] sf::base::Optional<std::size_t> seek(std::size_t position);
+///     [[nodiscard]] sf::base::Optional<base::SizeT> seek(base::SizeT position);
 ///
-///     [[nodiscard]] sf::base::Optional<std::size_t> tell();
+///     [[nodiscard]] sf::base::Optional<base::SizeT> tell();
 ///
-///     sf::base::Optional<std::size_t> getSize();
+///     sf::base::Optional<base::SizeT> getSize();
 ///
 /// private:
 ///

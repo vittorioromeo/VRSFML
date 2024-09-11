@@ -266,7 +266,7 @@ sf::Glyph loadGlyph(const FontHandles&         fontHandles,
         glyph.bounds.size     = sf::Vector2u(bitmap.width, bitmap.rows).to<sf::Vector2f>();
 
         // Resize the pixel buffer to the new size and fill it with transparent white pixels
-        pixelBuffer.resize(static_cast<std::size_t>(size.x) * static_cast<std::size_t>(size.y) * 4);
+        pixelBuffer.resize(static_cast<sf::base::SizeT>(size.x) * static_cast<sf::base::SizeT>(size.y) * 4);
 
         std::uint8_t* current = pixelBuffer.data();
         std::uint8_t* end     = current + size.x * size.y * 4;
@@ -289,7 +289,7 @@ sf::Glyph loadGlyph(const FontHandles&         fontHandles,
                 for (unsigned int x = padding; x < size.x - padding; ++x)
                 {
                     // The color channels remain white, just fill the alpha channel
-                    const std::size_t index = x + y * size.x;
+                    const sf::base::SizeT index = x + y * size.x;
                     pixelBuffer[index * 4 + 3] = ((pixels[(x - padding) / 8]) & (1 << (7 - ((x - padding) % 8)))) ? 255 : 0;
                 }
 
@@ -304,8 +304,8 @@ sf::Glyph loadGlyph(const FontHandles&         fontHandles,
                 for (unsigned int x = padding; x < size.x - padding; ++x)
                 {
                     // The color channels remain white, just fill the alpha channel
-                    const std::size_t index    = x + y * size.x;
-                    pixelBuffer[index * 4 + 3] = pixels[x - padding];
+                    const sf::base::SizeT index = x + y * size.x;
+                    pixelBuffer[index * 4 + 3]  = pixels[x - padding];
                 }
 
                 pixels += bitmap.pitch;
@@ -471,7 +471,7 @@ base::Optional<Font> Font::openFromFile(GraphicsContext& graphicsContext, const 
 ////////////////////////////////////////////////////////////
 base::Optional<Font> Font::openFromMemory(GraphicsContext& graphicsContext,
                                           const void*      data,
-                                          std::size_t      sizeInBytes,
+                                          base::SizeT      sizeInBytes,
                                           TextureAtlas*    textureAtlas)
 {
     const auto fail = [&](const char* what)

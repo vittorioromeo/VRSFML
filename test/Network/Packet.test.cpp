@@ -3,6 +3,7 @@
 // Other 1st party headers
 #include "SFML/System/String.hpp"
 
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Strlen.hpp"
 
 #include <Doctest.hpp>
@@ -15,7 +16,6 @@
 #include <string>
 #include <vector>
 
-#include <cstddef>
 #include <cwchar>
 
 #define CHECK_PACKET_STREAM_OPERATORS(expected)              \
@@ -275,8 +275,8 @@ TEST_CASE("[Network] sf::Packet")
 
     SECTION("onSend")
     {
-        Packet      packet;
-        std::size_t size = 0;
+        Packet          packet;
+        sf::base::SizeT size = 0;
         CHECK(packet.onSend(size) == nullptr);
         CHECK(size == 0);
 

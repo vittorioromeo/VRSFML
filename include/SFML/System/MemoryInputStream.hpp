@@ -10,6 +10,8 @@
 
 #include "SFML/System/InputStream.hpp"
 
+#include "SFML/Base/SizeT.hpp"
+
 #include <cstddef>
 
 
@@ -29,7 +31,7 @@ public:
     /// \param sizeInBytes Size of the data, in bytes
     ///
     ////////////////////////////////////////////////////////////
-    MemoryInputStream(const void* data, std::size_t sizeInBytes);
+    MemoryInputStream(const void* data, base::SizeT sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Read data from the stream
@@ -43,7 +45,7 @@ public:
     /// \return The number of bytes actually read, or `base::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<std::size_t> read(void* data, std::size_t size) override;
+    [[nodiscard]] base::Optional<base::SizeT> read(void* data, base::SizeT size) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current reading position
@@ -53,7 +55,7 @@ public:
     /// \return The position actually sought to, or `base::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<std::size_t> seek(std::size_t position) override;
+    [[nodiscard]] base::Optional<base::SizeT> seek(base::SizeT position) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current reading position in the stream
@@ -61,7 +63,7 @@ public:
     /// \return The current position, or `base::nullOpt` on error.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<std::size_t> tell() override;
+    [[nodiscard]] base::Optional<base::SizeT> tell() override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the stream
@@ -69,15 +71,15 @@ public:
     /// \return The total number of bytes available in the stream, or `base::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<std::size_t> getSize() override;
+    [[nodiscard]] base::Optional<base::SizeT> getSize() override;
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     const std::byte* m_data{};   //!< Pointer to the data in memory
-    std::size_t      m_size{};   //!< Total size of the data
-    std::size_t      m_offset{}; //!< Current reading position
+    base::SizeT      m_size{};   //!< Total size of the data
+    base::SizeT      m_offset{}; //!< Current reading position
 };
 
 } // namespace sf

@@ -6,9 +6,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Audio/Export.hpp"
 
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/UniquePtr.hpp"
-
-#include <cstddef>
 
 
 ////////////////////////////////////////////////////////////
@@ -105,7 +104,7 @@ public:
     /// \see createReaderFromFilename, createReaderFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::UniquePtr<SoundFileReader> createReaderFromMemory(const void* data, std::size_t sizeInBytes);
+    [[nodiscard]] static base::UniquePtr<SoundFileReader> createReaderFromMemory(const void* data, base::SizeT sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Instantiate the right codec for the given file in stream

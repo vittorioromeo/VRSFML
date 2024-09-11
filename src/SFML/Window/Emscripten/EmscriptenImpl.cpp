@@ -347,7 +347,7 @@ void requestFullscreen()
                 fullscreenPending = false;
             }
 
-            keyStatus[static_cast<std::size_t>(key)] = true;
+            keyStatus[static_cast<base::SizeT>(key)] = true;
             window->pushHtmlEvent(sf::Event::KeyPressed{.code    = key,
                                                         .alt     = e->altKey != 0,
                                                         .control = e->ctrlKey != 0,
@@ -366,7 +366,7 @@ void requestFullscreen()
         }
         case EMSCRIPTEN_EVENT_KEYUP:
         {
-            keyStatus[static_cast<std::size_t>(key)] = false;
+            keyStatus[static_cast<base::SizeT>(key)] = false;
 
             window->pushHtmlEvent(sf::Event::KeyReleased{.code    = key,
                                                          .alt     = e->altKey != 0,
@@ -404,7 +404,7 @@ void requestFullscreen()
         const auto pushEventAndUpdateStatus = [&](sf::Mouse::Button sfButton)
         {
             window->pushHtmlEvent(sf::Event::MouseButtonPressed{.button = sfButton, .position = mousePosition});
-            mouseStatus[static_cast<std::size_t>(sfButton)] = TDown;
+            mouseStatus[static_cast<base::SizeT>(sfButton)] = TDown;
         };
 
         // clang-format off
@@ -928,7 +928,7 @@ void WindowImplEmscripten::pushHtmlEvent(const Event& event)
 ////////////////////////////////////////////////////////////
 bool InputImpl::isKeyPressed(Keyboard::Key key)
 {
-    return keyStatus[static_cast<std::size_t>(key)];
+    return keyStatus[static_cast<base::SizeT>(key)];
 }
 
 ////////////////////////////////////////////////////////////
@@ -972,7 +972,7 @@ void InputImpl::setVirtualKeyboardVisible(bool /* visible */)
 ////////////////////////////////////////////////////////////
 bool InputImpl::isMouseButtonPressed(Mouse::Button button)
 {
-    return mouseStatus[static_cast<std::size_t>(button)];
+    return mouseStatus[static_cast<base::SizeT>(button)];
 }
 
 

@@ -10,9 +10,9 @@
 
 #include "SFML/System/Err.hpp"
 
-#include <vector>
+#include "SFML/Base/SizeT.hpp"
 
-#include <cstddef>
+#include <vector>
 
 
 namespace sf
@@ -83,7 +83,7 @@ bool UdpSocket::unbind()
 
 
 ////////////////////////////////////////////////////////////
-Socket::Status UdpSocket::send(const void* data, std::size_t size, IpAddress remoteAddress, unsigned short remotePort)
+Socket::Status UdpSocket::send(const void* data, base::SizeT size, IpAddress remoteAddress, unsigned short remotePort)
 {
     // Create the internal socket if it doesn't exist
     if (!create())
@@ -122,8 +122,8 @@ Socket::Status UdpSocket::send(const void* data, std::size_t size, IpAddress rem
 
 ////////////////////////////////////////////////////////////
 Socket::Status UdpSocket::receive(void*                      data,
-                                  std::size_t                size,
-                                  std::size_t&               received,
+                                  base::SizeT                size,
+                                  base::SizeT&               received,
                                   base::Optional<IpAddress>& remoteAddress,
                                   unsigned short&            remotePort)
 {
@@ -160,7 +160,7 @@ Socket::Status UdpSocket::receive(void*                      data,
         return priv::SocketImpl::getErrorStatus();
 
     // Fill the sender information
-    received = static_cast<std::size_t>(sizeReceived);
+    received = static_cast<base::SizeT>(sizeReceived);
     remoteAddress.emplace(priv::SocketImpl::ntohl(address.sAddr()));
     remotePort = priv::SocketImpl::ntohs(address.sinPort());
 
@@ -180,7 +180,7 @@ Socket::Status UdpSocket::send(Packet& packet, IpAddress remoteAddress, unsigned
     // to the packet's data.
 
     // Get the data to send from the packet
-    std::size_t size = 0;
+    base::SizeT size = 0;
     const void* data = packet.onSend(size);
 
     // Send it
@@ -194,7 +194,7 @@ Socket::Status UdpSocket::receive(Packet& packet, base::Optional<IpAddress>& rem
     // See the detailed comment in send(Packet) above.
 
     // Receive the datagram
-    std::size_t  received = 0;
+    base::SizeT  received = 0;
     const Status status   = receive(m_impl->buffer.data(), m_impl->buffer.size(), received, remoteAddress, remotePort);
 
     // If we received valid data, we can copy it to the user packet

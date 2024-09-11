@@ -4,6 +4,7 @@
 #include "SFML/Window/Joystick.hpp"
 
 #include "SFML/Graphics/CoordinateType.hpp"
+#include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
@@ -169,6 +170,9 @@ int main()
         if (updateValues(i))
             break;
 
+    // Create drawable batch to optimize rendering
+    sf::DrawableBatch drawableBatch;
+
     while (true)
     {
         // Handle events
@@ -228,13 +232,15 @@ int main()
 
         // Draw the label-value sf::Text objects
         {
-            auto batch = window.startBatchDraw({.texture = &font.getTexture(characterSize)});
+            drawableBatch.clear();
 
             for (const auto& [label, joystickObject] : texts)
             {
-                batch.add(joystickObject.label);
-                batch.add(joystickObject.value);
+                drawableBatch.add(joystickObject.label);
+                drawableBatch.add(joystickObject.value);
             }
+
+            window.draw(drawableBatch, {.texture = &font.getTexture(characterSize)});
         }
 
         // Display things on screen

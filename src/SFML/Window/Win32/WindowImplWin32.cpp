@@ -17,10 +17,10 @@
 // dbt.h is lowercase here, as a cross-compile on linux with mingw-w64
 // expects lowercase, and a native compile on windows, whether via msvc
 // or mingw-w64 addresses files in a case insensitive manner.
+#include "SFML/Base/SizeT.hpp"
+
 #include <dbt.h>
 #include <vector>
-
-#include <cstddef>
 
 // MinGW lacks the definition of some Win32 constants
 #ifndef XBUTTON1
@@ -349,7 +349,7 @@ void WindowImplWin32::setIcon(Vector2u size, const std::uint8_t* pixels)
 
     // Windows wants BGRA pixels: swap red and blue channels
     std::vector<std::uint8_t> iconPixels(size.x * size.y * 4);
-    for (std::size_t i = 0; i < iconPixels.size() / 4; ++i)
+    for (base::SizeT i = 0; i < iconPixels.size() / 4; ++i)
     {
         iconPixels[i * 4 + 0] = pixels[i * 4 + 2];
         iconPixels[i * 4 + 1] = pixels[i * 4 + 1];

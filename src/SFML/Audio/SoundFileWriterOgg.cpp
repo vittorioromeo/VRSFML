@@ -27,7 +27,7 @@ namespace sf::priv
 struct SoundFileWriterOgg::Impl
 {
     unsigned int     channelCount{};  //!< Channel count of the sound being written
-    std::size_t      remapTable[8]{}; //!< Table we use to remap source to target channel order
+    base::SizeT      remapTable[8]{}; //!< Table we use to remap source to target channel order
     std::ofstream    file;            //!< Output file
     ogg_stream_state ogg{};           //!< OGG stream
     vorbis_info      vorbis{};        //!< Vorbis handle
@@ -124,7 +124,7 @@ bool SoundFileWriterOgg::open(const Path& filename, unsigned int sampleRate, uns
 
     // Build the remap table
     for (auto i = 0u; i < channelCount; ++i)
-        m_impl->remapTable[i] = static_cast<std::size_t>(
+        m_impl->remapTable[i] = static_cast<base::SizeT>(
             base::find(channelMap.begin(), channelMap.end(), targetChannelMap[i]) - channelMap.begin());
 
     // Save the channel count

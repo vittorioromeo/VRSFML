@@ -299,7 +299,7 @@ XVisualInfo GlxContext::selectBestVisual(::Display* display, unsigned int bitsPe
         // Evaluate all the returned visuals, and pick the best one
         int         bestScore  = 0x7FFFFFFF;
         XVisualInfo bestVisual = XVisualInfo();
-        for (std::size_t i = 0; i < static_cast<std::size_t>(count); ++i)
+        for (base::SizeT i = 0; i < static_cast<base::SizeT>(count); ++i)
         {
             auto& visual = visuals.get()[i];
 
@@ -476,7 +476,7 @@ void GlxContext::createSurface(GlxContext* shared, Vector2u size, unsigned int b
             const auto configs   = X11Ptr<GLXFBConfig[]>(
                 glXChooseFBConfig(m_display.get(), DefaultScreen(m_display.get()), nullptr, &nbConfigs));
 
-            for (std::size_t i = 0; configs && (i < static_cast<std::size_t>(nbConfigs)); ++i)
+            for (base::SizeT i = 0; configs && (i < static_cast<base::SizeT>(nbConfigs)); ++i)
             {
                 const auto visual = X11Ptr<XVisualInfo>(glXGetVisualFromFBConfig(m_display.get(), configs.get()[i]));
 
@@ -616,7 +616,7 @@ void GlxContext::createContext(GlxContext* shared)
         const auto configs   = X11Ptr<GLXFBConfig[]>(
             glXChooseFBConfig(m_display.get(), DefaultScreen(m_display.get()), nullptr, &nbConfigs));
 
-        for (std::size_t i = 0; configs && (i < static_cast<std::size_t>(nbConfigs)); ++i)
+        for (base::SizeT i = 0; configs && (i < static_cast<base::SizeT>(nbConfigs)); ++i)
         {
             const auto visual = X11Ptr<XVisualInfo>(glXGetVisualFromFBConfig(m_display.get(), configs.get()[i]));
 

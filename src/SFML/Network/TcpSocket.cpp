@@ -40,7 +40,7 @@ namespace sf
 struct PendingPacket
 {
     std::uint32_t          size{};         //!< Data of packet size
-    std::size_t            sizeReceived{}; //!< Number of size bytes received so far
+    base::SizeT            sizeReceived{}; //!< Number of size bytes received so far
     std::vector<std::byte> data;           //!< Data of the packet
 };
 
@@ -217,19 +217,19 @@ bool TcpSocket::disconnect()
 
 
 ////////////////////////////////////////////////////////////
-Socket::Status TcpSocket::send(const void* data, std::size_t size)
+Socket::Status TcpSocket::send(const void* data, base::SizeT size)
 {
     if (!isBlocking())
         priv::err() << "Warning: Partial sends might not be handled properly.";
 
-    std::size_t sent = 0;
+    base::SizeT sent = 0;
 
     return send(data, size, sent);
 }
 
 
 ////////////////////////////////////////////////////////////
-Socket::Status TcpSocket::send(const void* data, std::size_t size, std::size_t& sent)
+Socket::Status TcpSocket::send(const void* data, base::SizeT size, base::SizeT& sent)
 {
     // Check the parameters
     if (!data || (size == 0))
@@ -240,7 +240,7 @@ Socket::Status TcpSocket::send(const void* data, std::size_t size, std::size_t& 
 
     // Loop until every byte has been sent
     int result = 0;
-    for (sent = 0; sent < size; sent += static_cast<std::size_t>(result))
+    for (sent = 0; sent < size; sent += static_cast<base::SizeT>(result))
     {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wuseless-cast"
@@ -268,7 +268,7 @@ Socket::Status TcpSocket::send(const void* data, std::size_t size, std::size_t& 
 
 
 ////////////////////////////////////////////////////////////
-Socket::Status TcpSocket::receive(void* data, std::size_t size, std::size_t& received)
+Socket::Status TcpSocket::receive(void* data, base::SizeT size, base::SizeT& received)
 {
     // First clear the variables to fill
     received = 0;
@@ -290,7 +290,7 @@ Socket::Status TcpSocket::receive(void* data, std::size_t size, std::size_t& rec
     // Check the number of bytes received
     if (sizeReceived > 0)
     {
-        received = static_cast<std::size_t>(sizeReceived);
+        received = static_cast<base::SizeT>(sizeReceived);
         return Status::Done;
     }
 
@@ -314,7 +314,7 @@ Socket::Status TcpSocket::send(Packet& packet)
     // data corruption on the receiving end.
 
     // Get the data to send from the packet
-    std::size_t size = 0;
+    base::SizeT size = 0;
     const void* data = packet.onSend(size);
 
     // First convert the packet size to network byte order
@@ -339,7 +339,7 @@ Socket::Status TcpSocket::send(Packet& packet)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-conversion"
     // Send the data block
-    std::size_t  sent   = 0;
+    base::SizeT  sent   = 0;
     const Status status = send(m_impl->blockToSendBuffer.data() + packet.getSendPos(),
                                static_cast<priv::SocketImpl::Size>(m_impl->blockToSendBuffer.size() - packet.getSendPos()),
                                sent);
@@ -368,7 +368,7 @@ Socket::Status TcpSocket::receive(Packet& packet)
 
     // We start by getting the size of the incoming packet
     std::uint32_t packetSize = 0;
-    std::size_t   received   = 0;
+    base::SizeT   received   = 0;
     if (m_impl->pendingPacket.sizeReceived < sizeof(m_impl->pendingPacket.size))
     {
         // Loop until we've received the entire size of the packet
@@ -397,7 +397,7 @@ Socket::Status TcpSocket::receive(Packet& packet)
     while (m_impl->pendingPacket.data.size() < packetSize)
     {
         // Receive a chunk of data
-        const std::size_t sizeToGet = base::min(packetSize - m_impl->pendingPacket.data.size(), sizeof(buffer));
+        const base::SizeT sizeToGet = base::min(packetSize - m_impl->pendingPacket.data.size(), sizeof(buffer));
         const Status      status    = receive(buffer, sizeToGet, received);
         if (status != Status::Done)
             return status;

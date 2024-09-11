@@ -96,9 +96,9 @@ struct SoundStream::Impl
             // Copy the samples to the output
             SFML_BASE_MEMCPY(framesOut,
                              impl.sampleBuffer.data() + impl.sampleBufferCursor,
-                             static_cast<std::size_t>(sampleCount) * sizeof(impl.sampleBuffer[0]));
+                             static_cast<base::SizeT>(sampleCount) * sizeof(impl.sampleBuffer[0]));
 
-            impl.sampleBufferCursor += static_cast<std::size_t>(sampleCount);
+            impl.sampleBufferCursor += static_cast<base::SizeT>(sampleCount);
             impl.samplesProcessed += sampleCount;
 
             if (impl.sampleBufferCursor >= impl.sampleBuffer.size())
@@ -188,7 +188,7 @@ struct SoundStream::Impl
 
     SoundStream*              owner;                //!< Owning `SoundStream` object
     std::vector<std::int16_t> sampleBuffer;         //!< Our temporary sample buffer
-    std::size_t               sampleBufferCursor{}; //!< The current read position in the temporary sample buffer
+    base::SizeT               sampleBufferCursor{}; //!< The current read position in the temporary sample buffer
     std::uint64_t             samplesProcessed{};   //!< Number of samples processed since beginning of the stream
     unsigned int              channelCount{};       //!< Number of channels (1 = mono, 2 = stereo, ...)
     unsigned int              sampleRate{};         //!< Frequency (samples / second)

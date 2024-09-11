@@ -445,9 +445,9 @@ int WindowImplAndroid::processKeyEvent(AInputEvent* inputEvent, ActivityStates& 
 int WindowImplAndroid::processMotionEvent(AInputEvent* inputEvent, ActivityStates& states)
 {
     const std::int32_t device       = AInputEvent_getSource(inputEvent);
-    const std::size_t  pointerCount = AMotionEvent_getPointerCount(inputEvent);
+    const base::SizeT  pointerCount = AMotionEvent_getPointerCount(inputEvent);
 
-    for (std::size_t p = 0; p < pointerCount; ++p)
+    for (base::SizeT p = 0; p < pointerCount; ++p)
     {
         const std::int32_t id = AMotionEvent_getPointerId(inputEvent, p);
 
@@ -483,7 +483,7 @@ int WindowImplAndroid::processPointerEvent(bool isDown, AInputEvent* inputEvent,
     const std::int32_t device = AInputEvent_getSource(inputEvent);
     const std::int32_t action = AMotionEvent_getAction(inputEvent);
 
-    const std::size_t index = (action & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK) >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT;
+    const base::SizeT index = (action & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK) >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT;
     const std::int32_t id     = AMotionEvent_getPointerId(inputEvent, index);
     const auto         button = static_cast<Mouse::Button>(id);
 

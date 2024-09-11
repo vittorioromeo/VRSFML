@@ -12,10 +12,9 @@
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 #include <miniaudio.h>
-
-#include <cstddef>
 
 
 namespace
@@ -28,7 +27,7 @@ ma_result onRead(ma_decoder* decoder, void* buffer, size_t bytesToRead, size_t* 
     if (!count.hasValue())
         return MA_ERROR;
 
-    *bytesRead = static_cast<std::size_t>(*count);
+    *bytesRead = static_cast<sf::base::SizeT>(*count);
     return MA_SUCCESS;
 }
 
@@ -40,7 +39,7 @@ ma_result onSeek(ma_decoder* decoder, ma_int64 byteOffset, ma_seek_origin origin
     {
         case ma_seek_origin_start:
         {
-            if (!stream->seek(static_cast<std::size_t>(byteOffset)).hasValue())
+            if (!stream->seek(static_cast<sf::base::SizeT>(byteOffset)).hasValue())
                 return MA_ERROR;
 
             return MA_SUCCESS;
@@ -50,7 +49,7 @@ ma_result onSeek(ma_decoder* decoder, ma_int64 byteOffset, ma_seek_origin origin
             if (!stream->tell().hasValue())
                 return MA_ERROR;
 
-            if (!stream->seek(stream->tell().value() + static_cast<std::size_t>(byteOffset)).hasValue())
+            if (!stream->seek(stream->tell().value() + static_cast<sf::base::SizeT>(byteOffset)).hasValue())
                 return MA_ERROR;
 
             return MA_SUCCESS;

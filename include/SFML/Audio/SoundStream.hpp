@@ -10,9 +10,9 @@
 #include "SFML/Audio/SoundSource.hpp"
 
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
-#include <cstddef>
 #include <cstdint>
 
 
@@ -43,7 +43,7 @@ public:
     struct [[nodiscard]] Chunk
     {
         const std::int16_t* samples{};     //!< Pointer to the audio samples
-        std::size_t         sampleCount{}; //!< Number of samples pointed by Samples
+        base::SizeT         sampleCount{}; //!< Number of samples pointed by Samples
     };
 
     ////////////////////////////////////////////////////////////

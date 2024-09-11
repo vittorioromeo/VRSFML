@@ -12,6 +12,9 @@
 #include <LoadIntoMemoryUtil.hpp>
 #include <SystemUtil.hpp>
 
+#include <cstddef>
+
+
 TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
 {
     SECTION("Type traits")

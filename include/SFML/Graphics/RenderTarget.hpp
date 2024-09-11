@@ -1,4 +1,6 @@
 #pragma once
+#include "DrawableBatch.hpp"
+
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
@@ -18,9 +20,10 @@
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Traits/IsBaseOf.hpp"
 
-#include <cstddef>
 
-
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
 namespace sf
 {
 class GraphicsContext;
@@ -36,7 +39,11 @@ struct RenderStates;
 struct StencilMode;
 struct StencilValue;
 struct Vertex;
+} // namespace sf
 
+
+namespace sf
+{
 ////////////////////////////////////////////////////////////
 /// \brief Base class for all render targets (window, texture, ...)
 ///
@@ -334,21 +341,26 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void draw(const Vertex*       vertices,
-              std::size_t         vertexCount,
+              base::SizeT         vertexCount,
               PrimitiveType       type,
               const RenderStates& states = getDefaultRenderStates());
-
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
     void drawIndexedVertices(const Vertex*         vertices,
-                             std::size_t           vertexCount,
+                             base::SizeT           vertexCount,
                              const unsigned short* indices,
-                             std::size_t           indexCount,
+                             base::SizeT           indexCount,
                              PrimitiveType         type,
                              const RenderStates&   states = getDefaultRenderStates());
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P0: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const DrawableBatch& drawableBatch, const RenderStates& renderStates);
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by a contiguous container of vertices
@@ -376,7 +388,7 @@ public:
     /// \param states      Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    template <std::size_t N>
+    template <base::SizeT N>
     void draw(const Vertex (&vertices)[N], PrimitiveType type, const RenderStates& states = getDefaultRenderStates())
     {
         draw(vertices, N, type, states);
@@ -401,8 +413,8 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void draw(const VertexBuffer& vertexBuffer,
-              std::size_t         firstVertex,
-              std::size_t         vertexCount,
+              base::SizeT         firstVertex,
+              base::SizeT         vertexCount,
               const RenderStates& states = getDefaultRenderStates());
 
     ////////////////////////////////////////////////////////////
@@ -464,48 +476,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void resetGLStates();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    class BatchDraw
-    {
-    public:
-        explicit BatchDraw(const RenderStates& renderStates, RenderTarget& renderTarget);
-        ~BatchDraw();
-
-        BatchDraw(const BatchDraw&) = delete;
-        BatchDraw(BatchDraw&&)      = delete;
-
-        template <typename BatchableObject>
-        void add(const BatchableObject& batchableObject) requires(!base::isBaseOf<Shape, BatchableObject>)
-        {
-            const auto [data, size]    = batchableObject.getVertices();
-            const Transform& transform = batchableObject.getTransform();
-
-            addSubsequentIndices(size);
-            appendPreTransformedVertices(data, size, transform);
-        }
-
-        void add(const Sprite& sprite);
-        void add(const Shape& shape);
-
-    private:
-        void addSubsequentIndices(base::SizeT count);
-        void appendPreTransformedVertices(const Vertex* data, base::SizeT size, const Transform& transform);
-
-        RenderStates  m_renderStates;
-        RenderTarget& m_renderTarget;
-    };
-
-    friend BatchDraw;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] BatchDraw startBatchDraw(const RenderStates& renderStates);
 
 protected:
     ////////////////////////////////////////////////////////////
@@ -601,7 +571,7 @@ private:
     /// \param vertexCount Number of vertices to use when drawing
     ///
     ////////////////////////////////////////////////////////////
-    void drawPrimitives(PrimitiveType type, std::size_t firstVertex, std::size_t vertexCount);
+    void drawPrimitives(PrimitiveType type, base::SizeT firstVertex, base::SizeT vertexCount);
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw indexed primitives
@@ -610,7 +580,7 @@ private:
     /// \param indexCount  Number of indices to use when drawing
     ///
     ////////////////////////////////////////////////////////////
-    void drawIndexedPrimitives(PrimitiveType type, std::size_t indexCount);
+    void drawIndexedPrimitives(PrimitiveType type, base::SizeT indexCount);
 
     ////////////////////////////////////////////////////////////
     /// \brief Clean up environment after drawing

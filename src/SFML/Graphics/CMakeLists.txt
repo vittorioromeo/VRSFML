@@ -8,6 +8,8 @@ set(SRC
     ${INCROOT}/Color.hpp
     ${INCROOT}/Color.inl
     ${INCROOT}/CoordinateType.hpp
+    ${SRCROOT}/DrawableBatch.cpp
+    ${INCROOT}/DrawableBatch.hpp
     ${INCROOT}/Export.hpp
     ${SRCROOT}/Font.cpp
     ${INCROOT}/Font.hpp

@@ -13,6 +13,7 @@
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 #include <iterator>
 #include <limits>
@@ -21,7 +22,6 @@
 #include <string>
 
 #include <cctype>
-#include <cstddef>
 
 namespace
 {
@@ -309,7 +309,7 @@ void Http::Response::parse(const std::string& data)
     else
     {
         // Chunked - have to read chunk by chunk
-        std::size_t length = 0;
+        base::SizeT length = 0;
 
         // Read all chunks, identified by a chunk-size not being 0
         while (in >> std::hex >> length)
@@ -320,7 +320,7 @@ void Http::Response::parse(const std::string& data)
             // Copy the actual content data
             std::istreambuf_iterator<char>       it(in);
             const std::istreambuf_iterator<char> itEnd;
-            for (std::size_t i = 0; ((i < length) && (it != itEnd)); ++i)
+            for (base::SizeT i = 0; ((i < length) && (it != itEnd)); ++i)
             {
                 m_impl->body.push_back(*it);
                 ++it; // Iterate in separate expression to work around false positive -Wnull-dereference warning in GCC 12.1.0
@@ -445,7 +445,7 @@ Http::Response Http::sendRequest(const Http::Request& request, Time timeout)
             {
                 // Wait for the server's response
                 std::string receivedStr;
-                std::size_t size = 0;
+                base::SizeT size = 0;
                 char        buffer[1024];
                 while (m_impl->connection.receive(buffer, sizeof(buffer), size) == Socket::Status::Done)
                 {

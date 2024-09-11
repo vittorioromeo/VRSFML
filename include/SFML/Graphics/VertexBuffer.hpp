@@ -8,7 +8,7 @@
 
 #include "SFML/Graphics/PrimitiveType.hpp"
 
-#include <cstddef>
+#include "SFML/Base/SizeT.hpp"
 
 
 namespace sf
@@ -112,7 +112,7 @@ public:
     /// \return True if creation was successful
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool create(std::size_t vertexCount);
+    [[nodiscard]] bool create(base::SizeT vertexCount);
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the vertex count
@@ -120,7 +120,7 @@ public:
     /// \return Number of vertices in the vertex buffer
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::size_t getVertexCount() const;
+    [[nodiscard]] base::SizeT getVertexCount() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the whole buffer from an array of vertices
@@ -173,7 +173,7 @@ public:
     /// \return True if the update was successful
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool update(const Vertex* vertices, std::size_t vertexCount, unsigned int offset);
+    [[nodiscard]] bool update(const Vertex* vertices, base::SizeT vertexCount, unsigned int offset);
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy the contents of another buffer into this buffer
@@ -313,7 +313,7 @@ private:
     ////////////////////////////////////////////////////////////
     GraphicsContext* m_graphicsContext;                      //!< The window context
     unsigned int     m_buffer{};                             //!< Internal buffer identifier
-    std::size_t      m_size{};                               //!< Size in Vertices of the currently allocated buffer
+    base::SizeT      m_size{};                               //!< Size in Vertices of the currently allocated buffer
     PrimitiveType    m_primitiveType{PrimitiveType::Points}; //!< Type of primitives to draw
     Usage            m_usage{Usage::Stream};                 //!< How this vertex buffer is to be used
 };

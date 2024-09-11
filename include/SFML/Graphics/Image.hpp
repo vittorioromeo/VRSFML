@@ -14,8 +14,8 @@
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
+#include "SFML/Base/SizeT.hpp"
 
-#include <cstddef>
 #include <cstdint>
 
 
@@ -131,7 +131,7 @@ public:
     /// \see loadFromFile, loadFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Image> loadFromMemory(const void* data, std::size_t size);
+    [[nodiscard]] static base::Optional<Image> loadFromMemory(const void* data, base::SizeT size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the image from a custom stream

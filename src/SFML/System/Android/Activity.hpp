@@ -8,6 +8,7 @@
 #include "SFML/Window/Event.hpp"
 
 #include "SFML/Base/EnumArray.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 #include <android/configuration.h>
 #include <android/native_activity.h>
@@ -17,8 +18,6 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-
-#include <cstddef>
 
 
 class SFML_SYSTEM_API LogcatStream : public std::streambuf

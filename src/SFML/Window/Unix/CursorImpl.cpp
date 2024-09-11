@@ -63,8 +63,8 @@ bool CursorImpl::loadFromPixelsARGB(const std::uint8_t* pixels, Vector2u size, V
     cursorImage->xhot = hotspot.x;
     cursorImage->yhot = hotspot.y;
 
-    const std::size_t numPixels = static_cast<std::size_t>(size.x) * static_cast<std::size_t>(size.y);
-    for (std::size_t pixelIndex = 0; pixelIndex < numPixels; ++pixelIndex)
+    const base::SizeT numPixels = static_cast<base::SizeT>(size.x) * static_cast<base::SizeT>(size.y);
+    for (base::SizeT pixelIndex = 0; pixelIndex < numPixels; ++pixelIndex)
     {
         cursorImage->pixels[pixelIndex] = static_cast<std::uint32_t>(
             pixels[pixelIndex * 4 + 2] + (pixels[pixelIndex * 4 + 1] << 8) + (pixels[pixelIndex * 4 + 0] << 16) +
@@ -86,18 +86,18 @@ bool CursorImpl::loadFromPixelsMonochrome(const std::uint8_t* pixels, Vector2u s
     // The bit data is stored packed into bytes. If the number of pixels on each row of the image
     // does not fit exactly into (width/8) bytes, one extra byte is allocated at the end of each
     // row to store the extra pixels.
-    const std::size_t         packedWidth = (size.x + 7) / 8;
-    const std::size_t         bytes       = packedWidth * size.y;
+    const base::SizeT         packedWidth = (size.x + 7) / 8;
+    const base::SizeT         bytes       = packedWidth * size.y;
     std::vector<std::uint8_t> mask(bytes, 0); // Defines which pixel is opaque (1) or transparent (0).
     std::vector<std::uint8_t> data(bytes, 0); // Defines which pixel is white (1) or black (0).
 
-    for (std::size_t j = 0; j < size.y; ++j)
+    for (base::SizeT j = 0; j < size.y; ++j)
     {
-        for (std::size_t i = 0; i < size.x; ++i)
+        for (base::SizeT i = 0; i < size.x; ++i)
         {
-            const std::size_t pixelIndex = i + j * size.x;
-            const std::size_t byteIndex  = i / 8 + j * packedWidth;
-            const std::size_t bitIndex   = i % 8;
+            const base::SizeT pixelIndex = i + j * size.x;
+            const base::SizeT byteIndex  = i / 8 + j * packedWidth;
+            const base::SizeT bitIndex   = i % 8;
 
             // Turn on pixel that are not transparent
             const std::uint8_t opacity = pixels[pixelIndex * 4 + 3] > 0 ? 1 : 0;

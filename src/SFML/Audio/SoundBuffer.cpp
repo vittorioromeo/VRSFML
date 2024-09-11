@@ -82,7 +82,7 @@ base::Optional<SoundBuffer> SoundBuffer::loadFromFile(const Path& filename)
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<SoundBuffer> SoundBuffer::loadFromMemory(const void* data, std::size_t sizeInBytes)
+base::Optional<SoundBuffer> SoundBuffer::loadFromMemory(const void* data, base::SizeT sizeInBytes)
 {
     if (base::Optional file = InputSoundFile::openFromMemory(data, sizeInBytes))
         return initialize(*file);
@@ -232,7 +232,7 @@ base::Optional<SoundBuffer> SoundBuffer::initialize(InputSoundFile& file)
 {
     // Read the samples from the provided file
     const std::uint64_t       sampleCount = file.getSampleCount();
-    std::vector<std::int16_t> samples(static_cast<std::size_t>(sampleCount));
+    std::vector<std::int16_t> samples(static_cast<base::SizeT>(sampleCount));
 
     if (file.read(samples.data(), sampleCount) != sampleCount)
         return base::nullOpt;

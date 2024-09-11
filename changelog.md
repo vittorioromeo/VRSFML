@@ -590,7 +590,7 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.3
 ### General
 
 -   Examples only link against sfml-main in release mode (#610, #766)
--   Replaced unsigned int with std::size_t for array indices and sizes (#739)
+-   Replaced unsigned int with base::SizeT for array indices and sizes (#739)
 -   Fixed some issues with the Doxygen documentation (#750)
 -   Added support for EditorConfig (#751)
 -   Hide success message for CMake in quiet mode (#753)

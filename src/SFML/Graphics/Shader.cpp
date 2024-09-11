@@ -46,19 +46,20 @@
 namespace
 {
 // Retrieve the maximum number of texture units available
-[[nodiscard]] std::size_t getMaxTextureUnits()
+[[nodiscard]] sf::base::SizeT getMaxTextureUnits()
 {
-    static const auto maxUnits = static_cast<std::size_t>(sf::priv::getGLInteger(GLEXT_GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS));
+    static const auto maxUnits = static_cast<sf::base::SizeT>(
+        sf::priv::getGLInteger(GLEXT_GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS));
     return maxUnits;
 }
 
 // Pair of indices into thread-local buffer
 struct [[nodiscard]] BufferSlice
 {
-    const std::size_t beginIdx;
-    const std::size_t count;
+    const sf::base::SizeT beginIdx;
+    const sf::base::SizeT count;
 
-    explicit BufferSlice(std::size_t b, std::size_t c) : beginIdx(b), count(c)
+    explicit BufferSlice(sf::base::SizeT b, sf::base::SizeT c) : beginIdx(b), count(c)
     {
     }
 
@@ -82,12 +83,12 @@ struct [[nodiscard]] BufferSlice
     file.seekg(0, std::ios_base::end);
     const std::ifstream::pos_type size = file.tellg();
 
-    const std::size_t bufferSizeBeforeRead = buffer.size();
+    const sf::base::SizeT bufferSizeBeforeRead = buffer.size();
 
     if (size > 0)
     {
         file.seekg(0, std::ios_base::beg);
-        buffer.resize(static_cast<std::size_t>(size) + bufferSizeBeforeRead);
+        buffer.resize(static_cast<sf::base::SizeT>(size) + bufferSizeBeforeRead);
         file.read(buffer.data() + bufferSizeBeforeRead, static_cast<std::streamsize>(size));
     }
 
@@ -98,7 +99,7 @@ struct [[nodiscard]] BufferSlice
 // Read the contents of a stream into an array of char
 [[nodiscard]] sf::base::Optional<BufferSlice> appendStreamContentsToVector(sf::InputStream& stream, std::vector<char>& buffer)
 {
-    const sf::base::Optional<std::size_t> size = stream.getSize();
+    const sf::base::Optional<sf::base::SizeT> size = stream.getSize();
 
     if (!size.hasValue() || size.value() == 0)
     {
@@ -106,7 +107,7 @@ struct [[nodiscard]] BufferSlice
         return sf::base::nullOpt;
     }
 
-    const std::size_t bufferSizeBeforeRead = buffer.size();
+    const sf::base::SizeT bufferSizeBeforeRead = buffer.size();
     buffer.resize(*size + bufferSizeBeforeRead);
 
     if (!stream.seek(0).hasValue())
@@ -115,7 +116,7 @@ struct [[nodiscard]] BufferSlice
         return sf::base::nullOpt;
     }
 
-    const sf::base::Optional<std::size_t> read = stream.read(buffer.data() + bufferSizeBeforeRead, *size);
+    const sf::base::Optional<sf::base::SizeT> read = stream.read(buffer.data() + bufferSizeBeforeRead, *size);
 
     if (!read.hasValue() || *read != *size)
     {
@@ -136,12 +137,12 @@ struct [[nodiscard]] BufferSlice
 }
 
 // Transforms an array of 2D vectors into a contiguous array of scalars
-[[nodiscard]] std::vector<float> flatten(const sf::Vector2f* vectorArray, std::size_t length)
+[[nodiscard]] std::vector<float> flatten(const sf::Vector2f* vectorArray, sf::base::SizeT length)
 {
-    const std::size_t vectorSize = 2;
+    const sf::base::SizeT vectorSize = 2;
 
     std::vector<float> contiguous(vectorSize * length);
-    for (std::size_t i = 0; i < length; ++i)
+    for (sf::base::SizeT i = 0; i < length; ++i)
     {
         contiguous[vectorSize * i]     = vectorArray[i].x;
         contiguous[vectorSize * i + 1] = vectorArray[i].y;
@@ -151,12 +152,12 @@ struct [[nodiscard]] BufferSlice
 }
 
 // Transforms an array of 3D vectors into a contiguous array of scalars
-[[nodiscard]] std::vector<float> flatten(const sf::Vector3f* vectorArray, std::size_t length)
+[[nodiscard]] std::vector<float> flatten(const sf::Vector3f* vectorArray, sf::base::SizeT length)
 {
-    const std::size_t vectorSize = 3;
+    const sf::base::SizeT vectorSize = 3;
 
     std::vector<float> contiguous(vectorSize * length);
-    for (std::size_t i = 0; i < length; ++i)
+    for (sf::base::SizeT i = 0; i < length; ++i)
     {
         contiguous[vectorSize * i]     = vectorArray[i].x;
         contiguous[vectorSize * i + 1] = vectorArray[i].y;
@@ -167,12 +168,12 @@ struct [[nodiscard]] BufferSlice
 }
 
 // Transforms an array of 4D vectors into a contiguous array of scalars
-[[nodiscard]] std::vector<float> flatten(const sf::Glsl::Vec4* vectorArray, std::size_t length)
+[[nodiscard]] std::vector<float> flatten(const sf::Glsl::Vec4* vectorArray, sf::base::SizeT length)
 {
-    const std::size_t vectorSize = 4;
+    const sf::base::SizeT vectorSize = 4;
 
     std::vector<float> contiguous(vectorSize * length);
-    for (std::size_t i = 0; i < length; ++i)
+    for (sf::base::SizeT i = 0; i < length; ++i)
     {
         contiguous[vectorSize * i]     = vectorArray[i].x;
         contiguous[vectorSize * i + 1] = vectorArray[i].y;
@@ -758,7 +759,7 @@ void Shader::setUniform(UniformLocation location, CurrentTextureType)
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniformArray(UniformLocation location, const float* scalarArray, std::size_t length)
+void Shader::setUniformArray(UniformLocation location, const float* scalarArray, base::SizeT length)
 {
     const UniformBinder binder{m_impl->shaderProgram};
     glCheck(GLEXT_glUniform1fv(location.m_value, static_cast<GLsizei>(length), scalarArray));
@@ -766,7 +767,7 @@ void Shader::setUniformArray(UniformLocation location, const float* scalarArray,
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniformArray(UniformLocation location, const Glsl::Vec2* vectorArray, std::size_t length)
+void Shader::setUniformArray(UniformLocation location, const Glsl::Vec2* vectorArray, base::SizeT length)
 {
     std::vector<float>  contiguous = flatten(vectorArray, length);
     const UniformBinder binder{m_impl->shaderProgram};
@@ -775,7 +776,7 @@ void Shader::setUniformArray(UniformLocation location, const Glsl::Vec2* vectorA
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniformArray(UniformLocation location, const Glsl::Vec3* vectorArray, std::size_t length)
+void Shader::setUniformArray(UniformLocation location, const Glsl::Vec3* vectorArray, base::SizeT length)
 {
     std::vector<float>  contiguous = flatten(vectorArray, length);
     const UniformBinder binder{m_impl->shaderProgram};
@@ -784,7 +785,7 @@ void Shader::setUniformArray(UniformLocation location, const Glsl::Vec3* vectorA
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniformArray(UniformLocation location, const Glsl::Vec4* vectorArray, std::size_t length)
+void Shader::setUniformArray(UniformLocation location, const Glsl::Vec4* vectorArray, base::SizeT length)
 {
     std::vector<float>  contiguous = flatten(vectorArray, length);
     const UniformBinder binder{m_impl->shaderProgram};
@@ -793,12 +794,12 @@ void Shader::setUniformArray(UniformLocation location, const Glsl::Vec4* vectorA
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniformArray(UniformLocation location, const Glsl::Mat3* matrixArray, std::size_t length)
+void Shader::setUniformArray(UniformLocation location, const Glsl::Mat3* matrixArray, base::SizeT length)
 {
-    const std::size_t matrixSize = 3 * 3;
+    const base::SizeT matrixSize = 3 * 3;
 
     std::vector<float> contiguous(matrixSize * length);
-    for (std::size_t i = 0; i < length; ++i)
+    for (base::SizeT i = 0; i < length; ++i)
         priv::copyMatrix(matrixArray[i].array, matrixSize, &contiguous[matrixSize * i]);
 
     const UniformBinder binder{m_impl->shaderProgram};
@@ -807,12 +808,12 @@ void Shader::setUniformArray(UniformLocation location, const Glsl::Mat3* matrixA
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniformArray(UniformLocation location, const Glsl::Mat4* matrixArray, std::size_t length)
+void Shader::setUniformArray(UniformLocation location, const Glsl::Mat4* matrixArray, base::SizeT length)
 {
-    const std::size_t matrixSize = 4 * 4;
+    const base::SizeT matrixSize = 4 * 4;
 
     std::vector<float> contiguous(matrixSize * length);
-    for (std::size_t i = 0; i < length; ++i)
+    for (base::SizeT i = 0; i < length; ++i)
         priv::copyMatrix(matrixArray[i].array, matrixSize, &contiguous[matrixSize * i]);
 
     const UniformBinder binder{m_impl->shaderProgram};
@@ -1029,7 +1030,7 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
 void Shader::bindTextures() const
 {
     auto it = m_impl->textures.begin();
-    for (std::size_t i = 0; i < m_impl->textures.size(); ++i)
+    for (base::SizeT i = 0; i < m_impl->textures.size(); ++i)
     {
         const auto index = static_cast<GLsizei>(i + 1);
         glCheck(GLEXT_glUniform1i(it->first, index));

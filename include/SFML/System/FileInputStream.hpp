@@ -86,7 +86,7 @@ public:
     /// \return The number of bytes actually read, or `base::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<std::size_t> read(void* data, std::size_t size) override;
+    [[nodiscard]] base::Optional<base::SizeT> read(void* data, base::SizeT size) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current reading position
@@ -96,7 +96,7 @@ public:
     /// \return The position actually sought to, or `base::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<std::size_t> seek(std::size_t position) override;
+    [[nodiscard]] base::Optional<base::SizeT> seek(base::SizeT position) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current reading position in the stream
@@ -104,7 +104,7 @@ public:
     /// \return The current position, or `base::nullOpt` on error.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<std::size_t> tell() override;
+    [[nodiscard]] base::Optional<base::SizeT> tell() override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the stream
@@ -112,7 +112,7 @@ public:
     /// \return The total number of bytes available in the stream, or `base::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<std::size_t> getSize() override;
+    [[nodiscard]] base::Optional<base::SizeT> getSize() override;
 
 private:
     ////////////////////////////////////////////////////////////

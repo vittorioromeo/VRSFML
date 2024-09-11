@@ -13,8 +13,8 @@
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
+#include "SFML/Base/SizeT.hpp"
 
-#include <cstddef>
 #include <cstdint>
 
 
@@ -83,7 +83,7 @@ public:
     /// \see loadFromFile, loadFromStream, loadFromSamples
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<SoundBuffer> loadFromMemory(const void* data, std::size_t sizeInBytes);
+    [[nodiscard]] static base::Optional<SoundBuffer> loadFromMemory(const void* data, base::SizeT sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the sound buffer from a custom stream

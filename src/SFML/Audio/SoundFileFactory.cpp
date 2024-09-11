@@ -95,7 +95,7 @@ base::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromFilename(cons
 
 
 ////////////////////////////////////////////////////////////
-base::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromMemory(const void* data, std::size_t sizeInBytes)
+base::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromMemory(const void* data, base::SizeT sizeInBytes)
 {
     // Wrap the memory file into a file stream
     MemoryInputStream stream(data, sizeInBytes);

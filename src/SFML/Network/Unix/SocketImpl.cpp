@@ -280,7 +280,7 @@ bool SocketImpl::enableBroadcast(SocketHandle handle)
 ////////////////////////////////////////////////////////////
 NetworkSSizeT SocketImpl::send(SocketHandle handle, const char* buf, SocketImpl::Size len, int flags)
 {
-    return ::send(handle, buf, static_cast<std::size_t>(len), flags);
+    return ::send(handle, buf, static_cast<base::SizeT>(len), flags);
 }
 
 
@@ -289,7 +289,7 @@ NetworkSSizeT SocketImpl::sendTo(SocketHandle handle, const char* buf, SocketImp
 {
     return ::sendto(handle,
                     buf,
-                    static_cast<std::size_t>(len),
+                    static_cast<base::SizeT>(len),
                     flags,
                     reinterpret_cast<sockaddr*>(&*address.m_impl),
                     address.size());
@@ -298,14 +298,14 @@ NetworkSSizeT SocketImpl::sendTo(SocketHandle handle, const char* buf, SocketImp
 ////////////////////////////////////////////////////////////
 NetworkSSizeT SocketImpl::recv(SocketHandle handle, char* buf, SocketImpl::Size len, int flags)
 {
-    return ::recv(handle, buf, static_cast<std::size_t>(len), flags);
+    return ::recv(handle, buf, static_cast<base::SizeT>(len), flags);
 }
 
 
 ////////////////////////////////////////////////////////////
 NetworkSSizeT SocketImpl::recvFrom(SocketHandle handle, char* buf, SocketImpl::Size len, int flags, SockAddrIn& address, AddrLength& length)
 {
-    return ::recvfrom(handle, buf, static_cast<std::size_t>(len), flags, reinterpret_cast<sockaddr*>(&*address.m_impl), &length);
+    return ::recvfrom(handle, buf, static_cast<base::SizeT>(len), flags, reinterpret_cast<sockaddr*>(&*address.m_impl), &length);
 }
 
 

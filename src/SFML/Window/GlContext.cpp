@@ -153,7 +153,7 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
             static const auto parseVersionString =
                 [](const char* versionString, const char* prefix, unsigned int& major, unsigned int& minor)
             {
-                const std::size_t prefixLength = SFML_BASE_STRLEN(prefix);
+                const base::SizeT prefixLength = SFML_BASE_STRLEN(prefix);
 
                 if ((SFML_BASE_STRLEN(versionString) >= (prefixLength + 3)) &&
                     (SFML_BASE_STRNCMP(versionString, prefix, prefixLength) == 0) &&

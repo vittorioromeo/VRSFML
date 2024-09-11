@@ -16,8 +16,7 @@
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
-
-#include <cstddef>
+#include "SFML/Base/SizeT.hpp"
 
 
 namespace sf
@@ -66,7 +65,7 @@ base::Optional<FileInputStream> FileInputStream::open(const Path& filename)
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<std::size_t> FileInputStream::read(void* data, std::size_t size)
+base::Optional<base::SizeT> FileInputStream::read(void* data, base::SizeT size)
 {
 #ifdef SFML_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
@@ -82,7 +81,7 @@ base::Optional<std::size_t> FileInputStream::read(void* data, std::size_t size)
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<std::size_t> FileInputStream::seek(std::size_t position)
+base::Optional<base::SizeT> FileInputStream::seek(base::SizeT position)
 {
 #ifdef SFML_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
@@ -102,7 +101,7 @@ base::Optional<std::size_t> FileInputStream::seek(std::size_t position)
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<std::size_t> FileInputStream::tell()
+base::Optional<base::SizeT> FileInputStream::tell()
 {
 #ifdef SFML_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
@@ -115,12 +114,12 @@ base::Optional<std::size_t> FileInputStream::tell()
     SFML_BASE_ASSERT(m_file != nullptr);
 
     const auto position = std::ftell(m_file.get());
-    return position < 0 ? base::nullOpt : base::makeOptional(static_cast<std::size_t>(position));
+    return position < 0 ? base::nullOpt : base::makeOptional(static_cast<base::SizeT>(position));
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<std::size_t> FileInputStream::getSize()
+base::Optional<base::SizeT> FileInputStream::getSize()
 {
 #ifdef SFML_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
@@ -135,7 +134,7 @@ base::Optional<std::size_t> FileInputStream::getSize()
     const auto position = tell().value();
     std::fseek(m_file.get(), 0, SEEK_END);
 
-    base::Optional<std::size_t> size = tell(); // Use a single local variable for NRVO
+    base::Optional<base::SizeT> size = tell(); // Use a single local variable for NRVO
 
     if (!seek(position).hasValue())
     {

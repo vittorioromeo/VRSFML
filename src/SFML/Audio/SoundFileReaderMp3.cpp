@@ -43,10 +43,10 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] std::size_t readCallback(void* ptr, std::size_t size, void* data)
+[[nodiscard]] sf::base::SizeT readCallback(void* ptr, sf::base::SizeT size, void* data)
 {
     auto* stream = static_cast<sf::InputStream*>(data);
-    return stream->read(ptr, size).valueOr(static_cast<std::size_t>(-1));
+    return stream->read(ptr, size).valueOr(static_cast<sf::base::SizeT>(-1));
 }
 
 
@@ -54,7 +54,7 @@ namespace
 [[nodiscard]] int seekCallback(std::uint64_t offset, void* data)
 {
     auto*                    stream   = static_cast<sf::InputStream*>(data);
-    const sf::base::Optional position = stream->seek(static_cast<std::size_t>(offset));
+    const sf::base::Optional position = stream->seek(static_cast<sf::base::SizeT>(offset));
     return position.hasValue() ? 0 : -1;
 }
 
@@ -169,7 +169,7 @@ void SoundFileReaderMp3::seek(std::uint64_t sampleOffset)
 std::uint64_t SoundFileReaderMp3::read(std::int16_t* samples, std::uint64_t maxCount)
 {
     std::uint64_t toRead = base::min(maxCount, m_impl->numSamples - m_impl->position);
-    toRead               = std::uint64_t{mp3dec_ex_read(&m_impl->decoder, samples, static_cast<std::size_t>(toRead))};
+    toRead               = std::uint64_t{mp3dec_ex_read(&m_impl->decoder, samples, static_cast<base::SizeT>(toRead))};
     m_impl->position += toRead;
     return toRead;
 }

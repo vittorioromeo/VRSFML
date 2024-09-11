@@ -116,7 +116,7 @@ base::Optional<Music> Music::openFromFile(const Path& filename)
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Music> Music::openFromMemory(const void* data, std::size_t sizeInBytes)
+base::Optional<Music> Music::openFromMemory(const void* data, base::SizeT sizeInBytes)
 {
     return tryOpenFromInputSoundFile(InputSoundFile::openFromMemory(data, sizeInBytes), "memory");
 }
@@ -169,7 +169,7 @@ bool Music::onGetData(SoundStream::Chunk& data)
 {
     const std::lock_guard lock(m_impl->mutex);
 
-    std::size_t         toFill        = m_impl->samples.size();
+    base::SizeT         toFill        = m_impl->samples.size();
     std::uint64_t       currentOffset = m_impl->file.getSampleOffset();
     const std::uint64_t loopEnd       = m_impl->loopSpan.offset + m_impl->loopSpan.length;
 
@@ -177,11 +177,11 @@ bool Music::onGetData(SoundStream::Chunk& data)
     // This will trip an "onLoop()" call from the underlying SoundStream,
     // and we can then take action.
     if (isLooping() && (m_impl->loopSpan.length != 0) && (currentOffset <= loopEnd) && (currentOffset + toFill > loopEnd))
-        toFill = static_cast<std::size_t>(loopEnd - currentOffset);
+        toFill = static_cast<base::SizeT>(loopEnd - currentOffset);
 
     // Fill the chunk parameters
     data.samples     = m_impl->samples.data();
-    data.sampleCount = static_cast<std::size_t>(m_impl->file.read(m_impl->samples.data(), toFill));
+    data.sampleCount = static_cast<base::SizeT>(m_impl->file.read(m_impl->samples.data(), toFill));
     currentOffset += data.sampleCount;
 
     // Check if we have stopped obtaining samples or reached either the EOF or the loop end point
