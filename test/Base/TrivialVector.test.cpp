@@ -18,6 +18,8 @@ namespace
 {
 TEST_CASE("[Base] Base/TrivialVector.hpp")
 {
+    const auto asConst = [](auto& x) -> const auto& { return x; };
+
     SECTION("Type traits")
     {
         STATIC_CHECK(SFML_BASE_IS_TRIVIAL(int));
@@ -44,16 +46,16 @@ TEST_CASE("[Base] Base/TrivialVector.hpp")
 
     SECTION("Empty")
     {
-#define DO_EMPTY_CHECKS(tv)                                                           \
-    CHECK((tv).begin() == nullptr);                                                   \
-    CHECK((tv).end() == nullptr);                                                     \
-    CHECK((tv).data() == nullptr);                                                    \
-                                                                                      \
-    CHECK(static_cast<const sf::base::TrivialVector<int>&>((tv)).begin() == nullptr); \
-    CHECK(static_cast<const sf::base::TrivialVector<int>&>((tv)).end() == nullptr);   \
-    CHECK(static_cast<const sf::base::TrivialVector<int>&>((tv)).data() == nullptr);  \
-                                                                                      \
-    CHECK((tv).size() == 0u);                                                         \
+#define DO_EMPTY_CHECKS(tv)                  \
+    CHECK((tv).begin() == nullptr);          \
+    CHECK((tv).end() == nullptr);            \
+    CHECK((tv).data() == nullptr);           \
+                                             \
+    CHECK(asConst((tv)).begin() == nullptr); \
+    CHECK(asConst((tv)).end() == nullptr);   \
+    CHECK(asConst((tv)).data() == nullptr);  \
+                                             \
+    CHECK((tv).size() == 0u);                \
     CHECK((tv).empty());
 
         sf::base::TrivialVector<int> tv;
@@ -124,6 +126,60 @@ TEST_CASE("[Base] Base/TrivialVector.hpp")
 
         for (sf::base::SizeT i = 1; i < 100; ++i)
             CHECK(tv[i] == 0);
+    }
+
+    SECTION("Non default constructible")
+    {
+        struct S
+        {
+            S(int x) : value(x)
+            {
+            }
+
+            int value;
+        };
+
+        sf::base::TrivialVector<S> tv;
+        DO_EMPTY_CHECKS(tv);
+        CHECK(tv.capacity() == 0u);
+
+        tv.reserve(1);
+        CHECK(tv.data() != nullptr);
+        CHECK(tv.begin() == tv.data());
+        CHECK(tv.end() == tv.data() + tv.size());
+        CHECK(tv.size() == 0u);
+        CHECK(tv.capacity() == 1u);
+
+        tv.unsafeEmplaceBack(42);
+        CHECK(tv.data() != nullptr);
+        CHECK(tv.begin() == tv.data());
+        CHECK(tv.end() == tv.data() + tv.size());
+        CHECK(tv.size() == 1u);
+        CHECK(tv.capacity() == 1u);
+        CHECK(tv[0].value == 42);
+
+        tv.reserveMore(10);
+
+        CHECK(tv.data() != nullptr);
+        CHECK(tv.begin() == tv.data());
+        CHECK(tv.end() == tv.data() + tv.size());
+        CHECK(tv.size() == 1u);
+        CHECK(tv.capacity() >= 11u);
+        CHECK(tv[0].value == 42);
+
+        tv.reserve(100);
+        for (sf::base::SizeT i = 1; i < 100; ++i)
+            tv.unsafeEmplaceBack(0);
+
+        CHECK(tv.data() != nullptr);
+        CHECK(tv.begin() == tv.data());
+        CHECK(tv.end() == tv.data() + tv.size());
+        CHECK(tv.size() == 100u);
+        CHECK(tv.capacity() >= 100u);
+        CHECK(tv[0].value == 42);
+
+        for (sf::base::SizeT i = 1; i < 100; ++i)
+            CHECK(tv[i].value == 0);
     }
 }
 

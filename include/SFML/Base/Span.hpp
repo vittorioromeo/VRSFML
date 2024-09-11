@@ -45,38 +45,38 @@ struct [[nodiscard]] Span
     }
 
     //////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr T* data() const
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T* data() const
     {
         return m_data;
     }
 
     //////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr SizeT size() const
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT size() const
     {
         return m_size;
     }
 
     //////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr T* begin() const
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T* begin() const
     {
         return m_data;
     }
 
     //////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr T* end() const
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T* end() const
     {
         return m_data + m_size;
     }
 
     //////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr T& operator[](SizeT i) const
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T& operator[](SizeT i) const
     {
         SFML_BASE_ASSERT(i < m_size);
         return *(m_data + i);
     }
 
     //////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr bool empty() const
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool empty() const
     {
         return m_size == 0u;
     }

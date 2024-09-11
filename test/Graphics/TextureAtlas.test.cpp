@@ -24,8 +24,7 @@ TEST_CASE("[Graphics] sf::TextureAtlas" * doctest::skip(skipDisplayTests))
     const auto makeColoredTexture = [&](sf::Color color)
     { return sf::Texture::loadFromImage(graphicsContext, sf::Image::create({64u, 64u}, color).value()).value(); };
 
-    const auto         maxTextureSize = sf::Texture::getMaximumSize(graphicsContext);
-    const sf::Vector2u atlasSize{maxTextureSize, maxTextureSize};
+    constexpr sf::Vector2u atlasSize{512u, 512u};
 
     SECTION("Add -- failure case")
     {
