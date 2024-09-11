@@ -11,6 +11,8 @@
 
 #include "SFML/System/Err.hpp"
 
+#include "SFML/Base/Algorithm.hpp"
+
 #include <ApplicationServices/ApplicationServices.h>
 #import <OpenGL/OpenGL.h>
 #import <SFML/Window/macOS/NSImage+raw.h>
@@ -19,7 +21,7 @@
 #import <SFML/Window/macOS/SFWindow.h>
 #import <SFML/Window/macOS/SFWindowController.h>
 #import <SFML/Window/macOS/Scaling.h>
-#include <algorithm>
+
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
@@ -194,8 +196,8 @@
     }
 
     // Create our OpenGL view size and the view
-    CGFloat width   = std::min(mode.size.x, desktop.size.x);
-    CGFloat height  = std::min(mode.size.y, desktop.size.y);
+    CGFloat width   = sf::base::min(mode.size.x, desktop.size.x);
+    CGFloat height  = sf::base::min(mode.size.y, desktop.size.y);
     CGFloat x       = (desktop.size.x - width) / 2.0;
     CGFloat y       = (desktop.size.y - height) / 2.0;
     NSRect  oglRect = NSMakeRect(x, y, width, height);
@@ -418,8 +420,8 @@
         // and make sure the requested size is not bigger than the window.
         const sf::VideoMode desktop = sf::VideoModeUtils::getDesktopMode();
 
-        size.x = std::min(size.x, desktop.size.x);
-        size.y = std::min(size.y, desktop.size.y);
+        size.x = sf::base::min(size.x, desktop.size.x);
+        size.y = sf::base::min(size.y, desktop.size.y);
 
         const auto origin  = sf::Vector2<CGFloat>(desktop.size - size) / CGFloat{2};
         NSRect     oglRect = NSMakeRect(origin.x, origin.y, size.x, size.y);

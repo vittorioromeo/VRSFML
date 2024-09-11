@@ -9,9 +9,9 @@
 #include "SFML/Network/IpAddress.hpp"
 #include "SFML/Network/Socket.hpp"
 
-#include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 
 
 namespace sf
@@ -43,19 +43,19 @@ public:
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    ~UdpSocket();
+    ~UdpSocket() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    UdpSocket(UdpSocket&&) noexcept;
+    UdpSocket(UdpSocket&&) noexcept = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment operator
     ///
     ////////////////////////////////////////////////////////////
-    UdpSocket& operator=(UdpSocket&&) noexcept;
+    UdpSocket& operator=(UdpSocket&&) noexcept = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the port to which the socket is bound locally
@@ -194,8 +194,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    struct Impl;
-    base::InPlacePImpl<Impl, 32> m_impl; //!< Implementation details
+    base::TrivialVector<unsigned char> m_buffer; //!< Temporary buffer holding the received data in Receive(Packet)
 };
 
 } // namespace sf

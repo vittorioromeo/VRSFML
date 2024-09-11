@@ -12,33 +12,14 @@
 
 #include "SFML/Base/SizeT.hpp"
 
-#include <vector>
-
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-struct UdpSocket::Impl
-{
-    std::vector<std::byte> buffer{MaxDatagramSize}; //!< Temporary buffer holding the received data in Receive(Packet)
-};
-
-
-////////////////////////////////////////////////////////////
 UdpSocket::UdpSocket(bool isBlocking) : Socket(Type::Udp, isBlocking)
 {
+    m_buffer.resize(MaxDatagramSize);
 }
-
-////////////////////////////////////////////////////////////
-UdpSocket::~UdpSocket() = default;
-
-
-////////////////////////////////////////////////////////////
-UdpSocket::UdpSocket(UdpSocket&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
-UdpSocket& UdpSocket::operator=(UdpSocket&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
@@ -195,12 +176,12 @@ Socket::Status UdpSocket::receive(Packet& packet, base::Optional<IpAddress>& rem
 
     // Receive the datagram
     base::SizeT  received = 0;
-    const Status status   = receive(m_impl->buffer.data(), m_impl->buffer.size(), received, remoteAddress, remotePort);
+    const Status status   = receive(m_buffer.data(), m_buffer.size(), received, remoteAddress, remotePort);
 
     // If we received valid data, we can copy it to the user packet
     packet.clear();
     if ((status == Status::Done) && (received > 0))
-        packet.onReceive(m_impl->buffer.data(), received);
+        packet.onReceive(m_buffer.data(), received);
 
     return status;
 }

@@ -14,54 +14,20 @@
 #include "SFML/Base/Strlen.hpp"
 
 #include <string>
-#include <vector>
 
 #include <cwchar>
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-struct Packet::Impl
-{
-    std::vector<std::byte> data;          //!< Data stored in the packet
-    base::SizeT            readPos{};     //!< Current reading position in the packet
-    base::SizeT            sendPos{};     //!< Current send position in the packet (for handling partial sends)
-    bool                   isValid{true}; //!< Reading state of the packet
-};
-
-
-////////////////////////////////////////////////////////////
-Packet::Packet() = default;
-
-
-////////////////////////////////////////////////////////////
-Packet::~Packet() = default;
-
-
-////////////////////////////////////////////////////////////
-Packet::Packet(const Packet&) = default;
-
-
-////////////////////////////////////////////////////////////
-Packet& Packet::operator=(const Packet&) = default;
-
-
-////////////////////////////////////////////////////////////
-Packet::Packet(Packet&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
-Packet& Packet::operator=(Packet&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
 void Packet::append(const void* data, base::SizeT sizeInBytes)
 {
     if (data && (sizeInBytes > 0))
     {
-        const auto* begin = reinterpret_cast<const std::byte*>(data);
-        const auto* end   = begin + sizeInBytes;
-        m_impl->data.insert(m_impl->data.end(), begin, end);
+        const auto* begin = reinterpret_cast<const unsigned char*>(data);
+
+        m_data.reserveMore(sizeInBytes);
+        m_data.unsafeEmplaceRange(begin, sizeInBytes);
     }
 }
 
@@ -69,44 +35,44 @@ void Packet::append(const void* data, base::SizeT sizeInBytes)
 ////////////////////////////////////////////////////////////
 base::SizeT Packet::getReadPosition() const
 {
-    return m_impl->readPos;
+    return m_readPos;
 }
 
 
 ////////////////////////////////////////////////////////////
 void Packet::clear()
 {
-    m_impl->data.clear();
-    m_impl->readPos = 0;
-    m_impl->isValid = true;
+    m_data.clear();
+    m_readPos = 0;
+    m_isValid = true;
 }
 
 
 ////////////////////////////////////////////////////////////
 const void* Packet::getData() const
 {
-    return !m_impl->data.empty() ? m_impl->data.data() : nullptr;
+    return !m_data.empty() ? m_data.data() : nullptr;
 }
 
 
 ////////////////////////////////////////////////////////////
 base::SizeT Packet::getDataSize() const
 {
-    return m_impl->data.size();
+    return m_data.size();
 }
 
 
 ////////////////////////////////////////////////////////////
 bool Packet::endOfPacket() const
 {
-    return m_impl->readPos >= m_impl->data.size();
+    return m_readPos >= m_data.size();
 }
 
 
 ////////////////////////////////////////////////////////////
 Packet::operator bool() const
 {
-    return m_impl->isValid;
+    return m_isValid;
 }
 
 
@@ -126,8 +92,8 @@ Packet& Packet::operator>>(std::int8_t& data)
 {
     if (checkSize(sizeof(data)))
     {
-        SFML_BASE_MEMCPY(&data, &m_impl->data[m_impl->readPos], sizeof(data));
-        m_impl->readPos += sizeof(data);
+        SFML_BASE_MEMCPY(&data, &m_data[m_readPos], sizeof(data));
+        m_readPos += sizeof(data);
     }
 
     return *this;
@@ -139,8 +105,8 @@ Packet& Packet::operator>>(std::uint8_t& data)
 {
     if (checkSize(sizeof(data)))
     {
-        SFML_BASE_MEMCPY(&data, &m_impl->data[m_impl->readPos], sizeof(data));
-        m_impl->readPos += sizeof(data);
+        SFML_BASE_MEMCPY(&data, &m_data[m_readPos], sizeof(data));
+        m_readPos += sizeof(data);
     }
 
     return *this;
@@ -152,9 +118,9 @@ Packet& Packet::operator>>(std::int16_t& data)
 {
     if (checkSize(sizeof(data)))
     {
-        SFML_BASE_MEMCPY(&data, &m_impl->data[m_impl->readPos], sizeof(data));
+        SFML_BASE_MEMCPY(&data, &m_data[m_readPos], sizeof(data));
         data = static_cast<std::int16_t>(priv::SocketImpl::ntohs(static_cast<std::uint16_t>(data)));
-        m_impl->readPos += sizeof(data);
+        m_readPos += sizeof(data);
     }
 
     return *this;
@@ -166,9 +132,9 @@ Packet& Packet::operator>>(std::uint16_t& data)
 {
     if (checkSize(sizeof(data)))
     {
-        SFML_BASE_MEMCPY(&data, &m_impl->data[m_impl->readPos], sizeof(data));
+        SFML_BASE_MEMCPY(&data, &m_data[m_readPos], sizeof(data));
         data = priv::SocketImpl::ntohs(data);
-        m_impl->readPos += sizeof(data);
+        m_readPos += sizeof(data);
     }
 
     return *this;
@@ -180,9 +146,9 @@ Packet& Packet::operator>>(std::int32_t& data)
 {
     if (checkSize(sizeof(data)))
     {
-        SFML_BASE_MEMCPY(&data, &m_impl->data[m_impl->readPos], sizeof(data));
+        SFML_BASE_MEMCPY(&data, &m_data[m_readPos], sizeof(data));
         data = static_cast<std::int32_t>(priv::SocketImpl::ntohl(static_cast<std::uint32_t>(data)));
-        m_impl->readPos += sizeof(data);
+        m_readPos += sizeof(data);
     }
 
     return *this;
@@ -194,9 +160,9 @@ Packet& Packet::operator>>(std::uint32_t& data)
 {
     if (checkSize(sizeof(data)))
     {
-        SFML_BASE_MEMCPY(&data, &m_impl->data[m_impl->readPos], sizeof(data));
+        SFML_BASE_MEMCPY(&data, &m_data[m_readPos], sizeof(data));
         data = priv::SocketImpl::ntohl(data);
-        m_impl->readPos += sizeof(data);
+        m_readPos += sizeof(data);
     }
 
     return *this;
@@ -211,12 +177,12 @@ Packet& Packet::operator>>(std::int64_t& data)
         // Since ntohll is not available everywhere, we have to convert
         // to network byte order (big endian) manually
         std::byte bytes[sizeof(data)];
-        SFML_BASE_MEMCPY(bytes, &m_impl->data[m_impl->readPos], sizeof(data));
+        SFML_BASE_MEMCPY(bytes, &m_data[m_readPos], sizeof(data));
 
         data = priv::byteSequenceToInteger<
             std::int64_t>(bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0]);
 
-        m_impl->readPos += sizeof(data);
+        m_readPos += sizeof(data);
     }
 
     return *this;
@@ -231,12 +197,12 @@ Packet& Packet::operator>>(std::uint64_t& data)
         // Since ntohll is not available everywhere, we have to convert
         // to network byte order (big endian) manually
         std::byte bytes[sizeof(data)]{};
-        SFML_BASE_MEMCPY(bytes, &m_impl->data[m_impl->readPos], sizeof(data));
+        SFML_BASE_MEMCPY(bytes, &m_data[m_readPos], sizeof(data));
 
         data = priv::byteSequenceToInteger<
             std::uint64_t>(bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0]);
 
-        m_impl->readPos += sizeof(data);
+        m_readPos += sizeof(data);
     }
 
     return *this;
@@ -248,8 +214,8 @@ Packet& Packet::operator>>(float& data)
 {
     if (checkSize(sizeof(data)))
     {
-        SFML_BASE_MEMCPY(&data, &m_impl->data[m_impl->readPos], sizeof(data));
-        m_impl->readPos += sizeof(data);
+        SFML_BASE_MEMCPY(&data, &m_data[m_readPos], sizeof(data));
+        m_readPos += sizeof(data);
     }
 
     return *this;
@@ -261,8 +227,8 @@ Packet& Packet::operator>>(double& data)
 {
     if (checkSize(sizeof(data)))
     {
-        SFML_BASE_MEMCPY(&data, &m_impl->data[m_impl->readPos], sizeof(data));
-        m_impl->readPos += sizeof(data);
+        SFML_BASE_MEMCPY(&data, &m_data[m_readPos], sizeof(data));
+        m_readPos += sizeof(data);
     }
 
     return *this;
@@ -281,11 +247,11 @@ Packet& Packet::operator>>(char* data)
     if ((length > 0) && checkSize(length))
     {
         // Then extract characters
-        SFML_BASE_MEMCPY(data, &m_impl->data[m_impl->readPos], length);
+        SFML_BASE_MEMCPY(data, &m_data[m_readPos], length);
         data[length] = '\0';
 
         // Update reading position
-        m_impl->readPos += length;
+        m_readPos += length;
     }
 
     return *this;
@@ -303,10 +269,10 @@ Packet& Packet::operator>>(std::string& data)
     if ((length > 0) && checkSize(length))
     {
         // Then extract characters
-        data.assign(reinterpret_cast<char*>(&m_impl->data[m_impl->readPos]), length);
+        data.assign(reinterpret_cast<char*>(&m_data[m_readPos]), length);
 
         // Update reading position
-        m_impl->readPos += length;
+        m_readPos += length;
     }
 
     return *this;
@@ -587,16 +553,16 @@ Packet& Packet::operator<<(const String& data)
 ////////////////////////////////////////////////////////////
 bool Packet::checkSize(base::SizeT size)
 {
-    m_impl->isValid = m_impl->isValid && (m_impl->readPos + size <= m_impl->data.size());
+    m_isValid = m_isValid && (m_readPos + size <= m_data.size());
 
-    return m_impl->isValid;
+    return m_isValid;
 }
 
 
 ////////////////////////////////////////////////////////////
 base::SizeT& Packet::getSendPos()
 {
-    return m_impl->sendPos;
+    return m_sendPos;
 }
 
 

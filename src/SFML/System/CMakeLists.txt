@@ -24,6 +24,8 @@ set(SRC_BASE
     ${BASE_INCROOT}/Math/Exp.hpp
     ${BASE_INCROOT}/Math/Fabs.hpp
     ${BASE_INCROOT}/Math/Floor.hpp
+    ${BASE_INCROOT}/Math/Fmax.hpp
+    ${BASE_INCROOT}/Math/Fmin.hpp
     ${BASE_INCROOT}/Math/Fmod.hpp
     ${BASE_INCROOT}/Math/Frexp.hpp
     ${BASE_INCROOT}/Math/Impl.hpp
@@ -37,11 +39,18 @@ set(SRC_BASE
     ${BASE_INCROOT}/Math/Sin.hpp
     ${BASE_INCROOT}/Math/Sqrt.hpp
     ${BASE_INCROOT}/MaxAlignT.hpp
+    ${BASE_INCROOT}/Memcmp.hpp
+    ${BASE_INCROOT}/Memcpy.hpp
+    ${BASE_INCROOT}/Memset.hpp
     ${BASE_INCROOT}/Optional.hpp
     ${BASE_INCROOT}/OverloadSet.hpp
     ${BASE_INCROOT}/PassKey.hpp
     ${BASE_INCROOT}/PlacementNew.hpp
     ${BASE_INCROOT}/SizeT.hpp
+    ${BASE_INCROOT}/Span.hpp
+    ${BASE_INCROOT}/Strlen.hpp
+    ${BASE_INCROOT}/Strncmp.hpp
+    ${BASE_INCROOT}/Strstr.hpp
     ${BASE_INCROOT}/Traits/HasVirtualDestructor.hpp
     ${BASE_INCROOT}/Traits/IsAggregate.hpp
     ${BASE_INCROOT}/Traits/IsBaseOf.hpp
@@ -73,6 +82,7 @@ set(SRC_BASE
     ${BASE_INCROOT}/Traits/RemoveCVRef.hpp
     ${BASE_INCROOT}/Traits/RemoveReference.hpp
     ${BASE_INCROOT}/Traits/UnderlyingType.hpp
+    ${BASE_INCROOT}/TrivialVector.hpp
     ${BASE_INCROOT}/TypePackElement.hpp
     ${BASE_INCROOT}/UniquePtr.hpp
     ${BASE_INCROOT}/Variant.hpp

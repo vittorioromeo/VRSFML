@@ -6,15 +6,14 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Network/Export.hpp"
 
-#include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 
 #if __has_include(<bits/stringfwd.h>)
 #include <bits/stringfwd.h>
 #else
 #include <string>
 #endif
-
-#include "SFML/Base/SizeT.hpp"
 
 #include <cstdint>
 
@@ -37,37 +36,37 @@ public:
     /// Creates an empty packet.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Packet();
+    [[nodiscard]] Packet() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Virtual destructor
     ///
     ////////////////////////////////////////////////////////////
-    virtual ~Packet();
+    virtual ~Packet() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy constructor
     ///
     ////////////////////////////////////////////////////////////
-    Packet(const Packet&);
+    Packet(const Packet&) = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy assignment
     ///
     ////////////////////////////////////////////////////////////
-    Packet& operator=(const Packet&);
+    Packet& operator=(const Packet&) = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    Packet(Packet&&) noexcept;
+    Packet(Packet&&) noexcept = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment
     ///
     ////////////////////////////////////////////////////////////
-    Packet& operator=(Packet&&) noexcept;
+    Packet& operator=(Packet&&) noexcept = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Append data to the end of the packet
@@ -414,8 +413,10 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    struct Impl;
-    base::InPlacePImpl<Impl, 64> m_impl; //!< Implementation details
+    base::TrivialVector<unsigned char> m_data;      //!< Data stored in the packet
+    base::SizeT                        m_readPos{}; //!< Current reading position in the packet
+    base::SizeT m_sendPos{};     //!< Current send position in the packet (for handling partial sends)
+    bool        m_isValid{true}; //!< Reading state of the packet
 };
 
 } // namespace sf

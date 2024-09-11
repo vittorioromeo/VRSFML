@@ -12,7 +12,6 @@
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Vector2.hpp"
 
-#include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
@@ -100,13 +99,13 @@ public:
     /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    WindowBase(WindowBase&&) noexcept;
+    WindowBase(WindowBase&&) noexcept = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment
     ///
     ////////////////////////////////////////////////////////////
-    WindowBase& operator=(WindowBase&&) noexcept;
+    WindowBase& operator=(WindowBase&&) noexcept = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Pop the next event from the front of the FIFO event queue, if any, and return it
@@ -498,8 +497,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    struct Impl;
-    base::InPlacePImpl<Impl, 32> m_impl; //!< Implementation details
+    base::UniquePtr<priv::WindowImpl> m_impl; //!< Platform-specific implementation of the window
+    Vector2u                          m_size; //!< Current size of the window
 };
 
 } // namespace sf
