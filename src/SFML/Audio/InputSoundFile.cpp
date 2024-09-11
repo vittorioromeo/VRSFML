@@ -101,7 +101,7 @@ base::Optional<InputSoundFile> InputSoundFile::openFromFile(const Path& filename
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<InputSoundFile> InputSoundFile::openFromMemory(const void* data, std::size_t sizeInBytes)
+base::Optional<InputSoundFile> InputSoundFile::openFromMemory(const void* data, base::SizeT sizeInBytes)
 {
     // Find a suitable reader for the file type
     auto reader = SoundFileFactory::createReaderFromMemory(data, sizeInBytes);
@@ -243,7 +243,7 @@ void InputSoundFile::seek(std::uint64_t sampleOffset)
 ////////////////////////////////////////////////////////////
 void InputSoundFile::seek(Time timeOffset)
 {
-    seek(static_cast<std::size_t>(timeOffset.asSeconds() * static_cast<float>(m_sampleRate)) * m_channelMap.getSize());
+    seek(static_cast<base::SizeT>(timeOffset.asSeconds() * static_cast<float>(m_sampleRate)) * m_channelMap.getSize());
 }
 
 

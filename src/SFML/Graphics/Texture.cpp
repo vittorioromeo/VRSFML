@@ -228,7 +228,7 @@ base::Optional<Texture> Texture::loadFromFile(GraphicsContext& graphicsContext, 
 base::Optional<Texture> Texture::loadFromMemory(
     GraphicsContext& graphicsContext,
     const void*      data,
-    std::size_t      size,
+    base::SizeT      size,
     bool             sRgb,
     const IntRect&   area)
 {

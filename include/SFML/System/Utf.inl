@@ -94,7 +94,7 @@ Out Utf<8>::encode(std::uint32_t input, Out output, std::uint8_t replacement)
         // Valid character
 
         // Get the number of bytes to write
-        std::size_t bytestoWrite = 1;
+        base::SizeT bytestoWrite = 1;
 
         // clang-format off
         if      (input <  0x80)       bytestoWrite = 1;
@@ -135,9 +135,9 @@ In Utf<8>::next(In begin, In end)
 
 ////////////////////////////////////////////////////////////
 template <typename In>
-std::size_t Utf<8>::count(In begin, In end)
+base::SizeT Utf<8>::count(In begin, In end)
 {
-    std::size_t length = 0;
+    base::SizeT length = 0;
     while (begin < end)
     {
         begin = next(begin, end);
@@ -362,9 +362,9 @@ In Utf<16>::next(In begin, In end)
 
 ////////////////////////////////////////////////////////////
 template <typename In>
-std::size_t Utf<16>::count(In begin, In end)
+base::SizeT Utf<16>::count(In begin, In end)
 {
-    std::size_t length = 0;
+    base::SizeT length = 0;
     while (begin < end)
     {
         begin = next(begin, end);
@@ -525,7 +525,7 @@ In Utf<32>::next(In begin, In /* end */)
 
 ////////////////////////////////////////////////////////////
 template <typename In>
-std::size_t Utf<32>::count(In begin, In end)
+base::SizeT Utf<32>::count(In begin, In end)
 {
     return begin - end;
 }

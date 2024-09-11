@@ -15,10 +15,9 @@
 #include "SFML/System/Err.hpp"
 
 #include "SFML/Base/Memcpy.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 #include <utility>
-
-#include <cstddef>
 
 
 namespace
@@ -108,7 +107,7 @@ VertexBuffer::~VertexBuffer()
 
 
 ////////////////////////////////////////////////////////////
-bool VertexBuffer::create(std::size_t vertexCount)
+bool VertexBuffer::create(base::SizeT vertexCount)
 {
     if (!isAvailable(*m_graphicsContext))
         return false;
@@ -138,7 +137,7 @@ bool VertexBuffer::create(std::size_t vertexCount)
 
 
 ////////////////////////////////////////////////////////////
-std::size_t VertexBuffer::getVertexCount() const
+base::SizeT VertexBuffer::getVertexCount() const
 {
     return m_size;
 }
@@ -152,7 +151,7 @@ bool VertexBuffer::update(const Vertex* vertices)
 
 
 ////////////////////////////////////////////////////////////
-bool VertexBuffer::update(const Vertex* vertices, std::size_t vertexCount, unsigned int offset)
+bool VertexBuffer::update(const Vertex* vertices, base::SizeT vertexCount, unsigned int offset)
 {
     // Sanity checks
     if (!m_buffer)

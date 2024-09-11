@@ -31,7 +31,7 @@ struct SoundFileWriterFlac::Impl
     };
     base::UniquePtr<FLAC__StreamEncoder, FlacStreamEncoderDeleter> encoder;        //!< FLAC stream encoder
     unsigned int                                                   channelCount{}; //!< Number of channels
-    std::size_t               remapTable[8]{}; //!< Table we use to remap source to target channel order
+    base::SizeT               remapTable[8]{}; //!< Table we use to remap source to target channel order
     std::vector<std::int32_t> samples32;       //!< Conversion buffer
 };
 
@@ -130,7 +130,7 @@ bool SoundFileWriterFlac::open(const Path& filename, unsigned int sampleRate, un
 
     // Build the remap rable
     for (auto i = 0u; i < channelCount; ++i)
-        m_impl->remapTable[i] = static_cast<std::size_t>(
+        m_impl->remapTable[i] = static_cast<base::SizeT>(
             base::find(channelMap.begin(), channelMap.end(), targetChannelMap[i]) - channelMap.begin());
 
     // Create the encoder

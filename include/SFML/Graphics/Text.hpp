@@ -15,9 +15,8 @@
 
 #include "SFML/Base/EnumClassBitwiseOps.hpp"
 #include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Span.hpp"
-
-#include <cstddef>
 
 
 namespace sf
@@ -372,7 +371,7 @@ public:
     /// \return Position of the character
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2f findCharacterPos(std::size_t index) const;
+    [[nodiscard]] Vector2f findCharacterPos(base::SizeT index) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the local bounding rectangle of the entity

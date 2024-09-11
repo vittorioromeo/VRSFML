@@ -70,7 +70,7 @@ void ClipboardImpl::setString(const String& text)
     }
 
     // Create a Win32-compatible string
-    const std::size_t stringSize   = (text.getSize() + 1) * sizeof(WCHAR);
+    const base::SizeT stringSize   = (text.getSize() + 1) * sizeof(WCHAR);
     HANDLE            stringHandle = GlobalAlloc(GMEM_MOVEABLE, stringSize);
 
     if (stringHandle)

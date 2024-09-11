@@ -61,7 +61,7 @@ std::vector<VideoMode> VideoModeImpl::getFullscreenModes()
                     if (depths && (nbDepths > 0))
                     {
                         // Combine depths and sizes to fill the array of supported modes
-                        for (std::size_t i = 0; i < static_cast<std::size_t>(nbDepths); ++i)
+                        for (base::SizeT i = 0; i < static_cast<base::SizeT>(nbDepths); ++i)
                         {
                             for (int j = 0; j < nbSizes; ++j)
                             {

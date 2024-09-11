@@ -9,8 +9,8 @@
 #include "SFML/Audio/SoundRecorder.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/SizeT.hpp"
 
-#include <cstddef>
 #include <cstdint>
 
 
@@ -76,7 +76,7 @@ protected:
     /// \return True to continue the capture, or false to stop it
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool onProcessSamples(const std::int16_t* samples, std::size_t sampleCount) override;
+    [[nodiscard]] bool onProcessSamples(const std::int16_t* samples, base::SizeT sampleCount) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Stop capturing audio data

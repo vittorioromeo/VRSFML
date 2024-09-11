@@ -20,7 +20,7 @@ namespace
 std::string stringFromCFString(CFStringRef cfString)
 {
     const CFIndex     length = CFStringGetLength(cfString);
-    std::vector<char> str(static_cast<std::size_t>(length));
+    std::vector<char> str(static_cast<base::SizeT>(length));
     const CFIndex     maxSize = CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8);
     CFStringGetCString(cfString, str.data(), maxSize, kCFStringEncodingUTF8);
     return str.data();
@@ -115,7 +115,7 @@ bool JoystickImpl::isConnected(unsigned int index)
                 const CFIndex size = CFSetGetCount(devices);
                 if (size > 0)
                 {
-                    std::vector<CFTypeRef> array(static_cast<std::size_t>(size)); // array of IOHIDDeviceRef
+                    std::vector<CFTypeRef> array(static_cast<base::SizeT>(size)); // array of IOHIDDeviceRef
                     CFSetGetValues(devices, array.data());
 
                     // If there exists a device d s.t. there is no j s.t.
@@ -123,7 +123,7 @@ bool JoystickImpl::isConnected(unsigned int index)
 
                     for (CFIndex didx(0); !state && didx < size; ++didx)
                     {
-                        auto* d = static_cast<IOHIDDeviceRef>(const_cast<void*>(array[static_cast<std::size_t>(didx)]));
+                        auto* d = static_cast<IOHIDDeviceRef>(const_cast<void*>(array[static_cast<base::SizeT>(didx)]));
                         const Location dloc = HIDInputManager::getLocationID(d);
 
                         bool foundJ = false;
@@ -167,14 +167,14 @@ bool JoystickImpl::open(unsigned int index)
 
     // Get a usable copy of the joysticks devices.
     const CFIndex          joysticksCount = CFSetGetCount(devices);
-    std::vector<CFTypeRef> devicesArray(static_cast<std::size_t>(joysticksCount));
+    std::vector<CFTypeRef> devicesArray(static_cast<base::SizeT>(joysticksCount));
     CFSetGetValues(devices, devicesArray.data());
 
     // Get the desired joystick.
     IOHIDDeviceRef self = nil;
     for (CFIndex i(0); self == nil && i < joysticksCount; ++i)
     {
-        auto* d = static_cast<IOHIDDeviceRef>(const_cast<void*>(devicesArray[static_cast<std::size_t>(i)]));
+        auto* d = static_cast<IOHIDDeviceRef>(const_cast<void*>(devicesArray[static_cast<base::SizeT>(i)]));
         if (deviceLoc == HIDInputManager::getLocationID(d))
             self = d;
     }
@@ -390,14 +390,14 @@ JoystickState JoystickImpl::update()
 
     // Get a usable copy of the joysticks devices.
     const CFIndex          joysticksCount = CFSetGetCount(devices);
-    std::vector<CFTypeRef> devicesArray(static_cast<std::size_t>(joysticksCount));
+    std::vector<CFTypeRef> devicesArray(static_cast<base::SizeT>(joysticksCount));
     CFSetGetValues(devices, devicesArray.data());
 
     // Search for it
     bool found = false;
     for (CFIndex i(0); !found && i < joysticksCount; ++i)
     {
-        auto* d = static_cast<IOHIDDeviceRef>(const_cast<void*>(devicesArray[static_cast<std::size_t>(i)]));
+        auto* d = static_cast<IOHIDDeviceRef>(const_cast<void*>(devicesArray[static_cast<base::SizeT>(i)]));
         if (selfLoc == HIDInputManager::getLocationID(d))
             found = true;
     }

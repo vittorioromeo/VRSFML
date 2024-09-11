@@ -12,12 +12,12 @@
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 #include <algorithm> // std::sort, std::adjacent_find
 #include <fstream>
 #include <vector>
 
-#include <cstddef>
 #include <cstdint>
 
 
@@ -57,7 +57,7 @@ struct SoundFileWriterWav::Impl
 {
     std::ofstream file;             //!< File stream to write to
     unsigned int  channelCount{};   //!< Channel count of the sound being written
-    std::size_t   remapTable[18]{}; //!< Table we use to remap source to target channel order
+    base::SizeT   remapTable[18]{}; //!< Table we use to remap source to target channel order
 };
 
 
@@ -203,7 +203,7 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
 
         // Build the remap table
         for (auto i = 0u; i < channelCount; ++i)
-            m_impl->remapTable[i] = static_cast<std::size_t>(
+            m_impl->remapTable[i] = static_cast<base::SizeT>(
                 base::find(channelMap.begin(), channelMap.end(), targetChannelMap[i].channel) - channelMap.begin());
 
         // Generate the channel mask

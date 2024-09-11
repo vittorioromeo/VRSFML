@@ -45,7 +45,7 @@ public:
     /// \return The number of bytes actually read, or `base::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    base::Optional<std::size_t> read(void* data, std::size_t size) override;
+    base::Optional<base::SizeT> read(void* data, base::SizeT size) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current reading position in the asset file
@@ -55,7 +55,7 @@ public:
     /// \return The position actually sought to, or `base::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    base::Optional<std::size_t> seek(std::size_t position) override;
+    base::Optional<base::SizeT> seek(base::SizeT position) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current reading position in the asset file
@@ -63,7 +63,7 @@ public:
     /// \return The current position, or `base::nullOpt` on error.
     ///
     ////////////////////////////////////////////////////////////
-    base::Optional<std::size_t> tell() override;
+    base::Optional<base::SizeT> tell() override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the asset file
@@ -71,7 +71,7 @@ public:
     /// \return The total number of bytes available in the asset, or `base::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    base::Optional<std::size_t> getSize() override;
+    base::Optional<base::SizeT> getSize() override;
 
 private:
     ////////////////////////////////////////////////////////////

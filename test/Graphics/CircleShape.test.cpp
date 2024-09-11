@@ -1,5 +1,7 @@
 #include "SFML/Graphics/CircleShape.hpp"
 
+#include "SFML/Base/SizeT.hpp"
+
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
@@ -20,7 +22,7 @@ TEST_CASE("[Graphics] sf::CircleShape")
         const sf::CircleShape circle;
         CHECK(circle.getRadius() == 0.f);
         CHECK(circle.getPointCount() == 30);
-        for (std::size_t i = 0; i < circle.getPointCount(); ++i)
+        for (sf::base::SizeT i = 0; i < circle.getPointCount(); ++i)
             CHECK(circle.getPoint(i) == sf::Vector2f{0, 0});
         CHECK(circle.getGeometricCenter() == sf::Vector2f{0, 0});
     }

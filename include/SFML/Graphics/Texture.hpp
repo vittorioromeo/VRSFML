@@ -14,8 +14,8 @@
 
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
+#include "SFML/Base/SizeT.hpp"
 
-#include <cstddef>
 #include <cstdint>
 
 
@@ -134,7 +134,7 @@ public:
     [[nodiscard]] static base::Optional<Texture> loadFromMemory(
         GraphicsContext& graphicsContext,
         const void*      data,
-        std::size_t      size,
+        base::SizeT      size,
         bool             sRgb = false,
         const IntRect&   area = {});
 

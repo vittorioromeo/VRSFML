@@ -11,10 +11,9 @@
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 #include <string_view>
-
-#include <cstddef>
 
 
 ////////////////////////////////////////////////////////////
@@ -542,7 +541,7 @@ public:
     /// \param length      Number of elements in the array
     ///
     ////////////////////////////////////////////////////////////
-    void setUniformArray(UniformLocation location, const float* scalarArray, std::size_t length);
+    void setUniformArray(UniformLocation location, const float* scalarArray, base::SizeT length);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify values for \p vec2[] array uniform
@@ -552,7 +551,7 @@ public:
     /// \param length      Number of elements in the array
     ///
     ////////////////////////////////////////////////////////////
-    void setUniformArray(UniformLocation location, const Glsl::Vec2* vectorArray, std::size_t length);
+    void setUniformArray(UniformLocation location, const Glsl::Vec2* vectorArray, base::SizeT length);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify values for \p vec3[] array uniform
@@ -562,7 +561,7 @@ public:
     /// \param length      Number of elements in the array
     ///
     ////////////////////////////////////////////////////////////
-    void setUniformArray(UniformLocation location, const Glsl::Vec3* vectorArray, std::size_t length);
+    void setUniformArray(UniformLocation location, const Glsl::Vec3* vectorArray, base::SizeT length);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify values for \p vec4[] array uniform
@@ -572,7 +571,7 @@ public:
     /// \param length      Number of elements in the array
     ///
     ////////////////////////////////////////////////////////////
-    void setUniformArray(UniformLocation location, const Glsl::Vec4* vectorArray, std::size_t length);
+    void setUniformArray(UniformLocation location, const Glsl::Vec4* vectorArray, base::SizeT length);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify values for \p mat3[] array uniform
@@ -582,7 +581,7 @@ public:
     /// \param length      Number of elements in the array
     ///
     ////////////////////////////////////////////////////////////
-    void setUniformArray(UniformLocation location, const Glsl::Mat3* matrixArray, std::size_t length);
+    void setUniformArray(UniformLocation location, const Glsl::Mat3* matrixArray, base::SizeT length);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify values for \p mat4[] array uniform
@@ -592,7 +591,7 @@ public:
     /// \param length      Number of elements in the array
     ///
     ////////////////////////////////////////////////////////////
-    void setUniformArray(UniformLocation location, const Glsl::Mat4* matrixArray, std::size_t length);
+    void setUniformArray(UniformLocation location, const Glsl::Mat4* matrixArray, base::SizeT length);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the underlying OpenGL handle of the shader.

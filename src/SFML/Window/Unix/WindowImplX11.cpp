@@ -112,13 +112,13 @@ sf::Path findExecutableName()
         return "sfml";
 
     std::vector<char> buffer(256, 0);
-    std::size_t       offset = 0;
+    base::SizeT       offset = 0;
     ssize_t           result = 0;
 
     while ((result = read(file, &buffer[offset], 256)) > 0)
     {
-        buffer.resize(buffer.size() + static_cast<std::size_t>(result), 0);
-        offset += static_cast<std::size_t>(result);
+        buffer.resize(buffer.size() + static_cast<base::SizeT>(result), 0);
+        offset += static_cast<base::SizeT>(result);
     }
 
     ::close(file);
@@ -964,9 +964,9 @@ void WindowImplX11::setIcon(Vector2u size, const std::uint8_t* pixels)
     // Note: this memory will be freed by X11Ptr<XImage> deleter
     // NOLINTBEGIN(cppcoreguidelines-no-malloc)
     auto* iconPixels = static_cast<std::uint8_t*>(
-        std::malloc(static_cast<std::size_t>(size.x) * static_cast<std::size_t>(size.y) * 4));
+        std::malloc(static_cast<base::SizeT>(size.x) * static_cast<base::SizeT>(size.y) * 4));
     // NOLINTEND(cppcoreguidelines-no-malloc)
-    for (std::size_t i = 0; i < static_cast<std::size_t>(size.x) * static_cast<std::size_t>(size.y); ++i)
+    for (base::SizeT i = 0; i < static_cast<base::SizeT>(size.x) * static_cast<base::SizeT>(size.y); ++i)
     {
         iconPixels[i * 4 + 0] = pixels[i * 4 + 2];
         iconPixels[i * 4 + 1] = pixels[i * 4 + 1];
@@ -998,13 +998,13 @@ void WindowImplX11::setIcon(Vector2u size, const std::uint8_t* pixels)
     XFreeGC(m_display.get(), iconGC);
 
     // Create the mask pixmap (must have 1 bit depth)
-    const std::size_t         pitch = (size.x + 7) / 8;
+    const base::SizeT         pitch = (size.x + 7) / 8;
     std::vector<std::uint8_t> maskPixels(pitch * size.y, 0);
-    for (std::size_t j = 0; j < size.y; ++j)
+    for (base::SizeT j = 0; j < size.y; ++j)
     {
-        for (std::size_t i = 0; i < pitch; ++i)
+        for (base::SizeT i = 0; i < pitch; ++i)
         {
-            for (std::size_t k = 0; k < 8; ++k)
+            for (base::SizeT k = 0; k < 8; ++k)
             {
                 if (i * 8 + k < size.x)
                 {
@@ -1041,7 +1041,7 @@ void WindowImplX11::setIcon(Vector2u size, const std::uint8_t* pixels)
     *ptr++ = size.y;
 #pragma GCC diagnostic pop
 
-    for (std::size_t i = 0; i < static_cast<std::size_t>(size.x) * static_cast<std::size_t>(size.y); ++i)
+    for (base::SizeT i = 0; i < static_cast<base::SizeT>(size.x) * static_cast<base::SizeT>(size.y); ++i)
     {
         *ptr++ = static_cast<unsigned long>(
             (pixels[i * 4 + 2] << 0) | (pixels[i * 4 + 1] << 8) | (pixels[i * 4 + 0] << 16) | (pixels[i * 4 + 3] << 24));

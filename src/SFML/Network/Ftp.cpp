@@ -12,12 +12,12 @@
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 #include <fstream>
 #include <sstream>
 
 #include <cctype>
-#include <cstddef>
 #include <cstdint>
 
 
@@ -381,7 +381,7 @@ Ftp::Response Ftp::getResponse()
     {
         // Receive the response from the server
         char        buffer[1024];
-        std::size_t length = 0;
+        base::SizeT length = 0;
 
         if (m_receiveBuffer.empty())
         {
@@ -450,8 +450,8 @@ Ftp::Response Ftp::getResponse()
                         }
 
                         // Save the remaining data for the next time getResponse() is called
-                        m_receiveBuffer.assign(buffer + static_cast<std::size_t>(in.tellg()),
-                                               length - static_cast<std::size_t>(in.tellg()));
+                        m_receiveBuffer.assign(buffer + static_cast<base::SizeT>(in.tellg()),
+                                               length - static_cast<base::SizeT>(in.tellg()));
 
                         // Return the response code and message
                         return Response(static_cast<Response::Status>(code), message);
@@ -527,7 +527,7 @@ Ftp::Response Ftp::DataChannel::open(Ftp::TransferMode mode)
         {
             std::uint8_t data[6] = {0, 0, 0, 0, 0, 0};
             std::string  str     = response.getMessage().substr(begin);
-            std::size_t  index   = 0;
+            base::SizeT  index   = 0;
             for (unsigned char& datum : data)
             {
                 // Extract the current number
@@ -584,7 +584,7 @@ void Ftp::DataChannel::receive(std::ostream& stream)
 {
     // Receive data
     char        buffer[1024];
-    std::size_t received = 0;
+    base::SizeT received = 0;
     while (m_dataSocket.receive(buffer, sizeof(buffer), received) == Socket::Status::Done)
     {
         stream.write(buffer, static_cast<std::streamsize>(received));
@@ -607,7 +607,7 @@ void Ftp::DataChannel::send(std::istream& stream)
 {
     // Send data
     char        buffer[1024];
-    std::size_t count = 0;
+    base::SizeT count = 0;
 
     for (;;)
     {
@@ -620,7 +620,7 @@ void Ftp::DataChannel::send(std::istream& stream)
             break;
         }
 
-        count = static_cast<std::size_t>(stream.gcount());
+        count = static_cast<base::SizeT>(stream.gcount());
 
         if (count > 0)
         {

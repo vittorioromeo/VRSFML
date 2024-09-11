@@ -3,6 +3,8 @@
 // Other 1st party headers
 #include "SFML/Graphics/CircleShape.hpp"
 
+#include "SFML/Base/SizeT.hpp"
+
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
@@ -28,7 +30,7 @@ TEST_CASE("[Graphics] sf::ConvexShape")
     {
         const sf::ConvexShape convex(15);
         CHECK(convex.getPointCount() == 15);
-        for (std::size_t i = 0; i < convex.getPointCount(); ++i)
+        for (sf::base::SizeT i = 0; i < convex.getPointCount(); ++i)
             CHECK(convex.getPoint(i) == sf::Vector2f{0, 0});
     }
 
@@ -37,7 +39,7 @@ TEST_CASE("[Graphics] sf::ConvexShape")
         sf::ConvexShape convex;
         convex.setPointCount(42);
         CHECK(convex.getPointCount() == 42);
-        for (std::size_t i = 0; i < convex.getPointCount(); ++i)
+        for (sf::base::SizeT i = 0; i < convex.getPointCount(); ++i)
             CHECK(convex.getPoint(i) == sf::Vector2f{0, 0});
     }
 

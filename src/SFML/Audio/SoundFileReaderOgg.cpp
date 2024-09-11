@@ -9,6 +9,7 @@
 #include "SFML/System/InputStream.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 #include <vorbis/vorbisfile.h>
 
@@ -17,16 +18,16 @@
 
 namespace
 {
-std::size_t read(void* ptr, std::size_t size, std::size_t nmemb, void* data)
+sf::base::SizeT read(void* ptr, sf::base::SizeT size, sf::base::SizeT nmemb, void* data)
 {
     auto* stream = static_cast<sf::InputStream*>(data);
-    return stream->read(ptr, size * nmemb).valueOr(static_cast<std::size_t>(-1));
+    return stream->read(ptr, size * nmemb).valueOr(static_cast<sf::base::SizeT>(-1));
 }
 
 int seek(void* data, ogg_int64_t signedOffset, int whence)
 {
     auto* stream = static_cast<sf::InputStream*>(data);
-    auto  offset = static_cast<std::size_t>(signedOffset);
+    auto  offset = static_cast<sf::base::SizeT>(signedOffset);
     switch (whence)
     {
         case SEEK_SET:
@@ -110,7 +111,7 @@ base::Optional<SoundFileReader::Info> SoundFileReaderOgg::open(InputStream& stre
     Info& info        = result.emplace();
     info.channelCount = static_cast<unsigned int>(vorbisInfo->channels);
     info.sampleRate   = static_cast<unsigned int>(vorbisInfo->rate);
-    info.sampleCount  = static_cast<std::size_t>(ov_pcm_total(&m_impl->vorbis, -1) * vorbisInfo->channels);
+    info.sampleCount  = static_cast<base::SizeT>(ov_pcm_total(&m_impl->vorbis, -1) * vorbisInfo->channels);
 
     // For Vorbis channel mapping refer to: https://xiph.org/vorbis/doc/Vorbis_I_spec.html#x1-810004.3.9
     switch (info.channelCount)

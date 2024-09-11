@@ -16,6 +16,8 @@
 
 #else
 
+#include "SFML/Base/SizeT.hpp"
+
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -23,8 +25,6 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-
-#include <cstddef>
 
 #endif
 
@@ -133,7 +133,7 @@ public:
 #if defined(SFML_SYSTEM_WINDOWS)
     using Size = int;
 #else
-    using Size = std::size_t;
+    using Size = base::SizeT;
 #endif
 
     ////////////////////////////////////////////////////////////

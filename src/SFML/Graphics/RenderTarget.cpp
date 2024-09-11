@@ -29,11 +29,11 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Math/Lround.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/TrivialVector.hpp"
 
 #include <atomic>
 
-#include <cstddef>
 #include <cstdint>
 
 
@@ -60,7 +60,7 @@ constexpr IdType invalidId{0ul};
 
 ////////////////////////////////////////////////////////////
 // Maximum supported number of render targets or contexts
-constexpr std::size_t maxIdCount{256ul};
+constexpr sf::base::SizeT maxIdCount{256ul};
 
 
 ////////////////////////////////////////////////////////////
@@ -196,7 +196,7 @@ constinit std::atomic<IdType> contextRenderTargetMap[maxIdCount]{};
 [[nodiscard, gnu::always_inline]] constexpr GLenum primitiveTypeToOpenGLMode(sf::PrimitiveType type)
 {
     constexpr GLenum modes[]{GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN};
-    return modes[static_cast<std::size_t>(type)];
+    return modes[static_cast<sf::base::SizeT>(type)];
 }
 
 ////////////////////////////////////////////////////////////
@@ -563,7 +563,7 @@ void RenderTarget::draw(const Shape& shape, const Texture* texture, const Render
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::draw(const Vertex* vertices, std::size_t vertexCount, PrimitiveType type, const RenderStates& states)
+void RenderTarget::draw(const Vertex* vertices, base::SizeT vertexCount, PrimitiveType type, const RenderStates& states)
 {
     // Nothing to draw or inactive target
     if (vertices == nullptr || vertexCount == 0u ||
@@ -586,9 +586,9 @@ void RenderTarget::draw(const Vertex* vertices, std::size_t vertexCount, Primiti
 ////////////////////////////////////////////////////////////
 void RenderTarget::drawIndexedVertices(
     const Vertex*         vertices,
-    std::size_t           vertexCount,
+    base::SizeT           vertexCount,
     const unsigned short* indices,
-    std::size_t           indexCount,
+    base::SizeT           indexCount,
     PrimitiveType         type,
     const RenderStates&   states)
 {
@@ -616,6 +616,18 @@ void RenderTarget::drawIndexedVertices(
 
 
 ////////////////////////////////////////////////////////////
+void RenderTarget::draw(const DrawableBatch& drawableBatch, const RenderStates& renderStates)
+{
+    drawIndexedVertices(drawableBatch.m_vertices.data(),
+                        drawableBatch.m_vertices.size(),
+                        drawableBatch.m_indices.data(),
+                        drawableBatch.m_indices.size(),
+                        PrimitiveType::Triangles,
+                        renderStates);
+}
+
+
+////////////////////////////////////////////////////////////
 void RenderTarget::draw(const VertexBuffer& vertexBuffer, const RenderStates& states)
 {
     draw(vertexBuffer, 0, vertexBuffer.getVertexCount(), states);
@@ -623,7 +635,7 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, const RenderStates& st
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::draw(const VertexBuffer& vertexBuffer, std::size_t firstVertex, std::size_t vertexCount, const RenderStates& states)
+void RenderTarget::draw(const VertexBuffer& vertexBuffer, base::SizeT firstVertex, base::SizeT vertexCount, const RenderStates& states)
 {
     // VertexBuffer not supported?
     if (!VertexBuffer::isAvailable(*m_impl->graphicsContext))
@@ -785,123 +797,6 @@ void RenderTarget::resetGLStates()
 
         m_impl->cache.enable = true;
     }
-}
-
-
-////////////////////////////////////////////////////////////
-RenderTarget::BatchDraw::BatchDraw(const RenderStates& renderStates, RenderTarget& renderTarget) :
-m_renderStates(renderStates),
-m_renderTarget(renderTarget)
-{
-    m_renderTarget.m_impl->batchVertexCache.clear();
-    m_renderTarget.m_impl->batchIndexCache.clear();
-}
-
-
-////////////////////////////////////////////////////////////
-RenderTarget::BatchDraw::~BatchDraw()
-{
-    const auto& vertices = m_renderTarget.m_impl->batchVertexCache;
-    const auto& indices  = m_renderTarget.m_impl->batchIndexCache;
-
-    m_renderTarget.drawIndexedVertices(vertices.data(),
-                                       vertices.size(),
-                                       indices.data(),
-                                       indices.size(),
-                                       PrimitiveType::Triangles,
-                                       m_renderStates);
-}
-
-
-////////////////////////////////////////////////////////////
-void RenderTarget::BatchDraw::add(const Sprite& sprite)
-{
-    const auto [data, size] = sprite.getVertices();
-
-    const auto& vertices  = m_renderTarget.m_impl->batchVertexCache;
-    auto&       indices   = m_renderTarget.m_impl->batchIndexCache;
-    const auto  nextIndex = static_cast<unsigned short>(vertices.size());
-
-    indices.reserveMore(6u);
-
-    indices.unsafePushBackMultiple(
-        // Triangle 0
-        nextIndex + 0u,
-        nextIndex + 1u,
-        nextIndex + 2u,
-
-        // Triangle 1
-        nextIndex + 1u,
-        nextIndex + 2u,
-        nextIndex + 3u);
-
-    appendPreTransformedVertices(data, size, sprite.getTransform());
-}
-
-
-////////////////////////////////////////////////////////////
-void RenderTarget::BatchDraw::add(const Shape& shape)
-{
-    auto& vertices = m_renderTarget.m_impl->batchVertexCache;
-    auto& indices  = m_renderTarget.m_impl->batchIndexCache;
-
-    if (const auto [fillData, fillSize] = shape.getFillVertices(); fillSize > 2u)
-    {
-        const auto nextFillIndex = static_cast<unsigned short>(vertices.size());
-
-        indices.reserveMore(fillSize * 3u);
-
-        for (unsigned short i = 1u; i < fillSize - 1; ++i)
-            indices.unsafePushBackMultiple(nextFillIndex, nextFillIndex + i, nextFillIndex + i + 1u);
-
-        appendPreTransformedVertices(fillData, fillSize, shape.getTransform());
-    }
-
-    if (const auto [outlineData, outlineSize] = shape.getOutlineVertices(); outlineSize > 2u)
-    {
-        const auto nextOutlineIndex = static_cast<unsigned short>(vertices.size());
-
-        indices.reserveMore(outlineSize * 3u);
-
-        for (unsigned short i = 0u; i < outlineSize - 2; ++i)
-            indices.unsafePushBackMultiple(nextOutlineIndex + i, nextOutlineIndex + i + 1u, nextOutlineIndex + i + 2u);
-
-        appendPreTransformedVertices(outlineData, outlineSize, shape.getTransform());
-    }
-}
-
-
-////////////////////////////////////////////////////////////
-void RenderTarget::BatchDraw::addSubsequentIndices(base::SizeT count)
-{
-    auto& indices = m_renderTarget.m_impl->batchIndexCache;
-
-    const auto nextIndex = static_cast<unsigned short>(m_renderTarget.m_impl->batchVertexCache.size());
-
-    indices.reserveMore(count);
-
-    for (unsigned short i = 0; i < static_cast<unsigned short>(count); ++i)
-        indices.unsafeEmplaceBack(nextIndex + i);
-}
-
-
-////////////////////////////////////////////////////////////
-void RenderTarget::BatchDraw::appendPreTransformedVertices(const Vertex* data, base::SizeT size, const Transform& transform)
-{
-    auto& vertices = m_renderTarget.m_impl->batchVertexCache;
-
-    vertices.reserveMore(size);
-    vertices.unsafeEmplaceRange(data, size);
-
-    for (auto i = vertices.size() - size; i < vertices.size(); ++i)
-        vertices[i].position = transform * vertices[i].position;
-}
-
-
-////////////////////////////////////////////////////////////
-RenderTarget::BatchDraw RenderTarget::startBatchDraw(const RenderStates& renderStates)
-{
-    return BatchDraw(renderStates, *this);
 }
 
 
@@ -1206,7 +1101,7 @@ void RenderTarget::setupDraw(const RenderStates& states)
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::drawPrimitives(PrimitiveType type, std::size_t firstVertex, std::size_t vertexCount)
+void RenderTarget::drawPrimitives(PrimitiveType type, base::SizeT firstVertex, base::SizeT vertexCount)
 {
     m_impl->vao.bind();
 
@@ -1217,7 +1112,7 @@ void RenderTarget::drawPrimitives(PrimitiveType type, std::size_t firstVertex, s
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::drawIndexedPrimitives(PrimitiveType type, std::size_t indexCount)
+void RenderTarget::drawIndexedPrimitives(PrimitiveType type, base::SizeT indexCount)
 {
     m_impl->vao.bind();
 

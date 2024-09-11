@@ -27,30 +27,30 @@ ResourceStream::ResourceStream(const Path& filename)
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<std::size_t> ResourceStream::read(void* data, std::size_t size)
+base::Optional<base::SizeT> ResourceStream::read(void* data, base::SizeT size)
 {
     const auto numBytesRead = AAsset_read(m_file.get(), data, size);
-    return numBytesRead < 0 ? base::nullOpt : base::makeOptional<std::size_t>(numBytesRead);
+    return numBytesRead < 0 ? base::nullOpt : base::makeOptional<base::SizeT>(numBytesRead);
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<std::size_t> ResourceStream::seek(std::size_t position)
+base::Optional<base::SizeT> ResourceStream::seek(base::SizeT position)
 {
     const auto newPosition = AAsset_seek(m_file.get(), static_cast<off_t>(position), SEEK_SET);
-    return newPosition < 0 ? base::nullOpt : base::makeOptional<std::size_t>(newPosition);
+    return newPosition < 0 ? base::nullOpt : base::makeOptional<base::SizeT>(newPosition);
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<std::size_t> ResourceStream::tell()
+base::Optional<base::SizeT> ResourceStream::tell()
 {
-    return getSize().value() - static_cast<std::size_t>(AAsset_getRemainingLength(m_file.get()));
+    return getSize().value() - static_cast<base::SizeT>(AAsset_getRemainingLength(m_file.get()));
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<std::size_t> ResourceStream::getSize()
+base::Optional<base::SizeT> ResourceStream::getSize()
 {
     return AAsset_getLength(m_file.get());
 }

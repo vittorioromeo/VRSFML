@@ -10,9 +10,9 @@
 
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
-#include <cstddef>
 #include <cstdint>
 
 
@@ -85,7 +85,7 @@ public:
     /// \return Input sound file if the file was successfully opened, otherwise `base::nullOpt`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<InputSoundFile> openFromMemory(const void* data, std::size_t sizeInBytes);
+    [[nodiscard]] static base::Optional<InputSoundFile> openFromMemory(const void* data, base::SizeT sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a sound file from a custom stream for reading

@@ -84,7 +84,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
-    static std::size_t count(In begin, In end);
+    static base::SizeT count(In begin, In end);
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert an ANSI characters range to UTF-8
@@ -290,7 +290,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
-    static std::size_t count(In begin, In end);
+    static base::SizeT count(In begin, In end);
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert an ANSI characters range to UTF-16
@@ -497,7 +497,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
-    static std::size_t count(In begin, In end);
+    static base::SizeT count(In begin, In end);
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert an ANSI characters range to UTF-32

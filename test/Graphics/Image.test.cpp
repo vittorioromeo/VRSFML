@@ -64,7 +64,7 @@ TEST_CASE("[Graphics] sf::Image")
         {
             // 10 x 10, with 4 color channels array
             std::uint8_t pixels[400]{};
-            for (std::size_t i = 0; i < 400; i += 4)
+            for (sf::base::SizeT i = 0; i < 400; i += 4)
             {
                 pixels[i]     = 255; // r
                 pixels[i + 1] = 0;   // g

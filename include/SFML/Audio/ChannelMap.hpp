@@ -9,10 +9,9 @@
 #include "SFML/Audio/SoundChannel.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 #include <initializer_list>
-
-#include <cstddef>
 
 
 namespace sf
@@ -70,7 +69,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::size_t getSize() const;
+    [[nodiscard]] base::SizeT getSize() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -106,13 +105,13 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const SoundChannel& operator[](std::size_t index) const;
+    [[nodiscard]] const SoundChannel& operator[](base::SizeT index) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void reserve(std::size_t count);
+    void reserve(base::SizeT count);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs

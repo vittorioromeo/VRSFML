@@ -24,8 +24,8 @@ namespace sf
 struct Packet::Impl
 {
     std::vector<std::byte> data;          //!< Data stored in the packet
-    std::size_t            readPos{};     //!< Current reading position in the packet
-    std::size_t            sendPos{};     //!< Current send position in the packet (for handling partial sends)
+    base::SizeT            readPos{};     //!< Current reading position in the packet
+    base::SizeT            sendPos{};     //!< Current send position in the packet (for handling partial sends)
     bool                   isValid{true}; //!< Reading state of the packet
 };
 
@@ -55,7 +55,7 @@ Packet& Packet::operator=(Packet&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-void Packet::append(const void* data, std::size_t sizeInBytes)
+void Packet::append(const void* data, base::SizeT sizeInBytes)
 {
     if (data && (sizeInBytes > 0))
     {
@@ -67,7 +67,7 @@ void Packet::append(const void* data, std::size_t sizeInBytes)
 
 
 ////////////////////////////////////////////////////////////
-std::size_t Packet::getReadPosition() const
+base::SizeT Packet::getReadPosition() const
 {
     return m_impl->readPos;
 }
@@ -90,7 +90,7 @@ const void* Packet::getData() const
 
 
 ////////////////////////////////////////////////////////////
-std::size_t Packet::getDataSize() const
+base::SizeT Packet::getDataSize() const
 {
     return m_impl->data.size();
 }
@@ -585,7 +585,7 @@ Packet& Packet::operator<<(const String& data)
 
 
 ////////////////////////////////////////////////////////////
-bool Packet::checkSize(std::size_t size)
+bool Packet::checkSize(base::SizeT size)
 {
     m_impl->isValid = m_impl->isValid && (m_impl->readPos + size <= m_impl->data.size());
 
@@ -594,14 +594,14 @@ bool Packet::checkSize(std::size_t size)
 
 
 ////////////////////////////////////////////////////////////
-std::size_t& Packet::getSendPos()
+base::SizeT& Packet::getSendPos()
 {
     return m_impl->sendPos;
 }
 
 
 ////////////////////////////////////////////////////////////
-const void* Packet::onSend(std::size_t& size)
+const void* Packet::onSend(base::SizeT& size)
 {
     size = getDataSize();
     return getData();
@@ -609,7 +609,7 @@ const void* Packet::onSend(std::size_t& size)
 
 
 ////////////////////////////////////////////////////////////
-void Packet::onReceive(const void* data, std::size_t size)
+void Packet::onReceive(const void* data, base::SizeT size)
 {
     append(data, size);
 }

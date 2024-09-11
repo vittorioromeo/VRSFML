@@ -354,16 +354,16 @@ inline int SF_GL_OES_vertex_buffer_object = 1;
 #define GLEXT_GL_STENCIL_ATTACHMENT                GL_STENCIL_ATTACHMENT_EXT
 
 // Core since 3.0 - EXT_packed_depth_stencil
-#define GLEXT_packed_depth_stencil        GLAD_GL_EXT_packed_depth_stencil
-#define GLEXT_GL_DEPTH24_STENCIL8         GL_DEPTH24_STENCIL8
+#define GLEXT_packed_depth_stencil                 GLAD_GL_EXT_packed_depth_stencil
+#define GLEXT_GL_DEPTH24_STENCIL8                  GL_DEPTH24_STENCIL8
 
 // Core since 3.0 - EXT_framebuffer_blit
-#define GLEXT_framebuffer_blit            GLAD_GL_EXT_framebuffer_blit
-#define GLEXT_glBlitFramebuffer           glBlitFramebufferEXT
-#define GLEXT_GL_READ_FRAMEBUFFER         GL_READ_FRAMEBUFFER_EXT
-#define GLEXT_GL_DRAW_FRAMEBUFFER         GL_DRAW_FRAMEBUFFER_EXT
-#define GLEXT_GL_DRAW_FRAMEBUFFER_BINDING GL_DRAW_FRAMEBUFFER_BINDING_EXT
-#define GLEXT_GL_READ_FRAMEBUFFER_BINDING GL_READ_FRAMEBUFFER_BINDING_EXT
+#define GLEXT_framebuffer_blit                     GLAD_GL_EXT_framebuffer_blit
+#define GLEXT_glBlitFramebuffer                    glBlitFramebufferEXT
+#define GLEXT_GL_READ_FRAMEBUFFER                  GL_READ_FRAMEBUFFER_EXT
+#define GLEXT_GL_DRAW_FRAMEBUFFER                  GL_DRAW_FRAMEBUFFER_EXT
+#define GLEXT_GL_DRAW_FRAMEBUFFER_BINDING          GL_DRAW_FRAMEBUFFER_BINDING_EXT
+#define GLEXT_GL_READ_FRAMEBUFFER_BINDING          GL_READ_FRAMEBUFFER_BINDING_EXT
 
 #define GLEXT_framebuffer_blit_dependencies    GLAD_GL_EXT_framebuffer_blit, glBlitFramebufferEXT
 

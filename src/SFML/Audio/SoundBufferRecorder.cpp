@@ -50,9 +50,9 @@ bool SoundBufferRecorder::onStart(CaptureDevice&)
 
 
 ////////////////////////////////////////////////////////////
-bool SoundBufferRecorder::onProcessSamples(const std::int16_t* samples, std::size_t sampleCount)
+bool SoundBufferRecorder::onProcessSamples(const std::int16_t* samples, base::SizeT sampleCount)
 {
-    const std::size_t oldSize = m_impl->samples.size();
+    const base::SizeT oldSize = m_impl->samples.size();
     m_impl->samples.resize(oldSize + sampleCount);
 
     SFML_BASE_MEMCPY(m_impl->samples.data() + oldSize, samples, sampleCount * sizeof(std::int16_t));

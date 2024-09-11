@@ -12,9 +12,9 @@
 #include "SFML/System/LifetimeDependee.hpp"
 
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
-#include <cstddef>
 #include <cstdint>
 
 
@@ -161,7 +161,7 @@ private:
     /// \brief Set the "process samples" callback used by miniaudio
     ///
     ////////////////////////////////////////////////////////////
-    using ProcessSamplesFunc = bool (*)(void* userData, const std::int16_t* samples, std::size_t sampleCount);
+    using ProcessSamplesFunc = bool (*)(void* userData, const std::int16_t* samples, base::SizeT sampleCount);
     void setProcessSamplesFunc(SoundRecorder* soundRecorder, ProcessSamplesFunc processSamplesFunc);
 
     ////////////////////////////////////////////////////////////

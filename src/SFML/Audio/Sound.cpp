@@ -79,9 +79,9 @@ struct Sound::Impl
 
         SFML_BASE_MEMCPY(framesOut,
                          buffer->getSamples() + impl.cursor,
-                         static_cast<std::size_t>(sampleCount) * sizeof(buffer->getSamples()[0]));
+                         static_cast<base::SizeT>(sampleCount) * sizeof(buffer->getSamples()[0]));
 
-        impl.cursor += static_cast<std::size_t>(sampleCount);
+        impl.cursor += static_cast<base::SizeT>(sampleCount);
 
         // If we are looping and at the end of the sound, set the cursor back to the start
         if (impl.owner->isLooping() && (impl.cursor >= buffer->getSampleCount()))
@@ -98,7 +98,7 @@ struct Sound::Impl
         if (buffer == nullptr)
             return MA_NO_DATA_AVAILABLE;
 
-        impl.cursor = static_cast<std::size_t>(frameIndex * buffer->getChannelCount());
+        impl.cursor = static_cast<base::SizeT>(frameIndex * buffer->getChannelCount());
 
         return MA_SUCCESS;
     }
@@ -159,7 +159,7 @@ struct Sound::Impl
 
     base::Optional<priv::MiniaudioUtils::SoundBase> soundBase; //!< Sound base, needs to be first member
     Sound*                                          owner;     //!< Owning `Sound` object
-    std::size_t                                     cursor{};  //!< The current playing position
+    base::SizeT                                     cursor{};  //!< The current playing position
     const SoundBuffer*                              buffer{};  //!< Sound buffer bound to the source
     SoundSource::Status                             status{SoundSource::Status::Stopped}; //!< The status
 };
@@ -356,7 +356,7 @@ void Sound::setPlayingOffset(Time playingOffset)
     const auto frameIndex = ma_uint64{priv::MiniaudioUtils::getFrameIndex(m_impl->soundBase->getSound(), playingOffset)};
 
     if (m_impl->buffer != nullptr)
-        m_impl->cursor = static_cast<std::size_t>(frameIndex * m_impl->buffer->getChannelCount());
+        m_impl->cursor = static_cast<base::SizeT>(frameIndex * m_impl->buffer->getChannelCount());
 }
 
 

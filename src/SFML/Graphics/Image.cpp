@@ -38,14 +38,14 @@ namespace
 int read(void* user, char* data, int size)
 {
     auto&                    stream = *static_cast<sf::InputStream*>(user);
-    const sf::base::Optional count  = stream.read(data, static_cast<std::size_t>(size));
+    const sf::base::Optional count  = stream.read(data, static_cast<sf::base::SizeT>(size));
     return count.hasValue() ? static_cast<int>(*count) : -1;
 }
 
 void skip(void* user, int size)
 {
     auto& stream = *static_cast<sf::InputStream*>(user);
-    if (!stream.seek(stream.tell().value() + static_cast<std::size_t>(size)).hasValue())
+    if (!stream.seek(stream.tell().value() + static_cast<sf::base::SizeT>(size)).hasValue())
         sf::priv::err() << "Failed to seek image loader input stream";
 }
 
@@ -115,7 +115,7 @@ base::Optional<Image> Image::create(Vector2u size, Color color)
         return result; // Empty optional
     }
 
-    result.emplace(base::PassKey<Image>{}, size, static_cast<std::size_t>(size.x) * static_cast<std::size_t>(size.y) * 4);
+    result.emplace(base::PassKey<Image>{}, size, static_cast<base::SizeT>(size.x) * static_cast<base::SizeT>(size.y) * 4);
 
     // Fill it with the specified color
     std::uint8_t*       ptr = result->m_impl->pixels.data();
@@ -202,7 +202,7 @@ base::Optional<Image> Image::loadFromFile(const Path& filename)
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Image> Image::loadFromMemory(const void* data, std::size_t size)
+base::Optional<Image> Image::loadFromMemory(const void* data, base::SizeT size)
 {
     // Check input parameters
     if (data == nullptr || size == 0)
@@ -336,7 +336,7 @@ bool Image::copy(const Image& source, Vector2u dest, const IntRect& sourceRect, 
                            base::min(m_impl->size.y - dest.y, srcRect.size.y));
 
     // Precompute as much as possible
-    const std::size_t  pitch     = static_cast<std::size_t>(dstSize.x) * 4;
+    const base::SizeT  pitch     = static_cast<base::SizeT>(dstSize.x) * 4;
     const unsigned int srcStride = source.m_impl->size.x * 4;
     const unsigned int dstStride = m_impl->size.x * 4;
 
@@ -432,14 +432,14 @@ void Image::flipHorizontally()
 {
     SFML_BASE_ASSERT(!m_impl->pixels.empty());
 
-    const std::size_t rowSize = m_impl->size.x * 4;
+    const base::SizeT rowSize = m_impl->size.x * 4;
 
-    for (std::size_t y = 0; y < m_impl->size.y; ++y)
+    for (base::SizeT y = 0; y < m_impl->size.y; ++y)
     {
         auto left = m_impl->pixels.begin() + static_cast<decltype(m_impl->pixels)::difference_type>(y * rowSize);
         auto right = m_impl->pixels.begin() + static_cast<decltype(m_impl->pixels)::difference_type>((y + 1) * rowSize - 4);
 
-        for (std::size_t x = 0; x < m_impl->size.x / 2; ++x)
+        for (base::SizeT x = 0; x < m_impl->size.x / 2; ++x)
         {
             base::swapRanges(left, left + 4, right);
 
@@ -460,7 +460,7 @@ void Image::flipVertically()
     auto top    = m_impl->pixels.begin();
     auto bottom = m_impl->pixels.end() - rowSize;
 
-    for (std::size_t y = 0; y < m_impl->size.y / 2; ++y)
+    for (base::SizeT y = 0; y < m_impl->size.y / 2; ++y)
     {
         base::swapRanges(top, top + rowSize, bottom);
 

@@ -557,7 +557,7 @@ JoystickCapabilities JoystickImpl::getCapabilities() const
     ioctl(m_file, JSIOCGAXES, &axesCount);
     for (int i = 0; i < axesCount; ++i)
     {
-        switch (m_mapping[static_cast<std::size_t>(i)])
+        switch (m_mapping[static_cast<base::SizeT>(i)])
         {
                 // clang-format off
             case ABS_X:        caps.axes[Joystick::Axis::X]    = true; break;

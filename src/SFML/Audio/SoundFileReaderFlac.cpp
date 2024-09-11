@@ -11,12 +11,12 @@
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <FLAC/stream_decoder.h>
 #include <vector>
 
-#include <cstddef>
 #include <cstdint>
 
 
@@ -38,7 +38,7 @@ struct FlacClientData
 
 
 ////////////////////////////////////////////////////////////
-FLAC__StreamDecoderReadStatus streamRead(const FLAC__StreamDecoder*, FLAC__byte buffer[], std::size_t* bytes, void* clientData)
+FLAC__StreamDecoderReadStatus streamRead(const FLAC__StreamDecoder*, FLAC__byte buffer[], sf::base::SizeT* bytes, void* clientData)
 {
     auto* data = static_cast<FlacClientData*>(clientData);
 
@@ -62,7 +62,7 @@ FLAC__StreamDecoderSeekStatus streamSeek(const FLAC__StreamDecoder*, FLAC__uint6
 {
     auto* data = static_cast<FlacClientData*>(clientData);
 
-    if (data->stream->seek(static_cast<std::size_t>(absoluteByteOffset)).hasValue())
+    if (data->stream->seek(static_cast<sf::base::SizeT>(absoluteByteOffset)).hasValue())
         return FLAC__STREAM_DECODER_SEEK_STATUS_OK;
 
     return FLAC__STREAM_DECODER_SEEK_STATUS_ERROR;
@@ -119,7 +119,7 @@ FLAC__StreamDecoderWriteStatus streamWrite(const FLAC__StreamDecoder*,
     // Reserve memory if we're going to use the leftovers buffer
     const unsigned int frameSamples = frame->header.blocksize * frame->header.channels;
     if (data->remaining < frameSamples)
-        data->leftovers.reserve(static_cast<std::size_t>(frameSamples - data->remaining));
+        data->leftovers.reserve(static_cast<sf::base::SizeT>(frameSamples - data->remaining));
 
     // Decode the samples
     for (unsigned i = 0; i < frame->header.blocksize; ++i)
@@ -391,13 +391,13 @@ std::uint64_t SoundFileReaderFlac::read(std::int16_t* samples, std::uint64_t max
                      "No decoder available. Call SoundFileReaderFlac::open() to create a new one.");
 
     // If there are leftovers from previous call, use it first
-    const std::size_t left = m_impl->clientData.leftovers.size();
+    const base::SizeT left = m_impl->clientData.leftovers.size();
     if (left > 0)
     {
         if (left > maxCount)
         {
             // There are more leftovers than needed
-            for (std::size_t i = 0; i < maxCount; ++i)
+            for (base::SizeT i = 0; i < maxCount; ++i)
                 samples[i] = m_impl->clientData.leftovers[i];
 
             std::vector<std::int16_t> leftovers(m_impl->clientData.leftovers.begin() +

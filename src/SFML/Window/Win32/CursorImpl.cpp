@@ -80,7 +80,7 @@ bool CursorImpl::loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vecto
     // Fill our bitmap with the cursor color data
     // We'll have to swap the red and blue channels here
     std::uint32_t* bitmapOffset = bitmapData;
-    for (std::size_t remaining = size.x * size.y; remaining > 0; --remaining, pixels += 4)
+    for (base::SizeT remaining = size.x * size.y; remaining > 0; --remaining, pixels += 4)
     {
         *bitmapOffset++ = static_cast<std::uint32_t>((pixels[3] << 24) | (pixels[0] << 16) | (pixels[1] << 8) | pixels[2]);
     }

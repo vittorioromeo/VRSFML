@@ -8,7 +8,8 @@
 
 #include "SFML/System/LifetimeDependant.hpp"
 
-#include <cstddef>
+#include "SFML/Base/SizeT.hpp"
+
 #include <cstdint>
 
 
@@ -130,7 +131,7 @@ protected:
     /// \return True to continue the capture, or false to stop it
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual bool onProcessSamples(const std::int16_t* samples, std::size_t sampleCount) = 0;
+    [[nodiscard]] virtual bool onProcessSamples(const std::int16_t* samples, base::SizeT sampleCount) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Stop capturing audio data
@@ -234,7 +235,7 @@ private:
 ///         return true;
 ///     }
 ///
-///     [[nodiscard]] bool onProcessSamples(const std::int16_t* samples, std::size_t sampleCount) override
+///     [[nodiscard]] bool onProcessSamples(const std::int16_t* samples, base::SizeT sampleCount) override
 ///     {
 ///         // Do something with the new chunk of samples (store them, send them, ...)
 ///         ...

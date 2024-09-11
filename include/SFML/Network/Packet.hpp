@@ -14,7 +14,8 @@
 #include <string>
 #endif
 
-#include <cstddef>
+#include "SFML/Base/SizeT.hpp"
+
 #include <cstdint>
 
 
@@ -78,7 +79,7 @@ public:
     /// \see getReadPosition
     ///
     ////////////////////////////////////////////////////////////
-    void append(const void* data, std::size_t sizeInBytes);
+    void append(const void* data, base::SizeT sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current reading position in the packet
@@ -90,7 +91,7 @@ public:
     /// \see append
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::size_t getReadPosition() const;
+    [[nodiscard]] base::SizeT getReadPosition() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Clear the packet
@@ -128,7 +129,7 @@ public:
     /// \see getData
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::size_t getDataSize() const;
+    [[nodiscard]] base::SizeT getDataSize() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Tell if the reading position has reached the
@@ -368,7 +369,7 @@ protected:
     /// \see onReceive
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual const void* onSend(std::size_t& size);
+    [[nodiscard]] virtual const void* onSend(base::SizeT& size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Called after the packet is received over the network
@@ -387,7 +388,7 @@ protected:
     /// \see onSend
     ///
     ////////////////////////////////////////////////////////////
-    virtual void onReceive(const void* data, std::size_t size);
+    virtual void onReceive(const void* data, base::SizeT size);
 
 private:
     ////////////////////////////////////////////////////////////
@@ -400,7 +401,7 @@ private:
     /// \return True if \a size bytes can be read from the packet
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool checkSize(std::size_t size);
+    [[nodiscard]] bool checkSize(base::SizeT size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the send position stored in the PImpl
@@ -408,7 +409,7 @@ private:
     /// Internally invoked by `TcpSocket`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::size_t& getSendPos();
+    [[nodiscard]] base::SizeT& getSendPos();
 
     ////////////////////////////////////////////////////////////
     // Member data
@@ -512,17 +513,17 @@ private:
 /// \code
 /// class ZipPacket : public sf::Packet
 /// {
-///     const void* onSend(std::size_t& size) override
+///     const void* onSend(base::SizeT& size) override
 ///     {
 ///         const void* srcData = getData();
-///         std::size_t srcSize = getDataSize();
+///         base::SizeT srcSize = getDataSize();
 ///
 ///         return MySuperZipFunction(srcData, srcSize, &size);
 ///     }
 ///
-///     void onReceive(const void* data, std::size_t size) override
+///     void onReceive(const void* data, base::SizeT size) override
 ///     {
-///         std::size_t dstSize;
+///         base::SizeT dstSize;
 ///         const void* dstData = MySuperUnzipFunction(data, size, &dstSize);
 ///
 ///         append(dstData, dstSize);

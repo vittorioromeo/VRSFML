@@ -19,7 +19,7 @@ template class sf::Vector2<long double>;
     template const sf::Vector2<type> sf::Vector2<type>::Zero;
 
 #define SFML_INSTANTIATE_VECTOR2_INTEGRAL_MEMBER_FUNCTIONS(type)                   \
-    template type              sf::Vector2<type>::lengthSquared() const;                \
+    template type              sf::Vector2<type>::lengthSquared() const;           \
     template sf::Vector2<type> sf::Vector2<type>::perpendicular() const;           \
     template type              sf::Vector2<type>::dot(Vector2) const;              \
     template type              sf::Vector2<type>::cross(Vector2) const;            \

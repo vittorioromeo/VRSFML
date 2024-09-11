@@ -11,8 +11,7 @@
 
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Optional.hpp"
-
-#include <cstddef>
+#include "SFML/Base/SizeT.hpp"
 
 
 namespace sf
@@ -29,7 +28,7 @@ public:
     ////////////////////////////////////////////////////////////
     // Constants
     ////////////////////////////////////////////////////////////
-    enum : std::size_t
+    enum : base::SizeT
     {
         MaxDatagramSize = 65507ul //!< The maximum number of bytes that can be sent in a single UDP datagram
     };
@@ -127,7 +126,7 @@ public:
     /// \see receive
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Status send(const void* data, std::size_t size, IpAddress remoteAddress, unsigned short remotePort);
+    [[nodiscard]] Status send(const void* data, base::SizeT size, IpAddress remoteAddress, unsigned short remotePort);
 
     ////////////////////////////////////////////////////////////
     /// \brief Receive raw data from a remote peer
@@ -151,8 +150,8 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Status receive(void*                      data,
-                                 std::size_t                size,
-                                 std::size_t&               received,
+                                 base::SizeT                size,
+                                 base::SizeT&               received,
                                  base::Optional<IpAddress>& remoteAddress,
                                  unsigned short&            remotePort);
 
@@ -261,7 +260,7 @@ private:
 ///
 /// // Receive an answer (most likely from 192.168.1.50, but could be anyone else)
 /// char buffer[1024];
-/// std::size_t received = 0;
+/// base::SizeT received = 0;
 /// sf::base::Optional<sf::IpAddress> sender;
 /// unsigned short port;
 /// if (socket.receive(buffer, sizeof(buffer), received, sender, port) == sf::Socket::Status::Done)
@@ -275,7 +274,7 @@ private:
 ///
 /// // Receive a message from anyone
 /// char buffer[1024];
-/// std::size_t received = 0;
+/// base::SizeT received = 0;
 /// sf::base::Optional<sf::IpAddress> sender;
 /// unsigned short port;
 /// if (socket.receive(buffer, sizeof(buffer), received, sender, port) == sf::Socket::Status::Done)
