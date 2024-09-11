@@ -37,6 +37,7 @@ std::uint64_t getUniqueId() noexcept
 
     return id.fetch_add(1);
 }
+
 } // namespace TextureImpl
 } // namespace
 
@@ -132,16 +133,17 @@ Texture& Texture::operator=(Texture&& right) noexcept
 
     // Move old to new.
     m_graphicsContext = right.m_graphicsContext;
-    m_size            = base::exchange(right.m_size, {});
-    m_actualSize      = base::exchange(right.m_actualSize, {});
-    m_texture         = base::exchange(right.m_texture, 0u);
-    m_isSmooth        = base::exchange(right.m_isSmooth, false);
-    m_sRgb            = base::exchange(right.m_sRgb, false);
-    m_isRepeated      = base::exchange(right.m_isRepeated, false);
-    m_pixelsFlipped   = base::exchange(right.m_pixelsFlipped, false);
-    m_fboAttachment   = base::exchange(right.m_fboAttachment, false);
-    m_hasMipmap       = base::exchange(right.m_hasMipmap, false);
-    m_cacheId         = base::exchange(right.m_cacheId, 0u);
+
+    m_size          = base::exchange(right.m_size, {});
+    m_actualSize    = base::exchange(right.m_actualSize, {});
+    m_texture       = base::exchange(right.m_texture, 0u);
+    m_isSmooth      = base::exchange(right.m_isSmooth, false);
+    m_sRgb          = base::exchange(right.m_sRgb, false);
+    m_isRepeated    = base::exchange(right.m_isRepeated, false);
+    m_pixelsFlipped = base::exchange(right.m_pixelsFlipped, false);
+    m_fboAttachment = base::exchange(right.m_fboAttachment, false);
+    m_hasMipmap     = base::exchange(right.m_hasMipmap, false);
+    m_cacheId       = base::exchange(right.m_cacheId, 0u);
 
     return *this;
 }
@@ -739,31 +741,30 @@ bool Texture::update(const Window& window, Vector2u dest)
 ////////////////////////////////////////////////////////////
 void Texture::setSmooth(bool smooth)
 {
-    if (smooth != m_isSmooth)
+    SFML_BASE_ASSERT(m_texture);
+
+    if (smooth == m_isSmooth)
+        return;
+
+    m_isSmooth = smooth;
+
+    SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
+
+    // Make sure that the current texture binding will be preserved
+    const priv::TextureSaver save;
+
+    glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
+    glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_isSmooth ? GL_LINEAR : GL_NEAREST));
+
+    if (m_hasMipmap)
     {
-        m_isSmooth = smooth;
-
-        if (m_texture)
-        {
-            SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
-
-            // Make sure that the current texture binding will be preserved
-            const priv::TextureSaver save;
-
-            glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
-            glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_isSmooth ? GL_LINEAR : GL_NEAREST));
-
-            if (m_hasMipmap)
-            {
-                glCheck(glTexParameteri(GL_TEXTURE_2D,
-                                        GL_TEXTURE_MIN_FILTER,
-                                        m_isSmooth ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_LINEAR));
-            }
-            else
-            {
-                glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_isSmooth ? GL_LINEAR : GL_NEAREST));
-            }
-        }
+        glCheck(glTexParameteri(GL_TEXTURE_2D,
+                                GL_TEXTURE_MIN_FILTER,
+                                m_isSmooth ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_LINEAR));
+    }
+    else
+    {
+        glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_isSmooth ? GL_LINEAR : GL_NEAREST));
     }
 }
 
@@ -785,45 +786,43 @@ bool Texture::isSrgb() const
 ////////////////////////////////////////////////////////////
 void Texture::setRepeated(bool repeated)
 {
-    if (repeated != m_isRepeated)
+    SFML_BASE_ASSERT(m_texture);
+
+    if (repeated == m_isRepeated)
+        return;
+
+    m_isRepeated = repeated;
+
+    SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
+
+    // Make sure that the current texture binding will be preserved
+    const priv::TextureSaver save;
+
+    static const bool textureEdgeClamp = GLEXT_texture_edge_clamp;
+
+    if (!m_isRepeated && !textureEdgeClamp)
     {
-        m_isRepeated = repeated;
+        static bool warned = false;
 
-        if (m_texture)
+        if (!warned)
         {
-            SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
+            priv::err() << "OpenGL extension SGIS_texture_edge_clamp unavailable" << '\n'
+                        << "Artifacts may occur along texture edges" << '\n'
+                        << "Ensure that hardware acceleration is enabled if available";
 
-            // Make sure that the current texture binding will be preserved
-            const priv::TextureSaver save;
-
-            static const bool textureEdgeClamp = GLEXT_texture_edge_clamp;
-
-            if (!m_isRepeated && !textureEdgeClamp)
-            {
-                static bool warned = false;
-
-                if (!warned)
-                {
-                    priv::err() << "OpenGL extension SGIS_texture_edge_clamp unavailable" << '\n'
-                                << "Artifacts may occur along texture edges" << '\n'
-                                << "Ensure that hardware acceleration is enabled if available";
-
-                    warned = true;
-                }
-            }
-
-#ifndef SFML_OPENGL_ES
-            const GLint textureWrapParam = m_isRepeated ? GL_REPEAT
-                                                        : (textureEdgeClamp ? GLEXT_GL_CLAMP_TO_EDGE : GLEXT_GL_CLAMP);
-#else
-            const GLint textureWrapParam = m_isRepeated ? GL_REPEAT : GLEXT_GL_CLAMP_TO_EDGE;
-#endif
-
-            glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
-            glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, textureWrapParam));
-            glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, textureWrapParam));
+            warned = true;
         }
     }
+
+#ifndef SFML_OPENGL_ES
+    const GLint textureWrapParam = m_isRepeated ? GL_REPEAT : (textureEdgeClamp ? GLEXT_GL_CLAMP_TO_EDGE : GLEXT_GL_CLAMP);
+#else
+    const GLint textureWrapParam = m_isRepeated ? GL_REPEAT : GLEXT_GL_CLAMP_TO_EDGE;
+#endif
+
+    glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
+    glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, textureWrapParam));
+    glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, textureWrapParam));
 }
 
 

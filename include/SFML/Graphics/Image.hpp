@@ -11,10 +11,10 @@
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vector2.hpp"
 
-#include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 
 #include <cstdint>
 
@@ -35,31 +35,31 @@ public:
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    ~Image();
+    ~Image() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy constructor
     ///
     ////////////////////////////////////////////////////////////
-    Image(const Image& rhs);
+    Image(const Image& rhs) = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy assignment operator
     ///
     ////////////////////////////////////////////////////////////
-    Image& operator=(const Image&);
+    Image& operator=(const Image&) = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    Image(Image&&) noexcept;
+    Image(Image&&) noexcept = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment operator
     ///
     ////////////////////////////////////////////////////////////
-    Image& operator=(Image&&) noexcept;
+    Image& operator=(Image&&) noexcept = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Supported image saving formats
@@ -269,15 +269,15 @@ public:
     /// \brief Directly initialize data members
     ///
     ////////////////////////////////////////////////////////////
-    template <typename... VectorArgs>
-    [[nodiscard]] Image(base::PassKey<Image>&&, Vector2u size, VectorArgs&&... vectorArgs);
+    [[nodiscard]] explicit Image(base::PassKey<Image>&&, Vector2u size, base::SizeT pixelCount);
+    [[nodiscard]] explicit Image(base::PassKey<Image>&&, Vector2u size, const std::uint8_t* itBegin, const std::uint8_t* itEnd);
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    struct Impl;
-    base::InPlacePImpl<Impl, 48> m_impl; //!< Implementation details
+    Vector2u                          m_size;   //!< Image size
+    base::TrivialVector<std::uint8_t> m_pixels; //!< Pixels of the image
 };
 
 } // namespace sf

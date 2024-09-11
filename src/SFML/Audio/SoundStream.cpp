@@ -18,10 +18,9 @@
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Memcpy.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 
 #include <miniaudio.h>
-
-#include <vector>
 
 
 namespace sf
@@ -78,7 +77,10 @@ struct SoundStream::Impl
 
             if (chunk.samples && chunk.sampleCount)
             {
-                impl.sampleBuffer.assign(chunk.samples, chunk.samples + chunk.sampleCount);
+                impl.sampleBuffer.clear();
+                impl.sampleBuffer.reserve(chunk.sampleCount);
+                impl.sampleBuffer.unsafeEmplaceRange(chunk.samples, chunk.sampleCount);
+
                 impl.sampleBufferCursor = 0;
             }
         }
@@ -186,15 +188,15 @@ struct SoundStream::Impl
 
     base::Optional<priv::MiniaudioUtils::SoundBase> soundBase; //!< Sound base, needs to be first member
 
-    SoundStream*              owner;                //!< Owning `SoundStream` object
-    std::vector<std::int16_t> sampleBuffer;         //!< Our temporary sample buffer
-    base::SizeT               sampleBufferCursor{}; //!< The current read position in the temporary sample buffer
-    std::uint64_t             samplesProcessed{};   //!< Number of samples processed since beginning of the stream
-    unsigned int              channelCount{};       //!< Number of channels (1 = mono, 2 = stereo, ...)
-    unsigned int              sampleRate{};         //!< Frequency (samples / second)
-    ChannelMap                channelMap;           //!< The map of position in sample frame to sound channel
-    bool                      streaming{true};      //!< True if we are still streaming samples from the source
-    SoundSource::Status       status{SoundSource::Status::Stopped}; //!< The status
+    SoundStream*                      owner;        //!< Owning `SoundStream` object
+    base::TrivialVector<std::int16_t> sampleBuffer; //!< Our temporary sample buffer
+    base::SizeT         sampleBufferCursor{};       //!< The current read position in the temporary sample buffer
+    std::uint64_t       samplesProcessed{};         //!< Number of samples processed since beginning of the stream
+    unsigned int        channelCount{};             //!< Number of channels (1 = mono, 2 = stereo, ...)
+    unsigned int        sampleRate{};               //!< Frequency (samples / second)
+    ChannelMap          channelMap;                 //!< The map of position in sample frame to sound channel
+    bool                streaming{true};            //!< True if we are still streaming samples from the source
+    SoundSource::Status status{SoundSource::Status::Stopped}; //!< The status
 };
 
 
