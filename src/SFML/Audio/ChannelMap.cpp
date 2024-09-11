@@ -6,108 +6,80 @@
 #include "SFML/Audio/ChannelMap.hpp"
 #include "SFML/Audio/SoundChannel.hpp"
 
-#include <vector>
-
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-struct ChannelMap::Impl
+ChannelMap::ChannelMap(std::initializer_list<SoundChannel> channels)
 {
-    std::vector<SoundChannel> channels;
-};
+    m_channels.reserve(channels.size());
 
-
-////////////////////////////////////////////////////////////
-ChannelMap::ChannelMap() = default;
-
-
-////////////////////////////////////////////////////////////
-ChannelMap::ChannelMap(std::initializer_list<SoundChannel> channels) : m_impl(channels)
-{
+    for (SoundChannel sc : channels)
+        m_channels.unsafeEmplaceBack(sc);
 }
-
-
-////////////////////////////////////////////////////////////
-ChannelMap::~ChannelMap() = default;
-
-
-////////////////////////////////////////////////////////////
-ChannelMap::ChannelMap(const ChannelMap&) = default;
-
-
-////////////////////////////////////////////////////////////
-ChannelMap::ChannelMap(ChannelMap&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
-ChannelMap& ChannelMap::operator=(const ChannelMap&) = default;
-
-
-////////////////////////////////////////////////////////////
-ChannelMap& ChannelMap::operator=(ChannelMap&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
 [[nodiscard]] base::SizeT ChannelMap::getSize() const
 {
-    return m_impl->channels.size();
+    return m_channels.size();
 }
 
 
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool ChannelMap::isEmpty() const
 {
-    return m_impl->channels.empty();
+    return m_channels.empty();
 }
 
 
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SoundChannel* ChannelMap::begin()
 {
-    return m_impl->channels.data();
+    return m_channels.data();
 }
 
 
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SoundChannel* ChannelMap::end()
 {
-    return m_impl->channels.data() + m_impl->channels.size();
+    return m_channels.data() + m_channels.size();
 }
 
 
 ////////////////////////////////////////////////////////////
 [[nodiscard]] const SoundChannel* ChannelMap::begin() const
 {
-    return m_impl->channels.data();
+    return m_channels.data();
 }
 
 
 ////////////////////////////////////////////////////////////
 [[nodiscard]] const SoundChannel* ChannelMap::end() const
 {
-    return m_impl->channels.data() + m_impl->channels.size();
+    return m_channels.data() + m_channels.size();
 }
 
 
 ////////////////////////////////////////////////////////////
 [[nodiscard]] const SoundChannel& ChannelMap::operator[](base::SizeT index) const
 {
-    return m_impl->channels.at(index);
+    return m_channels[index];
 }
 
 
 ////////////////////////////////////////////////////////////
 void ChannelMap::reserve(base::SizeT count)
 {
-    m_impl->channels.reserve(count);
+    m_channels.reserve(count);
 }
 
 
 ////////////////////////////////////////////////////////////
 void ChannelMap::append(SoundChannel channel)
 {
-    m_impl->channels.push_back(channel);
+    m_channels.reserveMore(1);
+    m_channels.unsafeEmplaceBack(channel);
 }
 
 } // namespace sf

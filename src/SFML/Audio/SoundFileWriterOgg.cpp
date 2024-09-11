@@ -206,7 +206,7 @@ void SoundFileWriterOgg::write(const std::int16_t* samples, std::uint64_t count)
         SFML_BASE_ASSERT(buffer != nullptr && "Vorbis buffer failed to allocate");
 
         // Write the samples to the buffer, converted to float and remapped to target channels
-        for (int i = 0; i < std::min(frameCount, bufferSize); ++i)
+        for (int i = 0; i < base::min(frameCount, bufferSize); ++i)
         {
             for (unsigned int j = 0; j < m_impl->channelCount; ++j)
                 buffer[j][i] = samples[m_impl->remapTable[j]] / 32767.0f;
@@ -215,7 +215,7 @@ void SoundFileWriterOgg::write(const std::int16_t* samples, std::uint64_t count)
         }
 
         // Tell the library how many samples we've written
-        vorbis_analysis_wrote(&m_impl->state, std::min(frameCount, bufferSize));
+        vorbis_analysis_wrote(&m_impl->state, base::min(frameCount, bufferSize));
 
         frameCount -= bufferSize;
 

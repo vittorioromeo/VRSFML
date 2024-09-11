@@ -1,6 +1,8 @@
 // Intentionally include multiple times.
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+#include <cmath>
+
 
 ////////////////////////////////////////////////////////////
 #define SFML_BASE_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_1ARG(name)                                \

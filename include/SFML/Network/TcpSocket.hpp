@@ -10,9 +10,9 @@
 
 #include "SFML/System/Time.hpp"
 
-#include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 
 
 namespace sf
@@ -38,19 +38,19 @@ public:
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    ~TcpSocket();
+    ~TcpSocket() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    TcpSocket(TcpSocket&&) noexcept;
+    TcpSocket(TcpSocket&&) noexcept = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment operator
     ///
     ////////////////////////////////////////////////////////////
-    TcpSocket& operator=(TcpSocket&&) noexcept;
+    TcpSocket& operator=(TcpSocket&&) noexcept = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the port to which the socket is bound locally
@@ -211,10 +211,21 @@ private:
     friend class TcpListener;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Structure holding the data of a pending packet
+    ///
+    ////////////////////////////////////////////////////////////
+    struct PendingPacket
+    {
+        std::uint32_t                      size{};         //!< Data of packet size
+        base::SizeT                        sizeReceived{}; //!< Number of size bytes received so far
+        base::TrivialVector<unsigned char> data;           //!< Data of the packet
+    };
+
+    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    struct Impl;
-    base::InPlacePImpl<Impl, 96> m_impl; //!< Implementation details
+    PendingPacket                      m_pendingPacket;     //!< Temporary data of the packet currently being received
+    base::TrivialVector<unsigned char> m_blockToSendBuffer; //!< Buffer used to prepare data being sent from the socket
 };
 
 } // namespace sf

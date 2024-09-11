@@ -7,12 +7,13 @@
 #include "SFML/Graphics/Export.hpp"
 
 #include "SFML/Graphics/Transformable.hpp"
+#include "SFML/Graphics/Vertex.hpp"
 
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vector2.hpp"
 
-#include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Span.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -24,7 +25,6 @@ class RenderTarget;
 class Texture;
 struct Color;
 struct RenderStates;
-struct Vertex;
 } // namespace sf
 
 
@@ -41,37 +41,37 @@ public:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    Shape();
+    Shape() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    ~Shape();
+    ~Shape() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy constructor
     ///
     ////////////////////////////////////////////////////////////
-    Shape(const Shape&);
+    Shape(const Shape&) = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy assignment
     ///
     ////////////////////////////////////////////////////////////
-    Shape& operator=(const Shape&);
+    Shape& operator=(const Shape&) = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    Shape(Shape&&) noexcept;
+    Shape(Shape&&) noexcept = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment
     ///
     ////////////////////////////////////////////////////////////
-    Shape& operator=(Shape&&) noexcept;
+    Shape& operator=(Shape&&) noexcept = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the sub-rectangle of the texture that the shape will display
@@ -295,8 +295,15 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    struct Impl;
-    base::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
+    IntRect m_textureRect;             //!< Rectangle defining the area of the source texture to display for the fill
+    IntRect m_outlineTextureRect;      //!< Rectangle defining the area of the source texture to display for the outline
+    Color   m_fillColor{Color::White}; //!< Fill color
+    Color   m_outlineColor{Color::White};          //!< Outline color
+    float   m_outlineThickness{};                  //!< Thickness of the shape's outline
+    base::TrivialVector<Vertex> m_vertices;        //!< Vertex array containing the fill geometry
+    base::TrivialVector<Vertex> m_outlineVertices; //!< Vertex array containing the outline geometry
+    FloatRect                   m_insideBounds;    //!< Bounding rectangle of the inside (fill)
+    FloatRect                   m_bounds;          //!< Bounding rectangle of the whole shape (outline + fill)
 };
 
 } // namespace sf

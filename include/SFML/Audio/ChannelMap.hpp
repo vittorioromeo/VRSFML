@@ -8,8 +8,8 @@
 
 #include "SFML/Audio/SoundChannel.hpp"
 
-#include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 
 #include <initializer_list>
 
@@ -27,7 +27,7 @@ public:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    ChannelMap();
+    ChannelMap() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -39,31 +39,31 @@ public:
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    ~ChannelMap();
+    ~ChannelMap() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy constructor
     ///
     ////////////////////////////////////////////////////////////
-    ChannelMap(const ChannelMap&);
+    ChannelMap(const ChannelMap&) = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    ChannelMap(ChannelMap&&) noexcept;
+    ChannelMap(ChannelMap&&) noexcept = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy assignment
     ///
     ////////////////////////////////////////////////////////////
-    ChannelMap& operator=(const ChannelMap&);
+    ChannelMap& operator=(const ChannelMap&) = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment
     ///
     ////////////////////////////////////////////////////////////
-    ChannelMap& operator=(ChannelMap&&) noexcept;
+    ChannelMap& operator=(ChannelMap&&) noexcept = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -123,8 +123,7 @@ private:
     ////////////////////////////////////////////////////////////
     /// Member data
     ////////////////////////////////////////////////////////////
-    struct Impl;
-    base::InPlacePImpl<Impl, 32> m_impl; //!< Implementation details
+    base::TrivialVector<SoundChannel> m_channels;
 };
 
 } // namespace sf
