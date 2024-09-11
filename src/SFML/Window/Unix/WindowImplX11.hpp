@@ -19,7 +19,7 @@
 
 namespace sf
 {
-class VideoMode;
+struct VideoMode;
 }
 
 

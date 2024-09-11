@@ -8,13 +8,11 @@
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Vector2.hpp"
 
-#include <vector>
-
 
 namespace
 {
 ////////////////////////////////////////////////////////////
-sf::Vector2f computeCirclePoint(std::size_t index, std::size_t pointCount, float radius)
+sf::Vector2f computeCirclePoint(sf::base::SizeT index, sf::base::SizeT pointCount, float radius)
 {
     const sf::Angle angle = static_cast<float>(index) / static_cast<float>(pointCount) * sf::degrees(360.f) -
                             sf::degrees(90.f);
@@ -28,91 +26,63 @@ sf::Vector2f computeCirclePoint(std::size_t index, std::size_t pointCount, float
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-struct CircleShape::Impl
-{
-    float                 radius; //!< Radius of the circle
-    std::vector<Vector2f> points; //!< Points composing the circle
-};
-
-
-////////////////////////////////////////////////////////////
-CircleShape::CircleShape(float radius, std::size_t pointCount) : m_impl(radius, std::vector<Vector2f>{})
+CircleShape::CircleShape(float radius, base::SizeT pointCount) : m_radius{radius}
 {
     update(radius, pointCount);
 }
 
 
 ////////////////////////////////////////////////////////////
-CircleShape::~CircleShape() = default;
-
-
-////////////////////////////////////////////////////////////
-CircleShape::CircleShape(const CircleShape& rhs) = default;
-
-
-////////////////////////////////////////////////////////////
-CircleShape& CircleShape::operator=(const CircleShape&) = default;
-
-
-////////////////////////////////////////////////////////////
-CircleShape::CircleShape(CircleShape&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
-CircleShape& CircleShape::operator=(CircleShape&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
 void CircleShape::setRadius(float radius)
 {
-    m_impl->radius = radius;
-    update(radius, m_impl->points.size());
+    m_radius = radius;
+    update(radius, m_points.size());
 }
 
 
 ////////////////////////////////////////////////////////////
 float CircleShape::getRadius() const
 {
-    return m_impl->radius;
+    return m_radius;
 }
 
 
 ////////////////////////////////////////////////////////////
-void CircleShape::setPointCount(std::size_t count)
+void CircleShape::setPointCount(base::SizeT count)
 {
-    update(m_impl->radius, count);
+    update(m_radius, count);
 }
 
 ////////////////////////////////////////////////////////////
-std::size_t CircleShape::getPointCount() const
+base::SizeT CircleShape::getPointCount() const
 {
-    return m_impl->points.size();
+    return m_points.size();
 }
 
 
 ////////////////////////////////////////////////////////////
-Vector2f CircleShape::getPoint(std::size_t index) const
+Vector2f CircleShape::getPoint(base::SizeT index) const
 {
-    return m_impl->points[index];
+    return m_points[index];
 }
 
 
 ////////////////////////////////////////////////////////////
 Vector2f CircleShape::getGeometricCenter() const
 {
-    return {m_impl->radius, m_impl->radius};
+    return {m_radius, m_radius};
 }
 
 
 ////////////////////////////////////////////////////////////
-void CircleShape::update(float radius, std::size_t pointCount)
+void CircleShape::update(float radius, base::SizeT pointCount)
 {
-    m_impl->points.resize(pointCount);
+    m_points.resize(pointCount);
 
-    for (std::size_t i = 0; i < pointCount; ++i)
-        m_impl->points[i] = computeCirclePoint(i, pointCount, radius);
+    for (base::SizeT i = 0; i < pointCount; ++i)
+        m_points[i] = computeCirclePoint(i, pointCount, radius);
 
-    Shape::update(m_impl->points.data(), m_impl->points.size());
+    Shape::update(m_points.data(), m_points.size());
 }
 
 } // namespace sf

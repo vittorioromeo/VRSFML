@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include <string_view>
-#include <vector>
+#include "SFML/Base/TrivialVector.hpp"
 
-[[nodiscard]] std::vector<std::byte> loadIntoMemory(const std::string_view& path);
+[[nodiscard]] sf::base::TrivialVector<unsigned char> loadIntoMemory(const char* path);

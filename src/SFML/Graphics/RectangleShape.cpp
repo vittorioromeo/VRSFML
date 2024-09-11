@@ -37,14 +37,14 @@ Vector2f RectangleShape::getSize() const
 
 
 ////////////////////////////////////////////////////////////
-std::size_t RectangleShape::getPointCount() const
+base::SizeT RectangleShape::getPointCount() const
 {
     return 4;
 }
 
 
 ////////////////////////////////////////////////////////////
-Vector2f RectangleShape::getPoint(std::size_t index) const
+Vector2f RectangleShape::getPoint(base::SizeT index) const
 {
     return m_points[index];
 }

@@ -14,7 +14,7 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
-class VideoMode;
+struct VideoMode;
 } // namespace sf
 
 

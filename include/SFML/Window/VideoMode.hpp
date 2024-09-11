@@ -15,18 +15,8 @@ namespace sf
 /// \brief VideoMode defines a video mode (width, height, bpp)
 ///
 ////////////////////////////////////////////////////////////
-class SFML_WINDOW_API VideoMode
+struct SFML_WINDOW_API [[nodiscard]] VideoMode
 {
-public:
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct the video mode with its attributes
-    ///
-    /// \param theSize         Width and height in pixels
-    /// \param theBitsPerPixel Pixel depths in bits per pixel
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit VideoMode(Vector2u theSize, unsigned int theBitsPerPixel = 32);
-
     ////////////////////////////////////////////////////////////
     /// \brief Tell whether or not the video mode is valid
     ///
@@ -42,8 +32,8 @@ public:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2u     size;           //!< Video mode width and height, in pixels
-    unsigned int bitsPerPixel{}; //!< Video mode pixel depth, in bits per pixels
+    Vector2u     size;              //!< Video mode width and height, in pixels
+    unsigned int bitsPerPixel{32u}; //!< Video mode pixel depth, in bits per pixels
 };
 
 ////////////////////////////////////////////////////////////

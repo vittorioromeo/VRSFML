@@ -10,8 +10,6 @@
 
 #include "SFML/System/Vector2.hpp"
 
-#include <cstddef>
-
 
 namespace sf
 {
@@ -57,7 +55,7 @@ public:
     ///         shapes, this number is always 4.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::size_t getPointCount() const;
+    [[nodiscard]] base::SizeT getPointCount() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a point of the rectangle
@@ -72,7 +70,7 @@ public:
     /// \return index-th point of the shape
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2f getPoint(std::size_t index) const;
+    [[nodiscard]] Vector2f getPoint(base::SizeT index) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the geometric center of the rectangle

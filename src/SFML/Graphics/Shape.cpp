@@ -12,9 +12,7 @@
 
 #include "SFML/System/Vector2.hpp"
 
-#include <vector>
-
-#include <cstddef>
+#include "SFML/Base/TrivialVector.hpp"
 
 
 namespace
@@ -25,26 +23,26 @@ namespace
 {
     sf::Vector2f normal = (p2 - p1).perpendicular();
     const float  length = normal.length();
+
     if (length != 0.f)
         normal /= length;
+
     return normal;
 }
 
 ////////////////////////////////////////////////////////////
 // Get bounds of a vertex range
-[[nodiscard]] sf::FloatRect getVertexRangeBounds(const std::vector<sf::Vertex>& data)
+[[nodiscard]] sf::FloatRect getVertexRangeBounds(const sf::base::TrivialVector<sf::Vertex>& data)
 {
     if (data.empty())
-    {
         return {};
-    }
 
     float left   = data[0].position.x;
     float top    = data[0].position.y;
     float right  = data[0].position.x;
     float bottom = data[0].position.y;
 
-    for (std::size_t i = 1; i < data.size(); ++i)
+    for (sf::base::SizeT i = 1; i < data.size(); ++i)
     {
         const sf::Vector2f position = data[i].position;
 
@@ -75,12 +73,12 @@ struct Shape::Impl
     IntRect textureRect;             //!< Rectangle defining the area of the source texture to display for the fill
     IntRect outlineTextureRect;      //!< Rectangle defining the area of the source texture to display for the outline
     Color   fillColor{Color::White}; //!< Fill color
-    Color   outlineColor{Color::White};  //!< Outline color
-    float   outlineThickness{};          //!< Thickness of the shape's outline
-    std::vector<Vertex> vertices;        //!< Vertex array containing the fill geometry
-    std::vector<Vertex> outlineVertices; //!< Vertex array containing the outline geometry
-    FloatRect           insideBounds;    //!< Bounding rectangle of the inside (fill)
-    FloatRect           bounds;          //!< Bounding rectangle of the whole shape (outline + fill)
+    Color   outlineColor{Color::White};          //!< Outline color
+    float   outlineThickness{};                  //!< Thickness of the shape's outline
+    base::TrivialVector<Vertex> vertices;        //!< Vertex array containing the fill geometry
+    base::TrivialVector<Vertex> outlineVertices; //!< Vertex array containing the outline geometry
+    FloatRect                   insideBounds;    //!< Bounding rectangle of the inside (fill)
+    FloatRect                   bounds;          //!< Bounding rectangle of the whole shape (outline + fill)
 };
 
 
@@ -172,13 +170,13 @@ void Shape::setOutlineThickness(float thickness)
 {
     m_impl->outlineThickness = thickness;
 
-    const std::size_t pointCount = m_impl->vertices.size() - 2;
+    const base::SizeT pointCount = m_impl->vertices.size() - 2;
 
-    std::vector<Vector2f> points;
+    base::TrivialVector<Vector2f> points;
     points.reserve(pointCount);
 
-    for (std::size_t i = 0; i < pointCount; ++i)
-        points.push_back(m_impl->vertices[i + 1].position);
+    for (base::SizeT i = 0; i < pointCount; ++i)
+        points.unsafeEmplaceBack(m_impl->vertices[i + 1].position);
 
     update(points.data(), pointCount); // recompute everything because the whole shape must be offset
 }
@@ -220,7 +218,7 @@ FloatRect Shape::getGlobalBounds() const
 
 
 ////////////////////////////////////////////////////////////
-void Shape::update(const sf::Vector2f* points, const std::size_t pointCount)
+void Shape::update(const sf::Vector2f* points, const base::SizeT pointCount)
 {
     // Get the total number of points of the shape
     if (pointCount < 3)
@@ -233,7 +231,7 @@ void Shape::update(const sf::Vector2f* points, const std::size_t pointCount)
     m_impl->vertices.resize(pointCount + 2); // + 2 for center and repeated first point
 
     // Position
-    for (std::size_t i = 0; i < pointCount; ++i)
+    for (base::SizeT i = 0; i < pointCount; ++i)
         m_impl->vertices[i + 1].position = points[i];
 
     m_impl->vertices[pointCount + 1].position = m_impl->vertices[1].position;
@@ -325,12 +323,12 @@ void Shape::updateOutline()
         return;
     }
 
-    const std::size_t count = m_impl->vertices.size() - 2;
+    const base::SizeT count = m_impl->vertices.size() - 2;
     m_impl->outlineVertices.resize((count + 1) * 2);
 
-    for (std::size_t i = 0; i < count; ++i)
+    for (base::SizeT i = 0; i < count; ++i)
     {
-        const std::size_t index = i + 1;
+        const base::SizeT index = i + 1;
 
         // Get the two segments shared by the current point
         const Vector2f p0 = (i == 0) ? m_impl->vertices[count].position : m_impl->vertices[index - 1].position;

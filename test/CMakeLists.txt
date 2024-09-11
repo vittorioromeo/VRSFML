@@ -88,6 +88,7 @@ set(BASE_SRC
     Base/Optional.test.cpp
     Base/SizeT.test.cpp
     Base/Traits.test.cpp
+    Base/TrivialVector.test.cpp
 )
 sfml_add_test(test-sfml-base "${BASE_SRC}" "")
 

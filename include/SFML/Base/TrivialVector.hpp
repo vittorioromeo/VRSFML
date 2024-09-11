@@ -8,10 +8,10 @@
 #include "SFML/Base/Launder.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Memcpy.hpp"
+#include "SFML/Base/PlacementNew.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Traits/IsTriviallyCopyable.hpp"
 #include "SFML/Base/Traits/IsTriviallyDestructible.hpp"
-#include "SFML/Base/UniquePtr.hpp"
 
 
 namespace sf::base
@@ -40,55 +40,134 @@ private:
     static_assert(SFML_BASE_IS_TRIVIALLY_COPYABLE(ItemUnion));
     static_assert(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(ItemUnion));
 
-    UniquePtr<ItemUnion, UniquePtrArrayDeleter> m_data{nullptr};
-    SizeT                                       m_size{};
-    SizeT                                       m_capacity{};
+    ItemUnion* m_data{nullptr};
+    ItemUnion* m_endSize{nullptr};
+    ItemUnion* m_endCapacity{nullptr};
 
 public:
     ////////////////////////////////////////////////////////////
+    explicit TrivialVector() = default;
+
+
+    ////////////////////////////////////////////////////////////
+    ~TrivialVector()
+    {
+        delete[] m_data;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] TrivialVector(const TrivialVector& rhs) :
+    m_data{rhs.m_data == nullptr ? nullptr : new ItemUnion[rhs.size()]},
+    m_endSize{m_data + rhs.size()},
+    m_endCapacity{m_data + rhs.size()}
+    {
+        SFML_BASE_MEMCPY(m_data, rhs.m_data, sizeof(TItem) * size());
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    TrivialVector& operator=(const TrivialVector& rhs)
+    {
+        if (this == &rhs)
+            return *this;
+
+        reserve(rhs.size());
+        m_endSize = m_data + rhs.size();
+
+        SFML_BASE_MEMCPY(m_data, rhs.m_data, sizeof(TItem) * size());
+
+        return *this;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] TrivialVector(TrivialVector&& rhs) noexcept :
+    m_data{rhs.m_data},
+    m_endSize{rhs.m_endSize},
+    m_endCapacity{rhs.m_endCapacity}
+    {
+        rhs.m_data = nullptr;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    TrivialVector& operator=(TrivialVector&& rhs) noexcept
+    {
+        if (this == &rhs)
+            return *this;
+
+        m_data        = rhs.m_data;
+        m_endSize     = rhs.m_endSize;
+        m_endCapacity = rhs.m_endCapacity;
+
+        rhs.m_data = nullptr;
+
+        return *this;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] void resize(const SizeT n)
+    {
+        const auto oldSize = size();
+
+        reserve(n);
+        m_endSize = m_data + n;
+
+        for (ItemUnion* p = m_data + oldSize; p < m_endSize; ++p)
+            SFML_BASE_PLACEMENT_NEW(p) TItem();
+    }
+
+
+    ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void reserveMore(const SizeT n)
     {
-        const SizeT targetCapacity = m_size + n;
+        const SizeT targetCapacity = size() + n;
 
-        if (m_capacity >= targetCapacity) [[likely]]
+        if (capacity() >= targetCapacity) [[likely]]
             return;
 
-        reserve(static_cast<SizeT>(static_cast<float>(m_capacity) * 1.5f) + n);
+        reserve(static_cast<SizeT>(static_cast<float>(capacity()) * 1.5f) + n);
     }
 
 
     ////////////////////////////////////////////////////////////
     void reserve(const SizeT targetCapacity)
     {
-        if (m_capacity >= targetCapacity) [[likely]]
+        if (capacity() >= targetCapacity) [[likely]]
             return;
 
-        auto newData = decltype(m_data){new ItemUnion[targetCapacity]};
+        auto*      newData = new ItemUnion[targetCapacity];
+        const auto oldSize = size();
 
         if (m_data != nullptr)
         {
-            SFML_BASE_MEMCPY(newData.get(), m_data.get(), sizeof(TItem) * m_size);
+            SFML_BASE_MEMCPY(newData, m_data, sizeof(TItem) * oldSize);
+            delete[] m_data;
         }
         else
         {
-            SFML_BASE_ASSERT(m_size == 0);
-            SFML_BASE_ASSERT(m_capacity == 0);
+            SFML_BASE_ASSERT(size() == 0);
+            SFML_BASE_ASSERT(capacity() == 0);
         }
 
-        m_data     = SFML_BASE_MOVE(newData);
-        m_capacity = targetCapacity;
+        m_data        = newData;
+        m_endSize     = m_data + oldSize;
+        m_endCapacity = m_data + targetCapacity;
     }
 
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void unsafeEmplaceRange(const TItem* ptr, SizeT count) noexcept
     {
-        SFML_BASE_ASSERT(m_size + count <= m_capacity);
+        SFML_BASE_ASSERT(size() + count <= capacity());
         SFML_BASE_ASSERT(m_data != nullptr);
+        SFML_BASE_ASSERT(m_endSize != nullptr);
 
-        SFML_BASE_MEMCPY(m_data.get() + m_size, ptr, sizeof(TItem) * count);
+        SFML_BASE_MEMCPY(m_endSize, ptr, sizeof(TItem) * count);
 
-        m_size += count;
+        m_endSize += count;
     }
 
 
@@ -102,14 +181,28 @@ public:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void clear() noexcept
     {
-        m_size = 0;
+        m_endSize = m_data;
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] SizeT size() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] SizeT size() const noexcept
     {
-        return m_size;
+        return static_cast<SizeT>(m_endSize - m_data);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] SizeT capacity() const noexcept
+    {
+        return static_cast<SizeT>(m_endCapacity - m_data);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] bool empty() const noexcept
+    {
+        return m_endSize == 0u;
     }
 
 
@@ -117,10 +210,11 @@ public:
     template <typename... Ts>
     [[gnu::always_inline]] void unsafeEmplaceBack(Ts&&... xs)
     {
-        SFML_BASE_ASSERT(m_size <= m_capacity);
+        SFML_BASE_ASSERT(size() <= capacity());
         SFML_BASE_ASSERT(m_data != nullptr);
+        SFML_BASE_ASSERT(m_endSize != nullptr);
 
-        new (&m_data.get()[m_size++].item) TItem(static_cast<TItem>(SFML_BASE_FORWARD(xs))...);
+        SFML_BASE_PLACEMENT_NEW(m_endSize++) TItem(static_cast<TItem>(SFML_BASE_FORWARD(xs))...);
     }
 
 
@@ -128,74 +222,73 @@ public:
     template <typename... TItems>
     [[gnu::always_inline]] void unsafePushBackMultiple(TItems&&... items)
     {
-        SFML_BASE_ASSERT(m_size + sizeof...(items) <= m_capacity);
+        SFML_BASE_ASSERT(size() + sizeof...(items) <= capacity());
+        SFML_BASE_ASSERT(m_data != nullptr);
+        SFML_BASE_ASSERT(m_endSize != nullptr);
+
+        (SFML_BASE_PLACEMENT_NEW(m_endSize++) TItem(static_cast<TItem>(SFML_BASE_FORWARD(items))), ...);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] TItem* data() noexcept
+    {
+        return SFML_BASE_LAUNDER_CAST(TItem*, m_data);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] const TItem* data() const noexcept
+    {
+        return SFML_BASE_LAUNDER_CAST(TItem*, m_data);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] TItem& operator[](const SizeT i) noexcept
+    {
+        SFML_BASE_ASSERT(i < size());
         SFML_BASE_ASSERT(m_data != nullptr);
 
-        (new (&m_data.get()[m_size++].item) TItem(static_cast<TItem>(SFML_BASE_FORWARD(items))), ...);
+        return *SFML_BASE_LAUNDER_CAST(TItem*, m_data + i);
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] TItem* data() noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] const TItem& operator[](const SizeT i) const noexcept
     {
-        return SFML_BASE_LAUNDER_CAST(TItem*, m_data.get());
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] const TItem* data() const noexcept
-    {
-        return SFML_BASE_LAUNDER_CAST(TItem*, m_data.get());
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] TItem& operator[](const SizeT i) noexcept
-    {
-        SFML_BASE_ASSERT(i < m_size);
+        SFML_BASE_ASSERT(i < size());
         SFML_BASE_ASSERT(m_data != nullptr);
 
-        return m_data.get()[i].item;
+        return *SFML_BASE_LAUNDER_CAST(TItem*, m_data + i);
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] const TItem& operator[](const SizeT i) const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] TItem* begin() noexcept
     {
-        SFML_BASE_ASSERT(i < m_size);
-        SFML_BASE_ASSERT(m_data != nullptr);
-
-        return m_data.get()[i].item;
+        return SFML_BASE_LAUNDER_CAST(TItem*, m_data);
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] TItem* begin() noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] const TItem* begin() const noexcept
     {
-        SFML_BASE_ASSERT(m_data != nullptr);
-        return &(m_data.get()[0].item);
+        return SFML_BASE_LAUNDER_CAST(TItem*, m_data);
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] const TItem* begin() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] TItem* end() noexcept
     {
-        SFML_BASE_ASSERT(m_data != nullptr);
-        return &(m_data.get()[0].item);
+        return SFML_BASE_LAUNDER_CAST(TItem*, m_endSize);
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] TItem* end() noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] const TItem* end() const noexcept
     {
-        return begin() + m_size;
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] const TItem* end() const noexcept
-    {
-        return begin() + m_size;
+        return SFML_BASE_LAUNDER_CAST(TItem*, m_endSize);
     }
 };
 
