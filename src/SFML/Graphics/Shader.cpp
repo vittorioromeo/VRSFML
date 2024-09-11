@@ -22,12 +22,12 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 
 #include <fstream>
 #include <string>
 #include <string_view>
 #include <unordered_map>
-#include <vector>
 
 
 #if defined(SFML_SYSTEM_MACOS) || defined(SFML_SYSTEM_IOS)
@@ -50,6 +50,7 @@ namespace
 {
     static const auto maxUnits = static_cast<sf::base::SizeT>(
         sf::priv::getGLInteger(GLEXT_GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS));
+
     return maxUnits;
 }
 
@@ -63,14 +64,15 @@ struct [[nodiscard]] BufferSlice
     {
     }
 
-    [[nodiscard]] std::string_view toView(const std::vector<char>& buffer) const
+    [[nodiscard]] std::string_view toView(const sf::base::TrivialVector<char>& buffer) const
     {
         return {buffer.data() + beginIdx, count};
     }
 };
 
 // Read the contents of a file into an array of char
-[[nodiscard]] sf::base::Optional<BufferSlice> appendFileContentsToVector(const sf::Path& filename, std::vector<char>& buffer)
+[[nodiscard]] sf::base::Optional<BufferSlice> appendFileContentsToVector(const sf::Path&                filename,
+                                                                         sf::base::TrivialVector<char>& buffer)
 {
     std::ifstream file(filename.to<std::string>(), std::ios_base::binary);
 
@@ -92,18 +94,21 @@ struct [[nodiscard]] BufferSlice
         file.read(buffer.data() + bufferSizeBeforeRead, static_cast<std::streamsize>(size));
     }
 
-    buffer.push_back('\0');
+    buffer.reserveMore(1u);
+    buffer.unsafeEmplaceBack('\0');
     return sf::base::makeOptional<BufferSlice>(bufferSizeBeforeRead, buffer.size() - bufferSizeBeforeRead);
 }
 
 // Read the contents of a stream into an array of char
-[[nodiscard]] sf::base::Optional<BufferSlice> appendStreamContentsToVector(sf::InputStream& stream, std::vector<char>& buffer)
+[[nodiscard]] sf::base::Optional<BufferSlice> appendStreamContentsToVector(sf::InputStream&               stream,
+                                                                           sf::base::TrivialVector<char>& buffer)
 {
     const sf::base::Optional<sf::base::SizeT> size = stream.getSize();
 
     if (!size.hasValue() || size.value() == 0)
     {
-        buffer.push_back('\0');
+        buffer.reserveMore(1u);
+        buffer.unsafeEmplaceBack('\0');
         return sf::base::nullOpt;
     }
 
@@ -124,24 +129,27 @@ struct [[nodiscard]] BufferSlice
         return sf::base::nullOpt;
     }
 
-    buffer.push_back('\0');
+    buffer.reserveMore(1u);
+    buffer.unsafeEmplaceBack('\0');
     return sf::base::makeOptional<BufferSlice>(bufferSizeBeforeRead, buffer.size() - bufferSizeBeforeRead);
 }
 
 // Return a thread-local vector for suitable use as a temporary buffer
 // This function is non-reentrant
-[[nodiscard]] std::vector<char>& getThreadLocalCharBuffer()
+[[nodiscard]] sf::base::TrivialVector<char>& getThreadLocalCharBuffer()
 {
-    thread_local std::vector<char> result;
+    thread_local sf::base::TrivialVector<char> result;
     return result;
 }
 
 // Transforms an array of 2D vectors into a contiguous array of scalars
-[[nodiscard]] std::vector<float> flatten(const sf::Vector2f* vectorArray, sf::base::SizeT length)
+[[nodiscard]] sf::base::TrivialVector<float> flatten(const sf::Vector2f* vectorArray, sf::base::SizeT length)
 {
     const sf::base::SizeT vectorSize = 2;
 
-    std::vector<float> contiguous(vectorSize * length);
+    sf::base::TrivialVector<float> contiguous;
+    contiguous.resize(vectorSize * length);
+
     for (sf::base::SizeT i = 0; i < length; ++i)
     {
         contiguous[vectorSize * i]     = vectorArray[i].x;
@@ -152,11 +160,13 @@ struct [[nodiscard]] BufferSlice
 }
 
 // Transforms an array of 3D vectors into a contiguous array of scalars
-[[nodiscard]] std::vector<float> flatten(const sf::Vector3f* vectorArray, sf::base::SizeT length)
+[[nodiscard]] sf::base::TrivialVector<float> flatten(const sf::Vector3f* vectorArray, sf::base::SizeT length)
 {
     const sf::base::SizeT vectorSize = 3;
 
-    std::vector<float> contiguous(vectorSize * length);
+    sf::base::TrivialVector<float> contiguous;
+    contiguous.resize(vectorSize * length);
+
     for (sf::base::SizeT i = 0; i < length; ++i)
     {
         contiguous[vectorSize * i]     = vectorArray[i].x;
@@ -168,11 +178,13 @@ struct [[nodiscard]] BufferSlice
 }
 
 // Transforms an array of 4D vectors into a contiguous array of scalars
-[[nodiscard]] std::vector<float> flatten(const sf::Glsl::Vec4* vectorArray, sf::base::SizeT length)
+[[nodiscard]] sf::base::TrivialVector<float> flatten(const sf::Glsl::Vec4* vectorArray, sf::base::SizeT length)
 {
     const sf::base::SizeT vectorSize = 4;
 
-    std::vector<float> contiguous(vectorSize * length);
+    sf::base::TrivialVector<float> contiguous;
+    contiguous.resize(vectorSize * length);
+
     for (sf::base::SizeT i = 0; i < length; ++i)
     {
         contiguous[vectorSize * i]     = vectorArray[i].x;
@@ -348,7 +360,7 @@ Shader& Shader::operator=(Shader&& right) noexcept
 base::Optional<Shader> Shader::loadFromFile(GraphicsContext& graphicsContext, const Path& filename, Type type)
 {
     // Prepare thread-local buffer
-    std::vector<char>& buffer = getThreadLocalCharBuffer();
+    base::TrivialVector<char>& buffer = getThreadLocalCharBuffer();
     buffer.clear();
 
     // Read the file
@@ -378,7 +390,7 @@ base::Optional<Shader> Shader::loadFromFile(GraphicsContext& graphicsContext,
                                             const Path&      fragmentShaderFilename)
 {
     // Prepare thread-local buffer
-    std::vector<char>& buffer = getThreadLocalCharBuffer();
+    base::TrivialVector<char>& buffer = getThreadLocalCharBuffer();
     buffer.clear();
 
     // Read the vertex shader file
@@ -409,7 +421,7 @@ base::Optional<Shader> Shader::loadFromFile(GraphicsContext& graphicsContext,
                                             const Path&      fragmentShaderFilename)
 {
     // Prepare thread-local buffer
-    std::vector<char>& buffer = getThreadLocalCharBuffer();
+    base::TrivialVector<char>& buffer = getThreadLocalCharBuffer();
     buffer.clear();
 
     // Read the vertex shader file
@@ -484,7 +496,7 @@ base::Optional<Shader> Shader::loadFromMemory(GraphicsContext& graphicsContext,
 base::Optional<Shader> Shader::loadFromStream(GraphicsContext& graphicsContext, InputStream& stream, Type type)
 {
     // Prepare thread-local buffer
-    std::vector<char>& buffer = getThreadLocalCharBuffer();
+    base::TrivialVector<char>& buffer = getThreadLocalCharBuffer();
     buffer.clear();
 
     // Read the shader code from the stream
@@ -515,7 +527,7 @@ base::Optional<Shader> Shader::loadFromStream(GraphicsContext& graphicsContext,
                                               InputStream&     fragmentShaderStream)
 {
     // Prepare thread-local buffer
-    std::vector<char>& buffer = getThreadLocalCharBuffer();
+    base::TrivialVector<char>& buffer = getThreadLocalCharBuffer();
     buffer.clear();
 
     // Read the vertex shader code from the stream
@@ -546,7 +558,7 @@ base::Optional<Shader> Shader::loadFromStream(GraphicsContext& graphicsContext,
                                               InputStream&     fragmentShaderStream)
 {
     // Prepare thread-local buffer
-    std::vector<char>& buffer = getThreadLocalCharBuffer();
+    base::TrivialVector<char>& buffer = getThreadLocalCharBuffer();
     buffer.clear();
 
     // Read the vertex shader code from the stream
@@ -769,8 +781,8 @@ void Shader::setUniformArray(UniformLocation location, const float* scalarArray,
 ////////////////////////////////////////////////////////////
 void Shader::setUniformArray(UniformLocation location, const Glsl::Vec2* vectorArray, base::SizeT length)
 {
-    std::vector<float>  contiguous = flatten(vectorArray, length);
-    const UniformBinder binder{m_impl->shaderProgram};
+    base::TrivialVector<float> contiguous = flatten(vectorArray, length);
+    const UniformBinder        binder{m_impl->shaderProgram};
     glCheck(GLEXT_glUniform2fv(location.m_value, static_cast<GLsizei>(length), contiguous.data()));
 }
 
@@ -778,8 +790,8 @@ void Shader::setUniformArray(UniformLocation location, const Glsl::Vec2* vectorA
 ////////////////////////////////////////////////////////////
 void Shader::setUniformArray(UniformLocation location, const Glsl::Vec3* vectorArray, base::SizeT length)
 {
-    std::vector<float>  contiguous = flatten(vectorArray, length);
-    const UniformBinder binder{m_impl->shaderProgram};
+    base::TrivialVector<float> contiguous = flatten(vectorArray, length);
+    const UniformBinder        binder{m_impl->shaderProgram};
     glCheck(GLEXT_glUniform3fv(location.m_value, static_cast<GLsizei>(length), contiguous.data()));
 }
 
@@ -787,8 +799,8 @@ void Shader::setUniformArray(UniformLocation location, const Glsl::Vec3* vectorA
 ////////////////////////////////////////////////////////////
 void Shader::setUniformArray(UniformLocation location, const Glsl::Vec4* vectorArray, base::SizeT length)
 {
-    std::vector<float>  contiguous = flatten(vectorArray, length);
-    const UniformBinder binder{m_impl->shaderProgram};
+    base::TrivialVector<float> contiguous = flatten(vectorArray, length);
+    const UniformBinder        binder{m_impl->shaderProgram};
     glCheck(GLEXT_glUniform4fv(location.m_value, static_cast<GLsizei>(length), contiguous.data()));
 }
 
@@ -798,7 +810,9 @@ void Shader::setUniformArray(UniformLocation location, const Glsl::Mat3* matrixA
 {
     const base::SizeT matrixSize = 3 * 3;
 
-    std::vector<float> contiguous(matrixSize * length);
+    base::TrivialVector<float> contiguous;
+    contiguous.resize(matrixSize * length);
+
     for (base::SizeT i = 0; i < length; ++i)
         priv::copyMatrix(matrixArray[i].array, matrixSize, &contiguous[matrixSize * i]);
 
@@ -812,7 +826,9 @@ void Shader::setUniformArray(UniformLocation location, const Glsl::Mat4* matrixA
 {
     const base::SizeT matrixSize = 4 * 4;
 
-    std::vector<float> contiguous(matrixSize * length);
+    base::TrivialVector<float> contiguous;
+    contiguous.resize(matrixSize * length);
+
     for (base::SizeT i = 0; i < length; ++i)
         priv::copyMatrix(matrixArray[i].array, matrixSize, &contiguous[matrixSize * i]);
 

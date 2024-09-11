@@ -15,6 +15,7 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #ifdef SFML_SYSTEM_ANDROID
@@ -29,7 +30,6 @@
 #include <stb_image.h>
 
 #include <string>
-#include <vector>
 
 
 namespace
@@ -70,41 +70,6 @@ using StbPtr = sf::base::UniquePtr<stbi_uc, StbDeleter>;
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] Image::Impl
-{
-    Vector2u                  size;   //!< Image size
-    std::vector<std::uint8_t> pixels; //!< Pixels of the image
-
-    template <typename... VectorArgs>
-    [[nodiscard]] explicit Impl(Vector2u theSize, VectorArgs&&... vectorArgs) :
-    size(theSize),
-    pixels(static_cast<VectorArgs&&>(vectorArgs)...)
-    {
-    }
-};
-
-
-////////////////////////////////////////////////////////////
-Image::~Image() = default;
-
-
-////////////////////////////////////////////////////////////
-Image::Image(const Image& rhs) = default;
-
-
-////////////////////////////////////////////////////////////
-Image& Image::operator=(const Image&) = default;
-
-
-////////////////////////////////////////////////////////////
-Image::Image(Image&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
-Image& Image::operator=(Image&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
 base::Optional<Image> Image::create(Vector2u size, Color color)
 {
     base::Optional<Image> result; // Use a single local variable for NRVO
@@ -118,8 +83,8 @@ base::Optional<Image> Image::create(Vector2u size, Color color)
     result.emplace(base::PassKey<Image>{}, size, static_cast<base::SizeT>(size.x) * static_cast<base::SizeT>(size.y) * 4);
 
     // Fill it with the specified color
-    std::uint8_t*       ptr = result->m_impl->pixels.data();
-    std::uint8_t* const end = ptr + result->m_impl->pixels.size();
+    std::uint8_t*       ptr = result->m_pixels.data();
+    std::uint8_t* const end = ptr + result->m_pixels.size();
 
     while (ptr < end)
     {
@@ -153,13 +118,25 @@ base::Optional<Image> Image::create(Vector2u size, const std::uint8_t* pixels)
 
 
 ////////////////////////////////////////////////////////////
-template <typename... VectorArgs>
-Image::Image(base::PassKey<Image>&&, Vector2u size, VectorArgs&&... vectorArgs) :
-m_impl(size, static_cast<VectorArgs&&>(vectorArgs)...)
+Image::Image(base::PassKey<Image>&&, Vector2u size, base::SizeT pixelCount) : m_size(size)
 {
     SFML_BASE_ASSERT(size.x > 0 && "Attempted to create an image with size.x == 0");
     SFML_BASE_ASSERT(size.y > 0 && "Attempted to create an image with size.y == 0");
-    SFML_BASE_ASSERT(!m_impl->pixels.empty() && "Attempted to create an image with no pixels");
+
+    m_pixels.resize(pixelCount);
+}
+
+
+////////////////////////////////////////////////////////////
+Image::Image(base::PassKey<Image>&&, Vector2u size, const std::uint8_t* itBegin, const std::uint8_t* itEnd) :
+m_size(size)
+{
+    SFML_BASE_ASSERT(size.x > 0 && "Attempted to create an image with size.x == 0");
+    SFML_BASE_ASSERT(size.y > 0 && "Attempted to create an image with size.y == 0");
+
+    const auto pixelCount = static_cast<base::SizeT>(itEnd - itBegin);
+    m_pixels.reserve(pixelCount);
+    m_pixels.unsafeEmplaceRange(itBegin, pixelCount);
 }
 
 
@@ -277,7 +254,7 @@ base::Optional<Image> Image::loadFromStream(InputStream& stream)
 ////////////////////////////////////////////////////////////
 Vector2u Image::getSize() const
 {
-    return m_impl->size;
+    return m_size;
 }
 
 
@@ -285,11 +262,11 @@ Vector2u Image::getSize() const
 void Image::createMaskFromColor(Color color, std::uint8_t alpha)
 {
     // Make sure that the image is not empty
-    SFML_BASE_ASSERT(!m_impl->pixels.empty());
+    SFML_BASE_ASSERT(!m_pixels.empty());
 
     // Replace the alpha of the pixels that match the transparent color
-    std::uint8_t* ptr = m_impl->pixels.data();
-    std::uint8_t* end = ptr + m_impl->pixels.size();
+    std::uint8_t* ptr = m_pixels.data();
+    std::uint8_t* end = ptr + m_pixels.size();
 
     while (ptr < end)
     {
@@ -304,7 +281,7 @@ void Image::createMaskFromColor(Color color, std::uint8_t alpha)
 bool Image::copy(const Image& source, Vector2u dest, const IntRect& sourceRect, bool applyAlpha)
 {
     // Make sure that both images are valid
-    SFML_BASE_ASSERT(source.m_impl->size.x > 0 && source.m_impl->size.y > 0 && m_impl->size.x > 0 && m_impl->size.y > 0);
+    SFML_BASE_ASSERT(source.m_size.x > 0 && source.m_size.y > 0 && m_size.x > 0 && m_size.y > 0);
 
     // Make sure the sourceRect components are non-negative before casting them to unsigned values
     if (sourceRect.position.x < 0 || sourceRect.position.y < 0 || sourceRect.size.x < 0 || sourceRect.size.y < 0)
@@ -315,34 +292,31 @@ bool Image::copy(const Image& source, Vector2u dest, const IntRect& sourceRect, 
     // Use the whole source image as srcRect if the provided source rectangle is empty
     if (srcRect.size.x == 0 || srcRect.size.y == 0)
     {
-        srcRect = Rect<unsigned int>({0, 0}, source.m_impl->size);
+        srcRect = Rect<unsigned int>({0, 0}, source.m_size);
     }
     // Otherwise make sure the provided source rectangle fits into the source image
     else
     {
         // Checking the bottom right corner is enough because
         // left and top are non-negative and width and height are positive.
-        if (source.m_impl->size.x < srcRect.position.x + srcRect.size.x ||
-            source.m_impl->size.y < srcRect.position.y + srcRect.size.y)
+        if (source.m_size.x < srcRect.position.x + srcRect.size.x || source.m_size.y < srcRect.position.y + srcRect.size.y)
             return false;
     }
 
     // Make sure the destination position is within this image bounds
-    if (m_impl->size.x <= dest.x || m_impl->size.y <= dest.y)
+    if (m_size.x <= dest.x || m_size.y <= dest.y)
         return false;
 
     // Then find the valid size of the destination rectangle
-    const Vector2u dstSize(base::min(m_impl->size.x - dest.x, srcRect.size.x),
-                           base::min(m_impl->size.y - dest.y, srcRect.size.y));
+    const Vector2u dstSize(base::min(m_size.x - dest.x, srcRect.size.x), base::min(m_size.y - dest.y, srcRect.size.y));
 
     // Precompute as much as possible
     const base::SizeT  pitch     = static_cast<base::SizeT>(dstSize.x) * 4;
-    const unsigned int srcStride = source.m_impl->size.x * 4;
-    const unsigned int dstStride = m_impl->size.x * 4;
+    const unsigned int srcStride = source.m_size.x * 4;
+    const unsigned int dstStride = m_size.x * 4;
 
-    const std::uint8_t* srcPixels = source.m_impl->pixels.data() +
-                                    (srcRect.position.x + srcRect.position.y * source.m_impl->size.x) * 4;
-    std::uint8_t* dstPixels = m_impl->pixels.data() + (dest.x + dest.y * m_impl->size.x) * 4;
+    const std::uint8_t* srcPixels = source.m_pixels.data() + (srcRect.position.x + srcRect.position.y * source.m_size.x) * 4;
+    std::uint8_t* dstPixels = m_pixels.data() + (dest.x + dest.y * m_size.x) * 4;
 
     // Copy the pixels
     if (applyAlpha)
@@ -393,11 +367,11 @@ bool Image::copy(const Image& source, Vector2u dest, const IntRect& sourceRect, 
 ////////////////////////////////////////////////////////////
 void Image::setPixel(Vector2u coords, Color color)
 {
-    SFML_BASE_ASSERT(coords.x < m_impl->size.x && "Image::setPixel() x coordinate is out of bounds");
-    SFML_BASE_ASSERT(coords.y < m_impl->size.y && "Image::setPixel() y coordinate is out of bounds");
+    SFML_BASE_ASSERT(coords.x < m_size.x && "Image::setPixel() x coordinate is out of bounds");
+    SFML_BASE_ASSERT(coords.y < m_size.y && "Image::setPixel() y coordinate is out of bounds");
 
-    const auto    index = (coords.x + coords.y * m_impl->size.x) * 4;
-    std::uint8_t* pixel = &m_impl->pixels[index];
+    const auto    index = (coords.x + coords.y * m_size.x) * 4;
+    std::uint8_t* pixel = &m_pixels[index];
 
     *pixel++ = color.r;
     *pixel++ = color.g;
@@ -409,11 +383,11 @@ void Image::setPixel(Vector2u coords, Color color)
 ////////////////////////////////////////////////////////////
 Color Image::getPixel(Vector2u coords) const
 {
-    SFML_BASE_ASSERT(coords.x < m_impl->size.x && "Image::getPixel() x coordinate is out of bounds");
-    SFML_BASE_ASSERT(coords.y < m_impl->size.y && "Image::getPixel() y coordinate is out of bounds");
+    SFML_BASE_ASSERT(coords.x < m_size.x && "Image::getPixel() x coordinate is out of bounds");
+    SFML_BASE_ASSERT(coords.y < m_size.y && "Image::getPixel() y coordinate is out of bounds");
 
-    const auto          index = (coords.x + coords.y * m_impl->size.x) * 4;
-    const std::uint8_t* pixel = &m_impl->pixels[index];
+    const auto          index = (coords.x + coords.y * m_size.x) * 4;
+    const std::uint8_t* pixel = &m_pixels[index];
 
     return {pixel[0], pixel[1], pixel[2], pixel[3]};
 }
@@ -422,24 +396,24 @@ Color Image::getPixel(Vector2u coords) const
 ////////////////////////////////////////////////////////////
 const std::uint8_t* Image::getPixelsPtr() const
 {
-    SFML_BASE_ASSERT(!m_impl->pixels.empty());
-    return m_impl->pixels.data();
+    SFML_BASE_ASSERT(!m_pixels.empty());
+    return m_pixels.data();
 }
 
 
 ////////////////////////////////////////////////////////////
 void Image::flipHorizontally()
 {
-    SFML_BASE_ASSERT(!m_impl->pixels.empty());
+    SFML_BASE_ASSERT(!m_pixels.empty());
 
-    const base::SizeT rowSize = m_impl->size.x * 4;
+    const base::SizeT rowSize = m_size.x * 4;
 
-    for (base::SizeT y = 0; y < m_impl->size.y; ++y)
+    for (base::SizeT y = 0; y < m_size.y; ++y)
     {
-        auto left = m_impl->pixels.begin() + static_cast<decltype(m_impl->pixels)::difference_type>(y * rowSize);
-        auto right = m_impl->pixels.begin() + static_cast<decltype(m_impl->pixels)::difference_type>((y + 1) * rowSize - 4);
+        auto* left  = m_pixels.begin() + static_cast<std::ptrdiff_t>(y * rowSize);
+        auto* right = m_pixels.begin() + static_cast<std::ptrdiff_t>((y + 1) * rowSize - 4);
 
-        for (base::SizeT x = 0; x < m_impl->size.x / 2; ++x)
+        for (base::SizeT x = 0; x < m_size.x / 2; ++x)
         {
             base::swapRanges(left, left + 4, right);
 
@@ -453,14 +427,14 @@ void Image::flipHorizontally()
 ////////////////////////////////////////////////////////////
 void Image::flipVertically()
 {
-    SFML_BASE_ASSERT(!m_impl->pixels.empty());
+    SFML_BASE_ASSERT(!m_pixels.empty());
 
-    const auto rowSize = static_cast<decltype(m_impl->pixels)::difference_type>(m_impl->size.x * 4);
+    const auto rowSize = static_cast<std::ptrdiff_t>(m_size.x * 4);
 
-    auto top    = m_impl->pixels.begin();
-    auto bottom = m_impl->pixels.end() - rowSize;
+    auto* top    = m_pixels.begin();
+    auto* bottom = m_pixels.end() - rowSize;
 
-    for (base::SizeT y = 0; y < m_impl->size.y / 2; ++y)
+    for (base::SizeT y = 0; y < m_size.y / 2; ++y)
     {
         base::swapRanges(top, top + rowSize, bottom);
 

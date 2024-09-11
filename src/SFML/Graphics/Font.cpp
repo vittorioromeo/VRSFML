@@ -15,6 +15,7 @@
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 #ifdef SFML_SYSTEM_ANDROID
 #include "SFML/System/Android/ResourceStream.hpp"
 #endif
@@ -38,7 +39,6 @@
 
 #include <memory>
 #include <unordered_map>
-#include <vector>
 
 
 namespace
@@ -156,13 +156,13 @@ struct FontHandles
 
 
 ////////////////////////////////////////////////////////////
-sf::Glyph loadGlyph(const FontHandles&         fontHandles,
-                    sf::TextureAtlas&          textureAtlas,
-                    std::vector<std::uint8_t>& pixelBuffer,
-                    std::uint32_t              codePoint,
-                    unsigned int               characterSize,
-                    bool                       bold,
-                    float                      outlineThickness)
+sf::Glyph loadGlyph(const FontHandles&                     fontHandles,
+                    sf::TextureAtlas&                      textureAtlas,
+                    sf::base::TrivialVector<std::uint8_t>& pixelBuffer,
+                    std::uint32_t                          codePoint,
+                    unsigned int                           characterSize,
+                    bool                                   bold,
+                    float                                  outlineThickness)
 {
     // Get our FT_Face
     FT_Face face = fontHandles.face;
@@ -374,7 +374,7 @@ struct Font::Impl
 
     mutable GlyphTable glyphs; //!< Table mapping code points to their corresponding glyph
 
-    mutable std::vector<std::uint8_t> pixelBuffer; //!< Pixel buffer holding a glyph's pixels before being written to the texture
+    mutable base::TrivialVector<std::uint8_t> pixelBuffer; //!< Pixel buffer holding a glyph's pixels before being written to the texture
 
 #ifdef SFML_SYSTEM_ANDROID
     base::UniquePtr<priv::ResourceStream> m_stream; //!< Asset file streamer (if loaded from file)
