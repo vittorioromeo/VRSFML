@@ -1,5 +1,6 @@
 #include "SFML/Base/TrivialVector.hpp"
 
+#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Traits/IsCopyAssignable.hpp"
 #include "SFML/Base/Traits/IsCopyConstructible.hpp"

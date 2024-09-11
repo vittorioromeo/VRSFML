@@ -34,7 +34,7 @@ public:
     /// Creates an identity transform (a transform that does nothing).
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr Transform() = default;
+    [[nodiscard, gnu::always_inline]] constexpr Transform() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a transform from a 3x3 matrix
@@ -48,7 +48,7 @@ public:
     /// \param a12 Element (1, 2) of the matrix
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr Transform(float a00, float a01, float a02, float a10, float a11, float a12);
+    [[nodiscard, gnu::always_inline]] constexpr Transform(float a00, float a01, float a02, float a10, float a11, float a12);
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the transform as a 4x4 matrix
@@ -65,7 +65,7 @@ public:
     /// \return Pointer to a 4x4 matrix
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr const float* getMatrix() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const float* getMatrix() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the inverse of the transform
@@ -76,7 +76,7 @@ public:
     /// \return A new transform which is the inverse of self
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr Transform getInverse() const;
+    [[nodiscard, gnu::pure]] constexpr Transform getInverse() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Transform a 2D point
@@ -92,7 +92,7 @@ public:
     /// \return Transformed point
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr Vector2f transformPoint(Vector2f point) const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector2f transformPoint(Vector2f point) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Transform a rectangle
@@ -108,7 +108,7 @@ public:
     /// \return Transformed rectangle
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr FloatRect transformRect(const FloatRect& rectangle) const;
+    [[nodiscard, gnu::pure]] constexpr FloatRect transformRect(const FloatRect& rectangle) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Combine the current transform with another one
@@ -128,7 +128,7 @@ public:
     /// \return Reference to *this
     ///
     ////////////////////////////////////////////////////////////
-    constexpr Transform& combine(const Transform& transform);
+    [[gnu::always_inline]] constexpr Transform& combine(const Transform& transform);
 
     ////////////////////////////////////////////////////////////
     /// \brief Combine the current transform with a translation
@@ -147,7 +147,7 @@ public:
     /// \see rotate, scale
     ///
     ////////////////////////////////////////////////////////////
-    constexpr Transform& translate(Vector2f offset);
+    [[gnu::always_inline]] constexpr Transform& translate(Vector2f offset);
 
     ////////////////////////////////////////////////////////////
     /// \brief Combine the current transform with a rotation
@@ -210,7 +210,7 @@ public:
     /// \see translate, rotate
     ///
     ////////////////////////////////////////////////////////////
-    constexpr Transform& scale(Vector2f factors);
+    [[gnu::always_inline]] constexpr Transform& scale(Vector2f factors);
 
     ////////////////////////////////////////////////////////////
     /// \brief Combine the current transform with a scaling
@@ -235,7 +235,7 @@ public:
     /// \see translate, rotate
     ///
     ////////////////////////////////////////////////////////////
-    constexpr Transform& scale(Vector2f factors, Vector2f center);
+    [[gnu::always_inline]] constexpr Transform& scale(Vector2f factors, Vector2f center);
 
     ////////////////////////////////////////////////////////////
     // Static member data
@@ -268,7 +268,7 @@ private:
 /// \return New combined transform
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] constexpr Transform operator*(const Transform& left, const Transform& right);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Transform operator*(const Transform& left, const Transform& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates sf::Transform
@@ -296,7 +296,7 @@ constexpr Transform& operator*=(Transform& left, const Transform& right);
 /// \return New transformed point
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] constexpr Vector2f operator*(const Transform& left, Vector2f right);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector2f operator*(const Transform& left, Vector2f right);
 
 ////////////////////////////////////////////////////////////
 /// \relates sf::Transform
@@ -311,7 +311,7 @@ constexpr Transform& operator*=(Transform& left, const Transform& right);
 /// \return true if the transforms are equal, false otherwise
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] constexpr bool operator==(const Transform& left, const Transform& right);
+[[nodiscard, gnu::always_inline, gnu::pure ]] constexpr bool operator==(const Transform& left, const Transform& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates sf::Transform
@@ -325,7 +325,7 @@ constexpr Transform& operator*=(Transform& left, const Transform& right);
 /// \return true if the transforms are not equal, false otherwise
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] constexpr bool operator!=(const Transform& left, const Transform& right);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator!=(const Transform& left, const Transform& right);
 
 } // namespace sf
 

@@ -46,11 +46,10 @@ public:
     template <typename BatchableObject>
     void add(const BatchableObject& batchableObject) requires(!base::isBaseOf<Shape, BatchableObject>)
     {
-        const auto [data, size]    = batchableObject.getVertices();
-        const Transform& transform = batchableObject.getTransform();
+        const auto [data, size] = batchableObject.getVertices();
 
         addSubsequentIndices(size);
-        appendPreTransformedVertices(data, size, transform);
+        appendPreTransformedVertices(data, size, batchableObject.getTransform());
     }
 
     ////////////////////////////////////////////////////////////
@@ -84,7 +83,7 @@ private:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void appendPreTransformedVertices(const Vertex* data, base::SizeT size, const Transform& transform);
+    void appendPreTransformedVertices(const Vertex* data, base::SizeT count, const Transform& transform);
 
     ////////////////////////////////////////////////////////////
     // Member data

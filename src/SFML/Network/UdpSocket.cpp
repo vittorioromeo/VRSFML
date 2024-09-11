@@ -16,9 +16,8 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-UdpSocket::UdpSocket(bool isBlocking) : Socket(Type::Udp, isBlocking)
+UdpSocket::UdpSocket(bool isBlocking) : Socket(Type::Udp, isBlocking), m_buffer(MaxDatagramSize)
 {
-    m_buffer.resize(MaxDatagramSize);
 }
 
 

@@ -30,7 +30,6 @@
 #include "SFML/Base/Math/Lround.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/TrivialVector.hpp"
 
 #include <atomic>
 
@@ -385,9 +384,6 @@ struct RenderTarget::Impl
     VAO vao; //!< Vertex array object associated with the render target
     VBO vbo; //!< Vertex buffer object associated with the render target
     EBO ebo; //!< Element index buffer object associated with the render target
-
-    base::TrivialVector<Vertex>         batchVertexCache; //!< TODO P0:
-    base::TrivialVector<unsigned short> batchIndexCache;  //!< TODO P0:
 };
 
 

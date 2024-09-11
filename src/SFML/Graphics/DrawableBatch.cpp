@@ -18,16 +18,17 @@ void DrawableBatch::add(const Sprite& sprite)
 
     m_indices.reserveMore(6u);
 
+    // Triangle strip
     m_indices.unsafePushBackMultiple(
         // Triangle 0
-        nextIndex + 0u,
-        nextIndex + 1u,
-        nextIndex + 2u,
+        static_cast<IndexType>(nextIndex + 0u),
+        static_cast<IndexType>(nextIndex + 1u),
+        static_cast<IndexType>(nextIndex + 2u),
 
         // Triangle 1
-        nextIndex + 1u,
-        nextIndex + 2u,
-        nextIndex + 3u);
+        static_cast<IndexType>(nextIndex + 1u),
+        static_cast<IndexType>(nextIndex + 2u),
+        static_cast<IndexType>(nextIndex + 3u));
 
     appendPreTransformedVertices(data, size, sprite.getTransform());
 }
@@ -36,6 +37,7 @@ void DrawableBatch::add(const Sprite& sprite)
 ////////////////////////////////////////////////////////////
 void DrawableBatch::add(const Shape& shape)
 {
+    // Triangle fan
     if (const auto [fillData, fillSize] = shape.getFillVertices(); fillSize > 2u)
     {
         const auto nextFillIndex = static_cast<IndexType>(m_vertices.size());
@@ -43,11 +45,14 @@ void DrawableBatch::add(const Shape& shape)
         m_indices.reserveMore(fillSize * 3u);
 
         for (IndexType i = 1u; i < fillSize - 1; ++i)
-            m_indices.unsafePushBackMultiple(nextFillIndex, nextFillIndex + i, nextFillIndex + i + 1u);
+            m_indices.unsafePushBackMultiple(static_cast<IndexType>(nextFillIndex),
+                                             static_cast<IndexType>(nextFillIndex + i),
+                                             static_cast<IndexType>(nextFillIndex + i + 1u));
 
         appendPreTransformedVertices(fillData, fillSize, shape.getTransform());
     }
 
+    // Triangle strip
     if (const auto [outlineData, outlineSize] = shape.getOutlineVertices(); outlineSize > 2u)
     {
         const auto nextOutlineIndex = static_cast<IndexType>(m_vertices.size());
@@ -55,7 +60,9 @@ void DrawableBatch::add(const Shape& shape)
         m_indices.reserveMore(outlineSize * 3u);
 
         for (IndexType i = 0u; i < outlineSize - 2; ++i)
-            m_indices.unsafePushBackMultiple(nextOutlineIndex + i, nextOutlineIndex + i + 1u, nextOutlineIndex + i + 2u);
+            m_indices.unsafePushBackMultiple(static_cast<IndexType>(nextOutlineIndex + i),
+                                             static_cast<IndexType>(nextOutlineIndex + i + 1u),
+                                             static_cast<IndexType>(nextOutlineIndex + i + 2u));
 
         appendPreTransformedVertices(outlineData, outlineSize, shape.getTransform());
     }
@@ -70,18 +77,26 @@ void DrawableBatch::addSubsequentIndices(base::SizeT count)
     m_indices.reserveMore(count);
 
     for (IndexType i = 0; i < static_cast<IndexType>(count); ++i)
-        m_indices.unsafeEmplaceBack(nextIndex + i);
+        m_indices.unsafeEmplaceBack(static_cast<IndexType>(nextIndex + i));
 }
 
 
 ////////////////////////////////////////////////////////////
-void DrawableBatch::appendPreTransformedVertices(const Vertex* data, base::SizeT size, const Transform& transform)
+void DrawableBatch::appendPreTransformedVertices(const Vertex* data, base::SizeT count, const Transform& transform)
 {
-    m_vertices.reserveMore(size);
-    m_vertices.unsafeEmplaceRange(data, size);
+    m_vertices.reserveMore(count);
 
-    for (auto i = m_vertices.size() - size; i < m_vertices.size(); ++i)
-        m_vertices[i].position = transform * m_vertices[i].position;
+#if 0 // not sure if faster
+    for (const auto* v = data; v < data + count; ++v)
+        m_vertices.unsafeEmplaceBack(transform.transformPoint(v->position));
+#else
+    m_vertices.unsafeEmplaceRange(data, count);
+
+    const auto size = m_vertices.size();
+
+    for (auto i = size - count; i < size; ++i)
+        m_vertices[i].position = transform.transformPoint(m_vertices[i].position);
+#endif
 }
 
 

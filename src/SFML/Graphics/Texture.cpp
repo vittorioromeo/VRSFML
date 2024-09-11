@@ -334,8 +334,7 @@ Image Texture::copyToImage() const
     const priv::TextureSaver save;
 
     // Create an array of pixels
-    base::TrivialVector<std::uint8_t> pixels;
-    pixels.resize(m_size.x * m_size.y * 4);
+    base::TrivialVector<std::uint8_t> pixels(m_size.x * m_size.y * 4);
 
 #ifdef SFML_OPENGL_ES
 
@@ -390,8 +389,7 @@ Image Texture::copyToImage() const
         // Texture is either padded or flipped, we have to use a slower algorithm
 
         // All the pixels will first be copied to a temporary array
-        base::TrivialVector<std::uint8_t> allPixels;
-        allPixels.resize(m_actualSize.x * m_actualSize.y * 4);
+        base::TrivialVector<std::uint8_t> allPixels(m_actualSize.x * m_actualSize.y * 4);
 
         glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
         glCheck(glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, allPixels.data()));
