@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Joystick.hpp"
 
+#include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/CoordinateType.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
@@ -139,6 +140,9 @@ int main()
         auto& [label, value] = it->second;
         label.setPosition({5.f, 5.f + yOffset * fontLineSpacing});
         value.setPosition({80.f, 5.f + yOffset * fontLineSpacing});
+
+        label.setOutlineColor(sf::Color::Blue);
+        label.setOutlineThickness(0.5f);
 
         return it->second;
     };
