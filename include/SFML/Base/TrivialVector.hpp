@@ -97,6 +97,8 @@ public:
         if (this == &rhs)
             return *this;
 
+        delete[] m_data;
+
         m_data        = rhs.m_data;
         m_endSize     = rhs.m_endSize;
         m_endCapacity = rhs.m_endCapacity;
@@ -165,7 +167,7 @@ public:
         SFML_BASE_ASSERT(m_data != nullptr);
         SFML_BASE_ASSERT(m_endSize != nullptr);
 
-        SFML_BASE_MEMCPY(m_endSize, ptr, sizeof(TItem) * count);
+        SFML_BASE_MEMCPY(m_endSize, SFML_BASE_LAUNDER_CAST(const ItemUnion*, ptr), sizeof(TItem) * count);
 
         m_endSize += count;
     }
@@ -174,7 +176,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void unsafeEmplaceOther(const TrivialVector& rhs) noexcept
     {
-        unsafeEmplaceRange(rhs.m_data.get(), rhs.m_size);
+        unsafeEmplaceRange(rhs.m_data, rhs.size());
     }
 
 
@@ -202,7 +204,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] bool empty() const noexcept
     {
-        return m_endSize == 0u;
+        return m_data == m_endSize;
     }
 
 

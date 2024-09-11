@@ -200,8 +200,8 @@ constinit std::atomic<IdType> contextRenderTargetMap[maxIdCount]{};
 }
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] sf::IntRect getMultipliedBySizeAndRoundedRect(sf::Vector2u         renderTargetSize,
-                                                                                const sf::FloatRect& inputRect)
+[[nodiscard, gnu::always_inline]] inline sf::IntRect getMultipliedBySizeAndRoundedRect(sf::Vector2u renderTargetSize,
+                                                                                       const sf::FloatRect& inputRect)
 {
     const auto [width, height] = renderTargetSize.to<sf::Vector2f>();
 
@@ -1117,7 +1117,7 @@ void RenderTarget::drawIndexedPrimitives(PrimitiveType type, base::SizeT indexCo
     m_impl->vao.bind();
 
     glCheck(glDrawElements(RenderTargetImpl::primitiveTypeToOpenGLMode(type),
-                           indexCount,
+                           static_cast<GLsizei>(indexCount),
                            GL_UNSIGNED_SHORT,
                            /* index offset */ nullptr));
 }

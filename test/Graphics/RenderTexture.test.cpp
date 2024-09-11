@@ -92,7 +92,8 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
 
     SECTION("Sanity check 1")
     {
-        auto renderTexture = sf::RenderTexture::create(graphicsContext, {64, 64}, sf::ContextSettings(0, 0, 1)).value();
+        auto renderTexture = sf::RenderTexture::create(graphicsContext, {64, 64}, {.antiAliasingLevel = 1, .sRgbCapable = true})
+                                 .value();
 
         renderTexture.clear(sf::Color::Green);
         renderTexture.display();
@@ -112,11 +113,13 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
         auto image   = sf::Image::create(size, sf::Color::White).value();
         auto texture = sf::Texture::loadFromImage(graphicsContext, image).value();
 
-        auto baseRenderTexture = sf::RenderTexture::create(graphicsContext, size, sf::ContextSettings{0, 0, 4 /* AA level*/})
+        auto baseRenderTexture = sf::RenderTexture::create(graphicsContext, size, {.antiAliasingLevel = 4, .sRgbCapable = true})
                                      .value();
 
-        auto leftInnerRT = sf::RenderTexture::create(graphicsContext, size, sf::ContextSettings{0, 0, 4 /* AA level*/}).value();
-        auto rightInnerRT = sf::RenderTexture::create(graphicsContext, size, sf::ContextSettings{0, 0, 4 /* AA level*/}).value();
+        auto leftInnerRT = sf::RenderTexture::create(graphicsContext, size, {.antiAliasingLevel = 4, .sRgbCapable = true})
+                               .value();
+        auto rightInnerRT = sf::RenderTexture::create(graphicsContext, size, {.antiAliasingLevel = 4, .sRgbCapable = true})
+                                .value();
 
         const sf::Vertex leftVertexArray[6]{{{0.f, 0.f}, sf::Color::White, {0.f, 0.f}},
                                             {{halfWidth, 0.f}, sf::Color::White, {halfWidth, 0.f}},

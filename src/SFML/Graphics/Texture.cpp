@@ -18,10 +18,10 @@
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 
 #include <atomic>
 #include <utility>
-#include <vector>
 
 
 namespace
@@ -334,7 +334,8 @@ Image Texture::copyToImage() const
     const priv::TextureSaver save;
 
     // Create an array of pixels
-    std::vector<std::uint8_t> pixels(m_size.x * m_size.y * 4);
+    base::TrivialVector<std::uint8_t> pixels;
+    pixels.resize(m_size.x * m_size.y * 4);
 
 #ifdef SFML_OPENGL_ES
 
@@ -363,9 +364,9 @@ Image Texture::copyToImage() const
         {
             // Flip the texture vertically
             const auto stride             = static_cast<std::ptrdiff_t>(m_size.x * 4);
-            auto       currentRowIterator = pixels.begin();
-            auto       nextRowIterator    = pixels.begin() + stride;
-            auto       reverseRowIterator = pixels.begin() + (stride * static_cast<std::ptrdiff_t>(m_size.y - 1));
+            auto*      currentRowIterator = pixels.begin();
+            auto*      nextRowIterator    = pixels.begin() + stride;
+            auto*      reverseRowIterator = pixels.begin() + (stride * static_cast<std::ptrdiff_t>(m_size.y - 1));
             for (unsigned int i = 0; i < m_size.y / 2; ++i)
             {
                 base::swapRanges(currentRowIterator, nextRowIterator, reverseRowIterator);
@@ -389,15 +390,19 @@ Image Texture::copyToImage() const
         // Texture is either padded or flipped, we have to use a slower algorithm
 
         // All the pixels will first be copied to a temporary array
-        std::vector<std::uint8_t> allPixels(m_actualSize.x * m_actualSize.y * 4);
+        base::TrivialVector<std::uint8_t> allPixels;
+        allPixels.resize(m_actualSize.x * m_actualSize.y * 4);
+
         glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
         glCheck(glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, allPixels.data()));
 
         // Then we copy the useful pixels from the temporary array to the final one
         const std::uint8_t* src      = allPixels.data();
         std::uint8_t*       dst      = pixels.data();
-        int                 srcPitch = static_cast<int>(m_actualSize.x * 4);
+        auto                srcPitch = static_cast<int>(m_actualSize.x * 4);
         const unsigned int  dstPitch = m_size.x * 4;
+
+        SFML_BASE_ASSERT(pixels.size() >= allPixels.size());
 
         // Handle the case where source pixels are flipped vertically
         if (m_pixelsFlipped)

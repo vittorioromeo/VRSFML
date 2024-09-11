@@ -79,7 +79,7 @@ template <typename T, typename U>
 
 ////////////////////////////////////////////////////////////
 // Combine outline thickness, boldness and font glyph index into a single 64-bit key
-[[nodiscard, gnu::always_inline]] std::uint64_t combine(float outlineThickness, bool bold, std::uint32_t index)
+[[nodiscard, gnu::always_inline]] inline std::uint64_t combine(float outlineThickness, bool bold, std::uint32_t index)
 {
     return (std::uint64_t{reinterpret<std::uint32_t>(outlineThickness)} << 32) | (std::uint64_t{bold} << 31) | index;
 }
@@ -164,14 +164,16 @@ sf::Glyph loadGlyph(const FontHandles&                     fontHandles,
                     bool                                   bold,
                     float                                  outlineThickness)
 {
+    sf::Glyph glyph; // Use a single local variable for NRVO
+
     // Get our FT_Face
     FT_Face face = fontHandles.face;
     if (!face)
-        return {};
+        return glyph; // Empty glyph
 
     // Set the character size
     if (!setFaceCurrentSize(face, characterSize))
-        return {};
+        return glyph; // Empty glyph
 
     // Load the glyph corresponding to the code point
     FT_Int32 flags = FT_LOAD_TARGET_NORMAL | FT_LOAD_FORCE_AUTOHINT;
@@ -179,12 +181,12 @@ sf::Glyph loadGlyph(const FontHandles&                     fontHandles,
         flags |= FT_LOAD_NO_BITMAP;
 
     if (FT_Load_Char(face, codePoint, flags) != 0)
-        return {};
+        return glyph; // Empty glyph
 
     // Retrieve the glyph
     FT_Glyph glyphDesc = nullptr;
     if (FT_Get_Glyph(face->glyph, &glyphDesc) != 0)
-        return {};
+        return glyph; // Empty glyph
 
     // Apply bold and outline (there is no fallback for outline) if necessary -- first technique using outline (highest quality)
     const FT_Pos weight  = 1 << 6;
@@ -228,7 +230,6 @@ sf::Glyph loadGlyph(const FontHandles&                     fontHandles,
             sf::priv::err() << "Failed to outline glyph (no fallback available)";
     }
 
-    sf::Glyph glyph;
 
     // Compute the glyph's advance offset
     glyph.advance = static_cast<float>(bitmapGlyph->root.advance.x >> 16);
@@ -343,12 +344,16 @@ struct Font::Impl
     }
 
     [[nodiscard]] static base::Optional<TextureAtlas> initFallbackTextureAtlas(GraphicsContext& theGraphicsContext,
-                                                                               TextureAtlas*    ptr)
+                                                                               TextureAtlas*    ptr,
+                                                                               bool             smooth)
     {
         if (ptr != nullptr)
             return base::nullOpt;
 
-        return base::makeOptional<TextureAtlas>(Texture::create(theGraphicsContext, {1024u, 1024u}).value());
+        auto texture = Texture::create(theGraphicsContext, {1024u, 1024u}).value();
+        texture.setSmooth(smooth);
+
+        return base::makeOptional<TextureAtlas>(SFML_BASE_MOVE(texture));
     }
 
     explicit Impl(GraphicsContext&               theGraphicsContext,
@@ -357,7 +362,7 @@ struct Font::Impl
                   const char*                    theFamilyName) :
     graphicsContext(&theGraphicsContext),
     textureAtlasPtr(theTextureAtlasPtr),
-    fallbackTextureAtlas(initFallbackTextureAtlas(theGraphicsContext, theTextureAtlasPtr)),
+    fallbackTextureAtlas(initFallbackTextureAtlas(theGraphicsContext, theTextureAtlasPtr, /* smooth */ true)),
     fontHandles(SFML_BASE_MOVE(theFontHandles)),
     info{theFamilyName}
     {
