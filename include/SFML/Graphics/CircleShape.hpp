@@ -10,9 +10,8 @@
 
 #include "SFML/System/Vector2.hpp"
 
-#include "SFML/Base/InPlacePImpl.hpp"
-
-#include <cstddef>
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 
 
 namespace sf
@@ -31,37 +30,37 @@ public:
     /// \param pointCount Number of points composing the circle
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit CircleShape(float radius = 0, std::size_t pointCount = 30);
+    [[nodiscard]] explicit CircleShape(float radius = 0, base::SizeT pointCount = 30);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    ~CircleShape();
+    ~CircleShape() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy constructor
     ///
     ////////////////////////////////////////////////////////////
-    CircleShape(const CircleShape& rhs);
+    CircleShape(const CircleShape& rhs) = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy assignment operator
     ///
     ////////////////////////////////////////////////////////////
-    CircleShape& operator=(const CircleShape&);
+    CircleShape& operator=(const CircleShape&) = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    CircleShape(CircleShape&&) noexcept;
+    CircleShape(CircleShape&&) noexcept = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment operator
     ///
     ////////////////////////////////////////////////////////////
-    CircleShape& operator=(CircleShape&&) noexcept;
+    CircleShape& operator=(CircleShape&&) noexcept = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the radius of the circle
@@ -91,7 +90,7 @@ public:
     /// \see getPointCount
     ///
     ////////////////////////////////////////////////////////////
-    void setPointCount(std::size_t count);
+    void setPointCount(base::SizeT count);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the number of points of the circle
@@ -101,7 +100,7 @@ public:
     /// \see setPointCount
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::size_t getPointCount() const;
+    [[nodiscard]] base::SizeT getPointCount() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a point of the circle
@@ -116,7 +115,7 @@ public:
     /// \return index-th point of the shape
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2f getPoint(std::size_t index) const;
+    [[nodiscard]] Vector2f getPoint(base::SizeT index) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the geometric center of the circle
@@ -135,13 +134,13 @@ private:
     /// \brief Recompute the circle geometry
     ///
     ////////////////////////////////////////////////////////////
-    void update(float radius, std::size_t pointCount);
+    void update(float radius, base::SizeT pointCount);
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    struct Impl;
-    base::InPlacePImpl<Impl, 48> m_impl; //!< Implementation details
+    float                         m_radius; //!< Radius of the circle
+    base::TrivialVector<Vector2f> m_points; //!< Points composing the circle
 };
 
 } // namespace sf

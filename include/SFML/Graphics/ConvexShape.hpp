@@ -10,9 +10,7 @@
 
 #include "SFML/System/Vector2.hpp"
 
-#include "SFML/Base/InPlacePImpl.hpp"
-
-#include <cstddef>
+#include "SFML/Base/TrivialVector.hpp"
 
 
 namespace sf
@@ -30,37 +28,37 @@ public:
     /// \param pointCount Number of points of the polygon
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit ConvexShape(std::size_t pointCount = 0);
+    [[nodiscard]] explicit ConvexShape(base::SizeT pointCount = 0);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    ~ConvexShape();
+    ~ConvexShape() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy constructor
     ///
     ////////////////////////////////////////////////////////////
-    ConvexShape(const ConvexShape& rhs);
+    ConvexShape(const ConvexShape& rhs) = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy assignment operator
     ///
     ////////////////////////////////////////////////////////////
-    ConvexShape& operator=(const ConvexShape&);
+    ConvexShape& operator=(const ConvexShape&) = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    ConvexShape(ConvexShape&&) noexcept;
+    ConvexShape(ConvexShape&&) noexcept = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment operator
     ///
     ////////////////////////////////////////////////////////////
-    ConvexShape& operator=(ConvexShape&&) noexcept;
+    ConvexShape& operator=(ConvexShape&&) noexcept = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the number of points of the polygon
@@ -73,7 +71,7 @@ public:
     /// \see getPointCount
     ///
     ////////////////////////////////////////////////////////////
-    void setPointCount(std::size_t count);
+    void setPointCount(base::SizeT count);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the number of points of the polygon
@@ -83,7 +81,7 @@ public:
     /// \see setPointCount
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::size_t getPointCount() const;
+    [[nodiscard]] base::SizeT getPointCount() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the position of a point
@@ -103,7 +101,7 @@ public:
     /// \see getPoint
     ///
     ////////////////////////////////////////////////////////////
-    void setPoint(std::size_t index, Vector2f point);
+    void setPoint(base::SizeT index, Vector2f point);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the position of a point
@@ -120,7 +118,7 @@ public:
     /// \see setPoint
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2f getPoint(std::size_t index) const;
+    [[nodiscard]] Vector2f getPoint(base::SizeT index) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the geometric center of the convex shape
@@ -138,8 +136,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    struct Impl;
-    base::InPlacePImpl<Impl, 32> m_impl; //!< Implementation details
+    base::TrivialVector<Vector2f> m_points; //!< Points composing the convex polygon
 };
 
 } // namespace sf

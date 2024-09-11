@@ -14,8 +14,6 @@
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Span.hpp"
 
-#include <cstddef>
-
 
 ////////////////////////////////////////////////////////////
 // Forward declarations
@@ -253,7 +251,7 @@ protected:
     /// getPointCount or getPoint is different).
     ///
     ////////////////////////////////////////////////////////////
-    void update(const sf::Vector2f* points, std::size_t pointCount);
+    void update(const sf::Vector2f* points, base::SizeT pointCount);
 
 private:
     friend RenderTarget;

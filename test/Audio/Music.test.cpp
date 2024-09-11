@@ -9,6 +9,9 @@
 #include "SFML/System/Sleep.hpp"
 #include "SFML/System/Time.hpp"
 
+#include "SFML/Base/Memset.hpp"
+#include "SFML/Base/TrivialVector.hpp"
+
 #include <Doctest.hpp>
 
 #include <AudioUtil.hpp>
@@ -73,7 +76,9 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("openFromMemory()")
     {
-        std::vector<std::byte> memory(10, std::byte{0xCA});
+        sf::base::TrivialVector<unsigned char> memory;
+        memory.resize(10);
+        SFML_BASE_MEMSET(memory.data(), 0xCA, 10);
 
         SECTION("Invalid buffer")
         {

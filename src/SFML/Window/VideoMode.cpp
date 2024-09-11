@@ -12,12 +12,6 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-VideoMode::VideoMode(Vector2u theSize, unsigned int theBitsPerPixel) : size(theSize), bitsPerPixel(theBitsPerPixel)
-{
-}
-
-
-////////////////////////////////////////////////////////////
 bool VideoMode::isValid() const
 {
     const std::vector<VideoMode>& modes = VideoModeUtils::getFullscreenModes();

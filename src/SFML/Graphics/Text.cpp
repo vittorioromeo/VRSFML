@@ -21,24 +21,22 @@
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Math/Floor.hpp"
 #include "SFML/Base/Memcpy.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 
-#include <vector>
-
-#include <cstddef>
 #include <cstdint>
 
 
 namespace
 {
 // Add an underline or strikethrough line to the vertex array
-void addLine(std::vector<sf::Vertex>& vertices,
-             std::size_t&             index,
-             float                    lineLength,
-             float                    lineTop,
-             sf::Color                color,
-             float                    offset,
-             float                    thickness,
-             float                    outlineThickness = 0)
+void addLine(sf::Vertex*      vertices,
+             sf::base::SizeT& index,
+             float            lineLength,
+             float            lineTop,
+             sf::Color        color,
+             float            offset,
+             float            thickness,
+             float            outlineThickness = 0)
 {
     const float top    = sf::base::floor(lineTop + offset - (thickness / 2) + 0.5f);
     const float bottom = top + sf::base::floor(thickness + 0.5f);
@@ -50,17 +48,17 @@ void addLine(std::vector<sf::Vertex>& vertices,
                                      {{lineLength + outlineThickness, top - outlineThickness}, color, {1.0f, 1.0f}},
                                      {{lineLength + outlineThickness, bottom + outlineThickness}, color, {1.0f, 1.0f}}};
 
-    SFML_BASE_MEMCPY(vertices.data() + index, vertexData, sizeof(sf::Vertex) * 6);
+    SFML_BASE_MEMCPY(vertices + index, vertexData, sizeof(sf::Vertex) * 6);
     index += 6;
 }
 
 // Add a glyph quad to the vertex array
-void addGlyphQuad(std::vector<sf::Vertex>& vertices,
-                  std::size_t&             index,
-                  sf::Vector2f             position,
-                  sf::Color                color,
-                  const sf::Glyph&         glyph,
-                  float                    italicShear)
+void addGlyphQuad(sf::Vertex*      vertices,
+                  sf::base::SizeT& index,
+                  sf::Vector2f     position,
+                  sf::Color        color,
+                  const sf::Glyph& glyph,
+                  float            italicShear)
 {
     const sf::Vector2f padding(1.f, 1.f);
 
@@ -77,7 +75,7 @@ void addGlyphQuad(std::vector<sf::Vertex>& vertices,
                                      {position + sf::Vector2f(p2.x - italicShear * p1.y, p1.y), color, {uv2.x, uv1.y}},
                                      {position + sf::Vector2f(p2.x - italicShear * p2.y, p2.y), color, {uv2.x, uv2.y}}};
 
-    SFML_BASE_MEMCPY(vertices.data() + index, vertexData, sizeof(sf::Vertex) * 6);
+    SFML_BASE_MEMCPY(vertices + index, vertexData, sizeof(sf::Vertex) * 6);
     index += 6;
 }
 
@@ -89,20 +87,20 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct Text::Impl
 {
-    const Font*                 font{};                     //!< Font used to display the string
-    String                      string;                     //!< String to display
-    unsigned int                characterSize{30};          //!< Base size of characters, in pixels
-    float                       letterSpacingFactor{1.f};   //!< Spacing factor between letters
-    float                       lineSpacingFactor{1.f};     //!< Spacing factor between lines
-    Style                       style{Style::Regular};      //!< Text style (see Style enum)
-    Color                       fillColor{Color::White};    //!< Text fill color
-    Color                       outlineColor{Color::Black}; //!< Text outline color
-    float                       outlineThickness{0.f};      //!< Thickness of the text's outline
-    mutable std::vector<Vertex> vertices;                   //!< Vertex array containing the outline and fill geometry
-    mutable std::size_t         fillVerticesStartIndex{};   //!< Index in the vertex array where the fill vertices start
-    mutable FloatRect           bounds;                     //!< Bounding rectangle of the text (in local coordinates)
-    mutable bool                geometryNeedUpdate{};       //!< Does the geometry need to be recomputed?
-    mutable std::uint64_t       fontTextureId{};            //!< The font texture id
+    const Font*                         font{};                     //!< Font used to display the string
+    String                              string;                     //!< String to display
+    unsigned int                        characterSize{30};          //!< Base size of characters, in pixels
+    float                               letterSpacingFactor{1.f};   //!< Spacing factor between letters
+    float                               lineSpacingFactor{1.f};     //!< Spacing factor between lines
+    Style                               style{Style::Regular};      //!< Text style (see Style enum)
+    Color                               fillColor{Color::White};    //!< Text fill color
+    Color                               outlineColor{Color::Black}; //!< Text outline color
+    float                               outlineThickness{0.f};      //!< Thickness of the text's outline
+    mutable base::TrivialVector<Vertex> vertices;   //!< Vertex array containing the outline and fill geometry
+    mutable base::SizeT   fillVerticesStartIndex{}; //!< Index in the vertex array where the fill vertices start
+    mutable FloatRect     bounds;                   //!< Bounding rectangle of the text (in local coordinates)
+    mutable bool          geometryNeedUpdate{};     //!< Does the geometry need to be recomputed?
+    mutable std::uint64_t fontTextureId{};          //!< The font texture id
 
     explicit Impl(const Font& theFont, String theString, unsigned int theCharacterSize) :
     font(&theFont),
@@ -232,7 +230,7 @@ void Text::setFillColor(Color color)
     // (if geometry is updated anyway, we can skip this step)
     if (!m_impl->geometryNeedUpdate)
     {
-        for (std::size_t i = m_impl->fillVerticesStartIndex; i < m_impl->vertices.size(); ++i)
+        for (base::SizeT i = m_impl->fillVerticesStartIndex; i < m_impl->vertices.size(); ++i)
             m_impl->vertices[i].color = m_impl->fillColor;
     }
 }
@@ -250,7 +248,7 @@ void Text::setOutlineColor(Color color)
     // (if geometry is updated anyway, we can skip this step)
     if (!m_impl->geometryNeedUpdate)
     {
-        for (std::size_t i = 0; i < m_impl->fillVerticesStartIndex; ++i)
+        for (base::SizeT i = 0; i < m_impl->fillVerticesStartIndex; ++i)
             m_impl->vertices[i].color = m_impl->outlineColor;
     }
 }
@@ -331,7 +329,7 @@ float Text::getOutlineThickness() const
 
 
 ////////////////////////////////////////////////////////////
-Vector2f Text::findCharacterPos(std::size_t index) const
+Vector2f Text::findCharacterPos(base::SizeT index) const
 {
     // Adjust the index if it's out of range
     index = base::min(index, m_impl->string.getSize());
@@ -346,7 +344,7 @@ Vector2f Text::findCharacterPos(std::size_t index) const
     // Compute the position
     Vector2f      position;
     std::uint32_t prevChar = 0;
-    for (std::size_t i = 0; i < index; ++i)
+    for (base::SizeT i = 0; i < index; ++i)
     {
         const std::uint32_t curChar = m_impl->string[i];
 
@@ -461,13 +459,13 @@ void Text::ensureGeometryUpdate(const Font& font) const
     const float lineSpacing = font.getLineSpacing(m_impl->characterSize) * m_impl->lineSpacingFactor;
 
     // TODO P1: docs and cleanup
-    std::size_t fillQuadCount    = 0;
-    std::size_t outlineQuadCount = 0;
+    base::SizeT fillQuadCount    = 0;
+    base::SizeT outlineQuadCount = 0;
 
     {
         float x = 0.f;
 
-        const std::size_t outlineQuadIncrement = (m_impl->outlineThickness == 0) ? 0 : 1;
+        const base::SizeT outlineQuadIncrement = (m_impl->outlineThickness == 0) ? 0 : 1;
 
         const auto addLinesFake = [&]
         {
@@ -530,14 +528,14 @@ void Text::ensureGeometryUpdate(const Font& font) const
             addLinesFake();
     }
 
-    const std::size_t outlineVertexCount = outlineQuadCount * 6;
-    const std::size_t fillVertexCount    = fillQuadCount * 6;
+    const base::SizeT outlineVertexCount = outlineQuadCount * 6;
+    const base::SizeT fillVertexCount    = fillQuadCount * 6;
 
     m_impl->vertices.resize(outlineVertexCount + fillVertexCount);
     m_impl->fillVerticesStartIndex = outlineVertexCount;
 
-    std::size_t currFillIndex    = outlineVertexCount;
-    std::size_t currOutlineIndex = 0;
+    base::SizeT currFillIndex    = outlineVertexCount;
+    base::SizeT currOutlineIndex = 0;
 
     float x = 0.f;
     auto  y = static_cast<float>(m_impl->characterSize);
@@ -552,10 +550,17 @@ void Text::ensureGeometryUpdate(const Font& font) const
 
     const auto addLines = [this, &currFillIndex, &currOutlineIndex, &x, &y, &underlineThickness](float offset)
     {
-        addLine(m_impl->vertices, currFillIndex, x, y, m_impl->fillColor, offset, underlineThickness);
+        addLine(m_impl->vertices.data(), currFillIndex, x, y, m_impl->fillColor, offset, underlineThickness);
 
         if (m_impl->outlineThickness != 0)
-            addLine(m_impl->vertices, currOutlineIndex, x, y, m_impl->outlineColor, offset, underlineThickness, m_impl->outlineThickness);
+            addLine(m_impl->vertices.data(),
+                    currOutlineIndex,
+                    x,
+                    y,
+                    m_impl->outlineColor,
+                    offset,
+                    underlineThickness,
+                    m_impl->outlineThickness);
     };
 
     for (const std::uint32_t curChar : m_impl->string)
@@ -615,14 +620,14 @@ void Text::ensureGeometryUpdate(const Font& font) const
             const Glyph& glyph = font.getGlyph(curChar, m_impl->characterSize, isBold, m_impl->outlineThickness);
 
             // Add the outline glyph to the vertices
-            addGlyphQuad(m_impl->vertices, currOutlineIndex, Vector2f{x, y}, m_impl->outlineColor, glyph, italicShear);
+            addGlyphQuad(m_impl->vertices.data(), currOutlineIndex, Vector2f{x, y}, m_impl->outlineColor, glyph, italicShear);
         }
 
         // Extract the current glyph's description
         const Glyph& glyph = font.getGlyph(curChar, m_impl->characterSize, isBold);
 
         // Add the glyph to the vertices
-        addGlyphQuad(m_impl->vertices, currFillIndex, Vector2f{x, y}, m_impl->fillColor, glyph, italicShear);
+        addGlyphQuad(m_impl->vertices.data(), currFillIndex, Vector2f{x, y}, m_impl->fillColor, glyph, italicShear);
 
         // Update the current bounds
         const Vector2f p1 = glyph.bounds.position;
