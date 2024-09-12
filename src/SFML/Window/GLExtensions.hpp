@@ -6,6 +6,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Config.hpp"
 
+#undef GLAD_GL_IMPLEMENTATION
 #include <glad/gl.h>
 
 

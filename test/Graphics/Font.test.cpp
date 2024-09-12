@@ -23,8 +23,8 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
     SECTION("Type traits")
     {
         STATIC_CHECK(!SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::Font));
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Font));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Font));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Font));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::Font));
         STATIC_CHECK(SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::Font));
         STATIC_CHECK(SFML_BASE_IS_MOVE_ASSIGNABLE(sf::Font));
     }

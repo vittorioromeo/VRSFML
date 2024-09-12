@@ -25,6 +25,7 @@ if(SFML_BUILD_GRAPHICS)
     add_subdirectory(stencil)
 
     if(NOT SFML_OS_IOS)
+        add_subdirectory(batching)
         add_subdirectory(imgui_minimal)
         add_subdirectory(island)
         add_subdirectory(joystick)

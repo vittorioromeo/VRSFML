@@ -10,6 +10,7 @@
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Vector2.hpp"
 
+#undef GLAD_GL_IMPLEMENTATION
 #include <glad/gl.h>
 
 #pragma GCC diagnostic push

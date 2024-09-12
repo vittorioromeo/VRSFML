@@ -82,21 +82,12 @@ void DrawableBatch::addSubsequentIndices(base::SizeT count)
 
 
 ////////////////////////////////////////////////////////////
-void DrawableBatch::appendPreTransformedVertices(const Vertex* data, base::SizeT count, const Transform& transform)
+void DrawableBatch::appendPreTransformedVertices(const Vertex* data, const base::SizeT count, const Transform& transform)
 {
     m_vertices.reserveMore(count);
 
-#if 0 // not sure if faster
-    for (const auto* v = data; v < data + count; ++v)
-        m_vertices.unsafeEmplaceBack(transform.transformPoint(v->position));
-#else
-    m_vertices.unsafeEmplaceRange(data, count);
-
-    const auto size = m_vertices.size();
-
-    for (auto i = size - count; i < size; ++i)
-        m_vertices[i].position = transform.transformPoint(m_vertices[i].position);
-#endif
+    for (const auto* const target = data + count; data != target; ++data)
+        m_vertices.unsafeEmplaceBack(transform.transformPoint(data->position), data->color, data->texCoords);
 }
 
 

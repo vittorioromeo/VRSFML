@@ -581,12 +581,12 @@ void RenderTarget::draw(const Vertex* vertices, base::SizeT vertexCount, Primiti
 
 ////////////////////////////////////////////////////////////
 void RenderTarget::drawIndexedVertices(
-    const Vertex*         vertices,
-    base::SizeT           vertexCount,
-    const unsigned short* indices,
-    base::SizeT           indexCount,
-    PrimitiveType         type,
-    const RenderStates&   states)
+    const Vertex*       vertices,
+    base::SizeT         vertexCount,
+    const unsigned int* indices,
+    base::SizeT         indexCount,
+    PrimitiveType       type,
+    const RenderStates& states)
 {
     // Nothing to draw or inactive target
     if (vertices == nullptr || vertexCount == 0u || indices == nullptr || indexCount == 0u ||
@@ -598,7 +598,7 @@ void RenderTarget::drawIndexedVertices(
     glCheck(glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeof(Vertex) * vertexCount), vertices, GL_STATIC_DRAW));
 
     glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                         static_cast<GLsizeiptr>(sizeof(unsigned short) * indexCount),
+                         static_cast<GLsizeiptr>(sizeof(unsigned int) * indexCount),
                          indices,
                          GL_STATIC_DRAW));
 
@@ -1114,7 +1114,7 @@ void RenderTarget::drawIndexedPrimitives(PrimitiveType type, base::SizeT indexCo
 
     glCheck(glDrawElements(RenderTargetImpl::primitiveTypeToOpenGLMode(type),
                            static_cast<GLsizei>(indexCount),
-                           GL_UNSIGNED_SHORT,
+                           GL_UNSIGNED_INT,
                            /* index offset */ nullptr));
 }
 

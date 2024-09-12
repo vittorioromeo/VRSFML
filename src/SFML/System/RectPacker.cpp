@@ -8,6 +8,7 @@
 
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 
 #define STBRP_STATIC
 #define STB_RECT_PACK_IMPLEMENTATION
@@ -38,20 +39,13 @@ struct RectPacker::Impl
 
 
 ////////////////////////////////////////////////////////////
-RectPacker::RectPacker(Vector2u size) : m_impl(size)
+RectPacker::RectPacker(Vector2u size) : m_impl(base::makeUnique<Impl>(size))
 {
 }
 
+
 ////////////////////////////////////////////////////////////
 RectPacker::~RectPacker() = default;
-
-
-////////////////////////////////////////////////////////////
-RectPacker::RectPacker(const RectPacker& rhs) = default;
-
-
-////////////////////////////////////////////////////////////
-RectPacker& RectPacker::operator=(const RectPacker&) = default;
 
 
 ////////////////////////////////////////////////////////////

@@ -88,9 +88,6 @@ else()
             set_target_properties(imgui PROPERTIES POSITION_INDEPENDENT_CODE ON)
         endif()
 
-        # disable building dependencies as part of a unity build, they don't support it
-        set_target_properties(imgui PROPERTIES UNITY_BUILD OFF)
-
         sfml_set_stdlib(imgui)
         add_library(ImGui::ImGui ALIAS imgui)
 

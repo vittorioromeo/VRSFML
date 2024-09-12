@@ -18,8 +18,6 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
-#include <glad/gl.h>
-
 #include <atomic>
 #include <mutex>
 #include <string>
