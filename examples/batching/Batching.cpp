@@ -258,7 +258,7 @@ int main()
             ImGui::NewLine();
 
             ImGui::Text("Number of entities:");
-            ImGui::InputInt("", &numEntities);
+            ImGui::InputInt("##InputInt", &numEntities);
 
             if (ImGui::Button("Repopulate") && numEntities > 0)
                 populateEntities(static_cast<std::size_t>(numEntities));
