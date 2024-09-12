@@ -44,7 +44,7 @@ public:
     /// rendering area into an already existing control.
     ///
     /// The second parameter is an optional structure specifying
-    /// advanced OpenGL context settings such as antialiasing,
+    /// advanced OpenGL context settings such as anti-aliasing,
     /// depth-buffer bits, etc. You shouldn't care about these
     /// parameters for a regular usage of the graphics module.
     ///
@@ -114,9 +114,9 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Tell if the window will use sRGB encoding when drawing on it
     ///
-    /// You can request sRGB encoding for a window by having the sRgbCapable flag set in the ContextSettings
+    /// You can request sRGB encoding for a window by having the sRgbCapable flag set in the `ContextSettings`
     ///
-    /// \return True if the window use sRGB encoding, false otherwise
+    /// \return `true` if the window use sRGB encoding, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isSrgb() const override;
@@ -130,11 +130,11 @@ public:
     /// on the previous thread first if it was active.
     /// Only one window can be active on a thread at a time, thus
     /// the window previously active (if any) automatically gets deactivated.
-    /// This is not to be confused with requestFocus().
+    /// This is not to be confused with `requestFocus()`.
     ///
-    /// \param active True to activate, false to deactivate
+    /// \param active `true` to activate, `false` to deactivate
     ///
-    /// \return True if operation was successful, false otherwise
+    /// \return `true` if operation was successful, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool setActive(bool active = true) override;
@@ -200,19 +200,19 @@ private:
 /// \class sf::RenderWindow
 /// \ingroup graphics
 ///
-/// sf::RenderWindow is the main class of the Graphics module.
+/// `sf::RenderWindow` is the main class of the Graphics module.
 /// It defines an OS window that can be painted using the other
 /// classes of the graphics module.
 ///
-/// sf::RenderWindow is derived from sf::Window, thus it inherits
+/// `sf::RenderWindow` is derived from `sf::Window`, thus it inherits
 /// all its features: events, window management, OpenGL rendering,
-/// etc. See the documentation of sf::Window for a more complete
+/// etc. See the documentation of `sf::Window` for a more complete
 /// description of all these features, as well as code examples.
 ///
-/// On top of that, sf::RenderWindow adds more features related to
+/// On top of that, `sf::RenderWindow` adds more features related to
 /// 2D drawing with the graphics module (see its base class
-/// sf::RenderTarget for more details).
-/// Here is a typical rendering and event loop with a sf::RenderWindow:
+/// `sf::RenderTarget` for more details).
+/// Here is a typical rendering and event loop with a `sf::RenderWindow`:
 ///
 /// \code
 /// // Declare and create a new render-window
@@ -245,7 +245,7 @@ private:
 /// }
 /// \endcode
 ///
-/// Like sf::Window, sf::RenderWindow is still able to render direct
+/// Like `sf::Window`, `sf::RenderWindow` is still able to render direct
 /// OpenGL stuff. It is even possible to mix together OpenGL calls
 /// and regular SFML drawing commands.
 ///
@@ -289,6 +289,6 @@ private:
 /// }
 /// \endcode
 ///
-/// \see sf::Window, sf::RenderTarget, sf::RenderTexture, sf::View
+/// \see `sf::Window`, `sf::RenderTarget`, `sf::RenderTexture`, `sf::View`
 ///
 ////////////////////////////////////////////////////////////

@@ -82,7 +82,7 @@ public:
     ///
     /// \param rect Rectangle defining the region of the texture to display
     ///
-    /// \see getTextureRect
+    /// \see `getTextureRect`
     ///
     ////////////////////////////////////////////////////////////
     void setTextureRect(const IntRect& rect);
@@ -107,13 +107,13 @@ public:
     /// This color is modulated (multiplied) with the shape's
     /// texture if any. It can be used to colorize the shape,
     /// or change its global opacity.
-    /// You can use sf::Color::Transparent to make the inside of
+    /// You can use `sf::Color::Transparent to make the inside of
     /// the shape transparent, and have the outline alone.
     /// By default, the shape's fill color is opaque white.
     ///
     /// \param color New color of the shape
     ///
-    /// \see getFillColor, setOutlineColor
+    /// \see `getFillColor`, `setOutlineColor`
     ///
     ////////////////////////////////////////////////////////////
     void setFillColor(Color color);
@@ -125,7 +125,7 @@ public:
     ///
     /// \param color New outline color of the shape
     ///
-    /// \see getOutlineColor, setFillColor
+    /// \see `getOutlineColor`, `setFillColor`
     ///
     ////////////////////////////////////////////////////////////
     void setOutlineColor(Color color);
@@ -140,7 +140,7 @@ public:
     ///
     /// \param thickness New outline thickness
     ///
-    /// \see getOutlineThickness
+    /// \see `getOutlineThickness`
     ///
     ////////////////////////////////////////////////////////////
     void setOutlineThickness(float thickness);
@@ -150,7 +150,7 @@ public:
     ///
     /// \return Texture rectangle of the shape
     ///
-    /// \see setTextureRect
+    /// \see `setTextureRect`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const IntRect& getTextureRect() const;
@@ -170,7 +170,7 @@ public:
     ///
     /// \return Fill color of the shape
     ///
-    /// \see setFillColor
+    /// \see `setFillColor`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Color getFillColor() const;
@@ -180,7 +180,7 @@ public:
     ///
     /// \return Outline color of the shape
     ///
-    /// \see setOutlineColor
+    /// \see `setOutlineColor`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Color getOutlineColor() const;
@@ -190,7 +190,7 @@ public:
     ///
     /// \return Outline thickness of the shape
     ///
-    /// \see setOutlineThickness
+    /// \see `setOutlineThickness`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] float getOutlineThickness() const;
@@ -218,7 +218,7 @@ public:
     /// In other words, this function returns the bounds of the
     /// shape in the global 2D world's coordinate system.
     ///
-    /// This function does not necessarily return the \a minimal
+    /// This function does not necessarily return the \a `minimal`
     /// bounding rectangle. It merely ensures that the returned
     /// rectangle covers all the vertices (but possibly more).
     /// This allows for a fast approximation of the bounds as a
@@ -313,7 +313,7 @@ private:
 /// \class sf::Shape
 /// \ingroup graphics
 ///
-/// sf::Shape is a non-polymorphic base class that allows to
+/// `sf::Shape` is a non-polymorphic base class that allows to
 /// define and display a custom convex shape on a render target.
 ///
 /// In addition to the attributes provided by the specialized
@@ -326,9 +326,9 @@ private:
 ///
 /// Each feature is optional, and can be disabled easily:
 /// \li the texture can be null
-/// \li the fill/outline colors can be sf::Color::Transparent
+/// \li the fill/outline colors can be `sf::Color::Transparent`
 /// \li the outline thickness can be zero
 ///
-/// \see sf::RectangleShape, sf::CircleShape, sf::ConvexShape, sf::Transformable
+/// \see `sf::RectangleShape`, `sf::CircleShape`, `sf::ConvexShape`, `sf::Transformable`
 ///
 ////////////////////////////////////////////////////////////

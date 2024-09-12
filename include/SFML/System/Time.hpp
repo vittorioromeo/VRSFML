@@ -35,7 +35,7 @@ public:
     ///
     /// \return Time in seconds
     ///
-    /// \see asMilliseconds, asMicroseconds
+    /// \see `asMilliseconds`, `asMicroseconds`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr float asSeconds() const;
@@ -45,7 +45,7 @@ public:
     ///
     /// \return Time in milliseconds
     ///
-    /// \see asSeconds, asMicroseconds
+    /// \see `asSeconds`, `asMicroseconds`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr std::int32_t asMilliseconds() const;
@@ -55,7 +55,7 @@ public:
     ///
     /// \return Time in microseconds
     ///
-    /// \see asSeconds, asMilliseconds
+    /// \see `asSeconds`, `asMilliseconds`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr std::int64_t asMicroseconds() const;
@@ -85,7 +85,7 @@ private:
 ///
 /// \return Time value constructed from the amount of seconds
 ///
-/// \see milliseconds, microseconds
+/// \see `milliseconds`, `microseconds`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time seconds(float amount);
@@ -98,7 +98,7 @@ private:
 ///
 /// \return Time value constructed from the amount of milliseconds
 ///
-/// \see seconds, microseconds
+/// \see `seconds`, `microseconds`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time milliseconds(std::int32_t amount);
@@ -111,86 +111,86 @@ private:
 ///
 /// \return Time value constructed from the amount of microseconds
 ///
-/// \see seconds, milliseconds
+/// \see `seconds`, `milliseconds`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time microseconds(std::int64_t amount);
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
-/// \brief Overload of == operator to compare two time values
+/// \brief Overload of `operator==` to compare two time values
 ///
 /// \param left  Left operand (a time)
 /// \param right Right operand (a time)
 ///
-/// \return True if both time values are equal
+/// \return `true` if both time values are equal
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator==(Time left, Time right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
-/// \brief Overload of != operator to compare two time values
+/// \brief Overload of `operator!=` to compare two time values
 ///
 /// \param left  Left operand (a time)
 /// \param right Right operand (a time)
 ///
-/// \return True if both time values are different
+/// \return `true` if both time values are different
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator!=(Time left, Time right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
-/// \brief Overload of < operator to compare two time values
+/// \brief Overload of `operator<` to compare two time values
 ///
 /// \param left  Left operand (a time)
 /// \param right Right operand (a time)
 ///
-/// \return True if \a left is lesser than \a right
+/// \return `true` if \a `left` is lesser than \a `right`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator<(Time left, Time right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
-/// \brief Overload of > operator to compare two time values
+/// \brief Overload of `operator>` to compare two time values
 ///
 /// \param left  Left operand (a time)
 /// \param right Right operand (a time)
 ///
-/// \return True if \a left is greater than \a right
+/// \return `true` if \a `left` is greater than \a `right`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator>(Time left, Time right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
-/// \brief Overload of <= operator to compare two time values
+/// \brief Overload of `operator<=` to compare two time values
 ///
 /// \param left  Left operand (a time)
 /// \param right Right operand (a time)
 ///
-/// \return True if \a left is lesser or equal than \a right
+/// \return `true` if \a `left` is lesser or equal than \a `right`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator<=(Time left, Time right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
-/// \brief Overload of >= operator to compare two time values
+/// \brief Overload of `operator>=` to compare two time values
 ///
 /// \param left  Left operand (a time)
 /// \param right Right operand (a time)
 ///
-/// \return True if \a left is greater or equal than \a right
+/// \return `true` if \a `left` is greater or equal than \a `right`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator>=(Time left, Time right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
-/// \brief Overload of unary - operator to negate a time value
+/// \brief Overload of unary `operator-` to negate a time value
 ///
 /// \param right Right operand (a time)
 ///
@@ -201,7 +201,7 @@ private:
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
-/// \brief Overload of binary + operator to add two time values
+/// \brief Overload of binary `operator+` to add two time values
 ///
 /// \param left  Left operand (a time)
 /// \param right Right operand (a time)
@@ -213,7 +213,7 @@ private:
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
-/// \brief Overload of binary += operator to add/assign two time values
+/// \brief Overload of binary `operator+=` to add/assign two time values
 ///
 /// \param left  Left operand (a time)
 /// \param right Right operand (a time)
@@ -225,7 +225,7 @@ private:
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
-/// \brief Overload of binary - operator to subtract two time values
+/// \brief Overload of binary `operator-` to subtract two time values
 ///
 /// \param left  Left operand (a time)
 /// \param right Right operand (a time)
@@ -237,7 +237,7 @@ private:
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
-/// \brief Overload of binary -= operator to subtract/assign two time values
+/// \brief Overload of binary `operator-=` to subtract/assign two time values
 ///
 /// \param left  Left operand (a time)
 /// \param right Right operand (a time)
@@ -249,156 +249,156 @@ private:
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
-/// \brief Overload of binary * operator to scale a time value
+/// \brief Overload of binary `operator*` to scale a time value
 ///
 /// \param left  Left operand (a time)
 /// \param right Right operand (a number)
 ///
-/// \return \a left multiplied by \a right
+/// \return \a `left` multiplied by \a `right`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator*(Time left, float right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
-/// \brief Overload of binary * operator to scale a time value
+/// \brief Overload of binary `operator*` to scale a time value
 ///
 /// \param left  Left operand (a time)
 /// \param right Right operand (a number)
 ///
-/// \return \a left multiplied by \a right
+/// \return \a `left` multiplied by \a `right`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator*(Time left, std::int64_t right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
-/// \brief Overload of binary * operator to scale a time value
+/// \brief Overload of binary `operator*` to scale a time value
 ///
 /// \param left  Left operand (a number)
 /// \param right Right operand (a time)
 ///
-/// \return \a left multiplied by \a right
+/// \return \a `left` multiplied by \a `right`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator*(float left, Time right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
-/// \brief Overload of binary * operator to scale a time value
+/// \brief Overload of binary `operator*` to scale a time value
 ///
 /// \param left  Left operand (a number)
 /// \param right Right operand (a time)
 ///
-/// \return \a left multiplied by \a right
+/// \return \a `left` multiplied by \a `right`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator*(std::int64_t left, Time right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
-/// \brief Overload of binary *= operator to scale/assign a time value
+/// \brief Overload of binary `operator*=` to scale/assign a time value
 ///
 /// \param left  Left operand (a time)
 /// \param right Right operand (a number)
 ///
-/// \return \a left multiplied by \a right
+/// \return \a `left` multiplied by \a `right`
 ///
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline]] constexpr Time& operator*=(Time& left, float right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
-/// \brief Overload of binary *= operator to scale/assign a time value
+/// \brief Overload of binary `operator*=` to scale/assign a time value
 ///
 /// \param left  Left operand (a time)
 /// \param right Right operand (a number)
 ///
-/// \return \a left multiplied by \a right
+/// \return \a `left` multiplied by \a `right`
 ///
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline]] constexpr Time& operator*=(Time& left, std::int64_t right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
-/// \brief Overload of binary / operator to scale a time value
+/// \brief Overload of binary `operator/` to scale a time value
 ///
 /// \param left  Left operand (a time)
 /// \param right Right operand (a number)
 ///
-/// \return \a left divided by \a right
+/// \return \a `left` divided by \a `right`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator/(Time left, float right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
-/// \brief Overload of binary / operator to scale a time value
+/// \brief Overload of binary `operator/` to scale a time value
 ///
 /// \param left  Left operand (a time)
 /// \param right Right operand (a number)
 ///
-/// \return \a left divided by \a right
+/// \return \a `left` divided by \a `right`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator/(Time left, std::int64_t right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
-/// \brief Overload of binary /= operator to scale/assign a time value
+/// \brief Overload of binary `operator/=` to scale/assign a time value
 ///
 /// \param left  Left operand (a time)
 /// \param right Right operand (a number)
 ///
-/// \return \a left divided by \a right
+/// \return \a `left` divided by \a `right`
 ///
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline]] constexpr Time& operator/=(Time& left, float right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
-/// \brief Overload of binary /= operator to scale/assign a time value
+/// \brief Overload of binary `operator/=` to scale/assign a time value
 ///
 /// \param left  Left operand (a time)
 /// \param right Right operand (a number)
 ///
-/// \return \a left divided by \a right
+/// \return \a `left` divided by \a `right`
 ///
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline]] constexpr Time& operator/=(Time& left, std::int64_t right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
-/// \brief Overload of binary / operator to compute the ratio of two time values
+/// \brief Overload of binary `operator/` to compute the ratio of two time values
 ///
 /// \param left  Left operand (a time)
 /// \param right Right operand (a time)
 ///
-/// \return \a left divided by \a right
+/// \return \a `left` divided by \a `right`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr float operator/(Time left, Time right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
-/// \brief Overload of binary % operator to compute remainder of a time value
+/// \brief Overload of binary `operator%` to compute remainder of a time value
 ///
 /// \param left  Left operand (a time)
 /// \param right Right operand (a time)
 ///
-/// \return \a left modulo \a right
+/// \return \a `left` modulo \a `right`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator%(Time left, Time right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
-/// \brief Overload of binary %= operator to compute/assign remainder of a time value
+/// \brief Overload of binary `operator%=` to compute/assign remainder of a time value
 ///
 /// \param left  Left operand (a time)
 /// \param right Right operand (a time)
 ///
-/// \return \a left modulo \a right
+/// \return \a `left` modulo \a `right`
 ///
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline]] constexpr Time& operator%=(Time& left, Time right);
@@ -412,14 +412,14 @@ private:
 /// \class sf::Time
 /// \ingroup system
 ///
-/// sf::Time encapsulates a time value in a flexible way.
+/// `sf::Time` encapsulates a time value in a flexible way.
 /// It allows to define a time value either as a number of
 /// seconds, milliseconds or microseconds. It also works the
 /// other way round: you can read a time value as either
 /// a number of seconds, milliseconds or microseconds. It
 /// even interoperates with the `<chrono>` header. You can
-/// construct an sf::Time from a chrono::duration and read
-/// any sf::Time as a chrono::duration.
+/// construct an `sf::Time` from a `chrono::duration` and read
+/// any `sf::Time` as a chrono::duration.
 ///
 /// By using such a flexible interface, the API doesn't
 /// impose any fixed type or resolution for time values,
@@ -456,6 +456,6 @@ private:
 /// update(sf::milliseconds(100));
 /// \endcode
 ///
-/// \see sf::Clock
+/// \see `sf::Clock`
 ///
 ////////////////////////////////////////////////////////////

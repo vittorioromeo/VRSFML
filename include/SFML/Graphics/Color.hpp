@@ -51,43 +51,43 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::uint8_t r{};    //!< Red component
-    std::uint8_t g{};    //!< Green component
-    std::uint8_t b{};    //!< Blue component
-    std::uint8_t a{255}; //!< Alpha (opacity) component
+    std::uint8_t r{};     //!< Red component
+    std::uint8_t g{};     //!< Green component
+    std::uint8_t b{};     //!< Blue component
+    std::uint8_t a{255u}; //!< Alpha (opacity) component
 };
 
 ////////////////////////////////////////////////////////////
 /// \relates Color
-/// \brief Overload of the == operator
+/// \brief Overload of the `operator==`
 ///
 /// This operator compares two colors and check if they are equal.
 ///
 /// \param left  Left operand
 /// \param right Right operand
 ///
-/// \return True if colors are equal, false if they are different
+/// \return `true` if colors are equal, `false` if they are different
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::const]] constexpr bool operator==(Color left, Color right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Color
-/// \brief Overload of the != operator
+/// \brief Overload of the `operator!=`
 ///
 /// This operator compares two colors and check if they are different.
 ///
 /// \param left  Left operand
 /// \param right Right operand
 ///
-/// \return True if colors are different, false if they are equal
+/// \return `true` if colors are different, `false` if they are equal
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::const]] constexpr bool operator!=(Color left, Color right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Color
-/// \brief Overload of the binary + operator
+/// \brief Overload of the binary `operator+`
 ///
 /// This operator returns the component-wise sum of two colors.
 /// Components that exceed 255 are clamped to 255.
@@ -102,7 +102,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
 
 ////////////////////////////////////////////////////////////
 /// \relates Color
-/// \brief Overload of the binary - operator
+/// \brief Overload of the binary `operator-`
 ///
 /// This operator returns the component-wise subtraction of two colors.
 /// Components below 0 are clamped to 0.
@@ -117,7 +117,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
 
 ////////////////////////////////////////////////////////////
 /// \relates Color
-/// \brief Overload of the binary * operator
+/// \brief Overload of the binary `operator*`
 ///
 /// This operator returns the component-wise multiplication
 /// (also called "modulation") of two colors.
@@ -134,7 +134,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
 
 ////////////////////////////////////////////////////////////
 /// \relates Color
-/// \brief Overload of the binary += operator
+/// \brief Overload of the binary `operator+=`
 ///
 /// This operator computes the component-wise sum of two colors,
 /// and assigns the result to the left operand.
@@ -150,7 +150,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
 
 ////////////////////////////////////////////////////////////
 /// \relates Color
-/// \brief Overload of the binary -= operator
+/// \brief Overload of the binary `operator-=`
 ///
 /// This operator computes the component-wise subtraction of two colors,
 /// and assigns the result to the left operand.
@@ -166,7 +166,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
 
 ////////////////////////////////////////////////////////////
 /// \relates Color
-/// \brief Overload of the binary *= operator
+/// \brief Overload of the binary `operator*=`
 ///
 /// This operator returns the component-wise multiplication
 /// (also called "modulation") of two colors, and assigns
@@ -191,7 +191,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
 /// \class sf::Color
 /// \ingroup graphics
 ///
-/// sf::Color is a simple color class composed of 4 components:
+/// `sf::Color` is a simple color class composed of 4 components:
 /// \li Red
 /// \li Green
 /// \li Blue

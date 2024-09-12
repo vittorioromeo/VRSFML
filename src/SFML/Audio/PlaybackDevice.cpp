@@ -93,7 +93,7 @@ struct PlaybackDevice::Impl
     std::mutex                 resourcesMutex; //!< The mutex guarding the registered resources
 
     ma_device maDevice; //!< miniaudio playback device (one per hardware device)
-    ma_engine maEngine; //!< miniaudio engine (one per hardware device, for effects/spatialisation)
+    ma_engine maEngine; //!< miniaudio engine (one per hardware device, for effects/spatialization)
 };
 
 

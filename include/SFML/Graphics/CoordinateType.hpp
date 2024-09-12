@@ -8,7 +8,7 @@ namespace sf
 /// \ingroup graphics
 /// \brief Types of texture coordinates that can be used for rendering
 ///
-/// \see sf::Texture::bind
+/// \see `sf::Texture::bind`
 ///
 ////////////////////////////////////////////////////////////
 enum class [[nodiscard]] CoordinateType

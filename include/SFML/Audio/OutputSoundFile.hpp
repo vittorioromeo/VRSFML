@@ -62,7 +62,7 @@ public:
     /// \param channelCount Number of channels in the sound
     /// \param channelMap   Map of position in sample frame to sound channel
     ///
-    /// \return Output sound file if the file was successfully opened
+    /// \return Output sound file on success, `base::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<OutputSoundFile> openFromFile(
@@ -103,7 +103,7 @@ private:
 /// \ingroup audio
 ///
 /// This class encodes audio samples to a sound file. It is
-/// used internally by higher-level classes such as sf::SoundBuffer,
+/// used internally by higher-level classes such as `sf::SoundBuffer`,
 /// but can also be useful if you want to create audio files from
 /// custom data sources, like generated audio samples.
 ///
@@ -122,6 +122,6 @@ private:
 /// }
 /// \endcode
 ///
-/// \see sf::SoundFileWriter, sf::InputSoundFile
+/// \see `sf::SoundFileWriter`, `sf::InputSoundFile`
 ///
 ////////////////////////////////////////////////////////////

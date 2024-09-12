@@ -63,12 +63,12 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Set the number of points of the polygon
     ///
-    /// For the shape to be rendered as expected, \a count must
+    /// For the shape to be rendered as expected, \a `count` must
     /// be greater or equal to 3.
     ///
     /// \param count New number of points of the polygon
     ///
-    /// \see getPointCount
+    /// \see `getPointCount`
     ///
     ////////////////////////////////////////////////////////////
     void setPointCount(base::SizeT count);
@@ -78,7 +78,7 @@ public:
     ///
     /// \return Number of points of the polygon
     ///
-    /// \see setPointCount
+    /// \see `setPointCount`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] base::SizeT getPointCount() const;
@@ -93,12 +93,12 @@ public:
     /// when not drawn (e.g. during shape initialization).
     ///
     /// Point count must be specified beforehand. The behavior is
-    /// undefined if \a index is greater than or equal to getPointCount.
+    /// undefined if \a `index` is greater than or equal to getPointCount.
     ///
     /// \param index Index of the point to change, in range [0 .. getPointCount() - 1]
     /// \param point New position of the point
     ///
-    /// \see getPoint
+    /// \see `getPoint`
     ///
     ////////////////////////////////////////////////////////////
     void setPoint(base::SizeT index, Vector2f point);
@@ -109,13 +109,13 @@ public:
     /// The returned point is in local coordinates, that is,
     /// the shape's transforms (position, rotation, scale) are
     /// not taken into account.
-    /// The result is undefined if \a index is out of the valid range.
+    /// The result is undefined if \a `index` is out of the valid range.
     ///
     /// \param index Index of the point to get, in range [0 .. getPointCount() - 1]
     ///
     /// \return Position of the index-th point of the polygon
     ///
-    /// \see setPoint
+    /// \see `setPoint`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Vector2f getPoint(base::SizeT index) const;
@@ -146,9 +146,9 @@ private:
 /// \class sf::ConvexShape
 /// \ingroup graphics
 ///
-/// This class inherits all the functions of sf::Transformable
+/// This class inherits all the functions of `sf::Transformable`
 /// (position, rotation, scale, bounds, ...) as well as the
-/// functions of sf::Shape (outline, color, texture, ...).
+/// functions of `sf::Shape` (outline, color, texture, ...).
 ///
 /// It is important to keep in mind that a convex shape must
 /// always be... convex, otherwise it may not be drawn correctly.
@@ -169,6 +169,6 @@ private:
 /// window.draw(polygon);
 /// \endcode
 ///
-/// \see sf::Shape, sf::RectangleShape, sf::ConvexShape
+/// \see `sf::Shape`, `sf::RectangleShape`, `sf::CircleShape`
 ///
 ////////////////////////////////////////////////////////////

@@ -43,7 +43,7 @@ public:
     /// \param channelCount Number of channels of the sound
     /// \param channelMap   Map of position in sample frame to sound channel
     ///
-    /// \return True if the file was successfully opened
+    /// \return `true` if the file was successfully opened
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] virtual bool open(const Path&       filename,
@@ -76,7 +76,7 @@ public:
 /// as well as providing a static check function; the latter is used by
 /// SFML to find a suitable writer for a given filename.
 ///
-/// To register a new writer, use the sf::SoundFileFactory::registerWriter
+/// To register a new writer, use the `sf::SoundFileFactory::registerWriter`
 /// template function.
 ///
 /// Usage example:
@@ -108,6 +108,6 @@ public:
 /// sf::SoundFileFactory::registerWriter<MySoundFileWriter>();
 /// \endcode
 ///
-/// \see sf::OutputSoundFile, sf::SoundFileFactory, sf::SoundFileReader
+/// \see `sf::OutputSoundFile`, `sf::SoundFileFactory`, `sf::SoundFileReader`
 ///
 ////////////////////////////////////////////////////////////

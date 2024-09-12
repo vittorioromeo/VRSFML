@@ -53,16 +53,13 @@ public:
     /// \brief Construct a new window
     ///
     /// This constructor creates the window with the size and pixel
-    /// depth defined in \a mode. An optional style can be passed to
+    /// depth defined in \a `mode`. An optional style can be passed to
     /// customize the look and behavior of the window (borders,
     /// title bar, resizable, closable, ...). An optional state can
-    /// be provided. If \a state is State::Fullscreen, then \a mode
+    /// be provided. If \a `state` is `State::Fullscreen`, then \a `mode`
     /// must be a valid video mode.
     ///
-    /// \param mode  Video mode to use (defines the width, height and depth of the rendering area of the window)
-    /// \param title Title of the window
-    /// \param style %Window style, a bitwise OR combination of sf::Style enumerators
-    /// \param state %Window state
+    /// \param windowSettings Settings to use
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit WindowBase(const WindowSettings& windowSettings);
@@ -122,9 +119,9 @@ public:
     /// }
     /// \endcode
     ///
-    /// \return The event, otherwise `base::nullOpt` if no events are pending
+    /// \return The potentially pending event, `base::nullOpt` otherwise
     ///
-    /// \see waitEvent, pollAndHandleEvents
+    /// \see `waitEvent`, `pollAndHandleEvents`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] base::Optional<Event> pollEvent();
@@ -148,9 +145,9 @@ public:
     ///
     /// \param timeout Maximum time to wait (`Time::Zero` for infinite)
     ///
-    /// \return The event, otherwise `base::nullOpt` on timeout or if window was closed
+    /// \return The event on success, `base::nullOpt` on timeout or if window was closed
     ///
-    /// \see pollEvent, pollAndHandleEvents
+    /// \see `pollEvent`, `pollAndHandleEvents`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] base::Optional<Event> waitEvent(Time timeout = Time::Zero);
@@ -164,7 +161,7 @@ public:
     /// This function can take a variadic list of event handlers that
     /// each take a concrete event type as a single parameter. The event
     /// handlers can be any kind of callable object that has an
-    /// operator() defined for a specific event type. Additionally a
+    /// `operator()` defined for a specific event type. Additionally a
     /// generic callable can also be provided that will be invoked for
     /// every event type. If both types of callables are provided, the
     /// callables taking concrete event types will be preferred over the
@@ -227,7 +224,7 @@ public:
     ///
     /// \param handlers A variadic list of callables that take a specific event as their only parameter
     ///
-    /// \see waitEvent, pollEvent
+    /// \see `waitEvent`, `pollEvent`
     ///
     ////////////////////////////////////////////////////////////
     template <typename... Handlers, auto PollEventFn = &WindowBase::pollEvent>
@@ -238,7 +235,7 @@ public:
     ///
     /// \return Position of the window, in pixels
     ///
-    /// \see setPosition
+    /// \see `setPosition`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Vector2i getPosition() const;
@@ -252,7 +249,7 @@ public:
     ///
     /// \param position New position, in pixels
     ///
-    /// \see getPosition
+    /// \see `getPosition`
     ///
     ////////////////////////////////////////////////////////////
     void setPosition(Vector2i position);
@@ -265,7 +262,7 @@ public:
     ///
     /// \return Size in pixels
     ///
-    /// \see setSize
+    /// \see `setSize`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Vector2u getSize() const;
@@ -275,7 +272,7 @@ public:
     ///
     /// \param size New size, in pixels
     ///
-    /// \see getSize
+    /// \see `getSize`
     ///
     ////////////////////////////////////////////////////////////
     void setSize(Vector2u size);
@@ -307,7 +304,7 @@ public:
     ///
     /// \param title New title
     ///
-    /// \see setIcon
+    /// \see `setIcon`
     ///
     ////////////////////////////////////////////////////////////
     void setTitle(const String& title);
@@ -316,7 +313,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Change the window's icon
     ///
-    /// \a pixels must be an array of \a width x \a height pixels
+    /// \a `pixels` must be an array of \a `size` pixels
     /// in 32-bits RGBA format.
     ///
     /// The OS default icon is used by default.
@@ -326,7 +323,7 @@ public:
     ///               pixels are copied, so you need not keep the
     ///               source alive after calling this function.
     ///
-    /// \see setTitle
+    /// \see `setTitle`
     ///
     ////////////////////////////////////////////////////////////
     void setIcon(Vector2u size, const std::uint8_t* pixels);
@@ -336,7 +333,7 @@ public:
     ///
     /// The window is shown by default.
     ///
-    /// \param visible True to show the window, false to hide it
+    /// \param visible `true` to show the window, `false` to hide it
     ///
     ////////////////////////////////////////////////////////////
     void setVisible(bool visible);
@@ -346,7 +343,7 @@ public:
     ///
     /// The mouse cursor is visible by default.
     ///
-    /// \param visible True to show the mouse cursor, false to hide it
+    /// \param visible `true` to show the mouse cursor, `false` to hide it
     ///
     ////////////////////////////////////////////////////////////
     void setMouseCursorVisible(bool visible);
@@ -359,7 +356,7 @@ public:
     /// Note that grabbing is only active while the window has
     /// focus.
     ///
-    /// \param grabbed True to enable, false to disable
+    /// \param grabbed `true` to enable, `false` to disable
     ///
     ////////////////////////////////////////////////////////////
     void setMouseCursorGrabbed(bool grabbed);
@@ -377,8 +374,7 @@ public:
     ///
     /// \param cursor Native system cursor type to display
     ///
-    /// \see sf::Cursor::loadFromSystem
-    /// \see sf::Cursor::loadFromPixels
+    /// \see `sf::Cursor::loadFromSystem`, `sf::Cursor::loadFromPixels`
     ///
     ////////////////////////////////////////////////////////////
     void setMouseCursor(const Cursor& cursor);
@@ -392,7 +388,7 @@ public:
     ///
     /// Key repeat is enabled by default.
     ///
-    /// \param enabled True to enable, false to disable
+    /// \param enabled `true` to enable, `false` to disable
     ///
     ////////////////////////////////////////////////////////////
     void setKeyRepeatEnabled(bool enabled);
@@ -419,9 +415,9 @@ public:
     /// If a window requests focus, it only hints to the operating
     /// system, that it would like to be focused. The operating system
     /// is free to deny the request.
-    /// This is not to be confused with setActive().
+    /// This is not to be confused with `setActive()`.
     ///
-    /// \see hasFocus
+    /// \see `hasFocus`
     ///
     ////////////////////////////////////////////////////////////
     void requestFocus();
@@ -433,8 +429,8 @@ public:
     /// to receive input events such as keystrokes or most mouse
     /// events.
     ///
-    /// \return True if window has focus, false otherwise
-    /// \see requestFocus
+    /// \return `true` if window has focus, `false` otherwise
+    /// \see `requestFocus`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool hasFocus() const;
@@ -442,7 +438,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Get the OS-specific handle of the window
     ///
-    /// The type of the returned handle is sf::WindowHandle,
+    /// The type of the returned handle is `sf::WindowHandle`,
     /// which is a type alias to the handle type defined by the OS.
     /// You shouldn't need to use this function, unless you have
     /// very specific stuff to implement that SFML doesn't support,
@@ -460,7 +456,7 @@ public:
     /// \param surface   Created surface
     /// \param allocator Allocator to use
     ///
-    /// \return True if surface creation was successful, false otherwise
+    /// \return `true` if surface creation was successful, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool createVulkanSurface(const Vulkan::VulkanSurfaceData& vulkanSurfaceData);
@@ -484,7 +480,7 @@ private:
     /// \brief Processes an event before it is sent to the user
     ///
     /// This function is called every time an event is received
-    /// from the internal window (through pollEvent or waitEvent).
+    /// from the internal window (through `pollEvent` or `waitEvent`).
     /// It filters out unwanted events, and performs whatever internal
     /// stuff the window needs before the event is returned to the
     /// user.
@@ -509,14 +505,14 @@ private:
 /// \class sf::WindowBase
 /// \ingroup window
 ///
-/// sf::WindowBase serves as the base class for all Windows.
+/// `sf::WindowBase` serves as the base class for all Windows.
 ///
-/// A sf::WindowBase can create its own new window, or be embedded into
-/// an already existing control using the create(handle) function.
+/// A `sf::WindowBase` can create its own new window, or be embedded into
+/// an already existing control using the `create(handle)` function.
 ///
-/// The sf::WindowBase class provides a simple interface for manipulating
+/// The `sf::WindowBase` class provides a simple interface for manipulating
 /// the window: move, resize, show/hide, control mouse cursor, etc.
-/// It also provides event handling through its pollEvent() and waitEvent()
+/// It also provides event handling through its `pollEvent()` and `waitEvent()`
 /// functions.
 ///
 /// Usage example:

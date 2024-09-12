@@ -74,8 +74,8 @@ public:
     /// \param data        Pointer to the sequence of bytes to append
     /// \param sizeInBytes Number of bytes to append
     ///
-    /// \see clear
-    /// \see getReadPosition
+    /// \see `clear`
+    /// \see `getReadPosition`
     ///
     ////////////////////////////////////////////////////////////
     void append(const void* data, base::SizeT sizeInBytes);
@@ -87,7 +87,7 @@ public:
     ///
     /// \return The byte offset of the current read position
     ///
-    /// \see append
+    /// \see `append`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] base::SizeT getReadPosition() const;
@@ -97,7 +97,7 @@ public:
     ///
     /// After calling Clear, the packet is empty.
     ///
-    /// \see append
+    /// \see `append`
     ///
     ////////////////////////////////////////////////////////////
     void clear();
@@ -108,11 +108,11 @@ public:
     /// Warning: the returned pointer may become invalid after
     /// you append data to the packet, therefore it should never
     /// be stored.
-    /// The return pointer is a null pointer if the packet is empty.
+    /// The return pointer is a `nullptr` if the packet is empty.
     ///
     /// \return Pointer to the data
     ///
-    /// \see getDataSize
+    /// \see `getDataSize`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const void* getData() const;
@@ -121,11 +121,11 @@ public:
     /// \brief Get the size of the data contained in the packet
     ///
     /// This function returns the number of bytes pointed to by
-    /// what getData returns.
+    /// what `getData` returns.
     ///
     /// \return Data size, in bytes
     ///
-    /// \see getData
+    /// \see `getData`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] base::SizeT getDataSize() const;
@@ -137,9 +137,9 @@ public:
     /// This function is useful to know if there is some data
     /// left to be read, without actually reading it.
     ///
-    /// \return True if all data was read, false otherwise
+    /// \return `true` if all data was read, `false` otherwise
     ///
-    /// \see operator bool
+    /// \see `operator` bool
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool endOfPacket() const;
@@ -177,15 +177,15 @@ public:
     /// it disallows unwanted implicit conversions to integer or
     /// pointer types.
     ///
-    /// \return True if last data extraction from packet was successful
+    /// \return `true` if last data extraction from packet was successful
     ///
-    /// \see endOfPacket
+    /// \see `endOfPacket`
     ///
     ////////////////////////////////////////////////////////////
     explicit operator bool() const;
 
     ////////////////////////////////////////////////////////////
-    /// Overload of operator >> to read data from the packet
+    /// Overload of `operator>>` to read data from the packet
     ///
     ////////////////////////////////////////////////////////////
     Packet& operator>>(bool& data);
@@ -266,7 +266,7 @@ public:
     Packet& operator>>(String& data);
 
     ////////////////////////////////////////////////////////////
-    /// Overload of operator << to write data into the packet
+    /// Overload of `operator<<` to write data into the packet
     ///
     ////////////////////////////////////////////////////////////
     Packet& operator<<(bool data);
@@ -365,7 +365,7 @@ protected:
     ///
     /// \return Pointer to the array of bytes to send
     ///
-    /// \see onReceive
+    /// \see `onReceive`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] virtual const void* onSend(base::SizeT& size);
@@ -384,7 +384,7 @@ protected:
     /// \param data Pointer to the received bytes
     /// \param size Number of bytes
     ///
-    /// \see onSend
+    /// \see `onSend`
     ///
     ////////////////////////////////////////////////////////////
     virtual void onReceive(const void* data, base::SizeT size);
@@ -397,7 +397,7 @@ private:
     ///
     /// \param size Size to check
     ///
-    /// \return True if \a size bytes can be read from the packet
+    /// \return `true` if \a size bytes can be read from the packet
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool checkSize(base::SizeT size);
@@ -428,14 +428,14 @@ private:
 ///
 /// Packets provide a safe and easy way to serialize data,
 /// in order to send it over the network using sockets
-/// (sf::TcpSocket, sf::UdpSocket).
+/// (`sf::TcpSocket`, `sf::UdpSocket`).
 ///
 /// Packets solve 2 fundamental problems that arise when
 /// transferring data over the network:
 /// \li data is interpreted correctly according to the endianness
 /// \li the bounds of the packet are preserved (one send == one receive)
 ///
-/// The sf::Packet class provides both input and output modes.
+/// The `sf::Packet` class provides both input and output modes.
 /// It is designed to follow the behavior of standard C++ streams,
 /// using operators >> and << to extract and insert data.
 ///
@@ -473,7 +473,7 @@ private:
 /// }
 /// \endcode
 ///
-/// Packets have built-in operator >> and << overloads for
+/// Packets have built-in `operator>>` and << overloads for
 /// standard types:
 /// \li `bool`
 /// \li fixed-size integer types (`int[8|16|32]_t`, `uint[8|16|32]_t`)
@@ -507,7 +507,7 @@ private:
 /// custom transformations to the data before it is sent,
 /// and after it is received. This is typically used to
 /// handle automatic compression or encryption of the data.
-/// This is achieved by inheriting from sf::Packet, and overriding
+/// This is achieved by inheriting from `sf::Packet`, and overriding
 /// the onSend and onReceive functions.
 ///
 /// Here is an example:
@@ -537,6 +537,6 @@ private:
 /// ...
 /// \endcode
 ///
-/// \see sf::TcpSocket, sf::UdpSocket
+/// \see `sf::TcpSocket`, `sf::UdpSocket`
 ///
 ////////////////////////////////////////////////////////////

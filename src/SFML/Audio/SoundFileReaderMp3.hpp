@@ -48,7 +48,7 @@ public:
     ///
     /// \param stream Source stream to read from
     ///
-    /// \return Properties of the loaded sound if the file was successfully opened
+    /// \return Properties of the loaded sound on success, `base::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] base::Optional<Info> open(InputStream& stream) override;

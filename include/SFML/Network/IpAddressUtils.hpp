@@ -36,7 +36,7 @@ public:
     ///
     /// \param address IP address or network name
     ///
-    /// \return Address if provided argument was valid, otherwise `base::nullOpt`
+    /// \return Address on success, `base::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<IpAddress> resolve(std::string_view address);

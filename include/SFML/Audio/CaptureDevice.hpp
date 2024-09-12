@@ -123,7 +123,7 @@ public:
     /// \brief Get the map of position in sample frame to sound channel
     ///
     /// This is used to map a sample in the sample stream to a
-    /// position during spatialisation.
+    /// position during spatialization.
     ///
     /// \return Map of position in sample frame to sound channel
     ///
