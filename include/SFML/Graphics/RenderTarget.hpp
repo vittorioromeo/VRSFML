@@ -349,12 +349,12 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void drawIndexedVertices(const Vertex*         vertices,
-                             base::SizeT           vertexCount,
-                             const unsigned short* indices,
-                             base::SizeT           indexCount,
-                             PrimitiveType         type,
-                             const RenderStates&   states = getDefaultRenderStates());
+    void drawIndexedVertices(const Vertex*       vertices,
+                             base::SizeT         vertexCount,
+                             const unsigned int* indices,
+                             base::SizeT         indexCount,
+                             PrimitiveType       type,
+                             const RenderStates& states = getDefaultRenderStates());
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P0: docs

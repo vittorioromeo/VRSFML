@@ -17,8 +17,6 @@
 #include "SFML/Base/Strncmp.hpp"
 #include "SFML/Base/Strstr.hpp"
 
-#include <glad/gl.h>
-
 #include <cctype>
 #include <cstdlib>
 

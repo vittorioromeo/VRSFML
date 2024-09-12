@@ -6,8 +6,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Vector2.hpp"
 
-#include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 
 
 namespace sf
@@ -35,25 +35,25 @@ public:
     /// \brief Copy constructor
     ///
     ////////////////////////////////////////////////////////////
-    RectPacker(const RectPacker& rhs);
+    RectPacker(const RectPacker& rhs) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy assignment operator
     ///
     ////////////////////////////////////////////////////////////
-    RectPacker& operator=(const RectPacker&);
+    RectPacker& operator=(const RectPacker& rhs) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    RectPacker(RectPacker&&) noexcept;
+    RectPacker(RectPacker&& rhs) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment operator
     ///
     ////////////////////////////////////////////////////////////
-    RectPacker& operator=(RectPacker&&) noexcept;
+    RectPacker& operator=(RectPacker&& rhs) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -72,7 +72,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 32768> m_impl; //!< Implementation details
+    base::UniquePtr<Impl> m_impl; //!< Implementation details (needs address stability)
 };
 
 } // namespace sf

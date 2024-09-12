@@ -1,5 +1,8 @@
 
+#include "SFML/ImGui/ImGui.hpp"
+
 #include "SFML/Graphics/CircleShape.hpp"
+#include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
@@ -18,17 +21,23 @@
 #include "SFML/Window/EventUtils.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
+#include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Path.hpp"
+#include "SFML/System/Rect.hpp"
 #include "SFML/System/String.hpp"
+#include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/Optional.hpp"
 
 #include <GL/gl.h>
+#include <imgui.h>
 
 #include <array>
 #include <iostream>
+#include <random>
 #include <sstream>
+#include <string>
 #include <vector>
 
 #include <cstddef>

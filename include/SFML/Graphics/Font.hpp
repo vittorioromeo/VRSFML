@@ -58,7 +58,7 @@ public:
     /// \brief Copy constructor
     ///
     ////////////////////////////////////////////////////////////
-    Font(const Font& rhs);
+    Font(const Font& rhs) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move constructor
@@ -70,7 +70,7 @@ public:
     /// \brief Copy assignment
     ///
     ////////////////////////////////////////////////////////////
-    Font& operator=(const Font& rhs);
+    Font& operator=(const Font& rhs) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment
@@ -337,7 +337,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 65536> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 256> m_impl; //!< Implementation details
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking
