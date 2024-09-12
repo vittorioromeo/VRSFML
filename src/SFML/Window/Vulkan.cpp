@@ -61,12 +61,11 @@ VulkanFunctionPointer Vulkan::getFunction([[maybe_unused]] const char* name)
 
 
 ////////////////////////////////////////////////////////////
-const std::vector<const char*>& Vulkan::getGraphicsRequiredInstanceExtensions()
+base::Span<const char* const> Vulkan::getGraphicsRequiredInstanceExtensions()
 {
 #ifdef SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
 
-    static const std::vector<const char*> empty;
-    return empty;
+    return {};
 
 #else
 

@@ -124,10 +124,11 @@ Ftp::ListingResponse::ListingResponse(const Ftp::Response& response, const std::
 
 
 ////////////////////////////////////////////////////////////
-const std::vector<std::string>& Ftp::ListingResponse::getListing() const
+base::Span<const std::string> Ftp::ListingResponse::getListing() const
 {
-    return m_listing;
+    return {m_listing.data(), m_listing.size()};
 }
+
 
 ////////////////////////////////////////////////////////////
 Ftp::Ftp() : m_commandSocket(/* isBlocking */ true)

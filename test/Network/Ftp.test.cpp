@@ -98,7 +98,9 @@ TEST_CASE("[Network] sf::Ftp")
         {
             const sf::Ftp::ListingResponse listingResponse(sf::Ftp::Response(sf::Ftp::Response::Status::Ok),
                                                            "foo\r\nbar\r\nbaz");
-            CHECK(listingResponse.getListing() == std::vector<std::string>{"foo", "bar"});
+
+            const std::vector<std::string> vec{"foo", "bar"};
+            CHECK(listingResponse.getListing().valueEquals(vec.data(), vec.size()));
         }
     }
 }

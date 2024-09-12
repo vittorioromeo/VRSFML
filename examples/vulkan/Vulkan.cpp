@@ -496,7 +496,11 @@ public:
         }
 
         // Retrieve the extensions we need to enable in order to use Vulkan with SFML
-        std::vector<const char*> requiredExtensions = sf::Vulkan::getGraphicsRequiredInstanceExtensions();
+        std::vector<const char*> requiredExtensions;
+
+        for (const char* e : sf::Vulkan::getGraphicsRequiredInstanceExtensions())
+            requiredExtensions.push_back(e);
+
         requiredExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 
         // Register our application information

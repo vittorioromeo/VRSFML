@@ -11,6 +11,8 @@
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Time.hpp"
 
+#include "SFML/Base/Span.hpp"
+
 #include <string>
 #include <vector>
 
@@ -206,10 +208,10 @@ public:
         ////////////////////////////////////////////////////////////
         /// \brief Return the array of directory/file names
         ///
-        /// \return Array containing the requested listing
+        /// \return Span containing the requested listing
         ///
         ////////////////////////////////////////////////////////////
-        [[nodiscard]] const std::vector<std::string>& getListing() const;
+        [[nodiscard]] base::Span<const std::string> getListing() const;
 
     private:
         ////////////////////////////////////////////////////////////

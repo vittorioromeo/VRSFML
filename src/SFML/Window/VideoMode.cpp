@@ -7,6 +7,7 @@
 #include "SFML/Window/VideoModeUtils.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Span.hpp"
 
 
 namespace sf
@@ -14,7 +15,7 @@ namespace sf
 ////////////////////////////////////////////////////////////
 bool VideoMode::isValid() const
 {
-    const std::vector<VideoMode>& modes = VideoModeUtils::getFullscreenModes();
+    const base::Span<const VideoMode> modes = VideoModeUtils::getFullscreenModes();
 
     return base::find(modes.begin(), modes.end(), *this) != modes.end();
 }
