@@ -82,6 +82,8 @@ elseif(${EMSCRIPTEN})
 
     set(SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS_RELEASE
         -O3          # Enable optimizations
+        -flto        # Link-time optimization
+        -DNDEBUG=1   # Should be set by CMake, but I'm paranoid
     )
 
     set(SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS
@@ -112,6 +114,7 @@ elseif(${EMSCRIPTEN})
 
     set(SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_RELEASE
         -O3                                 # Enable advanced linker optimizations
+        -flto                               # Link-time optimization
 
         -SMINIFY_HTML=1                     # Runs generated `.html` file through `html-minifier`
     )
