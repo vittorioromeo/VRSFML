@@ -16,6 +16,7 @@
 namespace sf
 {
 class Angle;
+class Transformable;
 } // namespace sf
 
 
@@ -244,6 +245,8 @@ public:
     static const Transform Identity; //!< The identity transform (does nothing)
 
 private:
+    friend Transformable;
+
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
