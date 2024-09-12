@@ -59,7 +59,8 @@ base::Optional<base::SizeT> ResourceStream::getSize()
 ////////////////////////////////////////////////////////////
 void ResourceStream::AAssetDeleter::operator()(AAsset* file)
 {
-    AAsset_close(file);
+    if (file != nullptr)
+        AAsset_close(file);
 }
 
 } // namespace sf::priv

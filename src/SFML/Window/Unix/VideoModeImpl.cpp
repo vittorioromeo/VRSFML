@@ -25,7 +25,8 @@ struct XDeleter<XRRScreenConfiguration>
 {
     void operator()(XRRScreenConfiguration* config) const
     {
-        XRRFreeScreenConfigInfo(config);
+        if (config != nullptr)
+            XRRFreeScreenConfigInfo(config);
     }
 };
 

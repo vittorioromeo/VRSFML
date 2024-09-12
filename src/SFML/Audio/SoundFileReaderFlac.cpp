@@ -277,6 +277,9 @@ SoundFileReaderFlac::~SoundFileReaderFlac() = default;
 ////////////////////////////////////////////////////////////
 void SoundFileReaderFlac::Impl::FlacStreamDecoderDeleter::operator()(FLAC__StreamDecoder* theDecoder) const
 {
+    if (theDecoder == nullptr)
+        return;
+
     FLAC__stream_decoder_finish(theDecoder);
     FLAC__stream_decoder_delete(theDecoder);
 }

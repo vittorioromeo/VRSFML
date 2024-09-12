@@ -26,22 +26,26 @@ struct UdevDeleter
 {
     void operator()(udev_device* device) const
     {
-        udev_device_unref(device);
+        if (device != nullptr)
+            udev_device_unref(device);
     }
 
     void operator()(udev_monitor* monitor) const
     {
-        udev_monitor_unref(monitor);
+        if (monitor != nullptr)
+            udev_monitor_unref(monitor);
     }
 
     void operator()(udev_enumerate* enumerate) const
     {
-        udev_enumerate_unref(enumerate);
+        if (enumerate != nullptr)
+            udev_enumerate_unref(enumerate);
     }
 
     void operator()(udev* context) const
     {
-        udev_unref(context);
+        if (context != nullptr)
+            udev_unref(context);
     }
 };
 

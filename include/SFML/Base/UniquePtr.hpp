@@ -23,17 +23,6 @@ struct UniquePtrDefaultDeleter
 
 
 ////////////////////////////////////////////////////////////
-struct UniquePtrArrayDeleter
-{
-    template <typename T>
-    [[gnu::always_inline]] void operator()(T* const ptr) const noexcept
-    {
-        delete[] ptr;
-    }
-};
-
-
-////////////////////////////////////////////////////////////
 template <typename T, typename TDeleter = UniquePtrDefaultDeleter>
 class UniquePtr : private TDeleter
 {
@@ -73,8 +62,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] ~UniquePtr() noexcept
     {
-        if (m_ptr != nullptr)
-            static_cast<TDeleter*>(this)->operator()(m_ptr);
+        static_cast<TDeleter*>(this)->operator()(m_ptr);
     }
 
 
@@ -169,9 +157,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void reset(T* const ptr = nullptr) noexcept
     {
-        if (m_ptr != nullptr)
-            static_cast<TDeleter*>(this)->operator()(m_ptr);
-
+        static_cast<TDeleter*>(this)->operator()(m_ptr);
         m_ptr = ptr;
     }
 };

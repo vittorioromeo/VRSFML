@@ -24,7 +24,8 @@ struct XDeleter<XcursorImage>
 {
     void operator()(XcursorImage* cursorImage) const
     {
-        XcursorImageDestroy(cursorImage);
+        if (cursorImage != nullptr)
+            XcursorImageDestroy(cursorImage);
     }
 };
 

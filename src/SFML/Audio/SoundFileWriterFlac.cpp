@@ -47,6 +47,9 @@ SoundFileWriterFlac::~SoundFileWriterFlac() = default;
 ////////////////////////////////////////////////////////////
 void SoundFileWriterFlac::Impl::FlacStreamEncoderDeleter::operator()(FLAC__StreamEncoder* theEncoder) const
 {
+    if (theEncoder == nullptr)
+        return;
+
     FLAC__stream_encoder_finish(theEncoder);
     FLAC__stream_encoder_delete(theEncoder);
 }
