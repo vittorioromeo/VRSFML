@@ -14,14 +14,14 @@ if(SFML_OS_WINDOWS)
 
         ${SRCROOT}/Win32/Win32ImplUnity.cpp
 
-        # ${SRCROOT}/Win32/ClipboardImpl.cpp
-        # ${SRCROOT}/Win32/CursorImpl.cpp
-        # ${SRCROOT}/Win32/InputImpl.cpp
-        # ${SRCROOT}/Win32/JoystickImpl.cpp
-        # ${SRCROOT}/Win32/Utils.cpp
-        # ${SRCROOT}/Win32/VideoModeImpl.cpp
-        # ${SRCROOT}/Win32/VulkanImplWin32.cpp
-        # ${SRCROOT}/Win32/WindowImplWin32.cpp
+        # ${SRCROOT}/Win32/Unity/ClipboardImpl.cpp
+        # ${SRCROOT}/Win32/Unity/CursorImpl.cpp
+        # ${SRCROOT}/Win32/Unity/InputImpl.cpp
+        # ${SRCROOT}/Win32/Unity/JoystickImpl.cpp
+        # ${SRCROOT}/Win32/Unity/Utils.cpp
+        # ${SRCROOT}/Win32/Unity/VideoModeImpl.cpp
+        # ${SRCROOT}/Win32/Unity/VulkanImplWin32.cpp
+        # ${SRCROOT}/Win32/Unity/WindowImplWin32.cpp
     )
     if(SFML_OPENGL_ES)
         list(APPEND PLATFORM_SRC
