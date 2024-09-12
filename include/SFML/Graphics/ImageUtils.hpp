@@ -71,8 +71,7 @@ public:
     /// \param image Image to save
     /// \param format Encoding format to use
     ///
-    /// \return Buffer with encoded data if saving was successful,
-    ///     otherwise base::nullOpt
+    /// \return Buffer with encoded data if saving was successful, `base::nullOpt` otherwise
     ///
     /// \see create, loadFromFile, loadFromMemory, saveToFile
     ///

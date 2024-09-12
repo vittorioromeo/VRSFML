@@ -6,7 +6,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Export.hpp"
 
-#include <vector>
+#include "SFML/Base/Span.hpp"
 
 
 using VkInstance = struct VkInstance_T*;
@@ -93,7 +93,7 @@ struct VulkanSurfaceData
 /// \return Vulkan instance extensions required for graphics
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API const std::vector<const char*>& getGraphicsRequiredInstanceExtensions();
+[[nodiscard]] SFML_WINDOW_API base::Span<const char* const> getGraphicsRequiredInstanceExtensions();
 
 } // namespace Vulkan
 } // namespace sf

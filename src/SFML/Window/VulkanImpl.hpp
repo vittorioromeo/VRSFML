@@ -46,7 +46,7 @@ namespace sf::priv::VulkanImpl
 /// \return Vulkan instance extensions required for graphics
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] const std::vector<const char*>& getGraphicsRequiredInstanceExtensions();
+[[nodiscard]] base::Span<const char* const> getGraphicsRequiredInstanceExtensions();
 
 ////////////////////////////////////////////////////////////
 /// \brief Create a Vulkan rendering surface

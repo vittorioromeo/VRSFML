@@ -15,6 +15,7 @@
 #include "SFML/System/Time.hpp"
 
 #include <iostream>
+#include <vector>
 
 
 ////////////////////////////////////////////////////////////

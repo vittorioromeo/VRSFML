@@ -21,7 +21,7 @@ VideoMode VideoModeUtils::getDesktopMode()
 
 
 ////////////////////////////////////////////////////////////
-const std::vector<VideoMode>& VideoModeUtils::getFullscreenModes()
+base::Span<const VideoMode> VideoModeUtils::getFullscreenModes()
 {
     static const auto modes = []
     {
@@ -30,7 +30,7 @@ const std::vector<VideoMode>& VideoModeUtils::getFullscreenModes()
         return result;
     }();
 
-    return modes;
+    return {modes.data(), modes.size()};
 }
 
 } // namespace sf

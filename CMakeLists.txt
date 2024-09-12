@@ -63,8 +63,8 @@ if(SFML_ENABLE_STACK_TRACES)
 
     CPMAddPackage(
         NAME cpptrace
-        GITHUB_REPOSITORY jeremy-rifkin/cpptrace
-        GIT_TAG v0.6.2
+        GITHUB_REPOSITORY vittorioromeo/cpptrace
+        GIT_TAG e76cc5a34e3ad22ff748b590f6085e56aa47f9e7
         SYSTEM TRUE
     )
 
