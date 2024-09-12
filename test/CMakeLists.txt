@@ -3,7 +3,6 @@ set_target_warnings(test-sfml-install)
 
 set(DOCTEST_NO_INSTALL ON CACHE BOOL "")
 
-
 CPMAddPackage(
     NAME doctest
     GITHUB_REPOSITORY doctest/doctest
@@ -29,25 +28,10 @@ if(SFML_OS_EMSCRIPTEN)
     target_link_options(doctest INTERFACE ${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS})
 endif()
 
-add_library(sfml-test-main STATIC
-    TestUtilities/Doctest.hpp
-    TestUtilities/Doctest.cpp
-    TestUtilities/SystemUtil.hpp
-    TestUtilities/SystemUtil.cpp
-    TestUtilities/LoadIntoMemoryUtil.hpp
-    TestUtilities/LoadIntoMemoryUtil.cpp
-    TestUtilities/WindowUtil.hpp
-    TestUtilities/WindowUtil.cpp
-    TestUtilities/GraphicsUtil.hpp
-    TestUtilities/GraphicsUtil.cpp
-    TestUtilities/AudioUtil.hpp
-    TestUtilities/AudioUtil.cpp
-    TestUtilities/StringifyArrayUtil.hpp
-    TestUtilities/StringifyOptionalUtil.hpp
-    TestUtilities/StringifyPathUtil.hpp
-    TestUtilities/StringifyStringUtil.hpp
-    TestUtilities/StringifyVectorUtil.hpp
-)
+set(TEST_SRCROOT ${PROJECT_SOURCE_DIR}/test)
+file(GLOB TEST_UTILITIES_SRC CONFIGURE_DEPENDS "${TEST_SRCROOT}/TestUtilities/*.cpp" "${TEST_SRCROOT}/TestUtilities/*.hpp" "${TEST_SRCROOT}/TestUtilities/*.inl")
+
+add_library(sfml-test-main STATIC ${TEST_UTILITIES_SRC})
 target_include_directories(sfml-test-main PUBLIC TestUtilities)
 target_compile_definitions(sfml-test-main PUBLIC DOCTEST_CONFIG_REQUIRE_STRINGIFICATION_FOR_ALL_USED_TYPES)
 
@@ -82,31 +66,10 @@ if(SFML_RUN_AUDIO_DEVICE_TESTS)
     target_compile_definitions(sfml-test-main PRIVATE SFML_RUN_AUDIO_DEVICE_TESTS)
 endif()
 
-set(BASE_SRC
-    Base/Algorithm.test.cpp
-    Base/MaxAlignT.test.cpp
-    Base/Optional.test.cpp
-    Base/SizeT.test.cpp
-    Base/Traits.test.cpp
-    Base/TrivialVector.test.cpp
-)
+file(GLOB BASE_SRC CONFIGURE_DEPENDS "${TEST_SRCROOT}/Base/*.cpp" "${TEST_SRCROOT}/Base/*.hpp" "${TEST_SRCROOT}/Base/*.inl")
 sfml_add_test(test-sfml-base "${BASE_SRC}" "")
 
-set(SYSTEM_SRC
-    System/Angle.test.cpp
-    System/Clock.test.cpp
-    System/Config.test.cpp
-    System/Err.test.cpp
-    System/FileInputStream.test.cpp
-    System/MemoryInputStream.test.cpp
-    System/Rect.test.cpp
-    System/RectPacker.test.cpp
-    System/Sleep.test.cpp
-    System/String.test.cpp
-    System/Time.test.cpp
-    System/Vector2.test.cpp
-    System/Vector3.test.cpp
-)
+file(GLOB SYSTEM_SRC CONFIGURE_DEPENDS "${TEST_SRCROOT}/System/*.cpp" "${TEST_SRCROOT}/System/*.hpp" "${TEST_SRCROOT}/System/*.inl")
 sfml_add_test(test-sfml-system "${SYSTEM_SRC}" "")
 target_compile_definitions(test-sfml-system PRIVATE
     EXPECTED_SFML_VERSION_MAJOR=${SFML_VERSION_MAJOR}
@@ -115,51 +78,12 @@ target_compile_definitions(test-sfml-system PRIVATE
     EXPECTED_SFML_VERSION_IS_RELEASE=$<IF:$<BOOL:${VERSION_IS_RELEASE}>,true,false>
 )
 
-set(WINDOW_SRC
-    Window/Clipboard.test.cpp
-    Window/Context.test.cpp
-    Window/ContextSettings.test.cpp
-    Window/Cursor.test.cpp
-    Window/Event.test.cpp
-    Window/Joystick.test.cpp
-    Window/Keyboard.test.cpp
-    Window/VideoMode.test.cpp
-    Window/Vulkan.test.cpp
-    Window/Window.test.cpp
-    Window/WindowBase.test.cpp
-)
+file(GLOB WINDOW_SRC CONFIGURE_DEPENDS "${TEST_SRCROOT}/Window/*.cpp" "${TEST_SRCROOT}/Window/*.hpp" "${TEST_SRCROOT}/Window/*.inl")
 sfml_add_test(test-sfml-window "${WINDOW_SRC}" SFML::Window)
 
-set(GRAPHICS_SRC
-    Graphics/BlendMode.test.cpp
-    Graphics/CircleShape.test.cpp
-    Graphics/Color.test.cpp
-    Graphics/ConvexShape.test.cpp
-    Graphics/CoordinateType.test.cpp
-    Graphics/Font.test.cpp
-    Graphics/Glsl.test.cpp
-    Graphics/Glyph.test.cpp
-    Graphics/Image.test.cpp
-    Graphics/RectangleShape.test.cpp
-    Graphics/Render.test.cpp
-    Graphics/RenderStates.test.cpp
-    Graphics/RenderTarget.test.cpp
-    Graphics/RenderTexture.test.cpp
-    Graphics/RenderWindow.test.cpp
-    Graphics/Shader.test.cpp
-    Graphics/Shape.test.cpp
-    Graphics/Sprite.test.cpp
-    Graphics/StencilMode.test.cpp
-    Graphics/Text.test.cpp
-    Graphics/Texture.test.cpp
-    Graphics/TextureAtlas.test.cpp
-    Graphics/Transform.test.cpp
-    Graphics/Transformable.test.cpp
-    Graphics/Vertex.test.cpp
-    Graphics/VertexBuffer.test.cpp
-    Graphics/View.test.cpp
-)
+file(GLOB GRAPHICS_SRC CONFIGURE_DEPENDS "${TEST_SRCROOT}/Graphics/*.cpp" "${TEST_SRCROOT}/Graphics/*.hpp" "${TEST_SRCROOT}/Graphics/*.inl")
 sfml_add_test(test-sfml-graphics "${GRAPHICS_SRC}" SFML::Graphics)
+
 if(SFML_RUN_DISPLAY_TESTS)
     target_compile_definitions(test-sfml-graphics PRIVATE SFML_RUN_DISPLAY_TESTS)
 endif()
@@ -181,33 +105,10 @@ if(SFML_OS_EMSCRIPTEN)
     endforeach()
 endif()
 
-set(NETWORK_SRC
-    Network/Ftp.test.cpp
-    Network/Http.test.cpp
-    Network/IpAddress.test.cpp
-    Network/Packet.test.cpp
-    Network/Socket.test.cpp
-    Network/SocketSelector.test.cpp
-    Network/TcpListener.test.cpp
-    Network/TcpSocket.test.cpp
-    Network/UdpSocket.test.cpp
-)
+file(GLOB NETWORK_SRC CONFIGURE_DEPENDS "${TEST_SRCROOT}/Network/*.cpp" "${TEST_SRCROOT}/Network/*.hpp" "${TEST_SRCROOT}/Network/*.inl")
 sfml_add_test(test-sfml-network "${NETWORK_SRC}" SFML::Network)
 
-set(AUDIO_SRC
-    Audio/InputSoundFile.test.cpp
-    Audio/Music.test.cpp
-    Audio/OutputSoundFile.test.cpp
-    Audio/Sound.test.cpp
-    Audio/SoundBuffer.test.cpp
-    Audio/SoundBufferRecorder.test.cpp
-    Audio/SoundFileFactory.test.cpp
-    Audio/SoundFileReader.test.cpp
-    Audio/SoundFileWriter.test.cpp
-    Audio/SoundRecorder.test.cpp
-    Audio/SoundSource.test.cpp
-    Audio/SoundStream.test.cpp
-)
+file(GLOB AUDIO_SRC CONFIGURE_DEPENDS "${TEST_SRCROOT}/Audio/*.cpp" "${TEST_SRCROOT}/Audio/*.hpp" "${TEST_SRCROOT}/Audio/*.inl")
 sfml_add_test(test-sfml-audio "${AUDIO_SRC}" SFML::Audio)
 
 if(SFML_OS_ANDROID AND DEFINED ENV{LIBCXX_SHARED_SO})

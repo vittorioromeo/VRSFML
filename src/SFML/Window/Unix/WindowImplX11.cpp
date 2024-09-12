@@ -394,7 +394,8 @@ struct XDeleter<XImage>
 {
     void operator()(XImage* image) const
     {
-        XDestroyImage(image);
+        if (image != nullptr)
+            XDestroyImage(image);
     }
 };
 
@@ -405,7 +406,8 @@ struct XDeleter<XRRScreenResources>
 {
     void operator()(XRRScreenResources* res) const
     {
-        XRRFreeScreenResources(res);
+        if (res != nullptr)
+            XRRFreeScreenResources(res);
     }
 };
 
@@ -416,7 +418,8 @@ struct XDeleter<XRROutputInfo>
 {
     void operator()(XRROutputInfo* outputInfo) const
     {
-        XRRFreeOutputInfo(outputInfo);
+        if (outputInfo != nullptr)
+            XRRFreeOutputInfo(outputInfo);
     }
 };
 
@@ -427,7 +430,8 @@ struct XDeleter<XRRCrtcInfo>
 {
     void operator()(XRRCrtcInfo* crtcInfo) const
     {
-        XRRFreeCrtcInfo(crtcInfo);
+        if (crtcInfo != nullptr)
+            XRRFreeCrtcInfo(crtcInfo);
     }
 };
 

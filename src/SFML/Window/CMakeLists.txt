@@ -1,73 +1,7 @@
 set(INCROOT ${PROJECT_SOURCE_DIR}/include/SFML/Window)
 set(SRCROOT ${PROJECT_SOURCE_DIR}/src/SFML/Window)
 
-# all source files
-set(SRC
-    ${INCROOT}/Clipboard.hpp
-    ${SRCROOT}/Clipboard.cpp
-    ${SRCROOT}/ClipboardImpl.hpp
-    ${SRCROOT}/Cursor.cpp
-    ${INCROOT}/Cursor.hpp
-    ${SRCROOT}/CursorImpl.hpp
-    ${SRCROOT}/Event.cpp
-    ${INCROOT}/Export.hpp
-    ${SRCROOT}/GLCheck.cpp
-    ${SRCROOT}/GLCheck.hpp
-    ${SRCROOT}/GlContext.cpp
-    ${SRCROOT}/GlContext.hpp
-    ${INCROOT}/ContextSettings.hpp
-    ${INCROOT}/ContextSettings.hpp
-    ${INCROOT}/Event.hpp
-    ${INCROOT}/Event.inl
-    ${INCROOT}/EventUtils.hpp
-    ${SRCROOT}/EventUtils.cpp
-    ${SRCROOT}/InputImpl.hpp
-    ${INCROOT}/Joystick.hpp
-    ${INCROOT}/JoystickIdentification.hpp
-    ${SRCROOT}/Joystick.cpp
-    ${INCROOT}/JoystickAxis.hpp
-    ${SRCROOT}/JoystickImpl.hpp
-    ${SRCROOT}/JoystickManager.cpp
-    ${SRCROOT}/JoystickManager.hpp
-    ${INCROOT}/Keyboard.hpp
-    ${SRCROOT}/Keyboard.cpp
-    ${INCROOT}/Mouse.hpp
-    ${SRCROOT}/Mouse.cpp
-    ${INCROOT}/Touch.hpp
-    ${SRCROOT}/Touch.cpp
-    ${INCROOT}/Sensor.hpp
-    ${SRCROOT}/Sensor.cpp
-    ${SRCROOT}/SensorImpl.hpp
-    ${SRCROOT}/SensorManager.cpp
-    ${SRCROOT}/SensorManager.hpp
-    ${SRCROOT}/VideoMode.cpp
-    ${INCROOT}/VideoMode.hpp
-    ${SRCROOT}/VideoModeUtils.cpp
-    ${INCROOT}/VideoModeUtils.hpp
-    ${SRCROOT}/VideoModeImpl.hpp
-    ${SRCROOT}/Vulkan.cpp
-    ${INCROOT}/Vulkan.hpp
-    ${SRCROOT}/VulkanImpl.hpp
-    ${SRCROOT}/Window.cpp
-    ${INCROOT}/Window.hpp
-    ${SRCROOT}/WindowBase.cpp
-    ${INCROOT}/WindowBase.hpp
-    ${INCROOT}/WindowEnums.hpp
-    ${INCROOT}/WindowHandle.hpp
-    ${SRCROOT}/WindowImpl.cpp
-    ${SRCROOT}/WindowImpl.hpp
-    ${SRCROOT}/WindowContext.cpp
-    ${INCROOT}/WindowContext.hpp
-    ${SRCROOT}/GLExtensions.hpp
-    ${SRCROOT}/GLExtensions.cpp
-    ${SRCROOT}/Stub/StubClipboardImpl.hpp
-    ${SRCROOT}/Stub/StubClipboardImpl.cpp
-    ${SRCROOT}/Stub/StubSensorImpl.hpp
-    ${SRCROOT}/Stub/StubSensorImpl.cpp
-    ${SRCROOT}/Stub/StubCursorImpl.hpp
-    ${SRCROOT}/Stub/StubCursorImpl.cpp
-)
-source_group("" FILES ${SRC})
+file(GLOB SRC CONFIGURE_DEPENDS "${INCROOT}/*.hpp" "${INCROOT}/*.inl"  "${SRCROOT}/*.hpp" "${SRCROOT}/*.inl" "${SRCROOT}/*.cpp" "${SRCROOT}/Stub/*.hpp" "${SRCROOT}/Stub/*.cpp")
 
 # add platform specific sources
 if(SFML_OS_WINDOWS)
@@ -102,7 +36,6 @@ if(SFML_OS_WINDOWS)
             ${SRCROOT}/Win32/WglContext.hpp
         )
     endif()
-    source_group("windows" FILES ${PLATFORM_SRC})
 elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
     if(SFML_USE_DRM)
         add_definitions(-DSFML_USE_DRM)
@@ -167,7 +100,6 @@ elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
             ${SRCROOT}/NetBSD/JoystickImpl.hpp
         )
     endif()
-    source_group("unix" FILES ${PLATFORM_SRC})
 elseif(SFML_OS_MACOS)
     enable_language(OBJC OBJCXX)
     set(PLATFORM_SRC
@@ -217,7 +149,6 @@ elseif(SFML_OS_MACOS)
         ${SRCROOT}/macOS/AutoreleasePoolWrapper.hpp
         ${SRCROOT}/macOS/AutoreleasePoolWrapper.mm
     )
-    source_group("mac" FILES ${PLATFORM_SRC})
 elseif(SFML_OS_IOS)
     enable_language(OBJCXX)
     set(PLATFORM_SRC
@@ -241,7 +172,6 @@ elseif(SFML_OS_IOS)
         ${SRCROOT}/iOS/SFMain.hpp
         ${SRCROOT}/iOS/SFMain.mm
     )
-    source_group("ios" FILES ${PLATFORM_SRC})
 elseif(SFML_OS_ANDROID)
     set(PLATFORM_SRC
         ${SRCROOT}/EGLCheck.cpp
@@ -255,7 +185,6 @@ elseif(SFML_OS_ANDROID)
         ${SRCROOT}/Android/SensorImpl.hpp
         ${SRCROOT}/Android/SensorImpl.cpp
     )
-    source_group("android" FILES ${PLATFORM_SRC})
 elseif(SFML_OS_EMSCRIPTEN)
     set(PLATFORM_SRC
         ${SRCROOT}/EGLCheck.cpp
@@ -266,7 +195,6 @@ elseif(SFML_OS_EMSCRIPTEN)
         ${SRCROOT}/Emscripten/JoystickImpl.hpp
         ${SRCROOT}/Emscripten/EmscriptenImpl.cpp
     )
-    source_group("emscripten" FILES ${PLATFORM_SRC})
 endif()
 
 # define the sfml-window target

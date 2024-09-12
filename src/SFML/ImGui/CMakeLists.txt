@@ -1,14 +1,7 @@
 set(INCROOT ${PROJECT_SOURCE_DIR}/include/SFML/ImGui)
 set(SRCROOT ${PROJECT_SOURCE_DIR}/src/SFML/ImGui)
 
-# all source files
-set(SRC
-    ${SRCROOT}/Backend.hpp
-    ${SRCROOT}/Backend.cpp
-    ${INCROOT}/ImGui.hpp
-    ${SRCROOT}/ImGui.cpp
-)
-source_group("" FILES ${SRC})
+file(GLOB SRC CONFIGURE_DEPENDS "${INCROOT}/*.hpp" "${INCROOT}/*.inl"  "${SRCROOT}/*.hpp" "${SRCROOT}/*.inl" "${SRCROOT}/*.cpp")
 
 # define the sfml-imgui target
 sfml_add_library(ImGui

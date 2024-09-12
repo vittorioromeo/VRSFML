@@ -24,7 +24,8 @@ namespace sf
 ////////////////////////////////////////////////////////////
 void FileInputStream::FileCloser::operator()(std::FILE* file)
 {
-    std::fclose(file);
+    if (file != nullptr)
+        std::fclose(file);
 }
 
 

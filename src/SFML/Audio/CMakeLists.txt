@@ -1,74 +1,7 @@
 set(INCROOT ${PROJECT_SOURCE_DIR}/include/SFML/Audio)
 set(SRCROOT ${PROJECT_SOURCE_DIR}/src/SFML/Audio)
 
-# all source files
-set(SRC
-    ${INCROOT}/AudioContext.hpp
-    ${SRCROOT}/AudioContext.cpp
-    ${INCROOT}/AudioContextUtils.hpp
-    ${SRCROOT}/AudioContextUtils.cpp
-    ${INCROOT}/AudioDeviceHandle.hpp
-    ${SRCROOT}/AudioDeviceHandle.cpp
-    ${SRCROOT}/CaptureDevice.cpp
-    ${INCROOT}/CaptureDevice.hpp
-    ${INCROOT}/CaptureDeviceHandle.hpp
-    ${SRCROOT}/ChannelMap.cpp
-    ${INCROOT}/ChannelMap.hpp
-    ${INCROOT}/Export.hpp
-    ${INCROOT}/Listener.hpp
-    ${SRCROOT}/Miniaudio.cpp
-    ${SRCROOT}/MiniaudioUtils.hpp
-    ${SRCROOT}/MiniaudioUtils.cpp
-    ${SRCROOT}/SavedSettings.hpp
-    ${SRCROOT}/SavedSettings.cpp
-    ${INCROOT}/Music.hpp
-    ${SRCROOT}/Music.cpp
-    ${SRCROOT}/PlaybackDevice.cpp
-    ${INCROOT}/PlaybackDevice.hpp
-    ${INCROOT}/PlaybackDeviceHandle.hpp
-    ${SRCROOT}/Sound.cpp
-    ${INCROOT}/Sound.hpp
-    ${SRCROOT}/SoundBuffer.cpp
-    ${INCROOT}/SoundBuffer.hpp
-    ${SRCROOT}/SoundBufferRecorder.cpp
-    ${INCROOT}/SoundBufferRecorder.hpp
-    ${INCROOT}/SoundChannel.hpp
-    ${SRCROOT}/InputSoundFile.cpp
-    ${INCROOT}/InputSoundFile.hpp
-    ${SRCROOT}/OutputSoundFile.cpp
-    ${INCROOT}/OutputSoundFile.hpp
-    ${SRCROOT}/SoundRecorder.cpp
-    ${INCROOT}/SoundRecorder.hpp
-    ${SRCROOT}/SoundSource.cpp
-    ${INCROOT}/SoundSource.hpp
-    ${SRCROOT}/SoundStream.cpp
-    ${INCROOT}/SoundStream.hpp
-    ${INCROOT}/EffectProcessor.hpp
-)
-source_group("" FILES ${SRC})
-
-set(CODECS_SRC
-    ${SRCROOT}/SoundFileFactory.cpp
-    ${INCROOT}/SoundFileFactory.hpp
-    ${INCROOT}/SoundFileFactory.inl
-    ${INCROOT}/SoundFileReader.hpp
-    ${SRCROOT}/SoundFileReaderFlac.hpp
-    ${SRCROOT}/SoundFileReaderFlac.cpp
-    ${SRCROOT}/SoundFileReaderMp3.hpp
-    ${SRCROOT}/SoundFileReaderMp3.cpp
-    ${SRCROOT}/SoundFileReaderOgg.hpp
-    ${SRCROOT}/SoundFileReaderOgg.cpp
-    ${SRCROOT}/SoundFileReaderWav.hpp
-    ${SRCROOT}/SoundFileReaderWav.cpp
-    ${INCROOT}/SoundFileWriter.hpp
-    ${SRCROOT}/SoundFileWriterFlac.hpp
-    ${SRCROOT}/SoundFileWriterFlac.cpp
-    ${SRCROOT}/SoundFileWriterOgg.hpp
-    ${SRCROOT}/SoundFileWriterOgg.cpp
-    ${SRCROOT}/SoundFileWriterWav.hpp
-    ${SRCROOT}/SoundFileWriterWav.cpp
-)
-source_group("codecs" FILES ${CODECS_SRC})
+file(GLOB SRC CONFIGURE_DEPENDS "${INCROOT}/*.hpp" "${INCROOT}/*.inl"  "${SRCROOT}/*.hpp" "${SRCROOT}/*.inl" "${SRCROOT}/*.cpp")
 
 # Ensure certain files are compiled as Objective-C++
 # See: https://miniaud.io/docs/manual/index.html#Building

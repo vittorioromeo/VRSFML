@@ -1,88 +1,11 @@
 set(INCROOT ${PROJECT_SOURCE_DIR}/include/SFML/Graphics)
 set(SRCROOT ${PROJECT_SOURCE_DIR}/src/SFML/Graphics)
 
-# all source files
-set(SRC
-    ${SRCROOT}/BlendMode.cpp
-    ${INCROOT}/BlendMode.hpp
-    ${INCROOT}/Color.hpp
-    ${INCROOT}/Color.inl
-    ${INCROOT}/CoordinateType.hpp
-    ${SRCROOT}/DrawableBatch.cpp
-    ${INCROOT}/DrawableBatch.hpp
-    ${INCROOT}/Export.hpp
-    ${SRCROOT}/Font.cpp
-    ${INCROOT}/Font.hpp
-    ${SRCROOT}/Glsl.cpp
-    ${INCROOT}/Glsl.hpp
-    ${SRCROOT}/GraphicsContext.cpp
-    ${INCROOT}/GraphicsContext.hpp
-    ${INCROOT}/Glsl.inl
-    ${INCROOT}/Glyph.hpp
-    ${SRCROOT}/Image.cpp
-    ${INCROOT}/Image.hpp
-    ${SRCROOT}/ImageUtils.cpp
-    ${INCROOT}/ImageUtils.hpp
-    ${INCROOT}/PrimitiveType.hpp
-    ${SRCROOT}/RenderStates.cpp
-    ${INCROOT}/RenderStates.hpp
-    ${SRCROOT}/RenderTexture.cpp
-    ${INCROOT}/RenderTexture.hpp
-    ${SRCROOT}/RenderTarget.cpp
-    ${INCROOT}/RenderTarget.hpp
-    ${SRCROOT}/RenderWindow.cpp
-    ${INCROOT}/RenderWindow.hpp
-    ${SRCROOT}/Shader.cpp
-    ${INCROOT}/Shader.hpp
-    ${SRCROOT}/StencilMode.cpp
-    ${INCROOT}/StencilMode.hpp
-    ${SRCROOT}/Texture.cpp
-    ${INCROOT}/Texture.hpp
-    ${SRCROOT}/TextureAtlas.cpp
-    ${INCROOT}/TextureAtlas.hpp
-    ${SRCROOT}/TextureSaver.cpp
-    ${SRCROOT}/TextureSaver.hpp
-    ${SRCROOT}/Transform.cpp
-    ${INCROOT}/Transform.hpp
-    ${INCROOT}/Transform.inl
-    ${SRCROOT}/Transformable.cpp
-    ${INCROOT}/Transformable.hpp
-    ${SRCROOT}/View.cpp
-    ${INCROOT}/View.hpp
-    ${INCROOT}/Vertex.hpp
-)
-source_group("" FILES ${SRC})
-
-# drawables sources
-set(DRAWABLES_SRC
-    ${SRCROOT}/Shape.cpp
-    ${INCROOT}/Shape.hpp
-    ${SRCROOT}/CircleShape.cpp
-    ${INCROOT}/CircleShape.hpp
-    ${SRCROOT}/RectangleShape.cpp
-    ${INCROOT}/RectangleShape.hpp
-    ${SRCROOT}/ConvexShape.cpp
-    ${INCROOT}/ConvexShape.hpp
-    ${SRCROOT}/Sprite.cpp
-    ${INCROOT}/Sprite.hpp
-    ${SRCROOT}/Text.cpp
-    ${INCROOT}/Text.hpp
-    ${SRCROOT}/VertexBuffer.cpp
-    ${INCROOT}/VertexBuffer.hpp
-)
-source_group("drawables" FILES ${DRAWABLES_SRC})
-
-# render-texture sources
-set(RENDER_TEXTURE_SRC
-    ${SRCROOT}/RenderTextureImplFBO.cpp
-    ${SRCROOT}/RenderTextureImplFBO.hpp
-)
-source_group("render texture" FILES ${RENDER_TEXTURE_SRC})
-
+file(GLOB SRC CONFIGURE_DEPENDS "${INCROOT}/*.hpp" "${INCROOT}/*.inl"  "${SRCROOT}/*.hpp" "${SRCROOT}/*.inl" "${SRCROOT}/*.cpp")
 
 # define the sfml-graphics target
 sfml_add_library(Graphics
-                 SOURCES ${SRC} ${DRAWABLES_SRC} ${RENDER_TEXTURE_SRC})
+                 SOURCES ${SRC})
 
 # setup dependencies
 target_link_libraries(sfml-graphics PUBLIC SFML::Window)

@@ -135,7 +135,6 @@ macro(sfml_add_library module)
                 @ONLY
             )
             target_sources(${target} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/${target}.rc")
-            source_group("" FILES "${CMAKE_CURRENT_BINARY_DIR}/${target}.rc")
 
             if(SFML_COMPILER_GCC OR SFML_COMPILER_CLANG)
                 # on Windows + gcc/clang get rid of "lib" prefix for shared libraries,
@@ -275,9 +274,6 @@ macro(sfml_add_example target)
     # parse the arguments
     cmake_parse_arguments(THIS "GUI_APP" "RESOURCES_DIR" "SOURCES;BUNDLE_RESOURCES;DEPENDS" ${ARGN})
 
-    # set a source group for the source files
-    source_group("" FILES ${THIS_SOURCES})
-
     # check whether resources must be added in target
     set(target_input ${THIS_SOURCES})
     if(THIS_BUNDLE_RESOURCES)
@@ -356,9 +352,6 @@ endmacro()
 #                           ftp.cpp ...
 #                           SFML::Network)
 function(sfml_add_test target SOURCES DEPENDS)
-
-    # set a source group for the source files
-    source_group("" FILES ${SOURCES})
 
     # create the target
     add_executable(${target} ${SOURCES})
