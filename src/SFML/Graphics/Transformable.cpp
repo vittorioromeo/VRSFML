@@ -18,7 +18,8 @@ Transformable::Transformable() = default;
 ////////////////////////////////////////////////////////////
 void Transformable::setPosition(Vector2f position)
 {
-    m_position                   = position;
+    m_position = position;
+
     m_transformNeedUpdate        = true;
     m_inverseTransformNeedUpdate = true;
 }
@@ -37,7 +38,8 @@ void Transformable::setRotation(Angle angle)
 ////////////////////////////////////////////////////////////
 void Transformable::setScale(Vector2f factors)
 {
-    m_scale                      = factors;
+    m_scale = factors;
+
     m_transformNeedUpdate        = true;
     m_inverseTransformNeedUpdate = true;
 }
@@ -46,7 +48,8 @@ void Transformable::setScale(Vector2f factors)
 ////////////////////////////////////////////////////////////
 void Transformable::setOrigin(Vector2f origin)
 {
-    m_origin                     = origin;
+    m_origin = origin;
+
     m_transformNeedUpdate        = true;
     m_inverseTransformNeedUpdate = true;
 }
@@ -117,10 +120,14 @@ const Transform& Transformable::getTransform() const
         const float tx     = -m_origin.x * sxc - m_origin.y * sys + m_position.x;
         const float ty     = m_origin.x * sxs - m_origin.y * syc + m_position.y;
 
-        // clang-format off
-        m_transform = Transform( sxc, sys, tx,
-                                -sxs, syc, ty);
-        // clang-format on
+        m_transform.m_matrix[0]  = sxc; // a00
+        m_transform.m_matrix[4]  = sys; // a01
+        m_transform.m_matrix[12] = tx;  // a02
+
+        m_transform.m_matrix[1]  = -sxs; // a10
+        m_transform.m_matrix[5]  = syc;  // a11
+        m_transform.m_matrix[13] = ty;   // a12
+
         m_transformNeedUpdate = false;
     }
 

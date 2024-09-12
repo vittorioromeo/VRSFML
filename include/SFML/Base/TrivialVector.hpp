@@ -230,7 +230,7 @@ public:
 
     ////////////////////////////////////////////////////////////
     template <typename... Ts>
-    [[gnu::always_inline]] void unsafeEmplaceBack(Ts&&... xs)
+    [[gnu::always_inline, gnu::flatten]] void unsafeEmplaceBack(Ts&&... xs)
     {
         SFML_BASE_ASSERT(size() <= capacity());
         SFML_BASE_ASSERT(m_data != nullptr);
@@ -242,7 +242,7 @@ public:
 
     ////////////////////////////////////////////////////////////
     template <typename... TItems>
-    [[gnu::always_inline]] void unsafePushBackMultiple(TItems&&... items)
+    [[gnu::always_inline, gnu::flatten]] void unsafePushBackMultiple(TItems&&... items)
     {
         SFML_BASE_ASSERT(size() + sizeof...(items) <= capacity());
         SFML_BASE_ASSERT(m_data != nullptr);
