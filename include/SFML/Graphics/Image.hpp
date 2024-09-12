@@ -90,7 +90,7 @@ public:
     /// The \a pixel array is assumed to contain 32-bits RGBA pixels,
     /// and have the given \a width and \a height. If not, this is
     /// an undefined behavior.
-    /// If \a pixels is null or \a size is zero, the behavior is undefined.
+    /// If \a pixels is `nullptr` or \a size is zero, the behavior is undefined.
     ///
     /// \param size   Width and height of the image
     /// \param pixels Array of pixels to copy to the image
@@ -110,7 +110,7 @@ public:
     ///
     /// \return Image if loading was successful, `base::nullOpt` otherwise
     ///
-    /// \see loadFromMemory, loadFromStream, saveToFile
+    /// \see `loadFromMemory`, `loadFromStream`, `saveToFile`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<Image> loadFromFile(const Path& filename);
@@ -145,7 +145,7 @@ public:
     ///
     /// \return Image if loading was successful, `base::nullOpt` otherwise
     ///
-    /// \see loadFromFile, loadFromMemory
+    /// \see `loadFromFile`, `loadFromMemory`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<Image> loadFromStream(InputStream& stream);
@@ -162,7 +162,7 @@ public:
     /// \brief Create a transparency mask from a specified color-key
     ///
     /// This function sets the alpha value of every pixel matching
-    /// the given color to \a alpha (0 by default), so that they
+    /// the given color to \a `alpha` (0 by default), so that they
     /// become transparent.
     ///
     /// \param color Color to make transparent
@@ -177,20 +177,20 @@ public:
     /// This function does a slow pixel copy and should not be
     /// used intensively. It can be used to prepare a complex
     /// static image from several others, but if you need this
-    /// kind of feature in real-time you'd better use sf::RenderTexture.
+    /// kind of feature in real-time you'd better use `sf::RenderTexture`.
     ///
-    /// If \a sourceRect is empty, the whole image is copied.
-    /// If \a applyAlpha is set to true, alpha blending is
+    /// If \a `sourceRect` is empty, the whole image is copied.
+    /// If \a `applyAlpha` is set to `true`, alpha blending is
     /// applied from the source pixels to the destination pixels
-    /// using the \b over operator. If it is false, the source
+    /// using the \b over operator. If it is `false`, the source
     /// pixels are copied unchanged with their alpha value.
     ///
     /// See https://en.wikipedia.org/wiki/Alpha_compositing for
     /// details on the \b over operator.
     ///
     /// Note that this function can fail if either image is invalid
-    /// (i.e. zero-sized width or height), or if \a sourceRect is
-    /// not within the boundaries of the \a source parameter, or
+    /// (i.e. zero-sized width or height), or if \a `sourceRect` is
+    /// not within the boundaries of the \a `source` parameter, or
     /// if the destination area is out of the boundaries of this image.
     ///
     /// On failure, the destination image is left unchanged.
@@ -200,7 +200,7 @@ public:
     /// \param sourceRect Sub-rectangle of the source image to copy
     /// \param applyAlpha Should the copy take into account the source transparency?
     ///
-    /// \return True if the operation was successful, false otherwise
+    /// \return `true` if the operation was successful, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool copy(const Image& source, Vector2u dest, const IntRect& sourceRect = {}, bool applyAlpha = false);
@@ -215,7 +215,7 @@ public:
     /// \param coords Coordinates of pixel to change
     /// \param color  New color of the pixel
     ///
-    /// \see getPixel
+    /// \see `getPixel`
     ///
     ////////////////////////////////////////////////////////////
     void setPixel(Vector2u coords, Color color);
@@ -231,7 +231,7 @@ public:
     ///
     /// \return Color of the pixel at given coordinates
     ///
-    /// \see setPixel
+    /// \see `setPixel`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Color getPixel(Vector2u coords) const;
@@ -241,7 +241,7 @@ public:
     ///
     /// The returned value points to an array of RGBA pixels made of
     /// 8 bit integer components. The size of the array is
-    /// width * height * 4 (getSize().x * getSize().y * 4).
+    /// `width * height * 4 (getSize().x * getSize().y * 4)`.
     /// Warning: the returned pointer may become invalid if you
     /// modify the image, so you should never store it for too long.
     /// If the image is empty, a null pointer is returned.
@@ -287,21 +287,21 @@ private:
 /// \class sf::Image
 /// \ingroup graphics
 ///
-/// sf::Image is an abstraction to manipulate images
-/// as bidimensional arrays of pixels. The class provides
+/// `sf::Image` is an abstraction to manipulate images
+/// as bi-dimensional arrays of pixels. The class provides
 /// functions to load, read, write and save pixels, as well
 /// as many other useful functions.
 ///
-/// sf::Image can handle a unique internal representation of
+/// `sf::Image` can handle a unique internal representation of
 /// pixels, which is RGBA 32 bits. This means that a pixel
 /// must be composed of 8 bit red, green, blue and alpha
-/// channels -- just like a sf::Color.
+/// channels -- just like a `sf::Color`.
 /// All the functions that return an array of pixels follow
-/// this rule, and all parameters that you pass to sf::Image
-/// functions (such as loadFromMemory) must use this
+/// this rule, and all parameters that you pass to `sf::Image`
+/// functions (such as `loadFromMemory`) must use this
 /// representation as well.
 ///
-/// A sf::Image can be copied, but it is a heavy resource and
+/// A `sf::Image` can be copied, but it is a heavy resource and
 /// if possible you should always use [const] references to
 /// pass or return them to avoid useless copies.
 ///
@@ -327,6 +327,6 @@ private:
 ///     return -1;
 /// \endcode
 ///
-/// \see sf::Texture
+/// \see `sf::Texture`
 ///
 ////////////////////////////////////////////////////////////

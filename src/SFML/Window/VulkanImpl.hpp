@@ -35,7 +35,7 @@ namespace sf::priv::VulkanImpl
 ///
 /// \param name Name of the function to get the address of
 ///
-/// \return Address of the Vulkan function, nullptr on failure
+/// \return Address of the Vulkan function, `nullptr` on failure
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] VulkanFunctionPointer getFunction(const char* name);

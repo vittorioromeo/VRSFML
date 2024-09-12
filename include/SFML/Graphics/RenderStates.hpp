@@ -25,7 +25,7 @@ class Texture;
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief Define the states used for drawing to a RenderTarget
+/// \brief Define the states used for drawing to a `RenderTarget`
 ///
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
@@ -86,19 +86,19 @@ struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
 ///
 /// If you want to use a single specific render state,
 /// for example a shader, you can pass it directly to the Draw
-/// function: sf::RenderStates has an implicit one-argument
+/// function: `sf::RenderStates` has an implicit one-argument
 /// constructor for each state.
 /// \code
 /// window.draw(sprite, shader);
 /// \endcode
 ///
-/// When you're inside the draw function of a drawable
+/// When you're inside the `draw` function of a drawable
 /// object, you can either pass the render states unmodified,
 /// or change some of them.
 /// For example, a transformable object will combine the
 /// current transform with its own transform. A sprite will
 /// set its texture. Etc.
 ///
-/// \see sf::RenderTarget
+/// \see `sf::RenderTarget`
 ///
 ////////////////////////////////////////////////////////////

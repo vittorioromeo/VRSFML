@@ -68,7 +68,7 @@ public:
     ///
     /// \param filename Path of the sound file to load
     ///
-    /// \return Input sound file if the file was successfully opened, otherwise `base::nullOpt`
+    /// \return Input sound file in success, `base::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<InputSoundFile> openFromFile(const Path& filename);
@@ -82,7 +82,7 @@ public:
     /// \param data        Pointer to the file data in memory
     /// \param sizeInBytes Size of the data to load, in bytes
     ///
-    /// \return Input sound file if the file was successfully opened, otherwise `base::nullOpt`
+    /// \return Input sound file in success, `base::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<InputSoundFile> openFromMemory(const void* data, base::SizeT sizeInBytes);
@@ -95,7 +95,7 @@ public:
     ///
     /// \param stream Source stream to read from
     ///
-    /// \return Input sound file if the file was successfully opened, otherwise `base::nullOpt`
+    /// \return Input sound file in success, `base::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<InputSoundFile> openFromStream(InputStream& stream);
@@ -128,11 +128,11 @@ public:
     /// \brief Get the map of position in sample frame to sound channel
     ///
     /// This is used to map a sample in the sample stream to a
-    /// position during spatialisation.
+    /// position during spatialization.
     ///
     /// \return Map of position in sample frame to sound channel
     ///
-    /// \see getSampleRate, getChannelCount, getDuration
+    /// \see `getSampleRate`, `getChannelCount`, `getDuration`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const ChannelMap& getChannelMap() const;
@@ -259,10 +259,10 @@ private:
 /// \ingroup audio
 ///
 /// This class decodes audio samples from a sound file. It is
-/// used internally by higher-level classes such as sf::SoundBuffer
-/// and sf::Music, but can also be useful if you want to process
+/// used internally by higher-level classes such as `sf::SoundBuffer`
+/// and `sf::Music`, but can also be useful if you want to process
 /// or analyze audio files without playing them, or if you want to
-/// implement your own version of sf::Music with more specific
+/// implement your own version of `sf::Music` with more specific
 /// features.
 ///
 /// Usage example:
@@ -289,6 +289,6 @@ private:
 /// while (count > 0);
 /// \endcode
 ///
-/// \see sf::SoundFileReader, sf::OutputSoundFile
+/// \see `sf::SoundFileReader`, `sf::OutputSoundFile`
 ///
 ////////////////////////////////////////////////////////////

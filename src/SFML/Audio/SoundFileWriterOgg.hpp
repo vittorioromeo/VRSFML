@@ -57,7 +57,7 @@ public:
     /// \param channelCount Number of channels of the sound
     /// \param channelMap   Map of position in sample frame to sound channel
     ///
-    /// \return True if the file was successfully opened
+    /// \return `true` if the file was successfully opened
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool open(const Path&       filename,

@@ -65,7 +65,7 @@ public:
     ///
     /// \return Port to which the socket is bound
     ///
-    /// \see bind
+    /// \see `bind`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] unsigned short getLocalPort() const;
@@ -76,9 +76,9 @@ public:
     /// Binding the socket to a port is necessary for being
     /// able to receive data on that port.
     ///
-    /// When providing sf::Socket::AnyPort as port, the listener
+    /// When providing `sf::Socket::AnyPort` as port, the listener
     /// will request an available port from the system.
-    /// The chosen port can be retrieved by calling getLocalPort().
+    /// The chosen port can be retrieved by calling `getLocalPort()`.
     ///
     /// Since the socket can only be bound to a single port at
     /// any given moment, if it is already bound when this
@@ -90,7 +90,7 @@ public:
     ///
     /// \return Status code
     ///
-    /// \see unbind, getLocalPort
+    /// \see `unbind`, `getLocalPort`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Status bind(unsigned short port, IpAddress address = IpAddress::Any);
@@ -100,11 +100,11 @@ public:
     ///
     /// The port that the socket was previously bound to is immediately
     /// made available to the operating system after this function is called.
-    /// This means that a subsequent call to bind() will be able to re-bind
+    /// This means that a subsequent call to `bind()` will be able to re-bind
     /// the port if no other process has done so in the mean time.
     /// If the socket is not bound to a port, this function has no effect.
     ///
-    /// \see bind
+    /// \see `bind`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool unbind();
@@ -112,8 +112,8 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Send raw data to a remote peer
     ///
-    /// Make sure that \a size is not greater than
-    /// UdpSocket::MaxDatagramSize, otherwise this function will
+    /// Make sure that \a `size` is not greater than
+    /// `UdpSocket::MaxDatagramSize`, otherwise this function will
     /// fail and no data will be sent.
     ///
     /// \param data          Pointer to the sequence of bytes to send
@@ -123,7 +123,7 @@ public:
     ///
     /// \return Status code
     ///
-    /// \see receive
+    /// \see `receive`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Status send(const void* data, base::SizeT size, IpAddress remoteAddress, unsigned short remotePort);
@@ -146,7 +146,7 @@ public:
     ///
     /// \return Status code
     ///
-    /// \see send
+    /// \see `send`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Status receive(void*                      data,
@@ -159,7 +159,7 @@ public:
     /// \brief Send a formatted packet of data to a remote peer
     ///
     /// Make sure that the packet size is not greater than
-    /// UdpSocket::MaxDatagramSize, otherwise this function will
+    /// `UdpSocket::MaxDatagramSize`, otherwise this function will
     /// fail and no data will be sent.
     ///
     /// \param packet        Packet to send
@@ -168,7 +168,7 @@ public:
     ///
     /// \return Status code
     ///
-    /// \see receive
+    /// \see `receive`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Status send(Packet& packet, IpAddress remoteAddress, unsigned short remotePort);
@@ -185,7 +185,7 @@ public:
     ///
     /// \return Status code
     ///
-    /// \see send
+    /// \see `send`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Status receive(Packet& packet, base::Optional<IpAddress>& remoteAddress, unsigned short& remotePort);
@@ -226,13 +226,13 @@ private:
 /// Sending and receiving data can use either the low-level
 /// or the high-level functions. The low-level functions
 /// process a raw sequence of bytes, whereas the high-level
-/// interface uses packets (see sf::Packet), which are easier
+/// interface uses packets (see `sf::Packet`), which are easier
 /// to use and provide more safety regarding the data that is
-/// exchanged. You can look at the sf::Packet class to get
+/// exchanged. You can look at the `sf::Packet` class to get
 /// more details about how they work.
 ///
-/// It is important to note that UdpSocket is unable to send
-/// datagrams bigger than MaxDatagramSize. In this case, it
+/// It is important to note that `UdpSocket` is unable to send
+/// datagrams bigger than `MaxDatagramSize`. In this case, it
 /// returns an error and doesn't send anything. This applies
 /// to both raw data and packets. Indeed, even packets are
 /// unable to split and recompose data, due to the unreliability
@@ -284,6 +284,6 @@ private:
 /// socket.send(message.c_str(), message.size() + 1, sender, port);
 /// \endcode
 ///
-/// \see sf::Socket, sf::TcpSocket, sf::Packet
+/// \see `sf::Socket`, `sf::TcpSocket`, `sf::Packet`
 ///
 ////////////////////////////////////////////////////////////

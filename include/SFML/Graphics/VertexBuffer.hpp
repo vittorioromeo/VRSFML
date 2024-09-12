@@ -51,7 +51,7 @@ public:
     [[nodiscard]] explicit VertexBuffer(GraphicsContext& graphicsContext);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct a VertexBuffer with a specific PrimitiveType
+    /// \brief Construct a `VertexBuffer` with a specific `PrimitiveType`
     ///
     /// Creates an empty vertex buffer and sets its primitive type to \p type.
     ///
@@ -61,7 +61,7 @@ public:
     [[nodiscard]] explicit VertexBuffer(GraphicsContext& graphicsContext, PrimitiveType type);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct a VertexBuffer with a specific usage specifier
+    /// \brief Construct a `VertexBuffer` with a specific usage specifier
     ///
     /// Creates an empty vertex buffer and sets its usage to \p usage.
     ///
@@ -71,7 +71,7 @@ public:
     [[nodiscard]] explicit VertexBuffer(GraphicsContext& graphicsContext, Usage usage);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct a VertexBuffer with a specific PrimitiveType and usage specifier
+    /// \brief Construct a `VertexBuffer` with a specific `PrimitiveType` and usage specifier
     ///
     /// Creates an empty vertex buffer and sets its primitive type
     /// to \p type and usage to \p usage.
@@ -100,16 +100,16 @@ public:
     /// \brief Create the vertex buffer
     ///
     /// Creates the vertex buffer and allocates enough graphics
-    /// memory to hold \p vertexCount vertices. Any previously
+    /// memory to hold \a `vertexCount` vertices. Any previously
     /// allocated memory is freed in the process.
     ///
     /// In order to deallocate previously allocated memory pass 0
-    /// as \p vertexCount. Don't forget to recreate with a non-zero
+    /// as \a `vertexCount`. Don't forget to recreate with a non-zero
     /// value when graphics memory should be allocated again.
     ///
     /// \param vertexCount Number of vertices worth of memory to allocate
     ///
-    /// \return True if creation was successful
+    /// \return `true` if creation was successful
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool create(base::SizeT vertexCount);
@@ -125,19 +125,19 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Update the whole buffer from an array of vertices
     ///
-    /// The \a vertex array is assumed to have the same size as
-    /// the \a created buffer.
+    /// The vertex array is assumed to have the same size as
+    /// the created buffer.
     ///
     /// No additional check is performed on the size of the vertex
     /// array. Passing invalid arguments will lead to undefined
     /// behavior.
     ///
-    /// This function does nothing if \a vertices is null or if the
+    /// This function does nothing if \a `vertices` is null or if the
     /// buffer was not previously created.
     ///
     /// \param vertices Array of vertices to copy to the buffer
     ///
-    /// \return True if the update was successful
+    /// \return `true` if the update was successful
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool update(const Vertex* vertices);
@@ -145,21 +145,21 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Update a part of the buffer from an array of vertices
     ///
-    /// \p offset is specified as the number of vertices to skip
+    /// \a `offset` is specified as the number of vertices to skip
     /// from the beginning of the buffer.
     ///
-    /// If \p offset is 0 and \p vertexCount is equal to the size of
+    /// If \a `offset` is 0 and \a `vertexCount` is equal to the size of
     /// the currently created buffer, its whole contents are replaced.
     ///
-    /// If \p offset is 0 and \p vertexCount is greater than the
+    /// If \a `offset` is 0 and \a `vertexCount` is greater than the
     /// size of the currently created buffer, a new buffer is created
     /// containing the vertex data.
     ///
-    /// If \p offset is 0 and \p vertexCount is less than the size of
+    /// If \a `offset` is 0 and \a `vertexCount` is less than the size of
     /// the currently created buffer, only the corresponding region
     /// is updated.
     ///
-    /// If \p offset is not 0 and \p offset + \p vertexCount is greater
+    /// If \a `offset` is not 0 and \a `offset` + \a `vertexCount` is greater
     /// than the size of the currently created buffer, the update fails.
     ///
     /// No additional check is performed on the size of the vertex
@@ -170,7 +170,7 @@ public:
     /// \param vertexCount Number of vertices to copy
     /// \param offset      Offset in the buffer to copy to
     ///
-    /// \return True if the update was successful
+    /// \return `true` if the update was successful
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool update(const Vertex* vertices, base::SizeT vertexCount, unsigned int offset);
@@ -180,7 +180,7 @@ public:
     ///
     /// \param vertexBuffer Vertex buffer whose contents to copy into this vertex buffer
     ///
-    /// \return True if the copy was successful
+    /// \return `true` if the copy was successful
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool update(const VertexBuffer& vertexBuffer);
@@ -221,7 +221,7 @@ public:
     /// This function defines how the vertices must be interpreted
     /// when it's time to draw them.
     ///
-    /// The default primitive type is sf::PrimitiveType::Points.
+    /// The default primitive type is `sf::PrimitiveType::Points`.
     ///
     /// \param type Type of primitive
     ///
@@ -246,7 +246,7 @@ public:
     /// to be updated with new data for the usage specifier to
     /// take effect.
     ///
-    /// The default usage type is sf::VertexBuffer::Usage::Stream.
+    /// The default usage type is `sf::VertexBuffer::Usage::Stream`.
     ///
     /// \param usage Usage specifier
     ///
@@ -275,7 +275,7 @@ public:
     ///
     /// This function is not part of the graphics API, it mustn't be
     /// used when drawing SFML entities. It must be used only if you
-    /// mix sf::VertexBuffer with OpenGL code.
+    /// mix `sf::VertexBuffer` with OpenGL code.
     ///
     /// \code
     /// sf::VertexBuffer vb1, vb2;
@@ -297,10 +297,10 @@ public:
     /// \brief Tell whether or not the system supports vertex buffers
     ///
     /// This function should always be called before using
-    /// the vertex buffer features. If it returns false, then
-    /// any attempt to use sf::VertexBuffer will fail.
+    /// the vertex buffer features. If it returns `false`, then
+    /// any attempt to use `sf::VertexBuffer` will fail.
     ///
-    /// \return True if vertex buffers are supported, false otherwise
+    /// \return `true` if vertex buffers are supported, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static bool isAvailable(GraphicsContext& graphicsContext);
@@ -334,20 +334,20 @@ SFML_GRAPHICS_API void swap(VertexBuffer& left, VertexBuffer& right) noexcept;
 /// \class sf::VertexBuffer
 /// \ingroup graphics
 ///
-/// sf::VertexBuffer is a simple wrapper around a dynamic
+/// `sf::VertexBuffer` is a simple wrapper around a dynamic
 /// buffer of vertices and a primitives type.
 ///
 /// The vertex data is stored in graphics memory.
 ///
 /// In situations where a large amount of vertex data would
 /// have to be transferred from system memory to graphics memory
-/// every frame, using sf::VertexBuffer can help. By using a
-/// sf::VertexBuffer, data that has not been changed between frames
+/// every frame, using `sf::VertexBuffer` can help. By using a
+/// `sf::VertexBuffer`, data that has not been changed between frames
 /// does not have to be re-transferred from system to graphics
 /// memory as would be the case with a `std::vector<sf::Vertex>`.
 /// If data transfer is a bottleneck, this can lead to performance gains.
 ///
-/// Using sf::VertexBuffer, the user also has the ability to only modify
+/// Using `sf::VertexBuffer`, the user also has the ability to only modify
 /// a portion of the buffer in graphics memory. This way, a large buffer
 /// can be allocated at the start of the application and only the
 /// applicable portions of it need to be updated during the course of
@@ -372,7 +372,7 @@ SFML_GRAPHICS_API void swap(VertexBuffer& left, VertexBuffer& right) noexcept;
 /// pending data transfers complete before the vertex buffer is sourced
 /// by the rendering pipeline.
 ///
-/// It inherits sf::Drawable, but unlike other drawables it
+/// It inherits `sf::Drawable`, but unlike other drawables it
 /// is not transformable.
 ///
 /// Example:
@@ -386,6 +386,6 @@ SFML_GRAPHICS_API void swap(VertexBuffer& left, VertexBuffer& right) noexcept;
 /// window.draw(triangles);
 /// \endcode
 ///
-/// \see sf::Vertex
+/// \see `sf::Vertex`
 ///
 ////////////////////////////////////////////////////////////

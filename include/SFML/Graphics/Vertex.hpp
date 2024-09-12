@@ -90,10 +90,10 @@ struct [[nodiscard]] Vertex
 /// \endcode
 ///
 ///
-/// Note: although texture coordinates are supposed to be an integer
+/// Note: Although texture coordinates are supposed to be an integer
 /// amount of pixels, their type is float because of some buggy graphics
 /// drivers that are not able to process integer coordinates correctly.
 ///
-/// \see sf::VertexBuffer
+/// \see `sf::VertexArray`
 ///
 ////////////////////////////////////////////////////////////

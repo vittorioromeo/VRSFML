@@ -9,10 +9,17 @@
 #include "SFML/Base/InPlacePImpl.hpp"
 
 
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
 namespace sf
 {
 class Time;
+} // namespace sf
 
+
+namespace sf
+{
 ////////////////////////////////////////////////////////////
 /// \brief Utility class that measures the elapsed time
 ///
@@ -62,7 +69,7 @@ public:
     /// \brief Get the elapsed time
     ///
     /// This function returns the time elapsed since the last call
-    /// to restart() (or the construction of the instance if restart()
+    /// to `restart()` (or the construction of the instance if `restart()`
     /// has not been called).
     ///
     /// \return Time elapsed
@@ -73,7 +80,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Check whether the clock is running
     ///
-    /// \return True if the clock is running, false otherwise
+    /// \return `true` if the clock is running, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isRunning() const;
@@ -81,7 +88,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Start the clock
     ///
-    /// \see stop
+    /// \see `stop`
     ///
     ////////////////////////////////////////////////////////////
     void start();
@@ -89,7 +96,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Stop the clock
     ///
-    /// \see start
+    /// \see `start`
     ///
     ////////////////////////////////////////////////////////////
     void stop();
@@ -102,7 +109,7 @@ public:
     ///
     /// \return Time elapsed
     ///
-    /// \see reset
+    /// \see `reset`
     ///
     ////////////////////////////////////////////////////////////
     Time restart();
@@ -115,7 +122,7 @@ public:
     ///
     /// \return Time elapsed
     ///
-    /// \see restart
+    /// \see `restart`
     ///
     ////////////////////////////////////////////////////////////
     Time reset();
@@ -135,7 +142,7 @@ private:
 /// \class sf::Clock
 /// \ingroup system
 ///
-/// sf::Clock is a lightweight class for measuring time.
+/// `sf::Clock` is a lightweight class for measuring time.
 ///
 /// It provides the most precise time that the underlying
 /// OS can achieve (generally microseconds or nanoseconds).
@@ -154,10 +161,10 @@ private:
 /// Time time3 = clock.reset();
 /// \endcode
 ///
-/// The sf::Time value returned by the clock can then be
+/// The `sf::Time` value returned by the clock can then be
 /// converted to a number of seconds, milliseconds or even
 /// microseconds.
 ///
-/// \see sf::Time
+/// \see `sf::Time`
 ///
 ////////////////////////////////////////////////////////////

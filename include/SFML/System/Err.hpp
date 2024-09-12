@@ -95,7 +95,7 @@ public:
 ///
 /// It is a standard `std::ostream` instance, so it supports all the
 /// insertion operations defined by the STL
-/// (operator <<, manipulators, etc.).
+/// (`operator<<`, manipulators, etc.).
 ///
 /// `sf::priv::err()` can be redirected to write to another output, independently
 /// of `std::cerr`, by using the `rdbuf()` function provided by the

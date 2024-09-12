@@ -95,7 +95,7 @@ public:
     ///
     /// \return Font if opening succeeded, `base::nullOpt` if it failed
     ///
-    /// \see openFromMemory, openFromStream
+    /// \see `openFromMemory`, `openFromStream`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<Font> openFromFile(GraphicsContext& graphicsContext,
@@ -117,7 +117,7 @@ public:
     ///
     /// \return Font if opening succeeded, `base::nullOpt` if it failed
     ///
-    /// \see openFromFile, openFromStream
+    /// \see `openFromFile`, `openFromStream`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<Font> openFromMemory(GraphicsContext& graphicsContext,
@@ -139,7 +139,7 @@ public:
     ///
     /// \return Font if opening succeeded, `base::nullOpt` if it failed
     ///
-    /// \see openFromFile, openFromMemory
+    /// \see `openFromFile`, `openFromMemory`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<Font> openFromStream(GraphicsContext& graphicsContext,
@@ -161,7 +161,7 @@ public:
     /// might be available. If the glyph is not available at the
     /// requested size, an empty glyph is returned.
     ///
-    /// You may want to use \ref hasGlyph to determine if the
+    /// You may want to use `hasGlyph` to determine if the
     /// glyph exists before requesting it. If the glyph does not
     /// exist, a font specific default is returned.
     ///
@@ -173,7 +173,7 @@ public:
     /// \param bold             Retrieve the bold version or the regular one?
     /// \param outlineThickness Thickness of outline (when != 0 the glyph will not be filled)
     ///
-    /// \return The glyph corresponding to \a codePoint and \a characterSize
+    /// \return The glyph corresponding to \a `codePoint` and \a `characterSize`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const Glyph& getGlyph(std::uint32_t codePoint,
@@ -194,7 +194,7 @@ public:
     ///
     /// \param codePoint Unicode code point to check
     ///
-    /// \return True if the codepoint has a glyph representation, false otherwise
+    /// \return `true` if the codepoint has a glyph representation, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool hasGlyph(std::uint32_t codePoint) const;
@@ -213,7 +213,7 @@ public:
     /// \param characterSize Reference character size
     /// \param bold          Retrieve the bold version or the regular one?
     ///
-    /// \return Kerning value for \a first and \a second, in pixels
+    /// \return Kerning value for \a `first` and \a `second`, in pixels
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] float getKerning(std::uint32_t first, std::uint32_t second, unsigned int characterSize, bool bold = false) const;
@@ -241,7 +241,7 @@ public:
     ///
     /// \return Underline position, in pixels
     ///
-    /// \see getUnderlineThickness
+    /// \see `getUnderlineThickness`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] float getUnderlinePosition(unsigned int characterSize) const;
@@ -255,7 +255,7 @@ public:
     ///
     /// \return Underline thickness, in pixels
     ///
-    /// \see getUnderlinePosition
+    /// \see `getUnderlinePosition`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] float getUnderlineThickness(unsigned int characterSize) const;
@@ -265,7 +265,7 @@ public:
     ///
     /// The contents of the returned texture changes as more glyphs
     /// are requested, thus it is not very relevant. It is mainly
-    /// used internally by sf::Text.
+    /// used internally by `sf::Text`.
     ///
     /// \param characterSize Reference character size
     ///
@@ -283,9 +283,9 @@ public:
     /// you should disable it.
     /// The smooth filter is enabled by default.
     ///
-    /// \param smooth True to enable smoothing, false to disable it
+    /// \param smooth `true` to enable smoothing, `false` to disable it
     ///
-    /// \see isSmooth
+    /// \see `isSmooth`
     ///
     ////////////////////////////////////////////////////////////
     void setSmooth(bool smooth);
@@ -293,9 +293,9 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Tell whether the smooth filter is enabled or not
     ///
-    /// \return True if smoothing is enabled, false if it is disabled
+    /// \return `true` if smoothing is enabled, `false` if it is disabled
     ///
-    /// \see setSmooth
+    /// \see `setSmooth`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isSmooth() const;
@@ -314,7 +314,7 @@ private:
     ///
     /// \param characterSize Reference character size
     ///
-    /// \return True on success, false if any error happened
+    /// \return `true` on success, `false` if any error happened
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool setCurrentSize(unsigned int characterSize) const;
@@ -356,7 +356,7 @@ private:
 /// stream, and supports the most common types of fonts. See
 /// the openFromFile function for the complete list of supported formats.
 ///
-/// Once it is opened, a sf::Font instance provides three
+/// Once it is opened, a `sf::Font` instance provides three
 /// types of information about the font:
 /// \li Global metrics, such as the line spacing
 /// \li Per-glyph metrics, such as bounding box or kerning
@@ -364,23 +364,23 @@ private:
 ///
 /// Fonts alone are not very useful: they hold the font data
 /// but cannot make anything useful of it. To do so you need to
-/// use the sf::Text class, which is able to properly output text
+/// use the `sf::Text` class, which is able to properly output text
 /// with several options such as character size, style, color,
 /// position, rotation, etc.
 /// This separation allows more flexibility and better performances:
-/// indeed a sf::Font is a heavy resource, and any operation on it
+/// indeed a `sf::Font` is a heavy resource, and any operation on it
 /// is slow (often too slow for real-time applications). On the other
-/// side, a sf::Text is a lightweight object which can combine the
-/// glyphs data and metrics of a sf::Font to display any text on a
+/// side, a `sf::Text` is a lightweight object which can combine the
+/// glyphs data and metrics of a `sf::Font` to display any text on a
 /// render target.
-/// Note that it is also possible to bind several sf::Text instances
-/// to the same sf::Font.
+/// Note that it is also possible to bind several `sf::Text` instances
+/// to the same `sf::Font`.
 ///
-/// It is important to note that the sf::Text instance doesn't
+/// It is important to note that the `sf::Text` instance doesn't
 /// copy the font that it uses, it only keeps a reference to it.
-/// Thus, a sf::Font must not be destructed while it is
-/// used by a sf::Text (i.e. never write a function that
-/// uses a local sf::Font instance for creating a text).
+/// Thus, a `sf::Font` must not be destructed while it is
+/// used by a `sf::Text` (i.e. never write a function that
+/// uses a local `sf::Font` instance for creating a text).
 ///
 /// Usage example:
 /// \code
@@ -399,16 +399,16 @@ private:
 /// \endcode
 ///
 /// Apart from opening font files, and passing them to instances
-/// of sf::Text, you should normally not have to deal directly
+/// of `sf::Text`, you should normally not have to deal directly
 /// with this class. However, it may be useful to access the
 /// font metrics or rasterized glyphs for advanced usage.
 ///
 /// Note that if the font is a bitmap font, it is not scalable,
 /// thus not all requested sizes will be available to use. This
-/// needs to be taken into consideration when using sf::Text.
+/// needs to be taken into consideration when using `sf::Text`.
 /// If you need to display text of a certain size, make sure the
 /// corresponding bitmap font that supports that size is used.
 ///
-/// \see sf::Text
+/// \see `sf::Text`
 ///
 ////////////////////////////////////////////////////////////

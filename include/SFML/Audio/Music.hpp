@@ -71,7 +71,7 @@ public:
     ///
     /// \return Music source if loading succeeded, `base::nullOpt` if it failed
     ///
-    /// \see openFromMemory, openFromStream
+    /// \see `openFromMemory`, `openFromStream`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<Music> openFromFile(const Path& filename);
@@ -97,7 +97,7 @@ public:
     ///
     /// \return Music source if loading succeeded, `base::nullOpt` if it failed
     ///
-    /// \see openFromFile, openFromStream
+    /// \see `openFromFile`, `openFromStream`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<Music> openFromMemory(const void* data, base::SizeT sizeInBytes);
@@ -121,7 +121,7 @@ public:
     ///
     /// \return Music source if loading succeeded, `base::nullOpt` if it failed
     ///
-    /// \see openFromFile, openFromMemory
+    /// \see `openFromFile`, `openFromMemory`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<Music> openFromStream(InputStream& stream);
@@ -159,7 +159,7 @@ public:
     /// \brief Get the map of position in sample frame to sound channel
     ///
     /// This is used to map a sample in the sample stream to a
-    /// position during spatialisation.
+    /// position during spatialization.
     ///
     /// \return Map of position in sample frame to sound channel
     ///
@@ -217,7 +217,7 @@ public:
     /// to return times that will map to the valid internal samples of
     /// this music stream if they are later passed to `setLoopPoints()`.
     ///
-    /// \see setLoopPoints
+    /// \see `setLoopPoints`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] TimeSpan getLoopPoints() const;
@@ -239,7 +239,7 @@ public:
     ///
     /// \param timePoints The definition of the loop. Can be any time points within the sound's length
     ///
-    /// \see getLoopPoints
+    /// \see `getLoopPoints`
     ///
     ////////////////////////////////////////////////////////////
     void setLoopPoints(TimeSpan timePoints);
@@ -253,7 +253,7 @@ protected:
     ///
     /// \param data Chunk of data to fill
     ///
-    /// \return True to continue playback, false to stop
+    /// \return `true` to continue playback, `false` to stop
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool onGetData(Chunk& data) override;
@@ -269,7 +269,7 @@ protected:
     ////////////////////////////////////////////////////////////
     /// \brief Change the current playing position in the stream source to the loop offset
     ///
-    /// This is called by the underlying SoundStream whenever it needs us to reset
+    /// This is called by the underlying `SoundStream` whenever it needs us to reset
     /// the seek position for a loop. We then determine whether we are looping on a
     /// loop point or the end-of-file, perform the seek, and return the new position.
     ///
@@ -300,16 +300,16 @@ private:
 /// you avoid saturating the memory and have almost no loading delay.
 /// This implies that the underlying resource (file, stream or
 /// memory buffer) must remain valid for the lifetime of the
-/// sf::Music object.
+/// `sf::Music` object.
 ///
-/// Apart from that, a sf::Music has almost the same features as
-/// the sf::SoundBuffer / sf::Sound pair: you can play/pause/stop
+/// Apart from that, a `sf::Music` has almost the same features as
+/// the `sf::SoundBuffer` / `sf::Sound` pair: you can play/pause/stop
 /// it, request its parameters (channels, sample rate), change
 /// the way it is played (pitch, volume, 3D position, ...), etc.
 ///
 /// As a sound stream, a music is played in its own thread in order
 /// not to block the rest of the program. This means that you can
-/// leave the music alone after calling play(), it will manage itself
+/// leave the music alone after calling `play()`, it will manage itself
 /// very well.
 ///
 /// Usage example:
@@ -331,6 +331,6 @@ private:
 /// music.play(playbackDevice);
 /// \endcode
 ///
-/// \see sf::Sound, sf::SoundStream
+/// \see `sf::Sound`, `sf::SoundStream`
 ///
 ////////////////////////////////////////////////////////////
