@@ -13,8 +13,7 @@ namespace sf
 ////////////////////////////////////////////////////////////
 void DrawableBatch::add(const Sprite& sprite)
 {
-    const auto [data, size] = sprite.getVertices();
-    const auto nextIndex    = static_cast<IndexType>(m_vertices.size());
+    const auto nextIndex = static_cast<IndexType>(m_vertices.size());
 
     m_indices.reserveMore(6u);
 
@@ -30,7 +29,12 @@ void DrawableBatch::add(const Sprite& sprite)
         static_cast<IndexType>(nextIndex + 2u),
         static_cast<IndexType>(nextIndex + 3u));
 
-    appendPreTransformedVertices(data, size, sprite.getTransform());
+    m_vertices.reserveMore(4u);
+
+    Vertex buffer[4];
+    sprite.updateVertices(buffer);
+
+    appendPreTransformedVertices(buffer, 4u, sprite.getTransform());
 }
 
 
@@ -72,22 +76,12 @@ void DrawableBatch::add(const Shape& shape)
 ////////////////////////////////////////////////////////////
 void DrawableBatch::addSubsequentIndices(base::SizeT count)
 {
-    const auto nextIndex = static_cast<IndexType>(m_vertices.size());
-
     m_indices.reserveMore(count);
 
-    for (IndexType i = 0; i < static_cast<IndexType>(count); ++i)
+    const auto nextIndex = static_cast<IndexType>(m_vertices.size());
+
+    for (IndexType i = 0u; i < static_cast<IndexType>(count); ++i)
         m_indices.unsafeEmplaceBack(static_cast<IndexType>(nextIndex + i));
-}
-
-
-////////////////////////////////////////////////////////////
-void DrawableBatch::appendPreTransformedVertices(const Vertex* data, const base::SizeT count, const Transform& transform)
-{
-    m_vertices.reserveMore(count);
-
-    for (const auto* const target = data + count; data != target; ++data)
-        m_vertices.unsafeEmplaceBack(transform.transformPoint(data->position), data->color, data->texCoords);
 }
 
 

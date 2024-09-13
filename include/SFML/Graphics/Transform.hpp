@@ -9,6 +9,8 @@
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vector2.hpp"
 
+#include "SFML/Base/SizeT.hpp"
+
 
 ////////////////////////////////////////////////////////////
 // Forward declarations
@@ -17,13 +19,22 @@ namespace sf
 {
 class Angle;
 class Transformable;
+class Transform;
 } // namespace sf
+
+namespace sf::priv
+{
+template <base::SizeT, base::SizeT>
+struct Matrix;
+
+void copyMatrix(const Transform&, Matrix<3, 3>&);
+} // namespace sf::priv
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief Define a 3x3 transform matrix
+/// \brief Define a 3x3 transform matrix TODO P0:
 ///
 ////////////////////////////////////////////////////////////
 class [[nodiscard]] Transform
@@ -66,7 +77,7 @@ public:
     /// \return Pointer to a 4x4 matrix
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const float* getMatrix() const;
+    [[gnu::always_inline]] constexpr void getMatrix(float (&target)[16]) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the inverse of the transform
@@ -238,6 +249,9 @@ public:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] constexpr Transform& scale(Vector2f factors, Vector2f center);
 
+    friend constexpr Transform operator*(const Transform& left, const Transform& right);
+    friend constexpr bool      operator==(const Transform& left, const Transform& right);
+
     ////////////////////////////////////////////////////////////
     // Static member data
     ////////////////////////////////////////////////////////////
@@ -246,17 +260,14 @@ public:
 
 private:
     friend Transformable;
+    friend void priv::copyMatrix(const Transform&, priv::Matrix<3, 3>&);
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     // clang-format off
-    // Using a C-style array here to minimize compilation impact of `Transform.hpp`.
-    float m_matrix[16]{1.f, 0.f, 0.f, 0.f,
-                       0.f, 1.f, 0.f, 0.f,
-                       0.f, 0.f, 1.f, 0.f,
-                       0.f, 0.f, 0.f, 1.f}; //!< 4x4 matrix defining the transformation
-    // clang-format off
+    float m_a00{1.f}, m_a10{0.f}, m_a01{0.f}, m_a11{1.f}, m_a02{0.f}, m_a12{0.f};
+    // clang-format on
 };
 
 ////////////////////////////////////////////////////////////
@@ -314,7 +325,7 @@ constexpr Transform& operator*=(Transform& left, const Transform& right);
 /// \return `true` if the transforms are equal, `false` otherwise
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure ]] constexpr bool operator==(const Transform& left, const Transform& right);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator==(const Transform& left, const Transform& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates `sf::Transform`

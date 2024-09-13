@@ -18,7 +18,6 @@
 
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Traits/IsBaseOf.hpp"
 
 
 ////////////////////////////////////////////////////////////

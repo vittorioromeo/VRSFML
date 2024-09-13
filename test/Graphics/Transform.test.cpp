@@ -10,8 +10,6 @@
 #include <GraphicsUtil.hpp>
 #include <StringifyVectorUtil.hpp>
 
-#include <vector>
-
 TEST_CASE("[Graphics] sf::Transform")
 {
     SECTION("Type traits")
@@ -32,17 +30,62 @@ TEST_CASE("[Graphics] sf::Transform")
         SECTION("3x3 matrix constructor")
         {
             constexpr sf::Transform transform(10.0f, 11.0f, 12.0f, 13.0f, 14.0f, 15.0f);
-            const std::vector       matrix(transform.getMatrix(), transform.getMatrix() + 16);
-            CHECK(matrix ==
-                  std::vector{10.0f, 13.0f, 0.0f, 0.0f, 11.0f, 14.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 12.0f, 15.0f, 0.0f, 1.0f});
+
+            // clang-format off
+            float matrix[]{{},  {},  0.f, 0.f,
+                           {},  {},  0.f, 0.f,
+                           0.f, 0.f, 1.f, 0.f,
+                           {},  {},  0.f, 1.f};
+            // clang-format on
+
+            transform.getMatrix(matrix);
+
+            CHECK(matrix[0] == 10.0f);
+            CHECK(matrix[1] == 13.0f);
+            CHECK(matrix[2] == 0.0f);
+            CHECK(matrix[3] == 0.0f);
+            CHECK(matrix[4] == 11.0f);
+            CHECK(matrix[5] == 14.0f);
+            CHECK(matrix[6] == 0.0f);
+            CHECK(matrix[7] == 0.0f);
+            CHECK(matrix[8] == 0.0f);
+            CHECK(matrix[9] == 0.0f);
+            CHECK(matrix[10] == 1.0f);
+            CHECK(matrix[11] == 0.0f);
+            CHECK(matrix[12] == 12.0f);
+            CHECK(matrix[13] == 15.0f);
+            CHECK(matrix[14] == 0.0f);
+            CHECK(matrix[15] == 1.0f);
         }
     }
 
     SECTION("Identity matrix")
     {
-        const std::vector matrix(sf::Transform::Identity.getMatrix(), sf::Transform::Identity.getMatrix() + 16);
-        CHECK(matrix ==
-              std::vector{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f});
+        // clang-format off
+        float matrix[]{{},  {},  0.f, 0.f,
+                       {},  {},  0.f, 0.f,
+                       0.f, 0.f, 1.f, 0.f,
+                       {},  {},  0.f, 1.f};
+        // clang-format on
+
+        sf::Transform::Identity.getMatrix(matrix);
+
+        CHECK(matrix[0] == 1.0f);
+        CHECK(matrix[1] == 0.0f);
+        CHECK(matrix[2] == 0.0f);
+        CHECK(matrix[3] == 0.0f);
+        CHECK(matrix[4] == 0.0f);
+        CHECK(matrix[5] == 1.0f);
+        CHECK(matrix[6] == 0.0f);
+        CHECK(matrix[7] == 0.0f);
+        CHECK(matrix[8] == 0.0f);
+        CHECK(matrix[9] == 0.0f);
+        CHECK(matrix[10] == 1.0f);
+        CHECK(matrix[11] == 0.0f);
+        CHECK(matrix[12] == 0.0f);
+        CHECK(matrix[13] == 0.0f);
+        CHECK(matrix[14] == 0.0f);
+        CHECK(matrix[15] == 1.0f);
     }
 
     SECTION("getInverse()")

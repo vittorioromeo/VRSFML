@@ -42,6 +42,29 @@ private:
     ItemUnion* m_endSize{nullptr};
     ItemUnion* m_endCapacity{nullptr};
 
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::cold, gnu::noinline]] void reserveImpl(base::SizeT targetCapacity)
+    {
+        auto*      newData = new ItemUnion[targetCapacity];
+        const auto oldSize = size();
+
+        if (m_data != nullptr)
+        {
+            SFML_BASE_MEMCPY(newData, m_data, sizeof(TItem) * oldSize);
+            delete[] m_data;
+        }
+        else
+        {
+            SFML_BASE_ASSERT(size() == 0);
+            SFML_BASE_ASSERT(capacity() == 0);
+        }
+
+        m_data        = newData;
+        m_endSize     = m_data + oldSize;
+        m_endCapacity = m_data + targetCapacity;
+    }
+
 public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] TrivialVector() = default;
@@ -147,36 +170,16 @@ public:
     {
         const SizeT targetCapacity = size() + n;
 
-        if (capacity() >= targetCapacity) [[likely]]
-            return;
-
-        reserve(static_cast<SizeT>(static_cast<float>(targetCapacity) * 1.5f) + n);
+        if (capacity() < targetCapacity) [[unlikely]]
+            reserveImpl(static_cast<SizeT>(static_cast<float>(targetCapacity) * 1.5f) + n);
     }
 
 
     ////////////////////////////////////////////////////////////
-    void reserve(const SizeT targetCapacity)
+    [[gnu::always_inline]] void reserve(const SizeT targetCapacity)
     {
-        if (capacity() >= targetCapacity) [[likely]]
-            return;
-
-        auto*      newData = new ItemUnion[targetCapacity];
-        const auto oldSize = size();
-
-        if (m_data != nullptr)
-        {
-            SFML_BASE_MEMCPY(newData, m_data, sizeof(TItem) * oldSize);
-            delete[] m_data;
-        }
-        else
-        {
-            SFML_BASE_ASSERT(size() == 0);
-            SFML_BASE_ASSERT(capacity() == 0);
-        }
-
-        m_data        = newData;
-        m_endSize     = m_data + oldSize;
-        m_endCapacity = m_data + targetCapacity;
+        if (capacity() < targetCapacity) [[unlikely]]
+            reserveImpl(targetCapacity);
     }
 
 

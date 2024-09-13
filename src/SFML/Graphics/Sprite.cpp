@@ -13,26 +13,20 @@ namespace sf
 ////////////////////////////////////////////////////////////
 Sprite::Sprite(const IntRect& rectangle) : m_textureRect(rectangle)
 {
-    updateVertices();
 }
 
 
 ////////////////////////////////////////////////////////////
 void Sprite::setTextureRect(const IntRect& rectangle)
 {
-    if (rectangle == m_textureRect)
-        return;
-
     m_textureRect = rectangle;
-    updateVertices();
 }
 
 
 ////////////////////////////////////////////////////////////
 void Sprite::setColor(Color color)
 {
-    for (Vertex& vertex : m_vertices)
-        vertex.color = color;
+    m_color = color;
 }
 
 
@@ -46,15 +40,16 @@ const IntRect& Sprite::getTextureRect() const
 ////////////////////////////////////////////////////////////
 Color Sprite::getColor() const
 {
-    return m_vertices[0].color;
+    return m_color;
 }
 
 
 ////////////////////////////////////////////////////////////
 FloatRect Sprite::getLocalBounds() const
 {
-    // Last vertex position is equal to texture rect size absolute value
-    return {{0.f, 0.f}, m_vertices[3].position};
+    return {{0.f, 0.f},
+            {base::fabs(static_cast<float>(m_textureRect.position.x)),
+             base::fabs(static_cast<float>(m_textureRect.position.y))}};
 }
 
 
@@ -66,14 +61,7 @@ FloatRect Sprite::getGlobalBounds() const
 
 
 ////////////////////////////////////////////////////////////
-base::Span<const Vertex> Sprite::getVertices() const
-{
-    return m_vertices;
-}
-
-
-////////////////////////////////////////////////////////////
-void Sprite::updateVertices()
+void Sprite::updateVertices(Vertex* target) const
 {
     const auto [position, size] = m_textureRect.to<FloatRect>();
 
@@ -81,16 +69,22 @@ void Sprite::updateVertices()
     const Vector2f absSize(base::fabs(size.x), base::fabs(size.y));
 
     // Update positions
-    m_vertices[0].position = {0.f, 0.f};
-    m_vertices[1].position = {0.f, absSize.y};
-    m_vertices[2].position = {absSize.x, 0.f};
-    m_vertices[3].position = absSize;
+    target[0].position = {0.f, 0.f};
+    target[1].position = {0.f, absSize.y};
+    target[2].position = {absSize.x, 0.f};
+    target[3].position = absSize;
+
+    // Update color
+    target[0].color = m_color;
+    target[1].color = m_color;
+    target[2].color = m_color;
+    target[3].color = m_color;
 
     // Update texture coordinates
-    m_vertices[0].texCoords = position;
-    m_vertices[1].texCoords = position + Vector2f(0.f, size.y);
-    m_vertices[2].texCoords = position + Vector2f(size.x, 0.f);
-    m_vertices[3].texCoords = position + size;
+    target[0].texCoords = position;
+    target[1].texCoords = position + Vector2f(0.f, size.y);
+    target[2].texCoords = position + Vector2f(size.x, 0.f);
+    target[3].texCoords = position + size;
 }
 
 } // namespace sf

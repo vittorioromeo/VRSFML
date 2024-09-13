@@ -10,31 +10,25 @@
 
 namespace sf::priv
 {
-
 ////////////////////////////////////////////////////////////
 void copyMatrix(const Transform& source, Matrix<3, 3>& dest)
 {
-    const float* from = source.getMatrix(); // 4x4
-    float*       to   = dest.array;         // 3x3
-
-    // Use only left-upper 3x3 block (for a 2D transform)
-    to[0] = from[0];
-    to[1] = from[1];
-    to[2] = from[3];
-    to[3] = from[4];
-    to[4] = from[5];
-    to[5] = from[7];
-    to[6] = from[12];
-    to[7] = from[13];
-    to[8] = from[15];
+    dest.array[0] = source.m_a00;
+    dest.array[1] = source.m_a10;
+    dest.array[3] = source.m_a01;
+    dest.array[4] = source.m_a11;
+    dest.array[6] = source.m_a02;
+    dest.array[7] = source.m_a12;
+    dest.array[8] = 1.f;
 }
 
 
 ////////////////////////////////////////////////////////////
 void copyMatrix(const Transform& source, Matrix<4, 4>& dest)
 {
-    // Adopt 4x4 matrix as-is
-    copyMatrix(source.getMatrix(), 4 * 4, dest.array);
+    source.getMatrix(dest.array);
+    dest.array[10] = 1.f;
+    dest.array[15] = 1.f;
 }
 
 } // namespace sf::priv

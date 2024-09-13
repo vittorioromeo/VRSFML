@@ -68,8 +68,10 @@ if(SFML_ENABLE_STACK_TRACES)
         SYSTEM TRUE
     )
 
-    set_target_properties(libzstd_static PROPERTIES UNITY_BUILD OFF)
-    set_target_properties(dwarf PROPERTIES UNITY_BUILD OFF)
+    if(NOT SFML_COMPILER_MSVC)
+        set_target_properties(libzstd_static PROPERTIES UNITY_BUILD OFF)
+        set_target_properties(dwarf PROPERTIES UNITY_BUILD OFF)
+    endif()
 
     # install(TARGETS cpptrace-lib EXPORT SFMLConfigExport)
     # install(TARGETS dwarf EXPORT SFMLConfigExport)

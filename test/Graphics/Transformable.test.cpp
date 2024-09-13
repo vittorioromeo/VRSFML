@@ -51,40 +51,58 @@ TEST_CASE("[Graphics] sf::Transformable")
         transform.rotate(transformable.getRotation(), transformable.getOrigin());
         transform.scale(transformable.getScale(), transformable.getOrigin());
 
-        CHECK(transformable.getTransform().getMatrix()[0] == Approx(transform.getMatrix()[0]));
-        CHECK(transformable.getTransform().getMatrix()[1] == Approx(transform.getMatrix()[1]));
-        CHECK(transformable.getTransform().getMatrix()[2] == Approx(transform.getMatrix()[2]));
-        CHECK(transformable.getTransform().getMatrix()[3] == Approx(transform.getMatrix()[3]));
-        CHECK(transformable.getTransform().getMatrix()[4] == Approx(transform.getMatrix()[4]));
-        CHECK(transformable.getTransform().getMatrix()[5] == Approx(transform.getMatrix()[5]));
-        CHECK(transformable.getTransform().getMatrix()[6] == Approx(transform.getMatrix()[6]));
-        CHECK(transformable.getTransform().getMatrix()[7] == Approx(transform.getMatrix()[7]));
-        CHECK(transformable.getTransform().getMatrix()[8] == Approx(transform.getMatrix()[8]));
-        CHECK(transformable.getTransform().getMatrix()[9] == Approx(transform.getMatrix()[9]));
-        CHECK(transformable.getTransform().getMatrix()[10] == Approx(transform.getMatrix()[10]));
-        CHECK(transformable.getTransform().getMatrix()[11] == Approx(transform.getMatrix()[11]));
-        CHECK(transformable.getTransform().getMatrix()[12] == Approx(transform.getMatrix()[12]));
-        CHECK(transformable.getTransform().getMatrix()[13] == Approx(transform.getMatrix()[13]));
-        CHECK(transformable.getTransform().getMatrix()[14] == Approx(transform.getMatrix()[14]));
-        CHECK(transformable.getTransform().getMatrix()[15] == Approx(transform.getMatrix()[15]));
+        // clang-format off
+        float lhsMatrix[]{{},  {},  0.f, 0.f,
+                          {},  {},  0.f, 0.f,
+                          0.f, 0.f, 1.f, 0.f,
+                          {},  {},  0.f, 1.f};
+
+        float rhsMatrix[]{{},  {},  0.f, 0.f,
+                          {},  {},  0.f, 0.f,
+                          0.f, 0.f, 1.f, 0.f,
+                          {},  {},  0.f, 1.f};
+        // clang-format on
+
+        transformable.getTransform().getMatrix(lhsMatrix);
+        transform.getMatrix(rhsMatrix);
+
+        CHECK(lhsMatrix[0] == Approx(rhsMatrix[0]));
+        CHECK(lhsMatrix[1] == Approx(rhsMatrix[1]));
+        CHECK(lhsMatrix[2] == Approx(rhsMatrix[2]));
+        CHECK(lhsMatrix[3] == Approx(rhsMatrix[3]));
+        CHECK(lhsMatrix[4] == Approx(rhsMatrix[4]));
+        CHECK(lhsMatrix[5] == Approx(rhsMatrix[5]));
+        CHECK(lhsMatrix[6] == Approx(rhsMatrix[6]));
+        CHECK(lhsMatrix[7] == Approx(rhsMatrix[7]));
+        CHECK(lhsMatrix[8] == Approx(rhsMatrix[8]));
+        CHECK(lhsMatrix[9] == Approx(rhsMatrix[9]));
+        CHECK(lhsMatrix[10] == Approx(rhsMatrix[10]));
+        CHECK(lhsMatrix[11] == Approx(rhsMatrix[11]));
+        CHECK(lhsMatrix[12] == Approx(rhsMatrix[12]));
+        CHECK(lhsMatrix[13] == Approx(rhsMatrix[13]));
+        CHECK(lhsMatrix[14] == Approx(rhsMatrix[14]));
+        CHECK(lhsMatrix[15] == Approx(rhsMatrix[15]));
 
         const sf::Transform inverseTransform = transform.getInverse();
-        CHECK(transformable.getInverseTransform().getMatrix()[0] == Approx(inverseTransform.getMatrix()[0]));
-        CHECK(transformable.getInverseTransform().getMatrix()[1] == Approx(inverseTransform.getMatrix()[1]));
-        CHECK(transformable.getInverseTransform().getMatrix()[2] == Approx(inverseTransform.getMatrix()[2]));
-        CHECK(transformable.getInverseTransform().getMatrix()[3] == Approx(inverseTransform.getMatrix()[3]));
-        CHECK(transformable.getInverseTransform().getMatrix()[4] == Approx(inverseTransform.getMatrix()[4]));
-        CHECK(transformable.getInverseTransform().getMatrix()[5] == Approx(inverseTransform.getMatrix()[5]));
-        CHECK(transformable.getInverseTransform().getMatrix()[6] == Approx(inverseTransform.getMatrix()[6]));
-        CHECK(transformable.getInverseTransform().getMatrix()[7] == Approx(inverseTransform.getMatrix()[7]));
-        CHECK(transformable.getInverseTransform().getMatrix()[8] == Approx(inverseTransform.getMatrix()[8]));
-        CHECK(transformable.getInverseTransform().getMatrix()[9] == Approx(inverseTransform.getMatrix()[9]));
-        CHECK(transformable.getInverseTransform().getMatrix()[10] == Approx(inverseTransform.getMatrix()[10]));
-        CHECK(transformable.getInverseTransform().getMatrix()[11] == Approx(inverseTransform.getMatrix()[11]));
-        CHECK(transformable.getInverseTransform().getMatrix()[12] == Approx(inverseTransform.getMatrix()[12]));
-        CHECK(transformable.getInverseTransform().getMatrix()[13] == Approx(inverseTransform.getMatrix()[13]));
-        CHECK(transformable.getInverseTransform().getMatrix()[14] == Approx(inverseTransform.getMatrix()[14]));
-        CHECK(transformable.getInverseTransform().getMatrix()[15] == Approx(inverseTransform.getMatrix()[15]));
+        transformable.getInverseTransform().getMatrix(lhsMatrix);
+        inverseTransform.getMatrix(rhsMatrix);
+
+        CHECK(lhsMatrix[0] == Approx(rhsMatrix[0]));
+        CHECK(lhsMatrix[1] == Approx(rhsMatrix[1]));
+        CHECK(lhsMatrix[2] == Approx(rhsMatrix[2]));
+        CHECK(lhsMatrix[3] == Approx(rhsMatrix[3]));
+        CHECK(lhsMatrix[4] == Approx(rhsMatrix[4]));
+        CHECK(lhsMatrix[5] == Approx(rhsMatrix[5]));
+        CHECK(lhsMatrix[6] == Approx(rhsMatrix[6]));
+        CHECK(lhsMatrix[7] == Approx(rhsMatrix[7]));
+        CHECK(lhsMatrix[8] == Approx(rhsMatrix[8]));
+        CHECK(lhsMatrix[9] == Approx(rhsMatrix[9]));
+        CHECK(lhsMatrix[10] == Approx(rhsMatrix[10]));
+        CHECK(lhsMatrix[11] == Approx(rhsMatrix[11]));
+        CHECK(lhsMatrix[12] == Approx(rhsMatrix[12]));
+        CHECK(lhsMatrix[13] == Approx(rhsMatrix[13]));
+        CHECK(lhsMatrix[14] == Approx(rhsMatrix[14]));
+        CHECK(lhsMatrix[15] == Approx(rhsMatrix[15]));
     }
 
     SECTION("move()")

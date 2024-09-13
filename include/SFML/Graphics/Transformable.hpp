@@ -24,7 +24,7 @@ public:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    Transformable();
+    constexpr Transformable() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief set the position of the object
@@ -38,7 +38,7 @@ public:
     /// \see `move`, `getPosition`
     ///
     ////////////////////////////////////////////////////////////
-    void setPosition(Vector2f position);
+    [[gnu::always_inline]] constexpr void setPosition(Vector2f position);
 
     ////////////////////////////////////////////////////////////
     /// \brief set the orientation of the object
@@ -52,7 +52,7 @@ public:
     /// \see `rotate`, `getRotation`
     ///
     ////////////////////////////////////////////////////////////
-    void setRotation(Angle angle);
+    [[gnu::always_inline]] constexpr void setRotation(Angle angle);
 
     ////////////////////////////////////////////////////////////
     /// \brief set the scale factors of the object
@@ -66,7 +66,7 @@ public:
     /// \see `scale`, `getScale`
     ///
     ////////////////////////////////////////////////////////////
-    void setScale(Vector2f factors);
+    [[gnu::always_inline]] constexpr void setScale(Vector2f factors);
 
     ////////////////////////////////////////////////////////////
     /// \brief set the local origin of the object
@@ -83,7 +83,7 @@ public:
     /// \see `getOrigin`
     ///
     ////////////////////////////////////////////////////////////
-    void setOrigin(Vector2f origin);
+    [[gnu::always_inline]] constexpr void setOrigin(Vector2f origin);
 
     ////////////////////////////////////////////////////////////
     /// \brief get the position of the object
@@ -93,7 +93,7 @@ public:
     /// \see `setPosition`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2f getPosition() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector2f getPosition() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief get the orientation of the object
@@ -105,7 +105,7 @@ public:
     /// \see `setRotation`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Angle getRotation() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Angle getRotation() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief get the current scale of the object
@@ -115,7 +115,7 @@ public:
     /// \see `setScale`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2f getScale() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector2f getScale() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief get the local origin of the object
@@ -125,7 +125,7 @@ public:
     /// \see `setOrigin`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2f getOrigin() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector2f getOrigin() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move the object by a given offset
@@ -142,7 +142,7 @@ public:
     /// \see `setPosition`
     ///
     ////////////////////////////////////////////////////////////
-    void move(Vector2f offset);
+    [[gnu::always_inline]] constexpr void move(Vector2f offset);
 
     ////////////////////////////////////////////////////////////
     /// \brief Rotate the object
@@ -157,7 +157,7 @@ public:
     /// \param angle Angle of rotation
     ///
     ////////////////////////////////////////////////////////////
-    void rotate(Angle angle);
+    [[gnu::always_inline]] constexpr void rotate(Angle angle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Scale the object
@@ -175,7 +175,7 @@ public:
     /// \see `setScale`
     ///
     ////////////////////////////////////////////////////////////
-    void scale(Vector2f factor);
+    [[gnu::always_inline]] constexpr void scale(Vector2f factor);
 
     ////////////////////////////////////////////////////////////
     /// \brief get the combined transform of the object
@@ -185,7 +185,7 @@ public:
     /// \see `getInverseTransform`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const Transform& getTransform() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Transform getTransform() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief get the inverse of the combined transform of the object
@@ -195,23 +195,21 @@ public:
     /// \see `getTransform`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const Transform& getInverseTransform() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Transform getInverseTransform() const;
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2f          m_origin;                           //!< Origin of translation/rotation/scaling of the object
-    Vector2f          m_position;                         //!< Position of the object in the 2D world
-    Angle             m_rotation;                         //!< Orientation of the object
-    Vector2f          m_scale{1.f, 1.f};                  //!< Scale of the object
-    mutable Transform m_transform;                        //!< Combined transformation of the object
-    mutable Transform m_inverseTransform;                 //!< Combined transformation of the object
-    mutable bool      m_transformNeedUpdate{true};        //!< Does the transform need to be recomputed?
-    mutable bool      m_inverseTransformNeedUpdate{true}; //!< Does the transform need to be recomputed?
+    Vector2f m_origin;          //!< Origin of translation/rotation/scaling of the object
+    Vector2f m_position;        //!< Position of the object in the 2D world
+    Angle    m_rotation;        //!< Orientation of the object
+    Vector2f m_scale{1.f, 1.f}; //!< Scale of the object
 };
 
 } // namespace sf
+
+#include "SFML/Graphics/Transformable.inl"
 
 
 ////////////////////////////////////////////////////////////

@@ -6,6 +6,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
+#include "SFML/Graphics/Transform.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
 #include "SFML/Base/Traits/IsBaseOf.hpp"
@@ -44,7 +45,8 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename BatchableObject>
-    void add(const BatchableObject& batchableObject) requires(!base::isBaseOf<Shape, BatchableObject>)
+    [[gnu::always_inline, gnu::flatten]] void add(const BatchableObject& batchableObject)
+        requires(!base::isBaseOf<Shape, BatchableObject>)
     {
         const auto [data, size] = batchableObject.getVertices();
 
@@ -83,7 +85,15 @@ private:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void appendPreTransformedVertices(const Vertex* data, base::SizeT count, const Transform& transform);
+    [[gnu::always_inline, gnu::flatten]] void appendPreTransformedVertices(const Vertex*    data,
+                                                                           base::SizeT      count,
+                                                                           const Transform& transform)
+    {
+        m_vertices.reserveMore(count);
+
+        for (const auto* const target = data + count; data != target; ++data)
+            m_vertices.unsafeEmplaceBack(transform.transformPoint(data->position), data->color, data->texCoords);
+    }
 
     ////////////////////////////////////////////////////////////
     // Member data

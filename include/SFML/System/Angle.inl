@@ -6,6 +6,7 @@
 #include "SFML/System/Angle.hpp" // NOLINT(misc-header-include-cycle)
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Math/Fmod.hpp"
 
 
 namespace sf::priv
@@ -16,7 +17,7 @@ inline constexpr float tau = pi * 2.f;
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] constexpr float positiveRemainder(float a, float b)
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr float positiveRemainder(float a, float b)
 {
     SFML_BASE_ASSERT(b > 0.f && "Cannot calculate remainder with non-positive divisor");
 
