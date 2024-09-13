@@ -28,6 +28,7 @@
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Math/Lround.hpp"
+#include "SFML/Base/Memcpy.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 
@@ -272,13 +273,15 @@ struct [[nodiscard]] StatesCache
     base::SizeT vaoCapacity{0u}; // TODO P0: docs
     base::SizeT eboCapacity{0u}; // TODO P0: docs
 
-    [[gnu::always_inline]] void reallocVAOIfNeeded(base::SizeT byteCount)
+    [[gnu::always_inline]] void reallocVBOIfNeeded(base::SizeT byteCount)
     {
         if (byteCount <= vaoCapacity)
             return;
 
-        glCheck(glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(byteCount), nullptr, GL_STREAM_DRAW));
-        vaoCapacity = byteCount;
+        const auto newCapacity = vaoCapacity * 2 + byteCount;
+
+        glCheck(glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(newCapacity), nullptr, GL_STREAM_DRAW));
+        vaoCapacity = newCapacity;
     }
 
     [[gnu::always_inline]] void reallocEBOIfNeeded(base::SizeT byteCount)
@@ -286,13 +289,15 @@ struct [[nodiscard]] StatesCache
         if (byteCount <= eboCapacity)
             return;
 
-        glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(byteCount), nullptr, GL_STREAM_DRAW));
-        eboCapacity = byteCount;
+        const auto newCapacity = eboCapacity * 2 + byteCount;
+
+        glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(newCapacity), nullptr, GL_STREAM_DRAW));
+        eboCapacity = newCapacity;
     }
 
-    [[gnu::always_inline]] void vaoReallocAndMemcpy(const void* data, sf::base::SizeT byteCount)
+    [[gnu::always_inline]] void vboReallocAndMemcpy(const void* data, sf::base::SizeT byteCount)
     {
-        reallocVAOIfNeeded(byteCount);
+        reallocVBOIfNeeded(byteCount);
         RenderTargetImpl::memcpyInMappedBuffer(GL_ARRAY_BUFFER, data, byteCount);
     }
 
@@ -628,7 +633,7 @@ void RenderTarget::draw(const Vertex* vertices, base::SizeT vertexCount, Primiti
 
     setupDraw(states);
 
-    m_impl->cache.vaoReallocAndMemcpy(vertices, sizeof(Vertex) * vertexCount);
+    m_impl->cache.vboReallocAndMemcpy(vertices, sizeof(Vertex) * vertexCount);
 
     setupVertexAttribPointers(m_impl->cache.sfAttribPositionIdx,
                               m_impl->cache.sfAttribColorIdx,
@@ -655,8 +660,26 @@ void RenderTarget::drawIndexedVertices(
 
     setupDraw(states);
 
-    m_impl->cache.vaoReallocAndMemcpy(vertices, sizeof(Vertex) * vertexCount);
+    m_impl->cache.vboReallocAndMemcpy(vertices, sizeof(Vertex) * vertexCount);
     m_impl->cache.eboReallocAndMemcpy(indices, sizeof(unsigned int) * indexCount);
+
+    setupVertexAttribPointers(m_impl->cache.sfAttribPositionIdx,
+                              m_impl->cache.sfAttribColorIdx,
+                              m_impl->cache.sfAttribTexCoordIdx);
+
+    drawIndexedPrimitives(type, indexCount);
+    cleanupDraw(states);
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::drawMappedIndexedVertices(PrimitiveType type, base::SizeT indexCount, const RenderStates& states)
+{
+    // Nothing to draw or inactive target
+    if ((!RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) && !setActive(true)))
+        return;
+
+    setupDraw(states);
 
     setupVertexAttribPointers(m_impl->cache.sfAttribPositionIdx,
                               m_impl->cache.sfAttribColorIdx,
@@ -1199,6 +1222,129 @@ void RenderTarget::cleanupDraw(const RenderStates& states)
 
     // Re-enable the cache at the end of the draw if it was disabled
     m_impl->cache.enable = true;
+}
+
+
+////////////////////////////////////////////////////////////
+MappedDrawableBatch::MappedDrawableBatch(RenderTarget& renderTarget) : m_renderTarget(renderTarget)
+{
+}
+
+
+////////////////////////////////////////////////////////////
+void MappedDrawableBatch::allocAndMap()
+{
+    m_renderTarget.m_impl->vbo.bind();
+    m_renderTarget.m_impl->cache.reallocVBOIfNeeded(m_vertexBytesToAlloc);
+
+    m_mappedVertices = glCheckExpr(
+        glMapBufferRange(GL_ARRAY_BUFFER,
+                         0u,
+                         m_vertexBytesToAlloc,
+                         GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT));
+
+    m_renderTarget.m_impl->ebo.bind();
+    m_renderTarget.m_impl->cache.reallocEBOIfNeeded(m_indexBytesToAlloc);
+
+    m_mappedIndices = glCheckExpr(
+        glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER,
+                         0u,
+                         m_indexBytesToAlloc,
+                         GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT));
+}
+
+
+////////////////////////////////////////////////////////////
+void MappedDrawableBatch::unmap()
+{
+    {
+        [[maybe_unused]] const bool rc = glCheckExpr(glUnmapBuffer(GL_ARRAY_BUFFER));
+        SFML_BASE_ASSERT(rc);
+    }
+
+    {
+        [[maybe_unused]] const bool rc = glCheckExpr(glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER));
+        SFML_BASE_ASSERT(rc);
+    }
+}
+
+
+////////////////////////////////////////////////////////////
+MappedDrawableBatch::~MappedDrawableBatch()
+{
+}
+
+
+////////////////////////////////////////////////////////////
+void MappedDrawableBatch::appendPreTransformedVertices(const Vertex* data, base::SizeT count, const Transform& transform)
+{
+    auto* asVertexPtr = reinterpret_cast<Vertex*>(m_mappedVertices) + m_vertexCount;
+
+    for (base::SizeT i = 0u; i < count; ++i)
+    {
+        asVertexPtr[i].position  = transform.transformPoint(data[i].position);
+        asVertexPtr[i].color     = data[i].color;
+        asVertexPtr[i].texCoords = data[i].texCoords;
+    }
+
+    m_vertexCount += count;
+}
+
+
+////////////////////////////////////////////////////////////
+void MappedDrawableBatch::prepare(const Sprite&)
+{
+    m_vertexBytesToAlloc += sizeof(Vertex) * 4u;
+    m_indexBytesToAlloc += sizeof(IndexType) * 6u;
+}
+
+
+////////////////////////////////////////////////////////////
+void MappedDrawableBatch::add(const Sprite& sprite)
+{
+    auto* asIndexPtr = reinterpret_cast<IndexType*>(m_mappedIndices) + m_indexCount;
+
+    // Triangle strip: triangle #0
+    asIndexPtr[0] = static_cast<IndexType>(m_vertexCount + 0u);
+    asIndexPtr[1] = static_cast<IndexType>(m_vertexCount + 1u);
+    asIndexPtr[2] = static_cast<IndexType>(m_vertexCount + 2u);
+
+    // Triangle strip: triangle #1
+    asIndexPtr[3] = static_cast<IndexType>(m_vertexCount + 1u);
+    asIndexPtr[4] = static_cast<IndexType>(m_vertexCount + 2u);
+    asIndexPtr[5] = static_cast<IndexType>(m_vertexCount + 3u);
+
+    m_indexCount += 6u;
+
+    sprite.getPreTransformedVertices(reinterpret_cast<Vertex*>(m_mappedVertices) + m_vertexCount);
+    m_vertexCount += 4u;
+}
+
+
+////////////////////////////////////////////////////////////
+void MappedDrawableBatch::addSubsequentIndices(base::SizeT count)
+{
+    auto* asIndexPtr = reinterpret_cast<IndexType*>(m_mappedIndices) + m_indexCount;
+
+    for (IndexType i = 0u; i < static_cast<IndexType>(count); ++i)
+        asIndexPtr[i] = static_cast<IndexType>(m_vertexCount + i);
+
+    m_indexCount += count;
+}
+
+
+////////////////////////////////////////////////////////////
+void MappedDrawableBatch::clear()
+{
+    m_vertexCount = 0u;
+    m_indexCount  = 0u;
+}
+
+
+////////////////////////////////////////////////////////////
+void MappedDrawableBatch::draw(const RenderStates& renderStates)
+{
+    m_renderTarget.drawMappedIndexedVertices(PrimitiveType::Triangles, m_indexCount, renderStates);
 }
 
 } // namespace sf
