@@ -125,7 +125,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     FloatRect m_textureRect;         //!< Rectangle defining the area of the source texture to display
-    Color     m_color{Color::White}; //!< TODO P0:
+    Color     m_color{Color::White}; //!< Color of the sprite
 };
 
 } // namespace sf

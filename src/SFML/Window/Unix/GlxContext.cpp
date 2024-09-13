@@ -121,31 +121,6 @@ GlContext(windowContext, id, contextSettings)
 
 
 ////////////////////////////////////////////////////////////
-GlxContext::GlxContext(WindowContext&         windowContext,
-                       std::uint64_t          id,
-                       GlxContext*            shared,
-                       const ContextSettings& contextSettings,
-                       Vector2u               size) :
-GlContext(windowContext, id, contextSettings)
-{
-    // Save the creation settings
-    m_settings = contextSettings;
-
-    // Open the connection with the X server
-    m_display = openDisplay();
-
-    // Make sure that extensions are initialized
-    ensureExtensionsInit(m_display.get(), DefaultScreen(m_display.get()));
-
-    // Create the rendering surface (window or pbuffer if supported)
-    createSurface(shared, size, VideoModeUtils::getDesktopMode().bitsPerPixel);
-
-    // Create the context
-    createContext(shared);
-}
-
-
-////////////////////////////////////////////////////////////
 GlxContext::~GlxContext()
 {
     // Notify unshared OpenGL resources of context destruction

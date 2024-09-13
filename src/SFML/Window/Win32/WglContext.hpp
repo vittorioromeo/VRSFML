@@ -52,20 +52,6 @@ public:
                                       unsigned int      bitsPerPixel);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Create a new context that embeds its own rendering target
-    ///
-    /// \param shared   Context to share the new one with
-    /// \param settings Creation parameters
-    /// \param size     Back buffer width and height, in pixels
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WglContext(WindowContext&  windowContext,
-                                      std::uint64_t   id,
-                                      WglContext*     shared,
-                                      ContextSettings contextSettings,
-                                      Vector2u        size);
-
-    ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
@@ -146,11 +132,11 @@ private:
     /// \param settings Creation parameters
     ///
     ////////////////////////////////////////////////////////////
-    explicit WglContext(WindowContext&     windowContext,
-                        std::uint64_t      id,
-                        WglContext*        shared,
-                        ContextSettings&   settings,
-                        const SurfaceData& surfaceData);
+    explicit WglContext(WindowContext&         windowContext,
+                        std::uint64_t          id,
+                        WglContext*            shared,
+                        const ContextSettings& settings,
+                        const SurfaceData&     surfaceData);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the pixel format of the device context
@@ -174,10 +160,10 @@ private:
     /// \param bitsPerPixel Pixel depth, in bits per pixel
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static SurfaceData createSurface(ContextSettings& settings,
-                                                   WglContext*      shared,
-                                                   Vector2u         size,
-                                                   unsigned int     bitsPerPixel);
+    [[nodiscard]] static SurfaceData createSurface(ContextSettings settings,
+                                                   WglContext*     shared,
+                                                   Vector2u        size,
+                                                   unsigned int    bitsPerPixel);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the context's drawing surface from an existing window

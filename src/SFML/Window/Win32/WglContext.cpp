@@ -94,11 +94,11 @@ void ensureWGLExtensionsInit(sf::priv::WglContext& wglContext, HDC deviceContext
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-WglContext::WglContext(WindowContext&     windowContext,
-                       std::uint64_t      id,
-                       WglContext*        shared,
-                       ContextSettings&   contextSettings,
-                       const SurfaceData& surfaceData) :
+WglContext::WglContext(WindowContext&         windowContext,
+                       std::uint64_t          id,
+                       WglContext*            shared,
+                       const ContextSettings& contextSettings,
+                       const SurfaceData&     surfaceData) :
 GlContext(windowContext, id, contextSettings),
 m_surfaceData(surfaceData),
 m_context(createContext(m_settings, m_surfaceData, shared))
@@ -127,23 +127,12 @@ WglContext(windowContext, id, shared, contextSettings, createSurface(contextSett
 
 
 ////////////////////////////////////////////////////////////
-WglContext::WglContext(WindowContext&  windowContext,
-                       std::uint64_t   id,
-                       WglContext*     shared,
-                       ContextSettings contextSettings,
-                       Vector2u        size) :
+WglContext::WglContext(WindowContext& windowContext, std::uint64_t id, WglContext* shared) :
 WglContext(windowContext,
            id,
            shared,
-           contextSettings,
-           createSurface(contextSettings, shared, size, VideoModeUtils::getDesktopMode().bitsPerPixel))
-{
-}
-
-
-////////////////////////////////////////////////////////////
-WglContext::WglContext(WindowContext& windowContext, std::uint64_t id, WglContext* shared) :
-WglContext(windowContext, id, shared, ContextSettings{}, {1u, 1u})
+           ContextSettings{},
+           createSurface(ContextSettings{}, shared, {1u, 1u}, VideoModeUtils::getDesktopMode().bitsPerPixel))
 {
 }
 
@@ -581,10 +570,10 @@ void WglContext::updateSettingsFromPixelFormat(ContextSettings& contextSettings,
 
 
 ////////////////////////////////////////////////////////////
-WglContext::SurfaceData WglContext::createSurface(ContextSettings& contextSettings,
-                                                  WglContext*      shared,
-                                                  Vector2u         size,
-                                                  unsigned int     bitsPerPixel)
+WglContext::SurfaceData WglContext::createSurface(ContextSettings contextSettings,
+                                                  WglContext*     shared,
+                                                  Vector2u        size,
+                                                  unsigned int    bitsPerPixel)
 {
     // If pbuffers are not available we use a hidden window as the off-screen surface to draw to
     const auto createHiddenWindow = [](ContextSettings& xSettings, const Vector2u& xSize, unsigned int xBitsPerPixel) -> SurfaceData

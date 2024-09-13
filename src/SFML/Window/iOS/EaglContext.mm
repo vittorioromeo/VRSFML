@@ -98,17 +98,6 @@ m_context(nil)
 
 
 ////////////////////////////////////////////////////////////
-EaglContext::EaglContext(EaglContext* /* shared */, const ContextSettings& /* contextSettings */, Vector2u /* size */) :
-m_context(nil)
-{
-    ensureInit();
-
-    // This constructor should never be used by implementation
-    priv::err() << "Calling bad EaglContext constructor, please contact your developer :)";
-}
-
-
-////////////////////////////////////////////////////////////
 EaglContext::~EaglContext()
 {
     // Notify unshared OpenGL resources of context destruction
