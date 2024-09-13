@@ -171,7 +171,7 @@ public:
         const SizeT targetCapacity = size() + n;
 
         if (capacity() < targetCapacity) [[unlikely]]
-            reserveImpl(static_cast<SizeT>(static_cast<float>(targetCapacity) * 1.5f) + n);
+            reserveImpl((targetCapacity * 3u / 2u) + n);
     }
 
 
@@ -319,7 +319,7 @@ public:
 
     ////////////////////////////////////////////////////////////
     template <typename F>
-    [[nodiscard, gnu::always_inline, gnu::flatten]] void unsafeEmplaceRangeFromFunc(F&& f, SizeT count) noexcept
+    [[gnu::always_inline, gnu::flatten]] void unsafeEmplaceRangeFromFunc(F&& f, SizeT count) noexcept
     {
         f(SFML_BASE_LAUNDER_CAST(TItem*, m_endSize));
         m_endSize += count;

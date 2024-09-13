@@ -9,11 +9,13 @@
 #include "SFML/Graphics/TextureSaver.hpp"
 
 #include "SFML/Window/GLCheck.hpp"
-#include "SFML/Window/GLExtensions.hpp"
+#include "SFML/Window/GLUtils.hpp"
+#include "SFML/Window/Glad.hpp"
 #include "SFML/Window/Window.hpp"
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Path.hpp"
+#include "SFML/System/Rect.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
@@ -45,15 +47,9 @@ std::uint64_t getUniqueId() noexcept
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-Texture::Texture(base::PassKey<Texture>&&,
-                 GraphicsContext& graphicsContext,
-                 Vector2u         size,
-                 Vector2u         actualSize,
-                 unsigned int     texture,
-                 bool             sRgb) :
+Texture::Texture(base::PassKey<Texture>&&, GraphicsContext& graphicsContext, Vector2u size, unsigned int texture, bool sRgb) :
 m_graphicsContext(&graphicsContext),
 m_size(size),
-m_actualSize(actualSize),
 m_texture(texture),
 m_sRgb(sRgb),
 m_cacheId(TextureImpl::getUniqueId())
@@ -101,7 +97,6 @@ Texture::~Texture()
 Texture::Texture(Texture&& right) noexcept :
 m_graphicsContext(right.m_graphicsContext),
 m_size(base::exchange(right.m_size, {})),
-m_actualSize(base::exchange(right.m_actualSize, {})),
 m_texture(base::exchange(right.m_texture, 0u)),
 m_isSmooth(base::exchange(right.m_isSmooth, false)),
 m_sRgb(base::exchange(right.m_sRgb, false)),
@@ -135,7 +130,6 @@ Texture& Texture::operator=(Texture&& right) noexcept
     m_graphicsContext = right.m_graphicsContext;
 
     m_size          = base::exchange(right.m_size, {});
-    m_actualSize    = base::exchange(right.m_actualSize, {});
     m_texture       = base::exchange(right.m_texture, 0u);
     m_isSmooth      = base::exchange(right.m_isSmooth, false);
     m_sRgb          = base::exchange(right.m_sRgb, false);
@@ -163,20 +157,16 @@ base::Optional<Texture> Texture::create(GraphicsContext& graphicsContext, Vector
 
     SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
 
-    // Compute the internal texture dimensions depending on NPOT textures support
-    const Vector2u actualSize(getValidSize(size.x), getValidSize(size.y));
-
     // Check the maximum texture size
     const unsigned int maxSize = getMaximumSize(graphicsContext);
-    if ((actualSize.x > maxSize) || (actualSize.y > maxSize))
+    if ((size.x > maxSize) || (size.y > maxSize))
     {
         priv::err() << "Failed to create texture, its internal size is too high "
-                    << "(" << actualSize.x << "x" << actualSize.y << ", "
+                    << "(" << size.x << "x" << size.y << ", "
                     << "maximum is " << maxSize << "x" << maxSize << ")";
 
         return result; // Empty optional
     }
-
 
     // Create the OpenGL texture
     GLuint glTexture = 0;
@@ -184,21 +174,21 @@ base::Optional<Texture> Texture::create(GraphicsContext& graphicsContext, Vector
     SFML_BASE_ASSERT(glTexture);
 
     // All the validity checks passed, we can store the new texture settings
-    result.emplace(base::PassKey<Texture>{}, graphicsContext, size, actualSize, glTexture, sRgb);
+    result.emplace(base::PassKey<Texture>{}, graphicsContext, size, glTexture, sRgb);
     Texture& texture = *result;
 
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
 
-    const GLint textureWrapParam = GLEXT_GL_CLAMP_TO_EDGE;
+    const GLint textureWrapParam = GL_CLAMP_TO_EDGE;
 
     // Initialize the texture
     glCheck(glBindTexture(GL_TEXTURE_2D, texture.m_texture));
     glCheck(glTexImage2D(GL_TEXTURE_2D,
                          0,
-                         (texture.m_sRgb ? GLEXT_GL_SRGB8_ALPHA8 : GL_RGBA),
-                         static_cast<GLsizei>(texture.m_actualSize.x),
-                         static_cast<GLsizei>(texture.m_actualSize.y),
+                         (texture.m_sRgb ? GL_SRGB8_ALPHA8 : GL_RGBA),
+                         static_cast<GLsizei>(texture.m_size.x),
+                         static_cast<GLsizei>(texture.m_size.y),
                          0,
                          GL_RGBA,
                          GL_UNSIGNED_BYTE,
@@ -259,7 +249,7 @@ base::Optional<Texture> Texture::loadFromImage(GraphicsContext& graphicsContext,
     base::Optional<Texture> result; // Use a single local variable for NRVO
 
     // Retrieve the image size
-    const auto size = image.getSize().to<Vector2i>();
+    const auto size = image.getSize().toVector2i();
 
     // Load the entire image if the source area is either empty or contains the whole image
     if (area.size.x == 0 || (area.size.y == 0) ||
@@ -286,7 +276,7 @@ base::Optional<Texture> Texture::loadFromImage(GraphicsContext& graphicsContext,
     rectangle.size.y     = base::min(rectangle.size.y, size.y - rectangle.position.y);
 
     // Create the texture and upload the pixels
-    if ((result = sf::Texture::create(graphicsContext, rectangle.size.to<Vector2u>(), sRgb)))
+    if ((result = sf::Texture::create(graphicsContext, rectangle.size.toVector2u(), sRgb)))
     {
         SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
 
@@ -341,13 +331,13 @@ Image Texture::copyToImage() const
     // OpenGL ES doesn't have the glGetTexImage function, the only way to read
     // from a texture is to bind it to a FBO and use glReadPixels
     GLuint frameBuffer = 0;
-    glCheck(GLEXT_glGenFramebuffers(1, &frameBuffer));
+    glCheck(glGenFramebuffers(1, &frameBuffer));
     if (frameBuffer)
     {
-        const auto previousFrameBuffer = priv::getGLInteger(GLEXT_GL_DRAW_FRAMEBUFFER_BINDING);
+        const auto previousFrameBuffer = priv::getGLInteger(GL_DRAW_FRAMEBUFFER_BINDING);
 
-        glCheck(GLEXT_glBindFramebuffer(GLEXT_GL_FRAMEBUFFER, frameBuffer));
-        glCheck(GLEXT_glFramebufferTexture2D(GLEXT_GL_FRAMEBUFFER, GLEXT_GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture, 0));
+        glCheck(glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer));
+        glCheck(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture, 0));
         glCheck(glReadPixels(0,
                              0,
                              static_cast<GLsizei>(m_size.x),
@@ -355,9 +345,9 @@ Image Texture::copyToImage() const
                              GL_RGBA,
                              GL_UNSIGNED_BYTE,
                              pixels.data()));
-        glCheck(GLEXT_glDeleteFramebuffers(1, &frameBuffer));
+        glCheck(glDeleteFramebuffers(1, &frameBuffer));
 
-        glCheck(GLEXT_glBindFramebuffer(GLEXT_GL_FRAMEBUFFER, static_cast<GLuint>(previousFrameBuffer)));
+        glCheck(glBindFramebuffer(GL_FRAMEBUFFER, static_cast<GLuint>(previousFrameBuffer)));
 
         if (m_pixelsFlipped)
         {
@@ -378,7 +368,7 @@ Image Texture::copyToImage() const
 
 #else
 
-    if ((m_size == m_actualSize) && !m_pixelsFlipped)
+    if (!m_pixelsFlipped)
     {
         // Texture is not padded nor flipped, we can use a direct copy
         glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
@@ -389,7 +379,7 @@ Image Texture::copyToImage() const
         // Texture is either padded or flipped, we have to use a slower algorithm
 
         // All the pixels will first be copied to a temporary array
-        base::TrivialVector<std::uint8_t> allPixels(m_actualSize.x * m_actualSize.y * 4);
+        base::TrivialVector<std::uint8_t> allPixels(m_size.x * m_size.y * 4);
 
         glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
         glCheck(glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, allPixels.data()));
@@ -397,7 +387,7 @@ Image Texture::copyToImage() const
         // Then we copy the useful pixels from the temporary array to the final one
         const std::uint8_t* src      = allPixels.data();
         std::uint8_t*       dst      = pixels.data();
-        auto                srcPitch = static_cast<int>(m_actualSize.x * 4);
+        auto                srcPitch = static_cast<int>(m_size.x * 4);
         const unsigned int  dstPitch = m_size.x * 4;
 
         SFML_BASE_ASSERT(pixels.size() >= allPixels.size());
@@ -493,21 +483,15 @@ bool Texture::update(const Texture& texture, Vector2u dest)
 
     SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
-    if (!GLEXT_framebuffer_object || !GLEXT_framebuffer_blit)
-    {
-        update(texture.copyToImage(), dest);
-        return true;
-    }
-
     // Save the current bindings so we can restore them after we are done
-    const auto readFramebuffer = priv::getGLInteger(GLEXT_GL_READ_FRAMEBUFFER_BINDING);
-    const auto drawFramebuffer = priv::getGLInteger(GLEXT_GL_DRAW_FRAMEBUFFER_BINDING);
+    const auto readFramebuffer = priv::getGLInteger(GL_READ_FRAMEBUFFER_BINDING);
+    const auto drawFramebuffer = priv::getGLInteger(GL_DRAW_FRAMEBUFFER_BINDING);
 
     // Create the framebuffers
     GLuint sourceFrameBuffer = 0;
     GLuint destFrameBuffer   = 0;
-    glCheck(GLEXT_glGenFramebuffers(1, &sourceFrameBuffer));
-    glCheck(GLEXT_glGenFramebuffers(1, &destFrameBuffer));
+    glCheck(glGenFramebuffers(1, &sourceFrameBuffer));
+    glCheck(glGenFramebuffers(1, &destFrameBuffer));
 
     if (!sourceFrameBuffer || !destFrameBuffer)
     {
@@ -516,25 +500,23 @@ bool Texture::update(const Texture& texture, Vector2u dest)
     }
 
     // Link the source texture to the source frame buffer
-    glCheck(GLEXT_glBindFramebuffer(GLEXT_GL_READ_FRAMEBUFFER, sourceFrameBuffer));
-    glCheck(
-        GLEXT_glFramebufferTexture2D(GLEXT_GL_READ_FRAMEBUFFER, GLEXT_GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture.m_texture, 0));
+    glCheck(glBindFramebuffer(GL_READ_FRAMEBUFFER, sourceFrameBuffer));
+    glCheck(glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture.m_texture, 0));
 
     // Link the destination texture to the destination frame buffer
-    glCheck(GLEXT_glBindFramebuffer(GLEXT_GL_DRAW_FRAMEBUFFER, destFrameBuffer));
-    glCheck(
-        GLEXT_glFramebufferTexture2D(GLEXT_GL_DRAW_FRAMEBUFFER, GLEXT_GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture, 0));
+    glCheck(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, destFrameBuffer));
+    glCheck(glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture, 0));
 
     // A final check, just to be sure...
     GLenum sourceStatus = 0;
-    glCheck(sourceStatus = GLEXT_glCheckFramebufferStatus(GLEXT_GL_READ_FRAMEBUFFER));
+    glCheck(sourceStatus = glCheckFramebufferStatus(GL_READ_FRAMEBUFFER));
 
     GLenum destStatus = 0;
-    glCheck(destStatus = GLEXT_glCheckFramebufferStatus(GLEXT_GL_DRAW_FRAMEBUFFER));
+    glCheck(destStatus = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER));
 
     bool success = true;
 
-    if ((sourceStatus == GLEXT_GL_FRAMEBUFFER_COMPLETE) && (destStatus == GLEXT_GL_FRAMEBUFFER_COMPLETE))
+    if ((sourceStatus == GL_FRAMEBUFFER_COMPLETE) && (destStatus == GL_FRAMEBUFFER_COMPLETE))
     {
         // Scissor testing affects framebuffer blits as well
         // Since we don't want scissor testing to interfere with our copying, we temporarily disable it for the blit if it is enabled
@@ -545,16 +527,16 @@ bool Texture::update(const Texture& texture, Vector2u dest)
             glCheck(glDisable(GL_SCISSOR_TEST));
 
         // Blit the texture contents from the source to the destination texture
-        glCheck(GLEXT_glBlitFramebuffer(0,
-                                        texture.m_pixelsFlipped ? static_cast<GLint>(texture.m_size.y) : 0,
-                                        static_cast<GLint>(texture.m_size.x),
-                                        texture.m_pixelsFlipped ? 0 : static_cast<GLint>(texture.m_size.y), // Source rectangle, flip y if source is flipped
-                                        static_cast<GLint>(dest.x),
-                                        static_cast<GLint>(dest.y),
-                                        static_cast<GLint>(dest.x + texture.m_size.x),
-                                        static_cast<GLint>(dest.y + texture.m_size.y), // Destination rectangle
-                                        GL_COLOR_BUFFER_BIT,
-                                        GL_NEAREST));
+        glCheck(glBlitFramebuffer(0,
+                                  texture.m_pixelsFlipped ? static_cast<GLint>(texture.m_size.y) : 0,
+                                  static_cast<GLint>(texture.m_size.x),
+                                  texture.m_pixelsFlipped ? 0 : static_cast<GLint>(texture.m_size.y), // Source rectangle, flip y if source is flipped
+                                  static_cast<GLint>(dest.x),
+                                  static_cast<GLint>(dest.y),
+                                  static_cast<GLint>(dest.x + texture.m_size.x),
+                                  static_cast<GLint>(dest.y + texture.m_size.y), // Destination rectangle
+                                  GL_COLOR_BUFFER_BIT,
+                                  GL_NEAREST));
 
         // Re-enable scissor testing if it was previously enabled
         if (scissorEnabled == GL_TRUE)
@@ -567,12 +549,12 @@ bool Texture::update(const Texture& texture, Vector2u dest)
     }
 
     // Restore previously bound framebuffers
-    glCheck(GLEXT_glBindFramebuffer(GLEXT_GL_READ_FRAMEBUFFER, static_cast<GLuint>(readFramebuffer)));
-    glCheck(GLEXT_glBindFramebuffer(GLEXT_GL_DRAW_FRAMEBUFFER, static_cast<GLuint>(drawFramebuffer)));
+    glCheck(glBindFramebuffer(GL_READ_FRAMEBUFFER, static_cast<GLuint>(readFramebuffer)));
+    glCheck(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, static_cast<GLuint>(drawFramebuffer)));
 
     // Delete the framebuffers
-    glCheck(GLEXT_glDeleteFramebuffers(1, &sourceFrameBuffer));
-    glCheck(GLEXT_glDeleteFramebuffers(1, &destFrameBuffer));
+    glCheck(glDeleteFramebuffers(1, &sourceFrameBuffer));
+    glCheck(glDeleteFramebuffers(1, &destFrameBuffer));
 
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
@@ -630,108 +612,83 @@ bool Texture::update(const Window& window, Vector2u dest)
 
     SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
-    if (GLEXT_framebuffer_object && GLEXT_framebuffer_blit)
+    // Save the current bindings so we can restore them after we are done
+    const auto readFramebuffer = priv::getGLInteger(GL_READ_FRAMEBUFFER_BINDING);
+    const auto drawFramebuffer = priv::getGLInteger(GL_DRAW_FRAMEBUFFER_BINDING);
+
+    // Create the destination framebuffers
+    GLuint destFrameBuffer = 0;
+    glCheck(glGenFramebuffers(1, &destFrameBuffer));
+
+    GLuint sourceFrameBuffer = 0; // default fbo
+
+    if (!destFrameBuffer)
     {
-        // Save the current bindings so we can restore them after we are done
-        const auto readFramebuffer = priv::getGLInteger(GLEXT_GL_READ_FRAMEBUFFER_BINDING);
-        const auto drawFramebuffer = priv::getGLInteger(GLEXT_GL_DRAW_FRAMEBUFFER_BINDING);
+        priv::err() << "Cannot copy texture, failed to create a frame buffer object";
+        return false;
+    }
 
-        // Create the destination framebuffers
-        GLuint destFrameBuffer = 0;
-        glCheck(GLEXT_glGenFramebuffers(1, &destFrameBuffer));
+    // Link the source texture to the source frame buffer
+    glCheck(glBindFramebuffer(GL_READ_FRAMEBUFFER, sourceFrameBuffer));
 
-        GLuint sourceFrameBuffer = 0; // default fbo
+    // Link the destination texture to the destination frame buffer
+    glCheck(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, destFrameBuffer));
+    glCheck(glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture, 0));
 
-        if (!destFrameBuffer)
-        {
-            priv::err() << "Cannot copy texture, failed to create a frame buffer object";
-            return false;
-        }
+    // A final check, just to be sure...
+    GLenum sourceStatus = 0;
+    glCheck(sourceStatus = glCheckFramebufferStatus(GL_READ_FRAMEBUFFER));
 
-        // Link the source texture to the source frame buffer
-        glCheck(GLEXT_glBindFramebuffer(GLEXT_GL_READ_FRAMEBUFFER, sourceFrameBuffer));
+    GLenum destStatus = 0;
+    glCheck(destStatus = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER));
 
-        // Link the destination texture to the destination frame buffer
-        glCheck(GLEXT_glBindFramebuffer(GLEXT_GL_DRAW_FRAMEBUFFER, destFrameBuffer));
-        glCheck(
-            GLEXT_glFramebufferTexture2D(GLEXT_GL_DRAW_FRAMEBUFFER, GLEXT_GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture, 0));
+    if ((sourceStatus == GL_FRAMEBUFFER_COMPLETE) && (destStatus == GL_FRAMEBUFFER_COMPLETE))
+    {
+        // Scissor testing affects framebuffer blits as well
+        // Since we don't want scissor testing to interfere with our copying, we temporarily disable it for the blit if it is enabled
+        GLboolean scissorEnabled = GL_FALSE;
+        glCheck(glGetBooleanv(GL_SCISSOR_TEST, &scissorEnabled));
 
-        // A final check, just to be sure...
-        GLenum sourceStatus = 0;
-        glCheck(sourceStatus = GLEXT_glCheckFramebufferStatus(GLEXT_GL_READ_FRAMEBUFFER));
+        if (scissorEnabled == GL_TRUE)
+            glCheck(glDisable(GL_SCISSOR_TEST));
 
-        GLenum destStatus = 0;
-        glCheck(destStatus = GLEXT_glCheckFramebufferStatus(GLEXT_GL_DRAW_FRAMEBUFFER));
+        // Blit the texture contents from the source to the destination texture
+        glCheck(glBlitFramebuffer(0,
+                                  0,
+                                  static_cast<GLsizei>(window.getSize().x),
+                                  static_cast<GLsizei>(window.getSize().y), // Source rectangle, flip y if source is flipped
+                                  static_cast<GLint>(dest.x),
+                                  static_cast<GLint>(dest.y),
+                                  static_cast<GLint>(dest.x + window.getSize().x),
+                                  static_cast<GLint>(dest.y + window.getSize().y), // Destination rectangle
+                                  GL_COLOR_BUFFER_BIT,
+                                  GL_NEAREST));
 
-        if ((sourceStatus == GLEXT_GL_FRAMEBUFFER_COMPLETE) && (destStatus == GLEXT_GL_FRAMEBUFFER_COMPLETE))
-        {
-            // Scissor testing affects framebuffer blits as well
-            // Since we don't want scissor testing to interfere with our copying, we temporarily disable it for the blit if it is enabled
-            GLboolean scissorEnabled = GL_FALSE;
-            glCheck(glGetBooleanv(GL_SCISSOR_TEST, &scissorEnabled));
-
-            if (scissorEnabled == GL_TRUE)
-                glCheck(glDisable(GL_SCISSOR_TEST));
-
-            // Blit the texture contents from the source to the destination texture
-            glCheck(GLEXT_glBlitFramebuffer(0,
-                                            0,
-                                            static_cast<GLsizei>(window.getSize().x),
-                                            static_cast<GLsizei>(window.getSize().y), // Source rectangle, flip y if source is flipped
-                                            static_cast<GLint>(dest.x),
-                                            static_cast<GLint>(dest.y),
-                                            static_cast<GLint>(dest.x + window.getSize().x),
-                                            static_cast<GLint>(dest.y + window.getSize().y), // Destination rectangle
-                                            GL_COLOR_BUFFER_BIT,
-                                            GL_NEAREST));
-
-            // Re-enable scissor testing if it was previously enabled
-            if (scissorEnabled == GL_TRUE)
-                glCheck(glEnable(GL_SCISSOR_TEST));
-        }
-        else
-        {
-            priv::err() << "Cannot copy texture, failed to link texture to frame buffer";
-        }
-
-        // Restore previously bound framebuffers
-        glCheck(GLEXT_glBindFramebuffer(GLEXT_GL_READ_FRAMEBUFFER, static_cast<GLuint>(readFramebuffer)));
-        glCheck(GLEXT_glBindFramebuffer(GLEXT_GL_DRAW_FRAMEBUFFER, static_cast<GLuint>(drawFramebuffer)));
-
-        // Delete the framebuffers
-        glCheck(GLEXT_glDeleteFramebuffers(1, &destFrameBuffer));
-
-        // Make sure that the current texture binding will be preserved
-        const priv::TextureSaver save;
-
-        // Set the parameters of this texture
-        glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
-        glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_isSmooth ? GL_LINEAR : GL_NEAREST));
-        m_hasMipmap     = false;
-        m_pixelsFlipped = true;
-        m_cacheId       = TextureImpl::getUniqueId();
+        // Re-enable scissor testing if it was previously enabled
+        if (scissorEnabled == GL_TRUE)
+            glCheck(glEnable(GL_SCISSOR_TEST));
     }
     else
     {
-        // Make sure that the current texture binding will be preserved
-        const priv::TextureSaver save;
-
-        // Copy pixels from the back-buffer to the texture
-        glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
-        glCheck(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0u));
-        glCheck(glCopyTexSubImage2D(GL_TEXTURE_2D,
-                                    0,
-                                    static_cast<GLint>(dest.x),
-                                    static_cast<GLint>(dest.y),
-                                    0,
-                                    0,
-                                    static_cast<GLsizei>(window.getSize().x),
-                                    static_cast<GLsizei>(window.getSize().y)));
-        glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_isSmooth ? GL_LINEAR : GL_NEAREST));
-        m_hasMipmap     = false;
-        m_pixelsFlipped = true;
-        m_cacheId       = TextureImpl::getUniqueId();
+        priv::err() << "Cannot copy texture, failed to link texture to frame buffer";
     }
+
+    // Restore previously bound framebuffers
+    glCheck(glBindFramebuffer(GL_READ_FRAMEBUFFER, static_cast<GLuint>(readFramebuffer)));
+    glCheck(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, static_cast<GLuint>(drawFramebuffer)));
+
+    // Delete the framebuffers
+    glCheck(glDeleteFramebuffers(1, &destFrameBuffer));
+
+    // Make sure that the current texture binding will be preserved
+    const priv::TextureSaver save;
+
+    // Set the parameters of this texture
+    glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
+    glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_isSmooth ? GL_LINEAR : GL_NEAREST));
+    m_hasMipmap     = false;
+    m_pixelsFlipped = true;
+    m_cacheId       = TextureImpl::getUniqueId();
 
     // Force an OpenGL flush, so that the texture will appear updated
     // in all contexts immediately (solves problems in multi-threaded apps)
@@ -801,27 +758,7 @@ void Texture::setRepeated(bool repeated)
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
 
-    static const bool textureEdgeClamp = GLEXT_texture_edge_clamp;
-
-    if (!m_isRepeated && !textureEdgeClamp)
-    {
-        static bool warned = false;
-
-        if (!warned)
-        {
-            priv::err() << "OpenGL extension SGIS_texture_edge_clamp unavailable" << '\n'
-                        << "Artifacts may occur along texture edges" << '\n'
-                        << "Ensure that hardware acceleration is enabled if available";
-
-            warned = true;
-        }
-    }
-
-#ifndef SFML_OPENGL_ES
-    const GLint textureWrapParam = m_isRepeated ? GL_REPEAT : (textureEdgeClamp ? GLEXT_GL_CLAMP_TO_EDGE : GLEXT_GL_CLAMP);
-#else
-    const GLint textureWrapParam = m_isRepeated ? GL_REPEAT : GLEXT_GL_CLAMP_TO_EDGE;
-#endif
+    const GLint textureWrapParam = m_isRepeated ? GL_REPEAT : GL_CLAMP_TO_EDGE;
 
     glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
     glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, textureWrapParam));
@@ -848,7 +785,7 @@ bool Texture::generateMipmap()
     const priv::TextureSaver save;
 
     glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
-    glCheck(GLEXT_glGenerateMipmap(GL_TEXTURE_2D));
+    glCheck(glGenerateMipmap(GL_TEXTURE_2D));
     glCheck(glTexParameteri(GL_TEXTURE_2D,
                             GL_TEXTURE_MIN_FILTER,
                             m_isSmooth ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_LINEAR));
@@ -913,12 +850,9 @@ void Texture::getMatrix(float (&target)[16], CoordinateType coordinateType) cons
     // If pixels are flipped we must invert the Y axis
     const float pixelFlippedMult = m_pixelsFlipped ? -1.f : 1.f;
 
-    target[0] = coordinateType == CoordinateType::Pixels ? 1.f / static_cast<float>(m_actualSize.x) : 1.f;
-
-    target[5] = (coordinateType == CoordinateType::Pixels ? 1.f / static_cast<float>(m_actualSize.y) : 1.f) *
-                pixelFlippedMult;
-
-    target[13] = m_pixelsFlipped ? static_cast<float>(m_size.y) / static_cast<float>(m_actualSize.y) : 0.f;
+    target[0] = coordinateType == CoordinateType::Pixels ? 1.f / static_cast<float>(m_size.x) : 1.f;
+    target[5] = (coordinateType == CoordinateType::Pixels ? 1.f / static_cast<float>(m_size.y) : 1.f) * pixelFlippedMult;
+    target[13] = m_pixelsFlipped ? static_cast<float>(m_size.y) / static_cast<float>(m_size.y) : 0.f;
 }
 
 
@@ -937,7 +871,6 @@ Texture& Texture::operator=(const Texture& right)
 void Texture::swap(Texture& right) noexcept
 {
     std::swap(m_size, right.m_size);
-    std::swap(m_actualSize, right.m_actualSize);
     std::swap(m_texture, right.m_texture);
     std::swap(m_isSmooth, right.m_isSmooth);
     std::swap(m_sRgb, right.m_sRgb);
@@ -957,27 +890,9 @@ unsigned int Texture::getNativeHandle() const
 
 
 ////////////////////////////////////////////////////////////
-IntRect Texture::getRect() const
+FloatRect Texture::getRect() const
 {
-    return {{0, 0}, getSize().to<Vector2i>()};
-}
-
-
-////////////////////////////////////////////////////////////
-unsigned int Texture::getValidSize(unsigned int size)
-{
-    if (GLEXT_texture_non_power_of_two)
-    {
-        // If hardware supports NPOT textures, then just return the unmodified size
-        return size;
-    }
-
-    // If hardware doesn't support NPOT textures, we calculate the nearest power of two
-    unsigned int powerOfTwo = 1;
-    while (powerOfTwo < size)
-        powerOfTwo *= 2;
-
-    return powerOfTwo;
+    return {{0, 0}, getSize().toVector2f()};
 }
 
 

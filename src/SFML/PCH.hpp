@@ -63,7 +63,6 @@
 
 #ifdef SFML_BUILD_WINDOW
 #include "SFML/Window/Event.hpp"
-// #include "SFML/Window/GLExtensions.hpp" (TODO P1: not working due to vulkan example)
 #endif
 
 #endif // SFML_ENABLE_PCH

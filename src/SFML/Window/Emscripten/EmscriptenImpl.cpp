@@ -8,7 +8,7 @@
 #include "SFML/Window/Emscripten/WindowImplEmscripten.hpp"
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/GLCheck.hpp"
-#include "SFML/Window/GLExtensions.hpp"
+#include "SFML/Window/Glad.hpp"
 #include "SFML/Window/InputImpl.hpp"
 #include "SFML/Window/JoystickAxis.hpp"
 #include "SFML/Window/JoystickIdentification.hpp"

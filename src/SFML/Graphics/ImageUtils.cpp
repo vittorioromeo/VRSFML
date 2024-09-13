@@ -41,7 +41,7 @@ bool ImageUtils::saveToFile(const Image& image, const Path& filename)
 {
     // Extract the extension
     const Path extension     = filename.extension();
-    const auto convertedSize = image.getSize().to<Vector2i>();
+    const auto convertedSize = image.getSize().toVector2i();
 
     // Deduce the image type from its extension
     if (extension == ".bmp")
@@ -82,7 +82,7 @@ bool ImageUtils::saveToFile(const Image& image, const Path& filename)
 std::vector<std::uint8_t> ImageUtils::saveToMemory(const Image& image, SaveFormat format)
 {
     // Choose function based on format
-    const auto convertedSize = image.getSize().to<Vector2i>();
+    const auto convertedSize = image.getSize().toVector2i();
 
     std::vector<std::uint8_t> buffer; // Use a single local variable for NRVO
 

@@ -65,7 +65,7 @@ namespace
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-void Shape::setTextureRect(const IntRect& rect)
+void Shape::setTextureRect(const FloatRect& rect)
 {
     m_textureRect = rect;
     updateTexCoords();
@@ -73,7 +73,7 @@ void Shape::setTextureRect(const IntRect& rect)
 
 
 ////////////////////////////////////////////////////////////
-void Shape::setOutlineTextureRect(const IntRect& rect)
+void Shape::setOutlineTextureRect(const FloatRect& rect)
 {
     m_outlineTextureRect = rect;
     updateOutlineTexCoords();
@@ -81,14 +81,14 @@ void Shape::setOutlineTextureRect(const IntRect& rect)
 
 
 ////////////////////////////////////////////////////////////
-const IntRect& Shape::getTextureRect() const
+const FloatRect& Shape::getTextureRect() const
 {
     return m_textureRect;
 }
 
 
 ////////////////////////////////////////////////////////////
-const IntRect& Shape::getOutlineTextureRect() const
+const FloatRect& Shape::getOutlineTextureRect() const
 {
     return m_outlineTextureRect;
 }
@@ -239,8 +239,6 @@ void Shape::updateFillColors()
 ////////////////////////////////////////////////////////////
 void Shape::updateTexCoords()
 {
-    const auto convertedTextureRect = m_textureRect.to<FloatRect>();
-
     // Make sure not to divide by zero when the points are aligned on a vertical or horizontal line
     const Vector2f safeInsideSize(m_insideBounds.size.x > 0 ? m_insideBounds.size.x : 1.f,
                                   m_insideBounds.size.y > 0 ? m_insideBounds.size.y : 1.f);
@@ -248,7 +246,7 @@ void Shape::updateTexCoords()
     for (Vertex& vertex : m_vertices)
     {
         const Vector2f ratio = (vertex.position - m_insideBounds.position).componentWiseDiv(safeInsideSize);
-        vertex.texCoords     = convertedTextureRect.position + convertedTextureRect.size.componentWiseMul(ratio);
+        vertex.texCoords     = m_textureRect.position + m_textureRect.size.componentWiseMul(ratio);
     }
 }
 
@@ -256,15 +254,13 @@ void Shape::updateTexCoords()
 ////////////////////////////////////////////////////////////
 void Shape::updateOutlineTexCoords()
 {
-    const auto convertedTextureRect = m_outlineTextureRect.to<FloatRect>();
-
     // Make sure not to divide by zero when the points are aligned on a vertical or horizontal line
     const Vector2f safeInsideSize(m_bounds.size.x > 0 ? m_bounds.size.x : 1.f, m_bounds.size.y > 0 ? m_bounds.size.y : 1.f);
 
     for (Vertex& vertex : m_outlineVertices)
     {
         const Vector2f ratio = (vertex.position - m_bounds.position).componentWiseDiv(safeInsideSize);
-        vertex.texCoords     = convertedTextureRect.position + convertedTextureRect.size.componentWiseMul(ratio);
+        vertex.texCoords     = m_textureRect.position + m_textureRect.size.componentWiseMul(ratio);
     }
 }
 

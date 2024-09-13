@@ -103,8 +103,8 @@ int main(int, char**)
     const auto texture = sf::Texture::loadFromFile(graphicsContext, "image.png").value();
 
     sf::Sprite image(texture.getRect());
-    image.setPosition(size.to<sf::Vector2f>() / 2.f);
-    image.setOrigin(texture.getSize().to<sf::Vector2f>() / 2.f);
+    image.setPosition(size.toVector2f() / 2.f);
+    image.setOrigin(texture.getSize().toVector2f() / 2.f);
 
     const auto font = sf::Font::openFromFile(graphicsContext, "tuffy.ttf").value();
 
@@ -130,7 +130,7 @@ int main(int, char**)
 
             if (const auto* resized = event->getIf<sf::Event::Resized>())
             {
-                const auto fSize = resized->size.to<sf::Vector2f>();
+                const auto fSize = resized->size.toVector2f();
                 view.setSize(fSize);
                 view.setCenter(fSize / 2.f);
                 window.setView(view);
@@ -157,7 +157,7 @@ int main(int, char**)
             {
                 if (touchBegan->finger == 0)
                 {
-                    image.setPosition(touchBegan->position.to<sf::Vector2f>());
+                    image.setPosition(touchBegan->position.toVector2f());
 #if defined(USE_JNI)
                     vibrate(sf::milliseconds(10));
 #endif

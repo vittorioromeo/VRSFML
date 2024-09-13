@@ -491,7 +491,7 @@ public:
     ///
     /// \return Rectangle covering the entire texture, from {0, 0} to {width, height}
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] IntRect getRect() const;
+    [[nodiscard]] FloatRect getRect() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Bind a texture for rendering
@@ -564,29 +564,9 @@ public:
     /// Creates an empty texture.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Texture(base::PassKey<Texture>&&,
-                          GraphicsContext& graphicsContext,
-                          Vector2u         size,
-                          Vector2u         actualSize,
-                          unsigned int     texture,
-                          bool             sRgb);
+    [[nodiscard]] Texture(base::PassKey<Texture>&&, GraphicsContext& graphicsContext, Vector2u size, unsigned int texture, bool sRgb);
 
 private:
-    ////////////////////////////////////////////////////////////
-    /// \brief Get a valid image size according to hardware support
-    ///
-    /// This function checks whether the graphics driver supports
-    /// non power of two sizes or not, and adjusts the size
-    /// accordingly.
-    /// The returned size is greater than or equal to the original size.
-    ///
-    /// \param size size to convert
-    ///
-    /// \return Valid nearest size (greater than or equal to specified size)
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static unsigned int getValidSize(unsigned int size);
-
     ////////////////////////////////////////////////////////////
     /// \brief Invalidate the mipmap if one exists
     ///
@@ -601,7 +581,6 @@ private:
     ////////////////////////////////////////////////////////////
     GraphicsContext* m_graphicsContext; //!< The window context
     Vector2u         m_size;            //!< Public texture size
-    Vector2u         m_actualSize;      //!< Actual texture size (can be greater than public size because of padding)
     unsigned int     m_texture{};       //!< Internal texture identifier
     bool             m_isSmooth{};      //!< Status of the smooth filter
     bool             m_sRgb{};          //!< Should the texture source be converted from sRGB?

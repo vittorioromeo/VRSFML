@@ -45,7 +45,7 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
             CHECK(glyph.lsbDelta == 9);
             CHECK(glyph.rsbDelta == 16);
             CHECK(glyph.bounds == sf::FloatRect({0, -12}, {8, 12}));
-            CHECK(glyph.textureRect == sf::IntRect({2, 2}, {8, 12}));
+            CHECK(glyph.textureRect == sf::FloatRect({2, 2}, {8, 12}));
             CHECK(font.hasGlyph(0x41));
             CHECK(font.hasGlyph(0xC0));
             CHECK(font.getKerning(0x41, 0x42, 12) == -1);
@@ -82,7 +82,7 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
             CHECK(glyph.lsbDelta == 9);
             CHECK(glyph.rsbDelta == 16);
             CHECK(glyph.bounds == sf::FloatRect({0, -12}, {8, 12}));
-            CHECK(glyph.textureRect == sf::IntRect({2, 2}, {8, 12}));
+            CHECK(glyph.textureRect == sf::FloatRect({2, 2}, {8, 12}));
             CHECK(font.hasGlyph(0x41));
             CHECK(font.hasGlyph(0xC0));
             CHECK(font.getKerning(0x41, 0x42, 12) == -1);
@@ -110,7 +110,7 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
         CHECK(glyph.lsbDelta == 9);
         CHECK(glyph.rsbDelta == 16);
         CHECK(glyph.bounds == sf::FloatRect({0, -12}, {8, 12}));
-        CHECK(glyph.textureRect == sf::IntRect({2, 2}, {8, 12}));
+        CHECK(glyph.textureRect == sf::FloatRect({2, 2}, {8, 12}));
         CHECK(font.hasGlyph(0x41));
         CHECK(font.hasGlyph(0xC0));
         CHECK(font.getKerning(0x41, 0x42, 12) == -1);

@@ -9,11 +9,7 @@
 #include "SFML/Graphics/Texture.hpp"
 
 #include "SFML/Window/GLCheck.hpp"
-#include "SFML/Window/GLExtensions.hpp"
-
-#ifndef SFML_OPENGL_ES
-#include "SFML/System/Err.hpp"
-#endif
+#include "SFML/Window/Glad.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Optional.hpp"
@@ -100,20 +96,6 @@ struct GraphicsContext::Impl
 ////////////////////////////////////////////////////////////
 GraphicsContext::GraphicsContext()
 {
-#ifndef SFML_OPENGL_ES
-    static const bool shadersAvailable = [&]
-    {
-        SFML_BASE_ASSERT(hasActiveThreadLocalOrSharedGlContext());
-        return GLEXT_multitexture && GLEXT_shader_objects && GLEXT_vertex_shader && GLEXT_fragment_shader;
-    }();
-
-    if (!shadersAvailable)
-    {
-        priv::err() << "[[SFML FATAL ERROR]]: your system doesn't support shaders";
-        std::abort();
-    }
-#endif
-
     m_impl->builtInShader.emplace(createBuiltInShader(*this, builtInShaderVertexSrc, builtInShaderFragmentSrc));
     m_impl->builtInWhiteDotTexture = Texture::loadFromImage(*this, *Image::create({1u, 1u}, Color::White));
 }

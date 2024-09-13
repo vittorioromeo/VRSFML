@@ -50,7 +50,7 @@ int main()
     constexpr sf::Vector2f windowSize{1024.f, 768.f};
 
     sf::RenderWindow window(graphicsContext,
-                            {.size{windowSize.to<sf::Vector2u>()},
+                            {.size{windowSize.toVector2u()},
                              .title     = "Vittorio's SFML fork: batching example",
                              .resizable = false});
 
@@ -88,13 +88,12 @@ int main()
     //
     //
     // Add images to texture atlas
-    const sf::IntRect spriteTextureRects
-        []{{textureAtlas.add(imgElephant).value().to<sf::Vector2i>(), imgElephant.getSize().to<sf::Vector2i>()},
-           {textureAtlas.add(imgGiraffe).value().to<sf::Vector2i>(), imgGiraffe.getSize().to<sf::Vector2i>()},
-           {textureAtlas.add(imgMonkey).value().to<sf::Vector2i>(), imgMonkey.getSize().to<sf::Vector2i>()},
-           {textureAtlas.add(imgPig).value().to<sf::Vector2i>(), imgPig.getSize().to<sf::Vector2i>()},
-           {textureAtlas.add(imgRabbit).value().to<sf::Vector2i>(), imgRabbit.getSize().to<sf::Vector2i>()},
-           {textureAtlas.add(imgSnake).value().to<sf::Vector2i>(), imgSnake.getSize().to<sf::Vector2i>()}};
+    const sf::FloatRect spriteTextureRects[]{{textureAtlas.add(imgElephant).value(), imgElephant.getSize().toVector2f()},
+                                             {textureAtlas.add(imgGiraffe).value(), imgGiraffe.getSize().toVector2f()},
+                                             {textureAtlas.add(imgMonkey).value(), imgMonkey.getSize().toVector2f()},
+                                             {textureAtlas.add(imgPig).value(), imgPig.getSize().toVector2f()},
+                                             {textureAtlas.add(imgRabbit).value(), imgRabbit.getSize().toVector2f()},
+                                             {textureAtlas.add(imgSnake).value(), imgSnake.getSize().toVector2f()}};
 
     //
     //
@@ -113,13 +112,19 @@ int main()
 
     const auto populateEntities = [&](const std::size_t n)
     {
+        if (n < entities.size())
+        {
+            entities.erase(entities.begin() + static_cast<std::ptrdiff_t>(n), entities.end());
+            return;
+        }
+
         entities.clear();
         entities.reserve(n);
 
         for (std::size_t i = 0u; i < n; ++i)
         {
-            const std::size_t  type        = i % 6u;
-            const sf::IntRect& textureRect = spriteTextureRects[type];
+            const std::size_t    type        = i % 6u;
+            const sf::FloatRect& textureRect = spriteTextureRects[type];
 
             const auto label = std::string{names[i % 6u]} + " #" + std::to_string((i / (type + 1)) + 1);
 
@@ -131,7 +136,7 @@ int main()
                                                    sf::Vector2f{getRndFloat(-2.5f, 2.5f), getRndFloat(-2.5f, 2.5f)},
                                                    getRndFloat(-0.05f, 0.05f));
 
-            sprite.setOrigin(textureRect.size.to<sf::Vector2f>() / 2.f);
+            sprite.setOrigin(textureRect.size / 2.f);
             sprite.setRotation(sf::degrees(getRndFloat(0.f, 360.f)));
 
             const float scaleFactor = getRndFloat(0.08f, 0.17f);
@@ -150,18 +155,17 @@ int main()
 
     //
     //
-    // Set up interactive UI elements
-    bool useBatch       = true;
-    bool useMappedBatch = true;
-    bool drawSprites    = true;
-    bool drawText       = true;
-    int  numEntities    = 100;
+    // Set up UI elements
+    bool         useBatch      = true;
+    bool         drawSprites   = true;
+    bool         drawText      = true;
+    int          numEntities   = 100;
+    unsigned int drawnVertices = 0u;
 
     //
     //
     // Set up drawable batch
-    sf::DrawableBatch       drawableBatch;
-    sf::MappedDrawableBatch mdb(window);
+    sf::DrawableBatch drawableBatch;
 
     //
     //
@@ -225,15 +229,13 @@ int main()
                 sprite.move(velocity);
                 sprite.rotate(sf::radians(torque));
 
-                if (sprite.getPosition().x > windowSize.x)
-                    velocity.x = -std::abs(velocity.x);
-                else if (sprite.getPosition().x < 0.f)
-                    velocity.x = std::abs(velocity.x);
+                if ((sprite.getPosition().x > windowSize.x && velocity.x > 0.f) ||
+                    (sprite.getPosition().x < 0.f && velocity.x < 0.f))
+                    velocity.x = -velocity.x;
 
-                if (sprite.getPosition().y > windowSize.y)
-                    velocity.y = -std::abs(velocity.y);
-                else if (sprite.getPosition().y < 0.f)
-                    velocity.y = std::abs(velocity.y);
+                if ((sprite.getPosition().y > windowSize.y && velocity.y > 0.f) ||
+                    (sprite.getPosition().y < 0.f && velocity.y < 0.f))
+                    velocity.y = -velocity.y;
 
                 text.setPosition(sprite.getPosition() - sf::Vector2f{0.f, 250.f * sprite.getScale().x});
             }
@@ -245,14 +247,12 @@ int main()
         // ImGui step
         ////////////////////////////////////////////////////////////
         {
-            imGuiContext.update(window, clock.getElapsedTime());
+            imGuiContext.update(window, fpsClock.getElapsedTime());
 
             ImGui::Begin("Vittorio's SFML fork: batching example", nullptr, ImGuiWindowFlags_NoResize);
-            ImGui::SetWindowSize(ImVec2{350.f, 284.f});
+            ImGui::SetWindowSize(ImVec2{350.f, 304.f});
 
-            ImGui::Checkbox("Batch drawing", &useBatch);
-            ImGui::SameLine();
-            ImGui::Checkbox("Mapped", &useMappedBatch);
+            ImGui::Checkbox("Enable batch drawing", &useBatch);
 
             ImGui::Checkbox("Draw sprites", &drawSprites);
             ImGui::SameLine();
@@ -285,6 +285,9 @@ int main()
             plotGraph("Draw (ms)", " ms", samplesDrawMs, 100.f);
             plotGraph("FPS", " FPS", samplesFPS, 300.f);
 
+            ImGui::Spacing();
+            ImGui::Text("Drawn vertices: %u", drawnVertices);
+
             ImGui::End();
         }
 
@@ -293,52 +296,37 @@ int main()
         ////////////////////////////////////////////////////////////
         {
             clock.restart();
+
             window.clear();
+            drawableBatch.clear();
 
-            if (useBatch)
+            drawnVertices = 0u;
+
+            for (const Entity& entity : entities)
             {
-                if (!useMappedBatch)
+                if (drawSprites)
                 {
-                    drawableBatch.clear();
-
-                    for (const Entity& entity : entities)
-                    {
-                        if (drawSprites)
-                            drawableBatch.add(entity.sprite);
-
-                        if (drawText)
-                            drawableBatch.add(entity.text);
-                    }
-
-                    window.draw(drawableBatch, {.texture = &textureAtlas.getTexture()});
-                }
-                else
-                {
-                    mdb.clear();
-
-                    for (const Entity& entity : entities)
-                    {
-                        if (drawSprites)
-                            mdb.add(entity.sprite);
-
-                        if (drawText)
-                            mdb.add(entity.text);
-                    }
-
-                    mdb.draw({.texture = &textureAtlas.getTexture()});
-                }
-            }
-            else
-            {
-                for (const Entity& entity : entities)
-                {
-                    if (drawSprites)
+                    if (useBatch)
+                        drawableBatch.add(entity.sprite);
+                    else
                         window.draw(entity.sprite, textureAtlas.getTexture());
 
-                    if (drawText)
+                    drawnVertices += 4u;
+                }
+
+                if (drawText)
+                {
+                    if (useBatch)
+                        drawableBatch.add(entity.text);
+                    else
                         window.draw(entity.text);
+
+                    drawnVertices += entity.text.getVertices().size();
                 }
             }
+
+            if (useBatch)
+                window.draw(drawableBatch, {.texture = &textureAtlas.getTexture()});
 
             recordUs(samplesDrawMs, clock.getElapsedTime().asSeconds() * 1000.f);
         }

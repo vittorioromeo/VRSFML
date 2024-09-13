@@ -47,7 +47,7 @@ TEMPLATE_TEST_CASE("[System] sf::Vector2", "", int, float)
         SECTION("Conversion constructor")
         {
             constexpr sf::Vector2f sourceVector(1.0f, 2.0f);
-            constexpr auto         vector = sourceVector.to<sf::Vector2i>();
+            constexpr auto         vector = sourceVector.toVector2i();
 
             STATIC_CHECK(vector.x == static_cast<int>(sourceVector.x));
             STATIC_CHECK(vector.y == static_cast<int>(sourceVector.y));

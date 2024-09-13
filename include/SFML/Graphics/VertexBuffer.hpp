@@ -293,18 +293,6 @@ public:
     ////////////////////////////////////////////////////////////
     static void bind(GraphicsContext& graphicsContext, const VertexBuffer* vertexBuffer);
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Tell whether or not the system supports vertex buffers
-    ///
-    /// This function should always be called before using
-    /// the vertex buffer features. If it returns `false`, then
-    /// any attempt to use `sf::VertexBuffer` will fail.
-    ///
-    /// \return `true` if vertex buffers are supported, `false` otherwise
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static bool isAvailable(GraphicsContext& graphicsContext);
-
 private:
     friend RenderTarget;
 
