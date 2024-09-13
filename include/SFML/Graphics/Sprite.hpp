@@ -6,16 +6,16 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
+#include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Transformable.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
 #include "SFML/System/Rect.hpp"
 
-#include "SFML/Base/Span.hpp"
-
 
 namespace sf
 {
+class DrawableBatch;
 class RenderTarget;
 
 ////////////////////////////////////////////////////////////
@@ -109,26 +109,21 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] FloatRect getGlobalBounds() const;
 
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Span<const Vertex> getVertices() const;
-
 private:
+    friend DrawableBatch;
     friend RenderTarget;
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the vertices' positions and texture coordinates
     ///
     ////////////////////////////////////////////////////////////
-    void updateVertices();
+    void updateVertices(Vertex* target) const;
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vertex  m_vertices[4]; //!< Vertices defining the sprite's geometry
-    IntRect m_textureRect; //!< Rectangle defining the area of the source texture to display
+    IntRect m_textureRect;         //!< Rectangle defining the area of the source texture to display
+    Color   m_color{Color::White}; //!< TODO P0:
 };
 
 } // namespace sf

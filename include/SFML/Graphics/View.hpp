@@ -217,7 +217,7 @@ public:
     /// \see `getInverseTransform`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const Transform& getTransform() const;
+    [[nodiscard, gnu::pure]] Transform getTransform() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the inverse projection transform of the view
@@ -229,21 +229,17 @@ public:
     /// \see `getTransform`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const Transform& getInverseTransform() const;
+    [[nodiscard, gnu::pure]] Transform getInverseTransform() const;
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2f  m_center{500, 500};           //!< Center of the view, in scene coordinates
-    Vector2f  m_size{1000, 1000};           //!< Size of the view, in scene coordinates
-    Angle     m_rotation;                   //!< Angle of rotation of the view rectangle
-    FloatRect m_viewport{{0, 0}, {1, 1}};   //!< Viewport rectangle, expressed as a factor of the render-target's size
-    FloatRect m_scissor{{0, 0}, {1, 1}};    //!< Scissor rectangle, expressed as a factor of the render-target's size
-    mutable Transform m_transform;          //!< Precomputed projection transform corresponding to the view
-    mutable Transform m_inverseTransform;   //!< Precomputed inverse projection transform corresponding to the view
-    mutable bool      m_transformUpdated{}; //!< Internal state telling if the transform needs to be updated
-    mutable bool      m_invTransformUpdated{}; //!< Internal state telling if the inverse transform needs to be updated
+    Vector2f m_center{500.f, 500.f};              //!< Center of the view, in scene coordinates
+    Vector2f m_size{1000.f, 1000.f};              //!< Size of the view, in scene coordinates
+    Angle    m_rotation;                          //!< Angle of rotation of the view rectangle
+    FloatRect m_viewport{{0.f, 0.f}, {1.f, 1.f}}; //!< Viewport rectangle, expressed as a factor of the render-target's size
+    FloatRect m_scissor{{0.f, 0.f}, {1.f, 1.f}}; //!< Scissor rectangle, expressed as a factor of the render-target's size
 };
 
 } // namespace sf

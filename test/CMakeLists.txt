@@ -12,6 +12,15 @@ CPMAddPackage(
 
 include(${doctest_SOURCE_DIR}/scripts/cmake/doctest.cmake)
 
+# include_directories(${PROJECT_SOURCE_DIR}/tracy/public/tracy/)
+# add_definitions(-include Tracy.hpp)
+# add_definitions(-DTRACY_ENABLE)
+#
+# add_library(tracyclient SHARED ${PROJECT_SOURCE_DIR}/tracy/public/TracyClient.cpp)
+# target_link_libraries(tracyclient PRIVATE ws2_32 winmm gdi32 dbghelp)
+
+
+
 # Build doctest in C++20 mode to enable C++20 features
 target_compile_features(doctest INTERFACE cxx_std_20)
 

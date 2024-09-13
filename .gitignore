@@ -13,3 +13,8 @@ cmake-build-*/
 CMakeUserPresets.json
 buildarm/
 -.json
+tracy/
+*.dll
+*.exe
+imgui.ini
+*.log

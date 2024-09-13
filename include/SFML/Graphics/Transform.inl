@@ -11,22 +11,26 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-// clang-format off
-constexpr Transform::Transform(float a00, float a01, float a02,
-                               float a10, float a11, float a12)
-    : m_matrix{a00, a10, 0.f, 0.f,
-               a01, a11, 0.f, 0.f,
-               0.f, 0.f, 1.f, 0.f,
-               a02, a12, 0.f, 1.f}
+constexpr Transform::Transform(float a00, float a01, float a02, float a10, float a11, float a12) :
+m_a00{a00},
+m_a10{a10},
+m_a01{a01},
+m_a11{a11},
+m_a02{a02},
+m_a12{a12}
 {
 }
-// clang-format on
 
 
 ////////////////////////////////////////////////////////////
-constexpr const float* Transform::getMatrix() const
+constexpr void Transform::getMatrix(float (&target)[16]) const
 {
-    return m_matrix;
+    target[0]  = m_a00;
+    target[1]  = m_a10;
+    target[4]  = m_a01;
+    target[5]  = m_a11;
+    target[12] = m_a02;
+    target[13] = m_a12;
 }
 
 
@@ -35,7 +39,7 @@ constexpr Transform Transform::getInverse() const
 {
     // clang-format off
     // Compute the determinant
-    const float det = m_matrix[0] * m_matrix[5] - m_matrix[1] * m_matrix[4];
+    const float det = m_a00 * m_a11 - m_a10 * m_a01;
     // clang-format on
 
     // Compute the inverse if the determinant is not zero
@@ -43,12 +47,12 @@ constexpr Transform Transform::getInverse() const
     if (det != 0.f)
     {
         // clang-format off
-		return {(               m_matrix[5]                             ) / det,
-               -(               m_matrix[4]                             ) / det,
-				(m_matrix[13] * m_matrix[4] - m_matrix[5] * m_matrix[12]) / det,
-               -(               m_matrix[1]                             ) / det,
-                (               m_matrix[0]                             ) / det,
-               -(m_matrix[13] * m_matrix[0] - m_matrix[1] * m_matrix[12]) / det};
+        return {(                m_a11        ) / det,
+               -(                m_a01        ) / det,
+                (m_a12 * m_a01 - m_a11 * m_a02) / det,
+               -(                m_a10        ) / det,
+                (                m_a00        ) / det,
+               -(m_a12 * m_a00 - m_a10 * m_a02) / det};
         // clang-format on
     }
 
@@ -59,8 +63,7 @@ constexpr Transform Transform::getInverse() const
 ////////////////////////////////////////////////////////////
 constexpr Vector2f Transform::transformPoint(Vector2f point) const
 {
-    return {m_matrix[0] * point.x + m_matrix[4] * point.y + m_matrix[12],
-            m_matrix[1] * point.x + m_matrix[5] * point.y + m_matrix[13]};
+    return {m_a00 * point.x + m_a01 * point.y + m_a02, m_a10 * point.x + m_a11 * point.y + m_a12};
 }
 
 
@@ -68,10 +71,10 @@ constexpr Vector2f Transform::transformPoint(Vector2f point) const
 constexpr FloatRect Transform::transformRect(const FloatRect& rectangle) const
 {
     // Transform the 4 corners of the rectangle
-    const Vector2f points[] = {transformPoint(rectangle.position),
-                               transformPoint(rectangle.position + Vector2f(0.f, rectangle.size.y)),
-                               transformPoint(rectangle.position + Vector2f(rectangle.size.x, 0.f)),
-                               transformPoint(rectangle.position + rectangle.size)};
+    const Vector2f points[]{transformPoint(rectangle.position),
+                            transformPoint(rectangle.position + Vector2f(0.f, rectangle.size.y)),
+                            transformPoint(rectangle.position + Vector2f(rectangle.size.x, 0.f)),
+                            transformPoint(rectangle.position + rectangle.size)};
 
     // Compute the bounding rectangle of the transformed points
     Vector2f pmin = points[0];
@@ -139,17 +142,12 @@ constexpr Transform& Transform::scale(Vector2f factors, Vector2f center)
 ////////////////////////////////////////////////////////////
 constexpr Transform operator*(const Transform& left, const Transform& right)
 {
-    const float* a = left.getMatrix();
-    const float* b = right.getMatrix();
-
-    // clang-format off
-    return {a[0] * b[0]  + a[4] * b[1],
-            a[0] * b[4]  + a[4] * b[5],
-            a[0] * b[12] + a[4] * b[13] + a[12],
-            a[1] * b[0]  + a[5] * b[1],
-            a[1] * b[4]  + a[5] * b[5],
-            a[1] * b[12] + a[5] * b[13] + a[13]};
-    // clang-format on
+    return {left.m_a00 * right.m_a00 + left.m_a01 * right.m_a10,
+            left.m_a00 * right.m_a01 + left.m_a01 * right.m_a11,
+            left.m_a00 * right.m_a02 + left.m_a01 * right.m_a12 + left.m_a02,
+            left.m_a10 * right.m_a00 + left.m_a11 * right.m_a10,
+            left.m_a10 * right.m_a01 + left.m_a11 * right.m_a11,
+            left.m_a10 * right.m_a02 + left.m_a11 * right.m_a12 + left.m_a12};
 }
 
 
@@ -170,14 +168,8 @@ constexpr Vector2f operator*(const Transform& left, Vector2f right)
 ////////////////////////////////////////////////////////////
 constexpr bool operator==(const Transform& left, const Transform& right)
 {
-    const float* a = left.getMatrix();
-    const float* b = right.getMatrix();
-
-    // clang-format off
-    return ((a[0]  == b[0])  && (a[1]  == b[1])
-	     && (a[4]  == b[4])  && (a[5]  == b[5])
-		 && (a[12] == b[12]) && (a[13] == b[13]));
-    // clang-format on
+    return left.m_a00 == right.m_a00 && left.m_a10 == right.m_a10 && left.m_a01 == right.m_a01 &&
+           left.m_a11 == right.m_a11 && left.m_a02 == right.m_a02 && left.m_a12 == right.m_a12;
 }
 
 
@@ -194,6 +186,6 @@ constexpr bool operator!=(const Transform& left, const Transform& right)
 
 // Note: the 'inline' keyword here is technically not required, but VS2019 fails
 // to compile with a bogus "multiple definition" error if not explicitly used.
-inline constexpr Transform Transform::Identity;
+inline constexpr Transform Transform::Identity{};
 
 } // namespace sf

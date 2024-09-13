@@ -25,9 +25,7 @@ View::View(Vector2f center, Vector2f size) : m_center(center), m_size(size)
 ////////////////////////////////////////////////////////////
 void View::setCenter(Vector2f center)
 {
-    m_center              = center;
-    m_transformUpdated    = false;
-    m_invTransformUpdated = false;
+    m_center = center;
 }
 
 
@@ -35,9 +33,6 @@ void View::setCenter(Vector2f center)
 void View::setSize(Vector2f size)
 {
     m_size = size;
-
-    m_transformUpdated    = false;
-    m_invTransformUpdated = false;
 }
 
 
@@ -45,9 +40,6 @@ void View::setSize(Vector2f size)
 void View::setRotation(Angle angle)
 {
     m_rotation = angle.wrapUnsigned();
-
-    m_transformUpdated    = false;
-    m_invTransformUpdated = false;
 }
 
 
@@ -133,47 +125,30 @@ void View::zoom(float factor)
 
 
 ////////////////////////////////////////////////////////////
-const Transform& View::getTransform() const
+Transform View::getTransform() const
 {
-    // Recompute the matrix if needed
-    if (!m_transformUpdated)
-    {
-        // Rotation components
-        const float angle  = m_rotation.asRadians();
-        const float cosine = base::cos(angle);
-        const float sine   = base::sin(angle);
-        const float tx     = -m_center.x * cosine - m_center.y * sine + m_center.x;
-        const float ty     = m_center.x * sine - m_center.y * cosine + m_center.y;
+    // Rotation components
+    const float angle  = m_rotation.asRadians();
+    const float cosine = base::cos(angle);
+    const float sine   = base::sin(angle);
+    const float tx     = -m_center.x * cosine - m_center.y * sine + m_center.x;
+    const float ty     = m_center.x * sine - m_center.y * cosine + m_center.y;
 
-        // Projection components
-        const float a = 2.f / m_size.x;
-        const float b = -2.f / m_size.y;
-        const float c = -a * m_center.x;
-        const float d = -b * m_center.y;
+    // Projection components
+    const float a = 2.f / m_size.x;
+    const float b = -2.f / m_size.y;
+    const float c = -a * m_center.x;
+    const float d = -b * m_center.y;
 
-        // Rebuild the projection matrix
-        // clang-format off
-        m_transform = Transform( a * cosine, a * sine,   a * tx + c,
-                                -b * sine,   b * cosine, b * ty + d);
-        // clang-format on
-        m_transformUpdated = true;
-    }
-
-    return m_transform;
+    // Rebuild the projection matrix
+    return {a * cosine, a * sine, a * tx + c, -b * sine, b * cosine, b * ty + d};
 }
 
 
 ////////////////////////////////////////////////////////////
-const Transform& View::getInverseTransform() const
+Transform View::getInverseTransform() const
 {
-    // Recompute the matrix if needed
-    if (!m_invTransformUpdated)
-    {
-        m_inverseTransform    = getTransform().getInverse();
-        m_invTransformUpdated = true;
-    }
-
-    return m_inverseTransform;
+    return getTransform().getInverse();
 }
 
 } // namespace sf

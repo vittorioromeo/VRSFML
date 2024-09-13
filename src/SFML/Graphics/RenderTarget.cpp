@@ -198,6 +198,7 @@ constinit std::atomic<IdType> contextRenderTargetMap[maxIdCount]{};
     return modes[static_cast<sf::base::SizeT>(type)];
 }
 
+
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline]] inline sf::IntRect getMultipliedBySizeAndRoundedRect(sf::Vector2u renderTargetSize,
                                                                                        const sf::FloatRect& inputRect)
@@ -207,6 +208,31 @@ constinit std::atomic<IdType> contextRenderTargetMap[maxIdCount]{};
     return sf::Rect<long>({sf::base::lround(width * inputRect.position.x), sf::base::lround(height * inputRect.position.y)},
                           {sf::base::lround(width * inputRect.size.x), sf::base::lround(height * inputRect.size.y)})
         .to<sf::IntRect>();
+}
+
+
+////////////////////////////////////////////////////////////
+void memcpyInMappedBuffer(GLenum target, const void* data, sf::base::SizeT byteCount)
+{
+#ifdef SFML_OPENGL_ES // tiny bit faster on ES
+    glCheck(glBufferSubData(target, 0u, byteCount, data));
+#else // tiny bit faster on desktop
+    SFML_BASE_ASSERT(byteCount > 0u);
+
+#ifdef SFML_DEBUG
+    GLint bufferSize{};
+    glGetBufferParameteriv(target, GL_BUFFER_SIZE, &bufferSize);
+    SFML_BASE_ASSERT(static_cast<GLint>(byteCount) <= bufferSize);
+#endif
+
+    GLvoid* const mappedBuffer = glCheckExpr(
+        glMapBufferRange(target, 0u, byteCount, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT));
+
+    SFML_BASE_MEMCPY(mappedBuffer, data, byteCount);
+
+    [[maybe_unused]] const bool rc = glCheckExpr(glUnmapBuffer(target));
+    SFML_BASE_ASSERT(rc);
+#endif
 }
 
 } // namespace RenderTargetImpl
@@ -242,6 +268,39 @@ struct [[nodiscard]] StatesCache
 
     base::Optional<Shader::UniformLocation> ulTextureMatrix;             //!< Built-in texture matrix uniform location
     base::Optional<Shader::UniformLocation> ulModelViewProjectionMatrix; //!< Built-in model-view-projection matrix uniform location
+
+    base::SizeT vaoCapacity{0u}; // TODO P0: docs
+    base::SizeT eboCapacity{0u}; // TODO P0: docs
+
+    [[gnu::always_inline]] void reallocVAOIfNeeded(base::SizeT byteCount)
+    {
+        if (byteCount <= vaoCapacity)
+            return;
+
+        glCheck(glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(byteCount), nullptr, GL_STREAM_DRAW));
+        vaoCapacity = byteCount;
+    }
+
+    [[gnu::always_inline]] void reallocEBOIfNeeded(base::SizeT byteCount)
+    {
+        if (byteCount <= eboCapacity)
+            return;
+
+        glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(byteCount), nullptr, GL_STREAM_DRAW));
+        eboCapacity = byteCount;
+    }
+
+    [[gnu::always_inline]] void vaoReallocAndMemcpy(const void* data, sf::base::SizeT byteCount)
+    {
+        reallocVAOIfNeeded(byteCount);
+        RenderTargetImpl::memcpyInMappedBuffer(GL_ARRAY_BUFFER, data, byteCount);
+    }
+
+    [[gnu::always_inline]] void eboReallocAndMemcpy(const void* data, sf::base::SizeT byteCount)
+    {
+        reallocEBOIfNeeded(byteCount);
+        RenderTargetImpl::memcpyInMappedBuffer(GL_ELEMENT_ARRAY_BUFFER, data, byteCount);
+    }
 };
 
 
@@ -546,8 +605,10 @@ void RenderTarget::draw(const Sprite& sprite, const Texture& texture, RenderStat
     states.transform *= sprite.getTransform();
     states.coordinateType = CoordinateType::Pixels;
 
-    // TODO P1: consider making vertices here on demand? Also better for batching I guess. But need to pretransform?
-    draw(sprite.m_vertices, PrimitiveType::TriangleStrip, states);
+    Vertex buffer[4];
+    sprite.updateVertices(buffer);
+
+    draw(buffer, PrimitiveType::TriangleStrip, states);
 }
 
 
@@ -568,7 +629,7 @@ void RenderTarget::draw(const Vertex* vertices, base::SizeT vertexCount, Primiti
 
     setupDraw(states);
 
-    glCheck(glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeof(Vertex) * vertexCount), vertices, GL_STATIC_DRAW));
+    m_impl->cache.vaoReallocAndMemcpy(vertices, sizeof(Vertex) * vertexCount);
 
     setupVertexAttribPointers(m_impl->cache.sfAttribPositionIdx,
                               m_impl->cache.sfAttribColorIdx,
@@ -595,12 +656,8 @@ void RenderTarget::drawIndexedVertices(
 
     setupDraw(states);
 
-    glCheck(glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeof(Vertex) * vertexCount), vertices, GL_STATIC_DRAW));
-
-    glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                         static_cast<GLsizeiptr>(sizeof(unsigned int) * indexCount),
-                         indices,
-                         GL_STATIC_DRAW));
+    m_impl->cache.vaoReallocAndMemcpy(vertices, sizeof(Vertex) * vertexCount);
+    m_impl->cache.eboReallocAndMemcpy(indices, sizeof(unsigned int) * indexCount);
 
     setupVertexAttribPointers(m_impl->cache.sfAttribPositionIdx,
                               m_impl->cache.sfAttribColorIdx,
@@ -1044,9 +1101,16 @@ void RenderTarget::setupDraw(const RenderStates& states)
         applyCurrentView();
 
     // Set the model-view-projection matrix
+    // clang-format off
+    float transformMatrixBuffer[]{{},  {},  0.f, 0.f,
+                                  {},  {},  0.f, 0.f,
+                                  0.f, 0.f, 1.f, 0.f,
+                                  {},  {},  0.f, 1.f};
+    // clang-format on
+
     const Transform& modelViewMatrix(states.transform);
-    usedShader.setMat4Uniform(*m_impl->cache.ulModelViewProjectionMatrix,
-                              (m_impl->view.getTransform() * modelViewMatrix).getMatrix());
+    (m_impl->view.getTransform() * modelViewMatrix).getMatrix(transformMatrixBuffer);
+    usedShader.setMat4Uniform(*m_impl->cache.ulModelViewProjectionMatrix, transformMatrixBuffer);
 
     // Apply the blend mode
     if (!m_impl->cache.enable || (states.blendMode != m_impl->cache.lastBlendMode))

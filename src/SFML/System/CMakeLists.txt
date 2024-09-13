@@ -9,6 +9,10 @@ set(SRCROOT ${PROJECT_SOURCE_DIR}/src/SFML/System)
 file(GLOB SRC CONFIGURE_DEPENDS "${INCROOT}/*.hpp" "${INCROOT}/*.inl"  "${SRCROOT}/*.hpp" "${SRCROOT}/*.inl" "${SRCROOT}/*.cpp")
 
 list(APPEND SRC ${SRC_BASE})
+# list(APPEND SRC ${PROJECT_SOURCE_DIR}/tracy/public/tracy/Tracy.hpp)
+# include_directories(${PROJECT_SOURCE_DIR}/tracy/public/tracy/)
+# add_definitions(-include Tracy.hpp)
+# add_definitions(-DTRACY_ENABLE)
 
 if(SFML_ENABLE_PCH)
     list(APPEND SRC ${PROJECT_SOURCE_DIR}/src/SFML/PCH/PCH.cpp)

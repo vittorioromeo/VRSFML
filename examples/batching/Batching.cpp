@@ -22,7 +22,6 @@
 
 #include "SFML/Base/Optional.hpp"
 
-#include <GL/gl.h>
 #include <imgui.h>
 
 #include <random>
@@ -221,8 +220,8 @@ int main()
 
             for (auto& [text, sprite, velocity, torque] : entities)
             {
-                sprite.setPosition(sprite.getPosition() + velocity);
-                sprite.setRotation(sf::radians(sprite.getRotation().asRadians() + torque));
+                sprite.move(velocity);
+                sprite.rotate(sf::radians(torque));
 
                 if (sprite.getPosition().x > windowSize.x)
                     velocity.x = -std::abs(velocity.x);
