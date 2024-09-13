@@ -641,10 +641,6 @@ public:
     /// the geometry shader features. If it returns `false`, then
     /// any attempt to use `sf::Shader` geometry shader features will fail.
     ///
-    /// This function can only return `true` if isAvailable() would also
-    /// return `true`, since shaders in general have to be supported in
-    /// order for geometry shaders to be supported as well.
-    ///
     /// Note: The first call to this function, whether by your
     /// code or SFML will result in a context switch.
     ///

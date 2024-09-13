@@ -6,7 +6,8 @@
 #include "SFML/Graphics/TextureSaver.hpp"
 
 #include "SFML/Window/GLCheck.hpp"
-#include "SFML/Window/GLExtensions.hpp"
+#include "SFML/Window/GLUtils.hpp"
+#include "SFML/Window/Glad.hpp"
 
 
 namespace sf::priv

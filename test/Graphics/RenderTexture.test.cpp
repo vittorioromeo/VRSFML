@@ -14,6 +14,7 @@
 #include <SystemUtil.hpp>
 #include <WindowUtil.hpp>
 
+
 TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
 {
     sf::GraphicsContext graphicsContext;

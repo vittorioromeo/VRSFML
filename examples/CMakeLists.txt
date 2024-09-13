@@ -15,13 +15,8 @@ if(NOT SFML_OS_IOS AND NOT SFML_OS_EMSCRIPTEN)
 endif()
 
 # GUI based examples
-if(SFML_BUILD_WINDOW)
-    add_subdirectory(window)
-endif()
-
 if(SFML_BUILD_GRAPHICS)
     add_subdirectory(event_handling)
-    add_subdirectory(opengl)
     add_subdirectory(stencil)
 
     if(NOT SFML_OS_IOS)

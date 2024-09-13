@@ -21,7 +21,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API Glyph
     int       lsbDelta{};  //!< Left offset after forced autohint. Internally used by getKerning()
     int       rsbDelta{};  //!< Right offset after forced autohint. Internally used by getKerning()
     FloatRect bounds;      //!< Bounding rectangle of the glyph, in coordinates relative to the baseline
-    IntRect   textureRect; //!< Texture coordinates of the glyph inside the font's texture
+    FloatRect textureRect; //!< Texture coordinates of the glyph inside the font's texture
 };
 
 } // namespace sf

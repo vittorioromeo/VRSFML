@@ -226,7 +226,7 @@ public:
 
         for (int i = 0; i < 6; ++i)
         {
-            sf::Sprite entity{{{96 * i, 0}, {96, 96}}};
+            sf::Sprite entity{{{96.f * i, 0.f}, {96.f, 96.f}}};
 
             entity.setPosition(
                 {std::cos(0.25f * (time * static_cast<float>(i) + static_cast<float>(numEntities - i))) * 300 + 350,
@@ -532,8 +532,7 @@ int main()
         if (Effect* currentEffect = effects[current])
         {
             // Update the current example
-            const auto [x, y] = sf::Mouse::getPosition(window).to<sf::Vector2f>().componentWiseDiv(
-                window.getSize().to<sf::Vector2f>());
+            const auto [x, y] = sf::Mouse::getPosition(window).toVector2f().componentWiseDiv(window.getSize().toVector2f());
             currentEffect->update(clock.getElapsedTime().asSeconds(), x, y);
 
             // Clear the window

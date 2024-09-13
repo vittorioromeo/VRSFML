@@ -66,8 +66,7 @@ int main()
 
     const auto whiteDotAtlasPos = textureAtlas.add(graphicsContext.getBuiltInWhiteDotTexture()).value();
 
-    sf::Sprite sfmlLogo(
-        {.position = sfmlLogoAtlasPos.to<sf::Vector2i>(), .size = sfmlLogoImage.getSize().to<sf::Vector2i>()});
+    sf::Sprite sfmlLogo({.position = sfmlLogoAtlasPos, .size = sfmlLogoImage.getSize().toVector2f()});
 
     sf::Text text0(font0, "Test", 128);
     text0.setPosition({0u, 0u});
@@ -92,8 +91,8 @@ int main()
     circle0.setFillColor(sf::Color::Red);
     circle0.setOutlineColor(sf::Color::Yellow);
     circle0.setOutlineThickness(8.f);
-    circle0.setTextureRect({.position = whiteDotAtlasPos.to<sf::Vector2i>(), .size{1u, 1u}});
-    circle0.setOutlineTextureRect({.position = whiteDotAtlasPos.to<sf::Vector2i>(), .size{1u, 1u}});
+    circle0.setTextureRect({.position = whiteDotAtlasPos.toVector2f(), .size{1.f, 1.f}});
+    circle0.setOutlineTextureRect({.position = whiteDotAtlasPos.toVector2f(), .size{1.f, 1.f}});
 
     // Create drawable batch to optimize rendering
     sf::DrawableBatch drawableBatch;

@@ -185,11 +185,6 @@ private:
 /// CPU, but it can be changed to a smaller value if you need to process
 /// the recorded data in real time, for example.
 ///
-/// The audio capture feature may not be supported or activated
-/// on every platform, thus it is recommended to check its
-/// availability with the isAvailable() function. If it returns
-/// `false`, then any attempt to use an audio recorder will fail.
-///
 /// If you have multiple sound input devices connected to your
 /// computer (for example: microphone, external sound card, webcam mic, ...)
 /// you can get a list of all available devices through the

@@ -493,7 +493,7 @@ m_cursorGrabbed(m_fullscreen)
     else
     {
         const Vector2i displaySize(DisplayWidth(m_display.get(), m_screen), DisplayHeight(m_display.get(), m_screen));
-        windowPosition = displaySize - windowSettings.size.to<Vector2i>() / 2;
+        windowPosition = displaySize - windowSettings.size.toVector2i() / 2;
     }
 
     const unsigned int width  = windowSettings.size.x;
@@ -877,7 +877,7 @@ Vector2u WindowImplX11::getSize() const
 {
     XWindowAttributes attributes;
     XGetWindowAttributes(m_display.get(), m_window, &attributes);
-    return Vector2i(attributes.width, attributes.height).to<Vector2u>();
+    return Vector2i(attributes.width, attributes.height).toVector2u();
 }
 
 
@@ -1749,8 +1749,7 @@ bool WindowImplX11::processEvent(XEvent& windowEvent)
             // ConfigureNotify can be triggered for other reasons, check if the size has actually changed
             if ((windowEvent.xconfigure.width != m_previousSize.x) || (windowEvent.xconfigure.height != m_previousSize.y))
             {
-                pushEvent(
-                    Event::Resized{Vector2{windowEvent.xconfigure.width, windowEvent.xconfigure.height}.to<Vector2u>()});
+                pushEvent(Event::Resized{Vector2{windowEvent.xconfigure.width, windowEvent.xconfigure.height}.toVector2u()});
 
                 m_previousSize.x = windowEvent.xconfigure.width;
                 m_previousSize.y = windowEvent.xconfigure.height;

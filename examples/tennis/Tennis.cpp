@@ -67,9 +67,8 @@ int main()
     sf::GraphicsContext graphicsContext;
 
     // Create the window of the application
-    sf::RenderWindow
-        window(graphicsContext,
-               {.size = gameSize.to<sf::Vector2u>(), .bitsPerPixel = 32u, .title = "SFML Tennis", .resizable = false});
+    sf::RenderWindow window(graphicsContext,
+                            {.size = gameSize.toVector2u(), .bitsPerPixel = 32u, .title = "SFML Tennis", .resizable = false});
 
     window.setVerticalSyncEnabled(true);
 

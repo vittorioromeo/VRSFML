@@ -6,7 +6,7 @@
 #include "SFML/ImGui/Backend.hpp"
 
 #include "SFML/Window/GLCheck.hpp"
-#include "SFML/Window/GLExtensions.hpp"
+#include "SFML/Window/Glad.hpp"
 
 #include <imgui.h>
 

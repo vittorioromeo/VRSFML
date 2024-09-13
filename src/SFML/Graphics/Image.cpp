@@ -160,7 +160,7 @@ base::Optional<Image> Image::loadFromFile(const Path& filename)
         SFML_BASE_ASSERT(height > 0 && "Loaded image from file with height == 0");
 
         return base::makeOptional<Image>(base::PassKey<Image>{},
-                                         Vector2i{width, height}.to<Vector2u>(),
+                                         Vector2i{width, height}.toVector2u(),
                                          ptr.get(),
                                          ptr.get() + width * height * 4);
     }
@@ -201,7 +201,7 @@ base::Optional<Image> Image::loadFromMemory(const void* data, base::SizeT size)
     SFML_BASE_ASSERT(height > 0 && "Loaded image from memory with height == 0");
 
     return base::makeOptional<Image>(base::PassKey<Image>{},
-                                     Vector2i{width, height}.to<Vector2u>(),
+                                     Vector2i{width, height}.toVector2u(),
                                      ptr.get(),
                                      ptr.get() + width * height * 4);
 }
@@ -240,7 +240,7 @@ base::Optional<Image> Image::loadFromStream(InputStream& stream)
     SFML_BASE_ASSERT(height > 0 && "Loaded image from stream with height == 0");
 
     return base::makeOptional<Image>(base::PassKey<Image>{},
-                                     Vector2i{width, height}.to<Vector2u>(),
+                                     Vector2i{width, height}.toVector2u(),
                                      ptr.get(),
                                      ptr.get() + width * height * 4);
 }

@@ -240,6 +240,7 @@ TEST_CASE("[Graphics] sf::Shader" * doctest::skip(skipShaderFullTest))
                                                          "Graphics/shader.vert",
                                                          "Graphics/shader.geom",
                                                          "Graphics/shader.frag");
+
             CHECK(shader.hasValue() == sf::Shader::isGeometryAvailable(graphicsContext));
             if (shader.hasValue())
                 CHECK(static_cast<bool>(shader->getNativeHandle()) == sf::Shader::isGeometryAvailable(graphicsContext));
@@ -249,7 +250,8 @@ TEST_CASE("[Graphics] sf::Shader" * doctest::skip(skipShaderFullTest))
     SECTION("loadFromMemory()")
     {
         CHECK(sf::Shader::loadFromMemory(graphicsContext, vertexSource, sf::Shader::Type::Vertex).hasValue());
-        CHECK(!sf::Shader::loadFromMemory(graphicsContext, geometrySource, sf::Shader::Type::Geometry).hasValue());
+        CHECK(sf::Shader::loadFromMemory(graphicsContext, geometrySource, sf::Shader::Type::Geometry).hasValue() ==
+              sf::Shader::isGeometryAvailable(graphicsContext));
         CHECK(sf::Shader::loadFromMemory(graphicsContext, fragmentSource, sf::Shader::Type::Fragment).hasValue());
         CHECK(sf::Shader::loadFromMemory(graphicsContext, vertexSource, fragmentSource).hasValue());
 

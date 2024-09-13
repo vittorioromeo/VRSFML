@@ -245,26 +245,24 @@ sf::Glyph loadGlyph(const FontHandles&                     fontHandles,
     {
         // Leave a small padding around characters, so that filtering doesn't
         // pollute them with pixels from neighbors
-        const unsigned int padding = 2;
+        const unsigned int padding = 2.f;
 
         size += 2u * sf::Vector2u{padding, padding};
 
         // Find a good position for the new glyph into the texture
         {
-            const sf::Vector2u pos = textureAtlas.getRectPacker().pack(size).value(); // TODO P0: what if there is no room?
-
-            glyph.textureRect = {.position{static_cast<int>(pos.x), static_cast<int>(pos.y)},
-                                 .size{static_cast<int>(size.x), static_cast<int>(size.y)}};
+            const auto pos = textureAtlas.getRectPacker().pack(size).value().toVector2f(); // TODO P0: what if there is no room?
+            glyph.textureRect = {pos, size.toVector2f()};
         }
 
         // Make sure the texture data is positioned in the center
         // of the allocated texture rectangle
-        glyph.textureRect.position += sf::Vector2i{padding, padding};
-        glyph.textureRect.size -= 2 * sf::Vector2i{padding, padding};
+        glyph.textureRect.position += sf::Vector2f{padding, padding};
+        glyph.textureRect.size -= 2.f * sf::Vector2f{padding, padding};
 
         // Compute the glyph's bounding box
-        glyph.bounds.position = sf::Vector2i(bitmapGlyph->left, -bitmapGlyph->top).to<sf::Vector2f>();
-        glyph.bounds.size     = sf::Vector2u(bitmap.width, bitmap.rows).to<sf::Vector2f>();
+        glyph.bounds.position = sf::Vector2i(bitmapGlyph->left, -bitmapGlyph->top).toVector2f();
+        glyph.bounds.size     = sf::Vector2u(bitmap.width, bitmap.rows).toVector2f();
 
         // Resize the pixel buffer to the new size and fill it with transparent white pixels
         pixelBuffer.resize(static_cast<sf::base::SizeT>(size.x) * static_cast<sf::base::SizeT>(size.y) * 4);
@@ -314,8 +312,8 @@ sf::Glyph loadGlyph(const FontHandles&                     fontHandles,
         }
 
         // Write the pixels to the texture
-        const auto dest       = glyph.textureRect.position.to<sf::Vector2u>() - sf::Vector2u{padding, padding};
-        const auto updateSize = glyph.textureRect.size.to<sf::Vector2u>() + 2u * sf::Vector2u{padding, padding};
+        const auto dest       = glyph.textureRect.position.toVector2u() - sf::Vector2u{padding, padding};
+        const auto updateSize = glyph.textureRect.size.toVector2u() + 2u * sf::Vector2u{padding, padding};
         textureAtlas.getTexture().update(pixelBuffer.data(), updateSize, dest);
     }
 

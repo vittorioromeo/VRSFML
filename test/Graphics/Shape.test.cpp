@@ -45,7 +45,7 @@ TEST_CASE("[Graphics] sf::Shape" * doctest::skip(skipDisplayTests))
     SECTION("Default constructor")
     {
         const TriangleShape triangleShape({0, 0});
-        CHECK(triangleShape.getTextureRect() == sf::IntRect());
+        CHECK(triangleShape.getTextureRect() == sf::FloatRect());
         CHECK(triangleShape.getFillColor() == sf::Color::White);
         CHECK(triangleShape.getOutlineColor() == sf::Color::White);
         CHECK(triangleShape.getOutlineThickness() == 0.0f);
@@ -57,7 +57,7 @@ TEST_CASE("[Graphics] sf::Shape" * doctest::skip(skipDisplayTests))
     {
         TriangleShape triangleShape({});
         triangleShape.setTextureRect({{4, 5}, {6, 7}});
-        CHECK(triangleShape.getTextureRect() == sf::IntRect({4, 5}, {6, 7}));
+        CHECK(triangleShape.getTextureRect() == sf::FloatRect({4, 5}, {6, 7}));
     }
 
     SECTION("Set/get fill color")

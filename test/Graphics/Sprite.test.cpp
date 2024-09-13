@@ -31,20 +31,20 @@ TEST_CASE("[Graphics] sf::Sprite" * doctest::skip(skipDisplayTests))
     {
         SECTION("Rectangle constructor")
         {
-            const sf::Sprite sprite({{0, 0}, {40, 60}});
-            CHECK(sprite.getTextureRect() == sf::IntRect({0, 0}, {40, 60}));
+            const sf::Sprite sprite({{0.f, 0.f}, {40.f, 60.f}});
+            CHECK(sprite.getTextureRect() == sf::FloatRect({0.f, 0.f}, {40.f, 60.f}));
             CHECK(sprite.getColor() == sf::Color::White);
-            CHECK(sprite.getLocalBounds() == sf::FloatRect({0, 0}, {40, 60}));
-            CHECK(sprite.getGlobalBounds() == sf::FloatRect({0, 0}, {40, 60}));
+            CHECK(sprite.getLocalBounds() == sf::FloatRect({0.f, 0.f}, {40.f, 60.f}));
+            CHECK(sprite.getGlobalBounds() == sf::FloatRect({0.f, 0.f}, {40.f, 60.f}));
         }
 
         SECTION("Negative-size texture rectangle")
         {
-            const sf::Sprite sprite({{0, 0}, {-40, -60}});
-            CHECK(sprite.getTextureRect() == sf::IntRect({0, 0}, {-40, -60}));
+            const sf::Sprite sprite({{0.f, 0.f}, {-40.f, -60.f}});
+            CHECK(sprite.getTextureRect() == sf::FloatRect({0.f, 0.f}, {-40.f, -60.f}));
             CHECK(sprite.getColor() == sf::Color::White);
-            CHECK(sprite.getLocalBounds() == sf::FloatRect({0, 0}, {40, 60}));
-            CHECK(sprite.getGlobalBounds() == sf::FloatRect({0, 0}, {40, 60}));
+            CHECK(sprite.getLocalBounds() == sf::FloatRect({0.f, 0.f}, {40.f, 60.f}));
+            CHECK(sprite.getGlobalBounds() == sf::FloatRect({0.f, 0.f}, {40.f, 60.f}));
         }
     }
 
@@ -52,7 +52,7 @@ TEST_CASE("[Graphics] sf::Sprite" * doctest::skip(skipDisplayTests))
     {
         sf::Sprite sprite({});
         sprite.setTextureRect({{1, 2}, {3, 4}});
-        CHECK(sprite.getTextureRect() == sf::IntRect({1, 2}, {3, 4}));
+        CHECK(sprite.getTextureRect() == sf::FloatRect({1, 2}, {3, 4}));
     }
 
     SECTION("Set/get color")

@@ -11,13 +11,13 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-Sprite::Sprite(const IntRect& rectangle) : m_textureRect(rectangle)
+Sprite::Sprite(const FloatRect& rectangle) : m_textureRect(rectangle)
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-void Sprite::setTextureRect(const IntRect& rectangle)
+void Sprite::setTextureRect(const FloatRect& rectangle)
 {
     m_textureRect = rectangle;
 }
@@ -31,7 +31,7 @@ void Sprite::setColor(Color color)
 
 
 ////////////////////////////////////////////////////////////
-const IntRect& Sprite::getTextureRect() const
+const FloatRect& Sprite::getTextureRect() const
 {
     return m_textureRect;
 }
@@ -47,9 +47,7 @@ Color Sprite::getColor() const
 ////////////////////////////////////////////////////////////
 FloatRect Sprite::getLocalBounds() const
 {
-    return {{0.f, 0.f},
-            {base::fabs(static_cast<float>(m_textureRect.position.x)),
-             base::fabs(static_cast<float>(m_textureRect.position.y))}};
+    return {{0.f, 0.f}, {base::fabs(m_textureRect.size.x), base::fabs(m_textureRect.size.y)}};
 }
 
 
@@ -63,7 +61,7 @@ FloatRect Sprite::getGlobalBounds() const
 ////////////////////////////////////////////////////////////
 void Sprite::getPreTransformedVertices(Vertex* target) const
 {
-    const auto [position, size] = m_textureRect.to<FloatRect>();
+    const auto& [position, size] = m_textureRect;
 
     // Absolute value is used to support negative texture rect sizes
     const Vector2f absSize(base::fabs(size.x), base::fabs(size.y));

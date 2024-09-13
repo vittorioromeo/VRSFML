@@ -717,6 +717,12 @@ struct [[nodiscard]] ImGuiPerWindowContext
     ////////////////////////////////////////////////////////////
     void updateMouseCursor(Window& theWindow, const ImGuiMouseCursor cursor) const
     {
+        if (!mouseCursors[ImGuiMouseCursor_Arrow].hasValue())
+        {
+            theWindow.setMouseCursorVisible(false);
+            return;
+        }
+
         theWindow.setMouseCursorVisible(true);
         theWindow.setMouseCursor(mouseCursors[cursor] ? *mouseCursors[cursor] : *mouseCursors[ImGuiMouseCursor_Arrow]);
     }
@@ -728,22 +734,23 @@ struct [[nodiscard]] ImGuiPerWindowContext
         // update OS/hardware mouse cursor if imgui isn't drawing a software cursor
         const ImGuiMouseCursor mouseCursor = ::ImGui::GetIO().MouseDrawCursor ? ImGuiMouseCursor_None
                                                                               : ::ImGui::GetMouseCursor();
+
         if (lastCursor != mouseCursor)
         {
             lastCursor = mouseCursor;
             updateMouseCursor(theWindow, mouseCursor);
         }
 
-        if (!mouseMoved)
+        if (!mouseMoved) // TODO P1: needed?
         {
             if (Touch::isDown(0))
                 touchPos = Touch::getPosition(0, theWindow);
 
-            update(touchPos, target.getSize().to<Vector2f>(), dt);
+            update(touchPos, target.getSize().toVector2f(), dt);
         }
         else
         {
-            update(Mouse::getPosition(theWindow), target.getSize().to<Vector2f>(), dt);
+            update(Mouse::getPosition(theWindow), target.getSize().toVector2f(), dt);
         }
     }
 
@@ -1006,8 +1013,8 @@ struct [[nodiscard]] SpriteTextureData
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SpriteTextureData getSpriteTextureData(const Sprite& sprite, const Texture& texture)
 {
-    const auto textureSize(texture.getSize().to<Vector2f>());
-    const auto textureRect(sprite.getTextureRect().to<FloatRect>());
+    const auto       textureSize(texture.getSize().toVector2f());
+    const FloatRect& textureRect(sprite.getTextureRect());
 
     return {toImVec2(textureRect.position.componentWiseDiv(textureSize)),
             toImVec2((textureRect.position + textureRect.size).componentWiseDiv(textureSize)),
@@ -1084,7 +1091,7 @@ bool ImGuiContext::init(RenderWindow& window, bool loadDefaultFont)
 ////////////////////////////////////////////////////////////
 bool ImGuiContext::init(Window& window, RenderTarget& target, bool loadDefaultFont)
 {
-    return init(window, target.getSize().to<Vector2f>(), loadDefaultFont);
+    return init(window, target.getSize().toVector2f(), loadDefaultFont);
 }
 
 
@@ -1239,7 +1246,7 @@ void ImGuiContext::shutdown()
 ////////////////////////////////////////////////////////////
 void ImGuiContext::image(const Texture& texture, Color tintColor, Color borderColor)
 {
-    image(texture, texture.getSize().to<Vector2f>(), tintColor, borderColor);
+    image(texture, texture.getSize().toVector2f(), tintColor, borderColor);
 }
 
 
@@ -1255,7 +1262,7 @@ void ImGuiContext::image(const Texture& texture, Vector2f size, Color tintColor,
 ////////////////////////////////////////////////////////////
 void ImGuiContext::image(const RenderTexture& texture, Color tintColor, Color borderColor)
 {
-    image(texture, texture.getSize().to<Vector2f>(), tintColor, borderColor);
+    image(texture, texture.getSize().toVector2f(), tintColor, borderColor);
 }
 
 

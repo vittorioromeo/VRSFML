@@ -121,13 +121,6 @@ int main()
     // Create the graphics context
     sf::GraphicsContext graphicsContext;
 
-    // Check if vertex buffers are supported
-    if (!sf::VertexBuffer::isAvailable(graphicsContext))
-    {
-        std::cerr << "Vertex buffers unsupported, exiting" << std::endl;
-        return EXIT_FAILURE;
-    }
-
     // Load the terrain shader
     auto terrainShader = sf::Shader::loadFromFile(graphicsContext, "resources/terrain.vert", "resources/terrain.frag").value();
     const auto ulLightFactor = terrainShader.getUniformLocation("lightFactor").value();
@@ -186,7 +179,7 @@ int main()
     terrainStates = sf::RenderStates{.shader = &terrainShader};
 
     // Center the status text
-    statusText.setPosition((windowSize.to<sf::Vector2f>() - statusText.getLocalBounds().size) / 2.f);
+    statusText.setPosition((windowSize.toVector2f() - statusText.getLocalBounds().size) / 2.f);
 
     // Set up an array of pointers to our settings for arrow navigation
     constexpr std::array<Setting, 9> settings = {
@@ -498,7 +491,7 @@ void processWorkItem(std::vector<sf::Vertex>& vertices, const WorkItem& workItem
     const unsigned int rowEnd   = std::min(rowStart + rowBlockSize, resolution.y);
     const unsigned int rowCount = rowEnd - rowStart;
 
-    const auto scalingFactor = windowSize.to<sf::Vector2f>().componentWiseDiv(resolution.to<sf::Vector2f>());
+    const auto scalingFactor = windowSize.toVector2f().componentWiseDiv(resolution.toVector2f());
 
     for (unsigned int y = rowStart; y < rowEnd; ++y)
     {

@@ -4,7 +4,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/GLCheck.hpp"
-#include "SFML/Window/GLExtensions.hpp"
+#include "SFML/Window/Glad.hpp"
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Path.hpp"
@@ -54,7 +54,7 @@ bool glCheckError(const char* file, unsigned int line, const char* expression)
         case GL_OUT_OF_MEMORY:
             return logError("GL_OUT_OF_MEMORY", "There is not enough memory left to execute the command.");
 
-        case GLEXT_GL_INVALID_FRAMEBUFFER_OPERATION:
+        case GL_INVALID_FRAMEBUFFER_OPERATION:
             return logError("GL_INVALID_FRAMEBUFFER_OPERATION",
                             "The object bound to FRAMEBUFFER_BINDING is not \"framebuffer complete\".");
 

@@ -28,10 +28,6 @@ TEST_CASE("[Graphics] sf::VertexBuffer", "[.display]")
         STATIC_CHECK(SFML_BASE_IS_NOTHROW_SWAPPABLE(sf::VertexBuffer));
     }
 
-    // Skip tests if vertex buffers aren't available
-    if (!sf::VertexBuffer::isAvailable(graphicsContext))
-        return;
-
     SECTION("Construction")
     {
         SECTION("Default constructor")

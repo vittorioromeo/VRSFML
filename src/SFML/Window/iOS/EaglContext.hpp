@@ -5,13 +5,11 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/GlContext.hpp"
+#include "SFML/Window/Glad.hpp"
 #include "SFML/Window/iOS/ObjCType.hpp"
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Vector2.hpp"
-
-#undef GLAD_GL_IMPLEMENTATION
-#include <glad/gl.h>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"

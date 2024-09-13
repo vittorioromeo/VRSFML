@@ -239,8 +239,7 @@ int main()
         // Clear the window
         window.clear();
 
-// Draw the label-value sf::Text objects
-#if 1
+        // Draw the label-value sf::Text objects
         {
             drawableBatch.clear();
 
@@ -252,17 +251,8 @@ int main()
 
             window.draw(drawableBatch, {.texture = &font.getTexture(characterSize)});
         }
-#else
-        for (const auto& [label, joystickObject] : texts)
-        {
-            window.draw(joystickObject.label);
-            window.draw(joystickObject.value);
-        }
-#endif
 
         // Display things on screen
         window.display();
-
-        window.setTitle(std::to_string(1.f / (float)clock.getElapsedTime().asSeconds()));
     }
 }

@@ -174,6 +174,14 @@ public:
     [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr OtherVector2 to() const;
 
     ////////////////////////////////////////////////////////////
+    /// \brief More convenient conversion functions
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Vector2<int>          toVector2i() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Vector2<float>        toVector2f() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Vector2<unsigned int> toVector2u() const;
+
+    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     T x{}; //!< X coordinate of the vector

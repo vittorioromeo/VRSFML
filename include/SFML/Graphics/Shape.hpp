@@ -85,7 +85,7 @@ public:
     /// \see `getTextureRect`
     ///
     ////////////////////////////////////////////////////////////
-    void setTextureRect(const IntRect& rect);
+    void setTextureRect(const FloatRect& rect);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the sub-rectangle of the texture that the shape outline will display
@@ -99,7 +99,7 @@ public:
     /// \see getOutlineTextureRect
     ///
     ////////////////////////////////////////////////////////////
-    void setOutlineTextureRect(const IntRect& rect);
+    void setOutlineTextureRect(const FloatRect& rect);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the fill color of the shape
@@ -153,7 +153,7 @@ public:
     /// \see `setTextureRect`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const IntRect& getTextureRect() const;
+    [[nodiscard]] const FloatRect& getTextureRect() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the sub-rectangle of the texture displayed by the shape outline
@@ -163,7 +163,7 @@ public:
     /// \see setTextureRect
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const IntRect& getOutlineTextureRect() const;
+    [[nodiscard]] const FloatRect& getOutlineTextureRect() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the fill color of the shape
@@ -295,11 +295,11 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    IntRect m_textureRect;             //!< Rectangle defining the area of the source texture to display for the fill
-    IntRect m_outlineTextureRect;      //!< Rectangle defining the area of the source texture to display for the outline
-    Color   m_fillColor{Color::White}; //!< Fill color
-    Color   m_outlineColor{Color::White};          //!< Outline color
-    float   m_outlineThickness{};                  //!< Thickness of the shape's outline
+    FloatRect m_textureRect;        //!< Rectangle defining the area of the source texture to display for the fill
+    FloatRect m_outlineTextureRect; //!< Rectangle defining the area of the source texture to display for the outline
+    Color     m_fillColor{Color::White};           //!< Fill color
+    Color     m_outlineColor{Color::White};        //!< Outline color
+    float     m_outlineThickness{};                //!< Thickness of the shape's outline
     base::TrivialVector<Vertex> m_vertices;        //!< Vertex array containing the fill geometry
     base::TrivialVector<Vertex> m_outlineVertices; //!< Vertex array containing the outline geometry
     FloatRect                   m_insideBounds;    //!< Bounding rectangle of the inside (fill)

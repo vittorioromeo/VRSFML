@@ -86,9 +86,18 @@ elseif(${EMSCRIPTEN})
         -DNDEBUG=1   # Should be set by CMake, but I'm paranoid
     )
 
+    set(SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS_RELWITHDEBINFO
+        -g3          # Enable debug mode
+        -gsource-map # Generate a source map using LLVM debug information
+        -O3          # Enable optimizations
+        -flto        # Link-time optimization
+        -DNDEBUG=1   # Should be set by CMake, but I'm paranoid
+    )
+
     set(SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS
         $<$<CONFIG:Debug>:${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS_DEBUG}>
         $<$<CONFIG:Release>:${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS_RELEASE}>
+        $<$<CONFIG:RelWithDebInfo>:${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS_RELWITHDEBINFO}>
 
         -pthread     # Enable threading support
 
@@ -119,6 +128,15 @@ elseif(${EMSCRIPTEN})
         -SMINIFY_HTML=1                     # Runs generated `.html` file through `html-minifier`
     )
 
+    set(SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_RELWITHDEBINFO
+        -O3                                 # Enable advanced linker optimizations
+        -flto                               # Link-time optimization
+        -g3                                 # Enable debug mode
+        -gsource-map                        # Generate a source map using LLVM debug information
+
+        -SMINIFY_HTML=1                     # Runs generated `.html` file through `html-minifier`
+    )
+
     set(SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_ASYNCIFY
         -sASYNCIFY=1                        # Support async operations in the compiled code (used for game loop)
         -sASYNCIFY_IGNORE_INDIRECT=1        # Assume indirect calls can’t lead to an unwind/rewind of the stack (faster)
@@ -131,6 +149,7 @@ elseif(${EMSCRIPTEN})
     set(SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS
         $<$<CONFIG:Debug>:${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_DEBUG}>
         $<$<CONFIG:Release>:${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_RELEASE}>
+        $<$<CONFIG:RelWithDebInfo>:${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_RELWITHDEBINFO}>
 
         ${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_ASYNCIFY}
         # ${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_JSPI}

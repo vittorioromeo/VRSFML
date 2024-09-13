@@ -20,7 +20,7 @@
 #include "SFML/Graphics/View.hpp"
 
 #include "SFML/Window/GLCheck.hpp"
-#include "SFML/Window/GLExtensions.hpp"
+#include "SFML/Window/Glad.hpp"
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Rect.hpp"
@@ -28,7 +28,6 @@
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Math/Lround.hpp"
-#include "SFML/Base/Memcpy.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 
@@ -82,7 +81,7 @@ constinit std::atomic<IdType> contextRenderTargetMap[maxIdCount]{};
 
 ////////////////////////////////////////////////////////////
 // Convert an sf::BlendMode::Factor constant to the corresponding OpenGL constant.
-[[nodiscard]] std::uint32_t factorToGlConstant(sf::BlendMode::Factor blendFactor)
+[[nodiscard, gnu::pure]] std::uint32_t factorToGlConstant(sf::BlendMode::Factor blendFactor)
 {
     // clang-format off
     switch (blendFactor)
@@ -108,47 +107,28 @@ constinit std::atomic<IdType> contextRenderTargetMap[maxIdCount]{};
 
 ////////////////////////////////////////////////////////////
 // Convert an sf::BlendMode::Equation constant to the corresponding OpenGL constant.
-[[nodiscard]] std::uint32_t equationToGlConstant(sf::BlendMode::Equation blendEquation)
+[[nodiscard, gnu::pure]] std::uint32_t equationToGlConstant(sf::BlendMode::Equation blendEquation)
 {
+    // clang-format off
     switch (blendEquation)
     {
-        case sf::BlendMode::Equation::Add:
-            return GLEXT_GL_FUNC_ADD;
-        case sf::BlendMode::Equation::Subtract:
-            if (GLEXT_blend_subtract)
-                return GLEXT_GL_FUNC_SUBTRACT;
-            break;
-        case sf::BlendMode::Equation::ReverseSubtract:
-            if (GLEXT_blend_subtract)
-                return GLEXT_GL_FUNC_REVERSE_SUBTRACT;
-            break;
-        case sf::BlendMode::Equation::Min:
-            if (GLEXT_blend_minmax)
-                return GLEXT_GL_MIN;
-            break;
-        case sf::BlendMode::Equation::Max:
-            if (GLEXT_blend_minmax)
-                return GLEXT_GL_MAX;
-            break;
+        case sf::BlendMode::Equation::Add:             return GL_FUNC_ADD;
+        case sf::BlendMode::Equation::Subtract:        return GL_FUNC_SUBTRACT;
+        case sf::BlendMode::Equation::ReverseSubtract: return GL_FUNC_REVERSE_SUBTRACT;
+        case sf::BlendMode::Equation::Min:             return GL_MIN;
+        case sf::BlendMode::Equation::Max:             return GL_MAX;
     }
+    // clang-format on
 
-    static bool warned = false;
-    if (!warned)
-    {
-        sf::priv::err() << "OpenGL extension EXT_blend_minmax or EXT_blend_subtract unavailable" << '\n'
-                        << "Some blending equations will fallback to sf::BlendMode::Equation::Add" << '\n'
-                        << "Ensure that hardware acceleration is enabled if available";
-
-        warned = true;
-    }
-
-    return GLEXT_GL_FUNC_ADD;
+    sf::priv::err() << "Invalid value for sf::BlendMode::Equation! Fallback to sf::BlendMode::Equation::Add.";
+    SFML_BASE_ASSERT(false);
+    return GL_FUNC_ADD;
 }
 
 
 ////////////////////////////////////////////////////////////
 // Convert an UpdateOperation constant to the corresponding OpenGL constant.
-[[nodiscard]] std::uint32_t stencilOperationToGlConstant(sf::StencilUpdateOperation operation)
+[[nodiscard, gnu::pure]] std::uint32_t stencilOperationToGlConstant(sf::StencilUpdateOperation operation)
 {
     // clang-format off
     switch (operation)
@@ -170,7 +150,7 @@ constinit std::atomic<IdType> contextRenderTargetMap[maxIdCount]{};
 
 ////////////////////////////////////////////////////////////
 // Convert a Comparison constant to the corresponding OpenGL constant.
-[[nodiscard]] std::uint32_t stencilFunctionToGlConstant(sf::StencilComparison comparison)
+[[nodiscard, gnu::pure]] std::uint32_t stencilFunctionToGlConstant(sf::StencilComparison comparison)
 {
     // clang-format off
     switch (comparison)
@@ -193,47 +173,25 @@ constinit std::atomic<IdType> contextRenderTargetMap[maxIdCount]{};
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] constexpr GLenum primitiveTypeToOpenGLMode(sf::PrimitiveType type)
+[[nodiscard, gnu::always_inline, gnu::const]] constexpr GLenum primitiveTypeToOpenGLMode(sf::PrimitiveType type)
 {
+    SFML_BASE_ASSERT(static_cast<sf::base::SizeT>(type) < 6u);
+
     constexpr GLenum modes[]{GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN};
     return modes[static_cast<sf::base::SizeT>(type)];
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline sf::IntRect getMultipliedBySizeAndRoundedRect(sf::Vector2u renderTargetSize,
-                                                                                       const sf::FloatRect& inputRect)
+[[nodiscard, gnu::always_inline, gnu::pure]] inline sf::IntRect getMultipliedBySizeAndRoundedRect(
+    sf::Vector2u         renderTargetSize,
+    const sf::FloatRect& inputRect)
 {
-    const auto [width, height] = renderTargetSize.to<sf::Vector2f>();
+    const auto [width, height] = renderTargetSize.toVector2f();
 
     return sf::Rect<long>({sf::base::lround(width * inputRect.position.x), sf::base::lround(height * inputRect.position.y)},
                           {sf::base::lround(width * inputRect.size.x), sf::base::lround(height * inputRect.size.y)})
         .to<sf::IntRect>();
-}
-
-
-////////////////////////////////////////////////////////////
-void memcpyInMappedBuffer(GLenum target, const void* data, sf::base::SizeT byteCount)
-{
-#ifdef SFML_OPENGL_ES // tiny bit faster on ES
-    glCheck(glBufferSubData(target, 0u, byteCount, data));
-#else // tiny bit faster on desktop
-    SFML_BASE_ASSERT(byteCount > 0u);
-
-#ifdef SFML_DEBUG
-    GLint bufferSize{};
-    glGetBufferParameteriv(target, GL_BUFFER_SIZE, &bufferSize);
-    SFML_BASE_ASSERT(static_cast<GLint>(byteCount) <= bufferSize);
-#endif
-
-    GLvoid* const mappedBuffer = glCheckExpr(
-        glMapBufferRange(target, 0u, byteCount, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_INVALIDATE_RANGE_BIT));
-
-    SFML_BASE_MEMCPY(mappedBuffer, data, byteCount);
-
-    [[maybe_unused]] const bool rc = glCheckExpr(glUnmapBuffer(target));
-    SFML_BASE_ASSERT(rc);
-#endif
 }
 
 } // namespace RenderTargetImpl
@@ -415,49 +373,38 @@ struct RenderTarget::Impl
     base::SizeT vboCapacity{0u}; // TODO P0: docs
     base::SizeT eboCapacity{0u}; // TODO P0: docs
 
-    [[gnu::always_inline]] base::SizeT reallocObjectIfNeeded(GLenum type, auto& object, base::SizeT& capacity, base::SizeT byteCount)
+    [[gnu::always_inline]] void reallocObjectIfNeeded(GLenum type, auto& object, base::SizeT& capacity, base::SizeT byteCount)
     {
         if (byteCount <= capacity) [[likely]]
-            return capacity;
+            return;
 
-        const auto newCapacity = static_cast<base::SizeT>(static_cast<float>(capacity) * 1.5f) + byteCount;
+        const auto newCapacity = (capacity * 3u / 2u) + byteCount;
 
         object.bind();
-        glCheck(glBufferData(type, static_cast<GLsizeiptr>(newCapacity), nullptr, GL_STREAM_DRAW));
+        glCheck(glBufferData(type, static_cast<GLsizeiptr>(newCapacity), nullptr, GL_DYNAMIC_DRAW));
 
         capacity = newCapacity;
-        return capacity;
     }
 
-    [[gnu::always_inline]] base::SizeT reallocVBOIfNeeded(base::SizeT byteCount)
+    [[gnu::always_inline]] void objectReallocAndMemcpy(
+        GLenum          type,
+        auto&           object,
+        base::SizeT&    capacity,
+        const void*     data,
+        sf::base::SizeT byteCount)
     {
-        return reallocObjectIfNeeded(GL_ARRAY_BUFFER, vbo, vboCapacity, byteCount);
-    }
-
-    [[gnu::always_inline]] base::SizeT reallocEBOIfNeeded(base::SizeT byteCount)
-    {
-        return reallocObjectIfNeeded(GL_ELEMENT_ARRAY_BUFFER, ebo, eboCapacity, byteCount);
-    }
-
-    [[gnu::always_inline]] base::SizeT reallocBufferIfNeeded(GLenum type, base::SizeT byteCount)
-    {
-        if (type == GL_ARRAY_BUFFER)
-            return reallocVBOIfNeeded(byteCount);
-
-        SFML_BASE_ASSERT(type == GL_ELEMENT_ARRAY_BUFFER);
-        return reallocEBOIfNeeded(byteCount);
+        reallocObjectIfNeeded(type, object, capacity, byteCount);
+        glCheck(glBufferSubData(type, 0u, byteCount, data));
     }
 
     [[gnu::always_inline]] void vboReallocAndMemcpy(const void* data, sf::base::SizeT byteCount)
     {
-        reallocVBOIfNeeded(byteCount);
-        RenderTargetImpl::memcpyInMappedBuffer(GL_ARRAY_BUFFER, data, byteCount);
+        objectReallocAndMemcpy(GL_ARRAY_BUFFER, vbo, vboCapacity, data, byteCount);
     }
 
     [[gnu::always_inline]] void eboReallocAndMemcpy(const void* data, sf::base::SizeT byteCount)
     {
-        reallocEBOIfNeeded(byteCount);
-        RenderTargetImpl::memcpyInMappedBuffer(GL_ELEMENT_ARRAY_BUFFER, data, byteCount);
+        objectReallocAndMemcpy(GL_ELEMENT_ARRAY_BUFFER, ebo, eboCapacity, data, byteCount);
     }
 };
 
@@ -583,7 +530,7 @@ Vector2f RenderTarget::mapPixelToCoords(Vector2i point, const View& view) const
     // First, convert from viewport coordinates to homogeneous coordinates
     const auto     viewport   = getViewport(view).to<FloatRect>();
     const Vector2f normalized = Vector2f(-1.f, 1.f) + Vector2f(2.f, -2.f)
-                                                          .componentWiseMul(point.to<Vector2f>() - viewport.position)
+                                                          .componentWiseMul(point.toVector2f() - viewport.position)
                                                           .componentWiseDiv(viewport.size);
 
     // Then transform by the inverse of the view matrix
@@ -610,7 +557,7 @@ Vector2i RenderTarget::mapCoordsToPixel(Vector2f point, const View& view) const
                 .componentWiseDiv({2.f, 2.f})
                 .componentWiseMul(viewport.size) +
             viewport.position)
-        .to<Vector2i>();
+        .toVector2i();
 }
 
 
@@ -684,24 +631,6 @@ void RenderTarget::drawIndexedVertices(
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::drawMappedIndexedVertices(PrimitiveType type, base::SizeT indexCount, const RenderStates& states)
-{
-    // Nothing to draw or inactive target
-    if ((!RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) && !setActive(true)))
-        return;
-
-    setupDraw(states);
-
-    setupVertexAttribPointers(m_impl->cache.sfAttribPositionIdx,
-                              m_impl->cache.sfAttribColorIdx,
-                              m_impl->cache.sfAttribTexCoordIdx);
-
-    drawIndexedPrimitives(type, indexCount);
-    cleanupDraw(states);
-}
-
-
-////////////////////////////////////////////////////////////
 void RenderTarget::draw(const DrawableBatch& drawableBatch, const RenderStates& renderStates)
 {
     drawIndexedVertices(drawableBatch.m_vertices.data(),
@@ -723,13 +652,6 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, const RenderStates& st
 ////////////////////////////////////////////////////////////
 void RenderTarget::draw(const VertexBuffer& vertexBuffer, base::SizeT firstVertex, base::SizeT vertexCount, const RenderStates& states)
 {
-    // VertexBuffer not supported?
-    if (!VertexBuffer::isAvailable(*m_impl->graphicsContext))
-    {
-        priv::err() << "sf::VertexBuffer is not available, drawing skipped";
-        return;
-    }
-
     // Sanity check
     if (firstVertex > vertexBuffer.getVertexCount())
         return;
@@ -817,9 +739,6 @@ bool RenderTarget::setActive(bool active)
 ////////////////////////////////////////////////////////////
 void RenderTarget::resetGLStates()
 {
-    // Check here to make sure a context change does not happen after activate(true)
-    const bool vertexBufferAvailable = VertexBuffer::isAvailable(*m_impl->graphicsContext);
-
 // Workaround for states not being properly reset on
 // macOS unless a context switch really takes place
 #if defined(SFML_SYSTEM_MACOS)
@@ -841,11 +760,7 @@ void RenderTarget::resetGLStates()
 #endif
 
         // Make sure that the texture unit which is active is the number 0
-        if (GLEXT_multitexture)
-        {
-            // glCheck(GLEXT_glClientActiveTexture(GLEXT_GL_TEXTURE0));
-            glCheck(GLEXT_glActiveTexture(GLEXT_GL_TEXTURE0));
-        }
+        glCheck(glActiveTexture(GL_TEXTURE0));
 
         // Define the default OpenGL states
         glCheck(glDisable(GL_CULL_FACE));
@@ -875,8 +790,7 @@ void RenderTarget::resetGLStates()
         unapplyTexture();
         unapplyShader();
 
-        if (vertexBufferAvailable)
-            glCheck(VertexBuffer::bind(*m_impl->graphicsContext, nullptr));
+        glCheck(VertexBuffer::bind(*m_impl->graphicsContext, nullptr));
 
         // Set the default view
         setView(getView());
@@ -897,7 +811,7 @@ const RenderStates& RenderTarget::getDefaultRenderStates()
 void RenderTarget::initialize()
 {
     // Setup the default and current views
-    m_impl->defaultView = View(FloatRect({0, 0}, getSize().to<Vector2f>()));
+    m_impl->defaultView = View(FloatRect({0, 0}, getSize().toVector2f()));
     m_impl->view        = m_impl->defaultView;
 
     // Set GL states only on first draw, so that we don't pollute user's states
@@ -960,48 +874,12 @@ void RenderTarget::applyBlendMode(const BlendMode& mode)
     using RenderTargetImpl::equationToGlConstant;
     using RenderTargetImpl::factorToGlConstant;
 
-    // Apply the blend mode, falling back to the non-separate versions if necessary
-    if (GLEXT_blend_func_separate)
-    {
-        glCheck(GLEXT_glBlendFuncSeparate(factorToGlConstant(mode.colorSrcFactor),
-                                          factorToGlConstant(mode.colorDstFactor),
-                                          factorToGlConstant(mode.alphaSrcFactor),
-                                          factorToGlConstant(mode.alphaDstFactor)));
-    }
-    else
-    {
-        glCheck(glBlendFunc(factorToGlConstant(mode.colorSrcFactor), factorToGlConstant(mode.colorDstFactor)));
-    }
+    glCheck(glBlendFuncSeparate(factorToGlConstant(mode.colorSrcFactor),
+                                factorToGlConstant(mode.colorDstFactor),
+                                factorToGlConstant(mode.alphaSrcFactor),
+                                factorToGlConstant(mode.alphaDstFactor)));
 
-    if (GLEXT_blend_minmax || GLEXT_blend_subtract)
-    {
-        if (GLEXT_blend_equation_separate)
-        {
-            glCheck(GLEXT_glBlendEquationSeparate(equationToGlConstant(mode.colorEquation),
-                                                  equationToGlConstant(mode.alphaEquation)));
-        }
-        else
-        {
-            glCheck(GLEXT_glBlendEquation(equationToGlConstant(mode.colorEquation)));
-        }
-    }
-    else if ((mode.colorEquation != BlendMode::Equation::Add) || (mode.alphaEquation != BlendMode::Equation::Add))
-    {
-        static bool warned = false;
-
-        if (!warned)
-        {
-#ifdef SFML_OPENGL_ES
-            priv::err() << "OpenGL ES extension OES_blend_subtract unavailable";
-#else
-            priv::err() << "OpenGL extension EXT_blend_minmax and EXT_blend_subtract unavailable";
-#endif
-            priv::err() << "Selecting a blend equation not possible" << '\n'
-                        << "Ensure that hardware acceleration is enabled if available";
-
-            warned = true;
-        }
-    }
+    glCheck(glBlendEquationSeparate(equationToGlConstant(mode.colorEquation), equationToGlConstant(mode.alphaEquation)));
 
     m_impl->cache.lastBlendMode = mode;
 }
@@ -1097,21 +975,17 @@ void RenderTarget::setupDraw(const RenderStates& states)
 
     const Shader& usedShader = states.shader != nullptr ? *states.shader : m_impl->graphicsContext->getBuiltInShader();
 
-    // Apply the shader
-    usedShader.bind();
-
     // Bind GL objects
     m_impl->vao.bind();
     m_impl->vbo.bind();
     m_impl->ebo.bind();
 
     // Update cache
-    const auto usedNativeHandle  = usedShader.getNativeHandle();
-    const bool usedShaderChanged = m_impl->cache.lastUsedProgramId != usedNativeHandle;
-
-    if (usedShaderChanged)
+    if (const auto usedNativeHandle = usedShader.getNativeHandle(); m_impl->cache.lastUsedProgramId != usedNativeHandle)
     {
         m_impl->cache.lastUsedProgramId = usedNativeHandle;
+
+        usedShader.bind();
 
         const auto updateCacheAttrib = [&](GLint& cacheAttrib, const char* attribName)
         {
@@ -1233,150 +1107,6 @@ void RenderTarget::cleanupDraw(const RenderStates& states)
 
     // Re-enable the cache at the end of the draw if it was disabled
     m_impl->cache.enable = true;
-}
-
-
-////////////////////////////////////////////////////////////
-MappedDrawableBatch::MappedDrawableBatch(RenderTarget& renderTarget) : m_renderTarget(renderTarget)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-void* MappedDrawableBatch::mapBuffer(unsigned int type, base::SizeT allocatedBytes) const
-{
-    return glCheckExpr(
-        glMapBufferRange(type, 0u, allocatedBytes, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT));
-    // return glCheckExpr(glMapBufferRange(type, 0u, allocatedBytes, GL_MAP_WRITE_BIT));
-}
-
-
-////////////////////////////////////////////////////////////
-void MappedDrawableBatch::unmapBuffer(unsigned int type) const
-{
-    [[maybe_unused]] const bool rc = glCheckExpr(glUnmapBuffer(type));
-    SFML_BASE_ASSERT(rc);
-}
-
-
-////////////////////////////////////////////////////////////
-void MappedDrawableBatch::reallocAndRemapBufferIfNeeded(unsigned int type,
-                                                        void*&       bufferPtr,
-                                                        base::SizeT& allocatedBytes,
-                                                        base::SizeT  targetBytes)
-{
-    if (allocatedBytes >= targetBytes) [[likely]]
-    {
-        if (bufferPtr == nullptr)
-            bufferPtr = mapBuffer(type, allocatedBytes);
-
-        return;
-    }
-
-    allocatedBytes = m_renderTarget.m_impl->reallocBufferIfNeeded(type, targetBytes);
-    bufferPtr      = mapBuffer(type, allocatedBytes);
-}
-
-
-////////////////////////////////////////////////////////////
-void MappedDrawableBatch::reallocAndRemapVerticesIfNeeded(base::SizeT moreCount)
-{
-    reallocAndRemapBufferIfNeeded(GL_ARRAY_BUFFER,
-                                  m_mappedVertices,
-                                  m_allocatedVertexBytes,
-                                  sizeof(Vertex) * (m_vertexCount + moreCount));
-}
-
-
-////////////////////////////////////////////////////////////
-void MappedDrawableBatch::reallocAndRemapIndicesIfNeeded(base::SizeT moreCount)
-{
-    reallocAndRemapBufferIfNeeded(GL_ELEMENT_ARRAY_BUFFER,
-                                  m_mappedIndices,
-                                  m_allocatedIndexBytes,
-                                  sizeof(IndexType) * (m_indexCount + moreCount));
-}
-
-
-////////////////////////////////////////////////////////////
-void MappedDrawableBatch::appendPreTransformedVertices(const Vertex* data, base::SizeT count, const Transform& transform)
-{
-    reallocAndRemapVerticesIfNeeded(count);
-    auto* asVertexPtr = reinterpret_cast<Vertex*>(m_mappedVertices) + m_vertexCount;
-
-    for (base::SizeT i = 0u; i < count; ++i)
-    {
-        asVertexPtr[i].position  = transform.transformPoint(data[i].position);
-        asVertexPtr[i].color     = data[i].color;
-        asVertexPtr[i].texCoords = data[i].texCoords;
-    }
-
-    m_vertexCount += count;
-}
-
-
-////////////////////////////////////////////////////////////
-void MappedDrawableBatch::add(const Sprite& sprite)
-{
-    reallocAndRemapIndicesIfNeeded(6u);
-    auto* asIndexPtr = reinterpret_cast<IndexType*>(m_mappedIndices) + m_indexCount;
-
-    // Triangle strip: triangle #0
-    asIndexPtr[0] = static_cast<IndexType>(m_vertexCount + 0u);
-    asIndexPtr[1] = static_cast<IndexType>(m_vertexCount + 1u);
-    asIndexPtr[2] = static_cast<IndexType>(m_vertexCount + 2u);
-
-    // Triangle strip: triangle #1
-    asIndexPtr[3] = static_cast<IndexType>(m_vertexCount + 1u);
-    asIndexPtr[4] = static_cast<IndexType>(m_vertexCount + 2u);
-    asIndexPtr[5] = static_cast<IndexType>(m_vertexCount + 3u);
-
-    m_indexCount += 6u;
-
-    reallocAndRemapVerticesIfNeeded(4u);
-    sprite.getPreTransformedVertices(reinterpret_cast<Vertex*>(m_mappedVertices) + m_vertexCount);
-    m_vertexCount += 4u;
-}
-
-
-////////////////////////////////////////////////////////////
-void MappedDrawableBatch::addSubsequentIndices(base::SizeT count)
-{
-    reallocAndRemapIndicesIfNeeded(count);
-
-    auto* asIndexPtr = reinterpret_cast<IndexType*>(m_mappedIndices) + m_indexCount;
-
-    for (IndexType i = 0u; i < static_cast<IndexType>(count); ++i)
-        asIndexPtr[i] = static_cast<IndexType>(m_vertexCount + i);
-
-    m_indexCount += count;
-}
-
-
-////////////////////////////////////////////////////////////
-void MappedDrawableBatch::clear()
-{
-    m_vertexCount = 0u;
-    m_indexCount  = 0u;
-
-    m_renderTarget.m_impl->vbo.bind();
-    m_renderTarget.m_impl->ebo.bind();
-}
-
-
-////////////////////////////////////////////////////////////
-void MappedDrawableBatch::draw(const RenderStates& renderStates)
-{
-    SFML_BASE_ASSERT(m_mappedVertices != nullptr);
-    SFML_BASE_ASSERT(m_mappedIndices != nullptr);
-
-    unmapBuffer(GL_ARRAY_BUFFER);
-    m_mappedVertices = nullptr;
-
-    unmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
-    m_mappedIndices = nullptr;
-
-    m_renderTarget.drawMappedIndexedVertices(PrimitiveType::Triangles, m_indexCount, renderStates);
 }
 
 } // namespace sf

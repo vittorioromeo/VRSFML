@@ -283,6 +283,30 @@ constexpr OtherVector2 Vector2<T>::to() const
 
 
 ////////////////////////////////////////////////////////////
+template <typename T>
+constexpr Vector2<int> Vector2<T>::toVector2i() const
+{
+    return {static_cast<int>(x), static_cast<int>(y)};
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+constexpr Vector2<float> Vector2<T>::toVector2f() const
+{
+    return {static_cast<float>(x), static_cast<float>(y)};
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+constexpr Vector2<unsigned int> Vector2<T>::toVector2u() const
+{
+    return {static_cast<unsigned int>(x), static_cast<unsigned int>(y)};
+}
+
+
+////////////////////////////////////////////////////////////
 // Static member data
 ////////////////////////////////////////////////////////////
 

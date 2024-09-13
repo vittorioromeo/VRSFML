@@ -68,8 +68,8 @@ void addGlyphQuad(sf::Vertex*      vertices,
     const sf::Vector2f p1 = glyph.bounds.position - padding;
     const sf::Vector2f p2 = glyph.bounds.position + glyph.bounds.size + padding;
 
-    const auto uv1 = glyph.textureRect.position.to<sf::Vector2f>() - padding;
-    const auto uv2 = (glyph.textureRect.position + glyph.textureRect.size).to<sf::Vector2f>() + padding;
+    const auto uv1 = glyph.textureRect.position - padding;
+    const auto uv2 = (glyph.textureRect.position + glyph.textureRect.size) + padding;
 
     const sf::Vertex vertexData[] = {{position + sf::Vector2f(p1.x - italicShear * p1.y, p1.y), color, {uv1.x, uv1.y}},
                                      {position + sf::Vector2f(p2.x - italicShear * p1.y, p1.y), color, {uv2.x, uv1.y}},

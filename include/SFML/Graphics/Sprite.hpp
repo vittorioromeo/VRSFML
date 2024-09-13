@@ -35,7 +35,7 @@ public:
     /// \see `setTextureRect`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Sprite(const IntRect& rectangle);
+    [[nodiscard]] explicit Sprite(const FloatRect& rectangle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the sub-rectagle of the texture that the sprite will display
@@ -45,7 +45,7 @@ public:
     /// \see `getTextureRect`
     ///
     ////////////////////////////////////////////////////////////
-    void setTextureRect(const IntRect& rectangle);
+    void setTextureRect(const FloatRect& rectangle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the global color of the sprite
@@ -70,7 +70,7 @@ public:
     /// \see `setTextureRect`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const IntRect& getTextureRect() const;
+    [[nodiscard]] const FloatRect& getTextureRect() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the global color of the sprite
@@ -124,8 +124,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    IntRect m_textureRect;         //!< Rectangle defining the area of the source texture to display
-    Color   m_color{Color::White}; //!< TODO P0:
+    FloatRect m_textureRect;         //!< Rectangle defining the area of the source texture to display
+    Color     m_color{Color::White}; //!< TODO P0:
 };
 
 } // namespace sf

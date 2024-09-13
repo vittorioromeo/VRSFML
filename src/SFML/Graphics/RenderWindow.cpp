@@ -10,7 +10,7 @@
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/GLCheck.hpp"
-#include "SFML/Window/GLExtensions.hpp"
+#include "SFML/Window/Glad.hpp"
 #include "SFML/Window/WindowBase.hpp"
 
 
@@ -21,7 +21,7 @@ void retrieveWindowFrameBufferId(unsigned int& defaultFrameBuffer)
 {
     // Retrieve the framebuffer ID we have to bind when targeting the window for rendering
     // We assume that this window's context is still active at this point
-    glCheck(glGetIntegerv(GLEXT_GL_DRAW_FRAMEBUFFER_BINDING, reinterpret_cast<GLint*>(&defaultFrameBuffer)));
+    glCheck(glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, reinterpret_cast<GLint*>(&defaultFrameBuffer)));
 }
 
 
@@ -100,7 +100,7 @@ bool RenderWindow::setActive(bool active)
     // try to draw to the default framebuffer of the RenderWindow
     if (active && result)
     {
-        glCheck(GLEXT_glBindFramebuffer(GLEXT_GL_FRAMEBUFFER, m_defaultFrameBuffer));
+        glCheck(glBindFramebuffer(GL_FRAMEBUFFER, m_defaultFrameBuffer));
         return true;
     }
 
