@@ -6,4 +6,4 @@ NAME1=$1
 NAME2=${NAME1//-/_}
 NAME3=${NAME1//_/-}
 
-(cd $SCRIPT_DIR/build_vrdev_clang && ninja) && (cd $SCRIPT_DIR/examples/$NAME1 && $SCRIPT_DIR/build_vrdev_clang/bin/$NAME1*.exe || $SCRIPT_DIR/build_vrdev_clang/bin/$NAME2*.exe || $SCRIPT_DIR/build_vrdev_clang/bin/$NAME3*.exe)
+(cd $SCRIPT_DIR/build_vrdev_clang && ninja $NAME1) && (cd $SCRIPT_DIR/examples/$NAME1 && $SCRIPT_DIR/build_vrdev_clang/bin/$NAME1*.exe || $SCRIPT_DIR/build_vrdev_clang/bin/$NAME2*.exe || $SCRIPT_DIR/build_vrdev_clang/bin/$NAME3*.exe)
