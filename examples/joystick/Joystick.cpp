@@ -131,7 +131,7 @@ int main()
     sstr.precision(2);
     sstr.setf(std::ios::fixed | std::ios::boolalpha);
 
-    // TODO P0:
+    // Utility function to create text objects
     const auto emplaceTexts = [&](const std::string& labelStr, const std::string& valueStr, const float yOffset) -> auto&
     {
         auto [it, success] = texts.emplace(labelStr,
@@ -148,7 +148,7 @@ int main()
         return it->second;
     };
 
-    // Set up our joystick identification sf::Text objects
+    // Set up our joystick identification `sf::Text` objects
     {
         auto& [label, value] = emplaceTexts("ID", "", 0.f);
         label.setString("<Not Connected>");

@@ -252,11 +252,22 @@ int main()
             ImGui::Begin("Vittorio's SFML fork: batching example", nullptr, ImGuiWindowFlags_NoResize);
             ImGui::SetWindowSize(ImVec2{350.f, 304.f});
 
-            ImGui::Checkbox("Enable batch drawing", &useBatch);
+            const auto clearSamples = [&]
+            {
+                samplesUpdateMs.clear();
+                samplesDrawMs.clear();
+                samplesFPS.clear();
+            };
 
-            ImGui::Checkbox("Draw sprites", &drawSprites);
+            if (ImGui::Checkbox("Enable batch drawing", &useBatch))
+                clearSamples();
+
+            if (ImGui::Checkbox("Draw sprites", &drawSprites))
+                clearSamples();
+
             ImGui::SameLine();
-            ImGui::Checkbox("Draw texts (expensive!)", &drawText);
+            if (ImGui::Checkbox("Draw texts (expensive!)", &drawText))
+                clearSamples();
 
             ImGui::NewLine();
 

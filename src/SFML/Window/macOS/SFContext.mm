@@ -43,29 +43,6 @@ SFContext::SFContext(SFContext* shared, const ContextSettings& contextSettings, 
 
 
 ////////////////////////////////////////////////////////////
-SFContext::SFContext(SFContext* shared, const ContextSettings& contextSettings, Vector2u size)
-{
-    const AutoreleasePool pool;
-    // Ensure the process is setup in order to create a valid window.
-    WindowImplCocoa::setUpProcess();
-
-    // Create the context.
-    createContext(shared, VideoModeUtils::getDesktopMode().bitsPerPixel, contextSettings);
-
-    // Create a dummy window/view pair (hidden) and assign it our context.
-    m_window = [[NSWindow alloc]
-        initWithContentRect:NSMakeRect(0, 0, size.x, size.y)
-                  styleMask:NSBorderlessWindowMask
-                    backing:NSBackingStoreBuffered
-                      defer:NO]; // Don't defer it!
-    m_view   = [[NSOpenGLView alloc] initWithFrame:NSMakeRect(0, 0, size.x, size.y)];
-    [m_window setContentView:m_view];
-    [m_view setOpenGLContext:m_context];
-    [m_context setView:m_view];
-}
-
-
-////////////////////////////////////////////////////////////
 SFContext::~SFContext()
 {
     const AutoreleasePool pool;

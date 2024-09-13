@@ -164,20 +164,6 @@ protected:
                                                                    const priv::WindowImpl& owner,
                                                                    unsigned int            bitsPerPixel);
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Create a new context that embeds its own rendering target
-    ///
-    /// This function automatically chooses the specialized class
-    /// to use according to the OS.
-    ///
-    /// \param settings Creation parameters
-    /// \param size     Back buffer width and height
-    ///
-    /// \return Pointer to the created context
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::UniquePtr<priv::GlContext> createGlContext(const ContextSettings& contextSettings,
-                                                                   const Vector2u&        size);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs

@@ -534,24 +534,6 @@ DRMContext::DRMContext(DRMContext* shared, const ContextSettings& contextSetting
 
 
 ////////////////////////////////////////////////////////////
-DRMContext::DRMContext(DRMContext* shared, const ContextSettings& contextSettings, Vector2u size)
-{
-    contextCount++;
-
-    // Get the initialized EGL display
-    m_display = getInitializedDisplay();
-
-    // Get the best EGL config matching the requested video settings
-    m_config = getBestConfig(m_display, VideoModeUtils::getDesktopMode().bitsPerPixel, contextSettings);
-    updateSettings();
-
-    // Create EGL context
-    createContext(shared);
-    createSurface(size, VideoModeUtils::getDesktopMode().bitsPerPixel, false);
-}
-
-
-////////////////////////////////////////////////////////////
 DRMContext::~DRMContext()
 {
     // Deactivate the current context

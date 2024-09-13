@@ -562,13 +562,6 @@ base::UniquePtr<priv::GlContext> WindowContext::createGlContext(const ContextSet
 
 
 ////////////////////////////////////////////////////////////
-base::UniquePtr<priv::GlContext> WindowContext::createGlContext(const ContextSettings& contextSettings, const Vector2u& size)
-{
-    return createGlContextImpl(contextSettings, contextSettings, size);
-}
-
-
-////////////////////////////////////////////////////////////
 bool WindowContext::isExtensionAvailable(const char* name) const
 {
     return base::find(m_impl->extensions.begin(), m_impl->extensions.end(), name) != m_impl->extensions.end();

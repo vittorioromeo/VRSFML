@@ -370,8 +370,8 @@ struct RenderTarget::Impl
     VBO vbo; //!< Vertex buffer object associated with the render target
     EBO ebo; //!< Element index buffer object associated with the render target
 
-    base::SizeT vboCapacity{0u}; // TODO P0: docs
-    base::SizeT eboCapacity{0u}; // TODO P0: docs
+    base::SizeT vboCapacity{0u}; //!< Currently allocated capacity of the VBO
+    base::SizeT eboCapacity{0u}; //!< Currently allocated capacity of the EBO
 
     [[gnu::always_inline]] void reallocObjectIfNeeded(GLenum type, auto& object, base::SizeT& capacity, base::SizeT byteCount)
     {

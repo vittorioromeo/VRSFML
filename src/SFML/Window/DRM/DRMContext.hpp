@@ -55,16 +55,6 @@ public:
     DRMContext(DRMContext* shared, const ContextSettings& contextSettings, const WindowImpl& owner, unsigned int bitsPerPixel);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Create a new context that embeds its own rendering target
-    ///
-    /// \param shared   Context to share the new one with
-    /// \param settings Creation parameters
-    /// \param size     Back buffer width and height, in pixels
-    ///
-    ////////////////////////////////////////////////////////////
-    DRMContext(DRMContext* shared, const ContextSettings& contextSettings, Vector2u size);
-
-    ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
