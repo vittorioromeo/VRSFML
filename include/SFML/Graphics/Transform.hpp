@@ -18,8 +18,9 @@
 namespace sf
 {
 class Angle;
-class Transformable;
+class Sprite;
 class Transform;
+class Transformable;
 } // namespace sf
 
 namespace sf::priv
@@ -259,8 +260,16 @@ public:
     static const Transform Identity; //!< The identity transform (does nothing)
 
 private:
+    friend Sprite;
     friend Transformable;
     friend void priv::copyMatrix(const Transform&, priv::Matrix<3, 3>&);
+
+    [[nodiscard, gnu::always_inline, gnu::flatten]] constexpr void transformSpritePoints(
+        Vector2f& p0,
+        Vector2f& p1,
+        Vector2f& p2,
+        Vector2f& p3,
+        Vector2f  absSize) const;
 
     ////////////////////////////////////////////////////////////
     // Member data

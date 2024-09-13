@@ -101,7 +101,7 @@ constexpr Transform Transformable::getTransform() const
     const float tx     = -m_origin.x * sxc - m_origin.y * sys + m_position.x;
     const float ty     = m_origin.x * sxs - m_origin.y * syc + m_position.y;
 
-    return {sxc, sys, tx, -sxs, syc, ty};
+    return {/* a00 */ sxc, /* a01 */ sys, /* a02 */ tx, -/* a10 */ sxs, /* a11 */ syc, /* a12 */ ty};
 }
 
 

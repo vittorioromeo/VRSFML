@@ -117,7 +117,7 @@ private:
     /// \brief Update the vertices' positions and texture coordinates
     ///
     ////////////////////////////////////////////////////////////
-    void updateVertices(Vertex* target) const;
+    void getPreTransformedVertices(Vertex* target) const;
 
     ////////////////////////////////////////////////////////////
     // Member data

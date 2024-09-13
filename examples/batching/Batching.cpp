@@ -175,7 +175,7 @@ int main()
     {
         target.push_back(value);
 
-        if (target.size() > 16u)
+        if (target.size() > 64u)
             target.erase(target.begin());
     };
 

@@ -315,6 +315,15 @@ public:
     {
         return SFML_BASE_LAUNDER_CAST(TItem*, m_endSize);
     }
+
+
+    ////////////////////////////////////////////////////////////
+    template <typename F>
+    [[nodiscard, gnu::always_inline, gnu::flatten]] void unsafeEmplaceRangeFromFunc(F&& f, SizeT count) noexcept
+    {
+        f(SFML_BASE_LAUNDER_CAST(TItem*, m_endSize));
+        m_endSize += count;
+    }
 };
 
 } // namespace sf::base

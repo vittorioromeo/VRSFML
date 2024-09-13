@@ -61,7 +61,7 @@ FloatRect Sprite::getGlobalBounds() const
 
 
 ////////////////////////////////////////////////////////////
-void Sprite::updateVertices(Vertex* target) const
+void Sprite::getPreTransformedVertices(Vertex* target) const
 {
     const auto [position, size] = m_textureRect.to<FloatRect>();
 
@@ -69,10 +69,7 @@ void Sprite::updateVertices(Vertex* target) const
     const Vector2f absSize(base::fabs(size.x), base::fabs(size.y));
 
     // Update positions
-    target[0].position = {0.f, 0.f};
-    target[1].position = {0.f, absSize.y};
-    target[2].position = {absSize.x, 0.f};
-    target[3].position = absSize;
+    getTransform().transformSpritePoints(target[0].position, target[1].position, target[2].position, target[3].position, absSize);
 
     // Update color
     target[0].color = m_color;
@@ -82,8 +79,8 @@ void Sprite::updateVertices(Vertex* target) const
 
     // Update texture coordinates
     target[0].texCoords = position;
-    target[1].texCoords = position + Vector2f(0.f, size.y);
-    target[2].texCoords = position + Vector2f(size.x, 0.f);
+    target[1].texCoords = position + Vector2f{0.f, size.y};
+    target[2].texCoords = position + Vector2f{size.x, 0.f};
     target[3].texCoords = position + size;
 }
 
