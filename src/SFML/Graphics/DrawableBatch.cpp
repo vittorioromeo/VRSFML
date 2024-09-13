@@ -30,11 +30,7 @@ void DrawableBatch::add(const Sprite& sprite)
         static_cast<IndexType>(nextIndex + 3u));
 
     m_vertices.reserveMore(4u);
-
-    Vertex buffer[4];
-    sprite.updateVertices(buffer);
-
-    appendPreTransformedVertices(buffer, 4u, sprite.getTransform());
+    m_vertices.unsafeEmplaceRangeFromFunc([&](Vertex* target) { sprite.getPreTransformedVertices(target); }, 4u);
 }
 
 

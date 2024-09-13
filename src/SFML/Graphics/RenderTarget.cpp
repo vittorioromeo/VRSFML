@@ -226,7 +226,7 @@ void memcpyInMappedBuffer(GLenum target, const void* data, sf::base::SizeT byteC
 #endif
 
     GLvoid* const mappedBuffer = glCheckExpr(
-        glMapBufferRange(target, 0u, byteCount, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT));
+        glMapBufferRange(target, 0u, byteCount, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_INVALIDATE_RANGE_BIT));
 
     SFML_BASE_MEMCPY(mappedBuffer, data, byteCount);
 
@@ -601,12 +601,11 @@ Vector2i RenderTarget::mapCoordsToPixel(Vector2f point, const View& view) const
 ////////////////////////////////////////////////////////////
 void RenderTarget::draw(const Sprite& sprite, const Texture& texture, RenderStates states)
 {
-    states.texture = &texture;
-    states.transform *= sprite.getTransform();
+    states.texture        = &texture;
     states.coordinateType = CoordinateType::Pixels;
 
     Vertex buffer[4];
-    sprite.updateVertices(buffer);
+    sprite.getPreTransformedVertices(buffer);
 
     draw(buffer, PrimitiveType::TriangleStrip, states);
 }
