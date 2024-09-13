@@ -18,6 +18,8 @@
 
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Traits/IsBaseOf.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -38,6 +40,8 @@ struct RenderStates;
 struct StencilMode;
 struct StencilValue;
 struct Vertex;
+
+class MappedDrawableBatch;
 } // namespace sf
 
 
@@ -355,6 +359,10 @@ public:
                              PrimitiveType       type,
                              const RenderStates& states = getDefaultRenderStates());
 
+    void drawMappedIndexedVertices(PrimitiveType       type,
+                                   base::SizeT         indexCount,
+                                   const RenderStates& states = getDefaultRenderStates());
+
     ////////////////////////////////////////////////////////////
     /// \brief TODO P0: docs
     ///
@@ -499,6 +507,8 @@ protected:
     [[nodiscard]] GraphicsContext& getGraphicsContext();
 
 private:
+    friend MappedDrawableBatch;
+
     ////////////////////////////////////////////////////////////
     /// \brief Perform common cleaning operations prior to GL calls
     ///
@@ -594,6 +604,93 @@ private:
     ////////////////////////////////////////////////////////////
     struct Impl;
     base::InPlacePImpl<Impl, 768> m_impl; //!< Implementation details
+};
+
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
+class [[nodiscard]] SFML_GRAPHICS_API MappedDrawableBatch
+{
+public:
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    using IndexType = unsigned int;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename BatchableObject>
+    [[gnu::always_inline, gnu::flatten]] void add(const BatchableObject& batchableObject)
+        requires(!base::isBaseOf<Shape, BatchableObject>)
+    {
+        const auto [data, size] = batchableObject.getVertices();
+
+        addSubsequentIndices(size);
+        appendPreTransformedVertices(data, size, batchableObject.getTransform());
+    }
+
+    template <typename BatchableObject>
+    [[gnu::always_inline, gnu::flatten]] void prepare(const BatchableObject& batchableObject)
+        requires(!base::isBaseOf<Shape, BatchableObject>)
+    {
+        const auto [data, size] = batchableObject.getVertices();
+
+        m_vertexBytesToAlloc += sizeof(Vertex) * size;
+        m_indexBytesToAlloc += sizeof(IndexType) * size;
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void add(const Sprite& sprite);
+    void prepare(const Sprite& sprite);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void clear();
+
+    void draw(const RenderStates& renderStates);
+
+    void allocAndMap();
+    void unmap();
+
+    MappedDrawableBatch(RenderTarget& renderTarget);
+    ~MappedDrawableBatch();
+
+private:
+    friend RenderTarget;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void addSubsequentIndices(base::SizeT count);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] void appendPreTransformedVertices(const Vertex*    data,
+                                                                           base::SizeT      count,
+                                                                           const Transform& transform);
+
+    ////////////////////////////////////////////////////////////
+    // Member data
+    ////////////////////////////////////////////////////////////
+    RenderTarget& m_renderTarget;
+    base::SizeT   m_vertexBytesToAlloc{0u};
+    base::SizeT   m_indexBytesToAlloc{0u};
+    base::SizeT   m_vertexCount{0u};
+    base::SizeT   m_indexCount{0u};
+    void*         m_mappedVertices{};
+    void*         m_mappedIndices{};
 };
 
 } // namespace sf

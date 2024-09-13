@@ -293,6 +293,7 @@ int main()
 
             if (useBatch)
             {
+#if 0
                 drawableBatch.clear();
 
                 for (const Entity& entity : entities)
@@ -305,6 +306,33 @@ int main()
                 }
 
                 window.draw(drawableBatch, {.texture = &textureAtlas.getTexture()});
+#else
+                sf::MappedDrawableBatch mdb(window);
+
+                for (const Entity& entity : entities)
+                {
+                    if (drawSprites)
+                        mdb.prepare(entity.sprite);
+
+                    if (drawText)
+                        mdb.prepare(entity.text);
+                }
+
+                mdb.allocAndMap();*/
+
+                for (const Entity& entity : entities)
+                {
+                    if (drawSprites)
+                        mdb.add(entity.sprite);
+
+                    if (drawText)
+                        mdb.add(entity.text);
+                }
+
+                mdb.unmap();
+
+                mdb.draw({.texture = &textureAtlas.getTexture()});
+#endif
             }
             else
             {

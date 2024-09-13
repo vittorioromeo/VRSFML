@@ -16,6 +16,7 @@
 namespace sf
 {
 class DrawableBatch;
+class MappedDrawableBatch;
 class RenderTarget;
 
 ////////////////////////////////////////////////////////////
@@ -111,6 +112,7 @@ public:
 
 private:
     friend DrawableBatch;
+    friend MappedDrawableBatch;
     friend RenderTarget;
 
     ////////////////////////////////////////////////////////////
