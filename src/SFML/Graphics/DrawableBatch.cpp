@@ -6,6 +6,7 @@
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Shape.hpp"
 #include "SFML/Graphics/Sprite.hpp"
+#include "SFML/Graphics/Vertex.hpp"
 
 
 namespace sf
@@ -17,14 +18,13 @@ void DrawableBatch::add(const Sprite& sprite)
 
     m_indices.reserveMore(6u);
 
-    // Triangle strip
     m_indices.unsafePushBackMultiple(
-        // Triangle 0
+        // Triangle strip: triangle #0
         static_cast<IndexType>(nextIndex + 0u),
         static_cast<IndexType>(nextIndex + 1u),
         static_cast<IndexType>(nextIndex + 2u),
 
-        // Triangle 1
+        // Triangle strip: triangle #1
         static_cast<IndexType>(nextIndex + 1u),
         static_cast<IndexType>(nextIndex + 2u),
         static_cast<IndexType>(nextIndex + 3u));

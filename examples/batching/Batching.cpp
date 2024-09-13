@@ -151,15 +151,17 @@ int main()
     //
     //
     // Set up interactive UI elements
-    bool useBatch    = true;
-    bool drawSprites = true;
-    bool drawText    = true;
-    int  numEntities = 100;
+    bool useBatch       = true;
+    bool useMappedBatch = true;
+    bool drawSprites    = true;
+    bool drawText       = true;
+    int  numEntities    = 100;
 
     //
     //
     // Set up drawable batch
-    sf::DrawableBatch drawableBatch;
+    sf::DrawableBatch       drawableBatch;
+    sf::MappedDrawableBatch mdb(window);
 
     //
     //
@@ -175,7 +177,7 @@ int main()
     {
         target.push_back(value);
 
-        if (target.size() > 64u)
+        if (target.size() > 32u)
             target.erase(target.begin());
     };
 
@@ -248,7 +250,9 @@ int main()
             ImGui::Begin("Vittorio's SFML fork: batching example", nullptr, ImGuiWindowFlags_NoResize);
             ImGui::SetWindowSize(ImVec2{350.f, 284.f});
 
-            ImGui::Checkbox("Enable batch drawing", &useBatch);
+            ImGui::Checkbox("Batch drawing", &useBatch);
+            ImGui::SameLine();
+            ImGui::Checkbox("Mapped", &useMappedBatch);
 
             ImGui::Checkbox("Draw sprites", &drawSprites);
             ImGui::SameLine();
@@ -293,46 +297,36 @@ int main()
 
             if (useBatch)
             {
-#if 0
-                drawableBatch.clear();
-
-                for (const Entity& entity : entities)
+                if (!useMappedBatch)
                 {
-                    if (drawSprites)
-                        drawableBatch.add(entity.sprite);
+                    drawableBatch.clear();
 
-                    if (drawText)
-                        drawableBatch.add(entity.text);
+                    for (const Entity& entity : entities)
+                    {
+                        if (drawSprites)
+                            drawableBatch.add(entity.sprite);
+
+                        if (drawText)
+                            drawableBatch.add(entity.text);
+                    }
+
+                    window.draw(drawableBatch, {.texture = &textureAtlas.getTexture()});
                 }
-
-                window.draw(drawableBatch, {.texture = &textureAtlas.getTexture()});
-#else
-                sf::MappedDrawableBatch mdb(window);
-
-                for (const Entity& entity : entities)
+                else
                 {
-                    if (drawSprites)
-                        mdb.prepare(entity.sprite);
+                    mdb.clear();
 
-                    if (drawText)
-                        mdb.prepare(entity.text);
+                    for (const Entity& entity : entities)
+                    {
+                        if (drawSprites)
+                            mdb.add(entity.sprite);
+
+                        if (drawText)
+                            mdb.add(entity.text);
+                    }
+
+                    mdb.draw({.texture = &textureAtlas.getTexture()});
                 }
-
-                mdb.allocAndMap();*/
-
-                for (const Entity& entity : entities)
-                {
-                    if (drawSprites)
-                        mdb.add(entity.sprite);
-
-                    if (drawText)
-                        mdb.add(entity.text);
-                }
-
-                mdb.unmap();
-
-                mdb.draw({.texture = &textureAtlas.getTexture()});
-#endif
             }
             else
             {

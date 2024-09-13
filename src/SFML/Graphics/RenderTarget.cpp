@@ -269,43 +269,6 @@ struct [[nodiscard]] StatesCache
 
     base::Optional<Shader::UniformLocation> ulTextureMatrix;             //!< Built-in texture matrix uniform location
     base::Optional<Shader::UniformLocation> ulModelViewProjectionMatrix; //!< Built-in model-view-projection matrix uniform location
-
-    base::SizeT vaoCapacity{0u}; // TODO P0: docs
-    base::SizeT eboCapacity{0u}; // TODO P0: docs
-
-    [[gnu::always_inline]] void reallocVBOIfNeeded(base::SizeT byteCount)
-    {
-        if (byteCount <= vaoCapacity)
-            return;
-
-        const auto newCapacity = vaoCapacity * 2 + byteCount;
-
-        glCheck(glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(newCapacity), nullptr, GL_STREAM_DRAW));
-        vaoCapacity = newCapacity;
-    }
-
-    [[gnu::always_inline]] void reallocEBOIfNeeded(base::SizeT byteCount)
-    {
-        if (byteCount <= eboCapacity)
-            return;
-
-        const auto newCapacity = eboCapacity * 2 + byteCount;
-
-        glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(newCapacity), nullptr, GL_STREAM_DRAW));
-        eboCapacity = newCapacity;
-    }
-
-    [[gnu::always_inline]] void vboReallocAndMemcpy(const void* data, sf::base::SizeT byteCount)
-    {
-        reallocVBOIfNeeded(byteCount);
-        RenderTargetImpl::memcpyInMappedBuffer(GL_ARRAY_BUFFER, data, byteCount);
-    }
-
-    [[gnu::always_inline]] void eboReallocAndMemcpy(const void* data, sf::base::SizeT byteCount)
-    {
-        reallocEBOIfNeeded(byteCount);
-        RenderTargetImpl::memcpyInMappedBuffer(GL_ELEMENT_ARRAY_BUFFER, data, byteCount);
-    }
 };
 
 
@@ -448,6 +411,54 @@ struct RenderTarget::Impl
     VAO vao; //!< Vertex array object associated with the render target
     VBO vbo; //!< Vertex buffer object associated with the render target
     EBO ebo; //!< Element index buffer object associated with the render target
+
+    base::SizeT vboCapacity{0u}; // TODO P0: docs
+    base::SizeT eboCapacity{0u}; // TODO P0: docs
+
+    [[gnu::always_inline]] base::SizeT reallocObjectIfNeeded(GLenum type, auto& object, base::SizeT& capacity, base::SizeT byteCount)
+    {
+        if (byteCount <= capacity) [[likely]]
+            return capacity;
+
+        const auto newCapacity = static_cast<base::SizeT>(static_cast<float>(capacity) * 1.5f) + byteCount;
+
+        object.bind();
+        glCheck(glBufferData(type, static_cast<GLsizeiptr>(newCapacity), nullptr, GL_STREAM_DRAW));
+
+        capacity = newCapacity;
+        return capacity;
+    }
+
+    [[gnu::always_inline]] base::SizeT reallocVBOIfNeeded(base::SizeT byteCount)
+    {
+        return reallocObjectIfNeeded(GL_ARRAY_BUFFER, vbo, vboCapacity, byteCount);
+    }
+
+    [[gnu::always_inline]] base::SizeT reallocEBOIfNeeded(base::SizeT byteCount)
+    {
+        return reallocObjectIfNeeded(GL_ELEMENT_ARRAY_BUFFER, ebo, eboCapacity, byteCount);
+    }
+
+    [[gnu::always_inline]] base::SizeT reallocBufferIfNeeded(GLenum type, base::SizeT byteCount)
+    {
+        if (type == GL_ARRAY_BUFFER)
+            return reallocVBOIfNeeded(byteCount);
+
+        SFML_BASE_ASSERT(type == GL_ELEMENT_ARRAY_BUFFER);
+        return reallocEBOIfNeeded(byteCount);
+    }
+
+    [[gnu::always_inline]] void vboReallocAndMemcpy(const void* data, sf::base::SizeT byteCount)
+    {
+        reallocVBOIfNeeded(byteCount);
+        RenderTargetImpl::memcpyInMappedBuffer(GL_ARRAY_BUFFER, data, byteCount);
+    }
+
+    [[gnu::always_inline]] void eboReallocAndMemcpy(const void* data, sf::base::SizeT byteCount)
+    {
+        reallocEBOIfNeeded(byteCount);
+        RenderTargetImpl::memcpyInMappedBuffer(GL_ELEMENT_ARRAY_BUFFER, data, byteCount);
+    }
 };
 
 
@@ -633,7 +644,7 @@ void RenderTarget::draw(const Vertex* vertices, base::SizeT vertexCount, Primiti
 
     setupDraw(states);
 
-    m_impl->cache.vboReallocAndMemcpy(vertices, sizeof(Vertex) * vertexCount);
+    m_impl->vboReallocAndMemcpy(vertices, sizeof(Vertex) * vertexCount);
 
     setupVertexAttribPointers(m_impl->cache.sfAttribPositionIdx,
                               m_impl->cache.sfAttribColorIdx,
@@ -660,8 +671,8 @@ void RenderTarget::drawIndexedVertices(
 
     setupDraw(states);
 
-    m_impl->cache.vboReallocAndMemcpy(vertices, sizeof(Vertex) * vertexCount);
-    m_impl->cache.eboReallocAndMemcpy(indices, sizeof(unsigned int) * indexCount);
+    m_impl->vboReallocAndMemcpy(vertices, sizeof(Vertex) * vertexCount);
+    m_impl->eboReallocAndMemcpy(indices, sizeof(unsigned int) * indexCount);
 
     setupVertexAttribPointers(m_impl->cache.sfAttribPositionIdx,
                               m_impl->cache.sfAttribColorIdx,
@@ -1232,52 +1243,65 @@ MappedDrawableBatch::MappedDrawableBatch(RenderTarget& renderTarget) : m_renderT
 
 
 ////////////////////////////////////////////////////////////
-void MappedDrawableBatch::allocAndMap()
+void* MappedDrawableBatch::mapBuffer(unsigned int type, base::SizeT allocatedBytes) const
 {
-    m_renderTarget.m_impl->vbo.bind();
-    m_renderTarget.m_impl->cache.reallocVBOIfNeeded(m_vertexBytesToAlloc);
-
-    m_mappedVertices = glCheckExpr(
-        glMapBufferRange(GL_ARRAY_BUFFER,
-                         0u,
-                         m_vertexBytesToAlloc,
-                         GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT));
-
-    m_renderTarget.m_impl->ebo.bind();
-    m_renderTarget.m_impl->cache.reallocEBOIfNeeded(m_indexBytesToAlloc);
-
-    m_mappedIndices = glCheckExpr(
-        glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER,
-                         0u,
-                         m_indexBytesToAlloc,
-                         GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT));
+    return glCheckExpr(
+        glMapBufferRange(type, 0u, allocatedBytes, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT));
+    // return glCheckExpr(glMapBufferRange(type, 0u, allocatedBytes, GL_MAP_WRITE_BIT));
 }
 
 
 ////////////////////////////////////////////////////////////
-void MappedDrawableBatch::unmap()
+void MappedDrawableBatch::unmapBuffer(unsigned int type) const
 {
-    {
-        [[maybe_unused]] const bool rc = glCheckExpr(glUnmapBuffer(GL_ARRAY_BUFFER));
-        SFML_BASE_ASSERT(rc);
-    }
-
-    {
-        [[maybe_unused]] const bool rc = glCheckExpr(glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER));
-        SFML_BASE_ASSERT(rc);
-    }
+    [[maybe_unused]] const bool rc = glCheckExpr(glUnmapBuffer(type));
+    SFML_BASE_ASSERT(rc);
 }
 
 
 ////////////////////////////////////////////////////////////
-MappedDrawableBatch::~MappedDrawableBatch()
+void MappedDrawableBatch::reallocAndRemapBufferIfNeeded(unsigned int type,
+                                                        void*&       bufferPtr,
+                                                        base::SizeT& allocatedBytes,
+                                                        base::SizeT  targetBytes)
 {
+    if (allocatedBytes >= targetBytes) [[likely]]
+    {
+        if (bufferPtr == nullptr)
+            bufferPtr = mapBuffer(type, allocatedBytes);
+
+        return;
+    }
+
+    allocatedBytes = m_renderTarget.m_impl->reallocBufferIfNeeded(type, targetBytes);
+    bufferPtr      = mapBuffer(type, allocatedBytes);
+}
+
+
+////////////////////////////////////////////////////////////
+void MappedDrawableBatch::reallocAndRemapVerticesIfNeeded(base::SizeT moreCount)
+{
+    reallocAndRemapBufferIfNeeded(GL_ARRAY_BUFFER,
+                                  m_mappedVertices,
+                                  m_allocatedVertexBytes,
+                                  sizeof(Vertex) * (m_vertexCount + moreCount));
+}
+
+
+////////////////////////////////////////////////////////////
+void MappedDrawableBatch::reallocAndRemapIndicesIfNeeded(base::SizeT moreCount)
+{
+    reallocAndRemapBufferIfNeeded(GL_ELEMENT_ARRAY_BUFFER,
+                                  m_mappedIndices,
+                                  m_allocatedIndexBytes,
+                                  sizeof(IndexType) * (m_indexCount + moreCount));
 }
 
 
 ////////////////////////////////////////////////////////////
 void MappedDrawableBatch::appendPreTransformedVertices(const Vertex* data, base::SizeT count, const Transform& transform)
 {
+    reallocAndRemapVerticesIfNeeded(count);
     auto* asVertexPtr = reinterpret_cast<Vertex*>(m_mappedVertices) + m_vertexCount;
 
     for (base::SizeT i = 0u; i < count; ++i)
@@ -1292,16 +1316,9 @@ void MappedDrawableBatch::appendPreTransformedVertices(const Vertex* data, base:
 
 
 ////////////////////////////////////////////////////////////
-void MappedDrawableBatch::prepare(const Sprite&)
-{
-    m_vertexBytesToAlloc += sizeof(Vertex) * 4u;
-    m_indexBytesToAlloc += sizeof(IndexType) * 6u;
-}
-
-
-////////////////////////////////////////////////////////////
 void MappedDrawableBatch::add(const Sprite& sprite)
 {
+    reallocAndRemapIndicesIfNeeded(6u);
     auto* asIndexPtr = reinterpret_cast<IndexType*>(m_mappedIndices) + m_indexCount;
 
     // Triangle strip: triangle #0
@@ -1316,6 +1333,7 @@ void MappedDrawableBatch::add(const Sprite& sprite)
 
     m_indexCount += 6u;
 
+    reallocAndRemapVerticesIfNeeded(4u);
     sprite.getPreTransformedVertices(reinterpret_cast<Vertex*>(m_mappedVertices) + m_vertexCount);
     m_vertexCount += 4u;
 }
@@ -1324,6 +1342,8 @@ void MappedDrawableBatch::add(const Sprite& sprite)
 ////////////////////////////////////////////////////////////
 void MappedDrawableBatch::addSubsequentIndices(base::SizeT count)
 {
+    reallocAndRemapIndicesIfNeeded(count);
+
     auto* asIndexPtr = reinterpret_cast<IndexType*>(m_mappedIndices) + m_indexCount;
 
     for (IndexType i = 0u; i < static_cast<IndexType>(count); ++i)
@@ -1338,12 +1358,24 @@ void MappedDrawableBatch::clear()
 {
     m_vertexCount = 0u;
     m_indexCount  = 0u;
+
+    m_renderTarget.m_impl->vbo.bind();
+    m_renderTarget.m_impl->ebo.bind();
 }
 
 
 ////////////////////////////////////////////////////////////
 void MappedDrawableBatch::draw(const RenderStates& renderStates)
 {
+    SFML_BASE_ASSERT(m_mappedVertices != nullptr);
+    SFML_BASE_ASSERT(m_mappedIndices != nullptr);
+
+    unmapBuffer(GL_ARRAY_BUFFER);
+    m_mappedVertices = nullptr;
+
+    unmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+    m_mappedIndices = nullptr;
+
     m_renderTarget.drawMappedIndexedVertices(PrimitiveType::Triangles, m_indexCount, renderStates);
 }
 

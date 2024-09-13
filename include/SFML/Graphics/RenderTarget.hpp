@@ -19,7 +19,6 @@
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Traits/IsBaseOf.hpp"
-#include "SFML/Base/TrivialVector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -633,22 +632,11 @@ public:
         appendPreTransformedVertices(data, size, batchableObject.getTransform());
     }
 
-    template <typename BatchableObject>
-    [[gnu::always_inline, gnu::flatten]] void prepare(const BatchableObject& batchableObject)
-        requires(!base::isBaseOf<Shape, BatchableObject>)
-    {
-        const auto [data, size] = batchableObject.getVertices();
-
-        m_vertexBytesToAlloc += sizeof(Vertex) * size;
-        m_indexBytesToAlloc += sizeof(IndexType) * size;
-    }
-
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
     void add(const Sprite& sprite);
-    void prepare(const Sprite& sprite);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -658,14 +646,22 @@ public:
 
     void draw(const RenderStates& renderStates);
 
-    void allocAndMap();
-    void unmap();
-
     MappedDrawableBatch(RenderTarget& renderTarget);
-    ~MappedDrawableBatch();
 
 private:
     friend RenderTarget;
+
+    [[gnu::always_inline, gnu::flatten]] void reallocAndRemapBufferIfNeeded(
+        unsigned int type,
+        void*&       bufferPtr,
+        base::SizeT& allocatedBytes,
+        base::SizeT  targetBytes);
+
+    void reallocAndRemapVerticesIfNeeded(base::SizeT moreCount);
+    void reallocAndRemapIndicesIfNeeded(base::SizeT moreCount);
+
+    [[nodiscard, gnu::always_inline, gnu::flatten]] void* mapBuffer(unsigned int type, base::SizeT allocatedBytes) const;
+    [[gnu::always_inline, gnu::flatten]] void unmapBuffer(unsigned int type) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -685,8 +681,8 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     RenderTarget& m_renderTarget;
-    base::SizeT   m_vertexBytesToAlloc{0u};
-    base::SizeT   m_indexBytesToAlloc{0u};
+    base::SizeT   m_allocatedVertexBytes{0u};
+    base::SizeT   m_allocatedIndexBytes{0u};
     base::SizeT   m_vertexCount{0u};
     base::SizeT   m_indexCount{0u};
     void*         m_mappedVertices{};
