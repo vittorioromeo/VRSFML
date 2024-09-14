@@ -1,5 +1,6 @@
 #include "SFML/ImGui/ImGui.hpp"
 
+#include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
@@ -161,8 +162,8 @@ int main()
     // Set up UI elements
     bool         useBatch      = true;
     bool         drawSprites   = true;
-    bool         drawText      = true;
-    int          numEntities   = 100;
+    bool         drawText      = false;
+    int          numEntities   = 1'000'000;
     unsigned int drawnVertices = 0u;
 
     //
@@ -324,7 +325,7 @@ int main()
                 if (drawSprites)
                 {
                     if (useBatch)
-                        drawableBatch.add(entity.sprite);
+                        drawableBatch.add(window, entity.sprite);
                     else
                         window.draw(entity.sprite, textureAtlas.getTexture());
 
@@ -334,7 +335,7 @@ int main()
                 if (drawText)
                 {
                     if (useBatch)
-                        drawableBatch.add(entity.text);
+                        drawableBatch.add(window, entity.text);
                     else
                         window.draw(entity.text);
 

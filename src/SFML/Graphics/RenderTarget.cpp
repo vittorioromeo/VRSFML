@@ -5,6 +5,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/BlendMode.hpp"
 #include "SFML/Graphics/CoordinateType.hpp"
+#include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
@@ -280,6 +281,15 @@ public:
         return *this;
     }
 
+    void reallocate()
+    {
+        if (m_id != 0u)
+            FnDelete(m_id);
+
+        FnGen(m_id);
+        SFML_BASE_ASSERT(m_id != 0u);
+    }
+
 private:
     unsigned int m_id{};
 };
@@ -371,12 +381,18 @@ struct RenderTarget::Impl
     VBO vbo; //!< Vertex buffer object associated with the render target
     EBO ebo; //!< Element index buffer object associated with the render target
 
-    // TODO P0:
-    /*
+    void*       mappedVbo{};
     base::SizeT vboCapacity{0u}; //!< Currently allocated capacity of the VBO
+
+    void*       mappedEbo{};
     base::SizeT eboCapacity{0u}; //!< Currently allocated capacity of the EBO
 
-    [[gnu::always_inline]] void reallocObjectIfNeeded(GLenum type, auto& object, base::SizeT& capacity, base::SizeT byteCount)
+    [[gnu::always_inline]] void reallocObjectIfNeeded(
+        GLenum       type,
+        auto&        object,
+        void*&       mappedPtr,
+        base::SizeT& capacity,
+        base::SizeT  byteCount)
     {
         if (byteCount <= capacity) [[likely]]
             return;
@@ -384,32 +400,63 @@ struct RenderTarget::Impl
         const auto newCapacity = (capacity * 3u / 2u) + byteCount;
 
         object.bind();
-        glCheck(glBufferData(type, static_cast<GLsizeiptr>(newCapacity), nullptr, GL_DYNAMIC_DRAW));
 
-        capacity = newCapacity;
+        if (mappedPtr != nullptr)
+        {
+            [[maybe_unused]] const bool rc = glCheckExpr(glUnmapBuffer(type));
+            SFML_BASE_ASSERT(rc);
+            mappedPtr = nullptr;
+        }
+
+        object.reallocate();
+        object.bind();
+
+        glCheck(
+            glBufferStorage(type, static_cast<GLsizeiptr>(newCapacity), nullptr, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT));
+
+        mappedPtr = glMapBufferRange(type, 0u, newCapacity, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT
+                                     // | GL_MAP_UNSYNCHRONIZED_BIT | GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT
+        );
+        capacity  = newCapacity;
+    }
+
+    [[gnu::always_inline]] void objectRealloc(GLenum type, auto& object, void*& mappedPtr, base::SizeT& capacity, sf::base::SizeT byteCount)
+    {
+        reallocObjectIfNeeded(type, object, mappedPtr, capacity, byteCount);
     }
 
     [[gnu::always_inline]] void objectReallocAndMemcpy(
         GLenum          type,
         auto&           object,
+        void*&          mappedPtr,
         base::SizeT&    capacity,
         const void*     data,
         sf::base::SizeT byteCount)
     {
-        reallocObjectIfNeeded(type, object, capacity, byteCount);
-        glCheck(glBufferSubData(type, 0u, byteCount, data));
+        reallocObjectIfNeeded(type, object, mappedPtr, capacity, byteCount);
+        SFML_BASE_MEMCPY(mappedPtr, data, byteCount);
+        // glCheck(glBufferSubData(type, 0u, byteCount, data));
+    }
+
+    [[gnu::always_inline]] void vboRealloc(sf::base::SizeT byteCount)
+    {
+        objectRealloc(GL_ARRAY_BUFFER, vbo, mappedVbo, vboCapacity, byteCount);
+    }
+
+    [[gnu::always_inline]] void eboRealloc(sf::base::SizeT byteCount)
+    {
+        objectRealloc(GL_ELEMENT_ARRAY_BUFFER, ebo, mappedEbo, eboCapacity, byteCount);
     }
 
     [[gnu::always_inline]] void vboReallocAndMemcpy(const void* data, sf::base::SizeT byteCount)
     {
-        objectReallocAndMemcpy(GL_ARRAY_BUFFER, vbo, vboCapacity, data, byteCount);
+        objectReallocAndMemcpy(GL_ARRAY_BUFFER, vbo, mappedVbo, vboCapacity, data, byteCount);
     }
 
     [[gnu::always_inline]] void eboReallocAndMemcpy(const void* data, sf::base::SizeT byteCount)
     {
-        objectReallocAndMemcpy(GL_ELEMENT_ARRAY_BUFFER, ebo, eboCapacity, data, byteCount);
+        objectReallocAndMemcpy(GL_ELEMENT_ARRAY_BUFFER, ebo, mappedEbo, eboCapacity, data, byteCount);
     }
-    */
 };
 
 
@@ -638,6 +685,9 @@ void RenderTarget::drawIndexedVertices(
 
     // TODO P0:
 #if 1
+    // m_impl->vboReallocAndMemcpy(vertices, sizeof(Vertex) * vertexCount);
+    // m_impl->eboReallocAndMemcpy(indices, sizeof(unsigned int) * indexCount);
+#elif 0
     glCheck(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertexCount, vertices, GL_STATIC_DRAW));
     glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indexCount, indices, GL_STATIC_DRAW));
 #elif 0
@@ -676,10 +726,10 @@ void RenderTarget::drawIndexedVertices(
 ////////////////////////////////////////////////////////////
 void RenderTarget::draw(const DrawableBatch& drawableBatch, const RenderStates& renderStates)
 {
-    drawIndexedVertices(drawableBatch.m_vertices.data(),
-                        drawableBatch.m_vertices.size(),
-                        drawableBatch.m_indices.data(),
-                        drawableBatch.m_indices.size(),
+    drawIndexedVertices((const Vertex*)m_impl->mappedVbo,
+                        drawableBatch.m_nVerts,
+                        (const unsigned int*)m_impl->mappedEbo,
+                        drawableBatch.m_nIdxs,
                         PrimitiveType::Triangles,
                         renderStates);
 }
@@ -778,6 +828,17 @@ bool RenderTarget::setActive(bool active)
     return true;
 }
 
+void* RenderTarget::getVerticesPtr(base::SizeT byteCount)
+{
+    m_impl->vboRealloc(byteCount);
+    return m_impl->mappedVbo;
+}
+
+void* RenderTarget::getIndicesPtr(base::SizeT byteCount)
+{
+    m_impl->eboRealloc(byteCount);
+    return m_impl->mappedEbo;
+}
 
 ////////////////////////////////////////////////////////////
 void RenderTarget::resetGLStates()

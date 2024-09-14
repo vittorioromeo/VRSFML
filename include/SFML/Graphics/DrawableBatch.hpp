@@ -6,6 +6,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
+#include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/Transform.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
@@ -45,26 +46,26 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename BatchableObject>
-    [[gnu::always_inline, gnu::flatten]] void add(const BatchableObject& batchableObject)
+    [[gnu::always_inline, gnu::flatten]] void add(RenderTarget& rt, const BatchableObject& batchableObject)
         requires(!base::isBaseOf<Shape, BatchableObject>)
     {
         const auto [data, size] = batchableObject.getVertices();
 
-        addSubsequentIndices(size);
-        appendPreTransformedVertices(data, size, batchableObject.getTransform());
+        addSubsequentIndices(rt, size);
+        appendPreTransformedVertices(rt, data, size, batchableObject.getTransform());
     }
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void add(const Sprite& sprite);
+    void add(RenderTarget& rt, const Sprite& sprite);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void add(const Shape& shape);
+    void add(RenderTarget& rt, const Shape& shape);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -79,27 +80,33 @@ private:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void addSubsequentIndices(base::SizeT count);
+    void addSubsequentIndices(RenderTarget& rt, base::SizeT count);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void appendPreTransformedVertices(const Vertex*    data,
-                                                                           base::SizeT      count,
-                                                                           const Transform& transform)
+    [[gnu::always_inline, gnu::flatten]] void appendPreTransformedVertices(
+        RenderTarget&    rt,
+        const Vertex*    data,
+        base::SizeT      count,
+        const Transform& transform)
     {
-        m_vertices.reserveMore(count);
+        // m_vertices.reserveMore(count);
+        auto* vertices = static_cast<Vertex*>(rt.getVerticesPtr(m_nIdxs + count)) + count;
 
         for (const auto* const target = data + count; data != target; ++data)
-            m_vertices.unsafeEmplaceBack(transform.transformPoint(data->position), data->color, data->texCoords);
+            *vertices++ = Vertex{transform.transformPoint(data->position), data->color, data->texCoords};
+        // m_vertices.unsafeEmplaceBack();
     }
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    base::TrivialVector<Vertex>    m_vertices; //!< TODO P0:
-    base::TrivialVector<IndexType> m_indices;  //!< TODO P0:
+    base::SizeT m_nVerts{};
+    base::SizeT m_nIdxs{};
+    // base::TrivialVector<Vertex>    m_vertices; //!< TODO P0:
+    // base::TrivialVector<IndexType> m_indices;  //!< TODO P0:
 };
 
 } // namespace sf
