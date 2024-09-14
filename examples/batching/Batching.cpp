@@ -29,16 +29,18 @@
 #include <vector>
 
 #include <cstddef>
+#include <cstdio>
 
-
-float getRndFloat(float min, float max)
-{
-    static std::mt19937 rng(std::random_device{}());
-    return std::uniform_real_distribution<float>{min, max}(rng);
-}
 
 int main()
 {
+    //
+    //
+    // Set up random generator
+    // static std::mt19937 rng(std::random_device{}());
+    std::mt19937 rng(100);
+    const auto getRndFloat = [&](float min, float max) { return std::uniform_real_distribution<float>{min, max}(rng); };
+
     //
     //
     // Set up graphics context
@@ -126,12 +128,13 @@ int main()
             const std::size_t    type        = i % 6u;
             const sf::FloatRect& textureRect = spriteTextureRects[type];
 
-            const auto label = std::string{names[i % 6u]} + " #" + std::to_string((i / (type + 1)) + 1);
+            char labelBuffer[64]{};
+            std::snprintf(labelBuffer, 64, "%s #%zu", names[i % 6u], (i / (type + 1)) + 1);
 
             auto& [text,
                    sprite,
                    velocity,
-                   torque] = entities.emplace_back(sf::Text{i % 2u == 0u ? fontTuffy : fontMouldyCheese, label},
+                   torque] = entities.emplace_back(sf::Text{i % 2u == 0u ? fontTuffy : fontMouldyCheese, labelBuffer},
                                                    sf::Sprite{textureRect},
                                                    sf::Vector2f{getRndFloat(-2.5f, 2.5f), getRndFloat(-2.5f, 2.5f)},
                                                    getRndFloat(-0.05f, 0.05f));
@@ -181,7 +184,7 @@ int main()
     {
         target.push_back(value);
 
-        if (target.size() > 32u)
+        if (target.size() > 512u)
             target.erase(target.begin());
     };
 
@@ -275,7 +278,10 @@ int main()
             ImGui::InputInt("##InputInt", &numEntities);
 
             if (ImGui::Button("Repopulate") && numEntities > 0)
+            {
                 populateEntities(static_cast<std::size_t>(numEntities));
+                clearSamples();
+            }
 
             ImGui::NewLine();
 
