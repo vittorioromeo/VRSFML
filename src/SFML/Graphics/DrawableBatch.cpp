@@ -80,9 +80,8 @@ void DrawableBatch::add(RenderTarget& rt, const Shape& shape)
 ////////////////////////////////////////////////////////////
 void DrawableBatch::addSubsequentIndices(RenderTarget& rt, base::SizeT count)
 {
-#if 0
     // m_indices.reserveMore(count);
-    auto* indices = static_cast<IndexType*>(rt.getIndicesPtr(m_nIdxs + count)) + count;
+    auto* indices = static_cast<IndexType*>(rt.getIndicesPtr(sizeof(IndexType) * (m_nIdxs + count))) + m_nIdxs;
 
     const auto nextIndex = static_cast<IndexType>(m_nVerts);
 
@@ -90,7 +89,7 @@ void DrawableBatch::addSubsequentIndices(RenderTarget& rt, base::SizeT count)
         *indices++ = static_cast<IndexType>(nextIndex + i);
 
     m_nIdxs += count;
-#endif
+
 }
 
 

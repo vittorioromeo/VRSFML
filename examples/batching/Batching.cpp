@@ -163,7 +163,7 @@ int main()
     bool         useBatch      = true;
     bool         drawSprites   = true;
     bool         drawText      = false;
-    int          numEntities   = 1'000'000;
+    int          numEntities   = 25000;
     unsigned int drawnVertices = 0u;
 
     //

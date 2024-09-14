@@ -93,10 +93,12 @@ private:
         const Transform& transform)
     {
         // m_vertices.reserveMore(count);
-        auto* vertices = static_cast<Vertex*>(rt.getVerticesPtr(m_nIdxs + count)) + count;
+        auto* vertices = static_cast<Vertex*>(rt.getVerticesPtr(sizeof(Vertex) * (m_nVerts + count))) + m_nVerts;
 
         for (const auto* const target = data + count; data != target; ++data)
             *vertices++ = Vertex{transform.transformPoint(data->position), data->color, data->texCoords};
+
+        m_nVerts += count;
         // m_vertices.unsafeEmplaceBack();
     }
 
