@@ -638,16 +638,16 @@ void RenderTarget::drawIndexedVertices(
 
     // TODO P0:
 #if 1
-    glCheck(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertexCount, vertices, GL_STATIC_DRAW));
-    glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indexCount, indices, GL_STATIC_DRAW));
+    glCheck(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertexCount, vertices, GL_STREAM_DRAW));
+    glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indexCount, indices, GL_STREAM_DRAW));
 #elif 0
-    glCheck(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertexCount, nullptr, GL_STATIC_DRAW));
+    glCheck(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertexCount, nullptr, GL_STREAM_DRAW));
     glCheck(glBufferSubData(GL_ARRAY_BUFFER, 0u, sizeof(Vertex) * vertexCount, vertices));
 
-    glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indexCount, nullptr, GL_STATIC_DRAW));
+    glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indexCount, nullptr, GL_STREAM_DRAW));
     glCheck(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0u, sizeof(unsigned int) * indexCount, indices));
 #elif 0
-    glCheck(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertexCount, nullptr, GL_STATIC_DRAW));
+    glCheck(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertexCount, nullptr, GL_STREAM_DRAW));
     void* ptr0 = glMapBufferRange(GL_ARRAY_BUFFER,
                                   0u,
                                   sizeof(Vertex) * vertexCount,
@@ -655,7 +655,7 @@ void RenderTarget::drawIndexedVertices(
     SFML_BASE_MEMCPY(ptr0, vertices, sizeof(Vertex) * vertexCount);
     glUnmapBuffer(GL_ARRAY_BUFFER);
 
-    glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indexCount, nullptr, GL_STATIC_DRAW));
+    glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indexCount, nullptr, GL_STREAM_DRAW));
     void* ptr1 = glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER,
                                   0u,
                                   sizeof(unsigned int) * indexCount,
