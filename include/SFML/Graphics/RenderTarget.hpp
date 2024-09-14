@@ -1,6 +1,4 @@
 #pragma once
-#include "DrawableBatch.hpp"
-
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
@@ -30,6 +28,7 @@ class Shader;
 class Shape;
 class Sprite;
 class Texture;
+class DrawableBatch;
 class Transform;
 class VertexBuffer;
 class View;
@@ -475,6 +474,9 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void resetGLStates();
+
+    [[nodiscard]] void* getVerticesPtr(base::SizeT byteCount);
+    [[nodiscard]] void* getIndicesPtr(base::SizeT byteCount);
 
 protected:
     ////////////////////////////////////////////////////////////

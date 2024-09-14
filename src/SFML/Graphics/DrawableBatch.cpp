@@ -12,36 +12,43 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-void DrawableBatch::add(const Sprite& sprite)
+void DrawableBatch::add(RenderTarget& rt, const Sprite& sprite)
 {
-    const auto nextIndex = static_cast<IndexType>(m_vertices.size());
+    const auto nextIndex = static_cast<IndexType>(m_nVerts);
 
-    m_indices.reserveMore(6u);
+    // m_indices.reserveMore(6u);
+    auto* indices = static_cast<IndexType*>(rt.getIndicesPtr(sizeof(IndexType) * (m_nIdxs + 6u))) + m_nIdxs;
 
-    m_indices.unsafePushBackMultiple(
-        // Triangle strip: triangle #0
-        static_cast<IndexType>(nextIndex + 0u),
-        static_cast<IndexType>(nextIndex + 1u),
-        static_cast<IndexType>(nextIndex + 2u),
+    // Triangle strip: triangle #0
+    *indices++ = static_cast<IndexType>(nextIndex + 0u);
+    *indices++ = static_cast<IndexType>(nextIndex + 1u);
+    *indices++ = static_cast<IndexType>(nextIndex + 2u);
 
-        // Triangle strip: triangle #1
-        static_cast<IndexType>(nextIndex + 1u),
-        static_cast<IndexType>(nextIndex + 2u),
-        static_cast<IndexType>(nextIndex + 3u));
+    // Triangle strip: triangle #1
+    *indices++ = static_cast<IndexType>(nextIndex + 1u);
+    *indices++ = static_cast<IndexType>(nextIndex + 2u);
+    *indices++ = static_cast<IndexType>(nextIndex + 3u);
 
-    m_vertices.reserveMore(4u);
-    m_vertices.unsafeEmplaceRangeFromFunc([&](Vertex* target) { sprite.getPreTransformedVertices(target); }, 4u);
+    m_nIdxs += 6u;
+
+    // m_vertices.reserveMore(4u);
+    auto* vertices = static_cast<Vertex*>(rt.getVerticesPtr(sizeof(Vertex) * (m_nVerts + 4u))) + m_nVerts;
+    sprite.getPreTransformedVertices(vertices);
+    m_nVerts += 4;
+    // m_vertices.unsafeEmplaceRangeFromFunc([&](Vertex* target) { sprite.getPreTransformedVertices(target); }, 4u);
 }
 
 
 ////////////////////////////////////////////////////////////
-void DrawableBatch::add(const Shape& shape)
+void DrawableBatch::add(RenderTarget& rt, const Shape& shape)
 {
+#if 0
     // Triangle fan
     if (const auto [fillData, fillSize] = shape.getFillVertices(); fillSize > 2u)
     {
-        const auto nextFillIndex = static_cast<IndexType>(m_vertices.size());
+        const auto nextFillIndex = static_cast<IndexType>(m_nVerts);
 
+    auto* indices = static_cast<IndexType*>(rt.getIndicesPtr(m_nIdxs + count)) + count;
         m_indices.reserveMore(fillSize * 3u);
 
         for (IndexType i = 1u; i < fillSize - 1; ++i)
@@ -55,7 +62,7 @@ void DrawableBatch::add(const Shape& shape)
     // Triangle strip
     if (const auto [outlineData, outlineSize] = shape.getOutlineVertices(); outlineSize > 2u)
     {
-        const auto nextOutlineIndex = static_cast<IndexType>(m_vertices.size());
+        const auto nextOutlineIndex = static_cast<IndexType>(m_nVerts);
 
         m_indices.reserveMore(outlineSize * 3u);
 
@@ -66,26 +73,35 @@ void DrawableBatch::add(const Shape& shape)
 
         appendPreTransformedVertices(outlineData, outlineSize, shape.getTransform());
     }
+#endif
 }
 
 
 ////////////////////////////////////////////////////////////
-void DrawableBatch::addSubsequentIndices(base::SizeT count)
+void DrawableBatch::addSubsequentIndices(RenderTarget& rt, base::SizeT count)
 {
-    m_indices.reserveMore(count);
+#if 0
+    // m_indices.reserveMore(count);
+    auto* indices = static_cast<IndexType*>(rt.getIndicesPtr(m_nIdxs + count)) + count;
 
-    const auto nextIndex = static_cast<IndexType>(m_vertices.size());
+    const auto nextIndex = static_cast<IndexType>(m_nVerts);
 
     for (IndexType i = 0u; i < static_cast<IndexType>(count); ++i)
-        m_indices.unsafeEmplaceBack(static_cast<IndexType>(nextIndex + i));
+        *indices++ = static_cast<IndexType>(nextIndex + i);
+
+    m_nIdxs += count;
+#endif
 }
 
 
 ////////////////////////////////////////////////////////////
 void DrawableBatch::clear()
 {
-    m_vertices.clear();
-    m_indices.clear();
+    // m_vertices.clear();
+    m_nVerts = 0u;
+
+    // m_indices.clear();
+    m_nIdxs = 0u;
 }
 
 } // namespace sf
