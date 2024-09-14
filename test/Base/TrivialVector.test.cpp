@@ -182,6 +182,26 @@ TEST_CASE("[Base] Base/TrivialVector.hpp")
         for (sf::base::SizeT i = 1; i < 100; ++i)
             CHECK(tv[i].value == 0);
     }
+
+    SECTION("Shrink to fit")
+    {
+        sf::base::TrivialVector<int> tv;
+        DO_EMPTY_CHECKS(tv);
+        CHECK(tv.capacity() == 0u);
+
+        tv.reserve(255);
+
+        for (int i = 0; i < 100; ++i)
+            tv.unsafeEmplaceBack(5);
+
+        CHECK(tv.size() == 100);
+        CHECK(tv.capacity() > 100);
+
+        tv.shrinkToFit();
+
+        CHECK(tv.size() == 100);
+        CHECK(tv.capacity() == 100);
+    }
 }
 
 } // namespace

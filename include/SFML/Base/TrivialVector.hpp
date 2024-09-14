@@ -166,6 +166,13 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    void shrinkToFit()
+    {
+        reserveImpl(size());
+    }
+
+
+    ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void reserveMore(const SizeT n)
     {
         const SizeT targetCapacity = size() + n;

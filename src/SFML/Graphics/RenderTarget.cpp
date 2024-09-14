@@ -28,6 +28,7 @@
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Math/Lround.hpp"
+#include "SFML/Base/Memcpy.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 
@@ -370,6 +371,8 @@ struct RenderTarget::Impl
     VBO vbo; //!< Vertex buffer object associated with the render target
     EBO ebo; //!< Element index buffer object associated with the render target
 
+    // TODO P0:
+    /*
     base::SizeT vboCapacity{0u}; //!< Currently allocated capacity of the VBO
     base::SizeT eboCapacity{0u}; //!< Currently allocated capacity of the EBO
 
@@ -406,6 +409,7 @@ struct RenderTarget::Impl
     {
         objectReallocAndMemcpy(GL_ELEMENT_ARRAY_BUFFER, ebo, eboCapacity, data, byteCount);
     }
+    */
 };
 
 
@@ -591,7 +595,21 @@ void RenderTarget::draw(const Vertex* vertices, base::SizeT vertexCount, Primiti
 
     setupDraw(states);
 
-    m_impl->vboReallocAndMemcpy(vertices, sizeof(Vertex) * vertexCount);
+    // TODO P0:
+#if 1
+    glCheck(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertexCount, vertices, GL_STREAM_DRAW));
+#elif 0
+    glCheck(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertexCount, nullptr, GL_STREAM_DRAW));
+    glCheck(glBufferSubData(GL_ARRAY_BUFFER, 0u, sizeof(Vertex) * vertexCount, vertices));
+#elif 0
+    glCheck(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertexCount, nullptr, GL_STREAM_DRAW));
+    void* ptr0 = glMapBufferRange(GL_ARRAY_BUFFER,
+                                  0u,
+                                  sizeof(Vertex) * vertexCount,
+                                  GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+    SFML_BASE_MEMCPY(ptr0, vertices, sizeof(Vertex) * vertexCount);
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+#endif
 
     setupVertexAttribPointers(m_impl->cache.sfAttribPositionIdx,
                               m_impl->cache.sfAttribColorIdx,
@@ -618,8 +636,33 @@ void RenderTarget::drawIndexedVertices(
 
     setupDraw(states);
 
-    m_impl->vboReallocAndMemcpy(vertices, sizeof(Vertex) * vertexCount);
-    m_impl->eboReallocAndMemcpy(indices, sizeof(unsigned int) * indexCount);
+    // TODO P0:
+#if 1
+    glCheck(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertexCount, vertices, GL_STATIC_DRAW));
+    glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indexCount, indices, GL_STATIC_DRAW));
+#elif 0
+    glCheck(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertexCount, nullptr, GL_STATIC_DRAW));
+    glCheck(glBufferSubData(GL_ARRAY_BUFFER, 0u, sizeof(Vertex) * vertexCount, vertices));
+
+    glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indexCount, nullptr, GL_STATIC_DRAW));
+    glCheck(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0u, sizeof(unsigned int) * indexCount, indices));
+#elif 0
+    glCheck(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertexCount, nullptr, GL_STATIC_DRAW));
+    void* ptr0 = glMapBufferRange(GL_ARRAY_BUFFER,
+                                  0u,
+                                  sizeof(Vertex) * vertexCount,
+                                  GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+    SFML_BASE_MEMCPY(ptr0, vertices, sizeof(Vertex) * vertexCount);
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+
+    glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indexCount, nullptr, GL_STATIC_DRAW));
+    void* ptr1 = glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER,
+                                  0u,
+                                  sizeof(unsigned int) * indexCount,
+                                  GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+    SFML_BASE_MEMCPY(ptr1, indices, sizeof(unsigned int) * indexCount);
+    glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+#endif
 
     setupVertexAttribPointers(m_impl->cache.sfAttribPositionIdx,
                               m_impl->cache.sfAttribColorIdx,
@@ -1094,12 +1137,14 @@ void RenderTarget::drawIndexedPrimitives(PrimitiveType type, base::SizeT indexCo
 void RenderTarget::cleanupDraw(const RenderStates& states)
 {
     // Unbind the shader, if any
-    unapplyShader();
+    // TODO P0:
+    // unapplyShader();
 
     // If the texture we used to draw belonged to a RenderTexture, then forcibly unbind that texture.
     // This prevents a bug where some drivers do not clear RenderTextures properly.
-    if (states.texture && states.texture->m_fboAttachment)
-        unapplyTexture();
+    // TODO P0:
+    // if (states.texture && states.texture->m_fboAttachment)
+    //    unapplyTexture();
 
     // Mask the color buffer back on if necessary
     if (states.stencilMode.stencilOnly)

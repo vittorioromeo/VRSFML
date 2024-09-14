@@ -844,7 +844,7 @@ void Shader::bind() const
     SFML_BASE_ASSERT(m_impl->shaderProgram != 0u);
 
     // Enable the program
-    // SFML_BASE_ASSERT(glCheckExpr(glIsProgram(castToGlHandle(m_impl->shaderProgram))));
+    SFML_BASE_ASSERT(glCheckExpr(glIsProgram(castToGlHandle(m_impl->shaderProgram))));
     glCheck(glUseProgram(castToGlHandle(m_impl->shaderProgram)));
 
     // Bind the textures

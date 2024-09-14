@@ -18,3 +18,5 @@ tracy/
 *.exe
 imgui.ini
 *.log
+notes.yaml
+examples/batching/imgui.ini
