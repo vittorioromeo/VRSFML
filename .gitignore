@@ -6,3 +6,4 @@ build/
 cmake-build-*/
 CMakeUserPresets.json
 build*/
+-.json

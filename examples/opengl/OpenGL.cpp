@@ -123,8 +123,8 @@ int main()
     //
     // Set up UI elements
     bool drawSprites = true;
-    bool drawText    = true;
-    int  numEntities = 10000;
+    bool drawText    = false;
+    int  numEntities = 5000;
 
     //
     //
