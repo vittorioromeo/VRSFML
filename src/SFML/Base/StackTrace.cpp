@@ -15,9 +15,9 @@
 #include <cpptrace/cpptrace.hpp>
 #endif
 
-#endif
-
 #include <cstdio>
+
+#endif
 
 
 namespace sf::base::priv
