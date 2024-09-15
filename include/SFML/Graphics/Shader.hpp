@@ -12,8 +12,7 @@
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/SizeT.hpp"
-
-#include <string_view>
+#include "SFML/Base/StringView.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -53,7 +52,7 @@ public:
     /// \brief Special type that can be passed to setUniform(),
     ///        and that represents the texture of the object being drawn
     ///
-    /// \see `setUniform(std::string_view, CurrentTextureType)`
+    /// \see `setUniform(base::StringView, CurrentTextureType)`
     ///
     ////////////////////////////////////////////////////////////
     struct CurrentTextureType
@@ -63,7 +62,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Represents the texture of the object being drawn
     ///
-    /// \see `setUniform(std::string_view, CurrentTextureType)`
+    /// \see `setUniform(base::StringView, CurrentTextureType)`
     ///
     ////////////////////////////////////////////////////////////
     // NOLINTNEXTLINE(readability-identifier-naming)
@@ -199,7 +198,7 @@ public:
     /// \see `loadFromFile`, `loadFromStream`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Shader> loadFromMemory(GraphicsContext& graphicsContext, std::string_view shader, Type type);
+    [[nodiscard]] static base::Optional<Shader> loadFromMemory(GraphicsContext& graphicsContext, base::StringView shader, Type type);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load both the vertex and fragment shaders from source codes in memory
@@ -221,8 +220,8 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<Shader> loadFromMemory(GraphicsContext& graphicsContext,
-                                                               std::string_view vertexShader,
-                                                               std::string_view fragmentShader);
+                                                               base::StringView vertexShader,
+                                                               base::StringView fragmentShader);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the vertex, geometry and fragment shaders from source codes in memory
@@ -246,9 +245,9 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<Shader> loadFromMemory(
         GraphicsContext& graphicsContext,
-        std::string_view vertexShader,
-        std::string_view geometryShader,
-        std::string_view fragmentShader);
+        base::StringView vertexShader,
+        base::StringView geometryShader,
+        base::StringView fragmentShader);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the vertex, geometry or fragment shader from a custom stream
@@ -327,7 +326,7 @@ public:
     /// \return Location ID of the uniform, or `sf::base::nullOpt` if not found
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<UniformLocation> getUniformLocation(std::string_view uniformName) const;
+    [[nodiscard]] base::Optional<UniformLocation> getUniformLocation(base::StringView uniformName) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p float uniform
@@ -680,9 +679,9 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<Shader> compile(GraphicsContext& graphicsContext,
-                                                        std::string_view vertexShaderCode,
-                                                        std::string_view geometryShaderCode,
-                                                        std::string_view fragmentShaderCode);
+                                                        base::StringView vertexShaderCode,
+                                                        base::StringView geometryShaderCode,
+                                                        base::StringView fragmentShaderCode);
 
     ////////////////////////////////////////////////////////////
     /// \brief Bind all the textures used by the shader
