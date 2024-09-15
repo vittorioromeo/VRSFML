@@ -97,6 +97,8 @@ namespace sf::priv
 /// \param line Line number of the source file where the call is located
 /// \param expression The evaluated expression as a string
 ///
+/// \return `false` if an error occurred, `true` otherwise
+///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool glCheckError(const char* file, unsigned int line, const char* expression);
 

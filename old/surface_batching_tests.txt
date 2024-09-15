@@ -28,6 +28,7 @@ surface (ES=0) fork draw (with batching, simple `glBufferData` call), GL_STREAM_
 - 5000 sprites = >60FPS
 - 10000 sprites + 10000 texts = ~30FPS
 - 15000 sprites = ~35FPS
+- 25000 sprites = ~22FPS
 - (same with GL_STATIC_DRAW)
 - (same with GL_DYNAMIC_DRAW)
 
@@ -56,5 +57,5 @@ surface (ES=0) fork draw (with batching, `glBufferStorage` branch):
 conclusion: 
 - performance of fork is always better than upstream, even without batching
 - simple `glBufferData` call with `GL_STREAM_DRAW` is good both for non-batching and batching
-- `glBufferStorage` seems to improve things a bit
+- `glBufferStorage` seems to improve things a tiny bit, probably not worth the complexity
 - bottleneck is probably CPU
