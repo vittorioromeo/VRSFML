@@ -52,6 +52,15 @@
       }
     },
     {
+      "name": "vrdev_clang_egl",
+      "inherits": "vrdev_clang",
+      "binaryDir": "build_vrdev_clang_egl",
+      "installDir": "${sourceDir}/build_vrdev_clang_egl/install",
+      "cacheVariables": {
+        "SFML_OPENGL_ES": "ON"
+      }
+    },
+    {
       "name": "vrdev_gcc",
       "inherits": "build_base_debug",
       "binaryDir": "build_vrdev_gcc",
@@ -93,6 +102,15 @@
       "cacheVariables": {
         "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace -Ofast $env{CXX_WARNINGS}"
+      }
+    },
+    {
+      "name": "vrdev_clang_egl_rel",
+      "inherits": "vrdev_clang_rel",
+      "binaryDir": "build_vrdev_clang_egl_rel",
+      "installDir": "${sourceDir}/build_vrdev_clang_egl_rel/install",
+      "cacheVariables": {
+        "SFML_OPENGL_ES": "ON"
       }
     },
     {
