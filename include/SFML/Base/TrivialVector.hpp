@@ -191,7 +191,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void unsafeEmplaceRange(const TItem* ptr, SizeT count) noexcept
+    [[gnu::always_inline, gnu::flatten]] void unsafeEmplaceRange(const TItem* ptr, SizeT count) noexcept
     {
         SFML_BASE_ASSERT(size() + count <= capacity());
         SFML_BASE_ASSERT(m_data != nullptr);
@@ -204,7 +204,15 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void unsafeEmplaceOther(const TrivialVector& rhs) noexcept
+    [[gnu::always_inline, gnu::flatten]] void emplaceRange(const TItem* ptr, SizeT count) noexcept
+    {
+        reserveMore(count);
+        unsafeEmplaceRange(ptr, count);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] void unsafeEmplaceOther(const TrivialVector& rhs) noexcept
     {
         unsafeEmplaceRange(rhs.m_data, rhs.size());
     }
@@ -251,6 +259,24 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    template <typename... Ts>
+    [[gnu::always_inline, gnu::flatten]] void emplaceBack(Ts&&... xs)
+    {
+        reserveMore(1);
+        unsafeEmplaceBack(static_cast<Ts&&>(xs)...);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    template <typename T>
+    [[gnu::always_inline, gnu::flatten]] void pushBack(T&& x)
+    {
+        reserveMore(1);
+        unsafeEmplaceBack(static_cast<T&&>(x));
+    }
+
+
+    ////////////////////////////////////////////////////////////
     template <typename... TItems>
     [[gnu::always_inline, gnu::flatten]] void unsafePushBackMultiple(TItems&&... items)
     {
@@ -263,21 +289,30 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] TItem* data() noexcept
+    template <typename... TItems>
+    [[gnu::always_inline, gnu::flatten]] void pushBackMultiple(TItems&&... items)
+    {
+        reserveMore(sizeof...(items));
+        unsafePushBackMultiple(static_cast<TItems&&>(items)...);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem* data() noexcept
     {
         return SFML_BASE_LAUNDER_CAST(TItem*, m_data);
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] const TItem* data() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem* data() const noexcept
     {
         return SFML_BASE_LAUNDER_CAST(TItem*, m_data);
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] TItem& operator[](const SizeT i) noexcept
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem& operator[](const SizeT i) noexcept
     {
         SFML_BASE_ASSERT(i < size());
         SFML_BASE_ASSERT(m_data != nullptr);
@@ -287,7 +322,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] const TItem& operator[](const SizeT i) const noexcept
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem& operator[](const SizeT i) const noexcept
     {
         SFML_BASE_ASSERT(i < size());
         SFML_BASE_ASSERT(m_data != nullptr);
@@ -297,30 +332,44 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] TItem* begin() noexcept
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem* begin() noexcept
     {
         return SFML_BASE_LAUNDER_CAST(TItem*, m_data);
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] const TItem* begin() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem* begin() const noexcept
     {
-        return SFML_BASE_LAUNDER_CAST(TItem*, m_data);
+        return SFML_BASE_LAUNDER_CAST(const TItem*, m_data);
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] TItem* end() noexcept
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem* end() noexcept
     {
         return SFML_BASE_LAUNDER_CAST(TItem*, m_endSize);
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] const TItem* end() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem* end() const noexcept
     {
-        return SFML_BASE_LAUNDER_CAST(TItem*, m_endSize);
+        return SFML_BASE_LAUNDER_CAST(const TItem*, m_endSize);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem* cbegin() const noexcept
+    {
+        return SFML_BASE_LAUNDER_CAST(const TItem*, m_data);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem* cend() const noexcept
+    {
+        return SFML_BASE_LAUNDER_CAST(const TItem*, m_data);
     }
 
 
@@ -330,6 +379,15 @@ public:
     {
         f(SFML_BASE_LAUNDER_CAST(TItem*, m_endSize));
         m_endSize += count;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    template <typename F>
+    [[gnu::always_inline, gnu::flatten]] void emplaceRangeFromFunc(F&& f, SizeT count) noexcept
+    {
+        reserveMore(count);
+        unsafeEmplaceRangeFromFunc(static_cast<F&&>(f), count);
     }
 };
 

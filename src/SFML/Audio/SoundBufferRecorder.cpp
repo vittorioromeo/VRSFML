@@ -13,8 +13,7 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Memcpy.hpp"
 #include "SFML/Base/Optional.hpp"
-
-#include <vector>
+#include "SFML/Base/TrivialVector.hpp"
 
 
 namespace sf
@@ -22,8 +21,8 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct SoundBufferRecorder::Impl
 {
-    std::vector<std::int16_t>   samples; //!< Temporary sample buffer to hold the recorded data
-    base::Optional<SoundBuffer> buffer;  //!< Sound buffer that will contain the recorded data
+    base::TrivialVector<std::int16_t> samples; //!< Temporary sample buffer to hold the recorded data
+    base::Optional<SoundBuffer>       buffer;  //!< Sound buffer that will contain the recorded data
 };
 
 

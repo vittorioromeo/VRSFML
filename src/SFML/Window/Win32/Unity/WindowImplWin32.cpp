@@ -18,9 +18,9 @@
 // expects lowercase, and a native compile on windows, whether via msvc
 // or mingw-w64 addresses files in a case insensitive manner.
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 
 #include <dbt.h>
-#include <vector>
 
 // MinGW lacks the definition of some Win32 constants
 #ifndef XBUTTON1
@@ -348,7 +348,7 @@ void WindowImplWin32::setIcon(Vector2u size, const std::uint8_t* pixels)
         DestroyIcon(m_icon);
 
     // Windows wants BGRA pixels: swap red and blue channels
-    std::vector<std::uint8_t> iconPixels(size.x * size.y * 4);
+    base::TrivialVector<std::uint8_t> iconPixels(size.x * size.y * 4);
     for (base::SizeT i = 0; i < iconPixels.size() / 4; ++i)
     {
         iconPixels[i * 4 + 0] = pixels[i * 4 + 2];

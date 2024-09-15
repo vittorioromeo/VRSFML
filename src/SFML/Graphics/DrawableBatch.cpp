@@ -16,9 +16,7 @@ void DrawableBatch::add(const Sprite& sprite)
 {
     const auto nextIndex = static_cast<IndexType>(m_vertices.size());
 
-    m_indices.reserveMore(6u);
-
-    m_indices.unsafePushBackMultiple(
+    m_indices.pushBackMultiple(
         // Triangle strip: triangle #0
         static_cast<IndexType>(nextIndex + 0u),
         static_cast<IndexType>(nextIndex + 1u),
@@ -29,8 +27,7 @@ void DrawableBatch::add(const Sprite& sprite)
         static_cast<IndexType>(nextIndex + 2u),
         static_cast<IndexType>(nextIndex + 3u));
 
-    m_vertices.reserveMore(4u);
-    m_vertices.unsafeEmplaceRangeFromFunc([&](Vertex* target) { sprite.getPreTransformedVertices(target); }, 4u);
+    m_vertices.emplaceRangeFromFunc([&](Vertex* target) { sprite.getPreTransformedVertices(target); }, 4u);
 }
 
 
