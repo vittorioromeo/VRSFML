@@ -80,7 +80,6 @@
         "CMAKE_CXX_COMPILER_LAUNCHER": "",
         "CMAKE_CXX_FLAGS": "$env{CXX_WARNINGS}",
         "CMAKE_TOOLCHAIN_FILE": "C:/msys64/clang64/lib/emscripten/cmake/Modules/Platform/Emscripten.cmake",
-        "SFML_ENABLE_STACK_TRACES": "OFF",
         "SFML_OPENGL_ES": "ON"
       }
     },
