@@ -1,11 +1,12 @@
 #include "SFML/Graphics/Color.hpp"
 
+#include "SFML/Base/TrivialVector.hpp"
+
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
 #include <GraphicsUtil.hpp>
 
-#include <vector>
 
 TEST_CASE("[Graphics] sf::Color")
 {
@@ -163,8 +164,12 @@ TEST_CASE("[Graphics] sf::Color")
         STATIC_CHECK(sizeof(sf::Color) == 4);
         STATIC_CHECK(alignof(sf::Color) == 1);
 
-        const std::vector<sf::Color> pixels = {{10, 11, 12, 13}, {14, 15, 16, 17}, {18, 19, 20, 21}};
-        const auto*                  begin  = reinterpret_cast<const std::uint8_t*>(pixels.data());
+        sf::base::TrivialVector<sf::Color> pixels(3);
+        pixels[0] = {10, 11, 12, 13};
+        pixels[1] = {14, 15, 16, 17};
+        pixels[2] = {18, 19, 20, 21};
+
+        const auto* begin = reinterpret_cast<const std::uint8_t*>(pixels.data());
         CHECK(begin[0] == pixels[0].r);
         CHECK(begin[1] == pixels[0].g);
         CHECK(begin[2] == pixels[0].b);

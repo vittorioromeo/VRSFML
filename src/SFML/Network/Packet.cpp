@@ -23,12 +23,7 @@ namespace sf
 void Packet::append(const void* data, base::SizeT sizeInBytes)
 {
     if (data && (sizeInBytes > 0))
-    {
-        const auto* begin = reinterpret_cast<const unsigned char*>(data);
-
-        m_data.reserveMore(sizeInBytes);
-        m_data.unsafeEmplaceRange(begin, sizeInBytes);
-    }
+        m_data.emplaceRange(reinterpret_cast<const unsigned char*>(data), sizeInBytes);
 }
 
 

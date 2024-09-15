@@ -96,8 +96,7 @@ struct [[nodiscard]] BufferSlice
         file.read(buffer.data() + bufferSizeBeforeRead, static_cast<std::streamsize>(size));
     }
 
-    buffer.reserveMore(1u);
-    buffer.unsafeEmplaceBack('\0');
+    buffer.pushBack('\0');
     return sf::base::makeOptional<BufferSlice>(bufferSizeBeforeRead, buffer.size() - bufferSizeBeforeRead);
 }
 
@@ -109,8 +108,7 @@ struct [[nodiscard]] BufferSlice
 
     if (!size.hasValue() || size.value() == 0)
     {
-        buffer.reserveMore(1u);
-        buffer.unsafeEmplaceBack('\0');
+        buffer.pushBack('\0');
         return sf::base::nullOpt;
     }
 
@@ -131,8 +129,7 @@ struct [[nodiscard]] BufferSlice
         return sf::base::nullOpt;
     }
 
-    buffer.reserveMore(1u);
-    buffer.unsafeEmplaceBack('\0');
+    buffer.pushBack('\0');
     return sf::base::makeOptional<BufferSlice>(bufferSizeBeforeRead, buffer.size() - bufferSizeBeforeRead);
 }
 

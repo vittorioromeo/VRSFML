@@ -6,10 +6,13 @@
 #include "SFML/System/FileInputStream.hpp"
 #include "SFML/System/Path.hpp"
 
+#include "SFML/Base/TrivialVector.hpp"
+
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
 #include <GraphicsUtil.hpp>
+
 
 TEST_CASE("[Graphics] sf::Image")
 {
@@ -158,7 +161,7 @@ TEST_CASE("[Graphics] sf::Image")
 
         SECTION("Failed load")
         {
-            std::vector<std::uint8_t> memory;
+            sf::base::TrivialVector<std::uint8_t> memory;
 
             SECTION("Empty")
             {
@@ -167,7 +170,7 @@ TEST_CASE("[Graphics] sf::Image")
 
             SECTION("Junk data")
             {
-                memory = {1, 2, 3, 4};
+                memory.pushBackMultiple(std::uint8_t{1}, std::uint8_t{2}, std::uint8_t{3}, std::uint8_t{4});
             }
 
             CHECK(!sf::Image::loadFromMemory(memory.data(), memory.size()).hasValue());

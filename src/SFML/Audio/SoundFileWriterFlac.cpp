@@ -12,12 +12,12 @@
 #include "SFML/System/StringUtils.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <FLAC/stream_encoder.h>
 #include <algorithm> // std::is_permutation
 #include <string>
-#include <vector>
 
 
 namespace sf::priv
@@ -31,8 +31,8 @@ struct SoundFileWriterFlac::Impl
     };
     base::UniquePtr<FLAC__StreamEncoder, FlacStreamEncoderDeleter> encoder;        //!< FLAC stream encoder
     unsigned int                                                   channelCount{}; //!< Number of channels
-    base::SizeT               remapTable[8]{}; //!< Table we use to remap source to target channel order
-    std::vector<std::int32_t> samples32;       //!< Conversion buffer
+    base::SizeT                       remapTable[8]{}; //!< Table we use to remap source to target channel order
+    base::TrivialVector<std::int32_t> samples32;       //!< Conversion buffer
 };
 
 
@@ -180,7 +180,7 @@ void SoundFileWriterFlac::write(const std::int16_t* samples, std::uint64_t count
         for (auto frame = 0u; frame < frames; ++frame)
         {
             for (auto channel = 0u; channel < m_impl->channelCount; ++channel)
-                m_impl->samples32.push_back(samples[frame * m_impl->channelCount + m_impl->remapTable[channel]]);
+                m_impl->samples32.unsafeEmplaceBack(samples[frame * m_impl->channelCount + m_impl->remapTable[channel]]);
         }
 
         // Write them to the FLAC stream

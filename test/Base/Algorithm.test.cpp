@@ -4,6 +4,7 @@
 
 #include <vector>
 
+
 TEST_CASE("[Base] Base/Algorithm.hpp")
 {
     SECTION("Min/Max")
