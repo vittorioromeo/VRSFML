@@ -60,6 +60,6 @@ elseif(SFML_OS_ANDROID)
     target_link_libraries(sfml-system PRIVATE android log)
 endif()
 
-if(SFML_ENABLE_STACK_TRACES)
+if(SFML_ENABLE_STACK_TRACES AND NOT SFML_OS_EMSCRIPTEN)
     target_link_libraries(sfml-system PUBLIC cpptrace::cpptrace)
 endif()

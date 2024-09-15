@@ -61,20 +61,22 @@ sfml_set_option(SFML_ENABLE_STACK_TRACES $<CONFIG:Debug> BOOL "TRUE to enable li
 if(SFML_ENABLE_STACK_TRACES)
     add_definitions(-DSFML_ENABLE_STACK_TRACES)
 
-    CPMAddPackage(
-        NAME cpptrace
-        GITHUB_REPOSITORY vittorioromeo/cpptrace
-        GIT_TAG e76cc5a34e3ad22ff748b590f6085e56aa47f9e7
-        SYSTEM TRUE
-    )
+    if (NOT SFML_OS_EMSCRIPTEN)
+        CPMAddPackage(
+            NAME cpptrace
+            GITHUB_REPOSITORY vittorioromeo/cpptrace
+            GIT_TAG e76cc5a34e3ad22ff748b590f6085e56aa47f9e7
+            SYSTEM TRUE
+        )
 
-    if(NOT SFML_COMPILER_MSVC)
-        set_target_properties(libzstd_static PROPERTIES UNITY_BUILD OFF)
-        set_target_properties(dwarf PROPERTIES UNITY_BUILD OFF)
+        if(NOT SFML_COMPILER_MSVC)
+            set_target_properties(libzstd_static PROPERTIES UNITY_BUILD OFF)
+            set_target_properties(dwarf PROPERTIES UNITY_BUILD OFF)
+        endif()
+
+        # install(TARGETS cpptrace-lib EXPORT SFMLConfigExport)
+        # install(TARGETS dwarf EXPORT SFMLConfigExport)
     endif()
-
-    # install(TARGETS cpptrace-lib EXPORT SFMLConfigExport)
-    # install(TARGETS dwarf EXPORT SFMLConfigExport)
 endif()
 
 # add an option to enable lifetime tracking

@@ -159,10 +159,10 @@ int main()
     //
     //
     // Set up UI elements
-    bool         useBatch      = true;
+    bool         useBatch      = false;
     bool         drawSprites   = true;
-    bool         drawText      = true;
-    int          numEntities   = 10000;
+    bool         drawText      = false;
+    int          numEntities   = 2;
     unsigned int drawnVertices = 0u;
 
     //
