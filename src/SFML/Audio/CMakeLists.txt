@@ -77,10 +77,10 @@ else()
         endif()
 
         # disable building dependencies as part of a unity build, they don't support it
-        if(SFML_COMPILER_MSVC)
-            set_target_properties(ogg FLAC vorbis vorbisenc vorbisfile PROPERTIES UNITY_BUILD OFF)
-        else()
-            set_target_properties(ogg FLAC vorbis vorbisenc vorbisfile benchmark_residual PROPERTIES UNITY_BUILD OFF)
+        set_target_properties(ogg FLAC vorbis vorbisenc vorbisfile PROPERTIES UNITY_BUILD OFF)
+
+        if(TARGET benchmark_residual)
+            set_target_properties(benchmark_residual PROPERTIES UNITY_BUILD OFF)
         endif()
 
         sfml_set_stdlib(ogg)

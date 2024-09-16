@@ -658,7 +658,7 @@ void RenderTarget::drawIndexedVertices(
                                   0u,
                                   vertexByteCount,
                                   GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
-    SFML_BASE_MEMCPY(ptr0, vertices, vertexByteCount);
+    SFML_BASE_MEMCPY(ptr0, vertices, static_cast<base::SizeT>(vertexByteCount));
     glUnmapBuffer(GL_ARRAY_BUFFER);
 
     glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexByteCount, nullptr, GL_STREAM_DRAW));
@@ -666,7 +666,7 @@ void RenderTarget::drawIndexedVertices(
                                   0u,
                                   indexByteCount,
                                   GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
-    SFML_BASE_MEMCPY(ptr1, indices, indexByteCount);
+    SFML_BASE_MEMCPY(ptr1, indices, static_cast<base::SizeT>(indexByteCount));
     glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
 #endif
 

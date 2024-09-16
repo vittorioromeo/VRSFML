@@ -69,8 +69,11 @@ if(SFML_ENABLE_STACK_TRACES)
             SYSTEM TRUE
         )
 
-        if(NOT SFML_COMPILER_MSVC)
+        if(TARGET libzstd_static)
             set_target_properties(libzstd_static PROPERTIES UNITY_BUILD OFF)
+        endif()
+
+        if(TARGET dwarf)
             set_target_properties(dwarf PROPERTIES UNITY_BUILD OFF)
         endif()
 
