@@ -19,7 +19,7 @@
 
 namespace
 {
-ma_result onRead(ma_decoder* decoder, void* buffer, size_t bytesToRead, size_t* bytesRead)
+ma_result onRead(ma_decoder* decoder, void* buffer, sf::base::SizeT bytesToRead, sf::base::SizeT* bytesRead)
 {
     auto*                    stream = static_cast<sf::InputStream*>(decoder->pUserData);
     const sf::base::Optional count  = stream->read(buffer, bytesToRead);
