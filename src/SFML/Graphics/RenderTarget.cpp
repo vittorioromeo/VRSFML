@@ -5,6 +5,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/BlendMode.hpp"
 #include "SFML/Graphics/CoordinateType.hpp"
+#include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RenderStates.hpp"

@@ -12,8 +12,6 @@
 #include <LoadIntoMemoryUtil.hpp>
 #include <SystemUtil.hpp>
 
-#include <cstddef>
-
 
 TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
 {
@@ -76,7 +74,7 @@ TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
     {
         SECTION("Invalid memory")
         {
-            constexpr std::byte memory[5]{};
+            constexpr unsigned char memory[5]{};
             CHECK(!sf::SoundBuffer::loadFromMemory(memory, 5).hasValue());
         }
 

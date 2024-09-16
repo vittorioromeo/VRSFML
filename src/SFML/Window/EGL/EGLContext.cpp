@@ -4,8 +4,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/EGLCheck.hpp"
-#include "SFML/Window/EglContext.hpp"
+#include "SFML/Window/EGL/EGLCheck.hpp"
+#include "SFML/Window/EGL/EGLContext.hpp"
 #include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
 #include "SFML/Window/WindowContext.hpp"

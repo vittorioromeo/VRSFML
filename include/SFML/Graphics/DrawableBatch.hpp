@@ -21,7 +21,6 @@ namespace sf
 class RenderTarget;
 class Shape;
 class Sprite;
-class Transform;
 } // namespace sf
 
 
@@ -46,7 +45,7 @@ public:
     ////////////////////////////////////////////////////////////
     template <typename BatchableObject>
     [[gnu::always_inline, gnu::flatten]] void add(const BatchableObject& batchableObject)
-        requires(!base::isBaseOf<Shape, BatchableObject>)
+        requires(!base::isBaseOf<Shape, BatchableObject>) // TODO P1: better requirement
     {
         const auto [data, size] = batchableObject.getVertices();
 

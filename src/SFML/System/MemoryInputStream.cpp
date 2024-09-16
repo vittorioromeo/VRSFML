@@ -15,7 +15,7 @@ namespace sf
 {
 ////////////////////////////////////////////////////////////
 MemoryInputStream::MemoryInputStream(const void* data, base::SizeT sizeInBytes) :
-m_data(static_cast<const std::byte*>(data)),
+m_data(static_cast<const unsigned char*>(data)),
 m_size(sizeInBytes)
 {
     SFML_BASE_ASSERT(m_data != nullptr && "MemoryInputStream must be initialized with non-null data");

@@ -50,7 +50,7 @@
 #include <vector>
 
 #ifdef SFML_OPENGL_ES
-#include "SFML/Window/EglContext.hpp"
+#include "SFML/Window/EGL/EGLContext.hpp"
 using DerivedGlContextType = sf::priv::EglContext;
 #else
 #include "SFML/Window/Unix/GlxContext.hpp"

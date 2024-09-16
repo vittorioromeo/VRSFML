@@ -12,8 +12,6 @@
 
 #include "SFML/Base/SizeT.hpp"
 
-#include <cstddef>
-
 
 namespace sf
 {
@@ -77,9 +75,9 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    const std::byte* m_data{};   //!< Pointer to the data in memory
-    base::SizeT      m_size{};   //!< Total size of the data
-    base::SizeT      m_offset{}; //!< Current reading position
+    const unsigned char* m_data{};   //!< Pointer to the data in memory
+    base::SizeT          m_size{};   //!< Total size of the data
+    base::SizeT          m_offset{}; //!< Current reading position
 };
 
 } // namespace sf

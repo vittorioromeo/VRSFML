@@ -226,7 +226,7 @@ public:
 
         for (int i = 0; i < 6; ++i)
         {
-            sf::Sprite entity{{{96.f * i, 0.f}, {96.f, 96.f}}};
+            sf::Sprite entity{{{96.f * static_cast<float>(i), 0.f}, {96.f, 96.f}}};
 
             entity.setPosition(
                 {std::cos(0.25f * (time * static_cast<float>(i) + static_cast<float>(numEntities - i))) * 300 + 350,
