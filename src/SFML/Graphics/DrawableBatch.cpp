@@ -11,13 +11,28 @@
 
 namespace sf
 {
+
+////////////////////////////////////////////////////////////
+DrawableBatch::IndexType* DrawableBatch::reserveMoreIndicesAndGetPtr(RenderTarget& rt, base::SizeT count) const
+{
+    return static_cast<IndexType*>(rt.getIndicesPtr(sizeof(IndexType) * (m_nIdxs + count))) + m_nIdxs;
+}
+
+
+////////////////////////////////////////////////////////////
+Vertex* DrawableBatch::reserveMoreVerticesAndGetPtr(RenderTarget& rt, base::SizeT count) const
+{
+    return static_cast<Vertex*>(rt.getVerticesPtr(sizeof(Vertex) * (m_nVerts + count))) + m_nVerts;
+}
+
+
 ////////////////////////////////////////////////////////////
 void DrawableBatch::add(RenderTarget& rt, const Sprite& sprite)
 {
     const auto nextIndex = static_cast<IndexType>(m_nVerts);
 
     // m_indices.reserveMore(6u);
-    auto* indices = static_cast<IndexType*>(rt.getIndicesPtr(sizeof(IndexType) * (m_nIdxs + 6u))) + m_nIdxs;
+    auto* indices = reserveMoreIndicesAndGetPtr(rt, 6u);
 
     // Triangle strip: triangle #0
     *indices++ = static_cast<IndexType>(nextIndex + 0u);
@@ -32,7 +47,7 @@ void DrawableBatch::add(RenderTarget& rt, const Sprite& sprite)
     m_nIdxs += 6u;
 
     // m_vertices.reserveMore(4u);
-    auto* vertices = static_cast<Vertex*>(rt.getVerticesPtr(sizeof(Vertex) * (m_nVerts + 4u))) + m_nVerts;
+    auto* vertices = reserveMoreVerticesAndGetPtr(rt, 4u);
     sprite.getPreTransformedVertices(vertices);
     m_nVerts += 4;
     // m_vertices.unsafeEmplaceRangeFromFunc([&](Vertex* target) { sprite.getPreTransformedVertices(target); }, 4u);
@@ -80,9 +95,8 @@ void DrawableBatch::add(RenderTarget& rt, const Shape& shape)
 ////////////////////////////////////////////////////////////
 void DrawableBatch::addSubsequentIndices(RenderTarget& rt, base::SizeT count)
 {
-#if 0
     // m_indices.reserveMore(count);
-    auto* indices = static_cast<IndexType*>(rt.getIndicesPtr(m_nIdxs + count)) + count;
+    auto* indices = reserveMoreIndicesAndGetPtr(rt, count);
 
     const auto nextIndex = static_cast<IndexType>(m_nVerts);
 
@@ -90,7 +104,6 @@ void DrawableBatch::addSubsequentIndices(RenderTarget& rt, base::SizeT count)
         *indices++ = static_cast<IndexType>(nextIndex + i);
 
     m_nIdxs += count;
-#endif
 }
 
 
