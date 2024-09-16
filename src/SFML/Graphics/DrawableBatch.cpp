@@ -6,7 +6,6 @@
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Shape.hpp"
 #include "SFML/Graphics/Sprite.hpp"
-#include "SFML/Graphics/Vertex.hpp"
 
 
 namespace sf
@@ -14,20 +13,28 @@ namespace sf
 ////////////////////////////////////////////////////////////
 void DrawableBatch::add(const Sprite& sprite)
 {
-    const auto nextIndex = static_cast<IndexType>(m_vertices.size());
+    // Indices
+    {
+        const auto  nextIndex = static_cast<IndexType>(m_vertices.size());
+        IndexType*& indexPtr  = m_indices.reserveMore(6u);
 
-    m_indices.pushBackMultiple(
         // Triangle strip: triangle #0
-        static_cast<IndexType>(nextIndex + 0u),
-        static_cast<IndexType>(nextIndex + 1u),
-        static_cast<IndexType>(nextIndex + 2u),
+        *indexPtr++ = nextIndex + 0u;
+        *indexPtr++ = nextIndex + 1u;
+        *indexPtr++ = nextIndex + 2u;
 
         // Triangle strip: triangle #1
-        static_cast<IndexType>(nextIndex + 1u),
-        static_cast<IndexType>(nextIndex + 2u),
-        static_cast<IndexType>(nextIndex + 3u));
+        *indexPtr++ = nextIndex + 1u;
+        *indexPtr++ = nextIndex + 2u;
+        *indexPtr++ = nextIndex + 3u;
+    }
 
-    m_vertices.emplaceRangeFromFunc([&](Vertex* target) { sprite.getPreTransformedVertices(target); }, 4u);
+    // Vertices
+    {
+        Vertex*& vertexPtr = m_vertices.reserveMore(4u);
+        sprite.updateVertices(vertexPtr); // does not take a reference
+        vertexPtr += 4u;
+    }
 }
 
 
@@ -37,14 +44,15 @@ void DrawableBatch::add(const Shape& shape)
     // Triangle fan
     if (const auto [fillData, fillSize] = shape.getFillVertices(); fillSize > 2u)
     {
-        const auto nextFillIndex = static_cast<IndexType>(m_vertices.size());
-
-        m_indices.reserveMore(fillSize * 3u);
+        const auto  nextFillIndex = static_cast<IndexType>(m_vertices.size());
+        IndexType*& indexPtr      = m_indices.reserveMore(fillSize * 3u);
 
         for (IndexType i = 1u; i < fillSize - 1; ++i)
-            m_indices.unsafePushBackMultiple(static_cast<IndexType>(nextFillIndex),
-                                             static_cast<IndexType>(nextFillIndex + i),
-                                             static_cast<IndexType>(nextFillIndex + i + 1u));
+        {
+            *indexPtr++ = nextFillIndex;
+            *indexPtr++ = nextFillIndex + i;
+            *indexPtr++ = nextFillIndex + i + 1u;
+        }
 
         appendPreTransformedVertices(fillData, fillSize, shape.getTransform());
     }
@@ -52,14 +60,15 @@ void DrawableBatch::add(const Shape& shape)
     // Triangle strip
     if (const auto [outlineData, outlineSize] = shape.getOutlineVertices(); outlineSize > 2u)
     {
-        const auto nextOutlineIndex = static_cast<IndexType>(m_vertices.size());
-
-        m_indices.reserveMore(outlineSize * 3u);
+        const auto  nextOutlineIndex = static_cast<IndexType>(m_vertices.size());
+        IndexType*& indexPtr         = m_indices.reserveMore(outlineSize * 3u);
 
         for (IndexType i = 0u; i < outlineSize - 2; ++i)
-            m_indices.unsafePushBackMultiple(static_cast<IndexType>(nextOutlineIndex + i),
-                                             static_cast<IndexType>(nextOutlineIndex + i + 1u),
-                                             static_cast<IndexType>(nextOutlineIndex + i + 2u));
+        {
+            *indexPtr++ = nextOutlineIndex + i + 0u;
+            *indexPtr++ = nextOutlineIndex + i + 1u;
+            *indexPtr++ = nextOutlineIndex + i + 2u;
+        }
 
         appendPreTransformedVertices(outlineData, outlineSize, shape.getTransform());
     }
@@ -69,12 +78,12 @@ void DrawableBatch::add(const Shape& shape)
 ////////////////////////////////////////////////////////////
 void DrawableBatch::addSubsequentIndices(base::SizeT count)
 {
-    m_indices.reserveMore(count);
+    auto*& indexPtr = m_indices.reserveMore(count);
 
     const auto nextIndex = static_cast<IndexType>(m_vertices.size());
 
     for (IndexType i = 0u; i < static_cast<IndexType>(count); ++i)
-        m_indices.unsafeEmplaceBack(static_cast<IndexType>(nextIndex + i));
+        *indexPtr++ = static_cast<IndexType>(nextIndex + i);
 }
 
 

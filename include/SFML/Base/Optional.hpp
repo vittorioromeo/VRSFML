@@ -452,7 +452,7 @@ private:
 
 ////////////////////////////////////////////////////////////
 template <typename Object>
-[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr auto makeOptional(Object&& object)
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr auto makeOptional(Object&& object)
 {
     return Optional<SFML_BASE_REMOVE_CVREF(Object)>{SFML_BASE_FORWARD(object)};
 }
@@ -460,7 +460,7 @@ template <typename Object>
 
 ////////////////////////////////////////////////////////////
 template <typename T, typename... Args>
-[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Optional<T> makeOptional(Args&&... args)
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Optional<T> makeOptional(Args&&... args)
 {
     return Optional<T>{inPlace, SFML_BASE_FORWARD(args)...};
 }
@@ -468,7 +468,7 @@ template <typename T, typename... Args>
 
 ////////////////////////////////////////////////////////////
 template <typename F>
-[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr auto makeOptionalFromFunc(F&& f)
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr auto makeOptionalFromFunc(F&& f)
 {
     return Optional<decltype(SFML_BASE_FORWARD(f)())>{fromFunc, SFML_BASE_FORWARD(f)};
 }

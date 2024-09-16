@@ -4,11 +4,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/System/Vector2.hpp"
-
 #include "SFML/Base/UniquePtr.hpp"
-
-#include <cstdint>
 
 
 ////////////////////////////////////////////////////////////
@@ -86,7 +82,7 @@ public:
     /// \return The active context's ID or 0 if no context is currently active
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::uint64_t getActiveThreadLocalGlContextId() const;
+    [[nodiscard]] unsigned int getActiveThreadLocalGlContextId() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -181,7 +177,7 @@ protected:
     /// \param object Object to be destroyed when its containing context is destroyed
     ///
     ////////////////////////////////////////////////////////////
-    void registerUnsharedFrameBuffer(std::uint64_t glContextId, unsigned int frameBufferId, UnsharedDeleteFn deleteFn);
+    void registerUnsharedFrameBuffer(unsigned int glContextId, unsigned int frameBufferId, UnsharedDeleteFn deleteFn);
 
     ////////////////////////////////////////////////////////////
     /// \brief Unregister an OpenGL object from its containing context
@@ -189,7 +185,7 @@ protected:
     /// \param object Object to be unregister
     ///
     ////////////////////////////////////////////////////////////
-    void unregisterUnsharedFrameBuffer(std::uint64_t glContextId, unsigned int frameBufferId);
+    void unregisterUnsharedFrameBuffer(unsigned int glContextId, unsigned int frameBufferId);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs

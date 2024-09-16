@@ -7,5 +7,5 @@
 #elif __has_include(<__fwd/locale.h>)
 #include <__fwd/locale.h>
 #else
-#include <string>
+#include <locale>
 #endif

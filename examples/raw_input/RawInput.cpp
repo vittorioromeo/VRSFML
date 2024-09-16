@@ -9,7 +9,6 @@
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Path.hpp"
 #include "SFML/System/String.hpp"

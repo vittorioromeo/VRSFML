@@ -7,6 +7,7 @@
 #include "SFML/Window/Export.hpp"
 
 #include "SFML/Window/WindowHandle.hpp"
+#include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/String.hpp"
 #include "SFML/System/Time.hpp"
@@ -25,8 +26,6 @@ namespace sf
 {
 class Cursor;
 class Event;
-class String;
-struct WindowSettings;
 } // namespace sf
 
 namespace sf::priv
@@ -308,7 +307,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void setTitle(const String& title);
-    void setTitle(const char* title);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the window's icon

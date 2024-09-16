@@ -35,6 +35,10 @@ struct RectPacker::Impl
     {
         stbrp_init_target(&context, static_cast<int>(size.x), static_cast<int>(size.y), nodes, MaxNodes);
     }
+
+    // Needs address stability
+    Impl(const Impl&) = delete;
+    Impl(Impl&&)      = delete;
 };
 
 

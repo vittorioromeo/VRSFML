@@ -4,20 +4,16 @@
 #include "SFML/Window/Joystick.hpp"
 
 #include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/CoordinateType.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Text.hpp"
-#include "SFML/Graphics/Vertex.hpp"
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
 #include "SFML/Window/Keyboard.hpp"
-#include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Path.hpp"
@@ -27,7 +23,6 @@
 #include <sstream>
 #include <string>
 #include <unordered_map>
-#include <vector>
 
 #include <cstdlib>
 

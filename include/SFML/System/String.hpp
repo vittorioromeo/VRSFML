@@ -6,10 +6,41 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Export.hpp"
 
-#include "SFML/Base/FwdStdLocale.hpp" // used
-#include "SFML/Base/FwdStdString.hpp" // used
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Traits/IsSame.hpp"
+
+
+namespace sf::priv
+{
+////////////////////////////////////////////////////////////
+template <typename T>
+concept LocaleLike = requires
+{
+    typename T::category;
+};
+
+////////////////////////////////////////////////////////////
+template <typename T>
+concept AnsiStringLike = sf::base::isSame<typename T::value_type, char>;
+
+////////////////////////////////////////////////////////////
+template <typename T>
+concept WStringLike = sf::base::isSame<typename T::value_type, wchar_t>;
+
+////////////////////////////////////////////////////////////
+template <typename T>
+concept U8StringLike = sf::base::isSame<typename T::value_type, char8_t>;
+
+////////////////////////////////////////////////////////////
+template <typename T>
+concept U16StringLike = sf::base::isSame<typename T::value_type, char16_t>;
+
+////////////////////////////////////////////////////////////
+template <typename T>
+concept U32StringLike = sf::base::isSame<typename T::value_type, char32_t>;
+
+} // namespace sf::priv
 
 
 namespace sf
@@ -84,8 +115,8 @@ public:
     /// Disallow construction from `nullptr` literal
     ///
     ////////////////////////////////////////////////////////////
-    String(decltype(nullptr))                     = delete;
-    String(decltype(nullptr), const std::locale&) = delete;
+    String(decltype(nullptr))                               = delete;
+    String(decltype(nullptr), const priv::LocaleLike auto&) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from a single ANSI character and a locale
@@ -98,7 +129,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] String(char ansiChar);
-    [[nodiscard]] String(char ansiChar, const std::locale& locale);
+    [[nodiscard]] String(char ansiChar, const priv::LocaleLike auto& locale);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from single wide character
@@ -127,7 +158,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] String(const char* ansiString);
-    [[nodiscard]] String(const char* ansiString, const std::locale& locale);
+    [[nodiscard]] String(const char* ansiString, const priv::LocaleLike auto& locale);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from an ANSI string and a locale
@@ -139,8 +170,8 @@ public:
     /// \param locale     Locale to use for conversion
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] String(const std::string& ansiString);
-    [[nodiscard]] String(const std::string& ansiString, const std::locale& locale);
+    [[nodiscard]] String(const priv::AnsiStringLike auto& ansiString);
+    [[nodiscard]] String(const priv::AnsiStringLike auto& ansiString, const priv::LocaleLike auto& locale);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from null-terminated C-style wide string
@@ -156,7 +187,7 @@ public:
     /// \param wideString Wide string to convert
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] String(const std::wstring& wideString);
+    [[nodiscard]] String(const priv::WStringLike auto& wideString);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from a null-terminated C-style UTF-32 string
@@ -172,39 +203,7 @@ public:
     /// \param utf32String UTF-32 string to assign
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] String(std::u32string utf32String);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Implicit conversion operator to `std::string` (ANSI string)
-    ///
-    /// The current global locale is used for conversion. If you
-    /// want to explicitly specify a locale, see toAnsiString.
-    /// Characters that do not fit in the target encoding are
-    /// discarded from the returned string.
-    /// This operator is defined for convenience, and is equivalent
-    /// to calling `toAnsiString()`.
-    ///
-    /// \return Converted ANSI string
-    ///
-    /// \see `toAnsiString`, `operator std::wstring`
-    ///
-    ////////////////////////////////////////////////////////////
-    operator std::string() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Implicit conversion operator to `std::wstring` (wide string)
-    ///
-    /// Characters that do not fit in the target encoding are
-    /// discarded from the returned string.
-    /// This operator is defined for convenience, and is equivalent
-    /// to calling `toWideString()`.
-    ///
-    /// \return Converted wide string
-    ///
-    /// \see `toWideString`, `operator std::string`
-    ///
-    ////////////////////////////////////////////////////////////
-    operator std::wstring() const;
+    [[nodiscard]] String(const priv::U32StringLike auto& utf32String);
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert the Unicode string to an ANSI string
@@ -218,11 +217,14 @@ public:
     ///
     /// \return Converted ANSI string
     ///
-    /// \see `toWideString`, `operator std::string`
+    /// \see `toWideString`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string toAnsiString() const;
-    [[nodiscard]] std::string toAnsiString(const std::locale& locale) const;
+    template <priv::AnsiStringLike TString>
+    [[nodiscard]] TString toAnsiString() const;
+
+    template <priv::AnsiStringLike TString>
+    [[nodiscard]] TString toAnsiString(const priv::LocaleLike auto& locale) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert the Unicode string to a wide string
@@ -232,10 +234,11 @@ public:
     ///
     /// \return Converted wide string
     ///
-    /// \see `toAnsiString`, `operator std::wstring`
+    /// \see `toAnsiString`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::wstring toWideString() const;
+    template <priv::WStringLike TString>
+    [[nodiscard]] TString toWideString() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert the Unicode string to a UTF-8 string
@@ -245,7 +248,8 @@ public:
     /// \see `toUtf16`, `toUtf32`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::u8string toUtf8() const;
+    template <priv::U8StringLike TString>
+    [[nodiscard]] TString toUtf8() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert the Unicode string to a UTF-16 string
@@ -255,7 +259,8 @@ public:
     /// \see `toUtf8`, `toUtf32`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::u16string toUtf16() const;
+    template <priv::U16StringLike TString>
+    [[nodiscard]] TString toUtf16() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert the Unicode string to a UTF-32 string
@@ -268,7 +273,8 @@ public:
     /// \see `toUtf8`, `toUtf16`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::u32string toUtf32() const;
+    template <priv::U32StringLike TString>
+    [[nodiscard]] TString toUtf32() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Overload of `operator+=` to append an UTF-32 string
@@ -486,7 +492,7 @@ private:
     /// \brief Retrieve the string stored in the PImpl
     ///
     ////////////////////////////////////////////////////////////
-    std::u32string& getImplString();
+    void* getImplString();
 
     ////////////////////////////////////////////////////////////
     // Member data
@@ -591,16 +597,15 @@ private:
 /// UTF-32), thus it can store any character in the world
 /// (European, Chinese, Arabic, Hebrew, etc.).
 ///
-/// It automatically handles conversions from/to ANSI and
-/// wide strings, so that you can work with standard string
-/// classes and still be compatible with functions taking a
-/// `sf::String`.
+/// It can handle conversions from/to ANSI and wide strings,
+/// so that you can work with standard string classes and still
+/// be compatible with functions taking a `sf::String`.
 ///
 /// \code
 /// sf::String s;
 ///
-/// std::string s1 = s;  // automatically converted to ANSI string
-/// std::wstring s2 = s; // automatically converted to wide string
+/// std::string s1 = s.toAnsiString<std::string>();  // converted to ANSI string
+/// std::wstring s2 = s.toWideString<std::wstring>(); // converted to wide string
 /// s = "hello";         // automatically converted from ANSI string
 /// s = L"hello";        // automatically converted from wide string
 /// s += 'a';            // automatically converted from ANSI string

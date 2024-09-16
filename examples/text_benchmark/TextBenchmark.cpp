@@ -19,7 +19,6 @@
 #include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
@@ -54,7 +53,7 @@ int main()
 {
     sf::GraphicsContext graphicsContext;
 
-    sf::RenderWindow window(graphicsContext, {.size{800u, 600u}, .title = "Window"});
+    sf::RenderWindow window(graphicsContext, {.size{800u, 600u}, .title = L"महसुस"});
 
     auto textureAtlas = sf::TextureAtlas{sf::Texture::create(graphicsContext, {1024u, 1024u}).value()};
 
@@ -134,6 +133,7 @@ int main()
             drawableBatch.add(text4);
             drawableBatch.add(text5);
 
+            circle0.setScale({2.f, 2.f});
             drawableBatch.add(circle0);
 
             window.draw(drawableBatch, {.texture = &textureAtlas.getTexture()});

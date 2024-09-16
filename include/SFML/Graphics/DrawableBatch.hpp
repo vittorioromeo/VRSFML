@@ -89,10 +89,10 @@ private:
                                                                            base::SizeT      count,
                                                                            const Transform& transform)
     {
-        m_vertices.reserveMore(count);
+        Vertex*& vertexPtr = m_vertices.reserveMore(count);
 
         for (const auto* const target = data + count; data != target; ++data)
-            m_vertices.unsafeEmplaceBack(transform.transformPoint(data->position), data->color, data->texCoords);
+            *vertexPtr++ = {transform.transformPoint(data->position), data->color, data->texCoords};
     }
 
     ////////////////////////////////////////////////////////////

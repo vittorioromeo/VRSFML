@@ -75,7 +75,7 @@ void ClipboardImpl::setString(const String& text)
 
     if (stringHandle)
     {
-        SFML_BASE_MEMCPY(GlobalLock(stringHandle), text.toWideString().data(), stringSize);
+        SFML_BASE_MEMCPY(GlobalLock(stringHandle), text.toWideString<std::wstring>().data(), stringSize);
         GlobalUnlock(stringHandle);
         SetClipboardData(CF_UNICODETEXT, stringHandle);
     }

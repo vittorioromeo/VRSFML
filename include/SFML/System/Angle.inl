@@ -6,7 +6,6 @@
 #include "SFML/System/Angle.hpp" // NOLINT(misc-header-include-cycle)
 
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Math/Fmod.hpp"
 
 
 namespace sf::priv
@@ -21,7 +20,8 @@ inline constexpr float tau = pi * 2.f;
 {
     SFML_BASE_ASSERT(b > 0.f && "Cannot calculate remainder with non-positive divisor");
 
-    const float val = a - static_cast<float>(static_cast<int>(a / b)) * b;
+    // fmod seems to be slower
+    const auto val = a - static_cast<float>(static_cast<int>(a / b)) * b;
     return val >= 0.f ? val : val + b;
 }
 

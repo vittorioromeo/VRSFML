@@ -68,22 +68,6 @@ constexpr Vector2f Transform::transformPoint(Vector2f point) const
 
 
 ////////////////////////////////////////////////////////////
-constexpr void Transform::transformSpritePoints(Vector2f& p0, Vector2f& p1, Vector2f& p2, Vector2f& p3, Vector2f absSize) const
-{
-    p0.x = m_a02;
-    p0.y = m_a12;
-
-    p1.x = m_a01 * absSize.y + m_a02;
-    p1.y = m_a11 * absSize.y + m_a12;
-
-    p2.x = m_a00 * absSize.x + m_a02;
-    p2.y = m_a10 * absSize.x + m_a12;
-
-    p3 = transformPoint(absSize);
-}
-
-
-////////////////////////////////////////////////////////////
 constexpr FloatRect Transform::transformRect(const FloatRect& rectangle) const
 {
     // Transform the 4 corners of the rectangle

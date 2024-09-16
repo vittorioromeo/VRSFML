@@ -11,6 +11,7 @@
 
 #include "SFML/System/LifetimeDependant.hpp"
 #include "SFML/System/Rect.hpp"
+#include "SFML/System/String.hpp"
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/EnumClassBitwiseOps.hpp"
@@ -24,7 +25,6 @@ namespace sf
 struct Color;
 class Font;
 class RenderTarget;
-class String;
 struct RenderStates;
 
 ////////////////////////////////////////////////////////////

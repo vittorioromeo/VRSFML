@@ -17,7 +17,7 @@ class Angle;
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-class Vector2
+class [[nodiscard]] Vector2
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -34,7 +34,7 @@ public:
     /// * `Vector2(r, phi) == Vector2(r, phi + n * 360_deg)`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] static inline constexpr Vector2 fromAngle(T r, Angle phi);
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] static inline constexpr Vector2 fromAngle(T r, Angle phi);
 
     ////////////////////////////////////////////////////////////
     /// \brief Length of the vector <i><b>(floating-point)</b></i>.
@@ -42,7 +42,7 @@ public:
     /// If you are not interested in the actual length, but only in comparisons, consider using `lengthSquared()`.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr T length() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr T length() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Square of vector's length.
@@ -50,7 +50,7 @@ public:
     /// Suitable for comparisons, more efficient than `length()`.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr T lengthSquared() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr T lengthSquared() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Vector with same direction but length 1 <i><b>(floating-point)</b></i>.
@@ -58,7 +58,7 @@ public:
     /// \pre `*this` is no zero vector.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Vector2 normalized() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 normalized() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Signed angle from `*this` to \a `rhs` <i><b>(floating-point)</b></i>.
@@ -69,7 +69,7 @@ public:
     /// \pre Neither `*this` nor \a `rhs` is a zero vector.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle angleTo(Vector2 rhs) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle angleTo(Vector2 rhs) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Signed angle from +X or (1,0) vector <i><b>(floating-point)</b></i>.
@@ -80,7 +80,7 @@ public:
     /// \pre This vector is no zero vector.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle angle() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle angle() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Rotate by angle \c phi <i><b>(floating-point)</b></i>.
@@ -91,7 +91,7 @@ public:
     /// this amounts to a clockwise rotation by \a `phi`.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Vector2 rotatedBy(Angle phi) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 rotatedBy(Angle phi) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move towards angle \c phi <i><b>(floating-point)</b></i> by \c r.
@@ -103,7 +103,7 @@ public:
     /// this amounts to a clockwise rotation by \c phi.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Vector2 movedTowards(T r, Angle phi) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 movedTowards(T r, Angle phi) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Projection of this vector onto \a `axis` <i><b>(floating-point)</b></i>.
@@ -112,7 +112,7 @@ public:
     /// \pre \a `axis` must not have length zero.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Vector2 projectedOnto(Vector2 axis) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 projectedOnto(Vector2 axis) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Returns a perpendicular vector.
@@ -124,13 +124,13 @@ public:
     /// this amounts to a clockwise rotation.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Vector2 perpendicular() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 perpendicular() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Dot product of two 2D vectors.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr T dot(Vector2 rhs) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr T dot(Vector2 rhs) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Z component of the cross product of two 2D vectors.
@@ -139,7 +139,7 @@ public:
     /// and returns the result's Z component (X and Y components are always zero).
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr T cross(Vector2 rhs) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr T cross(Vector2 rhs) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Component-wise multiplication of `*this` and \a `rhs`.
@@ -150,7 +150,7 @@ public:
     /// This operation is also known as the Hadamard or Schur product.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Vector2 componentWiseMul(Vector2 rhs) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 componentWiseMul(Vector2 rhs) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Component-wise division of `*this` and \a `rhs`.
@@ -162,7 +162,7 @@ public:
     /// \pre Neither component of \a `rhs` is zero.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Vector2 componentWiseDiv(Vector2 rhs) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 componentWiseDiv(Vector2 rhs) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert to another `Vector2` of type `OtherVector2`
@@ -171,30 +171,21 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename OtherVector2>
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr OtherVector2 to() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr OtherVector2 to() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief More convenient conversion functions
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Vector2<int>          toVector2i() const;
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Vector2<float>        toVector2f() const;
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Vector2<unsigned int> toVector2u() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2<int>   toVector2i() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2<float> toVector2f() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2<unsigned int> toVector2u() const;
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     T x{}; //!< X coordinate of the vector
     T y{}; //!< Y coordinate of the vector
-
-    ////////////////////////////////////////////////////////////
-    // Static member data
-    ////////////////////////////////////////////////////////////
-    // NOLINTBEGIN(readability-identifier-naming)
-    SFML_API_EXPORT static const Vector2 UnitX; //!< The X unit vector (1, 0), usually facing right
-    SFML_API_EXPORT static const Vector2 UnitY; //!< The Y unit vector (0, 1), usually facing down
-    SFML_API_EXPORT static const Vector2 Zero;  //!< The zero vector (0, 0)
-    // NOLINTEND(readability-identifier-naming)
 };
 
 // Define the most common types
@@ -212,7 +203,7 @@ using Vector2f = Vector2<float>;
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::const]] constexpr Vector2<T> operator-(Vector2<T> right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr Vector2<T> operator-(Vector2<T> right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -228,7 +219,7 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline]] constexpr Vector2<T>& operator+=(Vector2<T>& left, Vector2<T> right);
+[[gnu::always_inline, gnu::flatten]] constexpr Vector2<T>& operator+=(Vector2<T>& left, Vector2<T> right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -244,7 +235,7 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline]] constexpr Vector2<T>& operator-=(Vector2<T>& left, Vector2<T> right);
+[[gnu::always_inline, gnu::flatten]] constexpr Vector2<T>& operator-=(Vector2<T>& left, Vector2<T> right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -257,7 +248,7 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::const]] constexpr Vector2<T> operator+(Vector2<T> left, Vector2<T> right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr Vector2<T> operator+(Vector2<T> left, Vector2<T> right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -270,7 +261,7 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::const]] constexpr Vector2<T> operator-(Vector2<T> left, Vector2<T> right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr Vector2<T> operator-(Vector2<T> left, Vector2<T> right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -283,7 +274,7 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::const]] constexpr Vector2<T> operator*(Vector2<T> left, T right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr Vector2<T> operator*(Vector2<T> left, T right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -296,7 +287,7 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::const]] constexpr Vector2<T> operator*(T left, Vector2<T> right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr Vector2<T> operator*(T left, Vector2<T> right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -312,7 +303,7 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline]] constexpr Vector2<T>& operator*=(Vector2<T>& left, T right);
+[[gnu::always_inline, gnu::flatten]] constexpr Vector2<T>& operator*=(Vector2<T>& left, T right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -325,7 +316,7 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::const]] constexpr Vector2<T> operator/(Vector2<T> left, T right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr Vector2<T> operator/(Vector2<T> left, T right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -341,7 +332,7 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline]] constexpr Vector2<T>& operator/=(Vector2<T>& left, T right);
+[[gnu::always_inline, gnu::flatten]] constexpr Vector2<T>& operator/=(Vector2<T>& left, T right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -356,7 +347,7 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::const]] constexpr bool operator==(Vector2<T> left, Vector2<T> right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr bool operator==(Vector2<T> left, Vector2<T> right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -371,7 +362,7 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::const]] constexpr bool operator!=(Vector2<T> left, Vector2<T> right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr bool operator!=(Vector2<T> left, Vector2<T> right);
 
 } // namespace sf
 

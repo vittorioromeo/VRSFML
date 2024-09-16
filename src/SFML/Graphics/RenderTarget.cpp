@@ -559,7 +559,7 @@ Vector2i RenderTarget::mapCoordsToPixel(Vector2f point, const View& view) const
     // Then convert to viewport coordinates
     const auto viewport = getViewport(view).to<FloatRect>();
     return ((normalized.componentWiseMul({1.f, -1.f}) + sf::Vector2f{1.f, 1.f})
-                .componentWiseDiv({2.f, 2.f})
+                .componentWiseMul({0.5f, 0.5f})
                 .componentWiseMul(viewport.size) +
             viewport.position)
         .toVector2i();
@@ -573,7 +573,7 @@ void RenderTarget::draw(const Sprite& sprite, const Texture& texture, RenderStat
     states.coordinateType = CoordinateType::Pixels;
 
     Vertex buffer[4];
-    sprite.getPreTransformedVertices(buffer);
+    sprite.updateVertices(buffer);
 
     draw(buffer, PrimitiveType::TriangleStrip, states);
 }

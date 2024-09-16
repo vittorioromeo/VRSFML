@@ -6,8 +6,6 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/ContextSettings.hpp"
 
-#include <cstdint>
-
 
 ////////////////////////////////////////////////////////////
 // Forward declarations
@@ -91,7 +89,7 @@ protected:
     /// This constructor is meant for derived classes only.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit GlContext(WindowContext& windowContext, std::uint64_t id, const ContextSettings& contextSettings);
+    [[nodiscard]] explicit GlContext(WindowContext& windowContext, unsigned int id, const ContextSettings& contextSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Activate the context as the current target
@@ -137,7 +135,7 @@ protected:
     /// \brief Get the OpenGL context ID for this context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::uint64_t getId() const;
+    [[nodiscard]] unsigned int getId() const;
 
     ////////////////////////////////////////////////////////////
     // Member data
@@ -158,7 +156,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    const std::uint64_t m_id;
+    const unsigned int m_id;
 };
 
 } // namespace sf::priv

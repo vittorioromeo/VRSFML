@@ -38,14 +38,14 @@ const ContextSettings& GlContext::getSettings() const
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] std::uint64_t GlContext::getId() const
+[[nodiscard]] unsigned int GlContext::getId() const
 {
     return m_id;
 }
 
 
 ////////////////////////////////////////////////////////////
-GlContext::GlContext(WindowContext& windowContext, std::uint64_t id, const ContextSettings& contextSettings) :
+GlContext::GlContext(WindowContext& windowContext, unsigned int id, const ContextSettings& contextSettings) :
 m_settings(contextSettings),
 m_windowContext(windowContext),
 m_id{id}

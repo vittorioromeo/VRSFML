@@ -16,7 +16,7 @@ namespace
 {
 ////////////////////////////////////////////////////////////
 // Compute the normal of a segment
-[[nodiscard]] sf::Vector2f computeNormal(sf::Vector2f p1, sf::Vector2f p2)
+[[nodiscard, gnu::always_inline, gnu::const]] sf::Vector2f computeNormal(sf::Vector2f p1, sf::Vector2f p2)
 {
     sf::Vector2f normal = (p2 - p1).perpendicular();
     const float  length = normal.length();
@@ -254,14 +254,9 @@ void Shape::updateTexCoords()
 ////////////////////////////////////////////////////////////
 void Shape::updateOutlineTexCoords()
 {
-    // Make sure not to divide by zero when the points are aligned on a vertical or horizontal line
-    const Vector2f safeInsideSize(m_bounds.size.x > 0 ? m_bounds.size.x : 1.f, m_bounds.size.y > 0 ? m_bounds.size.y : 1.f);
-
+    // TODO P0:
     for (Vertex& vertex : m_outlineVertices)
-    {
-        const Vector2f ratio = (vertex.position - m_bounds.position).componentWiseDiv(safeInsideSize);
-        vertex.texCoords     = m_textureRect.position + m_textureRect.size.componentWiseMul(ratio);
-    }
+        vertex.texCoords = m_outlineTextureRect.position;
 }
 
 

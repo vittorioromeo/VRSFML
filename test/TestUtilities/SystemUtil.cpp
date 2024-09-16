@@ -5,8 +5,6 @@
 #include "SFML/System/Vector2.hpp"
 #include "SFML/System/Vector3.hpp"
 
-#include "SFML/Base/Assert.hpp"
-
 #include <Doctest.hpp>
 
 #include <GraphicsUtil.hpp>
@@ -15,6 +13,7 @@
 #include <iomanip>
 #include <limits>
 #include <ostream>
+#include <string>
 
 
 namespace sf
@@ -32,7 +31,7 @@ std::ostream& operator<<(std::ostream& os, const Angle& angle)
 
 std::ostream& operator<<(std::ostream& os, const String& string)
 {
-    return os << string.toAnsiString();
+    return os << string.toAnsiString<std::string>();
 }
 
 std::ostream& operator<<(std::ostream& os, Time time)

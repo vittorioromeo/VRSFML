@@ -12,6 +12,8 @@
 
 #include "SFML/System/Rect.hpp"
 
+#include "SFML/Base/Math/Fabs.hpp"
+
 
 namespace sf
 {
@@ -116,10 +118,46 @@ private:
     friend RenderTarget;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Update the vertices' positions and texture coordinates
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void getPreTransformedVertices(Vertex* target) const;
+    [[gnu::always_inline, gnu::flatten]] void updateVertices(Vertex* target) const
+    {
+        const auto& [position, size] = m_textureRect;
+        const Vector2f absSize(base::fabs(size.x), base::fabs(size.y));
+
+        // Position
+        {
+            const auto transform = getTransform();
+
+            target[0].position.x = transform.m_a02;
+            target[0].position.y = transform.m_a12;
+
+            target[1].position.x = transform.m_a01 * absSize.y + transform.m_a02;
+            target[1].position.y = transform.m_a11 * absSize.y + transform.m_a12;
+
+            target[2].position.x = transform.m_a00 * absSize.x + transform.m_a02;
+            target[2].position.y = transform.m_a10 * absSize.x + transform.m_a12;
+
+            target[3].position = transform.transformPoint(absSize);
+        }
+
+        // Color
+        {
+            target[0].color = m_color;
+            target[1].color = m_color;
+            target[2].color = m_color;
+            target[3].color = m_color;
+        }
+
+        // Texture Coordinates
+        {
+            target[0].texCoords = position;
+            target[1].texCoords = position + Vector2f{0.f, size.y};
+            target[2].texCoords = position + Vector2f{size.x, 0.f};
+            target[3].texCoords = position + size;
+        }
+    }
 
     ////////////////////////////////////////////////////////////
     // Member data

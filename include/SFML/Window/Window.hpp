@@ -28,7 +28,7 @@ public:
     /// Creates the render window with the specified \a windowSettings.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Window(WindowContext& windowContext, const WindowSettings& windowSettings);
+    [[nodiscard]] explicit Window(WindowContext& windowContext, const WindowSettings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control

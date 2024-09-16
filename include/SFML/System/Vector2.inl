@@ -305,18 +305,4 @@ constexpr Vector2<unsigned int> Vector2<T>::toVector2u() const
     return {static_cast<unsigned int>(x), static_cast<unsigned int>(y)};
 }
 
-
-////////////////////////////////////////////////////////////
-// Static member data
-////////////////////////////////////////////////////////////
-
-template <typename T>
-inline constexpr Vector2<T> Vector2<T>::UnitX(static_cast<T>(1), static_cast<T>(0));
-
-template <typename T>
-inline constexpr Vector2<T> Vector2<T>::UnitY(static_cast<T>(0), static_cast<T>(1));
-
-template <typename T>
-inline constexpr Vector2<T> Vector2<T>::Zero(static_cast<T>(0), static_cast<T>(0));
-
 } // namespace sf
