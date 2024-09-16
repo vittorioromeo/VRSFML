@@ -9,7 +9,12 @@
 
 #include "SFML/Base/Memcpy.hpp"
 
+#include <arpa/inet.h>
 #include <fcntl.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <unistd.h>
 
 #include <cerrno>
 #include <cstdint>
@@ -64,9 +69,9 @@ AddrLength SockAddrIn::size() const
 SockAddrIn SocketImpl::createAddress(std::uint32_t address, unsigned short port)
 {
     auto addr            = sockaddr_in();
-    addr.sin_addr.s_addr = priv::SocketImpl::htonl(address);
+    addr.sin_addr.s_addr = priv::SocketImpl::getHtonl(address);
     addr.sin_family      = AF_INET;
-    addr.sin_port        = priv::SocketImpl::htons(port);
+    addr.sin_port        = priv::SocketImpl::getHtons(port);
 
 #if defined(SFML_SYSTEM_MACOS)
     addr.sin_len = sizeof(addr);
@@ -133,35 +138,35 @@ bool SocketImpl::connect(SocketHandle handle, SockAddrIn& address)
 
 
 ////////////////////////////////////////////////////////////
-NetworkLong SocketImpl::ntohl(NetworkLong netlong)
+NetworkLong SocketImpl::getNtohl(NetworkLong netlong)
 {
     return ::ntohl(netlong);
 }
 
 
 ////////////////////////////////////////////////////////////
-NetworkShort SocketImpl::ntohs(NetworkShort netshort)
+NetworkShort SocketImpl::getNtohs(NetworkShort netshort)
 {
     return ::ntohs(netshort);
 }
 
 
 ////////////////////////////////////////////////////////////
-NetworkLong SocketImpl::ntohl(SockAddrIn addr)
+NetworkLong SocketImpl::getNtohl(SockAddrIn addr)
 {
     return ::ntohl(addr.m_impl->sin_addr.s_addr);
 }
 
 
 ////////////////////////////////////////////////////////////
-NetworkShort SocketImpl::htons(NetworkShort hostshort)
+NetworkShort SocketImpl::getHtons(NetworkShort hostshort)
 {
     return ::htons(hostshort);
 }
 
 
 ////////////////////////////////////////////////////////////
-NetworkLong SocketImpl::htonl(NetworkLong hostlong)
+NetworkLong SocketImpl::getHtonl(NetworkLong hostlong)
 {
     return ::htonl(hostlong);
 }

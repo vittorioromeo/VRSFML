@@ -65,7 +65,7 @@ if(SFML_ENABLE_STACK_TRACES)
         CPMAddPackage(
             NAME cpptrace
             GITHUB_REPOSITORY vittorioromeo/cpptrace
-            GIT_TAG e76cc5a34e3ad22ff748b590f6085e56aa47f9e7
+            GIT_TAG 26c981f7fa89f20ee351df8faba26dc1a4598783
             SYSTEM TRUE
         )
 
@@ -180,7 +180,7 @@ if(SFML_BUILD_IMGUI AND NOT SFML_BUILD_GRAPHICS)
 endif()
 
 # use bundled dependencies by default on these systems and system dependencies by default on all others (maintains old behavior)
-if(SFML_OS_WINDOWS OR SFML_OS_MACOS OR SFML_OS_IOS OR SFML_OS_ANDROID OR SFML_OS_EMSCRIPTEN)
+if(SFML_OS_WINDOWS OR SFML_OS_LINUX OR SFML_OS_MACOS OR SFML_OS_IOS OR SFML_OS_ANDROID OR SFML_OS_EMSCRIPTEN)
     set(SFML_USE_SYSTEM_DEPS_DEFAULT FALSE)
 else()
     set(SFML_USE_SYSTEM_DEPS_DEFAULT ON)

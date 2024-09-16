@@ -25,13 +25,13 @@ const IpAddress IpAddress::Broadcast(255, 255, 255, 255);
 
 ////////////////////////////////////////////////////////////
 IpAddress::IpAddress(std::uint8_t byte0, std::uint8_t byte1, std::uint8_t byte2, std::uint8_t byte3) :
-m_address(priv::SocketImpl::htonl(static_cast<std::uint32_t>((byte0 << 24) | (byte1 << 16) | (byte2 << 8) | byte3)))
+m_address(priv::SocketImpl::getHtonl(static_cast<std::uint32_t>((byte0 << 24) | (byte1 << 16) | (byte2 << 8) | byte3)))
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-IpAddress::IpAddress(std::uint32_t address) : m_address(priv::SocketImpl::htonl(address))
+IpAddress::IpAddress(std::uint32_t address) : m_address(priv::SocketImpl::getHtonl(address))
 {
 }
 
@@ -39,7 +39,7 @@ IpAddress::IpAddress(std::uint32_t address) : m_address(priv::SocketImpl::htonl(
 ////////////////////////////////////////////////////////////
 std::uint32_t IpAddress::toInteger() const
 {
-    return priv::SocketImpl::ntohl(m_address);
+    return priv::SocketImpl::getNtohl(m_address);
 }
 
 
@@ -59,7 +59,7 @@ base::Optional<IpAddress> IpAddress::getLocalAddress()
     }
 
     // Connect the socket to localhost on any port
-    priv::SockAddrIn address = priv::SocketImpl::createAddress(priv::SocketImpl::ntohl(priv::SocketImpl::inaddrLoopback()), 9);
+    priv::SockAddrIn address = priv::SocketImpl::createAddress(priv::SocketImpl::getNtohl(priv::SocketImpl::inaddrLoopback()), 9);
     if (!priv::SocketImpl::connect(sock, address))
     {
         priv::SocketImpl::close(sock);
@@ -82,7 +82,7 @@ base::Optional<IpAddress> IpAddress::getLocalAddress()
     priv::SocketImpl::close(sock);
 
     // Finally build the IP address
-    return base::makeOptional<IpAddress>(priv::SocketImpl::ntohl(address.sAddr()));
+    return base::makeOptional<IpAddress>(priv::SocketImpl::getNtohl(address.sAddr()));
 }
 
 

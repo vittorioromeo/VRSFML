@@ -64,7 +64,7 @@ base::Optional<IpAddress> TcpSocket::getRemoteAddress() const
         return base::nullOpt;
     }
 
-    return base::makeOptional<IpAddress>(priv::SocketImpl::ntohl(address));
+    return base::makeOptional<IpAddress>(priv::SocketImpl::getNtohl(address));
 }
 
 
@@ -87,7 +87,7 @@ unsigned short TcpSocket::getRemotePort() const
         return 0;
     }
 
-    return priv::SocketImpl::ntohs(address.sinPort());
+    return priv::SocketImpl::getNtohs(address.sinPort());
 }
 
 
@@ -282,7 +282,7 @@ Socket::Status TcpSocket::send(Packet& packet)
     const void* data = packet.onSend(size);
 
     // First convert the packet size to network byte order
-    std::uint32_t packetSize = priv::SocketImpl::htonl(static_cast<std::uint32_t>(size));
+    std::uint32_t packetSize = priv::SocketImpl::getHtonl(static_cast<std::uint32_t>(size));
 
     // Allocate memory for the data block to send
     m_blockToSendBuffer.resize(sizeof(packetSize) + size);
@@ -348,12 +348,12 @@ Socket::Status TcpSocket::receive(Packet& packet)
         }
 
         // The packet size has been fully received
-        packetSize = priv::SocketImpl::ntohl(m_pendingPacket.size);
+        packetSize = priv::SocketImpl::getNtohl(m_pendingPacket.size);
     }
     else
     {
         // The packet size has already been received in a previous call
-        packetSize = priv::SocketImpl::ntohl(m_pendingPacket.size);
+        packetSize = priv::SocketImpl::getNtohl(m_pendingPacket.size);
     }
 
     // Loop until we receive all the packet data
