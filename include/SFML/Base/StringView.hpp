@@ -45,7 +45,32 @@ public:
 
 
     //////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr StringView& operator=(const StringView&) noexcept = default;
+    template <typename StringLike>
+    [[nodiscard, gnu::always_inline]] constexpr StringView(const StringLike& stringLike) noexcept requires(requires {
+        stringLike.data();
+        stringLike.size();
+    }) :
+    m_data{stringLike.data()},
+    m_size{stringLike.size()}
+    {
+        SFML_BASE_ASSERT(stringLike.data() != nullptr);
+    }
+
+
+    //////////////////////////////////////////
+    [[nodiscard, gnu::always_inline]] constexpr StringView(const StringView&) noexcept = default;
+
+
+    //////////////////////////////////////////
+    [[nodiscard, gnu::always_inline]] constexpr StringView(StringView&&) noexcept = default;
+
+
+    //////////////////////////////////////////
+    [[gnu::always_inline]] constexpr StringView& operator=(const StringView&) noexcept = default;
+
+
+    //////////////////////////////////////////
+    [[gnu::always_inline]] constexpr StringView& operator=(StringView&&) noexcept = default;
 
 
     //////////////////////////////////////////
@@ -65,7 +90,6 @@ public:
     //////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool empty() const noexcept
     {
-        SFML_BASE_ASSERT(m_data == nullptr);
         return m_size == 0u;
     }
 
@@ -87,7 +111,7 @@ public:
         if (lhs.m_size != rhs.m_size)
             return false;
 
-        return SFML_BASE_STRNCMP(lhs.m_data, rhs.m_data, lhs.m_size);
+        return SFML_BASE_STRNCMP(lhs.m_data, rhs.m_data, lhs.m_size) == 0;
     }
 
 
@@ -104,3 +128,14 @@ private:
 };
 
 } // namespace sf::base
+
+
+namespace sf::base::literals
+{
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr StringView operator""_sv(const char* str, SizeT len) noexcept
+{
+    return StringView{str, len};
+}
+
+} // namespace sf::base::literals

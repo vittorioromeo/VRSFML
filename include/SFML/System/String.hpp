@@ -6,16 +6,10 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Export.hpp"
 
+#include "SFML/Base/FwdStdLocale.hpp" // used
+#include "SFML/Base/FwdStdString.hpp" // used
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/SizeT.hpp"
-
-#if __has_include(<bits/localefwd.h>) && __has_include(<bits/stringfwd.h>)
-#include <bits/localefwd.h>
-#include <bits/stringfwd.h>
-#else
-#include <locale>
-#include <string>
-#endif
 
 
 namespace sf

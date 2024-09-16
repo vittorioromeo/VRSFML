@@ -51,7 +51,8 @@ public:
     [[nodiscard]] Path extension() const;
     [[nodiscard]] Path absolute() const;
 
-    [[nodiscard]] const value_type* c_str() const; // TODO P1: support other platforms
+    [[nodiscard]] const value_type* c_str() const;     // TODO P1: support other platforms
+    [[nodiscard]] const char*       toCharPtr() const; // TODO P1: support other platforms
     // [[nodiscard]] std::string       string() const;
 
     // [[nodiscard]] operator std::string() const;
@@ -84,7 +85,7 @@ private:
     [[nodiscard]] Path(int, const void* fsPath);
 
     struct Impl;
-    base::InPlacePImpl<Impl, 64> m_impl;
+    base::InPlacePImpl<Impl, 128> m_impl;
 };
 
 

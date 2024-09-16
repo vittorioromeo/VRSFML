@@ -8,15 +8,9 @@
 
 #include "SFML/Network/IpAddress.hpp"
 
+#include "SFML/Base/FwdStdString.hpp" // used
 #include "SFML/Base/Optional.hpp"
-
-#if __has_include(<bits/stringfwd.h>)
-#include <bits/stringfwd.h>
-#else
-#include <string>
-#endif
-
-#include <string_view>
+#include "SFML/Base/StringView.hpp"
 
 
 namespace sf
@@ -39,7 +33,7 @@ public:
     /// \return Address on success, `base::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<IpAddress> resolve(std::string_view address);
+    [[nodiscard]] static base::Optional<IpAddress> resolve(base::StringView address);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a string representation of the address

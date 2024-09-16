@@ -8,6 +8,7 @@
 #include "SFML/Network/SocketImpl.hpp"
 
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/StringView.hpp"
 
 #include <string>
 
@@ -15,9 +16,9 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-base::Optional<IpAddress> IpAddressUtils::resolve(std::string_view address)
+base::Optional<IpAddress> IpAddressUtils::resolve(base::StringView address)
 {
-    using namespace std::string_view_literals;
+    using namespace base::literals;
 
     if (address.empty())
     {
@@ -25,14 +26,14 @@ base::Optional<IpAddress> IpAddressUtils::resolve(std::string_view address)
         return base::nullOpt;
     }
 
-    if (address == "255.255.255.255"sv)
+    if (address == "255.255.255.255"_sv)
     {
         // The broadcast address needs to be handled explicitly,
         // because it is also the value returned by inet_addr on error
         return base::makeOptional(IpAddress::Broadcast);
     }
 
-    if (address == "0.0.0.0"sv)
+    if (address == "0.0.0.0"_sv)
         return base::makeOptional(IpAddress::Any);
 
     // Try to convert the address as a byte representation ("xxx.xxx.xxx.xxx")

@@ -17,8 +17,6 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
 
-#include <string>
-
 
 namespace
 {
@@ -47,25 +45,25 @@ bool ImageUtils::saveToFile(const Image& image, const Path& filename)
     if (extension == ".bmp")
     {
         // BMP format
-        if (stbi_write_bmp(filename.to<std::string>().c_str(), convertedSize.x, convertedSize.y, 4, image.getPixelsPtr()))
+        if (stbi_write_bmp(filename.toCharPtr(), convertedSize.x, convertedSize.y, 4, image.getPixelsPtr()))
             return true;
     }
     else if (extension == ".tga")
     {
         // TGA format
-        if (stbi_write_tga(filename.to<std::string>().c_str(), convertedSize.x, convertedSize.y, 4, image.getPixelsPtr()))
+        if (stbi_write_tga(filename.toCharPtr(), convertedSize.x, convertedSize.y, 4, image.getPixelsPtr()))
             return true;
     }
     else if (extension == ".png")
     {
         // PNG format
-        if (stbi_write_png(filename.to<std::string>().c_str(), convertedSize.x, convertedSize.y, 4, image.getPixelsPtr(), 0))
+        if (stbi_write_png(filename.toCharPtr(), convertedSize.x, convertedSize.y, 4, image.getPixelsPtr(), 0))
             return true;
     }
     else if (extension == ".jpg" || extension == ".jpeg")
     {
         // JPG format
-        if (stbi_write_jpg(filename.to<std::string>().c_str(), convertedSize.x, convertedSize.y, 4, image.getPixelsPtr(), 90))
+        if (stbi_write_jpg(filename.toCharPtr(), convertedSize.x, convertedSize.y, 4, image.getPixelsPtr(), 90))
             return true;
     }
     else

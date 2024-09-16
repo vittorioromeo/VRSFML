@@ -4,15 +4,18 @@
 
 #include "SFML/System/Time.hpp"
 
+#include "SFML/Base/StringView.hpp"
+
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
 
 #include <sstream>
-#include <string_view>
+#include <string>
 
+
+using namespace sf::base::literals;
 using namespace std::string_literals;
-using namespace std::string_view_literals;
 
 TEST_CASE("[Network] sf::IpAddress")
 {
@@ -29,7 +32,7 @@ TEST_CASE("[Network] sf::IpAddress")
     {
         SECTION("static 'create' function")
         {
-            const auto ipAddress = sf::IpAddressUtils::resolve("203.0.113.2"sv);
+            const auto ipAddress = sf::IpAddressUtils::resolve("203.0.113.2"_sv);
             REQUIRE(ipAddress.hasValue());
             CHECK(sf::IpAddressUtils::toString(*ipAddress) == "203.0.113.2"s);
             CHECK(ipAddress->toInteger() == 0xCB007102);
@@ -37,13 +40,13 @@ TEST_CASE("[Network] sf::IpAddress")
             CHECK(*ipAddress != sf::IpAddress::Broadcast);
             CHECK(*ipAddress != sf::IpAddress::LocalHost);
 
-            const auto broadcast = sf::IpAddressUtils::resolve("255.255.255.255"sv);
+            const auto broadcast = sf::IpAddressUtils::resolve("255.255.255.255"_sv);
             REQUIRE(broadcast.hasValue());
             CHECK(sf::IpAddressUtils::toString(*broadcast) == "255.255.255.255"s);
             CHECK(broadcast->toInteger() == 0xFFFFFFFF);
             CHECK(*broadcast == sf::IpAddress::Broadcast);
 
-            const auto any = sf::IpAddressUtils::resolve("0.0.0.0"sv);
+            const auto any = sf::IpAddressUtils::resolve("0.0.0.0"_sv);
             REQUIRE(any.hasValue());
             CHECK(sf::IpAddressUtils::toString(*any) == "0.0.0.0"s);
             CHECK(any->toInteger() == 0x00000000);

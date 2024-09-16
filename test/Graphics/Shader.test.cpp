@@ -12,8 +12,6 @@
 
 #include <CommonTraits.hpp>
 
-#include <string_view>
-
 namespace
 {
 constexpr auto vertexSource = R"glsl(#version 300 es

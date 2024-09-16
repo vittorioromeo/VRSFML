@@ -7,7 +7,7 @@
 
 #include "SFML/System/Win32/WindowsHeader.hpp"
 
-#include <string_view>
+#include "SFML/Base/StringView.hpp"
 
 #include <cstdint>
 
@@ -118,11 +118,11 @@ bool VulkanImpl::isAvailable(bool requireGraphics)
 
             for (const VkExtensionProperties& properties : extensionProperties)
             {
-                if (std::string_view(properties.extensionName) == VK_KHR_SURFACE_EXTENSION_NAME)
+                if (base::StringView(properties.extensionName) == VK_KHR_SURFACE_EXTENSION_NAME)
                 {
                     hasVkKhrSurface = true;
                 }
-                else if (std::string_view(properties.extensionName) == VK_KHR_WIN32_SURFACE_EXTENSION_NAME)
+                else if (base::StringView(properties.extensionName) == VK_KHR_WIN32_SURFACE_EXTENSION_NAME)
                 {
                     hasVkKhrPlatformSurface = true;
                 }

@@ -4,16 +4,17 @@
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/StringView.hpp"
 
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
 #include <StringifyOptionalUtil.hpp>
+#include <StringifyStringViewUtil.hpp>
 
 #include <fstream>
 #include <sstream>
 #include <string>
-#include <string_view>
 
 namespace
 {
@@ -65,7 +66,7 @@ private:
 
 TEST_CASE("[System] sf::FileInputStream")
 {
-    using namespace std::string_view_literals;
+    using namespace sf::base::literals;
 
     SECTION("Type traits")
     {
@@ -88,7 +89,7 @@ TEST_CASE("[System] sf::FileInputStream")
             CHECK(fileInputStream.read(buffer, 6).value() == 6);
             CHECK(fileInputStream.tell().value() == 6);
             CHECK(fileInputStream.getSize().value() == 11);
-            CHECK(std::string_view(buffer, 6) == "Hello "sv);
+            CHECK(sf::base::StringView(buffer, 6) == "Hello "_sv);
         }
 
         SECTION("Move assignment")
@@ -100,7 +101,7 @@ TEST_CASE("[System] sf::FileInputStream")
             CHECK(fileInputStream.read(buffer, 6).value() == 6);
             CHECK(fileInputStream.tell().value() == 6);
             CHECK(fileInputStream.getSize().value() == 11);
-            CHECK(std::string_view(buffer, 6) == "Hello "sv);
+            CHECK(sf::base::StringView(buffer, 6) == "Hello "_sv);
         }
     }
 
@@ -110,7 +111,7 @@ TEST_CASE("[System] sf::FileInputStream")
         CHECK(fileInputStream.read(buffer, 5).value() == 5);
         CHECK(fileInputStream.tell().value() == 5);
         CHECK(fileInputStream.getSize().value() == 11);
-        CHECK(std::string_view(buffer, 5) == "Hello"sv);
+        CHECK(sf::base::StringView(buffer, 5) == "Hello"_sv);
         CHECK(fileInputStream.seek(6).value() == 6);
         CHECK(fileInputStream.tell().value() == 6);
     }

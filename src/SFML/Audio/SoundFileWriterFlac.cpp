@@ -150,7 +150,7 @@ bool SoundFileWriterFlac::open(const Path& filename, unsigned int sampleRate, un
     FLAC__stream_encoder_set_sample_rate(m_impl->encoder.get(), sampleRate);
 
     // Initialize the output stream
-    if (FLAC__stream_encoder_init_file(m_impl->encoder.get(), filename.to<std::string>().c_str(), nullptr, nullptr) !=
+    if (FLAC__stream_encoder_init_file(m_impl->encoder.get(), filename.toCharPtr(), nullptr, nullptr) !=
         FLAC__STREAM_ENCODER_INIT_STATUS_OK)
     {
         priv::err() << "Failed to write flac file (failed to open the file)\n" << priv::PathDebugFormatter{filename};
