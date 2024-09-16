@@ -60,7 +60,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] ~UniquePtr() noexcept
+    [[gnu::always_inline, gnu::flatten]] ~UniquePtr() noexcept
     {
         static_cast<TDeleter*>(this)->operator()(m_ptr);
     }
@@ -84,7 +84,7 @@ public:
 
     ////////////////////////////////////////////////////////////
     template <typename U, typename UDeleter>
-    [[gnu::always_inline]] UniquePtr& operator=(UniquePtr<U, UDeleter>&& rhs) noexcept
+    [[gnu::always_inline, gnu::flatten]] UniquePtr& operator=(UniquePtr<U, UDeleter>&& rhs) noexcept
         requires(base::isSame<T, U> || base::isBaseOf<T, U>)
     {
         (*static_cast<TDeleter*>(this)) = static_cast<UDeleter&&>(rhs);
@@ -155,7 +155,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void reset(T* const ptr = nullptr) noexcept
+    [[gnu::always_inline, gnu::flatten]] void reset(T* const ptr = nullptr) noexcept
     {
         static_cast<TDeleter*>(this)->operator()(m_ptr);
         m_ptr = ptr;
@@ -165,7 +165,7 @@ public:
 
 ////////////////////////////////////////////////////////////
 template <typename T, typename... Ts>
-[[nodiscard, gnu::always_inline, gnu::pure]] inline UniquePtr<T> makeUnique(Ts&&... xs)
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline UniquePtr<T> makeUnique(Ts&&... xs)
 {
     return UniquePtr<T>{new T{static_cast<Ts&&>(xs)...}};
 }

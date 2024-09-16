@@ -650,7 +650,7 @@ m_cursorGrabbed(m_fullscreen)
     // The class name identifies a class of windows that
     // "are of the same type". We simply use the initial window name as
     // the class name.
-    std::string       ansiTitle = windowSettings.title.toAnsiString();
+    std::string       ansiTitle = windowSettings.title.toAnsiString<std::string>();
     std::vector<char> windowClass(ansiTitle.size() + 1, 0);
     base::copy(ansiTitle.begin(), ansiTitle.end(), windowClass.begin());
     hint.res_class = windowClass.data();
@@ -922,7 +922,7 @@ void WindowImplX11::setTitle(const String& title)
     // There is however an option to tell the window manager your Unicode title via hints.
 
     // Convert to UTF-8 encoding.
-    const auto utf8Title = title.toUtf8();
+    const auto utf8Title = title.toUtf8<std::u8string>();
 
     const Atom useUtf8 = getAtom("UTF8_STRING", false);
 
@@ -951,8 +951,8 @@ void WindowImplX11::setTitle(const String& title)
     // Set the non-Unicode title as a fallback for window managers who don't support _NET_WM_NAME.
     Xutf8SetWMProperties(m_display.get(),
                          m_window,
-                         title.toAnsiString().c_str(),
-                         title.toAnsiString().c_str(),
+                         title.toAnsiString<std::string>().c_str(),
+                         title.toAnsiString<std::string>().c_str(),
                          nullptr,
                          0,
                          nullptr,

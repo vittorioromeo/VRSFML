@@ -59,7 +59,8 @@ base::Optional<IpAddress> IpAddress::getLocalAddress()
     }
 
     // Connect the socket to localhost on any port
-    priv::SockAddrIn address = priv::SocketImpl::createAddress(priv::SocketImpl::getNtohl(priv::SocketImpl::inaddrLoopback()), 9);
+    priv::SockAddrIn address = priv::SocketImpl::createAddress(priv::SocketImpl::getNtohl(priv::SocketImpl::inaddrLoopback()),
+                                                               9);
     if (!priv::SocketImpl::connect(sock, address))
     {
         priv::SocketImpl::close(sock);

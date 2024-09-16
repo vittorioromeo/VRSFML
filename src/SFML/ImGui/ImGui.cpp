@@ -35,6 +35,7 @@
 
 #include <imgui.h>
 
+#include <string>
 #include <vector>
 
 #if defined(__APPLE__)
@@ -1130,7 +1131,7 @@ bool ImGuiContext::init(Window& window, Vector2f displaySize, bool loadDefaultFo
 
         [](void* /*userData*/)
         {
-            auto tmp = Clipboard::getString().toUtf8();
+            auto tmp = Clipboard::getString().toUtf8<std::u8string>();
             clipboardTextPtr->assign(tmp.begin(), tmp.end());
             return clipboardTextPtr->c_str();
         });

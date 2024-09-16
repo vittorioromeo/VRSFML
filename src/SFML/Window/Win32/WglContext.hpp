@@ -33,7 +33,7 @@ public:
     /// \param shared Context to share the new one with (can be a null pointer)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WglContext(WindowContext& windowContext, std::uint64_t id, WglContext* shared);
+    [[nodiscard]] explicit WglContext(WindowContext& windowContext, unsigned int id, WglContext* shared);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context attached to a window
@@ -45,7 +45,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit WglContext(WindowContext&    windowContext,
-                                      std::uint64_t     id,
+                                      unsigned int      id,
                                       WglContext*       shared,
                                       ContextSettings   contextSettings,
                                       const WindowImpl& owner,
@@ -133,7 +133,7 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     explicit WglContext(WindowContext&         windowContext,
-                        std::uint64_t          id,
+                        unsigned int           id,
                         WglContext*            shared,
                         const ContextSettings& settings,
                         const SurfaceData&     surfaceData);

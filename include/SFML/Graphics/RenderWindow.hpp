@@ -11,16 +11,15 @@
 #include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/Window.hpp"
 #include "SFML/Window/WindowHandle.hpp"
+#include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Vector2.hpp"
 
 
 namespace sf
 {
-struct WindowSettings;
 class GraphicsContext;
 class Image;
-class String;
 
 ////////////////////////////////////////////////////////////
 /// \brief Window that can serve as a target for 2D drawing

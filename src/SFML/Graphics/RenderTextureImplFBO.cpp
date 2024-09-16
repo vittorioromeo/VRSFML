@@ -17,8 +17,6 @@
 
 #include <unordered_map>
 
-#include <cstdint>
-
 
 namespace
 {
@@ -40,7 +38,7 @@ struct RenderTextureImplFBO::Impl
     {
     }
 
-    using FrameBufferIdMap = std::unordered_map<std::uint64_t, unsigned int>;
+    using FrameBufferIdMap = std::unordered_map<unsigned int, unsigned int>;
 
     GraphicsContext* graphicsContext; //!< The window context
 
@@ -361,7 +359,7 @@ bool RenderTextureImplFBO::createFrameBuffer()
     }
 
     // Get current GL context id
-    const std::uint64_t glContextId = m_impl->graphicsContext->getActiveThreadLocalGlContextId();
+    const unsigned int glContextId = m_impl->graphicsContext->getActiveThreadLocalGlContextId();
 
     // Insert the FBO into our map
     m_impl->frameBuffers.emplace(glContextId, frameBufferId);
@@ -435,7 +433,7 @@ bool RenderTextureImplFBO::activate(bool active)
     }
 
     SFML_BASE_ASSERT(m_impl->graphicsContext->hasActiveThreadLocalOrSharedGlContext());
-    const std::uint64_t glContextId = m_impl->graphicsContext->getActiveThreadLocalGlContextId();
+    const unsigned int glContextId = m_impl->graphicsContext->getActiveThreadLocalGlContextId();
 
     // Lookup the FBO corresponding to the currently active context
     // If none is found, there is no FBO corresponding to the
@@ -483,7 +481,7 @@ void RenderTextureImplFBO::updateTexture(unsigned int)
     // are already available within the current context
     if (m_impl->multisample && m_impl->size.x && m_impl->size.y && activate(true))
     {
-        const std::uint64_t glContextId = m_impl->graphicsContext->getActiveThreadLocalGlContextId();
+        const unsigned int glContextId = m_impl->graphicsContext->getActiveThreadLocalGlContextId();
 
         const auto frameBufferIt = m_impl->frameBuffers.find(glContextId);
         const auto multisampleIt = m_impl->multisampleFrameBuffers.find(glContextId);

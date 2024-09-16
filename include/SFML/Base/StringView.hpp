@@ -133,7 +133,8 @@ private:
 namespace sf::base::literals
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr StringView operator""_sv(const char* str, SizeT len) noexcept
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr StringView operator""_sv(const char* str,
+                                                                                                     SizeT len) noexcept
 {
     return StringView{str, len};
 }

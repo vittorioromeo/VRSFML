@@ -845,7 +845,7 @@ bool JoystickImpl::openDInput(unsigned int index)
                     if (FAILED(result))
                     {
                         priv::err() << "Failed to get DirectInput device axis mode for device " << '"'
-                                    << m_impl->identification.name.toAnsiString() << "\": " << result;
+                                    << m_impl->identification.name.toAnsiString<std::string>() << "\": " << result;
 
                         m_impl->device->Release();
                         m_impl->device = nullptr;
@@ -877,7 +877,7 @@ bool JoystickImpl::openDInput(unsigned int index)
                     if (FAILED(result))
                     {
                         priv::err() << "Failed to verify DirectInput device axis mode for device " << '"'
-                                    << m_impl->identification.name.toAnsiString() << "\": " << result;
+                                    << m_impl->identification.name.toAnsiString<std::string>() << "\": " << result;
 
                         m_impl->device->Release();
                         m_impl->device = nullptr;
@@ -930,7 +930,7 @@ bool JoystickImpl::openDInput(unsigned int index)
             else
             {
                 priv::err() << "Failed to set DirectInput device buffer size for device " << '"'
-                            << m_impl->identification.name.toAnsiString() << "\": " << result;
+                            << m_impl->identification.name.toAnsiString<std::string>() << "\": " << result;
 
                 m_impl->device->Release();
                 m_impl->device = nullptr;

@@ -16,7 +16,7 @@ namespace sf
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-class Vector3
+class [[nodiscard]] Vector3
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -25,7 +25,7 @@ public:
     /// If you are not interested in the actual length, but only in comparisons, consider using `lengthSquared()`.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] SFML_SYSTEM_API constexpr T length() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_SYSTEM_API constexpr T length() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Square of vector's length.
@@ -33,7 +33,7 @@ public:
     /// Suitable for comparisons, more efficient than `length()`.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] SFML_API_EXPORT constexpr T lengthSquared() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_API_EXPORT constexpr T lengthSquared() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Vector with same direction but length 1 <i><b>(floating-point)</b></i>.
@@ -41,19 +41,19 @@ public:
     /// \pre `*this` is no zero vector.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] SFML_SYSTEM_API constexpr Vector3 normalized() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_SYSTEM_API constexpr Vector3 normalized() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Dot product of two 3D vectors.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] SFML_API_EXPORT constexpr T dot(const Vector3& rhs) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_API_EXPORT constexpr T dot(const Vector3& rhs) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Cross product of two 3D vectors.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] SFML_API_EXPORT constexpr Vector3 cross(const Vector3& rhs) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_API_EXPORT constexpr Vector3 cross(const Vector3& rhs) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Component-wise multiplication of `*this` and \a `rhs`.
@@ -64,7 +64,8 @@ public:
     /// This operation is also known as the Hadamard or Schur product.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] SFML_API_EXPORT constexpr Vector3 componentWiseMul(const Vector3& rhs) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_API_EXPORT constexpr Vector3 componentWiseMul(
+        const Vector3& rhs) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Component-wise division of `*this` and \a `rhs`.
@@ -76,7 +77,8 @@ public:
     /// \pre Neither component of \a `rhs` is zero.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] SFML_API_EXPORT constexpr Vector3 componentWiseDiv(const Vector3& rhs) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_API_EXPORT constexpr Vector3 componentWiseDiv(
+        const Vector3& rhs) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert to another `Vector3` of type `OtherVector3`
@@ -85,7 +87,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename OtherVector3>
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr OtherVector3 to() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr OtherVector3 to() const;
 
     ////////////////////////////////////////////////////////////
     // Member data
@@ -105,7 +107,7 @@ public:
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector3<T> operator-(const Vector3<T>& left);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vector3<T> operator-(const Vector3<T>& left);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector3
@@ -121,7 +123,7 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline]] constexpr Vector3<T>& operator+=(Vector3<T>& left, const Vector3<T>& right);
+[[gnu::always_inline, gnu::flatten]] constexpr Vector3<T>& operator+=(Vector3<T>& left, const Vector3<T>& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector3
@@ -137,7 +139,7 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline]] constexpr Vector3<T>& operator-=(Vector3<T>& left, const Vector3<T>& right);
+[[gnu::always_inline, gnu::flatten]] constexpr Vector3<T>& operator-=(Vector3<T>& left, const Vector3<T>& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector3
@@ -150,7 +152,8 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector3<T> operator+(const Vector3<T>& left, const Vector3<T>& right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vector3<T> operator+(const Vector3<T>& left,
+                                                                                          const Vector3<T>& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector3
@@ -163,7 +166,8 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector3<T> operator-(const Vector3<T>& left, const Vector3<T>& right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vector3<T> operator-(const Vector3<T>& left,
+                                                                                          const Vector3<T>& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector3
@@ -176,7 +180,7 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector3<T> operator*(const Vector3<T>& left, T right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vector3<T> operator*(const Vector3<T>& left, T right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector3
@@ -189,7 +193,7 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector3<T> operator*(T left, const Vector3<T>& right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vector3<T> operator*(T left, const Vector3<T>& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector3
@@ -205,7 +209,7 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline]] constexpr Vector3<T>& operator*=(Vector3<T>& left, T right);
+[[gnu::always_inline, gnu::flatten]] constexpr Vector3<T>& operator*=(Vector3<T>& left, T right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector3
@@ -218,7 +222,7 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector3<T> operator/(const Vector3<T>& left, T right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vector3<T> operator/(const Vector3<T>& left, T right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector3
@@ -234,7 +238,7 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline]] constexpr Vector3<T>& operator/=(Vector3<T>& left, T right);
+[[gnu::always_inline, gnu::flatten]] constexpr Vector3<T>& operator/=(Vector3<T>& left, T right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector3
@@ -249,7 +253,8 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator==(const Vector3<T>& left, const Vector3<T>& right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr bool operator==(const Vector3<T>& left,
+                                                                                     const Vector3<T>& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector3
@@ -264,7 +269,8 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator!=(const Vector3<T>& left, const Vector3<T>& right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr bool operator!=(const Vector3<T>& left,
+                                                                                     const Vector3<T>& right);
 
 // Define the most common types
 using Vector3i = Vector3<int>;

@@ -95,7 +95,7 @@ namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 WglContext::WglContext(WindowContext&         windowContext,
-                       std::uint64_t          id,
+                       unsigned int           id,
                        WglContext*            shared,
                        const ContextSettings& contextSettings,
                        const SurfaceData&     surfaceData) :
@@ -116,7 +116,7 @@ m_context(createContext(m_settings, m_surfaceData, shared))
 
 ////////////////////////////////////////////////////////////
 WglContext::WglContext(WindowContext&    windowContext,
-                       std::uint64_t     id,
+                       unsigned int      id,
                        WglContext*       shared,
                        ContextSettings   contextSettings,
                        const WindowImpl& owner,
@@ -127,7 +127,7 @@ WglContext(windowContext, id, shared, contextSettings, createSurface(contextSett
 
 
 ////////////////////////////////////////////////////////////
-WglContext::WglContext(WindowContext& windowContext, std::uint64_t id, WglContext* shared) :
+WglContext::WglContext(WindowContext& windowContext, unsigned int id, WglContext* shared) :
 WglContext(windowContext,
            id,
            shared,

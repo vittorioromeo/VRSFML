@@ -36,7 +36,7 @@ public:
     /// \param shared Context to share the new one with (can be a null pointer)
     ///
     ////////////////////////////////////////////////////////////
-    explicit EglContext(WindowContext& windowContext, std::uint64_t id, EglContext* shared);
+    explicit EglContext(WindowContext& windowContext, unsigned int id, EglContext* shared);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context attached to a window
@@ -48,7 +48,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     explicit EglContext(WindowContext&         windowContext,
-                        std::uint64_t          id,
+                        unsigned int           id,
                         EglContext*            shared,
                         const ContextSettings& contextSettings,
                         const WindowImpl&      owner,

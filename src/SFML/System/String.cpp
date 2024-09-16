@@ -8,7 +8,6 @@
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Strlen.hpp"
 
 #include <locale>
@@ -57,7 +56,7 @@ String::String(char ansiChar) : String(ansiChar, std::locale{})
 
 
 ////////////////////////////////////////////////////////////
-String::String(char ansiChar, const std::locale& locale)
+String::String(char ansiChar, const priv::LocaleLike auto& locale)
 {
     m_impl->string += Utf32::decodeAnsi(ansiChar, locale);
 }
@@ -84,7 +83,7 @@ String::String(const char* ansiString) : String(ansiString, std::locale{})
 
 
 ////////////////////////////////////////////////////////////
-String::String(const char* ansiString, const std::locale& locale)
+String::String(const char* ansiString, const priv::LocaleLike auto& locale)
 {
     if (ansiString)
     {
@@ -99,13 +98,13 @@ String::String(const char* ansiString, const std::locale& locale)
 
 
 ////////////////////////////////////////////////////////////
-String::String(const std::string& ansiString) : String(ansiString, std::locale{})
+String::String(const priv::AnsiStringLike auto& ansiString) : String(ansiString, std::locale{})
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-String::String(const std::string& ansiString, const std::locale& locale)
+String::String(const priv::AnsiStringLike auto& ansiString, const priv::LocaleLike auto& locale)
 {
     m_impl->string.reserve(ansiString.length() + 1);
     Utf32::fromAnsi(ansiString.begin(), ansiString.end(), base::BackInserter(m_impl->string), locale);
@@ -128,7 +127,7 @@ String::String(const wchar_t* wideString)
 
 
 ////////////////////////////////////////////////////////////
-String::String(const std::wstring& wideString)
+String::String(const priv::WStringLike auto& wideString)
 {
     m_impl->string.reserve(wideString.length() + 1);
     Utf32::fromWide(wideString.begin(), wideString.end(), base::BackInserter(m_impl->string));
@@ -144,34 +143,22 @@ String::String(const char32_t* utf32String)
 
 
 ////////////////////////////////////////////////////////////
-String::String(std::u32string utf32String) : m_impl(SFML_BASE_MOVE(utf32String))
+String::String(const priv::U32StringLike auto& utf32String) : m_impl(utf32String)
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-String::operator std::string() const
+template <priv::AnsiStringLike TString>
+TString String::toAnsiString() const
 {
-    return toAnsiString();
+    return toAnsiString<std::string>(std::locale{});
 }
 
 
 ////////////////////////////////////////////////////////////
-String::operator std::wstring() const
-{
-    return toWideString();
-}
-
-
-////////////////////////////////////////////////////////////
-std::string String::toAnsiString() const
-{
-    return toAnsiString(std::locale{});
-}
-
-
-////////////////////////////////////////////////////////////
-std::string String::toAnsiString(const std::locale& locale) const
+template <priv::AnsiStringLike TString>
+TString String::toAnsiString(const priv::LocaleLike auto& locale) const
 {
     // Prepare the output string
     std::string output;
@@ -185,7 +172,8 @@ std::string String::toAnsiString(const std::locale& locale) const
 
 
 ////////////////////////////////////////////////////////////
-std::wstring String::toWideString() const
+template <priv::WStringLike TString>
+TString String::toWideString() const
 {
     // Prepare the output string
     std::wstring output;
@@ -199,7 +187,8 @@ std::wstring String::toWideString() const
 
 
 ////////////////////////////////////////////////////////////
-std::u8string String::toUtf8() const
+template <priv::U8StringLike TString>
+TString String::toUtf8() const
 {
     // Prepare the output string
     std::u8string output;
@@ -213,7 +202,8 @@ std::u8string String::toUtf8() const
 
 
 ////////////////////////////////////////////////////////////
-std::u16string String::toUtf16() const
+template <priv::U16StringLike TString>
+TString String::toUtf16() const
 {
     // Prepare the output string
     std::u16string output;
@@ -227,7 +217,8 @@ std::u16string String::toUtf16() const
 
 
 ////////////////////////////////////////////////////////////
-std::u32string String::toUtf32() const
+template <priv::U32StringLike TString>
+TString String::toUtf32() const
 {
     return m_impl->string;
 }
@@ -365,9 +356,9 @@ String::ConstIterator String::end() const
 
 
 ////////////////////////////////////////////////////////////
-std::u32string& String::getImplString()
+void* String::getImplString()
 {
-    return m_impl->string;
+    return &m_impl->string;
 }
 
 
@@ -425,5 +416,38 @@ String operator+(const String& left, const String& right)
 
 ////////////////////////////////////////////////////////////
 const base::SizeT String::InvalidPos{std::u32string::npos};
+
+
+////////////////////////////////////////////////////////////
+template String::String(char ansiChar, const std::locale& locale);
+template String::String(const char* ansiString, const std::locale& locale);
+
+
+////////////////////////////////////////////////////////////
+template String::String(const std::string& ansiString);
+template String::String(const std::string& ansiString, const std::locale& locale);
+
+
+////////////////////////////////////////////////////////////
+template String::String(const std::wstring& wideString);
+
+
+////////////////////////////////////////////////////////////
+template String::String(const std::u32string& utf32String);
+
+
+////////////////////////////////////////////////////////////
+template std::string String::toAnsiString() const;
+template std::string String::toAnsiString(const std::locale& locale) const;
+
+
+////////////////////////////////////////////////////////////
+template std::wstring String::toWideString<std::wstring>() const;
+
+
+////////////////////////////////////////////////////////////
+template std::u8string  String::toUtf8<std::u8string>() const;
+template std::u16string String::toUtf16<std::u16string>() const;
+template std::u32string String::toUtf32<std::u32string>() const;
 
 } // namespace sf
