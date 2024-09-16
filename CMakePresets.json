@@ -47,7 +47,9 @@
       "binaryDir": "build_vrdev_clang",
       "installDir": "${sourceDir}/build_vrdev_clang/install",
       "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_C_FLAGS": "-fuse-ld=lld $env{CXX_WARNINGS}",
         "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace $env{CXX_WARNINGS}"
       }
     },
@@ -66,7 +68,9 @@
       "binaryDir": "build_vrdev_gcc",
       "installDir": "${sourceDir}/build_vrdev_gcc/install",
       "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
         "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_C_FLAGS": "-fuse-ld=lld $env{CXX_WARNINGS}",
         "CMAKE_CXX_FLAGS": "-fuse-ld=lld -Wnrvo $env{CXX_WARNINGS}"
       }
     },
@@ -89,7 +93,9 @@
       "binaryDir": "build_vrdev_gcc_rel",
       "installDir": "${sourceDir}/build_vrdev_gcc_rel/install",
       "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
         "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_C_FLAGS": "-fuse-ld=lld -Ofast $env{CXX_WARNINGS}",
         "CMAKE_CXX_FLAGS": "-fuse-ld=lld -Wnrvo -Ofast $env{CXX_WARNINGS}"
       }
     },
@@ -99,7 +105,9 @@
       "binaryDir": "build_vrdev_clang_rel",
       "installDir": "${sourceDir}/build_vrdev_clang_rel/install",
       "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_C_FLAGS": "-fuse-ld=lld -Ofast $env{CXX_WARNINGS}",
         "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace -Ofast $env{CXX_WARNINGS}"
       }
     },

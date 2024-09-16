@@ -393,6 +393,18 @@ struct [[nodiscard]] ImGuiPerWindowContext
 
     base::Optional<Cursor> mouseCursors[ImGuiMouseCursor_COUNT];
 
+    [[nodiscard, gnu::always_inline, gnu::pure]] base::Optional<Cursor>& getMouseCursor(ImGuiMouseCursor i)
+    {
+        SFML_BASE_ASSERT(i < ImGuiMouseCursor_COUNT);
+        return mouseCursors[i];
+    }
+
+    [[nodiscard, gnu::always_inline, gnu::pure]] const base::Optional<Cursor>& getMouseCursor(ImGuiMouseCursor i) const
+    {
+        SFML_BASE_ASSERT(i < ImGuiMouseCursor_COUNT);
+        return mouseCursors[i];
+    }
+
 #ifdef ANDROID
 #ifdef USE_JNI
     bool wantTextInput{false};
@@ -590,7 +602,7 @@ struct [[nodiscard]] ImGuiPerWindowContext
     ////////////////////////////////////////////////////////////
     void loadMouseCursor(ImGuiMouseCursor imguiCursorType, Cursor::Type sfmlCursorType)
     {
-        mouseCursors[imguiCursorType] = Cursor::loadFromSystem(sfmlCursorType);
+        getMouseCursor(imguiCursorType) = Cursor::loadFromSystem(sfmlCursorType);
     }
 
 
@@ -717,14 +729,15 @@ struct [[nodiscard]] ImGuiPerWindowContext
     ////////////////////////////////////////////////////////////
     void updateMouseCursor(Window& theWindow, const ImGuiMouseCursor cursor) const
     {
-        if (!mouseCursors[ImGuiMouseCursor_Arrow].hasValue())
+        if (!getMouseCursor(ImGuiMouseCursor_Arrow).hasValue())
         {
             theWindow.setMouseCursorVisible(false);
             return;
         }
 
         theWindow.setMouseCursorVisible(true);
-        theWindow.setMouseCursor(mouseCursors[cursor] ? *mouseCursors[cursor] : *mouseCursors[ImGuiMouseCursor_Arrow]);
+        theWindow.setMouseCursor(
+            getMouseCursor(cursor).hasValue() ? *getMouseCursor(cursor) : *getMouseCursor(ImGuiMouseCursor_Arrow));
     }
 
 
