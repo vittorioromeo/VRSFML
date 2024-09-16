@@ -72,7 +72,7 @@ void setProcessDpiAware()
             // enabled with SetProcessDpiAwarenessContext, because that
             // would scale the title bar and thus change window size
             // by default when moving the window between monitors.
-            if (setProcessDpiAwarenessFunc(ProcessPerMonitorDpiAware) == E_INVALIDARG)
+            if (setProcessDpiAwarenessFunc(ProcessDpiUnaware) == E_INVALIDARG)
             {
                 sf::priv::err() << "Failed to set process DPI awareness";
             }

@@ -10,6 +10,7 @@
 #include "SFML/Graphics/Transform.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Traits/IsBaseOf.hpp"
 #include "SFML/Base/TrivialVector.hpp"
 
@@ -76,6 +77,9 @@ public:
 private:
     friend RenderTarget;
 
+    IndexType* reserveMoreIndicesAndGetPtr(RenderTarget& rt, base::SizeT count) const;
+    Vertex*    reserveMoreVerticesAndGetPtr(RenderTarget& rt, base::SizeT count) const;
+
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
@@ -93,10 +97,12 @@ private:
         const Transform& transform)
     {
         // m_vertices.reserveMore(count);
-        auto* vertices = static_cast<Vertex*>(rt.getVerticesPtr(m_nIdxs + count)) + count;
+        auto* vertices = reserveMoreVerticesAndGetPtr(rt, count);
 
         for (const auto* const target = data + count; data != target; ++data)
             *vertices++ = Vertex{transform.transformPoint(data->position), data->color, data->texCoords};
+
+        m_nVerts += count;
         // m_vertices.unsafeEmplaceBack();
     }
 
