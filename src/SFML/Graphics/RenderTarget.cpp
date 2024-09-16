@@ -643,7 +643,7 @@ void RenderTarget::drawIndexedVertices(
     const auto vertexByteCount = static_cast<GLsizeiptr>(sizeof(Vertex) * vertexCount);
     const auto indexByteCount  = static_cast<GLsizeiptr>(sizeof(unsigned int) * indexCount);
 
-#if 1
+#if 0
     glCheck(glBufferData(GL_ARRAY_BUFFER, vertexByteCount, vertices, GL_STREAM_DRAW));
     glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexByteCount, indices, GL_STREAM_DRAW));
 #elif 0
@@ -652,7 +652,7 @@ void RenderTarget::drawIndexedVertices(
 
     glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexByteCount, nullptr, GL_STREAM_DRAW));
     glCheck(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0u, indexByteCount, indices));
-#elif 0
+#elif 1
     glCheck(glBufferData(GL_ARRAY_BUFFER, vertexByteCount, nullptr, GL_STREAM_DRAW));
     void* ptr0 = glMapBufferRange(GL_ARRAY_BUFFER,
                                   0u,
