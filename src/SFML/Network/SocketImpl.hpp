@@ -18,13 +18,8 @@
 
 #include "SFML/Base/SizeT.hpp"
 
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <netinet/tcp.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#include <unistd.h>
 
 #endif
 
@@ -199,31 +194,31 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static NetworkLong ntohl(NetworkLong netlong);
+    [[nodiscard]] static NetworkLong getNtohl(NetworkLong netlong);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static NetworkShort ntohs(NetworkShort netshort);
+    [[nodiscard]] static NetworkShort getNtohs(NetworkShort netshort);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static NetworkLong ntohl(SockAddrIn addr);
+    [[nodiscard]] static NetworkLong getNtohl(SockAddrIn addr);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static NetworkShort htons(NetworkShort hostshort);
+    [[nodiscard]] static NetworkShort getHtons(NetworkShort hostshort);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static NetworkLong htonl(NetworkLong hostlong);
+    [[nodiscard]] static NetworkLong getHtonl(NetworkLong hostlong);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs

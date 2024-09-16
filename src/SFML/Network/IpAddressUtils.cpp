@@ -38,7 +38,7 @@ base::Optional<IpAddress> IpAddressUtils::resolve(base::StringView address)
 
     // Try to convert the address as a byte representation ("xxx.xxx.xxx.xxx")
     if (const auto ip = priv::SocketImpl::inetAddr(address.data()); ip.hasValue())
-        return base::makeOptional<IpAddress>(priv::SocketImpl::ntohl(*ip));
+        return base::makeOptional<IpAddress>(priv::SocketImpl::getNtohl(*ip));
 
     // Not a valid address, try to convert it as a host name
     const base::Optional converted = priv::SocketImpl::convertToHostname(address.data());
@@ -49,7 +49,7 @@ base::Optional<IpAddress> IpAddressUtils::resolve(base::StringView address)
         return base::nullOpt;
     }
 
-    return base::makeOptional<IpAddress>(priv::SocketImpl::ntohl(*converted));
+    return base::makeOptional<IpAddress>(priv::SocketImpl::getNtohl(*converted));
 }
 
 

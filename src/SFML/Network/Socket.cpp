@@ -181,7 +181,7 @@ unsigned short Socket::getLocalPortImpl(const char* socketTypeStr) const
         return 0;
     }
 
-    return priv::SocketImpl::ntohs(address.sinPort());
+    return priv::SocketImpl::getNtohs(address.sinPort());
 }
 
 } // namespace sf
