@@ -78,8 +78,7 @@ void ChannelMap::reserve(base::SizeT count)
 ////////////////////////////////////////////////////////////
 void ChannelMap::append(SoundChannel channel)
 {
-    m_channels.reserveMore(1);
-    m_channels.unsafeEmplaceBack(channel);
+    m_channels.pushBack(channel);
 }
 
 } // namespace sf

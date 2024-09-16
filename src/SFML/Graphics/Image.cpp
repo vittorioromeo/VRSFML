@@ -29,8 +29,6 @@
 
 #include <stb_image.h>
 
-#include <string>
-
 
 namespace
 {
@@ -152,7 +150,7 @@ base::Optional<Image> Image::loadFromFile(const Path& filename)
     int        width    = 0;
     int        height   = 0;
     int        channels = 0;
-    const auto ptr = StbPtr(stbi_load(filename.to<std::string>().c_str(), &width, &height, &channels, STBI_rgb_alpha));
+    const auto ptr      = StbPtr(stbi_load(filename.toCharPtr(), &width, &height, &channels, STBI_rgb_alpha));
 
     if (ptr)
     {

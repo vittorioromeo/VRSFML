@@ -6,8 +6,9 @@
 #include "SFML/Window/Unix/Display.hpp"
 #include "SFML/Window/VulkanImpl.hpp"
 
+#include "SFML/Base/StringView.hpp"
+
 #include <dlfcn.h>
-#include <string_view>
 #include <vector>
 
 #include <cstdint>
@@ -119,11 +120,11 @@ bool VulkanImpl::isAvailable(bool requireGraphics)
 
             for (const VkExtensionProperties& properties : extensionProperties)
             {
-                if (std::string_view(properties.extensionName) == VK_KHR_SURFACE_EXTENSION_NAME)
+                if (base::StringView(properties.extensionName) == VK_KHR_SURFACE_EXTENSION_NAME)
                 {
                     hasVkKhrSurface = true;
                 }
-                else if (std::string_view(properties.extensionName) == VK_KHR_XLIB_SURFACE_EXTENSION_NAME)
+                else if (base::StringView(properties.extensionName) == VK_KHR_XLIB_SURFACE_EXTENSION_NAME)
                 {
                     hasVkKhrPlatformSurface = true;
                 }

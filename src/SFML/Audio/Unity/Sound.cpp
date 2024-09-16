@@ -108,7 +108,7 @@ struct Sound::Impl
                                ma_uint32*      channels,
                                ma_uint32*      sampleRate,
                                ma_channel*,
-                               size_t)
+                               base::SizeT)
     {
         const auto& impl   = *static_cast<const Impl*>(dataSource);
         const auto* buffer = impl.buffer;

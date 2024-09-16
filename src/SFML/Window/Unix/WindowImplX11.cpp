@@ -112,13 +112,13 @@ sf::Path findExecutableName()
         return "sfml";
 
     std::vector<char> buffer(256, 0);
-    base::SizeT       offset = 0;
+    sf::base::SizeT   offset = 0;
     ssize_t           result = 0;
 
     while ((result = read(file, &buffer[offset], 256)) > 0)
     {
-        buffer.resize(buffer.size() + static_cast<base::SizeT>(result), 0);
-        offset += static_cast<base::SizeT>(result);
+        buffer.resize(buffer.size() + static_cast<sf::base::SizeT>(result), 0);
+        offset += static_cast<sf::base::SizeT>(result);
     }
 
     ::close(file);
@@ -642,7 +642,7 @@ m_cursorGrabbed(m_fullscreen)
     // The instance name should be something unique to this invocation
     // of the application but is rarely if ever used these days.
     // For simplicity, we retrieve it via the base executable name.
-    std::string       executableName = findExecutableName().to<std::string>();
+    auto              executableName = findExecutableName().to<std::string>();
     std::vector<char> windowInstance(executableName.size() + 1, 0);
     base::copy(executableName.begin(), executableName.end(), windowInstance.begin());
     hint.res_name = windowInstance.data();

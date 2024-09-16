@@ -8,13 +8,8 @@
 
 #include "SFML/System/Time.hpp"
 
+#include "SFML/Base/FwdStdString.hpp"
 #include "SFML/Base/InPlacePImpl.hpp"
-
-#if __has_include(<bits/stringfwd.h>)
-#include <bits/stringfwd.h>
-#else
-#include <string>
-#endif
 
 
 namespace sf

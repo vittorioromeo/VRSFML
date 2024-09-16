@@ -48,6 +48,7 @@ using GLhandle = GLuint;
 
 namespace
 {
+////////////////////////////////////////////////////////////
 // Retrieve the maximum number of texture units available
 [[nodiscard]] sf::base::SizeT getMaxTextureUnits()
 {
@@ -56,6 +57,8 @@ namespace
     return maxUnits;
 }
 
+
+////////////////////////////////////////////////////////////
 // Pair of indices into thread-local buffer
 struct [[nodiscard]] BufferSlice
 {
@@ -66,12 +69,14 @@ struct [[nodiscard]] BufferSlice
     {
     }
 
-    [[nodiscard]] std::string_view toView(const sf::base::TrivialVector<char>& buffer) const
+    [[nodiscard]] sf::base::StringView toView(const sf::base::TrivialVector<char>& buffer) const
     {
         return {buffer.data() + beginIdx, count};
     }
 };
 
+
+////////////////////////////////////////////////////////////
 // Read the contents of a file into an array of char
 [[nodiscard]] sf::base::Optional<BufferSlice> appendFileContentsToVector(const sf::Path&                filename,
                                                                          sf::base::TrivialVector<char>& buffer)
@@ -96,11 +101,12 @@ struct [[nodiscard]] BufferSlice
         file.read(buffer.data() + bufferSizeBeforeRead, static_cast<std::streamsize>(size));
     }
 
-    buffer.reserveMore(1u);
-    buffer.unsafeEmplaceBack('\0');
+    buffer.pushBack('\0');
     return sf::base::makeOptional<BufferSlice>(bufferSizeBeforeRead, buffer.size() - bufferSizeBeforeRead);
 }
 
+
+////////////////////////////////////////////////////////////
 // Read the contents of a stream into an array of char
 [[nodiscard]] sf::base::Optional<BufferSlice> appendStreamContentsToVector(sf::InputStream&               stream,
                                                                            sf::base::TrivialVector<char>& buffer)
@@ -109,8 +115,7 @@ struct [[nodiscard]] BufferSlice
 
     if (!size.hasValue() || size.value() == 0)
     {
-        buffer.reserveMore(1u);
-        buffer.unsafeEmplaceBack('\0');
+        buffer.pushBack('\0');
         return sf::base::nullOpt;
     }
 
@@ -131,11 +136,12 @@ struct [[nodiscard]] BufferSlice
         return sf::base::nullOpt;
     }
 
-    buffer.reserveMore(1u);
-    buffer.unsafeEmplaceBack('\0');
+    buffer.pushBack('\0');
     return sf::base::makeOptional<BufferSlice>(bufferSizeBeforeRead, buffer.size() - bufferSizeBeforeRead);
 }
 
+
+////////////////////////////////////////////////////////////
 // Return a thread-local vector for suitable use as a temporary buffer
 // This function is non-reentrant
 [[nodiscard]] sf::base::TrivialVector<char>& getThreadLocalCharBuffer()
@@ -144,6 +150,8 @@ struct [[nodiscard]] BufferSlice
     return result;
 }
 
+
+////////////////////////////////////////////////////////////
 // Transforms an array of 2D vectors into a contiguous array of scalars
 [[nodiscard]] sf::base::TrivialVector<float> flatten(const sf::Vector2f* vectorArray, sf::base::SizeT length)
 {
@@ -160,6 +168,8 @@ struct [[nodiscard]] BufferSlice
     return contiguous;
 }
 
+
+////////////////////////////////////////////////////////////
 // Transforms an array of 3D vectors into a contiguous array of scalars
 [[nodiscard]] sf::base::TrivialVector<float> flatten(const sf::Vector3f* vectorArray, sf::base::SizeT length)
 {
@@ -177,6 +187,8 @@ struct [[nodiscard]] BufferSlice
     return contiguous;
 }
 
+
+////////////////////////////////////////////////////////////
 // Transforms an array of 4D vectors into a contiguous array of scalars
 [[nodiscard]] sf::base::TrivialVector<float> flatten(const sf::Glsl::Vec4* vectorArray, sf::base::SizeT length)
 {
@@ -195,23 +207,52 @@ struct [[nodiscard]] BufferSlice
     return contiguous;
 }
 
+
+////////////////////////////////////////////////////////////
 struct StringHash
 {
     using is_transparent = void;
 
-    [[nodiscard]] size_t operator()(const char* txt) const
+    [[nodiscard]] sf::base::SizeT operator()(const char* txt) const
     {
         return std::hash<std::string_view>{}(txt);
     }
 
-    [[nodiscard]] size_t operator()(std::string_view txt) const
+    [[nodiscard]] sf::base::SizeT operator()(sf::base::StringView txt) const
     {
-        return std::hash<std::string_view>{}(txt);
+        return std::hash<std::string_view>{}({txt.data(), txt.size()});
     }
 
-    [[nodiscard]] size_t operator()(const std::string& txt) const
+    [[nodiscard]] sf::base::SizeT operator()(const std::string& txt) const
     {
         return std::hash<std::string>{}(txt);
+    }
+};
+
+
+////////////////////////////////////////////////////////////
+struct StringEq
+{
+    using is_transparent = void;
+
+    [[nodiscard, gnu::always_inline]] bool operator()(const sf::base::StringView& a, const std::string& b) const
+    {
+        return a == sf::base::StringView{b};
+    }
+
+    [[nodiscard, gnu::always_inline]] bool operator()(const std::string& a, const sf::base::StringView& b) const
+    {
+        return sf::base::StringView{a} == b;
+    }
+
+    [[nodiscard, gnu::always_inline]] bool operator()(const sf::base::StringView& a, const sf::base::StringView& b) const
+    {
+        return a == b;
+    }
+
+    [[nodiscard, gnu::always_inline]] bool operator()(const std::string& a, const std::string& b) const
+    {
+        return a == b;
     }
 };
 
@@ -223,7 +264,7 @@ namespace sf
 struct Shader::Impl
 {
     using TextureTable = std::unordered_map<int, const Texture*>;
-    using UniformTable = std::unordered_map<std::string, int, StringHash, std::equal_to<>>;
+    using UniformTable = std::unordered_map<std::string, int, StringHash, StringEq>;
 
     GraphicsContext* graphicsContext;
     unsigned int     shaderProgram{};    //!< OpenGL identifier for the program
@@ -366,7 +407,7 @@ base::Optional<Shader> Shader::loadFromFile(GraphicsContext& graphicsContext, co
         return base::nullOpt;
     }
 
-    const std::string_view shaderView = shaderSlice->toView(buffer);
+    const base::StringView shaderView = shaderSlice->toView(buffer);
 
     // Compile the shader program
     if (type == Type::Vertex)
@@ -452,7 +493,7 @@ base::Optional<Shader> Shader::loadFromFile(GraphicsContext& graphicsContext,
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::loadFromMemory(GraphicsContext& graphicsContext, std::string_view shader, Type type)
+base::Optional<Shader> Shader::loadFromMemory(GraphicsContext& graphicsContext, base::StringView shader, Type type)
 {
     // Compile the shader program
     if (type == Type::Vertex)
@@ -468,8 +509,8 @@ base::Optional<Shader> Shader::loadFromMemory(GraphicsContext& graphicsContext, 
 
 ////////////////////////////////////////////////////////////
 base::Optional<Shader> Shader::loadFromMemory(GraphicsContext& graphicsContext,
-                                              std::string_view vertexShader,
-                                              std::string_view fragmentShader)
+                                              base::StringView vertexShader,
+                                              base::StringView fragmentShader)
 {
     // Compile the shader program
     return compile(graphicsContext, vertexShader, {}, fragmentShader);
@@ -478,9 +519,9 @@ base::Optional<Shader> Shader::loadFromMemory(GraphicsContext& graphicsContext,
 
 ////////////////////////////////////////////////////////////
 base::Optional<Shader> Shader::loadFromMemory(GraphicsContext& graphicsContext,
-                                              std::string_view vertexShader,
-                                              std::string_view geometryShader,
-                                              std::string_view fragmentShader)
+                                              base::StringView vertexShader,
+                                              base::StringView geometryShader,
+                                              base::StringView fragmentShader)
 {
     // Compile the shader program
     return compile(graphicsContext, vertexShader, geometryShader, fragmentShader);
@@ -502,7 +543,7 @@ base::Optional<Shader> Shader::loadFromStream(GraphicsContext& graphicsContext, 
         return base::nullOpt;
     }
 
-    const std::string_view shaderView = shaderSlice->toView(buffer);
+    const base::StringView shaderView = shaderSlice->toView(buffer);
 
     // Compile the shader program
     if (type == Type::Vertex)
@@ -589,7 +630,7 @@ base::Optional<Shader> Shader::loadFromStream(GraphicsContext& graphicsContext,
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Shader::UniformLocation> Shader::getUniformLocation(std::string_view uniformName) const
+base::Optional<Shader::UniformLocation> Shader::getUniformLocation(base::StringView uniformName) const
 {
     // Check the cache
     if (const auto it = m_impl->uniforms.find(uniformName); it != m_impl->uniforms.end())
@@ -601,11 +642,11 @@ base::Optional<Shader::UniformLocation> Shader::getUniformLocation(std::string_v
     // Use thread-local string buffer to get a null-terminated uniform name
     thread_local std::string uniformNameBuffer;
     uniformNameBuffer.clear();
-    uniformNameBuffer.assign(uniformName);
+    uniformNameBuffer.assign(uniformName.data(), uniformName.size());
 
     // Not in cache, request the location from OpenGL
     const int location = glGetUniformLocation(castToGlHandle(m_impl->shaderProgram), uniformNameBuffer.c_str());
-    m_impl->uniforms.emplace(uniformName, location);
+    m_impl->uniforms.emplace(std::string{uniformName.data(), uniformName.size()}, location);
 
     return location == -1 ? base::nullOpt : base::makeOptional(UniformLocation{location});
 }
@@ -887,9 +928,9 @@ m_impl(graphicsContext, shaderProgram)
 
 ////////////////////////////////////////////////////////////
 base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
-                                       std::string_view vertexShaderCode,
-                                       std::string_view geometryShaderCode,
-                                       std::string_view fragmentShaderCode)
+                                       base::StringView vertexShaderCode,
+                                       base::StringView geometryShaderCode,
+                                       base::StringView fragmentShaderCode)
 {
     SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
 
@@ -916,7 +957,7 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
         GLhandle vertexShader{};
         glCheck(vertexShader = glCheckExpr(glCreateShader(GL_VERTEX_SHADER)));
         const GLcharARB* sourceCode       = vertexShaderCode.data();
-        const auto       sourceCodeLength = static_cast<GLint>(vertexShaderCode.length());
+        const auto       sourceCodeLength = static_cast<GLint>(vertexShaderCode.size());
         glCheck(glShaderSource(vertexShader, 1, &sourceCode, &sourceCodeLength));
         glCheck(glCompileShader(vertexShader));
         SFML_BASE_ASSERT(glCheckExpr(glIsShader(vertexShader)));
@@ -945,7 +986,7 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
         // Create and compile the shader
         const GLhandle   geometryShader   = glCheckExpr(glCreateShader(GL_GEOMETRY_SHADER));
         const GLcharARB* sourceCode       = geometryShaderCode.data();
-        const auto       sourceCodeLength = static_cast<GLint>(geometryShaderCode.length());
+        const auto       sourceCodeLength = static_cast<GLint>(geometryShaderCode.size());
         glCheck(glShaderSource(geometryShader, 1, &sourceCode, &sourceCodeLength));
         glCheck(glCompileShader(geometryShader));
         SFML_BASE_ASSERT(glCheckExpr(glIsShader(geometryShader)));
@@ -977,7 +1018,7 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
         GLhandle fragmentShader{};
         glCheck(fragmentShader = glCheckExpr(glCreateShader(GL_FRAGMENT_SHADER)));
         const GLcharARB* sourceCode       = fragmentShaderCode.data();
-        const auto       sourceCodeLength = static_cast<GLint>(fragmentShaderCode.length());
+        const auto       sourceCodeLength = static_cast<GLint>(fragmentShaderCode.size());
         glCheck(glShaderSource(fragmentShader, 1, &sourceCode, &sourceCodeLength));
         glCheck(glCompileShader(fragmentShader));
         SFML_BASE_ASSERT(glCheckExpr(glIsShader(fragmentShader)));

@@ -61,20 +61,25 @@ sfml_set_option(SFML_ENABLE_STACK_TRACES $<CONFIG:Debug> BOOL "TRUE to enable li
 if(SFML_ENABLE_STACK_TRACES)
     add_definitions(-DSFML_ENABLE_STACK_TRACES)
 
-    CPMAddPackage(
-        NAME cpptrace
-        GITHUB_REPOSITORY vittorioromeo/cpptrace
-        GIT_TAG e76cc5a34e3ad22ff748b590f6085e56aa47f9e7
-        SYSTEM TRUE
-    )
+    if (NOT SFML_OS_EMSCRIPTEN)
+        CPMAddPackage(
+            NAME cpptrace
+            GITHUB_REPOSITORY vittorioromeo/cpptrace
+            GIT_TAG 26c981f7fa89f20ee351df8faba26dc1a4598783
+            SYSTEM TRUE
+        )
 
-    if(NOT SFML_COMPILER_MSVC)
-        set_target_properties(libzstd_static PROPERTIES UNITY_BUILD OFF)
-        set_target_properties(dwarf PROPERTIES UNITY_BUILD OFF)
+        if(TARGET libzstd_static)
+            set_target_properties(libzstd_static PROPERTIES UNITY_BUILD OFF)
+        endif()
+
+        if(TARGET dwarf)
+            set_target_properties(dwarf PROPERTIES UNITY_BUILD OFF)
+        endif()
+
+        # install(TARGETS cpptrace-lib EXPORT SFMLConfigExport)
+        # install(TARGETS dwarf EXPORT SFMLConfigExport)
     endif()
-
-    # install(TARGETS cpptrace-lib EXPORT SFMLConfigExport)
-    # install(TARGETS dwarf EXPORT SFMLConfigExport)
 endif()
 
 # add an option to enable lifetime tracking
@@ -178,7 +183,7 @@ if(SFML_BUILD_IMGUI AND NOT SFML_BUILD_GRAPHICS)
 endif()
 
 # use bundled dependencies by default on these systems and system dependencies by default on all others (maintains old behavior)
-if(SFML_OS_WINDOWS OR SFML_OS_MACOS OR SFML_OS_IOS OR SFML_OS_ANDROID OR SFML_OS_EMSCRIPTEN)
+if(SFML_OS_WINDOWS OR SFML_OS_LINUX OR SFML_OS_MACOS OR SFML_OS_IOS OR SFML_OS_ANDROID OR SFML_OS_EMSCRIPTEN)
     set(SFML_USE_SYSTEM_DEPS_DEFAULT FALSE)
 else()
     set(SFML_USE_SYSTEM_DEPS_DEFAULT ON)

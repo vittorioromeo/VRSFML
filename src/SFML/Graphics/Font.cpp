@@ -434,7 +434,7 @@ base::Optional<Font> Font::openFromFile(GraphicsContext& graphicsContext, const 
 
     // Load the new font face from the specified file
     FT_Face face = nullptr;
-    if (FT_New_Face(fontHandles->library, filename.to<std::string>().c_str(), 0, &face) != 0)
+    if (FT_New_Face(fontHandles->library, filename.toCharPtr(), 0, &face) != 0)
         return fail("failed to create the font face");
 
     fontHandles->face = face;

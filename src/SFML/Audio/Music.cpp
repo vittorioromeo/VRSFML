@@ -12,10 +12,10 @@
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <mutex>
-#include <vector>
 
 #include <cstdint>
 
@@ -51,10 +51,10 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct Music::Impl
 {
-    InputSoundFile            file;     //!< Input sound file
-    std::vector<std::int16_t> samples;  //!< Temporary buffer of samples
-    std::recursive_mutex      mutex;    //!< Mutex protecting the data
-    Span<std::uint64_t>       loopSpan; //!< Loop Range Specifier
+    InputSoundFile                    file;     //!< Input sound file
+    base::TrivialVector<std::int16_t> samples;  //!< Temporary buffer of samples
+    std::recursive_mutex              mutex;    //!< Mutex protecting the data
+    Span<std::uint64_t>               loopSpan; //!< Loop Range Specifier
 
     explicit Impl(InputSoundFile&& theFile) :
     file(SFML_BASE_MOVE(theFile)),

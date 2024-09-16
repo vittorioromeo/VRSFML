@@ -23,12 +23,7 @@ namespace sf
 void Packet::append(const void* data, base::SizeT sizeInBytes)
 {
     if (data && (sizeInBytes > 0))
-    {
-        const auto* begin = reinterpret_cast<const unsigned char*>(data);
-
-        m_data.reserveMore(sizeInBytes);
-        m_data.unsafeEmplaceRange(begin, sizeInBytes);
-    }
+        m_data.emplaceRange(reinterpret_cast<const unsigned char*>(data), sizeInBytes);
 }
 
 
@@ -119,7 +114,7 @@ Packet& Packet::operator>>(std::int16_t& data)
     if (checkSize(sizeof(data)))
     {
         SFML_BASE_MEMCPY(&data, &m_data[m_readPos], sizeof(data));
-        data = static_cast<std::int16_t>(priv::SocketImpl::ntohs(static_cast<std::uint16_t>(data)));
+        data = static_cast<std::int16_t>(priv::SocketImpl::getNtohs(static_cast<std::uint16_t>(data)));
         m_readPos += sizeof(data);
     }
 
@@ -133,7 +128,7 @@ Packet& Packet::operator>>(std::uint16_t& data)
     if (checkSize(sizeof(data)))
     {
         SFML_BASE_MEMCPY(&data, &m_data[m_readPos], sizeof(data));
-        data = priv::SocketImpl::ntohs(data);
+        data = priv::SocketImpl::getNtohs(data);
         m_readPos += sizeof(data);
     }
 
@@ -147,7 +142,7 @@ Packet& Packet::operator>>(std::int32_t& data)
     if (checkSize(sizeof(data)))
     {
         SFML_BASE_MEMCPY(&data, &m_data[m_readPos], sizeof(data));
-        data = static_cast<std::int32_t>(priv::SocketImpl::ntohl(static_cast<std::uint32_t>(data)));
+        data = static_cast<std::int32_t>(priv::SocketImpl::getNtohl(static_cast<std::uint32_t>(data)));
         m_readPos += sizeof(data);
     }
 
@@ -161,7 +156,7 @@ Packet& Packet::operator>>(std::uint32_t& data)
     if (checkSize(sizeof(data)))
     {
         SFML_BASE_MEMCPY(&data, &m_data[m_readPos], sizeof(data));
-        data = priv::SocketImpl::ntohl(data);
+        data = priv::SocketImpl::getNtohl(data);
         m_readPos += sizeof(data);
     }
 
@@ -377,7 +372,7 @@ Packet& Packet::operator<<(std::uint8_t data)
 ////////////////////////////////////////////////////////////
 Packet& Packet::operator<<(std::int16_t data)
 {
-    auto toWrite = static_cast<std::int16_t>(priv::SocketImpl::htons(static_cast<std::uint16_t>(data)));
+    auto toWrite = static_cast<std::int16_t>(priv::SocketImpl::getHtons(static_cast<std::uint16_t>(data)));
     append(&toWrite, sizeof(toWrite));
     return *this;
 }
@@ -386,7 +381,7 @@ Packet& Packet::operator<<(std::int16_t data)
 ////////////////////////////////////////////////////////////
 Packet& Packet::operator<<(std::uint16_t data)
 {
-    std::uint16_t toWrite = priv::SocketImpl::htons(data);
+    std::uint16_t toWrite = priv::SocketImpl::getHtons(data);
     append(&toWrite, sizeof(toWrite));
     return *this;
 }
@@ -395,7 +390,7 @@ Packet& Packet::operator<<(std::uint16_t data)
 ////////////////////////////////////////////////////////////
 Packet& Packet::operator<<(std::int32_t data)
 {
-    auto toWrite = static_cast<std::int32_t>(priv::SocketImpl::htonl(static_cast<std::uint32_t>(data)));
+    auto toWrite = static_cast<std::int32_t>(priv::SocketImpl::getHtonl(static_cast<std::uint32_t>(data)));
     append(&toWrite, sizeof(toWrite));
     return *this;
 }
@@ -404,7 +399,7 @@ Packet& Packet::operator<<(std::int32_t data)
 ////////////////////////////////////////////////////////////
 Packet& Packet::operator<<(std::uint32_t data)
 {
-    std::uint32_t toWrite = priv::SocketImpl::htonl(data);
+    std::uint32_t toWrite = priv::SocketImpl::getHtonl(data);
     append(&toWrite, sizeof(toWrite));
     return *this;
 }

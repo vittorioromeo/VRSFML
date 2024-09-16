@@ -12,6 +12,7 @@
 #include <X11/keysym.h>
 
 #include <mutex>
+#include <string>
 #include <unordered_map>
 
 #include <clocale>
@@ -98,16 +99,17 @@ std::shared_ptr<_XIM> openXim()
 
 
 ////////////////////////////////////////////////////////////
-Atom getAtom(const std::string& name, bool onlyIfExists)
+Atom getAtom(base::StringView name, bool onlyIfExists)
 {
     static std::unordered_map<std::string, Atom> atoms;
 
-    if (const auto it = atoms.find(name); it != atoms.end())
+    const std::string nameStr(name.data(), name.size());
+    if (const auto it = atoms.find(nameStr); it != atoms.end())
         return it->second;
 
     const auto display = openDisplay();
-    const Atom atom    = XInternAtom(display.get(), name.c_str(), onlyIfExists ? True : False);
-    atoms[name]        = atom;
+    const Atom atom    = XInternAtom(display.get(), name.data(), onlyIfExists ? True : False);
+    atoms[nameStr]     = atom;
 
     return atom;
 }

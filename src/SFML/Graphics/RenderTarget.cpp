@@ -30,6 +30,7 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Math/Lround.hpp"
 #include "SFML/Base/Memcpy.hpp"
+#include "SFML/Base/OffsetOf.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 
@@ -319,7 +320,7 @@ using EBO = OpenGLRAII<[](auto& id) { glCheck(glGenBuffers(1, &id)); },
 ////////////////////////////////////////////////////////////
 void setupVertexAttribPointers(const GLint sfAttribPositionIdx, const GLint sfAttribColorIdx, const GLint sfAttribTexCoordIdx)
 {
-#define SFML_PRIV_OFFSETOF(...) reinterpret_cast<const void*>(offsetof(__VA_ARGS__))
+#define SFML_PRIV_OFFSETOF(...) reinterpret_cast<const void*>(SFML_BASE_OFFSETOF(__VA_ARGS__))
 
     SFML_BASE_ASSERT(sfAttribPositionIdx >= 0);
 
@@ -643,18 +644,20 @@ void RenderTarget::draw(const Vertex* vertices, base::SizeT vertexCount, Primiti
     setupDraw(states);
 
     // TODO P0:
+    const auto vertexByteCount = static_cast<GLsizeiptr>(sizeof(Vertex) * vertexCount);
+
 #if 1
-    glCheck(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertexCount, vertices, GL_STREAM_DRAW));
+    glCheck(glBufferData(GL_ARRAY_BUFFER, vertexByteCount, vertices, GL_STREAM_DRAW));
 #elif 0
-    glCheck(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertexCount, nullptr, GL_STREAM_DRAW));
-    glCheck(glBufferSubData(GL_ARRAY_BUFFER, 0u, sizeof(Vertex) * vertexCount, vertices));
+    glCheck(glBufferData(GL_ARRAY_BUFFER, vertexByteCount, nullptr, GL_STREAM_DRAW));
+    glCheck(glBufferSubData(GL_ARRAY_BUFFER, 0u, vertexByteCount, vertices));
 #elif 0
-    glCheck(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertexCount, nullptr, GL_STREAM_DRAW));
+    glCheck(glBufferData(GL_ARRAY_BUFFER, vertexByteCount, nullptr, GL_STREAM_DRAW));
     void* ptr0 = glMapBufferRange(GL_ARRAY_BUFFER,
                                   0u,
-                                  sizeof(Vertex) * vertexCount,
+                                  vertexByteCount,
                                   GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
-    SFML_BASE_MEMCPY(ptr0, vertices, sizeof(Vertex) * vertexCount);
+    SFML_BASE_MEMCPY(ptr0, vertices, vertexByteCount);
     glUnmapBuffer(GL_ARRAY_BUFFER);
 #endif
 
@@ -688,29 +691,29 @@ void RenderTarget::drawIndexedVertices(
     // m_impl->vboReallocAndMemcpy(vertices, sizeof(Vertex) * vertexCount);
     // m_impl->eboReallocAndMemcpy(indices, sizeof(unsigned int) * indexCount);
 #elif 0
-    glCheck(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertexCount, vertices, GL_STATIC_DRAW));
-    glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indexCount, indices, GL_STATIC_DRAW));
+    glCheck(glBufferData(GL_ARRAY_BUFFER, vertexByteCount, vertices, GL_STREAM_DRAW));
+    glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexByteCount, indices, GL_STREAM_DRAW));
 #elif 0
-    glCheck(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertexCount, nullptr, GL_STATIC_DRAW));
-    glCheck(glBufferSubData(GL_ARRAY_BUFFER, 0u, sizeof(Vertex) * vertexCount, vertices));
+    glCheck(glBufferData(GL_ARRAY_BUFFER, vertexByteCount, nullptr, GL_STREAM_DRAW));
+    glCheck(glBufferSubData(GL_ARRAY_BUFFER, 0u, vertexByteCount, vertices));
 
-    glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indexCount, nullptr, GL_STATIC_DRAW));
-    glCheck(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0u, sizeof(unsigned int) * indexCount, indices));
-#elif 0
-    glCheck(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertexCount, nullptr, GL_STATIC_DRAW));
+    glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexByteCount, nullptr, GL_STREAM_DRAW));
+    glCheck(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0u, indexByteCount, indices));
+#elif 1
+    glCheck(glBufferData(GL_ARRAY_BUFFER, vertexByteCount, nullptr, GL_STREAM_DRAW));
     void* ptr0 = glMapBufferRange(GL_ARRAY_BUFFER,
                                   0u,
-                                  sizeof(Vertex) * vertexCount,
+                                  vertexByteCount,
                                   GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
-    SFML_BASE_MEMCPY(ptr0, vertices, sizeof(Vertex) * vertexCount);
+    SFML_BASE_MEMCPY(ptr0, vertices, static_cast<base::SizeT>(vertexByteCount));
     glUnmapBuffer(GL_ARRAY_BUFFER);
 
-    glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indexCount, nullptr, GL_STATIC_DRAW));
+    glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexByteCount, nullptr, GL_STREAM_DRAW));
     void* ptr1 = glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER,
                                   0u,
-                                  sizeof(unsigned int) * indexCount,
+                                  indexByteCount,
                                   GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
-    SFML_BASE_MEMCPY(ptr1, indices, sizeof(unsigned int) * indexCount);
+    SFML_BASE_MEMCPY(ptr1, indices, static_cast<base::SizeT>(indexByteCount));
     glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
 #endif
 
