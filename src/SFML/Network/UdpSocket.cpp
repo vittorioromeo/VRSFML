@@ -141,8 +141,8 @@ Socket::Status UdpSocket::receive(void*                      data,
 
     // Fill the sender information
     received = static_cast<base::SizeT>(sizeReceived);
-    remoteAddress.emplace(priv::SocketImpl::ntohl(address.sAddr()));
-    remotePort = priv::SocketImpl::ntohs(address.sinPort());
+    remoteAddress.emplace(priv::SocketImpl::getNtohl(address.sAddr()));
+    remotePort = priv::SocketImpl::getNtohs(address.sinPort());
 
     return Status::Done;
 }

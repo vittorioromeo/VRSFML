@@ -4,7 +4,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/GlContext.hpp"
+
+#include "SFML/System/Vector2.hpp"
 
 #include <X11/Xlib.h>
 #include <glad/glx.h>
@@ -111,6 +114,17 @@ public:
     static XVisualInfo selectBestVisual(::Display* display, unsigned int bitsPerPixel, const ContextSettings& contextSettings);
 
 private:
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename... TSurfaceArgs>
+    [[nodiscard]] explicit GlxContext(WindowContext&         windowContext,
+                                      std::uint64_t          id,
+                                      GlxContext*            shared,
+                                      const ContextSettings& contextSettings,
+                                      TSurfaceArgs&&... surfaceArgs);
+
     ////////////////////////////////////////////////////////////
     /// \brief Update the context visual settings from XVisualInfo
     ///

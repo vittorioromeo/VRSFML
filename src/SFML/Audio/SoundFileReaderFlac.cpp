@@ -15,7 +15,6 @@
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <FLAC/stream_decoder.h>
-#include <vector>
 
 #include <cstdint>
 
@@ -28,12 +27,12 @@ namespace
 ////////////////////////////////////////////////////////////
 struct FlacClientData
 {
-    sf::InputStream*          stream{};
-    sf::SoundFileReader::Info info;
-    std::int16_t*             buffer{};
-    std::uint64_t             remaining{};
-    std::vector<std::int16_t> leftovers;
-    bool                      error{};
+    sf::InputStream*                      stream{};
+    sf::SoundFileReader::Info             info;
+    std::int16_t*                         buffer{};
+    std::uint64_t                         remaining{};
+    sf::base::TrivialVector<std::int16_t> leftovers;
+    bool                                  error{};
 };
 
 
@@ -157,7 +156,7 @@ FLAC__StreamDecoderWriteStatus streamWrite(const FLAC__StreamDecoder*,
             {
                 // We are either seeking (null buffer) or have decoded all the requested samples during a
                 // normal read (0 remaining), so we put the sample in a temporary buffer until next call
-                data->leftovers.push_back(sample);
+                data->leftovers.pushBack(sample);
             }
         }
     }
@@ -403,11 +402,7 @@ std::uint64_t SoundFileReaderFlac::read(std::int16_t* samples, std::uint64_t max
             for (base::SizeT i = 0; i < maxCount; ++i)
                 samples[i] = m_impl->clientData.leftovers[i];
 
-            std::vector<std::int16_t> leftovers(m_impl->clientData.leftovers.begin() +
-                                                    static_cast<std::vector<std::int16_t>::difference_type>(maxCount),
-                                                m_impl->clientData.leftovers.end());
-
-            m_impl->clientData.leftovers.swap(leftovers);
+            m_impl->clientData.leftovers = base::TrivialVector<std::int16_t>(m_impl->clientData.leftovers.begin(), maxCount);
             return maxCount;
         }
 

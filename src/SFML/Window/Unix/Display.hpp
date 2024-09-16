@@ -4,10 +4,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Base/StringView.hpp"
+
 #include <X11/Xlib.h>
 
 #include <memory>
-#include <string>
 
 
 namespace sf::priv
@@ -37,6 +38,6 @@ std::shared_ptr<_XIM> openXim();
 /// \return Atom if it exists or None (0) if it doesn't
 ///
 ////////////////////////////////////////////////////////////
-Atom getAtom(const std::string& name, bool onlyIfExists = false);
+Atom getAtom(base::StringView name, bool onlyIfExists = false);
 
 } // namespace sf::priv

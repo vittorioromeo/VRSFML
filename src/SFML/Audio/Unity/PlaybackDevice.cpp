@@ -17,12 +17,12 @@
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <miniaudio.h>
 
 #include <mutex>
-#include <vector>
 
 
 namespace sf
@@ -89,8 +89,8 @@ struct PlaybackDevice::Impl
     AudioContext*        audioContext; //!< The audio context (used to get the MA context and for lifetime tracking)
     PlaybackDeviceHandle playbackDeviceHandle; //!< Playback device handle, can be retieved from the playback device
 
-    std::vector<ResourceEntry> resources;      //!< Registered resources
-    std::mutex                 resourcesMutex; //!< The mutex guarding the registered resources
+    base::TrivialVector<ResourceEntry> resources;      //!< Registered resources
+    std::mutex                         resourcesMutex; //!< The mutex guarding the registered resources
 
     ma_device maDevice; //!< miniaudio playback device (one per hardware device)
     ma_engine maEngine; //!< miniaudio engine (one per hardware device, for effects/spatialization)
@@ -219,7 +219,7 @@ PlaybackDevice::ResourceEntryIndex PlaybackDevice::registerResource(
     }
 
     // Add a new resource slot
-    m_impl->resources.emplace_back(resource, deinitializeFunc, reinitializeFunc, transferFunc);
+    m_impl->resources.emplaceBack(resource, deinitializeFunc, reinitializeFunc, transferFunc);
     return static_cast<PlaybackDevice::ResourceEntryIndex>(m_impl->resources.size()) - 1;
 }
 

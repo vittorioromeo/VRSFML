@@ -4,11 +4,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#if __has_include(<bits/stringfwd.h>)
-#include <bits/stringfwd.h>
-#else
-#include <string>
-#endif
+#include "SFML/Base/FwdStdString.hpp" // used
+
 
 using DWORD = unsigned long;
 

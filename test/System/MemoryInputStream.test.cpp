@@ -1,10 +1,12 @@
 #include "SFML/System/MemoryInputStream.hpp"
 
+#include "SFML/Base/StringView.hpp"
+
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
 
-#include <string_view>
+#include <StringifyStringViewUtil.hpp>
 
 TEST_CASE("[System] sf::MemoryInputStream")
 {
@@ -16,11 +18,11 @@ TEST_CASE("[System] sf::MemoryInputStream")
         STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::MemoryInputStream));
     }
 
-    using namespace std::literals::string_view_literals;
+    using namespace sf::base::literals;
 
     SECTION("open()")
     {
-        static constexpr auto input = "hello world"sv;
+        static constexpr auto input = "hello world"_sv;
 
         SECTION("Zero length")
         {
@@ -39,7 +41,7 @@ TEST_CASE("[System] sf::MemoryInputStream")
 
     SECTION("read()")
     {
-        static constexpr auto input = "hello world"sv;
+        static constexpr auto input = "hello world"_sv;
         sf::MemoryInputStream memoryInputStream(input.data(), input.size());
         CHECK(memoryInputStream.tell().value() == 0);
         CHECK(memoryInputStream.getSize().value() == input.size());
@@ -47,20 +49,20 @@ TEST_CASE("[System] sf::MemoryInputStream")
         // Read within input
         char output[32]{};
         CHECK(memoryInputStream.read(output, 5).value() == 5);
-        CHECK(std::string_view(output, 5) == "hello"sv);
+        CHECK(sf::base::StringView(output, 5) == "hello"_sv);
         CHECK(memoryInputStream.tell().value() == 5);
         CHECK(memoryInputStream.getSize().value() == input.size());
 
         // Read beyond input
         CHECK(memoryInputStream.read(output, 100).value() == 6);
-        CHECK(std::string_view(output, 6) == " world"sv);
+        CHECK(sf::base::StringView(output, 6) == " world"_sv);
         CHECK(memoryInputStream.tell().value() == 11);
         CHECK(memoryInputStream.getSize().value() == input.size());
     }
 
     SECTION("seek()")
     {
-        static constexpr auto input = "We Love SFML!"sv;
+        static constexpr auto input = "We Love SFML!"_sv;
         sf::MemoryInputStream memoryInputStream(input.data(), input.size());
         CHECK(memoryInputStream.tell().value() == 0);
         CHECK(memoryInputStream.getSize().value() == input.size());

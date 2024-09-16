@@ -12,12 +12,12 @@
 #include "SFML/System/StringUtils.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <FLAC/stream_encoder.h>
 #include <algorithm> // std::is_permutation
 #include <string>
-#include <vector>
 
 
 namespace sf::priv
@@ -31,8 +31,8 @@ struct SoundFileWriterFlac::Impl
     };
     base::UniquePtr<FLAC__StreamEncoder, FlacStreamEncoderDeleter> encoder;        //!< FLAC stream encoder
     unsigned int                                                   channelCount{}; //!< Number of channels
-    base::SizeT               remapTable[8]{}; //!< Table we use to remap source to target channel order
-    std::vector<std::int32_t> samples32;       //!< Conversion buffer
+    base::SizeT                       remapTable[8]{}; //!< Table we use to remap source to target channel order
+    base::TrivialVector<std::int32_t> samples32;       //!< Conversion buffer
 };
 
 
@@ -150,7 +150,7 @@ bool SoundFileWriterFlac::open(const Path& filename, unsigned int sampleRate, un
     FLAC__stream_encoder_set_sample_rate(m_impl->encoder.get(), sampleRate);
 
     // Initialize the output stream
-    if (FLAC__stream_encoder_init_file(m_impl->encoder.get(), filename.to<std::string>().c_str(), nullptr, nullptr) !=
+    if (FLAC__stream_encoder_init_file(m_impl->encoder.get(), filename.toCharPtr(), nullptr, nullptr) !=
         FLAC__STREAM_ENCODER_INIT_STATUS_OK)
     {
         priv::err() << "Failed to write flac file (failed to open the file)\n" << priv::PathDebugFormatter{filename};
@@ -180,7 +180,7 @@ void SoundFileWriterFlac::write(const std::int16_t* samples, std::uint64_t count
         for (auto frame = 0u; frame < frames; ++frame)
         {
             for (auto channel = 0u; channel < m_impl->channelCount; ++channel)
-                m_impl->samples32.push_back(samples[frame * m_impl->channelCount + m_impl->remapTable[channel]]);
+                m_impl->samples32.unsafeEmplaceBack(samples[frame * m_impl->channelCount + m_impl->remapTable[channel]]);
         }
 
         // Write them to the FLAC stream

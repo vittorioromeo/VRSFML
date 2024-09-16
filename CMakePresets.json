@@ -47,8 +47,19 @@
       "binaryDir": "build_vrdev_clang",
       "installDir": "${sourceDir}/build_vrdev_clang/install",
       "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_C_FLAGS": "-fuse-ld=lld $env{CXX_WARNINGS}",
         "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace $env{CXX_WARNINGS}"
+      }
+    },
+    {
+      "name": "vrdev_clang_egl",
+      "inherits": "vrdev_clang",
+      "binaryDir": "build_vrdev_clang_egl",
+      "installDir": "${sourceDir}/build_vrdev_clang_egl/install",
+      "cacheVariables": {
+        "SFML_OPENGL_ES": "ON"
       }
     },
     {
@@ -57,7 +68,9 @@
       "binaryDir": "build_vrdev_gcc",
       "installDir": "${sourceDir}/build_vrdev_gcc/install",
       "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
         "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_C_FLAGS": "-fuse-ld=lld $env{CXX_WARNINGS}",
         "CMAKE_CXX_FLAGS": "-fuse-ld=lld -Wnrvo $env{CXX_WARNINGS}"
       }
     },
@@ -71,7 +84,6 @@
         "CMAKE_CXX_COMPILER_LAUNCHER": "",
         "CMAKE_CXX_FLAGS": "$env{CXX_WARNINGS}",
         "CMAKE_TOOLCHAIN_FILE": "C:/msys64/clang64/lib/emscripten/cmake/Modules/Platform/Emscripten.cmake",
-        "SFML_ENABLE_STACK_TRACES": "OFF",
         "SFML_OPENGL_ES": "ON"
       }
     },
@@ -81,7 +93,9 @@
       "binaryDir": "build_vrdev_gcc_rel",
       "installDir": "${sourceDir}/build_vrdev_gcc_rel/install",
       "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
         "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_C_FLAGS": "-fuse-ld=lld -Ofast $env{CXX_WARNINGS}",
         "CMAKE_CXX_FLAGS": "-fuse-ld=lld -Wnrvo -Ofast $env{CXX_WARNINGS}"
       }
     },
@@ -91,8 +105,19 @@
       "binaryDir": "build_vrdev_clang_rel",
       "installDir": "${sourceDir}/build_vrdev_clang_rel/install",
       "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_C_FLAGS": "-fuse-ld=lld -Ofast $env{CXX_WARNINGS}",
         "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace -Ofast $env{CXX_WARNINGS}"
+      }
+    },
+    {
+      "name": "vrdev_clang_egl_rel",
+      "inherits": "vrdev_clang_rel",
+      "binaryDir": "build_vrdev_clang_egl_rel",
+      "installDir": "${sourceDir}/build_vrdev_clang_egl_rel/install",
+      "cacheVariables": {
+        "SFML_OPENGL_ES": "ON"
       }
     },
     {

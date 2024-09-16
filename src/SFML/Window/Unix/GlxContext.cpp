@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/Unix/Display.hpp"
 #include "SFML/Window/Unix/GlxContext.hpp"
 #include "SFML/Window/Unix/Utils.hpp"
@@ -87,9 +88,41 @@ private:
 
 namespace sf::priv
 {
+
+////////////////////////////////////////////////////////////
+template <typename... TSurfaceArgs>
+GlxContext::GlxContext(WindowContext&         windowContext,
+                       std::uint64_t          id,
+                       GlxContext*            shared,
+                       const ContextSettings& contextSettings,
+                       TSurfaceArgs&&... surfaceArgs) :
+GlContext(windowContext, id, {}),
+m_display(openDisplay())
+{
+    // Save the creation settings
+    GlContext::m_settings = contextSettings;
+
+    // Make sure that extensions are initialized
+    ensureExtensionsInit(m_display.get(), DefaultScreen(m_display.get()));
+
+    // Create the rendering surface from the owner window
+    createSurface(SFML_BASE_FORWARD(surfaceArgs)...);
+
+    // Create the context
+    createContext(shared);
+}
+
+
 ////////////////////////////////////////////////////////////
 GlxContext::GlxContext(WindowContext& windowContext, std::uint64_t id, GlxContext* shared) :
-GlxContext(windowContext, id, shared, {}, {1, 1})
+GlxContext(windowContext,
+           id,
+           shared,
+           ContextSettings{},
+           // surface args:
+           shared,
+           Vector2u{1u, 1u},
+           VideoModeUtils::getDesktopMode().bitsPerPixel)
 {
 }
 
@@ -101,22 +134,13 @@ GlxContext::GlxContext(WindowContext&         windowContext,
                        const ContextSettings& contextSettings,
                        const WindowImpl&      owner,
                        unsigned int /*bitsPerPixel*/) :
-GlContext(windowContext, id, contextSettings)
+GlxContext(windowContext,
+           id,
+           shared,
+           contextSettings,
+           // surface args:
+           owner.getNativeHandle())
 {
-    // Save the creation settings
-    m_settings = contextSettings;
-
-    // Open the connection with the X server
-    m_display = openDisplay();
-
-    // Make sure that extensions are initialized
-    ensureExtensionsInit(m_display.get(), DefaultScreen(m_display.get()));
-
-    // Create the rendering surface from the owner window
-    createSurface(owner.getNativeHandle());
-
-    // Create the context
-    createContext(shared);
 }
 
 
@@ -248,7 +272,6 @@ void GlxContext::setVerticalSyncEnabled(bool enabled)
         if (!warned)
         {
             priv::err() << "Setting vertical sync not supported";
-
             warned = true;
         }
     }

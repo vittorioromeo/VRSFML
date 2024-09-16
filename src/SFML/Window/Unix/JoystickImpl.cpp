@@ -7,7 +7,7 @@
 
 #include "SFML/System/Err.hpp"
 
-#include "SFML/Base/Memcpy.hpp"
+#include "SFML/Base/Strstr.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <fcntl.h>
@@ -80,7 +80,7 @@ bool isJoystick(udev_device* udevDevice)
         return false;
 
     // SFML doesn't support evdev yet, so make sure we only handle /js nodes
-    if (!std::strstr(devnode, "/js"))
+    if (!SFML_BASE_STRSTR(devnode, "/js"))
         return false;
 
     // Check if this device is a joystick
@@ -107,14 +107,15 @@ bool isJoystick(udev_device* udevDevice)
     if (idClass)
     {
         // Check if the device class matches joystick
-        if (std::strstr(idClass, "joystick"))
+        if (SFML_BASE_STRSTR(idClass, "joystick"))
             return true;
 
         // Check if the device class matches something that isn't a joystick
         // Rationale same as above
-        if (std::strstr(idClass, "accelerometer") || std::strstr(idClass, "key") || std::strstr(idClass, "keyboard") ||
-            std::strstr(idClass, "mouse") || std::strstr(idClass, "tablet") || std::strstr(idClass, "touchpad") ||
-            std::strstr(idClass, "touchscreen"))
+        if (SFML_BASE_STRSTR(idClass, "accelerometer") || SFML_BASE_STRSTR(idClass, "key") ||
+            SFML_BASE_STRSTR(idClass, "keyboard") || SFML_BASE_STRSTR(idClass, "mouse") ||
+            SFML_BASE_STRSTR(idClass, "tablet") || SFML_BASE_STRSTR(idClass, "touchpad") ||
+            SFML_BASE_STRSTR(idClass, "touchscreen"))
             return false;
     }
 
@@ -141,7 +142,7 @@ void updatePluggedList(udev_device* udevDevice = nullptr)
                 {
                     if (recordIt->deviceNode == devnode)
                     {
-                        if (std::strstr(action, "add"))
+                        if (SFML_BASE_STRSTR(action, "add"))
                         {
                             // The system path might have changed so update it
                             const char* syspath = udev_device_get_syspath(udevDevice);
@@ -150,7 +151,7 @@ void updatePluggedList(udev_device* udevDevice = nullptr)
                             recordIt->systemPath = syspath ? syspath : "";
                             break;
                         }
-                        if (std::strstr(action, "remove"))
+                        if (SFML_BASE_STRSTR(action, "remove"))
                         {
                             recordIt->plugged = false;
                             break;
@@ -160,7 +161,7 @@ void updatePluggedList(udev_device* udevDevice = nullptr)
 
                 if (recordIt == joystickList.end())
                 {
-                    if (std::strstr(action, "add"))
+                    if (SFML_BASE_STRSTR(action, "add"))
                     {
                         // If not mapped before and it got added, map it now
                         const char* syspath = udev_device_get_syspath(udevDevice);
@@ -172,7 +173,7 @@ void updatePluggedList(udev_device* udevDevice = nullptr)
 
                         joystickList.push_back(newRecord);
                     }
-                    else if (std::strstr(action, "remove"))
+                    else if (SFML_BASE_STRSTR(action, "remove"))
                     {
                         // Not mapped during the initial scan, and removed (shouldn't happen)
                         sf::priv::err() << "Trying to disconnect joystick that wasn't connected";

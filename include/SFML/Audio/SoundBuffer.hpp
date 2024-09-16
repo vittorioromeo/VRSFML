@@ -235,7 +235,7 @@ public:
     /// \brief Construct from vector of samples
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit SoundBuffer(base::PassKey<SoundBuffer>&&, void* samplesVectorPtr);
+    [[nodiscard]] explicit SoundBuffer(base::PassKey<SoundBuffer>&&, void* samplesTrivialVectorPtr);
 
 private:
     ////////////////////////////////////////////////////////////

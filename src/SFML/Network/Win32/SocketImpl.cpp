@@ -172,35 +172,35 @@ SocketHandle SocketImpl::invalidSocket()
 
 
 ////////////////////////////////////////////////////////////
-unsigned long SocketImpl::ntohl(unsigned long netlong)
+unsigned long SocketImpl::getNtohl(unsigned long netlong)
 {
     return ::ntohl(netlong);
 }
 
 
 ////////////////////////////////////////////////////////////
-unsigned short SocketImpl::ntohs(unsigned short netshort)
+unsigned short SocketImpl::getNtohs(unsigned short netshort)
 {
     return ::ntohs(netshort);
 }
 
 
 ////////////////////////////////////////////////////////////
-unsigned long SocketImpl::ntohl(SockAddrIn addr)
+unsigned long SocketImpl::getNtohl(SockAddrIn addr)
 {
     return ::ntohl(addr.m_impl->sin_addr.s_addr);
 }
 
 
 ////////////////////////////////////////////////////////////
-unsigned short SocketImpl::htons(NetworkShort hostshort)
+unsigned short SocketImpl::getHtons(NetworkShort hostshort)
 {
     return ::htons(hostshort);
 }
 
 
 ////////////////////////////////////////////////////////////
-unsigned long SocketImpl::htonl(NetworkLong hostlong)
+unsigned long SocketImpl::getHtonl(NetworkLong hostlong)
 {
     return ::htonl(hostlong);
 }

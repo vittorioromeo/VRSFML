@@ -6,14 +6,9 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Network/Export.hpp"
 
+#include "SFML/Base/FwdStdString.hpp" // used
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/TrivialVector.hpp"
-
-#if __has_include(<bits/stringfwd.h>)
-#include <bits/stringfwd.h>
-#else
-#include <string>
-#endif
 
 #include <cstdint>
 

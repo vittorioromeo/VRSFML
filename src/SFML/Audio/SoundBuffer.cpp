@@ -14,9 +14,9 @@
 
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 
 #include <unordered_set>
-#include <vector>
 
 
 namespace sf
@@ -30,15 +30,15 @@ struct SoundBuffer::Impl
 {
     explicit Impl() = default;
 
-    explicit Impl(std::vector<std::int16_t>&& theSamples) : samples(SFML_BASE_MOVE(theSamples))
+    explicit Impl(base::TrivialVector<std::int16_t>&& theSamples) : samples(SFML_BASE_MOVE(theSamples))
     {
     }
 
-    std::vector<std::int16_t> samples;                        //!< Samples buffer
-    unsigned int              sampleRate{44100};              //!< Number of samples per second
-    ChannelMap                channelMap{SoundChannel::Mono}; //!< The map of position in sample frame to sound channel
-    Time                      duration;                       //!< Sound duration
-    mutable SoundList         sounds;                         //!< List of sounds that are using this buffer
+    base::TrivialVector<std::int16_t> samples;           //!< Samples buffer
+    unsigned int                      sampleRate{44100}; //!< Number of samples per second
+    ChannelMap        channelMap{SoundChannel::Mono};    //!< The map of position in sample frame to sound channel
+    Time              duration;                          //!< Sound duration
+    mutable SoundList sounds;                            //!< List of sounds that are using this buffer
 };
 
 
@@ -143,7 +143,7 @@ base::Optional<SoundBuffer> SoundBuffer::loadFromSamples(
     unsigned int        sampleRate,
     const ChannelMap&   channelMap)
 {
-    return loadFromSamplesImpl(std::vector<std::int16_t>(samples, samples + sampleCount), channelCount, sampleRate, channelMap);
+    return loadFromSamplesImpl(base::TrivialVector<std::int16_t>(samples, sampleCount), channelCount, sampleRate, channelMap);
 }
 
 
@@ -221,8 +221,8 @@ SoundBuffer& SoundBuffer::operator=(const SoundBuffer& right)
 
 
 ////////////////////////////////////////////////////////////
-SoundBuffer::SoundBuffer(base::PassKey<SoundBuffer>&&, void* samplesVectorPtr) :
-m_impl(SFML_BASE_MOVE(*static_cast<std::vector<std::int16_t>*>(samplesVectorPtr)))
+SoundBuffer::SoundBuffer(base::PassKey<SoundBuffer>&&, void* samplesTrivialVectorPtr) :
+m_impl(SFML_BASE_MOVE(*static_cast<base::TrivialVector<std::int16_t>*>(samplesTrivialVectorPtr)))
 {
 }
 
@@ -231,8 +231,8 @@ m_impl(SFML_BASE_MOVE(*static_cast<std::vector<std::int16_t>*>(samplesVectorPtr)
 base::Optional<SoundBuffer> SoundBuffer::initialize(InputSoundFile& file)
 {
     // Read the samples from the provided file
-    const std::uint64_t       sampleCount = file.getSampleCount();
-    std::vector<std::int16_t> samples(static_cast<base::SizeT>(sampleCount));
+    const std::uint64_t               sampleCount = file.getSampleCount();
+    base::TrivialVector<std::int16_t> samples(static_cast<base::SizeT>(sampleCount));
 
     if (file.read(samples.data(), sampleCount) != sampleCount)
         return base::nullOpt;

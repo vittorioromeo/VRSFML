@@ -26,6 +26,7 @@ namespace sf
 struct Path::Impl
 {
     std::filesystem::path fsPath;
+    mutable std::string   buffer;
 };
 
 
@@ -42,7 +43,7 @@ Path::Path() = default;
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-Path::Path(const T& source) : m_impl(source)
+Path::Path(const T& source) : m_impl(source, std::string{})
 {
 }
 
@@ -52,7 +53,7 @@ template Path::Path(const std::basic_string<wchar_t>&);
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-Path::Path(const T* source) : m_impl(source)
+Path::Path(const T* source) : m_impl(source, std::string{})
 {
 }
 
@@ -61,7 +62,7 @@ template Path::Path(const wchar_t*);
 
 
 ////////////////////////////////////////////////////////////
-Path::Path(int, const void* fsPath) : m_impl(*static_cast<const std::filesystem::path*>(fsPath))
+Path::Path(int, const void* fsPath) : m_impl(*static_cast<const std::filesystem::path*>(fsPath), std::string{})
 {
 }
 
@@ -111,6 +112,14 @@ Path Path::absolute() const
 const Path::value_type* Path::c_str() const
 {
     return m_impl->fsPath.c_str();
+}
+
+
+////////////////////////////////////////////////////////////
+const char* Path::toCharPtr() const
+{
+    m_impl->buffer = to<std::string>();
+    return m_impl->buffer.c_str();
 }
 
 
