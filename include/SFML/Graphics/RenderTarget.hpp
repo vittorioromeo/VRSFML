@@ -1,6 +1,4 @@
 #pragma once
-#include "DrawableBatch.hpp"
-
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
@@ -25,6 +23,7 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
+class DrawableBatch;
 class GraphicsContext;
 class Shader;
 class Shape;

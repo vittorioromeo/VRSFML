@@ -16,7 +16,7 @@ namespace
 {
 ////////////////////////////////////////////////////////////
 // Compute the normal of a segment
-[[nodiscard, gnu::always_inline, gnu::const]] sf::Vector2f computeNormal(sf::Vector2f p1, sf::Vector2f p2)
+[[nodiscard, gnu::always_inline, gnu::const]] inline sf::Vector2f computeNormal(sf::Vector2f p1, sf::Vector2f p2)
 {
     sf::Vector2f normal = (p2 - p1).perpendicular();
     const float  length = normal.length();

@@ -1,5 +1,6 @@
 #include "SFML/ImGui/ImGui.hpp"
 
+#include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
@@ -158,11 +159,11 @@ int main()
     //
     //
     // Set up UI elements
-    bool         useBatch      = true;
-    bool         drawSprites   = true;
-    bool         drawText      = false;
-    int          numEntities   = 1'000'000;
-    unsigned int drawnVertices = 0u;
+    bool        useBatch      = true;
+    bool        drawSprites   = true;
+    bool        drawText      = false;
+    int         numEntities   = 1'000'000;
+    std::size_t drawnVertices = 0u;
 
     //
     //
@@ -302,7 +303,7 @@ int main()
             plotGraph("FPS", " FPS", samplesFPS, 300.f);
 
             ImGui::Spacing();
-            ImGui::Text("Drawn vertices: %u", drawnVertices);
+            ImGui::Text("Drawn vertices: %zu", drawnVertices);
 
             ImGui::End();
         }

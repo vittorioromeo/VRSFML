@@ -1,13 +1,18 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Config.hpp"
+
+#ifndef SFML_OPENGL_ES
+#error "EGLContext included but ES disabled"
+#endif
+
 #include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/GlContext.hpp"
-
-#include "SFML/System/Vector2.hpp"
 
 // Emscripten does not use GLAD
 #ifdef SFML_SYSTEM_EMSCRIPTEN
