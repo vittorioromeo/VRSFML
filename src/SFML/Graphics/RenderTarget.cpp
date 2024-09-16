@@ -699,7 +699,7 @@ void RenderTarget::drawIndexedVertices(
 
     glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexByteCount, nullptr, GL_STREAM_DRAW));
     glCheck(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0u, indexByteCount, indices));
-#elif 1
+#elif 0
     glCheck(glBufferData(GL_ARRAY_BUFFER, vertexByteCount, nullptr, GL_STREAM_DRAW));
     void* ptr0 = glMapBufferRange(GL_ARRAY_BUFFER,
                                   0u,
