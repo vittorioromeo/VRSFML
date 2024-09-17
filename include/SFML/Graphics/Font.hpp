@@ -337,7 +337,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 256> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 512> m_impl; //!< Implementation details
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking

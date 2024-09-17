@@ -7,8 +7,7 @@
 #include "SFML/System/RectPacker.hpp"
 
 #include "SFML/Base/Optional.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/UniquePtr.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 
 #define STBRP_STATIC
 #define STB_RECT_PACK_IMPLEMENTATION
@@ -18,32 +17,24 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-enum : base::SizeT
-{
-    MaxNodes = 1024ul
-};
-
-
-////////////////////////////////////////////////////////////
 struct RectPacker::Impl
 {
-    stbrp_node    nodes[MaxNodes]{};
-    stbrp_context context{};
-    base::SizeT   numPacked{0ul};
+    base::TrivialVector<stbrp_node> nodes;
+    stbrp_context                   context{};
 
-    explicit Impl(Vector2u size)
+    explicit Impl(Vector2u size) : nodes(size.x * 3 / 2)
     {
-        stbrp_init_target(&context, static_cast<int>(size.x), static_cast<int>(size.y), nodes, MaxNodes);
+        stbrp_init_target(&context,
+                          static_cast<int>(size.x),
+                          static_cast<int>(size.y),
+                          nodes.data(),
+                          static_cast<int>(nodes.size()));
     }
-
-    // Needs address stability
-    Impl(const Impl&) = delete;
-    Impl(Impl&&)      = delete;
 };
 
 
 ////////////////////////////////////////////////////////////
-RectPacker::RectPacker(Vector2u size) : m_impl(base::makeUnique<Impl>(size))
+RectPacker::RectPacker(Vector2u size) : m_impl(size)
 {
 }
 
@@ -68,9 +59,6 @@ base::Optional<Vector2u> RectPacker::pack(Vector2u rectSize)
         priv::err() << "Failure packing rectangle with size {" << rectSize.x << ", " << rectSize.y << "}: " << what;
         return base::nullOpt;
     };
-
-    if (m_impl->numPacked >= MaxNodes)
-        return fail("no nodes left");
 
     if (rectSize.x == 0u || rectSize.y == 0u)
         return fail("zero-sized coordinate");

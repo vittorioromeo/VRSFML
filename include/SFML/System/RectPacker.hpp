@@ -6,8 +6,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Vector2.hpp"
 
+#include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Optional.hpp"
-#include "SFML/Base/UniquePtr.hpp"
 
 
 namespace sf
@@ -72,7 +72,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::UniquePtr<Impl> m_impl; //!< Implementation details (needs address stability)
+    base::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
 };
 
 } // namespace sf
