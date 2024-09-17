@@ -140,7 +140,7 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
         m_settings.minorVersion = 1;
 
         if (const char* version = reinterpret_cast<const char*>(
-                glCheckIgnoreExprWithFunc(glGetErrorFunc, glGetStringFunc(GL_VERSION))))
+                glCheckIgnoreWithFunc(glGetErrorFunc, glGetStringFunc(GL_VERSION))))
         {
             // OpenGL ES Common Lite profile: The beginning of the returned string is "OpenGL ES-CL major.minor"
             // OpenGL ES Common profile:      The beginning of the returned string is "OpenGL ES-CM major.minor"
@@ -261,7 +261,7 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
         glCheckIgnoreWithFunc(glGetErrorFunc, glEnableFunc(GL_FRAMEBUFFER_SRGB));
 
         // Check to see if the enable was successful
-        if (glCheckIgnoreExprWithFunc(glGetErrorFunc, glIsEnabledFunc(GL_FRAMEBUFFER_SRGB)) == GL_FALSE)
+        if (glCheckIgnoreWithFunc(glGetErrorFunc, glIsEnabledFunc(GL_FRAMEBUFFER_SRGB)) == GL_FALSE)
         {
             err() << "Warning: Failed to enable GL_FRAMEBUFFER_SRGB";
             m_settings.sRgbCapable = false;

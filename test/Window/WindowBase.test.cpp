@@ -4,7 +4,7 @@
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
-#include "SFML/System/TimeChronoUtil.hpp"
+#include "SFML/System/Clock.hpp"
 
 #include <Doctest.hpp>
 
@@ -12,8 +12,6 @@
 #include <StringifyOptionalUtil.hpp>
 #include <SystemUtil.hpp>
 #include <WindowUtil.hpp>
-
-#include <chrono>
 
 TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 {
@@ -69,13 +67,15 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 
             constexpr auto timeout = sf::milliseconds(50);
 
-            const auto startTime = std::chrono::steady_clock::now();
+            sf::Clock clock;
+
+            const auto startTime = clock.getElapsedTime();
             const auto event     = windowBase.waitEvent(timeout);
-            const auto elapsed   = std::chrono::steady_clock::now() - startTime;
+            const auto elapsed   = clock.getElapsedTime() - startTime;
 
-            REQUIRE(elapsed < sf::TimeChronoUtil::toDuration(timeout + sf::milliseconds(50)));
+            REQUIRE(elapsed < timeout);
 
-            if (elapsed <= sf::TimeChronoUtil::toDuration(timeout))
+            if (elapsed <= timeout)
                 CHECK(event.hasValue());
             else
                 CHECK(!event.hasValue());

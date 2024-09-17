@@ -7,6 +7,7 @@
 #include "SFML/Config.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Traits/IsSame.hpp"
 
 
 namespace sf::priv
@@ -19,66 +20,53 @@ namespace sf::priv
 // In debug mode, perform a test on every OpenGL call
 // The do-while loop is needed so that glCheck can be used as a single statement in if/else branches
 
-#define glCheck(...)                                                            \
-    do                                                                          \
-    {                                                                           \
-        SFML_BASE_ASSERT(::sf::priv::glGetErrorImpl() == 0u /* GL_NO_ERROR */); \
-                                                                                \
-        __VA_ARGS__;                                                            \
-                                                                                \
-        while (!::sf::priv::glCheckError(__FILE__, __LINE__, #__VA_ARGS__))     \
-            /* no-op */;                                                        \
-                                                                                \
-    } while (false)
+[[nodiscard, gnu::always_inline, gnu::flatten]] constexpr auto regularize(auto&& f)
+{
+    if constexpr (SFML_BASE_IS_SAME(decltype(f()), void))
+    {
+        f();
+        return nullptr;
+    }
+    else
+    {
+        return f();
+    }
+}
 
-#define glCheckExpr(...)                                                        \
-    [&]                                                                         \
+#define glCheck(...)                                                            \
+    [](auto&& f) [[gnu::always_inline, gnu::flatten]]                           \
     {                                                                           \
         SFML_BASE_ASSERT(::sf::priv::glGetErrorImpl() == 0u /* GL_NO_ERROR */); \
                                                                                 \
-        auto _glCheckExprResult = __VA_ARGS__;                                  \
+        auto _glCheckResult = ::sf::priv::regularize(f);                        \
                                                                                 \
         while (!::sf::priv::glCheckError(__FILE__, __LINE__, #__VA_ARGS__))     \
             /* no-op */;                                                        \
                                                                                 \
-        return _glCheckExprResult;                                              \
-    }()
+        return _glCheckResult;                                                  \
+    }([&]() [[gnu::always_inline, gnu::flatten]] { return __VA_ARGS__; })
 
 // The variants below are expected to fail, but we don't want to pollute the state of
 // `glGetError` so we have to call it anyway
 
-#define glCheckIgnoreWithFunc(errorFunc, ...)         \
-    do                                                \
-    {                                                 \
-        SFML_BASE_ASSERT(errorFunc() == GL_NO_ERROR); \
-                                                      \
-        __VA_ARGS__;                                  \
-                                                      \
-        while (errorFunc() != GL_NO_ERROR)            \
-            /* no-op */;                              \
-                                                      \
-    } while (false)
-
-#define glCheckIgnoreExprWithFunc(errorFunc, ...)     \
-    [&]                                               \
-    {                                                 \
-        SFML_BASE_ASSERT(errorFunc() == GL_NO_ERROR); \
-                                                      \
-        auto _glCheckExprResult = __VA_ARGS__;        \
-                                                      \
-        while (errorFunc() != GL_NO_ERROR)            \
-            /* no-op */;                              \
-                                                      \
-        return _glCheckExprResult;                    \
-    }()
+#define glCheckIgnoreWithFunc(errorFunc, ...)                  \
+    [&](auto&& f) [[gnu::always_inline, gnu::flatten]]         \
+    {                                                          \
+        SFML_BASE_ASSERT(errorFunc() == 0u /* GL_NO_ERROR */); \
+                                                               \
+        auto _glCheckResult = ::sf::priv::regularize(f);       \
+                                                               \
+        while (errorFunc() != 0u /* GL_NO_ERROR */)            \
+            /* no-op */;                                       \
+                                                               \
+        return _glCheckResult;                                 \
+    }([&]() [[gnu::always_inline, gnu::flatten]] { return __VA_ARGS__; })
 
 #else
 
 // Else, we don't add any overhead
-#define glCheck(...)                              (__VA_ARGS__)
-#define glCheckExpr(...)                          (__VA_ARGS__)
-#define glCheckIgnoreWithFunc(errorFunc, ...)     (__VA_ARGS__)
-#define glCheckIgnoreExprWithFunc(errorFunc, ...) (__VA_ARGS__)
+#define glCheck(...)                          (__VA_ARGS__)
+#define glCheckIgnoreWithFunc(errorFunc, ...) (__VA_ARGS__)
 
 #endif
 
