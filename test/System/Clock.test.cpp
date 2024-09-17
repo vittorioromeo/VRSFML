@@ -8,12 +8,8 @@
 #include <CommonTraits.hpp>
 #include <SystemUtil.hpp>
 
-#include <chrono>
-
 TEST_CASE("[System] sf::Clock")
 {
-    using namespace std::chrono_literals;
-
     SECTION("Type traits")
     {
         STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Clock));

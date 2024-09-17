@@ -22,18 +22,18 @@ struct [[nodiscard]] SFML_GRAPHICS_API BlendMode
     /// The factors are mapped directly to their OpenGL equivalents,
     /// specified by glBlendFunc() or glBlendFuncSeparate().
     ////////////////////////////////////////////////////////
-    enum class [[nodiscard]] Factor
+    enum class [[nodiscard]] Factor : unsigned int
     {
-        Zero,             //!< (0, 0, 0, 0)
-        One,              //!< (1, 1, 1, 1)
-        SrcColor,         //!< (src.r, src.g, src.b, src.a)
-        OneMinusSrcColor, //!< (1, 1, 1, 1) - (src.r, src.g, src.b, src.a)
-        DstColor,         //!< (dst.r, dst.g, dst.b, dst.a)
-        OneMinusDstColor, //!< (1, 1, 1, 1) - (dst.r, dst.g, dst.b, dst.a)
-        SrcAlpha,         //!< (src.a, src.a, src.a, src.a)
-        OneMinusSrcAlpha, //!< (1, 1, 1, 1) - (src.a, src.a, src.a, src.a)
-        DstAlpha,         //!< (dst.a, dst.a, dst.a, dst.a)
-        OneMinusDstAlpha  //!< (1, 1, 1, 1) - (dst.a, dst.a, dst.a, dst.a)
+        Zero             = 0u, //!< (0, 0, 0, 0)
+        One              = 1u, //!< (1, 1, 1, 1)
+        SrcColor         = 2u, //!< (src.r, src.g, src.b, src.a)
+        OneMinusSrcColor = 3u, //!< (1, 1, 1, 1) - (src.r, src.g, src.b, src.a)
+        DstColor         = 4u, //!< (dst.r, dst.g, dst.b, dst.a)
+        OneMinusDstColor = 5u, //!< (1, 1, 1, 1) - (dst.r, dst.g, dst.b, dst.a)
+        SrcAlpha         = 6u, //!< (src.a, src.a, src.a, src.a)
+        OneMinusSrcAlpha = 7u, //!< (1, 1, 1, 1) - (src.a, src.a, src.a, src.a)
+        DstAlpha         = 8u, //!< (dst.a, dst.a, dst.a, dst.a)
+        OneMinusDstAlpha = 9u  //!< (1, 1, 1, 1) - (dst.a, dst.a, dst.a, dst.a)
     };
 
     ////////////////////////////////////////////////////////
@@ -42,13 +42,13 @@ struct [[nodiscard]] SFML_GRAPHICS_API BlendMode
     /// The equations are mapped directly to their OpenGL equivalents,
     /// specified by glBlendEquation() or glBlendEquationSeparate().
     ////////////////////////////////////////////////////////
-    enum class [[nodiscard]] Equation
+    enum class [[nodiscard]] Equation : unsigned int
     {
-        Add,             //!< Pixel = Src * SrcFactor + Dst * DstFactor
-        Subtract,        //!< Pixel = Src * SrcFactor - Dst * DstFactor
-        ReverseSubtract, //!< Pixel = Dst * DstFactor - Src * SrcFactor
-        Min,             //!< Pixel = min(Dst, Src)
-        Max              //!< Pixel = max(Dst, Src)
+        Add             = 0u, //!< Pixel = Src * SrcFactor + Dst * DstFactor
+        Subtract        = 1u, //!< Pixel = Src * SrcFactor - Dst * DstFactor
+        ReverseSubtract = 2u, //!< Pixel = Dst * DstFactor - Src * SrcFactor
+        Min             = 3u, //!< Pixel = min(Dst, Src)
+        Max             = 4u  //!< Pixel = max(Dst, Src)
     };
 
     ////////////////////////////////////////////////////////////

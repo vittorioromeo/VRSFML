@@ -31,6 +31,8 @@ bool glCheckError(const char* file, unsigned int line, const char* expression)
         return false;
     };
 
+    // TODO P0: macro to detect statement expressions, use in definition
+
     switch (glGetError())
     {
         case GL_NO_ERROR:

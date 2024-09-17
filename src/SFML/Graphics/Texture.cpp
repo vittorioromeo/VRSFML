@@ -432,7 +432,7 @@ void Texture::update(const std::uint8_t* pixels, Vector2u size, Vector2u dest)
     SFML_BASE_ASSERT(pixels != nullptr);
 
     SFML_BASE_ASSERT(m_texture);
-    SFML_BASE_ASSERT(glCheckExpr(glIsTexture(m_texture)));
+    SFML_BASE_ASSERT(glCheck(glIsTexture(m_texture)));
 
     SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
@@ -476,10 +476,10 @@ bool Texture::update(const Texture& texture, Vector2u dest)
     SFML_BASE_ASSERT(dest.y + texture.m_size.y <= m_size.y && "Destination y coordinate is outside of texture");
 
     SFML_BASE_ASSERT(m_texture);
-    SFML_BASE_ASSERT(glCheckExpr(glIsTexture(m_texture)));
+    SFML_BASE_ASSERT(glCheck(glIsTexture(m_texture)));
 
     SFML_BASE_ASSERT(texture.m_texture);
-    SFML_BASE_ASSERT(glCheckExpr(glIsTexture(texture.m_texture)));
+    SFML_BASE_ASSERT(glCheck(glIsTexture(texture.m_texture)));
 
     SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
@@ -602,7 +602,7 @@ bool Texture::update(const Window& window, Vector2u dest)
     SFML_BASE_ASSERT(dest.y + window.getSize().y <= m_size.y && "Destination y coordinate is outside of texture");
 
     SFML_BASE_ASSERT(m_texture);
-    SFML_BASE_ASSERT(glCheckExpr(glIsTexture(m_texture)));
+    SFML_BASE_ASSERT(glCheck(glIsTexture(m_texture)));
 
     if (!window.setActive(true))
     {
@@ -777,7 +777,7 @@ bool Texture::isRepeated() const
 bool Texture::generateMipmap()
 {
     SFML_BASE_ASSERT(m_texture);
-    SFML_BASE_ASSERT(glCheckExpr(glIsTexture(m_texture)));
+    SFML_BASE_ASSERT(glCheck(glIsTexture(m_texture)));
 
     SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 

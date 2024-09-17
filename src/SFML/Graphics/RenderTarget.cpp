@@ -46,7 +46,7 @@ namespace RenderTargetImpl
 {
 ////////////////////////////////////////////////////////////
 // Type alias for a render target or context id
-using IdType = std::uint64_t;
+using IdType = unsigned int;
 
 
 ////////////////////////////////////////////////////////////
@@ -83,110 +83,68 @@ constinit std::atomic<IdType> contextRenderTargetMap[maxIdCount]{};
 
 
 ////////////////////////////////////////////////////////////
-// Convert an sf::BlendMode::Factor constant to the corresponding OpenGL constant.
-[[nodiscard, gnu::pure]] std::uint32_t factorToGlConstant(sf::BlendMode::Factor blendFactor)
-{
-    // clang-format off
-    switch (blendFactor)
-    {
-        case sf::BlendMode::Factor::Zero:             return GL_ZERO;
-        case sf::BlendMode::Factor::One:              return GL_ONE;
-        case sf::BlendMode::Factor::SrcColor:         return GL_SRC_COLOR;
-        case sf::BlendMode::Factor::OneMinusSrcColor: return GL_ONE_MINUS_SRC_COLOR;
-        case sf::BlendMode::Factor::DstColor:         return GL_DST_COLOR;
-        case sf::BlendMode::Factor::OneMinusDstColor: return GL_ONE_MINUS_DST_COLOR;
-        case sf::BlendMode::Factor::SrcAlpha:         return GL_SRC_ALPHA;
-        case sf::BlendMode::Factor::OneMinusSrcAlpha: return GL_ONE_MINUS_SRC_ALPHA;
-        case sf::BlendMode::Factor::DstAlpha:         return GL_DST_ALPHA;
-        case sf::BlendMode::Factor::OneMinusDstAlpha: return GL_ONE_MINUS_DST_ALPHA;
+#define SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(fnName, sfEnumType, ...)                         \
+    [[nodiscard, gnu::pure, gnu::flatten, gnu::const]] constexpr GLenum fnName(sfEnumType sfEnumValue) \
+    {                                                                                                  \
+        constexpr GLenum glValues[] __VA_ARGS__;                                                       \
+                                                                                                       \
+        SFML_BASE_ASSERT(static_cast<unsigned int>(sfEnumValue) < ::sf::base::getArraySize(glValues)); \
+        return glValues[static_cast<unsigned int>(sfEnumValue)];                                       \
     }
-    // clang-format on
 
-    sf::priv::err() << "Invalid value for sf::BlendMode::Factor! Fallback to sf::BlendMode::Factor::Zero.";
-    SFML_BASE_ASSERT(false);
-    return GL_ZERO;
-}
+
+////////////////////////////////////////////////////////////
+// Convert an sf::BlendMode::Factor constant to the corresponding OpenGL constant.
+SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
+    factorToGlConstant,
+    sf::BlendMode::Factor,
+    {GL_ZERO,
+     GL_ONE,
+     GL_SRC_COLOR,
+     GL_ONE_MINUS_SRC_COLOR,
+     GL_DST_COLOR,
+     GL_ONE_MINUS_DST_COLOR,
+     GL_SRC_ALPHA,
+     GL_ONE_MINUS_SRC_ALPHA,
+     GL_DST_ALPHA,
+     GL_ONE_MINUS_DST_ALPHA});
 
 
 ////////////////////////////////////////////////////////////
 // Convert an sf::BlendMode::Equation constant to the corresponding OpenGL constant.
-[[nodiscard, gnu::pure]] std::uint32_t equationToGlConstant(sf::BlendMode::Equation blendEquation)
-{
-    // clang-format off
-    switch (blendEquation)
-    {
-        case sf::BlendMode::Equation::Add:             return GL_FUNC_ADD;
-        case sf::BlendMode::Equation::Subtract:        return GL_FUNC_SUBTRACT;
-        case sf::BlendMode::Equation::ReverseSubtract: return GL_FUNC_REVERSE_SUBTRACT;
-        case sf::BlendMode::Equation::Min:             return GL_MIN;
-        case sf::BlendMode::Equation::Max:             return GL_MAX;
-    }
-    // clang-format on
-
-    sf::priv::err() << "Invalid value for sf::BlendMode::Equation! Fallback to sf::BlendMode::Equation::Add.";
-    SFML_BASE_ASSERT(false);
-    return GL_FUNC_ADD;
-}
+SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(equationToGlConstant,
+                                              sf::BlendMode::Equation,
+                                              {GL_FUNC_ADD, GL_FUNC_SUBTRACT, GL_FUNC_REVERSE_SUBTRACT, GL_MIN, GL_MAX});
 
 
 ////////////////////////////////////////////////////////////
 // Convert an UpdateOperation constant to the corresponding OpenGL constant.
-[[nodiscard, gnu::pure]] std::uint32_t stencilOperationToGlConstant(sf::StencilUpdateOperation operation)
-{
-    // clang-format off
-    switch (operation)
-    {
-        case sf::StencilUpdateOperation::Keep:      return GL_KEEP;
-        case sf::StencilUpdateOperation::Zero:      return GL_ZERO;
-        case sf::StencilUpdateOperation::Replace:   return GL_REPLACE;
-        case sf::StencilUpdateOperation::Increment: return GL_INCR;
-        case sf::StencilUpdateOperation::Decrement: return GL_DECR;
-        case sf::StencilUpdateOperation::Invert:    return GL_INVERT;
-    }
-    // clang-format on
-
-    sf::priv::err() << "Invalid value for sf::StencilUpdateOperation! Fallback to sf::StencilMode::Keep.";
-    SFML_BASE_ASSERT(false);
-    return GL_KEEP;
-}
+SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(stencilOperationToGlConstant,
+                                              sf::StencilUpdateOperation,
+                                              {GL_KEEP, GL_ZERO, GL_REPLACE, GL_INCR, GL_DECR, GL_INVERT});
 
 
 ////////////////////////////////////////////////////////////
 // Convert a Comparison constant to the corresponding OpenGL constant.
-[[nodiscard, gnu::pure]] std::uint32_t stencilFunctionToGlConstant(sf::StencilComparison comparison)
-{
-    // clang-format off
-    switch (comparison)
-    {
-        case sf::StencilComparison::Never:        return GL_NEVER;
-        case sf::StencilComparison::Less:         return GL_LESS;
-        case sf::StencilComparison::LessEqual:    return GL_LEQUAL;
-        case sf::StencilComparison::Greater:      return GL_GREATER;
-        case sf::StencilComparison::GreaterEqual: return GL_GEQUAL;
-        case sf::StencilComparison::Equal:        return GL_EQUAL;
-        case sf::StencilComparison::NotEqual:     return GL_NOTEQUAL;
-        case sf::StencilComparison::Always:       return GL_ALWAYS;
-    }
-    // clang-format on
-
-    sf::priv::err() << "Invalid value for sf::StencilComparison! Fallback to sf::StencilMode::Always.";
-    SFML_BASE_ASSERT(false);
-    return GL_ALWAYS;
-}
+SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
+    stencilFunctionToGlConstant,
+    sf::StencilComparison,
+    {GL_NEVER, GL_LESS, GL_LEQUAL, GL_GREATER, GL_GEQUAL, GL_EQUAL, GL_NOTEQUAL, GL_ALWAYS});
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::const]] constexpr GLenum primitiveTypeToOpenGLMode(sf::PrimitiveType type)
-{
-    SFML_BASE_ASSERT(static_cast<sf::base::SizeT>(type) < 6u);
-
-    constexpr GLenum modes[]{GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN};
-    return modes[static_cast<sf::base::SizeT>(type)];
-}
+SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
+    primitiveTypeToOpenGLMode,
+    sf::PrimitiveType,
+    {GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN});
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] inline sf::IntRect getMultipliedBySizeAndRoundedRect(
+#undef SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline sf::IntRect getMultipliedBySizeAndRoundedRect(
     sf::Vector2u         renderTargetSize,
     const sf::FloatRect& inputRect)
 {
@@ -209,24 +167,24 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] StatesCache
 {
-    bool enable{};      //!< Is the cache enabled?
-    bool glStatesSet{}; //!< Are our internal GL states set yet?
+    bool enable{false};      //!< Is the cache enabled?
+    bool glStatesSet{false}; //!< Are our internal GL states set yet?
 
-    bool viewChanged{}; //!< Has the current view changed since last draw?
+    bool viewChanged{false}; //!< Has the current view changed since last draw?
 
-    bool scissorEnabled{}; //!< Is scissor testing enabled?
-    bool stencilEnabled{}; //!< Is stencil testing enabled?
+    bool scissorEnabled{false}; //!< Is scissor testing enabled?
+    bool stencilEnabled{false}; //!< Is stencil testing enabled?
 
-    BlendMode      lastBlendMode;        //!< Cached blending mode
-    StencilMode    lastStencilMode;      //!< Cached stencil
-    std::uint64_t  lastTextureId{};      //!< Cached texture
-    CoordinateType lastCoordinateType{}; //!< Texture coordinate type
+    BlendMode      lastBlendMode;                                  //!< Cached blending mode
+    StencilMode    lastStencilMode;                                //!< Cached stencil
+    std::uint64_t  lastTextureId{0u};                              //!< Cached texture
+    CoordinateType lastCoordinateType{CoordinateType::Normalized}; //!< Cached texture coordinate type
 
-    GLuint lastUsedProgramId{}; //!< GL id of the last used shader program
+    GLuint lastUsedProgramId{0u}; //!< GL id of the last used shader program
 
-    GLint sfAttribPositionIdx{}; //!< Index of the "sf_a_position" attribute
-    GLint sfAttribColorIdx{};    //!< Index of the "sf_a_color" attribute
-    GLint sfAttribTexCoordIdx{}; //!< Index of the "sf_a_texCoord" attribute
+    GLint sfAttribIdxPosition{0u}; //!< Index of the "sf_a_position" attribute
+    GLint sfAttribIdxColor{0u};    //!< Index of the "sf_a_color" attribute
+    GLint sfAttribIdxTexCoord{0u}; //!< Index of the "sf_a_texCoord" attribute
 
     base::Optional<Shader::UniformLocation> ulTextureMatrix;             //!< Built-in texture matrix uniform location
     base::Optional<Shader::UniformLocation> ulModelViewProjectionMatrix; //!< Built-in model-view-projection matrix uniform location
@@ -235,24 +193,36 @@ struct [[nodiscard]] StatesCache
 
 ////////////////////////////////////////////////////////////
 template <auto FnGen, auto FnBind, auto FnGet, auto FnDelete>
-class OpenGLRAII
+class [[nodiscard]] OpenGLRAII
 {
 public:
-    [[nodiscard, gnu::always_inline]] explicit OpenGLRAII(GraphicsContext&)
+    [[nodiscard, gnu::always_inline, gnu::flatten]] explicit OpenGLRAII(GraphicsContext&)
     {
         SFML_BASE_ASSERT(m_id == 0u);
         FnGen(m_id);
         SFML_BASE_ASSERT(m_id != 0u);
     }
 
-    [[nodiscard, gnu::always_inline]] bool isBound() const
+    [[gnu::always_inline, gnu::flatten]] OpenGLRAII(OpenGLRAII&& rhs) noexcept : m_id(base::exchange(rhs.m_id, 0u))
+    {
+    }
+
+    [[gnu::always_inline, gnu::flatten]] OpenGLRAII& operator=(OpenGLRAII&& rhs) noexcept
+    {
+        if (&rhs != this)
+            m_id = base::exchange(rhs.m_id, 0u);
+
+        return *this;
+    }
+
+    [[nodiscard, gnu::always_inline, gnu::flatten]] bool isBound() const
     {
         int out{};
         FnGet(out);
         return out != 0u;
     }
 
-    [[gnu::always_inline]] void bind() const
+    [[gnu::always_inline, gnu::flatten]] void bind() const
     {
         SFML_BASE_ASSERT(m_id != 0u);
         FnBind(m_id);
@@ -260,7 +230,7 @@ public:
         SFML_BASE_ASSERT(isBound());
     }
 
-    [[gnu::always_inline]] ~OpenGLRAII()
+    [[gnu::always_inline, gnu::flatten]] ~OpenGLRAII()
     {
         if (m_id != 0u)
             FnDelete(m_id);
@@ -269,18 +239,6 @@ public:
     OpenGLRAII(const OpenGLRAII&)            = delete;
     OpenGLRAII& operator=(const OpenGLRAII&) = delete;
 
-    [[gnu::always_inline]] OpenGLRAII(OpenGLRAII&& rhs) noexcept : m_id(base::exchange(rhs.m_id, 0u))
-    {
-    }
-
-    [[gnu::always_inline]] OpenGLRAII& operator=(OpenGLRAII&& rhs) noexcept
-    {
-        if (&rhs == this)
-            return *this;
-
-        m_id = base::exchange(rhs.m_id, 0u);
-        return *this;
-    }
 
 private:
     unsigned int m_id{};
@@ -309,24 +267,24 @@ using EBO = OpenGLRAII<[](auto& id) { glCheck(glGenBuffers(1, &id)); },
 
 
 ////////////////////////////////////////////////////////////
-void setupVertexAttribPointers(const GLint sfAttribPositionIdx, const GLint sfAttribColorIdx, const GLint sfAttribTexCoordIdx)
+void setupVertexAttribPointers(const GLint sfAttribIdxPosition, const GLint sfAttribIdxColor, const GLint sfAttribIdxTexCoord)
 {
 #define SFML_PRIV_OFFSETOF(...) reinterpret_cast<const void*>(SFML_BASE_OFFSETOF(__VA_ARGS__))
 
-    SFML_BASE_ASSERT(sfAttribPositionIdx >= 0);
+    SFML_BASE_ASSERT(sfAttribIdxPosition >= 0);
 
-    glCheck(glEnableVertexAttribArray(static_cast<GLuint>(sfAttribPositionIdx)));
-    glCheck(glVertexAttribPointer(/*      index */ static_cast<GLuint>(sfAttribPositionIdx),
+    glCheck(glEnableVertexAttribArray(static_cast<GLuint>(sfAttribIdxPosition)));
+    glCheck(glVertexAttribPointer(/*      index */ static_cast<GLuint>(sfAttribIdxPosition),
                                   /*       size */ 2,
                                   /*       type */ GL_FLOAT,
                                   /* normalized */ GL_FALSE,
                                   /*     stride */ sizeof(Vertex),
                                   /*     offset */ SFML_PRIV_OFFSETOF(Vertex, position)));
 
-    if (sfAttribColorIdx >= 0)
+    if (sfAttribIdxColor >= 0)
     {
-        glCheck(glEnableVertexAttribArray(static_cast<GLuint>(sfAttribColorIdx)));
-        glCheck(glVertexAttribPointer(/*      index */ static_cast<GLuint>(sfAttribColorIdx),
+        glCheck(glEnableVertexAttribArray(static_cast<GLuint>(sfAttribIdxColor)));
+        glCheck(glVertexAttribPointer(/*      index */ static_cast<GLuint>(sfAttribIdxColor),
                                       /*       size */ 4,
                                       /*       type */ GL_UNSIGNED_BYTE,
                                       /* normalized */ GL_TRUE,
@@ -334,10 +292,10 @@ void setupVertexAttribPointers(const GLint sfAttribPositionIdx, const GLint sfAt
                                       /*     offset */ SFML_PRIV_OFFSETOF(Vertex, color)));
     }
 
-    if (sfAttribTexCoordIdx >= 0)
+    if (sfAttribIdxTexCoord >= 0)
     {
-        glCheck(glEnableVertexAttribArray(static_cast<GLuint>(sfAttribTexCoordIdx)));
-        glCheck(glVertexAttribPointer(/*      index */ static_cast<GLuint>(sfAttribTexCoordIdx),
+        glCheck(glEnableVertexAttribArray(static_cast<GLuint>(sfAttribIdxTexCoord)));
+        glCheck(glVertexAttribPointer(/*      index */ static_cast<GLuint>(sfAttribIdxTexCoord),
                                       /*       size */ 2,
                                       /*       type */ GL_FLOAT,
                                       /* normalized */ GL_FALSE,
@@ -372,46 +330,6 @@ struct RenderTarget::Impl
     VAO vao; //!< Vertex array object associated with the render target
     VBO vbo; //!< Vertex buffer object associated with the render target
     EBO ebo; //!< Element index buffer object associated with the render target
-
-    // TODO P0:
-    /*
-    base::SizeT vboCapacity{0u}; //!< Currently allocated capacity of the VBO
-    base::SizeT eboCapacity{0u}; //!< Currently allocated capacity of the EBO
-
-    [[gnu::always_inline]] void reallocObjectIfNeeded(GLenum type, auto& object, base::SizeT& capacity, base::SizeT byteCount)
-    {
-        if (byteCount <= capacity) [[likely]]
-            return;
-
-        const auto newCapacity = (capacity * 3u / 2u) + byteCount;
-
-        object.bind();
-        glCheck(glBufferData(type, static_cast<GLsizeiptr>(newCapacity), nullptr, GL_DYNAMIC_DRAW));
-
-        capacity = newCapacity;
-    }
-
-    [[gnu::always_inline]] void objectReallocAndMemcpy(
-        GLenum          type,
-        auto&           object,
-        base::SizeT&    capacity,
-        const void*     data,
-        sf::base::SizeT byteCount)
-    {
-        reallocObjectIfNeeded(type, object, capacity, byteCount);
-        glCheck(glBufferSubData(type, 0u, byteCount, data));
-    }
-
-    [[gnu::always_inline]] void vboReallocAndMemcpy(const void* data, sf::base::SizeT byteCount)
-    {
-        objectReallocAndMemcpy(GL_ARRAY_BUFFER, vbo, vboCapacity, data, byteCount);
-    }
-
-    [[gnu::always_inline]] void eboReallocAndMemcpy(const void* data, sf::base::SizeT byteCount)
-    {
-        objectReallocAndMemcpy(GL_ELEMENT_ARRAY_BUFFER, ebo, eboCapacity, data, byteCount);
-    }
-    */
 };
 
 
@@ -443,7 +361,7 @@ RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
     }
 
     // Unbind texture to fix RenderTexture preventing clear
-    unapplyTexture();
+    unapplyTexture(); // TODO P0: is this one necessary? Ask on Discord
 
     // Apply the view (scissor testing can affect clearing)
     if (!m_impl->cache.enable || m_impl->cache.viewChanged)
@@ -615,10 +533,6 @@ void RenderTarget::draw(const Vertex* vertices, base::SizeT vertexCount, Primiti
     glUnmapBuffer(GL_ARRAY_BUFFER);
 #endif
 
-    setupVertexAttribPointers(m_impl->cache.sfAttribPositionIdx,
-                              m_impl->cache.sfAttribColorIdx,
-                              m_impl->cache.sfAttribTexCoordIdx);
-
     drawPrimitives(type, 0u, vertexCount);
     cleanupDraw(states);
 }
@@ -671,10 +585,6 @@ void RenderTarget::drawIndexedVertices(
     glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
 #endif
 
-    setupVertexAttribPointers(m_impl->cache.sfAttribPositionIdx,
-                              m_impl->cache.sfAttribColorIdx,
-                              m_impl->cache.sfAttribTexCoordIdx);
-
     drawIndexedPrimitives(type, indexCount);
     cleanupDraw(states);
 }
@@ -721,9 +631,9 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, base::SizeT firstVerte
     VertexBuffer::bind(*m_impl->graphicsContext, &vertexBuffer);
 
     // Always enable texture coordinates
-    setupVertexAttribPointers(m_impl->cache.sfAttribPositionIdx,
-                              m_impl->cache.sfAttribColorIdx,
-                              m_impl->cache.sfAttribTexCoordIdx);
+    setupVertexAttribPointers(m_impl->cache.sfAttribIdxPosition,
+                              m_impl->cache.sfAttribIdxColor,
+                              m_impl->cache.sfAttribIdxTexCoord);
 
     drawPrimitives(vertexBuffer.getPrimitiveType(), firstVertex, vertexCount);
 
@@ -826,9 +736,9 @@ void RenderTarget::resetGLStates()
                 glCheck(glDisableVertexAttribArray(static_cast<GLuint>(cacheAttrib)));
         };
 
-        disableCacheAttrib(m_impl->cache.sfAttribPositionIdx);
-        disableCacheAttrib(m_impl->cache.sfAttribColorIdx);
-        disableCacheAttrib(m_impl->cache.sfAttribTexCoordIdx);
+        disableCacheAttrib(m_impl->cache.sfAttribIdxPosition);
+        disableCacheAttrib(m_impl->cache.sfAttribIdxColor);
+        disableCacheAttrib(m_impl->cache.sfAttribIdxTexCoord);
 
         m_impl->cache.scissorEnabled = false;
         m_impl->cache.stencilEnabled = false;
@@ -838,7 +748,11 @@ void RenderTarget::resetGLStates()
         applyBlendMode(BlendAlpha);
         applyStencilMode(StencilMode());
         unapplyTexture();
-        unapplyShader();
+
+        {
+            Shader::unbind(*m_impl->graphicsContext);
+            m_impl->cache.lastUsedProgramId = 0u;
+        }
 
         glCheck(VertexBuffer::bind(*m_impl->graphicsContext, nullptr));
 
@@ -867,9 +781,9 @@ void RenderTarget::initialize()
     // Set GL states only on first draw, so that we don't pollute user's states
     m_impl->cache.glStatesSet         = false;
     m_impl->cache.lastUsedProgramId   = 0u;
-    m_impl->cache.sfAttribPositionIdx = -1;
-    m_impl->cache.sfAttribColorIdx    = -1;
-    m_impl->cache.sfAttribTexCoordIdx = -1;
+    m_impl->cache.sfAttribIdxPosition = -1;
+    m_impl->cache.sfAttribIdxColor    = -1;
+    m_impl->cache.sfAttribIdxTexCoord = -1;
 
     // Generate a unique ID for this RenderTarget to track
     // whether it is active within a specific context
@@ -974,31 +888,12 @@ void RenderTarget::applyStencilMode(const StencilMode& mode)
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::applyTexture(const Texture& texture, CoordinateType coordinateType)
-{
-    texture.bind(*m_impl->graphicsContext);
-
-    m_impl->cache.lastTextureId      = texture.m_cacheId;
-    m_impl->cache.lastCoordinateType = coordinateType;
-}
-
-
-////////////////////////////////////////////////////////////
 void RenderTarget::unapplyTexture()
 {
     Texture::unbind(*m_impl->graphicsContext);
 
     m_impl->cache.lastTextureId      = 0ul;
     m_impl->cache.lastCoordinateType = CoordinateType::Pixels;
-}
-
-
-////////////////////////////////////////////////////////////
-void RenderTarget::unapplyShader()
-{
-    Shader::unbind(*m_impl->graphicsContext);
-
-    m_impl->cache.lastUsedProgramId = 0u;
 }
 
 
@@ -1023,35 +918,32 @@ void RenderTarget::setupDraw(const RenderStates& states)
     if (!m_impl->cache.glStatesSet)
         resetGLStates();
 
-    const Shader& usedShader = states.shader != nullptr ? *states.shader : m_impl->graphicsContext->getBuiltInShader();
-
     // Bind GL objects
     m_impl->vao.bind();
     m_impl->vbo.bind();
     m_impl->ebo.bind();
 
+    // Select shader to be used
+    const Shader& usedShader = states.shader != nullptr ? *states.shader : m_impl->graphicsContext->getBuiltInShader();
+
     // Update cache
     if (const auto usedNativeHandle = usedShader.getNativeHandle(); m_impl->cache.lastUsedProgramId != usedNativeHandle)
     {
-        m_impl->cache.lastUsedProgramId = usedNativeHandle;
-
         usedShader.bind();
 
-        const auto updateCacheAttrib = [&](GLint& cacheAttrib, const char* attribName)
-        {
-            cacheAttrib = glCheckExpr(glGetAttribLocation(usedNativeHandle, attribName));
+        m_impl->cache.lastUsedProgramId = usedNativeHandle;
 
-            if (cacheAttrib >= 0)
-                glCheck(glEnableVertexAttribArray(static_cast<GLuint>(cacheAttrib)));
-        };
-
-        updateCacheAttrib(m_impl->cache.sfAttribPositionIdx, "sf_a_position");
-        updateCacheAttrib(m_impl->cache.sfAttribColorIdx, "sf_a_color");
-        updateCacheAttrib(m_impl->cache.sfAttribTexCoordIdx, "sf_a_texCoord");
+        m_impl->cache.sfAttribIdxPosition = glCheck(glGetAttribLocation(usedNativeHandle, "sf_a_position"));
+        m_impl->cache.sfAttribIdxColor    = glCheck(glGetAttribLocation(usedNativeHandle, "sf_a_color"));
+        m_impl->cache.sfAttribIdxTexCoord = glCheck(glGetAttribLocation(usedNativeHandle, "sf_a_texCoord"));
 
         m_impl->cache.ulTextureMatrix             = usedShader.getUniformLocation("sf_u_textureMatrix");
         m_impl->cache.ulModelViewProjectionMatrix = usedShader.getUniformLocation("sf_u_modelViewProjectionMatrix");
     }
+
+    setupVertexAttribPointers(m_impl->cache.sfAttribIdxPosition,
+                              m_impl->cache.sfAttribIdxColor,
+                              m_impl->cache.sfAttribIdxTexCoord);
 
     // Apply the view
     if (!m_impl->cache.enable || m_impl->cache.viewChanged)
@@ -1065,8 +957,7 @@ void RenderTarget::setupDraw(const RenderStates& states)
                                   {},  {},  0.f, 1.f};
     // clang-format on
 
-    const Transform& modelViewMatrix(states.transform);
-    (m_impl->view.getTransform() * modelViewMatrix).getMatrix(transformMatrixBuffer);
+    (m_impl->view.getTransform() * /* model-view matrix */ states.transform).getMatrix(transformMatrixBuffer);
     usedShader.setMat4Uniform(*m_impl->cache.ulModelViewProjectionMatrix, transformMatrixBuffer);
 
     // Apply the blend mode
@@ -1081,25 +972,27 @@ void RenderTarget::setupDraw(const RenderStates& states)
     if (states.stencilMode.stencilOnly)
         glCheck(glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE));
 
-    // Apply the texture
+    // Select texture to be used
     const Texture& usedTexture = states.texture != nullptr ? *states.texture
                                                            : getGraphicsContext().getBuiltInWhiteDotTexture();
 
-    const std::uint64_t usedTextureId = usedTexture.m_cacheId;
-
     // If the texture is an FBO attachment, always rebind it in order to inform the OpenGL driver that we
-    // want changes made to it in other contexts to be visible here as well This saves us from having to
+    // want changes made to it in other contexts to be visible here as well. This saves us from having to
     // call `glFlush()` in `RenderTextureImplFBO` which can be quite costly
     //
     // See: https://www.khronos.org/opengl/wiki/Memory_Model
 
+    // Apply the texture
     const bool mustApplyTexture = !m_impl->cache.enable || usedTexture.m_fboAttachment ||
-                                  usedTextureId != m_impl->cache.lastTextureId ||
+                                  usedTexture.m_cacheId != m_impl->cache.lastTextureId ||
                                   states.coordinateType != m_impl->cache.lastCoordinateType;
 
     if (mustApplyTexture)
     {
-        applyTexture(usedTexture, states.coordinateType);
+        usedTexture.bind(*m_impl->graphicsContext);
+
+        m_impl->cache.lastTextureId      = usedTexture.m_cacheId;
+        m_impl->cache.lastCoordinateType = states.coordinateType;
 
         if (m_impl->cache.ulTextureMatrix.hasValue())
         {
@@ -1120,38 +1013,31 @@ void RenderTarget::setupDraw(const RenderStates& states)
 ////////////////////////////////////////////////////////////
 void RenderTarget::drawPrimitives(PrimitiveType type, base::SizeT firstVertex, base::SizeT vertexCount)
 {
-    m_impl->vao.bind();
-
-    glCheck(glDrawArrays(RenderTargetImpl::primitiveTypeToOpenGLMode(type),
-                         static_cast<GLint>(firstVertex),
-                         static_cast<GLsizei>(vertexCount)));
+    glCheck(glDrawArrays(/*     primitive type */ RenderTargetImpl::primitiveTypeToOpenGLMode(type),
+                         /* first vertex index */ static_cast<GLint>(firstVertex),
+                         /*       vertex count */ static_cast<GLsizei>(vertexCount)));
 }
 
 
 ////////////////////////////////////////////////////////////
 void RenderTarget::drawIndexedPrimitives(PrimitiveType type, base::SizeT indexCount)
 {
-    m_impl->vao.bind();
-
-    glCheck(glDrawElements(RenderTargetImpl::primitiveTypeToOpenGLMode(type),
-                           static_cast<GLsizei>(indexCount),
-                           GL_UNSIGNED_INT,
-                           /* index offset */ nullptr));
+    glCheck(glDrawElements(/* primitive type */ RenderTargetImpl::primitiveTypeToOpenGLMode(type),
+                           /*    index count */ static_cast<GLsizei>(indexCount),
+                           /*     index type */ GL_UNSIGNED_INT,
+                           /*   index offset */ nullptr));
 }
 
 
 ////////////////////////////////////////////////////////////
 void RenderTarget::cleanupDraw(const RenderStates& states)
 {
-    // Unbind the shader, if any
-    // TODO P0:
-    // unapplyShader();
+    // Do not unbind the shader here, as it could be reused for the next draw call.
 
     // If the texture we used to draw belonged to a RenderTexture, then forcibly unbind that texture.
     // This prevents a bug where some drivers do not clear RenderTextures properly.
-    // TODO P0:
-    // if (states.texture && states.texture->m_fboAttachment)
-    //    unapplyTexture();
+    if (states.texture != nullptr && states.texture->m_fboAttachment)
+        unapplyTexture();
 
     // Mask the color buffer back on if necessary
     if (states.stencilMode.stencilOnly)
