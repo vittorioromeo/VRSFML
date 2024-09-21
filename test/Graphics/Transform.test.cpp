@@ -172,16 +172,16 @@ TEST_CASE("[Graphics] sf::Transform")
         SECTION("About origin")
         {
             sf::Transform transform(1, 2, 3, 4, 5, 4);
-            CHECK(transform.scale({2.0f, 4.0f}) == sf::Transform(2, 8, 3, 8, 20, 4));
-            CHECK(transform.scale({0.0f, 0.0f}) == sf::Transform(0, 0, 3, 0, 0, 4));
-            CHECK(transform.scale({10.0f, 10.0f}) == sf::Transform(0, 0, 3, 0, 0, 4));
+            CHECK(transform.scaleBy({2.0f, 4.0f}) == sf::Transform(2, 8, 3, 8, 20, 4));
+            CHECK(transform.scaleBy({0.0f, 0.0f}) == sf::Transform(0, 0, 3, 0, 0, 4));
+            CHECK(transform.scaleBy({10.0f, 10.0f}) == sf::Transform(0, 0, 3, 0, 0, 4));
         }
 
         SECTION("About custom point")
         {
             sf::Transform transform(1, 2, 3, 4, 5, 4);
-            CHECK(transform.scale({1.0f, 2.0f}, {1.0f, 0.0f}) == sf::Transform(1, 4, 3, 4, 10, 4));
-            CHECK(transform.scale({0.0f, 0.0f}, {1.0f, 0.0f}) == sf::Transform(0, 0, 4, 0, 0, 8));
+            CHECK(transform.scaleBy({1.0f, 2.0f}, {1.0f, 0.0f}) == sf::Transform(1, 4, 3, 4, 10, 4));
+            CHECK(transform.scaleBy({0.0f, 0.0f}, {1.0f, 0.0f}) == sf::Transform(0, 0, 4, 0, 0, 8));
         }
     }
 

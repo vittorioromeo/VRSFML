@@ -32,7 +32,7 @@ void DrawableBatch::add(const Sprite& sprite)
     // Vertices
     {
         Vertex*& vertexPtr = m_vertices.reserveMore(4u);
-        sprite.updateVertices(vertexPtr); // does not take a reference
+        priv::spriteToVertices(sprite, vertexPtr); // does not take a reference
         vertexPtr += 4u;
     }
 }

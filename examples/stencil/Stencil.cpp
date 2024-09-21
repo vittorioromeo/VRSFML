@@ -27,24 +27,23 @@ int main()
                             {.size{600u, 600u},
                              .title     = "SFML Stencil",
                              .resizable = false,
+                             .vsync     = true,
                              .contextSettings{.depthBits = 0, .stencilBits = 8}});
-
-    window.setVerticalSyncEnabled(true);
 
     sf::RectangleShape red({500, 50});
     red.setFillColor(sf::Color::Red);
-    red.setPosition({270, 70});
-    red.setRotation(sf::degrees(60));
+    red.position = {270, 70};
+    red.rotation = sf::degrees(60);
 
     sf::RectangleShape green({500, 50});
     green.setFillColor(sf::Color::Green);
-    green.setPosition({370, 100});
-    green.setRotation(sf::degrees(120));
+    green.position = {370, 100};
+    green.rotation = sf::degrees(120);
 
     sf::RectangleShape blue({500, 50});
     blue.setFillColor(sf::Color::Blue);
-    blue.setPosition({550, 470});
-    blue.setRotation(sf::degrees(180));
+    blue.position = {550, 470};
+    blue.rotation = sf::degrees(180);
 
     while (true)
     {

@@ -161,10 +161,10 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     template <typename TWindowBaseArg>
-    [[nodiscard]] explicit Window(WindowContext&         windowContext,
-                                  const ContextSettings& contextSettings,
-                                  TWindowBaseArg&&       windowBaseArg,
-                                  unsigned int           bitsPerPixel);
+    [[nodiscard]] explicit Window(WindowContext&        windowContext,
+                                  const WindowSettings& windowSettings,
+                                  TWindowBaseArg&&      windowBaseArg,
+                                  unsigned int          bitsPerPixel);
 
     ////////////////////////////////////////////////////////////
     // Member data

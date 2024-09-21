@@ -29,16 +29,15 @@ int main()
     sf::GraphicsContext graphicsContext;
 
     // Create the main window
-    sf::RenderWindow window(graphicsContext, {.size{800u, 600u}, .title = "SFML Raw Mouse Input", .resizable = false});
-
-    window.setVerticalSyncEnabled(true);
+    sf::RenderWindow window(graphicsContext,
+                            {.size{800u, 600u}, .title = "SFML Raw Mouse Input", .resizable = false, .vsync = true});
 
     // Open the application font and pass it to the Effect class
     const auto font = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf").value();
 
     // Create the mouse position text
     sf::Text mousePosition(font, "", 20);
-    mousePosition.setPosition({400.f, 300.f});
+    mousePosition.position = {400.f, 300.f};
     mousePosition.setFillColor(sf::Color::White);
 
     // Create the mouse raw movement text
@@ -74,7 +73,7 @@ int main()
 
         for (std::size_t i = 0; i < log.size(); ++i)
         {
-            mouseRawMovement.setPosition({50.f, static_cast<float>(i * 20) + 50.f});
+            mouseRawMovement.position = {50.f, static_cast<float>(i * 20) + 50.f};
             mouseRawMovement.setString(log[i]);
             window.draw(mouseRawMovement);
         }

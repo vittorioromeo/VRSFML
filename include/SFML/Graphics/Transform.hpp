@@ -18,9 +18,9 @@
 namespace sf
 {
 class Angle;
-class Sprite;
+struct Sprite;
 class Transform;
-class Transformable;
+struct Transformable;
 } // namespace sf
 
 namespace sf::priv
@@ -213,7 +213,7 @@ public:
     /// can be chained.
     /// \code
     /// sf::Transform transform;
-    /// transform.scale(sf::Vector2f{2, 1}).rotate(sf::degrees(45));
+    /// transform.scaleBy(sf::Vector2f{2, 1}).rotate(sf::degrees(45));
     /// \endcode
     ///
     /// \param factors Scaling factors
@@ -223,7 +223,7 @@ public:
     /// \see `translate`, `rotate`
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] constexpr Transform& scale(Vector2f factors);
+    [[gnu::always_inline]] constexpr Transform& scaleBy(Vector2f factors);
 
     ////////////////////////////////////////////////////////////
     /// \brief Combine the current transform with a scaling
@@ -231,13 +231,13 @@ public:
     /// The center of scaling is provided for convenience as a second
     /// argument, so that you can build scaling around arbitrary points
     /// more easily (and efficiently) than the usual
-    /// `translate(-center).scale(factors).translate(center)`.
+    /// `translate(-center).scaleBy(factors).translate(center)`.
     ///
     /// This function returns a reference to `*this`, so that calls
     /// can be chained.
     /// \code
     /// sf::Transform transform;
-    /// transform.scale(sf::Vector2f{2, 1}, sf::Vector2f{8, 3}).rotate(45);
+    /// transform.scaleBy(sf::Vector2f{2, 1}, sf::Vector2f{8, 3}).rotate(45);
     /// \endcode
     ///
     /// \param factors Scaling factors
@@ -248,7 +248,7 @@ public:
     /// \see `translate`, `rotate`
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] constexpr Transform& scale(Vector2f factors, Vector2f center);
+    [[gnu::always_inline]] constexpr Transform& scaleBy(Vector2f factors, Vector2f center);
 
     friend constexpr Transform operator*(const Transform& left, const Transform& right);
     friend constexpr bool      operator==(const Transform& left, const Transform& right);
@@ -259,7 +259,7 @@ public:
     // NOLINTNEXTLINE(readability-identifier-naming)
     static const Transform Identity; //!< The identity transform (does nothing)
 
-private:
+public: // TODO P0:
     friend Sprite;
     friend Transformable;
     friend void priv::copyMatrix(const Transform&, priv::Matrix<3, 3>&);

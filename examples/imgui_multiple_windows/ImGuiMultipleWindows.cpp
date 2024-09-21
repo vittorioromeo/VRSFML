@@ -19,15 +19,15 @@ int main()
     sf::GraphicsContext     graphicsContext;
     sf::ImGui::ImGuiContext imGuiContext(graphicsContext);
 
-    sf::RenderWindow window(graphicsContext, {.size{1280u, 720u}, .title = "ImGui + SFML = <3"});
-    window.setFramerateLimit(60);
+    sf::RenderWindow window(graphicsContext, {.size{1280u, 720u}, .title = "ImGui + SFML = <3", .vsync = true});
     if (!imGuiContext.init(window))
         return -1;
 
-    sf::base::Optional<sf::RenderWindow> childWindow(sf::base::inPlace,
-                                                     graphicsContext,
-                                                     sf::WindowSettings{.size{640u, 480u}, .title = "ImGui-SFML Child window"});
-    childWindow->setFramerateLimit(60);
+    sf::base::Optional<sf::RenderWindow>
+        childWindow(sf::base::inPlace,
+                    graphicsContext,
+                    sf::WindowSettings{.size{640u, 480u}, .title = "ImGui-SFML Child window", .vsync = true});
+
     if (!imGuiContext.init(*childWindow))
         return -1;
 

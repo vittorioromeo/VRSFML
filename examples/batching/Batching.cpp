@@ -54,9 +54,8 @@ int main()
     sf::RenderWindow window(graphicsContext,
                             {.size{windowSize.toVector2u()},
                              .title     = "Vittorio's SFML fork: batching example",
-                             .resizable = false});
-
-    window.setVerticalSyncEnabled(true);
+                             .resizable = false,
+                             .vsync     = true});
 
     //
     //
@@ -139,20 +138,20 @@ int main()
                                                    sf::Vector2f{getRndFloat(-2.5f, 2.5f), getRndFloat(-2.5f, 2.5f)},
                                                    getRndFloat(-0.05f, 0.05f));
 
-            sprite.setOrigin(textureRect.size / 2.f);
-            sprite.setRotation(sf::degrees(getRndFloat(0.f, 360.f)));
+            sprite.origin   = textureRect.size / 2.f;
+            sprite.rotation = sf::degrees(getRndFloat(0.f, 360.f));
 
             const float scaleFactor = getRndFloat(0.08f, 0.17f);
-            sprite.setScale({scaleFactor, scaleFactor});
-            text.setScale({scaleFactor * 3.5f, scaleFactor * 3.5f});
+            sprite.scale            = {scaleFactor, scaleFactor};
+            text.scale              = {scaleFactor * 3.5f, scaleFactor * 3.5f};
 
-            sprite.setPosition({getRndFloat(0.f, windowSize.x), getRndFloat(0.f, windowSize.y)});
+            sprite.position = {getRndFloat(0.f, windowSize.x), getRndFloat(0.f, windowSize.y)};
 
             text.setFillColor(sf::Color::Black);
             text.setOutlineColor(sf::Color::White);
             text.setOutlineThickness(5.f);
 
-            text.setOrigin(text.getLocalBounds().size / 2.f);
+            text.origin = text.getLocalBounds().size / 2.f;
         }
     };
 
@@ -232,15 +231,13 @@ int main()
                 sprite.move(velocity);
                 sprite.rotate(sf::radians(torque));
 
-                if ((sprite.getPosition().x > windowSize.x && velocity.x > 0.f) ||
-                    (sprite.getPosition().x < 0.f && velocity.x < 0.f))
+                if ((sprite.position.x > windowSize.x && velocity.x > 0.f) || (sprite.position.x < 0.f && velocity.x < 0.f))
                     velocity.x = -velocity.x;
 
-                if ((sprite.getPosition().y > windowSize.y && velocity.y > 0.f) ||
-                    (sprite.getPosition().y < 0.f && velocity.y < 0.f))
+                if ((sprite.position.y > windowSize.y && velocity.y > 0.f) || (sprite.position.y < 0.f && velocity.y < 0.f))
                     velocity.y = -velocity.y;
 
-                text.setPosition(sprite.getPosition() - sf::Vector2f{0.f, 250.f * sprite.getScale().x});
+                text.position = sprite.position - sf::Vector2f{0.f, 250.f * sprite.scale.x};
             }
 
             recordUs(samplesUpdateMs, clock.getElapsedTime().asSeconds() * 1000.f);

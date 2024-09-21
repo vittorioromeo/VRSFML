@@ -119,8 +119,7 @@ int main()
     };
 
     // Create the window of the application
-    sf::RenderWindow window(graphicsContext, {.size{400, 775}, .title = "Joystick", .resizable = false});
-    window.setVerticalSyncEnabled(true);
+    sf::RenderWindow window(graphicsContext, {.size{400, 775}, .title = "Joystick", .resizable = false, .vsync = true});
 
     // Set up our string conversion parameters
     sstr.precision(2);
@@ -134,8 +133,8 @@ int main()
                                                          {font, valueStr, characterSize}});
 
         auto& [label, value] = it->second;
-        label.setPosition({5.f, 5.f + yOffset * fontLineSpacing});
-        value.setPosition({80.f, 5.f + yOffset * fontLineSpacing});
+        label.position       = {5.f, 5.f + yOffset * fontLineSpacing};
+        value.position       = {80.f, 5.f + yOffset * fontLineSpacing};
 
         label.setOutlineColor(sf::Color::Blue);
         label.setOutlineThickness(0.5f);

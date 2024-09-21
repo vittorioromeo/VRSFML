@@ -492,7 +492,7 @@ void RenderTarget::draw(const Sprite& sprite, const Texture& texture, RenderStat
     states.coordinateType = CoordinateType::Pixels;
 
     Vertex buffer[4];
-    sprite.updateVertices(buffer);
+    priv::spriteToVertices(sprite, buffer);
 
     draw(buffer, PrimitiveType::TriangleStrip, states);
 }

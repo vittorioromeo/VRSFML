@@ -27,7 +27,7 @@ class DrawableBatch;
 class GraphicsContext;
 class Shader;
 class Shape;
-class Sprite;
+struct Sprite;
 class Texture;
 class Transform;
 class VertexBuffer;

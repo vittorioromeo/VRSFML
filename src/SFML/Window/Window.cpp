@@ -44,19 +44,19 @@ struct Window::Window::Impl
 
 ////////////////////////////////////////////////////////////
 template <typename TWindowBaseArg>
-Window::Window(WindowContext&         windowContext,
-               const ContextSettings& contextSettings,
-               TWindowBaseArg&&       windowBaseArg,
-               unsigned int           bitsPerPixel) :
+Window::Window(WindowContext&        windowContext,
+               const WindowSettings& windowSettings,
+               TWindowBaseArg&&      windowBaseArg,
+               unsigned int          bitsPerPixel) :
 WindowBase(SFML_BASE_FORWARD(windowBaseArg)),
-m_impl(windowContext, windowContext.createGlContext(contextSettings, getWindowImpl(), bitsPerPixel))
+m_impl(windowContext, windowContext.createGlContext(windowSettings.contextSettings, getWindowImpl(), bitsPerPixel))
 {
     // Perform common initializations
     SFML_BASE_ASSERT(m_impl->glContext != nullptr);
 
     // Setup default behaviors (to get a consistent behavior across different implementations)
-    setVerticalSyncEnabled(false);
-    setFramerateLimit(0);
+    setVerticalSyncEnabled(windowSettings.vsync);
+    setFramerateLimit(windowSettings.frametimeLimit);
 
     // Activate the window
     if (!setActive())
@@ -66,14 +66,17 @@ m_impl(windowContext, windowContext.createGlContext(contextSettings, getWindowIm
 
 ////////////////////////////////////////////////////////////
 Window::Window(WindowContext& windowContext, const WindowSettings& windowSettings) :
-Window(windowContext, windowSettings.contextSettings, priv::WindowImpl::create(windowSettings), windowSettings.bitsPerPixel)
+Window(windowContext, windowSettings, priv::WindowImpl::create(windowSettings), windowSettings.bitsPerPixel)
 {
 }
 
 
 ////////////////////////////////////////////////////////////
 Window::Window(WindowContext& windowContext, WindowHandle handle, const ContextSettings& contextSettings) :
-Window(windowContext, contextSettings, handle, VideoModeUtils::getDesktopMode().bitsPerPixel)
+Window(windowContext,
+       WindowSettings{.size{}, .contextSettings = contextSettings},
+       handle,
+       VideoModeUtils::getDesktopMode().bitsPerPixel)
 {
 }
 
