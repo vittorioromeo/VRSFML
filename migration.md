@@ -60,7 +60,7 @@ v2:
 ```cpp
 sf::VideoMode videoMode(480, 640, 24);
 sf::CircleShape circle(10);
-circle.setPosition(10, 20);
+circle.position = 10, 20;
 sf::IntRect rect(250, 400, 50, 100);
 ```
 
@@ -68,7 +68,7 @@ v3:
 ```cpp
 sf::VideoMode videoMode({480, 640}, 24);
 sf::CircleShape circle(10);
-circle.setPosition({10, 20});
+circle.position = {10, 20};
 sf::IntRect rect({250, 400}, {50, 100});
 ```
 
@@ -202,7 +202,7 @@ The 4-parameter constructor was also removed in favor of the constructor which t
 v2:
 ```cpp
 sf::FloatRect rect(10, 20, 30, 40);
-sf::Vector2f position = rect.getPosition();
+sf::Vector2f position = rect.position;;
 sf::Vector2f size = rect.getSize();
 ```
 
@@ -234,15 +234,15 @@ If you need access to the raw angle as a `float` then you can use either `sf::An
 v2:
 ```cpp
 sf::RectangleShape shape(sf::Vector2f(50, 50));
-shape.setRotation(90);
-std::cout << "Rotation: " << shape.getRotation() << '\n';
+shape.rotation = 90;
+std::cout << "Rotation: " << shape.rotation << '\n';
 ```
 
 v3:
 ```cpp
 sf::RectangleShape shape({50, 50});
-shape.setRotation(sf::degrees(90));
-std::cout << "Rotation: " << shape.getRotation().asDegrees() << '\n';
+shape.rotation = sf::degrees(90);
+std::cout << "Rotation: " << shape.rotation.asDegrees() << '\n';
 ```
 
 ## Renamed Functions

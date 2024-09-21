@@ -156,7 +156,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
     SECTION("findCharacterPos()")
     {
         sf::Text text(font, "\tabcdefghijklmnopqrstuvwxyz \n");
-        text.setPosition({120, 240});
+        text.position = {120, 240};
         CHECK(text.findCharacterPos(0) == sf::Vector2f{120, 240});
         CHECK(text.findCharacterPos(1) == sf::Vector2f{156, 240});
         CHECK(text.findCharacterPos(2) == sf::Vector2f{170, 240});
@@ -170,7 +170,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
     SECTION("Get bounds")
     {
         sf::Text text(font, "Test", 18);
-        text.setPosition({100, 200});
+        text.position = {100, 200};
         CHECK(text.getLocalBounds() == sf::FloatRect({1, 5}, {33, 13}));
         CHECK(text.getGlobalBounds() == sf::FloatRect({101, 205}, {33, 13}));
 
@@ -190,7 +190,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
 
         SECTION("Change rotation")
         {
-            text.setRotation(sf::degrees(180));
+            text.rotation = sf::degrees(180);
             CHECK(text.getLocalBounds() == sf::FloatRect({1, 5}, {33, 13}));
             CHECK(text.getGlobalBounds() == Approx(sf::FloatRect({66, 182}, {33, 13})));
         }

@@ -9,43 +9,15 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-Sprite::Sprite(const FloatRect& rectangle) : m_textureRect(rectangle)
+Sprite::Sprite(const FloatRect& rectangle) : textureRect(rectangle)
 {
-}
-
-
-////////////////////////////////////////////////////////////
-void Sprite::setTextureRect(const FloatRect& rectangle)
-{
-    m_textureRect = rectangle;
-}
-
-
-////////////////////////////////////////////////////////////
-void Sprite::setColor(Color color)
-{
-    m_color = color;
-}
-
-
-////////////////////////////////////////////////////////////
-const FloatRect& Sprite::getTextureRect() const
-{
-    return m_textureRect;
-}
-
-
-////////////////////////////////////////////////////////////
-Color Sprite::getColor() const
-{
-    return m_color;
 }
 
 
 ////////////////////////////////////////////////////////////
 FloatRect Sprite::getLocalBounds() const
 {
-    return {{0.f, 0.f}, {base::fabs(m_textureRect.size.x), base::fabs(m_textureRect.size.y)}};
+    return {{0.f, 0.f}, {base::fabs(textureRect.size.x), base::fabs(textureRect.size.y)}};
 }
 
 

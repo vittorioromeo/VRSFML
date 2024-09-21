@@ -17,116 +17,8 @@ namespace sf
 /// \brief Decomposed transform defined by a position, a rotation and a scale
 ///
 ////////////////////////////////////////////////////////////
-class SFML_GRAPHICS_API Transformable
+struct SFML_GRAPHICS_API Transformable
 {
-public:
-    ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    ////////////////////////////////////////////////////////////
-    constexpr Transformable() = default;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief set the position of the object
-    ///
-    /// This function completely overwrites the previous position.
-    /// See the move function to apply an offset based on the previous position instead.
-    /// The default position of a transformable object is (0, 0).
-    ///
-    /// \param position New position
-    ///
-    /// \see `move`, `getPosition`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] constexpr void setPosition(Vector2f position);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief set the orientation of the object
-    ///
-    /// This function completely overwrites the previous rotation.
-    /// See the rotate function to add an angle based on the previous rotation instead.
-    /// The default rotation of a transformable object is 0.
-    ///
-    /// \param angle New rotation
-    ///
-    /// \see `rotate`, `getRotation`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] constexpr void setRotation(Angle angle);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief set the scale factors of the object
-    ///
-    /// This function completely overwrites the previous scale.
-    /// See the scale function to add a factor based on the previous scale instead.
-    /// The default scale of a transformable object is (1, 1).
-    ///
-    /// \param factors New scale factors
-    ///
-    /// \see `scale`, `getScale`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] constexpr void setScale(Vector2f factors);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief set the local origin of the object
-    ///
-    /// The origin of an object defines the center point for
-    /// all transformations (position, scale, rotation).
-    /// The coordinates of this point must be relative to the
-    /// top-left corner of the object, and ignore all
-    /// transformations (position, scale, rotation).
-    /// The default origin of a transformable object is (0, 0).
-    ///
-    /// \param origin New origin
-    ///
-    /// \see `getOrigin`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] constexpr void setOrigin(Vector2f origin);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief get the position of the object
-    ///
-    /// \return Current position
-    ///
-    /// \see `setPosition`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector2f getPosition() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief get the orientation of the object
-    ///
-    /// The rotation is always in the range [0, 360].
-    ///
-    /// \return Current rotation
-    ///
-    /// \see `setRotation`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Angle getRotation() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief get the current scale of the object
-    ///
-    /// \return Current scale factors
-    ///
-    /// \see `setScale`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector2f getScale() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief get the local origin of the object
-    ///
-    /// \return Current origin
-    ///
-    /// \see `setOrigin`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector2f getOrigin() const;
-
     ////////////////////////////////////////////////////////////
     /// \brief Move the object by a given offset
     ///
@@ -134,7 +26,7 @@ public:
     /// unlike `setPosition` which overwrites it.
     /// Thus, it is equivalent to the following code:
     /// \code
-    /// object.setPosition(object.getPosition() + offset);
+    /// object.position = object.position + offset;
     /// \endcode
     ///
     /// \param offset Offset
@@ -151,7 +43,7 @@ public:
     /// unlike `setRotation` which overwrites it.
     /// Thus, it is equivalent to the following code:
     /// \code
-    /// object.setRotation(object.getRotation() + angle);
+    /// object.rotation = object.rotation + angle;
     /// \endcode
     ///
     /// \param angle Angle of rotation
@@ -166,8 +58,8 @@ public:
     /// unlike `setScale` which overwrites it.
     /// Thus, it is equivalent to the following code:
     /// \code
-    /// sf::Vector2f scale = object.getScale();
-    /// object.setScale(scale.x * factor.x, scale.y * factor.y);
+    /// sf::Vector2f scale = object.scale;
+    /// object.scale = scale.x * factor.x, scale.y * factor.y;
     /// \endcode
     ///
     /// \param factor Scale factors
@@ -175,7 +67,7 @@ public:
     /// \see `setScale`
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] constexpr void scale(Vector2f factor);
+    [[gnu::always_inline]] constexpr void scaleBy(Vector2f factor);
 
     ////////////////////////////////////////////////////////////
     /// \brief get the combined transform of the object
@@ -197,14 +89,13 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Transform getInverseTransform() const;
 
-private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2f m_origin;          //!< Origin of translation/rotation/scaling of the object
-    Vector2f m_position;        //!< Position of the object in the 2D world
-    Angle    m_rotation;        //!< Orientation of the object
-    Vector2f m_scale{1.f, 1.f}; //!< Scale of the object
+    Vector2f position;        //!< Position of the object in the 2D world
+    Vector2f scale{1.f, 1.f}; //!< Scale of the object
+    Vector2f origin;          //!< Origin of translation/rotation/scaling of the object
+    Angle    rotation;        //!< Orientation of the object
 };
 
 } // namespace sf
@@ -263,8 +154,8 @@ private:
 /// };
 ///
 /// MyEntity entity;
-/// entity.setPosition({10, 20});
-/// entity.setRotation(sf::degrees(45));
+/// entity.position = {10, 20};
+/// entity.rotation = sf::degrees(45);
 /// window.draw(entity);
 /// \endcode
 ///
@@ -277,7 +168,7 @@ private:
 /// public:
 ///     void SetPosition(const MyVector& v)
 ///     {
-///         myTransform.setPosition(v.x(), v.y());
+///         myTransform.position = v.x(), v.y();
 ///     }
 ///
 ///     void draw(sf::RenderTarget& target) const

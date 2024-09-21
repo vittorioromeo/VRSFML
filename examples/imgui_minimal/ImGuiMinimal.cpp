@@ -19,8 +19,7 @@ int main()
     sf::GraphicsContext     graphicsContext;
     sf::ImGui::ImGuiContext imGuiContext(graphicsContext);
 
-    sf::RenderWindow window(graphicsContext, {.size{1024u, 768u}, .title = "ImGui + SFML = <3"});
-    window.setFramerateLimit(60);
+    sf::RenderWindow window(graphicsContext, {.size{1024u, 768u}, .title = "ImGui + SFML = <3", .vsync = true});
 
     if (!imGuiContext.init(window))
         return -1;

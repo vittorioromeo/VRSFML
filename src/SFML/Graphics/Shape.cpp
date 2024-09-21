@@ -93,6 +93,7 @@ const FloatRect& Shape::getOutlineTextureRect() const
     return m_outlineTextureRect;
 }
 
+
 ////////////////////////////////////////////////////////////
 void Shape::setFillColor(Color color)
 {

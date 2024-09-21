@@ -104,7 +104,7 @@ public:
     m_listener(listener),
     m_music(std::move(music))
     {
-        m_listenerShape.setPosition({(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f});
+        m_listenerShape.position = {(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f};
         m_listenerShape.setFillColor(sf::Color::Red);
 
         // Set the music to loop
@@ -133,7 +133,7 @@ public:
     void start(sf::PlaybackDevice& playbackDevice) override
     {
         // Synchronize listener audio position with graphical position
-        m_listener.position = {m_listenerShape.getPosition().x, m_listenerShape.getPosition().y, 0.f};
+        m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
         if (!playbackDevice.updateListener(m_listener))
             std::cerr << "Failed to update listener\n";
@@ -180,8 +180,8 @@ public:
         // Set initial volume
         m_music.setVolume(m_volume);
 
-        m_pitchText.setPosition({windowWidth / 2.f - 120.f, windowHeight / 2.f - 80.f});
-        m_volumeText.setPosition({windowWidth / 2.f - 120.f, windowHeight / 2.f - 30.f});
+        m_pitchText.position  = {windowWidth / 2.f - 120.f, windowHeight / 2.f - 80.f};
+        m_volumeText.position = {windowWidth / 2.f - 120.f, windowHeight / 2.f - 30.f};
     }
 
     void update(float /*time*/, float x, float y) override
@@ -245,7 +245,7 @@ public:
            18),
     m_music(std::move(music))
     {
-        m_listenerShape.setPosition({(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f + 100.f});
+        m_listenerShape.position = {(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f + 100.f};
         m_listenerShape.setFillColor(sf::Color::Red);
 
         m_soundShape.setFillColor(sf::Color::Magenta);
@@ -260,7 +260,7 @@ public:
         {
             cone->setPointCount(3);
             cone->setPoint(0, {0.f, 0.f});
-            cone->setPosition({20.f, 20.f});
+            cone->position = {20.f, 20.f};
         }
 
         m_soundConeOuter.setFillColor(sf::Color::Black);
@@ -291,7 +291,7 @@ public:
         // Set cone
         m_music.setCone({innerConeAngle, outerConeAngle, 0.f});
 
-        m_text.setPosition({20.f, 20.f});
+        m_text.position = {20.f, 20.f};
     }
 
     void update(float /*time*/, float x, float y) override
@@ -317,7 +317,7 @@ public:
     void start(sf::PlaybackDevice& playbackDevice) override
     {
         // Synchronize listener audio position with graphical position
-        m_listener.position = {m_listenerShape.getPosition().x, m_listenerShape.getPosition().y, 0.f};
+        m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
         if (!playbackDevice.updateListener(m_listener))
             std::cerr << "Failed to update listener\n";
@@ -358,10 +358,10 @@ public:
     m_currentAmplitude(font, "Amplitude: 0.05"),
     m_currentFrequency(font, "Frequency: 200 Hz")
     {
-        m_instruction.setPosition({windowWidth / 2.f - 370.f, windowHeight / 2.f - 200.f});
-        m_currentType.setPosition({windowWidth / 2.f - 150.f, windowHeight / 2.f - 100.f});
-        m_currentAmplitude.setPosition({windowWidth / 2.f - 150.f, windowHeight / 2.f - 50.f});
-        m_currentFrequency.setPosition({windowWidth / 2.f - 150.f, windowHeight / 2.f});
+        m_instruction.position      = {windowWidth / 2.f - 370.f, windowHeight / 2.f - 200.f};
+        m_currentType.position      = {windowWidth / 2.f - 150.f, windowHeight / 2.f - 100.f};
+        m_currentAmplitude.position = {windowWidth / 2.f - 150.f, windowHeight / 2.f - 50.f};
+        m_currentFrequency.position = {windowWidth / 2.f - 150.f, windowHeight / 2.f};
 
         sf::SoundStream::initialize(1, sampleRate, {sf::SoundChannel::Mono});
     }
@@ -524,13 +524,13 @@ public:
     m_currentVelocity(font, "Velocity: " + std::to_string(m_velocity)),
     m_currentFactor(font, "Doppler Factor: " + std::to_string(m_factor))
     {
-        m_listenerShape.setPosition({(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f});
+        m_listenerShape.position = {(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f};
         m_listenerShape.setFillColor(sf::Color::Red);
 
         m_position.y = (windowHeight - 20.f) / 2.f - 40.f;
 
-        m_currentVelocity.setPosition({windowWidth / 2.f - 150.f, windowHeight * 3.f / 4.f - 50.f});
-        m_currentFactor.setPosition({windowWidth / 2.f - 150.f, windowHeight * 3.f / 4.f});
+        m_currentVelocity.position = {windowWidth / 2.f - 150.f, windowHeight * 3.f / 4.f - 50.f};
+        m_currentFactor.position   = {windowWidth / 2.f - 150.f, windowHeight * 3.f / 4.f};
 
         // Set attenuation to a nice value
         setAttenuation(0.05f);
@@ -568,7 +568,7 @@ public:
     void start(sf::PlaybackDevice& playbackDevice) override
     {
         // Synchronize listener audio position with graphical position
-        m_listener.position = {m_listenerShape.getPosition().x, m_listenerShape.getPosition().y, 0.f};
+        m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
         if (!playbackDevice.updateListener(m_listener))
             std::cerr << "Failed to update listener\n";
@@ -653,7 +653,7 @@ public:
     void start(sf::PlaybackDevice& playbackDevice) override
     {
         // Synchronize listener audio position with graphical position
-        m_listener.position = {m_listenerShape.getPosition().x, m_listenerShape.getPosition().y, 0.f};
+        m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
         if (!playbackDevice.updateListener(m_listener))
             std::cerr << "Failed to update listener\n";
@@ -674,11 +674,11 @@ protected:
     m_enabledText(font, "Processing: Enabled"),
     m_instructions(font, "Press Space to enable/disable processing")
     {
-        m_listenerShape.setPosition({(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f});
+        m_listenerShape.position = {(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f};
         m_listenerShape.setFillColor(sf::Color::Red);
 
-        m_enabledText.setPosition({windowWidth / 2.f - 120.f, windowHeight * 3.f / 4.f - 50.f});
-        m_instructions.setPosition({windowWidth / 2.f - 250.f, windowHeight * 3.f / 4.f});
+        m_enabledText.position  = {windowWidth / 2.f - 120.f, windowHeight * 3.f / 4.f - 50.f};
+        m_instructions.position = {windowWidth / 2.f - 250.f, windowHeight * 3.f / 4.f};
 
         // Set the music to loop
         m_music.setLooping(true);
@@ -1063,9 +1063,7 @@ int main()
 
     // Create the main window
     sf::RenderWindow window(graphicsContext,
-                            {.size{windowWidth, windowHeight}, .title = "SFML Sound Effects", .resizable = false});
-
-    window.setVerticalSyncEnabled(true);
+                            {.size{windowWidth, windowHeight}, .title = "SFML Sound Effects", .resizable = false, .vsync=true});
 
     // Load the application font and pass it to the Effect class
     const auto font = sf::Font::openFromFile(graphicsContext, resourcesDir() / "tuffy.ttf").value();
@@ -1136,17 +1134,17 @@ int main()
                                            .value();
 
     sf::Sprite textBackground(textBackgroundTexture.getRect());
-    textBackground.setPosition({0.f, 520.f});
-    textBackground.setColor(sf::Color(255, 255, 255, 200));
+    textBackground.position = {0.f, 520.f};
+    textBackground.color    = {255, 255, 255, 200};
 
     // Create the description text
     sf::Text description(font, "Current effect: " + effects[current]->getName(), 20);
-    description.setPosition({10.f, 522.f});
+    description.position = {10.f, 522.f};
     description.setFillColor(sf::Color(80, 80, 80));
 
     // Create the instructions text
     sf::Text instructions(font, "Press left and right arrows to change the current effect", 20);
-    instructions.setPosition({280.f, 544.f});
+    instructions.position = {280.f, 544.f};
     instructions.setFillColor(sf::Color(80, 80, 80));
 
     // Utility functions
@@ -1154,12 +1152,12 @@ int main()
 
     // Create the playback device text
     sf::Text playbackDeviceText(font, "Current playback device: " + getCurrentDeviceName(), 20);
-    playbackDeviceText.setPosition({10.f, 566.f});
+    playbackDeviceText.position = {10.f, 566.f};
     playbackDeviceText.setFillColor(sf::Color(80, 80, 80));
 
     // Create the playback device instructions text
     sf::Text playbackDeviceInstructions(font, "Press F1 to change device", 20);
-    playbackDeviceInstructions.setPosition({565.f, 566.f});
+    playbackDeviceInstructions.position = {565.f, 566.f};
     playbackDeviceInstructions.setFillColor(sf::Color(80, 80, 80));
 
     // Start the game loop

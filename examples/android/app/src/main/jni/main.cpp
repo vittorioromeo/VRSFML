@@ -97,20 +97,19 @@ int main(int, char**)
 
     const auto [size, bitsPerPixel] = sf::VideoModeUtils::getDesktopMode();
 
-    sf::RenderWindow window(graphicsContext, {.size = size, .bitsPerPixel = bitsPerPixel});
-    window.setFramerateLimit(30);
+    sf::RenderWindow window(graphicsContext, {.size = size, .bitsPerPixel = bitsPerPixel, .framerateLimit = 30});
 
     const auto texture = sf::Texture::loadFromFile(graphicsContext, "image.png").value();
 
     sf::Sprite image(texture.getRect());
-    image.setPosition(size.toVector2f() / 2.f);
-    image.setOrigin(texture.getSize().toVector2f() / 2.f);
+    image.position = size.toVector2f() / 2.f;
+    image.origin   = texture.getSize().toVector2f() / 2.f;
 
     const auto font = sf::Font::openFromFile(graphicsContext, "tuffy.ttf").value();
 
     sf::Text text(font, "Tap anywhere to move the logo.", 64);
     text.setFillColor(sf::Color::Black);
-    text.setPosition({10, 10});
+    text.position = {10, 10};
 
     sf::View view = window.getDefaultView();
 
@@ -157,7 +156,7 @@ int main(int, char**)
             {
                 if (touchBegan->finger == 0)
                 {
-                    image.setPosition(touchBegan->position.toVector2f());
+                    image.position = touchBegan->position.toVector2f();
 #if defined(USE_JNI)
                     vibrate(sf::milliseconds(10));
 #endif

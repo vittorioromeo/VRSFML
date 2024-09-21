@@ -142,7 +142,7 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
         sf::Sprite sprite(texture.getRect());
         leftInnerRT.draw(sprite, texture);
 
-        sprite.setColor(sf::Color::Green);
+        sprite.color = sf::Color::Green;
         rightInnerRT.draw(sprite, texture);
 
         baseRenderTexture.clear();

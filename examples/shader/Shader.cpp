@@ -135,7 +135,7 @@ public:
     m_ulWaveAmplitude(m_shader.getUniformLocation("wave_amplitude").value()),
     m_ulBlurRadius(m_shader.getUniformLocation("blur_radius").value())
     {
-        m_text.setPosition({30.f, 20.f});
+        m_text.position = {30.f, 20.f};
     }
 
 private:
@@ -218,7 +218,7 @@ public:
         m_surface.clear(sf::Color::White);
 
         sf::Sprite backgroundSprite{m_backgroundTexture.getRect()};
-        backgroundSprite.setPosition({135.f, 100.f});
+        backgroundSprite.position = {135.f, 100.f};
         m_surface.draw(backgroundSprite, m_backgroundTexture);
 
         // Update the position of the moving entities
@@ -228,9 +228,9 @@ public:
         {
             sf::Sprite entity{{{96.f * static_cast<float>(i), 0.f}, {96.f, 96.f}}};
 
-            entity.setPosition(
+            entity.position =
                 {std::cos(0.25f * (time * static_cast<float>(i) + static_cast<float>(numEntities - i))) * 300 + 350,
-                 std::sin(0.25f * (time * static_cast<float>(numEntities - i) + static_cast<float>(i))) * 200 + 250});
+                 std::sin(0.25f * (time * static_cast<float>(numEntities - i) + static_cast<float>(i))) * 200 + 250};
 
             m_surface.draw(entity, m_entityTexture);
         }
@@ -461,27 +461,25 @@ int main()
     // Create the messages background
     const auto textBackgroundTexture = sf::Texture::loadFromFile(graphicsContext, "resources/text-background.png").value();
     sf::Sprite textBackground(textBackgroundTexture.getRect());
-    textBackground.setPosition({0.f, 520.f});
-    textBackground.setColor(sf::Color(255, 255, 255, 200));
+    textBackground.position = {0.f, 520.f};
+    textBackground.color    = {255, 255, 255, 200};
 
     // Create the description text
     sf::Text description(font, "Current effect: " + effectNames[current], 20);
-    description.setPosition({10.f, 530.f});
+    description.position = {10.f, 530.f};
     description.setFillColor(sf::Color(80, 80, 80));
     description.setOutlineThickness(3.f);
     description.setOutlineColor(sf::Color::Red);
 
     // Create the instructions text
     sf::Text instructions(font, "Press left and right arrows to change the current shader", 20);
-    instructions.setPosition({280.f, 555.f});
+    instructions.position = {280.f, 555.f};
     instructions.setFillColor(sf::Color(80, 80, 80));
     instructions.setOutlineThickness(3.f);
     instructions.setOutlineColor(sf::Color::Red);
 
     // Create the main window
-    sf::RenderWindow window(graphicsContext, {.size{800u, 600u}, .title = "SFML Shader", .resizable = false});
-
-    window.setVerticalSyncEnabled(true);
+    sf::RenderWindow window(graphicsContext, {.size{800u, 600u}, .title = "SFML Shader", .resizable = false, .vsync=true});
 
     // Start the game loop
     const sf::Clock clock;
@@ -547,7 +545,7 @@ int main()
             window.clear(sf::Color(50, 50, 50));
 
             sf::Text error(font, "Shader not\nsupported", 36);
-            error.setPosition({320.f, 200.f});
+            error.position = {320.f, 200.f};
 
             window.draw(error);
         }

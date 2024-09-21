@@ -20,7 +20,7 @@ namespace sf
 {
 class RenderTarget;
 class Shape;
-class Sprite;
+struct Sprite;
 } // namespace sf
 
 

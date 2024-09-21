@@ -129,12 +129,27 @@ int main()
     const auto font = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf").value();
 
     // Create the window of the application
-    sf::RenderWindow window(graphicsContext, {.size{windowSize}, .title = "SFML Island", .resizable = false});
-    window.setVerticalSyncEnabled(true);
+    sf::RenderWindow window(graphicsContext, {.size{windowSize}, .title = "SFML Island", .resizable = false, .vsync = true});
 
     // Create all of our graphics resources
-    sf::Text         hudText(font);
-    sf::Text         statusText(font);
+#if 1
+    sf::Text hudText(font);
+    sf::Text statusText(font);
+#else
+    // TODO P0:
+    sf::Text hudText(font,
+                     {.characterSize    = 28,
+                      .fillColor        = sf::Color::White,
+                      .outlineColor     = sf::Color::Black,
+                      .outlineThickness = 2.0f});
+
+    sf::Text statusText(font,
+                        {.characterSize    = 14,
+                         .fillColor        = sf::Color::White,
+                         .outlineColor     = sf::Color::Black,
+                         .outlineThickness = 2.0f});
+
+#endif
     sf::RenderStates terrainStates;
     sf::VertexBuffer terrain(graphicsContext, sf::PrimitiveType::Triangles, sf::VertexBuffer::Usage::Static);
 
@@ -148,7 +163,7 @@ int main()
     hudText.setFillColor(sf::Color::White);
     hudText.setOutlineColor(sf::Color::Black);
     hudText.setOutlineThickness(2.0f);
-    hudText.setPosition({5.0f, 5.0f});
+    hudText.position = {5.0f, 5.0f};
 
     // Staging buffer for our terrain data that we will upload to our VertexBuffer
     std::vector<sf::Vertex> terrainStagingBuffer;
@@ -178,7 +193,7 @@ int main()
     terrainStates = sf::RenderStates{.shader = &terrainShader};
 
     // Center the status text
-    statusText.setPosition((windowSize.toVector2f() - statusText.getLocalBounds().size) / 2.f);
+    statusText.position = (windowSize.toVector2f() - statusText.getLocalBounds().size) / 2.f;
 
     // Set up an array of pointers to our settings for arrow navigation
     constexpr std::array<Setting, 9> settings = {

@@ -1027,11 +1027,11 @@ struct [[nodiscard]] SpriteTextureData
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SpriteTextureData getSpriteTextureData(const Sprite& sprite, const Texture& texture)
 {
-    const auto       textureSize(texture.getSize().toVector2f());
-    const FloatRect& textureRect(sprite.getTextureRect());
+    const auto textureSize(texture.getSize().toVector2f());
+    const auto& [txrPosition, txrSize](sprite.textureRect);
 
-    return {toImVec2(textureRect.position.componentWiseDiv(textureSize)),
-            toImVec2((textureRect.position + textureRect.size).componentWiseDiv(textureSize)),
+    return {toImVec2(txrPosition.componentWiseDiv(textureSize)),
+            toImVec2((txrPosition + txrSize).componentWiseDiv(textureSize)),
             convertGLTextureHandleToImTextureID(texture.getNativeHandle())};
 }
 

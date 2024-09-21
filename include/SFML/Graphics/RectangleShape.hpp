@@ -109,7 +109,7 @@ private:
 /// rectangle.setSize(sf::Vector2f{100, 50});
 /// rectangle.setOutlineColor(sf::Color::Red);
 /// rectangle.setOutlineThickness(5);
-/// rectangle.setPosition({10, 20});
+/// rectangle.position = {10, 20};
 /// ...
 /// window.draw(rectangle);
 /// \endcode

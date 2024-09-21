@@ -116,7 +116,7 @@ constexpr Transform& Transform::translate(Vector2f offset)
 
 
 ////////////////////////////////////////////////////////////
-constexpr Transform& Transform::scale(Vector2f factors)
+constexpr Transform& Transform::scaleBy(Vector2f factors)
 {
     // clang-format off
     const Transform scaling(factors.x, 0,         0,
@@ -128,7 +128,7 @@ constexpr Transform& Transform::scale(Vector2f factors)
 
 
 ////////////////////////////////////////////////////////////
-constexpr Transform& Transform::scale(Vector2f factors, Vector2f center)
+constexpr Transform& Transform::scaleBy(Vector2f factors, Vector2f center)
 {
     // clang-format off
     const Transform scaling(factors.x, 0,         center.x * (1 - factors.x),

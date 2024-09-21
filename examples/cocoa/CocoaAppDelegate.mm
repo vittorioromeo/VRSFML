@@ -20,9 +20,9 @@ struct SFMLmainWindow
     {
         logo.setSmooth(true);
 
-        sprite.setOrigin(sprite.getLocalBounds().getCenter());
-        sprite.scale({0.3f, 0.3f});
-        sprite.setPosition(sf::Vector2f(renderWindow.getSize()) / 2.f);
+        sprite.origin = sprite.getLocalBounds().getCenter();
+        sprite.scaleBy({0.3f, 0.3f});
+        sprite.position = sf::Vector2f(renderWindow.getSize()) / 2.f;
 
         text.setFillColor(sf::Color::White);
     }
@@ -128,10 +128,10 @@ struct SFMLmainWindow
     // Scaling
     /* /!\ we do this at 60fps so choose low scaling factor! /!\ */
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up))
-        self.mainWindow->sprite.scale({1.01f, 1.01f});
+        self.mainWindow->sprite.scaleBy({1.01f, 1.01f});
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down))
-        self.mainWindow->sprite.scale({0.99f, 0.99f});
+        self.mainWindow->sprite.scaleBy({0.99f, 0.99f});
 
     // Clear the window, display some stuff and display it into our view.
 
@@ -165,7 +165,7 @@ struct SFMLmainWindow
     if (self.initialized)
     {
         float angle = [sender floatValue];
-        self.mainWindow->sprite.setRotation(sf::degrees(angle));
+        self.mainWindow->sprite.rotation = sf::degrees(angle);
     }
 }
 
