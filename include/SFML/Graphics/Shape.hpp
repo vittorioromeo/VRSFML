@@ -266,31 +266,31 @@ private:
     /// \brief Update the fill vertices' color
     ///
     ////////////////////////////////////////////////////////////
-    void updateFillColors();
+    void updateFillColors(base::TrivialVector<Vertex>& vertices);
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the fill vertices' texture coordinates
     ///
     ////////////////////////////////////////////////////////////
-    void updateTexCoords();
+    void updateTexCoords(base::TrivialVector<Vertex>& vertices);
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the outline vertices' texture coordinates
     ///
     ////////////////////////////////////////////////////////////
-    void updateOutlineTexCoords();
+    void updateOutlineTexCoords(base::TrivialVector<Vertex>& outlineVertices);
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the outline vertices' position
     ///
     ////////////////////////////////////////////////////////////
-    void updateOutline();
+    void updateOutline(base::TrivialVector<Vertex>& outlineVertices, const base::TrivialVector<Vertex>& vertices);
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the outline vertices' color
     ///
     ////////////////////////////////////////////////////////////
-    void updateOutlineColors();
+    void updateOutlineColors(base::TrivialVector<Vertex>& outlineVertices);
 
     ////////////////////////////////////////////////////////////
     // Member data

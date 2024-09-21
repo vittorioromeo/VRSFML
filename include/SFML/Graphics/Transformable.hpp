@@ -20,23 +20,6 @@ namespace sf
 struct SFML_GRAPHICS_API Transformable
 {
     ////////////////////////////////////////////////////////////
-    /// \brief Move the object by a given offset
-    ///
-    /// This function adds to the current position of the object,
-    /// unlike `setPosition` which overwrites it.
-    /// Thus, it is equivalent to the following code:
-    /// \code
-    /// object.position = object.position + offset;
-    /// \endcode
-    ///
-    /// \param offset Offset
-    ///
-    /// \see `setPosition`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] constexpr void move(Vector2f offset);
-
-    ////////////////////////////////////////////////////////////
     /// \brief Rotate the object
     ///
     /// This function adds to the current rotation of the object,
