@@ -18,9 +18,10 @@
 namespace sf
 {
 class Angle;
-struct Sprite;
 class Transform;
+struct Sprite;
 struct Transformable;
+struct Vertex;
 } // namespace sf
 
 namespace sf::priv
@@ -29,6 +30,8 @@ template <base::SizeT, base::SizeT>
 struct Matrix;
 
 void copyMatrix(const Transform&, Matrix<3, 3>&);
+
+void spriteToVertices(const Sprite& sprite, Vertex* target);
 } // namespace sf::priv
 
 
@@ -259,8 +262,8 @@ public:
     // NOLINTNEXTLINE(readability-identifier-naming)
     static const Transform Identity; //!< The identity transform (does nothing)
 
-public: // TODO P0:
-    friend Sprite;
+private:
+    friend void priv::spriteToVertices(const Sprite& sprite, Vertex* target);
     friend Transformable;
     friend void priv::copyMatrix(const Transform&, priv::Matrix<3, 3>&);
 
