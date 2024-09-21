@@ -12,16 +12,9 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-constexpr void Transformable::move(Vector2f offset)
-{
-    position += offset;
-}
-
-
-////////////////////////////////////////////////////////////
 constexpr void Transformable::rotate(Angle angle)
 {
-    rotation = (rotation + angle).wrapUnsigned();
+    rotation = (rotation + angle).wrapUnsigned(); // TODO P0: make wrappable angle
 }
 
 

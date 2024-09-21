@@ -89,7 +89,7 @@ TEST_CASE("[Graphics] sf::Shape" * doctest::skip(skipDisplayTests))
 
         SECTION("Move and rotate")
         {
-            triangleShape.move({1, 1});
+            triangleShape.position += {1, 1};
             triangleShape.rotate(sf::degrees(90));
             CHECK(triangleShape.getLocalBounds() == sf::FloatRect({0, 0}, {30, 40}));
             CHECK(triangleShape.getGlobalBounds() == Approx(sf::FloatRect({-39, 1}, {40, 30})));

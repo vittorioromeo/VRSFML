@@ -39,7 +39,7 @@ void View::setSize(Vector2f size)
 ////////////////////////////////////////////////////////////
 void View::setRotation(Angle angle)
 {
-    m_rotation = angle.wrapUnsigned();
+    m_rotation = angle.wrapUnsigned(); // TODO P0: make wrappable angle
 }
 
 

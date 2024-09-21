@@ -185,12 +185,12 @@ int main()
             // Move the player's paddle
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up) && (leftPaddle.position.y - paddleSize.y / 2 > 5.f))
             {
-                leftPaddle.move({0.f, -paddleSpeed * deltaTime});
+                leftPaddle.position += {0.f, -paddleSpeed * deltaTime};
             }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down) &&
                 (leftPaddle.position.y + paddleSize.y / 2 < gameSize.y - 5.f))
             {
-                leftPaddle.move({0.f, paddleSpeed * deltaTime});
+                leftPaddle.position += {0.f, paddleSpeed * deltaTime};
             }
 
             if (sf::Touch::isDown(0))
@@ -204,7 +204,7 @@ int main()
             if (((rightPaddleSpeed < 0.f) && (rightPaddle.position.y - paddleSize.y / 2 > 5.f)) ||
                 ((rightPaddleSpeed > 0.f) && (rightPaddle.position.y + paddleSize.y / 2 < gameSize.y - 5.f)))
             {
-                rightPaddle.move({0.f, rightPaddleSpeed * deltaTime});
+                rightPaddle.position += {0.f, rightPaddleSpeed * deltaTime};
             }
 
             // Update the computer's paddle direction according to the ball position
@@ -220,7 +220,7 @@ int main()
             }
 
             // Move the ball
-            ball.move(sf::Vector2f::fromAngle(ballSpeed * deltaTime, ballAngle));
+            ball.position += sf::Vector2f::fromAngle(ballSpeed * deltaTime, ballAngle);
 
 #ifdef SFML_SYSTEM_IOS
             const std::string inputString = "Touch the screen to restart.";

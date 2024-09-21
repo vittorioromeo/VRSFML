@@ -228,7 +228,7 @@ int main()
 
             for (auto& [text, sprite, velocity, torque] : entities)
             {
-                sprite.move(velocity);
+                sprite.position += velocity;
                 sprite.rotate(sf::radians(torque));
 
                 if ((sprite.position.x > windowSize.x && velocity.x > 0.f) || (sprite.position.x < 0.f && velocity.x < 0.f))

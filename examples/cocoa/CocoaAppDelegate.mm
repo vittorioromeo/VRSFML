@@ -1,10 +1,10 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
-
 #import "CocoaAppDelegate.h"
 
 #import "NSString+stdstring.h"
 
 #include "SFML/System/Path.hpp"
+
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 // These define are used for converting the color of the NSPopUpButton
 #define BLUE  @"Blue"
@@ -21,19 +21,19 @@ struct SFMLmainWindow
         logo.setSmooth(true);
 
         sprite.origin = sprite.getLocalBounds().getCenter();
-        sprite.scaleBy({0.3f, 0.3f});
+        sprite.scale *= 0.3f;
         sprite.position = sf::Vector2f(renderWindow.getSize()) / 2.f;
 
         text.setFillColor(sf::Color::White);
     }
 
-    sf::Path resPath{[[[NSBundle mainBundle] resourcePath] tostdstring]};
-    sf::RenderWindow      renderWindow;
-    sf::Font              font{sf::Font::openFromFile(resPath / "tuffy.ttf").value()};
-    sf::Text              text{font};
-    sf::Texture           logo{sf::Texture::loadFromFile(resPath / "logo.png").value()};
-    sf::Sprite            sprite{logo};
-    sf::Color             background{sf::Color::Blue};
+    sf::Path         resPath{[[[NSBundle mainBundle] resourcePath] tostdstring]};
+    sf::RenderWindow renderWindow;
+    sf::Font         font{sf::Font::openFromFile(resPath / "tuffy.ttf").value()};
+    sf::Text         text{font};
+    sf::Texture      logo{sf::Texture::loadFromFile(resPath / "logo.png").value()};
+    sf::Sprite       sprite{logo};
+    sf::Color        background{sf::Color::Blue};
 };
 
 // Private stuff
@@ -128,10 +128,10 @@ struct SFMLmainWindow
     // Scaling
     /* /!\ we do this at 60fps so choose low scaling factor! /!\ */
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up))
-        self.mainWindow->sprite.scaleBy({1.01f, 1.01f});
+        self.mainWindow->sprite.scale *= 1.01f;
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down))
-        self.mainWindow->sprite.scaleBy({0.99f, 0.99f});
+        self.mainWindow->sprite.scale *= 0.99f;
 
     // Clear the window, display some stuff and display it into our view.
 
@@ -164,7 +164,7 @@ struct SFMLmainWindow
 {
     if (self.initialized)
     {
-        float angle = [sender floatValue];
+        float angle                      = [sender floatValue];
         self.mainWindow->sprite.rotation = sf::degrees(angle);
     }
 }
