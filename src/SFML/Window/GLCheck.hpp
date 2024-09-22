@@ -34,7 +34,7 @@ namespace sf::priv
 }
 
 #define glCheck(...)                                                            \
-    [](auto&& f) [[gnu::always_inline, gnu::flatten]]                           \
+    [](auto&& f) __attribute__((always_inline, flatten))                        \
     {                                                                           \
         SFML_BASE_ASSERT(::sf::priv::glGetErrorImpl() == 0u /* GL_NO_ERROR */); \
                                                                                 \
@@ -44,13 +44,14 @@ namespace sf::priv
             /* no-op */;                                                        \
                                                                                 \
         return _glCheckResult;                                                  \
-    }([&]() [[gnu::always_inline, gnu::flatten]] { return __VA_ARGS__; })
+    }                                                                           \
+    ([&]() __attribute__((always_inline, flatten)) { return __VA_ARGS__; })
 
 // The variants below are expected to fail, but we don't want to pollute the state of
 // `glGetError` so we have to call it anyway
 
 #define glCheckIgnoreWithFunc(errorFunc, ...)                  \
-    [&](auto&& f) [[gnu::always_inline, gnu::flatten]]         \
+    [&](auto&& f) __attribute__((always_inline, flatten))      \
     {                                                          \
         SFML_BASE_ASSERT(errorFunc() == 0u /* GL_NO_ERROR */); \
                                                                \
@@ -60,7 +61,8 @@ namespace sf::priv
             /* no-op */;                                       \
                                                                \
         return _glCheckResult;                                 \
-    }([&]() [[gnu::always_inline, gnu::flatten]] { return __VA_ARGS__; })
+    }                                                          \
+    ([&]() __attribute__((always_inline, flatten)) { return __VA_ARGS__; })
 
 #else
 

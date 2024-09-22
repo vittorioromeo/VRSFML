@@ -897,9 +897,9 @@ FloatRect Texture::getRect() const
 
 
 ////////////////////////////////////////////////////////////
-void swap(Texture& left, Texture& right) noexcept
+void swap(Texture& lhs, Texture& rhs) noexcept
 {
-    left.swap(right);
+    lhs.swap(rhs);
 }
 
 } // namespace sf

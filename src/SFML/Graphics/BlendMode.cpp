@@ -59,20 +59,4 @@ alphaEquation(alphaBlendEquation)
 {
 }
 
-
-////////////////////////////////////////////////////////////
-bool operator==(const BlendMode& left, const BlendMode& right)
-{
-    return (left.colorSrcFactor == right.colorSrcFactor) && (left.colorDstFactor == right.colorDstFactor) &&
-           (left.colorEquation == right.colorEquation) && (left.alphaSrcFactor == right.alphaSrcFactor) &&
-           (left.alphaDstFactor == right.alphaDstFactor) && (left.alphaEquation == right.alphaEquation);
-}
-
-
-////////////////////////////////////////////////////////////
-bool operator!=(const BlendMode& left, const BlendMode& right)
-{
-    return !(left == right);
-}
-
 } // namespace sf

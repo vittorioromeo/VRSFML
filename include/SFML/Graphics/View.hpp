@@ -9,17 +9,39 @@
 #include "SFML/Graphics/Transform.hpp"
 
 #include "SFML/System/Angle.hpp"
+#include "SFML/System/AutoWrapAngle.hpp"
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vector2.hpp"
+
+#include "SFML/Base/Assert.hpp"
 
 
 namespace sf
 {
+// TODO P0:
+struct ScissorRect : FloatRect
+{
+    constexpr explicit ScissorRect(Vector2f thePosition, Vector2f theSize) : FloatRect{thePosition, theSize}
+    {
+        SFML_BASE_ASSERT(position.x >= 0.0f && position.x <= 1.0f && "position.x must lie within [0, 1]");
+        SFML_BASE_ASSERT(position.y >= 0.0f && position.y <= 1.0f && "position.y must lie within [0, 1]");
+        SFML_BASE_ASSERT(size.x >= 0.0f && "size.x must lie within [0, 1]");
+        SFML_BASE_ASSERT(size.y >= 0.0f && "size.y must lie within [0, 1]");
+        SFML_BASE_ASSERT(position.x + size.x <= 1.0f && "position.x + size.x must lie within [0, 1]");
+        SFML_BASE_ASSERT(position.y + size.y <= 1.0f && "position.y + size.y must lie within [0, 1]");
+    }
+
+    constexpr explicit(false) ScissorRect(const FloatRect& rect) : ScissorRect{rect.position, rect.size}
+    {
+    }
+};
+
+
 ////////////////////////////////////////////////////////////
 /// \brief 2D camera that defines what region is shown on screen
 ///
 ////////////////////////////////////////////////////////////
-class [[nodiscard]] SFML_GRAPHICS_API View
+struct [[nodiscard]] SFML_GRAPHICS_API View
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -41,134 +63,11 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Construct the view from its center and size
     ///
-    /// \param center Center of the zone to display
-    /// \param size   Size of zone to display
+    /// \param theCenter Center of the zone to display
+    /// \param theSize   Size of zone to display
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] View(Vector2f center, Vector2f size);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Set the center of the view
-    ///
-    /// \param center New center
-    ///
-    /// \see `setSize`, `getCenter`
-    ///
-    ////////////////////////////////////////////////////////////
-    void setCenter(Vector2f center);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Set the size of the view
-    ///
-    /// \param size New size
-    ///
-    /// \see `setCenter`, `getCenter`
-    ///
-    ////////////////////////////////////////////////////////////
-    void setSize(Vector2f size);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Set the orientation of the view
-    ///
-    /// The default rotation of a view is 0 degree.
-    ///
-    /// \param angle New angle
-    ///
-    /// \see `getRotation`
-    ///
-    ////////////////////////////////////////////////////////////
-    void setRotation(Angle angle);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Set the target viewport
-    ///
-    /// The viewport is the rectangle into which the contents of the
-    /// view are displayed, expressed as a factor (between 0 and 1)
-    /// of the size of the RenderTarget to which the view is applied.
-    /// For example, a view which takes the left side of the target would
-    /// be defined with `view.setViewport(sf::FloatRect({0.f, 0.f}, {0.5f, 1.f}))`.
-    /// By default, a view has a viewport which covers the entire target.
-    ///
-    /// \param viewport New viewport rectangle
-    ///
-    /// \see `getViewport`
-    ///
-    ////////////////////////////////////////////////////////////
-    void setViewport(const FloatRect& viewport);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Set the target scissor rectangle
-    ///
-    /// The scissor rectangle, expressed as a factor (between 0 and 1) of
-    /// the RenderTarget, specifies the region of the RenderTarget whose
-    /// pixels are able to be modified by draw or clear operations.
-    /// Any pixels which lie outside of the scissor rectangle will
-    /// not be modified by draw or clear operations.
-    /// For example, a scissor rectangle which only allows modifications
-    /// to the right side of the target would be defined
-    /// with `view.setScissor(sf::FloatRect({0.5f, 0.f}, {0.5f, 1.f}))`.
-    /// By default, a view has a scissor rectangle which allows
-    /// modifications to the entire target. This is equivalent to
-    /// disabling the scissor test entirely. Passing the default
-    /// scissor rectangle to this function will also disable
-    /// scissor testing.
-    ///
-    /// \param scissor New scissor rectangle
-    ///
-    /// \see `getScissor`
-    ///
-    ////////////////////////////////////////////////////////////
-    void setScissor(const FloatRect& scissor);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the center of the view
-    ///
-    /// \return Center of the view
-    ///
-    /// \see `getSize`, `setCenter`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2f getCenter() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the size of the view
-    ///
-    /// \return Size of the view
-    ///
-    /// \see `getCenter`, `setSize`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2f getSize() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the current orientation of the view
-    ///
-    /// \return Rotation angle of the view
-    ///
-    /// \see `setRotation`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] Angle getRotation() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the target viewport rectangle of the view
-    ///
-    /// \return Viewport rectangle, expressed as a factor of the target size
-    ///
-    /// \see `setViewport`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] const FloatRect& getViewport() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the scissor rectangle of the view
-    ///
-    /// \return Scissor rectangle, expressed as a factor of the target size
-    ///
-    /// \see `setScissor`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] const FloatRect& getScissor() const;
+    [[nodiscard]] View(Vector2f theCenter, Vector2f theSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Move the view relatively to its current position
@@ -231,15 +130,14 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::pure]] Transform getInverseTransform() const;
 
-private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2f m_center{500.f, 500.f};              //!< Center of the view, in scene coordinates
-    Vector2f m_size{1000.f, 1000.f};              //!< Size of the view, in scene coordinates
-    Angle    m_rotation;                          //!< Angle of rotation of the view rectangle
-    FloatRect m_viewport{{0.f, 0.f}, {1.f, 1.f}}; //!< Viewport rectangle, expressed as a factor of the render-target's size
-    FloatRect m_scissor{{0.f, 0.f}, {1.f, 1.f}}; //!< Scissor rectangle, expressed as a factor of the render-target's size
+    Vector2f      center{500.f, 500.f};         //!< Center of the view, in scene coordinates
+    Vector2f      size{1000.f, 1000.f};         //!< Size of the view, in scene coordinates
+    AutoWrapAngle rotation;                     //!< Angle of rotation of the view rectangle
+    FloatRect viewport{{0.f, 0.f}, {1.f, 1.f}}; //!< Viewport rectangle, expressed as a factor of the render-target's size
+    ScissorRect scissor{{0.f, 0.f}, {1.f, 1.f}}; //!< Scissor rectangle, expressed as a factor of the render-target's size
 };
 
 } // namespace sf

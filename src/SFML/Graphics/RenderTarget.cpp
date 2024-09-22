@@ -83,13 +83,13 @@ constinit std::atomic<IdType> contextRenderTargetMap[maxIdCount]{};
 
 
 ////////////////////////////////////////////////////////////
-#define SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(fnName, sfEnumType, ...)                         \
-    [[nodiscard, gnu::pure, gnu::flatten, gnu::const]] constexpr GLenum fnName(sfEnumType sfEnumValue) \
-    {                                                                                                  \
-        constexpr GLenum glValues[] __VA_ARGS__;                                                       \
-                                                                                                       \
-        SFML_BASE_ASSERT(static_cast<unsigned int>(sfEnumValue) < ::sf::base::getArraySize(glValues)); \
-        return glValues[static_cast<unsigned int>(sfEnumValue)];                                       \
+#define SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(fnName, sfEnumType, ...)                                  \
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr GLenum fnName(sfEnumType sfEnumValue) \
+    {                                                                                                           \
+        constexpr GLenum glValues[] __VA_ARGS__;                                                                \
+                                                                                                                \
+        SFML_BASE_ASSERT(static_cast<unsigned int>(sfEnumValue) < ::sf::base::getArraySize(glValues));          \
+        return glValues[static_cast<unsigned int>(sfEnumValue)];                                                \
     }
 
 
@@ -430,14 +430,14 @@ const View& RenderTarget::getDefaultView() const
 ////////////////////////////////////////////////////////////
 IntRect RenderTarget::getViewport(const View& view) const
 {
-    return RenderTargetImpl::getMultipliedBySizeAndRoundedRect(getSize(), view.getViewport());
+    return RenderTargetImpl::getMultipliedBySizeAndRoundedRect(getSize(), view.viewport);
 }
 
 
 ////////////////////////////////////////////////////////////
 IntRect RenderTarget::getScissor(const View& view) const
 {
-    return RenderTargetImpl::getMultipliedBySizeAndRoundedRect(getSize(), view.getScissor());
+    return RenderTargetImpl::getMultipliedBySizeAndRoundedRect(getSize(), view.scissor);
 }
 
 
@@ -807,7 +807,7 @@ void RenderTarget::applyCurrentView()
     glCheck(glViewport(viewport.position.x, viewportTop, viewport.size.x, viewport.size.y));
 
     // Set the scissor rectangle and enable/disable scissor testing
-    if (m_impl->view.getScissor() == FloatRect({0, 0}, {1, 1}))
+    if (m_impl->view.scissor == FloatRect({0.f, 0.f}, {1.f, 1.f}))
     {
         if (!m_impl->cache.enable || m_impl->cache.scissorEnabled)
         {

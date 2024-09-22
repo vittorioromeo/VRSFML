@@ -27,6 +27,7 @@ inline constexpr float tau = pi * 2.f;
 
 } // namespace sf::priv
 
+
 namespace sf
 {
 ////////////////////////////////////////////////////////////
@@ -46,14 +47,14 @@ constexpr float Angle::asRadians() const
 ////////////////////////////////////////////////////////////
 constexpr Angle Angle::wrapSigned() const
 {
-    return radians(priv::positiveRemainder(m_radians + priv::pi, priv::tau) - priv::pi);
+    return Angle(priv::positiveRemainder(m_radians + priv::pi, priv::tau) - priv::pi);
 }
 
 
 ////////////////////////////////////////////////////////////
 constexpr Angle Angle::wrapUnsigned() const
 {
-    return radians(priv::positiveRemainder(m_radians, priv::tau));
+    return Angle(priv::positiveRemainder(m_radians, priv::tau));
 }
 
 
@@ -78,145 +79,150 @@ constexpr Angle radians(float angle)
 
 
 ////////////////////////////////////////////////////////////
-constexpr bool operator==(Angle left, Angle right)
+constexpr bool operator==(Angle lhs, Angle rhs)
 {
-    return left.asRadians() == right.asRadians();
+    return lhs.m_radians == rhs.m_radians;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr bool operator!=(Angle left, Angle right)
+constexpr bool operator!=(Angle lhs, Angle rhs)
 {
-    return left.asRadians() != right.asRadians();
+    return lhs.m_radians != rhs.m_radians;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr bool operator<(Angle left, Angle right)
+constexpr bool operator<(Angle lhs, Angle rhs)
 {
-    return left.asRadians() < right.asRadians();
+    return lhs.m_radians < rhs.m_radians;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr bool operator>(Angle left, Angle right)
+constexpr bool operator>(Angle lhs, Angle rhs)
 {
-    return left.asRadians() > right.asRadians();
+    return lhs.m_radians > rhs.m_radians;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr bool operator<=(Angle left, Angle right)
+constexpr bool operator<=(Angle lhs, Angle rhs)
 {
-    return left.asRadians() <= right.asRadians();
+    return lhs.m_radians <= rhs.m_radians;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr bool operator>=(Angle left, Angle right)
+constexpr bool operator>=(Angle lhs, Angle rhs)
 {
-    return left.asRadians() >= right.asRadians();
+    return lhs.m_radians >= rhs.m_radians;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle operator-(Angle right)
+constexpr Angle operator-(Angle rhs)
 {
-    return radians(-right.asRadians());
+    return Angle(-rhs.m_radians);
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle operator+(Angle left, Angle right)
+constexpr Angle operator+(Angle lhs, Angle rhs)
 {
-    return radians(left.asRadians() + right.asRadians());
+    return Angle(lhs.m_radians + rhs.m_radians);
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle& operator+=(Angle& left, Angle right)
+constexpr Angle& operator+=(Angle& lhs, Angle rhs)
 {
-    return left = left + right;
+    lhs.m_radians += rhs.m_radians;
+    return lhs;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle operator-(Angle left, Angle right)
+constexpr Angle operator-(Angle lhs, Angle rhs)
 {
-    return radians(left.asRadians() - right.asRadians());
+    return Angle(lhs.m_radians - rhs.m_radians);
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle& operator-=(Angle& left, Angle right)
+constexpr Angle& operator-=(Angle& lhs, Angle rhs)
 {
-    return left = left - right;
+    lhs.m_radians -= rhs.m_radians;
+    return lhs;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle operator*(Angle left, float right)
+constexpr Angle operator*(Angle lhs, float rhs)
 {
-    return radians(left.asRadians() * right);
+    return Angle(lhs.m_radians * rhs);
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle operator*(float left, Angle right)
+constexpr Angle operator*(float lhs, Angle rhs)
 {
-    return right * left;
+    return rhs * lhs;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle& operator*=(Angle& left, float right)
+constexpr Angle& operator*=(Angle& lhs, float rhs)
 {
-    return left = left * right;
+    lhs.m_radians *= rhs;
+    return lhs;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle operator/(Angle left, float right)
+constexpr Angle operator/(Angle lhs, float rhs)
 {
-    SFML_BASE_ASSERT(right != 0.f && "Angle::operator/ cannot divide by 0");
-    return radians(left.asRadians() / right);
+    SFML_BASE_ASSERT(rhs != 0.f && "Angle::operator/ cannot divide by 0");
+    return Angle(lhs.m_radians / rhs);
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle& operator/=(Angle& left, float right)
+constexpr Angle& operator/=(Angle& lhs, float rhs)
 {
-    SFML_BASE_ASSERT(right != 0.f && "Angle::operator/= cannot divide by 0");
-    return left = left / right;
+    SFML_BASE_ASSERT(rhs != 0.f && "Angle::operator/= cannot divide by 0");
+    lhs.m_radians /= rhs;
+    return lhs;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr float operator/(Angle left, Angle right)
+constexpr float operator/(Angle lhs, Angle rhs)
 {
-    SFML_BASE_ASSERT(right.asRadians() != 0.f && "Angle::operator/ cannot divide by 0");
-    return left.asRadians() / right.asRadians();
+    SFML_BASE_ASSERT(rhs.m_radians != 0.f && "Angle::operator/ cannot divide by 0");
+    return lhs.m_radians / rhs.m_radians;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle operator%(Angle left, Angle right)
+constexpr Angle operator%(Angle lhs, Angle rhs)
 {
-    SFML_BASE_ASSERT(right.asRadians() != 0.f && "Angle::operator% cannot modulus by 0");
-    return radians(priv::positiveRemainder(left.asRadians(), right.asRadians()));
+    SFML_BASE_ASSERT(rhs.m_radians != 0.f && "Angle::operator% cannot modulus by 0");
+    return Angle(priv::positiveRemainder(lhs.m_radians, rhs.m_radians));
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Angle& operator%=(Angle& left, Angle right)
+constexpr Angle& operator%=(Angle& lhs, Angle rhs)
 {
-    SFML_BASE_ASSERT(right.asRadians() != 0.f && "Angle::operator%= cannot modulus by 0");
-    return left = left % right;
+    SFML_BASE_ASSERT(rhs.m_radians != 0.f && "Angle::operator%= cannot modulus by 0");
+    lhs.m_radians = priv::positiveRemainder(lhs.m_radians, rhs.m_radians);
+    return lhs;
 }
+
 
 namespace Literals
 {
-
 ////////////////////////////////////////////////////////////
 constexpr Angle operator""_deg(long double angle)
 {

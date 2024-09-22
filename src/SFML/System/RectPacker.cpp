@@ -7,7 +7,7 @@
 #include "SFML/System/RectPacker.hpp"
 
 #include "SFML/Base/Optional.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 
 #define STBRP_STATIC
 #define STB_RECT_PACK_IMPLEMENTATION
@@ -19,22 +19,23 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct RectPacker::Impl
 {
-    base::TrivialVector<stbrp_node> nodes;
-    stbrp_context                   context{};
-
-    explicit Impl(Vector2u size) : nodes(size.x * 3 / 2)
+    enum : int
     {
-        stbrp_init_target(&context,
-                          static_cast<int>(size.x),
-                          static_cast<int>(size.y),
-                          nodes.data(),
-                          static_cast<int>(nodes.size()));
+        MaxNodes = 2048
+    };
+
+    stbrp_node    nodes[MaxNodes]{};
+    stbrp_context context{};
+
+    explicit Impl(Vector2u size)
+    {
+        stbrp_init_target(&context, static_cast<int>(size.x), static_cast<int>(size.y), nodes, MaxNodes);
     }
 };
 
 
 ////////////////////////////////////////////////////////////
-RectPacker::RectPacker(Vector2u size) : m_impl(size)
+RectPacker::RectPacker(Vector2u size) : m_impl(base::makeUnique<Impl>(size))
 {
 }
 

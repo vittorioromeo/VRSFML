@@ -279,12 +279,12 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Overload of `operator+=` to append an UTF-32 string
     ///
-    /// \param right String to append
+    /// \param rhs String to append
     ///
     /// \return Reference to self
     ///
     ////////////////////////////////////////////////////////////
-    String& operator+=(const String& right);
+    String& operator+=(const String& rhs);
 
     ////////////////////////////////////////////////////////////
     /// \brief Overload of `operator[]` to access a character by its position
@@ -485,8 +485,8 @@ public:
     [[nodiscard]] ConstIterator end() const;
 
 private:
-    friend SFML_SYSTEM_API bool operator==(const String& left, const String& right);
-    friend SFML_SYSTEM_API bool operator<(const String& left, const String& right);
+    friend SFML_SYSTEM_API bool operator==(const String& lhs, const String& rhs);
+    friend SFML_SYSTEM_API bool operator<(const String& lhs, const String& rhs);
 
     ////////////////////////////////////////////////////////////
     /// \brief Retrieve the string stored in the PImpl
@@ -505,85 +505,85 @@ private:
 /// \relates String
 /// \brief Overload of `operator==` to compare two UTF-32 strings
 ///
-/// \param left  Left operand (a string)
-/// \param right Right operand (a string)
+/// \param lhs  Left operand (a string)
+/// \param rhs Right operand (a string)
 ///
 /// \return `true` if both strings are equal
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_SYSTEM_API bool operator==(const String& left, const String& right);
+[[nodiscard]] SFML_SYSTEM_API bool operator==(const String& lhs, const String& rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates String
 /// \brief Overload of `operator!=` to compare two UTF-32 strings
 ///
-/// \param left  Left operand (a string)
-/// \param right Right operand (a string)
+/// \param lhs  Left operand (a string)
+/// \param rhs Right operand (a string)
 ///
 /// \return `true` if both strings are different
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_SYSTEM_API bool operator!=(const String& left, const String& right);
+[[nodiscard]] SFML_SYSTEM_API bool operator!=(const String& lhs, const String& rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates String
 /// \brief Overload of `operator<` to compare two UTF-32 strings
 ///
-/// \param left  Left operand (a string)
-/// \param right Right operand (a string)
+/// \param lhs  Left operand (a string)
+/// \param rhs Right operand (a string)
 ///
-/// \return `true` if \a `left` is lexicographically before \a `right`
+/// \return `true` if \a `lhs` is lexicographically before \a `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_SYSTEM_API bool operator<(const String& left, const String& right);
+[[nodiscard]] SFML_SYSTEM_API bool operator<(const String& lhs, const String& rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates String
 /// \brief Overload of `operator>` to compare two UTF-32 strings
 ///
-/// \param left  Left operand (a string)
-/// \param right Right operand (a string)
+/// \param lhs  Left operand (a string)
+/// \param rhs Right operand (a string)
 ///
-/// \return `true` if \a `left` is lexicographically after \a `right`
+/// \return `true` if \a `lhs` is lexicographically after \a `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_SYSTEM_API bool operator>(const String& left, const String& right);
+[[nodiscard]] SFML_SYSTEM_API bool operator>(const String& lhs, const String& rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates String
 /// \brief Overload of `operator<=` to compare two UTF-32 strings
 ///
-/// \param left  Left operand (a string)
-/// \param right Right operand (a string)
+/// \param lhs  Left operand (a string)
+/// \param rhs Right operand (a string)
 ///
-/// \return `true` if \a `left` is lexicographically before or equivalent to \a `right`
+/// \return `true` if \a `lhs` is lexicographically before or equivalent to \a `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_SYSTEM_API bool operator<=(const String& left, const String& right);
+[[nodiscard]] SFML_SYSTEM_API bool operator<=(const String& lhs, const String& rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates String
 /// \brief Overload of `operator>=` to compare two UTF-32 strings
 ///
-/// \param left  Left operand (a string)
-/// \param right Right operand (a string)
+/// \param lhs  Left operand (a string)
+/// \param rhs Right operand (a string)
 ///
-/// \return `true` if \a `left` is lexicographically after or equivalent to \a `right`
+/// \return `true` if \a `lhs` is lexicographically after or equivalent to \a `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_SYSTEM_API bool operator>=(const String& left, const String& right);
+[[nodiscard]] SFML_SYSTEM_API bool operator>=(const String& lhs, const String& rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates String
 /// \brief Overload of binary `operator+` to concatenate two strings
 ///
-/// \param left  Left operand (a string)
-/// \param right Right operand (a string)
+/// \param lhs  Left operand (a string)
+/// \param rhs Right operand (a string)
 ///
 /// \return Concatenated string
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_SYSTEM_API String operator+(const String& left, const String& right);
+[[nodiscard]] SFML_SYSTEM_API String operator+(const String& lhs, const String& rhs);
 
 } // namespace sf
 

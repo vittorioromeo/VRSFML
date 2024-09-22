@@ -14,7 +14,7 @@ namespace sf
 ////////////////////////////////////////////////////////////
 constexpr void Transformable::rotate(Angle angle)
 {
-    rotation = (rotation + angle).wrapUnsigned(); // TODO P0: make wrappable angle
+    rotation += angle;
 }
 
 

@@ -12,7 +12,6 @@
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/Vulkan.hpp"
 #include "SFML/Window/WindowBase.hpp"
-#include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
@@ -41,15 +40,14 @@ namespace
 using Matrix = float[4][4];
 
 // Multiply 2 matrices
-void matrixMultiply(Matrix& result, const Matrix& left, const Matrix& right)
+void matrixMultiply(Matrix& result, const Matrix& lhs, const Matrix& rhs)
 {
     Matrix temp;
 
     for (int i = 0; i < 4; ++i)
     {
         for (int j = 0; j < 4; ++j)
-            temp[i][j] = left[0][j] * right[i][0] + left[1][j] * right[i][1] + left[2][j] * right[i][2] +
-                         left[3][j] * right[i][3];
+            temp[i][j] = lhs[0][j] * rhs[i][0] + lhs[1][j] * rhs[i][1] + lhs[2][j] * rhs[i][2] + lhs[3][j] * rhs[i][3];
     }
 
     std::memcpy(result, temp, sizeof(Matrix));

@@ -135,8 +135,8 @@ public:
     ///
     /// These two statements are equivalent:
     /// \code
-    /// left.combine(right);
-    /// left *= right;
+    /// lhs.combine(rhs);
+    /// lhs *= rhs;
     /// \endcode
     ///
     /// \param transform Transform to combine with this transform
@@ -253,8 +253,32 @@ public:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] constexpr Transform& scaleBy(Vector2f factors, Vector2f center);
 
-    friend constexpr Transform operator*(const Transform& left, const Transform& right);
-    friend constexpr bool      operator==(const Transform& left, const Transform& right);
+    ////////////////////////////////////////////////////////////
+    /// \brief Overload of binary `operator==` to compare two transforms
+    ///
+    /// Performs an element-wise comparison of the elements of the
+    /// lhs transform with the elements of the rhs transform.
+    ///
+    /// \param rhs Right operand
+    ///
+    /// \return `true` if the transforms are equal, `false` otherwise
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator==(const Transform& rhs) const = default;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Overload of binary `operator!=` to compare two transforms
+    ///
+    /// This call is equivalent to `!(lhs == rhs)`.
+    ///
+    /// \param rhs Right operand
+    ///
+    /// \return `true` if the transforms are not equal, `false` otherwise
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator!=(const Transform& rhs) const = default;
+
+    friend constexpr Transform operator*(const Transform& lhs, const Transform& rhs);
 
     ////////////////////////////////////////////////////////////
     // Static member data
@@ -279,72 +303,43 @@ private:
 /// \relates `sf::Transform`
 /// \brief Overload of binary `operator*` to combine two transforms
 ///
-/// This call is equivalent to calling `Transform(left).combine(right)`.
+/// This call is equivalent to calling `Transform(lhs).combine(rhs)`.
 ///
-/// \param left Left operand (the first transform)
-/// \param right Right operand (the second transform)
+/// \param lhs Left operand (the first transform)
+/// \param rhs Right operand (the second transform)
 ///
 /// \return New combined transform
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Transform operator*(const Transform& left, const Transform& right);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Transform operator*(const Transform& lhs, const Transform& rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates `sf::Transform`
 /// \brief Overload of binary `operator*=` to combine two transforms
 ///
-/// This call is equivalent to calling `left.combine(right)`.
+/// This call is equivalent to calling `lhs.combine(rhs)`.
 ///
-/// \param left Left operand (the first transform)
-/// \param right Right operand (the second transform)
+/// \param lhs Left operand (the first transform)
+/// \param rhs Right operand (the second transform)
 ///
 /// \return The combined transform
 ///
 ////////////////////////////////////////////////////////////
-constexpr Transform& operator*=(Transform& left, const Transform& right);
+constexpr Transform& operator*=(Transform& lhs, const Transform& rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates `sf::Transform`
 /// \brief Overload of binary `operator*` to transform a point
 ///
-/// This call is equivalent to calling `left.transformPoint(right)`.
+/// This call is equivalent to calling `lhs.transformPoint(rhs)`.
 ///
-/// \param left Left operand (the transform)
-/// \param right Right operand (the point to transform)
+/// \param lhs Left operand (the transform)
+/// \param rhs Right operand (the point to transform)
 ///
 /// \return New transformed point
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector2f operator*(const Transform& left, Vector2f right);
-
-////////////////////////////////////////////////////////////
-/// \relates `sf::Transform`
-/// \brief Overload of binary `operator==` to compare two transforms
-///
-/// Performs an element-wise comparison of the elements of the
-/// left transform with the elements of the right transform.
-///
-/// \param left Left operand (the first transform)
-/// \param right Right operand (the second transform)
-///
-/// \return `true` if the transforms are equal, `false` otherwise
-///
-////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator==(const Transform& left, const Transform& right);
-
-////////////////////////////////////////////////////////////
-/// \relates `sf::Transform`
-/// \brief Overload of binary `operator!=` to compare two transforms
-///
-/// This call is equivalent to `!(left == right)`.
-///
-/// \param left Left operand (the first transform)
-/// \param right Right operand (the second transform)
-///
-/// \return `true` if the transforms are not equal, `false` otherwise
-///
-////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator!=(const Transform& left, const Transform& right);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector2f operator*(const Transform& lhs, Vector2f rhs);
 
 } // namespace sf
 

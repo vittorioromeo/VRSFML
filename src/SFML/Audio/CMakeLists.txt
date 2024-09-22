@@ -89,6 +89,12 @@ else()
         sfml_set_stdlib(vorbisenc)
         sfml_set_stdlib(vorbisfile)
 
+        target_compile_options(ogg PRIVATE "-w")
+        target_compile_options(FLAC PRIVATE "-w")
+        target_compile_options(vorbis PRIVATE "-w")
+        target_compile_options(vorbisenc PRIVATE "-w")
+        target_compile_options(vorbisfile PRIVATE "-w")
+
         # define NDEBUG when building FLAC to suppress console debug output
         target_compile_definitions(FLAC PRIVATE NDEBUG)
 
@@ -106,6 +112,7 @@ else()
         add_library(Vorbis::vorbisenc ALIAS vorbisenc)
         add_library(Vorbis::vorbisfile ALIAS vorbisfile)
     endfunction()
+
     sfml_add_audio_dependencies()
 endif()
 

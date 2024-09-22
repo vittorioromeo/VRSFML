@@ -50,41 +50,35 @@ public:
     [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr U to() const;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Overload of binary `operator==`
+    ///
+    /// This operator compares strict equality between two rectangles.
+    ///
+    /// \param rhs Right operand
+    ///
+    /// \return `true` if \a lhs is equal to \a rhs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator==(const Rect<T>& rhs) const = default;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Overload of binary `operator!=`
+    ///
+    /// This operator compares strict difference between two rectangles.
+    ///
+    /// \param rhs Right operand
+    ///
+    /// \return `true` if \a lhs is not equal to \a rhs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator!=(const Rect<T>& rhs) const = default;
+
+    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     Vector2<T> position{}; //!< Position of the top-left corner of the rectangle
     Vector2<T> size{};     //!< Size of the rectangle
 };
-
-////////////////////////////////////////////////////////////
-/// \relates Rect
-/// \brief Overload of binary `operator==`
-///
-/// This operator compares strict equality between two rectangles.
-///
-/// \param lhs Left operand (a rectangle)
-/// \param rhs Right operand (a rectangle)
-///
-/// \return `true` if \a lhs is equal to \a rhs
-///
-////////////////////////////////////////////////////////////
-template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator==(const Rect<T>& lhs, const Rect<T>& rhs);
-
-////////////////////////////////////////////////////////////
-/// \relates Rect
-/// \brief Overload of binary `operator!=`
-///
-/// This operator compares strict difference between two rectangles.
-///
-/// \param lhs Left operand (a rectangle)
-/// \param rhs Right operand (a rectangle)
-///
-/// \return `true` if \a lhs is not equal to \a rhs
-///
-////////////////////////////////////////////////////////////
-template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator!=(const Rect<T>& lhs, const Rect<T>& rhs);
 
 // Create type aliases for the most common types
 using IntRect   = Rect<int>;

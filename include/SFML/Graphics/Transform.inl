@@ -140,43 +140,28 @@ constexpr Transform& Transform::scaleBy(Vector2f factors, Vector2f center)
 
 
 ////////////////////////////////////////////////////////////
-constexpr Transform operator*(const Transform& left, const Transform& right)
+constexpr Transform operator*(const Transform& lhs, const Transform& rhs)
 {
-    return {left.m_a00 * right.m_a00 + left.m_a01 * right.m_a10,
-            left.m_a00 * right.m_a01 + left.m_a01 * right.m_a11,
-            left.m_a00 * right.m_a02 + left.m_a01 * right.m_a12 + left.m_a02,
-            left.m_a10 * right.m_a00 + left.m_a11 * right.m_a10,
-            left.m_a10 * right.m_a01 + left.m_a11 * right.m_a11,
-            left.m_a10 * right.m_a02 + left.m_a11 * right.m_a12 + left.m_a12};
+    return {lhs.m_a00 * rhs.m_a00 + lhs.m_a01 * rhs.m_a10,
+            lhs.m_a00 * rhs.m_a01 + lhs.m_a01 * rhs.m_a11,
+            lhs.m_a00 * rhs.m_a02 + lhs.m_a01 * rhs.m_a12 + lhs.m_a02,
+            lhs.m_a10 * rhs.m_a00 + lhs.m_a11 * rhs.m_a10,
+            lhs.m_a10 * rhs.m_a01 + lhs.m_a11 * rhs.m_a11,
+            lhs.m_a10 * rhs.m_a02 + lhs.m_a11 * rhs.m_a12 + lhs.m_a12};
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Transform& operator*=(Transform& left, const Transform& right)
+constexpr Transform& operator*=(Transform& lhs, const Transform& rhs)
 {
-    return left.combine(right);
+    return lhs.combine(rhs);
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Vector2f operator*(const Transform& left, Vector2f right)
+constexpr Vector2f operator*(const Transform& lhs, Vector2f rhs)
 {
-    return left.transformPoint(right);
-}
-
-
-////////////////////////////////////////////////////////////
-constexpr bool operator==(const Transform& left, const Transform& right)
-{
-    return left.m_a00 == right.m_a00 && left.m_a10 == right.m_a10 && left.m_a01 == right.m_a01 &&
-           left.m_a11 == right.m_a11 && left.m_a02 == right.m_a02 && left.m_a12 == right.m_a12;
-}
-
-
-////////////////////////////////////////////////////////////
-constexpr bool operator!=(const Transform& left, const Transform& right)
-{
-    return !(left == right);
+    return lhs.transformPoint(rhs);
 }
 
 

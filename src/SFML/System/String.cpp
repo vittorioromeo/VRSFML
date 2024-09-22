@@ -225,9 +225,9 @@ TString String::toUtf32() const
 
 
 ////////////////////////////////////////////////////////////
-String& String::operator+=(const String& right)
+String& String::operator+=(const String& rhs)
 {
-    m_impl->string += right.m_impl->string;
+    m_impl->string += rhs.m_impl->string;
     return *this;
 }
 
@@ -363,52 +363,52 @@ void* String::getImplString()
 
 
 ////////////////////////////////////////////////////////////
-bool operator==(const String& left, const String& right)
+bool operator==(const String& lhs, const String& rhs)
 {
-    return left.m_impl->string == right.m_impl->string;
+    return lhs.m_impl->string == rhs.m_impl->string;
 }
 
 
 ////////////////////////////////////////////////////////////
-bool operator!=(const String& left, const String& right)
+bool operator!=(const String& lhs, const String& rhs)
 {
-    return !(left == right);
+    return !(lhs == rhs);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool operator<(const String& left, const String& right)
+bool operator<(const String& lhs, const String& rhs)
 {
-    return left.m_impl->string < right.m_impl->string;
+    return lhs.m_impl->string < rhs.m_impl->string;
 }
 
 
 ////////////////////////////////////////////////////////////
-bool operator>(const String& left, const String& right)
+bool operator>(const String& lhs, const String& rhs)
 {
-    return right < left;
+    return rhs < lhs;
 }
 
 
 ////////////////////////////////////////////////////////////
-bool operator<=(const String& left, const String& right)
+bool operator<=(const String& lhs, const String& rhs)
 {
-    return !(right < left);
+    return !(rhs < lhs);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool operator>=(const String& left, const String& right)
+bool operator>=(const String& lhs, const String& rhs)
 {
-    return !(left < right);
+    return !(lhs < rhs);
 }
 
 
 ////////////////////////////////////////////////////////////
-String operator+(const String& left, const String& right)
+String operator+(const String& lhs, const String& rhs)
 {
-    String string = left;
-    string += right;
+    String string = lhs;
+    string += rhs;
 
     return string;
 }

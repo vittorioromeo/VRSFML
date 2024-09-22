@@ -34,6 +34,30 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr std::uint32_t toInteger() const;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Overload of the `operator==`
+    ///
+    /// This operator compares two colors and check if they are equal.
+    ///
+    /// \param rhs Right operand
+    ///
+    /// \return `true` if colors are equal, `false` if they are different
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::const]] constexpr bool operator==(const Color& rhs) const = default;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Overload of the `operator!=`
+    ///
+    /// This operator compares two colors and check if they are different.
+    ///
+    /// \param rhs Right operand
+    ///
+    /// \return `true` if colors are different, `false` if they are equal
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::const]] constexpr bool operator!=(const Color& rhs) const = default;
+
+    ////////////////////////////////////////////////////////////
     // Static member data
     ////////////////////////////////////////////////////////////
     // NOLINTBEGIN(readability-identifier-naming)
@@ -59,46 +83,18 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
 
 ////////////////////////////////////////////////////////////
 /// \relates Color
-/// \brief Overload of the `operator==`
-///
-/// This operator compares two colors and check if they are equal.
-///
-/// \param left  Left operand
-/// \param right Right operand
-///
-/// \return `true` if colors are equal, `false` if they are different
-///
-////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::const]] constexpr bool operator==(Color left, Color right);
-
-////////////////////////////////////////////////////////////
-/// \relates Color
-/// \brief Overload of the `operator!=`
-///
-/// This operator compares two colors and check if they are different.
-///
-/// \param left  Left operand
-/// \param right Right operand
-///
-/// \return `true` if colors are different, `false` if they are equal
-///
-////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::const]] constexpr bool operator!=(Color left, Color right);
-
-////////////////////////////////////////////////////////////
-/// \relates Color
 /// \brief Overload of the binary `operator+`
 ///
 /// This operator returns the component-wise sum of two colors.
 /// Components that exceed 255 are clamped to 255.
 ///
-/// \param left  Left operand
-/// \param right Right operand
+/// \param lhs  Left operand
+/// \param rhs Right operand
 ///
-/// \return Result of \a left + \a right
+/// \return Result of \a lhs + \a rhs
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::const]] constexpr Color operator+(Color left, Color right);
+[[nodiscard, gnu::always_inline, gnu::const]] constexpr Color operator+(Color lhs, Color rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Color
@@ -107,13 +103,13 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
 /// This operator returns the component-wise subtraction of two colors.
 /// Components below 0 are clamped to 0.
 ///
-/// \param left  Left operand
-/// \param right Right operand
+/// \param lhs  Left operand
+/// \param rhs Right operand
 ///
-/// \return Result of \a left - \a right
+/// \return Result of \a lhs - \a rhs
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::const]] constexpr Color operator-(Color left, Color right);
+[[nodiscard, gnu::always_inline, gnu::const]] constexpr Color operator-(Color lhs, Color rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Color
@@ -124,45 +120,45 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
 /// Components are then divided by 255 so that the result is
 /// still in the range [0, 255].
 ///
-/// \param left  Left operand
-/// \param right Right operand
+/// \param lhs  Left operand
+/// \param rhs Right operand
 ///
-/// \return Result of \a left * \a right
+/// \return Result of \a lhs * \a rhs
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::const]] constexpr Color operator*(Color left, Color right);
+[[nodiscard, gnu::always_inline, gnu::const]] constexpr Color operator*(Color lhs, Color rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Color
 /// \brief Overload of the binary `operator+=`
 ///
 /// This operator computes the component-wise sum of two colors,
-/// and assigns the result to the left operand.
+/// and assigns the result to the lhs operand.
 /// Components that exceed 255 are clamped to 255.
 ///
-/// \param left  Left operand
-/// \param right Right operand
+/// \param lhs  Left operand
+/// \param rhs Right operand
 ///
-/// \return Reference to \a left
+/// \return Reference to \a lhs
 ///
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] constexpr Color& operator+=(Color& left, Color right);
+[[gnu::always_inline]] constexpr Color& operator+=(Color& lhs, Color rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Color
 /// \brief Overload of the binary `operator-=`
 ///
 /// This operator computes the component-wise subtraction of two colors,
-/// and assigns the result to the left operand.
+/// and assigns the result to the lhs operand.
 /// Components below 0 are clamped to 0.
 ///
-/// \param left  Left operand
-/// \param right Right operand
+/// \param lhs  Left operand
+/// \param rhs Right operand
 ///
-/// \return Reference to \a left
+/// \return Reference to \a lhs
 ///
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] constexpr Color& operator-=(Color& left, Color right);
+[[gnu::always_inline]] constexpr Color& operator-=(Color& lhs, Color rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Color
@@ -170,17 +166,17 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
 ///
 /// This operator returns the component-wise multiplication
 /// (also called "modulation") of two colors, and assigns
-/// the result to the left operand.
+/// the result to the lhs operand.
 /// Components are then divided by 255 so that the result is
 /// still in the range [0, 255].
 ///
-/// \param left  Left operand
-/// \param right Right operand
+/// \param lhs  Left operand
+/// \param rhs Right operand
 ///
-/// \return Reference to \a left
+/// \return Reference to \a lhs
 ///
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] constexpr Color& operator*=(Color& left, Color right);
+[[gnu::always_inline]] constexpr Color& operator*=(Color& lhs, Color rhs);
 
 } // namespace sf
 

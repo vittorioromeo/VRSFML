@@ -29,6 +29,7 @@ set_target_properties(doctest PROPERTIES COMPILE_OPTIONS "" EXPORT_COMPILE_COMMA
 set_target_properties(doctest_with_main PROPERTIES EXPORT_COMPILE_COMMANDS OFF)
 get_target_property(DOCTEST_INCLUDE_DIRS doctest INTERFACE_INCLUDE_DIRECTORIES)
 target_include_directories(doctest SYSTEM INTERFACE ${DOCTEST_INCLUDE_DIRS})
+target_compile_options(doctest_with_main PRIVATE "-w")
 
 # add flags required for emscripten support (e.g. pthread)
 if(SFML_OS_EMSCRIPTEN)

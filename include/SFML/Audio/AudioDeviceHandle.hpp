@@ -165,17 +165,8 @@ public:
     using AudioDeviceHandle::isDefault;
     using AudioDeviceHandle::operator=;
 
-    [[nodiscard, gnu::always_inline, gnu::pure]] friend bool operator==(const StronglyTypedDeviceHandle& lhs,
-                                                                        const StronglyTypedDeviceHandle& rhs)
-    {
-        return static_cast<const AudioDeviceHandle&>(lhs) == static_cast<const AudioDeviceHandle>(rhs);
-    }
-
-    [[nodiscard, gnu::always_inline, gnu::pure]] friend bool operator!=(const StronglyTypedDeviceHandle& lhs,
-                                                                        const StronglyTypedDeviceHandle& rhs)
-    {
-        return !(lhs == rhs);
-    }
+    [[nodiscard, gnu::always_inline, gnu::pure]] bool operator==(const StronglyTypedDeviceHandle& rhs) const = default;
+    [[nodiscard, gnu::always_inline, gnu::pure]] bool operator!=(const StronglyTypedDeviceHandle& rhs) const = default;
 
 private:
     using AudioDeviceHandle::getMADeviceInfo;

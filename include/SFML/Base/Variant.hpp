@@ -140,43 +140,40 @@ private:
     alignas(max_alignment) byte _buffer[max_size];
     index_type _index;
 
-#if defined(__GNUC__) && !defined(__clang__) && (__GNUC__ >= 10)
-#define TINYVARIANT_ALWAYS_INLINE_LAMBDA [[gnu::always_inline]]
-#else
-#define TINYVARIANT_ALWAYS_INLINE_LAMBDA
-#endif
-
 #define TINYVARIANT_STATIC_ASSERT_INDEX_VALIDITY(I)                                     \
     static_assert((I) != impl::bad_index, "Alternative type not supported by variant"); \
                                                                                         \
     static_assert((I) >= 0 && (I) < type_count, "Alternative index out of range")
 
-#define TINYVARIANT_DO_WITH_CURRENT_INDEX_OBJ(obj, Is, ...)                                          \
-    do                                                                                               \
-    {                                                                                                \
-        if constexpr (sizeof...(Alternatives) == 1)                                                  \
-        {                                                                                            \
-            if (constexpr impl::SizeT Is = 0; (obj)._index == Is)                                    \
-            {                                                                                        \
-                __VA_ARGS__;                                                                         \
-            }                                                                                        \
-        }                                                                                            \
-        else if constexpr (sizeof...(Alternatives) == 2)                                             \
-        {                                                                                            \
-            if (constexpr impl::SizeT Is = 0; (obj)._index == Is)                                    \
-            {                                                                                        \
-                __VA_ARGS__;                                                                         \
-            }                                                                                        \
-            else if (constexpr impl::SizeT Is = 1; (obj)._index == Is)                               \
-            {                                                                                        \
-                __VA_ARGS__;                                                                         \
-            }                                                                                        \
-        }                                                                                            \
-        else                                                                                         \
-        {                                                                                            \
-            [&]<impl::SizeT... Is>(sf::base::IndexSequence<Is...>) TINYVARIANT_ALWAYS_INLINE_LAMBDA  \
-            { ((((obj)._index == Is) ? ((__VA_ARGS__), 0) : 0), ...); }(alternative_index_sequence); \
-        }                                                                                            \
+#define TINYVARIANT_DO_WITH_CURRENT_INDEX_OBJ(obj, Is, ...)                                                \
+    do                                                                                                     \
+    {                                                                                                      \
+        if constexpr (sizeof...(Alternatives) == 1)                                                        \
+        {                                                                                                  \
+            if (constexpr impl::SizeT Is = 0; (obj)._index == Is)                                          \
+            {                                                                                              \
+                __VA_ARGS__;                                                                               \
+            }                                                                                              \
+        }                                                                                                  \
+        else if constexpr (sizeof...(Alternatives) == 2)                                                   \
+        {                                                                                                  \
+            if (constexpr impl::SizeT Is = 0; (obj)._index == Is)                                          \
+            {                                                                                              \
+                __VA_ARGS__;                                                                               \
+            }                                                                                              \
+            else if (constexpr impl::SizeT Is = 1; (obj)._index == Is)                                     \
+            {                                                                                              \
+                __VA_ARGS__;                                                                               \
+            }                                                                                              \
+        }                                                                                                  \
+        else                                                                                               \
+        {                                                                                                  \
+            [&]<impl::SizeT... Is>(sf::base::IndexSequence<Is...>) __attribute__((always_inline, flatten)) \
+            {                                                                                              \
+                ((((obj)._index == Is) ? ((__VA_ARGS__), 0) : 0), ...);                                    \
+            }                                                                                              \
+            (alternative_index_sequence);                                                                  \
+        }                                                                                                  \
     } while (false)
 
 #define TINYVARIANT_DO_WITH_CURRENT_INDEX(Is, ...) TINYVARIANT_DO_WITH_CURRENT_INDEX_OBJ((*this), Is, __VA_ARGS__)
@@ -194,7 +191,9 @@ private:
     template <impl::SizeT I>
     [[gnu::always_inline]] void destroy_at() noexcept
     {
-        as<TINYVARIANT_NTH_TYPE(I)>().~TINYVARIANT_NTH_TYPE(I)();
+        using type = TINYVARIANT_NTH_TYPE(I);
+
+        as<type>().~type();
     }
 
     template <impl::SizeT I, typename R, typename Visitor>

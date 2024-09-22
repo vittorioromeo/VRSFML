@@ -309,11 +309,11 @@ private:
 ////////////////////////////////////////////////////////////
 /// \brief Swap the contents of one vertex buffer with those of another
 ///
-/// \param left First instance to swap
-/// \param right Second instance to swap
+/// \param lhs First instance to swap
+/// \param rhs Second instance to swap
 ///
 ////////////////////////////////////////////////////////////
-SFML_GRAPHICS_API void swap(VertexBuffer& left, VertexBuffer& right) noexcept;
+SFML_GRAPHICS_API void swap(VertexBuffer& lhs, VertexBuffer& rhs) noexcept;
 
 } // namespace sf
 

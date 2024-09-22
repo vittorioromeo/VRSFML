@@ -479,7 +479,7 @@ int main()
     instructions.setOutlineColor(sf::Color::Red);
 
     // Create the main window
-    sf::RenderWindow window(graphicsContext, {.size{800u, 600u}, .title = "SFML Shader", .resizable = false, .vsync=true});
+    sf::RenderWindow window(graphicsContext, {.size{800u, 600u}, .title = "SFML Shader", .resizable = false, .vsync = true});
 
     // Start the game loop
     const sf::Clock clock;
