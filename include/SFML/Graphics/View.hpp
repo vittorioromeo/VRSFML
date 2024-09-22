@@ -69,7 +69,7 @@ public:
     /// \param theSize   Size of zone to display
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit View(Vector2f theCenter, Vector2f theSize);
+    [[nodiscard]] explicit(false) View(Vector2f theCenter, Vector2f theSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Move the view relatively to its current position
