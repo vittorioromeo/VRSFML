@@ -1063,7 +1063,7 @@ int main()
 
     // Create the main window
     sf::RenderWindow window(graphicsContext,
-                            {.size{windowWidth, windowHeight}, .title = "SFML Sound Effects", .resizable = false, .vsync=true});
+                            {.size{windowWidth, windowHeight}, .title = "SFML Sound Effects", .resizable = false, .vsync = true});
 
     // Load the application font and pass it to the Effect class
     const auto font = sf::Font::openFromFile(graphicsContext, resourcesDir() / "tuffy.ttf").value();

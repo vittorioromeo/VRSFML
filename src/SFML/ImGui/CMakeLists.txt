@@ -72,6 +72,8 @@ else()
 
         set_target_properties(imgui PROPERTIES FOLDER "Dependencies")
 
+        target_compile_options(imgui PRIVATE "-w")
+
         target_include_directories(imgui
                                    SYSTEM PUBLIC $<BUILD_INTERFACE:${IMGUI_INCLUDE_DIRS}>
                                                  $<INSTALL_INTERFACE:include>)

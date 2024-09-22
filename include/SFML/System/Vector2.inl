@@ -69,113 +69,113 @@ constexpr Vector2<T> Vector2<T>::componentWiseDiv(Vector2<T> rhs) const
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector2<T> operator-(Vector2<T> right)
+constexpr Vector2<T> operator-(Vector2<T> rhs)
 {
-    return Vector2<T>(-right.x, -right.y);
+    return Vector2<T>(-rhs.x, -rhs.y);
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector2<T>& operator+=(Vector2<T>& left, Vector2<T> right)
+constexpr Vector2<T>& operator+=(Vector2<T>& lhs, Vector2<T> rhs)
 {
-    left.x += right.x;
-    left.y += right.y;
+    lhs.x += rhs.x;
+    lhs.y += rhs.y;
 
-    return left;
+    return lhs;
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector2<T>& operator-=(Vector2<T>& left, Vector2<T> right)
+constexpr Vector2<T>& operator-=(Vector2<T>& lhs, Vector2<T> rhs)
 {
-    left.x -= right.x;
-    left.y -= right.y;
+    lhs.x -= rhs.x;
+    lhs.y -= rhs.y;
 
-    return left;
+    return lhs;
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector2<T> operator+(Vector2<T> left, Vector2<T> right)
+constexpr Vector2<T> operator+(Vector2<T> lhs, Vector2<T> rhs)
 {
-    return Vector2<T>(left.x + right.x, left.y + right.y);
+    return Vector2<T>(lhs.x + rhs.x, lhs.y + rhs.y);
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector2<T> operator-(Vector2<T> left, Vector2<T> right)
+constexpr Vector2<T> operator-(Vector2<T> lhs, Vector2<T> rhs)
 {
-    return Vector2<T>(left.x - right.x, left.y - right.y);
+    return Vector2<T>(lhs.x - rhs.x, lhs.y - rhs.y);
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector2<T> operator*(Vector2<T> left, T right)
+constexpr Vector2<T> operator*(Vector2<T> lhs, T rhs)
 {
-    return Vector2<T>(left.x * right, left.y * right);
+    return Vector2<T>(lhs.x * rhs, lhs.y * rhs);
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector2<T> operator*(T left, Vector2<T> right)
+constexpr Vector2<T> operator*(T lhs, Vector2<T> rhs)
 {
-    return Vector2<T>(right.x * left, right.y * left);
+    return Vector2<T>(rhs.x * lhs, rhs.y * lhs);
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector2<T>& operator*=(Vector2<T>& left, T right)
+constexpr Vector2<T>& operator*=(Vector2<T>& lhs, T rhs)
 {
-    left.x *= right;
-    left.y *= right;
+    lhs.x *= rhs;
+    lhs.y *= rhs;
 
-    return left;
+    return lhs;
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector2<T> operator/(Vector2<T> left, T right)
+constexpr Vector2<T> operator/(Vector2<T> lhs, T rhs)
 {
-    SFML_BASE_ASSERT(right != 0 && "Vector2::operator/ cannot divide by 0");
+    SFML_BASE_ASSERT(rhs != 0 && "Vector2::operator/ cannot divide by 0");
 
-    return Vector2<T>(left.x / right, left.y / right);
+    return Vector2<T>(lhs.x / rhs, lhs.y / rhs);
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector2<T>& operator/=(Vector2<T>& left, T right)
+constexpr Vector2<T>& operator/=(Vector2<T>& lhs, T rhs)
 {
-    SFML_BASE_ASSERT(right != 0 && "Vector2::operator/= cannot divide by 0");
+    SFML_BASE_ASSERT(rhs != 0 && "Vector2::operator/= cannot divide by 0");
 
-    left.x /= right;
-    left.y /= right;
+    lhs.x /= rhs;
+    lhs.y /= rhs;
 
-    return left;
+    return lhs;
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr bool operator==(Vector2<T> left, Vector2<T> right)
+constexpr bool operator==(Vector2<T> lhs, Vector2<T> rhs)
 {
-    return (left.x == right.x) && (left.y == right.y);
+    return (lhs.x == rhs.x) && (lhs.y == rhs.y);
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr bool operator!=(Vector2<T> left, Vector2<T> right)
+constexpr bool operator!=(Vector2<T> lhs, Vector2<T> rhs)
 {
-    return (left.x != right.x) || (left.y != right.y);
+    return (lhs.x != rhs.x) || (lhs.y != rhs.y);
 }
 
 

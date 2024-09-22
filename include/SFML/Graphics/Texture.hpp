@@ -594,11 +594,11 @@ private:
 ////////////////////////////////////////////////////////////
 /// \brief Swap the contents of one texture with those of another
 ///
-/// \param left First instance to swap
-/// \param right Second instance to swap
+/// \param lhs First instance to swap
+/// \param rhs Second instance to swap
 ///
 ////////////////////////////////////////////////////////////
-SFML_GRAPHICS_API void swap(Texture& left, Texture& right) noexcept;
+SFML_GRAPHICS_API void swap(Texture& lhs, Texture& rhs) noexcept;
 
 } // namespace sf
 

@@ -9,6 +9,7 @@
 #include "SFML/Graphics/Transform.hpp"
 
 #include "SFML/System/Angle.hpp"
+#include "SFML/System/AutoWrapAngle.hpp"
 
 
 namespace sf
@@ -75,10 +76,10 @@ struct SFML_GRAPHICS_API Transformable
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2f position;        //!< Position of the object in the 2D world
-    Vector2f scale{1.f, 1.f}; //!< Scale of the object
-    Vector2f origin;          //!< Origin of translation/rotation/scaling of the object
-    Angle    rotation;        //!< Orientation of the object
+    Vector2f      position;        //!< Position of the object in the 2D world
+    Vector2f      scale{1.f, 1.f}; //!< Scale of the object
+    Vector2f      origin;          //!< Origin of translation/rotation/scaling of the object
+    AutoWrapAngle rotation;        //!< Orientation of the object
 };
 
 } // namespace sf

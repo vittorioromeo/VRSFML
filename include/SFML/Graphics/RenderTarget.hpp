@@ -27,16 +27,16 @@ class DrawableBatch;
 class GraphicsContext;
 class Shader;
 class Shape;
-struct Sprite;
 class Texture;
 class Transform;
 class VertexBuffer;
-class View;
 struct BlendMode;
 struct RenderStates;
+struct Sprite;
 struct StencilMode;
 struct StencilValue;
 struct Vertex;
+struct View;
 } // namespace sf
 
 

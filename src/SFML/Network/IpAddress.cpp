@@ -113,44 +113,30 @@ base::Optional<IpAddress> IpAddress::getPublicAddress(Time timeout)
 
 
 ////////////////////////////////////////////////////////////
-bool operator==(IpAddress left, IpAddress right)
+bool operator<(IpAddress lhs, IpAddress rhs)
 {
-    return !(left < right) && !(right < left);
+    return lhs.m_address < rhs.m_address;
 }
 
 
 ////////////////////////////////////////////////////////////
-bool operator!=(IpAddress left, IpAddress right)
+bool operator>(IpAddress lhs, IpAddress rhs)
 {
-    return !(left == right);
+    return rhs < lhs;
 }
 
 
 ////////////////////////////////////////////////////////////
-bool operator<(IpAddress left, IpAddress right)
+bool operator<=(IpAddress lhs, IpAddress rhs)
 {
-    return left.m_address < right.m_address;
+    return !(rhs < lhs);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool operator>(IpAddress left, IpAddress right)
+bool operator>=(IpAddress lhs, IpAddress rhs)
 {
-    return right < left;
-}
-
-
-////////////////////////////////////////////////////////////
-bool operator<=(IpAddress left, IpAddress right)
-{
-    return !(right < left);
-}
-
-
-////////////////////////////////////////////////////////////
-bool operator>=(IpAddress left, IpAddress right)
-{
-    return !(left < right);
+    return !(lhs < rhs);
 }
 
 

@@ -42,9 +42,9 @@ TEST_CASE("[Graphics] sf::Transformable")
 
         transformable.rotation = sf::degrees(3.14f);
         CHECK(transformable.rotation == Approx(sf::degrees(3.14f)));
-        transformable.rotation = sf::degrees(540).wrapUnsigned(); // TODO P0: make wrappable angle
+        transformable.rotation = sf::degrees(540);
         CHECK(transformable.rotation == Approx(sf::degrees(180)));
-        transformable.rotation = sf::degrees(-72).wrapUnsigned(); // TODO P0: make wrappable angle
+        transformable.rotation = sf::degrees(-72);
         CHECK(transformable.rotation == Approx(sf::degrees(288)));
 
         transformable.scale = {5, 6};

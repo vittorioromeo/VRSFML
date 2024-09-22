@@ -73,6 +73,26 @@ struct [[nodiscard]] SFML_GRAPHICS_API StencilValue
     template <typename T>
     StencilValue(T) = delete;
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Overload of the `operator==`
+    ///
+    /// \param rhs Right operand
+    ///
+    /// \return `true` if stencil values are equal, `false` if they are different
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] SFML_GRAPHICS_API bool operator==(const StencilValue& rhs) const = default;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Overload of the `operator!=`
+    ///
+    /// \param rhs Right operand
+    ///
+    /// \return `true` if stencil values are different, `false` if they are equal
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] SFML_GRAPHICS_API bool operator!=(const StencilValue& rhs) const = default;
+
     unsigned int value{}; //!< The stored stencil value
 };
 
@@ -88,31 +108,27 @@ struct [[nodiscard]] SFML_GRAPHICS_API StencilMode
     StencilValue stencilReference{0};  //!< The reference value we're performing the stencil test with
     StencilValue stencilMask{~0u}; //!< The mask to apply to both the reference value and the value in the stencil buffer
     bool stencilOnly{};            //!< Whether we should update the color buffer in addition to the stencil buffer
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Overload of the `operator==`
+    ///
+    /// \param rhs Right operand
+    ///
+    /// \return `true` if stencil modes are equal, `false` if they are different
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] SFML_GRAPHICS_API bool operator==(const StencilMode& rhs) const = default;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Overload of the `operator!=`
+    ///
+    /// \param rhs Right operand
+    ///
+    /// \return `true` if stencil modes are different, `false` if they are equal
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] SFML_GRAPHICS_API bool operator!=(const StencilMode& rhs) const = default;
 };
-
-////////////////////////////////////////////////////////////
-/// \relates StencilMode
-/// \brief Overload of the `operator==`
-///
-/// \param left  Left operand
-/// \param right Right operand
-///
-/// \return `true` if stencil modes are equal, `false` if they are different
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_GRAPHICS_API bool operator==(const StencilMode& left, const StencilMode& right);
-
-////////////////////////////////////////////////////////////
-/// \relates StencilMode
-/// \brief Overload of the `operator!=`
-///
-/// \param left  Left operand
-/// \param right Right operand
-///
-/// \return `true` if stencil modes are different, `false` if they are equal
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_GRAPHICS_API bool operator!=(const StencilMode& left, const StencilMode& right);
 
 } // namespace sf
 

@@ -345,39 +345,37 @@ Vector2f Text::findCharacterPos(base::SizeT index) const
     const float lineSpacing = m_impl->font->getLineSpacing(m_impl->characterSize) * m_impl->lineSpacingFactor;
 
     // Compute the position
-    Vector2f      position;
+    Vector2f      characterPos;
     std::uint32_t prevChar = 0;
     for (base::SizeT i = 0; i < index; ++i)
     {
         const std::uint32_t curChar = m_impl->string[i];
 
         // Apply the kerning offset
-        position.x += m_impl->font->getKerning(prevChar, curChar, m_impl->characterSize, isBold);
+        characterPos.x += m_impl->font->getKerning(prevChar, curChar, m_impl->characterSize, isBold);
         prevChar = curChar;
 
         // Handle special characters
         switch (curChar)
         {
             case U' ':
-                position.x += whitespaceWidth;
+                characterPos.x += whitespaceWidth;
                 continue;
             case U'\t':
-                position.x += whitespaceWidth * 4;
+                characterPos.x += whitespaceWidth * 4;
                 continue;
             case U'\n':
-                position.y += lineSpacing;
-                position.x = 0;
+                characterPos.y += lineSpacing;
+                characterPos.x = 0;
                 continue;
         }
 
         // For regular characters, add the advance offset of the glyph
-        position.x += m_impl->font->getGlyph(curChar, m_impl->characterSize, isBold).advance + letterSpacing;
+        characterPos.x += m_impl->font->getGlyph(curChar, m_impl->characterSize, isBold).advance + letterSpacing;
     }
 
-    // Transform the position to global coordinates
-    position = getTransform().transformPoint(position);
-
-    return position;
+    // Transform the characterPos to global coordinates
+    return getTransform().transformPoint(characterPos);
 }
 
 

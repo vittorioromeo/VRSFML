@@ -283,9 +283,9 @@ void VertexBuffer::draw(RenderTarget& target, RenderStates states) const
 
 
 ////////////////////////////////////////////////////////////
-void swap(VertexBuffer& left, VertexBuffer& right) noexcept
+void swap(VertexBuffer& lhs, VertexBuffer& rhs) noexcept
 {
-    left.swap(right);
+    lhs.swap(rhs);
 }
 
 } // namespace sf
