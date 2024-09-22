@@ -70,7 +70,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API BlendMode
     /// \param blendEquation     Specifies how to combine the source and destination colors and alpha.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] BlendMode(Factor sourceFactor, Factor destinationFactor, Equation blendEquation = Equation::Add);
+    [[nodiscard]] explicit BlendMode(Factor sourceFactor, Factor destinationFactor, Equation blendEquation = Equation::Add);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the blend mode given the factors and equation.
@@ -83,12 +83,12 @@ struct [[nodiscard]] SFML_GRAPHICS_API BlendMode
     /// \param alphaBlendEquation     Specifies how to combine the source and destination alphas.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] BlendMode(Factor   colorSourceFactor,
-                            Factor   colorDestinationFactor,
-                            Equation colorBlendEquation,
-                            Factor   alphaSourceFactor,
-                            Factor   alphaDestinationFactor,
-                            Equation alphaBlendEquation);
+    [[nodiscard]] explicit BlendMode(Factor   colorSourceFactor,
+                                     Factor   colorDestinationFactor,
+                                     Equation colorBlendEquation,
+                                     Factor   alphaSourceFactor,
+                                     Factor   alphaDestinationFactor,
+                                     Equation alphaBlendEquation);
 
     ////////////////////////////////////////////////////////////
     /// \brief Overload of the `operator==`

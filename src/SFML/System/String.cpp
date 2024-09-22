@@ -8,7 +8,7 @@
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Strlen.hpp"
+#include "SFML/Base/Builtins/Strlen.hpp"
 
 #include <locale>
 #include <string>

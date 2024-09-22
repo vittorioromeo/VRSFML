@@ -10,8 +10,6 @@
 #include <SystemUtil.hpp>
 #include <WindowUtil.hpp>
 
-#include <vector>
-
 
 TEST_CASE("[Window] sf::VideoMode" * doctest::skip(skipDisplayTests))
 {

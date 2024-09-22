@@ -15,7 +15,7 @@ namespace sf
 /// \brief VideoMode defines a video mode (size, bpp)
 ///
 ////////////////////////////////////////////////////////////
-struct SFML_WINDOW_API [[nodiscard]] VideoMode
+struct [[nodiscard]] SFML_WINDOW_API VideoMode
 {
     ////////////////////////////////////////////////////////////
     /// \brief Tell whether or not the video mode is valid

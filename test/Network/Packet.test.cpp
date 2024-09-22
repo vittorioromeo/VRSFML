@@ -3,8 +3,8 @@
 // Other 1st party headers
 #include "SFML/System/String.hpp"
 
+#include "SFML/Base/Builtins/Strlen.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Strlen.hpp"
 
 #include <Doctest.hpp>
 

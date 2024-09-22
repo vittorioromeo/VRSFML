@@ -68,7 +68,7 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
         SECTION("Invalid data and size")
         {
             CHECK(!sf::Font::openFromMemory(graphicsContext, nullptr, 1).hasValue());
-            const std::byte testByte{0xCD};
+            const unsigned char testByte{0xCD};
             CHECK(!sf::Font::openFromMemory(graphicsContext, &testByte, 0).hasValue());
         }
 

@@ -5,9 +5,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Builtins/Strlen.hpp"
+#include "SFML/Base/Builtins/Strncmp.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Strlen.hpp"
-#include "SFML/Base/Strncmp.hpp"
 
 
 namespace sf::base

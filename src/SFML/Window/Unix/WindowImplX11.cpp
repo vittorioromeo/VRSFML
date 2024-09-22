@@ -30,7 +30,7 @@
 #include "SFML/System/Path.hpp"
 
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Memcpy.hpp"
+#include "SFML/Base/Builtins/Memcpy.hpp"
 
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
