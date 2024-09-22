@@ -35,8 +35,10 @@ using GLhandle = GLuint;
 
 #if defined(SFML_SYSTEM_MACOS) || defined(SFML_SYSTEM_IOS)
 
-#define castToGlHandle(x)   reinterpret_cast<GLhandle>(static_cast<std::ptrdiff_t>(x))
-#define castFromGlHandle(x) static_cast<unsigned int>(reinterpret_cast<std::ptrdiff_t>(x))
+#include "SFML/Base/PtrDiffT.hpp"
+
+#define castToGlHandle(x)   reinterpret_cast<GLhandle>(static_cast<::sf::base::PtrDiffT>(x))
+#define castFromGlHandle(x) static_cast<unsigned int>(reinterpret_cast<::sf::base::PtrDiffT>(x))
 
 #else
 

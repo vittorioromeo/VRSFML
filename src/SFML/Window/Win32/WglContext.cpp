@@ -15,11 +15,13 @@
 #include "SFML/System/Err.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/PtrDiffT.hpp"
 
 #include <mutex>
 #include <string> // Needed by `getErrorString`
 #include <vector>
 #include <windef.h>
+
 
 // We check for this definition in order to avoid multiple definitions of GLAD
 // entities during unity builds of SFML.
@@ -180,7 +182,7 @@ GlFunctionPointer WglContext::getFunction(const char* name) const
     if (address)
     {
         // Test whether the returned value is a valid error code
-        auto errorCode = reinterpret_cast<std::ptrdiff_t>(address);
+        auto errorCode = reinterpret_cast<base::PtrDiffT>(address);
 
         if ((errorCode != -1) && (errorCode != 1) && (errorCode != 2) && (errorCode != 3))
             return address;
