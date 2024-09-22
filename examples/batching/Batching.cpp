@@ -38,7 +38,7 @@ int main()
     //
     // Set up random generator
     // static std::mt19937 rng(std::random_device{}());
-    std::mt19937 rng(100);
+    std::minstd_rand rng(100);
     const auto getRndFloat = [&](float min, float max) { return std::uniform_real_distribution<float>{min, max}(rng); };
 
     //

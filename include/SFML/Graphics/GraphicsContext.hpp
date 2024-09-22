@@ -52,7 +52,7 @@ private:
     [[nodiscard]] const char* getBuiltInShaderFragmentSrc() const;
 
     ////////////////////////////////////////////////////////////
-    /// Member data
+    // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
     base::InPlacePImpl<Impl, 512> m_impl; //!< Implementation details

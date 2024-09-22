@@ -636,7 +636,7 @@ private:
     [[nodiscard]] virtual void* getSound() const = 0;
 
     ////////////////////////////////////////////////////////////
-    /// Member data
+    // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
     base::InPlacePImpl<Impl, 320> m_impl; //!< Implementation details

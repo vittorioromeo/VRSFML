@@ -19,9 +19,10 @@
 namespace sf
 {
 // TODO P0:
-struct ScissorRect : FloatRect
+struct [[nodiscard]] ScissorRect : FloatRect
 {
-    constexpr explicit ScissorRect(Vector2f thePosition, Vector2f theSize) : FloatRect{thePosition, theSize}
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr explicit ScissorRect(Vector2f thePosition, Vector2f theSize) :
+    FloatRect{thePosition, theSize}
     {
         SFML_BASE_ASSERT(position.x >= 0.0f && position.x <= 1.0f && "position.x must lie within [0, 1]");
         SFML_BASE_ASSERT(position.y >= 0.0f && position.y <= 1.0f && "position.y must lie within [0, 1]");
@@ -31,7 +32,8 @@ struct ScissorRect : FloatRect
         SFML_BASE_ASSERT(position.y + size.y <= 1.0f && "position.y + size.y must lie within [0, 1]");
     }
 
-    constexpr explicit(false) ScissorRect(const FloatRect& rect) : ScissorRect{rect.position, rect.size}
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr explicit(false) ScissorRect(const FloatRect& rect) :
+    ScissorRect{rect.position, rect.size}
     {
     }
 };

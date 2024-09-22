@@ -13,8 +13,10 @@
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Memcpy.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
+#include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/TrivialVector.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
@@ -25,7 +27,6 @@
 
 #define STB_IMAGE_STATIC
 #define STB_IMAGE_IMPLEMENTATION
-#include "SFML/Base/Memcpy.hpp"
 
 #include <stb_image.h>
 
@@ -403,8 +404,8 @@ void Image::flipHorizontally()
 
     for (base::SizeT y = 0; y < m_size.y; ++y)
     {
-        auto* left  = m_pixels.begin() + static_cast<std::ptrdiff_t>(y * rowSize);
-        auto* right = m_pixels.begin() + static_cast<std::ptrdiff_t>((y + 1) * rowSize - 4);
+        auto* left  = m_pixels.begin() + static_cast<base::PtrDiffT>(y * rowSize);
+        auto* right = m_pixels.begin() + static_cast<base::PtrDiffT>((y + 1) * rowSize - 4);
 
         for (base::SizeT x = 0; x < m_size.x / 2; ++x)
         {
@@ -422,7 +423,7 @@ void Image::flipVertically()
 {
     SFML_BASE_ASSERT(!m_pixels.empty());
 
-    const auto rowSize = static_cast<std::ptrdiff_t>(m_size.x * 4);
+    const auto rowSize = static_cast<base::PtrDiffT>(m_size.x * 4);
 
     auto* top    = m_pixels.begin();
     auto* bottom = m_pixels.end() - rowSize;
