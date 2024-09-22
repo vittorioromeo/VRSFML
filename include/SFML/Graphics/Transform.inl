@@ -98,8 +98,7 @@ constexpr FloatRect Transform::transformRect(const FloatRect& rectangle) const
 ////////////////////////////////////////////////////////////
 constexpr Transform& Transform::combine(const Transform& transform)
 {
-    *this = sf::operator*(*this, transform);
-    return *this;
+    return *this = sf::operator*(*this, transform);
 }
 
 
