@@ -237,7 +237,7 @@ void Shape::updateFillColors(base::TrivialVector<Vertex>& vertices)
 
 
 ////////////////////////////////////////////////////////////
-void Shape::updateTexCoords(base::TrivialVector<Vertex>& vertices)
+void Shape::updateTexCoords(base::TrivialVector<Vertex>& vertices) const
 {
     // Make sure not to divide by zero when the points are aligned on a vertical or horizontal line
     const Vector2f safeInsideSize(m_insideBounds.size.x > 0 ? m_insideBounds.size.x : 1.f,
@@ -252,7 +252,7 @@ void Shape::updateTexCoords(base::TrivialVector<Vertex>& vertices)
 
 
 ////////////////////////////////////////////////////////////
-void Shape::updateOutlineTexCoords(base::TrivialVector<Vertex>& outlineVertices)
+void Shape::updateOutlineTexCoords(base::TrivialVector<Vertex>& outlineVertices) const
 {
     // TODO P0:
     for (Vertex& vertex : outlineVertices)

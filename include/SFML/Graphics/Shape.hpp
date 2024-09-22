@@ -272,13 +272,13 @@ private:
     /// \brief Update the fill vertices' texture coordinates
     ///
     ////////////////////////////////////////////////////////////
-    void updateTexCoords(base::TrivialVector<Vertex>& vertices);
+    void updateTexCoords(base::TrivialVector<Vertex>& vertices) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the outline vertices' texture coordinates
     ///
     ////////////////////////////////////////////////////////////
-    void updateOutlineTexCoords(base::TrivialVector<Vertex>& outlineVertices);
+    void updateOutlineTexCoords(base::TrivialVector<Vertex>& outlineVertices) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the outline vertices' position
