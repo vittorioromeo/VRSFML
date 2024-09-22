@@ -20,9 +20,7 @@ int main()
     sf::ImGui::ImGuiContext imGuiContext(graphicsContext);
 
     sf::RenderWindow window(graphicsContext, {.size{1024u, 768u}, .title = "ImGui + SFML = <3", .vsync = true});
-
-    if (!imGuiContext.init(window))
-        return -1;
+    auto             imGuiWindowContext = imGuiContext.init(window).value();
 
     sf::CircleShape shape(100.f);
     shape.setFillColor(sf::Color::Green);
@@ -33,13 +31,13 @@ int main()
     {
         while (const sf::base::Optional event = window.pollEvent())
         {
-            imGuiContext.processEvent(window, *event);
+            imGuiWindowContext.processEvent(*event);
 
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
         }
 
-        imGuiContext.update(window, deltaClock.restart());
+        imGuiWindowContext.update(deltaClock.restart());
 
         ImGui::ShowDemoWindow();
 
@@ -49,7 +47,7 @@ int main()
 
         window.clear();
         window.draw(shape, nullptr /* texture */);
-        imGuiContext.render(window);
+        imGuiWindowContext.render();
         window.display();
     }
 }

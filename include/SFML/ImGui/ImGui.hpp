@@ -15,6 +15,8 @@
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/Traits/IsSame.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -32,9 +34,75 @@ class Texture;
 class Window;
 } // namespace sf
 
+namespace sf::ImGui
+{
+class ImGuiContext;
+} // namespace sf::ImGui
+
 
 namespace sf::ImGui
 {
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
+template <typename TWindow>
+class [[nodiscard]] SFML_IMGUI_API ImGuiWindowContext
+{
+public:
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void activate();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void update(Time dt) requires(SFML_BASE_IS_SAME(TWindow, RenderWindow));
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void update(RenderTarget& target, Time dt);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void processEvent(const Event& event);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void render() requires(SFML_BASE_IS_SAME(TWindow, RenderWindow));
+
+private:
+    friend ImGuiContext;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    explicit ImGuiWindowContext(ImGuiContext& imGuiContext, TWindow& window);
+
+    ////////////////////////////////////////////////////////////
+    // Member data
+    ////////////////////////////////////////////////////////////
+    ImGuiContext& m_imGuiContext;
+    TWindow&      m_window;
+};
+
+extern template class ImGuiWindowContext<Window>;
+extern template class ImGuiWindowContext<RenderWindow>;
+
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
 class [[nodiscard]] SFML_IMGUI_API ImGuiContext
 {
 public:
@@ -78,9 +146,18 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool init(RenderWindow& window, bool loadDefaultFont = true);
-    [[nodiscard]] bool init(Window& window, RenderTarget& target, bool loadDefaultFont = true);
-    [[nodiscard]] bool init(Window& window, Vector2f displaySize, bool loadDefaultFont = true);
+    template <typename TWindow>
+    [[nodiscard]] bool initImpl(TWindow& window, Vector2f displaySize, bool loadDefaultFont = true);
+
+    [[nodiscard]] base::Optional<ImGuiWindowContext<RenderWindow>> init(RenderWindow& window, bool loadDefaultFont = true);
+
+    [[nodiscard]] base::Optional<ImGuiWindowContext<Window>> init(Window&       window,
+                                                                  RenderTarget& target,
+                                                                  bool          loadDefaultFont = true);
+
+    [[nodiscard]] base::Optional<ImGuiWindowContext<Window>> init(Window&  window,
+                                                                  Vector2f displaySize,
+                                                                  bool     loadDefaultFont = true);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs

@@ -20,8 +20,7 @@ int main()
     sf::ImGui::ImGuiContext imGuiContext(graphicsContext);
 
     sf::RenderWindow window(graphicsContext, {.size{1280u, 720u}, .title = "ImGui + SFML = <3", .vsync = true});
-    if (!imGuiContext.init(window))
-        return -1;
+    auto             imGuiWindowContext = imGuiContext.init(window).value();
 
     sf::base::Optional<sf::RenderWindow>
         childWindow(sf::base::inPlace,
@@ -37,7 +36,7 @@ int main()
         // Main window event processing
         while (const sf::base::Optional event = window.pollEvent())
         {
-            imGuiContext.processEvent(window, *event);
+            imGuiWindowContext.processEvent(*event);
 
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
@@ -45,10 +44,10 @@ int main()
 
         // Update
         const sf::Time dt = deltaClock.restart();
-        imGuiContext.update(window, dt);
+        imGuiWindowContext.update(dt);
 
         // Add ImGui widgets in the first window
-        imGuiContext.setCurrentWindow(window);
+        imGuiWindowContext.activate();
         ImGui::Begin("Hello, world!");
         ImGui::Button("Look at this pretty button");
         ImGui::End();
@@ -61,7 +60,7 @@ int main()
 
         window.clear();
         window.draw(shape, /* texture */ nullptr);
-        imGuiContext.render(window);
+        imGuiWindowContext.render();
         window.display();
 
         const auto processChildWindow = [&](sf::RenderWindow& childWindowRef)
