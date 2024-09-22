@@ -7,7 +7,7 @@
 
 #include "SFML/System/Err.hpp"
 
-#include "SFML/Base/Memcpy.hpp"
+#include "SFML/Base/Builtins/Memcpy.hpp"
 
 #include <arpa/inet.h>
 #include <fcntl.h>

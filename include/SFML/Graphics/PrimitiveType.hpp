@@ -14,12 +14,12 @@ namespace sf
 ////////////////////////////////////////////////////////////
 enum class [[nodiscard]] PrimitiveType : unsigned int
 {
-    Points        = 0u, //!< List of individual points
-    Lines         = 1u, //!< List of individual lines
-    LineStrip     = 2u, //!< List of connected lines, a point uses the previous point to form a line
-    Triangles     = 3u, //!< List of individual triangles
-    TriangleStrip = 4u, //!< List of connected triangles, a point uses the two previous points to form a triangle
-    TriangleFan = 5u //!< List of connected triangles, a point uses the common center and the previous point to form a triangle
+    Points        = 0u, //!< Individual points
+    Lines         = 1u, //!< Individual lines
+    LineStrip     = 2u, //!< Connected lines, points use the previous point to form a line
+    Triangles     = 3u, //!< Individual triangles
+    TriangleStrip = 4u, //!< Connected triangles, points use the two previous points to form a triangle
+    TriangleFan   = 5u  //!< Connected triangles, points use the common center and the previous point to form a triangle
 };
 
 } // namespace sf

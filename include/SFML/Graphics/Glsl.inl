@@ -8,7 +8,7 @@
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Glsl.hpp" // NOLINT(misc-header-include-cycle)
 
-#include "SFML/Base/Memcpy.hpp"
+#include "SFML/Base/Builtins/Memcpy.hpp"
 
 
 namespace sf

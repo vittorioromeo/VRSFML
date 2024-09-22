@@ -5,8 +5,8 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Builtins/Memcpy.hpp"
 #include "SFML/Base/Launder.hpp"
-#include "SFML/Base/Memcpy.hpp"
 #include "SFML/Base/PlacementNew.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Traits/IsTriviallyCopyable.hpp"

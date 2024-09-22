@@ -6,7 +6,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
-#include <string>
+#include "SFML/System/String.hpp"
 
 
 namespace sf
@@ -17,7 +17,7 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct SFML_GRAPHICS_API FontInfo
 {
-    std::string family; //!< The font family
+    String family; //!< The font family
 };
 
 } // namespace sf

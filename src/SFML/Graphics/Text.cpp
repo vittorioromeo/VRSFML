@@ -17,13 +17,13 @@
 #include "SFML/System/String.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Builtins/Memcpy.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Math/Floor.hpp"
 #include "SFML/Base/Math/Fmax.hpp"
 #include "SFML/Base/Math/Fmin.hpp"
-#include "SFML/Base/Memcpy.hpp"
 #include "SFML/Base/TrivialVector.hpp"
 
 #include <cstdint>

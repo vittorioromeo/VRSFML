@@ -35,13 +35,12 @@ namespace
 // A nested named namespace is used here to allow unity builds of SFML.
 namespace TextureImpl
 {
-// Thread-safe unique identifier generator,
-// is used for states cache (see RenderTarget)
-std::uint64_t getUniqueId() noexcept
-{
-    static std::atomic<std::uint64_t> id(1); // start at 1, zero is "no texture"
+// Thread-safe unique identifier generator, is used for states cache (see RenderTarget)
+constinit std::atomic<std::uint64_t> nextUniqueId{1u}; // start at 1, zero is "no texture"
 
-    return id.fetch_add(1);
+[[nodiscard, gnu::always_inline, gnu::flatten]] inline std::uint64_t getUniqueId() noexcept
+{
+    return nextUniqueId.fetch_add(1u, std::memory_order_relaxed);
 }
 
 } // namespace TextureImpl

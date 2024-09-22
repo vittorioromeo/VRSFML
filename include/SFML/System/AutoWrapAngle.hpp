@@ -20,7 +20,16 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] AutoWrapAngle() = default;
+    [[nodiscard]] constexpr AutoWrapAngle() = default;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten]] constexpr explicit AutoWrapAngle(Angle angle) :
+    m_radians(angle.m_radians)
+    {
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -124,36 +133,9 @@ private:
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::Angle
+/// \class sf::AutoWrapAngle
 /// \ingroup system
 ///
-/// `sf::Angle` encapsulates an angle value in a flexible way.
-/// It allows for defining an angle value either as a number
-/// of degrees or radians. It also works the other way
-/// around. You can read an angle value as either a number
-/// of degrees or radians.
-///
-/// By using such a flexible interface, the API doesn't
-/// impose any fixed type or unit for angle values and lets
-/// the user choose their own preferred representation.
-///
-/// Angle values support the usual mathematical operations.
-/// You can add or subtract two angles, multiply or divide
-/// an angle by a number, compare two angles, etc.
-///
-/// Usage example:
-/// \code
-/// sf::Angle a1  = sf::degrees(90);
-/// float radians = a1.asRadians(); // 1.5708f
-///
-/// sf::Angle a2 = sf::radians(3.141592654f);
-/// float degrees = a2.asDegrees(); // 180.0f
-///
-/// using namespace sf::Literals;
-/// sf::Angle a3 = 10_deg;   // 10 degrees
-/// sf::Angle a4 = 1.5_deg;  // 1.5 degrees
-/// sf::Angle a5 = 1_rad;    // 1 radians
-/// sf::Angle a6 = 3.14_rad; // 3.14 radians
-/// \endcode
+/// TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////

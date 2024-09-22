@@ -33,7 +33,7 @@ namespace sf
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-class [[nodiscard]] GraphicsContext : public WindowContext
+class [[nodiscard]] SFML_GRAPHICS_API GraphicsContext : public WindowContext
 {
 public:
     explicit GraphicsContext();

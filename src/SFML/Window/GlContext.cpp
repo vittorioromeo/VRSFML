@@ -13,9 +13,9 @@
 
 #include "SFML/System/Err.hpp"
 
-#include "SFML/Base/Strlen.hpp"
-#include "SFML/Base/Strncmp.hpp"
-#include "SFML/Base/Strstr.hpp"
+#include "SFML/Base/Builtins/Strlen.hpp"
+#include "SFML/Base/Builtins/Strncmp.hpp"
+#include "SFML/Base/Builtins/Strstr.hpp"
 
 #include <cctype>
 #include <cstdlib>

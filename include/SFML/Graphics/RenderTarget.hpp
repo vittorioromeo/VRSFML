@@ -7,7 +7,6 @@
 #include "SFML/Graphics/Export.hpp"
 
 #include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/CoordinateType.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 

@@ -1,13 +1,5 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
-// Repeating isEventSubtype<T> allows for cleaner compiler errors.
-// It is not strictly necessary but it's useful nonetheless.
-// It works by ensuring that the code within the conditional is
-// only compiled when the condition is met. Otherwise you get
-// a static_assert failure in addition to the compiler failing
-// to compile the code within the compiletime conditional when
-// an incorrect template parameter is provided.
-
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////

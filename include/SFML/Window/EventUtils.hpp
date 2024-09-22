@@ -24,7 +24,7 @@ namespace sf::EventUtils
 {
 ////////////////////////////////////////////////////////////
 /// \brief Check if the event is `Event::Closed` or `Event::KeyPressed`
-///        with escape key
+///        with key `Keyboard::Key::Escape`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_WINDOW_API bool isClosedOrEscapeKeyPressed(const Event& event);

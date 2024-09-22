@@ -11,8 +11,8 @@
 #include "SFML/System/String.hpp"
 #include "SFML/System/Utf.hpp"
 
+#include "SFML/Base/Builtins/Memcpy.hpp"
 #include "SFML/Base/EnumArray.hpp"
-#include "SFML/Base/Memcpy.hpp"
 
 #include <X11/XKBlib.h>
 #include <X11/Xlib.h>

@@ -35,7 +35,7 @@
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Memcmp.hpp"
+#include "SFML/Base/Builtins/Memcmp.hpp"
 
 #include <cstdint>
 

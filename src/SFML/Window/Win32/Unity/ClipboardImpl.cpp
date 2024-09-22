@@ -10,7 +10,7 @@
 #include "SFML/System/String.hpp"
 #include "SFML/System/Win32/WindowsHeader.hpp"
 
-#include "SFML/Base/Memcpy.hpp"
+#include "SFML/Base/Builtins/Memcpy.hpp"
 
 #include <string>
 

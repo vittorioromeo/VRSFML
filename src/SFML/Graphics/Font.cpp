@@ -35,7 +35,7 @@
 #include FT_STROKER_H
 
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Memcpy.hpp"
+#include "SFML/Base/Builtins/Memcpy.hpp"
 
 #include <memory>
 #include <unordered_map>
