@@ -369,9 +369,12 @@ constexpr unsigned int nullJoystickId = Joystick::MaxCount;
 
 
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] ImGuiPerWindowContext
+class [[nodiscard]] ImGuiPerWindowContext
 {
-    const Window*   window;
+private:
+    friend ImGuiContext;
+
+    Window*         window;
     ::ImGuiContext* imContext{::ImGui::CreateContext()};
 
     base::Optional<Texture> fontTexture; // internal font atlas which is used if user doesn't set a custom Texture.
@@ -394,17 +397,6 @@ struct [[nodiscard]] ImGuiPerWindowContext
 
     base::Optional<Cursor> mouseCursors[ImGuiMouseCursor_COUNT];
 
-    [[nodiscard, gnu::always_inline, gnu::pure]] base::Optional<Cursor>& getMouseCursor(ImGuiMouseCursor i)
-    {
-        SFML_BASE_ASSERT(i < ImGuiMouseCursor_COUNT);
-        return mouseCursors[i];
-    }
-
-    [[nodiscard, gnu::always_inline, gnu::pure]] const base::Optional<Cursor>& getMouseCursor(ImGuiMouseCursor i) const
-    {
-        SFML_BASE_ASSERT(i < ImGuiMouseCursor_COUNT);
-        return mouseCursors[i];
-    }
 
 #ifdef ANDROID
 #ifdef USE_JNI
@@ -412,98 +404,20 @@ struct [[nodiscard]] ImGuiPerWindowContext
 #endif
 #endif
 
+
     ////////////////////////////////////////////////////////////
-    explicit ImGuiPerWindowContext(const Window& w) : window(&w), windowHasFocus(window->hasFocus())
+    [[nodiscard, gnu::always_inline, gnu::pure]] base::Optional<Cursor>& getMouseCursor(ImGuiMouseCursor i)
     {
-    }
-
-    ////////////////////////////////////////////////////////////
-    ~ImGuiPerWindowContext()
-    {
-        ::ImGui::SetCurrentContext(imContext);
-        priv::ImGui_ImplOpenGL3_Shutdown();
-        ::ImGui::DestroyContext(imContext);
-    }
-
-    ////////////////////////////////////////////////////////////
-    ImGuiPerWindowContext(const ImGuiPerWindowContext&)            = delete;
-    ImGuiPerWindowContext& operator=(const ImGuiPerWindowContext&) = delete;
-
-    ////////////////////////////////////////////////////////////
-    using SetClipboardTextFn = void (*)(void*, const char*);
-    using GetClipboardTextFn = const char* (*)(void*);
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool init(GraphicsContext&   graphicsContext,
-                            Vector2f           displaySize,
-                            bool               loadDefaultFont,
-                            SetClipboardTextFn setClipboardTextFn,
-                            GetClipboardTextFn getClipboardTextFn)
-    {
-        ImGuiIO& io = ::ImGui::GetIO();
-
-        // tell ImGui which features we support
-        io.BackendFlags |= ImGuiBackendFlags_HasGamepad | ImGuiBackendFlags_HasMouseCursors |
-                           ImGuiBackendFlags_HasSetMousePos;
-
-        io.BackendPlatformName = "imgui_impl_sfml";
-
-        joystickId = getConnectedJoystickId();
-        initDefaultJoystickMapping();
-
-        // init rendering
-        io.DisplaySize = toImVec2(displaySize);
-
-        // clipboard
-        io.SetClipboardTextFn = setClipboardTextFn;
-        io.GetClipboardTextFn = getClipboardTextFn;
-
-        // load mouse cursors
-        loadMouseCursor(ImGuiMouseCursor_Arrow, Cursor::Type::Arrow);
-        loadMouseCursor(ImGuiMouseCursor_TextInput, Cursor::Type::Text);
-        loadMouseCursor(ImGuiMouseCursor_ResizeAll, Cursor::Type::SizeAll);
-        loadMouseCursor(ImGuiMouseCursor_ResizeNS, Cursor::Type::SizeVertical);
-        loadMouseCursor(ImGuiMouseCursor_ResizeEW, Cursor::Type::SizeHorizontal);
-        loadMouseCursor(ImGuiMouseCursor_ResizeNESW, Cursor::Type::SizeBottomLeftTopRight);
-        loadMouseCursor(ImGuiMouseCursor_ResizeNWSE, Cursor::Type::SizeTopLeftBottomRight);
-        loadMouseCursor(ImGuiMouseCursor_Hand, Cursor::Type::Hand);
-
-        if (loadDefaultFont)
-        {
-            // this will load default font automatically
-            // No need to call AddDefaultFont
-            if (!updateFontTexture(graphicsContext))
-                return false;
-        }
-
-        ::ImGui::SetCurrentContext(imContext);
-        priv::ImGui_ImplOpenGL3_Init(nullptr);
-
-        return true;
+        SFML_BASE_ASSERT(i < ImGuiMouseCursor_COUNT);
+        return mouseCursors[i];
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool updateFontTexture(GraphicsContext& graphicsContext)
+    [[nodiscard, gnu::always_inline, gnu::pure]] const base::Optional<Cursor>& getMouseCursor(ImGuiMouseCursor i) const
     {
-        base::Optional<Texture> newTexture = createImGuiDefaultFontTexture(graphicsContext);
-        if (!newTexture.hasValue())
-        {
-            sf::priv::err() << "Failed to create default ImGui font texture";
-            return false;
-        }
-
-        ::ImGui::GetIO().Fonts->SetTexID(convertGLTextureHandleToImTextureID(newTexture->getNativeHandle()));
-        fontTexture = std::move(newTexture);
-
-        return true;
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<Texture>& getFontTexture()
-    {
-        return fontTexture;
+        SFML_BASE_ASSERT(i < ImGuiMouseCursor_COUNT);
+        return mouseCursors[i];
     }
 
 
@@ -604,6 +518,116 @@ struct [[nodiscard]] ImGuiPerWindowContext
     void loadMouseCursor(ImGuiMouseCursor imguiCursorType, Cursor::Type sfmlCursorType)
     {
         getMouseCursor(imguiCursorType) = Cursor::loadFromSystem(sfmlCursorType);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    void updateMouseCursor(Window& theWindow, const ImGuiMouseCursor cursor) const
+    {
+        if (!getMouseCursor(ImGuiMouseCursor_Arrow).hasValue())
+        {
+            theWindow.setMouseCursorVisible(false);
+            return;
+        }
+
+        theWindow.setMouseCursorVisible(true);
+        theWindow.setMouseCursor(
+            getMouseCursor(cursor).hasValue() ? *getMouseCursor(cursor) : *getMouseCursor(ImGuiMouseCursor_Arrow));
+    }
+
+public:
+    ////////////////////////////////////////////////////////////
+    explicit ImGuiPerWindowContext(Window& w) : window(&w), windowHasFocus(window->hasFocus())
+    {
+    }
+
+    ////////////////////////////////////////////////////////////
+    ~ImGuiPerWindowContext()
+    {
+        ::ImGui::SetCurrentContext(imContext);
+        priv::ImGui_ImplOpenGL3_Shutdown();
+        ::ImGui::DestroyContext(imContext);
+    }
+
+    ////////////////////////////////////////////////////////////
+    ImGuiPerWindowContext(const ImGuiPerWindowContext&)            = delete;
+    ImGuiPerWindowContext& operator=(const ImGuiPerWindowContext&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    using SetClipboardTextFn = void (*)(void*, const char*);
+    using GetClipboardTextFn = const char* (*)(void*);
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool init(GraphicsContext&   graphicsContext,
+                            Vector2f           displaySize,
+                            bool               loadDefaultFont,
+                            SetClipboardTextFn setClipboardTextFn,
+                            GetClipboardTextFn getClipboardTextFn)
+    {
+        ImGuiIO& io = ::ImGui::GetIO();
+
+        // tell ImGui which features we support
+        io.BackendFlags |= ImGuiBackendFlags_HasGamepad | ImGuiBackendFlags_HasMouseCursors |
+                           ImGuiBackendFlags_HasSetMousePos;
+
+        io.BackendPlatformName = "imgui_impl_sfml";
+
+        joystickId = getConnectedJoystickId();
+        initDefaultJoystickMapping();
+
+        // init rendering
+        io.DisplaySize = toImVec2(displaySize);
+
+        // clipboard
+        io.SetClipboardTextFn = setClipboardTextFn;
+        io.GetClipboardTextFn = getClipboardTextFn;
+
+        // load mouse cursors
+        loadMouseCursor(ImGuiMouseCursor_Arrow, Cursor::Type::Arrow);
+        loadMouseCursor(ImGuiMouseCursor_TextInput, Cursor::Type::Text);
+        loadMouseCursor(ImGuiMouseCursor_ResizeAll, Cursor::Type::SizeAll);
+        loadMouseCursor(ImGuiMouseCursor_ResizeNS, Cursor::Type::SizeVertical);
+        loadMouseCursor(ImGuiMouseCursor_ResizeEW, Cursor::Type::SizeHorizontal);
+        loadMouseCursor(ImGuiMouseCursor_ResizeNESW, Cursor::Type::SizeBottomLeftTopRight);
+        loadMouseCursor(ImGuiMouseCursor_ResizeNWSE, Cursor::Type::SizeTopLeftBottomRight);
+        loadMouseCursor(ImGuiMouseCursor_Hand, Cursor::Type::Hand);
+
+        if (loadDefaultFont)
+        {
+            // this will load default font automatically
+            // No need to call AddDefaultFont
+            if (!updateFontTexture(graphicsContext))
+                return false;
+        }
+
+        ::ImGui::SetCurrentContext(imContext);
+        priv::ImGui_ImplOpenGL3_Init(nullptr);
+
+        return true;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool updateFontTexture(GraphicsContext& graphicsContext)
+    {
+        base::Optional<Texture> newTexture = createImGuiDefaultFontTexture(graphicsContext);
+        if (!newTexture.hasValue())
+        {
+            sf::priv::err() << "Failed to create default ImGui font texture";
+            return false;
+        }
+
+        ::ImGui::GetIO().Fonts->SetTexID(convertGLTextureHandleToImTextureID(newTexture->getNativeHandle()));
+        fontTexture = std::move(newTexture);
+
+        return true;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] base::Optional<Texture>& getFontTexture()
+    {
+        return fontTexture;
     }
 
 
@@ -728,22 +752,7 @@ struct [[nodiscard]] ImGuiPerWindowContext
 
 
     ////////////////////////////////////////////////////////////
-    void updateMouseCursor(Window& theWindow, const ImGuiMouseCursor cursor) const
-    {
-        if (!getMouseCursor(ImGuiMouseCursor_Arrow).hasValue())
-        {
-            theWindow.setMouseCursorVisible(false);
-            return;
-        }
-
-        theWindow.setMouseCursorVisible(true);
-        theWindow.setMouseCursor(
-            getMouseCursor(cursor).hasValue() ? *getMouseCursor(cursor) : *getMouseCursor(ImGuiMouseCursor_Arrow));
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    void update(Window& theWindow, RenderTarget& target, Time dt)
+    void update(RenderTarget& target, Time dt)
     {
         // update OS/hardware mouse cursor if imgui isn't drawing a software cursor
         const ImGuiMouseCursor mouseCursor = ::ImGui::GetIO().MouseDrawCursor ? ImGuiMouseCursor_None
@@ -752,19 +761,19 @@ struct [[nodiscard]] ImGuiPerWindowContext
         if (lastCursor != mouseCursor)
         {
             lastCursor = mouseCursor;
-            updateMouseCursor(theWindow, mouseCursor);
+            updateMouseCursor(*window, mouseCursor);
         }
 
         if (!mouseMoved) // TODO P1: needed?
         {
             if (Touch::isDown(0))
-                touchPos = Touch::getPosition(0, theWindow);
+                touchPos = Touch::getPosition(0, *window);
 
             update(touchPos, target.getSize().toVector2f(), dt);
         }
         else
         {
-            update(Mouse::getPosition(theWindow), target.getSize().toVector2f(), dt);
+            update(Mouse::getPosition(*window), target.getSize().toVector2f(), dt);
         }
     }
 
@@ -1096,25 +1105,42 @@ ImGuiContext& ImGuiContext::operator=(ImGuiContext&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-bool ImGuiContext::init(RenderWindow& window, bool loadDefaultFont)
+base::Optional<ImGuiWindowContext<RenderWindow>> ImGuiContext::init(RenderWindow& window, bool loadDefaultFont)
 {
-    return init(window, window, loadDefaultFont);
+    if (!initImpl(window, window.getSize().toVector2f(), loadDefaultFont))
+        return base::nullOpt;
+
+    return base::makeOptionalFromFunc([&] { return ImGuiWindowContext<RenderWindow>(*this, window); });
 }
 
 
 ////////////////////////////////////////////////////////////
-bool ImGuiContext::init(Window& window, RenderTarget& target, bool loadDefaultFont)
+base::Optional<ImGuiWindowContext<Window>> ImGuiContext::init(Window& window, RenderTarget& target, bool loadDefaultFont)
 {
-    return init(window, target.getSize().toVector2f(), loadDefaultFont);
+    if (!initImpl(window, target.getSize().toVector2f(), loadDefaultFont))
+        return base::nullOpt;
+
+    return base::makeOptionalFromFunc([&] { return ImGuiWindowContext<Window>(*this, window); });
 }
 
 
 ////////////////////////////////////////////////////////////
-bool ImGuiContext::init(Window& window, Vector2f displaySize, bool loadDefaultFont)
+base::Optional<ImGuiWindowContext<Window>> ImGuiContext::init(Window& window, Vector2f displaySize, bool loadDefaultFont)
 {
-    m_impl->perWindowContexts.emplace_back(base::makeUnique<ImGuiPerWindowContext>(window));
+    if (!initImpl(window, displaySize, loadDefaultFont))
+        return base::nullOpt;
 
-    m_impl->currentPerWindowContext = m_impl->perWindowContexts.back().get();
+    return base::makeOptionalFromFunc([&] { return ImGuiWindowContext<Window>(*this, window); });
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TWindow>
+bool ImGuiContext::initImpl(TWindow& window, Vector2f displaySize, bool loadDefaultFont)
+{
+    auto& pwc = m_impl->perWindowContexts.emplace_back(base::makeUnique<ImGuiPerWindowContext>(window));
+
+    m_impl->currentPerWindowContext = pwc.get();
     ::ImGui::SetCurrentContext(m_impl->currentPerWindowContext->imContext);
 
     thread_local std::string* clipboardTextPtr;
@@ -1177,7 +1203,7 @@ void ImGuiContext::update(Window& window, RenderTarget& target, Time dt)
     setCurrentWindow(window);
     SFML_BASE_ASSERT(m_impl->currentPerWindowContext);
 
-    m_impl->currentPerWindowContext->update(window, target, dt);
+    m_impl->currentPerWindowContext->update(target, dt);
 }
 
 
@@ -1227,7 +1253,7 @@ void ImGuiContext::shutdown(const Window& window)
     SFML_BASE_ASSERT(found != m_impl->perWindowContexts.end() &&
                      "Window wasn't inited properly: forgot to call init(window)?");
 
-    m_impl->perWindowContexts.erase(found); // s_currWindowCtx can become invalid here!
+    m_impl->perWindowContexts.erase(found); // `s_currWindowCtx` can become invalid here!
 
     // set current context to some window for convenience if needed
     if (!needReplacement)
@@ -1386,5 +1412,63 @@ void ImGuiContext::drawRectFilled(const FloatRect& rect, Color color, float roun
                             rounding,
                             roundingCorners);
 }
+
+
+////////////////////////////////////////////////////////////
+template <typename TWindow>
+ImGuiWindowContext<TWindow>::ImGuiWindowContext(ImGuiContext& imGuiContext, TWindow& window) :
+m_imGuiContext(imGuiContext),
+m_window(window)
+{
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TWindow>
+void ImGuiWindowContext<TWindow>::activate()
+{
+    m_imGuiContext.setCurrentWindow(m_window);
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TWindow>
+void ImGuiWindowContext<TWindow>::update(Time dt) requires(SFML_BASE_IS_SAME(TWindow, RenderWindow))
+{
+    activate();
+    m_imGuiContext.update(m_window, dt);
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TWindow>
+void ImGuiWindowContext<TWindow>::update(RenderTarget& target, Time dt)
+{
+    activate();
+    m_imGuiContext.update(m_window, target, dt);
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TWindow>
+void ImGuiWindowContext<TWindow>::processEvent(const Event& event)
+{
+    activate();
+    m_imGuiContext.processEvent(m_window, event);
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TWindow>
+void ImGuiWindowContext<TWindow>::render() requires(SFML_BASE_IS_SAME(TWindow, RenderWindow))
+{
+    activate();
+    m_imGuiContext.render(m_window);
+}
+
+
+////////////////////////////////////////////////////////////
+template class ImGuiWindowContext<Window>;
+template class ImGuiWindowContext<RenderWindow>;
 
 } // namespace sf::ImGui

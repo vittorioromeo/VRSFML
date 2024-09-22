@@ -38,13 +38,14 @@ int main()
     //
     // Set up random generator
     // static std::mt19937 rng(std::random_device{}());
-    std::mt19937 rng(100);
+    std::minstd_rand rng(100);
     const auto getRndFloat = [&](float min, float max) { return std::uniform_real_distribution<float>{min, max}(rng); };
 
     //
     //
     // Set up graphics context
-    sf::GraphicsContext graphicsContext;
+    sf::GraphicsContext     graphicsContext;
+    sf::ImGui::ImGuiContext imGuiContext(graphicsContext);
 
     //
     //
@@ -57,12 +58,7 @@ int main()
                              .resizable = false,
                              .vsync     = true});
 
-    //
-    //
-    // Set up imgui
-    sf::ImGui::ImGuiContext imGuiContext(graphicsContext);
-    if (!imGuiContext.init(window))
-        return -1;
+    auto imGuiWindowContext = imGuiContext.init(window).value();
 
     //
     //
@@ -214,7 +210,7 @@ int main()
         ////////////////////////////////////////////////////////////
         while (sf::base::Optional event = window.pollEvent())
         {
-            imGuiContext.processEvent(window, *event);
+            imGuiWindowContext.processEvent(*event);
 
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return EXIT_SUCCESS;
@@ -247,7 +243,7 @@ int main()
         // ImGui step
         ////////////////////////////////////////////////////////////
         {
-            imGuiContext.update(window, fpsClock.getElapsedTime());
+            imGuiWindowContext.update(fpsClock.getElapsedTime());
 
             ImGui::Begin("Vittorio's SFML fork: batching example", nullptr, ImGuiWindowFlags_NoResize);
             ImGui::SetWindowSize(ImVec2{350.f, 304.f});
@@ -345,7 +341,7 @@ int main()
             recordUs(samplesDrawMs, clock.getElapsedTime().asSeconds() * 1000.f);
         }
 
-        imGuiContext.render(window);
+        imGuiWindowContext.render();
         window.display();
 
         recordUs(samplesFPS, 1.f / fpsClock.getElapsedTime().asSeconds());
