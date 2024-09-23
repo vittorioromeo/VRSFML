@@ -6,6 +6,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
+#include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Transformable.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
@@ -15,16 +16,15 @@
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/EnumClassBitwiseOps.hpp"
-#include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Span.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 
 
 namespace sf
 {
 class Font;
 class RenderTarget;
-struct Color;
 struct RenderStates;
 
 ////////////////////////////////////////////////////////////
@@ -443,8 +443,21 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    struct Impl;
-    base::InPlacePImpl<Impl, 192> m_impl; //!< Implementation details
+    const Font*  m_font{};                     //!< Font used to display the string
+    String       m_string;                     //!< String to display
+    unsigned int m_characterSize{30};          //!< Base size of characters, in pixels
+    float        m_letterSpacing{1.f};         //!< Spacing factor between letters
+    float        m_lineSpacing{1.f};           //!< Spacing factor between lines
+    Style        m_style{Style::Regular};      //!< Text style (see Style enum)
+    Color        m_fillColor{Color::White};    //!< Text fill color
+    Color        m_outlineColor{Color::Black}; //!< Text outline color
+    float        m_outlineThickness{0.f};      //!< Thickness of the text's outline
+
+    mutable base::TrivialVector<Vertex> m_vertices;  //!< Vertex array containing the outline and fill geometry
+    mutable base::SizeT  m_fillVerticesStartIndex{}; //!< Index in the vertex array where the fill vertices start
+    mutable FloatRect    m_bounds;                   //!< Bounding rectangle of the text (in local coordinates)
+    mutable bool         m_geometryNeedUpdate{};     //!< Does the geometry need to be recomputed?
+    mutable unsigned int m_fontTextureId{};          //!< The font texture id
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking

@@ -87,46 +87,20 @@ void addGlyphQuad(sf::Vertex*      vertices,
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-struct Text::Impl
-{
-    const Font*                         font{};                     //!< Font used to display the string
-    String                              string;                     //!< String to display
-    unsigned int                        characterSize{30};          //!< Base size of characters, in pixels
-    float                               letterSpacingFactor{1.f};   //!< Spacing factor between letters
-    float                               lineSpacingFactor{1.f};     //!< Spacing factor between lines
-    Style                               style{Style::Regular};      //!< Text style (see Style enum)
-    Color                               fillColor{Color::White};    //!< Text fill color
-    Color                               outlineColor{Color::Black}; //!< Text outline color
-    float                               outlineThickness{0.f};      //!< Thickness of the text's outline
-    mutable base::TrivialVector<Vertex> vertices;   //!< Vertex array containing the outline and fill geometry
-    mutable base::SizeT   fillVerticesStartIndex{}; //!< Index in the vertex array where the fill vertices start
-    mutable FloatRect     bounds;                   //!< Bounding rectangle of the text (in local coordinates)
-    mutable bool          geometryNeedUpdate{};     //!< Does the geometry need to be recomputed?
-    mutable std::uint64_t fontTextureId{};          //!< The font texture id
-
-    // NOLINTNEXTLINE(modernize-pass-by-value)
-    explicit Impl(const Font& theFont, const String& theString, unsigned int theCharacterSize) :
-    font(&theFont),
-    string(theString),
-    characterSize(theCharacterSize)
-    {
-    }
-};
-
-
-////////////////////////////////////////////////////////////
 Text::Text(const Font& font, const Settings& settings) :
 Transformable{.position = settings.position, .scale = settings.scale, .origin = settings.origin, .rotation = settings.rotation},
-m_impl(font, settings.string, settings.characterSize)
+m_font(&font),
+m_string(settings.string),
+m_characterSize(settings.characterSize),
+m_letterSpacing(settings.letterSpacing),
+m_lineSpacing(settings.lineSpacing),
+m_style(settings.style),
+m_fillColor(settings.fillColor),
+m_outlineColor(settings.outlineColor),
+m_outlineThickness(settings.outlineThickness),
+m_geometryNeedUpdate{true}
 {
-    SFML_UPDATE_LIFETIME_DEPENDANT(Font, Text, this, m_impl->font);
-
-    setLetterSpacing(settings.letterSpacing);
-    setLineSpacing(settings.lineSpacing);
-    setStyle(settings.style);
-    setFillColor(settings.fillColor);
-    setOutlineColor(settings.outlineColor);
-    setOutlineThickness(settings.outlineThickness);
+    SFML_UPDATE_LIFETIME_DEPENDANT(Font, Text, this, m_font);
 }
 
 
@@ -153,83 +127,83 @@ Text& Text::operator=(Text&&) noexcept = default;
 ////////////////////////////////////////////////////////////
 void Text::setString(const String& string)
 {
-    if (m_impl->string == string)
+    if (m_string == string)
         return;
 
-    m_impl->string             = string;
-    m_impl->geometryNeedUpdate = true;
+    m_string             = string;
+    m_geometryNeedUpdate = true;
 }
 
 
 ////////////////////////////////////////////////////////////
 void Text::setFont(const Font& font)
 {
-    if (m_impl->font == &font)
+    if (m_font == &font)
         return;
 
-    m_impl->font               = &font;
-    m_impl->geometryNeedUpdate = true;
+    m_font               = &font;
+    m_geometryNeedUpdate = true;
 }
 
 
 ////////////////////////////////////////////////////////////
 void Text::setCharacterSize(unsigned int size)
 {
-    if (m_impl->characterSize == size)
+    if (m_characterSize == size)
         return;
 
-    m_impl->characterSize      = size;
-    m_impl->geometryNeedUpdate = true;
+    m_characterSize      = size;
+    m_geometryNeedUpdate = true;
 }
 
 
 ////////////////////////////////////////////////////////////
 void Text::setLetterSpacing(float spacingFactor)
 {
-    if (m_impl->letterSpacingFactor == spacingFactor)
+    if (m_letterSpacing == spacingFactor)
         return;
 
-    m_impl->letterSpacingFactor = spacingFactor;
-    m_impl->geometryNeedUpdate  = true;
+    m_letterSpacing      = spacingFactor;
+    m_geometryNeedUpdate = true;
 }
 
 
 ////////////////////////////////////////////////////////////
 void Text::setLineSpacing(float spacingFactor)
 {
-    if (m_impl->lineSpacingFactor == spacingFactor)
+    if (m_lineSpacing == spacingFactor)
         return;
 
-    m_impl->lineSpacingFactor  = spacingFactor;
-    m_impl->geometryNeedUpdate = true;
+    m_lineSpacing        = spacingFactor;
+    m_geometryNeedUpdate = true;
 }
 
 
 ////////////////////////////////////////////////////////////
 void Text::setStyle(Text::Style style)
 {
-    if (m_impl->style == style)
+    if (m_style == style)
         return;
 
-    m_impl->style              = style;
-    m_impl->geometryNeedUpdate = true;
+    m_style              = style;
+    m_geometryNeedUpdate = true;
 }
 
 
 ////////////////////////////////////////////////////////////
 void Text::setFillColor(Color color)
 {
-    if (color == m_impl->fillColor)
+    if (color == m_fillColor)
         return;
 
-    m_impl->fillColor = color;
+    m_fillColor = color;
 
     // Change vertex colors directly, no need to update whole geometry
     // (if geometry is updated anyway, we can skip this step)
-    if (!m_impl->geometryNeedUpdate)
+    if (!m_geometryNeedUpdate)
     {
-        for (base::SizeT i = m_impl->fillVerticesStartIndex; i < m_impl->vertices.size(); ++i)
-            m_impl->vertices[i].color = m_impl->fillColor;
+        for (base::SizeT i = m_fillVerticesStartIndex; i < m_vertices.size(); ++i)
+            m_vertices[i].color = m_fillColor;
     }
 }
 
@@ -237,17 +211,17 @@ void Text::setFillColor(Color color)
 ////////////////////////////////////////////////////////////
 void Text::setOutlineColor(Color color)
 {
-    if (color == m_impl->outlineColor)
+    if (color == m_outlineColor)
         return;
 
-    m_impl->outlineColor = color;
+    m_outlineColor = color;
 
     // Change vertex colors directly, no need to update whole geometry
     // (if geometry is updated anyway, we can skip this step)
-    if (!m_impl->geometryNeedUpdate)
+    if (!m_geometryNeedUpdate)
     {
-        for (base::SizeT i = 0; i < m_impl->fillVerticesStartIndex; ++i)
-            m_impl->vertices[i].color = m_impl->outlineColor;
+        for (base::SizeT i = 0; i < m_fillVerticesStartIndex; ++i)
+            m_vertices[i].color = m_outlineColor;
     }
 }
 
@@ -255,74 +229,74 @@ void Text::setOutlineColor(Color color)
 ////////////////////////////////////////////////////////////
 void Text::setOutlineThickness(float thickness)
 {
-    if (thickness == m_impl->outlineThickness)
+    if (thickness == m_outlineThickness)
         return;
 
-    m_impl->outlineThickness   = thickness;
-    m_impl->geometryNeedUpdate = true;
+    m_outlineThickness   = thickness;
+    m_geometryNeedUpdate = true;
 }
 
 
 ////////////////////////////////////////////////////////////
 const String& Text::getString() const
 {
-    return m_impl->string;
+    return m_string;
 }
 
 
 ////////////////////////////////////////////////////////////
 const Font& Text::getFont() const
 {
-    return *m_impl->font;
+    return *m_font;
 }
 
 
 ////////////////////////////////////////////////////////////
 unsigned int Text::getCharacterSize() const
 {
-    return m_impl->characterSize;
+    return m_characterSize;
 }
 
 
 ////////////////////////////////////////////////////////////
 float Text::getLetterSpacing() const
 {
-    return m_impl->letterSpacingFactor;
+    return m_letterSpacing;
 }
 
 
 ////////////////////////////////////////////////////////////
 float Text::getLineSpacing() const
 {
-    return m_impl->lineSpacingFactor;
+    return m_lineSpacing;
 }
 
 
 ////////////////////////////////////////////////////////////
 Text::Style Text::getStyle() const
 {
-    return m_impl->style;
+    return m_style;
 }
 
 
 ////////////////////////////////////////////////////////////
 Color Text::getFillColor() const
 {
-    return m_impl->fillColor;
+    return m_fillColor;
 }
 
 
 ////////////////////////////////////////////////////////////
 Color Text::getOutlineColor() const
 {
-    return m_impl->outlineColor;
+    return m_outlineColor;
 }
 
 
 ////////////////////////////////////////////////////////////
 float Text::getOutlineThickness() const
 {
-    return m_impl->outlineThickness;
+    return m_outlineThickness;
 }
 
 
@@ -330,24 +304,24 @@ float Text::getOutlineThickness() const
 Vector2f Text::findCharacterPos(base::SizeT index) const
 {
     // Adjust the index if it's out of range
-    index = base::min(index, m_impl->string.getSize());
+    index = base::min(index, m_string.getSize());
 
     // Precompute the variables needed by the algorithm
-    const bool  isBold          = !!(m_impl->style & Style::Bold);
-    float       whitespaceWidth = m_impl->font->getGlyph(U' ', m_impl->characterSize, isBold).advance;
-    const float letterSpacing   = (whitespaceWidth / 3.f) * (m_impl->letterSpacingFactor - 1.f);
+    const bool  isBold          = !!(m_style & Style::Bold);
+    float       whitespaceWidth = m_font->getGlyph(U' ', m_characterSize, isBold).advance;
+    const float letterSpacing   = (whitespaceWidth / 3.f) * (m_letterSpacing - 1.f);
     whitespaceWidth += letterSpacing;
-    const float lineSpacing = m_impl->font->getLineSpacing(m_impl->characterSize) * m_impl->lineSpacingFactor;
+    const float lineSpacing = m_font->getLineSpacing(m_characterSize) * m_lineSpacing;
 
     // Compute the position
     Vector2f      characterPos;
     std::uint32_t prevChar = 0;
     for (base::SizeT i = 0; i < index; ++i)
     {
-        const std::uint32_t curChar = m_impl->string[i];
+        const std::uint32_t curChar = m_string[i];
 
         // Apply the kerning offset
-        characterPos.x += m_impl->font->getKerning(prevChar, curChar, m_impl->characterSize, isBold);
+        characterPos.x += m_font->getKerning(prevChar, curChar, m_characterSize, isBold);
         prevChar = curChar;
 
         // Handle special characters
@@ -366,7 +340,7 @@ Vector2f Text::findCharacterPos(base::SizeT index) const
         }
 
         // For regular characters, add the advance offset of the glyph
-        characterPos.x += m_impl->font->getGlyph(curChar, m_impl->characterSize, isBold).advance + letterSpacing;
+        characterPos.x += m_font->getGlyph(curChar, m_characterSize, isBold).advance + letterSpacing;
     }
 
     // Transform the characterPos to global coordinates
@@ -377,9 +351,9 @@ Vector2f Text::findCharacterPos(base::SizeT index) const
 ////////////////////////////////////////////////////////////
 const FloatRect& Text::getLocalBounds() const
 {
-    ensureGeometryUpdate(*m_impl->font);
+    ensureGeometryUpdate(*m_font);
 
-    return m_impl->bounds;
+    return m_bounds;
 }
 
 
@@ -394,7 +368,7 @@ FloatRect Text::getGlobalBounds() const
 void Text::draw(RenderTarget& target, RenderStates states) const
 {
     states.transform *= getTransform();
-    states.texture        = &m_impl->font->getTexture(m_impl->characterSize);
+    states.texture        = &m_font->getTexture(m_characterSize);
     states.coordinateType = CoordinateType::Pixels;
 
     const auto [data, size] = getVertices();
@@ -405,61 +379,61 @@ void Text::draw(RenderTarget& target, RenderStates states) const
 ////////////////////////////////////////////////////////////
 [[nodiscard]] base::Span<const Vertex> Text::getVertices() const
 {
-    ensureGeometryUpdate(*m_impl->font);
+    ensureGeometryUpdate(*m_font);
 
-    return {m_impl->vertices.data(), m_impl->vertices.size()};
+    return {m_vertices.data(), m_vertices.size()};
 }
 
 
 ////////////////////////////////////////////////////////////
 void Text::ensureGeometryUpdate(const Font& font) const
 {
-    const auto fontTextureCacheId = font.getTexture(m_impl->characterSize).m_cacheId;
+    const auto fontTextureCacheId = font.getTexture(m_characterSize).m_cacheId;
 
     // Do nothing, if geometry has not changed and the font texture has not changed
-    if (!m_impl->geometryNeedUpdate && fontTextureCacheId == m_impl->fontTextureId)
+    if (!m_geometryNeedUpdate && fontTextureCacheId == m_fontTextureId)
         return;
 
     // Save the current fonts texture id
-    m_impl->fontTextureId = fontTextureCacheId;
+    m_fontTextureId = fontTextureCacheId;
 
     // Mark geometry as updated
-    m_impl->geometryNeedUpdate = false;
+    m_geometryNeedUpdate = false;
 
     // Clear the previous geometry
-    m_impl->vertices.clear();
-    m_impl->fillVerticesStartIndex = 0u;
-    m_impl->bounds                 = {};
+    m_vertices.clear();
+    m_fillVerticesStartIndex = 0u;
+    m_bounds                 = {};
 
     // No text: nothing to draw
-    if (m_impl->string.isEmpty())
+    if (m_string.isEmpty())
         return;
 
     // Compute values related to the text style
-    const bool  isBold             = !!(m_impl->style & Style::Bold);
-    const bool  isUnderlined       = !!(m_impl->style & Style::Underlined);
-    const bool  isStrikeThrough    = !!(m_impl->style & Style::StrikeThrough);
-    const float italicShear        = !!(m_impl->style & Style::Italic) ? degrees(12).asRadians() : 0.f;
-    const float underlineOffset    = font.getUnderlinePosition(m_impl->characterSize);
-    const float underlineThickness = font.getUnderlineThickness(m_impl->characterSize);
+    const bool  isBold             = !!(m_style & Style::Bold);
+    const bool  isUnderlined       = !!(m_style & Style::Underlined);
+    const bool  isStrikeThrough    = !!(m_style & Style::StrikeThrough);
+    const float italicShear        = !!(m_style & Style::Italic) ? degrees(12).asRadians() : 0.f;
+    const float underlineOffset    = font.getUnderlinePosition(m_characterSize);
+    const float underlineThickness = font.getUnderlineThickness(m_characterSize);
 
     // Compute the location of the strike through dynamically
     // We use the center point of the lowercase 'x' glyph as the reference
     // We reuse the underline thickness as the thickness of the strike through as well
-    const float strikeThroughOffset = font.getGlyph(U'x', m_impl->characterSize, isBold).bounds.getCenter().y;
+    const float strikeThroughOffset = font.getGlyph(U'x', m_characterSize, isBold).bounds.getCenter().y;
 
     // Precompute the variables needed by the algorithm
-    float       whitespaceWidth = font.getGlyph(U' ', m_impl->characterSize, isBold).advance;
-    const float letterSpacing   = (whitespaceWidth / 3.f) * (m_impl->letterSpacingFactor - 1.f);
+    float       whitespaceWidth = font.getGlyph(U' ', m_characterSize, isBold).advance;
+    const float letterSpacing   = (whitespaceWidth / 3.f) * (m_letterSpacing - 1.f);
     whitespaceWidth += letterSpacing;
-    const float lineSpacing = font.getLineSpacing(m_impl->characterSize) * m_impl->lineSpacingFactor;
+    const float lineSpacing = font.getLineSpacing(m_characterSize) * m_lineSpacing;
 
     // Precalculate the amount of quads that will be produced
     base::SizeT fillQuadCount    = 0;
     base::SizeT outlineQuadCount = 0;
 
     {
-        const auto addLinesFake = [&, outlineQuadIncrement = (m_impl->outlineThickness == 0.f) ? 0u : 1u]
+        const auto addLinesFake = [&, outlineQuadIncrement = (m_outlineThickness == 0.f) ? 0u : 1u]
         {
             outlineQuadCount += outlineQuadIncrement;
             ++fillQuadCount;
@@ -470,7 +444,7 @@ void Text::ensureGeometryUpdate(const Font& font) const
         std::uint32_t prevChar = 0;
         float         x        = 0.f;
 
-        for (const std::uint32_t curChar : m_impl->string)
+        for (const std::uint32_t curChar : m_string)
         {
             // Skip the \r char to avoid weird graphical issues
             if (curChar == U'\r')
@@ -517,18 +491,18 @@ void Text::ensureGeometryUpdate(const Font& font) const
     const base::SizeT outlineVertexCount = outlineQuadCount * 6u;
     const base::SizeT fillVertexCount    = fillQuadCount * 6u;
 
-    m_impl->vertices.resize(outlineVertexCount + fillVertexCount);
-    m_impl->fillVerticesStartIndex = outlineVertexCount;
+    m_vertices.resize(outlineVertexCount + fillVertexCount);
+    m_fillVerticesStartIndex = outlineVertexCount;
 
     base::SizeT currFillIndex    = outlineVertexCount;
     base::SizeT currOutlineIndex = 0u;
 
     float x = 0.f;
-    auto  y = static_cast<float>(m_impl->characterSize);
+    auto  y = static_cast<float>(m_characterSize);
 
     // Create one quad for each character
-    auto  minX = static_cast<float>(m_impl->characterSize);
-    auto  minY = static_cast<float>(m_impl->characterSize);
+    auto  minX = static_cast<float>(m_characterSize);
+    auto  minY = static_cast<float>(m_characterSize);
     float maxX = 0.f;
     float maxY = 0.f;
 
@@ -536,27 +510,20 @@ void Text::ensureGeometryUpdate(const Font& font) const
 
     const auto addLines = [this, &currFillIndex, &currOutlineIndex, &x, &y, &underlineThickness](float offset)
     {
-        addLine(m_impl->vertices.data(), currFillIndex, x, y, m_impl->fillColor, offset, underlineThickness);
+        addLine(m_vertices.data(), currFillIndex, x, y, m_fillColor, offset, underlineThickness);
 
-        if (m_impl->outlineThickness != 0)
-            addLine(m_impl->vertices.data(),
-                    currOutlineIndex,
-                    x,
-                    y,
-                    m_impl->outlineColor,
-                    offset,
-                    underlineThickness,
-                    m_impl->outlineThickness);
+        if (m_outlineThickness != 0)
+            addLine(m_vertices.data(), currOutlineIndex, x, y, m_outlineColor, offset, underlineThickness, m_outlineThickness);
     };
 
-    for (const std::uint32_t curChar : m_impl->string)
+    for (const std::uint32_t curChar : m_string)
     {
         // Skip the \r char to avoid weird graphical issues
         if (curChar == U'\r')
             continue;
 
         // Apply the kerning offset
-        x += font.getKerning(prevChar, curChar, m_impl->characterSize, isBold);
+        x += font.getKerning(prevChar, curChar, m_characterSize, isBold);
 
         if (curChar == U'\n' && prevChar != U'\n')
         {
@@ -601,19 +568,19 @@ void Text::ensureGeometryUpdate(const Font& font) const
         }
 
         // Apply the outline
-        if (m_impl->outlineThickness != 0)
+        if (m_outlineThickness != 0)
         {
-            const Glyph& glyph = font.getGlyph(curChar, m_impl->characterSize, isBold, m_impl->outlineThickness);
+            const Glyph& glyph = font.getGlyph(curChar, m_characterSize, isBold, m_outlineThickness);
 
             // Add the outline glyph to the vertices
-            addGlyphQuad(m_impl->vertices.data(), currOutlineIndex, Vector2f{x, y}, m_impl->outlineColor, glyph, italicShear);
+            addGlyphQuad(m_vertices.data(), currOutlineIndex, Vector2f{x, y}, m_outlineColor, glyph, italicShear);
         }
 
         // Extract the current glyph's description
-        const Glyph& glyph = font.getGlyph(curChar, m_impl->characterSize, isBold);
+        const Glyph& glyph = font.getGlyph(curChar, m_characterSize, isBold);
 
         // Add the glyph to the vertices
-        addGlyphQuad(m_impl->vertices.data(), currFillIndex, Vector2f{x, y}, m_impl->fillColor, glyph, italicShear);
+        addGlyphQuad(m_vertices.data(), currFillIndex, Vector2f{x, y}, m_fillColor, glyph, italicShear);
 
         // Update the current bounds
         const Vector2f p1 = glyph.bounds.position;
@@ -629,9 +596,9 @@ void Text::ensureGeometryUpdate(const Font& font) const
     }
 
     // If we're using outline, update the current bounds
-    if (m_impl->outlineThickness != 0)
+    if (m_outlineThickness != 0)
     {
-        const float outline = base::fabs(base::ceil(m_impl->outlineThickness));
+        const float outline = base::fabs(base::ceil(m_outlineThickness));
         minX -= outline;
         maxX += outline;
         minY -= outline;
@@ -647,8 +614,8 @@ void Text::ensureGeometryUpdate(const Font& font) const
         addLines(strikeThroughOffset);
 
     // Update the bounding rectangle
-    m_impl->bounds.position = Vector2f{minX, minY};
-    m_impl->bounds.size     = Vector2f{maxX, maxY} - Vector2f{minX, minY};
+    m_bounds.position = Vector2f{minX, minY};
+    m_bounds.size     = Vector2f{maxX, maxY} - Vector2f{minX, minY};
 }
 
 } // namespace sf

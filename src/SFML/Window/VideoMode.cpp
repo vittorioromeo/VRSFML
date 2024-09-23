@@ -27,9 +27,7 @@ bool operator<(const VideoMode& lhs, const VideoMode& rhs)
     if (lhs.bitsPerPixel == rhs.bitsPerPixel)
     {
         if (lhs.size.x == rhs.size.x)
-        {
             return lhs.size.y < rhs.size.y;
-        }
 
         return lhs.size.x < rhs.size.x;
     }

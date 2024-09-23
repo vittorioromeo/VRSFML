@@ -258,8 +258,16 @@ struct SoundFileReaderFlac::Impl
 {
     struct FlacStreamDecoderDeleter
     {
-        void operator()(FLAC__StreamDecoder* theDecoder) const;
+        void operator()(FLAC__StreamDecoder* theDecoder) const
+        {
+            if (theDecoder == nullptr)
+                return;
+
+            FLAC__stream_decoder_finish(theDecoder);
+            FLAC__stream_decoder_delete(theDecoder);
+        }
     };
+
     base::UniquePtr<FLAC__StreamDecoder, FlacStreamDecoderDeleter> decoder; //!< FLAC decoder
     FlacClientData clientData; //!< Structure passed to the decoder callbacks
 };
@@ -271,17 +279,6 @@ SoundFileReaderFlac::SoundFileReaderFlac() = default;
 
 ////////////////////////////////////////////////////////////
 SoundFileReaderFlac::~SoundFileReaderFlac() = default;
-
-
-////////////////////////////////////////////////////////////
-void SoundFileReaderFlac::Impl::FlacStreamDecoderDeleter::operator()(FLAC__StreamDecoder* theDecoder) const
-{
-    if (theDecoder == nullptr)
-        return;
-
-    FLAC__stream_decoder_finish(theDecoder);
-    FLAC__stream_decoder_delete(theDecoder);
-}
 
 
 ////////////////////////////////////////////////////////////

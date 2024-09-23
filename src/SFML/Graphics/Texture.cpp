@@ -36,9 +36,9 @@ namespace
 namespace TextureImpl
 {
 // Thread-safe unique identifier generator, is used for states cache (see RenderTarget)
-constinit std::atomic<std::uint64_t> nextUniqueId{1u}; // start at 1, zero is "no texture"
+constinit std::atomic<unsigned int> nextUniqueId{1u}; // start at 1, zero is "no texture"
 
-[[nodiscard, gnu::always_inline, gnu::flatten]] inline std::uint64_t getUniqueId() noexcept
+[[nodiscard, gnu::always_inline, gnu::flatten]] inline unsigned int getUniqueId() noexcept
 {
     return nextUniqueId.fetch_add(1u, std::memory_order_relaxed);
 }
