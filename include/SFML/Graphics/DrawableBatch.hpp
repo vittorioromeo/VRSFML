@@ -110,6 +110,6 @@ private:
 ///
 /// TODO P1: docs
 ///
-/// \see sf::RenderTarget
+/// \see `sf::RenderTarget`
 ///
 ////////////////////////////////////////////////////////////
