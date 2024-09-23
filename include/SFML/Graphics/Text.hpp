@@ -22,9 +22,9 @@
 
 namespace sf
 {
-struct Color;
 class Font;
 class RenderTarget;
+struct Color;
 struct RenderStates;
 
 ////////////////////////////////////////////////////////////
@@ -62,15 +62,13 @@ public:
     /// \param characterSize  Base size of characters, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Text(const Font& font, String string, unsigned int characterSize = 30);
-    [[nodiscard]] Text(const Font& font, const char* string = "", unsigned int characterSize = 30);
+    [[nodiscard]] Text(const Font& font, String string = "", unsigned int characterSize = 30);
 
     ////////////////////////////////////////////////////////////
     /// \brief Disallow construction from a temporary font
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Text(const Font&& font, String string, unsigned int characterSize = 30)           = delete;
-    [[nodiscard]] Text(const Font&& font, const char* string = "", unsigned int characterSize = 30) = delete;
+    [[nodiscard]] Text(const Font&& font, String string = "", unsigned int characterSize = 30) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -122,7 +120,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void setString(const String& string);
-    void setString(const char* string);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the text's font

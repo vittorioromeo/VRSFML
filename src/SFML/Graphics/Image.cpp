@@ -33,6 +33,7 @@
 
 namespace
 {
+////////////////////////////////////////////////////////////
 // stb_image callbacks that operate on a sf::InputStream
 int read(void* user, char* data, int size)
 {
@@ -41,6 +42,7 @@ int read(void* user, char* data, int size)
     return count.hasValue() ? static_cast<int>(*count) : -1;
 }
 
+////////////////////////////////////////////////////////////
 void skip(void* user, int size)
 {
     auto& stream = *static_cast<sf::InputStream*>(user);
@@ -48,12 +50,14 @@ void skip(void* user, int size)
         sf::priv::err() << "Failed to seek image loader input stream";
 }
 
+////////////////////////////////////////////////////////////
 int eof(void* user)
 {
     auto& stream = *static_cast<sf::InputStream*>(user);
     return stream.tell().value() >= stream.getSize().value();
 }
 
+////////////////////////////////////////////////////////////
 // Deleter for STB pointers
 struct StbDeleter
 {
@@ -62,7 +66,10 @@ struct StbDeleter
         stbi_image_free(image);
     }
 };
+
+////////////////////////////////////////////////////////////
 using StbPtr = sf::base::UniquePtr<stbi_uc, StbDeleter>;
+
 } // namespace
 
 

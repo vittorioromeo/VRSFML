@@ -8,6 +8,7 @@
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/Shape.hpp"
 #include "SFML/Graphics/Texture.hpp"
+#include "SFML/Graphics/Transformable.hpp"
 
 #include "SFML/System/Vector2.hpp"
 
@@ -66,6 +67,18 @@ namespace
 
 namespace sf
 {
+////////////////////////////////////////////////////////////
+Shape::Shape(const Settings& settings) :
+Transformable{.position = settings.position, .scale = settings.scale, .origin = settings.origin, .rotation = settings.rotation},
+m_textureRect{settings.textureRect},
+m_outlineTextureRect{settings.outlineTextureRect},
+m_fillColor{settings.fillColor},
+m_outlineColor{settings.outlineColor},
+m_outlineThickness{settings.outlineThickness}
+{
+}
+
+
 ////////////////////////////////////////////////////////////
 void Shape::setTextureRect(const FloatRect& rect)
 {
@@ -229,7 +242,7 @@ void Shape::drawOnto(RenderTarget& renderTarget, const Texture* texture, RenderS
 
 
 ////////////////////////////////////////////////////////////
-void Shape::updateFillColors(base::TrivialVector<Vertex>& vertices)
+void Shape::updateFillColors(base::TrivialVector<Vertex>& vertices) const
 {
     for (Vertex& vertex : vertices)
         vertex.color = m_fillColor;
@@ -316,7 +329,7 @@ void Shape::updateOutline(base::TrivialVector<Vertex>& outlineVertices, const ba
 
 
 ////////////////////////////////////////////////////////////
-void Shape::updateOutlineColors(base::TrivialVector<Vertex>& outlineVertices)
+void Shape::updateOutlineColors(base::TrivialVector<Vertex>& outlineVertices) const
 {
     for (Vertex& outlineVertex : outlineVertices)
         outlineVertex.color = m_outlineColor;

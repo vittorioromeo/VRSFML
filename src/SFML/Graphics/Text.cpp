@@ -123,12 +123,6 @@ m_impl(font, SFML_BASE_MOVE(string), characterSize)
 
 
 ////////////////////////////////////////////////////////////
-Text::Text(const Font& font, const char* string, unsigned int characterSize) : Text(font, String(string), characterSize)
-{
-}
-
-
-////////////////////////////////////////////////////////////
 Text::~Text() = default;
 
 
@@ -156,13 +150,6 @@ void Text::setString(const String& string)
 
     m_impl->string             = string;
     m_impl->geometryNeedUpdate = true;
-}
-
-
-////////////////////////////////////////////////////////////
-void Text::setString(const char* string)
-{
-    setString(String(string));
 }
 
 
@@ -459,16 +446,12 @@ void Text::ensureGeometryUpdate(const Font& font) const
     whitespaceWidth += letterSpacing;
     const float lineSpacing = font.getLineSpacing(m_impl->characterSize) * m_impl->lineSpacingFactor;
 
-    // TODO P1: docs and cleanup
+    // Precalculate the amount of quads that will be produced
     base::SizeT fillQuadCount    = 0;
     base::SizeT outlineQuadCount = 0;
 
     {
-        float x = 0.f;
-
-        const base::SizeT outlineQuadIncrement = (m_impl->outlineThickness == 0) ? 0 : 1;
-
-        const auto addLinesFake = [&]
+        const auto addLinesFake = [&, outlineQuadIncrement = (m_impl->outlineThickness == 0.f) ? 0u : 1u]
         {
             outlineQuadCount += outlineQuadIncrement;
             ++fillQuadCount;
@@ -477,6 +460,7 @@ void Text::ensureGeometryUpdate(const Font& font) const
         const auto addGlyphsFake = addLinesFake;
 
         std::uint32_t prevChar = 0;
+        float         x        = 0.f;
 
         for (const std::uint32_t curChar : m_impl->string)
         {
@@ -494,23 +478,16 @@ void Text::ensureGeometryUpdate(const Font& font) const
             prevChar = curChar;
 
             // Handle special characters
-            if ((curChar == U' ') || (curChar == U'\n') || (curChar == U'\t'))
+            switch (curChar)
             {
-                switch (curChar)
-                {
-                    case U' ':
-                        x += 1.f;
-                        break;
-                    case U'\t':
-                        x += 1.f;
-                        break;
-                    case U'\n':
-                        x = 0;
-                        break;
-                }
-
-                // Next glyph, no need to create a quad for whitespace
-                continue;
+                case U' ':
+                    [[fallthrough]];
+                case U'\t':
+                    x += 1.f;
+                    continue;
+                case U'\n':
+                    x = 0;
+                    continue;
             }
 
             // Apply the outline
@@ -529,14 +506,14 @@ void Text::ensureGeometryUpdate(const Font& font) const
             addLinesFake();
     }
 
-    const base::SizeT outlineVertexCount = outlineQuadCount * 6;
-    const base::SizeT fillVertexCount    = fillQuadCount * 6;
+    const base::SizeT outlineVertexCount = outlineQuadCount * 6u;
+    const base::SizeT fillVertexCount    = fillQuadCount * 6u;
 
     m_impl->vertices.resize(outlineVertexCount + fillVertexCount);
     m_impl->fillVerticesStartIndex = outlineVertexCount;
 
     base::SizeT currFillIndex    = outlineVertexCount;
-    base::SizeT currOutlineIndex = 0;
+    base::SizeT currOutlineIndex = 0u;
 
     float x = 0.f;
     auto  y = static_cast<float>(m_impl->characterSize);

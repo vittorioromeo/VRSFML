@@ -6,15 +6,11 @@
 #include "SFML/System/Angle.hpp" // NOLINT(misc-header-include-cycle)
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Constants.hpp"
 
 
 namespace sf::priv
 {
-////////////////////////////////////////////////////////////
-inline constexpr float pi  = 3.141592654f;
-inline constexpr float tau = pi * 2.f;
-
-
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr float positiveRemainder(float a, float b)
 {
@@ -33,7 +29,7 @@ namespace sf
 ////////////////////////////////////////////////////////////
 constexpr float Angle::asDegrees() const
 {
-    return m_radians * (180.f / priv::pi);
+    return m_radians * (180.f / base::pi);
 }
 
 
@@ -47,14 +43,14 @@ constexpr float Angle::asRadians() const
 ////////////////////////////////////////////////////////////
 constexpr Angle Angle::wrapSigned() const
 {
-    return Angle(priv::positiveRemainder(m_radians + priv::pi, priv::tau) - priv::pi);
+    return Angle(priv::positiveRemainder(m_radians + base::pi, base::tau) - base::pi);
 }
 
 
 ////////////////////////////////////////////////////////////
 constexpr Angle Angle::wrapUnsigned() const
 {
-    return Angle(priv::positiveRemainder(m_radians, priv::tau));
+    return Angle(priv::positiveRemainder(m_radians, base::tau));
 }
 
 
@@ -67,7 +63,7 @@ constexpr Angle::Angle(float radians) : m_radians(radians)
 ////////////////////////////////////////////////////////////
 constexpr Angle degrees(float angle)
 {
-    return Angle(angle * (priv::pi / 180.f));
+    return Angle(angle * (base::pi / 180.f));
 }
 
 

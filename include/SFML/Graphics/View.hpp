@@ -18,95 +18,42 @@
 
 namespace sf
 {
-// TODO P0:
-struct [[nodiscard]] ScissorRect : FloatRect
-{
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr explicit ScissorRect(Vector2f thePosition, Vector2f theSize) :
-    FloatRect{thePosition, theSize}
-    {
-        SFML_BASE_ASSERT(position.x >= 0.0f && position.x <= 1.0f && "position.x must lie within [0, 1]");
-        SFML_BASE_ASSERT(position.y >= 0.0f && position.y <= 1.0f && "position.y must lie within [0, 1]");
-        SFML_BASE_ASSERT(size.x >= 0.0f && "size.x must lie within [0, 1]");
-        SFML_BASE_ASSERT(size.y >= 0.0f && "size.y must lie within [0, 1]");
-        SFML_BASE_ASSERT(position.x + size.x <= 1.0f && "position.x + size.x must lie within [0, 1]");
-        SFML_BASE_ASSERT(position.y + size.y <= 1.0f && "position.y + size.y must lie within [0, 1]");
-    }
-
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr explicit(false) ScissorRect(const FloatRect& rect) :
-    ScissorRect{rect.position, rect.size}
-    {
-    }
-};
-
-
 ////////////////////////////////////////////////////////////
 /// \brief 2D camera that defines what region is shown on screen
 ///
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] SFML_GRAPHICS_API View
 {
-public:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// This constructor creates a default view of (0, 0, 1000, 1000)
+    /// \brief Scissor rectangle
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] View() = default;
+    struct [[nodiscard]] ScissorRect : FloatRect
+    {
+        [[nodiscard, gnu::always_inline]] constexpr explicit ScissorRect(Vector2f thePosition, Vector2f theSize) :
+        FloatRect{thePosition, theSize}
+        {
+            SFML_BASE_ASSERT(position.x >= 0.0f && position.x <= 1.0f && "position.x must lie within [0, 1]");
+            SFML_BASE_ASSERT(position.y >= 0.0f && position.y <= 1.0f && "position.y must lie within [0, 1]");
+            SFML_BASE_ASSERT(size.x >= 0.0f && "size.x must lie within [0, 1]");
+            SFML_BASE_ASSERT(size.y >= 0.0f && "size.y must lie within [0, 1]");
+            SFML_BASE_ASSERT(position.x + size.x <= 1.0f && "position.x + size.x must lie within [0, 1]");
+            SFML_BASE_ASSERT(position.y + size.y <= 1.0f && "position.y + size.y must lie within [0, 1]");
+        }
+
+        [[nodiscard, gnu::always_inline]] constexpr explicit(false) ScissorRect(const FloatRect& rect) :
+        ScissorRect{rect.position, rect.size}
+        {
+        }
+    };
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct the view from a rectangle
+    /// \brief Create a view from a rectangle
     ///
     /// \param rectangle Rectangle defining the zone to display
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit View(const FloatRect& rectangle);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct the view from its center and size
-    ///
-    /// \param theCenter Center of the zone to display
-    /// \param theSize   Size of zone to display
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit(false) View(Vector2f theCenter, Vector2f theSize);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Move the view relatively to its current position
-    ///
-    /// \param offset Move offset
-    ///
-    /// \see `setCenter`, `rotate`, `zoom`
-    ///
-    ////////////////////////////////////////////////////////////
-    void move(Vector2f offset);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Rotate the view relatively to its current orientation
-    ///
-    /// \param angle Angle to rotate
-    ///
-    /// \see `setRotation`, `move`, `zoom`
-    ///
-    ////////////////////////////////////////////////////////////
-    void rotate(Angle angle);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Resize the view rectangle relatively to its current size
-    ///
-    /// Resizing the view simulates a zoom, as the zone displayed on
-    /// screen grows or shrinks.
-    /// \a factor is a multiplier:
-    /// \li 1 keeps the size unchanged
-    /// \li > 1 makes the view bigger (objects appear smaller)
-    /// \li < 1 makes the view smaller (objects appear bigger)
-    ///
-    /// \param factor Zoom factor to apply
-    ///
-    /// \see `setSize`, `move`, `rotate`
-    ///
-    ////////////////////////////////////////////////////////////
-    void zoom(float factor);
+    [[nodiscard, gnu::const]] static View fromRect(const FloatRect& rectangle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the projection transform of the view
@@ -135,9 +82,12 @@ public:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2f      center{500.f, 500.f};         //!< Center of the view, in scene coordinates
-    Vector2f      size{1000.f, 1000.f};         //!< Size of the view, in scene coordinates
-    AutoWrapAngle rotation;                     //!< Angle of rotation of the view rectangle
+    Vector2f center{500.f, 500.f}; //!< Center of the view, in scene coordinates
+    Vector2f size{1000.f, 1000.f}; //!< Size of the view, in scene coordinates
+
+    // NOLINTNEXTLINE(readability-redundant-member-init)
+    AutoWrapAngle rotation{}; //!< Angle of rotation of the view rectangle
+
     FloatRect viewport{{0.f, 0.f}, {1.f, 1.f}}; //!< Viewport rectangle, expressed as a factor of the render-target's size
     ScissorRect scissor{{0.f, 0.f}, {1.f, 1.f}}; //!< Scissor rectangle, expressed as a factor of the render-target's size
 };
@@ -202,13 +152,13 @@ public:
 /// sf::RenderWindow window;
 ///
 /// // Initialize the view to a rectangle located at (100, 100) and with a size of 400x200
-/// sf::View view(sf::FloatRect({100, 100}, {400, 200}));
+/// sf::View view([{100, 100}, {400, 200}});
 ///
 /// // Rotate it by 45 degrees
-/// view.rotate(sf::degrees(45));
+/// view.rotation += sf::degrees(45);
 ///
 /// // Set its target viewport to be half of the window
-/// view.setViewport(sf::FloatRect({0.f, 0.f}, {0.5f, 1.f}));
+/// view.setViewport([{0.f, 0.f}, {0.5f, 1.f}});
 ///
 /// // Apply it
 /// window.setView(view);

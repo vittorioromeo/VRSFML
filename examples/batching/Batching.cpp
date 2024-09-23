@@ -20,6 +20,7 @@
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vector2.hpp"
 
+#include "SFML/Base/Constants.hpp"
 #include "SFML/Base/Optional.hpp"
 
 #include <imgui.h>
@@ -32,12 +33,53 @@
 #include <cstdio>
 
 
+class Sampler
+{
+public:
+    void recordUs(float value)
+    {
+        m_data.push_back(value);
+
+        if (m_data.size() > 512u)
+            m_data.erase(m_data.begin());
+    }
+
+    [[nodiscard]] double getAverage() const
+    {
+        double accumulator = 0.0;
+
+        for (auto value : m_data)
+            accumulator += static_cast<double>(value);
+
+        return accumulator / static_cast<double>(m_data.size());
+    }
+
+    [[nodiscard]] std::size_t size() const
+    {
+        return m_data.size();
+    }
+
+    [[nodiscard]] const float* data() const
+    {
+        return m_data.data();
+    }
+
+    void clear()
+    {
+        m_data.clear();
+    }
+
+private:
+    std::vector<float> m_data;
+};
+
+
 int main()
 {
     //
     //
     // Set up random generator
-    // static std::mt19937 rng(std::random_device{}());
+    // std::minstd_rand rng(std::random_device{}());
     std::minstd_rand rng(100);
     const auto getRndFloat = [&](float min, float max) { return std::uniform_real_distribution<float>{min, max}(rng); };
 
@@ -139,11 +181,11 @@ int main()
                                                    getRndFloat(-0.05f, 0.05f));
 
             sprite.origin   = textureRect.size / 2.f;
-            sprite.rotation = sf::degrees(getRndFloat(0.f, 360.f));
+            sprite.rotation = sf::radians(getRndFloat(0.f, sf::base::tau));
 
             const float scaleFactor = getRndFloat(0.08f, 0.17f);
             sprite.scale            = {scaleFactor, scaleFactor};
-            text.scale              = {scaleFactor * 3.5f, scaleFactor * 3.5f};
+            text.scale              = sprite.scale * 3.5f;
 
             sprite.position = {getRndFloat(0.f, windowSize.x), getRndFloat(0.f, windowSize.y)};
 
@@ -161,7 +203,7 @@ int main()
     bool        useBatch      = true;
     bool        drawSprites   = true;
     bool        drawText      = false;
-    int         numEntities   = 1'000'000;
+    int         numEntities   = 1'000;
     std::size_t drawnVertices = 0u;
 
     //
@@ -175,27 +217,9 @@ int main()
     sf::Clock clock;
     sf::Clock fpsClock;
 
-    std::vector<float> samplesUpdateMs{};
-    std::vector<float> samplesDrawMs{};
-    std::vector<float> samplesFPS{};
-
-    const auto recordUs = [&](std::vector<float>& target, const float value)
-    {
-        target.push_back(value);
-
-        if (target.size() > 512u)
-            target.erase(target.begin());
-    };
-
-    const auto getAverage = [&](const std::vector<float>& target)
-    {
-        double accumulator = 0.0;
-
-        for (auto value : target)
-            accumulator += static_cast<double>(value);
-
-        return accumulator / static_cast<double>(target.size());
-    };
+    Sampler samplesUpdateMs;
+    Sampler samplesDrawMs;
+    Sampler samplesFPS;
 
     //
     //
@@ -229,7 +253,7 @@ int main()
             for (auto& [text, sprite, velocity, torque] : entities)
             {
                 sprite.position += velocity;
-                sprite.rotate(sf::radians(torque));
+                sprite.rotation += sf::radians(torque);
 
                 if ((sprite.position.x > windowSize.x && velocity.x > 0.f) || (sprite.position.x < 0.f && velocity.x < 0.f))
                     velocity.x = -velocity.x;
@@ -240,7 +264,7 @@ int main()
                 text.position = sprite.position - sf::Vector2f{0.f, 250.f * sprite.scale.x};
             }
 
-            recordUs(samplesUpdateMs, clock.getElapsedTime().asSeconds() * 1000.f);
+            samplesUpdateMs.recordUs(clock.getElapsedTime().asSeconds() * 1000.f);
         }
 
         ////////////////////////////////////////////////////////////
@@ -282,14 +306,13 @@ int main()
 
             ImGui::NewLine();
 
-            const auto plotGraph =
-                [&](const char* label, const char* unit, const std::vector<float>& samples, float upperBound)
+            const auto plotGraph = [&](const char* label, const char* unit, const Sampler& samples, float upperBound)
             {
                 ImGui::PlotLines(label,
                                  samples.data(),
                                  static_cast<int>(samples.size()),
                                  0,
-                                 (std::to_string(getAverage(samples)) + unit).c_str(),
+                                 (std::to_string(samples.getAverage()) + unit).c_str(),
                                  0.f,
                                  upperBound,
                                  ImVec2{256.f, 32.f});
@@ -342,12 +365,12 @@ int main()
             if (useBatch)
                 window.draw(drawableBatch, {.texture = &textureAtlas.getTexture()});
 
-            recordUs(samplesDrawMs, clock.getElapsedTime().asSeconds() * 1000.f);
+            samplesDrawMs.recordUs(clock.getElapsedTime().asSeconds() * 1000.f);
         }
 
         imGuiContext.render(window);
         window.display();
 
-        recordUs(samplesFPS, 1.f / fpsClock.getElapsedTime().asSeconds());
+        samplesFPS.recordUs(1.f / fpsClock.getElapsedTime().asSeconds());
     }
 }

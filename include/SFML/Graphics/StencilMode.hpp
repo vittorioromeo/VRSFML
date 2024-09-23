@@ -211,20 +211,9 @@ struct [[nodiscard]] SFML_GRAPHICS_API StencilMode
 ///
 /// ...
 ///
-/// // Left circle
-/// sf::CircleShape left(100.f);
-/// left.setFillColor(sf::Color::Green);
-/// left.position = {0, 0};
-///
-/// // Middle circle
-/// sf::CircleShape middle(100.f);
-/// middle.setFillColor(sf::Color::Yellow);
-/// middle.position = {25, 0};
-///
-/// // Right circle
-/// sf::CircleShape right(100.f);
-/// right.setFillColor(sf::Color::Red);
-/// right.position = {50, 0};
+/// const sf::CircleShape left{{.position = {0, 0}, .fillColor = sf::Color::Green, .radius = 100.f}};
+/// const sf::CircleShape middle{{.position = {25, 0}, .fillColor = sf::Color::Yellow, .radius = 100.f}};
+/// const sf::CircleShape right{{.position = {50, 0}, .fillColor = sf::Color::Red, .radius = 100.f}};
 ///
 /// ...
 ///

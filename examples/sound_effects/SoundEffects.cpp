@@ -2,6 +2,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/CircleShape.hpp"
+#include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/ConvexShape.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
@@ -105,7 +106,6 @@ public:
     m_music(std::move(music))
     {
         m_listenerShape.position = {(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f};
-        m_listenerShape.setFillColor(sf::Color::Red);
 
         // Set the music to loop
         m_music.setLooping(true);
@@ -148,8 +148,8 @@ public:
 
 private:
     sf::Listener&   m_listener;
-    sf::CircleShape m_listenerShape{20.f};
-    sf::CircleShape m_soundShape{20.f};
+    sf::CircleShape m_listenerShape{{.fillColor = sf::Color::Red, .radius = 20.f}};
+    sf::CircleShape m_soundShape{{.radius = 20.f}};
     sf::Vector2f    m_position;
     sf::Music       m_music;
 };
@@ -246,9 +246,6 @@ public:
     m_music(std::move(music))
     {
         m_listenerShape.position = {(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f + 100.f};
-        m_listenerShape.setFillColor(sf::Color::Red);
-
-        m_soundShape.setFillColor(sf::Color::Magenta);
 
         // Sound cone parameters
         static constexpr auto coneHeight     = windowHeight * 2.f;
@@ -263,8 +260,6 @@ public:
             cone->position = {20.f, 20.f};
         }
 
-        m_soundConeOuter.setFillColor(sf::Color::Black);
-        m_soundConeInner.setFillColor(sf::Color::Cyan);
 
         // Make each cone based on their angle and height
         static constexpr auto makeCone = [](auto& shape, const auto& angle)
@@ -332,10 +327,10 @@ public:
 
 private:
     sf::Listener&   m_listener;
-    sf::CircleShape m_listenerShape{20.f};
-    sf::CircleShape m_soundShape{20.f};
-    sf::ConvexShape m_soundConeOuter;
-    sf::ConvexShape m_soundConeInner;
+    sf::CircleShape m_listenerShape{{.fillColor = sf::Color::Red, .radius = 20.f}};
+    sf::CircleShape m_soundShape{{.fillColor = sf::Color::Magenta, .radius = 20.f}};
+    sf::ConvexShape m_soundConeOuter{{.fillColor = sf::Color::Black}};
+    sf::ConvexShape m_soundConeInner{{.fillColor = sf::Color::Cyan}};
     sf::Text        m_text;
     sf::Vector2f    m_position;
     sf::Music       m_music;
@@ -525,7 +520,6 @@ public:
     m_currentFactor(font, "Doppler Factor: " + std::to_string(m_factor))
     {
         m_listenerShape.position = {(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f};
-        m_listenerShape.setFillColor(sf::Color::Red);
 
         m_position.y = (windowHeight - 20.f) / 2.f - 40.f;
 
@@ -618,8 +612,8 @@ private:
 
     float           m_velocity{0.f};
     float           m_factor{1.f};
-    sf::CircleShape m_listenerShape{20.f};
-    sf::CircleShape m_soundShape{20.f};
+    sf::CircleShape m_listenerShape{{.fillColor = sf::Color::Red, .radius = 20.f}};
+    sf::CircleShape m_soundShape{{.radius = 20.f}};
     sf::Vector2f    m_position;
     sf::Text        m_currentVelocity;
     sf::Text        m_currentFactor;
@@ -675,7 +669,6 @@ protected:
     m_instructions(font, "Press Space to enable/disable processing")
     {
         m_listenerShape.position = {(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f};
-        m_listenerShape.setFillColor(sf::Color::Red);
 
         m_enabledText.position  = {windowWidth / 2.f - 120.f, windowHeight * 3.f / 4.f - 50.f};
         m_instructions.position = {windowWidth / 2.f - 250.f, windowHeight * 3.f / 4.f};
@@ -704,8 +697,8 @@ private:
         m_enabledText.setString(m_enabled ? "Processing: Enabled" : "Processing: Disabled");
     }
 
-    sf::CircleShape m_listenerShape{20.f};
-    sf::CircleShape m_soundShape{20.f};
+    sf::CircleShape m_listenerShape{{.fillColor = sf::Color::Red, .radius = 20.f}};
+    sf::CircleShape m_soundShape{{.radius = 20.f}};
     sf::Vector2f    m_position;
     sf::Text        m_enabledText;
     sf::Text        m_instructions;

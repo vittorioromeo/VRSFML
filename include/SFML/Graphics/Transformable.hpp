@@ -21,21 +21,6 @@ namespace sf
 struct SFML_GRAPHICS_API Transformable
 {
     ////////////////////////////////////////////////////////////
-    /// \brief Rotate the object
-    ///
-    /// This function adds to the current rotation of the object,
-    /// unlike `setRotation` which overwrites it.
-    /// Thus, it is equivalent to the following code:
-    /// \code
-    /// object.rotation = object.rotation + angle;
-    /// \endcode
-    ///
-    /// \param angle Angle of rotation
-    ///
-    ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] constexpr void rotate(Angle angle);
-
-    ////////////////////////////////////////////////////////////
     /// \brief Scale the object
     ///
     /// This function multiplies the current scale of the object,
@@ -61,7 +46,7 @@ struct SFML_GRAPHICS_API Transformable
     /// \see `getInverseTransform`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Transform getTransform() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Transform getTransform() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief get the inverse of the combined transform of the object
@@ -71,15 +56,17 @@ struct SFML_GRAPHICS_API Transformable
     /// \see `getTransform`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Transform getInverseTransform() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Transform getInverseTransform() const;
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2f      position;        //!< Position of the object in the 2D world
-    Vector2f      scale{1.f, 1.f}; //!< Scale of the object
-    Vector2f      origin;          //!< Origin of translation/rotation/scaling of the object
-    AutoWrapAngle rotation;        //!< Orientation of the object
+    Vector2f position{};      //!< Position of the object in the 2D world
+    Vector2f scale{1.f, 1.f}; //!< Scale of the object
+    Vector2f origin{};        //!< Origin of translation/rotation/scaling of the object
+
+    // NOLINTNEXTLINE(readability-redundant-member-init)
+    AutoWrapAngle rotation{}; //!< Orientation of the object
 };
 
 } // namespace sf

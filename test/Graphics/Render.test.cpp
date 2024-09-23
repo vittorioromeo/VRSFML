@@ -24,9 +24,9 @@ TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
 
         renderTexture.clear(sf::Color::Red, 127);
 
-        sf::RectangleShape shape1({100, 100});
+        sf::RectangleShape shape1({}, {100, 100});
         shape1.setFillColor(sf::Color::Green);
-        sf::RectangleShape shape2({100, 100});
+        sf::RectangleShape shape2({}, {100, 100});
         shape2.setFillColor(sf::Color::Blue);
 
         SECTION("Stencil-Only")

@@ -2,6 +2,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/CircleShape.hpp"
+#include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
@@ -83,34 +84,22 @@ int main()
     sfmlLogo.position = {170.f, 50.f};
 
     // Create the left paddle
-    sf::RectangleShape leftPaddle;
-    leftPaddle.setSize(paddleSize - sf::Vector2f{3.f, 3.f});
-    leftPaddle.setOutlineThickness(3.f);
-    leftPaddle.setOutlineColor(sf::Color::Black);
-    leftPaddle.setFillColor({100u, 100u, 200u});
-    leftPaddle.origin = paddleSize / 2.f;
-
-    // TODO P1: consider
-    /*
-    sf::RectangleShape leftPaddle2{
-        {.size             = paddleSize - sf::Vector2f{3.f, 3.f},
-         .outlineThickness = 3.f,
-         .outlineColor     = sf::Color::Black,
-         .fillColor        = {100u, 100u, 200u},
-         .origin           = paddleSize / 2.f}};
-    */
+    sf::RectangleShape leftPaddle{{.origin           = paddleSize / 2.f,
+                                   .fillColor        = {100u, 100u, 200u},
+                                   .outlineColor     = sf::Color::Black,
+                                   .outlineThickness = 3.f},
+                                  /* size */ {paddleSize - sf::Vector2f{3.f, 3.f}}};
 
     // Create the right paddle
     sf::RectangleShape rightPaddle = leftPaddle;
     rightPaddle.setFillColor({200u, 100u, 100u});
 
     // Create the ball
-    sf::CircleShape ball;
-    ball.setRadius(ballRadius - 3);
-    ball.setOutlineThickness(2);
-    ball.setOutlineColor(sf::Color::Black);
-    ball.setFillColor(sf::Color::White);
-    ball.origin = {ballRadius / 2.f, ballRadius / 2.f};
+    sf::CircleShape ball{{.origin           = {ballRadius / 2.f, ballRadius / 2.f},
+                          .fillColor        = sf::Color::White,
+                          .outlineColor     = sf::Color::Black,
+                          .outlineThickness = 2.f,
+                          .radius           = ballRadius - 3.f}};
 
     // Open the text font
     const auto font = sf::Font::openFromFile(graphicsContext, resourcesDir() / "tuffy.ttf").value();

@@ -19,7 +19,7 @@ TEST_CASE("[Graphics] sf::CircleShape")
 
     SECTION("Default constructor")
     {
-        const sf::CircleShape circle;
+        const sf::CircleShape circle{{.radius = 0.f}};
         CHECK(circle.getRadius() == 0.f);
         CHECK(circle.getPointCount() == 30);
         for (sf::base::SizeT i = 0; i < circle.getPointCount(); ++i)
@@ -29,7 +29,7 @@ TEST_CASE("[Graphics] sf::CircleShape")
 
     SECTION("Radius constructor")
     {
-        const sf::CircleShape circle(15.f);
+        const sf::CircleShape circle{{.radius = 15.f}};
         CHECK(circle.getRadius() == 15.f);
         CHECK(circle.getPointCount() == 30);
         CHECK(circle.getPoint(0) == Approx(sf::Vector2f{15, 0}));
@@ -67,7 +67,7 @@ TEST_CASE("[Graphics] sf::CircleShape")
 
     SECTION("Radius and point count constructor")
     {
-        const sf::CircleShape circle(5.f, 8);
+        const sf::CircleShape circle{{.radius = 5.f, .pointCount = 8}};
         CHECK(circle.getRadius() == 5.f);
         CHECK(circle.getPointCount() == 8);
         CHECK(circle.getPoint(0) == Approx(sf::Vector2f(5.000000000f, 0.000000000f)));
@@ -83,7 +83,7 @@ TEST_CASE("[Graphics] sf::CircleShape")
 
     SECTION("Set radius")
     {
-        sf::CircleShape circle(1.f, 6);
+        sf::CircleShape circle{{.radius = 1.f, .pointCount = 6}};
         circle.setRadius(10.f);
         CHECK(circle.getRadius() == 10.f);
         CHECK(circle.getPointCount() == 6);
@@ -98,7 +98,7 @@ TEST_CASE("[Graphics] sf::CircleShape")
 
     SECTION("Set point count")
     {
-        sf::CircleShape circle(4.f, 10);
+        sf::CircleShape circle{{.radius = 4.f, .pointCount = 10}};
         circle.setPointCount(4);
         CHECK(circle.getRadius() == 4.f);
         CHECK(circle.getPointCount() == 4);
@@ -111,7 +111,7 @@ TEST_CASE("[Graphics] sf::CircleShape")
 
     SECTION("Equilateral triangle")
     {
-        const sf::CircleShape triangle(2.f, 3);
+        sf::CircleShape triangle{{.radius = 2.f, .pointCount = 3}};
         CHECK(triangle.getRadius() == 2.f);
         CHECK(triangle.getPointCount() == 3);
         CHECK(triangle.getPoint(0) == Approx(sf::Vector2f(1.999999881f, 0.000000000f)));
@@ -124,12 +124,12 @@ TEST_CASE("[Graphics] sf::CircleShape")
     {
         SECTION("2 points")
         {
-            CHECK(sf::CircleShape(2.f, 2).getGeometricCenter() == sf::Vector2f(2.f, 2.f));
+            CHECK(sf::CircleShape{{.radius = 2.f, .pointCount = 2}}.getGeometricCenter() == sf::Vector2f(2.f, 2.f));
         }
 
         SECTION("3 points")
         {
-            CHECK(sf::CircleShape(4.f, 3).getGeometricCenter() == sf::Vector2f(4.f, 4.f));
+            CHECK(sf::CircleShape{{.radius = 4.f, .pointCount = 3}}.getGeometricCenter() == sf::Vector2f(4.f, 4.f));
         }
     }
 }

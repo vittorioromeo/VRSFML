@@ -9,7 +9,7 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-RectangleShape::RectangleShape(Vector2f size)
+RectangleShape::RectangleShape(const Shape::Settings& settings, Vector2f size) : Shape(settings)
 {
     setSize(size);
 }

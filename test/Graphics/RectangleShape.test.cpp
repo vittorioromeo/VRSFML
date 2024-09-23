@@ -19,7 +19,7 @@ TEST_CASE("[Graphics] sf::RectangleShape")
 
     SECTION("Default constructor")
     {
-        const sf::RectangleShape rectangle;
+        const sf::RectangleShape rectangle{{}};
         CHECK(rectangle.getSize() == sf::Vector2f{0, 0});
         CHECK(rectangle.getPointCount() == 4);
         CHECK(rectangle.getPoint(0) == sf::Vector2f{0, 0});
@@ -31,7 +31,7 @@ TEST_CASE("[Graphics] sf::RectangleShape")
 
     SECTION("Size constructor")
     {
-        const sf::RectangleShape rectangle({9, 8});
+        const sf::RectangleShape rectangle({}, {9, 8});
         CHECK(rectangle.getSize() == sf::Vector2f{9, 8});
         CHECK(rectangle.getPointCount() == 4);
         CHECK(rectangle.getPoint(0) == sf::Vector2f{0, 0});
@@ -43,7 +43,7 @@ TEST_CASE("[Graphics] sf::RectangleShape")
 
     SECTION("Set size")
     {
-        sf::RectangleShape rectangle({7, 6});
+        sf::RectangleShape rectangle({}, {7, 6});
         rectangle.setSize({5, 4});
         CHECK(rectangle.getSize() == sf::Vector2f{5, 4});
         CHECK(rectangle.getGeometricCenter() == sf::Vector2f(5.f, 4.f) / 2.f);

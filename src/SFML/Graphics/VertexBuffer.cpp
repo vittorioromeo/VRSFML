@@ -14,7 +14,6 @@
 
 #include "SFML/System/Err.hpp"
 
-#include "SFML/Base/Builtins/Memcpy.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 #include <utility>
