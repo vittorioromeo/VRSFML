@@ -775,7 +775,7 @@ const RenderStates& RenderTarget::getDefaultRenderStates()
 void RenderTarget::initialize()
 {
     // Setup the default and current views
-    m_impl->defaultView = View(FloatRect({0, 0}, getSize().toVector2f()));
+    m_impl->defaultView = View::fromRect({{0, 0}, getSize().toVector2f()});
     m_impl->view        = m_impl->defaultView;
 
     // Set GL states only on first draw, so that we don't pollute user's states

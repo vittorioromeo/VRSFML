@@ -87,14 +87,15 @@ m_cacheId(TextureImpl::getUniqueId())
 Texture::~Texture()
 {
     // Destroy the OpenGL texture
-    if (m_texture)
-    {
-        SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
+    if (!m_texture)
+        return;
 
-        const GLuint texture = m_texture;
-        glCheck(glDeleteTextures(1, &texture));
-    }
+    SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
+
+    const GLuint texture = m_texture;
+    glCheck(glDeleteTextures(1, &texture));
 }
+
 
 ////////////////////////////////////////////////////////////
 Texture::Texture(Texture&& right) noexcept :
@@ -110,6 +111,7 @@ m_hasMipmap(base::exchange(right.m_hasMipmap, false)),
 m_cacheId(base::exchange(right.m_cacheId, 0u))
 {
 }
+
 
 ////////////////////////////////////////////////////////////
 Texture& Texture::operator=(Texture&& right) noexcept

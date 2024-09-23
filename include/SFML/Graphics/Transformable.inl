@@ -12,13 +12,6 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-constexpr void Transformable::rotate(Angle angle)
-{
-    rotation += angle;
-}
-
-
-////////////////////////////////////////////////////////////
 constexpr void Transformable::scaleBy(Vector2f factor)
 {
     scale.x *= factor.x;

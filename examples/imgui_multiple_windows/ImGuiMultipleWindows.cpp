@@ -56,8 +56,7 @@ int main()
         ImGui::ShowDemoWindow();
 
         // Main window drawing
-        sf::CircleShape shape(100.f);
-        shape.setFillColor(sf::Color::Green);
+        const sf::CircleShape shape{{.fillColor = sf::Color::Green, .radius = 100.f}};
 
         window.clear();
         window.draw(shape, /* texture */ nullptr);
@@ -85,8 +84,7 @@ int main()
             ImGui::Button("Example button");
             ImGui::End();
 
-            sf::CircleShape shape2(50.f);
-            shape2.setFillColor(sf::Color::Red);
+            const sf::CircleShape shape2{{.fillColor = sf::Color::Red, .radius = 50.f}};
 
             childWindowRef.clear();
             childWindowRef.draw(shape2, /* texture */ nullptr);

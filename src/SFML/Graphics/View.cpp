@@ -9,35 +9,9 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-View::View(const FloatRect& rectangle) : center(rectangle.getCenter()), size(rectangle.size)
+View View::fromRect(const FloatRect& rectangle)
 {
-}
-
-
-////////////////////////////////////////////////////////////
-View::View(Vector2f theCenter, Vector2f theSize) : center(theCenter), size(theSize)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-void View::move(Vector2f offset)
-{
-    center += offset;
-}
-
-
-////////////////////////////////////////////////////////////
-void View::rotate(Angle angle)
-{
-    rotation += angle;
-}
-
-
-////////////////////////////////////////////////////////////
-void View::zoom(float factor)
-{
-    size *= factor;
+    return {.center = rectangle.getCenter(), .size = rectangle.size};
 }
 
 

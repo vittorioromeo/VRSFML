@@ -28,7 +28,7 @@ public:
     /// \param pointCount Number of points of the polygon
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit ConvexShape(base::SizeT pointCount = 0);
+    [[nodiscard]] explicit ConvexShape(const Shape::Settings& settings, base::SizeT pointCount = 0);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor

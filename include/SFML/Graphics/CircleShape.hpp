@@ -24,13 +24,47 @@ class SFML_GRAPHICS_API CircleShape : public Shape
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// \param radius     Radius of the circle
-    /// \param pointCount Number of points composing the circle
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit CircleShape(float radius = 0, base::SizeT pointCount = 30);
+    struct Settings
+    {
+        Vector2f position{};      //!< Position of the object in the 2D world
+        Vector2f scale{1.f, 1.f}; //!< Scale of the object
+        Vector2f origin{};        //!< Origin of translation/rotation/scaling of the object
+        // NOLINTNEXTLINE(readability-redundant-member-init)
+        Angle       rotation{};                 //!< Orientation of the object
+        FloatRect   textureRect{};              //!< Area of the source texture to display for the fill
+        FloatRect   outlineTextureRect{};       //!< Area of the source texture to display for the outline
+        Color       fillColor{Color::White};    //!< Fill color
+        Color       outlineColor{Color::White}; //!< Outline color
+        float       outlineThickness{0.f};      //!< Thickness of the shape's outline
+        float       radius{0.f};                //!< Radius of the circle
+        base::SizeT pointCount{30u};            //!< Number of points composing the circle
+
+        [[nodiscard]] Shape::Settings toShapeSettings() const
+        {
+            return {
+                .position           = position,
+                .scale              = scale,
+                .origin             = origin,
+                .rotation           = rotation,
+                .textureRect        = textureRect,
+                .outlineTextureRect = outlineTextureRect,
+                .fillColor          = fillColor,
+                .outlineColor       = outlineColor,
+                .outlineThickness   = outlineThickness,
+            };
+        }
+    };
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Default constructor
+    ///
+    /// \param settings Settings of the circle
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] explicit CircleShape(const Settings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -156,8 +190,7 @@ private:
 ///
 /// Usage example:
 /// \code
-/// sf::CircleShape circle;
-/// circle.setRadius(150);
+/// sf::CircleShape circle(150.f);
 /// circle.setOutlineColor(sf::Color::Red);
 /// circle.setOutlineThickness(5);
 /// circle.position = {10, 20};

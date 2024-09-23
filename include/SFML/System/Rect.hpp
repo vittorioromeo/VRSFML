@@ -76,8 +76,8 @@ public:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2<T> position{}; //!< Position of the top-left corner of the rectangle
-    Vector2<T> size{};     //!< Size of the rectangle
+    Vector2<T> position; //!< Position of the top-left corner of the rectangle
+    Vector2<T> size;     //!< Size of the rectangle
 };
 
 // Create type aliases for the most common types

@@ -86,13 +86,14 @@ int main()
     sf::Text text5(font1, "sussy", 64);
     text5.position = {128u, 256u};
 
-    sf::CircleShape circle0{45.f};
-    circle0.position = {350.f, 350.f};
-    circle0.setFillColor(sf::Color::Red);
-    circle0.setOutlineColor(sf::Color::Yellow);
-    circle0.setOutlineThickness(8.f);
-    circle0.setTextureRect({.position = whiteDotAtlasPos.toVector2f(), .size{1.f, 1.f}});
-    circle0.setOutlineTextureRect({.position = whiteDotAtlasPos.toVector2f(), .size{1.f, 1.f}});
+    sf::CircleShape circle0{
+        {.position           = {350.f, 350.f},
+         .textureRect        = {.position = whiteDotAtlasPos.toVector2f(), .size{1.f, 1.f}},
+         .outlineTextureRect = {.position = whiteDotAtlasPos.toVector2f(), .size{1.f, 1.f}},
+         .fillColor          = sf::Color::Red,
+         .outlineColor       = sf::Color::Yellow,
+         .outlineThickness   = 8.f,
+         .radius             = 45.f}};
 
     // Create drawable batch to optimize rendering
     sf::DrawableBatch drawableBatch;

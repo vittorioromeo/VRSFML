@@ -9,6 +9,7 @@
 #include "SFML/Graphics/Transformable.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
+#include "SFML/System/Angle.hpp"
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vector2.hpp"
 
@@ -38,10 +39,28 @@ class SFML_GRAPHICS_API Shape : public Transformable
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    Shape() = default;
+    struct Settings
+    {
+        Vector2f position{};      //!< Position of the object in the 2D world
+        Vector2f scale{1.f, 1.f}; //!< Scale of the object
+        Vector2f origin{};        //!< Origin of translation/rotation/scaling of the object
+        // NOLINTNEXTLINE(readability-redundant-member-init)
+        Angle     rotation{};                 //!< Orientation of the object
+        FloatRect textureRect{};              //!< Area of the source texture to display for the fill
+        FloatRect outlineTextureRect{};       //!< Area of the source texture to display for the outline
+        Color     fillColor{Color::White};    //!< Fill color
+        Color     outlineColor{Color::White}; //!< Outline color
+        float     outlineThickness{};         //!< Thickness of the shape's outline
+    };
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    explicit Shape(const Settings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -266,7 +285,7 @@ private:
     /// \brief Update the fill vertices' color
     ///
     ////////////////////////////////////////////////////////////
-    void updateFillColors(base::TrivialVector<Vertex>& vertices);
+    void updateFillColors(base::TrivialVector<Vertex>& vertices) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the fill vertices' texture coordinates
@@ -290,20 +309,20 @@ private:
     /// \brief Update the outline vertices' color
     ///
     ////////////////////////////////////////////////////////////
-    void updateOutlineColors(base::TrivialVector<Vertex>& outlineVertices);
+    void updateOutlineColors(base::TrivialVector<Vertex>& outlineVertices) const;
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    FloatRect m_textureRect;        //!< Rectangle defining the area of the source texture to display for the fill
-    FloatRect m_outlineTextureRect; //!< Rectangle defining the area of the source texture to display for the outline
-    Color     m_fillColor{Color::White};           //!< Fill color
-    Color     m_outlineColor{Color::White};        //!< Outline color
-    float     m_outlineThickness{};                //!< Thickness of the shape's outline
-    base::TrivialVector<Vertex> m_vertices;        //!< Vertex array containing the fill geometry
-    base::TrivialVector<Vertex> m_outlineVertices; //!< Vertex array containing the outline geometry
-    FloatRect                   m_insideBounds;    //!< Bounding rectangle of the inside (fill)
-    FloatRect                   m_bounds;          //!< Bounding rectangle of the whole shape (outline + fill)
+    FloatRect                   m_textureRect{};              //!< Area of the source texture to display for the fill
+    FloatRect                   m_outlineTextureRect{};       //!< Area of the source texture to display for the outline
+    Color                       m_fillColor{Color::White};    //!< Fill color
+    Color                       m_outlineColor{Color::White}; //!< Outline color
+    float                       m_outlineThickness{};         //!< Thickness of the shape's outline
+    base::TrivialVector<Vertex> m_vertices;                   //!< Vertex array containing the fill geometry
+    base::TrivialVector<Vertex> m_outlineVertices;            //!< Vertex array containing the outline geometry
+    FloatRect                   m_insideBounds;               //!< Bounding rectangle of the inside (fill)
+    FloatRect                   m_bounds; //!< Bounding rectangle of the whole shape (outline + fill)
 };
 
 } // namespace sf

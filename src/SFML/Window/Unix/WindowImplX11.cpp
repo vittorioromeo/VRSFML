@@ -1902,7 +1902,7 @@ bool WindowImplX11::processEvent(XEvent& windowEvent)
                 event.position = {windowEvent.xbutton.x, windowEvent.xbutton.y};
 
                 // clang-format off
-                switch(button)
+                switch (button)
                 {
                     case Button1: event.button = Mouse::Button::Left;     break;
                     case Button2: event.button = Mouse::Button::Middle;   break;

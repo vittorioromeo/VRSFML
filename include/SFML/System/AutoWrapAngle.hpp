@@ -26,7 +26,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] constexpr explicit AutoWrapAngle(Angle angle) :
+    [[nodiscard, gnu::always_inline, gnu::flatten]] constexpr explicit(false) AutoWrapAngle(Angle angle) :
     m_radians(angle.m_radians)
     {
     }

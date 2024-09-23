@@ -97,7 +97,7 @@ TEST_CASE("[Graphics] sf::RenderTarget")
     SECTION("mapPixelToCoords(Vector2i)")
     {
         sf::View view;
-        view.move({5, 5});
+        view.center += {5, 5};
         view.viewport = sf::FloatRect({0, 0}, {.5f, 1});
         RenderTarget renderTarget(graphicsContext);
         renderTarget.setView(view);
@@ -115,7 +115,7 @@ TEST_CASE("[Graphics] sf::RenderTarget")
     SECTION("mapPixelToCoords(Vector2i, const View&)")
     {
         sf::View view;
-        view.move({5, 5});
+        view.center += {5, 5};
         view.viewport = sf::FloatRect({.5f, .5f}, {.5f, 1});
         const RenderTarget renderTarget(graphicsContext);
         const auto [x1, y1] = renderTarget.mapPixelToCoords({0, 0}, view);
@@ -129,7 +129,7 @@ TEST_CASE("[Graphics] sf::RenderTarget")
     SECTION("mapCoordsToPixel(Vector2f)")
     {
         sf::View view;
-        view.move({5, 5});
+        view.center += {5, 5};
         view.viewport = sf::FloatRect({.25f, 0}, {1, 1});
         RenderTarget renderTarget(graphicsContext);
         renderTarget.setView(view);
@@ -141,7 +141,7 @@ TEST_CASE("[Graphics] sf::RenderTarget")
     SECTION("mapCoordsToPixel(Vector2f, const View&)")
     {
         sf::View view;
-        view.move({5, 5});
+        view.center += {5, 5};
         view.viewport = sf::FloatRect({0, 0}, {.5, .25f});
         RenderTarget renderTarget(graphicsContext);
         renderTarget.setView(view);

@@ -13,7 +13,6 @@
 #include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/Window.hpp"
 #include "SFML/Window/WindowContext.hpp"
-#include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/String.hpp"
@@ -29,7 +28,7 @@ int main()
     [[maybe_unused]] const sf::Color     color;
     [[maybe_unused]] const sf::IntRect   rect;
     // [[maybe_unused]] const sf::RenderWindow   renderWindow;
-    [[maybe_unused]] const sf::RectangleShape rectangleShape;
+    [[maybe_unused]] const sf::RectangleShape rectangleShape{{}};
     [[maybe_unused]] const sf::Vertex         vertex;
 
     // Network

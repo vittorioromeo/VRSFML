@@ -26,9 +26,9 @@ sf::Vector2f computeCirclePoint(sf::base::SizeT index, sf::base::SizeT pointCoun
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-CircleShape::CircleShape(float radius, base::SizeT pointCount) : m_radius{radius}
+CircleShape::CircleShape(const Settings& settings) : Shape(settings.toShapeSettings()), m_radius{settings.radius}
 {
-    update(radius, pointCount);
+    update(m_radius, settings.pointCount);
 }
 
 

@@ -112,7 +112,7 @@ TEST_CASE("[Graphics] sf::Transformable")
         CHECK(lhsMatrix[15] == Approx(rhsMatrix[15]));
     }
 
-    SECTION("move()")
+    SECTION("Movement")
     {
         sf::Transformable transformable;
         CHECK(transformable.position == sf::Vector2f{0, 0});
@@ -122,23 +122,23 @@ TEST_CASE("[Graphics] sf::Transformable")
         CHECK(transformable.position == sf::Vector2f(-6, 12));
     }
 
-    SECTION("rotate()")
+    SECTION("Rotation")
     {
         sf::Transformable transformable;
         CHECK(transformable.rotation == sf::Angle::Zero);
-        transformable.rotate(sf::degrees(15));
+        transformable.rotation += sf::degrees(15);
         CHECK(transformable.rotation == Approx(sf::degrees(15)));
-        transformable.rotate(sf::degrees(360));
+        transformable.rotation += sf::degrees(360);
         CHECK(transformable.rotation == Approx(sf::degrees(15)));
-        transformable.rotate(sf::degrees(-25));
+        transformable.rotation += sf::degrees(-25);
         CHECK(transformable.rotation == Approx(sf::degrees(350)));
-        transformable.rotate(sf::degrees(-720));
+        transformable.rotation += sf::degrees(-720);
         CHECK(transformable.rotation == Approx(sf::degrees(350)));
-        transformable.rotate(sf::degrees(-370));
+        transformable.rotation += sf::degrees(-370);
         CHECK(transformable.rotation == Approx(sf::degrees(340)));
     }
 
-    SECTION("scale()")
+    SECTION("scaleBy()")
     {
         sf::Transformable transformable;
         CHECK(transformable.scale == sf::Vector2f{1, 1});

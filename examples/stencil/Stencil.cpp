@@ -5,10 +5,13 @@
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/Transformable.hpp"
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
 #include "SFML/Window/WindowSettings.hpp"
+
+#include "SFML/System/Angle.hpp"
 
 #include <cstdlib>
 
@@ -30,20 +33,14 @@ int main()
                              .vsync     = true,
                              .contextSettings{.depthBits = 0, .stencilBits = 8}});
 
-    sf::RectangleShape red({500, 50});
-    red.setFillColor(sf::Color::Red);
-    red.position = {270, 70};
-    red.rotation = sf::degrees(60);
+    const sf::RectangleShape red({.position{270.f, 70.f}, .rotation = sf::degrees(60.f), .fillColor = sf::Color::Red},
+                                 /* size */ {500, 50});
 
-    sf::RectangleShape green({500, 50});
-    green.setFillColor(sf::Color::Green);
-    green.position = {370, 100};
-    green.rotation = sf::degrees(120);
+    const sf::RectangleShape green({.position{370.f, 100.f}, .rotation = sf::degrees(120.f), .fillColor = sf::Color::Green},
+                                   /* size */ {500, 50});
 
-    sf::RectangleShape blue({500, 50});
-    blue.setFillColor(sf::Color::Blue);
-    blue.position = {550, 470};
-    blue.rotation = sf::degrees(180);
+    const sf::RectangleShape blue({.position{550.f, 470.f}, .rotation = sf::degrees(180.f), .fillColor = sf::Color::Blue},
+                                  /* size */ {500, 50});
 
     while (true)
     {

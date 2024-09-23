@@ -26,7 +26,7 @@ public:
     /// \param size Size of the rectangle
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit RectangleShape(Vector2f size = {});
+    [[nodiscard]] explicit RectangleShape(const Shape::Settings& settings, Vector2f size = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the size of the rectangle

@@ -1,6 +1,7 @@
 #include "SFML/ImGui/ImGui.hpp"
 
 #include "SFML/Graphics/CircleShape.hpp"
+#include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 
@@ -24,8 +25,7 @@ int main()
     if (!imGuiContext.init(window))
         return -1;
 
-    sf::CircleShape shape(100.f);
-    shape.setFillColor(sf::Color::Green);
+    const sf::CircleShape shape{{.fillColor = sf::Color::Green, .radius = 100.f}};
 
     sf::Clock deltaClock;
 

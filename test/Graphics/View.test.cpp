@@ -18,7 +18,7 @@ TEST_CASE("[Graphics] sf::View")
 
         STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::View));
         STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::View));
-        STATIC_CHECK(!SFML_BASE_IS_AGGREGATE(sf::View));
+        STATIC_CHECK(SFML_BASE_IS_AGGREGATE(sf::View));
         STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::View));
         STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::View));
         STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::View, sf::View));
@@ -38,9 +38,9 @@ TEST_CASE("[Graphics] sf::View")
             CHECK(view.getInverseTransform() == Approx(sf::Transform(500, 0, 500, 0, -500, 500)));
         }
 
-        SECTION("Rectangle constructor")
+        SECTION("Rectangle factory function")
         {
-            const sf::View view(sf::FloatRect({10, 20}, {400, 600}));
+            const auto view = sf::View::fromRect({{10, 20}, {400, 600}});
             CHECK(view.center == sf::Vector2f{210, 320});
             CHECK(view.size == sf::Vector2f{400, 600});
             CHECK(view.rotation == sf::Angle::Zero);
@@ -114,21 +114,11 @@ TEST_CASE("[Graphics] sf::View")
         CHECK(view.viewport == sf::FloatRect({0, 0}, {1, 1}));
     }
 
-    SECTION("move()")
-    {
-        sf::View view;
-        view.center = {25, 25};
-        view.move({15, 25});
-        CHECK(view.center == sf::Vector2f(40, 50));
-        CHECK(view.getTransform() == Approx(sf::Transform(0.002f, 0, -0.08f, 0, -0.002f, 0.1f)));
-        CHECK(view.getInverseTransform() == Approx(sf::Transform(500, 0, 40, 0, -500, 50)));
-    }
-
     SECTION("rotate()")
     {
         sf::View view;
         view.rotation = sf::degrees(45);
-        view.rotate(sf::degrees(-15));
+        view.rotation += sf::degrees(-15);
         CHECK(view.rotation == Approx(sf::degrees(30)));
         CHECK(view.getTransform() ==
               Approx(sf::Transform(0.00173205f, 0.001f, -1.36603f, 0.001f, -0.00173205f, 0.366025f)));
@@ -139,7 +129,7 @@ TEST_CASE("[Graphics] sf::View")
     {
         sf::View view;
         view.size = {25, 25};
-        view.zoom(4);
+        view.size *= 4.f;
         CHECK(view.size == sf::Vector2f(100, 100));
         CHECK(view.getTransform() == Approx(sf::Transform(0.02f, 0, -10, 0, -0.02f, 10)));
         CHECK(view.getInverseTransform() == Approx(sf::Transform(50, 0, 500, 0, -50, 500)));
