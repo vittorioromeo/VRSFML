@@ -362,7 +362,7 @@ struct RenderTarget::Impl
 
         if (mappedPtr != nullptr)
         {
-            [[maybe_unused]] const bool rc = glCheckExpr(glUnmapBuffer(type));
+            [[maybe_unused]] const bool rc = glCheck(glUnmapBuffer(type));
             SFML_BASE_ASSERT(rc);
             mappedPtr = nullptr;
         }
@@ -633,9 +633,9 @@ void RenderTarget::drawIndexedVertices(
     glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexByteCount, indices, GL_STREAM_DRAW));
 #endif
 
-    setupVertexAttribPointers(m_impl->cache.sfAttribPositionIdx,
-                              m_impl->cache.sfAttribColorIdx,
-                              m_impl->cache.sfAttribTexCoordIdx);
+    setupVertexAttribPointers(m_impl->cache.sfAttribIdxPosition,
+                              m_impl->cache.sfAttribIdxColor,
+                              m_impl->cache.sfAttribIdxTexCoord);
 
     drawIndexedPrimitives(type, indexCount);
     cleanupDraw(states);
