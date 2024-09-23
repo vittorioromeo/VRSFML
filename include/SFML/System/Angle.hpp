@@ -2,6 +2,15 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+namespace sf
+{
+class AutoWrapAngle;
+} // namespace sf
+
+
 namespace sf
 {
 ////////////////////////////////////////////////////////////
@@ -27,7 +36,7 @@ public:
     /// \see `asRadians`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr float asDegrees() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float asDegrees() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the angle's value in radians
@@ -37,7 +46,7 @@ public:
     /// \see `asDegrees`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr float asRadians() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float asRadians() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Wrap to a range such that -180° <= angle < 180°
@@ -70,7 +79,7 @@ public:
     /// \see `wrapUnsigned`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle wrapSigned() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle wrapSigned() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Wrap to a range such that 0° <= angle < 360°
@@ -103,17 +112,51 @@ public:
     /// \see `wrapSigned`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle wrapUnsigned() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle wrapUnsigned() const;
 
     ////////////////////////////////////////////////////////////
     // Static member data
     ////////////////////////////////////////////////////////////
     // NOLINTNEXTLINE(readability-identifier-naming)
     static const Angle Zero; //!< Predefined 0 degree angle value
+    // NOLINTNEXTLINE(readability-identifier-naming)
+    static const Angle Quarter; //!< Predefined 90 degree angle value
+    // NOLINTNEXTLINE(readability-identifier-naming)
+    static const Angle Half; //!< Predefined 180 degree angle value
+    // NOLINTNEXTLINE(readability-identifier-naming)
+    static const Angle Full; //!< Predefined 360 degree angle value
 
 private:
+    friend AutoWrapAngle;
+
     friend constexpr Angle degrees(float angle);
     friend constexpr Angle radians(float angle);
+
+    friend constexpr bool operator==(Angle lhs, Angle rhs);
+    friend constexpr bool operator!=(Angle lhs, Angle rhs);
+    friend constexpr bool operator<(Angle lhs, Angle rhs);
+    friend constexpr bool operator>(Angle lhs, Angle rhs);
+    friend constexpr bool operator<=(Angle lhs, Angle rhs);
+    friend constexpr bool operator>=(Angle lhs, Angle rhs);
+
+    friend constexpr Angle operator-(Angle rhs);
+
+    friend constexpr Angle  operator+(Angle lhs, Angle rhs);
+    friend constexpr Angle& operator+=(Angle& lhs, Angle rhs);
+
+    friend constexpr Angle  operator-(Angle lhs, Angle rhs);
+    friend constexpr Angle& operator-=(Angle& lhs, Angle rhs);
+
+    friend constexpr Angle  operator*(Angle lhs, float rhs);
+    friend constexpr Angle  operator*(float lhs, Angle rhs);
+    friend constexpr Angle& operator*=(Angle& lhs, float rhs);
+
+    friend constexpr Angle  operator/(Angle lhs, float rhs);
+    friend constexpr Angle& operator/=(Angle& lhs, float rhs);
+    friend constexpr float  operator/(Angle lhs, Angle rhs);
+
+    friend constexpr Angle  operator%(Angle lhs, Angle rhs);
+    friend constexpr Angle& operator%=(Angle& lhs, Angle rhs);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from a number of radians
@@ -129,7 +172,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    float m_radians{}; //!< Angle value stored as radians
+    float m_radians{0.f}; //!< Angle value stored as radians
 };
 
 ////////////////////////////////////////////////////////////
@@ -142,7 +185,7 @@ private:
 /// \see `radians`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle degrees(float angle);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle degrees(float angle);
 
 ////////////////////////////////////////////////////////////
 /// \brief Construct an angle value from a number of radians
@@ -154,85 +197,85 @@ private:
 /// \see `degrees`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle radians(float angle);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle radians(float angle);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
 /// \brief Overload of `operator==` to compare two angle values
 /// \note Does not automatically wrap the angle value
 ///
-/// \param left  Left operand (an angle)
-/// \param right Right operand (an angle)
+/// \param lhs  Left operand (an angle)
+/// \param rhs Right operand (an angle)
 ///
 /// \return `true` if both angle values are equal
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr bool operator==(Angle left, Angle right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr bool operator==(Angle lhs, Angle rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
 /// \brief Overload of `operator!=` to compare two angle values
 /// \note Does not automatically wrap the angle value
 ///
-/// \param left  Left operand (an angle)
-/// \param right Right operand (an angle)
+/// \param lhs  Left operand (an angle)
+/// \param rhs Right operand (an angle)
 ///
 /// \return `true` if both angle values are different
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr bool operator!=(Angle left, Angle right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr bool operator!=(Angle lhs, Angle rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
 /// \brief Overload of `operator<` to compare two angle values
 /// \note Does not automatically wrap the angle value
 ///
-/// \param left  Left operand (an angle)
-/// \param right Right operand (an angle)
+/// \param lhs  Left operand (an angle)
+/// \param rhs Right operand (an angle)
 ///
-/// \return `true` if \a left is less than \a right
+/// \return `true` if \a lhs is less than \a rhs
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr bool operator<(Angle left, Angle right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr bool operator<(Angle lhs, Angle rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
 /// \brief Overload of `operator>` to compare two angle values
 /// \note Does not automatically wrap the angle value
 ///
-/// \param left  Left operand (an angle)
-/// \param right Right operand (an angle)
+/// \param lhs  Left operand (an angle)
+/// \param rhs Right operand (an angle)
 ///
-/// \return `true` if \a left is greater than \a right
+/// \return `true` if \a lhs is greater than \a rhs
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr bool operator>(Angle left, Angle right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr bool operator>(Angle lhs, Angle rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
 /// \brief Overload of `operator<=` to compare two angle values
 /// \note Does not automatically wrap the angle value
 ///
-/// \param left  Left operand (an angle)
-/// \param right Right operand (an angle)
+/// \param lhs  Left operand (an angle)
+/// \param rhs Right operand (an angle)
 ///
-/// \return `true` if \a left is less than or equal to \a right
+/// \return `true` if \a lhs is less than or equal to \a rhs
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr bool operator<=(Angle left, Angle right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr bool operator<=(Angle lhs, Angle rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
 /// \brief Overload of `operator>=` to compare two angle values
 /// \note Does not automatically wrap the angle value
 ///
-/// \param left  Left operand (an angle)
-/// \param right Right operand (an angle)
+/// \param lhs  Left operand (an angle)
+/// \param rhs Right operand (an angle)
 ///
-/// \return `true` if \a left is greater than or equal to \a right
+/// \return `true` if \a lhs is greater than or equal to \a rhs
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr bool operator>=(Angle left, Angle right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr bool operator>=(Angle lhs, Angle rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
@@ -240,132 +283,132 @@ private:
 ///
 /// Represents a rotation in the opposite direction.
 ///
-/// \param right Right operand (an angle)
+/// \param rhs Right operand (an angle)
 ///
 /// \return Negative of the angle value
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle operator-(Angle right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle operator-(Angle rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
 /// \brief Overload of binary `operator+` to add two angle values
 ///
-/// \param left  Left operand (an angle)
-/// \param right Right operand (an angle)
+/// \param lhs  Left operand (an angle)
+/// \param rhs Right operand (an angle)
 ///
 /// \return Sum of the two angle values
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle operator+(Angle left, Angle right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle operator+(Angle lhs, Angle rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
 /// \brief Overload of binary `operator+=` to add/assign two angle values
 ///
-/// \param left  Left operand (an angle)
-/// \param right Right operand (an angle)
+/// \param lhs  Left operand (an angle)
+/// \param rhs Right operand (an angle)
 ///
 /// \return Sum of the two angle values
 ///
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] constexpr Angle& operator+=(Angle& left, Angle right);
+[[gnu::always_inline, gnu::flatten]] constexpr Angle& operator+=(Angle& lhs, Angle rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
 /// \brief Overload of binary `operator-` to subtract two angle values
 ///
-/// \param left  Left operand (an angle)
-/// \param right Right operand (an angle)
+/// \param lhs  Left operand (an angle)
+/// \param rhs Right operand (an angle)
 ///
 /// \return Difference of the two angle values
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle operator-(Angle left, Angle right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle operator-(Angle lhs, Angle rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
 /// \brief Overload of binary `operator-=` to subtract/assign two angle values
 ///
-/// \param left  Left operand (an angle)
-/// \param right Right operand (an angle)
+/// \param lhs  Left operand (an angle)
+/// \param rhs Right operand (an angle)
 ///
 /// \return Difference of the two angle values
 ///
-////////////////////////////////////////////////////////////
-[[gnu::always_inline]] constexpr Angle& operator-=(Angle& left, Angle right);
+////////////////////////////////////////////////////////////ù
+[[gnu::always_inline, gnu::flatten]] constexpr Angle& operator-=(Angle& lhs, Angle rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
 /// \brief Overload of binary `operator*` to scale an angle value
 ///
-/// \param left  Left operand (an angle)
-/// \param right Right operand (a number)
+/// \param lhs  Left operand (an angle)
+/// \param rhs Right operand (a number)
 ///
-/// \return \a `left` multiplied by \a `right`
+/// \return \a `lhs` multiplied by \a `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle operator*(Angle left, float right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle operator*(Angle lhs, float rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
 /// \brief Overload of binary `operator*` to scale an angle value
 ///
-/// \param left  Left operand (a number)
-/// \param right Right operand (an angle)
+/// \param lhs  Left operand (a number)
+/// \param rhs Right operand (an angle)
 ///
-/// \return \a `left` multiplied by \a `right`
+/// \return \a `lhs` multiplied by \a `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle operator*(float left, Angle right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle operator*(float lhs, Angle rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
 /// \brief Overload of binary `operator*=` to scale/assign an angle value
 ///
-/// \param left  Left operand (an angle)
-/// \param right Right operand (a number)
+/// \param lhs  Left operand (an angle)
+/// \param rhs Right operand (a number)
 ///
-/// \return \a `left` multiplied by \a `right`
+/// \return \a `lhs` multiplied by \a `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] constexpr Angle& operator*=(Angle& left, float right);
+[[gnu::always_inline, gnu::flatten]] constexpr Angle& operator*=(Angle& lhs, float rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
 /// \brief Overload of binary `operator/` to scale an angle value
 ///
-/// \param left  Left operand (an angle)
-/// \param right Right operand (a number)
+/// \param lhs  Left operand (an angle)
+/// \param rhs Right operand (a number)
 ///
-/// \return \a `left` divided by \a `right`
+/// \return \a `lhs` divided by \a `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle operator/(Angle left, float right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle operator/(Angle lhs, float rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
 /// \brief Overload of binary `operator/=` to scale/assign an angle value
 ///
-/// \param left  Left operand (an angle)
-/// \param right Right operand (a number)
+/// \param lhs  Left operand (an angle)
+/// \param rhs Right operand (a number)
 ///
-/// \return \a `left` divided by \a `right`
+/// \return \a `lhs` divided by \a `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] constexpr Angle& operator/=(Angle& left, float right);
+[[gnu::always_inline, gnu::flatten]] constexpr Angle& operator/=(Angle& lhs, float rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
 /// \brief Overload of binary `operator/` to compute the ratio of two angle values
 ///
-/// \param left  Left operand (an angle)
-/// \param right Right operand (an angle)
+/// \param lhs  Left operand (an angle)
+/// \param rhs Right operand (an angle)
 ///
-/// \return \a `left` divided by \a `right`
+/// \return \a `lhs` divided by \a `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr float operator/(Angle left, Angle right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float operator/(Angle lhs, Angle rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
@@ -379,25 +422,25 @@ private:
 /// sf::degrees(-90) % sf::degrees(40) // 30 degrees (not -10)
 /// \endcode
 ///
-/// \param left  Left operand (an angle)
-/// \param right Right operand (an angle)
+/// \param lhs  Left operand (an angle)
+/// \param rhs Right operand (an angle)
 ///
-/// \return \a `left` modulo \a `right`
+/// \return \a `lhs` modulo \a `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle operator%(Angle left, Angle right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle operator%(Angle lhs, Angle rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
 /// \brief Overload of binary `operator%=` to compute/assign remainder of an angle value
 ///
-/// \param left  Left operand (an angle)
-/// \param right Right operand (an angle)
+/// \param lhs  Left operand (an angle)
+/// \param rhs Right operand (an angle)
 ///
-/// \return \a `left` modulo \a `right`
+/// \return \a `lhs` modulo \a `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] constexpr Angle& operator%=(Angle& left, Angle right);
+[[gnu::always_inline, gnu::flatten]] constexpr Angle& operator%=(Angle& lhs, Angle rhs);
 
 namespace Literals
 {
@@ -411,7 +454,7 @@ namespace Literals
 /// \return Angle
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle operator""_deg(long double angle);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle operator""_deg(long double angle);
 
 ////////////////////////////////////////////////////////////
 /// \relates `sf::Angle`
@@ -422,7 +465,7 @@ namespace Literals
 /// \return Angle
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle operator""_deg(unsigned long long int angle);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle operator""_deg(unsigned long long int angle);
 
 ////////////////////////////////////////////////////////////
 /// \relates `sf::Angle`
@@ -433,7 +476,7 @@ namespace Literals
 /// \return Angle
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle operator""_rad(long double angle);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle operator""_rad(long double angle);
 
 ////////////////////////////////////////////////////////////
 /// \relates `sf::Angle`
@@ -444,7 +487,7 @@ namespace Literals
 /// \return Angle
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Angle operator""_rad(unsigned long long int angle);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle operator""_rad(unsigned long long int angle);
 
 } // namespace Literals
 } // namespace sf

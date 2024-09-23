@@ -21,12 +21,24 @@ class SFML_GRAPHICS_API RectangleShape : public Shape
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// \param size Size of the rectangle
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit RectangleShape(Vector2f size = {});
+    struct [[nodiscard]] Settings
+    {
+        SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
+        SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;
+
+        Vector2f size{}; //!< Size of the rectangle
+    };
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Default constructor
+    ///
+    /// \param settings Settings of the rectangle
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] explicit RectangleShape(const Settings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the size of the rectangle
@@ -109,7 +121,7 @@ private:
 /// rectangle.setSize(sf::Vector2f{100, 50});
 /// rectangle.setOutlineColor(sf::Color::Red);
 /// rectangle.setOutlineThickness(5);
-/// rectangle.setPosition({10, 20});
+/// rectangle.position = {10, 20};
 /// ...
 /// window.draw(rectangle);
 /// \endcode

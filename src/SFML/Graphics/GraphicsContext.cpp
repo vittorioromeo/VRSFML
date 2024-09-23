@@ -72,7 +72,7 @@ void main()
 [[nodiscard]] sf::Shader createBuiltInShader(sf::GraphicsContext& graphicsContext, const char* vertexSrc, const char* fragmentSrc)
 {
     sf::Shader shader = sf::Shader::loadFromMemory(graphicsContext, vertexSrc, fragmentSrc).value();
-    SFML_BASE_ASSERT(glCheckExpr(glIsProgram(shader.getNativeHandle())));
+    SFML_BASE_ASSERT(glCheck(glIsProgram(shader.getNativeHandle())));
 
     if (const sf::base::Optional ulTexture = shader.getUniformLocation("sf_u_texture"))
         shader.setUniform(*ulTexture, sf::Shader::CurrentTexture);

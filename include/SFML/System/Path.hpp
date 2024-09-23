@@ -22,7 +22,6 @@ public:
 #else
     using value_type = wchar_t;
 #endif
-    // using string_type = std::basic_string<value_type>;
 
     [[nodiscard]] static Path tempDirectoryPath();
 
@@ -33,11 +32,6 @@ public:
 
     template <typename T>
     [[nodiscard]] Path(const T* source);
-
-    // [[nodiscard]] Path(const value_type* str);
-    // [[nodiscard]] Path(const string_type& str);
-    // [[nodiscard]] Path(const char* str);
-    // [[nodiscard]] Path(const std::string& str);
 
     ~Path();
 
@@ -53,9 +47,6 @@ public:
 
     [[nodiscard]] const value_type* c_str() const;     // TODO P1: support other platforms
     [[nodiscard]] const char*       toCharPtr() const; // TODO P1: support other platforms
-    // [[nodiscard]] std::string       string() const;
-
-    // [[nodiscard]] operator std::string() const;
 
     template <typename T>
     T to() const;

@@ -6,8 +6,6 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/EnumClassBitwiseOps.hpp"
 
-#include <cstdint>
-
 
 namespace sf
 {
@@ -16,7 +14,7 @@ namespace sf
 /// \brief Enumeration of the window styles
 ///
 ////////////////////////////////////////////////////////////
-enum class [[nodiscard]] Style : std::uint32_t
+enum class [[nodiscard]] Style : unsigned int
 {
     None     = 0,      //!< No border / title bar (this flag and all others are mutually exclusive)
     Titlebar = 1 << 0, //!< Title bar + fixed border

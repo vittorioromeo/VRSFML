@@ -9,7 +9,6 @@
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Path.hpp"
 #include "SFML/System/String.hpp"
@@ -30,21 +29,15 @@ int main()
     sf::GraphicsContext graphicsContext;
 
     // Create the main window
-    sf::RenderWindow window(graphicsContext, {.size{800u, 600u}, .title = "SFML Raw Mouse Input", .resizable = false});
-
-    window.setVerticalSyncEnabled(true);
+    sf::RenderWindow window(graphicsContext,
+                            {.size{800u, 600u}, .title = "SFML Raw Mouse Input", .resizable = false, .vsync = true});
 
     // Open the application font and pass it to the Effect class
     const auto font = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf").value();
 
-    // Create the mouse position text
-    sf::Text mousePosition(font, "", 20);
-    mousePosition.setPosition({400.f, 300.f});
-    mousePosition.setFillColor(sf::Color::White);
-
-    // Create the mouse raw movement text
-    sf::Text mouseRawMovement(font, "", 20);
-    mouseRawMovement.setFillColor(sf::Color::White);
+    // Create the mouse position and mouse raw movement texts
+    sf::Text mousePosition(font, {.position = {400.f, 300.f}, .characterSize = 20u, .fillColor = sf::Color::White});
+    sf::Text mouseRawMovement(font, {.characterSize = 20u, .fillColor = sf::Color::White});
 
     std::vector<std::string> log;
 
@@ -73,9 +66,9 @@ int main()
         window.clear();
         window.draw(mousePosition);
 
-        for (std::size_t i = 0; i < log.size(); ++i)
+        for (std::size_t i = 0u; i < log.size(); ++i)
         {
-            mouseRawMovement.setPosition({50.f, static_cast<float>(i * 20) + 50.f});
+            mouseRawMovement.position = {50.f, static_cast<float>(i * 20) + 50.f};
             mouseRawMovement.setString(log[i]);
             window.draw(mouseRawMovement);
         }

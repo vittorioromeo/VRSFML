@@ -39,7 +39,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
     {
         SECTION("Font constructor")
         {
-            const sf::Text text(font);
+            const sf::Text text(font, {});
             CHECK(text.getString() == "");
             CHECK(&text.getFont() == &font);
             CHECK(text.getCharacterSize() == 30);
@@ -56,7 +56,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
 
         SECTION("Font and string constructor")
         {
-            const sf::Text text(font, "abcdefghijklmnopqrstuvwxyz");
+            const sf::Text text(font, {.string = "abcdefghijklmnopqrstuvwxyz"});
             CHECK(text.getString() == "abcdefghijklmnopqrstuvwxyz");
             CHECK(&text.getFont() == &font);
             CHECK(text.getCharacterSize() == 30);
@@ -73,7 +73,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
 
         SECTION("Font, string, and character size constructor")
         {
-            const sf::Text text(font, "abcdefghijklmnopqrstuvwxyz", 24);
+            const sf::Text text(font, {.string = "abcdefghijklmnopqrstuvwxyz", .characterSize = 24});
             CHECK(text.getString() == "abcdefghijklmnopqrstuvwxyz");
             CHECK(&text.getFont() == &font);
             CHECK(text.getCharacterSize() == 24);
@@ -91,14 +91,14 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
 
     SECTION("Set/get string")
     {
-        sf::Text text(font);
+        sf::Text text(font, {});
         text.setString("abcdefghijklmnopqrstuvwxyz");
         CHECK(text.getString() == "abcdefghijklmnopqrstuvwxyz");
     }
 
     SECTION("Set/get font")
     {
-        sf::Text   text(font);
+        sf::Text   text(font, {});
         const auto otherFont = sf::Font::openFromFile(graphicsContext, "Graphics/tuffy.ttf").value();
         text.setFont(otherFont);
         CHECK(&text.getFont() == &otherFont);
@@ -106,57 +106,57 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
 
     SECTION("Set/get character size")
     {
-        sf::Text text(font);
+        sf::Text text(font, {});
         text.setCharacterSize(48);
         CHECK(text.getCharacterSize() == 48);
     }
 
     SECTION("Set/get line spacing")
     {
-        sf::Text text(font);
+        sf::Text text(font, {});
         text.setLineSpacing(42);
         CHECK(text.getLineSpacing() == 42);
     }
 
     SECTION("Set/get letter spacing")
     {
-        sf::Text text(font);
+        sf::Text text(font, {});
         text.setLetterSpacing(15);
         CHECK(text.getLetterSpacing() == 15);
     }
 
     SECTION("Set/get style")
     {
-        sf::Text text(font);
+        sf::Text text(font, {});
         text.setStyle(sf::Text::Style::Bold | sf::Text::Style::Italic);
         CHECK(text.getStyle() == (sf::Text::Style::Bold | sf::Text::Style::Italic));
     }
 
     SECTION("Set/get fill color")
     {
-        sf::Text text(font, "Fill color");
+        sf::Text text(font, {.string = "Fill color"});
         text.setFillColor(sf::Color::Red);
         CHECK(text.getFillColor() == sf::Color::Red);
     }
 
     SECTION("Set/get outline color")
     {
-        sf::Text text(font, "Outline color");
+        sf::Text text(font, {.string = "Outline color"});
         text.setOutlineColor(sf::Color::Green);
         CHECK(text.getOutlineColor() == sf::Color::Green);
     }
 
     SECTION("Set/get outline thickness")
     {
-        sf::Text text(font);
+        sf::Text text(font, {});
         text.setOutlineThickness(3.14f);
         CHECK(text.getOutlineThickness() == 3.14f);
     }
 
     SECTION("findCharacterPos()")
     {
-        sf::Text text(font, "\tabcdefghijklmnopqrstuvwxyz \n");
-        text.setPosition({120, 240});
+        sf::Text text(font, {.string = "\tabcdefghijklmnopqrstuvwxyz \n"});
+        text.position = {120, 240};
         CHECK(text.findCharacterPos(0) == sf::Vector2f{120, 240});
         CHECK(text.findCharacterPos(1) == sf::Vector2f{156, 240});
         CHECK(text.findCharacterPos(2) == sf::Vector2f{170, 240});
@@ -169,8 +169,8 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
 
     SECTION("Get bounds")
     {
-        sf::Text text(font, "Test", 18);
-        text.setPosition({100, 200});
+        sf::Text text(font, {.string = "Test", .characterSize = 18u});
+        text.position = {100, 200};
         CHECK(text.getLocalBounds() == sf::FloatRect({1, 5}, {33, 13}));
         CHECK(text.getGlobalBounds() == sf::FloatRect({101, 205}, {33, 13}));
 
@@ -190,7 +190,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
 
         SECTION("Change rotation")
         {
-            text.setRotation(sf::degrees(180));
+            text.rotation = sf::degrees(180);
             CHECK(text.getLocalBounds() == sf::FloatRect({1, 5}, {33, 13}));
             CHECK(text.getGlobalBounds() == Approx(sf::FloatRect({66, 182}, {33, 13})));
         }
@@ -204,7 +204,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             const auto badFunction = [&graphicsContext]
             {
                 const auto localFont = sf::Font::openFromFile(graphicsContext, "Graphics/tuffy.ttf").value();
-                return sf::Text(localFont);
+                return sf::Text(localFont, {});
             };
 
             const sf::priv::LifetimeDependee::TestingModeGuard guard;
@@ -221,7 +221,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             {
                 BadStruct(sf::GraphicsContext& graphicsContext) :
                 memberFont{sf::Font::openFromFile(graphicsContext, "Graphics/tuffy.ttf").value()},
-                memberText{memberFont}
+                memberText{memberFont, {}}
                 {
                 }
 

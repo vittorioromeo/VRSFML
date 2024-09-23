@@ -51,6 +51,8 @@ else()
 
         set_target_properties(freetype PROPERTIES FOLDER "Dependencies")
 
+        target_compile_options(freetype PRIVATE "-w")
+
         # add flags required for emscripten support (e.g. pthread)
         if(SFML_OS_EMSCRIPTEN)
             target_compile_options(freetype PRIVATE ${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS})

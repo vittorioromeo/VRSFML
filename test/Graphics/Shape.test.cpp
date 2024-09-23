@@ -16,7 +16,7 @@
 class TriangleShape : public sf::Shape
 {
 public:
-    explicit TriangleShape(sf::Vector2f size) : m_size(size)
+    explicit TriangleShape(sf::Vector2f size) : sf::Shape({}), m_size(size)
     {
         m_points[0] = {m_size.x / 2, 0};
         m_points[1] = {0, m_size.y};
@@ -34,7 +34,8 @@ TEST_CASE("[Graphics] sf::Shape" * doctest::skip(skipDisplayTests))
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(SFML_BASE_IS_CONSTRUCTIBLE(sf::Shape));
+        STATIC_CHECK(!SFML_BASE_IS_CONSTRUCTIBLE(sf::Shape));
+        STATIC_CHECK(SFML_BASE_IS_CONSTRUCTIBLE(sf::Shape, sf::Shape::Settings));
         STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Shape));
         STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Shape));
         STATIC_CHECK(SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::Shape));
@@ -89,8 +90,8 @@ TEST_CASE("[Graphics] sf::Shape" * doctest::skip(skipDisplayTests))
 
         SECTION("Move and rotate")
         {
-            triangleShape.move({1, 1});
-            triangleShape.rotate(sf::degrees(90));
+            triangleShape.position += {1, 1};
+            triangleShape.rotation += sf::degrees(90);
             CHECK(triangleShape.getLocalBounds() == sf::FloatRect({0, 0}, {30, 40}));
             CHECK(triangleShape.getGlobalBounds() == Approx(sf::FloatRect({-39, 1}, {40, 30})));
         }

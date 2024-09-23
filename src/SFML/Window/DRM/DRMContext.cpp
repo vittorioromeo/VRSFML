@@ -10,7 +10,7 @@
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Sleep.hpp"
 
-#include "SFML/Base/Memcpy.hpp"
+#include "SFML/Base/Builtins/Memcpy.hpp"
 
 #include <fcntl.h>
 #include <poll.h>

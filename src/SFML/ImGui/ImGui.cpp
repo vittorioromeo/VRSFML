@@ -27,14 +27,15 @@
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Builtins/Memcpy.hpp"
+#include "SFML/Base/Builtins/Strlen.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
-#include "SFML/Base/Memcpy.hpp"
 #include "SFML/Base/Optional.hpp"
-#include "SFML/Base/Strlen.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <imgui.h>
 
+#include <string>
 #include <vector>
 
 #if defined(__APPLE__)
@@ -1026,11 +1027,11 @@ struct [[nodiscard]] SpriteTextureData
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SpriteTextureData getSpriteTextureData(const Sprite& sprite, const Texture& texture)
 {
-    const auto       textureSize(texture.getSize().toVector2f());
-    const FloatRect& textureRect(sprite.getTextureRect());
+    const auto textureSize(texture.getSize().toVector2f());
+    const auto& [txrPosition, txrSize](sprite.textureRect);
 
-    return {toImVec2(textureRect.position.componentWiseDiv(textureSize)),
-            toImVec2((textureRect.position + textureRect.size).componentWiseDiv(textureSize)),
+    return {toImVec2(txrPosition.componentWiseDiv(textureSize)),
+            toImVec2((txrPosition + txrSize).componentWiseDiv(textureSize)),
             convertGLTextureHandleToImTextureID(texture.getNativeHandle())};
 }
 
@@ -1130,7 +1131,7 @@ bool ImGuiContext::init(Window& window, Vector2f displaySize, bool loadDefaultFo
 
         [](void* /*userData*/)
         {
-            auto tmp = Clipboard::getString().toUtf8();
+            auto tmp = Clipboard::getString().toUtf8<std::u8string>();
             clipboardTextPtr->assign(tmp.begin(), tmp.end());
             return clipboardTextPtr->c_str();
         });

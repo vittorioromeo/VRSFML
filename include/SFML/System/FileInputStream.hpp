@@ -13,7 +13,7 @@
 #include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
-#include <cstdio>
+#include <cstdio> // TODO P1: try to remove
 
 #ifdef SFML_SYSTEM_ANDROID
 namespace sf::priv

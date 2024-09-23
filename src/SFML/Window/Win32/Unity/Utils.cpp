@@ -30,7 +30,7 @@ std::string getErrorString(DWORD error)
 
     const sf::String message = buffer;
     LocalFree(buffer);
-    return message.toAnsiString();
+    return message.toAnsiString<std::string>();
 }
 
 } // namespace sf::priv

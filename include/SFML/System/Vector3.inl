@@ -90,117 +90,101 @@ constexpr OtherVector3 Vector3<T>::to() const
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector3<T> operator-(const Vector3<T>& left)
+constexpr Vector3<T> operator-(const Vector3<T>& lhs)
 {
-    return Vector3<T>(-left.x, -left.y, -left.z);
+    return Vector3<T>(-lhs.x, -lhs.y, -lhs.z);
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector3<T>& operator+=(Vector3<T>& left, const Vector3<T>& right)
+constexpr Vector3<T>& operator+=(Vector3<T>& lhs, const Vector3<T>& rhs)
 {
-    left.x += right.x;
-    left.y += right.y;
-    left.z += right.z;
+    lhs.x += rhs.x;
+    lhs.y += rhs.y;
+    lhs.z += rhs.z;
 
-    return left;
+    return lhs;
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector3<T>& operator-=(Vector3<T>& left, const Vector3<T>& right)
+constexpr Vector3<T>& operator-=(Vector3<T>& lhs, const Vector3<T>& rhs)
 {
-    left.x -= right.x;
-    left.y -= right.y;
-    left.z -= right.z;
+    lhs.x -= rhs.x;
+    lhs.y -= rhs.y;
+    lhs.z -= rhs.z;
 
-    return left;
+    return lhs;
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector3<T> operator+(const Vector3<T>& left, const Vector3<T>& right)
+constexpr Vector3<T> operator+(const Vector3<T>& lhs, const Vector3<T>& rhs)
 {
-    return Vector3<T>(left.x + right.x, left.y + right.y, left.z + right.z);
+    return Vector3<T>(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z);
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector3<T> operator-(const Vector3<T>& left, const Vector3<T>& right)
+constexpr Vector3<T> operator-(const Vector3<T>& lhs, const Vector3<T>& rhs)
 {
-    return Vector3<T>(left.x - right.x, left.y - right.y, left.z - right.z);
+    return Vector3<T>(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z);
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector3<T> operator*(const Vector3<T>& left, T right)
+constexpr Vector3<T> operator*(const Vector3<T>& lhs, T rhs)
 {
-    return Vector3<T>(left.x * right, left.y * right, left.z * right);
+    return Vector3<T>(lhs.x * rhs, lhs.y * rhs, lhs.z * rhs);
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector3<T> operator*(T left, const Vector3<T>& right)
+constexpr Vector3<T> operator*(T lhs, const Vector3<T>& rhs)
 {
-    return Vector3<T>(right.x * left, right.y * left, right.z * left);
+    return Vector3<T>(rhs.x * lhs, rhs.y * lhs, rhs.z * lhs);
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector3<T>& operator*=(Vector3<T>& left, T right)
+constexpr Vector3<T>& operator*=(Vector3<T>& lhs, T rhs)
 {
-    left.x *= right;
-    left.y *= right;
-    left.z *= right;
+    lhs.x *= rhs;
+    lhs.y *= rhs;
+    lhs.z *= rhs;
 
-    return left;
+    return lhs;
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector3<T> operator/(const Vector3<T>& left, T right)
+constexpr Vector3<T> operator/(const Vector3<T>& lhs, T rhs)
 {
-    SFML_BASE_ASSERT(right != 0 && "Vector3::operator/ cannot divide by 0");
+    SFML_BASE_ASSERT(rhs != 0 && "Vector3::operator/ cannot divide by 0");
 
-    return Vector3<T>(left.x / right, left.y / right, left.z / right);
+    return Vector3<T>(lhs.x / rhs, lhs.y / rhs, lhs.z / rhs);
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector3<T>& operator/=(Vector3<T>& left, T right)
+constexpr Vector3<T>& operator/=(Vector3<T>& lhs, T rhs)
 {
-    SFML_BASE_ASSERT(right != 0 && "Vector3::operator/= cannot divide by 0");
+    SFML_BASE_ASSERT(rhs != 0 && "Vector3::operator/= cannot divide by 0");
 
-    left.x /= right;
-    left.y /= right;
-    left.z /= right;
+    lhs.x /= rhs;
+    lhs.y /= rhs;
+    lhs.z /= rhs;
 
-    return left;
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-constexpr bool operator==(const Vector3<T>& left, const Vector3<T>& right)
-{
-    return (left.x == right.x) && (left.y == right.y) && (left.z == right.z);
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-constexpr bool operator!=(const Vector3<T>& left, const Vector3<T>& right)
-{
-    return (left.x != right.x) || (left.y != right.y) || (left.z != right.z);
+    return lhs;
 }
 
 } // namespace sf

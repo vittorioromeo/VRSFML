@@ -12,19 +12,17 @@
 
 #include "SFML/System/Rect.hpp"
 
+#include "SFML/Base/Math/Fabs.hpp"
+
 
 namespace sf
 {
-class DrawableBatch;
-class MappedDrawableBatch;
-class RenderTarget;
-
 ////////////////////////////////////////////////////////////
 /// \brief Geometry that can render a texture, with its
 ///        own transformations, color, etc.
 ///
 ////////////////////////////////////////////////////////////
-class SFML_GRAPHICS_API Sprite : public Transformable
+struct SFML_GRAPHICS_API Sprite : Transformable
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -36,51 +34,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit Sprite(const FloatRect& rectangle);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Set the sub-rectagle of the texture that the sprite will display
-    ///
-    /// \param rectangle Rectangle defining the region of the texture to display (specified during drawing)
-    ///
-    /// \see `getTextureRect`
-    ///
-    ////////////////////////////////////////////////////////////
-    void setTextureRect(const FloatRect& rectangle);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Set the global color of the sprite
-    ///
-    /// This color is modulated (multiplied) with the sprite's
-    /// texture. It can be used to colorize the sprite, or change
-    /// its global opacity.
-    /// By default, the sprite's color is opaque white.
-    ///
-    /// \param color New color of the sprite
-    ///
-    /// \see `getColor`
-    ///
-    ////////////////////////////////////////////////////////////
-    void setColor(Color color);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the sub-rectangle of the texture displayed by the sprite
-    ///
-    /// \return Texture rectangle of the sprite
-    ///
-    /// \see `setTextureRect`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] const FloatRect& getTextureRect() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the global color of the sprite
-    ///
-    /// \return Global color of the sprite
-    ///
-    /// \see `setColor`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] Color getColor() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the local bounding rectangle of the entity
@@ -110,25 +63,61 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] FloatRect getGlobalBounds() const;
 
-private:
-    friend DrawableBatch;
-    friend MappedDrawableBatch;
-    friend RenderTarget;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Update the vertices' positions and texture coordinates
-    ///
-    ////////////////////////////////////////////////////////////
-    void getPreTransformedVertices(Vertex* target) const;
-
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    FloatRect m_textureRect;         //!< Rectangle defining the area of the source texture to display
-    Color     m_color{Color::White}; //!< Color of the sprite
+    FloatRect textureRect;         //!< Rectangle defining the area of the source texture to display
+    Color     color{Color::White}; //!< Color of the sprite
 };
 
 } // namespace sf
+
+
+namespace sf::priv
+{
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
+[[gnu::always_inline, gnu::flatten]] inline void spriteToVertices(const Sprite& sprite, Vertex* target)
+{
+    const auto& [position, size] = sprite.textureRect;
+    const Vector2f absSize(base::fabs(size.x), base::fabs(size.y));
+
+    // Position
+    {
+        const auto transform = sprite.getTransform();
+
+        target[0].position.x = transform.m_a02;
+        target[0].position.y = transform.m_a12;
+
+        target[1].position.x = transform.m_a01 * absSize.y + transform.m_a02;
+        target[1].position.y = transform.m_a11 * absSize.y + transform.m_a12;
+
+        target[2].position.x = transform.m_a00 * absSize.x + transform.m_a02;
+        target[2].position.y = transform.m_a10 * absSize.x + transform.m_a12;
+
+        target[3].position = transform.transformPoint(absSize);
+    }
+
+    // Color
+    {
+        target[0].color = sprite.color;
+        target[1].color = sprite.color;
+        target[2].color = sprite.color;
+        target[3].color = sprite.color;
+    }
+
+    // Texture Coordinates
+    {
+        target[0].texCoords = position;
+        target[1].texCoords = position + Vector2f{0.f, size.y};
+        target[2].texCoords = position + Vector2f{size.x, 0.f};
+        target[3].texCoords = position + size;
+    }
+}
+
+} // namespace sf::priv
 
 
 ////////////////////////////////////////////////////////////
@@ -166,9 +155,9 @@ private:
 /// const auto texture = sf::Texture::loadFromFile("texture.png").value();
 ///
 /// // Create a sprite
-/// sprite.setTextureRect({{10, 10}, {50, 30}});
-/// sprite.setColor({255, 255, 255, 200});
-/// sprite.setPosition({100.f, 25.f});
+/// sprite.textureRect = {{10, 10}, {50, 30}};
+/// sprite.color = {255, 255, 255, 200};
+/// sprite.position = {100.f, 25.f};
 ///
 /// // Draw it
 /// window.draw(sprite, texture);

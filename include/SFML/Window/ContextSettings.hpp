@@ -8,8 +8,6 @@
 
 #include "SFML/Base/EnumClassBitwiseOps.hpp"
 
-#include <cstdint>
-
 
 namespace sf
 {
@@ -24,7 +22,7 @@ struct ContextSettings
     /// \brief Enumeration of the context attribute flags
     ///
     ////////////////////////////////////////////////////////////
-    enum class [[nodiscard]] Attribute : std::uint32_t
+    enum class [[nodiscard]] Attribute : unsigned int
     {
         Default = 0,      //!< Non-debug, compatibility context (this and the core attribute are mutually exclusive)
         Core    = 1 << 0, //!< Core attribute

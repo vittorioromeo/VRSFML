@@ -27,7 +27,7 @@ static_assert(alignof(AtomicUInt) == alignof(unsigned int));
 
 namespace
 {
-std::atomic<bool> lifetimeTrackingTestingModfe{false};
+std::atomic<bool> lifetimeTrackingTestingMode{false};
 std::atomic<bool> lifetimeTrackingFatalErrorTriggered{false};
 
 [[gnu::always_inline, gnu::const]] inline AtomicUInt& asAtomicUInt(char* ptr)
@@ -42,14 +42,14 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 LifetimeDependee::TestingModeGuard::TestingModeGuard()
 {
-    lifetimeTrackingTestingModfe.store(true, std::memory_order_seq_cst);
+    lifetimeTrackingTestingMode.store(true, std::memory_order_seq_cst);
 }
 
 
 ////////////////////////////////////////////////////////////
 LifetimeDependee::TestingModeGuard::~TestingModeGuard()
 {
-    lifetimeTrackingTestingModfe.store(false, std::memory_order_seq_cst);
+    lifetimeTrackingTestingMode.store(false, std::memory_order_seq_cst);
     lifetimeTrackingFatalErrorTriggered.store(false, std::memory_order_seq_cst);
 }
 
@@ -137,7 +137,7 @@ LifetimeDependee::~LifetimeDependee()
     if (finalCount == 0u)
         return;
 
-    if (lifetimeTrackingTestingModfe)
+    if (lifetimeTrackingTestingMode)
     {
         lifetimeTrackingFatalErrorTriggered = true;
         return;

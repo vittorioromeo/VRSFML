@@ -131,8 +131,7 @@ int main()
         const auto texture2 = sf::Texture::loadFromFile(graphicsContext, "resources/image2.jpg").value();
         sf::Sprite sprite1(texture1.getRect());
         sf::Sprite sprite2(texture2.getRect());
-        sprite1.setOrigin(texture1.getSize().toVector2f() / 2.f);
-        sprite1.setPosition(sprite1.getOrigin());
+        sprite1.position = sprite1.origin = texture1.getSize().toVector2f() / 2.f;
 
         // Create a clock for measuring elapsed time
         const sf::Clock clock;
@@ -157,11 +156,11 @@ int main()
                 sfmlView2.clear();
 
                 // Draw sprite 1 on view 1
-                sprite1.setRotation(sf::degrees(time * 100));
+                sprite1.rotation = sf::degrees(time * 100);
                 sfmlView1.draw(sprite1, texture1);
 
                 // Draw sprite 2 on view 2
-                sprite2.setPosition({std::cos(time) * 100.f, 0.f});
+                sprite2.position = {std::cos(time) * 100.f, 0.f};
                 sfmlView2.draw(sprite2, texture2);
 
                 // Display each view on screen

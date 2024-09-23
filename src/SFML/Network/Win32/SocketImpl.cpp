@@ -7,7 +7,7 @@
 
 #include "SFML/System/Win32/WindowsHeader.hpp"
 
-#include "SFML/Base/Memcpy.hpp"
+#include "SFML/Base/Builtins/Memcpy.hpp"
 #include "SFML/Base/Optional.hpp"
 
 #include <winsock2.h>

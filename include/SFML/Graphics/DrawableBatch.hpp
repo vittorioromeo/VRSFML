@@ -22,8 +22,7 @@ namespace sf
 {
 class RenderTarget;
 class Shape;
-class Sprite;
-class Transform;
+struct Sprite;
 } // namespace sf
 
 
@@ -48,7 +47,7 @@ public:
     ////////////////////////////////////////////////////////////
     template <typename BatchableObject>
     [[gnu::always_inline, gnu::flatten]] void add(RenderTarget& rt, const BatchableObject& batchableObject)
-        requires(!base::isBaseOf<Shape, BatchableObject>)
+        requires(!base::isBaseOf<Shape, BatchableObject>) // TODO P1: better requirement
     {
         const auto [data, size] = batchableObject.getVertices();
 
@@ -96,14 +95,12 @@ private:
         base::SizeT      count,
         const Transform& transform)
     {
-        // m_vertices.reserveMore(count);
-        auto* vertices = reserveMoreVerticesAndGetPtr(rt, count);
+        Vertex* vertexPtr = reserveMoreVerticesAndGetPtr(rt, count);
 
         for (const auto* const target = data + count; data != target; ++data)
-            *vertices++ = Vertex{transform.transformPoint(data->position), data->color, data->texCoords};
+            *vertexPtr++ = {transform.transformPoint(data->position), data->color, data->texCoords};
 
         m_nVerts += count;
-        // m_vertices.unsafeEmplaceBack();
     }
 
     ////////////////////////////////////////////////////////////
@@ -124,6 +121,6 @@ private:
 ///
 /// TODO P1: docs
 ///
-/// \see sf::RenderTarget
+/// \see `sf::RenderTarget`
 ///
 ////////////////////////////////////////////////////////////

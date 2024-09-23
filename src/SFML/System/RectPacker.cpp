@@ -7,7 +7,6 @@
 #include "SFML/System/RectPacker.hpp"
 
 #include "SFML/Base/Optional.hpp"
-#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #define STBRP_STATIC
@@ -18,18 +17,15 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-enum : base::SizeT
-{
-    MaxNodes = 1024ul
-};
-
-
-////////////////////////////////////////////////////////////
 struct RectPacker::Impl
 {
+    enum : int
+    {
+        MaxNodes = 2048
+    };
+
     stbrp_node    nodes[MaxNodes]{};
     stbrp_context context{};
-    base::SizeT   numPacked{0ul};
 
     explicit Impl(Vector2u size)
     {
@@ -64,9 +60,6 @@ base::Optional<Vector2u> RectPacker::pack(Vector2u rectSize)
         priv::err() << "Failure packing rectangle with size {" << rectSize.x << ", " << rectSize.y << "}: " << what;
         return base::nullOpt;
     };
-
-    if (m_impl->numPacked >= MaxNodes)
-        return fail("no nodes left");
 
     if (rectSize.x == 0u || rectSize.y == 0u)
         return fail("zero-sized coordinate");

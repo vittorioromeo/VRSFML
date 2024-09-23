@@ -28,7 +28,7 @@ public:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] RenderTextureImplFBO(GraphicsContext& graphicsContext);
+    [[nodiscard]] explicit RenderTextureImplFBO(GraphicsContext& graphicsContext);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor

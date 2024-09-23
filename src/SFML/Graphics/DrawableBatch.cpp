@@ -6,7 +6,6 @@
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Shape.hpp"
 #include "SFML/Graphics/Sprite.hpp"
-#include "SFML/Graphics/Vertex.hpp"
 
 
 namespace sf
@@ -61,15 +60,15 @@ void DrawableBatch::add(RenderTarget& rt, const Shape& shape)
     // Triangle fan
     if (const auto [fillData, fillSize] = shape.getFillVertices(); fillSize > 2u)
     {
-        const auto nextFillIndex = static_cast<IndexType>(m_nVerts);
-
-    auto* indices = static_cast<IndexType*>(rt.getIndicesPtr(m_nIdxs + count)) + count;
-        m_indices.reserveMore(fillSize * 3u);
+        const auto  nextFillIndex = static_cast<IndexType>(m_vertices.size());
+        IndexType*& indexPtr      = m_indices.reserveMore(fillSize * 3u);
 
         for (IndexType i = 1u; i < fillSize - 1; ++i)
-            m_indices.unsafePushBackMultiple(static_cast<IndexType>(nextFillIndex),
-                                             static_cast<IndexType>(nextFillIndex + i),
-                                             static_cast<IndexType>(nextFillIndex + i + 1u));
+        {
+            *indexPtr++ = nextFillIndex;
+            *indexPtr++ = nextFillIndex + i;
+            *indexPtr++ = nextFillIndex + i + 1u;
+        }
 
         appendPreTransformedVertices(fillData, fillSize, shape.getTransform());
     }
@@ -77,14 +76,15 @@ void DrawableBatch::add(RenderTarget& rt, const Shape& shape)
     // Triangle strip
     if (const auto [outlineData, outlineSize] = shape.getOutlineVertices(); outlineSize > 2u)
     {
-        const auto nextOutlineIndex = static_cast<IndexType>(m_nVerts);
-
-        m_indices.reserveMore(outlineSize * 3u);
+        const auto  nextOutlineIndex = static_cast<IndexType>(m_vertices.size());
+        IndexType*& indexPtr         = m_indices.reserveMore(outlineSize * 3u);
 
         for (IndexType i = 0u; i < outlineSize - 2; ++i)
-            m_indices.unsafePushBackMultiple(static_cast<IndexType>(nextOutlineIndex + i),
-                                             static_cast<IndexType>(nextOutlineIndex + i + 1u),
-                                             static_cast<IndexType>(nextOutlineIndex + i + 2u));
+        {
+            *indexPtr++ = nextOutlineIndex + i + 0u;
+            *indexPtr++ = nextOutlineIndex + i + 1u;
+            *indexPtr++ = nextOutlineIndex + i + 2u;
+        }
 
         appendPreTransformedVertices(outlineData, outlineSize, shape.getTransform());
     }
@@ -95,13 +95,11 @@ void DrawableBatch::add(RenderTarget& rt, const Shape& shape)
 ////////////////////////////////////////////////////////////
 void DrawableBatch::addSubsequentIndices(RenderTarget& rt, base::SizeT count)
 {
-    // m_indices.reserveMore(count);
-    auto* indices = reserveMoreIndicesAndGetPtr(rt, count);
-
     const auto nextIndex = static_cast<IndexType>(m_nVerts);
+    IndexType* indexPtr  = reserveMoreIndicesAndGetPtr(rt, count);
 
     for (IndexType i = 0u; i < static_cast<IndexType>(count); ++i)
-        *indices++ = static_cast<IndexType>(nextIndex + i);
+        *indexPtr++ = static_cast<IndexType>(nextIndex + i);
 
     m_nIdxs += count;
 }
@@ -110,11 +108,8 @@ void DrawableBatch::addSubsequentIndices(RenderTarget& rt, base::SizeT count)
 ////////////////////////////////////////////////////////////
 void DrawableBatch::clear()
 {
-    // m_vertices.clear();
     m_nVerts = 0u;
-
-    // m_indices.clear();
-    m_nIdxs = 0u;
+    m_nIdxs  = 0u;
 }
 
 } // namespace sf

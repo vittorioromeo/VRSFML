@@ -24,43 +24,25 @@ class SFML_GRAPHICS_API CircleShape : public Shape
 {
 public:
     ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    struct [[nodiscard]] Settings
+    {
+        SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
+        SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;
+
+        float       radius{0.f};     //!< Radius of the circle
+        base::SizeT pointCount{30u}; //!< Number of points composing the circle
+    };
+
+    ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
-    /// \param radius     Radius of the circle
-    /// \param pointCount Number of points composing the circle
+    /// \param settings Settings of the circle
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit CircleShape(float radius = 0, base::SizeT pointCount = 30);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Destructor
-    ///
-    ////////////////////////////////////////////////////////////
-    ~CircleShape() = default;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Copy constructor
-    ///
-    ////////////////////////////////////////////////////////////
-    CircleShape(const CircleShape& rhs) = default;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Copy assignment operator
-    ///
-    ////////////////////////////////////////////////////////////
-    CircleShape& operator=(const CircleShape&) = default;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Move constructor
-    ///
-    ////////////////////////////////////////////////////////////
-    CircleShape(CircleShape&&) noexcept = default;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Move assignment operator
-    ///
-    ////////////////////////////////////////////////////////////
-    CircleShape& operator=(CircleShape&&) noexcept = default;
+    [[nodiscard]] explicit CircleShape(const Settings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the radius of the circle
@@ -156,11 +138,10 @@ private:
 ///
 /// Usage example:
 /// \code
-/// sf::CircleShape circle;
-/// circle.setRadius(150);
+/// sf::CircleShape circle(150.f);
 /// circle.setOutlineColor(sf::Color::Red);
 /// circle.setOutlineThickness(5);
-/// circle.setPosition({10, 20});
+/// circle.position = {10, 20};
 /// ...
 /// window.draw(circle);
 /// \endcode

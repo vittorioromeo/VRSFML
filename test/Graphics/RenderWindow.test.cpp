@@ -47,10 +47,10 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
             CHECK(window.getNativeHandle() == sf::WindowHandle());
 #endif
             CHECK(!window.isSrgb());
-            CHECK(window.getView().getCenter() == sf::Vector2f{128, 128});
-            CHECK(window.getView().getSize() == sf::Vector2f{256, 256});
-            CHECK(window.getView().getRotation() == sf::Angle::Zero);
-            CHECK(window.getView().getViewport() == sf::FloatRect({0, 0}, {1, 1}));
+            CHECK(window.getView().center == sf::Vector2f{128, 128});
+            CHECK(window.getView().size == sf::Vector2f{256, 256});
+            CHECK(window.getView().rotation == sf::Angle::Zero);
+            CHECK(window.getView().viewport == sf::FloatRect({0, 0}, {1, 1}));
             CHECK(window.getView().getTransform() == sf::Transform(0.0078125f, 0, -1, 0, -0.0078125f, 1));
         }
 
@@ -67,10 +67,10 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
             CHECK(window.getNativeHandle() == sf::WindowHandle());
 #endif
             CHECK(!window.isSrgb());
-            CHECK(window.getView().getCenter() == sf::Vector2f{120, 150});
-            CHECK(window.getView().getSize() == sf::Vector2f{240, 300});
-            CHECK(window.getView().getRotation() == sf::Angle::Zero);
-            CHECK(window.getView().getViewport() == sf::FloatRect({0, 0}, {1, 1}));
+            CHECK(window.getView().center == sf::Vector2f{120, 150});
+            CHECK(window.getView().size == sf::Vector2f{240, 300});
+            CHECK(window.getView().rotation == sf::Angle::Zero);
+            CHECK(window.getView().viewport == sf::FloatRect({0, 0}, {1, 1}));
             CHECK(window.getView().getTransform() == Approx(sf::Transform(0.00833333f, 0, -1, 0, -0.00666667f, 1)));
         }
     }
@@ -104,7 +104,7 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 
         sf::base::Optional<sf::RenderWindow> childWindow(sf::base::inPlace,
                                                          graphicsContext,
-                                                         sf::WindowSettings{.size{256u, 256u}, .title = "B"});
+                                                         sf::RenderWindow::Settings{.size{256u, 256u}, .title = "B"});
 
         window.clear();
         window.display();
@@ -121,7 +121,7 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 
         sf::base::Optional<sf::RenderWindow> childWindow(sf::base::inPlace,
                                                          graphicsContext,
-                                                         sf::WindowSettings{.size{256u, 256u}, .title = "B"});
+                                                         sf::RenderWindow::Settings{.size{256u, 256u}, .title = "B"});
 
         window.clear();
         window.display();
@@ -139,7 +139,7 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 
         sf::base::Optional<sf::RenderWindow> childWindow(sf::base::inPlace,
                                                          graphicsContext,
-                                                         sf::WindowSettings{.size{256u, 256u}, .title = "B"});
+                                                         sf::RenderWindow::Settings{.size{256u, 256u}, .title = "B"});
 
         childWindow->clear();
         childWindow->display();
@@ -154,7 +154,7 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 
         sf::base::Optional<sf::RenderWindow> childWindow(sf::base::inPlace,
                                                          graphicsContext,
-                                                         sf::WindowSettings{.size{256u, 256u}, .title = "B"});
+                                                         sf::RenderWindow::Settings{.size{256u, 256u}, .title = "B"});
 
         childWindow->clear();
         childWindow->display();

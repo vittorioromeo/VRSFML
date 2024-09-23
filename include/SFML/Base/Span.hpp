@@ -19,22 +19,6 @@ struct [[nodiscard]] Span
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr Span(const Span&) = default;
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr Span(Span&&) = default;
-
-
-    ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] constexpr Span& operator=(const Span&) = default;
-
-
-    ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] constexpr Span& operator=(Span&&) = default;
-
-
-    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr Span(decltype(nullptr), SizeT) = delete;
 
 

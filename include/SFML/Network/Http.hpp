@@ -8,7 +8,7 @@
 
 #include "SFML/System/Time.hpp"
 
-#include "SFML/Base/FwdStdString.hpp"
+#include "SFML/Base/FwdStdString.hpp" // used
 #include "SFML/Base/InPlacePImpl.hpp"
 
 

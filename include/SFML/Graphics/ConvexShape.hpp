@@ -23,42 +23,24 @@ class SFML_GRAPHICS_API ConvexShape : public Shape
 {
 public:
     ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    struct [[nodiscard]] Settings
+    {
+        SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
+        SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;
+
+        base::SizeT pointCount{0u}; //!< Number of points of the polygon
+    };
+
+    ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
-    /// \param pointCount Number of points of the polygon
+    /// \param settings Settings of the polygon
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit ConvexShape(base::SizeT pointCount = 0);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Destructor
-    ///
-    ////////////////////////////////////////////////////////////
-    ~ConvexShape() = default;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Copy constructor
-    ///
-    ////////////////////////////////////////////////////////////
-    ConvexShape(const ConvexShape& rhs) = default;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Copy assignment operator
-    ///
-    ////////////////////////////////////////////////////////////
-    ConvexShape& operator=(const ConvexShape&) = default;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Move constructor
-    ///
-    ////////////////////////////////////////////////////////////
-    ConvexShape(ConvexShape&&) noexcept = default;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Move assignment operator
-    ///
-    ////////////////////////////////////////////////////////////
-    ConvexShape& operator=(ConvexShape&&) noexcept = default;
+    [[nodiscard]] explicit ConvexShape(const Settings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the number of points of the polygon
@@ -164,7 +146,7 @@ private:
 /// polygon.setPoint(2, sf::Vector2f{25, 5});
 /// polygon.setOutlineColor(sf::Color::Red);
 /// polygon.setOutlineThickness(5);
-/// polygon.setPosition({10, 20});
+/// polygon.position = {10, 20};
 /// ...
 /// window.draw(polygon);
 /// \endcode

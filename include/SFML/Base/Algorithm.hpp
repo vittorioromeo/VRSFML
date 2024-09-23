@@ -89,7 +89,7 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T, auto N>
-[[nodiscard, gnu::always_inline, gnu::const]] constexpr SizeT getArraySize(const T (&)[N]) noexcept
+[[nodiscard, gnu::always_inline, gnu::const]] consteval SizeT getArraySize(const T (&)[N]) noexcept
 {
     return N;
 }

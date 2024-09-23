@@ -20,7 +20,6 @@
 #include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
@@ -55,7 +54,7 @@ int main()
 {
     sf::GraphicsContext graphicsContext;
 
-    sf::RenderWindow window(graphicsContext, {.size{800u, 600u}, .title = "Window"});
+    sf::RenderWindow window(graphicsContext, {.size{800u, 600u}, .title = L"महसुस"});
 
     auto textureAtlas = sf::TextureAtlas{sf::Texture::create(graphicsContext, {1024u, 1024u}).value()};
 
@@ -69,31 +68,22 @@ int main()
 
     sf::Sprite sfmlLogo({.position = sfmlLogoAtlasPos, .size = sfmlLogoImage.getSize().toVector2f()});
 
-    sf::Text text0(font0, "Test", 128);
-    text0.setPosition({0u, 0u});
+    const sf::Text text0(font0, {.position = {0u, 0u}, .string = "Test", .characterSize = 128u});
+    const sf::Text text1(font0, {.position = {128u, 0u}, .string = "acbasdfbFOOBAR", .characterSize = 32u});
+    const sf::Text text2(font0, {.position = {0u, 128u}, .string = "ssdfbsdbfussy", .characterSize = 64u});
+    const sf::Text text3(font1, {.position = {128u, 128u}, .string = "Test", .characterSize = 128u});
+    const sf::Text text4(font1, {.position = {256u, 128u}, .string = "FOmfgj,ryfkmtdfOBAR", .characterSize = 32u});
+    const sf::Text text5(font1, {.position = {128u, 256u}, .string = "sussy", .characterSize = 64u});
 
-    sf::Text text1(font0, "acbasdfbFOOBAR", 32);
-    text1.setPosition({128u, 0u});
-
-    sf::Text text2(font0, "ssdfbsdbfussy", 64);
-    text2.setPosition({0u, 128u});
-
-    sf::Text text3(font1, "Test", 128);
-    text3.setPosition({128u, 128u});
-
-    sf::Text text4(font1, "FOmfgj,ryfkmtdfOBAR", 32);
-    text4.setPosition({256u, 128u});
-
-    sf::Text text5(font1, "sussy", 64);
-    text5.setPosition({128u, 256u});
-
-    sf::CircleShape circle0{45.f};
-    circle0.setPosition({350.f, 350.f});
-    circle0.setFillColor(sf::Color::Red);
-    circle0.setOutlineColor(sf::Color::Yellow);
-    circle0.setOutlineThickness(8.f);
-    circle0.setTextureRect({.position = whiteDotAtlasPos.toVector2f(), .size{1.f, 1.f}});
-    circle0.setOutlineTextureRect({.position = whiteDotAtlasPos.toVector2f(), .size{1.f, 1.f}});
+    const sf::CircleShape circle0{
+        {.position           = {350.f, 350.f},
+         .scale              = {2.f, 2.f},
+         .textureRect        = {.position = whiteDotAtlasPos.toVector2f(), .size{1.f, 1.f}},
+         .outlineTextureRect = {.position = whiteDotAtlasPos.toVector2f(), .size{1.f, 1.f}},
+         .fillColor          = sf::Color::Red,
+         .outlineColor       = sf::Color::Yellow,
+         .outlineThickness   = 8.f,
+         .radius             = 45.f}};
 
     // Create drawable batch to optimize rendering
     sf::DrawableBatch drawableBatch;
@@ -113,23 +103,23 @@ int main()
 
             drawableBatch.add(text0);
 
-            sfmlLogo.setPosition({170.f, 50.f});
-            sfmlLogo.setScale({1.5f, 1.5f});
+            sfmlLogo.position = {170.f, 50.f};
+            sfmlLogo.scale    = {1.5f, 1.5f};
             drawableBatch.add(sfmlLogo);
 
             drawableBatch.add(text1);
-            sfmlLogo.setPosition({100.f, 50.f});
-            sfmlLogo.setScale({1.0f, 1.0f});
+            sfmlLogo.position = {100.f, 50.f};
+            sfmlLogo.scale    = {1.0f, 1.0f};
             drawableBatch.add(sfmlLogo);
 
             drawableBatch.add(text2);
-            sfmlLogo.setPosition({300.f, 150.f});
-            sfmlLogo.setScale({1.5f, 1.5f});
+            sfmlLogo.position = {300.f, 150.f};
+            sfmlLogo.scale    = {1.5f, 1.5f};
             drawableBatch.add(sfmlLogo);
 
             drawableBatch.add(text3);
-            sfmlLogo.setPosition({250.f, 250.f});
-            sfmlLogo.setScale({1.0f, 1.0f});
+            sfmlLogo.position = {250.f, 250.f};
+            sfmlLogo.scale    = {1.0f, 1.0f};
             drawableBatch.add(sfmlLogo);
 
             drawableBatch.add(text4);
@@ -167,9 +157,8 @@ int main()
     sf::RenderWindow window(graphicsContext,
                             {.size{screenSize},
                              .title = "Window",
+                             .vsync = true,
                              .contextSettings{.depthBits = 0, .stencilBits = 0, .antiAliasingLevel = 4}});
-
-    window.setVerticalSyncEnabled(true);
 
     auto image   = sf::Image::create(screenSize, sf::Color::White).value();
     auto texture = sf::Texture::loadFromImage(graphicsContext, image).value();
@@ -223,7 +212,7 @@ int main()
         sf::Sprite sprite(texture.getRect());
         renderTextures[0].draw(sprite, texture);
 
-        sprite.setColor(sf::Color::Green);
+        sprite.color = sf::Color::Green;
         renderTextures[1].draw(sprite, texture);
 
         baseRenderTexture.clear();
@@ -265,9 +254,7 @@ int main()
 {
     sf::GraphicsContext graphicsContext;
 
-    sf::RenderWindow window(graphicsContext, {.size{800u, 600u}, .title = "Test", .resizable = false});
-
-    window.setVerticalSyncEnabled(false);
+    sf::RenderWindow window(graphicsContext, {.size{800u, 600u}, .title = "Test", .vsync = false, .resizable = false});
 
     const auto font = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf").value();
 

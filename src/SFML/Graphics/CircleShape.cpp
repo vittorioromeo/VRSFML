@@ -8,15 +8,18 @@
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Vector2.hpp"
 
+#include "SFML/Base/Assert.hpp"
+
 
 namespace
 {
 ////////////////////////////////////////////////////////////
-sf::Vector2f computeCirclePoint(sf::base::SizeT index, sf::base::SizeT pointCount, float radius)
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline sf::Vector2f computeCirclePoint(
+    sf::base::SizeT index,
+    sf::base::SizeT pointCount,
+    float           radius)
 {
-    const sf::Angle angle = static_cast<float>(index) / static_cast<float>(pointCount) * sf::degrees(360.f) -
-                            sf::degrees(90.f);
-
+    const sf::Angle angle = static_cast<float>(index) / static_cast<float>(pointCount) * sf::Angle::Full - sf::Angle::Quarter;
     return sf::Vector2f{radius, radius}.movedTowards(radius, angle);
 }
 
@@ -26,9 +29,9 @@ sf::Vector2f computeCirclePoint(sf::base::SizeT index, sf::base::SizeT pointCoun
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-CircleShape::CircleShape(float radius, base::SizeT pointCount) : m_radius{radius}
+CircleShape::CircleShape(const Settings& settings) : Shape(priv::toShapeSettings(settings)), m_radius{settings.radius}
 {
-    update(radius, pointCount);
+    update(m_radius, settings.pointCount);
 }
 
 
@@ -53,6 +56,7 @@ void CircleShape::setPointCount(base::SizeT count)
     update(m_radius, count);
 }
 
+
 ////////////////////////////////////////////////////////////
 base::SizeT CircleShape::getPointCount() const
 {
@@ -63,6 +67,7 @@ base::SizeT CircleShape::getPointCount() const
 ////////////////////////////////////////////////////////////
 Vector2f CircleShape::getPoint(base::SizeT index) const
 {
+    SFML_BASE_ASSERT(index < m_points.size() && "Index is out of bounds");
     return m_points[index];
 }
 

@@ -70,12 +70,16 @@ if(SFML_ENABLE_STACK_TRACES)
         )
 
         if(TARGET libzstd_static)
+            target_compile_options(libzstd_static PRIVATE "-w")
             set_target_properties(libzstd_static PROPERTIES UNITY_BUILD OFF)
         endif()
 
         if(TARGET dwarf)
+            target_compile_options(dwarf PRIVATE "-w")
             set_target_properties(dwarf PROPERTIES UNITY_BUILD OFF)
         endif()
+
+        target_compile_options(cpptrace-lib PRIVATE "-w")
 
         # install(TARGETS cpptrace-lib EXPORT SFMLConfigExport)
         # install(TARGETS dwarf EXPORT SFMLConfigExport)

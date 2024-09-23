@@ -24,8 +24,6 @@
 #include <string>
 #include <vector>
 
-#include <cstdint>
-
 
 namespace sf
 {
@@ -52,6 +50,7 @@ namespace
 
     auto glGetStringiFunc = reinterpret_cast<glGetStringiFuncType>(glContext.getFunction("glGetStringi"));
 
+    // TODO P0: needed at all?
     if (glGetErrorFunc() == GL_INVALID_ENUM || !majorVersion || !glGetStringiFunc)
     {
         // Try to load the < 3.0 way
@@ -82,7 +81,7 @@ namespace
 
     for (int i = 0; i < numExtensions; ++i)
         if (const auto* extensionString = reinterpret_cast<const char*>(
-                glCheckIgnoreExprWithFunc(glGetErrorFunc, glGetStringiFunc(GL_EXTENSIONS, static_cast<unsigned int>(i)))))
+                glCheckIgnoreWithFunc(glGetErrorFunc, glGetStringiFunc(GL_EXTENSIONS, static_cast<unsigned int>(i)))))
             result.emplace_back(extensionString);
 
     return result;
@@ -91,7 +90,7 @@ namespace
 ////////////////////////////////////////////////////////////
 thread_local constinit struct
 {
-    std::uint64_t        id{0u};
+    unsigned int         id{0u};
     sf::priv::GlContext* ptr{nullptr};
 } activeGlContext;
 
@@ -180,7 +179,7 @@ struct WindowContext::Impl
     ClearAliveFlag clearAliveFlag;
 
     ////////////////////////////////////////////////////////////
-    std::atomic<std::uint64_t> nextThreadLocalGlContextId{2u}; // 1 is reserved for shared context
+    std::atomic<unsigned int> nextThreadLocalGlContextId{2u}; // 1 is reserved for shared context
 
     ////////////////////////////////////////////////////////////
     DerivedGlContextType sharedGlContext; //!< The hidden, inactive context that will be shared with all other contexts
@@ -192,7 +191,7 @@ struct WindowContext::Impl
     ////////////////////////////////////////////////////////////
     struct UnsharedFrameBuffer
     {
-        std::uint64_t    glContextId{};
+        unsigned int     glContextId{};
         unsigned int     frameBufferId;
         UnsharedDeleteFn deleteFn;
     };
@@ -287,7 +286,7 @@ WindowContext::~WindowContext()
 
 
 ////////////////////////////////////////////////////////////
-void WindowContext::registerUnsharedFrameBuffer(std::uint64_t glContextId, unsigned int frameBufferId, UnsharedDeleteFn deleteFn)
+void WindowContext::registerUnsharedFrameBuffer(unsigned int glContextId, unsigned int frameBufferId, UnsharedDeleteFn deleteFn)
 {
     SFML_BASE_ASSERT(getActiveThreadLocalGlContextId() == glContextId);
 
@@ -297,7 +296,7 @@ void WindowContext::registerUnsharedFrameBuffer(std::uint64_t glContextId, unsig
 
 
 ////////////////////////////////////////////////////////////
-void WindowContext::unregisterUnsharedFrameBuffer(std::uint64_t glContextId, unsigned int frameBufferId)
+void WindowContext::unregisterUnsharedFrameBuffer(unsigned int glContextId, unsigned int frameBufferId)
 {
     // If we're not on the right context, wait for the cleanup later on
     if (getActiveThreadLocalGlContextId() != glContextId)
@@ -372,7 +371,7 @@ const priv::GlContext* WindowContext::getActiveThreadLocalGlContextPtr() const
 
 
 ////////////////////////////////////////////////////////////
-std::uint64_t WindowContext::getActiveThreadLocalGlContextId() const
+unsigned int WindowContext::getActiveThreadLocalGlContextId() const
 {
     SFML_BASE_ASSERT(windowContextAlive);
     return activeGlContext.id;

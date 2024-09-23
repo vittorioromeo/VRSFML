@@ -5,9 +5,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Builtins/Strlen.hpp"
+#include "SFML/Base/Builtins/Strncmp.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Strlen.hpp"
-#include "SFML/Base/Strncmp.hpp"
 
 
 namespace sf::base
@@ -55,22 +55,6 @@ public:
     {
         SFML_BASE_ASSERT(stringLike.data() != nullptr);
     }
-
-
-    //////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr StringView(const StringView&) noexcept = default;
-
-
-    //////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr StringView(StringView&&) noexcept = default;
-
-
-    //////////////////////////////////////////
-    [[gnu::always_inline]] constexpr StringView& operator=(const StringView&) noexcept = default;
-
-
-    //////////////////////////////////////////
-    [[gnu::always_inline]] constexpr StringView& operator=(StringView&&) noexcept = default;
 
 
     //////////////////////////////////////////
@@ -133,7 +117,8 @@ private:
 namespace sf::base::literals
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr StringView operator""_sv(const char* str, SizeT len) noexcept
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr StringView operator""_sv(const char* str,
+                                                                                                     SizeT len) noexcept
 {
     return StringView{str, len};
 }

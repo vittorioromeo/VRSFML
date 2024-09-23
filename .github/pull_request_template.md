@@ -41,8 +41,8 @@ This PR is related to the issue #
 
 int main()
 {
-    sf::RenderWindow window({.size{1280u, 720u}, .title = "Minimal, complete and verifiable example"});
-    window.setFramerateLimit(60);
+    sf::RenderWindow window(
+        {.size{1280u, 720u}, .title = "Minimal, complete and verifiable example", .framerateLimit = 60});
 
     while (true)
     {

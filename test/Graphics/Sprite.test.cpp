@@ -32,8 +32,8 @@ TEST_CASE("[Graphics] sf::Sprite" * doctest::skip(skipDisplayTests))
         SECTION("Rectangle constructor")
         {
             const sf::Sprite sprite({{0.f, 0.f}, {40.f, 60.f}});
-            CHECK(sprite.getTextureRect() == sf::FloatRect({0.f, 0.f}, {40.f, 60.f}));
-            CHECK(sprite.getColor() == sf::Color::White);
+            CHECK(sprite.textureRect == sf::FloatRect({0.f, 0.f}, {40.f, 60.f}));
+            CHECK(sprite.color == sf::Color::White);
             CHECK(sprite.getLocalBounds() == sf::FloatRect({0.f, 0.f}, {40.f, 60.f}));
             CHECK(sprite.getGlobalBounds() == sf::FloatRect({0.f, 0.f}, {40.f, 60.f}));
         }
@@ -41,8 +41,8 @@ TEST_CASE("[Graphics] sf::Sprite" * doctest::skip(skipDisplayTests))
         SECTION("Negative-size texture rectangle")
         {
             const sf::Sprite sprite({{0.f, 0.f}, {-40.f, -60.f}});
-            CHECK(sprite.getTextureRect() == sf::FloatRect({0.f, 0.f}, {-40.f, -60.f}));
-            CHECK(sprite.getColor() == sf::Color::White);
+            CHECK(sprite.textureRect == sf::FloatRect({0.f, 0.f}, {-40.f, -60.f}));
+            CHECK(sprite.color == sf::Color::White);
             CHECK(sprite.getLocalBounds() == sf::FloatRect({0.f, 0.f}, {40.f, 60.f}));
             CHECK(sprite.getGlobalBounds() == sf::FloatRect({0.f, 0.f}, {40.f, 60.f}));
         }
@@ -51,14 +51,14 @@ TEST_CASE("[Graphics] sf::Sprite" * doctest::skip(skipDisplayTests))
     SECTION("Set/get texture rect")
     {
         sf::Sprite sprite({});
-        sprite.setTextureRect({{1, 2}, {3, 4}});
-        CHECK(sprite.getTextureRect() == sf::FloatRect({1, 2}, {3, 4}));
+        sprite.textureRect = {{1, 2}, {3, 4}};
+        CHECK(sprite.textureRect == sf::FloatRect({1, 2}, {3, 4}));
     }
 
     SECTION("Set/get color")
     {
         sf::Sprite sprite({});
-        sprite.setColor(sf::Color::Red);
-        CHECK(sprite.getColor() == sf::Color::Red);
+        sprite.color = sf::Color::Red;
+        CHECK(sprite.color == sf::Color::Red);
     }
 }

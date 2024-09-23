@@ -27,15 +27,17 @@ namespace sf
 /// parameters for a regular usage of the graphics module.
 ///
 ////////////////////////////////////////////////////////////
-struct WindowSettings
+struct [[nodiscard]] WindowSettings
 {
     Vector2u        size;                     //!< Video mode width and height, in pixels
     unsigned int    bitsPerPixel{32u};        //!< Video mode pixel depth, in bits per pixels
     String          title{"Untitled Window"}; //!< Title of the window
-    bool            fullscreen{false};        //!< TODO P1: docs
-    bool            resizable{true};          //!< TODO P1: docs
-    bool            closable{true};           //!< TODO P1: docs
-    bool            hasTitlebar{true};        //!< TODO P1: docs
+    bool            fullscreen{false};        //!< Is the window fullscreen?
+    bool            resizable{true};          //!< Is the window resizable?
+    bool            closable{true};           //!< Is the window closable?
+    bool            hasTitlebar{true};        //!< Does the window have a titlebar?
+    bool            vsync{false};             //!< Is vertical sync enabled?
+    unsigned int    frametimeLimit{0u};       //!< Frametime limit (FPS) (`0` for no limit)
     ContextSettings contextSettings{};        //!< Additional settings for the underlying OpenGL context
 };
 

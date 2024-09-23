@@ -188,8 +188,8 @@ void PlaybackDevice::transferResourcesTo(PlaybackDevice& other)
 
     ma_engine_listener_set_cone(engine,
                                 0,
-                                base::clamp(listener.cone.innerAngle, Angle::Zero, degrees(360.f)).asRadians(),
-                                base::clamp(listener.cone.outerAngle, Angle::Zero, degrees(360.f)).asRadians(),
+                                base::clamp(listener.cone.innerAngle, Angle::Zero, Angle::Full).asRadians(),
+                                base::clamp(listener.cone.outerAngle, Angle::Zero, Angle::Full).asRadians(),
                                 listener.cone.outerGain);
 
     ma_engine_listener_set_world_up(engine, 0, listener.upVector.x, listener.upVector.y, listener.upVector.z);
