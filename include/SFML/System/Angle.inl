@@ -255,6 +255,9 @@ constexpr Angle operator""_rad(unsigned long long angle)
 
 // Note: the 'inline' keyword here is technically not required, but VS2019 fails
 // to compile with a bogus "multiple definition" error if not explicitly used.
-inline constexpr Angle Angle::Zero;
+inline constexpr Angle Angle::Zero{};
+inline constexpr Angle Angle::Quarter{base::pi / 2.f};
+inline constexpr Angle Angle::Half{base::pi};
+inline constexpr Angle Angle::Full{base::tau};
 
 } // namespace sf

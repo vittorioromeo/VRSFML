@@ -22,20 +22,20 @@ TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
                                                        sf::ContextSettings{.depthBits = 0, .stencilBits = 8})
                                  .value();
 
-        renderTexture.clear(sf::Color::Red, 127);
+        renderTexture.clear(sf::Color::Red, sf::StencilValue{127u});
 
-        sf::RectangleShape shape1({}, {100, 100});
-        shape1.setFillColor(sf::Color::Green);
-        sf::RectangleShape shape2({}, {100, 100});
-        shape2.setFillColor(sf::Color::Blue);
+        const sf::RectangleShape shape1{{.fillColor = sf::Color::Green, .size = {100.f, 100.f}}};
+        const sf::RectangleShape shape2{{.fillColor = sf::Color::Blue, .size = {100.f, 100.f}}};
 
         SECTION("Stencil-Only")
         {
-            renderTexture
-                .draw(shape1,
-                      /* texture */ nullptr,
-                      sf::RenderStates{
-                          .stencilMode{sf::StencilComparison::Always, sf::StencilUpdateOperation::Keep, 1, 0xFF, true}});
+            renderTexture.draw(shape1,
+                               /* texture */ nullptr,
+                               sf::RenderStates{.stencilMode{sf::StencilComparison::Always,
+                                                             sf::StencilUpdateOperation::Keep,
+                                                             sf::StencilValue{1u},
+                                                             sf::StencilValue{0xFFu},
+                                                             true}});
             renderTexture.display();
             CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Red);
         }
@@ -44,54 +44,66 @@ TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
         {
             SECTION("Always")
             {
-                renderTexture
-                    .draw(shape1,
-                          /* texture */ nullptr,
-                          sf::RenderStates{
-                              .stencilMode{sf::StencilComparison::Always, sf::StencilUpdateOperation::Keep, 1, 0xFF, false}});
+                renderTexture.draw(shape1,
+                                   /* texture */ nullptr,
+                                   sf::RenderStates{.stencilMode{sf::StencilComparison::Always,
+                                                                 sf::StencilUpdateOperation::Keep,
+                                                                 sf::StencilValue{1u},
+                                                                 sf::StencilValue{0xFFu},
+                                                                 false}});
                 renderTexture.display();
                 CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Green);
             }
 
             SECTION("Equal")
             {
-                renderTexture
-                    .draw(shape1,
-                          /* texture */ nullptr,
-                          sf::RenderStates{
-                              .stencilMode{sf::StencilComparison::Equal, sf::StencilUpdateOperation::Keep, 126, 0xFF, false}});
+                renderTexture.draw(shape1,
+                                   /* texture */ nullptr,
+                                   sf::RenderStates{.stencilMode{sf::StencilComparison::Equal,
+                                                                 sf::StencilUpdateOperation::Keep,
+                                                                 sf::StencilValue{126u},
+                                                                 sf::StencilValue{0xFFu},
+                                                                 false}});
                 renderTexture.display();
                 CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Red);
-                renderTexture
-                    .draw(shape1,
-                          /* texture */ nullptr,
-                          sf::RenderStates{
-                              .stencilMode{sf::StencilComparison::Equal, sf::StencilUpdateOperation::Keep, 127, 0xFF, false}});
+                renderTexture.draw(shape1,
+                                   /* texture */ nullptr,
+                                   sf::RenderStates{.stencilMode{sf::StencilComparison::Equal,
+                                                                 sf::StencilUpdateOperation::Keep,
+                                                                 sf::StencilValue{127u},
+                                                                 sf::StencilValue{0xFFu},
+                                                                 false}});
                 renderTexture.display();
                 CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Green);
             }
 
             SECTION("Greater")
             {
-                renderTexture
-                    .draw(shape1,
-                          /* texture */ nullptr,
-                          sf::RenderStates{
-                              .stencilMode{sf::StencilComparison::Greater, sf::StencilUpdateOperation::Keep, 126, 0xFF, false}});
+                renderTexture.draw(shape1,
+                                   /* texture */ nullptr,
+                                   sf::RenderStates{.stencilMode{sf::StencilComparison::Greater,
+                                                                 sf::StencilUpdateOperation::Keep,
+                                                                 sf::StencilValue{126u},
+                                                                 sf::StencilValue{0xFFu},
+                                                                 false}});
                 renderTexture.display();
                 CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Red);
-                renderTexture
-                    .draw(shape1,
-                          /* texture */ nullptr,
-                          sf::RenderStates{
-                              .stencilMode{sf::StencilComparison::Greater, sf::StencilUpdateOperation::Keep, 127, 0xFF, false}});
+                renderTexture.draw(shape1,
+                                   /* texture */ nullptr,
+                                   sf::RenderStates{.stencilMode{sf::StencilComparison::Greater,
+                                                                 sf::StencilUpdateOperation::Keep,
+                                                                 sf::StencilValue{127u},
+                                                                 sf::StencilValue{0xFFu},
+                                                                 false}});
                 renderTexture.display();
                 CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Red);
-                renderTexture
-                    .draw(shape1,
-                          /* texture */ nullptr,
-                          sf::RenderStates{
-                              .stencilMode{sf::StencilComparison::Greater, sf::StencilUpdateOperation::Keep, 128, 0xFF, false}});
+                renderTexture.draw(shape1,
+                                   /* texture */ nullptr,
+                                   sf::RenderStates{.stencilMode{sf::StencilComparison::Greater,
+                                                                 sf::StencilUpdateOperation::Keep,
+                                                                 sf::StencilValue{128u},
+                                                                 sf::StencilValue{0xFFu},
+                                                                 false}});
                 renderTexture.display();
                 CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Green);
             }
@@ -102,8 +114,8 @@ TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
                                    /* texture */ nullptr,
                                    sf::RenderStates{.stencilMode{sf::StencilComparison::GreaterEqual,
                                                                  sf::StencilUpdateOperation::Keep,
-                                                                 126,
-                                                                 0xFF,
+                                                                 sf::StencilValue{126u},
+                                                                 sf::StencilValue{0xFFu},
                                                                  false}});
                 renderTexture.display();
                 CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Red);
@@ -111,8 +123,8 @@ TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
                                    /* texture */ nullptr,
                                    sf::RenderStates{.stencilMode{sf::StencilComparison::GreaterEqual,
                                                                  sf::StencilUpdateOperation::Keep,
-                                                                 127,
-                                                                 0xFF,
+                                                                 sf::StencilValue{127u},
+                                                                 sf::StencilValue{0xFFu},
                                                                  false}});
                 renderTexture.display();
                 CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Green);
@@ -120,8 +132,8 @@ TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
                                    /* texture */ nullptr,
                                    sf::RenderStates{.stencilMode{sf::StencilComparison::GreaterEqual,
                                                                  sf::StencilUpdateOperation::Keep,
-                                                                 128,
-                                                                 0xFF,
+                                                                 sf::StencilValue{128u},
+                                                                 sf::StencilValue{0xFFu},
                                                                  false}});
                 renderTexture.display();
                 CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Blue);
@@ -129,79 +141,97 @@ TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
 
             SECTION("Less")
             {
-                renderTexture
-                    .draw(shape1,
-                          /* texture */ nullptr,
-                          sf::RenderStates{
-                              .stencilMode{sf::StencilComparison::Less, sf::StencilUpdateOperation::Keep, 128, 0xFF, false}});
+                renderTexture.draw(shape1,
+                                   /* texture */ nullptr,
+                                   sf::RenderStates{.stencilMode{sf::StencilComparison::Less,
+                                                                 sf::StencilUpdateOperation::Keep,
+                                                                 sf::StencilValue{128u},
+                                                                 sf::StencilValue{0xFFu},
+                                                                 false}});
                 renderTexture.display();
                 CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Red);
-                renderTexture
-                    .draw(shape1,
-                          /* texture */ nullptr,
-                          sf::RenderStates{
-                              .stencilMode{sf::StencilComparison::Less, sf::StencilUpdateOperation::Keep, 127, 0xFF, false}});
+                renderTexture.draw(shape1,
+                                   /* texture */ nullptr,
+                                   sf::RenderStates{.stencilMode{sf::StencilComparison::Less,
+                                                                 sf::StencilUpdateOperation::Keep,
+                                                                 sf::StencilValue{127u},
+                                                                 sf::StencilValue{0xFFu},
+                                                                 false}});
                 renderTexture.display();
                 CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Red);
-                renderTexture
-                    .draw(shape1,
-                          /* texture */ nullptr,
-                          sf::RenderStates{
-                              .stencilMode{sf::StencilComparison::Less, sf::StencilUpdateOperation::Keep, 126, 0xFF, false}});
+                renderTexture.draw(shape1,
+                                   /* texture */ nullptr,
+                                   sf::RenderStates{.stencilMode{sf::StencilComparison::Less,
+                                                                 sf::StencilUpdateOperation::Keep,
+                                                                 sf::StencilValue{126u},
+                                                                 sf::StencilValue{0xFFu},
+                                                                 false}});
                 renderTexture.display();
                 CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Green);
             }
 
             SECTION("LessEqual")
             {
-                renderTexture
-                    .draw(shape1,
-                          /* texture */ nullptr,
-                          sf::RenderStates{
-                              .stencilMode{sf::StencilComparison::LessEqual, sf::StencilUpdateOperation::Keep, 128, 0xFF, false}});
+                renderTexture.draw(shape1,
+                                   /* texture */ nullptr,
+                                   sf::RenderStates{.stencilMode{sf::StencilComparison::LessEqual,
+                                                                 sf::StencilUpdateOperation::Keep,
+                                                                 sf::StencilValue{128u},
+                                                                 sf::StencilValue{0xFFu},
+                                                                 false}});
                 renderTexture.display();
                 CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Red);
-                renderTexture
-                    .draw(shape1,
-                          /* texture */ nullptr,
-                          sf::RenderStates{
-                              .stencilMode{sf::StencilComparison::LessEqual, sf::StencilUpdateOperation::Keep, 127, 0xFF, false}});
+                renderTexture.draw(shape1,
+                                   /* texture */ nullptr,
+                                   sf::RenderStates{.stencilMode{sf::StencilComparison::LessEqual,
+                                                                 sf::StencilUpdateOperation::Keep,
+                                                                 sf::StencilValue{127u},
+                                                                 sf::StencilValue{0xFFu},
+                                                                 false}});
                 renderTexture.display();
                 CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Green);
-                renderTexture
-                    .draw(shape2,
-                          /* texture */ nullptr,
-                          sf::RenderStates{
-                              .stencilMode{sf::StencilComparison::LessEqual, sf::StencilUpdateOperation::Keep, 126, 0xFF, false}});
+                renderTexture.draw(shape2,
+                                   /* texture */ nullptr,
+                                   sf::RenderStates{.stencilMode{sf::StencilComparison::LessEqual,
+                                                                 sf::StencilUpdateOperation::Keep,
+                                                                 sf::StencilValue{126u},
+                                                                 sf::StencilValue{0xFFu},
+                                                                 false}});
                 renderTexture.display();
                 CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Blue);
             }
 
             SECTION("Never")
             {
-                renderTexture
-                    .draw(shape1,
-                          /* texture */ nullptr,
-                          sf::RenderStates{
-                              .stencilMode{sf::StencilComparison::Never, sf::StencilUpdateOperation::Keep, 127, 0xFF, false}});
+                renderTexture.draw(shape1,
+                                   /* texture */ nullptr,
+                                   sf::RenderStates{.stencilMode{sf::StencilComparison::Never,
+                                                                 sf::StencilUpdateOperation::Keep,
+                                                                 sf::StencilValue{127u},
+                                                                 sf::StencilValue{0xFFu},
+                                                                 false}});
                 renderTexture.display();
                 CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Red);
             }
 
             SECTION("NotEqual")
             {
-                renderTexture
-                    .draw(shape1,
-                          /* texture */ nullptr,
-                          sf::RenderStates{
-                              .stencilMode{sf::StencilComparison::NotEqual, sf::StencilUpdateOperation::Keep, 127, 0xFF, false}});
+                renderTexture.draw(shape1,
+                                   /* texture */ nullptr,
+                                   sf::RenderStates{.stencilMode{sf::StencilComparison::NotEqual,
+                                                                 sf::StencilUpdateOperation::Keep,
+                                                                 sf::StencilValue{127u},
+                                                                 sf::StencilValue{0xFFu},
+                                                                 false}});
                 renderTexture.display();
                 CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Red);
-                renderTexture
-                    .draw(shape1,
-                          /* texture */ nullptr,
-                          sf::RenderStates{
-                              .stencilMode{sf::StencilComparison::NotEqual, sf::StencilUpdateOperation::Keep, 128, 0xFF, false}});
+                renderTexture.draw(shape1,
+                                   /* texture */ nullptr,
+                                   sf::RenderStates{.stencilMode{sf::StencilComparison::NotEqual,
+                                                                 sf::StencilUpdateOperation::Keep,
+                                                                 sf::StencilValue{128u},
+                                                                 sf::StencilValue{0xFFu},
+                                                                 false}});
                 renderTexture.display();
                 CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Green);
             }
@@ -215,15 +245,15 @@ TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
                                    /* texture */ nullptr,
                                    sf::RenderStates{.stencilMode{sf::StencilComparison::Always,
                                                                  sf::StencilUpdateOperation::Decrement,
-                                                                 127,
-                                                                 0xFF,
+                                                                 sf::StencilValue{127u},
+                                                                 sf::StencilValue{0xFFu},
                                                                  true}});
                 renderTexture.draw(shape1,
                                    /* texture */ nullptr,
                                    sf::RenderStates{.stencilMode{sf::StencilComparison::Equal,
                                                                  sf::StencilUpdateOperation::Decrement,
-                                                                 126,
-                                                                 0xFF,
+                                                                 sf::StencilValue{126u},
+                                                                 sf::StencilValue{0xFFu},
                                                                  false}});
                 renderTexture.display();
                 CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Green);
@@ -235,15 +265,15 @@ TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
                                    /* texture */ nullptr,
                                    sf::RenderStates{.stencilMode{sf::StencilComparison::Always,
                                                                  sf::StencilUpdateOperation::Increment,
-                                                                 127,
-                                                                 0xFF,
+                                                                 sf::StencilValue{127u},
+                                                                 sf::StencilValue{0xFFu},
                                                                  true}});
                 renderTexture.draw(shape1,
                                    /* texture */ nullptr,
                                    sf::RenderStates{.stencilMode{sf::StencilComparison::Equal,
                                                                  sf::StencilUpdateOperation::Increment,
-                                                                 128,
-                                                                 0xFF,
+                                                                 sf::StencilValue{128u},
+                                                                 sf::StencilValue{0xFFu},
                                                                  false}});
                 renderTexture.display();
                 CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Green);
@@ -251,64 +281,80 @@ TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
 
             SECTION("Invert")
             {
-                renderTexture
-                    .draw(shape1,
-                          /* texture */ nullptr,
-                          sf::RenderStates{
-                              .stencilMode{sf::StencilComparison::Always, sf::StencilUpdateOperation::Invert, 127, 0xFF, true}});
-                renderTexture
-                    .draw(shape1,
-                          /* texture */ nullptr,
-                          sf::RenderStates{
-                              .stencilMode{sf::StencilComparison::Equal, sf::StencilUpdateOperation::Invert, 0x80, 0xFF, false}});
+                renderTexture.draw(shape1,
+                                   /* texture */ nullptr,
+                                   sf::RenderStates{.stencilMode{sf::StencilComparison::Always,
+                                                                 sf::StencilUpdateOperation::Invert,
+                                                                 sf::StencilValue{127u},
+                                                                 sf::StencilValue{0xFFu},
+                                                                 true}});
+                renderTexture.draw(shape1,
+                                   /* texture */ nullptr,
+                                   sf::RenderStates{.stencilMode{sf::StencilComparison::Equal,
+                                                                 sf::StencilUpdateOperation::Invert,
+                                                                 sf::StencilValue{0x80u},
+                                                                 sf::StencilValue{0xFFu},
+                                                                 false}});
                 renderTexture.display();
                 CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Green);
             }
 
             SECTION("Keep")
             {
-                renderTexture
-                    .draw(shape1,
-                          /* texture */ nullptr,
-                          sf::RenderStates{
-                              .stencilMode{sf::StencilComparison::Always, sf::StencilUpdateOperation::Keep, 127, 0xFF, true}});
-                renderTexture
-                    .draw(shape1,
-                          /* texture */ nullptr,
-                          sf::RenderStates{
-                              .stencilMode{sf::StencilComparison::Equal, sf::StencilUpdateOperation::Keep, 127, 0xFF, false}});
+                renderTexture.draw(shape1,
+                                   /* texture */ nullptr,
+                                   sf::RenderStates{.stencilMode{sf::StencilComparison::Always,
+                                                                 sf::StencilUpdateOperation::Keep,
+                                                                 sf::StencilValue{127u},
+                                                                 sf::StencilValue{0xFFu},
+                                                                 true}});
+                renderTexture.draw(shape1,
+                                   /* texture */ nullptr,
+                                   sf::RenderStates{.stencilMode{sf::StencilComparison::Equal,
+                                                                 sf::StencilUpdateOperation::Keep,
+                                                                 sf::StencilValue{127u},
+                                                                 sf::StencilValue{0xFFu},
+                                                                 false}});
                 renderTexture.display();
                 CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Green);
             }
 
             SECTION("Replace")
             {
-                renderTexture
-                    .draw(shape1,
-                          /* texture */ nullptr,
-                          sf::RenderStates{
-                              .stencilMode{sf::StencilComparison::Always, sf::StencilUpdateOperation::Replace, 255, 0xFF, true}});
-                renderTexture
-                    .draw(shape1,
-                          /* texture */ nullptr,
-                          sf::RenderStates{
-                              .stencilMode{sf::StencilComparison::Equal, sf::StencilUpdateOperation::Replace, 255, 0xFF, false}});
+                renderTexture.draw(shape1,
+                                   /* texture */ nullptr,
+                                   sf::RenderStates{.stencilMode{sf::StencilComparison::Always,
+                                                                 sf::StencilUpdateOperation::Replace,
+                                                                 sf::StencilValue{255u},
+                                                                 sf::StencilValue{0xFFu},
+                                                                 true}});
+                renderTexture.draw(shape1,
+                                   /* texture */ nullptr,
+                                   sf::RenderStates{.stencilMode{sf::StencilComparison::Equal,
+                                                                 sf::StencilUpdateOperation::Replace,
+                                                                 sf::StencilValue{255u},
+                                                                 sf::StencilValue{0xFFu},
+                                                                 false}});
                 renderTexture.display();
                 CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Green);
             }
 
             SECTION("Zero")
             {
-                renderTexture
-                    .draw(shape1,
-                          /* texture */ nullptr,
-                          sf::RenderStates{
-                              .stencilMode{sf::StencilComparison::Always, sf::StencilUpdateOperation::Zero, 127, 0xFF, true}});
-                renderTexture
-                    .draw(shape1,
-                          /* texture */ nullptr,
-                          sf::RenderStates{
-                              .stencilMode{sf::StencilComparison::Equal, sf::StencilUpdateOperation::Zero, 0, 0xFF, false}});
+                renderTexture.draw(shape1,
+                                   /* texture */ nullptr,
+                                   sf::RenderStates{.stencilMode{sf::StencilComparison::Always,
+                                                                 sf::StencilUpdateOperation::Zero,
+                                                                 sf::StencilValue{127u},
+                                                                 sf::StencilValue{0xFFu},
+                                                                 true}});
+                renderTexture.draw(shape1,
+                                   /* texture */ nullptr,
+                                   sf::RenderStates{.stencilMode{sf::StencilComparison::Equal,
+                                                                 sf::StencilUpdateOperation::Zero,
+                                                                 sf::StencilValue{0u},
+                                                                 sf::StencilValue{0xFFu},
+                                                                 false}});
                 renderTexture.display();
                 CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Green);
             }

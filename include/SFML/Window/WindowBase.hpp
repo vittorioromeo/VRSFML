@@ -6,6 +6,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Export.hpp"
 
+#include "SFML/Window/Event.hpp"
 #include "SFML/Window/WindowHandle.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
@@ -25,7 +26,6 @@
 namespace sf
 {
 class Cursor;
-class Event;
 } // namespace sf
 
 namespace sf::priv
@@ -49,6 +49,12 @@ class SFML_WINDOW_API WindowBase
 {
 public:
     ////////////////////////////////////////////////////////////
+    /// \brief Window creation settings
+    ///
+    ////////////////////////////////////////////////////////////
+    using Settings = WindowSettings;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Construct a new window
     ///
     /// This constructor creates the window with the size and pixel
@@ -61,7 +67,7 @@ public:
     /// \param windowSettings Settings to use
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowBase(const WindowSettings& windowSettings);
+    [[nodiscard]] explicit WindowBase(const Settings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control

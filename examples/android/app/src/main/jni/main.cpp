@@ -8,9 +8,7 @@
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
-#include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Sleep.hpp"
@@ -107,7 +105,7 @@ int main(int, char**)
 
     const auto font = sf::Font::openFromFile(graphicsContext, "tuffy.ttf").value();
 
-    sf::Text text(font, "Tap anywhere to move the logo.", 64);
+    sf::Text text(font, {.string = "Tap anywhere to move the logo.", .characterSize = 64u});
     text.setFillColor(sf::Color::Black);
     text.position = {10, 10};
 
@@ -130,8 +128,8 @@ int main(int, char**)
             if (const auto* resized = event->getIf<sf::Event::Resized>())
             {
                 const auto fSize = resized->size.toVector2f();
-                view.setSize(fSize);
-                view.setCenter(fSize / 2.f);
+                view.size        = fSize;
+                view.center      = fSize / 2.f;
                 window.setView(view);
             }
             else if (event->is<sf::Event::FocusLost>())

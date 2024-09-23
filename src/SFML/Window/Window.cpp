@@ -44,10 +44,10 @@ struct Window::Window::Impl
 
 ////////////////////////////////////////////////////////////
 template <typename TWindowBaseArg>
-Window::Window(WindowContext&        windowContext,
-               const WindowSettings& windowSettings,
-               TWindowBaseArg&&      windowBaseArg,
-               unsigned int          bitsPerPixel) :
+Window::Window(WindowContext&   windowContext,
+               const Settings&  windowSettings,
+               TWindowBaseArg&& windowBaseArg,
+               unsigned int     bitsPerPixel) :
 WindowBase(SFML_BASE_FORWARD(windowBaseArg)),
 m_impl(windowContext, windowContext.createGlContext(windowSettings.contextSettings, getWindowImpl(), bitsPerPixel))
 {
@@ -65,7 +65,7 @@ m_impl(windowContext, windowContext.createGlContext(windowSettings.contextSettin
 
 
 ////////////////////////////////////////////////////////////
-Window::Window(WindowContext& windowContext, const WindowSettings& windowSettings) :
+Window::Window(WindowContext& windowContext, const Settings& windowSettings) :
 Window(windowContext, windowSettings, priv::WindowImpl::create(windowSettings), windowSettings.bitsPerPixel)
 {
 }

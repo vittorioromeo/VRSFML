@@ -14,7 +14,6 @@
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
 #include "SFML/Window/Keyboard.hpp"
-#include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Path.hpp"
@@ -132,13 +131,9 @@ int main()
     sf::RenderWindow window(graphicsContext, {.size{windowSize}, .title = "SFML Island", .resizable = false, .vsync = true});
 
     // Create all of our graphics resources
-#if 1
-    sf::Text hudText(font);
-    sf::Text statusText(font);
-#else
-    // TODO P0:
     sf::Text hudText(font,
-                     {.characterSize    = 28,
+                     {.position         = {5.0f, 5.0f},
+                      .characterSize    = 28,
                       .fillColor        = sf::Color::White,
                       .outlineColor     = sf::Color::Black,
                       .outlineThickness = 2.0f});
@@ -149,21 +144,8 @@ int main()
                          .outlineColor     = sf::Color::Black,
                          .outlineThickness = 2.0f});
 
-#endif
     sf::RenderStates terrainStates;
     sf::VertexBuffer terrain(graphicsContext, sf::PrimitiveType::Triangles, sf::VertexBuffer::Usage::Static);
-
-    // Set up our text drawables
-    statusText.setCharacterSize(28);
-    statusText.setFillColor(sf::Color::White);
-    statusText.setOutlineColor(sf::Color::Black);
-    statusText.setOutlineThickness(2.0f);
-
-    hudText.setCharacterSize(14);
-    hudText.setFillColor(sf::Color::White);
-    hudText.setOutlineColor(sf::Color::Black);
-    hudText.setOutlineThickness(2.0f);
-    hudText.position = {5.0f, 5.0f};
 
     // Staging buffer for our terrain data that we will upload to our VertexBuffer
     std::vector<sf::Vertex> terrainStagingBuffer;
@@ -209,7 +191,7 @@ int main()
 
     std::size_t currentSetting = 0;
 
-    std::ostringstream osstr;
+    std::ostringstream oss;
     sf::Clock          clock;
 
     while (true)
@@ -278,16 +260,16 @@ int main()
         }
 
         // Update and draw the HUD text
-        osstr.str("");
-        osstr << "Frame:  " << clock.restart().asMilliseconds() << "ms\n"
-              << "perlinOctaves:  " << perlinOctaves << "\n\n"
-              << "Use the arrow keys to change the values.\nUse the return key to regenerate the terrain.\n\n";
+        oss.str("");
+        oss << "Frame:  " << clock.restart().asMilliseconds() << "ms\n"
+            << "perlinOctaves:  " << perlinOctaves << "\n\n"
+            << "Use the arrow keys to change the values.\nUse the return key to regenerate the terrain.\n\n";
 
         for (std::size_t i = 0; i < settings.size(); ++i)
-            osstr << ((i == currentSetting) ? ">>  " : "       ") << settings[i].name << ":  " << *(settings[i].value)
-                  << '\n';
+            oss << ((i == currentSetting) ? ">>  " : "       ") << settings[i].name << ":  " << *(settings[i].value)
+                << '\n';
 
-        hudText.setString(osstr.str());
+        hudText.setString(oss.str());
 
         window.draw(hudText);
 

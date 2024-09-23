@@ -42,7 +42,7 @@ struct SFML_AUDIO_API Listener
     Vector3f position{0, 0, 0};   //< Position where audio is heard from
     Vector3f direction{0, 0, -1}; //< Forward-pointing vector from listener's perspective (not necessarily normalized)
     Vector3f velocity{0, 0, 0};   //< Velocity of the listener
-    Listener::Cone cone{degrees(360.f), degrees(360.f), 1}; //< Cone properties (affects directional attenuation)
+    Listener::Cone cone{Angle::Full, Angle::Full, 1}; //< Cone properties (affects directional attenuation)
     Vector3f upVector{0, 1, 0}; //< Upward-pointing vector from the listener's perspective (not necessarily normalized)
 };
 

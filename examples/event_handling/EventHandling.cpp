@@ -361,13 +361,16 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    sf::GraphicsContext      m_graphicsContext;
-    sf::RenderWindow         m_window{m_graphicsContext,
-                                      {.size{800u, 600u}, .title = "SFML Event Handling", .resizable = false, .vsync = true}};
-    const sf::Font           m_font{sf::Font::openFromFile(m_graphicsContext, "resources/tuffy.ttf").value()};
-    sf::Text                 m_logText{m_font, "", 20};
-    sf::Text                 m_handlerText{m_font, "Current Handler: Classic", 24};
-    sf::Text                 m_instructions{m_font, "Press Enter to change handler type", 24};
+    sf::GraphicsContext m_graphicsContext;
+    sf::RenderWindow    m_window{m_graphicsContext,
+                                 {.size{800u, 600u}, .title = "SFML Event Handling", .resizable = false, .vsync = true}};
+
+    const sf::Font m_font{sf::Font::openFromFile(m_graphicsContext, "resources/tuffy.ttf").value()};
+
+    sf::Text m_logText{m_font, {.characterSize = 20u}};
+    sf::Text m_handlerText{m_font, {.string = "Current Handler: Classic", .characterSize = 24u}};
+    sf::Text m_instructions{m_font, {.string = "Press Enter to change handler type", .characterSize = 24u}};
+
     std::vector<std::string> m_log;
     HandlerType              m_handlerType{HandlerType::Classic};
     bool                     m_mustClose{false};

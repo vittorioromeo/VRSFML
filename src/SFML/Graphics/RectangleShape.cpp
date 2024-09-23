@@ -5,13 +5,15 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/RectangleShape.hpp"
 
+#include "SFML/Base/Assert.hpp"
+
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-RectangleShape::RectangleShape(const Shape::Settings& settings, Vector2f size) : Shape(settings)
+RectangleShape::RectangleShape(const Settings& settings) : Shape(priv::toShapeSettings(settings))
 {
-    setSize(size);
+    setSize(settings.size);
 }
 
 
@@ -46,6 +48,7 @@ base::SizeT RectangleShape::getPointCount() const
 ////////////////////////////////////////////////////////////
 Vector2f RectangleShape::getPoint(base::SizeT index) const
 {
+    SFML_BASE_ASSERT(index < 4u && "Index is out of bounds");
     return m_points[index];
 }
 

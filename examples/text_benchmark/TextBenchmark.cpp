@@ -68,26 +68,16 @@ int main()
 
     sf::Sprite sfmlLogo({.position = sfmlLogoAtlasPos, .size = sfmlLogoImage.getSize().toVector2f()});
 
-    sf::Text text0(font0, "Test", 128);
-    text0.position = {0u, 0u};
+    const sf::Text text0(font0, {.position = {0u, 0u}, .string = "Test", .characterSize = 128u});
+    const sf::Text text1(font0, {.position = {128u, 0u}, .string = "acbasdfbFOOBAR", .characterSize = 32u});
+    const sf::Text text2(font0, {.position = {0u, 128u}, .string = "ssdfbsdbfussy", .characterSize = 64u});
+    const sf::Text text3(font1, {.position = {128u, 128u}, .string = "Test", .characterSize = 128u});
+    const sf::Text text4(font1, {.position = {256u, 128u}, .string = "FOmfgj,ryfkmtdfOBAR", .characterSize = 32u});
+    const sf::Text text5(font1, {.position = {128u, 256u}, .string = "sussy", .characterSize = 64u});
 
-    sf::Text text1(font0, "acbasdfbFOOBAR", 32);
-    text1.position = {128u, 0u};
-
-    sf::Text text2(font0, "ssdfbsdbfussy", 64);
-    text2.position = {0u, 128u};
-
-    sf::Text text3(font1, "Test", 128);
-    text3.position = {128u, 128u};
-
-    sf::Text text4(font1, "FOmfgj,ryfkmtdfOBAR", 32);
-    text4.position = {256u, 128u};
-
-    sf::Text text5(font1, "sussy", 64);
-    text5.position = {128u, 256u};
-
-    sf::CircleShape circle0{
+    const sf::CircleShape circle0{
         {.position           = {350.f, 350.f},
+         .scale              = {2.f, 2.f},
          .textureRect        = {.position = whiteDotAtlasPos.toVector2f(), .size{1.f, 1.f}},
          .outlineTextureRect = {.position = whiteDotAtlasPos.toVector2f(), .size{1.f, 1.f}},
          .fillColor          = sf::Color::Red,
@@ -135,7 +125,6 @@ int main()
             drawableBatch.add(text4);
             drawableBatch.add(text5);
 
-            circle0.scale = {2.f, 2.f};
             drawableBatch.add(circle0);
 
             window.draw(drawableBatch, {.texture = &textureAtlas.getTexture()});

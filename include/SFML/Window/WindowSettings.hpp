@@ -27,7 +27,7 @@ namespace sf
 /// parameters for a regular usage of the graphics module.
 ///
 ////////////////////////////////////////////////////////////
-struct WindowSettings
+struct [[nodiscard]] WindowSettings
 {
     Vector2u        size;                     //!< Video mode width and height, in pixels
     unsigned int    bitsPerPixel{32u};        //!< Video mode pixel depth, in bits per pixels

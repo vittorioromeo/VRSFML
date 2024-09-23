@@ -104,7 +104,7 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 
         sf::base::Optional<sf::RenderWindow> childWindow(sf::base::inPlace,
                                                          graphicsContext,
-                                                         sf::WindowSettings{.size{256u, 256u}, .title = "B"});
+                                                         sf::RenderWindow::Settings{.size{256u, 256u}, .title = "B"});
 
         window.clear();
         window.display();
@@ -121,7 +121,7 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 
         sf::base::Optional<sf::RenderWindow> childWindow(sf::base::inPlace,
                                                          graphicsContext,
-                                                         sf::WindowSettings{.size{256u, 256u}, .title = "B"});
+                                                         sf::RenderWindow::Settings{.size{256u, 256u}, .title = "B"});
 
         window.clear();
         window.display();
@@ -139,7 +139,7 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 
         sf::base::Optional<sf::RenderWindow> childWindow(sf::base::inPlace,
                                                          graphicsContext,
-                                                         sf::WindowSettings{.size{256u, 256u}, .title = "B"});
+                                                         sf::RenderWindow::Settings{.size{256u, 256u}, .title = "B"});
 
         childWindow->clear();
         childWindow->display();
@@ -154,7 +154,7 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 
         sf::base::Optional<sf::RenderWindow> childWindow(sf::base::inPlace,
                                                          graphicsContext,
-                                                         sf::WindowSettings{.size{256u, 256u}, .title = "B"});
+                                                         sf::RenderWindow::Settings{.size{256u, 256u}, .title = "B"});
 
         childWindow->clear();
         childWindow->display();

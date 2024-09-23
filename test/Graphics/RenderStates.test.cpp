@@ -1,5 +1,7 @@
 #include "SFML/Graphics/RenderStates.hpp"
 
+#include "SFML/Graphics/BlendMode.hpp"
+
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
@@ -27,7 +29,7 @@ TEST_CASE("[Graphics] sf::RenderStates")
         SECTION("Default constructor")
         {
             const sf::RenderStates renderStates{};
-            CHECK(renderStates.blendMode == sf::BlendMode());
+            CHECK(renderStates.blendMode == sf::BlendAlpha);
             CHECK(renderStates.stencilMode == sf::StencilMode{});
             CHECK(renderStates.transform == sf::Transform());
             CHECK(renderStates.coordinateType == sf::CoordinateType::Pixels);
@@ -38,7 +40,7 @@ TEST_CASE("[Graphics] sf::RenderStates")
 
     SECTION("Default constant")
     {
-        CHECK(sf::RenderStates::Default.blendMode == sf::BlendMode());
+        CHECK(sf::RenderStates::Default.blendMode == sf::BlendAlpha);
         CHECK(sf::RenderStates::Default.stencilMode == sf::StencilMode{});
         CHECK(sf::RenderStates::Default.transform == sf::Transform());
         CHECK(sf::RenderStates::Default.coordinateType == sf::CoordinateType::Pixels);

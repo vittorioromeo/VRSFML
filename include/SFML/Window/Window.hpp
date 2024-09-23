@@ -23,12 +23,18 @@ class SFML_WINDOW_API Window : public WindowBase
 {
 public:
     ////////////////////////////////////////////////////////////
+    /// \brief Window creation settings
+    ///
+    ////////////////////////////////////////////////////////////
+    using Settings = WindowSettings;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Construct a new window
     ///
     /// Creates the render window with the specified \a windowSettings.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Window(WindowContext& windowContext, const WindowSettings& windowSettings);
+    [[nodiscard]] explicit Window(WindowContext& windowContext, const Settings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control
@@ -161,10 +167,10 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     template <typename TWindowBaseArg>
-    [[nodiscard]] explicit Window(WindowContext&        windowContext,
-                                  const WindowSettings& windowSettings,
-                                  TWindowBaseArg&&      windowBaseArg,
-                                  unsigned int          bitsPerPixel);
+    [[nodiscard]] explicit Window(WindowContext&   windowContext,
+                                  const Settings&  windowSettings,
+                                  TWindowBaseArg&& windowBaseArg,
+                                  unsigned int     bitsPerPixel);
 
     ////////////////////////////////////////////////////////////
     // Member data

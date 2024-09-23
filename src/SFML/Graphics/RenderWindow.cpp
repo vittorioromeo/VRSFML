@@ -30,7 +30,7 @@ void retrieveWindowFrameBufferId(unsigned int& defaultFrameBuffer)
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-RenderWindow::RenderWindow(GraphicsContext& graphicsContext, const WindowSettings& windowSettings) :
+RenderWindow::RenderWindow(GraphicsContext& graphicsContext, const Settings& windowSettings) :
 Window(graphicsContext, windowSettings),
 RenderTarget(graphicsContext)
 {

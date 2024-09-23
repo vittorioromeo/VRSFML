@@ -5,11 +5,8 @@
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Transformable.hpp"
 
-#include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Angle.hpp"
 
@@ -33,14 +30,14 @@ int main()
                              .vsync     = true,
                              .contextSettings{.depthBits = 0, .stencilBits = 8}});
 
-    const sf::RectangleShape red({.position{270.f, 70.f}, .rotation = sf::degrees(60.f), .fillColor = sf::Color::Red},
-                                 /* size */ {500, 50});
+    const sf::RectangleShape red(
+        {.position{270.f, 70.f}, .rotation = sf::degrees(60.f), .fillColor = sf::Color::Red, .size = {500.f, 50.f}});
 
-    const sf::RectangleShape green({.position{370.f, 100.f}, .rotation = sf::degrees(120.f), .fillColor = sf::Color::Green},
-                                   /* size */ {500, 50});
+    const sf::RectangleShape green(
+        {.position{370.f, 100.f}, .rotation = sf::degrees(120.f), .fillColor = sf::Color::Green, .size = {500.f, 50.f}});
 
-    const sf::RectangleShape blue({.position{550.f, 470.f}, .rotation = sf::degrees(180.f), .fillColor = sf::Color::Blue},
-                                  /* size */ {500, 50});
+    const sf::RectangleShape blue(
+        {.position{550.f, 470.f}, .rotation = sf::degrees(180.f), .fillColor = sf::Color::Blue, .size = {500.f, 50.f}});
 
     while (true)
     {
@@ -108,7 +105,7 @@ int main()
         // make sure the reference value of 2 is greater than 0.
 
         // Clear the window color to black and the initial stencil buffer values to 0
-        window.clear(sf::Color::Black, 0);
+        window.clear(sf::Color::Black, sf::StencilValue{0u});
 
         // Draw rectangles
 
@@ -116,8 +113,11 @@ int main()
         // the stencil buffer values of its pixels to the specified reference value.
         window.draw(red,
                     /* texture */ nullptr,
-                    sf::RenderStates{
-                        .stencilMode{sf::StencilComparison::Always, sf::StencilUpdateOperation::Replace, 3, ~0u, false}});
+                    sf::RenderStates{.stencilMode{sf::StencilComparison::Always,
+                                                  sf::StencilUpdateOperation::Replace,
+                                                  sf::StencilValue{3u},
+                                                  sf::StencilValue{~0u},
+                                                  false}});
 
         // Just like the first, we draw the second rectangle with comparison set to always so that it will definitely
         // draw and update (Replace) the stencil buffer values of its pixels to the specified reference value.
@@ -125,8 +125,11 @@ int main()
         // as if we are drawing using the painter's algorithm, i.e. newer pixels overwrite older pixels.
         window.draw(green,
                     /* texture */ nullptr,
-                    sf::RenderStates{
-                        .stencilMode{sf::StencilComparison::Always, sf::StencilUpdateOperation::Replace, 1, ~0u, false}});
+                    sf::RenderStates{.stencilMode{sf::StencilComparison::Always,
+                                                  sf::StencilUpdateOperation::Replace,
+                                                  sf::StencilValue{1u},
+                                                  sf::StencilValue{~0u},
+                                                  false}});
 
         // Now comes the magic. We want to draw the third rectangle so it is behind i.e. does not overwrite pixels of the
         // first rectangle but in front of i.e. overwrites pixels of the second rectangle. We already set the reference
@@ -137,8 +140,11 @@ int main()
         // the last draw call in the frame.
         window.draw(blue,
                     /* texture */ nullptr,
-                    sf::RenderStates{
-                        .stencilMode{sf::StencilComparison::Greater, sf::StencilUpdateOperation::Replace, 2, ~0u, false}});
+                    sf::RenderStates{.stencilMode{sf::StencilComparison::Greater,
+                                                  sf::StencilUpdateOperation::Replace,
+                                                  sf::StencilValue{2u},
+                                                  sf::StencilValue{~0u},
+                                                  false}});
 
         // Display things on screen
         window.display();

@@ -175,7 +175,7 @@ struct [[nodiscard]] StatesCache
     bool scissorEnabled{false}; //!< Is scissor testing enabled?
     bool stencilEnabled{false}; //!< Is stencil testing enabled?
 
-    BlendMode      lastBlendMode;                                  //!< Cached blending mode
+    BlendMode      lastBlendMode{BlendAlpha};                      //!< Cached blending mode
     StencilMode    lastStencilMode;                                //!< Cached stencil
     std::uint64_t  lastTextureId{0u};                              //!< Cached texture
     CoordinateType lastCoordinateType{CoordinateType::Normalized}; //!< Cached texture coordinate type
@@ -761,13 +761,6 @@ void RenderTarget::resetGLStates()
 
         m_impl->cache.enable = true;
     }
-}
-
-
-////////////////////////////////////////////////////////////
-const RenderStates& RenderTarget::getDefaultRenderStates()
-{
-    return RenderStates::Default;
 }
 
 
