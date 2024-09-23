@@ -26,82 +26,62 @@ constexpr std::uint32_t Color::toInteger() const
 
 
 ////////////////////////////////////////////////////////////
-constexpr bool operator==(Color left, Color right)
+constexpr Color operator+(Color lhs, Color rhs)
 {
-    return (left.r == right.r) && (left.g == right.g) && (left.b == right.b) && (left.a == right.a);
-}
-
-
-////////////////////////////////////////////////////////////
-constexpr bool operator!=(Color left, Color right)
-{
-    return !(left == right);
-}
-
-
-////////////////////////////////////////////////////////////
-constexpr Color operator+(Color left, Color right)
-{
-    const auto clampedAdd = [](std::uint8_t lhs, std::uint8_t rhs) -> std::uint8_t
+    const auto clampedAdd = [](std::uint8_t l, std::uint8_t r) -> std::uint8_t
     {
-        const int intResult = int{lhs} + int{rhs};
+        const int intResult = int{l} + int{r};
         return static_cast<std::uint8_t>(intResult < 255 ? intResult : 255);
     };
 
-    return {clampedAdd(left.r, right.r),
-            clampedAdd(left.g, right.g),
-            clampedAdd(left.b, right.b),
-            clampedAdd(left.a, right.a)};
+    return {clampedAdd(lhs.r, rhs.r), clampedAdd(lhs.g, rhs.g), clampedAdd(lhs.b, rhs.b), clampedAdd(lhs.a, rhs.a)};
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Color operator-(Color left, Color right)
+constexpr Color operator-(Color lhs, Color rhs)
 {
-    const auto clampedSub = [](std::uint8_t lhs, std::uint8_t rhs) -> std::uint8_t
+    const auto clampedSub = [](std::uint8_t l, std::uint8_t r) -> std::uint8_t
     {
-        const int intResult = int{lhs} - int{rhs};
+        const int intResult = int{l} - int{r};
         return static_cast<std::uint8_t>(intResult > 0 ? intResult : 0);
     };
 
-    return {clampedSub(left.r, right.r),
-            clampedSub(left.g, right.g),
-            clampedSub(left.b, right.b),
-            clampedSub(left.a, right.a)};
+    return {clampedSub(lhs.r, rhs.r), clampedSub(lhs.g, rhs.g), clampedSub(lhs.b, rhs.b), clampedSub(lhs.a, rhs.a)};
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Color operator*(Color left, Color right)
+constexpr Color operator*(Color lhs, Color rhs)
 {
-    const auto scaledMul = [](std::uint8_t lhs, std::uint8_t rhs) -> std::uint8_t
+    const auto scaledMul = [](std::uint8_t l, std::uint8_t r) -> std::uint8_t
     {
-        const auto uint16Result = static_cast<std::uint16_t>(std::uint16_t{lhs} * std::uint16_t{rhs});
+        const auto uint16Result = static_cast<std::uint16_t>(std::uint16_t{l} * std::uint16_t{r});
         return static_cast<std::uint8_t>(uint16Result / 255u);
     };
 
-    return {scaledMul(left.r, right.r), scaledMul(left.g, right.g), scaledMul(left.b, right.b), scaledMul(left.a, right.a)};
+    return {scaledMul(lhs.r, rhs.r), scaledMul(lhs.g, rhs.g), scaledMul(lhs.b, rhs.b), scaledMul(lhs.a, rhs.a)};
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Color& operator+=(Color& left, Color right)
+constexpr Color& operator+=(Color& lhs, Color rhs)
 {
-    return left = left + right;
+    return lhs = lhs + rhs;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Color& operator-=(Color& left, Color right)
+constexpr Color& operator-=(Color& lhs, Color rhs)
 {
-    return left = left - right;
+    return lhs = lhs - rhs;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Color& operator*=(Color& left, Color right)
+constexpr Color& operator*=(Color& lhs, Color rhs)
 {
-    return left = left * right;
+    return lhs = lhs * rhs;
 }
 
 

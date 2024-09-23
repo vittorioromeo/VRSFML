@@ -5,7 +5,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/JoystickImpl.hpp"
 
-#include "SFML/Base/Memcpy.hpp"
+#include "SFML/Base/Builtins/Memcpy.hpp"
 #include "SFML/Base/Optional.hpp"
 
 #include <dirent.h>

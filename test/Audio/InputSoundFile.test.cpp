@@ -9,9 +9,9 @@
 
 #include <CommonTraits.hpp>
 #include <LoadIntoMemoryUtil.hpp>
-#include <StringifyArrayUtil.hpp>
 #include <SystemUtil.hpp>
 
+#include <StringifyArrayUtil.hpp>
 #include <array>
 
 TEST_CASE("[Audio] sf::InputSoundFile")

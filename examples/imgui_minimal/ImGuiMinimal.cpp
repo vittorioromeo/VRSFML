@@ -1,12 +1,11 @@
 #include "SFML/ImGui/ImGui.hpp"
 
 #include "SFML/Graphics/CircleShape.hpp"
+#include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 
-#include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Clock.hpp"
 
@@ -19,14 +18,12 @@ int main()
     sf::GraphicsContext     graphicsContext;
     sf::ImGui::ImGuiContext imGuiContext(graphicsContext);
 
-    sf::RenderWindow window(graphicsContext, {.size{1024u, 768u}, .title = "ImGui + SFML = <3"});
-    window.setFramerateLimit(60);
+    sf::RenderWindow window(graphicsContext, {.size{1024u, 768u}, .title = "ImGui + SFML = <3", .vsync = true});
 
     if (!imGuiContext.init(window))
         return -1;
 
-    sf::CircleShape shape(100.f);
-    shape.setFillColor(sf::Color::Green);
+    const sf::CircleShape shape{{.fillColor = sf::Color::Green, .radius = 100.f}};
 
     sf::Clock deltaClock;
 

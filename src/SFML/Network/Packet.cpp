@@ -7,15 +7,33 @@
 #include "SFML/Network/SocketImpl.hpp"
 
 #include "SFML/System/String.hpp"
-#include "SFML/System/Utils.hpp"
 
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Memcpy.hpp"
-#include "SFML/Base/Strlen.hpp"
+#include "SFML/Base/Builtins/Memcpy.hpp"
+#include "SFML/Base/Builtins/Strlen.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 #include <string>
 
 #include <cwchar>
+
+
+namespace
+{
+////////////////////////////////////////////////////////////
+template <typename IntegerType, typename... Bytes>
+[[nodiscard]] constexpr IntegerType byteSequenceToInteger(Bytes... byte)
+{
+    static_assert(sizeof(IntegerType) >= sizeof...(Bytes), "IntegerType not large enough to contain bytes");
+
+    IntegerType     integer = 0;
+    sf::base::SizeT index   = 0;
+
+    return ((integer |= static_cast<IntegerType>(static_cast<IntegerType>(byte) << 8 * index++)), ...);
+}
+
+} // namespace
+
 
 namespace sf
 {
@@ -174,8 +192,7 @@ Packet& Packet::operator>>(std::int64_t& data)
         std::byte bytes[sizeof(data)];
         SFML_BASE_MEMCPY(bytes, &m_data[m_readPos], sizeof(data));
 
-        data = priv::byteSequenceToInteger<
-            std::int64_t>(bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0]);
+        data = byteSequenceToInteger<std::int64_t>(bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0]);
 
         m_readPos += sizeof(data);
     }
@@ -194,8 +211,7 @@ Packet& Packet::operator>>(std::uint64_t& data)
         std::byte bytes[sizeof(data)]{};
         SFML_BASE_MEMCPY(bytes, &m_data[m_readPos], sizeof(data));
 
-        data = priv::byteSequenceToInteger<
-            std::uint64_t>(bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0]);
+        data = byteSequenceToInteger<std::uint64_t>(bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0]);
 
         m_readPos += sizeof(data);
     }

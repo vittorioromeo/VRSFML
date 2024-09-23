@@ -27,7 +27,7 @@ class GraphicsContext;
 class RenderTarget;
 class RenderTexture;
 class RenderWindow;
-class Sprite;
+struct Sprite;
 class Texture;
 class Window;
 } // namespace sf

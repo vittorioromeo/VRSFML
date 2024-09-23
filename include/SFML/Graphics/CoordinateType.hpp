@@ -3,7 +3,6 @@
 
 namespace sf
 {
-
 ////////////////////////////////////////////////////////////
 /// \ingroup graphics
 /// \brief Types of texture coordinates that can be used for rendering

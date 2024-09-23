@@ -11,7 +11,6 @@
 
 #include "SFML/Base/InPlacePImpl.hpp"
 
-#include <cfloat>
 #include <cstdint>
 
 

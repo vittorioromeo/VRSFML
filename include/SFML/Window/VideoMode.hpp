@@ -15,7 +15,7 @@ namespace sf
 /// \brief VideoMode defines a video mode (size, bpp)
 ///
 ////////////////////////////////////////////////////////////
-struct SFML_WINDOW_API [[nodiscard]] VideoMode
+struct [[nodiscard]] SFML_WINDOW_API VideoMode
 {
     ////////////////////////////////////////////////////////////
     /// \brief Tell whether or not the video mode is valid
@@ -30,6 +30,28 @@ struct SFML_WINDOW_API [[nodiscard]] VideoMode
     [[nodiscard]] bool isValid() const;
 
     ////////////////////////////////////////////////////////////
+    /// \relates VideoMode
+    /// \brief Overload of `operator==` to compare two video modes
+    ///
+    /// \param rhs Right operand
+    ///
+    /// \return `true` if modes are equal
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] SFML_WINDOW_API bool operator==(const VideoMode& rhs) const = default;
+
+    ////////////////////////////////////////////////////////////
+    /// \relates VideoMode
+    /// \brief Overload of `operator!=` to compare two video modes
+    ///
+    /// \param rhs Right operand (a video mode)
+    ///
+    /// \return `true` if modes are different
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] SFML_WINDOW_API bool operator!=(const VideoMode& rhs) const = default;
+
+    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     Vector2u     size;              //!< Video mode width and height, in pixels
@@ -38,75 +60,51 @@ struct SFML_WINDOW_API [[nodiscard]] VideoMode
 
 ////////////////////////////////////////////////////////////
 /// \relates VideoMode
-/// \brief Overload of `operator==` to compare two video modes
-///
-/// \param left  Left operand (a video mode)
-/// \param right Right operand (a video mode)
-///
-/// \return `true` if modes are equal
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API bool operator==(const VideoMode& left, const VideoMode& right);
-
-////////////////////////////////////////////////////////////
-/// \relates VideoMode
-/// \brief Overload of `operator!=` to compare two video modes
-///
-/// \param left  Left operand (a video mode)
-/// \param right Right operand (a video mode)
-///
-/// \return `true` if modes are different
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API bool operator!=(const VideoMode& left, const VideoMode& right);
-
-////////////////////////////////////////////////////////////
-/// \relates VideoMode
 /// \brief Overload of `operator<` to compare video modes
 ///
-/// \param left  Left operand (a video mode)
-/// \param right Right operand (a video mode)
+/// \param lhs  Left operand (a video mode)
+/// \param rhs Right operand (a video mode)
 ///
-/// \return `true` if \a `left` is lesser than \a `right`
+/// \return `true` if \a `lhs` is lesser than \a `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API bool operator<(const VideoMode& left, const VideoMode& right);
+[[nodiscard]] SFML_WINDOW_API bool operator<(const VideoMode& lhs, const VideoMode& rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates VideoMode
 /// \brief Overload of `operator>` to compare video modes
 ///
-/// \param left  Left operand (a video mode)
-/// \param right Right operand (a video mode)
+/// \param lhs  Left operand (a video mode)
+/// \param rhs Right operand (a video mode)
 ///
-/// \return `true` if \a `left` is greater than \a `right`
+/// \return `true` if \a `lhs` is greater than \a `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API bool operator>(const VideoMode& left, const VideoMode& right);
+[[nodiscard]] SFML_WINDOW_API bool operator>(const VideoMode& lhs, const VideoMode& rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates VideoMode
 /// \brief Overload of `operator<=` to compare video modes
 ///
-/// \param left  Left operand (a video mode)
-/// \param right Right operand (a video mode)
+/// \param lhs  Left operand (a video mode)
+/// \param rhs Right operand (a video mode)
 ///
-/// \return `true` if \a `left` is lesser or equal than \a `right`
+/// \return `true` if \a `lhs` is lesser or equal than \a `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API bool operator<=(const VideoMode& left, const VideoMode& right);
+[[nodiscard]] SFML_WINDOW_API bool operator<=(const VideoMode& lhs, const VideoMode& rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates VideoMode
 /// \brief Overload of `operator>=` to compare video modes
 ///
-/// \param left  Left operand (a video mode)
-/// \param right Right operand (a video mode)
+/// \param lhs  Left operand (a video mode)
+/// \param rhs Right operand (a video mode)
 ///
-/// \return `true` if \a `left` is greater or equal than \a `right`
+/// \return `true` if \a `lhs` is greater or equal than \a `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API bool operator>=(const VideoMode& left, const VideoMode& right);
+[[nodiscard]] SFML_WINDOW_API bool operator>=(const VideoMode& lhs, const VideoMode& rhs);
 
 } // namespace sf
 

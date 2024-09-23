@@ -17,6 +17,19 @@
 
 
 ////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
+#define SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE                                                                \
+    ::sf::FloatRect textureRect{};                    /*!< Area of the source texture to display for the fill */    \
+    ::sf::FloatRect outlineTextureRect{};             /*!< Area of the source texture to display for the outline */ \
+    ::sf::Color     fillColor{::sf::Color::White};    /*!< Fill color */                                            \
+    ::sf::Color     outlineColor{::sf::Color::White}; /*!< Outline color */                                         \
+    float           outlineThickness{};               /*!< Thickness of the shape's outline */                      \
+    using sfPrivSwallowSemicolon1 = void
+
+
+////////////////////////////////////////////////////////////
 // Forward declarations
 ////////////////////////////////////////////////////////////
 namespace sf
@@ -38,40 +51,20 @@ class SFML_GRAPHICS_API Shape : public Transformable
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    Shape() = default;
+    struct [[nodiscard]] Settings
+    {
+        SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
+        SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;
+    };
 
     ////////////////////////////////////////////////////////////
-    /// \brief Destructor
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    ~Shape() = default;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Copy constructor
-    ///
-    ////////////////////////////////////////////////////////////
-    Shape(const Shape&) = default;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Copy assignment
-    ///
-    ////////////////////////////////////////////////////////////
-    Shape& operator=(const Shape&) = default;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Move constructor
-    ///
-    ////////////////////////////////////////////////////////////
-    Shape(Shape&&) noexcept = default;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Move assignment
-    ///
-    ////////////////////////////////////////////////////////////
-    Shape& operator=(Shape&&) noexcept = default;
+    explicit Shape(const Settings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the sub-rectangle of the texture that the shape will display
@@ -266,47 +259,69 @@ private:
     /// \brief Update the fill vertices' color
     ///
     ////////////////////////////////////////////////////////////
-    void updateFillColors();
+    void updateFillColors(base::TrivialVector<Vertex>& vertices) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the fill vertices' texture coordinates
     ///
     ////////////////////////////////////////////////////////////
-    void updateTexCoords();
+    void updateTexCoords(base::TrivialVector<Vertex>& vertices) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the outline vertices' texture coordinates
     ///
     ////////////////////////////////////////////////////////////
-    void updateOutlineTexCoords();
+    void updateOutlineTexCoords(base::TrivialVector<Vertex>& outlineVertices) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the outline vertices' position
     ///
     ////////////////////////////////////////////////////////////
-    void updateOutline();
+    void updateOutline(base::TrivialVector<Vertex>& outlineVertices, const base::TrivialVector<Vertex>& vertices);
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the outline vertices' color
     ///
     ////////////////////////////////////////////////////////////
-    void updateOutlineColors();
+    void updateOutlineColors(base::TrivialVector<Vertex>& outlineVertices) const;
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    FloatRect m_textureRect;        //!< Rectangle defining the area of the source texture to display for the fill
-    FloatRect m_outlineTextureRect; //!< Rectangle defining the area of the source texture to display for the outline
-    Color     m_fillColor{Color::White};           //!< Fill color
-    Color     m_outlineColor{Color::White};        //!< Outline color
-    float     m_outlineThickness{};                //!< Thickness of the shape's outline
-    base::TrivialVector<Vertex> m_vertices;        //!< Vertex array containing the fill geometry
-    base::TrivialVector<Vertex> m_outlineVertices; //!< Vertex array containing the outline geometry
-    FloatRect                   m_insideBounds;    //!< Bounding rectangle of the inside (fill)
-    FloatRect                   m_bounds;          //!< Bounding rectangle of the whole shape (outline + fill)
+    FloatRect                   m_textureRect{};              //!< Area of the source texture to display for the fill
+    FloatRect                   m_outlineTextureRect{};       //!< Area of the source texture to display for the outline
+    Color                       m_fillColor{Color::White};    //!< Fill color
+    Color                       m_outlineColor{Color::White}; //!< Outline color
+    float                       m_outlineThickness{};         //!< Thickness of the shape's outline
+    base::TrivialVector<Vertex> m_vertices;                   //!< Vertex array containing the fill geometry
+    base::TrivialVector<Vertex> m_outlineVertices;            //!< Vertex array containing the outline geometry
+    FloatRect                   m_insideBounds;               //!< Bounding rectangle of the inside (fill)
+    FloatRect                   m_bounds; //!< Bounding rectangle of the whole shape (outline + fill)
 };
 
 } // namespace sf
+
+
+namespace sf::priv
+{
+////////////////////////////////////////////////////////////
+template <typename TSettings>
+[[nodiscard]] inline Shape::Settings toShapeSettings(const TSettings& settings)
+{
+    return {
+        .position           = settings.position,
+        .scale              = settings.scale,
+        .origin             = settings.origin,
+        .rotation           = settings.rotation,
+        .textureRect        = settings.textureRect,
+        .outlineTextureRect = settings.outlineTextureRect,
+        .fillColor          = settings.fillColor,
+        .outlineColor       = settings.outlineColor,
+        .outlineThickness   = settings.outlineThickness,
+    };
+}
+
+} // namespace sf::priv
 
 
 ////////////////////////////////////////////////////////////

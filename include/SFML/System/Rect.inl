@@ -43,20 +43,4 @@ constexpr OtherRect Rect<T>::to() const
     return Rect<ValueType>{position.template to<Vector2<ValueType>>(), size.template to<Vector2<ValueType>>()};
 }
 
-
-////////////////////////////////////////////////////////////
-template <typename T>
-constexpr bool operator==(const Rect<T>& lhs, const Rect<T>& rhs)
-{
-    return (lhs.position == rhs.position) && (lhs.size == rhs.size);
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-constexpr bool operator!=(const Rect<T>& lhs, const Rect<T>& rhs)
-{
-    return !(lhs == rhs);
-}
-
 } // namespace sf

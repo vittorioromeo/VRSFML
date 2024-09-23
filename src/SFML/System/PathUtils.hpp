@@ -19,10 +19,6 @@ namespace sf::priv
 struct SFML_SYSTEM_API PathDebugFormatter
 {
     const Path& path;
-
-    explicit PathDebugFormatter(const Path& thePath) : path(thePath)
-    {
-    }
 };
 
 } // namespace sf::priv

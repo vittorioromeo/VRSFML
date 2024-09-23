@@ -103,7 +103,7 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
         sf::base::Optional<sf::Window> childWindow(sf::base::inPlace,
                                                    windowContext,
-                                                   sf::WindowSettings{.size{256u, 256u}, .title = "B"});
+                                                   sf::Window::Settings{.size{256u, 256u}, .title = "B"});
 
         window.display();
         childWindow.reset();
@@ -116,7 +116,7 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
         sf::base::Optional<sf::Window> childWindow(sf::base::inPlace,
                                                    windowContext,
-                                                   sf::WindowSettings{.size{256u, 256u}, .title = "B"});
+                                                   sf::Window::Settings{.size{256u, 256u}, .title = "B"});
 
         window.display();
         childWindow->display();
@@ -129,7 +129,7 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
         sf::base::Optional<sf::Window> childWindow(sf::base::inPlace,
                                                    windowContext,
-                                                   sf::WindowSettings{.size{256u, 256u}, .title = "B"});
+                                                   sf::Window::Settings{.size{256u, 256u}, .title = "B"});
 
         childWindow->display();
         window.display();
@@ -141,7 +141,7 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
         sf::base::Optional<sf::Window> childWindow(sf::base::inPlace,
                                                    windowContext,
-                                                   sf::WindowSettings{.size{256u, 256u}, .title = "B"});
+                                                   sf::Window::Settings{.size{256u, 256u}, .title = "B"});
 
         childWindow->display();
         childWindow.reset();

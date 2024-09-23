@@ -13,9 +13,9 @@
 
 #include "SFML/System/Err.hpp"
 
-#include "SFML/Base/Strlen.hpp"
-#include "SFML/Base/Strncmp.hpp"
-#include "SFML/Base/Strstr.hpp"
+#include "SFML/Base/Builtins/Strlen.hpp"
+#include "SFML/Base/Builtins/Strncmp.hpp"
+#include "SFML/Base/Builtins/Strstr.hpp"
 
 #include <cctype>
 #include <cstdlib>
@@ -38,14 +38,14 @@ const ContextSettings& GlContext::getSettings() const
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] std::uint64_t GlContext::getId() const
+[[nodiscard]] unsigned int GlContext::getId() const
 {
     return m_id;
 }
 
 
 ////////////////////////////////////////////////////////////
-GlContext::GlContext(WindowContext& windowContext, std::uint64_t id, const ContextSettings& contextSettings) :
+GlContext::GlContext(WindowContext& windowContext, unsigned int id, const ContextSettings& contextSettings) :
 m_settings(contextSettings),
 m_windowContext(windowContext),
 m_id{id}
@@ -140,7 +140,7 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
         m_settings.minorVersion = 1;
 
         if (const char* version = reinterpret_cast<const char*>(
-                glCheckIgnoreExprWithFunc(glGetErrorFunc, glGetStringFunc(GL_VERSION))))
+                glCheckIgnoreWithFunc(glGetErrorFunc, glGetStringFunc(GL_VERSION))))
         {
             // OpenGL ES Common Lite profile: The beginning of the returned string is "OpenGL ES-CL major.minor"
             // OpenGL ES Common profile:      The beginning of the returned string is "OpenGL ES-CM major.minor"
@@ -261,7 +261,7 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
         glCheckIgnoreWithFunc(glGetErrorFunc, glEnableFunc(GL_FRAMEBUFFER_SRGB));
 
         // Check to see if the enable was successful
-        if (glCheckIgnoreExprWithFunc(glGetErrorFunc, glIsEnabledFunc(GL_FRAMEBUFFER_SRGB)) == GL_FALSE)
+        if (glCheckIgnoreWithFunc(glGetErrorFunc, glIsEnabledFunc(GL_FRAMEBUFFER_SRGB)) == GL_FALSE)
         {
             err() << "Warning: Failed to enable GL_FRAMEBUFFER_SRGB";
             m_settings.sRgbCapable = false;

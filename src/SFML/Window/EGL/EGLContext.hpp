@@ -1,13 +1,18 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Config.hpp"
+
+#ifndef SFML_OPENGL_ES
+#error "EGLContext included but ES disabled"
+#endif
+
 #include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/GlContext.hpp"
-
-#include "SFML/System/Vector2.hpp"
 
 // Emscripten does not use GLAD
 #ifdef SFML_SYSTEM_EMSCRIPTEN
@@ -36,7 +41,7 @@ public:
     /// \param shared Context to share the new one with (can be a null pointer)
     ///
     ////////////////////////////////////////////////////////////
-    explicit EglContext(WindowContext& windowContext, std::uint64_t id, EglContext* shared);
+    explicit EglContext(WindowContext& windowContext, unsigned int id, EglContext* shared);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context attached to a window
@@ -48,7 +53,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     explicit EglContext(WindowContext&         windowContext,
-                        std::uint64_t          id,
+                        unsigned int           id,
                         EglContext*            shared,
                         const ContextSettings& contextSettings,
                         const WindowImpl&      owner,

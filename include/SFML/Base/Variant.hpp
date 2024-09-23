@@ -112,6 +112,8 @@ inline constexpr impl::inplace_type_t<T> inplace_type{};
 template <impl::SizeT N>
 inline constexpr impl::inplace_index_t<N> inplace_index{};
 
+#define TINYVARIANT_NTH_TYPE(i) SFML_BASE_TYPE_PACK_ELEMENT(i, Alternatives...)
+
 template <typename... Alternatives>
 class [[nodiscard]] tinyvariant
 {
@@ -127,8 +129,6 @@ private:
 
     using index_type = unsigned char; // Support up to 255 alternatives
 
-    template <impl::SizeT I>
-    using nth_type = SFML_BASE_TYPE_PACK_ELEMENT(I, Alternatives...);
 
 public:
     template <typename T>
@@ -140,43 +140,40 @@ private:
     alignas(max_alignment) byte _buffer[max_size];
     index_type _index;
 
-#if defined(__GNUC__) && !defined(__clang__) && (__GNUC__ >= 10)
-#define TINYVARIANT_ALWAYS_INLINE_LAMBDA [[gnu::always_inline]]
-#else
-#define TINYVARIANT_ALWAYS_INLINE_LAMBDA
-#endif
-
 #define TINYVARIANT_STATIC_ASSERT_INDEX_VALIDITY(I)                                     \
     static_assert((I) != impl::bad_index, "Alternative type not supported by variant"); \
                                                                                         \
     static_assert((I) >= 0 && (I) < type_count, "Alternative index out of range")
 
-#define TINYVARIANT_DO_WITH_CURRENT_INDEX_OBJ(obj, Is, ...)                                          \
-    do                                                                                               \
-    {                                                                                                \
-        if constexpr (sizeof...(Alternatives) == 1)                                                  \
-        {                                                                                            \
-            if (constexpr impl::SizeT Is = 0; (obj)._index == Is)                                    \
-            {                                                                                        \
-                __VA_ARGS__;                                                                         \
-            }                                                                                        \
-        }                                                                                            \
-        else if constexpr (sizeof...(Alternatives) == 2)                                             \
-        {                                                                                            \
-            if (constexpr impl::SizeT Is = 0; (obj)._index == Is)                                    \
-            {                                                                                        \
-                __VA_ARGS__;                                                                         \
-            }                                                                                        \
-            else if (constexpr impl::SizeT Is = 1; (obj)._index == Is)                               \
-            {                                                                                        \
-                __VA_ARGS__;                                                                         \
-            }                                                                                        \
-        }                                                                                            \
-        else                                                                                         \
-        {                                                                                            \
-            [&]<impl::SizeT... Is>(sf::base::IndexSequence<Is...>) TINYVARIANT_ALWAYS_INLINE_LAMBDA  \
-            { ((((obj)._index == Is) ? ((__VA_ARGS__), 0) : 0), ...); }(alternative_index_sequence); \
-        }                                                                                            \
+#define TINYVARIANT_DO_WITH_CURRENT_INDEX_OBJ(obj, Is, ...)                                                \
+    do                                                                                                     \
+    {                                                                                                      \
+        if constexpr (sizeof...(Alternatives) == 1)                                                        \
+        {                                                                                                  \
+            if (constexpr impl::SizeT Is = 0; (obj)._index == Is)                                          \
+            {                                                                                              \
+                __VA_ARGS__;                                                                               \
+            }                                                                                              \
+        }                                                                                                  \
+        else if constexpr (sizeof...(Alternatives) == 2)                                                   \
+        {                                                                                                  \
+            if (constexpr impl::SizeT Is = 0; (obj)._index == Is)                                          \
+            {                                                                                              \
+                __VA_ARGS__;                                                                               \
+            }                                                                                              \
+            else if (constexpr impl::SizeT Is = 1; (obj)._index == Is)                                     \
+            {                                                                                              \
+                __VA_ARGS__;                                                                               \
+            }                                                                                              \
+        }                                                                                                  \
+        else                                                                                               \
+        {                                                                                                  \
+            [&]<impl::SizeT... Is>(sf::base::IndexSequence<Is...>) __attribute__((always_inline, flatten)) \
+            {                                                                                              \
+                ((((obj)._index == Is) ? ((__VA_ARGS__), 0) : 0), ...);                                    \
+            }                                                                                              \
+            (alternative_index_sequence);                                                                  \
+        }                                                                                                  \
     } while (false)
 
 #define TINYVARIANT_DO_WITH_CURRENT_INDEX(Is, ...) TINYVARIANT_DO_WITH_CURRENT_INDEX_OBJ((*this), Is, __VA_ARGS__)
@@ -194,7 +191,9 @@ private:
     template <impl::SizeT I>
     [[gnu::always_inline]] void destroy_at() noexcept
     {
-        as<nth_type<I>>().~nth_type<I>();
+        using type = TINYVARIANT_NTH_TYPE(I);
+
+        as<type>().~type();
     }
 
     template <impl::SizeT I, typename R, typename Visitor>
@@ -276,7 +275,7 @@ public:
     template <impl::SizeT I, typename... Args>
     [[nodiscard, gnu::always_inline]] explicit tinyvariant(impl::inplace_index_t<I> inplace_index, Args&&... args) noexcept
     :
-    tinyvariant{inplace_type<nth_type<I>>, inplace_index, static_cast<Args&&>(args)...}
+    tinyvariant{inplace_type<TINYVARIANT_NTH_TYPE(I)>, inplace_index, static_cast<Args&&>(args)...}
     {
     }
 
@@ -293,15 +292,17 @@ public:
     [[gnu::always_inline]] tinyvariant(const tinyvariant& rhs) : _index{rhs._index}
     {
         TINYVARIANT_DO_WITH_CURRENT_INDEX(I,
-                                          SFML_BASE_PLACEMENT_NEW(_buffer) nth_type<I>(static_cast<const nth_type<I>&>(
-                                              *SFML_BASE_LAUNDER_CAST(const nth_type<I>*, rhs._buffer))));
+                                          SFML_BASE_PLACEMENT_NEW(_buffer)
+                                              TINYVARIANT_NTH_TYPE(I)(static_cast<const TINYVARIANT_NTH_TYPE(I)&>(
+                                                  *SFML_BASE_LAUNDER_CAST(const TINYVARIANT_NTH_TYPE(I)*, rhs._buffer))));
     }
 
     [[gnu::always_inline]] tinyvariant(tinyvariant&& rhs) noexcept : _index{rhs._index}
     {
         TINYVARIANT_DO_WITH_CURRENT_INDEX(I,
-                                          SFML_BASE_PLACEMENT_NEW(_buffer) nth_type<I>(static_cast<nth_type<I>&&>(
-                                              *SFML_BASE_LAUNDER_CAST(nth_type<I>*, rhs._buffer))));
+                                          SFML_BASE_PLACEMENT_NEW(_buffer)
+                                              TINYVARIANT_NTH_TYPE(I)(static_cast<TINYVARIANT_NTH_TYPE(I) &&>(
+                                                  *SFML_BASE_LAUNDER_CAST(TINYVARIANT_NTH_TYPE(I)*, rhs._buffer))));
     }
 
     // Avoid forwarding constructor hijack.
@@ -329,7 +330,8 @@ public:
 
         TINYVARIANT_DO_WITH_CURRENT_INDEX_OBJ(rhs,
                                               I,
-                                              (SFML_BASE_PLACEMENT_NEW(_buffer) nth_type<I>(rhs.template as<nth_type<I>>())));
+                                              (SFML_BASE_PLACEMENT_NEW(_buffer)
+                                                   TINYVARIANT_NTH_TYPE(I)(rhs.template as<TINYVARIANT_NTH_TYPE(I)>())));
         _index = rhs._index;
 
         return *this;
@@ -346,8 +348,9 @@ public:
 
         TINYVARIANT_DO_WITH_CURRENT_INDEX_OBJ(rhs,
                                               I,
-                                              (SFML_BASE_PLACEMENT_NEW(_buffer) nth_type<I>(
-                                                  static_cast<nth_type<I>&&>(rhs.template as<nth_type<I>>()))));
+                                              (SFML_BASE_PLACEMENT_NEW(_buffer)
+                                                   TINYVARIANT_NTH_TYPE(I)(static_cast<TINYVARIANT_NTH_TYPE(I) &&>(
+                                                       rhs.template as<TINYVARIANT_NTH_TYPE(I)>()))));
         _index = rhs._index;
 
         return *this;
@@ -404,24 +407,24 @@ public:
     [[nodiscard, gnu::always_inline]] auto& get_by_index() & noexcept
     {
         TINYVARIANT_STATIC_ASSERT_INDEX_VALIDITY(I);
-        return as<nth_type<I>>();
+        return as<TINYVARIANT_NTH_TYPE(I)>();
     }
 
     template <impl::SizeT I>
     [[nodiscard, gnu::always_inline]] const auto& get_by_index() const& noexcept
     {
         TINYVARIANT_STATIC_ASSERT_INDEX_VALIDITY(I);
-        return as<nth_type<I>>();
+        return as<TINYVARIANT_NTH_TYPE(I)>();
     }
 
     template <impl::SizeT I>
     [[nodiscard, gnu::always_inline]] auto&& get_by_index() && noexcept
     {
         TINYVARIANT_STATIC_ASSERT_INDEX_VALIDITY(I);
-        return static_cast<nth_type<I>&&>(as<nth_type<I>>());
+        return static_cast<TINYVARIANT_NTH_TYPE(I) &&>(as<TINYVARIANT_NTH_TYPE(I)>());
     }
 
-    template <typename Visitor, typename R = decltype(impl::declval<Visitor>()(impl::declval<nth_type<0>>()))>
+    template <typename Visitor, typename R = decltype(impl::declval<Visitor>()(impl::declval<TINYVARIANT_NTH_TYPE(0)>()))>
     [[nodiscard, gnu::always_inline]] R recursive_visit(Visitor&& visitor) &
     {
         if constexpr (sizeof...(Alternatives) >= 10)
@@ -438,7 +441,7 @@ public:
         }
     }
 
-    template <typename Visitor, typename R = decltype(impl::declval<Visitor>()(impl::declval<nth_type<0>>()))>
+    template <typename Visitor, typename R = decltype(impl::declval<Visitor>()(impl::declval<TINYVARIANT_NTH_TYPE(0)>()))>
     [[nodiscard, gnu::always_inline]] R recursive_visit(Visitor&& visitor) const&
     {
         if constexpr (sizeof...(Alternatives) >= 10)
@@ -469,7 +472,7 @@ public:
         return recursive_visit(sf::base::OverloadSet{static_cast<Fs&&>(fs)...});
     }
 
-    template <typename Visitor, typename R = decltype(impl::declval<Visitor>()(impl::declval<nth_type<0>>()))>
+    template <typename Visitor, typename R = decltype(impl::declval<Visitor>()(impl::declval<TINYVARIANT_NTH_TYPE(0)>()))>
     [[nodiscard, gnu::always_inline]] R linear_visit(Visitor&& visitor) &
     {
         if constexpr (SFML_BASE_IS_REFERENCE(R))
@@ -496,7 +499,7 @@ public:
     }
 
 
-    template <typename Visitor, typename R = decltype(impl::declval<Visitor>()(impl::declval<nth_type<0>>()))>
+    template <typename Visitor, typename R = decltype(impl::declval<Visitor>()(impl::declval<TINYVARIANT_NTH_TYPE(0)>()))>
     [[nodiscard, gnu::always_inline]] R linear_visit(Visitor&& visitor) const&
     {
         if constexpr (SFML_BASE_IS_REFERENCE(R))
@@ -540,6 +543,7 @@ public:
 #undef TINYVARIANT_DO_WITH_CURRENT_INDEX
 #undef TINYVARIANT_DO_WITH_CURRENT_INDEX_OBJ
 #undef TINYVARIANT_STATIC_ASSERT_INDEX_VALIDITY
+#undef TINYVARIANT_NTH_TYPE
 
 } // namespace sfvr
 

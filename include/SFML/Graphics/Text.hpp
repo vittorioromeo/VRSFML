@@ -6,25 +6,25 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
+#include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Transformable.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
 #include "SFML/System/LifetimeDependant.hpp"
 #include "SFML/System/Rect.hpp"
+#include "SFML/System/String.hpp"
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/EnumClassBitwiseOps.hpp"
-#include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Span.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 
 
 namespace sf
 {
-struct Color;
 class Font;
 class RenderTarget;
-class String;
 struct RenderStates;
 
 ////////////////////////////////////////////////////////////
@@ -48,6 +48,25 @@ public:
     };
 
     ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    struct [[nodiscard]] Settings
+    {
+        SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
+
+        // NOLINTNEXTLINE(readability-redundant-member-init)
+        String       string{};                   //!< String to display
+        unsigned int characterSize{30u};         //!< Base size of characters, in pixels
+        float        letterSpacing{1.f};         //!< Spacing factor between letters
+        float        lineSpacing{1.f};           //!< Spacing factor between lines
+        Style        style{Style::Regular};      //!< Text style (see Style enum)
+        Color        fillColor{Color::White};    //!< Text fill color
+        Color        outlineColor{Color::Black}; //!< Text outline color
+        float        outlineThickness{0.f};      //!< Thickness of the text's outline
+    };
+
+    ////////////////////////////////////////////////////////////
     /// \brief Construct the text from a string, font and size
     ///
     /// Note that if the used font is a bitmap font, it is not
@@ -57,20 +76,16 @@ public:
     /// of a certain size, make sure the corresponding bitmap
     /// font that supports that size is used.
     ///
-    /// \param string         Text assigned to the string
-    /// \param font           Font used to draw the string
-    /// \param characterSize  Base size of characters, in pixels
+    /// \param settings       Settings of the text
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Text(const Font& font, String string, unsigned int characterSize = 30);
-    [[nodiscard]] Text(const Font& font, const char* string = "", unsigned int characterSize = 30);
+    [[nodiscard]] Text(const Font& font, const Settings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Disallow construction from a temporary font
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Text(const Font&& font, String string, unsigned int characterSize = 30)           = delete;
-    [[nodiscard]] Text(const Font&& font, const char* string = "", unsigned int characterSize = 30) = delete;
+    [[nodiscard]] Text(const Font&& font, const Settings& settings) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -122,7 +137,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void setString(const String& string);
-    void setString(const char* string);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the text's font
@@ -429,8 +443,21 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    struct Impl;
-    base::InPlacePImpl<Impl, 192> m_impl; //!< Implementation details
+    const Font*  m_font{};                     //!< Font used to display the string
+    String       m_string;                     //!< String to display
+    unsigned int m_characterSize{30};          //!< Base size of characters, in pixels
+    float        m_letterSpacing{1.f};         //!< Spacing factor between letters
+    float        m_lineSpacing{1.f};           //!< Spacing factor between lines
+    Style        m_style{Style::Regular};      //!< Text style (see Style enum)
+    Color        m_fillColor{Color::White};    //!< Text fill color
+    Color        m_outlineColor{Color::Black}; //!< Text outline color
+    float        m_outlineThickness{0.f};      //!< Thickness of the text's outline
+
+    mutable base::TrivialVector<Vertex> m_vertices;  //!< Vertex array containing the outline and fill geometry
+    mutable base::SizeT  m_fillVerticesStartIndex{}; //!< Index in the vertex array where the fill vertices start
+    mutable FloatRect    m_bounds;                   //!< Bounding rectangle of the text (in local coordinates)
+    mutable bool         m_geometryNeedUpdate{};     //!< Does the geometry need to be recomputed?
+    mutable unsigned int m_fontTextureId{};          //!< The font texture id
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking

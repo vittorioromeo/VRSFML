@@ -119,22 +119,9 @@ const Path::value_type* Path::c_str() const
 const char* Path::toCharPtr() const
 {
     m_impl->buffer = to<std::string>();
+
     return m_impl->buffer.c_str();
 }
-
-
-////////////////////////////////////////////////////////////
-// std::string Path::string() const
-// {
-//     return m_impl->fsPath.string();
-// }
-
-
-////////////////////////////////////////////////////////////
-// Path::operator std::string() const
-// {
-//     return m_impl->fsPath.string();
-// }
 
 
 ////////////////////////////////////////////////////////////
@@ -179,42 +166,58 @@ std::ostream& operator<<(std::ostream& os, const Path& path)
     return os << path.m_impl->fsPath;
 }
 
+
+////////////////////////////////////////////////////////////
 template <typename T>
 T Path::to() const
 {
     return m_impl->fsPath.string();
 }
 
-template std::string Path::to<std::string>() const;
 
+////////////////////////////////////////////////////////////
 template <typename T>
 bool Path::operator==(const T* str) const
 {
     return m_impl->fsPath == std::filesystem::path(str);
 }
 
+
+////////////////////////////////////////////////////////////
 template <typename T>
 bool Path::operator!=(const T* str) const
 {
     return m_impl->fsPath != std::filesystem::path(str);
 }
 
+
+////////////////////////////////////////////////////////////
 template <typename T>
 bool Path::operator==(const T& str) const
 {
     return m_impl->fsPath == std::filesystem::path(str);
 }
 
+
+////////////////////////////////////////////////////////////
 template <typename T>
 bool Path::operator!=(const T& str) const
 {
     return m_impl->fsPath != std::filesystem::path(str);
 }
 
+
+////////////////////////////////////////////////////////////
+template std::string Path::to<std::string>() const;
+
+
+////////////////////////////////////////////////////////////
 template bool Path::operator== <char>(const char*) const;
 template bool Path::operator== <wchar_t>(const wchar_t*) const;
 template bool Path::operator== <std::string>(const std::string&) const;
 
+
+////////////////////////////////////////////////////////////
 template bool Path::operator!= <char>(const char*) const;
 template bool Path::operator!= <wchar_t>(const wchar_t*) const;
 template bool Path::operator!= <std::string>(const std::string&) const;

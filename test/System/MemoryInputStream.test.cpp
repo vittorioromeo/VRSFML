@@ -5,7 +5,6 @@
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
-
 #include <StringifyStringViewUtil.hpp>
 
 TEST_CASE("[System] sf::MemoryInputStream")

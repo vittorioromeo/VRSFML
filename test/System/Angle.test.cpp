@@ -108,6 +108,10 @@ TEST_CASE("[System] sf::Angle")
             STATIC_CHECK(sf::radians(1) == sf::radians(1));
             STATIC_CHECK(sf::degrees(360) == sf::degrees(360));
             STATIC_CHECK(sf::degrees(720) == sf::degrees(720));
+
+            STATIC_CHECK(sf::Angle::Quarter == sf::degrees(90));
+            STATIC_CHECK(sf::Angle::Half == sf::degrees(180));
+            STATIC_CHECK(sf::Angle::Full == sf::degrees(360));
         }
 
         SECTION("operator!=")

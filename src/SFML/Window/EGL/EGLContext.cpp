@@ -4,8 +4,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/EGLCheck.hpp"
-#include "SFML/Window/EglContext.hpp"
+#include "SFML/Window/EGL/EGLCheck.hpp"
+#include "SFML/Window/EGL/EGLContext.hpp"
 #include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
 #include "SFML/Window/WindowContext.hpp"
@@ -112,7 +112,7 @@ bool ensureInit()
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-EglContext::EglContext(WindowContext& windowContext, std::uint64_t id, EglContext* shared) :
+EglContext::EglContext(WindowContext& windowContext, unsigned int id, EglContext* shared) :
 GlContext(windowContext, id, {})
 {
     EglContextImpl::ensureInit();
@@ -143,7 +143,7 @@ GlContext(windowContext, id, {})
 
 ////////////////////////////////////////////////////////////
 EglContext::EglContext(WindowContext&                     windowContext,
-                       std::uint64_t                      id,
+                       unsigned int                       id,
                        EglContext*                        shared,
                        const ContextSettings&             contextSettings,
                        [[maybe_unused]] const WindowImpl& owner,

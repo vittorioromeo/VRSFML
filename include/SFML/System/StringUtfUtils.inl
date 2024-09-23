@@ -17,7 +17,7 @@ template <typename T>
 String StringUtfUtils::fromUtf8(T begin, T end)
 {
     String string;
-    Utf8::toUtf32(begin, end, base::BackInserter(string.getImplString()));
+    Utf8::toUtf32(begin, end, base::BackInserter(*static_cast<std::u32string*>(string.getImplString())));
     return string;
 }
 
@@ -27,7 +27,7 @@ template <typename T>
 String StringUtfUtils::fromUtf16(T begin, T end)
 {
     String string;
-    Utf16::toUtf32(begin, end, base::BackInserter(string.getImplString()));
+    Utf16::toUtf32(begin, end, base::BackInserter(*static_cast<std::u32string*>(string.getImplString())));
     return string;
 }
 
@@ -37,7 +37,7 @@ template <typename T>
 String StringUtfUtils::fromUtf32(T begin, T end)
 {
     String string;
-    string.getImplString().assign(begin, end);
+    static_cast<std::u32string*>(string.getImplString())->assign(begin, end);
     return string;
 }
 

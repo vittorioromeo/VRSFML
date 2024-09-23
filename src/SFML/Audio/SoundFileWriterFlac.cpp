@@ -27,8 +27,16 @@ struct SoundFileWriterFlac::Impl
 {
     struct FlacStreamEncoderDeleter
     {
-        void operator()(FLAC__StreamEncoder* theEncoder) const;
+        void operator()(FLAC__StreamEncoder* theEncoder) const
+        {
+            if (theEncoder == nullptr)
+                return;
+
+            FLAC__stream_encoder_finish(theEncoder);
+            FLAC__stream_encoder_delete(theEncoder);
+        }
     };
+
     base::UniquePtr<FLAC__StreamEncoder, FlacStreamEncoderDeleter> encoder;        //!< FLAC stream encoder
     unsigned int                                                   channelCount{}; //!< Number of channels
     base::SizeT                       remapTable[8]{}; //!< Table we use to remap source to target channel order
@@ -42,17 +50,6 @@ SoundFileWriterFlac::SoundFileWriterFlac() = default;
 
 ////////////////////////////////////////////////////////////
 SoundFileWriterFlac::~SoundFileWriterFlac() = default;
-
-
-////////////////////////////////////////////////////////////
-void SoundFileWriterFlac::Impl::FlacStreamEncoderDeleter::operator()(FLAC__StreamEncoder* theEncoder) const
-{
-    if (theEncoder == nullptr)
-        return;
-
-    FLAC__stream_encoder_finish(theEncoder);
-    FLAC__stream_encoder_delete(theEncoder);
-}
 
 
 ////////////////////////////////////////////////////////////

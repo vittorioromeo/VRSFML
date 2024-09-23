@@ -28,7 +28,7 @@ class GlContext
 {
 public:
     [[nodiscard]] const ContextSettings& getSettings() const;
-    [[nodiscard]] std::uint64_t          getId() const;
+    [[nodiscard]] unsigned int           getId() const;
 };
 
 }; // namespace sf::priv

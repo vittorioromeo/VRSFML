@@ -7,7 +7,7 @@
 
 #include "SFML/System/Err.hpp"
 
-#include "SFML/Base/Strstr.hpp"
+#include "SFML/Base/Builtins/Strstr.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <fcntl.h>

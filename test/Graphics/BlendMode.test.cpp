@@ -13,21 +13,17 @@ TEST_CASE("[Graphics] sf::BlendMode")
         STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::BlendMode));
         STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::BlendMode));
         STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::BlendMode));
+
+        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::BlendMode));
+        STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::BlendMode));
+        STATIC_CHECK(!SFML_BASE_IS_AGGREGATE(sf::BlendMode));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::BlendMode));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::BlendMode));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::BlendMode, sf::BlendMode));
     }
 
     SECTION("Construction")
     {
-        SECTION("Default constructor")
-        {
-            const sf::BlendMode blendMode;
-            CHECK(blendMode.colorSrcFactor == sf::BlendMode::Factor::SrcAlpha);
-            CHECK(blendMode.colorDstFactor == sf::BlendMode::Factor::OneMinusSrcAlpha);
-            CHECK(blendMode.colorEquation == sf::BlendMode::Equation::Add);
-            CHECK(blendMode.alphaSrcFactor == sf::BlendMode::Factor::One);
-            CHECK(blendMode.alphaDstFactor == sf::BlendMode::Factor::OneMinusSrcAlpha);
-            CHECK(blendMode.alphaEquation == sf::BlendMode::Equation::Add);
-        }
-
         SECTION("Combined color and alpha constructor using default parameter")
         {
             const sf::BlendMode blendMode(sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::SrcColor);
@@ -73,7 +69,6 @@ TEST_CASE("[Graphics] sf::BlendMode")
     {
         SECTION("operator==")
         {
-            CHECK(sf::BlendMode() == sf::BlendMode());
             CHECK(sf::BlendMode(sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::One) ==
                   sf::BlendMode(sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::One));
             CHECK(sf::BlendMode(sf::BlendMode::Factor::Zero,
@@ -89,7 +84,6 @@ TEST_CASE("[Graphics] sf::BlendMode")
                                 sf::BlendMode::Factor::DstAlpha,
                                 sf::BlendMode::Equation::Max));
 
-            CHECK_FALSE(sf::BlendMode() == sf::BlendMode(sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::One));
             CHECK_FALSE(sf::BlendMode(sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::One) ==
                         sf::BlendMode(sf::BlendMode::Factor::One, sf::BlendMode::Factor::Zero));
             CHECK_FALSE(
@@ -109,7 +103,6 @@ TEST_CASE("[Graphics] sf::BlendMode")
 
         SECTION("operator!=")
         {
-            CHECK_FALSE(sf::BlendMode() != sf::BlendMode());
             CHECK_FALSE(sf::BlendMode(sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::One) !=
                         sf::BlendMode(sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::One));
             CHECK_FALSE(
@@ -126,7 +119,6 @@ TEST_CASE("[Graphics] sf::BlendMode")
                               sf::BlendMode::Factor::DstAlpha,
                               sf::BlendMode::Equation::Max));
 
-            CHECK(sf::BlendMode() != sf::BlendMode(sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::One));
             CHECK(sf::BlendMode(sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::One) !=
                   sf::BlendMode(sf::BlendMode::Factor::One, sf::BlendMode::Factor::Zero));
             CHECK(sf::BlendMode(sf::BlendMode::Factor::Zero,

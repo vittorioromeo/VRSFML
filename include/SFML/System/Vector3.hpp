@@ -16,7 +16,7 @@ namespace sf
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-class Vector3
+class [[nodiscard]] Vector3
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -25,7 +25,7 @@ public:
     /// If you are not interested in the actual length, but only in comparisons, consider using `lengthSquared()`.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] SFML_SYSTEM_API constexpr T length() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_SYSTEM_API constexpr T length() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Square of vector's length.
@@ -33,7 +33,7 @@ public:
     /// Suitable for comparisons, more efficient than `length()`.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] SFML_API_EXPORT constexpr T lengthSquared() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_API_EXPORT constexpr T lengthSquared() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Vector with same direction but length 1 <i><b>(floating-point)</b></i>.
@@ -41,19 +41,19 @@ public:
     /// \pre `*this` is no zero vector.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] SFML_SYSTEM_API constexpr Vector3 normalized() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_SYSTEM_API constexpr Vector3 normalized() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Dot product of two 3D vectors.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] SFML_API_EXPORT constexpr T dot(const Vector3& rhs) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_API_EXPORT constexpr T dot(const Vector3& rhs) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Cross product of two 3D vectors.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] SFML_API_EXPORT constexpr Vector3 cross(const Vector3& rhs) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_API_EXPORT constexpr Vector3 cross(const Vector3& rhs) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Component-wise multiplication of `*this` and \a `rhs`.
@@ -64,7 +64,8 @@ public:
     /// This operation is also known as the Hadamard or Schur product.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] SFML_API_EXPORT constexpr Vector3 componentWiseMul(const Vector3& rhs) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_API_EXPORT constexpr Vector3 componentWiseMul(
+        const Vector3& rhs) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Component-wise division of `*this` and \a `rhs`.
@@ -76,7 +77,8 @@ public:
     /// \pre Neither component of \a `rhs` is zero.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] SFML_API_EXPORT constexpr Vector3 componentWiseDiv(const Vector3& rhs) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_API_EXPORT constexpr Vector3 componentWiseDiv(
+        const Vector3& rhs) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert to another `Vector3` of type `OtherVector3`
@@ -85,7 +87,31 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename OtherVector3>
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr OtherVector3 to() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr OtherVector3 to() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Overload of binary `operator==`
+    ///
+    /// This operator compares strict equality between two vectors.
+    ///
+    /// \param rhs Right operand
+    ///
+    /// \return `true` if \a `lhs` is equal to \a `rhs`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr bool operator==(const Vector3<T>& rhs) const = default;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Overload of binary `operator!=`
+    ///
+    /// This operator compares strict difference between two vectors.
+    ///
+    /// \param rhs Right operand
+    ///
+    /// \return `true` if \a `lhs` is not equal to \a `rhs`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr bool operator!=(const Vector3<T>& rhs) const = default;
 
     ////////////////////////////////////////////////////////////
     // Member data
@@ -99,172 +125,144 @@ public:
 /// \relates Vector3
 /// \brief Overload of unary `operator-`
 ///
-/// \param left Vector to negate
+/// \param lhs Vector to negate
 ///
 /// \return Member-wise opposite of the vector
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector3<T> operator-(const Vector3<T>& left);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vector3<T> operator-(const Vector3<T>& lhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector3
 /// \brief Overload of binary `operator+=`
 ///
 /// This operator performs a member-wise addition of both vectors,
-/// and assigns the result to \a `left`.
+/// and assigns the result to \a `lhs`.
 ///
-/// \param left  Left operand (a vector)
-/// \param right Right operand (a vector)
+/// \param lhs  Left operand (a vector)
+/// \param rhs Right operand (a vector)
 ///
-/// \return Reference to \a `left`
+/// \return Reference to \a `lhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline]] constexpr Vector3<T>& operator+=(Vector3<T>& left, const Vector3<T>& right);
+[[gnu::always_inline, gnu::flatten]] constexpr Vector3<T>& operator+=(Vector3<T>& lhs, const Vector3<T>& rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector3
 /// \brief Overload of binary `operator-=`
 ///
 /// This operator performs a member-wise subtraction of both vectors,
-/// and assigns the result to \a `left`.
+/// and assigns the result to \a `lhs`.
 ///
-/// \param left  Left operand (a vector)
-/// \param right Right operand (a vector)
+/// \param lhs  Left operand (a vector)
+/// \param rhs Right operand (a vector)
 ///
-/// \return Reference to \a `left`
+/// \return Reference to \a `lhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline]] constexpr Vector3<T>& operator-=(Vector3<T>& left, const Vector3<T>& right);
+[[gnu::always_inline, gnu::flatten]] constexpr Vector3<T>& operator-=(Vector3<T>& lhs, const Vector3<T>& rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector3
 /// \brief Overload of binary `operator+`
 ///
-/// \param left  Left operand (a vector)
-/// \param right Right operand (a vector)
+/// \param lhs  Left operand (a vector)
+/// \param rhs Right operand (a vector)
 ///
 /// \return Member-wise addition of both vectors
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector3<T> operator+(const Vector3<T>& left, const Vector3<T>& right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vector3<T> operator+(const Vector3<T>& lhs,
+                                                                                          const Vector3<T>& rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector3
 /// \brief Overload of binary `operator-`
 ///
-/// \param left  Left operand (a vector)
-/// \param right Right operand (a vector)
+/// \param lhs  Left operand (a vector)
+/// \param rhs Right operand (a vector)
 ///
 /// \return Member-wise subtraction of both vectors
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector3<T> operator-(const Vector3<T>& left, const Vector3<T>& right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vector3<T> operator-(const Vector3<T>& lhs,
+                                                                                          const Vector3<T>& rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector3
 /// \brief Overload of binary `operator*`
 ///
-/// \param left  Left operand (a vector)
-/// \param right Right operand (a scalar value)
+/// \param lhs  Left operand (a vector)
+/// \param rhs Right operand (a scalar value)
 ///
-/// \return Member-wise multiplication by \a `right`
+/// \return Member-wise multiplication by \a `rhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector3<T> operator*(const Vector3<T>& left, T right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vector3<T> operator*(const Vector3<T>& lhs, T rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector3
 /// \brief Overload of binary `operator*`
 ///
-/// \param left  Left operand (a scalar value)
-/// \param right Right operand (a vector)
+/// \param lhs  Left operand (a scalar value)
+/// \param rhs Right operand (a vector)
 ///
-/// \return Member-wise multiplication by \a `left`
+/// \return Member-wise multiplication by \a `lhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector3<T> operator*(T left, const Vector3<T>& right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vector3<T> operator*(T lhs, const Vector3<T>& rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector3
 /// \brief Overload of binary `operator*=`
 ///
-/// This operator performs a member-wise multiplication by \a `right`,
-/// and assigns the result to \a `left`.
+/// This operator performs a member-wise multiplication by \a `rhs`,
+/// and assigns the result to \a `lhs`.
 ///
-/// \param left  Left operand (a vector)
-/// \param right Right operand (a scalar value)
+/// \param lhs  Left operand (a vector)
+/// \param rhs Right operand (a scalar value)
 ///
-/// \return Reference to \a `left`
+/// \return Reference to \a `lhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline]] constexpr Vector3<T>& operator*=(Vector3<T>& left, T right);
+[[gnu::always_inline, gnu::flatten]] constexpr Vector3<T>& operator*=(Vector3<T>& lhs, T rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector3
 /// \brief Overload of binary `operator/`
 ///
-/// \param left  Left operand (a vector)
-/// \param right Right operand (a scalar value)
+/// \param lhs  Left operand (a vector)
+/// \param rhs Right operand (a scalar value)
 ///
-/// \return Member-wise division by \a `right`
+/// \return Member-wise division by \a `rhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector3<T> operator/(const Vector3<T>& left, T right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vector3<T> operator/(const Vector3<T>& lhs, T rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector3
 /// \brief Overload of binary `operator/=`
 ///
-/// This operator performs a member-wise division by \a `right`,
-/// and assigns the result to \a `left`.
+/// This operator performs a member-wise division by \a `rhs`,
+/// and assigns the result to \a `lhs`.
 ///
-/// \param left  Left operand (a vector)
-/// \param right Right operand (a scalar value)
+/// \param lhs  Left operand (a vector)
+/// \param rhs Right operand (a scalar value)
 ///
-/// \return Reference to \a `left`
-///
-////////////////////////////////////////////////////////////
-template <typename T>
-[[gnu::always_inline]] constexpr Vector3<T>& operator/=(Vector3<T>& left, T right);
-
-////////////////////////////////////////////////////////////
-/// \relates Vector3
-/// \brief Overload of binary `operator==`
-///
-/// This operator compares strict equality between two vectors.
-///
-/// \param left  Left operand (a vector)
-/// \param right Right operand (a vector)
-///
-/// \return `true` if \a `left` is equal to \a `right`
+/// \return Reference to \a `lhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator==(const Vector3<T>& left, const Vector3<T>& right);
-
-////////////////////////////////////////////////////////////
-/// \relates Vector3
-/// \brief Overload of binary `operator!=`
-///
-/// This operator compares strict difference between two vectors.
-///
-/// \param left  Left operand (a vector)
-/// \param right Right operand (a vector)
-///
-/// \return `true` if \a `left` is not equal to \a `right`
-///
-////////////////////////////////////////////////////////////
-template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator!=(const Vector3<T>& left, const Vector3<T>& right);
+[[gnu::always_inline, gnu::flatten]] constexpr Vector3<T>& operator/=(Vector3<T>& lhs, T rhs);
 
 // Define the most common types
 using Vector3i = Vector3<int>;

@@ -13,6 +13,7 @@
 
 #include <X11/Xatom.h>
 
+#include <string>
 #include <vector>
 
 
@@ -295,7 +296,7 @@ void ClipboardImpl::processEvent(XEvent& windowEvent)
                     ((m_utf8String == None) && (selectionRequestEvent.target == m_text)))
                 {
                     // Respond to a request for conversion to a Latin-1 string
-                    const std::string data = m_clipboardContents.toAnsiString();
+                    const std::string data = m_clipboardContents.toAnsiString<std::string>();
 
                     XChangeProperty(m_display.get(),
                                     selectionRequestEvent.requestor,
@@ -322,7 +323,7 @@ void ClipboardImpl::processEvent(XEvent& windowEvent)
                 {
                     // Respond to a request for conversion to a UTF-8 string
                     // or an encoding of our choosing (we always choose UTF-8)
-                    const auto data = m_clipboardContents.toUtf8();
+                    const auto data = m_clipboardContents.toUtf8<std::u8string>();
 
                     XChangeProperty(m_display.get(),
                                     selectionRequestEvent.requestor,

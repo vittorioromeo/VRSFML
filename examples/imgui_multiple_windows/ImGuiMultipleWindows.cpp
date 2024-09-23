@@ -19,15 +19,15 @@ int main()
     sf::GraphicsContext     graphicsContext;
     sf::ImGui::ImGuiContext imGuiContext(graphicsContext);
 
-    sf::RenderWindow window(graphicsContext, {.size{1280u, 720u}, .title = "ImGui + SFML = <3"});
-    window.setFramerateLimit(60);
+    sf::RenderWindow window(graphicsContext, {.size{1280u, 720u}, .title = "ImGui + SFML = <3", .vsync = true});
     if (!imGuiContext.init(window))
         return -1;
 
-    sf::base::Optional<sf::RenderWindow> childWindow(sf::base::inPlace,
-                                                     graphicsContext,
-                                                     sf::WindowSettings{.size{640u, 480u}, .title = "ImGui-SFML Child window"});
-    childWindow->setFramerateLimit(60);
+    sf::base::Optional<sf::RenderWindow>
+        childWindow(sf::base::inPlace,
+                    graphicsContext,
+                    sf::RenderWindow::Settings{.size{640u, 480u}, .title = "ImGui-SFML Child window", .vsync = true});
+
     if (!imGuiContext.init(*childWindow))
         return -1;
 
@@ -56,8 +56,7 @@ int main()
         ImGui::ShowDemoWindow();
 
         // Main window drawing
-        sf::CircleShape shape(100.f);
-        shape.setFillColor(sf::Color::Green);
+        const sf::CircleShape shape{{.fillColor = sf::Color::Green, .radius = 100.f}};
 
         window.clear();
         window.draw(shape, /* texture */ nullptr);
@@ -85,8 +84,7 @@ int main()
             ImGui::Button("Example button");
             ImGui::End();
 
-            sf::CircleShape shape2(50.f);
-            shape2.setFillColor(sf::Color::Red);
+            const sf::CircleShape shape2{{.fillColor = sf::Color::Red, .radius = 50.f}};
 
             childWindowRef.clear();
             childWindowRef.draw(shape2, /* texture */ nullptr);

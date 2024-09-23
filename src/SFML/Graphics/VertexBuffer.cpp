@@ -14,7 +14,6 @@
 
 #include "SFML/System/Err.hpp"
 
-#include "SFML/Base/Memcpy.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 #include <utility>
@@ -283,9 +282,9 @@ void VertexBuffer::draw(RenderTarget& target, RenderStates states) const
 
 
 ////////////////////////////////////////////////////////////
-void swap(VertexBuffer& left, VertexBuffer& right) noexcept
+void swap(VertexBuffer& lhs, VertexBuffer& rhs) noexcept
 {
-    left.swap(right);
+    lhs.swap(rhs);
 }
 
 } // namespace sf

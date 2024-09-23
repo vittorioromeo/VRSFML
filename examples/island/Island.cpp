@@ -14,7 +14,6 @@
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
 #include "SFML/Window/Keyboard.hpp"
-#include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Path.hpp"
@@ -101,7 +100,7 @@ float edgeDropoffExponent = 1.5f;
 float snowcapHeight = 0.6f;
 
 // Terrain lighting parameters
-float heightFactor  = windowSize.y / 2.0f;
+float heightFactor  = static_cast<float>(windowSize.y) / 2.0f;
 float heightFlatten = 3.0f;
 float lightFactor   = 0.7f;
 } // namespace
@@ -129,27 +128,24 @@ int main()
     const auto font = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf").value();
 
     // Create the window of the application
-    sf::RenderWindow window(graphicsContext, {.size{windowSize}, .title = "SFML Island", .resizable = false});
-
-    window.setVerticalSyncEnabled(true);
+    sf::RenderWindow window(graphicsContext, {.size{windowSize}, .title = "SFML Island", .resizable = false, .vsync = true});
 
     // Create all of our graphics resources
-    sf::Text         hudText(font);
-    sf::Text         statusText(font);
+    sf::Text hudText(font,
+                     {.position         = {5.0f, 5.0f},
+                      .characterSize    = 28,
+                      .fillColor        = sf::Color::White,
+                      .outlineColor     = sf::Color::Black,
+                      .outlineThickness = 2.0f});
+
+    sf::Text statusText(font,
+                        {.characterSize    = 14,
+                         .fillColor        = sf::Color::White,
+                         .outlineColor     = sf::Color::Black,
+                         .outlineThickness = 2.0f});
+
     sf::RenderStates terrainStates;
     sf::VertexBuffer terrain(graphicsContext, sf::PrimitiveType::Triangles, sf::VertexBuffer::Usage::Static);
-
-    // Set up our text drawables
-    statusText.setCharacterSize(28);
-    statusText.setFillColor(sf::Color::White);
-    statusText.setOutlineColor(sf::Color::Black);
-    statusText.setOutlineThickness(2.0f);
-
-    hudText.setCharacterSize(14);
-    hudText.setFillColor(sf::Color::White);
-    hudText.setOutlineColor(sf::Color::Black);
-    hudText.setOutlineThickness(2.0f);
-    hudText.setPosition({5.0f, 5.0f});
 
     // Staging buffer for our terrain data that we will upload to our VertexBuffer
     std::vector<sf::Vertex> terrainStagingBuffer;
@@ -179,7 +175,7 @@ int main()
     terrainStates = sf::RenderStates{.shader = &terrainShader};
 
     // Center the status text
-    statusText.setPosition((windowSize.toVector2f() - statusText.getLocalBounds().size) / 2.f);
+    statusText.position = (windowSize.toVector2f() - statusText.getLocalBounds().size) / 2.f;
 
     // Set up an array of pointers to our settings for arrow navigation
     constexpr std::array<Setting, 9> settings = {
@@ -195,7 +191,7 @@ int main()
 
     std::size_t currentSetting = 0;
 
-    std::ostringstream osstr;
+    std::ostringstream oss;
     sf::Clock          clock;
 
     while (true)
@@ -264,16 +260,16 @@ int main()
         }
 
         // Update and draw the HUD text
-        osstr.str("");
-        osstr << "Frame:  " << clock.restart().asMilliseconds() << "ms\n"
-              << "perlinOctaves:  " << perlinOctaves << "\n\n"
-              << "Use the arrow keys to change the values.\nUse the return key to regenerate the terrain.\n\n";
+        oss.str("");
+        oss << "Frame:  " << clock.restart().asMilliseconds() << "ms\n"
+            << "perlinOctaves:  " << perlinOctaves << "\n\n"
+            << "Use the arrow keys to change the values.\nUse the return key to regenerate the terrain.\n\n";
 
         for (std::size_t i = 0; i < settings.size(); ++i)
-            osstr << ((i == currentSetting) ? ">>  " : "       ") << settings[i].name << ":  " << *(settings[i].value)
-                  << '\n';
+            oss << ((i == currentSetting) ? ">>  " : "       ") << settings[i].name << ":  " << *(settings[i].value)
+                << '\n';
 
-        hudText.setString(osstr.str());
+        hudText.setString(oss.str());
 
         window.draw(hudText);
 
@@ -287,36 +283,27 @@ int main()
 /// Get the terrain elevation at the given coordinates.
 ///
 ////////////////////////////////////////////////////////////
-float getElevation(float x, float y)
+float getElevation(sf::Vector2u position)
 {
-    x = x / resolution.x - 0.5f;
-    y = y / resolution.y - 0.5f;
+    const sf::Vector2f normalized = position.toVector2f().componentWiseDiv(resolution.toVector2f()) -
+                                    sf::Vector2f(0.5f, 0.5f);
 
     float elevation = 0.0f;
 
     for (int i = 0; i < perlinOctaves; ++i)
     {
-        elevation += stb_perlin_noise3(x * perlinFrequency * static_cast<float>(std::pow(perlinFrequencyBase, i)),
-                                       y * perlinFrequency * static_cast<float>(std::pow(perlinFrequencyBase, i)),
-                                       0,
-                                       0,
-                                       0,
-                                       0) *
+        const sf::Vector2f scaled = normalized * perlinFrequency * static_cast<float>(std::pow(perlinFrequencyBase, i));
+        elevation += stb_perlin_noise3(scaled.x, scaled.y, 0, 0, 0, 0) *
                      static_cast<float>(std::pow(perlinFrequencyBase, -i));
     }
 
     elevation = (elevation + 1.f) / 2.f;
 
-    const float distance = 2.0f * std::sqrt(x * x + y * y);
+    const float distance = 2.0f * normalized.length();
     elevation            = (elevation + heightBase) * (1.0f - edgeFactor * std::pow(distance, edgeDropoffExponent));
     elevation            = std::clamp(elevation, 0.0f, 1.0f);
 
     return elevation;
-}
-
-float getElevation(unsigned int x, unsigned int y)
-{
-    return getElevation(static_cast<float>(x), static_cast<float>(y));
 }
 
 
@@ -324,19 +311,15 @@ float getElevation(unsigned int x, unsigned int y)
 /// Get the terrain moisture at the given coordinates.
 ///
 ////////////////////////////////////////////////////////////
-float getMoisture(float x, float y)
+float getMoisture(sf::Vector2u position)
 {
-    x = x / resolution.x - 0.5f;
-    y = y / resolution.y - 0.5f;
+    const sf::Vector2f normalized = position.toVector2f().componentWiseDiv(resolution.toVector2f()) -
+                                    sf::Vector2f(0.5f, 0.5f);
+    const sf::Vector2f transformed = normalized * 4.f + sf::Vector2f(0.5f, 0.5f);
 
-    const float moisture = stb_perlin_noise3(x * 4.f + 0.5f, y * 4.f + 0.5f, 0, 0, 0, 0);
+    const float moisture = stb_perlin_noise3(transformed.x, transformed.y, 0, 0, 0, 0);
 
     return (moisture + 1.f) / 2.f;
-}
-
-float getMoisture(unsigned int x, unsigned int y)
-{
-    return getMoisture(static_cast<float>(x), static_cast<float>(y));
 }
 
 
@@ -386,18 +369,16 @@ sf::Color getHighlandsTerrainColor(float elevation, float moisture)
 {
     const sf::Color lowlandsColor = getLowlandsTerrainColor(moisture);
 
-    sf::Color color = moisture < 0.6f ? sf::Color(112, 128, 144)
-                                      : colorFromFloats(112 + (110 * (moisture - 0.6f) / 0.4f),
-                                                        128 + (56 * (moisture - 0.6f) / 0.4f),
-                                                        144 - (9 * (moisture - 0.6f) / 0.4f));
+    const sf::Color color = moisture < 0.6f ? sf::Color(112, 128, 144)
+                                            : colorFromFloats(112 + (110 * (moisture - 0.6f) / 0.4f),
+                                                              128 + (56 * (moisture - 0.6f) / 0.4f),
+                                                              144 - (9 * (moisture - 0.6f) / 0.4f));
 
     const float factor = std::min((elevation - 0.4f) / 0.1f, 1.f);
 
-    color.r = static_cast<std::uint8_t>(lowlandsColor.r * (1.f - factor) + color.r * factor);
-    color.g = static_cast<std::uint8_t>(lowlandsColor.g * (1.f - factor) + color.g * factor);
-    color.b = static_cast<std::uint8_t>(lowlandsColor.b * (1.f - factor) + color.b * factor);
-
-    return color;
+    return colorFromFloats(lowlandsColor.r * (1.f - factor) + color.r * factor,
+                           lowlandsColor.g * (1.f - factor) + color.g * factor,
+                           lowlandsColor.b * (1.f - factor) + color.b * factor);
 }
 
 
@@ -462,9 +443,7 @@ sf::Vector2f computeNormal(float left, float right, float bottom, float top)
     const sf::Vector3f deltaX(1, 0, (std::pow(right, heightFlatten) - std::pow(left, heightFlatten)) * heightFactor);
     const sf::Vector3f deltaY(0, 1, (std::pow(top, heightFlatten) - std::pow(bottom, heightFlatten)) * heightFactor);
 
-    sf::Vector3f crossProduct(deltaX.y * deltaY.z - deltaX.z * deltaY.y,
-                              deltaX.z * deltaY.x - deltaX.x * deltaY.z,
-                              deltaX.x * deltaY.y - deltaX.y * deltaY.x);
+    sf::Vector3f crossProduct = deltaX.cross(deltaY);
 
     // Scale cross product to make z component 1.0f so we can drop it
     crossProduct /= crossProduct.z;
@@ -472,6 +451,26 @@ sf::Vector2f computeNormal(float left, float right, float bottom, float top)
     // Return "compressed" normal
     return {crossProduct.x, crossProduct.y};
 }
+
+
+////////////////////////////////////////////////////////////
+/// Compute the vertex representing the terrain at the given
+/// coordinates.
+///
+////////////////////////////////////////////////////////////
+constexpr auto scalingFactors = windowSize.toVector2f().componentWiseDiv(resolution.toVector2f());
+
+sf::Vertex computeVertex(sf::Vector2u position)
+{
+    sf::Vertex vertex;
+    vertex.position  = position.toVector2f().componentWiseMul(scalingFactors);
+    vertex.color     = getTerrainColor(getElevation(position), getMoisture(position));
+    vertex.texCoords = computeNormal(getElevation(position - sf::Vector2u(1, 0)),
+                                     getElevation(position + sf::Vector2u(1, 0)),
+                                     getElevation(position + sf::Vector2u(0, 1)),
+                                     getElevation(position - sf::Vector2u(0, 1)));
+    return vertex;
+};
 
 
 ////////////////////////////////////////////////////////////
@@ -491,8 +490,6 @@ void processWorkItem(std::vector<sf::Vertex>& vertices, const WorkItem& workItem
     const unsigned int rowEnd   = std::min(rowStart + rowBlockSize, resolution.y);
     const unsigned int rowCount = rowEnd - rowStart;
 
-    const auto scalingFactor = windowSize.toVector2f().componentWiseDiv(resolution.toVector2f());
-
     for (unsigned int y = rowStart; y < rowEnd; ++y)
     {
         for (unsigned int x = 0; x < resolution.x; ++x)
@@ -510,13 +507,7 @@ void processWorkItem(std::vector<sf::Vertex>& vertices, const WorkItem& workItem
             }
             else
             {
-                vertices[arrayIndexBase + 0].position  = sf::Vector2f(static_cast<float>(x) * scalingFactor.x,
-                                                                     static_cast<float>(y) * scalingFactor.y);
-                vertices[arrayIndexBase + 0].color     = getTerrainColor(getElevation(x, y), getMoisture(x, y));
-                vertices[arrayIndexBase + 0].texCoords = computeNormal(getElevation(x - 1, y),
-                                                                       getElevation(x + 1, y),
-                                                                       getElevation(x, y + 1),
-                                                                       getElevation(x, y - 1));
+                vertices[arrayIndexBase + 0] = computeVertex({x, y});
             }
 
             // Bottom left corner (first triangle)
@@ -526,23 +517,11 @@ void processWorkItem(std::vector<sf::Vertex>& vertices, const WorkItem& workItem
             }
             else
             {
-                vertices[arrayIndexBase + 1].position  = sf::Vector2f(static_cast<float>(x) * scalingFactor.x,
-                                                                     static_cast<float>(y + 1) * scalingFactor.y);
-                vertices[arrayIndexBase + 1].color     = getTerrainColor(getElevation(x, y + 1), getMoisture(x, y + 1));
-                vertices[arrayIndexBase + 1].texCoords = computeNormal(getElevation(x - 1, y + 1),
-                                                                       getElevation(x + 1, y + 1),
-                                                                       getElevation(x, y + 2),
-                                                                       getElevation(x, y));
+                vertices[arrayIndexBase + 1] = computeVertex({x, y + 1});
             }
 
             // Bottom right corner (first triangle)
-            vertices[arrayIndexBase + 2].position = sf::Vector2f(static_cast<float>(x + 1) * scalingFactor.x,
-                                                                 static_cast<float>(y + 1) * scalingFactor.y);
-            vertices[arrayIndexBase + 2].color = getTerrainColor(getElevation(x + 1, y + 1), getMoisture(x + 1, y + 1));
-            vertices[arrayIndexBase + 2].texCoords = computeNormal(getElevation(x, y + 1),
-                                                                   getElevation(x + 2, y + 1),
-                                                                   getElevation(x + 1, y + 2),
-                                                                   getElevation(x + 1, y));
+            vertices[arrayIndexBase + 2] = computeVertex({x + 1, y + 1});
 
             // Top left corner (second triangle)
             vertices[arrayIndexBase + 3] = vertices[arrayIndexBase + 0];
@@ -557,13 +536,7 @@ void processWorkItem(std::vector<sf::Vertex>& vertices, const WorkItem& workItem
             }
             else
             {
-                vertices[arrayIndexBase + 5].position  = sf::Vector2f(static_cast<float>(x + 1) * scalingFactor.x,
-                                                                     static_cast<float>(y) * scalingFactor.y);
-                vertices[arrayIndexBase + 5].color     = getTerrainColor(getElevation(x + 1, y), getMoisture(x + 1, y));
-                vertices[arrayIndexBase + 5].texCoords = computeNormal(getElevation(x, y),
-                                                                       getElevation(x + 2, y),
-                                                                       getElevation(x + 1, y + 1),
-                                                                       getElevation(x + 1, y - 1));
+                vertices[arrayIndexBase + 5] = computeVertex({x + 1, y});
             }
         }
     }

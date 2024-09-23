@@ -10,6 +10,8 @@
 #include "SFML/System/StringUtfUtils.hpp"
 
 #import <AppKit/AppKit.h>
+#include <string>
+
 
 namespace sf::priv
 {
@@ -32,7 +34,7 @@ String ClipboardImpl::getString()
 void ClipboardImpl::setString(const String& text)
 {
     const AutoreleasePool pool;
-    const auto            utf8 = text.toUtf8();
+    const auto            utf8 = text.toUtf8<std::u8string>();
     NSString* const       data = [[NSString alloc]
         initWithBytes:utf8.data()
                length:utf8.length()

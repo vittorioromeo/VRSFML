@@ -9,7 +9,6 @@
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/Keyboard.hpp"
-#include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Path.hpp"
 #include "SFML/System/String.hpp"
@@ -24,10 +23,17 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-std::string vec2ToString(const sf::Vector2i vec2)
+[[nodiscard]] std::string vec2ToString(const sf::Vector2i vec2)
 {
     return '(' + std::to_string(vec2.x) + ", " + std::to_string(vec2.y) + ')';
-};
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] std::string scancodeToString(const sf::Keyboard::Scancode scancode)
+{
+    return sf::Keyboard::getDescription(scancode).toAnsiString<std::string>();
+}
 
 } // namespace
 
@@ -42,17 +48,15 @@ public:
     ////////////////////////////////////////////////////////////
     Application()
     {
-        m_window.setVerticalSyncEnabled(true);
-
         m_logText.setFillColor(sf::Color::White);
 
         m_handlerText.setFillColor(sf::Color::White);
         m_handlerText.setStyle(sf::Text::Style::Bold);
-        m_handlerText.setPosition({380.f, 260.f});
+        m_handlerText.position = {380.f, 260.f};
 
         m_instructions.setFillColor(sf::Color::White);
         m_instructions.setStyle(sf::Text::Style::Bold);
-        m_instructions.setPosition({380.f, 310.f});
+        m_instructions.position = {380.f, 310.f};
     }
 
     // The visitor we pass to event->visit in the "Visitor" handler
@@ -79,7 +83,7 @@ public:
                 application.m_handlerText.setString("Current Handler: Overload");
             }
 
-            return sf::base::makeOptional<std::string>("Key Pressed: " + sf::Keyboard::getDescription(keyPress.scancode));
+            return sf::base::makeOptional<std::string>("Key Pressed: " + scancodeToString(keyPress.scancode));
         }
 
         sf::base::Optional<std::string> operator()(const sf::Event::MouseMoved& mouseMoved)
@@ -128,7 +132,7 @@ public:
 
             if (const auto* keyPress = event->getIf<sf::Event::KeyPressed>())
             {
-                m_log.emplace_back("Key Pressed: " + sf::Keyboard::getDescription(keyPress->scancode));
+                m_log.emplace_back("Key Pressed: " + scancodeToString(keyPress->scancode));
 
                 // When the enter key is pressed, switch to the next handler type
                 if (keyPress->code == sf::Keyboard::Key::Enter)
@@ -178,8 +182,7 @@ public:
         m_window.pollAndHandleEvents([&](sf::Event::Closed) { m_mustClose = true; },
                                      [&](const sf::Event::KeyPressed& keyPress)
                                      {
-                                         m_log.emplace_back(
-                                             "Key Pressed: " + sf::Keyboard::getDescription(keyPress.scancode));
+                                         m_log.emplace_back("Key Pressed: " + scancodeToString(keyPress.scancode));
 
                                          // When the enter key is pressed, switch to the next handler type
                                          if (keyPress.code == sf::Keyboard::Key::Enter)
@@ -215,7 +218,7 @@ public:
                 }
                 else if constexpr (std::is_same_v<T, sf::Event::KeyPressed>)
                 {
-                    m_log.emplace_back("Key Pressed: " + sf::Keyboard::getDescription(event.scancode));
+                    m_log.emplace_back("Key Pressed: " + scancodeToString(event.scancode));
 
                     // When the enter key is pressed, switch to the next handler type
                     if (event.code == sf::Keyboard::Key::Enter)
@@ -290,7 +293,7 @@ public:
 
             for (std::size_t i = 0; i < m_log.size(); ++i)
             {
-                m_logText.setPosition({50.f, static_cast<float>(i * 20) + 50.f});
+                m_logText.position = {50.f, static_cast<float>(i * 20) + 50.f};
                 m_logText.setString(m_log[i]);
                 m_window.draw(m_logText);
             }
@@ -313,7 +316,7 @@ public:
 
     void handle(const sf::Event::KeyPressed& keyPress)
     {
-        m_log.emplace_back("Key Pressed: " + sf::Keyboard::getDescription(keyPress.scancode));
+        m_log.emplace_back("Key Pressed: " + scancodeToString(keyPress.scancode));
 
         // When the enter key is pressed, switch to the next handler type
         if (keyPress.code == sf::Keyboard::Key::Enter)
@@ -359,11 +362,15 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     sf::GraphicsContext m_graphicsContext;
-    sf::RenderWindow m_window{m_graphicsContext, {.size{800u, 600u}, .title = "SFML Event Handling", .resizable = false}};
-    const sf::Font           m_font{sf::Font::openFromFile(m_graphicsContext, "resources/tuffy.ttf").value()};
-    sf::Text                 m_logText{m_font, "", 20};
-    sf::Text                 m_handlerText{m_font, "Current Handler: Classic", 24};
-    sf::Text                 m_instructions{m_font, "Press Enter to change handler type", 24};
+    sf::RenderWindow    m_window{m_graphicsContext,
+                                 {.size{800u, 600u}, .title = "SFML Event Handling", .resizable = false, .vsync = true}};
+
+    const sf::Font m_font{sf::Font::openFromFile(m_graphicsContext, "resources/tuffy.ttf").value()};
+
+    sf::Text m_logText{m_font, {.characterSize = 20u}};
+    sf::Text m_handlerText{m_font, {.string = "Current Handler: Classic", .characterSize = 24u}};
+    sf::Text m_instructions{m_font, {.string = "Press Enter to change handler type", .characterSize = 24u}};
+
     std::vector<std::string> m_log;
     HandlerType              m_handlerType{HandlerType::Classic};
     bool                     m_mustClose{false};

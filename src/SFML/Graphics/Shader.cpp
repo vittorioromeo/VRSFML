@@ -35,8 +35,10 @@ using GLhandle = GLuint;
 
 #if defined(SFML_SYSTEM_MACOS) || defined(SFML_SYSTEM_IOS)
 
-#define castToGlHandle(x)   reinterpret_cast<GLhandle>(static_cast<std::ptrdiff_t>(x))
-#define castFromGlHandle(x) static_cast<unsigned int>(reinterpret_cast<std::ptrdiff_t>(x))
+#include "SFML/Base/PtrDiffT.hpp"
+
+#define castToGlHandle(x)   reinterpret_cast<GLhandle>(static_cast<::sf::base::PtrDiffT>(x))
+#define castFromGlHandle(x) static_cast<unsigned int>(reinterpret_cast<::sf::base::PtrDiffT>(x))
 
 #else
 
@@ -355,7 +357,7 @@ Shader::~Shader()
     // Destroy effect program
     if (m_impl->shaderProgram)
     {
-        SFML_BASE_ASSERT(glCheckExpr(glIsProgram(castToGlHandle(m_impl->shaderProgram))));
+        SFML_BASE_ASSERT(glCheck(glIsProgram(castToGlHandle(m_impl->shaderProgram))));
         glCheck(glDeleteProgram(castToGlHandle(m_impl->shaderProgram)));
     }
 }
@@ -885,7 +887,7 @@ void Shader::bind() const
     SFML_BASE_ASSERT(m_impl->shaderProgram != 0u);
 
     // Enable the program
-    SFML_BASE_ASSERT(glCheckExpr(glIsProgram(castToGlHandle(m_impl->shaderProgram))));
+    SFML_BASE_ASSERT(glCheck(glIsProgram(castToGlHandle(m_impl->shaderProgram))));
     glCheck(glUseProgram(castToGlHandle(m_impl->shaderProgram)));
 
     // Bind the textures
@@ -901,8 +903,6 @@ void Shader::bind() const
 void Shader::unbind([[maybe_unused]] GraphicsContext& graphicsContext)
 {
     SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
-
-    // Bind no shader
     glCheck(glUseProgram({}));
 }
 
@@ -946,7 +946,7 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
     // Create the program
     GLhandle shaderProgram{};
     glCheck(shaderProgram = glCreateProgram());
-    SFML_BASE_ASSERT(glCheckExpr(glIsProgram(shaderProgram)));
+    SFML_BASE_ASSERT(glCheck(glIsProgram(shaderProgram)));
 
     if (vertexShaderCode.data() == nullptr)
         vertexShaderCode = graphicsContext.getBuiltInShaderVertexSrc();
@@ -955,12 +955,12 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
     {
         // Create and compile the shader
         GLhandle vertexShader{};
-        glCheck(vertexShader = glCheckExpr(glCreateShader(GL_VERTEX_SHADER)));
+        glCheck(vertexShader = glCheck(glCreateShader(GL_VERTEX_SHADER)));
         const GLcharARB* sourceCode       = vertexShaderCode.data();
         const auto       sourceCodeLength = static_cast<GLint>(vertexShaderCode.size());
         glCheck(glShaderSource(vertexShader, 1, &sourceCode, &sourceCodeLength));
         glCheck(glCompileShader(vertexShader));
-        SFML_BASE_ASSERT(glCheckExpr(glIsShader(vertexShader)));
+        SFML_BASE_ASSERT(glCheck(glIsShader(vertexShader)));
 
         // Check the compile log
         GLint success = 0;
@@ -984,12 +984,12 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
     if (geometryShaderCode.data())
     {
         // Create and compile the shader
-        const GLhandle   geometryShader   = glCheckExpr(glCreateShader(GL_GEOMETRY_SHADER));
+        const GLhandle   geometryShader   = glCheck(glCreateShader(GL_GEOMETRY_SHADER));
         const GLcharARB* sourceCode       = geometryShaderCode.data();
         const auto       sourceCodeLength = static_cast<GLint>(geometryShaderCode.size());
         glCheck(glShaderSource(geometryShader, 1, &sourceCode, &sourceCodeLength));
         glCheck(glCompileShader(geometryShader));
-        SFML_BASE_ASSERT(glCheckExpr(glIsShader(geometryShader)));
+        SFML_BASE_ASSERT(glCheck(glIsShader(geometryShader)));
 
         // Check the compile log
         GLint success = 0;
@@ -1016,12 +1016,12 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
     {
         // Create and compile the shader
         GLhandle fragmentShader{};
-        glCheck(fragmentShader = glCheckExpr(glCreateShader(GL_FRAGMENT_SHADER)));
+        glCheck(fragmentShader = glCheck(glCreateShader(GL_FRAGMENT_SHADER)));
         const GLcharARB* sourceCode       = fragmentShaderCode.data();
         const auto       sourceCodeLength = static_cast<GLint>(fragmentShaderCode.size());
         glCheck(glShaderSource(fragmentShader, 1, &sourceCode, &sourceCodeLength));
         glCheck(glCompileShader(fragmentShader));
-        SFML_BASE_ASSERT(glCheckExpr(glIsShader(fragmentShader)));
+        SFML_BASE_ASSERT(glCheck(glIsShader(fragmentShader)));
 
         // Check the compile log
         GLint success = 0;

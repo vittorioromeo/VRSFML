@@ -9,16 +9,16 @@ MappedDrawableBatch::MappedDrawableBatch(RenderTarget& renderTarget) : m_renderT
 ////////////////////////////////////////////////////////////
 void* MappedDrawableBatch::mapBuffer(unsigned int type, base::SizeT allocatedBytes) const
 {
-    return glCheckExpr(
+    return glCheck(
         glMapBufferRange(type, 0u, allocatedBytes, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT));
-    // return glCheckExpr(glMapBufferRange(type, 0u, allocatedBytes, GL_MAP_WRITE_BIT));
+    // return glCheck(glMapBufferRange(type, 0u, allocatedBytes, GL_MAP_WRITE_BIT));
 }
 
 
 ////////////////////////////////////////////////////////////
 void MappedDrawableBatch::unmapBuffer(unsigned int type) const
 {
-    [[maybe_unused]] const bool rc = glCheckExpr(glUnmapBuffer(type));
+    [[maybe_unused]] const bool rc = glCheck(glUnmapBuffer(type));
     SFML_BASE_ASSERT(rc);
 }
 

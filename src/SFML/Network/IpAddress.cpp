@@ -59,7 +59,8 @@ base::Optional<IpAddress> IpAddress::getLocalAddress()
     }
 
     // Connect the socket to localhost on any port
-    priv::SockAddrIn address = priv::SocketImpl::createAddress(priv::SocketImpl::getNtohl(priv::SocketImpl::inaddrLoopback()), 9);
+    priv::SockAddrIn address = priv::SocketImpl::createAddress(priv::SocketImpl::getNtohl(priv::SocketImpl::inaddrLoopback()),
+                                                               9);
     if (!priv::SocketImpl::connect(sock, address))
     {
         priv::SocketImpl::close(sock);
@@ -112,44 +113,30 @@ base::Optional<IpAddress> IpAddress::getPublicAddress(Time timeout)
 
 
 ////////////////////////////////////////////////////////////
-bool operator==(IpAddress left, IpAddress right)
+bool operator<(IpAddress lhs, IpAddress rhs)
 {
-    return !(left < right) && !(right < left);
+    return lhs.m_address < rhs.m_address;
 }
 
 
 ////////////////////////////////////////////////////////////
-bool operator!=(IpAddress left, IpAddress right)
+bool operator>(IpAddress lhs, IpAddress rhs)
 {
-    return !(left == right);
+    return rhs < lhs;
 }
 
 
 ////////////////////////////////////////////////////////////
-bool operator<(IpAddress left, IpAddress right)
+bool operator<=(IpAddress lhs, IpAddress rhs)
 {
-    return left.m_address < right.m_address;
+    return !(rhs < lhs);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool operator>(IpAddress left, IpAddress right)
+bool operator>=(IpAddress lhs, IpAddress rhs)
 {
-    return right < left;
-}
-
-
-////////////////////////////////////////////////////////////
-bool operator<=(IpAddress left, IpAddress right)
-{
-    return !(right < left);
-}
-
-
-////////////////////////////////////////////////////////////
-bool operator>=(IpAddress left, IpAddress right)
-{
-    return !(left < right);
+    return !(lhs < rhs);
 }
 
 

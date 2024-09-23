@@ -11,16 +11,15 @@
 #include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/Window.hpp"
 #include "SFML/Window/WindowHandle.hpp"
+#include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Vector2.hpp"
 
 
 namespace sf
 {
-struct WindowSettings;
 class GraphicsContext;
 class Image;
-class String;
 
 ////////////////////////////////////////////////////////////
 /// \brief Window that can serve as a target for 2D drawing
@@ -30,12 +29,18 @@ class SFML_GRAPHICS_API RenderWindow : public Window, public RenderTarget
 {
 public:
     ////////////////////////////////////////////////////////////
+    /// \brief Window creation settings
+    ///
+    ////////////////////////////////////////////////////////////
+    using Settings = WindowSettings;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Construct a new window
     ///
     /// Creates the render window with the specified \a windowSettings.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] RenderWindow(GraphicsContext& graphicsContext, const WindowSettings& windowSettings);
+    [[nodiscard]] explicit RenderWindow(GraphicsContext& graphicsContext, const Settings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control

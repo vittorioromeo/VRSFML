@@ -22,6 +22,10 @@
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/TrivialVector.hpp"
 
+#ifdef SFML_OPENGL_ES
+#include "SFML/Base/PtrDiffT.hpp"
+#endif
+
 #include <atomic>
 #include <utility>
 
@@ -31,13 +35,12 @@ namespace
 // A nested named namespace is used here to allow unity builds of SFML.
 namespace TextureImpl
 {
-// Thread-safe unique identifier generator,
-// is used for states cache (see RenderTarget)
-std::uint64_t getUniqueId() noexcept
-{
-    static std::atomic<std::uint64_t> id(1); // start at 1, zero is "no texture"
+// Thread-safe unique identifier generator, is used for states cache (see RenderTarget)
+constinit std::atomic<unsigned int> nextUniqueId{1u}; // start at 1, zero is "no texture"
 
-    return id.fetch_add(1);
+[[nodiscard, gnu::always_inline, gnu::flatten]] inline unsigned int getUniqueId() noexcept
+{
+    return nextUniqueId.fetch_add(1u, std::memory_order_relaxed);
 }
 
 } // namespace TextureImpl
@@ -84,14 +87,15 @@ m_cacheId(TextureImpl::getUniqueId())
 Texture::~Texture()
 {
     // Destroy the OpenGL texture
-    if (m_texture)
-    {
-        SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
+    if (!m_texture)
+        return;
 
-        const GLuint texture = m_texture;
-        glCheck(glDeleteTextures(1, &texture));
-    }
+    SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
+
+    const GLuint texture = m_texture;
+    glCheck(glDeleteTextures(1, &texture));
 }
+
 
 ////////////////////////////////////////////////////////////
 Texture::Texture(Texture&& right) noexcept :
@@ -107,6 +111,7 @@ m_hasMipmap(base::exchange(right.m_hasMipmap, false)),
 m_cacheId(base::exchange(right.m_cacheId, 0u))
 {
 }
+
 
 ////////////////////////////////////////////////////////////
 Texture& Texture::operator=(Texture&& right) noexcept
@@ -352,10 +357,10 @@ Image Texture::copyToImage() const
         if (m_pixelsFlipped)
         {
             // Flip the texture vertically
-            const auto stride             = static_cast<std::ptrdiff_t>(m_size.x * 4);
+            const auto stride             = static_cast<base::PtrDiffT>(m_size.x * 4);
             auto*      currentRowIterator = pixels.begin();
             auto*      nextRowIterator    = pixels.begin() + stride;
-            auto*      reverseRowIterator = pixels.begin() + (stride * static_cast<std::ptrdiff_t>(m_size.y - 1));
+            auto*      reverseRowIterator = pixels.begin() + (stride * static_cast<base::PtrDiffT>(m_size.y - 1));
             for (unsigned int i = 0; i < m_size.y / 2; ++i)
             {
                 base::swapRanges(currentRowIterator, nextRowIterator, reverseRowIterator);
@@ -432,7 +437,7 @@ void Texture::update(const std::uint8_t* pixels, Vector2u size, Vector2u dest)
     SFML_BASE_ASSERT(pixels != nullptr);
 
     SFML_BASE_ASSERT(m_texture);
-    SFML_BASE_ASSERT(glCheckExpr(glIsTexture(m_texture)));
+    SFML_BASE_ASSERT(glCheck(glIsTexture(m_texture)));
 
     SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
@@ -476,10 +481,10 @@ bool Texture::update(const Texture& texture, Vector2u dest)
     SFML_BASE_ASSERT(dest.y + texture.m_size.y <= m_size.y && "Destination y coordinate is outside of texture");
 
     SFML_BASE_ASSERT(m_texture);
-    SFML_BASE_ASSERT(glCheckExpr(glIsTexture(m_texture)));
+    SFML_BASE_ASSERT(glCheck(glIsTexture(m_texture)));
 
     SFML_BASE_ASSERT(texture.m_texture);
-    SFML_BASE_ASSERT(glCheckExpr(glIsTexture(texture.m_texture)));
+    SFML_BASE_ASSERT(glCheck(glIsTexture(texture.m_texture)));
 
     SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
@@ -602,7 +607,7 @@ bool Texture::update(const Window& window, Vector2u dest)
     SFML_BASE_ASSERT(dest.y + window.getSize().y <= m_size.y && "Destination y coordinate is outside of texture");
 
     SFML_BASE_ASSERT(m_texture);
-    SFML_BASE_ASSERT(glCheckExpr(glIsTexture(m_texture)));
+    SFML_BASE_ASSERT(glCheck(glIsTexture(m_texture)));
 
     if (!window.setActive(true))
     {
@@ -777,7 +782,7 @@ bool Texture::isRepeated() const
 bool Texture::generateMipmap()
 {
     SFML_BASE_ASSERT(m_texture);
-    SFML_BASE_ASSERT(glCheckExpr(glIsTexture(m_texture)));
+    SFML_BASE_ASSERT(glCheck(glIsTexture(m_texture)));
 
     SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
 
@@ -897,9 +902,9 @@ FloatRect Texture::getRect() const
 
 
 ////////////////////////////////////////////////////////////
-void swap(Texture& left, Texture& right) noexcept
+void swap(Texture& lhs, Texture& rhs) noexcept
 {
-    left.swap(right);
+    lhs.swap(rhs);
 }
 
 } // namespace sf

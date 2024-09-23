@@ -5,7 +5,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Audio/PlaybackDeviceHandle.hpp"
 
-#include "SFML/Base/Memcmp.hpp"
+#include "SFML/Base/Builtins/Memcmp.hpp"
 
 #include <miniaudio.h>
 

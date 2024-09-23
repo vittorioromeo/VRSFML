@@ -25,10 +25,10 @@ if(SFML_OS_WINDOWS)
     )
     if(SFML_OPENGL_ES)
         list(APPEND PLATFORM_SRC
-            ${SRCROOT}/EGLCheck.cpp
-            ${SRCROOT}/EGLCheck.hpp
-            ${SRCROOT}/EglContext.cpp
-            ${SRCROOT}/EglContext.hpp
+            ${SRCROOT}/EGL/EGLCheck.cpp
+            ${SRCROOT}/EGL/EGLCheck.hpp
+            ${SRCROOT}/EGL/EGLContext.cpp
+            ${SRCROOT}/EGL/EGLContext.hpp
         )
     else()
         list(APPEND PLATFORM_SRC
@@ -40,8 +40,8 @@ elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
     if(SFML_USE_DRM)
         add_definitions(-DSFML_USE_DRM)
         set(PLATFORM_SRC
-            ${SRCROOT}/EGLCheck.cpp
-            ${SRCROOT}/EGLCheck.hpp
+            ${SRCROOT}/EGL/EGLCheck.cpp
+            ${SRCROOT}/EGL/EGLCheck.hpp
             ${SRCROOT}/DRM/InputImpl.cpp
             ${SRCROOT}/DRM/VideoModeImpl.cpp
             ${SRCROOT}/DRM/DRMContext.cpp
@@ -72,10 +72,10 @@ elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
         )
         if(SFML_OPENGL_ES)
             list(APPEND PLATFORM_SRC
-                ${SRCROOT}/EGLCheck.cpp
-                ${SRCROOT}/EGLCheck.hpp
-                ${SRCROOT}/EglContext.cpp
-                ${SRCROOT}/EglContext.hpp
+                ${SRCROOT}/EGL/EGLCheck.cpp
+                ${SRCROOT}/EGL/EGLCheck.hpp
+                ${SRCROOT}/EGL/EGLContext.cpp
+                ${SRCROOT}/EGL/EGLContext.hpp
             )
         else()
              list(APPEND PLATFORM_SRC
@@ -174,10 +174,10 @@ elseif(SFML_OS_IOS)
     )
 elseif(SFML_OS_ANDROID)
     set(PLATFORM_SRC
-        ${SRCROOT}/EGLCheck.cpp
-        ${SRCROOT}/EGLCheck.hpp
-        ${SRCROOT}/EglContext.cpp
-        ${SRCROOT}/EglContext.hpp
+        ${SRCROOT}/EGL/EGLCheck.cpp
+        ${SRCROOT}/EGL/EGLCheck.hpp
+        ${SRCROOT}/EGL/EGLContext.cpp
+        ${SRCROOT}/EGL/EGLContext.hpp
         ${SRCROOT}/Android/WindowImplAndroid.hpp
         ${SRCROOT}/Android/WindowImplAndroid.cpp
         ${SRCROOT}/Android/VideoModeImpl.cpp
@@ -187,10 +187,10 @@ elseif(SFML_OS_ANDROID)
     )
 elseif(SFML_OS_EMSCRIPTEN)
     set(PLATFORM_SRC
-        ${SRCROOT}/EGLCheck.cpp
-        ${SRCROOT}/EGLCheck.hpp
-        ${SRCROOT}/EglContext.cpp
-        ${SRCROOT}/EglContext.hpp
+        ${SRCROOT}/EGL/EGLCheck.cpp
+        ${SRCROOT}/EGL/EGLCheck.hpp
+        ${SRCROOT}/EGL/EGLContext.cpp
+        ${SRCROOT}/EGL/EGLContext.hpp
         ${SRCROOT}/Emscripten/WindowImplEmscripten.hpp
         ${SRCROOT}/Emscripten/JoystickImpl.hpp
         ${SRCROOT}/Emscripten/EmscriptenImpl.cpp

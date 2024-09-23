@@ -30,7 +30,7 @@
 #include "SFML/System/Path.hpp"
 
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Memcpy.hpp"
+#include "SFML/Base/Builtins/Memcpy.hpp"
 
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
@@ -50,7 +50,7 @@
 #include <vector>
 
 #ifdef SFML_OPENGL_ES
-#include "SFML/Window/EglContext.hpp"
+#include "SFML/Window/EGL/EGLContext.hpp"
 using DerivedGlContextType = sf::priv::EglContext;
 #else
 #include "SFML/Window/Unix/GlxContext.hpp"
@@ -650,7 +650,7 @@ m_cursorGrabbed(m_fullscreen)
     // The class name identifies a class of windows that
     // "are of the same type". We simply use the initial window name as
     // the class name.
-    std::string       ansiTitle = windowSettings.title.toAnsiString();
+    std::string       ansiTitle = windowSettings.title.toAnsiString<std::string>();
     std::vector<char> windowClass(ansiTitle.size() + 1, 0);
     base::copy(ansiTitle.begin(), ansiTitle.end(), windowClass.begin());
     hint.res_class = windowClass.data();
@@ -922,7 +922,7 @@ void WindowImplX11::setTitle(const String& title)
     // There is however an option to tell the window manager your Unicode title via hints.
 
     // Convert to UTF-8 encoding.
-    const auto utf8Title = title.toUtf8();
+    const auto utf8Title = title.toUtf8<std::u8string>();
 
     const Atom useUtf8 = getAtom("UTF8_STRING", false);
 
@@ -951,8 +951,8 @@ void WindowImplX11::setTitle(const String& title)
     // Set the non-Unicode title as a fallback for window managers who don't support _NET_WM_NAME.
     Xutf8SetWMProperties(m_display.get(),
                          m_window,
-                         title.toAnsiString().c_str(),
-                         title.toAnsiString().c_str(),
+                         title.toAnsiString<std::string>().c_str(),
+                         title.toAnsiString<std::string>().c_str(),
                          nullptr,
                          0,
                          nullptr,
@@ -1902,7 +1902,7 @@ bool WindowImplX11::processEvent(XEvent& windowEvent)
                 event.position = {windowEvent.xbutton.x, windowEvent.xbutton.y};
 
                 // clang-format off
-                switch(button)
+                switch (button)
                 {
                     case Button1: event.button = Mouse::Button::Left;     break;
                     case Button2: event.button = Mouse::Button::Middle;   break;

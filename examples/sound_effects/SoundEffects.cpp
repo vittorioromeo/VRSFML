@@ -2,6 +2,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/CircleShape.hpp"
+#include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/ConvexShape.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
@@ -25,7 +26,6 @@
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
 #include "SFML/Window/Keyboard.hpp"
-#include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Path.hpp"
@@ -104,8 +104,7 @@ public:
     m_listener(listener),
     m_music(std::move(music))
     {
-        m_listenerShape.setPosition({(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f});
-        m_listenerShape.setFillColor(sf::Color::Red);
+        m_listenerShape.position = {(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f};
 
         // Set the music to loop
         m_music.setLooping(true);
@@ -133,7 +132,7 @@ public:
     void start(sf::PlaybackDevice& playbackDevice) override
     {
         // Synchronize listener audio position with graphical position
-        m_listener.position = {m_listenerShape.getPosition().x, m_listenerShape.getPosition().y, 0.f};
+        m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
         if (!playbackDevice.updateListener(m_listener))
             std::cerr << "Failed to update listener\n";
@@ -148,8 +147,8 @@ public:
 
 private:
     sf::Listener&   m_listener;
-    sf::CircleShape m_listenerShape{20.f};
-    sf::CircleShape m_soundShape{20.f};
+    sf::CircleShape m_listenerShape{{.fillColor = sf::Color::Red, .radius = 20.f}};
+    sf::CircleShape m_soundShape{{.radius = 20.f}};
     sf::Vector2f    m_position;
     sf::Music       m_music;
 };
@@ -164,8 +163,8 @@ public:
     explicit PitchVolume(sf::Listener& listener, const sf::Font& font, sf::Music&& music) :
     Effect("Pitch / Volume"),
     m_listener(listener),
-    m_pitchText(font, "Pitch: " + std::to_string(m_pitch)),
-    m_volumeText(font, "Volume: " + std::to_string(m_volume)),
+    m_pitchText(font, {.position = {windowWidth / 2.f - 120.f, windowHeight / 2.f - 80.f}}),
+    m_volumeText(font, {.position = {windowWidth / 2.f - 120.f, windowHeight / 2.f - 30.f}}),
     m_music(std::move(music))
     {
         // Set the music to loop
@@ -179,9 +178,6 @@ public:
 
         // Set initial volume
         m_music.setVolume(m_volume);
-
-        m_pitchText.setPosition({windowWidth / 2.f - 120.f, windowHeight / 2.f - 80.f});
-        m_volumeText.setPosition({windowWidth / 2.f - 120.f, windowHeight / 2.f - 30.f});
     }
 
     void update(float /*time*/, float x, float y) override
@@ -239,17 +235,13 @@ public:
     Effect("Attenuation"),
     m_listener(listener),
     m_text(font,
-           "Attenuation factor dampens full volume of sound while within inner cone based on distance to "
-           "listener.\nCone outer gain determines volume of sound while outside outer cone.\nWhen within outer cone, "
-           "volume is linearly interpolated between inner and outer volumes.",
-           18),
+           {.position = {20.f, 20.f},
+            .string   = "Attenuation factor dampens full volume of sound while within inner cone based on distance to "
+                        "listener.\nCone outer gain determines volume of sound while outside outer cone.\nWhen within "
+                        "outer cone, volume is linearly interpolated between inner and outer volumes.",
+            .characterSize = 18u}),
     m_music(std::move(music))
     {
-        m_listenerShape.setPosition({(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f + 100.f});
-        m_listenerShape.setFillColor(sf::Color::Red);
-
-        m_soundShape.setFillColor(sf::Color::Magenta);
-
         // Sound cone parameters
         static constexpr auto coneHeight     = windowHeight * 2.f;
         static constexpr auto outerConeAngle = sf::degrees(120.f);
@@ -257,14 +249,7 @@ public:
 
         // Set common properties of both cones
         for (sf::ConvexShape* cone : {&m_soundConeOuter, &m_soundConeInner})
-        {
-            cone->setPointCount(3);
             cone->setPoint(0, {0.f, 0.f});
-            cone->setPosition({20.f, 20.f});
-        }
-
-        m_soundConeOuter.setFillColor(sf::Color::Black);
-        m_soundConeInner.setFillColor(sf::Color::Cyan);
 
         // Make each cone based on their angle and height
         static constexpr auto makeCone = [](auto& shape, const auto& angle)
@@ -290,8 +275,6 @@ public:
 
         // Set cone
         m_music.setCone({innerConeAngle, outerConeAngle, 0.f});
-
-        m_text.setPosition({20.f, 20.f});
     }
 
     void update(float /*time*/, float x, float y) override
@@ -317,7 +300,7 @@ public:
     void start(sf::PlaybackDevice& playbackDevice) override
     {
         // Synchronize listener audio position with graphical position
-        m_listener.position = {m_listenerShape.getPosition().x, m_listenerShape.getPosition().y, 0.f};
+        m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
         if (!playbackDevice.updateListener(m_listener))
             std::cerr << "Failed to update listener\n";
@@ -332,10 +315,12 @@ public:
 
 private:
     sf::Listener&   m_listener;
-    sf::CircleShape m_listenerShape{20.f};
-    sf::CircleShape m_soundShape{20.f};
-    sf::ConvexShape m_soundConeOuter;
-    sf::ConvexShape m_soundConeInner;
+    sf::CircleShape m_listenerShape{{.position  = {(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f + 100.f},
+                                     .fillColor = sf::Color::Red,
+                                     .radius    = 20.f}};
+    sf::CircleShape m_soundShape{{.fillColor = sf::Color::Magenta, .radius = 20.f}};
+    sf::ConvexShape m_soundConeOuter{{.position = {20.f, 20.f}, .fillColor = sf::Color::Black, .pointCount = 3u}};
+    sf::ConvexShape m_soundConeInner{{.position = {20.f, 20.f}, .fillColor = sf::Color::Cyan, .pointCount = 3u}};
     sf::Text        m_text;
     sf::Vector2f    m_position;
     sf::Music       m_music;
@@ -353,16 +338,13 @@ public:
     explicit Tone(sf::Listener& listener, const sf::Font& font) :
     Effect("Tone Generator"),
     m_listener(listener),
-    m_instruction(font, "Press up and down arrows to change the current wave type"),
-    m_currentType(font, "Wave Type: Triangle"),
-    m_currentAmplitude(font, "Amplitude: 0.05"),
-    m_currentFrequency(font, "Frequency: 200 Hz")
+    m_instruction(font,
+                  {.position = {windowWidth / 2.f - 370.f, windowHeight / 2.f - 200.f},
+                   .string   = "Press up and down arrows to change the current wave type"}),
+    m_currentType(font, {.position = {windowWidth / 2.f - 150.f, windowHeight / 2.f - 100.f}}),
+    m_currentAmplitude(font, {.position = {windowWidth / 2.f - 150.f, windowHeight / 2.f - 50.f}}),
+    m_currentFrequency(font, {.position = {windowWidth / 2.f - 150.f, windowHeight / 2.f}})
     {
-        m_instruction.setPosition({windowWidth / 2.f - 370.f, windowHeight / 2.f - 200.f});
-        m_currentType.setPosition({windowWidth / 2.f - 150.f, windowHeight / 2.f - 100.f});
-        m_currentAmplitude.setPosition({windowWidth / 2.f - 150.f, windowHeight / 2.f - 50.f});
-        m_currentFrequency.setPosition({windowWidth / 2.f - 150.f, windowHeight / 2.f});
-
         sf::SoundStream::initialize(1, sampleRate, {sf::SoundChannel::Mono});
     }
 
@@ -373,6 +355,9 @@ public:
 
         m_currentAmplitude.setString("Amplitude: " + std::to_string(m_amplitude));
         m_currentFrequency.setString("Frequency: " + std::to_string(m_frequency) + " Hz");
+
+        m_currentType.setString(std::string{"Wave Type: "} +
+                                std::array{"Sine", "Square", "Triangle", "Sawtooth"}[static_cast<std::size_t>(m_type)]);
     }
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
@@ -402,35 +387,10 @@ public:
 
     void handleKey(sf::Keyboard::Key key) override
     {
-        auto ticks = 0;
-
         if (key == sf::Keyboard::Key::Down)
-            ticks = 1; // Forward
+            m_type = static_cast<Type>((static_cast<std::size_t>(m_type) + 1) % 4u); // Forward
         else if (key == sf::Keyboard::Key::Up)
-            ticks = 3; // Reverse
-
-        while (ticks--)
-        {
-            switch (m_type)
-            {
-                case Type::Sine:
-                    m_type = Type::Square;
-                    m_currentType.setString("Wave Type: Square");
-                    break;
-                case Type::Square:
-                    m_type = Type::Triangle;
-                    m_currentType.setString("Wave Type: Triangle");
-                    break;
-                case Type::Triangle:
-                    m_type = Type::Sawtooth;
-                    m_currentType.setString("Wave Type: Sawtooth");
-                    break;
-                case Type::Sawtooth:
-                    m_type = Type::Sine;
-                    m_currentType.setString("Wave Type: Sine");
-                    break;
-            }
-        }
+            m_type = static_cast<Type>((static_cast<std::size_t>(m_type) - 1) % 4u); // Reverse
     }
 
 private:
@@ -485,7 +445,7 @@ private:
         // It doesn't make sense to seek in a tone generator
     }
 
-    enum class Type
+    enum class Type : std::size_t
     {
         Sine,
         Square,
@@ -521,16 +481,10 @@ public:
     explicit Doppler(sf::Listener& listener, const sf::Font& font) :
     Effect("Doppler Shift"),
     m_listener(listener),
-    m_currentVelocity(font, "Velocity: " + std::to_string(m_velocity)),
-    m_currentFactor(font, "Doppler Factor: " + std::to_string(m_factor))
+    m_currentVelocity(font, {.position = {windowWidth / 2.f - 150.f, windowHeight * 3.f / 4.f - 50.f}}),
+    m_currentFactor(font, {.position = {windowWidth / 2.f - 150.f, windowHeight * 3.f / 4.f}})
     {
-        m_listenerShape.setPosition({(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f});
-        m_listenerShape.setFillColor(sf::Color::Red);
-
         m_position.y = (windowHeight - 20.f) / 2.f - 40.f;
-
-        m_currentVelocity.setPosition({windowWidth / 2.f - 150.f, windowHeight * 3.f / 4.f - 50.f});
-        m_currentFactor.setPosition({windowWidth / 2.f - 150.f, windowHeight * 3.f / 4.f});
 
         // Set attenuation to a nice value
         setAttenuation(0.05f);
@@ -568,7 +522,7 @@ public:
     void start(sf::PlaybackDevice& playbackDevice) override
     {
         // Synchronize listener audio position with graphical position
-        m_listener.position = {m_listenerShape.getPosition().x, m_listenerShape.getPosition().y, 0.f};
+        m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
         if (!playbackDevice.updateListener(m_listener))
             std::cerr << "Failed to update listener\n";
@@ -618,8 +572,9 @@ private:
 
     float           m_velocity{0.f};
     float           m_factor{1.f};
-    sf::CircleShape m_listenerShape{20.f};
-    sf::CircleShape m_soundShape{20.f};
+    sf::CircleShape m_listenerShape{
+        {.position = {(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f}, .fillColor = sf::Color::Red, .radius = 20.f}};
+    sf::CircleShape m_soundShape{{.radius = 20.f}};
     sf::Vector2f    m_position;
     sf::Text        m_currentVelocity;
     sf::Text        m_currentFactor;
@@ -653,7 +608,7 @@ public:
     void start(sf::PlaybackDevice& playbackDevice) override
     {
         // Synchronize listener audio position with graphical position
-        m_listener.position = {m_listenerShape.getPosition().x, m_listenerShape.getPosition().y, 0.f};
+        m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
         if (!playbackDevice.updateListener(m_listener))
             std::cerr << "Failed to update listener\n";
@@ -671,14 +626,13 @@ protected:
     Effect(std::move(name)),
     m_listener(listener),
     m_music(std::move(music)),
-    m_enabledText(font, "Processing: Enabled"),
-    m_instructions(font, "Press Space to enable/disable processing")
+    m_enabledText(font, {.string = "Processing: Enabled"}),
+    m_instructions(font, {.string = "Press Space to enable/disable processing"})
     {
-        m_listenerShape.setPosition({(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f});
-        m_listenerShape.setFillColor(sf::Color::Red);
+        m_listenerShape.position = {(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f};
 
-        m_enabledText.setPosition({windowWidth / 2.f - 120.f, windowHeight * 3.f / 4.f - 50.f});
-        m_instructions.setPosition({windowWidth / 2.f - 250.f, windowHeight * 3.f / 4.f});
+        m_enabledText.position  = {windowWidth / 2.f - 120.f, windowHeight * 3.f / 4.f - 50.f};
+        m_instructions.position = {windowWidth / 2.f - 250.f, windowHeight * 3.f / 4.f};
 
         // Set the music to loop
         m_music.setLooping(true);
@@ -704,8 +658,8 @@ private:
         m_enabledText.setString(m_enabled ? "Processing: Enabled" : "Processing: Disabled");
     }
 
-    sf::CircleShape m_listenerShape{20.f};
-    sf::CircleShape m_soundShape{20.f};
+    sf::CircleShape m_listenerShape{{.fillColor = sf::Color::Red, .radius = 20.f}};
+    sf::CircleShape m_soundShape{{.radius = 20.f}};
     sf::Vector2f    m_position;
     sf::Text        m_enabledText;
     sf::Text        m_instructions;
@@ -802,13 +756,11 @@ struct HighPassFilter : BiquadFilter
 
         const auto c = std::tan(pi * cutoffFrequency / static_cast<float>(m_music.getSampleRate()));
 
-        Coefficients coefficients;
-
-        coefficients.a0 = 1.f / (1.f + sqrt2 * c + std::pow(c, 2.f));
-        coefficients.a1 = -2.f * coefficients.a0;
-        coefficients.a2 = coefficients.a0;
-        coefficients.b1 = 2.f * coefficients.a0 * (std::pow(c, 2.f) - 1.f);
-        coefficients.b2 = coefficients.a0 * (1.f - sqrt2 * c + std::pow(c, 2.f));
+        Coefficients coefficients{.a0 = 1.f / (1.f + sqrt2 * c + std::pow(c, 2.f)),
+                                  .a1 = -2.f * coefficients.a0,
+                                  .a2 = coefficients.a0,
+                                  .b1 = 2.f * coefficients.a0 * (std::pow(c, 2.f) - 1.f),
+                                  .b2 = coefficients.a0 * (1.f - sqrt2 * c + std::pow(c, 2.f))};
 
         setCoefficients(coefficients);
     }
@@ -827,13 +779,11 @@ struct LowPassFilter : BiquadFilter
 
         const auto c = 1.f / std::tan(pi * cutoffFrequency / static_cast<float>(m_music.getSampleRate()));
 
-        Coefficients coefficients;
-
-        coefficients.a0 = 1.f / (1.f + sqrt2 * c + std::pow(c, 2.f));
-        coefficients.a1 = 2.f * coefficients.a0;
-        coefficients.a2 = coefficients.a0;
-        coefficients.b1 = 2.f * coefficients.a0 * (1.f - std::pow(c, 2.f));
-        coefficients.b2 = coefficients.a0 * (1.f - sqrt2 * c + std::pow(c, 2.f));
+        Coefficients coefficients{.a0 = 1.f / (1.f + sqrt2 * c + std::pow(c, 2.f)),
+                                  .a1 = 2.f * coefficients.a0,
+                                  .a2 = coefficients.a0,
+                                  .b1 = 2.f * coefficients.a0 * (1.f - std::pow(c, 2.f)),
+                                  .b2 = coefficients.a0 * (1.f - sqrt2 * c + std::pow(c, 2.f))};
 
         setCoefficients(coefficients);
     }
@@ -1063,9 +1013,7 @@ int main()
 
     // Create the main window
     sf::RenderWindow window(graphicsContext,
-                            {.size{windowWidth, windowHeight}, .title = "SFML Sound Effects", .resizable = false});
-
-    window.setVerticalSyncEnabled(true);
+                            {.size{windowWidth, windowHeight}, .title = "SFML Sound Effects", .resizable = false, .vsync = true});
 
     // Load the application font and pass it to the Effect class
     const auto font = sf::Font::openFromFile(graphicsContext, resourcesDir() / "tuffy.ttf").value();
@@ -1077,7 +1025,6 @@ int main()
         std::cerr << "Music file '" << musicPath << "' not found, aborting" << std::endl;
         return EXIT_FAILURE;
     }
-
 
     // Create the playback device and listener
     // TODO P1: docs
@@ -1136,31 +1083,39 @@ int main()
                                            .value();
 
     sf::Sprite textBackground(textBackgroundTexture.getRect());
-    textBackground.setPosition({0.f, 520.f});
-    textBackground.setColor(sf::Color(255, 255, 255, 200));
+    textBackground.position = {0.f, 520.f};
+    textBackground.color    = {255, 255, 255, 200};
 
     // Create the description text
-    sf::Text description(font, "Current effect: " + effects[current]->getName(), 20);
-    description.setPosition({10.f, 522.f});
-    description.setFillColor(sf::Color(80, 80, 80));
+    sf::Text description(font,
+                         {.position      = {10.f, 522.f},
+                          .string        = "Current effect: " + effects[current]->getName(),
+                          .characterSize = 20u,
+                          .fillColor     = {80, 80, 80}});
 
     // Create the instructions text
-    sf::Text instructions(font, "Press left and right arrows to change the current effect", 20);
-    instructions.setPosition({280.f, 544.f});
-    instructions.setFillColor(sf::Color(80, 80, 80));
+    const sf::Text instructions(font,
+                                {.position      = {280.f, 544.f},
+                                 .string        = "Press left and right arrows to change the current effect",
+                                 .characterSize = 20u,
+                                 .fillColor     = {80, 80, 80}});
 
     // Utility functions
     const auto getCurrentDeviceName = [&] { return std::string{getCurrentPlaybackDevice().getDeviceHandle().getName()}; };
 
     // Create the playback device text
-    sf::Text playbackDeviceText(font, "Current playback device: " + getCurrentDeviceName(), 20);
-    playbackDeviceText.setPosition({10.f, 566.f});
-    playbackDeviceText.setFillColor(sf::Color(80, 80, 80));
+    sf::Text playbackDeviceText(font,
+                                {.position      = {10.f, 566.f},
+                                 .string        = "Current playback device: " + getCurrentDeviceName(),
+                                 .characterSize = 20u,
+                                 .fillColor     = {80, 80, 80}});
 
     // Create the playback device instructions text
-    sf::Text playbackDeviceInstructions(font, "Press F1 to change device", 20);
-    playbackDeviceInstructions.setPosition({565.f, 566.f});
-    playbackDeviceInstructions.setFillColor(sf::Color(80, 80, 80));
+    const sf::Text playbackDeviceInstructions(font,
+                                              {.position      = {565.f, 566.f},
+                                               .string        = "Press F1 to change device",
+                                               .characterSize = 20u,
+                                               .fillColor     = {80, 80, 80}});
 
     // Start the game loop
     const sf::Clock clock;
@@ -1268,7 +1223,7 @@ int main()
         effects[current]->update(clock.getElapsedTime().asSeconds(), x, y);
 
         // Clear the window
-        window.clear(sf::Color(50, 50, 50));
+        window.clear({50, 50, 50});
 
         // Draw the current example
         window.draw(*effects[current]);

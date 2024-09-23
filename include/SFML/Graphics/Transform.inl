@@ -68,22 +68,6 @@ constexpr Vector2f Transform::transformPoint(Vector2f point) const
 
 
 ////////////////////////////////////////////////////////////
-constexpr void Transform::transformSpritePoints(Vector2f& p0, Vector2f& p1, Vector2f& p2, Vector2f& p3, Vector2f absSize) const
-{
-    p0.x = m_a02;
-    p0.y = m_a12;
-
-    p1.x = m_a01 * absSize.y + m_a02;
-    p1.y = m_a11 * absSize.y + m_a12;
-
-    p2.x = m_a00 * absSize.x + m_a02;
-    p2.y = m_a10 * absSize.x + m_a12;
-
-    p3 = transformPoint(absSize);
-}
-
-
-////////////////////////////////////////////////////////////
 constexpr FloatRect Transform::transformRect(const FloatRect& rectangle) const
 {
     // Transform the 4 corners of the rectangle
@@ -114,8 +98,7 @@ constexpr FloatRect Transform::transformRect(const FloatRect& rectangle) const
 ////////////////////////////////////////////////////////////
 constexpr Transform& Transform::combine(const Transform& transform)
 {
-    *this = sf::operator*(*this, transform);
-    return *this;
+    return *this = sf::operator*(*this, transform);
 }
 
 
@@ -132,7 +115,7 @@ constexpr Transform& Transform::translate(Vector2f offset)
 
 
 ////////////////////////////////////////////////////////////
-constexpr Transform& Transform::scale(Vector2f factors)
+constexpr Transform& Transform::scaleBy(Vector2f factors)
 {
     // clang-format off
     const Transform scaling(factors.x, 0,         0,
@@ -144,7 +127,7 @@ constexpr Transform& Transform::scale(Vector2f factors)
 
 
 ////////////////////////////////////////////////////////////
-constexpr Transform& Transform::scale(Vector2f factors, Vector2f center)
+constexpr Transform& Transform::scaleBy(Vector2f factors, Vector2f center)
 {
     // clang-format off
     const Transform scaling(factors.x, 0,         center.x * (1 - factors.x),
@@ -156,43 +139,28 @@ constexpr Transform& Transform::scale(Vector2f factors, Vector2f center)
 
 
 ////////////////////////////////////////////////////////////
-constexpr Transform operator*(const Transform& left, const Transform& right)
+constexpr Transform operator*(const Transform& lhs, const Transform& rhs)
 {
-    return {left.m_a00 * right.m_a00 + left.m_a01 * right.m_a10,
-            left.m_a00 * right.m_a01 + left.m_a01 * right.m_a11,
-            left.m_a00 * right.m_a02 + left.m_a01 * right.m_a12 + left.m_a02,
-            left.m_a10 * right.m_a00 + left.m_a11 * right.m_a10,
-            left.m_a10 * right.m_a01 + left.m_a11 * right.m_a11,
-            left.m_a10 * right.m_a02 + left.m_a11 * right.m_a12 + left.m_a12};
+    return {lhs.m_a00 * rhs.m_a00 + lhs.m_a01 * rhs.m_a10,
+            lhs.m_a00 * rhs.m_a01 + lhs.m_a01 * rhs.m_a11,
+            lhs.m_a00 * rhs.m_a02 + lhs.m_a01 * rhs.m_a12 + lhs.m_a02,
+            lhs.m_a10 * rhs.m_a00 + lhs.m_a11 * rhs.m_a10,
+            lhs.m_a10 * rhs.m_a01 + lhs.m_a11 * rhs.m_a11,
+            lhs.m_a10 * rhs.m_a02 + lhs.m_a11 * rhs.m_a12 + lhs.m_a12};
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Transform& operator*=(Transform& left, const Transform& right)
+constexpr Transform& operator*=(Transform& lhs, const Transform& rhs)
 {
-    return left.combine(right);
+    return lhs.combine(rhs);
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Vector2f operator*(const Transform& left, Vector2f right)
+constexpr Vector2f operator*(const Transform& lhs, Vector2f rhs)
 {
-    return left.transformPoint(right);
-}
-
-
-////////////////////////////////////////////////////////////
-constexpr bool operator==(const Transform& left, const Transform& right)
-{
-    return left.m_a00 == right.m_a00 && left.m_a10 == right.m_a10 && left.m_a01 == right.m_a01 &&
-           left.m_a11 == right.m_a11 && left.m_a02 == right.m_a02 && left.m_a12 == right.m_a12;
-}
-
-
-////////////////////////////////////////////////////////////
-constexpr bool operator!=(const Transform& left, const Transform& right)
-{
-    return !(left == right);
+    return lhs.transformPoint(rhs);
 }
 
 

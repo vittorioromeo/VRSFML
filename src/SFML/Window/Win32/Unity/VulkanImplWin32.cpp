@@ -9,6 +9,8 @@
 
 #include "SFML/Base/StringView.hpp"
 
+#include <vector>
+
 #include <cstdint>
 
 #define VK_USE_PLATFORM_WIN32_KHR

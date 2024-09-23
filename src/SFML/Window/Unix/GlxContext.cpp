@@ -92,7 +92,7 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 template <typename... TSurfaceArgs>
 GlxContext::GlxContext(WindowContext&         windowContext,
-                       std::uint64_t          id,
+                       unsigned int           id,
                        GlxContext*            shared,
                        const ContextSettings& contextSettings,
                        TSurfaceArgs&&... surfaceArgs) :
@@ -114,7 +114,7 @@ m_display(openDisplay())
 
 
 ////////////////////////////////////////////////////////////
-GlxContext::GlxContext(WindowContext& windowContext, std::uint64_t id, GlxContext* shared) :
+GlxContext::GlxContext(WindowContext& windowContext, unsigned int id, GlxContext* shared) :
 GlxContext(windowContext,
            id,
            shared,
@@ -129,7 +129,7 @@ GlxContext(windowContext,
 
 ////////////////////////////////////////////////////////////
 GlxContext::GlxContext(WindowContext&         windowContext,
-                       std::uint64_t          id,
+                       unsigned int           id,
                        GlxContext*            shared,
                        const ContextSettings& contextSettings,
                        const WindowImpl&      owner,

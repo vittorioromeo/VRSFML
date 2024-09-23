@@ -1,5 +1,6 @@
 #include "SFML/ImGui/ImGui.hpp"
 
+#include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
@@ -12,15 +13,14 @@
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/TextureAtlas.hpp"
 
-#include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vector2.hpp"
 
+#include "SFML/Base/Constants.hpp"
 #include "SFML/Base/Optional.hpp"
 
 #include <imgui.h>
@@ -33,13 +33,68 @@
 #include <cstdio>
 
 
+class Sampler
+{
+public:
+    enum : unsigned int
+    {
+        ToIgnore   = 32u,
+        MaxSamples = 512u
+    };
+
+    void record(float value)
+    {
+        if (m_toIgnore > 0u)
+        {
+            --m_toIgnore;
+            return;
+        }
+
+        m_data.push_back(value);
+
+        if (m_data.size() > MaxSamples)
+            m_data.erase(m_data.begin());
+    }
+
+    [[nodiscard]] double getAverage() const
+    {
+        double accumulator = 0.0;
+
+        for (auto value : m_data)
+            accumulator += static_cast<double>(value);
+
+        return accumulator / static_cast<double>(m_data.size());
+    }
+
+    [[nodiscard]] std::size_t size() const
+    {
+        return m_data.size();
+    }
+
+    [[nodiscard]] const float* data() const
+    {
+        return m_data.data();
+    }
+
+    void clear()
+    {
+        m_data.clear();
+        m_toIgnore = ToIgnore;
+    }
+
+private:
+    std::vector<float> m_data;
+    unsigned int       m_toIgnore = ToIgnore;
+};
+
+
 int main()
 {
     //
     //
     // Set up random generator
-    // static std::mt19937 rng(std::random_device{}());
-    std::mt19937 rng(100);
+    // std::minstd_rand rng(std::random_device{}());
+    std::minstd_rand rng(100);
     const auto getRndFloat = [&](float min, float max) { return std::uniform_real_distribution<float>{min, max}(rng); };
 
     //
@@ -55,9 +110,8 @@ int main()
     sf::RenderWindow window(graphicsContext,
                             {.size{windowSize.toVector2u()},
                              .title     = "Vittorio's SFML fork: batching example",
-                             .resizable = false});
-
-    window.setVerticalSyncEnabled(true);
+                             .resizable = false,
+                             .vsync     = true});
 
     //
     //
@@ -135,36 +189,36 @@ int main()
             auto& [text,
                    sprite,
                    velocity,
-                   torque] = entities.emplace_back(sf::Text{i % 2u == 0u ? fontTuffy : fontMouldyCheese, labelBuffer},
+                   torque] = entities.emplace_back(sf::Text{i % 2u == 0u ? fontTuffy : fontMouldyCheese,
+                                                            {.string           = labelBuffer,
+                                                             .fillColor        = sf::Color::Black,
+                                                             .outlineColor     = sf::Color::White,
+                                                             .outlineThickness = 5.f}},
                                                    sf::Sprite{textureRect},
                                                    sf::Vector2f{getRndFloat(-2.5f, 2.5f), getRndFloat(-2.5f, 2.5f)},
                                                    getRndFloat(-0.05f, 0.05f));
 
-            sprite.setOrigin(textureRect.size / 2.f);
-            sprite.setRotation(sf::degrees(getRndFloat(0.f, 360.f)));
+            sprite.origin   = textureRect.size / 2.f;
+            sprite.rotation = sf::radians(getRndFloat(0.f, sf::base::tau));
 
             const float scaleFactor = getRndFloat(0.08f, 0.17f);
-            sprite.setScale({scaleFactor, scaleFactor});
-            text.setScale({scaleFactor * 3.5f, scaleFactor * 3.5f});
+            sprite.scale            = {scaleFactor, scaleFactor};
+            text.scale              = sprite.scale * 3.5f;
 
-            sprite.setPosition({getRndFloat(0.f, windowSize.x), getRndFloat(0.f, windowSize.y)});
+            sprite.position = {getRndFloat(0.f, windowSize.x), getRndFloat(0.f, windowSize.y)};
 
-            text.setFillColor(sf::Color::Black);
-            text.setOutlineColor(sf::Color::White);
-            text.setOutlineThickness(5.f);
-
-            text.setOrigin(text.getLocalBounds().size / 2.f);
+            text.origin = text.getLocalBounds().size / 2.f;
         }
     };
 
     //
     //
     // Set up UI elements
-    bool         useBatch      = true;
-    bool         drawSprites   = true;
-    bool         drawText      = false;
-    int          numEntities   = 1'000'000;
-    unsigned int drawnVertices = 0u;
+    bool        useBatch      = true;
+    bool        drawSprites   = true;
+    bool        drawText      = false;
+    int         numEntities   = 1'000'000;
+    std::size_t drawnVertices = 0u;
 
     //
     //
@@ -177,27 +231,9 @@ int main()
     sf::Clock clock;
     sf::Clock fpsClock;
 
-    std::vector<float> samplesUpdateMs{};
-    std::vector<float> samplesDrawMs{};
-    std::vector<float> samplesFPS{};
-
-    const auto recordUs = [&](std::vector<float>& target, const float value)
-    {
-        target.push_back(value);
-
-        if (target.size() > 512u)
-            target.erase(target.begin());
-    };
-
-    const auto getAverage = [&](const std::vector<float>& target)
-    {
-        double accumulator = 0.0;
-
-        for (auto value : target)
-            accumulator += static_cast<double>(value);
-
-        return accumulator / static_cast<double>(target.size());
-    };
+    Sampler samplesUpdateMs;
+    Sampler samplesDrawMs;
+    Sampler samplesFPS;
 
     //
     //
@@ -230,21 +266,19 @@ int main()
 
             for (auto& [text, sprite, velocity, torque] : entities)
             {
-                sprite.move(velocity);
-                sprite.rotate(sf::radians(torque));
+                sprite.position += velocity;
+                sprite.rotation += sf::radians(torque);
 
-                if ((sprite.getPosition().x > windowSize.x && velocity.x > 0.f) ||
-                    (sprite.getPosition().x < 0.f && velocity.x < 0.f))
+                if ((sprite.position.x > windowSize.x && velocity.x > 0.f) || (sprite.position.x < 0.f && velocity.x < 0.f))
                     velocity.x = -velocity.x;
 
-                if ((sprite.getPosition().y > windowSize.y && velocity.y > 0.f) ||
-                    (sprite.getPosition().y < 0.f && velocity.y < 0.f))
+                if ((sprite.position.y > windowSize.y && velocity.y > 0.f) || (sprite.position.y < 0.f && velocity.y < 0.f))
                     velocity.y = -velocity.y;
 
-                text.setPosition(sprite.getPosition() - sf::Vector2f{0.f, 250.f * sprite.getScale().x});
+                text.position = sprite.position - sf::Vector2f{0.f, 250.f * sprite.scale.x};
             }
 
-            recordUs(samplesUpdateMs, clock.getElapsedTime().asSeconds() * 1000.f);
+            samplesUpdateMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
         }
 
         ////////////////////////////////////////////////////////////
@@ -286,14 +320,13 @@ int main()
 
             ImGui::NewLine();
 
-            const auto plotGraph =
-                [&](const char* label, const char* unit, const std::vector<float>& samples, float upperBound)
+            const auto plotGraph = [&](const char* label, const char* unit, const Sampler& samples, float upperBound)
             {
                 ImGui::PlotLines(label,
                                  samples.data(),
                                  static_cast<int>(samples.size()),
                                  0,
-                                 (std::to_string(getAverage(samples)) + unit).c_str(),
+                                 (std::to_string(samples.getAverage()) + unit).c_str(),
                                  0.f,
                                  upperBound,
                                  ImVec2{256.f, 32.f});
@@ -304,7 +337,7 @@ int main()
             plotGraph("FPS", " FPS", samplesFPS, 300.f);
 
             ImGui::Spacing();
-            ImGui::Text("Drawn vertices: %u", drawnVertices);
+            ImGui::Text("Drawn vertices: %zu", drawnVertices);
 
             ImGui::End();
         }
@@ -346,12 +379,12 @@ int main()
             if (useBatch)
                 window.draw(drawableBatch, {.texture = &textureAtlas.getTexture()});
 
-            recordUs(samplesDrawMs, clock.getElapsedTime().asSeconds() * 1000.f);
+            samplesDrawMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
         }
 
         imGuiContext.render(window);
         window.display();
 
-        recordUs(samplesFPS, 1.f / fpsClock.getElapsedTime().asSeconds());
+        samplesFPS.record(1.f / fpsClock.getElapsedTime().asSeconds());
     }
 }

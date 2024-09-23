@@ -9,7 +9,7 @@ namespace sf::base
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-class PassKey
+class [[nodiscard]] PassKey
 {
     friend T;
 

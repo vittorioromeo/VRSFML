@@ -38,7 +38,7 @@ public:
     /// \param shared Context to share the new one with (can be a null pointer)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit GlxContext(WindowContext& windowContext, std::uint64_t id, GlxContext* shared);
+    [[nodiscard]] explicit GlxContext(WindowContext& windowContext, unsigned int id, GlxContext* shared);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context attached to a window
@@ -50,7 +50,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit GlxContext(WindowContext&         windowContext,
-                                      std::uint64_t          id,
+                                      unsigned int           id,
                                       GlxContext*            shared,
                                       const ContextSettings& contextSettings,
                                       const WindowImpl&      owner,
@@ -120,7 +120,7 @@ private:
     ////////////////////////////////////////////////////////////
     template <typename... TSurfaceArgs>
     [[nodiscard]] explicit GlxContext(WindowContext&         windowContext,
-                                      std::uint64_t          id,
+                                      unsigned int           id,
                                       GlxContext*            shared,
                                       const ContextSettings& contextSettings,
                                       TSurfaceArgs&&... surfaceArgs);
