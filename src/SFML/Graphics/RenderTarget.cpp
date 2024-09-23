@@ -361,7 +361,7 @@ RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
     }
 
     // Unbind texture to fix RenderTexture preventing clear
-    unapplyTexture(); // TODO P0: is this one necessary? Ask on Discord
+    unapplyTexture(); // See https://en.sfml-dev.org/forums/index.php?topic=9350
 
     // Apply the view (scissor testing can affect clearing)
     if (!m_impl->cache.enable || m_impl->cache.viewChanged)
@@ -525,11 +525,11 @@ void RenderTarget::draw(const Vertex* vertices, base::SizeT vertexCount, Primiti
     glCheck(glBufferSubData(GL_ARRAY_BUFFER, 0u, vertexByteCount, vertices));
 #elif 0
     glCheck(glBufferData(GL_ARRAY_BUFFER, vertexByteCount, nullptr, GL_STREAM_DRAW));
-    void* ptr0 = glMapBufferRange(GL_ARRAY_BUFFER,
-                                  0u,
-                                  vertexByteCount,
-                                  GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
-    SFML_BASE_MEMCPY(ptr0, vertices, vertexByteCount);
+    void* const ptrVertices = glMapBufferRange(GL_ARRAY_BUFFER,
+                                               0u,
+                                               vertexByteCount,
+                                               GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+    SFML_BASE_MEMCPY(ptrVertices, vertices, vertexByteCount);
     glUnmapBuffer(GL_ARRAY_BUFFER);
 #endif
 
@@ -569,19 +569,19 @@ void RenderTarget::drawIndexedVertices(
     glCheck(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0u, indexByteCount, indices));
 #elif 1
     glCheck(glBufferData(GL_ARRAY_BUFFER, vertexByteCount, nullptr, GL_STREAM_DRAW));
-    void* ptr0 = glMapBufferRange(GL_ARRAY_BUFFER,
-                                  0u,
-                                  vertexByteCount,
-                                  GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
-    SFML_BASE_MEMCPY(ptr0, vertices, static_cast<base::SizeT>(vertexByteCount));
+    void* const ptrVertices = glMapBufferRange(GL_ARRAY_BUFFER,
+                                               0u,
+                                               vertexByteCount,
+                                               GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+    SFML_BASE_MEMCPY(ptrVertices, vertices, static_cast<base::SizeT>(vertexByteCount));
     glUnmapBuffer(GL_ARRAY_BUFFER);
 
     glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexByteCount, nullptr, GL_STREAM_DRAW));
-    void* ptr1 = glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER,
-                                  0u,
-                                  indexByteCount,
-                                  GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
-    SFML_BASE_MEMCPY(ptr1, indices, static_cast<base::SizeT>(indexByteCount));
+    void* const ptrIndices = glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER,
+                                              0u,
+                                              indexByteCount,
+                                              GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+    SFML_BASE_MEMCPY(ptrIndices, indices, static_cast<base::SizeT>(indexByteCount));
     glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
 #endif
 

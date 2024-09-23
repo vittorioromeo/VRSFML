@@ -58,22 +58,6 @@ public:
 
 
     //////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr StringView(const StringView&) noexcept = default;
-
-
-    //////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr StringView(StringView&&) noexcept = default;
-
-
-    //////////////////////////////////////////
-    [[gnu::always_inline]] constexpr StringView& operator=(const StringView&) noexcept = default;
-
-
-    //////////////////////////////////////////
-    [[gnu::always_inline]] constexpr StringView& operator=(StringView&&) noexcept = default;
-
-
-    //////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const char* data() const noexcept
     {
         return m_data;

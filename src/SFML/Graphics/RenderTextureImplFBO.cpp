@@ -42,11 +42,11 @@ struct RenderTextureImplFBO::Impl
 
     GraphicsContext* graphicsContext; //!< The window context
 
-    FrameBufferIdMap frameBuffers; //!< OpenGL frame buffer objects per context
-    FrameBufferIdMap multisampleFrameBuffers; //!< base::Optional per-context OpenGL frame buffer objects with multisample attachments
+    FrameBufferIdMap frameBuffers;            //!< OpenGL frame buffer objects per context
+    FrameBufferIdMap multisampleFrameBuffers; //!< Optional per-context OpenGL frame buffer objects with multisample attachments
 
-    unsigned int depthStencilBuffer{}; //!< base::Optional depth/stencil buffer attached to the frame buffer
-    unsigned int colorBuffer{};        //!< base::Optional multisample color buffer attached to the frame buffer
+    unsigned int depthStencilBuffer{}; //!< Optional depth/stencil buffer attached to the frame buffer
+    unsigned int colorBuffer{};        //!< Optional multisample color buffer attached to the frame buffer
     Vector2u     size;                 //!< Width and height of the attachments
     unsigned int textureId{};          //!< The ID of the texture to attach to the FBO
     bool         multisample{};        //!< Whether we have to create a multisample frame buffer as well

@@ -8,7 +8,6 @@
 
 #include "SFML/Graphics/CoordinateType.hpp"
 
-#include "SFML/System/LifetimeDependee.hpp"
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vector2.hpp"
 
@@ -588,7 +587,7 @@ private:
     mutable bool     m_pixelsFlipped{}; //!< To work around the inconsistency in Y orientation
     bool             m_fboAttachment{}; //!< Is this texture owned by a framebuffer object?
     bool             m_hasMipmap{};     //!< Has the mipmap been generated?
-    std::uint64_t    m_cacheId;         //!< Unique number that identifies the texture to the render target's cache
+    unsigned int     m_cacheId;         //!< Unique number that identifies the texture to the render target's cache
 };
 
 ////////////////////////////////////////////////////////////

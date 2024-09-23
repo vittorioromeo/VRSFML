@@ -78,12 +78,11 @@ void DrawableBatch::add(const Shape& shape)
 ////////////////////////////////////////////////////////////
 void DrawableBatch::addSubsequentIndices(base::SizeT count)
 {
-    auto*& indexPtr = m_indices.reserveMore(count);
-
-    const auto nextIndex = static_cast<IndexType>(m_vertices.size());
+    const auto  nextIndex = static_cast<IndexType>(m_vertices.size());
+    IndexType*& indexPtr  = m_indices.reserveMore(count);
 
     for (IndexType i = 0u; i < static_cast<IndexType>(count); ++i)
-        *indexPtr++ = static_cast<IndexType>(nextIndex + i);
+        *indexPtr++ = nextIndex + i;
 }
 
 
