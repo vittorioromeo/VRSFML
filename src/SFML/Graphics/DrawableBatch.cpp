@@ -30,7 +30,6 @@ void DrawableBatch::add(RenderTarget& rt, const Sprite& sprite)
 {
     const auto nextIndex = static_cast<IndexType>(m_nVerts);
 
-    // m_indices.reserveMore(6u);
     auto* indices = reserveMoreIndicesAndGetPtr(rt, 6u);
 
     // Triangle strip: triangle #0
@@ -45,11 +44,9 @@ void DrawableBatch::add(RenderTarget& rt, const Sprite& sprite)
 
     m_nIdxs += 6u;
 
-    // m_vertices.reserveMore(4u);
-    auto* vertices = reserveMoreVerticesAndGetPtr(rt, 4u);
-    sprite.getPreTransformedVertices(vertices);
+    Vertex* vertices = reserveMoreVerticesAndGetPtr(rt, 4u);
+    priv::spriteToVertices(sprite, vertices);
     m_nVerts += 4;
-    // m_vertices.unsafeEmplaceRangeFromFunc([&](Vertex* target) { sprite.getPreTransformedVertices(target); }, 4u);
 }
 
 

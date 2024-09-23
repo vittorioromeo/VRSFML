@@ -159,7 +159,7 @@ int main()
             if (drawSprites)
             {
                 if (useBatch)
-                    drawableBatch.add(entity.sprite);
+                    drawableBatch.add(window, entity.sprite);
                 else
                     window.draw(entity.sprite, textureAtlas.getTexture());
             }
@@ -167,7 +167,7 @@ int main()
             if (drawText)
             {
                 if (useBatch)
-                    drawableBatch.add(entity.text);
+                    drawableBatch.add(window, entity.text);
                 else
                     window.draw(entity.text);
             }
