@@ -515,23 +515,7 @@ void RenderTarget::draw(const Vertex* vertices, base::SizeT vertexCount, Primiti
 
     setupDraw(states);
 
-    // TODO P0:
-    const auto vertexByteCount = static_cast<GLsizeiptr>(sizeof(Vertex) * vertexCount);
-
-#if 1
-    glCheck(glBufferData(GL_ARRAY_BUFFER, vertexByteCount, vertices, GL_STREAM_DRAW));
-#elif 0
-    glCheck(glBufferData(GL_ARRAY_BUFFER, vertexByteCount, nullptr, GL_STREAM_DRAW));
-    glCheck(glBufferSubData(GL_ARRAY_BUFFER, 0u, vertexByteCount, vertices));
-#elif 0
-    glCheck(glBufferData(GL_ARRAY_BUFFER, vertexByteCount, nullptr, GL_STREAM_DRAW));
-    void* const ptrVertices = glMapBufferRange(GL_ARRAY_BUFFER,
-                                               0u,
-                                               vertexByteCount,
-                                               GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
-    SFML_BASE_MEMCPY(ptrVertices, vertices, vertexByteCount);
-    glUnmapBuffer(GL_ARRAY_BUFFER);
-#endif
+    glCheck(glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeof(Vertex) * vertexCount), vertices, GL_STREAM_DRAW));
 
     drawPrimitives(type, 0u, vertexCount);
     cleanupDraw(states);
@@ -554,36 +538,12 @@ void RenderTarget::drawIndexedVertices(
 
     setupDraw(states);
 
-    // TODO P0:
-    const auto vertexByteCount = static_cast<GLsizeiptr>(sizeof(Vertex) * vertexCount);
-    const auto indexByteCount  = static_cast<GLsizeiptr>(sizeof(unsigned int) * indexCount);
+    glCheck(glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeof(Vertex) * vertexCount), vertices, GL_STREAM_DRAW));
 
-#if 0
-    glCheck(glBufferData(GL_ARRAY_BUFFER, vertexByteCount, vertices, GL_STREAM_DRAW));
-    glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexByteCount, indices, GL_STREAM_DRAW));
-#elif 0
-    glCheck(glBufferData(GL_ARRAY_BUFFER, vertexByteCount, nullptr, GL_STREAM_DRAW));
-    glCheck(glBufferSubData(GL_ARRAY_BUFFER, 0u, vertexByteCount, vertices));
-
-    glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexByteCount, nullptr, GL_STREAM_DRAW));
-    glCheck(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0u, indexByteCount, indices));
-#elif 1
-    glCheck(glBufferData(GL_ARRAY_BUFFER, vertexByteCount, nullptr, GL_STREAM_DRAW));
-    void* const ptrVertices = glMapBufferRange(GL_ARRAY_BUFFER,
-                                               0u,
-                                               vertexByteCount,
-                                               GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
-    SFML_BASE_MEMCPY(ptrVertices, vertices, static_cast<base::SizeT>(vertexByteCount));
-    glUnmapBuffer(GL_ARRAY_BUFFER);
-
-    glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexByteCount, nullptr, GL_STREAM_DRAW));
-    void* const ptrIndices = glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER,
-                                              0u,
-                                              indexByteCount,
-                                              GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
-    SFML_BASE_MEMCPY(ptrIndices, indices, static_cast<base::SizeT>(indexByteCount));
-    glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
-#endif
+    glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                         static_cast<GLsizeiptr>(sizeof(unsigned int) * indexCount),
+                         indices,
+                         GL_STREAM_DRAW));
 
     drawIndexedPrimitives(type, indexCount);
     cleanupDraw(states);
