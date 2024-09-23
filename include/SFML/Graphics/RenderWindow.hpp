@@ -29,12 +29,18 @@ class SFML_GRAPHICS_API RenderWindow : public Window, public RenderTarget
 {
 public:
     ////////////////////////////////////////////////////////////
+    /// \brief Window creation settings
+    ///
+    ////////////////////////////////////////////////////////////
+    using Settings = WindowSettings;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Construct a new window
     ///
     /// Creates the render window with the specified \a windowSettings.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] RenderWindow(GraphicsContext& graphicsContext, const WindowSettings& windowSettings);
+    [[nodiscard]] explicit RenderWindow(GraphicsContext& graphicsContext, const Settings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control

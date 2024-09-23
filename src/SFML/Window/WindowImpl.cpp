@@ -17,17 +17,16 @@
 #include "SFML/Window/WindowImplType.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
+#include "SFML/System/Clock.hpp"
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Sleep.hpp"
 #include "SFML/System/Time.hpp"
-#include "SFML/System/TimeChronoUtil.hpp"
 
 #include "SFML/Base/EnumArray.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
-#include <chrono>
 #include <queue>
 
 
@@ -193,10 +192,12 @@ void WindowImpl::setMaximumSize(const base::Optional<Vector2u>& maximumSize)
 ////////////////////////////////////////////////////////////
 base::Optional<Event> WindowImpl::waitEvent(Time timeout)
 {
-    const auto timedOut = [&, startTime = std::chrono::steady_clock::now()]
+    sf::Clock clock;
+
+    const auto timedOut = [&, startTime = clock.getElapsedTime()]
     {
         const bool infiniteTimeout = timeout == Time::Zero;
-        return !infiniteTimeout && (std::chrono::steady_clock::now() - startTime) >= TimeChronoUtil::toDuration(timeout);
+        return !infiniteTimeout && (clock.getElapsedTime() - startTime) >= timeout;
     };
 
     // If the event queue is empty, let's first check if new events are available from the OS

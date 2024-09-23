@@ -119,6 +119,12 @@ public:
     ////////////////////////////////////////////////////////////
     // NOLINTNEXTLINE(readability-identifier-naming)
     static const Angle Zero; //!< Predefined 0 degree angle value
+    // NOLINTNEXTLINE(readability-identifier-naming)
+    static const Angle Quarter; //!< Predefined 90 degree angle value
+    // NOLINTNEXTLINE(readability-identifier-naming)
+    static const Angle Half; //!< Predefined 180 degree angle value
+    // NOLINTNEXTLINE(readability-identifier-naming)
+    static const Angle Full; //!< Predefined 360 degree angle value
 
 private:
     friend AutoWrapAngle;

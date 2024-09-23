@@ -1,5 +1,6 @@
 #include "SFML/ImGui/ImGui.hpp"
 
+#include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
@@ -12,7 +13,6 @@
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/TextureAtlas.hpp"
 
-#include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
 
 #include "SFML/System/Clock.hpp"
@@ -36,11 +36,23 @@
 class Sampler
 {
 public:
-    void recordUs(float value)
+    enum : unsigned int
     {
+        ToIgnore   = 32u,
+        MaxSamples = 512u
+    };
+
+    void record(float value)
+    {
+        if (m_toIgnore > 0u)
+        {
+            --m_toIgnore;
+            return;
+        }
+
         m_data.push_back(value);
 
-        if (m_data.size() > 512u)
+        if (m_data.size() > MaxSamples)
             m_data.erase(m_data.begin());
     }
 
@@ -67,10 +79,12 @@ public:
     void clear()
     {
         m_data.clear();
+        m_toIgnore = ToIgnore;
     }
 
 private:
     std::vector<float> m_data;
+    unsigned int       m_toIgnore = ToIgnore;
 };
 
 
@@ -175,7 +189,11 @@ int main()
             auto& [text,
                    sprite,
                    velocity,
-                   torque] = entities.emplace_back(sf::Text{i % 2u == 0u ? fontTuffy : fontMouldyCheese, labelBuffer},
+                   torque] = entities.emplace_back(sf::Text{i % 2u == 0u ? fontTuffy : fontMouldyCheese,
+                                                            {.string           = labelBuffer,
+                                                             .fillColor        = sf::Color::Black,
+                                                             .outlineColor     = sf::Color::White,
+                                                             .outlineThickness = 5.f}},
                                                    sf::Sprite{textureRect},
                                                    sf::Vector2f{getRndFloat(-2.5f, 2.5f), getRndFloat(-2.5f, 2.5f)},
                                                    getRndFloat(-0.05f, 0.05f));
@@ -188,10 +206,6 @@ int main()
             text.scale              = sprite.scale * 3.5f;
 
             sprite.position = {getRndFloat(0.f, windowSize.x), getRndFloat(0.f, windowSize.y)};
-
-            text.setFillColor(sf::Color::Black);
-            text.setOutlineColor(sf::Color::White);
-            text.setOutlineThickness(5.f);
 
             text.origin = text.getLocalBounds().size / 2.f;
         }
@@ -264,7 +278,7 @@ int main()
                 text.position = sprite.position - sf::Vector2f{0.f, 250.f * sprite.scale.x};
             }
 
-            samplesUpdateMs.recordUs(clock.getElapsedTime().asSeconds() * 1000.f);
+            samplesUpdateMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
         }
 
         ////////////////////////////////////////////////////////////
@@ -365,12 +379,12 @@ int main()
             if (useBatch)
                 window.draw(drawableBatch, {.texture = &textureAtlas.getTexture()});
 
-            samplesDrawMs.recordUs(clock.getElapsedTime().asSeconds() * 1000.f);
+            samplesDrawMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
         }
 
         imGuiContext.render(window);
         window.display();
 
-        samplesFPS.recordUs(1.f / fpsClock.getElapsedTime().asSeconds());
+        samplesFPS.record(1.f / fpsClock.getElapsedTime().asSeconds());
     }
 }

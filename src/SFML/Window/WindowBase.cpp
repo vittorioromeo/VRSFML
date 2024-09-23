@@ -10,7 +10,6 @@
 #include "SFML/Window/WindowBase.hpp"
 #include "SFML/Window/WindowHandle.hpp"
 #include "SFML/Window/WindowImpl.hpp"
-#include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/String.hpp"
 #include "SFML/System/Vector2.hpp"
@@ -27,7 +26,7 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::WindowSettings nullifyContextSettings(sf::WindowSettings windowSettings)
+[[nodiscard]] sf::WindowBase::Settings nullifyContextSettings(sf::WindowBase::Settings windowSettings)
 {
     windowSettings.contextSettings = sf::ContextSettings{.depthBits         = 0,
                                                          .stencilBits       = 0,
@@ -66,7 +65,7 @@ WindowBase::WindowBase(base::UniquePtr<priv::WindowImpl>&& impl) : m_impl(SFML_B
 
 
 ////////////////////////////////////////////////////////////
-WindowBase::WindowBase(const WindowSettings& windowSettings) :
+WindowBase::WindowBase(const Settings& windowSettings) :
 WindowBase(priv::WindowImpl::create(nullifyContextSettings(windowSettings)))
 {
 }

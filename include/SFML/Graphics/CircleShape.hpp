@@ -27,35 +27,13 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    struct Settings
+    struct [[nodiscard]] Settings
     {
-        Vector2f position{};      //!< Position of the object in the 2D world
-        Vector2f scale{1.f, 1.f}; //!< Scale of the object
-        Vector2f origin{};        //!< Origin of translation/rotation/scaling of the object
-        // NOLINTNEXTLINE(readability-redundant-member-init)
-        Angle       rotation{};                 //!< Orientation of the object
-        FloatRect   textureRect{};              //!< Area of the source texture to display for the fill
-        FloatRect   outlineTextureRect{};       //!< Area of the source texture to display for the outline
-        Color       fillColor{Color::White};    //!< Fill color
-        Color       outlineColor{Color::White}; //!< Outline color
-        float       outlineThickness{0.f};      //!< Thickness of the shape's outline
-        float       radius{0.f};                //!< Radius of the circle
-        base::SizeT pointCount{30u};            //!< Number of points composing the circle
+        SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
+        SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;
 
-        [[nodiscard]] Shape::Settings toShapeSettings() const
-        {
-            return {
-                .position           = position,
-                .scale              = scale,
-                .origin             = origin,
-                .rotation           = rotation,
-                .textureRect        = textureRect,
-                .outlineTextureRect = outlineTextureRect,
-                .fillColor          = fillColor,
-                .outlineColor       = outlineColor,
-                .outlineThickness   = outlineThickness,
-            };
-        }
+        float       radius{0.f};     //!< Radius of the circle
+        base::SizeT pointCount{30u}; //!< Number of points composing the circle
     };
 
     ////////////////////////////////////////////////////////////

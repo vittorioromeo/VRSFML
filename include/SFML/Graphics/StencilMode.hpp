@@ -9,7 +9,6 @@
 
 namespace sf
 {
-
 ////////////////////////////////////////////////////////
 /// \brief Enumeration of the stencil test comparisons that can be performed
 ///
@@ -51,20 +50,14 @@ enum class [[nodiscard]] StencilUpdateOperation : unsigned int
 struct [[nodiscard]] SFML_GRAPHICS_API StencilValue
 {
     ////////////////////////////////////////////////////////////
-    /// \brief Construct a stencil value from a signed integer
-    ///
-    /// \param theValue Signed integer value to use
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] StencilValue(int theValue);
-
-    ////////////////////////////////////////////////////////////
     /// \brief Construct a stencil value from an unsigned integer
     ///
     /// \param theValue Unsigned integer value to use
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] StencilValue(unsigned int theValue);
+    [[nodiscard]] constexpr explicit StencilValue(unsigned int theValue) : value(theValue)
+    {
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Disable construction from any other type
@@ -81,7 +74,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API StencilValue
     /// \return `true` if stencil values are equal, `false` if they are different
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_GRAPHICS_API bool operator==(const StencilValue& rhs) const = default;
+    [[nodiscard]] SFML_GRAPHICS_API constexpr bool operator==(const StencilValue& rhs) const = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Overload of the `operator!=`
@@ -91,7 +84,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API StencilValue
     /// \return `true` if stencil values are different, `false` if they are equal
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_GRAPHICS_API bool operator!=(const StencilValue& rhs) const = default;
+    [[nodiscard]] SFML_GRAPHICS_API constexpr bool operator!=(const StencilValue& rhs) const = default;
 
     unsigned int value{}; //!< The stored stencil value
 };
@@ -105,7 +98,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API StencilMode
     StencilComparison stencilComparison{StencilComparison::Always}; //!< The comparison we're performing the stencil test with
     StencilUpdateOperation stencilUpdateOperation{
         StencilUpdateOperation::Keep}; //!< The update operation to perform if the stencil test passes
-    StencilValue stencilReference{0};  //!< The reference value we're performing the stencil test with
+    StencilValue stencilReference{0u}; //!< The reference value we're performing the stencil test with
     StencilValue stencilMask{~0u}; //!< The mask to apply to both the reference value and the value in the stencil buffer
     bool stencilOnly{};            //!< Whether we should update the color buffer in addition to the stencil buffer
 
@@ -117,7 +110,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API StencilMode
     /// \return `true` if stencil modes are equal, `false` if they are different
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_GRAPHICS_API bool operator==(const StencilMode& rhs) const = default;
+    [[nodiscard]] SFML_GRAPHICS_API constexpr bool operator==(const StencilMode& rhs) const = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Overload of the `operator!=`
@@ -127,7 +120,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API StencilMode
     /// \return `true` if stencil modes are different, `false` if they are equal
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_GRAPHICS_API bool operator!=(const StencilMode& rhs) const = default;
+    [[nodiscard]] SFML_GRAPHICS_API constexpr bool operator!=(const StencilMode& rhs) const = default;
 };
 
 } // namespace sf

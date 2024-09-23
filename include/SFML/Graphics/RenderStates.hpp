@@ -50,6 +50,8 @@ struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
     const Shader*  shader{};                               //!< Shader
 };
 
+inline constexpr RenderStates RenderStates::Default{.blendMode = BlendAlpha};
+
 } // namespace sf
 
 

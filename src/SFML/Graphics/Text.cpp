@@ -18,7 +18,6 @@
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Builtins/Memcpy.hpp"
-#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Math/Floor.hpp"
@@ -105,9 +104,10 @@ struct Text::Impl
     mutable bool          geometryNeedUpdate{};     //!< Does the geometry need to be recomputed?
     mutable std::uint64_t fontTextureId{};          //!< The font texture id
 
-    explicit Impl(const Font& theFont, String theString, unsigned int theCharacterSize) :
+    // NOLINTNEXTLINE(modernize-pass-by-value)
+    explicit Impl(const Font& theFont, const String& theString, unsigned int theCharacterSize) :
     font(&theFont),
-    string(SFML_BASE_MOVE(theString)),
+    string(theString),
     characterSize(theCharacterSize)
     {
     }
@@ -115,10 +115,18 @@ struct Text::Impl
 
 
 ////////////////////////////////////////////////////////////
-Text::Text(const Font& font, String string, unsigned int characterSize) :
-m_impl(font, SFML_BASE_MOVE(string), characterSize)
+Text::Text(const Font& font, const Settings& settings) :
+Transformable{.position = settings.position, .scale = settings.scale, .origin = settings.origin, .rotation = settings.rotation},
+m_impl(font, settings.string, settings.characterSize)
 {
     SFML_UPDATE_LIFETIME_DEPENDANT(Font, Text, this, m_impl->font);
+
+    setLetterSpacing(settings.letterSpacing);
+    setLineSpacing(settings.lineSpacing);
+    setStyle(settings.style);
+    setFillColor(settings.fillColor);
+    setOutlineColor(settings.outlineColor);
+    setOutlineThickness(settings.outlineThickness);
 }
 
 

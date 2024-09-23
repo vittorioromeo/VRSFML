@@ -4,6 +4,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/ConvexShape.hpp"
+#include "SFML/Graphics/Shape.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Math/Fmax.hpp"
@@ -13,9 +14,9 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-ConvexShape::ConvexShape(const Shape::Settings& settings, base::SizeT pointCount) : Shape(settings)
+ConvexShape::ConvexShape(const Settings& settings) : Shape(priv::toShapeSettings(settings))
 {
-    setPointCount(pointCount);
+    setPointCount(settings.pointCount);
 }
 
 

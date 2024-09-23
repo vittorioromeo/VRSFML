@@ -23,12 +23,24 @@ class SFML_GRAPHICS_API ConvexShape : public Shape
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// \param pointCount Number of points of the polygon
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit ConvexShape(const Shape::Settings& settings, base::SizeT pointCount = 0);
+    struct [[nodiscard]] Settings
+    {
+        SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
+        SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;
+
+        base::SizeT pointCount{0u}; //!< Number of points of the polygon
+    };
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Default constructor
+    ///
+    /// \param settings Settings of the polygon
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] explicit ConvexShape(const Settings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor

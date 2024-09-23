@@ -30,7 +30,6 @@ class Texture;
 class Transform;
 class VertexBuffer;
 struct BlendMode;
-struct RenderStates;
 struct Sprite;
 struct StencilMode;
 struct StencilValue;
@@ -292,7 +291,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename DrawableObject>
-    void draw(const DrawableObject& drawableObject, const RenderStates& states = getDefaultRenderStates())
+    void draw(const DrawableObject& drawableObject, const RenderStates& states = RenderStates::Default)
         requires(requires { drawableObject.draw(*this, states); })
     {
         drawableObject.draw(*this, states);
@@ -307,7 +306,7 @@ public:
     /// \param texture Texture associated with the sprite
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Sprite& sprite, const Texture& texture, RenderStates states = getDefaultRenderStates());
+    void draw(const Sprite& sprite, const Texture& texture, RenderStates states = RenderStates::Default);
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted overload of `draw` for sprites without a texture
@@ -326,7 +325,7 @@ public:
     /// \param texture Texture associated with the shape
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Shape& shape, const Texture* texture, const RenderStates& states = getDefaultRenderStates());
+    void draw(const Shape& shape, const Texture* texture, const RenderStates& states = RenderStates::Default);
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by an array of vertices
@@ -340,7 +339,7 @@ public:
     void draw(const Vertex*       vertices,
               base::SizeT         vertexCount,
               PrimitiveType       type,
-              const RenderStates& states = getDefaultRenderStates());
+              const RenderStates& states = RenderStates::Default);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -351,7 +350,7 @@ public:
                              const unsigned int* indices,
                              base::SizeT         indexCount,
                              PrimitiveType       type,
-                             const RenderStates& states = getDefaultRenderStates());
+                             const RenderStates& states = RenderStates::Default);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P0: docs
@@ -371,7 +370,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename ContiguousVertexRange>
-    void draw(const ContiguousVertexRange& vertices, PrimitiveType type, const RenderStates& states = getDefaultRenderStates())
+    void draw(const ContiguousVertexRange& vertices, PrimitiveType type, const RenderStates& states = RenderStates::Default)
         requires(requires { draw(vertices.data(), vertices.size(), type, states); })
     {
         draw(vertices.data(), vertices.size(), type, states);
@@ -386,7 +385,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <base::SizeT N>
-    void draw(const Vertex (&vertices)[N], PrimitiveType type, const RenderStates& states = getDefaultRenderStates())
+    void draw(const Vertex (&vertices)[N], PrimitiveType type, const RenderStates& states = RenderStates::Default)
     {
         draw(vertices, N, type, states);
     }
@@ -398,7 +397,7 @@ public:
     /// \param states       Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const VertexBuffer& vertexBuffer, const RenderStates& states = getDefaultRenderStates());
+    void draw(const VertexBuffer& vertexBuffer, const RenderStates& states = RenderStates::Default);
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by a vertex buffer
@@ -412,7 +411,7 @@ public:
     void draw(const VertexBuffer& vertexBuffer,
               base::SizeT         firstVertex,
               base::SizeT         vertexCount,
-              const RenderStates& states = getDefaultRenderStates());
+              const RenderStates& states = RenderStates::Default);
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the rendering region of the target
@@ -502,12 +501,6 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool clearImpl();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Return the default render states (used to avoid header dependency)
-    ///
-    ////////////////////////////////////////////////////////////
-    static const RenderStates& getDefaultRenderStates();
 
     ////////////////////////////////////////////////////////////
     /// \brief Apply the current view

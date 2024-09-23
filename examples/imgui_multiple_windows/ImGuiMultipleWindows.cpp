@@ -26,7 +26,7 @@ int main()
     sf::base::Optional<sf::RenderWindow>
         childWindow(sf::base::inPlace,
                     graphicsContext,
-                    sf::WindowSettings{.size{640u, 480u}, .title = "ImGui-SFML Child window", .vsync = true});
+                    sf::RenderWindow::Settings{.size{640u, 480u}, .title = "ImGui-SFML Child window", .vsync = true});
 
     if (!imGuiContext.init(*childWindow))
         return -1;

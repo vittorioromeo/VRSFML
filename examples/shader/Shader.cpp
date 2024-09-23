@@ -18,14 +18,12 @@
 #include "SFML/Window/EventUtils.hpp"
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/Mouse.hpp"
-#include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/String.hpp"
 #include "SFML/System/Time.hpp"
 
-#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Optional.hpp"
 
 #include <array>
@@ -111,31 +109,32 @@ public:
 
     explicit WaveBlur(const sf::Font& font, sf::Shader&& shader) :
     m_text(font,
-           "Praesent suscipit augue in velit pulvinar hendrerit varius purus aliquam.\n"
-           "Mauris mi odio, bibendum quis fringilla a, laoreet vel orci. Proin vitae vulputate tortor.\n"
-           "Praesent cursus ultrices justo, ut feugiat ante vehicula quis.\n"
-           "Donec fringilla scelerisque mauris et viverra.\n"
-           "Maecenas adipiscing ornare scelerisque. Nullam at libero elit.\n"
-           "Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.\n"
-           "Nullam leo urna, tincidunt id semper eget, ultricies sed mi.\n"
-           "Morbi mauris massa, commodo id dignissim vel, lobortis et elit.\n"
-           "Fusce vel libero sed neque scelerisque venenatis.\n"
-           "Integer mattis tincidunt quam vitae iaculis.\n"
-           "Vivamus fringilla sem non velit venenatis fermentum.\n"
-           "Vivamus varius tincidunt nisi id vehicula.\n"
-           "Integer ullamcorper, enim vitae euismod rutrum, massa nisl semper ipsum,\n"
-           "vestibulum sodales sem ante in massa.\n"
-           "Vestibulum in augue non felis convallis viverra.\n"
-           "Mauris ultricies dolor sed massa convallis sed aliquet augue fringilla.\n"
-           "Duis erat eros, porta in accumsan in, blandit quis sem.\n"
-           "In hac habitasse platea dictumst. Etiam fringilla est id odio dapibus sit amet semper dui laoreet.\n",
-           22),
+           {.position      = {30.f, 20.f},
+            .string        = "Praesent suscipit augue in velit pulvinar hendrerit varius purus aliquam.\n"
+                             "Mauris mi odio, bibendum quis fringilla a, laoreet vel orci. Proin vitae vulputate tortor.\n"
+                             "Praesent cursus ultrices justo, ut feugiat ante vehicula quis.\n"
+                             "Donec fringilla scelerisque mauris et viverra.\n"
+                             "Maecenas adipiscing ornare scelerisque. Nullam at libero elit.\n"
+                             "Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.\n"
+                             "Nullam leo urna, tincidunt id semper eget, ultricies sed mi.\n"
+                             "Morbi mauris massa, commodo id dignissim vel, lobortis et elit.\n"
+                             "Fusce vel libero sed neque scelerisque venenatis.\n"
+                             "Integer mattis tincidunt quam vitae iaculis.\n"
+                             "Vivamus fringilla sem non velit venenatis fermentum.\n"
+                             "Vivamus varius tincidunt nisi id vehicula.\n"
+                             "Integer ullamcorper, enim vitae euismod rutrum, massa nisl semper ipsum,\n"
+                             "vestibulum sodales sem ante in massa.\n"
+                             "Vestibulum in augue non felis convallis viverra.\n"
+                             "Mauris ultricies dolor sed massa convallis sed aliquet augue fringilla.\n"
+                             "Duis erat eros, porta in accumsan in, blandit quis sem.\n"
+                             "In hac habitasse platea dictumst. Etiam fringilla est id odio dapibus sit amet semper dui "
+                             "laoreet.\n",
+            .characterSize = 22u}),
     m_shader(std::move(shader)),
     m_ulWavePhase(m_shader.getUniformLocation("wave_phase").value()),
     m_ulWaveAmplitude(m_shader.getUniformLocation("wave_amplitude").value()),
     m_ulBlurRadius(m_shader.getUniformLocation("blur_radius").value())
     {
-        m_text.position = {30.f, 20.f};
     }
 
 private:
@@ -309,7 +308,7 @@ public:
         for (std::size_t i = 0; i < 10000; ++i)
         {
             // Spread the coordinates from -480 to +480 so they'll always fill the viewport at 800x600
-            std::uniform_real_distribution<float> positionDistribution(-480, 480);
+            std::uniform_real_distribution<float> positionDistribution(-480.f, 480.f);
             m_pointCloud[i].position = {positionDistribution(rng), positionDistribution(rng)};
         }
     }
@@ -465,18 +464,23 @@ int main()
     textBackground.color    = {255, 255, 255, 200};
 
     // Create the description text
-    sf::Text description(font, "Current effect: " + effectNames[current], 20);
-    description.position = {10.f, 530.f};
-    description.setFillColor(sf::Color(80, 80, 80));
-    description.setOutlineThickness(3.f);
-    description.setOutlineColor(sf::Color::Red);
+    sf::Text description(font,
+                         {.position         = {10.f, 530.f},
+                          .string           = "Current effect: " + effectNames[current],
+                          .characterSize    = 20u,
+                          .fillColor        = {80, 80, 80},
+                          .outlineColor     = sf::Color::Red,
+                          .outlineThickness = 3.f});
+
 
     // Create the instructions text
-    sf::Text instructions(font, "Press left and right arrows to change the current shader", 20);
-    instructions.position = {280.f, 555.f};
-    instructions.setFillColor(sf::Color(80, 80, 80));
-    instructions.setOutlineThickness(3.f);
-    instructions.setOutlineColor(sf::Color::Red);
+    sf::Text instructions(font,
+                          {.position         = {280.f, 555.f},
+                           .string           = "Press left and right arrows to change the current shader",
+                           .characterSize    = 20u,
+                           .fillColor        = {80, 80, 80},
+                           .outlineColor     = sf::Color::Red,
+                           .outlineThickness = 3.f});
 
     // Create the main window
     sf::RenderWindow window(graphicsContext, {.size{800u, 600u}, .title = "SFML Shader", .resizable = false, .vsync = true});
@@ -543,11 +547,8 @@ int main()
         {
             // Clear the window to grey to make sure the text is always readable
             window.clear(sf::Color(50, 50, 50));
-
-            sf::Text error(font, "Shader not\nsupported", 36);
-            error.position = {320.f, 200.f};
-
-            window.draw(error);
+            window.draw(
+                sf::Text{font, {.position = {320.f, 200.f}, .string = "Shader not\nsupported", .characterSize = 36u}});
         }
 
         // Draw the text

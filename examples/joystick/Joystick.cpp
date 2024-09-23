@@ -129,15 +129,16 @@ int main()
     const auto emplaceTexts = [&](const std::string& labelStr, const std::string& valueStr, const float yOffset) -> auto&
     {
         auto [it, success] = texts.emplace(labelStr,
-                                           JoystickTexts{{font, labelStr + ":", characterSize},
-                                                         {font, valueStr, characterSize}});
-
-        auto& [label, value] = it->second;
-        label.position       = {5.f, 5.f + yOffset * fontLineSpacing};
-        value.position       = {80.f, 5.f + yOffset * fontLineSpacing};
-
-        label.setOutlineColor(sf::Color::Blue);
-        label.setOutlineThickness(0.5f);
+                                           JoystickTexts{{font,
+                                                          {.position         = {5.f, 5.f + yOffset * fontLineSpacing},
+                                                           .string           = labelStr + ":",
+                                                           .characterSize    = characterSize,
+                                                           .outlineColor     = sf::Color::Blue,
+                                                           .outlineThickness = 0.5f}},
+                                                         {font,
+                                                          {.position      = {80.f, 5.f + yOffset * fontLineSpacing},
+                                                           .string        = valueStr,
+                                                           .characterSize = characterSize}}});
 
         return it->second;
     };
@@ -183,21 +184,13 @@ int main()
                 return EXIT_SUCCESS;
 
             if (const auto* joystickButtonPressed = event->getIf<sf::Event::JoystickButtonPressed>())
-            {
                 updateValues(joystickButtonPressed->joystickId);
-            }
             else if (const auto* joystickButtonReleased = event->getIf<sf::Event::JoystickButtonReleased>())
-            {
                 updateValues(joystickButtonReleased->joystickId);
-            }
             else if (const auto* joystickMoved = event->getIf<sf::Event::JoystickMoved>())
-            {
                 updateValues(joystickMoved->joystickId);
-            }
             else if (const auto* joystickConnected = event->getIf<sf::Event::JoystickConnected>())
-            {
                 updateValues(joystickConnected->joystickId);
-            }
             else if (event->is<sf::Event::JoystickDisconnected>())
             {
                 // Reset displayed joystick values to empty

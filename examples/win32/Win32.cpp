@@ -131,8 +131,7 @@ int main()
         const auto texture2 = sf::Texture::loadFromFile(graphicsContext, "resources/image2.jpg").value();
         sf::Sprite sprite1(texture1.getRect());
         sf::Sprite sprite2(texture2.getRect());
-        sprite1.origin   = texture1.getSize().toVector2f() / 2.f;
-        sprite1.position = sprite1.origin;
+        sprite1.position = sprite1.origin = texture1.getSize().toVector2f() / 2.f;
 
         // Create a clock for measuring elapsed time
         const sf::Clock clock;

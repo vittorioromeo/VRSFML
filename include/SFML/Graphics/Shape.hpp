@@ -9,12 +9,24 @@
 #include "SFML/Graphics/Transformable.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
-#include "SFML/System/Angle.hpp"
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/Span.hpp"
 #include "SFML/Base/TrivialVector.hpp"
+
+
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
+#define SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE                                                                \
+    ::sf::FloatRect textureRect{};                    /*!< Area of the source texture to display for the fill */    \
+    ::sf::FloatRect outlineTextureRect{};             /*!< Area of the source texture to display for the outline */ \
+    ::sf::Color     fillColor{::sf::Color::White};    /*!< Fill color */                                            \
+    ::sf::Color     outlineColor{::sf::Color::White}; /*!< Outline color */                                         \
+    float           outlineThickness{};               /*!< Thickness of the shape's outline */                      \
+    using sfPrivSwallowSemicolon1 = void
 
 
 ////////////////////////////////////////////////////////////
@@ -42,18 +54,10 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    struct Settings
+    struct [[nodiscard]] Settings
     {
-        Vector2f position{};      //!< Position of the object in the 2D world
-        Vector2f scale{1.f, 1.f}; //!< Scale of the object
-        Vector2f origin{};        //!< Origin of translation/rotation/scaling of the object
-        // NOLINTNEXTLINE(readability-redundant-member-init)
-        Angle     rotation{};                 //!< Orientation of the object
-        FloatRect textureRect{};              //!< Area of the source texture to display for the fill
-        FloatRect outlineTextureRect{};       //!< Area of the source texture to display for the outline
-        Color     fillColor{Color::White};    //!< Fill color
-        Color     outlineColor{Color::White}; //!< Outline color
-        float     outlineThickness{};         //!< Thickness of the shape's outline
+        SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
+        SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;
     };
 
     ////////////////////////////////////////////////////////////
@@ -326,6 +330,28 @@ private:
 };
 
 } // namespace sf
+
+
+namespace sf::priv
+{
+////////////////////////////////////////////////////////////
+template <typename TSettings>
+[[nodiscard]] inline Shape::Settings toShapeSettings(const TSettings& settings)
+{
+    return {
+        .position           = settings.position,
+        .scale              = settings.scale,
+        .origin             = settings.origin,
+        .rotation           = settings.rotation,
+        .textureRect        = settings.textureRect,
+        .outlineTextureRect = settings.outlineTextureRect,
+        .fillColor          = settings.fillColor,
+        .outlineColor       = settings.outlineColor,
+        .outlineThickness   = settings.outlineThickness,
+    };
+}
+
+} // namespace sf::priv
 
 
 ////////////////////////////////////////////////////////////

@@ -48,6 +48,25 @@ public:
     };
 
     ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    struct [[nodiscard]] Settings
+    {
+        SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
+
+        // NOLINTNEXTLINE(readability-redundant-member-init)
+        String       string{};                   //!< String to display
+        unsigned int characterSize{30u};         //!< Base size of characters, in pixels
+        float        letterSpacing{1.f};         //!< Spacing factor between letters
+        float        lineSpacing{1.f};           //!< Spacing factor between lines
+        Style        style{Style::Regular};      //!< Text style (see Style enum)
+        Color        fillColor{Color::White};    //!< Text fill color
+        Color        outlineColor{Color::Black}; //!< Text outline color
+        float        outlineThickness{0.f};      //!< Thickness of the text's outline
+    };
+
+    ////////////////////////////////////////////////////////////
     /// \brief Construct the text from a string, font and size
     ///
     /// Note that if the used font is a bitmap font, it is not
@@ -57,18 +76,16 @@ public:
     /// of a certain size, make sure the corresponding bitmap
     /// font that supports that size is used.
     ///
-    /// \param string         Text assigned to the string
-    /// \param font           Font used to draw the string
-    /// \param characterSize  Base size of characters, in pixels
+    /// \param settings       Settings of the text
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Text(const Font& font, String string = "", unsigned int characterSize = 30);
+    [[nodiscard]] Text(const Font& font, const Settings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Disallow construction from a temporary font
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Text(const Font&& font, String string = "", unsigned int characterSize = 30) = delete;
+    [[nodiscard]] Text(const Font&& font, const Settings& settings) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
