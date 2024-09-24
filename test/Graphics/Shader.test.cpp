@@ -14,25 +14,21 @@
 
 namespace
 {
-constexpr auto vertexSource = R"glsl(#version 310 es
-
-#ifdef GL_ES
-precision mediump float;
-#endif
-
-uniform vec2  storm_position;
-uniform float storm_total_radius;
-uniform float storm_inner_radius;
+constexpr auto vertexSource = R"glsl(
 
 layout(location = 0) uniform mat4 sf_u_modelViewProjectionMatrix;
 layout(location = 1) uniform mat4 sf_u_textureMatrix;
+
+layout(location = 3) uniform vec2 storm_position;
+layout(location = 4) uniform float storm_total_radius;
+layout(location = 5) uniform float storm_inner_radius;
 
 layout(location = 0) in vec2 sf_a_position;
 layout(location = 1) in vec4 sf_a_color;
 layout(location = 2) in vec2 sf_a_texCoord;
 
-layout(location = 0) out vec4 sf_v_color;
-layout(location = 1) out vec2 sf_v_texCoord;
+out vec4 sf_v_color;
+out vec2 sf_v_texCoord;
 
 void main()
 {
@@ -54,14 +50,13 @@ void main()
 
 )glsl";
 
-constexpr auto geometrySource = R"glsl(#version 310 es
-#extension GL_EXT_geometry_shader : enable
+constexpr auto geometrySource = R"glsl(
 
 // The render target's resolution (used for scaling)
-uniform vec2 resolution;
+layout(location = 7) uniform vec2 resolution;
 
 // The billboards' size
-uniform vec2 size;
+layout(location = 8) uniform vec2 size;
 
 // Input is the passed point cloud
 layout(points) in;
@@ -70,9 +65,9 @@ layout(points) in;
 layout(triangle_strip, max_vertices = 4) out;
 
 // Output texture coordinates
-out vec2 sf_v_texCoord;
+layout(location = 1) out vec2 sf_v_texCoord;
 
-uniform mat4 sf_u_textureMatrix;
+layout(location = 1) uniform mat4 sf_u_textureMatrix;
 
 // Main entry point
 void main()
@@ -116,17 +111,13 @@ void main()
 
 )glsl";
 
-constexpr auto fragmentSource = R"glsl(#version 310 es
-
-#ifdef GL_ES
-precision mediump float;
-#endif
+constexpr auto fragmentSource = R"glsl(
 
 layout(location = 2) uniform sampler2D sf_u_texture;
-uniform float     blink_alpha;
+layout(location = 6) uniform float     blink_alpha;
 
-layout(location = 0) in vec4 sf_v_color;
-layout(location = 1) in vec2 sf_v_texCoord;
+in vec4 sf_v_color;
+in vec2 sf_v_texCoord;
 
 layout(location = 0) out vec4 sf_fragColor;
 
@@ -165,18 +156,17 @@ TEST_CASE("[Graphics] sf::Shader" * doctest::skip(skipShaderFullTest))
     {
         SECTION("Construction")
         {
-            sf::Shader movedShader = sf::Shader::loadFromFile(graphicsContext, "Graphics/shader.vert", sf::Shader::Type::Vertex)
-                                         .value();
-            const sf::Shader shader = SFML_BASE_MOVE(movedShader);
+            auto movedShader = sf::Shader::loadFromFile(graphicsContext, "Graphics/shader.vert", sf::Shader::Type::Vertex)
+                                   .value();
+            const auto shader = SFML_BASE_MOVE(movedShader);
             CHECK(shader.getNativeHandle() != 0);
         }
 
         SECTION("Assignment")
         {
-            sf::Shader movedShader = sf::Shader::loadFromFile(graphicsContext, "Graphics/shader.vert", sf::Shader::Type::Vertex)
-                                         .value();
-            sf::Shader shader = sf::Shader::loadFromFile(graphicsContext, "Graphics/shader.frag", sf::Shader::Type::Fragment)
-                                    .value();
+            auto movedShader = sf::Shader::loadFromFile(graphicsContext, "Graphics/shader.vert", sf::Shader::Type::Vertex)
+                                   .value();
+            auto shader = sf::Shader::loadFromFile(graphicsContext, "Graphics/shader.frag", sf::Shader::Type::Fragment).value();
             shader = SFML_BASE_MOVE(movedShader);
             CHECK(shader.getNativeHandle() != 0);
         }

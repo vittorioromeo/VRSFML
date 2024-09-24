@@ -1,9 +1,3 @@
-#version 310 es
-
-#ifdef GL_ES
-precision mediump float;
-#endif
-
 uniform float wave_phase;
 uniform vec2  wave_amplitude;
 
@@ -14,8 +8,8 @@ layout(location = 0) in vec2 sf_a_position;
 layout(location = 1) in vec4 sf_a_color;
 layout(location = 2) in vec2 sf_a_texCoord;
 
-layout(location = 0) out vec4 sf_v_color;
-layout(location = 1) out vec2 sf_v_texCoord;
+out vec4 sf_v_color;
+out vec2 sf_v_texCoord;
 
 void main()
 {

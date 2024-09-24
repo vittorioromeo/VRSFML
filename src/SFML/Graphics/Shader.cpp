@@ -4,6 +4,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Config.hpp"
+
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Shader.hpp"
 #include "SFML/Graphics/Texture.hpp"
@@ -23,6 +25,7 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/StringView.hpp"
 #include "SFML/Base/TrivialVector.hpp"
 
 #include <fstream>
@@ -152,6 +155,16 @@ struct [[nodiscard]] BufferSlice
     return result;
 }
 
+
+// TODO P0:
+////////////////////////////////////////////////////////////
+// Return a thread-local vector for suitable use as a temporary buffer
+// This function is non-reentrant
+[[nodiscard]] sf::base::TrivialVector<char>& getThreadLocalCharBuffer2()
+{
+    thread_local sf::base::TrivialVector<char> result;
+    return result;
+}
 
 ////////////////////////////////////////////////////////////
 // Transforms an array of 2D vectors into a contiguous array of scalars
@@ -932,6 +945,42 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
                                        base::StringView geometryShaderCode,
                                        base::StringView fragmentShaderCode)
 {
+    // TODO P0:
+#if defined(SFML_SYSTEM_EMSCRIPTEN)
+
+    constexpr base::StringView preamble{R"glsl(#version 300 es
+
+precision mediump float;
+
+        )glsl"};
+
+#elif defined(SFML_OPENGL_ES)
+
+    constexpr base::StringView preamble{R"glsl(#version 310 es
+
+precision mediump float;
+
+        )glsl"};
+
+#else
+
+    constexpr base::StringView preamble{R"glsl(#version 430 core
+
+)glsl"};
+
+#endif
+
+    const auto adjustPreamble = [&](base::StringView src)
+    {
+        auto& buffer = getThreadLocalCharBuffer2();
+        buffer.clear();
+
+        buffer.emplaceRange(preamble.data(), preamble.size() - 1);
+        buffer.emplaceRange(src.data(), src.size() - 1);
+
+        return base::StringView{buffer.data(), buffer.size()};
+    };
+
     SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
 
     // Make sure we can use geometry shaders
@@ -954,8 +1003,9 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
     // Create the vertex shader
     {
         // Create and compile the shader
-        GLhandle vertexShader{};
-        glCheck(vertexShader = glCheck(glCreateShader(GL_VERTEX_SHADER)));
+        vertexShaderCode = adjustPreamble(vertexShaderCode);
+
+        const GLhandle   vertexShader     = glCheck(glCreateShader(GL_VERTEX_SHADER));
         const GLcharARB* sourceCode       = vertexShaderCode.data();
         const auto       sourceCodeLength = static_cast<GLint>(vertexShaderCode.size());
         glCheck(glShaderSource(vertexShader, 1, &sourceCode, &sourceCodeLength));
@@ -969,7 +1019,9 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
         {
             char log[1024];
             glCheck(glGetShaderInfoLog(vertexShader, sizeof(log), nullptr, log));
-            priv::err() << "Failed to compile vertex shader:" << '\n' << static_cast<const char*>(log);
+            priv::err() << "Failed to compile vertex shader:" << '\n'
+                        << static_cast<const char*>(log) << "\n\nSource code:\n"
+                        << vertexShaderCode;
             glCheck(glDeleteShader(vertexShader));
             glCheck(glDeleteProgram(shaderProgram));
             return base::nullOpt;
@@ -984,6 +1036,8 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
     if (geometryShaderCode.data())
     {
         // Create and compile the shader
+        geometryShaderCode = adjustPreamble(geometryShaderCode);
+
         const GLhandle   geometryShader   = glCheck(glCreateShader(GL_GEOMETRY_SHADER));
         const GLcharARB* sourceCode       = geometryShaderCode.data();
         const auto       sourceCodeLength = static_cast<GLint>(geometryShaderCode.size());
@@ -998,7 +1052,9 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
         {
             char log[1024];
             glCheck(glGetShaderInfoLog(geometryShader, sizeof(log), nullptr, log));
-            priv::err() << "Failed to compile geometry shader:" << '\n' << static_cast<const char*>(log);
+            priv::err() << "Failed to compile geometry shader:" << '\n'
+                        << static_cast<const char*>(log) << "\n\nSource code:\n"
+                        << geometryShaderCode;
             glCheck(glDeleteShader(geometryShader));
             glCheck(glDeleteProgram(shaderProgram));
             return base::nullOpt;
@@ -1015,8 +1071,9 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
     // Create the fragment shader
     {
         // Create and compile the shader
-        GLhandle fragmentShader{};
-        glCheck(fragmentShader = glCheck(glCreateShader(GL_FRAGMENT_SHADER)));
+        fragmentShaderCode = adjustPreamble(fragmentShaderCode);
+
+        const GLhandle   fragmentShader   = glCheck(glCreateShader(GL_FRAGMENT_SHADER));
         const GLcharARB* sourceCode       = fragmentShaderCode.data();
         const auto       sourceCodeLength = static_cast<GLint>(fragmentShaderCode.size());
         glCheck(glShaderSource(fragmentShader, 1, &sourceCode, &sourceCodeLength));
@@ -1030,7 +1087,9 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
         {
             char log[1024];
             glCheck(glGetShaderInfoLog(fragmentShader, sizeof(log), nullptr, log));
-            priv::err() << "Failed to compile fragment shader:" << '\n' << static_cast<const char*>(log);
+            priv::err() << "Failed to compile fragment shader:" << '\n'
+                        << static_cast<const char*>(log) << "\n\nSource code:\n"
+                        << fragmentShaderCode;
             glCheck(glDeleteShader(fragmentShader));
             glCheck(glDeleteProgram(shaderProgram));
             return base::nullOpt;
