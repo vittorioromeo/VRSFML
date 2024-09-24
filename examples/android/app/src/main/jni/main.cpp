@@ -96,6 +96,7 @@ int main(int, char**)
     const auto [size, bitsPerPixel] = sf::VideoModeUtils::getDesktopMode();
 
     sf::RenderWindow window(graphicsContext, {.size = size, .bitsPerPixel = bitsPerPixel, .framerateLimit = 30});
+    const auto       defaultView = window.getView();
 
     const auto texture = sf::Texture::loadFromFile(graphicsContext, "image.png").value();
 
@@ -109,7 +110,7 @@ int main(int, char**)
     text.setFillColor(sf::Color::Black);
     text.position = {10, 10};
 
-    sf::View view = window.getDefaultView();
+    sf::View view = defaultView;
 
     sf::Color background = sf::Color::White;
 
