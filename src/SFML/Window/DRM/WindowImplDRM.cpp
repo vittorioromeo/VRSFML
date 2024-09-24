@@ -7,6 +7,7 @@
 #include "SFML/Window/DRM/WindowImplDRM.hpp"
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/InputImpl.hpp"
+#include "SFML/Window/WindowImpl.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Err.hpp"
@@ -41,14 +42,16 @@ void restoreTerminalConfig();
 
 
 ////////////////////////////////////////////////////////////
-WindowImplDRM::WindowImplDRM(WindowHandle /*handle*/)
+WindowImplDRM::WindowImplDRM(WindowContext& windowContext, WindowHandle /*handle*/) : WindowImpl(windowContext)
 {
     InputImpl::setTerminalConfig();
 }
 
 
 ////////////////////////////////////////////////////////////
-WindowImplDRM::WindowImplDRM(const WindowSettings& windowSettings) : m_size(windowSettings.size)
+WindowImplDRM::WindowImplDRM(WindowContext& windowContext, const WindowSettings& windowSettings) :
+WindowImpl(windowContext),
+m_size(windowSettings.size)
 {
     InputImpl::setTerminalConfig();
 }

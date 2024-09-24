@@ -358,10 +358,10 @@ constexpr unsigned int nullJoystickId = Joystick::MaxCount;
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] unsigned int getConnectedJoystickId()
+[[nodiscard]] unsigned int getConnectedJoystickId(const WindowContext& windowContext)
 {
     for (unsigned int i = 0; i < static_cast<unsigned int>(Joystick::MaxCount); ++i)
-        if (Joystick::query(i).hasValue())
+        if (Joystick::query(windowContext, i).hasValue())
             return i;
 
     return nullJoystickId;
@@ -378,14 +378,14 @@ struct [[nodiscard]] ImGuiPerWindowContext
 
     bool             windowHasFocus;
     bool             mouseMoved{false};
-    bool             mousePressed[3] = {false};
+    bool             mousePressed[3]{};
     ImGuiMouseCursor lastCursor{ImGuiMouseCursor_COUNT};
 
-    bool     touchDown[3] = {false};
+    bool     touchDown[3]{};
     Vector2i touchPos;
 
-    unsigned int joystickId{getConnectedJoystickId()};
-    ImGuiKey     joystickMapping[Joystick::ButtonCount] = {ImGuiKey_None};
+    unsigned int joystickId;
+    ImGuiKey     joystickMapping[Joystick::ButtonCount]{ImGuiKey_None};
     StickInfo    dPadInfo;
     StickInfo    lStickInfo;
     StickInfo    rStickInfo;
@@ -413,7 +413,10 @@ struct [[nodiscard]] ImGuiPerWindowContext
 #endif
 
     ////////////////////////////////////////////////////////////
-    explicit ImGuiPerWindowContext(const Window& w) : window(&w), windowHasFocus(window->hasFocus())
+    [[nodiscard]] explicit ImGuiPerWindowContext(const Window& theWindow) :
+    window(&theWindow),
+    windowHasFocus(theWindow.hasFocus()),
+    joystickId{getConnectedJoystickId(theWindow.getWindowContext())}
     {
     }
 
@@ -448,7 +451,7 @@ struct [[nodiscard]] ImGuiPerWindowContext
 
         io.BackendPlatformName = "imgui_impl_sfml";
 
-        joystickId = getConnectedJoystickId();
+        joystickId = getConnectedJoystickId(window->getWindowContext());
         initDefaultJoystickMapping();
 
         // init rendering
@@ -517,7 +520,9 @@ struct [[nodiscard]] ImGuiPerWindowContext
             if (key == ImGuiKey_None)
                 continue;
 
-            const bool isPressed = Joystick::query(joystickId)->isButtonPressed(static_cast<unsigned>(i));
+            const bool isPressed = Joystick::query(window->getWindowContext(), joystickId)
+                                       ->isButtonPressed(static_cast<unsigned>(i));
+
             if (windowHasFocus || !isPressed)
                 io.AddKeyEvent(key, isPressed);
         }
@@ -526,7 +531,7 @@ struct [[nodiscard]] ImGuiPerWindowContext
     ////////////////////////////////////////////////////////////
     void updateJoystickAxis(ImGuiIO& io, ImGuiKey key, Joystick::Axis axis, float threshold, float maxThreshold, bool inverted = false) const
     {
-        float pos = Joystick::query(joystickId)->getAxisPosition(axis);
+        float pos = Joystick::query(window->getWindowContext(), joystickId)->getAxisPosition(axis);
         if (inverted)
             pos = -pos;
 
@@ -721,7 +726,7 @@ struct [[nodiscard]] ImGuiPerWindowContext
             if (joystickId == joystickDisconnected->joystickId)
             {
                 // used gamepad was disconnected
-                joystickId = getConnectedJoystickId();
+                joystickId = getConnectedJoystickId(window->getWindowContext());
             }
         }
     }

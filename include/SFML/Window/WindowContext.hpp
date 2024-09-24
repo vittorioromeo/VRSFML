@@ -13,6 +13,7 @@
 namespace sf::priv
 {
 class GlContext;
+class JoystickManager;
 class WindowImpl;
 } // namespace sf::priv
 
@@ -110,6 +111,7 @@ protected:
     ////////////////////////////////////////////////////////////
     friend priv::GlContext;
     friend Window;
+    friend priv::WindowImpl;
 
     friend TestContext;
 
@@ -227,6 +229,20 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const priv::GlContext* getActiveThreadLocalGlContextPtr() const;
 
+public: // TODO P0: to passkey
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the "global" joystick manager
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] priv::JoystickManager& getJoystickManager();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the "global" joystick manager
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] const priv::JoystickManager& getJoystickManager() const;
+
+private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////

@@ -5,6 +5,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/CursorImpl.hpp"
 #include "SFML/Window/WindowEnums.hpp"
+#include "SFML/Window/WindowImpl.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 #include "SFML/Window/macOS/AutoreleasePoolWrapper.hpp"
 #include "SFML/Window/macOS/WindowImplCocoa.hpp"
@@ -78,7 +79,7 @@ void showMouseCursor()
 #pragma mark WindowImplCocoa's ctor/dtor
 
 ////////////////////////////////////////////////////////////
-WindowImplCocoa::WindowImplCocoa(WindowHandle handle)
+WindowImplCocoa::WindowImplCocoa(WindowContext& windowContext, WindowHandle handle) : WindowImpl(windowContext)
 {
     const AutoreleasePool pool;
     // Treat the handle as it real type
@@ -110,7 +111,8 @@ WindowImplCocoa::WindowImplCocoa(WindowHandle handle)
 
 
 ////////////////////////////////////////////////////////////
-WindowImplCocoa::WindowImplCocoa(const WindowSettings& windowSettings)
+WindowImplCocoa::WindowImplCocoa(WindowContext& windowContext, const WindowSettings& windowSettings) :
+WindowImpl(windowContext)
 {
     const AutoreleasePool pool;
     // Transform the app process.

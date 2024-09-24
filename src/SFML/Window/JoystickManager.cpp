@@ -23,14 +23,6 @@ struct JoystickManager::Impl
 
 
 ////////////////////////////////////////////////////////////
-JoystickManager& JoystickManager::getInstance()
-{
-    static JoystickManager instance;
-    return instance;
-}
-
-
-////////////////////////////////////////////////////////////
 const JoystickCapabilities& JoystickManager::getCapabilities(unsigned int joystickId) const
 {
     SFML_BASE_ASSERT(joystickId < Joystick::MaxCount && "Joystick index must be less than `Joystick::MaxCount`");

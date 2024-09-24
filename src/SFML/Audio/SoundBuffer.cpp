@@ -143,7 +143,10 @@ base::Optional<SoundBuffer> SoundBuffer::loadFromSamples(
     unsigned int        sampleRate,
     const ChannelMap&   channelMap)
 {
-    return loadFromSamplesImpl(base::TrivialVector<std::int16_t>(samples, sampleCount), channelCount, sampleRate, channelMap);
+    return loadFromSamplesImpl(base::TrivialVector<std::int16_t>(samples, static_cast<base::SizeT>(sampleCount)),
+                               channelCount,
+                               sampleRate,
+                               channelMap);
 }
 
 

@@ -5,6 +5,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Android/WindowImplAndroid.hpp"
 #include "SFML/Window/Event.hpp"
+#include "SFML/Window/WindowImpl.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Err.hpp"
@@ -27,13 +28,16 @@ namespace sf::priv
 WindowImplAndroid* WindowImplAndroid::singleInstance = nullptr;
 
 ////////////////////////////////////////////////////////////
-WindowImplAndroid::WindowImplAndroid(WindowHandle /* handle */)
+WindowImplAndroid::WindowImplAndroid(WindowContext& windowContext, WindowHandle /* handle */) :
+WindowImpl(windowContext)
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-WindowImplAndroid::WindowImplAndroid(const WindowSettings& windowSettings) : m_size(windowSettings.size)
+WindowImplAndroid::WindowImplAndroid(WindowContext& windowContext, const WindowSettings& windowSettings) :
+WindowImpl(windowContext),
+m_size(windowSettings.size)
 {
     ActivityStates&       states = getActivity();
     const std::lock_guard lock(states.mutex);

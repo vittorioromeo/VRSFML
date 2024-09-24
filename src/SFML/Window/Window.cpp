@@ -43,12 +43,13 @@ struct Window::Window::Impl
 
 
 ////////////////////////////////////////////////////////////
-template <typename TWindowBaseArg>
-Window::Window(WindowContext&   windowContext,
-               const Settings&  windowSettings,
-               TWindowBaseArg&& windowBaseArg,
-               unsigned int     bitsPerPixel) :
-WindowBase(SFML_BASE_FORWARD(windowBaseArg)),
+template <typename... TWindowBaseArgs>
+Window::Window(WindowContext&  windowContext,
+               const Settings& windowSettings,
+
+               unsigned int bitsPerPixel,
+               TWindowBaseArgs&&... windowBaseArgs) :
+WindowBase(SFML_BASE_FORWARD(windowBaseArgs)...),
 m_impl(windowContext, windowContext.createGlContext(windowSettings.contextSettings, getWindowImpl(), bitsPerPixel))
 {
     // Perform common initializations
@@ -66,7 +67,7 @@ m_impl(windowContext, windowContext.createGlContext(windowSettings.contextSettin
 
 ////////////////////////////////////////////////////////////
 Window::Window(WindowContext& windowContext, const Settings& windowSettings) :
-Window(windowContext, windowSettings, priv::WindowImpl::create(windowSettings), windowSettings.bitsPerPixel)
+Window(windowContext, windowSettings, windowSettings.bitsPerPixel, priv::WindowImpl::create(windowContext, windowSettings))
 {
 }
 
@@ -75,8 +76,9 @@ Window(windowContext, windowSettings, priv::WindowImpl::create(windowSettings), 
 Window::Window(WindowContext& windowContext, WindowHandle handle, const ContextSettings& contextSettings) :
 Window(windowContext,
        WindowSettings{.size{}, .contextSettings = contextSettings},
-       handle,
-       VideoModeUtils::getDesktopMode().bitsPerPixel)
+       VideoModeUtils::getDesktopMode().bitsPerPixel,
+       windowContext,
+       handle)
 {
 }
 
@@ -151,6 +153,20 @@ void Window::display()
 #ifdef SFML_SYSTEM_EMSCRIPTEN
     emscripten_sleep(0u);
 #endif
+}
+
+
+////////////////////////////////////////////////////////////
+WindowContext& Window::getWindowContext()
+{
+    return *m_impl->windowContext;
+}
+
+
+////////////////////////////////////////////////////////////
+const WindowContext& Window::getWindowContext() const
+{
+    return *m_impl->windowContext;
 }
 
 } // namespace sf

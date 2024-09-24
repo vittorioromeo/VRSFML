@@ -12,6 +12,7 @@
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/Vulkan.hpp"
 #include "SFML/Window/WindowBase.hpp"
+#include "SFML/Window/WindowContext.hpp"
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
@@ -191,7 +192,8 @@ class VulkanExample
 {
 public:
     // Constructor
-    VulkanExample()
+    VulkanExample(sf::WindowContext& windowContext) :
+    window{windowContext, {.size{800u, 600u}, .title = "SFML window with Vulkan"}}
     {
         // Vulkan setup procedure
         if (vulkanAvailable)
@@ -2555,7 +2557,7 @@ public:
 
 private:
     // NOLINTBEGIN(readability-identifier-naming)
-    sf::WindowBase window{{.size{800u, 600u}, .title = "SFML window with Vulkan"}};
+    sf::WindowBase window;
 
     bool vulkanAvailable{sf::Vulkan::isAvailable()};
 
@@ -2614,7 +2616,8 @@ private:
 ////////////////////////////////////////////////////////////
 int main()
 {
-    VulkanExample example;
+    sf::WindowContext windowContext;
+    VulkanExample     example(windowContext);
 
     example.run();
 }

@@ -42,7 +42,7 @@ namespace priv
 /// \brief macOS (Cocoa) implementation of WindowImpl
 ///
 ////////////////////////////////////////////////////////////
-class WindowImplCocoa : public WindowImpl
+class [[nodiscard]] WindowImplCocoa : public WindowImpl
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -51,7 +51,7 @@ public:
     /// \param handle Platform-specific handle of the control
     ///
     ////////////////////////////////////////////////////////////
-    WindowImplCocoa(WindowHandle handle);
+    [[nodiscard]] explicit WindowImplCocoa(WindowContext& windowContext, WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the window implementation
@@ -63,7 +63,7 @@ public:
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    WindowImplCocoa(const WindowSettings& windowSettings);
+    [[nodiscard]] explicit WindowImplCocoa(WindowContext& windowContext, const WindowSettings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor

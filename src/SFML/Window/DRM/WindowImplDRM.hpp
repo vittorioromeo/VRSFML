@@ -13,7 +13,7 @@ namespace sf::priv
 /// \brief DRM implementation of WindowImpl
 ///
 ////////////////////////////////////////////////////////////
-class WindowImplDRM : public WindowImpl
+class [[nodiscard]] WindowImplDRM : public WindowImpl
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -22,7 +22,7 @@ public:
     /// \param handle Platform-specific handle of the control
     ///
     ////////////////////////////////////////////////////////////
-    WindowImplDRM(WindowHandle handle);
+    [[nodiscard]] explicit WindowImplDRM(WindowContext& windowContext, WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the window implementation
@@ -30,7 +30,7 @@ public:
     /// \param windowSettings Window settings
     ///
     ////////////////////////////////////////////////////////////
-    WindowImplDRM(const WindowSettings& windowSettings);
+    [[nodiscard]] explicit WindowImplDRM(WindowContext& windowContext, const WindowSettings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor

@@ -11,6 +11,7 @@
 #include "SFML/Window/GlContext.hpp"
 #include "SFML/Window/GlContextTypeImpl.hpp"
 #include "SFML/Window/Glad.hpp"
+#include "SFML/Window/JoystickManager.hpp"
 #include "SFML/Window/WindowContext.hpp"
 
 #include "SFML/System/Err.hpp"
@@ -200,6 +201,9 @@ struct WindowContext::Impl
     std::vector<UnsharedFrameBuffer> unsharedFrameBuffers;
 
     ////////////////////////////////////////////////////////////
+    priv::JoystickManager joystickManager;
+
+    ////////////////////////////////////////////////////////////
     template <typename... SharedGlContextArgs>
     explicit Impl(SharedGlContextArgs&&... args) : sharedGlContext(SFML_BASE_FORWARD(args)...)
     {
@@ -367,6 +371,22 @@ const priv::GlContext* WindowContext::getActiveThreadLocalGlContextPtr() const
 {
     SFML_BASE_ASSERT(windowContextAlive);
     return activeGlContext.ptr;
+}
+
+
+////////////////////////////////////////////////////////////
+priv::JoystickManager& WindowContext::getJoystickManager()
+{
+    SFML_BASE_ASSERT(windowContextAlive);
+    return m_impl->joystickManager;
+}
+
+
+////////////////////////////////////////////////////////////
+const priv::JoystickManager& WindowContext::getJoystickManager() const
+{
+    SFML_BASE_ASSERT(windowContextAlive);
+    return m_impl->joystickManager;
 }
 
 
