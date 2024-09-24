@@ -26,7 +26,7 @@ public:
     /// \return Current content of the clipboard
     ///
     ////////////////////////////////////////////////////////////
-    static String getString();
+    [[nodiscard]] static String getString();
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the content of the clipboard as string data
