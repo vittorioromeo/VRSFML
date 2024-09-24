@@ -23,8 +23,8 @@ constexpr void Transformable::scaleBy(Vector2f factor)
 constexpr Transform Transformable::getTransform() const
 {
     const float angle  = -rotation.asRadians();
-    const float cosine = base::cos(angle);
-    const float sine   = base::sin(angle);
+    const float cosine = base::cos(angle); // TODO P0: bottleneck
+    const float sine   = base::sin(angle); // TODO P0: bottleneck
     const float sxc    = scale.x * cosine;
     const float syc    = scale.y * cosine;
     const float sxs    = scale.x * sine;
