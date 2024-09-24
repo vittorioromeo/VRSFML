@@ -437,7 +437,9 @@ struct XDeleter<XRRCrtcInfo>
 
 
 ////////////////////////////////////////////////////////////
-WindowImplX11::WindowImplX11(WindowHandle handle) : m_isExternal(true)
+WindowImplX11::WindowImplX11(WindowContext& windowContext, WindowHandle handle) :
+WindowImpl(windowContext),
+m_isExternal(true)
 {
     using namespace WindowImplX11Impl;
 
@@ -470,7 +472,8 @@ WindowImplX11::WindowImplX11(WindowHandle handle) : m_isExternal(true)
 
 
 ////////////////////////////////////////////////////////////
-WindowImplX11::WindowImplX11(const WindowSettings& windowSettings) :
+WindowImplX11::WindowImplX11(WindowContext& windowContext, const WindowSettings& windowSettings) :
+WindowImpl(windowContext),
 m_fullscreen(windowSettings.fullscreen),
 m_cursorGrabbed(m_fullscreen)
 {

@@ -20,7 +20,7 @@ namespace sf::priv
 /// \brief iOS (UIKit) implementation of WindowImpl
 ///
 ////////////////////////////////////////////////////////////
-class WindowImplUIKit : public WindowImpl
+class [[nodiscard]] WindowImplUIKit : public WindowImpl
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -29,7 +29,7 @@ public:
     /// \param handle Platform-specific handle of the control
     ///
     ////////////////////////////////////////////////////////////
-    WindowImplUIKit(WindowHandle handle);
+    [[nodiscard]] explicit WindowImplUIKit(WindowContext& windowContext, WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the window implementation
@@ -37,7 +37,7 @@ public:
     /// \param windowSettings Window settings
     ///
     ////////////////////////////////////////////////////////////
-    WindowImplUIKit(const WindowSettings& windowSettings);
+    [[nodiscard]] explicit WindowImplUIKit(WindowContext& windowContext, const WindowSettings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the OS-specific handle of the window

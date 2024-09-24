@@ -399,7 +399,8 @@ std::uint64_t SoundFileReaderFlac::read(std::int16_t* samples, std::uint64_t max
             for (base::SizeT i = 0; i < maxCount; ++i)
                 samples[i] = m_impl->clientData.leftovers[i];
 
-            m_impl->clientData.leftovers = base::TrivialVector<std::int16_t>(m_impl->clientData.leftovers.begin(), maxCount);
+            m_impl->clientData.leftovers = base::TrivialVector<std::int16_t>(m_impl->clientData.leftovers.begin(),
+                                                                             static_cast<base::SizeT>(maxCount));
             return maxCount;
         }
 

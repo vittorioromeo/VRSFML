@@ -7,6 +7,7 @@
 #include "SFML/Window/JoystickImpl.hpp"
 #include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/Win32/WindowImplWin32.hpp"
+#include "SFML/Window/WindowImpl.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Err.hpp"
@@ -115,12 +116,15 @@ void initRawMouse()
     if (RegisterRawInputDevices(&rawMouse, 1, sizeof(rawMouse)) != TRUE)
         sf::priv::err() << "Failed to initialize raw mouse input";
 }
+
 } // namespace
 
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-WindowImplWin32::WindowImplWin32(WindowHandle handle) : m_handle(handle)
+WindowImplWin32::WindowImplWin32(WindowContext& windowContext, WindowHandle handle) :
+WindowImpl(windowContext),
+m_handle(handle)
 {
     // Set that this process is DPI aware and can handle DPI scaling
     setProcessDpiAware();
@@ -145,7 +149,8 @@ WindowImplWin32::WindowImplWin32(WindowHandle handle) : m_handle(handle)
 
 
 ////////////////////////////////////////////////////////////
-WindowImplWin32::WindowImplWin32(const WindowSettings& windowSettings) :
+WindowImplWin32::WindowImplWin32(WindowContext& windowContext, const WindowSettings& windowSettings) :
+WindowImpl(windowContext),
 m_lastSize(windowSettings.size),
 m_fullscreen(windowSettings.fullscreen),
 m_cursorGrabbed(m_fullscreen)

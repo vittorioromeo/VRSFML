@@ -26,6 +26,7 @@
 namespace sf
 {
 class Cursor;
+class WindowContext;
 } // namespace sf
 
 namespace sf::priv
@@ -67,7 +68,7 @@ public:
     /// \param windowSettings Settings to use
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowBase(const Settings& windowSettings);
+    [[nodiscard]] explicit WindowBase(WindowContext& windowContext, const Settings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control
@@ -75,7 +76,7 @@ public:
     /// \param handle Platform-specific handle of the control
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowBase(WindowHandle handle);
+    [[nodiscard]] explicit WindowBase(WindowContext& windowContext, WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor

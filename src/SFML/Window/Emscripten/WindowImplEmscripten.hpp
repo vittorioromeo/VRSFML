@@ -22,7 +22,7 @@ namespace sf::priv
 /// \brief Emscripten implementation of WindowImpl
 ///
 ////////////////////////////////////////////////////////////
-class WindowImplEmscripten : public WindowImpl
+class [[nodiscard]] WindowImplEmscripten : public WindowImpl
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -31,7 +31,7 @@ public:
     /// \param handle Platform-specific handle of the control
     ///
     ////////////////////////////////////////////////////////////
-    explicit WindowImplEmscripten(WindowHandle handle);
+    [[nodiscard]] explicit WindowImplEmscripten(WindowContext& windowContext, WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the window implementation
@@ -39,7 +39,7 @@ public:
     /// \param windowSettings Window settings
     ///
     ////////////////////////////////////////////////////////////
-    explicit WindowImplEmscripten(const WindowSettings& windowSettings);
+    [[nodiscard]] explicit WindowImplEmscripten(WindowContext& windowContext, const WindowSettings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor

@@ -763,7 +763,9 @@ void setCallbacks()
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-WindowImplEmscripten::WindowImplEmscripten(WindowHandle /* handle */) : m_keyRepeatEnabled(true)
+WindowImplEmscripten::WindowImplEmscripten(WindowContext& windowContext, WindowHandle /* handle */) :
+WindowImpl(windowContext),
+m_keyRepeatEnabled(true)
 {
     err() << "Creating a window from a WindowHandle unsupported";
     std::abort();
@@ -771,7 +773,9 @@ WindowImplEmscripten::WindowImplEmscripten(WindowHandle /* handle */) : m_keyRep
 
 
 ////////////////////////////////////////////////////////////
-WindowImplEmscripten::WindowImplEmscripten(const WindowSettings& windowSettings) : m_keyRepeatEnabled(true)
+WindowImplEmscripten::WindowImplEmscripten(WindowContext& windowContext, const WindowSettings& windowSettings) :
+WindowImpl(windowContext),
+m_keyRepeatEnabled(true)
 {
     if (window != nullptr)
     {
