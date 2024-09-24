@@ -131,12 +131,14 @@ base::UniquePtr<WindowImpl> WindowImpl::create(WindowHandle handle)
 ////////////////////////////////////////////////////////////
 WindowImpl::WindowImpl() : m_impl(base::makeUnique<JoystickStatesImpl>())
 {
+    auto& joystickManager = *m_impl->joystickManager;
+
     // Get the initial joystick states
-    m_impl->joystickManager->update();
+    joystickManager.update();
 
     for (unsigned int i = 0; i < Joystick::MaxCount; ++i)
     {
-        m_impl->joystickStatesImpl->states[i] = m_impl->joystickManager->getState(i);
+        m_impl->joystickStatesImpl->states[i] = joystickManager.getState(i);
         m_impl->previousAxes[i].fill(0.f);
     }
 
@@ -252,14 +254,16 @@ void WindowImpl::pushEvent(const Event& event)
 ////////////////////////////////////////////////////////////
 void WindowImpl::processJoystickEvents()
 {
+    auto& joystickManager = *m_impl->joystickManager;
+
     // First update the global joystick states
-    m_impl->joystickManager->update();
+    joystickManager.update();
 
     for (unsigned int i = 0; i < Joystick::MaxCount; ++i)
     {
         // Copy the previous state of the joystick and get the new one
         const JoystickState previousState     = m_impl->joystickStatesImpl->states[i];
-        m_impl->joystickStatesImpl->states[i] = m_impl->joystickManager->getState(i);
+        m_impl->joystickStatesImpl->states[i] = joystickManager.getState(i);
 
         // Connection state
         const bool connected = m_impl->joystickStatesImpl->states[i].connected;
@@ -278,7 +282,7 @@ void WindowImpl::processJoystickEvents()
         if (!connected)
             continue;
 
-        const JoystickCapabilities caps = m_impl->joystickManager->getCapabilities(i);
+        const JoystickCapabilities caps = joystickManager.getCapabilities(i);
 
         // Axes
         for (unsigned int j = 0; j < Joystick::AxisCount; ++j)
