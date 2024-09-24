@@ -11,14 +11,6 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-SensorManager& SensorManager::getInstance()
-{
-    static SensorManager instance;
-    return instance;
-}
-
-
-////////////////////////////////////////////////////////////
 bool SensorManager::isAvailable(Sensor::Type sensor)
 {
     return m_sensors[sensor].available;

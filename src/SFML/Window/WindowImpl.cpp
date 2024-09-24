@@ -46,9 +46,9 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 struct WindowImpl::Impl
 {
-    priv::JoystickManager* joystickManager;                             //!< Associated joystick manager
-    std::queue<Event>      events;                                      //!< Queue of available events
-    JoystickState          joystickStates[Joystick::MaxCount]{};        //!< Previous state of the joysticks
+    WindowContext*    windowContext;                                    //!< Associated window context
+    std::queue<Event> events;                                           //!< Queue of available events
+    JoystickState     joystickStates[Joystick::MaxCount]{};             //!< Previous state of the joysticks
     base::EnumArray<Sensor::Type, Vector3f, Sensor::Count> sensorValue; //!< Previous value of the sensors
     float joystickThreshold{0.1f}; //!< Joystick threshold (minimum motion for "move" event to be generated)
     base::EnumArray<Joystick::Axis, float, Joystick::AxisCount>
@@ -56,7 +56,7 @@ struct WindowImpl::Impl
     base::Optional<Vector2u> minimumSize; //!< Minimum window size
     base::Optional<Vector2u> maximumSize; //!< Maximum window size
 
-    explicit Impl(priv::JoystickManager& theJoystickManager) : joystickManager{&theJoystickManager}
+    explicit Impl(WindowContext& theWindowContext) : windowContext{&theWindowContext}
     {
     }
 };
@@ -120,14 +120,16 @@ base::UniquePtr<WindowImpl> WindowImpl::create(WindowContext& windowContext, Win
 
 
 ////////////////////////////////////////////////////////////
-WindowImpl::WindowImpl(WindowContext& windowContext) : m_impl(windowContext.getJoystickManager())
+WindowImpl::WindowImpl(WindowContext& windowContext) : m_impl(windowContext)
 {
+    auto& joystickManager = m_impl->windowContext->getJoystickManager();
+
     // Get the initial joystick states
-    m_impl->joystickManager->update();
+    joystickManager.update();
 
     for (unsigned int i = 0; i < Joystick::MaxCount; ++i)
     {
-        m_impl->joystickStates[i] = m_impl->joystickManager->getState(i);
+        m_impl->joystickStates[i] = joystickManager.getState(i);
         m_impl->previousAxes[i].fill(0.f);
     }
 
@@ -243,7 +245,7 @@ void WindowImpl::pushEvent(const Event& event)
 ////////////////////////////////////////////////////////////
 void WindowImpl::processJoystickEvents()
 {
-    auto& joystickManager = *m_impl->joystickManager;
+    auto& joystickManager = m_impl->windowContext->getJoystickManager();
 
     // First update the global joystick states
     joystickManager.update();
@@ -311,7 +313,7 @@ void WindowImpl::processJoystickEvents()
 void WindowImpl::processSensorEvents()
 {
     // First update the sensor states
-    auto& sensorManager = SensorManager::getInstance();
+    auto& sensorManager = m_impl->windowContext->getSensorManager();
     sensorManager.update();
 
     for (unsigned int i = 0; i < Sensor::Count; ++i)

@@ -14,6 +14,7 @@ namespace sf::priv
 {
 class GlContext;
 class JoystickManager;
+class SensorManager;
 class WindowImpl;
 } // namespace sf::priv
 
@@ -241,6 +242,18 @@ public: // TODO P0: to passkey
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const priv::JoystickManager& getJoystickManager() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the "global" sensor manager
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] priv::SensorManager& getSensorManager();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the "global" sensor manager
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] const priv::SensorManager& getSensorManager() const;
 
 private:
     ////////////////////////////////////////////////////////////

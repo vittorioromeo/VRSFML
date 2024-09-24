@@ -12,12 +12,14 @@
 #include "SFML/Window/GlContextTypeImpl.hpp"
 #include "SFML/Window/Glad.hpp"
 #include "SFML/Window/JoystickManager.hpp"
+#include "SFML/Window/SensorManager.hpp"
 #include "SFML/Window/WindowContext.hpp"
 
 #include "SFML/System/Err.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <atomic>
@@ -201,7 +203,8 @@ struct WindowContext::Impl
     std::vector<UnsharedFrameBuffer> unsharedFrameBuffers;
 
     ////////////////////////////////////////////////////////////
-    priv::JoystickManager joystickManager;
+    base::Optional<priv::JoystickManager> joystickManager;
+    base::Optional<priv::SensorManager>   sensorManager;
 
     ////////////////////////////////////////////////////////////
     template <typename... SharedGlContextArgs>
@@ -377,8 +380,7 @@ const priv::GlContext* WindowContext::getActiveThreadLocalGlContextPtr() const
 ////////////////////////////////////////////////////////////
 priv::JoystickManager& WindowContext::getJoystickManager()
 {
-    SFML_BASE_ASSERT(windowContextAlive);
-    return m_impl->joystickManager;
+    return const_cast<priv::JoystickManager&>(static_cast<const WindowContext&>(*this).getJoystickManager());
 }
 
 
@@ -386,7 +388,30 @@ priv::JoystickManager& WindowContext::getJoystickManager()
 const priv::JoystickManager& WindowContext::getJoystickManager() const
 {
     SFML_BASE_ASSERT(windowContextAlive);
-    return m_impl->joystickManager;
+
+    if (!m_impl->joystickManager.hasValue())
+        m_impl->joystickManager.emplace();
+
+    return *m_impl->joystickManager;
+}
+
+
+////////////////////////////////////////////////////////////
+priv::SensorManager& WindowContext::getSensorManager()
+{
+    return const_cast<priv::SensorManager&>(static_cast<const WindowContext&>(*this).getSensorManager());
+}
+
+
+////////////////////////////////////////////////////////////
+const priv::SensorManager& WindowContext::getSensorManager() const
+{
+    SFML_BASE_ASSERT(windowContextAlive);
+
+    if (!m_impl->sensorManager.hasValue())
+        m_impl->sensorManager.emplace();
+
+    return *m_impl->sensorManager;
 }
 
 
