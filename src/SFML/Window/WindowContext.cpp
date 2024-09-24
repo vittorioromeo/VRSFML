@@ -529,7 +529,7 @@ template <typename... GLContextArgs>
 
     if (!setActiveThreadLocalGlContext(*glContext, true))
     {
-        priv::err() << "Error enabling newly created GL context in GlContext::initalize()";
+        priv::err() << "Error enabling newly created GL context in GlContext::initialize()";
         return nullptr;
     }
 

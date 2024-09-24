@@ -19,8 +19,6 @@
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/Optional.hpp"
 
-#include <imgui.h>
-
 #include <iostream>
 #include <random>
 #include <vector>

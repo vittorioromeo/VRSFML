@@ -14,7 +14,7 @@
 
 namespace
 {
-constexpr auto vertexSource = R"glsl(#version 300 es
+constexpr auto vertexSource = R"glsl(#version 310 es
 
 #ifdef GL_ES
 precision mediump float;
@@ -24,15 +24,15 @@ uniform vec2  storm_position;
 uniform float storm_total_radius;
 uniform float storm_inner_radius;
 
-uniform mat4 sf_u_textureMatrix;
-uniform mat4 sf_u_modelViewProjectionMatrix;
+layout(location = 0) uniform mat4 sf_u_modelViewProjectionMatrix;
+layout(location = 1) uniform mat4 sf_u_textureMatrix;
 
-in vec2 sf_a_position;
-in vec4 sf_a_color;
-in vec2 sf_a_texCoord;
+layout(location = 0) in vec2 sf_a_position;
+layout(location = 1) in vec4 sf_a_color;
+layout(location = 2) in vec2 sf_a_texCoord;
 
-out vec4 sf_v_color;
-out vec2 sf_v_texCoord;
+layout(location = 0) out vec4 sf_v_color;
+layout(location = 1) out vec2 sf_v_texCoord;
 
 void main()
 {
@@ -54,7 +54,7 @@ void main()
 
 )glsl";
 
-constexpr auto geometrySource = R"glsl(#version 300 es
+constexpr auto geometrySource = R"glsl(#version 310 es
 #extension GL_EXT_geometry_shader : enable
 
 // The render target's resolution (used for scaling)
@@ -116,19 +116,19 @@ void main()
 
 )glsl";
 
-constexpr auto fragmentSource = R"glsl(#version 300 es
+constexpr auto fragmentSource = R"glsl(#version 310 es
 
 #ifdef GL_ES
 precision mediump float;
 #endif
 
-uniform sampler2D sf_u_texture;
+layout(location = 2) uniform sampler2D sf_u_texture;
 uniform float     blink_alpha;
 
-in vec4 sf_v_color;
-in vec2 sf_v_texCoord;
+layout(location = 0) in vec4 sf_v_color;
+layout(location = 1) in vec2 sf_v_texCoord;
 
-out vec4 sf_fragColor;
+layout(location = 0) out vec4 sf_fragColor;
 
 void main()
 {

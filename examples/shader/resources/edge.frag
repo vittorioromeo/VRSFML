@@ -1,16 +1,16 @@
-#version 300 es
+#version 310 es
 
 #ifdef GL_ES
 precision mediump float;
 #endif
 
-uniform sampler2D sf_u_texture;
+layout(location = 2) uniform sampler2D sf_u_texture;
 uniform float     edge_threshold;
 
-in vec4 sf_v_color;
-in vec2 sf_v_texCoord;
+layout(location = 0) in vec4 sf_v_color;
+layout(location = 1) in vec2 sf_v_texCoord;
 
-out vec4 sf_fragColor;
+layout(location = 0) out vec4 sf_fragColor;
 
 void main()
 {

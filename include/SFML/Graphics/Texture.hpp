@@ -547,12 +547,23 @@ private:
     friend class Text;
     friend class RenderTexture;
     friend class RenderTarget;
+    friend struct StatesCache;
 
     ////////////////////////////////////////////////////////////
     /// \brief Compute and return the texture matrix (used by shaders)
     ///
     ////////////////////////////////////////////////////////////
-    void getMatrix(float (&target)[16], CoordinateType coordinateType) const;
+    struct MatrixElems
+    {
+        float a00; //!< 4x4 matrix index: `0`
+        float a11; //!< 4x4 matrix index: `5`
+        float a12; //!< 4x4 matrix index: `13`
+
+        constexpr bool operator==(const MatrixElems&) const = default;
+        constexpr bool operator!=(const MatrixElems&) const = default;
+    };
+
+    [[nodiscard]] MatrixElems getMatrixElems(CoordinateType coordinateType) const;
 
 public:
     ////////////////////////////////////////////////////////////

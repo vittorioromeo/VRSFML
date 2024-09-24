@@ -133,7 +133,7 @@ int main()
     // Create all of our graphics resources
     sf::Text hudText(font,
                      {.position         = {5.0f, 5.0f},
-                      .characterSize    = 28,
+                      .characterSize    = 14,
                       .fillColor        = sf::Color::White,
                       .outlineColor     = sf::Color::Black,
                       .outlineThickness = 2.0f});

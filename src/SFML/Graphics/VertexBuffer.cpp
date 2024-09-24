@@ -238,10 +238,18 @@ unsigned int VertexBuffer::getNativeHandle() const
 
 
 ////////////////////////////////////////////////////////////
-void VertexBuffer::bind([[maybe_unused]] GraphicsContext& graphicsContext, const VertexBuffer* vertexBuffer)
+void VertexBuffer::bind([[maybe_unused]] GraphicsContext& graphicsContext) const
 {
     SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
-    glCheck(glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer ? vertexBuffer->m_buffer : 0));
+    glCheck(glBindBuffer(GL_ARRAY_BUFFER, m_buffer));
+}
+
+
+////////////////////////////////////////////////////////////
+void VertexBuffer::unbind([[maybe_unused]] GraphicsContext& graphicsContext)
+{
+    SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
+    glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0u));
 }
 
 

@@ -847,7 +847,7 @@ unsigned int Texture::getMaximumSize([[maybe_unused]] GraphicsContext& graphicsC
 
 
 ////////////////////////////////////////////////////////////
-void Texture::getMatrix(float (&target)[16], CoordinateType coordinateType) const
+Texture::MatrixElems Texture::getMatrixElems(CoordinateType coordinateType) const
 {
     // If non-normalized coordinates (= pixels) are requested, we need to
     // setup scale factors that convert the range [0 .. size] to [0 .. 1]ù
@@ -855,9 +855,9 @@ void Texture::getMatrix(float (&target)[16], CoordinateType coordinateType) cons
     // If pixels are flipped we must invert the Y axis
     const float pixelFlippedMult = m_pixelsFlipped ? -1.f : 1.f;
 
-    target[0] = coordinateType == CoordinateType::Pixels ? 1.f / static_cast<float>(m_size.x) : 1.f;
-    target[5] = (coordinateType == CoordinateType::Pixels ? 1.f / static_cast<float>(m_size.y) : 1.f) * pixelFlippedMult;
-    target[13] = m_pixelsFlipped ? static_cast<float>(m_size.y) / static_cast<float>(m_size.y) : 0.f;
+    return {coordinateType == CoordinateType::Pixels ? 1.f / static_cast<float>(m_size.x) : 1.f,
+            (coordinateType == CoordinateType::Pixels ? 1.f / static_cast<float>(m_size.y) : 1.f) * pixelFlippedMult,
+            m_pixelsFlipped ? static_cast<float>(m_size.y) / static_cast<float>(m_size.y) : 0.f};
 }
 
 

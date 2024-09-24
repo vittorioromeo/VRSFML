@@ -153,7 +153,7 @@ public:
     /// \see `setView`, `getView`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const View& getDefaultView() const;
+    [[nodiscard]] View getDefaultView() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the viewport of a view, applied to this render target
@@ -503,10 +503,10 @@ private:
     [[nodiscard]] bool clearImpl();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Apply the current view
+    /// \brief Apply a view
     ///
     ////////////////////////////////////////////////////////////
-    void applyCurrentView();
+    void applyView(const View& view);
 
     ////////////////////////////////////////////////////////////
     /// \brief Apply a new blending mode
@@ -533,10 +533,26 @@ private:
     ////////////////////////////////////////////////////////////
     /// \brief Setup environment for drawing
     ///
-    /// \param states         Render states to use for drawing
+    /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
     void setupDraw(const RenderStates& states);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Setup environment for drawing: MVP matrix
+    ///
+    /// \param states Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void setupDrawMVP(const RenderStates& states, const Transform& viewTransform);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Setup environment for drawing: texture
+    ///
+    /// \param states Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void setupDrawTexture(const RenderStates& states);
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw non-indexed primitives
