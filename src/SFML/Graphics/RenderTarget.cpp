@@ -309,8 +309,10 @@ void setupVertexAttribPointers()
 ////////////////////////////////////////////////////////////
 struct RenderTarget::Impl
 {
-    explicit Impl(GraphicsContext& theGraphicsContext) :
+    explicit Impl(GraphicsContext& theGraphicsContext, const View& theView) :
     graphicsContext(&theGraphicsContext),
+    view(theView),
+    id(RenderTargetImpl::nextUniqueId.fetch_add(1u, std::memory_order_relaxed)),
     vao(theGraphicsContext),
     vbo(theGraphicsContext),
     ebo(theGraphicsContext)
@@ -343,7 +345,8 @@ struct RenderTarget::Impl
 
 
 ////////////////////////////////////////////////////////////
-RenderTarget::RenderTarget(GraphicsContext& graphicsContext) : m_impl(graphicsContext)
+RenderTarget::RenderTarget(GraphicsContext& graphicsContext, const View& currentView) :
+m_impl(graphicsContext, currentView)
 {
 }
 
@@ -429,13 +432,6 @@ void RenderTarget::setView(const View& view)
 const View& RenderTarget::getView() const
 {
     return m_impl->view;
-}
-
-
-////////////////////////////////////////////////////////////
-View RenderTarget::getDefaultView() const
-{
-    return View::fromRect({{0, 0}, getSize().toVector2f()});
 }
 
 
@@ -724,22 +720,6 @@ void RenderTarget::resetGLStates()
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::initialize()
-{
-    // Setup the default and current views
-    m_impl->view = getDefaultView();
-
-    // Set GL states only on first draw, so that we don't pollute user's states
-    m_impl->cache.glStatesSet       = false;
-    m_impl->cache.lastUsedProgramId = 0u;
-
-    // Generate a unique ID for this RenderTarget to track
-    // whether it is active within a specific context
-    m_impl->id = RenderTargetImpl::nextUniqueId.fetch_add(1u, std::memory_order_relaxed);
-}
-
-
-////////////////////////////////////////////////////////////
 GraphicsContext& RenderTarget::getGraphicsContext()
 {
     return *m_impl->graphicsContext;
@@ -879,8 +859,11 @@ void RenderTarget::setupDraw(const RenderStates& states)
     // Select shader to be used
     const Shader& usedShader = states.shader != nullptr ? *states.shader : m_impl->graphicsContext->getBuiltInShader();
 
-    // Update cache
-    if (const auto usedNativeHandle = usedShader.getNativeHandle(); m_impl->cache.lastUsedProgramId != usedNativeHandle)
+    // Update shader
+    const auto usedNativeHandle = usedShader.getNativeHandle();
+    const bool shaderChanged    = m_impl->cache.lastUsedProgramId != usedNativeHandle;
+
+    if (shaderChanged)
     {
         usedShader.bind();
         m_impl->cache.lastUsedProgramId = usedNativeHandle;
@@ -891,7 +874,7 @@ void RenderTarget::setupDraw(const RenderStates& states)
         applyView(m_impl->view);
 
     // Set the model-view-projection matrix
-    setupDrawMVP(states, m_impl->cache.viewTransform);
+    setupDrawMVP(states, m_impl->cache.viewTransform, shaderChanged);
 
     // Apply the blend mode
     if (!m_impl->cache.enable || (states.blendMode != m_impl->cache.lastBlendMode))
@@ -906,18 +889,18 @@ void RenderTarget::setupDraw(const RenderStates& states)
         glCheck(glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE));
 
     // Deal with texture
-    setupDrawTexture(states);
+    setupDrawTexture(states, shaderChanged);
 }
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::setupDrawMVP(const RenderStates& states, const Transform& viewTransform)
+void RenderTarget::setupDrawMVP(const RenderStates& states, const Transform& viewTransform, bool shaderChanged)
 {
     // Compute the final draw transform
     const Transform trsfm = viewTransform * /* model-view matrix */ states.transform;
 
     // If there's no difference from the cached one, exit early
-    if (m_impl->cache.enable && trsfm == m_impl->cache.lastDrawTransform)
+    if (!shaderChanged && (m_impl->cache.enable && trsfm == m_impl->cache.lastDrawTransform))
         return;
 
     // Update the cached transform
@@ -936,7 +919,7 @@ void RenderTarget::setupDrawMVP(const RenderStates& states, const Transform& vie
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::setupDrawTexture(const RenderStates& states)
+void RenderTarget::setupDrawTexture(const RenderStates& states, bool shaderChanged)
 {
     // Select texture to be used
     const Texture& usedTexture = states.texture != nullptr ? *states.texture
@@ -968,7 +951,7 @@ void RenderTarget::setupDrawTexture(const RenderStates& states)
     const auto elems = usedTexture.getMatrixElems(m_impl->cache.lastCoordinateType);
 
     // If texture uniform doesn't need an update, exit early
-    if (m_impl->cache.enable && m_impl->cache.lastTextureMatrixElems == elems)
+    if (!shaderChanged && (m_impl->cache.enable && m_impl->cache.lastTextureMatrixElems == elems))
         return;
 
     // Otherwise, update the cached matrix elements

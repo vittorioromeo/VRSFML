@@ -12,7 +12,7 @@
 class TestRenderTarget : public sf::RenderTarget
 {
 public:
-    TestRenderTarget(sf::GraphicsContext& graphicsContext) : sf::RenderTarget(graphicsContext)
+    TestRenderTarget(sf::GraphicsContext& graphicsContext) : sf::RenderTarget(graphicsContext, {})
     {
     }
 
@@ -44,11 +44,6 @@ TEST_CASE("[Graphics] sf::RenderTarget")
         CHECK(renderTarget.getView().rotation == sf::Angle::Zero);
         CHECK(renderTarget.getView().viewport == sf::FloatRect({0, 0}, {1, 1}));
         CHECK(renderTarget.getView().getTransform() == sf::Transform(.002f, 0, -1, 0, -.002f, 1));
-        CHECK(renderTarget.getDefaultView().center == sf::Vector2f(320, 240));
-        CHECK(renderTarget.getDefaultView().size == sf::Vector2f(640, 480));
-        CHECK(renderTarget.getDefaultView().rotation == sf::Angle::Zero);
-        CHECK(renderTarget.getDefaultView().viewport == sf::FloatRect({0, 0}, {1, 1}));
-        CHECK(renderTarget.getDefaultView().getTransform() == Approx(sf::Transform(0.003125f, 0, -1, 0, -0.00416667f, 1)));
         CHECK(!renderTarget.isSrgb());
     }
 
