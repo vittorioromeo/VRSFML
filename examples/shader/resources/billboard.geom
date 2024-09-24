@@ -1,17 +1,10 @@
-#version 310 es
-#extension GL_EXT_geometry_shader : enable
-
 // TODO P0: compiles and links on ARM x64, but doesn't display anything
 
-#ifdef GL_ES
-precision mediump float;
-#endif
-
 // The render target's resolution (used for scaling)
-uniform vec2 resolution;
+layout(location = 7) uniform vec2 resolution;
 
 // The billboards' size
-uniform vec2 size;
+layout(location = 8) uniform vec2 size;
 
 // Input is the passed point cloud
 layout(points) in;
@@ -20,9 +13,9 @@ layout(points) in;
 layout(triangle_strip, max_vertices = 4) out;
 
 // Output texture coordinates
-out vec2 sf_v_texCoord;
+layout(location = 1) out vec2 sf_v_texCoord;
 
-uniform mat4 sf_u_textureMatrix;
+layout(location = 1) uniform mat4 sf_u_textureMatrix;
 
 // Main entry point
 void main()

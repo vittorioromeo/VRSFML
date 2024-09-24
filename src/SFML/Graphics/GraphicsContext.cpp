@@ -20,11 +20,7 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-constexpr const char* builtInShaderVertexSrc = R"glsl(#version 310 es
-
-#ifdef GL_ES
-precision mediump float;
-#endif
+constexpr const char* builtInShaderVertexSrc = R"glsl(
 
 layout(location = 0) uniform mat4 sf_u_modelViewProjectionMatrix;
 layout(location = 1) uniform mat4 sf_u_textureMatrix;
@@ -33,8 +29,8 @@ layout(location = 0) in vec2 sf_a_position;
 layout(location = 1) in vec4 sf_a_color;
 layout(location = 2) in vec2 sf_a_texCoord;
 
-layout(location = 0) out vec4 sf_v_color;
-layout(location = 1) out vec2 sf_v_texCoord;
+out vec4 sf_v_color;
+out vec2 sf_v_texCoord;
 
 void main()
 {
@@ -47,16 +43,12 @@ void main()
 
 
 ////////////////////////////////////////////////////////////
-constexpr const char* builtInShaderFragmentSrc = R"glsl(#version 310 es
-
-#ifdef GL_ES
-precision mediump float;
-#endif
+constexpr const char* builtInShaderFragmentSrc = R"glsl(
 
 layout(location = 2) uniform sampler2D sf_u_texture;
 
-layout(location = 0) in vec4 sf_v_color;
-layout(location = 1) in vec2 sf_v_texCoord;
+in vec4 sf_v_color;
+in vec2 sf_v_texCoord;
 
 layout(location = 0) out vec4 sf_fragColor;
 

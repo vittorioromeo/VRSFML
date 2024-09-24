@@ -106,7 +106,7 @@ int main()
             const sf::FloatRect& textureRect = spriteTextureRects[type];
 
             auto& [text, sprite, torque] = entities.emplace_back(sf::Text{i % 2u == 0u ? fontTuffy : fontMouldyCheese,
-                                                                          {.string           = "ABCDEFabcdef",
+                                                                          {.string           = "",
                                                                            .fillColor        = sf::Color::Black,
                                                                            .outlineColor     = sf::Color::White,
                                                                            .outlineThickness = 5.f}},

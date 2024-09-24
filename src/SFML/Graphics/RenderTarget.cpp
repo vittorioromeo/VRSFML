@@ -853,7 +853,7 @@ void RenderTarget::setupDraw(const RenderStates& states)
         m_impl->bindGLObjects();
         m_impl->cache.vaoBound = true;
 
-        // setupVertexAttribPointers();
+        setupVertexAttribPointers();
     }
 
     // Select shader to be used
