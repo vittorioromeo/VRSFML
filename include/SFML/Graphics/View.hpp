@@ -79,6 +79,10 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::pure]] Transform getInverseTransform() const;
 
+    // TODO P1: docs
+    [[nodiscard]] SFML_GRAPHICS_API constexpr bool operator==(const View& rhs) const = default;
+    [[nodiscard]] SFML_GRAPHICS_API constexpr bool operator!=(const View& rhs) const = default;
+
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////

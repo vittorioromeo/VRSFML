@@ -18,6 +18,7 @@
 namespace sf
 {
 class Angle;
+class RenderTarget;
 class Transform;
 struct Sprite;
 struct Transformable;
@@ -290,6 +291,7 @@ private:
     friend void priv::spriteToVertices(const Sprite& sprite, Vertex* target);
     friend Transformable;
     friend void priv::copyMatrix(const Transform&, priv::Matrix<3, 3>&);
+    friend RenderTarget;
 
     ////////////////////////////////////////////////////////////
     // Member data

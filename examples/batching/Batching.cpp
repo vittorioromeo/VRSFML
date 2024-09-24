@@ -214,10 +214,10 @@ int main()
     //
     //
     // Set up UI elements
-    bool        useBatch      = true;
+    bool        useBatch      = false;
     bool        drawSprites   = true;
     bool        drawText      = false;
-    int         numEntities   = 1'000'000;
+    int         numEntities   = 100'000;
     std::size_t drawnVertices = 0u;
 
     //
@@ -386,5 +386,9 @@ int main()
         window.display();
 
         samplesFPS.record(1.f / fpsClock.getElapsedTime().asSeconds());
+
+        window.setTitle("FPS: " + std::to_string(samplesFPS.getAverage()) +
+                        " || U: " + std::to_string(samplesUpdateMs.getAverage()) +
+                        " || D: " + std::to_string(samplesDrawMs.getAverage()));
     }
 }
