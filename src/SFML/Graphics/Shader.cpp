@@ -993,8 +993,7 @@ precision mediump float;
     }
 
     // Create the program
-    GLhandle shaderProgram{};
-    glCheck(shaderProgram = glCreateProgram());
+    const GLhandle shaderProgram = glCheck(glCreateProgram());
     SFML_BASE_ASSERT(glCheck(glIsProgram(shaderProgram)));
 
     if (vertexShaderCode.data() == nullptr)
