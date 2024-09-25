@@ -8,11 +8,10 @@
 
 #include "SFML/Audio/ChannelMap.hpp"
 
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/UniquePtr.hpp"
-
-#include <cstdint>
 
 
 ////////////////////////////////////////////////////////////
@@ -78,7 +77,7 @@ public:
     /// \param count       Number of samples to write
     ///
     ////////////////////////////////////////////////////////////
-    void write(const std::int16_t* samples, std::uint64_t count);
+    void write(const base::I16* samples, base::U64 count);
 
     ////////////////////////////////////////////////////////////
     /// \private
@@ -115,7 +114,7 @@ private:
 /// while (...)
 /// {
 ///     // Read or generate audio samples from your custom source
-///     std::vector<std::int16_t> samples = ...;
+///     std::vector<base::I16> samples = ...;
 ///
 ///     // Write them to the file
 ///     file.write(samples.data(), samples.size());

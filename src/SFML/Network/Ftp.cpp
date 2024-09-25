@@ -11,6 +11,7 @@
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/SizeT.hpp"
 
@@ -18,7 +19,6 @@
 #include <sstream>
 
 #include <cctype>
-#include <cstdint>
 
 
 namespace sf
@@ -526,16 +526,16 @@ Ftp::Response Ftp::DataChannel::open(Ftp::TransferMode mode)
         const std::string::size_type begin = response.getMessage().find_first_of("0123456789");
         if (begin != std::string::npos)
         {
-            std::uint8_t data[6] = {0, 0, 0, 0, 0, 0};
-            std::string  str     = response.getMessage().substr(begin);
-            base::SizeT  index   = 0;
+            base::U8    data[6] = {0, 0, 0, 0, 0, 0};
+            std::string str     = response.getMessage().substr(begin);
+            base::SizeT index   = 0;
             for (unsigned char& datum : data)
             {
                 // Extract the current number
                 while (std::isdigit(str[index]))
                 {
-                    datum = static_cast<std::uint8_t>(
-                        static_cast<std::uint8_t>(datum * 10) + static_cast<std::uint8_t>(str[index] - '0'));
+                    datum = static_cast<base::U8>(
+                        static_cast<base::U8>(datum * 10) + static_cast<base::U8>(str[index] - '0'));
                     ++index;
                 }
 
@@ -544,7 +544,7 @@ Ftp::Response Ftp::DataChannel::open(Ftp::TransferMode mode)
             }
 
             // Reconstruct connection port and address
-            const auto      port = static_cast<std::uint16_t>(data[4] * 256 + data[5]);
+            const auto      port = static_cast<base::U16>(data[4] * 256 + data[5]);
             const IpAddress address(data[0], data[1], data[2], data[3]);
 
             // Connect the data channel to the server

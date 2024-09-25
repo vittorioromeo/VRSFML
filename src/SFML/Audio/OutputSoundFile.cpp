@@ -55,7 +55,7 @@ base::Optional<OutputSoundFile> OutputSoundFile::openFromFile(
 
 
 ////////////////////////////////////////////////////////////
-void OutputSoundFile::write(const std::int16_t* samples, std::uint64_t count)
+void OutputSoundFile::write(const base::I16* samples, base::U64 count)
 {
     SFML_BASE_ASSERT(m_writer != nullptr);
 

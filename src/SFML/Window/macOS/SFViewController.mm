@@ -224,7 +224,7 @@
 
 
 ////////////////////////////////////////////////////////
-- (void)setIconTo:(sf::Vector2u)size with:(const std::uint8_t*)pixels
+- (void)setIconTo:(sf::Vector2u)size with:(const base::U8*)pixels
 {
     (void)size;
     (void)pixels;

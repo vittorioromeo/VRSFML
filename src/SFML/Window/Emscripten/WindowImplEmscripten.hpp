@@ -6,7 +6,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/WindowImpl.hpp"
 
-#include <cstdint>
+#include "SFML/Base/IntTypes.hpp"
 
 
 namespace sf
@@ -102,7 +102,7 @@ public:
     /// \param pixels Pointer to the pixels in memory, format must be RGBA 32 bits
     ///
     ////////////////////////////////////////////////////////////
-    void setIcon(Vector2u size, const std::uint8_t* pixels) override;
+    void setIcon(Vector2u size, const base::U8* pixels) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window

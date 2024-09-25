@@ -148,7 +148,7 @@ void WindowImplUIKit::setTitle(const String& /* title */)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplUIKit::setIcon(Vector2u /* size */, const std::uint8_t* /* pixels */)
+void WindowImplUIKit::setIcon(Vector2u /* size */, const base::U8* /* pixels */)
 {
     // Not applicable
 }

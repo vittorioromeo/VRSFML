@@ -116,7 +116,7 @@ void WindowImplDRM::setTitle(const String& /*title*/)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplDRM::setIcon(Vector2u /*size*/, const std::uint8_t* /*pixels*/)
+void WindowImplDRM::setIcon(Vector2u /*size*/, const base::U8* /*pixels*/)
 {
 }
 

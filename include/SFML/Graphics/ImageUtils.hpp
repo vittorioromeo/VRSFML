@@ -6,9 +6,9 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
-#include <vector>
+#include "SFML/Base/IntTypes.hpp"
 
-#include <cstdint>
+#include <vector>
 
 
 ////////////////////////////////////////////////////////////
@@ -76,7 +76,7 @@ public:
     /// \see create, loadFromFile, loadFromMemory, saveToFile
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::vector<std::uint8_t> saveToMemory(const Image& image, SaveFormat format);
+    [[nodiscard]] static std::vector<base::U8> saveToMemory(const Image& image, SaveFormat format);
 };
 
 } // namespace sf

@@ -19,7 +19,7 @@ TEST_CASE("[Window] sf::Cursor" * doctest::skip(skipDisplayTests))
 
     SECTION("loadFromPixels()")
     {
-        static constexpr std::uint8_t pixels[4]{};
+        static constexpr sf::base::U8 pixels[4]{};
 
         CHECK(!sf::Cursor::loadFromPixels(nullptr, {}, {}).hasValue());
         CHECK(!sf::Cursor::loadFromPixels(pixels, {0, 1}, {}).hasValue());

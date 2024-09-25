@@ -9,12 +9,11 @@
 #include "SFML/Audio/ChannelMap.hpp"
 #include "SFML/Audio/SoundStream.hpp"
 
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/UniquePtr.hpp"
-
-#include <cstdint>
 
 
 ////////////////////////////////////////////////////////////
@@ -172,7 +171,7 @@ public:
     /// \return Number of samples
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::uint64_t getSampleCount() const;
+    [[nodiscard]] base::U64 getSampleCount() const;
 
 private:
     ////////////////////////////////////////////////////////////
@@ -276,7 +275,7 @@ protected:
     /// \return The seek position after looping (or `base::nullOpt` if there's no loop)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<std::uint64_t> onLoop() override;
+    [[nodiscard]] base::Optional<base::U64> onLoop() override;
 
 private:
     ////////////////////////////////////////////////////////////

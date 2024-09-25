@@ -27,6 +27,8 @@
 #include <string>
 #include <vector>
 
+#include <csignal>
+
 
 namespace sf
 {
@@ -201,6 +203,12 @@ struct WindowContext::Impl
 ////////////////////////////////////////////////////////////
 WindowContext::WindowContext() : m_impl(base::makeUnique<Impl>(*this, /* id */ 1u, /* shared */ nullptr))
 {
+    // Define fatal signal handlers for the user that will display a stack trace:
+    std::signal(SIGSEGV, [](int) { priv::err() << "FATAL SIGNAL: SIGSEGV"; });
+    std::signal(SIGILL, [](int) { priv::err() << "FATAL SIGNAL: SIGILL"; });
+    std::signal(SIGABRT, [](int) { priv::err() << "FATAL SIGNAL: SIGABRT"; });
+    std::signal(SIGFPE, [](int) { priv::err() << "FATAL SIGNAL: SIGFPE"; });
+
     SFML_BASE_ASSERT(!hasActiveThreadLocalOrSharedGlContext());
 
     if (!setActiveThreadLocalGlContextToSharedContext(true))

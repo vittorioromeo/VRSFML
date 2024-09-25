@@ -6,7 +6,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
-#include <cstdint>
+#include "SFML/Base/IntTypes.hpp"
 
 
 namespace sf
@@ -23,7 +23,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     /// \param color Number containing the RGBA components (in that order)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::const]] constexpr static Color fromRGBA(std::uint32_t color);
+    [[nodiscard, gnu::always_inline, gnu::const]] constexpr static Color fromRGBA(base::U32 color);
 
     ////////////////////////////////////////////////////////////
     /// \brief Retrieve the color as a 32-bit unsigned integer
@@ -31,7 +31,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     /// \return Color represented as a 32-bit unsigned integer
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr std::uint32_t toInteger() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr base::U32 toInteger() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Overload of the `operator==`
@@ -75,10 +75,10 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::uint8_t r{};     //!< Red component
-    std::uint8_t g{};     //!< Green component
-    std::uint8_t b{};     //!< Blue component
-    std::uint8_t a{255u}; //!< Alpha (opacity) component
+    base::U8 r{};     //!< Red component
+    base::U8 g{};     //!< Green component
+    base::U8 b{};     //!< Blue component
+    base::U8 a{255u}; //!< Alpha (opacity) component
 };
 
 ////////////////////////////////////////////////////////////

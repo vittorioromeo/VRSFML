@@ -39,9 +39,9 @@ TEST_CASE("[Graphics] sf::Image")
             CHECK(image.getSize() == sf::Vector2u{10, 10});
             CHECK(image.getPixelsPtr() != nullptr);
 
-            for (std::uint32_t i = 0; i < 10; ++i)
+            for (sf::base::U32 i = 0; i < 10; ++i)
             {
-                for (std::uint32_t j = 0; j < 10; ++j)
+                for (sf::base::U32 j = 0; j < 10; ++j)
                 {
                     CHECK(image.getPixel(sf::Vector2u{i, j}) == sf::Color::Black);
                 }
@@ -54,19 +54,19 @@ TEST_CASE("[Graphics] sf::Image")
             CHECK(image.getSize() == sf::Vector2u{10, 10});
             CHECK(image.getPixelsPtr() != nullptr);
 
-            for (std::uint32_t i = 0; i < 10; ++i)
+            for (sf::base::U32 i = 0; i < 10; ++i)
             {
-                for (std::uint32_t j = 0; j < 10; ++j)
+                for (sf::base::U32 j = 0; j < 10; ++j)
                 {
                     CHECK(image.getPixel(sf::Vector2u{i, j}) == sf::Color::Red);
                 }
             }
         }
 
-        SECTION("Vector2 and std::uint8_t* constructor")
+        SECTION("Vector2 and sf::base::U8* constructor")
         {
             // 10 x 10, with 4 color channels array
-            std::uint8_t pixels[400]{};
+            sf::base::U8 pixels[400]{};
             for (sf::base::SizeT i = 0; i < 400; i += 4)
             {
                 pixels[i]     = 255; // r
@@ -79,9 +79,9 @@ TEST_CASE("[Graphics] sf::Image")
             CHECK(image.getSize() == sf::Vector2u{10, 10});
             CHECK(image.getPixelsPtr() != nullptr);
 
-            for (std::uint32_t i = 0; i < 10; ++i)
+            for (sf::base::U32 i = 0; i < 10; ++i)
             {
-                for (std::uint32_t j = 0; j < 10; ++j)
+                for (sf::base::U32 j = 0; j < 10; ++j)
                 {
                     CHECK(image.getPixel(sf::Vector2u{i, j}) == sf::Color::Red);
                 }
@@ -161,7 +161,7 @@ TEST_CASE("[Graphics] sf::Image")
 
         SECTION("Failed load")
         {
-            sf::base::TrivialVector<std::uint8_t> memory;
+            sf::base::TrivialVector<sf::base::U8> memory;
 
             SECTION("Empty")
             {
@@ -170,7 +170,7 @@ TEST_CASE("[Graphics] sf::Image")
 
             SECTION("Junk data")
             {
-                memory.pushBackMultiple(std::uint8_t{1}, std::uint8_t{2}, std::uint8_t{3}, std::uint8_t{4});
+                memory.pushBackMultiple(sf::base::U8{1}, sf::base::U8{2}, sf::base::U8{3}, sf::base::U8{4});
             }
 
             CHECK(!sf::Image::loadFromMemory(memory.data(), memory.size()).hasValue());
@@ -253,7 +253,7 @@ TEST_CASE("[Graphics] sf::Image")
 
         SECTION("Successful save")
         {
-            std::vector<std::uint8_t> output;
+            std::vector<sf::base::U8> output;
 
             SECTION("To bmp")
             {
@@ -310,9 +310,9 @@ TEST_CASE("[Graphics] sf::Image")
             auto       image2 = sf::Image::create(sf::Vector2u{10, 10}).value();
             CHECK(image2.copy(image1, sf::Vector2u{0, 0}));
 
-            for (std::uint32_t i = 0; i < 10; ++i)
+            for (sf::base::U32 i = 0; i < 10; ++i)
             {
-                for (std::uint32_t j = 0; j < 10; ++j)
+                for (sf::base::U32 j = 0; j < 10; ++j)
                 {
                     CHECK(image1.getPixel(sf::Vector2u{i, j}) == image2.getPixel(sf::Vector2u{i, j}));
                 }
@@ -325,9 +325,9 @@ TEST_CASE("[Graphics] sf::Image")
             auto       image2 = sf::Image::create(sf::Vector2u{10, 10}).value();
             CHECK(image2.copy(image1, sf::Vector2u{0, 0}, sf::IntRect(sf::Vector2i{0, 0}, sf::Vector2i{5, 5})));
 
-            for (std::uint32_t i = 0; i < 10; ++i)
+            for (sf::base::U32 i = 0; i < 10; ++i)
             {
-                for (std::uint32_t j = 0; j < 10; ++j)
+                for (sf::base::U32 j = 0; j < 10; ++j)
                 {
                     if (i <= 4 && j <= 4)
                         CHECK(image2.getPixel(sf::Vector2u{i, j}) == sf::Color::Blue);
@@ -343,12 +343,12 @@ TEST_CASE("[Graphics] sf::Image")
             const sf::Color source(5, 255, 78, 232);
 
             // Create the composited color for via the alpha composite over operation
-            const auto a = static_cast<std::uint8_t>(source.a + (dest.a * (255 - source.a)) / 255);
-            const auto r = static_cast<std::uint8_t>(
+            const auto a = static_cast<sf::base::U8>(source.a + (dest.a * (255 - source.a)) / 255);
+            const auto r = static_cast<sf::base::U8>(
                 ((source.r * source.a) + ((dest.r * dest.a) * (255 - source.a)) / 255) / a);
-            const auto g = static_cast<std::uint8_t>(
+            const auto g = static_cast<sf::base::U8>(
                 ((source.g * source.a) + ((dest.g * dest.a) * (255 - source.a)) / 255) / a);
-            const auto b = static_cast<std::uint8_t>(
+            const auto b = static_cast<sf::base::U8>(
                 ((source.b * source.a) + ((dest.b * dest.a) * (255 - source.a)) / 255) / a);
             const sf::Color composite(r, g, b, a);
 
@@ -356,9 +356,9 @@ TEST_CASE("[Graphics] sf::Image")
             const auto image2 = sf::Image::create(sf::Vector2u{10, 10}, source).value();
             CHECK(image1.copy(image2, sf::Vector2u{0, 0}, sf::IntRect(sf::Vector2i{0, 0}, sf::Vector2i{10, 10}), true));
 
-            for (std::uint32_t i = 0; i < 10; ++i)
+            for (sf::base::U32 i = 0; i < 10; ++i)
             {
-                for (std::uint32_t j = 0; j < 10; ++j)
+                for (sf::base::U32 j = 0; j < 10; ++j)
                 {
                     CHECK(image1.getPixel(sf::Vector2u{i, j}) == composite);
                 }
@@ -371,9 +371,9 @@ TEST_CASE("[Graphics] sf::Image")
             auto       image2 = sf::Image::create(sf::Vector2u{10, 10}, sf::Color::Red).value();
             CHECK(!image2.copy(image1, sf::Vector2u{0, 0}, sf::IntRect(sf::Vector2i{5, 5}, sf::Vector2i{9, 9})));
 
-            for (std::uint32_t i = 0; i < 10; ++i)
+            for (sf::base::U32 i = 0; i < 10; ++i)
             {
-                for (std::uint32_t j = 0; j < 10; ++j)
+                for (sf::base::U32 j = 0; j < 10; ++j)
                 {
                     CHECK(image2.getPixel(sf::Vector2u{i, j}) == sf::Color::Red);
                 }
@@ -388,23 +388,23 @@ TEST_CASE("[Graphics] sf::Image")
             auto image = sf::Image::create(sf::Vector2u{10, 10}, sf::Color::Blue).value();
             image.createMaskFromColor(sf::Color::Blue);
 
-            for (std::uint32_t i = 0; i < 10; ++i)
+            for (sf::base::U32 i = 0; i < 10; ++i)
             {
-                for (std::uint32_t j = 0; j < 10; ++j)
+                for (sf::base::U32 j = 0; j < 10; ++j)
                 {
                     CHECK(image.getPixel(sf::Vector2u{i, j}) == sf::Color(0, 0, 255, 0));
                 }
             }
         }
 
-        SECTION("createMaskFromColor(Color, std::uint8_t)")
+        SECTION("createMaskFromColor(Color, sf::base::U8)")
         {
             auto image = sf::Image::create(sf::Vector2u{10, 10}, sf::Color::Blue).value();
             image.createMaskFromColor(sf::Color::Blue, 100);
 
-            for (std::uint32_t i = 0; i < 10; ++i)
+            for (sf::base::U32 i = 0; i < 10; ++i)
             {
-                for (std::uint32_t j = 0; j < 10; ++j)
+                for (sf::base::U32 j = 0; j < 10; ++j)
                 {
                     CHECK(image.getPixel(sf::Vector2u{i, j}) == sf::Color(0, 0, 255, 100));
                 }

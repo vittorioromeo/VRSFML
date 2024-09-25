@@ -29,12 +29,11 @@
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtins/OffsetOf.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Lround.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 #include <atomic>
-
-#include <cstdint>
 
 
 namespace
@@ -200,7 +199,7 @@ struct [[nodiscard]] StatesCache
 
     BlendMode      lastBlendMode{BlendAlpha};                      //!< Cached blending mode
     StencilMode    lastStencilMode;                                //!< Cached stencil
-    std::uint64_t  lastTextureId{0u};                              //!< Cached texture
+    base::U64      lastTextureId{0u};                              //!< Cached texture
     CoordinateType lastCoordinateType{CoordinateType::Normalized}; //!< Cached texture coordinate type
 
     GLuint lastUsedProgramId{0u}; //!< GL id of the last used shader program

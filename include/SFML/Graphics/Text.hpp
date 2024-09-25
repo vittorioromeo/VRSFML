@@ -453,11 +453,10 @@ private:
     Color        m_outlineColor{Color::Black}; //!< Text outline color
     float        m_outlineThickness{0.f};      //!< Thickness of the text's outline
 
-    mutable base::TrivialVector<Vertex> m_vertices;  //!< Vertex array containing the outline and fill geometry
-    mutable base::SizeT  m_fillVerticesStartIndex{}; //!< Index in the vertex array where the fill vertices start
-    mutable FloatRect    m_bounds;                   //!< Bounding rectangle of the text (in local coordinates)
-    mutable bool         m_geometryNeedUpdate{};     //!< Does the geometry need to be recomputed?
-    mutable unsigned int m_fontTextureId{};          //!< The font texture id
+    mutable base::TrivialVector<Vertex> m_vertices; //!< Vertex array containing the outline and fill geometry
+    mutable base::SizeT m_fillVerticesStartIndex{}; //!< Index in the vertex array where the fill vertices start
+    mutable FloatRect   m_bounds;                   //!< Bounding rectangle of the text (in local coordinates)
+    mutable bool        m_geometryNeedUpdate{};     //!< Does the geometry need to be recomputed?
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking

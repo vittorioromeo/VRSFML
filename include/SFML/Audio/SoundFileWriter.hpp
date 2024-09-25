@@ -8,7 +8,7 @@
 
 #include "SFML/Audio/ChannelMap.hpp"
 
-#include <cstdint>
+#include "SFML/Base/IntTypes.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -58,7 +58,7 @@ public:
     /// \param count   Number of samples to write
     ///
     ////////////////////////////////////////////////////////////
-    virtual void write(const std::int16_t* samples, std::uint64_t count) = 0;
+    virtual void write(const base::I16* samples, base::U64 count) = 0;
 };
 
 } // namespace sf
@@ -98,7 +98,7 @@ public:
 ///         // return true on success
 ///     }
 ///
-///     void write(const std::int16_t* samples, std::uint64_t count) override
+///     void write(const base::I16* samples, base::U64 count) override
 ///     {
 ///         // write 'count' samples stored at address 'samples',
 ///         // convert them (for example to normalized float) if the format requires it

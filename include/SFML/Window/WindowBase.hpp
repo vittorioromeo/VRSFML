@@ -14,10 +14,9 @@
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Vector2.hpp"
 
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/UniquePtr.hpp"
-
-#include <cstdint>
 
 
 ////////////////////////////////////////////////////////////
@@ -331,7 +330,7 @@ public:
     /// \see `setTitle`
     ///
     ////////////////////////////////////////////////////////////
-    void setIcon(Vector2u size, const std::uint8_t* pixels);
+    void setIcon(Vector2u size, const base::U8* pixels);
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window

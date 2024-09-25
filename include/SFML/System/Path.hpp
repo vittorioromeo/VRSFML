@@ -14,7 +14,7 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-class [[nodiscard]] Path
+class [[nodiscard]] SFML_SYSTEM_API Path
 {
 public:
 #if defined(SFML_SYSTEM_EMSCRIPTEN) || defined(SFML_SYSTEM_LINUX_OR_BSD)

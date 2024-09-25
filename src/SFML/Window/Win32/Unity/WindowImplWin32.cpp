@@ -346,14 +346,14 @@ void WindowImplWin32::setTitle(const String& title)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplWin32::setIcon(Vector2u size, const std::uint8_t* pixels)
+void WindowImplWin32::setIcon(Vector2u size, const base::U8* pixels)
 {
     // First destroy the previous one
     if (m_icon)
         DestroyIcon(m_icon);
 
     // Windows wants BGRA pixels: swap red and blue channels
-    base::TrivialVector<std::uint8_t> iconPixels(size.x * size.y * 4);
+    base::TrivialVector<base::U8> iconPixels(size.x * size.y * 4);
     for (base::SizeT i = 0; i < iconPixels.size() / 4; ++i)
     {
         iconPixels[i * 4 + 0] = pixels[i * 4 + 2];
@@ -833,13 +833,13 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
             if (m_keyRepeatEnabled || ((lParam & (1 << 30)) == 0))
             {
                 // Get the code of the typed character
-                auto character = static_cast<std::uint32_t>(wParam);
+                auto character = static_cast<base::U32>(wParam);
 
                 // Check if it is the first part of a surrogate pair, or a regular character
                 if ((character >= 0xD800) && (character <= 0xDBFF))
                 {
                     // First part of a surrogate pair: store it and wait for the second one
-                    m_surrogate = static_cast<std::uint16_t>(character);
+                    m_surrogate = static_cast<base::U16>(character);
                 }
                 else
                 {
@@ -847,7 +847,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
                     if ((character >= 0xDC00) && (character <= 0xDFFF))
                     {
                         // Convert the UTF-16 surrogate pair to a single UTF-32 value
-                        std::uint16_t utf16[] = {m_surrogate, static_cast<std::uint16_t>(character)};
+                        base::U16 utf16[] = {m_surrogate, static_cast<base::U16>(character)};
                         sf::Utf16::toUtf32(utf16, utf16 + 2, &character);
                         m_surrogate = 0;
                     }
@@ -897,11 +897,11 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
         {
             // Mouse position is in screen coordinates, convert it to window coordinates
             POINT position;
-            position.x = static_cast<std::int16_t>(LOWORD(lParam));
-            position.y = static_cast<std::int16_t>(HIWORD(lParam));
+            position.x = static_cast<base::I16>(LOWORD(lParam));
+            position.y = static_cast<base::I16>(HIWORD(lParam));
             ScreenToClient(m_handle, &position);
 
-            auto delta = static_cast<std::int16_t>(HIWORD(wParam));
+            auto delta = static_cast<base::I16>(HIWORD(wParam));
 
             Event::MouseWheelScrolled event;
             event.wheel    = Mouse::Wheel::Vertical;
@@ -916,11 +916,11 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
         {
             // Mouse position is in screen coordinates, convert it to window coordinates
             POINT position;
-            position.x = static_cast<std::int16_t>(LOWORD(lParam));
-            position.y = static_cast<std::int16_t>(HIWORD(lParam));
+            position.x = static_cast<base::I16>(LOWORD(lParam));
+            position.y = static_cast<base::I16>(HIWORD(lParam));
             ScreenToClient(m_handle, &position);
 
-            auto delta = static_cast<std::int16_t>(HIWORD(wParam));
+            auto delta = static_cast<base::I16>(HIWORD(wParam));
 
             Event::MouseWheelScrolled event;
             event.wheel    = Mouse::Wheel::Horizontal;
@@ -935,7 +935,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
         {
             Event::MouseButtonPressed event;
             event.button   = Mouse::Button::Left;
-            event.position = {static_cast<std::int16_t>(LOWORD(lParam)), static_cast<std::int16_t>(HIWORD(lParam))};
+            event.position = {static_cast<base::I16>(LOWORD(lParam)), static_cast<base::I16>(HIWORD(lParam))};
             pushEvent(event);
             break;
         }
@@ -945,7 +945,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
         {
             Event::MouseButtonReleased event;
             event.button   = Mouse::Button::Left;
-            event.position = {static_cast<std::int16_t>(LOWORD(lParam)), static_cast<std::int16_t>(HIWORD(lParam))};
+            event.position = {static_cast<base::I16>(LOWORD(lParam)), static_cast<base::I16>(HIWORD(lParam))};
             pushEvent(event);
             break;
         }
@@ -955,7 +955,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
         {
             Event::MouseButtonPressed event;
             event.button   = Mouse::Button::Right;
-            event.position = {static_cast<std::int16_t>(LOWORD(lParam)), static_cast<std::int16_t>(HIWORD(lParam))};
+            event.position = {static_cast<base::I16>(LOWORD(lParam)), static_cast<base::I16>(HIWORD(lParam))};
             pushEvent(event);
             break;
         }
@@ -965,7 +965,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
         {
             Event::MouseButtonReleased event;
             event.button   = Mouse::Button::Right;
-            event.position = {static_cast<std::int16_t>(LOWORD(lParam)), static_cast<std::int16_t>(HIWORD(lParam))};
+            event.position = {static_cast<base::I16>(LOWORD(lParam)), static_cast<base::I16>(HIWORD(lParam))};
             pushEvent(event);
             break;
         }
@@ -975,7 +975,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
         {
             Event::MouseButtonPressed event;
             event.button   = Mouse::Button::Middle;
-            event.position = {static_cast<std::int16_t>(LOWORD(lParam)), static_cast<std::int16_t>(HIWORD(lParam))};
+            event.position = {static_cast<base::I16>(LOWORD(lParam)), static_cast<base::I16>(HIWORD(lParam))};
             pushEvent(event);
             break;
         }
@@ -985,7 +985,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
         {
             Event::MouseButtonReleased event;
             event.button   = Mouse::Button::Middle;
-            event.position = {static_cast<std::int16_t>(LOWORD(lParam)), static_cast<std::int16_t>(HIWORD(lParam))};
+            event.position = {static_cast<base::I16>(LOWORD(lParam)), static_cast<base::I16>(HIWORD(lParam))};
             pushEvent(event);
             break;
         }
@@ -995,7 +995,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
         {
             Event::MouseButtonPressed event;
             event.button   = HIWORD(wParam) == XBUTTON1 ? Mouse::Button::Extra1 : Mouse::Button::Extra2;
-            event.position = {static_cast<std::int16_t>(LOWORD(lParam)), static_cast<std::int16_t>(HIWORD(lParam))};
+            event.position = {static_cast<base::I16>(LOWORD(lParam)), static_cast<base::I16>(HIWORD(lParam))};
             pushEvent(event);
             break;
         }
@@ -1005,7 +1005,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
         {
             Event::MouseButtonReleased event;
             event.button   = HIWORD(wParam) == XBUTTON1 ? Mouse::Button::Extra1 : Mouse::Button::Extra2;
-            event.position = {static_cast<std::int16_t>(LOWORD(lParam)), static_cast<std::int16_t>(HIWORD(lParam))};
+            event.position = {static_cast<base::I16>(LOWORD(lParam)), static_cast<base::I16>(HIWORD(lParam))};
             pushEvent(event);
             break;
         }
@@ -1028,8 +1028,8 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
         case WM_MOUSEMOVE:
         {
             // Extract the mouse local coordinates
-            const int x = static_cast<std::int16_t>(LOWORD(lParam));
-            const int y = static_cast<std::int16_t>(HIWORD(lParam));
+            const int x = static_cast<base::I16>(LOWORD(lParam));
+            const int y = static_cast<base::I16>(HIWORD(lParam));
 
             // Get the client area of the window
             RECT area;

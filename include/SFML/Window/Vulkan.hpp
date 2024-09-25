@@ -18,10 +18,10 @@ using VkSurfaceKHR = struct VkSurfaceKHR_T*;
 
 #else
 
-#include <cstdint>
+#include "SFML/Base/IntTypes.hpp"
 
 
-using VkSurfaceKHR = std::uint64_t;
+using VkSurfaceKHR = base::U64;
 
 #endif
 

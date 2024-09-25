@@ -30,15 +30,15 @@ struct SoundBuffer::Impl
 {
     explicit Impl() = default;
 
-    explicit Impl(base::TrivialVector<std::int16_t>&& theSamples) : samples(SFML_BASE_MOVE(theSamples))
+    explicit Impl(base::TrivialVector<base::I16>&& theSamples) : samples(SFML_BASE_MOVE(theSamples))
     {
     }
 
-    base::TrivialVector<std::int16_t> samples;           //!< Samples buffer
-    unsigned int                      sampleRate{44100}; //!< Number of samples per second
-    ChannelMap        channelMap{SoundChannel::Mono};    //!< The map of position in sample frame to sound channel
-    Time              duration;                          //!< Sound duration
-    mutable SoundList sounds;                            //!< List of sounds that are using this buffer
+    base::TrivialVector<base::I16> samples;           //!< Samples buffer
+    unsigned int                   sampleRate{44100}; //!< Number of samples per second
+    ChannelMap        channelMap{SoundChannel::Mono}; //!< The map of position in sample frame to sound channel
+    Time              duration;                       //!< Sound duration
+    mutable SoundList sounds;                         //!< List of sounds that are using this buffer
 };
 
 
@@ -137,13 +137,13 @@ base::Optional<SoundBuffer> SoundBuffer::loadFromSamplesImpl(
 
 ////////////////////////////////////////////////////////////
 base::Optional<SoundBuffer> SoundBuffer::loadFromSamples(
-    const std::int16_t* samples,
-    std::uint64_t       sampleCount,
-    unsigned int        channelCount,
-    unsigned int        sampleRate,
-    const ChannelMap&   channelMap)
+    const base::I16*  samples,
+    base::U64         sampleCount,
+    unsigned int      channelCount,
+    unsigned int      sampleRate,
+    const ChannelMap& channelMap)
 {
-    return loadFromSamplesImpl(base::TrivialVector<std::int16_t>(samples, static_cast<base::SizeT>(sampleCount)),
+    return loadFromSamplesImpl(base::TrivialVector<base::I16>(samples, static_cast<base::SizeT>(sampleCount)),
                                channelCount,
                                sampleRate,
                                channelMap);
@@ -167,14 +167,14 @@ bool SoundBuffer::saveToFile(const Path& filename) const
 
 
 ////////////////////////////////////////////////////////////
-const std::int16_t* SoundBuffer::getSamples() const
+const base::I16* SoundBuffer::getSamples() const
 {
     return m_impl->samples.empty() ? nullptr : m_impl->samples.data();
 }
 
 
 ////////////////////////////////////////////////////////////
-std::uint64_t SoundBuffer::getSampleCount() const
+base::U64 SoundBuffer::getSampleCount() const
 {
     return m_impl->samples.size();
 }
@@ -225,7 +225,7 @@ SoundBuffer& SoundBuffer::operator=(const SoundBuffer& right)
 
 ////////////////////////////////////////////////////////////
 SoundBuffer::SoundBuffer(base::PassKey<SoundBuffer>&&, void* samplesTrivialVectorPtr) :
-m_impl(SFML_BASE_MOVE(*static_cast<base::TrivialVector<std::int16_t>*>(samplesTrivialVectorPtr)))
+m_impl(SFML_BASE_MOVE(*static_cast<base::TrivialVector<base::I16>*>(samplesTrivialVectorPtr)))
 {
 }
 
@@ -234,8 +234,8 @@ m_impl(SFML_BASE_MOVE(*static_cast<base::TrivialVector<std::int16_t>*>(samplesTr
 base::Optional<SoundBuffer> SoundBuffer::initialize(InputSoundFile& file)
 {
     // Read the samples from the provided file
-    const std::uint64_t               sampleCount = file.getSampleCount();
-    base::TrivialVector<std::int16_t> samples(static_cast<base::SizeT>(sampleCount));
+    const base::U64                sampleCount = file.getSampleCount();
+    base::TrivialVector<base::I16> samples(static_cast<base::SizeT>(sampleCount));
 
     if (file.read(samples.data(), sampleCount) != sampleCount)
         return base::nullOpt;

@@ -23,8 +23,8 @@ namespace
 // stb_image callback for constructing a buffer
 void bufferFromCallback(void* context, void* data, int size)
 {
-    const auto* source = static_cast<std::uint8_t*>(data);
-    auto*       dest   = static_cast<std::vector<std::uint8_t>*>(context);
+    const auto* source = static_cast<sf::base::U8*>(data);
+    auto*       dest   = static_cast<std::vector<sf::base::U8>*>(context);
 
     dest->insert(dest->end(), source, source + size);
 }
@@ -77,12 +77,12 @@ bool ImageUtils::saveToFile(const Image& image, const Path& filename)
 
 
 ////////////////////////////////////////////////////////////
-std::vector<std::uint8_t> ImageUtils::saveToMemory(const Image& image, SaveFormat format)
+std::vector<base::U8> ImageUtils::saveToMemory(const Image& image, SaveFormat format)
 {
     // Choose function based on format
     const auto convertedSize = image.getSize().toVector2i();
 
-    std::vector<std::uint8_t> buffer; // Use a single local variable for NRVO
+    std::vector<base::U8> buffer; // Use a single local variable for NRVO
 
     if (format == SaveFormat::BMP)
     {

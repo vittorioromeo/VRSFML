@@ -7,9 +7,8 @@
 #include "SFML/Audio/SoundFileReader.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
-
-#include <cstdint>
 
 
 namespace sf::priv
@@ -66,7 +65,7 @@ public:
     /// \param sampleOffset Index of the sample to jump to, relative to the beginning
     ///
     ////////////////////////////////////////////////////////////
-    void seek(std::uint64_t sampleOffset) override;
+    void seek(base::U64 sampleOffset) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Read audio samples from the open file
@@ -77,7 +76,7 @@ public:
     /// \return Number of samples actually read (may be less than \a maxCount)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::uint64_t read(std::int16_t* samples, std::uint64_t maxCount) override;
+    [[nodiscard]] base::U64 read(base::I16* samples, base::U64 maxCount) override;
 
 private:
     ////////////////////////////////////////////////////////////

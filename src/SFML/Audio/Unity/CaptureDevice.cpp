@@ -31,7 +31,7 @@ struct CaptureDevice::Impl
 
         // Copy the new samples into our temporary buffer
         impl.samples.resize(frameCount * impl.channelCount);
-        SFML_BASE_MEMCPY(impl.samples.data(), input, frameCount * impl.channelCount * sizeof(std::int16_t));
+        SFML_BASE_MEMCPY(impl.samples.data(), input, frameCount * impl.channelCount * sizeof(base::I16));
 
         // Notify the derived class of the availability of new samples
         SFML_BASE_ASSERT(impl.processSamplesFunc != nullptr &&
@@ -87,12 +87,12 @@ struct CaptureDevice::Impl
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    AudioContext*                     audioContext;        //!< Audio context
-    CaptureDeviceHandle               captureDeviceHandle; //!< Capture device handle
-    ma_uint32                         channelCount{1u};    //!< Number of recording channels
-    ma_uint32                         sampleRate{44100u};  //!< Sample rate
-    base::TrivialVector<std::int16_t> samples;             //!< Buffer to store captured samples
-    ChannelMap channelMap{SoundChannel::Mono};             //!< The map of position in sample frame to sound channel
+    AudioContext*                  audioContext;        //!< Audio context
+    CaptureDeviceHandle            captureDeviceHandle; //!< Capture device handle
+    ma_uint32                      channelCount{1u};    //!< Number of recording channels
+    ma_uint32                      sampleRate{44100u};  //!< Sample rate
+    base::TrivialVector<base::I16> samples;             //!< Buffer to store captured samples
+    ChannelMap channelMap{SoundChannel::Mono};          //!< The map of position in sample frame to sound channel
 
     SoundRecorder*     soundRecorder{nullptr}; //!< Used in the miniaudio device callback
     ProcessSamplesFunc processSamplesFunc{};   //!< Used in the miniaudio device callback

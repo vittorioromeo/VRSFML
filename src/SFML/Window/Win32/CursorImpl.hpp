@@ -8,7 +8,7 @@
 
 #include "SFML/System/Vector2.hpp"
 
-#include <cstdint>
+#include "SFML/Base/IntTypes.hpp"
 
 
 namespace sf::priv
@@ -66,7 +66,7 @@ public:
     /// Refer to sf::Cursor::loadFromPixels().
     ///
     ////////////////////////////////////////////////////////////
-    bool loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vector2u hotspot);
+    bool loadFromPixels(const base::U8* pixels, Vector2u size, Vector2u hotspot);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a native system cursor

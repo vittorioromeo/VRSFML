@@ -6,12 +6,13 @@
 #include "SFML/System/Time.hpp" // NOLINT(misc-header-include-cycle)
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/IntTypes.hpp"
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-constexpr Time::Time(std::int64_t microseconds) : m_microseconds(microseconds)
+constexpr Time::Time(base::I64 microseconds) : m_microseconds(microseconds)
 {
 }
 
@@ -24,14 +25,14 @@ constexpr float Time::asSeconds() const
 
 
 ////////////////////////////////////////////////////////////
-constexpr std::int32_t Time::asMilliseconds() const
+constexpr base::I32 Time::asMilliseconds() const
 {
-    return static_cast<std::int32_t>(static_cast<float>(m_microseconds) / 1'000.f);
+    return static_cast<base::I32>(static_cast<float>(m_microseconds) / 1'000.f);
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr std::int64_t Time::asMicroseconds() const
+constexpr base::I64 Time::asMicroseconds() const
 {
     return m_microseconds;
 }
@@ -40,19 +41,19 @@ constexpr std::int64_t Time::asMicroseconds() const
 ////////////////////////////////////////////////////////////
 constexpr Time seconds(float amount)
 {
-    return Time(static_cast<std::int64_t>(amount * 1'000'000.f));
+    return Time(static_cast<base::I64>(amount * 1'000'000.f));
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time milliseconds(std::int32_t amount)
+constexpr Time milliseconds(base::I32 amount)
 {
     return Time(amount * 1'000);
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time microseconds(std::int64_t amount)
+constexpr Time microseconds(base::I64 amount)
 {
     return Time(amount);
 }
@@ -143,7 +144,7 @@ constexpr Time operator*(Time lhs, float rhs)
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time operator*(Time lhs, std::int64_t rhs)
+constexpr Time operator*(Time lhs, base::I64 rhs)
 {
     return microseconds(lhs.asMicroseconds() * rhs);
 }
@@ -157,7 +158,7 @@ constexpr Time operator*(float lhs, Time rhs)
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time operator*(std::int64_t lhs, Time rhs)
+constexpr Time operator*(base::I64 lhs, Time rhs)
 {
     return rhs * lhs;
 }
@@ -171,7 +172,7 @@ constexpr Time& operator*=(Time& lhs, float rhs)
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time& operator*=(Time& lhs, std::int64_t rhs)
+constexpr Time& operator*=(Time& lhs, base::I64 rhs)
 {
     return lhs = lhs * rhs;
 }
@@ -186,7 +187,7 @@ constexpr Time operator/(Time lhs, float rhs)
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time operator/(Time lhs, std::int64_t rhs)
+constexpr Time operator/(Time lhs, base::I64 rhs)
 {
     SFML_BASE_ASSERT(rhs != 0 && "Time::operator/ cannot divide by 0");
     return microseconds(lhs.asMicroseconds() / rhs);
@@ -202,7 +203,7 @@ constexpr Time& operator/=(Time& lhs, float rhs)
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time& operator/=(Time& lhs, std::int64_t rhs)
+constexpr Time& operator/=(Time& lhs, base::I64 rhs)
 {
     SFML_BASE_ASSERT(rhs != 0 && "Time::operator/= cannot divide by 0");
     return lhs = lhs / rhs;

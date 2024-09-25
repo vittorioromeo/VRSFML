@@ -11,7 +11,7 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-bool StubCursorImpl::loadFromPixels(const std::uint8_t* /* pixels */, Vector2u /* size */, Vector2u /* hotspot */)
+bool StubCursorImpl::loadFromPixels(const base::U8* /* pixels */, Vector2u /* size */, Vector2u /* hotspot */)
 {
     // err() << "Cursor API not implemented";
     return false;

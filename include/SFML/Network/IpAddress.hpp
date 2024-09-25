@@ -8,11 +8,10 @@
 
 #include "SFML/System/Time.hpp"
 
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 
 #include <iosfwd>
-
-#include <cstdint>
 
 
 ////////////////////////////////////////////////////////////
@@ -46,7 +45,7 @@ public:
     /// \param byte3 Fourth byte of the address
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] IpAddress(std::uint8_t byte0, std::uint8_t byte1, std::uint8_t byte2, std::uint8_t byte3);
+    [[nodiscard]] IpAddress(base::U8 byte0, base::U8 byte1, base::U8 byte2, base::U8 byte3);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the address from a 32-bits integer
@@ -61,7 +60,7 @@ public:
     /// \see `toInteger`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit IpAddress(std::uint32_t address);
+    [[nodiscard]] explicit IpAddress(base::U32 address);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get an integer representation of the address
@@ -77,7 +76,7 @@ public:
     /// \see `toString`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::uint32_t toInteger() const;
+    [[nodiscard]] base::U32 toInteger() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the computer's local address
@@ -157,7 +156,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::uint32_t m_address; //!< Address stored as an unsigned 32 bit integer
+    base::U32 m_address; //!< Address stored as an unsigned 32 bit integer
 };
 
 ////////////////////////////////////////////////////////////

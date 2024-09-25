@@ -7,7 +7,7 @@
 
 #import <AppKit/AppKit.h>
 
-#include <cstdint>
+#include "SFML/Base/IntTypes.hpp"
 
 ////////////////////////////////////////////////////////////
 /// Extends NSImage with a convenience method to load images
@@ -26,6 +26,6 @@
 /// \return an instance of NSImage that needs to be released by the caller
 ///
 ////////////////////////////////////////////////////////////
-+ (NSImage*)imageWithRawData:(const std::uint8_t*)pixels andSize:(NSSize)size;
++ (NSImage*)imageWithRawData:(const base::U8*)pixels andSize:(NSSize)size;
 
 @end

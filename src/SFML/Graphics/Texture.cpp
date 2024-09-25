@@ -289,7 +289,7 @@ base::Optional<Texture> Texture::loadFromImage(GraphicsContext& graphicsContext,
         const priv::TextureSaver save;
 
         // Copy the pixels to the texture, row by row
-        const std::uint8_t* pixels = image.getPixelsPtr() + 4 * (rectangle.position.x + (size.x * rectangle.position.y));
+        const base::U8* pixels = image.getPixelsPtr() + 4 * (rectangle.position.x + (size.x * rectangle.position.y));
         glCheck(glBindTexture(GL_TEXTURE_2D, result->m_texture));
         for (int i = 0; i < rectangle.size.y; ++i)
         {
@@ -329,7 +329,7 @@ Image Texture::copyToImage() const
     const priv::TextureSaver save;
 
     // Create an array of pixels
-    base::TrivialVector<std::uint8_t> pixels(m_size.x * m_size.y * 4);
+    base::TrivialVector<base::U8> pixels(m_size.x * m_size.y * 4);
 
 #ifdef SFML_OPENGL_ES
 
@@ -384,16 +384,16 @@ Image Texture::copyToImage() const
         // Texture is either padded or flipped, we have to use a slower algorithm
 
         // All the pixels will first be copied to a temporary array
-        base::TrivialVector<std::uint8_t> allPixels(m_size.x * m_size.y * 4);
+        base::TrivialVector<base::U8> allPixels(m_size.x * m_size.y * 4);
 
         glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
         glCheck(glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, allPixels.data()));
 
         // Then we copy the useful pixels from the temporary array to the final one
-        const std::uint8_t* src      = allPixels.data();
-        std::uint8_t*       dst      = pixels.data();
-        auto                srcPitch = static_cast<int>(m_size.x * 4);
-        const unsigned int  dstPitch = m_size.x * 4;
+        const base::U8*    src      = allPixels.data();
+        base::U8*          dst      = pixels.data();
+        auto               srcPitch = static_cast<int>(m_size.x * 4);
+        const unsigned int dstPitch = m_size.x * 4;
 
         SFML_BASE_ASSERT(pixels.size() >= allPixels.size());
 
@@ -421,7 +421,7 @@ Image Texture::copyToImage() const
 
 
 ////////////////////////////////////////////////////////////
-void Texture::update(const std::uint8_t* pixels)
+void Texture::update(const base::U8* pixels)
 {
     // Update the whole texture
     update(pixels, m_size, {0, 0});
@@ -429,7 +429,7 @@ void Texture::update(const std::uint8_t* pixels)
 
 
 ////////////////////////////////////////////////////////////
-void Texture::update(const std::uint8_t* pixels, Vector2u size, Vector2u dest)
+void Texture::update(const base::U8* pixels, Vector2u size, Vector2u dest)
 {
     SFML_BASE_ASSERT(dest.x + size.x <= m_size.x && "Destination x coordinate is outside of texture");
     SFML_BASE_ASSERT(dest.y + size.y <= m_size.y && "Destination y coordinate is outside of texture");

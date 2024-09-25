@@ -179,7 +179,7 @@ base::Optional<SoundFileReader::Info> SoundFileReaderOgg::open(InputStream& stre
 
 
 ////////////////////////////////////////////////////////////
-void SoundFileReaderOgg::seek(std::uint64_t sampleOffset)
+void SoundFileReaderOgg::seek(base::U64 sampleOffset)
 {
     SFML_BASE_ASSERT(m_impl->vorbis.datasource != nullptr &&
                      "Vorbis datasource is missing. Call SoundFileReaderOgg::open() to initialize it.");
@@ -189,21 +189,21 @@ void SoundFileReaderOgg::seek(std::uint64_t sampleOffset)
 
 
 ////////////////////////////////////////////////////////////
-std::uint64_t SoundFileReaderOgg::read(std::int16_t* samples, std::uint64_t maxCount)
+base::U64 SoundFileReaderOgg::read(base::I16* samples, base::U64 maxCount)
 {
     SFML_BASE_ASSERT(m_impl->vorbis.datasource != nullptr &&
                      "Vorbis datasource is missing. Call SoundFileReaderOgg::open() to initialize it.");
 
     // Try to read the requested number of samples, stop only on error or end of file
-    std::uint64_t count = 0;
+    base::U64 count = 0;
     while (count < maxCount)
     {
-        const int bytesToRead = static_cast<int>(maxCount - count) * static_cast<int>(sizeof(std::int16_t));
+        const int bytesToRead = static_cast<int>(maxCount - count) * static_cast<int>(sizeof(base::I16));
         const long bytesRead = ov_read(&m_impl->vorbis, reinterpret_cast<char*>(samples), bytesToRead, 0, 2, 1, nullptr);
         if (bytesRead > 0)
         {
-            const long samplesRead = bytesRead / static_cast<long>(sizeof(std::int16_t));
-            count += static_cast<std::uint64_t>(samplesRead);
+            const long samplesRead = bytesRead / static_cast<long>(sizeof(base::I16));
+            count += static_cast<base::U64>(samplesRead);
             samples += samplesRead;
         }
         else

@@ -184,7 +184,7 @@ int main()
             const std::size_t    type        = i % 6u;
             const sf::FloatRect& textureRect = spriteTextureRects[type];
 
-            std::snprintf(labelBuffer, 64, "%s %zu", names[type], (i / (type + 1)) + 1);
+            std::snprintf(labelBuffer, 64, "%s #%zu", names[type], (i / (type + 1)) + 1);
 
             auto& [text,
                    sprite,

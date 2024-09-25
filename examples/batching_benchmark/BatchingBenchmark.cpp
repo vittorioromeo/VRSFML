@@ -106,7 +106,7 @@ int main()
             const sf::FloatRect& textureRect = spriteTextureRects[type];
 
             auto& [text, sprite, torque] = entities.emplace_back(sf::Text{i % 2u == 0u ? fontTuffy : fontMouldyCheese,
-                                                                          {.string           = "",
+                                                                          {.string           = "abcdefABCDEF",
                                                                            .fillColor        = sf::Color::Black,
                                                                            .outlineColor     = sf::Color::White,
                                                                            .outlineThickness = 5.f}},
@@ -122,7 +122,8 @@ int main()
 
             sprite.position = {getRndFloat(0.f, windowSize.x), getRndFloat(0.f, windowSize.y)};
 
-            text.origin = text.getLocalBounds().size / 2.f;
+            text.origin   = text.getLocalBounds().size / 2.f;
+            text.position = sprite.position;
         }
     };
 
@@ -130,9 +131,9 @@ int main()
     //
     // Set up UI elements
     bool useBatch    = true;
-    bool drawSprites = true;
-    bool drawText    = false;
-    int  numEntities = 500'000;
+    bool drawSprites = false;
+    bool drawText    = true;
+    int  numEntities = 50'000;
     int  numFrames   = 240;
 
     //

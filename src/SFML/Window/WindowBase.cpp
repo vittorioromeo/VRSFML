@@ -208,7 +208,7 @@ void WindowBase::setTitle(const String& title)
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::setIcon(Vector2u size, const std::uint8_t* pixels)
+void WindowBase::setIcon(Vector2u size, const base::U8* pixels)
 {
     m_impl->setIcon(size, pixels);
 }

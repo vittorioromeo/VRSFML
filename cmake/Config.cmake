@@ -171,6 +171,8 @@ elseif(${EMSCRIPTEN})
         -sGL_EXPLICIT_UNIFORM_LOCATION=1  # TODO P0:
         -sGL_EXPLICIT_UNIFORM_BINDING=1   # TODO P0:
 
+        # --pre-js=C:/msys64/clang64/lib/emscripten/src/emscripten-source-map.min.js # TODO P0: make path configurable, add to presets
+
         --emrun                             # Add native support for `emrun` (I/O capture)
 
         --shell-file=${CMAKE_SOURCE_DIR}/emscripten/shell.html
