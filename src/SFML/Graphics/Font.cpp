@@ -79,9 +79,9 @@ template <typename T, typename U>
 
 ////////////////////////////////////////////////////////////
 // Combine outline thickness, boldness and font glyph index into a single 64-bit key
-[[nodiscard, gnu::always_inline]] inline std::uint64_t combine(float outlineThickness, bool bold, std::uint32_t index)
+[[nodiscard, gnu::always_inline]] inline sf::base::U64 combine(float outlineThickness, bool bold, sf::base::U32 index)
 {
-    return (std::uint64_t{reinterpret<std::uint32_t>(outlineThickness)} << 32) | (std::uint64_t{bold} << 31) | index;
+    return (sf::base::U64{reinterpret<sf::base::U32>(outlineThickness)} << 32) | (sf::base::U64{bold} << 31) | index;
 }
 
 
@@ -158,8 +158,8 @@ struct FontHandles
 ////////////////////////////////////////////////////////////
 sf::Glyph loadGlyph(const FontHandles&                     fontHandles,
                     sf::TextureAtlas&                      textureAtlas,
-                    sf::base::TrivialVector<std::uint8_t>& pixelBuffer,
-                    std::uint32_t                          codePoint,
+                    sf::base::TrivialVector<sf::base::U8>& pixelBuffer,
+                    sf::base::U32                          codePoint,
                     unsigned int                           characterSize,
                     bool                                   bold,
                     float                                  outlineThickness)
@@ -267,8 +267,8 @@ sf::Glyph loadGlyph(const FontHandles&                     fontHandles,
         // Resize the pixel buffer to the new size and fill it with transparent white pixels
         pixelBuffer.resize(static_cast<sf::base::SizeT>(size.x) * static_cast<sf::base::SizeT>(size.y) * 4);
 
-        std::uint8_t* current = pixelBuffer.data();
-        std::uint8_t* end     = current + size.x * size.y * 4;
+        sf::base::U8* current = pixelBuffer.data();
+        sf::base::U8* end     = current + size.x * size.y * 4;
 
         while (current != end)
         {
@@ -279,7 +279,7 @@ sf::Glyph loadGlyph(const FontHandles&                     fontHandles,
         }
 
         // Extract the glyph's pixels from the bitmap
-        const std::uint8_t* pixels = bitmap.buffer;
+        const sf::base::U8* pixels = bitmap.buffer;
         if (bitmap.pixel_mode == FT_PIXEL_MODE_MONO)
         {
             // Pixels are 1 bit monochrome values
@@ -333,7 +333,7 @@ namespace sf
 struct Font::Impl
 {
     using GlyphTable = std::unordered_map</* character size */ unsigned int,
-                                          std::unordered_map</* combined key */ std::uint64_t, Glyph>>; //!< Table mapping a codepoint to its glyph
+                                          std::unordered_map</* combined key */ base::U64, Glyph>>; //!< Table mapping a codepoint to its glyph
 
     [[nodiscard]] static Vector2u getMaxTextureSizeVec(GraphicsContext& graphicsContext)
     {
@@ -377,7 +377,7 @@ struct Font::Impl
 
     mutable GlyphTable glyphs; //!< Table mapping code points to their corresponding glyph
 
-    mutable base::TrivialVector<std::uint8_t> pixelBuffer; //!< Pixel buffer holding a glyph's pixels before being written to the texture
+    mutable base::TrivialVector<base::U8> pixelBuffer; //!< Pixel buffer holding a glyph's pixels before being written to the texture
 
 #ifdef SFML_SYSTEM_ANDROID
     base::UniquePtr<priv::ResourceStream> m_stream; //!< Asset file streamer (if loaded from file)
@@ -568,7 +568,7 @@ const FontInfo& Font::getInfo() const
 
 
 ////////////////////////////////////////////////////////////
-unsigned int Font::getCharIndex(std::uint32_t codePoint) const
+unsigned int Font::getCharIndex(base::U32 codePoint) const
 {
     SFML_BASE_ASSERT(m_impl->fontHandles != nullptr);
     return FT_Get_Char_Index(m_impl->fontHandles->face, codePoint);
@@ -576,7 +576,7 @@ unsigned int Font::getCharIndex(std::uint32_t codePoint) const
 
 
 ////////////////////////////////////////////////////////////
-const Glyph& Font::getGlyph(std::uint32_t codePoint, unsigned int characterSize, bool bold, float outlineThickness) const
+const Glyph& Font::getGlyph(base::U32 codePoint, unsigned int characterSize, bool bold, float outlineThickness) const
 {
     SFML_BASE_ASSERT(m_impl->fontHandles != nullptr);
 
@@ -584,7 +584,7 @@ const Glyph& Font::getGlyph(std::uint32_t codePoint, unsigned int characterSize,
     auto& glyphs = m_impl->glyphs[characterSize];
 
     // Build the key by combining the glyph index (based on code point), bold flag, and outline thickness
-    const std::uint64_t key = combine(outlineThickness, bold, getCharIndex(codePoint));
+    const base::U64 key = combine(outlineThickness, bold, getCharIndex(codePoint));
 
     // Glyph cached: just return it
     if (const auto it = glyphs.find(key); it != glyphs.end())
@@ -604,14 +604,14 @@ const Glyph& Font::getGlyph(std::uint32_t codePoint, unsigned int characterSize,
 
 
 ////////////////////////////////////////////////////////////
-bool Font::hasGlyph(std::uint32_t codePoint) const
+bool Font::hasGlyph(base::U32 codePoint) const
 {
     return getCharIndex(codePoint) != 0;
 }
 
 
 ////////////////////////////////////////////////////////////
-float Font::getKerning(std::uint32_t first, std::uint32_t second, unsigned int characterSize, bool bold) const
+float Font::getKerning(base::U32 first, base::U32 second, unsigned int characterSize, bool bold) const
 {
     SFML_BASE_ASSERT(m_impl->fontHandles != nullptr);
 
@@ -705,7 +705,7 @@ float Font::getUnderlineThickness(unsigned int characterSize) const
 
 
 ////////////////////////////////////////////////////////////
-const Texture& Font::getTexture(unsigned int /* characterSize */) const
+const Texture& Font::getTexture() const
 {
     return m_impl->getTextureAtlas().getTexture();
 }

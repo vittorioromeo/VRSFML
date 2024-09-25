@@ -236,7 +236,7 @@ int main()
                 drawableBatch.add(joystickObject.value);
             }
 
-            window.draw(drawableBatch, {.texture = &font.getTexture(characterSize)});
+            window.draw(drawableBatch, {.texture = &font.getTexture()});
         }
 
         // Display things on screen

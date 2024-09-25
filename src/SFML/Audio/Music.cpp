@@ -11,37 +11,36 @@
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/TrivialVector.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <mutex>
 
-#include <cstdint>
-
 
 namespace
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::Time samplesToTime(unsigned int sampleRate, unsigned int channelCount, std::uint64_t samples)
+[[nodiscard]] sf::Time samplesToTime(unsigned int sampleRate, unsigned int channelCount, sf::base::U64 samples)
 {
     auto position = sf::Time::Zero;
 
     // Make sure we don't divide by 0
     if (sampleRate != 0 && channelCount != 0)
-        position = sf::microseconds(static_cast<std::int64_t>((samples * 1000000) / (channelCount * sampleRate)));
+        position = sf::microseconds(static_cast<sf::base::I64>((samples * 1000000) / (channelCount * sampleRate)));
 
     return position;
 }
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] std::uint64_t timeToSamples(unsigned int sampleRate, unsigned int channelCount, sf::Time position)
+[[nodiscard]] sf::base::U64 timeToSamples(unsigned int sampleRate, unsigned int channelCount, sf::Time position)
 {
     // Always ROUND, no unchecked truncation, hence the addition in the numerator.
     // This avoids most precision errors arising from "samples => Time => samples" conversions
     // Original rounding calculation is ((Micros * Freq * Channels) / 1000000) + 0.5
-    // We refactor it to keep std::int64_t as the data type throughout the whole operation.
-    return ((static_cast<std::uint64_t>(position.asMicroseconds()) * sampleRate * channelCount) + 500000) / 1000000;
+    // We refactor it to keep sf::base::I64 as the data type throughout the whole operation.
+    return ((static_cast<sf::base::U64>(position.asMicroseconds()) * sampleRate * channelCount) + 500000) / 1000000;
 }
 
 } // namespace
@@ -51,10 +50,10 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct Music::Impl
 {
-    InputSoundFile                    file;     //!< Input sound file
-    base::TrivialVector<std::int16_t> samples;  //!< Temporary buffer of samples
-    std::recursive_mutex              mutex;    //!< Mutex protecting the data
-    Span<std::uint64_t>               loopSpan; //!< Loop Range Specifier
+    InputSoundFile                 file;     //!< Input sound file
+    base::TrivialVector<base::I16> samples;  //!< Temporary buffer of samples
+    std::recursive_mutex           mutex;    //!< Mutex protecting the data
+    Span<base::U64>                loopSpan; //!< Loop Range Specifier
 
     explicit Impl(InputSoundFile&& theFile) :
     file(SFML_BASE_MOVE(theFile)),
@@ -158,7 +157,7 @@ ChannelMap Music::getChannelMap() const
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] std::uint64_t Music::getSampleCount() const
+[[nodiscard]] base::U64 Music::getSampleCount() const
 {
     return m_impl->file.getSampleCount();
 }
@@ -169,9 +168,9 @@ bool Music::onGetData(SoundStream::Chunk& data)
 {
     const std::lock_guard lock(m_impl->mutex);
 
-    base::SizeT         toFill        = m_impl->samples.size();
-    std::uint64_t       currentOffset = m_impl->file.getSampleOffset();
-    const std::uint64_t loopEnd       = m_impl->loopSpan.offset + m_impl->loopSpan.length;
+    base::SizeT     toFill        = m_impl->samples.size();
+    base::U64       currentOffset = m_impl->file.getSampleOffset();
+    const base::U64 loopEnd       = m_impl->loopSpan.offset + m_impl->loopSpan.length;
 
     // If the loop end is enabled and imminent, request less data.
     // This will trip an "onLoop()" call from the underlying SoundStream,
@@ -199,11 +198,11 @@ void Music::onSeek(Time timeOffset)
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<std::uint64_t> Music::onLoop()
+base::Optional<base::U64> Music::onLoop()
 {
     // Called by underlying SoundStream so we can determine where to loop.
     const std::lock_guard lock(m_impl->mutex);
-    const std::uint64_t   currentOffset = m_impl->file.getSampleOffset();
+    const base::U64       currentOffset = m_impl->file.getSampleOffset();
 
     if (isLooping() && (m_impl->loopSpan.length != 0) &&
         (currentOffset == m_impl->loopSpan.offset + m_impl->loopSpan.length))
@@ -218,7 +217,7 @@ base::Optional<std::uint64_t> Music::onLoop()
     {
         // If we're at the EOF, reset to 0
         m_impl->file.seek(0);
-        return base::makeOptional(std::uint64_t{0});
+        return base::makeOptional(base::U64{0});
     }
 
     return base::nullOpt;
@@ -236,8 +235,8 @@ Music::TimeSpan Music::getLoopPoints() const
 ////////////////////////////////////////////////////////////
 void Music::setLoopPoints(TimeSpan timePoints)
 {
-    Span<std::uint64_t> samplePoints{timeToSamples(getSampleRate(), getChannelCount(), timePoints.offset),
-                                     timeToSamples(getSampleRate(), getChannelCount(), timePoints.length)};
+    Span<base::U64> samplePoints{timeToSamples(getSampleRate(), getChannelCount(), timePoints.offset),
+                                 timeToSamples(getSampleRate(), getChannelCount(), timePoints.length)};
 
     // Check our state. This averts a divide-by-zero. GetChannelCount() is cheap enough to use often
     if (getChannelCount() == 0 || m_impl->file.getSampleCount() == 0)

@@ -8,12 +8,11 @@
 
 #include "SFML/Audio/ChannelMap.hpp"
 
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/UniquePtr.hpp"
-
-#include <cstdint>
 
 
 ////////////////////////////////////////////////////////////
@@ -106,7 +105,7 @@ public:
     /// \return Number of samples
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::uint64_t getSampleCount() const;
+    [[nodiscard]] base::U64 getSampleCount() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the number of channels used by the sound
@@ -162,7 +161,7 @@ public:
     /// \return Sample position
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::uint64_t getSampleOffset() const;
+    [[nodiscard]] base::U64 getSampleOffset() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current read position to the given sample offset
@@ -181,7 +180,7 @@ public:
     /// \param sampleOffset Index of the sample to jump to, relative to the beginning
     ///
     ////////////////////////////////////////////////////////////
-    void seek(std::uint64_t sampleOffset);
+    void seek(base::U64 sampleOffset);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current read position to the given time offset
@@ -206,7 +205,7 @@ public:
     /// \return Number of samples actually read (may be less than \a maxCount)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::uint64_t read(std::int16_t* samples, std::uint64_t maxCount);
+    [[nodiscard]] base::U64 read(base::I16* samples, base::U64 maxCount);
 
 private:
     ////////////////////////////////////////////////////////////
@@ -235,7 +234,7 @@ public:
     [[nodiscard]] InputSoundFile(base::PassKey<InputSoundFile>&&,
                                  base::UniquePtr<SoundFileReader>&&            reader,
                                  base::UniquePtr<InputStream, StreamDeleter>&& stream,
-                                 std::uint64_t                                 sampleCount,
+                                 base::U64                                     sampleCount,
                                  unsigned int                                  sampleRate,
                                  ChannelMap&&                                  channelMap);
 
@@ -245,10 +244,10 @@ private:
     ////////////////////////////////////////////////////////////
     base::UniquePtr<SoundFileReader> m_reader; //!< Reader that handles I/O on the file's format
     base::UniquePtr<InputStream, StreamDeleter> m_stream{nullptr, false}; //!< Input stream used to access the file's data
-    std::uint64_t m_sampleOffset{};                                       //!< Sample Read Position
-    std::uint64_t m_sampleCount{};                                        //!< Total number of samples in the file
-    unsigned int  m_sampleRate{};                                         //!< Number of samples per second
-    ChannelMap    m_channelMap; //!< The map of position in sample frame to sound channel
+    base::U64    m_sampleOffset{};                                        //!< Sample Read Position
+    base::U64    m_sampleCount{};                                         //!< Total number of samples in the file
+    unsigned int m_sampleRate{};                                          //!< Number of samples per second
+    ChannelMap   m_channelMap; //!< The map of position in sample frame to sound channel
 };
 
 } // namespace sf
@@ -277,8 +276,8 @@ private:
 ///           << "sample count: " << file.getSampleCount() << '\n';
 ///
 /// // Read and process batches of samples until the end of file is reached
-/// std::int16_t samples[1024];
-/// std::uint64_t count;
+/// base::I16 samples[1024];
+/// base::U64 count;
 /// do
 /// {
 ///     count = file.read(samples, 1024);

@@ -10,13 +10,12 @@
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <FLAC/stream_decoder.h>
-
-#include <cstdint>
 
 
 namespace
@@ -27,12 +26,12 @@ namespace
 ////////////////////////////////////////////////////////////
 struct FlacClientData
 {
-    sf::InputStream*                      stream{};
-    sf::SoundFileReader::Info             info;
-    std::int16_t*                         buffer{};
-    std::uint64_t                         remaining{};
-    sf::base::TrivialVector<std::int16_t> leftovers;
-    bool                                  error{};
+    sf::InputStream*                       stream{};
+    sf::SoundFileReader::Info              info;
+    sf::base::I16*                         buffer{};
+    sf::base::U64                          remaining{};
+    sf::base::TrivialVector<sf::base::I16> leftovers;
+    bool                                   error{};
 };
 
 
@@ -126,20 +125,20 @@ FLAC__StreamDecoderWriteStatus streamWrite(const FLAC__StreamDecoder*,
         for (unsigned int j = 0; j < frame->header.channels; ++j)
         {
             // Decode the current sample
-            std::int16_t sample = 0;
+            sf::base::I16 sample = 0;
             switch (frame->header.bits_per_sample)
             {
                 case 8:
-                    sample = static_cast<std::int16_t>(buffer[j][i] << 8);
+                    sample = static_cast<sf::base::I16>(buffer[j][i] << 8);
                     break;
                 case 16:
-                    sample = static_cast<std::int16_t>(buffer[j][i]);
+                    sample = static_cast<sf::base::I16>(buffer[j][i]);
                     break;
                 case 24:
-                    sample = static_cast<std::int16_t>(buffer[j][i] >> 8);
+                    sample = static_cast<sf::base::I16>(buffer[j][i] >> 8);
                     break;
                 case 32:
-                    sample = static_cast<std::int16_t>(buffer[j][i] >> 16);
+                    sample = static_cast<sf::base::I16>(buffer[j][i] >> 16);
                     break;
                 default:
                     SFML_BASE_ASSERT(false && "Invalid bits per sample. Must be 8, 16, 24, or 32.");
@@ -353,7 +352,7 @@ base::Optional<SoundFileReader::Info> SoundFileReaderFlac::open(InputStream& str
 
 
 ////////////////////////////////////////////////////////////
-void SoundFileReaderFlac::seek(std::uint64_t sampleOffset)
+void SoundFileReaderFlac::seek(base::U64 sampleOffset)
 {
     SFML_BASE_ASSERT(m_impl->decoder != nullptr &&
                      "No decoder available. Call SoundFileReaderFlac::open() to create a new one.");
@@ -384,7 +383,7 @@ void SoundFileReaderFlac::seek(std::uint64_t sampleOffset)
 
 
 ////////////////////////////////////////////////////////////
-std::uint64_t SoundFileReaderFlac::read(std::int16_t* samples, std::uint64_t maxCount)
+base::U64 SoundFileReaderFlac::read(base::I16* samples, base::U64 maxCount)
 {
     SFML_BASE_ASSERT(m_impl->decoder != nullptr &&
                      "No decoder available. Call SoundFileReaderFlac::open() to create a new one.");
@@ -399,8 +398,8 @@ std::uint64_t SoundFileReaderFlac::read(std::int16_t* samples, std::uint64_t max
             for (base::SizeT i = 0; i < maxCount; ++i)
                 samples[i] = m_impl->clientData.leftovers[i];
 
-            m_impl->clientData.leftovers = base::TrivialVector<std::int16_t>(m_impl->clientData.leftovers.begin(),
-                                                                             static_cast<base::SizeT>(maxCount));
+            m_impl->clientData.leftovers = base::TrivialVector<base::I16>(m_impl->clientData.leftovers.begin(),
+                                                                          static_cast<base::SizeT>(maxCount));
             return maxCount;
         }
 

@@ -188,15 +188,15 @@ struct SoundStream::Impl
 
     base::Optional<priv::MiniaudioUtils::SoundBase> soundBase; //!< Sound base, needs to be first member
 
-    SoundStream*                      owner;        //!< Owning `SoundStream` object
-    base::TrivialVector<std::int16_t> sampleBuffer; //!< Our temporary sample buffer
-    base::SizeT         sampleBufferCursor{};       //!< The current read position in the temporary sample buffer
-    std::uint64_t       samplesProcessed{};         //!< Number of samples processed since beginning of the stream
-    unsigned int        channelCount{};             //!< Number of channels (1 = mono, 2 = stereo, ...)
-    unsigned int        sampleRate{};               //!< Frequency (samples / second)
-    ChannelMap          channelMap;                 //!< The map of position in sample frame to sound channel
-    bool                streaming{true};            //!< True if we are still streaming samples from the source
-    SoundSource::Status status{SoundSource::Status::Stopped}; //!< The status
+    SoundStream*                   owner;                //!< Owning `SoundStream` object
+    base::TrivialVector<base::I16> sampleBuffer;         //!< Our temporary sample buffer
+    base::SizeT                    sampleBufferCursor{}; //!< The current read position in the temporary sample buffer
+    base::U64                      samplesProcessed{};   //!< Number of samples processed since beginning of the stream
+    unsigned int                   channelCount{};       //!< Number of channels (1 = mono, 2 = stereo, ...)
+    unsigned int                   sampleRate{};         //!< Frequency (samples / second)
+    ChannelMap                     channelMap;           //!< The map of position in sample frame to sound channel
+    bool                           streaming{true};      //!< True if we are still streaming samples from the source
+    SoundSource::Status            status{SoundSource::Status::Stopped}; //!< The status
 };
 
 
@@ -393,10 +393,10 @@ void SoundStream::setEffectProcessor(EffectProcessor effectProcessor)
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<std::uint64_t> SoundStream::onLoop()
+base::Optional<base::U64> SoundStream::onLoop()
 {
     onSeek(Time::Zero);
-    return base::makeOptional(std::uint64_t{0});
+    return base::makeOptional(base::U64{0});
 }
 
 

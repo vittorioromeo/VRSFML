@@ -7,11 +7,10 @@
 
 #include "SFML/System/Win32/WindowsHeader.hpp"
 
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/StringView.hpp"
 
 #include <vector>
-
-#include <cstdint>
 
 #define VK_USE_PLATFORM_WIN32_KHR
 #define VK_NO_PROTOTYPES
@@ -106,7 +105,7 @@ bool VulkanImpl::isAvailable(bool requireGraphics)
             // Retrieve the available instance extensions
             std::vector<VkExtensionProperties> extensionProperties;
 
-            std::uint32_t extensionCount = 0;
+            base::U32 extensionCount = 0;
 
             wrapper.vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
 

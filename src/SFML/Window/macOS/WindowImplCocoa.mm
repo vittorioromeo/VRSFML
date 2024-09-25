@@ -37,7 +37,7 @@ bool isCursorHidden = false; // initially, the cursor is visible
 
 NSString* sfStringToNSString(const sf::String& string)
 {
-    const auto  length = static_cast<std::uint32_t>(string.getSize() * sizeof(std::uint32_t));
+    const auto  length = static_cast<base::U32>(string.getSize() * sizeof(base::U32));
     const void* data   = reinterpret_cast<const void*>(string.getData());
 
     NSStringEncoding encoding = 0;
@@ -400,7 +400,7 @@ void WindowImplCocoa::setTitle(const String& title)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplCocoa::setIcon(Vector2u size, const std::uint8_t* pixels)
+void WindowImplCocoa::setIcon(Vector2u size, const base::U8* pixels)
 {
     const AutoreleasePool pool;
     [m_delegate setIconTo:size with:pixels];

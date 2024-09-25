@@ -10,6 +10,7 @@
 #include "SFML/System/InputStream.hpp"
 #include "SFML/System/Path.hpp"
 
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 
 #include <Doctest.hpp>
@@ -17,8 +18,6 @@
 #include <CommonTraits.hpp>
 #include <StringifyOptionalUtil.hpp>
 #include <SystemUtil.hpp>
-
-#include <cstdint>
 
 namespace
 {
@@ -35,11 +34,11 @@ struct NoopSoundFileReader : sf::SoundFileReader
         return sf::base::nullOpt;
     }
 
-    void seek(std::uint64_t) override
+    void seek(sf::base::U64) override
     {
     }
 
-    std::uint64_t read(std::int16_t*, std::uint64_t) override
+    sf::base::U64 read(sf::base::I16*, sf::base::U64) override
     {
         return 0;
     }
@@ -57,7 +56,7 @@ struct NoopSoundFileWriter : sf::SoundFileWriter
         return false;
     }
 
-    void write(const std::int16_t*, std::uint64_t) override
+    void write(const sf::base::I16*, sf::base::U64) override
     {
     }
 };

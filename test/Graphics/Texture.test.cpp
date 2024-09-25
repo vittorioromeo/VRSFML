@@ -143,7 +143,7 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
 
     SECTION("Copy semantics")
     {
-        constexpr std::uint8_t red[] = {0xFF, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0xFF};
+        constexpr sf::base::U8 red[] = {0xFF, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0xFF};
 
         auto texture = sf::Texture::create(graphicsContext, {1, 2}).value();
         texture.update(red);
@@ -166,8 +166,8 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
 
     SECTION("update()")
     {
-        constexpr std::uint8_t yellow[] = {0xFF, 0xFF, 0x00, 0xFF};
-        constexpr std::uint8_t cyan[]   = {0x00, 0xFF, 0xFF, 0xFF};
+        constexpr sf::base::U8 yellow[] = {0xFF, 0xFF, 0x00, 0xFF};
+        constexpr sf::base::U8 cyan[]   = {0x00, 0xFF, 0xFF, 0xFF};
 
         SECTION("Pixels")
         {
@@ -262,8 +262,8 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
 
     SECTION("swap()")
     {
-        constexpr std::uint8_t blue[]  = {0x00, 0x00, 0xFF, 0xFF};
-        constexpr std::uint8_t green[] = {0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF};
+        constexpr sf::base::U8 blue[]  = {0x00, 0x00, 0xFF, 0xFF};
+        constexpr sf::base::U8 green[] = {0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF};
 
         auto texture1 = sf::Texture::create(graphicsContext, sf::Vector2u{1, 1}, true).value();
         texture1.update(blue);

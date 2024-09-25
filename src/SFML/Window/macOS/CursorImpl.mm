@@ -57,7 +57,7 @@ CursorImpl& CursorImpl::operator=(CursorImpl&& rhs) noexcept
 
 
 ////////////////////////////////////////////////////////////
-bool CursorImpl::loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vector2u hotspot)
+bool CursorImpl::loadFromPixels(const base::U8* pixels, Vector2u size, Vector2u hotspot)
 {
     const AutoreleasePool pool;
     if (m_cursor)

@@ -236,18 +236,18 @@ TEST_CASE("[System] sf::Time")
         {
             STATIC_CHECK(sf::seconds(1) * 2.0f == sf::seconds(2));
             STATIC_CHECK(sf::seconds(12) * 0.5f == sf::seconds(6));
-            STATIC_CHECK(sf::seconds(1) * std::int64_t{2} == sf::seconds(2));
-            STATIC_CHECK(sf::seconds(42) * std::int64_t{2} == sf::seconds(84));
+            STATIC_CHECK(sf::seconds(1) * sf::base::I64{2} == sf::seconds(2));
+            STATIC_CHECK(sf::seconds(42) * sf::base::I64{2} == sf::seconds(84));
             STATIC_CHECK(2.0f * sf::seconds(1) == sf::seconds(2));
             STATIC_CHECK(0.5f * sf::seconds(12) == sf::seconds(6));
-            STATIC_CHECK(std::int64_t{2} * sf::seconds(1) == sf::seconds(2));
-            STATIC_CHECK(std::int64_t{2} * sf::seconds(42) == sf::seconds(84));
+            STATIC_CHECK(sf::base::I64{2} * sf::seconds(1) == sf::seconds(2));
+            STATIC_CHECK(sf::base::I64{2} * sf::seconds(42) == sf::seconds(84));
         }
 
         SECTION("operator*=")
         {
             sf::Time time = sf::milliseconds(1'000);
-            time *= std::int64_t{10};
+            time *= sf::base::I64{10};
             CHECK(time == sf::milliseconds(10'000));
             time *= 0.1f;
             CHECK(time.asMilliseconds() == 1'000);
@@ -257,8 +257,8 @@ TEST_CASE("[System] sf::Time")
         {
             STATIC_CHECK(sf::seconds(1) / 2.0f == sf::seconds(0.5f));
             STATIC_CHECK(sf::seconds(12) / 0.5f == sf::seconds(24));
-            STATIC_CHECK(sf::seconds(1) / std::int64_t{2} == sf::seconds(0.5f));
-            STATIC_CHECK(sf::seconds(42) / std::int64_t{2} == sf::seconds(21));
+            STATIC_CHECK(sf::seconds(1) / sf::base::I64{2} == sf::seconds(0.5f));
+            STATIC_CHECK(sf::seconds(42) / sf::base::I64{2} == sf::seconds(21));
             STATIC_CHECK(sf::seconds(1) / sf::seconds(1) == 1.0f);
             CHECK(sf::milliseconds(10) / sf::microseconds(1) == Approx(10'000.f));
         }
@@ -266,7 +266,7 @@ TEST_CASE("[System] sf::Time")
         SECTION("operator/=")
         {
             sf::Time time = sf::milliseconds(1'000);
-            time /= std::int64_t{2};
+            time /= sf::base::I64{2};
             CHECK(time == sf::milliseconds(500));
             time /= 0.5f;
             CHECK(time.asMilliseconds() == 1'000);

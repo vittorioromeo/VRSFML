@@ -11,7 +11,7 @@
 
 #import <AppKit/AppKit.h>
 
-#include <cstdint>
+#include "SFML/Base/IntTypes.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -212,7 +212,7 @@ class WindowImplCocoa;
 /// \param pixels icon's data
 ///
 ////////////////////////////////////////////////////////////
-- (void)setIconTo:(sf::Vector2u)size with:(const std::uint8_t*)pixels;
+- (void)setIconTo:(sf::Vector2u)size with:(const base::U8*)pixels;
 
 ////////////////////////////////////////////////////////////
 /// \brief Fetch new event

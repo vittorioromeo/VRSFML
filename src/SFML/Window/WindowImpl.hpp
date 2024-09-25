@@ -10,10 +10,9 @@
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/UniquePtr.hpp"
-
-#include <cstdint>
 
 
 namespace sf
@@ -206,7 +205,7 @@ public:
     /// \param pixels Pointer to the pixels in memory, format must be RGBA 32 bits
     ///
     ////////////////////////////////////////////////////////////
-    virtual void setIcon(Vector2u size, const std::uint8_t* pixels) = 0;
+    virtual void setIcon(Vector2u size, const base::U8* pixels) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window

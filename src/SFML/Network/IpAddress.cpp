@@ -24,20 +24,20 @@ const IpAddress IpAddress::Broadcast(255, 255, 255, 255);
 
 
 ////////////////////////////////////////////////////////////
-IpAddress::IpAddress(std::uint8_t byte0, std::uint8_t byte1, std::uint8_t byte2, std::uint8_t byte3) :
-m_address(priv::SocketImpl::getHtonl(static_cast<std::uint32_t>((byte0 << 24) | (byte1 << 16) | (byte2 << 8) | byte3)))
+IpAddress::IpAddress(base::U8 byte0, base::U8 byte1, base::U8 byte2, base::U8 byte3) :
+m_address(priv::SocketImpl::getHtonl(static_cast<base::U32>((byte0 << 24) | (byte1 << 16) | (byte2 << 8) | byte3)))
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-IpAddress::IpAddress(std::uint32_t address) : m_address(priv::SocketImpl::getHtonl(address))
+IpAddress::IpAddress(base::U32 address) : m_address(priv::SocketImpl::getHtonl(address))
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-std::uint32_t IpAddress::toInteger() const
+base::U32 IpAddress::toInteger() const
 {
     return priv::SocketImpl::getNtohl(m_address);
 }

@@ -54,7 +54,7 @@ TEST_CASE("[Graphics] sf::Color")
             STATIC_CHECK(color.a == 4);
         }
 
-        SECTION("std::int32_t constructor")
+        SECTION("sf::base::I32 constructor")
         {
             STATIC_CHECK(sf::Color::fromRGBA(0x00000000) == sf::Color(0, 0, 0, 0));
             STATIC_CHECK(sf::Color::fromRGBA(0x01020304) == sf::Color(1, 2, 3, 4));
@@ -159,7 +159,7 @@ TEST_CASE("[Graphics] sf::Color")
         STATIC_CHECK(sf::Color::Transparent == sf::Color(0, 0, 0, 0));
     }
 
-    SECTION("Reinterpret as std::uint8_t*")
+    SECTION("Reinterpret as sf::base::U8*")
     {
         STATIC_CHECK(sizeof(sf::Color) == 4);
         STATIC_CHECK(alignof(sf::Color) == 1);
@@ -169,7 +169,7 @@ TEST_CASE("[Graphics] sf::Color")
         pixels[1] = {14, 15, 16, 17};
         pixels[2] = {18, 19, 20, 21};
 
-        const auto* begin = reinterpret_cast<const std::uint8_t*>(pixels.data());
+        const auto* begin = reinterpret_cast<const sf::base::U8*>(pixels.data());
         CHECK(begin[0] == pixels[0].r);
         CHECK(begin[1] == pixels[0].g);
         CHECK(begin[2] == pixels[0].b);

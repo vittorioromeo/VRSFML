@@ -7,14 +7,13 @@
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/WindowImpl.hpp"
 
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 
 #include <X11/Xlib.h>
 #include <X11/extensions/Xrandr.h>
 
 #include <memory>
-
-#include <cstdint>
 
 
 namespace sf
@@ -133,7 +132,7 @@ public:
     /// \param pixels Pointer to the pixels in memory, format must be RGBA 32 bits
     ///
     ////////////////////////////////////////////////////////////
-    void setIcon(Vector2u size, const std::uint8_t* pixels) override;
+    void setIcon(Vector2u size, const base::U8* pixels) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window

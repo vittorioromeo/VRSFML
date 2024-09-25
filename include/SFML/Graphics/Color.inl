@@ -9,29 +9,29 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-constexpr Color Color::fromRGBA(std::uint32_t color)
+constexpr Color Color::fromRGBA(base::U32 color)
 {
-    return {static_cast<std::uint8_t>((color & 0xff000000) >> 24),
-            static_cast<std::uint8_t>((color & 0x00ff0000) >> 16),
-            static_cast<std::uint8_t>((color & 0x0000ff00) >> 8),
-            static_cast<std::uint8_t>(color & 0x000000ff)};
+    return {static_cast<base::U8>((color & 0xff000000) >> 24),
+            static_cast<base::U8>((color & 0x00ff0000) >> 16),
+            static_cast<base::U8>((color & 0x0000ff00) >> 8),
+            static_cast<base::U8>(color & 0x000000ff)};
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr std::uint32_t Color::toInteger() const
+constexpr base::U32 Color::toInteger() const
 {
-    return static_cast<std::uint32_t>((r << 24) | (g << 16) | (b << 8) | a);
+    return static_cast<base::U32>((r << 24) | (g << 16) | (b << 8) | a);
 }
 
 
 ////////////////////////////////////////////////////////////
 constexpr Color operator+(Color lhs, Color rhs)
 {
-    const auto clampedAdd = [](std::uint8_t l, std::uint8_t r) -> std::uint8_t
+    const auto clampedAdd = [](base::U8 l, base::U8 r) -> base::U8
     {
         const int intResult = int{l} + int{r};
-        return static_cast<std::uint8_t>(intResult < 255 ? intResult : 255);
+        return static_cast<base::U8>(intResult < 255 ? intResult : 255);
     };
 
     return {clampedAdd(lhs.r, rhs.r), clampedAdd(lhs.g, rhs.g), clampedAdd(lhs.b, rhs.b), clampedAdd(lhs.a, rhs.a)};
@@ -41,10 +41,10 @@ constexpr Color operator+(Color lhs, Color rhs)
 ////////////////////////////////////////////////////////////
 constexpr Color operator-(Color lhs, Color rhs)
 {
-    const auto clampedSub = [](std::uint8_t l, std::uint8_t r) -> std::uint8_t
+    const auto clampedSub = [](base::U8 l, base::U8 r) -> base::U8
     {
         const int intResult = int{l} - int{r};
-        return static_cast<std::uint8_t>(intResult > 0 ? intResult : 0);
+        return static_cast<base::U8>(intResult > 0 ? intResult : 0);
     };
 
     return {clampedSub(lhs.r, rhs.r), clampedSub(lhs.g, rhs.g), clampedSub(lhs.b, rhs.b), clampedSub(lhs.a, rhs.a)};
@@ -54,10 +54,10 @@ constexpr Color operator-(Color lhs, Color rhs)
 ////////////////////////////////////////////////////////////
 constexpr Color operator*(Color lhs, Color rhs)
 {
-    const auto scaledMul = [](std::uint8_t l, std::uint8_t r) -> std::uint8_t
+    const auto scaledMul = [](base::U8 l, base::U8 r) -> base::U8
     {
-        const auto uint16Result = static_cast<std::uint16_t>(std::uint16_t{l} * std::uint16_t{r});
-        return static_cast<std::uint8_t>(uint16Result / 255u);
+        const auto uint16Result = static_cast<base::U16>(base::U16{l} * base::U16{r});
+        return static_cast<base::U8>(uint16Result / 255u);
     };
 
     return {scaledMul(lhs.r, rhs.r), scaledMul(lhs.g, rhs.g), scaledMul(lhs.b, rhs.b), scaledMul(lhs.a, rhs.a)};

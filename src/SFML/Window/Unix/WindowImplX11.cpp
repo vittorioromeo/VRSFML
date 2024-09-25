@@ -965,12 +965,12 @@ void WindowImplX11::setTitle(const String& title)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplX11::setIcon(Vector2u size, const std::uint8_t* pixels)
+void WindowImplX11::setIcon(Vector2u size, const base::U8* pixels)
 {
     // X11 wants BGRA pixels: swap red and blue channels
     // Note: this memory will be freed by X11Ptr<XImage> deleter
     // NOLINTBEGIN(cppcoreguidelines-no-malloc)
-    auto* iconPixels = static_cast<std::uint8_t*>(
+    auto* iconPixels = static_cast<base::U8*>(
         std::malloc(static_cast<base::SizeT>(size.x) * static_cast<base::SizeT>(size.y) * 4));
     // NOLINTEND(cppcoreguidelines-no-malloc)
     for (base::SizeT i = 0; i < static_cast<base::SizeT>(size.x) * static_cast<base::SizeT>(size.y); ++i)
@@ -1005,8 +1005,8 @@ void WindowImplX11::setIcon(Vector2u size, const std::uint8_t* pixels)
     XFreeGC(m_display.get(), iconGC);
 
     // Create the mask pixmap (must have 1 bit depth)
-    const base::SizeT         pitch = (size.x + 7) / 8;
-    std::vector<std::uint8_t> maskPixels(pitch * size.y, 0);
+    const base::SizeT     pitch = (size.x + 7) / 8;
+    std::vector<base::U8> maskPixels(pitch * size.y, 0);
     for (base::SizeT j = 0; j < size.y; ++j)
     {
         for (base::SizeT i = 0; i < pitch; ++i)
@@ -1015,8 +1015,8 @@ void WindowImplX11::setIcon(Vector2u size, const std::uint8_t* pixels)
             {
                 if (i * 8 + k < size.x)
                 {
-                    const std::uint8_t opacity = (pixels[(i * 8 + k + j * size.x) * 4 + 3] > 0) ? 1 : 0;
-                    maskPixels[i + j * pitch] |= static_cast<std::uint8_t>(opacity << k);
+                    const base::U8 opacity = (pixels[(i * 8 + k + j * size.x) * 4 + 3] > 0) ? 1 : 0;
+                    maskPixels[i + j * pitch] |= static_cast<base::U8>(opacity << k);
                 }
             }
         }
@@ -1836,8 +1836,8 @@ bool WindowImplX11::processEvent(XEvent& windowEvent)
             {
                 if (m_inputContext)
                 {
-                    Status       status = 0;
-                    std::uint8_t keyBuffer[64];
+                    Status   status = 0;
+                    base::U8 keyBuffer[64];
 
                     const int length = Xutf8LookupString(m_inputContext,
                                                          &windowEvent.xkey,
@@ -1854,8 +1854,8 @@ bool WindowImplX11::processEvent(XEvent& windowEvent)
                     {
                         // There might be more than 1 characters in this event,
                         // so we must iterate it
-                        std::uint32_t unicode = 0;
-                        std::uint8_t* iter    = keyBuffer;
+                        base::U32 unicode = 0;
+                        base::U8* iter    = keyBuffer;
                         while (iter < keyBuffer + length)
                         {
                             iter = Utf8::decode(iter, keyBuffer + length, unicode, 0);
@@ -1869,7 +1869,7 @@ bool WindowImplX11::processEvent(XEvent& windowEvent)
                     static XComposeStatus status;
                     char                  keyBuffer[16];
                     if (XLookupString(&windowEvent.xkey, keyBuffer, sizeof(keyBuffer), nullptr, &status))
-                        pushEvent(Event::TextEntered{static_cast<std::uint32_t>(keyBuffer[0])});
+                        pushEvent(Event::TextEntered{static_cast<base::U32>(keyBuffer[0])});
                 }
             }
 

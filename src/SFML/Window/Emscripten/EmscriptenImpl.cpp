@@ -860,7 +860,7 @@ void WindowImplEmscripten::setTitle(const String& /* title */)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplEmscripten::setIcon(Vector2u /* size */, const std::uint8_t* /* pixels */)
+void WindowImplEmscripten::setIcon(Vector2u /* size */, const base::U8* /* pixels */)
 {
     // Not applicable
 }

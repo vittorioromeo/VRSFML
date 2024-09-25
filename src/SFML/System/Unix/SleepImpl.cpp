@@ -15,7 +15,7 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 void sleepImpl(Time time)
 {
-    const std::int64_t usecs = time.asMicroseconds();
+    const base::I64 usecs = time.asMicroseconds();
 
     // Construct the time to wait
     timespec ti{};

@@ -69,7 +69,7 @@ TEST_CASE("[Network] sf::IpAddress")
             CHECK(ipAddress.toInteger() == 0xC63364EA);
         }
 
-        SECTION("std::uint32_t constructor")
+        SECTION("sf::base::U32 constructor")
         {
             const sf::IpAddress ipAddress(0xCB00719A);
             CHECK(sf::IpAddressUtils::toString(ipAddress) == "203.0.113.154"s);

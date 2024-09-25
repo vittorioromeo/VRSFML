@@ -38,7 +38,7 @@ m_rectPacker(m_atlasTexture.getSize())
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Vector2f> TextureAtlas::add(const std::uint8_t* pixels, Vector2u size)
+base::Optional<Vector2f> TextureAtlas::add(const base::U8* pixels, Vector2u size)
 {
     const auto packedPosition = m_rectPacker.pack(size);
 

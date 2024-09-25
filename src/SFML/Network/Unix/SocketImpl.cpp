@@ -8,6 +8,7 @@
 #include "SFML/System/Err.hpp"
 
 #include "SFML/Base/Builtins/Memcpy.hpp"
+#include "SFML/Base/IntTypes.hpp"
 
 #include <arpa/inet.h>
 #include <fcntl.h>
@@ -17,7 +18,6 @@
 #include <unistd.h>
 
 #include <cerrno>
-#include <cstdint>
 
 // TODO P1: major repetition with Win32 impl
 
@@ -66,7 +66,7 @@ AddrLength SockAddrIn::size() const
 
 
 ////////////////////////////////////////////////////////////
-SockAddrIn SocketImpl::createAddress(std::uint32_t address, unsigned short port)
+SockAddrIn SocketImpl::createAddress(base::U32 address, unsigned short port)
 {
     auto addr            = sockaddr_in();
     addr.sin_addr.s_addr = priv::SocketImpl::getHtonl(address);
@@ -82,14 +82,14 @@ SockAddrIn SocketImpl::createAddress(std::uint32_t address, unsigned short port)
 
 
 ////////////////////////////////////////////////////////////
-std::uint32_t SocketImpl::inaddrAny()
+base::U32 SocketImpl::inaddrAny()
 {
     return INADDR_ANY;
 }
 
 
 ////////////////////////////////////////////////////////////
-std::uint32_t SocketImpl::inaddrLoopback()
+base::U32 SocketImpl::inaddrLoopback()
 {
     return INADDR_LOOPBACK;
 }
@@ -224,15 +224,15 @@ Socket::Status SocketImpl::getErrorStatus()
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<std::uint32_t> SocketImpl::inetAddr(const char* data)
+base::Optional<base::U32> SocketImpl::inetAddr(const char* data)
 {
-    const std::uint32_t ip = ::inet_addr(data);
-    return ip == INADDR_NONE ? base::nullOpt : base::makeOptional<std::uint32_t>(ip);
+    const base::U32 ip = ::inet_addr(data);
+    return ip == INADDR_NONE ? base::nullOpt : base::makeOptional<base::U32>(ip);
 }
 
 
 ////////////////////////////////////////////////////////////
-const char* SocketImpl::addrToString(std::uint32_t addr)
+const char* SocketImpl::addrToString(base::U32 addr)
 {
     in_addr address{};
     address.s_addr = addr;
@@ -326,7 +326,7 @@ base::Optional<NetworkLong> SocketImpl::convertToHostname(const char* address)
         sockaddr_in sin{};
         SFML_BASE_MEMCPY(&sin, result->ai_addr, sizeof(*result->ai_addr));
 
-        const std::uint32_t ip = sin.sin_addr.s_addr;
+        const base::U32 ip = sin.sin_addr.s_addr;
         freeaddrinfo(result);
 
         return base::makeOptional<NetworkLong>(ip);
