@@ -641,11 +641,8 @@ bool Texture::update(const Window& window, Vector2u dest)
     glCheck(glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture, 0));
 
     // A final check, just to be sure...
-    GLenum sourceStatus = 0;
-    glCheck(sourceStatus = glCheckFramebufferStatus(GL_READ_FRAMEBUFFER));
-
-    GLenum destStatus = 0;
-    glCheck(destStatus = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER));
+    const GLenum sourceStatus = glCheck(glCheckFramebufferStatus(GL_READ_FRAMEBUFFER));
+    const GLenum destStatus   = glCheck(glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER));
 
     if ((sourceStatus == GL_FRAMEBUFFER_COMPLETE) && (destStatus == GL_FRAMEBUFFER_COMPLETE))
     {
