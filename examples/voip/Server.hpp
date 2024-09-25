@@ -1,3 +1,5 @@
 #pragma once
 
-void doServer(unsigned short port);
+#include "SFML/Audio/PlaybackDevice.hpp"
+
+void doServer(sf::PlaybackDevice& playbackDevice, unsigned short port);

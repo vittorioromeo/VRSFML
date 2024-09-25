@@ -1,3 +1,5 @@
 #pragma once
 
-void doClient(unsigned short port);
+#include "SFML/Audio/CaptureDevice.hpp"
+
+void doClient(sf::CaptureDevice& captureDevice, unsigned short port);
