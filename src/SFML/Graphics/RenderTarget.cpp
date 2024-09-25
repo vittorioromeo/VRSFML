@@ -153,6 +153,24 @@ SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
         .to<sf::IntRect>();
 }
 
+////////////////////////////////////////////////////////////
+[[gnu::always_inline, gnu::flatten]] inline void streamToGPU(GLenum bufferType, const void* data, sf::base::SizeT dataByteCount)
+{
+#ifdef SFML_OPENGL_ES
+    glCheck(glBufferData(bufferType, static_cast<GLsizeiptr>(dataByteCount), data, GL_STREAM_DRAW));
+#else
+    glCheck(glBufferData(bufferType, dataByteCount, nullptr, GL_STREAM_DRAW));
+
+    void* ptr = glMapBufferRange(bufferType,
+                                 0u,
+                                 dataByteCount,
+                                 GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
+
+    SFML_BASE_MEMCPY(ptr, data, dataByteCount);
+    glUnmapBuffer(bufferType);
+#endif
+};
+
 } // namespace RenderTargetImpl
 } // namespace
 
@@ -523,7 +541,7 @@ void RenderTarget::draw(const Vertex* vertices, base::SizeT vertexCount, Primiti
 
     setupDraw(states);
 
-    glCheck(glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeof(Vertex) * vertexCount), vertices, GL_STREAM_DRAW));
+    RenderTargetImpl::streamToGPU(GL_ARRAY_BUFFER, vertices, sizeof(Vertex) * vertexCount);
 
     drawPrimitives(type, 0u, vertexCount);
     cleanupDraw(states);
@@ -546,12 +564,8 @@ void RenderTarget::drawIndexedVertices(
 
     setupDraw(states);
 
-    glCheck(glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeof(Vertex) * vertexCount), vertices, GL_STREAM_DRAW));
-
-    glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                         static_cast<GLsizeiptr>(sizeof(unsigned int) * indexCount),
-                         indices,
-                         GL_STREAM_DRAW));
+    RenderTargetImpl::streamToGPU(GL_ARRAY_BUFFER, vertices, sizeof(Vertex) * vertexCount);
+    RenderTargetImpl::streamToGPU(GL_ELEMENT_ARRAY_BUFFER, indices, sizeof(unsigned int) * indexCount);
 
     drawIndexedPrimitives(type, indexCount);
     cleanupDraw(states);

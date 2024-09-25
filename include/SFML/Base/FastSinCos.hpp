@@ -10,7 +10,7 @@
 
 namespace sf::base::priv
 {
-
+////////////////////////////////////////////////////////////
 enum : unsigned int
 {
     sinBits  = 16u,
@@ -18,7 +18,17 @@ enum : unsigned int
     sinCount = sinMask + 1u // 65536
 };
 
+
+////////////////////////////////////////////////////////////
 inline constexpr float radToIndex = static_cast<float>(sinCount) / tau;
+
+
+////////////////////////////////////////////////////////////
+static_assert(sizeof(unsigned int) == 4);
+static_assert(sizeof(float) == 4);
+static_assert(radToIndex >= 10430.0f);
+static_assert(radToIndex <= 10430.9f);
+
 
 ////////////////////////////////////////////////////////////
 struct SinTable
@@ -9471,3 +9481,23 @@ namespace sf::base
 }
 
 } // namespace sf::base
+
+static_assert(sf::base::fastSin(sf::base::halfPi * 0.f) == 0.f);
+static_assert(sf::base::fastSin(sf::base::halfPi * 0.5f) == 0.70710678118f);
+static_assert(sf::base::fastSin(sf::base::halfPi * 1.f) == 1.f);
+static_assert(sf::base::fastSin(sf::base::halfPi * 1.5f) == 0.70710678118f);
+static_assert(sf::base::fastSin(sf::base::halfPi * 2.f) == 0.f);
+static_assert(sf::base::fastSin(sf::base::halfPi * 2.5f) == -0.70710678118f);
+static_assert(sf::base::fastSin(sf::base::halfPi * 3.f) == -1.f);
+static_assert(sf::base::fastSin(sf::base::halfPi * 3.5f) == -0.70710678118f);
+static_assert(sf::base::fastSin(sf::base::halfPi * 4.f) == 0.f);
+
+static_assert(sf::base::fastCos(sf::base::halfPi * 0.f) == 1.f);
+static_assert(sf::base::fastCos(sf::base::halfPi * 0.5f) == 0.70710678118f);
+static_assert(sf::base::fastCos(sf::base::halfPi * 1.f) == 0.f);
+static_assert(sf::base::fastCos(sf::base::halfPi * 1.5f) == -0.70710678118f);
+static_assert(sf::base::fastCos(sf::base::halfPi * 2.f) == -1.f);
+static_assert(sf::base::fastCos(sf::base::halfPi * 2.5f) == -0.70710678118f);
+static_assert(sf::base::fastCos(sf::base::halfPi * 3.f) == 0.f);
+static_assert(sf::base::fastCos(sf::base::halfPi * 3.5f) == 0.70710678118f);
+static_assert(sf::base::fastCos(sf::base::halfPi * 4.f) == 1.f);
