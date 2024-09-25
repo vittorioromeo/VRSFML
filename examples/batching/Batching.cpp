@@ -155,8 +155,6 @@ int main()
     //
     //
     // Simulation stuff
-    constexpr const char* names[]{"Elephant", "Giraffe", "Monkey", "Pig", "Rabbit", "Snake"};
-
     struct Entity
     {
         sf::Text     text;
@@ -178,13 +176,15 @@ int main()
         entities.clear();
         entities.reserve(n);
 
+        char                  labelBuffer[64]{};
+        constexpr const char* names[]{"Elephant", "Giraffe", "Monkey", "Pig", "Rabbit", "Snake"};
+
         for (std::size_t i = 0u; i < n; ++i)
         {
             const std::size_t    type        = i % 6u;
             const sf::FloatRect& textureRect = spriteTextureRects[type];
 
-            char labelBuffer[64]{};
-            std::snprintf(labelBuffer, 64, "%s #%zu", names[i % 6u], (i / (type + 1)) + 1);
+            std::snprintf(labelBuffer, 64, "%s %zu", names[type], (i / (type + 1)) + 1);
 
             auto& [text,
                    sprite,
@@ -214,10 +214,10 @@ int main()
     //
     //
     // Set up UI elements
-    bool        useBatch      = false;
+    bool        useBatch      = true;
     bool        drawSprites   = true;
     bool        drawText      = false;
-    int         numEntities   = 100'000;
+    int         numEntities   = 50'000;
     std::size_t drawnVertices = 0u;
 
     //
