@@ -49,7 +49,6 @@ NSString* sfStringToNSString(const sf::String& string)
     NSString* const str = [[NSString alloc] initWithBytes:data length:length encoding:encoding];
     return [str autorelease];
 }
-} // namespace
 
 
 ////////////////////////////////////////////////////////
@@ -74,6 +73,7 @@ void showMouseCursor()
         isCursorHidden = false;
     }
 }
+} // namespace
 
 #pragma mark
 #pragma mark WindowImplCocoa's ctor/dtor
