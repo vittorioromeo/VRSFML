@@ -551,10 +551,14 @@ void RenderTarget::draw(const Vertex* vertices, base::SizeT vertexCount, Primiti
 
 
 ////////////////////////////////////////////////////////////
+using IndexType = DrawableBatch::IndexType;
+
+
+////////////////////////////////////////////////////////////
 void RenderTarget::drawIndexedVertices(
     const Vertex*       vertices,
     base::SizeT         vertexCount,
-    const unsigned int* indices,
+    const IndexType*    indices,
     base::SizeT         indexCount,
     PrimitiveType       type,
     const RenderStates& states)
@@ -567,7 +571,7 @@ void RenderTarget::drawIndexedVertices(
     setupDraw(states);
 
     RenderTargetImpl::streamToGPU(GL_ARRAY_BUFFER, vertices, sizeof(Vertex) * vertexCount);
-    RenderTargetImpl::streamToGPU(GL_ELEMENT_ARRAY_BUFFER, indices, sizeof(unsigned int) * indexCount);
+    RenderTargetImpl::streamToGPU(GL_ELEMENT_ARRAY_BUFFER, indices, sizeof(IndexType) * indexCount);
 
     drawIndexedPrimitives(type, indexCount);
     cleanupDraw(states);
@@ -998,6 +1002,8 @@ void RenderTarget::drawPrimitives(PrimitiveType type, base::SizeT firstVertex, b
 ////////////////////////////////////////////////////////////
 void RenderTarget::drawIndexedPrimitives(PrimitiveType type, base::SizeT indexCount)
 {
+    static_assert(SFML_BASE_IS_SAME(IndexType, unsigned int));
+
     glCheck(glDrawElements(/* primitive type */ RenderTargetImpl::primitiveTypeToOpenGLMode(type),
                            /*    index count */ static_cast<GLsizei>(indexCount),
                            /*     index type */ GL_UNSIGNED_INT,
