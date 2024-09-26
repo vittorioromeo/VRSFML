@@ -7,8 +7,73 @@
 #include "SFML/Graphics/Shape.hpp"
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/Text.hpp"
+#include "SFML/Graphics/Transform.hpp"
 
 #include "SFML/Base/SizeT.hpp"
+
+
+namespace
+{
+////////////////////////////////////////////////////////////
+using IndexType = sf::DrawableBatch::IndexType;
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten]] inline constexpr IndexType* appendTriangleIndices(
+    IndexType*      indexPtr,
+    const IndexType startIndex) noexcept
+{
+    *indexPtr++ = startIndex + 0u;
+    *indexPtr++ = startIndex + 1u;
+    *indexPtr++ = startIndex + 2u;
+
+    return indexPtr;
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten]] inline constexpr IndexType* appendTriangleFanIndices(
+    IndexType*      indexPtr,
+    const IndexType startIndex,
+    const IndexType i) noexcept
+{
+    *indexPtr++ = startIndex;
+    *indexPtr++ = startIndex + i;
+    *indexPtr++ = startIndex + i + 1u;
+
+    return indexPtr;
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten]] inline constexpr IndexType* appendQuadIndices(IndexType* indexPtr,
+                                                                                              const IndexType startIndex) noexcept
+{
+    indexPtr = appendTriangleIndices(indexPtr, startIndex);     // Triangle strip: triangle #0
+    indexPtr = appendTriangleIndices(indexPtr, startIndex + 1); // Triangle strip: triangle #1
+
+    return indexPtr;
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten]] inline constexpr sf::Vertex* appendPreTransformedQuadVertices(
+    sf::Vertex*          vertexPtr,
+    const sf::Transform& transform,
+    const sf::Vertex&    a,
+    const sf::Vertex&    b,
+    const sf::Vertex&    c,
+    const sf::Vertex&    d) noexcept
+{
+    *vertexPtr++ = {transform.transformPoint(a.position), a.color, a.texCoords};
+    *vertexPtr++ = {transform.transformPoint(b.position), b.color, b.texCoords};
+    *vertexPtr++ = {transform.transformPoint(c.position), c.color, c.texCoords};
+    *vertexPtr++ = {transform.transformPoint(d.position), d.color, d.texCoords};
+
+    return vertexPtr;
+}
+
+} // namespace
 
 
 namespace sf
@@ -21,15 +86,7 @@ void DrawableBatch::add(const Sprite& sprite)
         const auto  nextIndex = static_cast<IndexType>(m_vertices.size());
         IndexType*& indexPtr  = m_indices.reserveMore(6u);
 
-        // Triangle strip: triangle #0
-        *indexPtr++ = nextIndex + 0u;
-        *indexPtr++ = nextIndex + 1u;
-        *indexPtr++ = nextIndex + 2u;
-
-        // Triangle strip: triangle #1
-        *indexPtr++ = nextIndex + 1u;
-        *indexPtr++ = nextIndex + 2u;
-        *indexPtr++ = nextIndex + 3u;
+        indexPtr = appendQuadIndices(indexPtr, nextIndex);
     }
 
     // Vertices
@@ -56,19 +113,7 @@ void DrawableBatch::add(const Text& text)
         IndexType*& indexPtr  = m_indices.reserveMore(6u * numQuads);
 
         for (base::SizeT i = 0u; i < numQuads; ++i)
-        {
-            const auto idx = static_cast<IndexType>(nextIndex + (i * 4u));
-
-            // Triangle strip: triangle #0
-            *indexPtr++ = idx + 0u;
-            *indexPtr++ = idx + 1u;
-            *indexPtr++ = idx + 2u;
-
-            // Triangle strip: triangle #1
-            *indexPtr++ = idx + 1u;
-            *indexPtr++ = idx + 2u;
-            *indexPtr++ = idx + 3u;
-        }
+            indexPtr = appendQuadIndices(indexPtr, static_cast<IndexType>(nextIndex + (i * 4u)));
     }
 
     // Vertices
@@ -81,15 +126,12 @@ void DrawableBatch::add(const Text& text)
         {
             const auto idx = i * 6u;
 
-            const Vertex& a = data[idx + 0u];
-            const Vertex& b = data[idx + 1u];
-            const Vertex& c = data[idx + 2u];
-            const Vertex& d = data[idx + 5u];
-
-            *vertexPtr++ = {transform.transformPoint(a.position), a.color, a.texCoords};
-            *vertexPtr++ = {transform.transformPoint(b.position), b.color, b.texCoords};
-            *vertexPtr++ = {transform.transformPoint(c.position), c.color, c.texCoords};
-            *vertexPtr++ = {transform.transformPoint(d.position), d.color, d.texCoords};
+            vertexPtr = appendPreTransformedQuadVertices(vertexPtr,
+                                                         transform,
+                                                         data[idx + 0u],
+                                                         data[idx + 1u],
+                                                         data[idx + 2u],
+                                                         data[idx + 5u]);
         }
     }
 }
@@ -105,11 +147,7 @@ void DrawableBatch::add(const Shape& shape)
         IndexType*& indexPtr      = m_indices.reserveMore(fillSize * 3u);
 
         for (IndexType i = 1u; i < fillSize - 1; ++i)
-        {
-            *indexPtr++ = nextFillIndex;
-            *indexPtr++ = nextFillIndex + i;
-            *indexPtr++ = nextFillIndex + i + 1u;
-        }
+            indexPtr = appendTriangleFanIndices(indexPtr, nextFillIndex, i);
 
         appendPreTransformedVertices(fillData, fillSize, shape.getTransform());
     }
@@ -121,11 +159,7 @@ void DrawableBatch::add(const Shape& shape)
         IndexType*& indexPtr         = m_indices.reserveMore(outlineSize * 3u);
 
         for (IndexType i = 0u; i < outlineSize - 2; ++i)
-        {
-            *indexPtr++ = nextOutlineIndex + i + 0u;
-            *indexPtr++ = nextOutlineIndex + i + 1u;
-            *indexPtr++ = nextOutlineIndex + i + 2u;
-        }
+            indexPtr = appendTriangleIndices(indexPtr, nextOutlineIndex + i);
 
         appendPreTransformedVertices(outlineData, outlineSize, shape.getTransform());
     }
