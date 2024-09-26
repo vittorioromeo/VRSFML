@@ -651,7 +651,7 @@ void DRMContext::setVerticalSyncEnabled(bool enabled)
 ////////////////////////////////////////////////////////////
 void DRMContext::createContext(DRMContext* shared)
 {
-    const EGLint contextVersion[] = {EGL_CONTEXT_CLIENT_VERSION, 1, EGL_NONE};
+    const EGLint contextVersion[]{EGL_CONTEXT_CLIENT_VERSION, 1, EGL_NONE};
 
     EGLContext toShared = nullptr;
 

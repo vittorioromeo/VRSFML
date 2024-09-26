@@ -847,7 +847,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
                     if ((character >= 0xDC00) && (character <= 0xDFFF))
                     {
                         // Convert the UTF-16 surrogate pair to a single UTF-32 value
-                        base::U16 utf16[] = {m_surrogate, static_cast<base::U16>(character)};
+                        base::U16 utf16[]{m_surrogate, static_cast<base::U16>(character)};
                         sf::Utf16::toUtf32(utf16, utf16 + 2, &character);
                         m_surrogate = 0;
                     }

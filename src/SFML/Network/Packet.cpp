@@ -427,14 +427,14 @@ Packet& Packet::operator<<(base::I64 data)
     // Since htonll is not available everywhere, we have to convert
     // to network byte order (big endian) manually
 
-    base::U8 toWrite[] = {static_cast<base::U8>((data >> 56) & 0xFF),
-                          static_cast<base::U8>((data >> 48) & 0xFF),
-                          static_cast<base::U8>((data >> 40) & 0xFF),
-                          static_cast<base::U8>((data >> 32) & 0xFF),
-                          static_cast<base::U8>((data >> 24) & 0xFF),
-                          static_cast<base::U8>((data >> 16) & 0xFF),
-                          static_cast<base::U8>((data >> 8) & 0xFF),
-                          static_cast<base::U8>((data) & 0xFF)};
+    base::U8 toWrite[]{static_cast<base::U8>((data >> 56) & 0xFF),
+                       static_cast<base::U8>((data >> 48) & 0xFF),
+                       static_cast<base::U8>((data >> 40) & 0xFF),
+                       static_cast<base::U8>((data >> 32) & 0xFF),
+                       static_cast<base::U8>((data >> 24) & 0xFF),
+                       static_cast<base::U8>((data >> 16) & 0xFF),
+                       static_cast<base::U8>((data >> 8) & 0xFF),
+                       static_cast<base::U8>((data) & 0xFF)};
 
     append(&toWrite, sizeof(toWrite));
     return *this;
@@ -447,14 +447,14 @@ Packet& Packet::operator<<(base::U64 data)
     // Since htonll is not available everywhere, we have to convert
     // to network byte order (big endian) manually
 
-    base::U8 toWrite[] = {static_cast<base::U8>((data >> 56) & 0xFF),
-                          static_cast<base::U8>((data >> 48) & 0xFF),
-                          static_cast<base::U8>((data >> 40) & 0xFF),
-                          static_cast<base::U8>((data >> 32) & 0xFF),
-                          static_cast<base::U8>((data >> 24) & 0xFF),
-                          static_cast<base::U8>((data >> 16) & 0xFF),
-                          static_cast<base::U8>((data >> 8) & 0xFF),
-                          static_cast<base::U8>((data) & 0xFF)};
+    base::U8 toWrite[]{static_cast<base::U8>((data >> 56) & 0xFF),
+                       static_cast<base::U8>((data >> 48) & 0xFF),
+                       static_cast<base::U8>((data >> 40) & 0xFF),
+                       static_cast<base::U8>((data >> 32) & 0xFF),
+                       static_cast<base::U8>((data >> 24) & 0xFF),
+                       static_cast<base::U8>((data >> 16) & 0xFF),
+                       static_cast<base::U8>((data >> 8) & 0xFF),
+                       static_cast<base::U8>((data) & 0xFF)};
 
     append(&toWrite, sizeof(toWrite));
     return *this;
