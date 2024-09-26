@@ -43,13 +43,13 @@ inline constexpr float radToIndex = static_cast<float>(sinCount) / tau;
 inline constexpr struct SinTable
 {
     ////////////////////////////////////////////////////////////
-    float data[sinCount - 1]{
+    float data[sinCount]{
 #include "SFML/Base/FastSinCosTable.inl"
     };
 
 
     ////////////////////////////////////////////////////////////
-    static_assert(sizeof(data) == (sinCount - 1) * sizeof(float));
+    static_assert(sizeof(data) == (sinCount) * sizeof(float));
 
 
     ////////////////////////////////////////////////////////////
