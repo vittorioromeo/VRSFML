@@ -137,20 +137,20 @@ struct ImGui_ImplOpenGL3_VtxAttribState
 
     void GetState(GLint index)
     {
-        glGetVertexAttribiv(index, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &Enabled);
-        glGetVertexAttribiv(index, GL_VERTEX_ATTRIB_ARRAY_SIZE, &Size);
-        glGetVertexAttribiv(index, GL_VERTEX_ATTRIB_ARRAY_TYPE, &Type);
-        glGetVertexAttribiv(index, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, &Normalized);
-        glGetVertexAttribiv(index, GL_VERTEX_ATTRIB_ARRAY_STRIDE, &Stride);
-        glGetVertexAttribPointerv(index, GL_VERTEX_ATTRIB_ARRAY_POINTER, &Ptr);
+        glCheck(glGetVertexAttribiv(index, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &Enabled));
+        glCheck(glGetVertexAttribiv(index, GL_VERTEX_ATTRIB_ARRAY_SIZE, &Size));
+        glCheck(glGetVertexAttribiv(index, GL_VERTEX_ATTRIB_ARRAY_TYPE, &Type));
+        glCheck(glGetVertexAttribiv(index, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, &Normalized));
+        glCheck(glGetVertexAttribiv(index, GL_VERTEX_ATTRIB_ARRAY_STRIDE, &Stride));
+        glCheck(glGetVertexAttribPointerv(index, GL_VERTEX_ATTRIB_ARRAY_POINTER, &Ptr));
     }
     void SetState(GLint index)
     {
-        glVertexAttribPointer(index, Size, Type, (GLboolean)Normalized, Stride, Ptr);
+        glCheck(glVertexAttribPointer(index, Size, Type, (GLboolean)Normalized, Stride, Ptr));
         if (Enabled)
-            glEnableVertexAttribArray(index);
+            glCheck(glEnableVertexAttribArray(index));
         else
-            glDisableVertexAttribArray(index);
+            glCheck(glDisableVertexAttribArray(index));
     }
 };
 #endif
@@ -189,6 +189,11 @@ bool ImGui_ImplOpenGL3_Init(const char* glsl_version)
     GLint       minor          = 0;
     glCheckIgnoreWithFunc(glGetError, glGetIntegerv(GL_MAJOR_VERSION, &major));
     glCheckIgnoreWithFunc(glGetError, glGetIntegerv(GL_MINOR_VERSION, &minor));
+
+    // Need to drain errors here or subsequent assertion will fail on Emscripten
+    while (glGetError() != GL_NO_ERROR)
+        ;
+
     if (major == 0 && minor == 0)
         sscanf(gl_version_str, "%d.%d", &major, &minor); // Query GL_VERSION in desktop GL 2.x, the string will start with "<major>.<minor>"
     bd->GlVersion = (GLuint)(major * 100 + minor * 10);
@@ -226,8 +231,8 @@ bool ImGui_ImplOpenGL3_Init(const char* glsl_version)
         bd->GlProfileMask,
         bd->GlProfileIsES2,
         bd->GlProfileIsES3,
-        (const char*)glGetString(GL_VENDOR),
-        (const char*)glGetString(GL_RENDERER)); // [DEBUG]
+        (const char*)glCheck(glGetString(GL_VENDOR)),
+        (const char*)glCheck(glGetString(GL_RENDERER))); // [DEBUG]
 #endif
 
 #ifdef IMGUI_IMPL_OPENGL_MAY_HAVE_VTX_OFFSET
@@ -268,7 +273,7 @@ bool ImGui_ImplOpenGL3_Init(const char* glsl_version)
     glCheck(glGetIntegerv(GL_NUM_EXTENSIONS, &num_extensions));
     for (GLint i = 0; i < num_extensions; i++)
     {
-        const char* extension = (const char*)glGetStringi(GL_EXTENSIONS, i);
+        const char* extension = (const char*)glCheck(glGetStringi(GL_EXTENSIONS, i));
         if (extension != nullptr && strcmp(extension, "GL_ARB_clip_control") == 0)
             bd->HasClipOrigin = true;
     }
@@ -468,13 +473,13 @@ void ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
     glCheck(glGetIntegerv(GL_BLEND_EQUATION_RGB, (GLint*)&last_blend_equation_rgb));
     GLenum last_blend_equation_alpha;
     glCheck(glGetIntegerv(GL_BLEND_EQUATION_ALPHA, (GLint*)&last_blend_equation_alpha));
-    GLboolean last_enable_blend        = glIsEnabled(GL_BLEND);
-    GLboolean last_enable_cull_face    = glIsEnabled(GL_CULL_FACE);
-    GLboolean last_enable_depth_test   = glIsEnabled(GL_DEPTH_TEST);
-    GLboolean last_enable_stencil_test = glIsEnabled(GL_STENCIL_TEST);
-    GLboolean last_enable_scissor_test = glIsEnabled(GL_SCISSOR_TEST);
+    GLboolean last_enable_blend        = glCheck(glIsEnabled(GL_BLEND));
+    GLboolean last_enable_cull_face    = glCheck(glIsEnabled(GL_CULL_FACE));
+    GLboolean last_enable_depth_test   = glCheck(glIsEnabled(GL_DEPTH_TEST));
+    GLboolean last_enable_stencil_test = glCheck(glIsEnabled(GL_STENCIL_TEST));
+    GLboolean last_enable_scissor_test = glCheck(glIsEnabled(GL_SCISSOR_TEST));
 #ifdef IMGUI_IMPL_OPENGL_MAY_HAVE_PRIMITIVE_RESTART
-    GLboolean last_enable_primitive_restart = (bd->GlVersion >= 310) ? glIsEnabled(GL_PRIMITIVE_RESTART) : GL_FALSE;
+    GLboolean last_enable_primitive_restart = (bd->GlVersion >= 310) ? glCheck(glIsEnabled(GL_PRIMITIVE_RESTART)) : GL_FALSE;
 #endif
 
     // Setup desired GL state
@@ -590,7 +595,7 @@ void ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
 
     // Restore modified GL state
     // This "glIsProgram()" check is required because if the program is "pending deletion" at the time of binding backup, it will have been deleted by now and will cause an OpenGL error. See #6220.
-    if (last_program == 0 || glIsProgram(last_program))
+    if (last_program == 0 || glCheck(glIsProgram(last_program)))
         glCheck(glUseProgram(last_program));
     glCheck(glBindTexture(GL_TEXTURE_2D, last_texture));
 #ifdef IMGUI_IMPL_OPENGL_MAY_HAVE_BIND_SAMPLER
@@ -900,21 +905,21 @@ void ImGui_ImplOpenGL3_DestroyFontsTexture()
 
     // Create shaders
     const GLchar* vertex_shader_with_version[2] = {bd->GlslVersionString, vertex_shader};
-    GLuint        vert_handle                   = glCreateShader(GL_VERTEX_SHADER);
+    GLuint        vert_handle                   = glCheck(glCreateShader(GL_VERTEX_SHADER));
     glCheck(glShaderSource(vert_handle, 2, vertex_shader_with_version, nullptr));
     glCheck(glCompileShader(vert_handle));
     if (!CheckShader(vert_handle, "vertex shader"))
         return false;
 
     const GLchar* fragment_shader_with_version[2] = {bd->GlslVersionString, fragment_shader};
-    GLuint        frag_handle                     = glCreateShader(GL_FRAGMENT_SHADER);
+    GLuint        frag_handle                     = glCheck(glCreateShader(GL_FRAGMENT_SHADER));
     glCheck(glShaderSource(frag_handle, 2, fragment_shader_with_version, nullptr));
     glCheck(glCompileShader(frag_handle));
     if (!CheckShader(frag_handle, "fragment shader"))
         return false;
 
     // Link
-    bd->ShaderHandle = glCreateProgram();
+    bd->ShaderHandle = glCheck(glCreateProgram());
     glCheck(glAttachShader(bd->ShaderHandle, vert_handle));
     glCheck(glAttachShader(bd->ShaderHandle, frag_handle));
     glCheck(glLinkProgram(bd->ShaderHandle));
@@ -926,11 +931,11 @@ void ImGui_ImplOpenGL3_DestroyFontsTexture()
     glCheck(glDeleteShader(vert_handle));
     glCheck(glDeleteShader(frag_handle));
 
-    bd->AttribLocationTex      = glGetUniformLocation(bd->ShaderHandle, "Texture");
-    bd->AttribLocationProjMtx  = glGetUniformLocation(bd->ShaderHandle, "ProjMtx");
-    bd->AttribLocationVtxPos   = (GLuint)glGetAttribLocation(bd->ShaderHandle, "Position");
-    bd->AttribLocationVtxUV    = (GLuint)glGetAttribLocation(bd->ShaderHandle, "UV");
-    bd->AttribLocationVtxColor = (GLuint)glGetAttribLocation(bd->ShaderHandle, "Color");
+    bd->AttribLocationTex      = glCheck(glGetUniformLocation(bd->ShaderHandle, "Texture"));
+    bd->AttribLocationProjMtx  = glCheck(glGetUniformLocation(bd->ShaderHandle, "ProjMtx"));
+    bd->AttribLocationVtxPos   = glCheck((GLuint)glGetAttribLocation(bd->ShaderHandle, "Position"));
+    bd->AttribLocationVtxUV    = glCheck((GLuint)glGetAttribLocation(bd->ShaderHandle, "UV"));
+    bd->AttribLocationVtxColor = glCheck((GLuint)glGetAttribLocation(bd->ShaderHandle, "Color"));
 
     // Create buffers
     glCheck(glGenBuffers(1, &bd->VboHandle));

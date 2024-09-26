@@ -18,9 +18,8 @@
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
-
-#include <cstdint>
 
 
 namespace sf
@@ -167,7 +166,7 @@ base::Optional<InputSoundFile> InputSoundFile::openFromStream(InputStream& strea
 
 
 ////////////////////////////////////////////////////////////
-std::uint64_t InputSoundFile::getSampleCount() const
+base::U64 InputSoundFile::getSampleCount() const
 {
     return m_sampleCount;
 }
@@ -219,14 +218,14 @@ Time InputSoundFile::getTimeOffset() const
 
 
 ////////////////////////////////////////////////////////////
-std::uint64_t InputSoundFile::getSampleOffset() const
+base::U64 InputSoundFile::getSampleOffset() const
 {
     return m_sampleOffset;
 }
 
 
 ////////////////////////////////////////////////////////////
-void InputSoundFile::seek(std::uint64_t sampleOffset)
+void InputSoundFile::seek(base::U64 sampleOffset)
 {
     SFML_BASE_ASSERT(m_reader != nullptr);
 
@@ -248,11 +247,11 @@ void InputSoundFile::seek(Time timeOffset)
 
 
 ////////////////////////////////////////////////////////////
-std::uint64_t InputSoundFile::read(std::int16_t* samples, std::uint64_t maxCount)
+base::U64 InputSoundFile::read(base::I16* samples, base::U64 maxCount)
 {
     SFML_BASE_ASSERT(m_reader != nullptr);
 
-    std::uint64_t readSamples = 0;
+    base::U64 readSamples = 0;
     if (samples && maxCount)
         readSamples = m_reader->read(samples, maxCount);
     m_sampleOffset += readSamples;
@@ -264,7 +263,7 @@ std::uint64_t InputSoundFile::read(std::int16_t* samples, std::uint64_t maxCount
 InputSoundFile::InputSoundFile(base::PassKey<InputSoundFile>&&,
                                base::UniquePtr<SoundFileReader>&&            reader,
                                base::UniquePtr<InputStream, StreamDeleter>&& stream,
-                               std::uint64_t                                 sampleCount,
+                               base::U64                                     sampleCount,
                                unsigned int                                  sampleRate,
                                ChannelMap&&                                  channelMap) :
 m_reader(SFML_BASE_MOVE(reader)),

@@ -10,10 +10,10 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-/// \brief sf::priv::InputImpl helper
+/// \brief `sf::priv::InputImpl` helper
 ///
 /// This class manage as a singleton instance the joysticks.
-/// It's only purpose is to help sf::priv::JoystickImpl class.
+/// It's only purpose is to help `sf::priv::JoystickImpl` class.
 ///
 ////////////////////////////////////////////////////////////
 class HIDJoystickManager
@@ -31,7 +31,6 @@ public:
     ////////////////////////////////////////////////////////////
     HIDJoystickManager& operator=(const HIDJoystickManager&) = delete;
 
-
     ////////////////////////////////////////////////////////////
     /// \brief Get the unique instance of the class
     ///
@@ -40,13 +39,13 @@ public:
     /// \return Reference to the HIDJoystickManager instance
     ///
     ////////////////////////////////////////////////////////////
-    static HIDJoystickManager& getInstance();
+    [[nodiscard]] static HIDJoystickManager& getInstance();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the number of currently connected joystick
     ///
     ////////////////////////////////////////////////////////////
-    unsigned int getJoystickCount();
+    [[nodiscard]] unsigned int getJoystickCount();
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy the devices associated with this HID manager
@@ -54,7 +53,7 @@ public:
     /// \return a retained CFSetRef of IOHIDDeviceRef or a null pointer
     ///
     ////////////////////////////////////////////////////////////
-    CFSetRef copyJoysticks();
+    [[nodiscard]] CFSetRef copyJoysticks();
 
 private:
     ////////////////////////////////////////////////////////////

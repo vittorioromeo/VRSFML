@@ -99,7 +99,7 @@ int main()
     // Update the label-value sf::Text objects based on the current joystick state
     const auto updateValues = [&](unsigned int index)
     {
-        const auto query = sf::Joystick::query(index);
+        const auto query = sf::Joystick::query(graphicsContext, index);
         if (!query.hasValue())
             return false;
 
@@ -236,7 +236,7 @@ int main()
                 drawableBatch.add(joystickObject.value);
             }
 
-            window.draw(drawableBatch, {.texture = &font.getTexture(characterSize)});
+            window.draw(drawableBatch, {.texture = &font.getTexture()});
         }
 
         // Display things on screen

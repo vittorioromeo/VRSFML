@@ -16,6 +16,7 @@
 #include <LoadIntoMemoryUtil.hpp>
 #include <WindowUtil.hpp>
 
+
 TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
 {
     sf::GraphicsContext graphicsContext;
@@ -53,7 +54,7 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
             CHECK(font.getLineSpacing(24) == 30);
             CHECK(font.getUnderlinePosition(36) == Approx(2.20312f));
             CHECK(font.getUnderlineThickness(48) == Approx(1.17188f));
-            const auto& texture = font.getTexture(10);
+            const auto& texture = font.getTexture();
             CHECK(texture.getSize() == sf::Vector2u{1024u, 1024u});
             CHECK(texture.isSmooth());
             CHECK(!texture.isSrgb());
@@ -90,7 +91,7 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
             CHECK(font.getLineSpacing(24) == 30);
             CHECK(font.getUnderlinePosition(36) == Approx(2.20312f));
             CHECK(font.getUnderlineThickness(48) == Approx(1.17188f));
-            const auto& texture = font.getTexture(10);
+            const auto& texture = font.getTexture();
             CHECK(texture.getSize() == sf::Vector2u{1024u, 1024u});
             CHECK(texture.isSmooth());
             CHECK(!texture.isSrgb());
@@ -118,7 +119,7 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
         CHECK(font.getLineSpacing(24) == 30);
         CHECK(font.getUnderlinePosition(36) == Approx(2.20312f));
         CHECK(font.getUnderlineThickness(48) == Approx(1.17188f));
-        const auto& texture = font.getTexture(10);
+        const auto& texture = font.getTexture();
         CHECK(texture.getSize() == sf::Vector2u{1024u, 1024u});
         CHECK(texture.isSmooth());
         CHECK(!texture.isSrgb());

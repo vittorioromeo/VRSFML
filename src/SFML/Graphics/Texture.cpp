@@ -289,7 +289,7 @@ base::Optional<Texture> Texture::loadFromImage(GraphicsContext& graphicsContext,
         const priv::TextureSaver save;
 
         // Copy the pixels to the texture, row by row
-        const std::uint8_t* pixels = image.getPixelsPtr() + 4 * (rectangle.position.x + (size.x * rectangle.position.y));
+        const base::U8* pixels = image.getPixelsPtr() + 4 * (rectangle.position.x + (size.x * rectangle.position.y));
         glCheck(glBindTexture(GL_TEXTURE_2D, result->m_texture));
         for (int i = 0; i < rectangle.size.y; ++i)
         {
@@ -329,7 +329,7 @@ Image Texture::copyToImage() const
     const priv::TextureSaver save;
 
     // Create an array of pixels
-    base::TrivialVector<std::uint8_t> pixels(m_size.x * m_size.y * 4);
+    base::TrivialVector<base::U8> pixels(m_size.x * m_size.y * 4);
 
 #ifdef SFML_OPENGL_ES
 
@@ -384,16 +384,16 @@ Image Texture::copyToImage() const
         // Texture is either padded or flipped, we have to use a slower algorithm
 
         // All the pixels will first be copied to a temporary array
-        base::TrivialVector<std::uint8_t> allPixels(m_size.x * m_size.y * 4);
+        base::TrivialVector<base::U8> allPixels(m_size.x * m_size.y * 4);
 
         glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
         glCheck(glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, allPixels.data()));
 
         // Then we copy the useful pixels from the temporary array to the final one
-        const std::uint8_t* src      = allPixels.data();
-        std::uint8_t*       dst      = pixels.data();
-        auto                srcPitch = static_cast<int>(m_size.x * 4);
-        const unsigned int  dstPitch = m_size.x * 4;
+        const base::U8*    src      = allPixels.data();
+        base::U8*          dst      = pixels.data();
+        auto               srcPitch = static_cast<int>(m_size.x * 4);
+        const unsigned int dstPitch = m_size.x * 4;
 
         SFML_BASE_ASSERT(pixels.size() >= allPixels.size());
 
@@ -421,7 +421,7 @@ Image Texture::copyToImage() const
 
 
 ////////////////////////////////////////////////////////////
-void Texture::update(const std::uint8_t* pixels)
+void Texture::update(const base::U8* pixels)
 {
     // Update the whole texture
     update(pixels, m_size, {0, 0});
@@ -429,7 +429,7 @@ void Texture::update(const std::uint8_t* pixels)
 
 
 ////////////////////////////////////////////////////////////
-void Texture::update(const std::uint8_t* pixels, Vector2u size, Vector2u dest)
+void Texture::update(const base::U8* pixels, Vector2u size, Vector2u dest)
 {
     SFML_BASE_ASSERT(dest.x + size.x <= m_size.x && "Destination x coordinate is outside of texture");
     SFML_BASE_ASSERT(dest.y + size.y <= m_size.y && "Destination y coordinate is outside of texture");
@@ -641,11 +641,8 @@ bool Texture::update(const Window& window, Vector2u dest)
     glCheck(glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture, 0));
 
     // A final check, just to be sure...
-    GLenum sourceStatus = 0;
-    glCheck(sourceStatus = glCheckFramebufferStatus(GL_READ_FRAMEBUFFER));
-
-    GLenum destStatus = 0;
-    glCheck(destStatus = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER));
+    const GLenum sourceStatus = glCheck(glCheckFramebufferStatus(GL_READ_FRAMEBUFFER));
+    const GLenum destStatus   = glCheck(glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER));
 
     if ((sourceStatus == GL_FRAMEBUFFER_COMPLETE) && (destStatus == GL_FRAMEBUFFER_COMPLETE))
     {
@@ -847,7 +844,7 @@ unsigned int Texture::getMaximumSize([[maybe_unused]] GraphicsContext& graphicsC
 
 
 ////////////////////////////////////////////////////////////
-void Texture::getMatrix(float (&target)[16], CoordinateType coordinateType) const
+Texture::MatrixElems Texture::getMatrixElems(CoordinateType coordinateType) const
 {
     // If non-normalized coordinates (= pixels) are requested, we need to
     // setup scale factors that convert the range [0 .. size] to [0 .. 1]ù
@@ -855,9 +852,9 @@ void Texture::getMatrix(float (&target)[16], CoordinateType coordinateType) cons
     // If pixels are flipped we must invert the Y axis
     const float pixelFlippedMult = m_pixelsFlipped ? -1.f : 1.f;
 
-    target[0] = coordinateType == CoordinateType::Pixels ? 1.f / static_cast<float>(m_size.x) : 1.f;
-    target[5] = (coordinateType == CoordinateType::Pixels ? 1.f / static_cast<float>(m_size.y) : 1.f) * pixelFlippedMult;
-    target[13] = m_pixelsFlipped ? static_cast<float>(m_size.y) / static_cast<float>(m_size.y) : 0.f;
+    return {coordinateType == CoordinateType::Pixels ? 1.f / static_cast<float>(m_size.x) : 1.f,
+            (coordinateType == CoordinateType::Pixels ? 1.f / static_cast<float>(m_size.y) : 1.f) * pixelFlippedMult,
+            m_pixelsFlipped ? static_cast<float>(m_size.y) / static_cast<float>(m_size.y) : 0.f};
 }
 
 

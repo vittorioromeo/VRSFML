@@ -31,7 +31,7 @@ Cursor& Cursor::operator=(Cursor&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Cursor> Cursor::loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vector2u hotspot)
+base::Optional<Cursor> Cursor::loadFromPixels(const base::U8* pixels, Vector2u size, Vector2u hotspot)
 {
     base::Optional<Cursor> cursor; // Use a single local variable for NRVO
 

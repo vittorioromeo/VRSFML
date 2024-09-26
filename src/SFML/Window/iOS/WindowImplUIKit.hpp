@@ -20,7 +20,7 @@ namespace sf::priv
 /// \brief iOS (UIKit) implementation of WindowImpl
 ///
 ////////////////////////////////////////////////////////////
-class WindowImplUIKit : public WindowImpl
+class [[nodiscard]] WindowImplUIKit : public WindowImpl
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -29,7 +29,7 @@ public:
     /// \param handle Platform-specific handle of the control
     ///
     ////////////////////////////////////////////////////////////
-    WindowImplUIKit(WindowHandle handle);
+    [[nodiscard]] explicit WindowImplUIKit(WindowContext& windowContext, WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the window implementation
@@ -37,7 +37,7 @@ public:
     /// \param windowSettings Window settings
     ///
     ////////////////////////////////////////////////////////////
-    WindowImplUIKit(const WindowSettings& windowSettings);
+    [[nodiscard]] explicit WindowImplUIKit(WindowContext& windowContext, const WindowSettings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the OS-specific handle of the window
@@ -114,7 +114,7 @@ public:
     /// \param pixels Pointer to the pixels in memory, format must be RGBA 32 bits
     ///
     ////////////////////////////////////////////////////////////
-    void setIcon(Vector2u size, const std::uint8_t* pixels) override;
+    void setIcon(Vector2u size, const base::U8* pixels) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window

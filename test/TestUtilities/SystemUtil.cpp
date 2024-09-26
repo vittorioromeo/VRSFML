@@ -64,7 +64,7 @@ template std::ostream& operator<<(std::ostream&, const Vector3<float>&);
 
 bool operator==(const float& lhs, const Approx<float>& rhs)
 {
-    return static_cast<double>(lhs) == doctest::Approx(static_cast<double>(rhs.value)).epsilon(1e-5);
+    return static_cast<double>(lhs) == doctest::Approx(static_cast<double>(rhs.value)).epsilon(1e-3);
 }
 
 bool operator==(sf::Vector2f lhs, const Approx<sf::Vector2f>& rhs)

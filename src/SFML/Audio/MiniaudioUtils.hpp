@@ -10,8 +10,7 @@
 #include "SFML/System/LifetimeDependant.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
-
-#include <cstdint>
+#include "SFML/Base/IntTypes.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -40,13 +39,13 @@ struct SoundBase
     [[nodiscard]] bool initialize(ma_sound_end_proc endCallback);
     void               deinitialize();
 
-    void processEffect(const float** framesIn, std::uint32_t& frameCountIn, float** framesOut, std::uint32_t& frameCountOut) const;
+    void processEffect(const float** framesIn, base::U32& frameCountIn, float** framesOut, base::U32& frameCountOut) const;
     void connectEffect(bool connect);
 
     ma_sound& getSound();
 
     void clearSoundChannelMap();
-    void addToSoundChannelMap(std::uint8_t maChannel);
+    void addToSoundChannelMap(base::U8 maChannel);
     void refreshSoundChannelMap();
 
     void setAndConnectEffectProcessor(EffectProcessor effectProcessor);
@@ -63,10 +62,10 @@ struct SoundBase
     SFML_DEFINE_LIFETIME_DEPENDANT(PlaybackDevice);
 };
 
-[[nodiscard]] std::uint8_t  soundChannelToMiniaudioChannel(SoundChannel soundChannel);
-[[nodiscard]] SoundChannel  miniaudioChannelToSoundChannel(std::uint8_t soundChannel);
-[[nodiscard]] Time          getPlayingOffset(ma_sound& sound);
-[[nodiscard]] std::uint64_t getFrameIndex(ma_sound& sound, Time timeOffset);
-[[gnu::cold]] bool          fail(const char* what, int maResult);
+[[nodiscard]] base::U8     soundChannelToMiniaudioChannel(SoundChannel soundChannel);
+[[nodiscard]] SoundChannel miniaudioChannelToSoundChannel(base::U8 soundChannel);
+[[nodiscard]] Time         getPlayingOffset(ma_sound& sound);
+[[nodiscard]] base::U64    getFrameIndex(ma_sound& sound, Time timeOffset);
+[[gnu::cold]] bool         fail(const char* what, int maResult);
 
 } // namespace sf::priv::MiniaudioUtils

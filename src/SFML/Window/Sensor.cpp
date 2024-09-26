@@ -5,28 +5,29 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Sensor.hpp"
 #include "SFML/Window/SensorManager.hpp"
+#include "SFML/Window/WindowContext.hpp"
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-bool Sensor::isAvailable(Type sensor)
+bool Sensor::isAvailable(WindowContext& windowContext, Type sensor)
 {
-    return priv::SensorManager::getInstance().isAvailable(sensor);
+    return windowContext.getSensorManager().isAvailable(sensor);
 }
 
 
 ////////////////////////////////////////////////////////////
-void Sensor::setEnabled(Type sensor, bool enabled)
+void Sensor::setEnabled(WindowContext& windowContext, Type sensor, bool enabled)
 {
-    priv::SensorManager::getInstance().setEnabled(sensor, enabled);
+    windowContext.getSensorManager().setEnabled(sensor, enabled);
 }
 
 
 ////////////////////////////////////////////////////////////
-Vector3f Sensor::getValue(Type sensor)
+Vector3f Sensor::getValue(WindowContext& windowContext, Type sensor)
 {
-    return priv::SensorManager::getInstance().getValue(sensor);
+    return windowContext.getSensorManager().getValue(sensor);
 }
 
 } // namespace sf

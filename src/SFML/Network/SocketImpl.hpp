@@ -23,7 +23,7 @@
 
 #endif
 
-#include <cstdint>
+#include "SFML/Base/IntTypes.hpp"
 
 struct sockaddr_in;
 
@@ -67,8 +67,8 @@ using NetworkShort  = unsigned short;
 using NetworkSSizeT = int;
 #else
 using AddrLength    = socklen_t;
-using NetworkLong   = std::uint32_t;
-using NetworkShort  = std::uint16_t;
+using NetworkLong   = base::U32;
+using NetworkShort  = base::U16;
 using NetworkSSizeT = ssize_t;
 #endif
 
@@ -140,19 +140,19 @@ public:
     /// \return sockaddr_in ready to be used by socket functions
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static SockAddrIn createAddress(std::uint32_t address, unsigned short port);
+    [[nodiscard]] static SockAddrIn createAddress(base::U32 address, unsigned short port);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::uint32_t inaddrAny();
+    [[nodiscard]] static base::U32 inaddrAny();
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::uint32_t inaddrLoopback();
+    [[nodiscard]] static base::U32 inaddrLoopback();
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -230,13 +230,13 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<std::uint32_t> inetAddr(const char* data);
+    [[nodiscard]] static base::Optional<base::U32> inetAddr(const char* data);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static const char* addrToString(std::uint32_t addr);
+    [[nodiscard]] static const char* addrToString(base::U32 addr);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs

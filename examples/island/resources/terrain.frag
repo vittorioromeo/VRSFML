@@ -1,18 +1,12 @@
-#version 300 es
-
-#ifdef GL_ES
-precision mediump float;
-#endif
-
-in vec3       normal;
 uniform float lightFactor;
 
-uniform sampler2D sf_u_texture;
+layout(location = 2) uniform sampler2D sf_u_texture;
 
 in vec4 sf_v_color;
 in vec2 sf_v_texCoord;
+in vec3 normal;
 
-out vec4 sf_fragColor;
+layout(location = 0) out vec4 sf_fragColor;
 
 void main()
 {

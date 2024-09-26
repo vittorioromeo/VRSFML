@@ -8,8 +8,7 @@
 #include "SFML/Audio/SoundFileWriter.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
-
-#include <cstdint>
+#include "SFML/Base/IntTypes.hpp"
 
 
 namespace sf
@@ -72,7 +71,7 @@ public:
     /// \param count   Number of samples to write
     ///
     ////////////////////////////////////////////////////////////
-    void write(const std::int16_t* samples, std::uint64_t count) override;
+    void write(const base::I16* samples, base::U64 count) override;
 
 private:
     ////////////////////////////////////////////////////////////

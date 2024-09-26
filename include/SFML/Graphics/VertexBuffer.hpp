@@ -291,7 +291,13 @@ public:
     /// \param vertexBuffer Pointer to the vertex buffer to bind, can be null to use no vertex buffer
     ///
     ////////////////////////////////////////////////////////////
-    static void bind(GraphicsContext& graphicsContext, const VertexBuffer* vertexBuffer);
+    void bind(GraphicsContext& graphicsContext) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Unbind any bound vertex buffer
+    ///
+    ////////////////////////////////////////////////////////////
+    static void unbind(GraphicsContext& graphicsContext);
 
 private:
     friend RenderTarget;

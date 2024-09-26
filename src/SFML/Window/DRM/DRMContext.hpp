@@ -21,8 +21,8 @@ struct Drm
     int fileDescriptor{};
 
     drmModeModeInfoPtr mode{};
-    std::uint32_t      crtcId{};
-    std::uint32_t      connectorId{};
+    base::U32          crtcId{};
+    base::U32          connectorId{};
 
     drmModeCrtcPtr originalCrtc{};
 

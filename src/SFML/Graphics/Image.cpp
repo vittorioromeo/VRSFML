@@ -89,8 +89,8 @@ base::Optional<Image> Image::create(Vector2u size, Color color)
     result.emplace(base::PassKey<Image>{}, size, static_cast<base::SizeT>(size.x) * static_cast<base::SizeT>(size.y) * 4);
 
     // Fill it with the specified color
-    std::uint8_t*       ptr = result->m_pixels.data();
-    std::uint8_t* const end = ptr + result->m_pixels.size();
+    base::U8*       ptr = result->m_pixels.data();
+    base::U8* const end = ptr + result->m_pixels.size();
 
     while (ptr < end)
     {
@@ -105,7 +105,7 @@ base::Optional<Image> Image::create(Vector2u size, Color color)
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Image> Image::create(Vector2u size, const std::uint8_t* pixels)
+base::Optional<Image> Image::create(Vector2u size, const base::U8* pixels)
 {
     if (size.x == 0 || size.y == 0)
     {
@@ -132,7 +132,7 @@ Image::Image(base::PassKey<Image>&&, Vector2u size, base::SizeT pixelCount) : m_
 
 
 ////////////////////////////////////////////////////////////
-Image::Image(base::PassKey<Image>&&, Vector2u size, const std::uint8_t* itBegin, const std::uint8_t* itEnd) :
+Image::Image(base::PassKey<Image>&&, Vector2u size, const base::U8* itBegin, const base::U8* itEnd) :
 m_size(size),
 m_pixels(itBegin, static_cast<base::SizeT>(itEnd - itBegin))
 {
@@ -260,14 +260,14 @@ Vector2u Image::getSize() const
 
 
 ////////////////////////////////////////////////////////////
-void Image::createMaskFromColor(Color color, std::uint8_t alpha)
+void Image::createMaskFromColor(Color color, base::U8 alpha)
 {
     // Make sure that the image is not empty
     SFML_BASE_ASSERT(!m_pixels.empty());
 
     // Replace the alpha of the pixels that match the transparent color
-    std::uint8_t* ptr = m_pixels.data();
-    std::uint8_t* end = ptr + m_pixels.size();
+    base::U8* ptr = m_pixels.data();
+    base::U8* end = ptr + m_pixels.size();
 
     while (ptr < end)
     {
@@ -316,8 +316,8 @@ bool Image::copy(const Image& source, Vector2u dest, const IntRect& sourceRect, 
     const unsigned int srcStride = source.m_size.x * 4;
     const unsigned int dstStride = m_size.x * 4;
 
-    const std::uint8_t* srcPixels = source.m_pixels.data() + (srcRect.position.x + srcRect.position.y * source.m_size.x) * 4;
-    std::uint8_t* dstPixels = m_pixels.data() + (dest.x + dest.y * m_size.x) * 4;
+    const base::U8* srcPixels = source.m_pixels.data() + (srcRect.position.x + srcRect.position.y * source.m_size.x) * 4;
+    base::U8* dstPixels = m_pixels.data() + (dest.x + dest.y * m_size.x) * 4;
 
     // Copy the pixels
     if (applyAlpha)
@@ -328,19 +328,19 @@ bool Image::copy(const Image& source, Vector2u dest, const IntRect& sourceRect, 
             for (unsigned int j = 0; j < dstSize.x; ++j)
             {
                 // Get a direct pointer to the components of the current pixel
-                const std::uint8_t* src = srcPixels + j * 4;
-                std::uint8_t*       dst = dstPixels + j * 4;
+                const base::U8* src = srcPixels + j * 4;
+                base::U8*       dst = dstPixels + j * 4;
 
                 // Interpolate RGBA components using the alpha values of the destination and source pixels
-                const std::uint8_t srcAlpha = src[3];
-                const std::uint8_t dstAlpha = dst[3];
-                const auto outAlpha = static_cast<std::uint8_t>(srcAlpha + dstAlpha - srcAlpha * dstAlpha / 255);
+                const base::U8 srcAlpha = src[3];
+                const base::U8 dstAlpha = dst[3];
+                const auto     outAlpha = static_cast<base::U8>(srcAlpha + dstAlpha - srcAlpha * dstAlpha / 255);
 
                 dst[3] = outAlpha;
 
                 if (outAlpha)
                     for (int k = 0; k < 3; k++)
-                        dst[k] = static_cast<std::uint8_t>((src[k] * srcAlpha + dst[k] * (outAlpha - srcAlpha)) / outAlpha);
+                        dst[k] = static_cast<base::U8>((src[k] * srcAlpha + dst[k] * (outAlpha - srcAlpha)) / outAlpha);
                 else
                     for (int k = 0; k < 3; k++)
                         dst[k] = src[k];
@@ -371,8 +371,8 @@ void Image::setPixel(Vector2u coords, Color color)
     SFML_BASE_ASSERT(coords.x < m_size.x && "Image::setPixel() x coordinate is out of bounds");
     SFML_BASE_ASSERT(coords.y < m_size.y && "Image::setPixel() y coordinate is out of bounds");
 
-    const auto    index = (coords.x + coords.y * m_size.x) * 4;
-    std::uint8_t* pixel = &m_pixels[index];
+    const auto index = (coords.x + coords.y * m_size.x) * 4;
+    base::U8*  pixel = &m_pixels[index];
 
     *pixel++ = color.r;
     *pixel++ = color.g;
@@ -387,15 +387,15 @@ Color Image::getPixel(Vector2u coords) const
     SFML_BASE_ASSERT(coords.x < m_size.x && "Image::getPixel() x coordinate is out of bounds");
     SFML_BASE_ASSERT(coords.y < m_size.y && "Image::getPixel() y coordinate is out of bounds");
 
-    const auto          index = (coords.x + coords.y * m_size.x) * 4;
-    const std::uint8_t* pixel = &m_pixels[index];
+    const auto      index = (coords.x + coords.y * m_size.x) * 4;
+    const base::U8* pixel = &m_pixels[index];
 
     return {pixel[0], pixel[1], pixel[2], pixel[3]};
 }
 
 
 ////////////////////////////////////////////////////////////
-const std::uint8_t* Image::getPixelsPtr() const
+const base::U8* Image::getPixelsPtr() const
 {
     SFML_BASE_ASSERT(!m_pixels.empty());
     return m_pixels.data();

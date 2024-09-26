@@ -538,7 +538,7 @@
 
 
 ////////////////////////////////////////////////////////
-- (void)setIconTo:(sf::Vector2u)size with:(const std::uint8_t*)pixels
+- (void)setIconTo:(sf::Vector2u)size with:(const base::U8*)pixels
 {
     // Load image and set app icon.
     NSImage* icon = [NSImage imageWithRawData:pixels andSize:NSMakeSize(size.x, size.y)];

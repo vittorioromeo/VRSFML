@@ -159,7 +159,7 @@ base::Optional<SoundFileReader::Info> SoundFileReaderWav::open(InputStream& stre
     soundChannels.reserve(m_impl->channelCount);
 
     for (auto i = 0u; i < m_impl->channelCount; ++i)
-        soundChannels.append(priv::MiniaudioUtils::miniaudioChannelToSoundChannel(std::uint8_t{channelMap[i]}));
+        soundChannels.append(priv::MiniaudioUtils::miniaudioChannelToSoundChannel(base::U8{channelMap[i]}));
 
     return base::makeOptional<Info>(
         {frameCount * m_impl->channelCount, m_impl->channelCount, sampleRate, SFML_BASE_MOVE(soundChannels)});
@@ -167,7 +167,7 @@ base::Optional<SoundFileReader::Info> SoundFileReaderWav::open(InputStream& stre
 
 
 ////////////////////////////////////////////////////////////
-void SoundFileReaderWav::seek(std::uint64_t sampleOffset)
+void SoundFileReaderWav::seek(base::U64 sampleOffset)
 {
     SFML_BASE_ASSERT(m_impl->decoder.hasValue() &&
                      "wav decoder not initialized. Call SoundFileReaderWav::open() to initialize it.");
@@ -179,7 +179,7 @@ void SoundFileReaderWav::seek(std::uint64_t sampleOffset)
 
 
 ////////////////////////////////////////////////////////////
-std::uint64_t SoundFileReaderWav::read(std::int16_t* samples, std::uint64_t maxCount)
+base::U64 SoundFileReaderWav::read(base::I16* samples, base::U64 maxCount)
 {
     SFML_BASE_ASSERT(m_impl->decoder.hasValue() &&
                      "wav decoder not initialized. Call SoundFileReaderWav::open() to initialize it.");

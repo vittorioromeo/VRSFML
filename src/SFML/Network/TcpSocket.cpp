@@ -282,7 +282,7 @@ Socket::Status TcpSocket::send(Packet& packet)
     const void* data = packet.onSend(size);
 
     // First convert the packet size to network byte order
-    std::uint32_t packetSize = priv::SocketImpl::getHtonl(static_cast<std::uint32_t>(size));
+    base::U32 packetSize = priv::SocketImpl::getHtonl(static_cast<base::U32>(size));
 
     // Allocate memory for the data block to send
     m_blockToSendBuffer.resize(sizeof(packetSize) + size);
@@ -331,8 +331,8 @@ Socket::Status TcpSocket::receive(Packet& packet)
     packet.clear();
 
     // We start by getting the size of the incoming packet
-    std::uint32_t packetSize = 0;
-    base::SizeT   received   = 0;
+    base::U32   packetSize = 0;
+    base::SizeT received   = 0;
     if (m_pendingPacket.sizeReceived < sizeof(m_pendingPacket.size))
     {
         // Loop until we've received the entire size of the packet

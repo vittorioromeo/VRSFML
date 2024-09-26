@@ -5,6 +5,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/CursorImpl.hpp"
 #include "SFML/Window/WindowEnums.hpp"
+#include "SFML/Window/WindowImpl.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 #include "SFML/Window/macOS/AutoreleasePoolWrapper.hpp"
 #include "SFML/Window/macOS/WindowImplCocoa.hpp"
@@ -36,7 +37,7 @@ bool isCursorHidden = false; // initially, the cursor is visible
 
 NSString* sfStringToNSString(const sf::String& string)
 {
-    const auto  length = static_cast<std::uint32_t>(string.getSize() * sizeof(std::uint32_t));
+    const auto  length = static_cast<base::U32>(string.getSize() * sizeof(base::U32));
     const void* data   = reinterpret_cast<const void*>(string.getData());
 
     NSStringEncoding encoding = 0;
@@ -48,7 +49,6 @@ NSString* sfStringToNSString(const sf::String& string)
     NSString* const str = [[NSString alloc] initWithBytes:data length:length encoding:encoding];
     return [str autorelease];
 }
-} // namespace
 
 
 ////////////////////////////////////////////////////////
@@ -73,12 +73,13 @@ void showMouseCursor()
         isCursorHidden = false;
     }
 }
+} // namespace
 
 #pragma mark
 #pragma mark WindowImplCocoa's ctor/dtor
 
 ////////////////////////////////////////////////////////////
-WindowImplCocoa::WindowImplCocoa(WindowHandle handle)
+WindowImplCocoa::WindowImplCocoa(WindowContext& windowContext, WindowHandle handle) : WindowImpl(windowContext)
 {
     const AutoreleasePool pool;
     // Treat the handle as it real type
@@ -110,7 +111,8 @@ WindowImplCocoa::WindowImplCocoa(WindowHandle handle)
 
 
 ////////////////////////////////////////////////////////////
-WindowImplCocoa::WindowImplCocoa(const WindowSettings& windowSettings)
+WindowImplCocoa::WindowImplCocoa(WindowContext& windowContext, const WindowSettings& windowSettings) :
+WindowImpl(windowContext)
 {
     const AutoreleasePool pool;
     // Transform the app process.
@@ -398,7 +400,7 @@ void WindowImplCocoa::setTitle(const String& title)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplCocoa::setIcon(Vector2u size, const std::uint8_t* pixels)
+void WindowImplCocoa::setIcon(Vector2u size, const base::U8* pixels)
 {
     const AutoreleasePool pool;
     [m_delegate setIconTo:size with:pixels];

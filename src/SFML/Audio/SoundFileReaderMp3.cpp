@@ -36,8 +36,7 @@
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtins/Memcmp.hpp"
-
-#include <cstdint>
+#include "SFML/Base/IntTypes.hpp"
 
 
 namespace
@@ -51,7 +50,7 @@ namespace
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] int seekCallback(std::uint64_t offset, void* data)
+[[nodiscard]] int seekCallback(sf::base::U64 offset, void* data)
 {
     auto*                    stream   = static_cast<sf::InputStream*>(data);
     const sf::base::Optional position = stream->seek(static_cast<sf::base::SizeT>(offset));
@@ -60,7 +59,7 @@ namespace
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool hasValidId3Tag(const std::uint8_t* header)
+[[nodiscard]] bool hasValidId3Tag(const sf::base::U8* header)
 {
     return SFML_BASE_MEMCMP(header, "ID3", 3) == 0 &&
            !((header[5] & 15) || (header[6] & 0x80) || (header[7] & 0x80) || (header[8] & 0x80) || (header[9] & 0x80));
@@ -73,17 +72,17 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 struct SoundFileReaderMp3::Impl
 {
-    mp3dec_io_t   io{};
-    mp3dec_ex_t   decoder{};
-    std::uint64_t numSamples{}; // Decompressed audio storage size
-    std::uint64_t position{};   // Position in decompressed audio buffer
+    mp3dec_io_t io{};
+    mp3dec_ex_t decoder{};
+    base::U64   numSamples{}; // Decompressed audio storage size
+    base::U64   position{};   // Position in decompressed audio buffer
 };
 
 
 ////////////////////////////////////////////////////////////
 bool SoundFileReaderMp3::check(InputStream& stream)
 {
-    std::uint8_t header[10];
+    base::U8 header[10];
 
     if (base::Optional readResult = stream.read(header, sizeof(header));
         !readResult.hasValue() || *readResult != sizeof(header))
@@ -158,7 +157,7 @@ base::Optional<SoundFileReader::Info> SoundFileReaderMp3::open(InputStream& stre
 
 
 ////////////////////////////////////////////////////////////
-void SoundFileReaderMp3::seek(std::uint64_t sampleOffset)
+void SoundFileReaderMp3::seek(base::U64 sampleOffset)
 {
     m_impl->position = base::min(sampleOffset, m_impl->numSamples);
     mp3dec_ex_seek(&m_impl->decoder, m_impl->position);
@@ -166,10 +165,10 @@ void SoundFileReaderMp3::seek(std::uint64_t sampleOffset)
 
 
 ////////////////////////////////////////////////////////////
-std::uint64_t SoundFileReaderMp3::read(std::int16_t* samples, std::uint64_t maxCount)
+base::U64 SoundFileReaderMp3::read(base::I16* samples, base::U64 maxCount)
 {
-    std::uint64_t toRead = base::min(maxCount, m_impl->numSamples - m_impl->position);
-    toRead               = std::uint64_t{mp3dec_ex_read(&m_impl->decoder, samples, static_cast<base::SizeT>(toRead))};
+    base::U64 toRead = base::min(maxCount, m_impl->numSamples - m_impl->position);
+    toRead           = base::U64{mp3dec_ex_read(&m_impl->decoder, samples, static_cast<base::SizeT>(toRead))};
     m_impl->position += toRead;
     return toRead;
 }

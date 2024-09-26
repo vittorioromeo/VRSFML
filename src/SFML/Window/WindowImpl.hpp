@@ -10,17 +10,17 @@
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/UniquePtr.hpp"
-
-#include <cstdint>
 
 
 namespace sf
 {
-struct WindowSettings;
 class String;
 class Time;
+class WindowContext;
+struct WindowSettings;
 
 namespace Vulkan
 {
@@ -30,12 +30,13 @@ struct VulkanSurfaceData;
 namespace priv
 {
 class CursorImpl;
+class JoystickManager;
 
 ////////////////////////////////////////////////////////////
 /// \brief Abstract base class for OS-specific window implementation
 ///
 ////////////////////////////////////////////////////////////
-class WindowImpl // TODO P1: Remove and rely on `.cpp` compilation? how to deal with state?
+class [[nodiscard]] WindowImpl // TODO P1: Remove and rely on `.cpp` compilation? how to deal with state?
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -50,7 +51,7 @@ public:
     /// \return Pointer to the created window
     ///
     ////////////////////////////////////////////////////////////
-    static base::UniquePtr<WindowImpl> create(WindowSettings windowSettings);
+    [[nodiscard]] static base::UniquePtr<WindowImpl> create(WindowContext& windowContext, WindowSettings windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new window depending on to the current OS
@@ -60,7 +61,7 @@ public:
     /// \return Pointer to the created window
     ///
     ////////////////////////////////////////////////////////////
-    static base::UniquePtr<WindowImpl> create(WindowHandle handle);
+    [[nodiscard]] static base::UniquePtr<WindowImpl> create(WindowContext& windowContext, WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -204,7 +205,7 @@ public:
     /// \param pixels Pointer to the pixels in memory, format must be RGBA 32 bits
     ///
     ////////////////////////////////////////////////////////////
-    virtual void setIcon(Vector2u size, const std::uint8_t* pixels) = 0;
+    virtual void setIcon(Vector2u size, const base::U8* pixels) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window
@@ -275,10 +276,10 @@ public:
 
 protected:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
+    /// \brief Constructor
     ///
     ////////////////////////////////////////////////////////////
-    WindowImpl();
+    [[nodiscard]] explicit WindowImpl(WindowContext& windowContext);
 
     ////////////////////////////////////////////////////////////
     /// \brief Push a new event into the event queue
@@ -299,8 +300,6 @@ protected:
     virtual void processEvents() = 0;
 
 private:
-    struct JoystickStatesImpl;
-
     ////////////////////////////////////////////////////////////
     /// \return First event of the queue if available, `base::nullOpt` otherwise
     ///
@@ -329,7 +328,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 512> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 1024> m_impl; //!< Implementation details
 };
 
 } // namespace priv

@@ -21,8 +21,8 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct SoundBufferRecorder::Impl
 {
-    base::TrivialVector<std::int16_t> samples; //!< Temporary sample buffer to hold the recorded data
-    base::Optional<SoundBuffer>       buffer;  //!< Sound buffer that will contain the recorded data
+    base::TrivialVector<base::I16> samples; //!< Temporary sample buffer to hold the recorded data
+    base::Optional<SoundBuffer>    buffer;  //!< Sound buffer that will contain the recorded data
 };
 
 
@@ -49,12 +49,12 @@ bool SoundBufferRecorder::onStart(CaptureDevice&)
 
 
 ////////////////////////////////////////////////////////////
-bool SoundBufferRecorder::onProcessSamples(const std::int16_t* samples, base::SizeT sampleCount)
+bool SoundBufferRecorder::onProcessSamples(const base::I16* samples, base::SizeT sampleCount)
 {
     const base::SizeT oldSize = m_impl->samples.size();
     m_impl->samples.resize(oldSize + sampleCount);
 
-    SFML_BASE_MEMCPY(m_impl->samples.data() + oldSize, samples, sampleCount * sizeof(std::int16_t));
+    SFML_BASE_MEMCPY(m_impl->samples.data() + oldSize, samples, sampleCount * sizeof(base::I16));
 
     return true;
 }

@@ -127,7 +127,7 @@ GlContext(windowContext, id, {})
 #ifndef SFML_SYSTEM_EMSCRIPTEN
     // Note: The EGL specs say that attribList can be a null pointer when passed to eglCreatePbufferSurface,
     // but this is resulting in a segfault. Bug in Android?
-    EGLint attribList[] = {EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE};
+    EGLint attribList[]{EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE};
 
     eglCheck(m_surface = eglCreatePbufferSurface(m_display, m_config, attribList));
     SFML_BASE_ASSERT(m_surface != EGL_NO_SURFACE);
@@ -257,9 +257,9 @@ void EglContext::setVerticalSyncEnabled([[maybe_unused]] bool enabled)
 void EglContext::createContext(EglContext* shared)
 {
 #ifndef SFML_SYSTEM_EMSCRIPTEN
-    constexpr EGLint contextVersion[] = {EGL_CONTEXT_MAJOR_VERSION, 3, EGL_CONTEXT_MINOR_VERSION, 1, EGL_NONE};
+    constexpr EGLint contextVersion[]{EGL_CONTEXT_MAJOR_VERSION, 3, EGL_CONTEXT_MINOR_VERSION, 1, EGL_NONE};
 #else
-    constexpr EGLint contextVersion[] = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE, EGL_NONE};
+    constexpr EGLint contextVersion[]{EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE, EGL_NONE};
 #endif
 
     EGLContext toShared = shared != nullptr ? shared->m_context : EGL_NO_CONTEXT;

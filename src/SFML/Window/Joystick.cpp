@@ -7,6 +7,7 @@
 #include "SFML/Window/JoystickIdentification.hpp"
 #include "SFML/Window/JoystickImpl.hpp"
 #include "SFML/Window/JoystickManager.hpp"
+#include "SFML/Window/WindowContext.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Optional.hpp"
@@ -15,7 +16,7 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool isConnectedImpl(sf::priv::JoystickManager& joystickManager, unsigned int joystickId)
+[[nodiscard]] bool isConnectedImpl(const sf::priv::JoystickManager& joystickManager, unsigned int joystickId)
 {
     return joystickManager.getState(joystickId).connected;
 }
@@ -26,14 +27,14 @@ namespace
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-void Joystick::update()
+void Joystick::update(WindowContext& windowContext)
 {
-    priv::JoystickManager::getInstance().update();
+    windowContext.getJoystickManager().update();
 }
 
 
 ////////////////////////////////////////////////////////////
-Joystick::Query::Query(priv::JoystickManager& joystickManager, unsigned int joystickId) :
+Joystick::Query::Query(const priv::JoystickManager& joystickManager, unsigned int joystickId) :
 m_joystickManager(joystickManager),
 m_joystickId(joystickId)
 {
@@ -118,9 +119,9 @@ bool Joystick::Query::isConnected() const
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Joystick::Query> Joystick::query(unsigned int joystickId)
+base::Optional<Joystick::Query> Joystick::query(const WindowContext& windowContext, unsigned int joystickId)
 {
-    auto& joystickManager = priv::JoystickManager::getInstance();
+    const auto& joystickManager = windowContext.getJoystickManager();
 
     if (!isConnectedImpl(joystickManager, joystickId))
         return base::nullOpt;

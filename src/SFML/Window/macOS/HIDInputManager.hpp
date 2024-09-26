@@ -69,7 +69,7 @@ public:
     /// \return a retained CFDictionaryRef
     ///
     ////////////////////////////////////////////////////////////
-    static CFDictionaryRef copyDevicesMask(std::uint32_t page, std::uint32_t usage);
+    static CFDictionaryRef copyDevicesMask(base::U32 page, base::U32 usage);
 
     ////////////////////////////////////////////////////////////
     /// \brief Try to convert a character into a SFML key code
@@ -222,7 +222,7 @@ private:
     /// \return a retained, non-empty CFSetRef of IOHIDDeviceRef or a null pointer
     ///
     ////////////////////////////////////////////////////////////
-    CFSetRef copyDevices(std::uint32_t page, std::uint32_t usage);
+    CFSetRef copyDevices(base::U32 page, base::U32 usage);
 
     ////////////////////////////////////////////////////////////
     /// \brief Check if a key is pressed
@@ -244,13 +244,13 @@ private:
     ///         or Scan::Unknown if it is associated with no scancode.
     ///
     ////////////////////////////////////////////////////////////
-    static Keyboard::Scancode usageToScancode(std::uint32_t usage);
+    static Keyboard::Scancode usageToScancode(base::U32 usage);
 
     ////////////////////////////////////////////////////////////
     /// Convert the scancode to the expected virtual code.
     ///
     ////////////////////////////////////////////////////////////
-    static std::uint8_t scanToVirtualCode(Keyboard::Scancode code);
+    static base::U8 scanToVirtualCode(Keyboard::Scancode code);
 
     ////////////////////////////////////////////////////////////
     /// Fallback conversion for keys which aren't expected to be impacted

@@ -1,6 +1,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Client.hpp"
+#include "Server.hpp"
+
 #include "SFML/Audio/AudioContext.hpp"
 #include "SFML/Audio/CaptureDevice.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
@@ -29,7 +32,6 @@ int main()
         auto playbackDevice = sf::PlaybackDevice::createDefault(audioContext).value();
 
         // Run as a server
-        void doServer(sf::PlaybackDevice&, unsigned short);
         doServer(playbackDevice, port);
     }
     else
@@ -39,7 +41,6 @@ int main()
         auto captureDevice = sf::CaptureDevice::createDefault(audioContext).value();
 
         // Run as a client
-        void doClient(sf::CaptureDevice&, unsigned short);
         doClient(captureDevice, port);
     }
 

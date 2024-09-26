@@ -79,6 +79,10 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::pure]] Transform getInverseTransform() const;
 
+    // TODO P1: docs
+    [[nodiscard]] SFML_GRAPHICS_API constexpr bool operator==(const View& rhs) const = default;
+    [[nodiscard]] SFML_GRAPHICS_API constexpr bool operator!=(const View& rhs) const = default;
+
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
@@ -161,13 +165,14 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
 /// view.setViewport([{0.f, 0.f}, {0.5f, 1.f}});
 ///
 /// // Apply it
+/// const auto defaultView = window.getView();
 /// window.setView(view);
 ///
 /// // Render stuff
 /// window.draw(someSprite);
 ///
 /// // Set the default view back
-/// window.setView(window.getDefaultView());
+/// window.setView(defaultView);
 ///
 /// // Render stuff not affected by the view
 /// window.draw(someText);

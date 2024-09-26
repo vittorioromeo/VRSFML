@@ -59,7 +59,7 @@ struct SFML_GRAPHICS_API Transformable
     /// \see `getInverseTransform`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Transform getTransform() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] Transform getTransform() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief get the inverse of the combined transform of the object
@@ -69,7 +69,7 @@ struct SFML_GRAPHICS_API Transformable
     /// \see `getTransform`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Transform getInverseTransform() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] Transform getInverseTransform() const;
 
     ////////////////////////////////////////////////////////////
     // Member data
@@ -113,7 +113,7 @@ struct SFML_GRAPHICS_API Transformable
 ///
 /// In addition to the position, rotation and scale, `sf::Transformable`
 /// provides an "origin" component, which represents the local origin
-/// of the three other components. Let's take an example with a 10x10
+/// of the three other components. Take an example with a 10x10
 /// pixels sprite. By default, the sprite is positioned/rotated/scaled
 /// relatively to its top-left corner, because it is the local point
 /// (0, 0). But if we change the origin to be (5, 5), the sprite will

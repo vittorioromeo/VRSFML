@@ -6,7 +6,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/WindowImpl.hpp"
 
-#include <cstdint>
+#include "SFML/Base/IntTypes.hpp"
 
 
 namespace sf
@@ -22,7 +22,7 @@ namespace sf::priv
 /// \brief Emscripten implementation of WindowImpl
 ///
 ////////////////////////////////////////////////////////////
-class WindowImplEmscripten : public WindowImpl
+class [[nodiscard]] WindowImplEmscripten : public WindowImpl
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -31,7 +31,7 @@ public:
     /// \param handle Platform-specific handle of the control
     ///
     ////////////////////////////////////////////////////////////
-    explicit WindowImplEmscripten(WindowHandle handle);
+    [[nodiscard]] explicit WindowImplEmscripten(WindowContext& windowContext, WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the window implementation
@@ -39,7 +39,7 @@ public:
     /// \param windowSettings Window settings
     ///
     ////////////////////////////////////////////////////////////
-    explicit WindowImplEmscripten(const WindowSettings& windowSettings);
+    [[nodiscard]] explicit WindowImplEmscripten(WindowContext& windowContext, const WindowSettings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -102,7 +102,7 @@ public:
     /// \param pixels Pointer to the pixels in memory, format must be RGBA 32 bits
     ///
     ////////////////////////////////////////////////////////////
-    void setIcon(Vector2u size, const std::uint8_t* pixels) override;
+    void setIcon(Vector2u size, const base::U8* pixels) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window

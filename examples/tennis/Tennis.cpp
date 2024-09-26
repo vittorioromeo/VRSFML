@@ -39,6 +39,8 @@
 #include "SFML/Main.hpp"
 #endif
 
+namespace
+{
 sf::Path resourcesDir()
 {
 #ifdef SFML_SYSTEM_IOS
@@ -47,6 +49,7 @@ sf::Path resourcesDir()
     return "resources";
 #endif
 }
+} // namespace
 
 ////////////////////////////////////////////////////////////
 /// Main

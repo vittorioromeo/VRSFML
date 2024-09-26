@@ -13,6 +13,7 @@
 #include "SFML/Window/SensorManager.hpp"
 #include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
+#include "SFML/Window/WindowContext.hpp"
 #include "SFML/Window/WindowImpl.hpp"
 #include "SFML/Window/WindowImplType.hpp"
 #include "SFML/Window/WindowSettings.hpp"
@@ -23,7 +24,6 @@
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/EnumArray.hpp"
-#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
@@ -44,18 +44,11 @@ const sf::priv::WindowImpl* fullscreenWindow = nullptr;
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-struct WindowImpl::JoystickStatesImpl
-{
-    JoystickState states[Joystick::MaxCount]{}; //!< Previous state of the joysticks
-};
-
-
-////////////////////////////////////////////////////////////
 struct WindowImpl::Impl
 {
-    priv::JoystickManager*              joystickManager;                //!< Associated joystick manager
-    std::queue<Event>                   events;                         //!< Queue of available events
-    base::UniquePtr<JoystickStatesImpl> joystickStatesImpl;             //!< Previous state of the joysticks (PImpl)
+    WindowContext*    windowContext;                                    //!< Associated window context
+    std::queue<Event> events;                                           //!< Queue of available events
+    JoystickState     joystickStates[Joystick::MaxCount]{};             //!< Previous state of the joysticks
     base::EnumArray<Sensor::Type, Vector3f, Sensor::Count> sensorValue; //!< Previous value of the sensors
     float joystickThreshold{0.1f}; //!< Joystick threshold (minimum motion for "move" event to be generated)
     base::EnumArray<Joystick::Axis, float, Joystick::AxisCount>
@@ -63,16 +56,14 @@ struct WindowImpl::Impl
     base::Optional<Vector2u> minimumSize; //!< Minimum window size
     base::Optional<Vector2u> maximumSize; //!< Maximum window size
 
-    explicit Impl(base::UniquePtr<JoystickStatesImpl>&& theJoystickStatesImpl) :
-    joystickManager{&priv::JoystickManager::getInstance()},
-    joystickStatesImpl(SFML_BASE_MOVE(theJoystickStatesImpl))
+    explicit Impl(WindowContext& theWindowContext) : windowContext{&theWindowContext}
     {
     }
 };
 
 
 ////////////////////////////////////////////////////////////
-base::UniquePtr<WindowImpl> WindowImpl::create(WindowSettings windowSettings)
+base::UniquePtr<WindowImpl> WindowImpl::create(WindowContext& windowContext, WindowSettings windowSettings)
 {
     // Fullscreen style requires some tests
     if (windowSettings.fullscreen)
@@ -112,7 +103,7 @@ base::UniquePtr<WindowImpl> WindowImpl::create(WindowSettings windowSettings)
         windowSettings.hasTitlebar = true;
 #endif
 
-    auto windowImpl = base::makeUnique<WindowImplType>(windowSettings);
+    auto windowImpl = base::makeUnique<WindowImplType>(windowContext, windowSettings);
 
     if (windowSettings.fullscreen)
         WindowImplImpl::fullscreenWindow = windowImpl.get();
@@ -122,21 +113,23 @@ base::UniquePtr<WindowImpl> WindowImpl::create(WindowSettings windowSettings)
 
 
 ////////////////////////////////////////////////////////////
-base::UniquePtr<WindowImpl> WindowImpl::create(WindowHandle handle)
+base::UniquePtr<WindowImpl> WindowImpl::create(WindowContext& windowContext, WindowHandle handle)
 {
-    return base::makeUnique<WindowImplType>(handle);
+    return base::makeUnique<WindowImplType>(windowContext, handle);
 }
 
 
 ////////////////////////////////////////////////////////////
-WindowImpl::WindowImpl() : m_impl(base::makeUnique<JoystickStatesImpl>())
+WindowImpl::WindowImpl(WindowContext& windowContext) : m_impl(windowContext)
 {
+    auto& joystickManager = m_impl->windowContext->getJoystickManager();
+
     // Get the initial joystick states
-    m_impl->joystickManager->update();
+    joystickManager.update();
 
     for (unsigned int i = 0; i < Joystick::MaxCount; ++i)
     {
-        m_impl->joystickStatesImpl->states[i] = m_impl->joystickManager->getState(i);
+        m_impl->joystickStates[i] = joystickManager.getState(i);
         m_impl->previousAxes[i].fill(0.f);
     }
 
@@ -252,17 +245,19 @@ void WindowImpl::pushEvent(const Event& event)
 ////////////////////////////////////////////////////////////
 void WindowImpl::processJoystickEvents()
 {
+    auto& joystickManager = m_impl->windowContext->getJoystickManager();
+
     // First update the global joystick states
-    m_impl->joystickManager->update();
+    joystickManager.update();
 
     for (unsigned int i = 0; i < Joystick::MaxCount; ++i)
     {
         // Copy the previous state of the joystick and get the new one
-        const JoystickState previousState     = m_impl->joystickStatesImpl->states[i];
-        m_impl->joystickStatesImpl->states[i] = m_impl->joystickManager->getState(i);
+        const JoystickState previousState = m_impl->joystickStates[i];
+        m_impl->joystickStates[i]         = joystickManager.getState(i);
 
         // Connection state
-        const bool connected = m_impl->joystickStatesImpl->states[i].connected;
+        const bool connected = m_impl->joystickStates[i].connected;
         if (previousState.connected ^ connected)
         {
             if (connected)
@@ -278,7 +273,7 @@ void WindowImpl::processJoystickEvents()
         if (!connected)
             continue;
 
-        const JoystickCapabilities caps = m_impl->joystickManager->getCapabilities(i);
+        const JoystickCapabilities caps = joystickManager.getCapabilities(i);
 
         // Axes
         for (unsigned int j = 0; j < Joystick::AxisCount; ++j)
@@ -288,7 +283,7 @@ void WindowImpl::processJoystickEvents()
                 continue;
 
             const float prevPos = m_impl->previousAxes[i][axis];
-            const float currPos = m_impl->joystickStatesImpl->states[i].axes[axis];
+            const float currPos = m_impl->joystickStates[i].axes[axis];
             if (base::fabs(currPos - prevPos) >= m_impl->joystickThreshold)
             {
                 pushEvent(Event::JoystickMoved{i, axis, currPos});
@@ -300,7 +295,7 @@ void WindowImpl::processJoystickEvents()
         for (unsigned int j = 0; j < caps.buttonCount; ++j)
         {
             const bool prevPressed = previousState.buttons[j];
-            const bool currPressed = m_impl->joystickStatesImpl->states[i].buttons[j];
+            const bool currPressed = m_impl->joystickStates[i].buttons[j];
 
             if (prevPressed ^ currPressed)
             {
@@ -318,7 +313,7 @@ void WindowImpl::processJoystickEvents()
 void WindowImpl::processSensorEvents()
 {
     // First update the sensor states
-    auto& sensorManager = SensorManager::getInstance();
+    auto& sensorManager = m_impl->windowContext->getSensorManager();
     sensorManager.update();
 
     for (unsigned int i = 0; i < Sensor::Count; ++i)

@@ -19,7 +19,7 @@ namespace sf::priv
 /// \brief Android implementation of WindowImpl
 ///
 ////////////////////////////////////////////////////////////
-class WindowImplAndroid : public WindowImpl
+class [[nodiscard]] WindowImplAndroid : public WindowImpl
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -28,7 +28,7 @@ public:
     /// \param handle Platform-specific handle of the control
     ///
     ////////////////////////////////////////////////////////////
-    WindowImplAndroid(WindowHandle handle);
+    [[nodiscard]] explicit WindowImplAndroid(WindowContext& windowContext, WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the window implementation
@@ -36,7 +36,7 @@ public:
     /// \param windowSettings Window settings
     ///
     ////////////////////////////////////////////////////////////
-    WindowImplAndroid(const WindowSettings& windowSettings);
+    [[nodiscard]] explicit WindowImplAndroid(WindowContext& windowContext, const WindowSettings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -119,7 +119,7 @@ public:
     /// \param pixels Pointer to the pixels in memory, format must be RGBA 32 bits
     ///
     ////////////////////////////////////////////////////////////
-    void setIcon(Vector2u size, const std::uint8_t* pixels) override;
+    void setIcon(Vector2u size, const base::U8* pixels) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window
@@ -197,12 +197,12 @@ private:
     /// \return Whether it should continue (1) or unregister the callback (0)
     ///
     ////////////////////////////////////////////////////////////
-    static int processEvent(int fd, int events, void* data);
+    [[nodiscard]] static int processEvent(int fd, int events, void* data);
 
-    static int processScrollEvent(AInputEvent* inputEvent, ActivityStates& states);
-    static int processKeyEvent(AInputEvent* inputEvent, ActivityStates& states);
-    static int processMotionEvent(AInputEvent* inputEvent, ActivityStates& states);
-    static int processPointerEvent(bool isDown, AInputEvent* event, ActivityStates& states);
+    [[nodiscard]] static int processScrollEvent(AInputEvent* inputEvent, ActivityStates& states);
+    [[nodiscard]] static int processKeyEvent(AInputEvent* inputEvent, ActivityStates& states);
+    [[nodiscard]] static int processMotionEvent(AInputEvent* inputEvent, ActivityStates& states);
+    [[nodiscard]] static int processPointerEvent(bool isDown, AInputEvent* event, ActivityStates& states);
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert a Android key to SFML key code
@@ -212,7 +212,7 @@ private:
     /// \return Corresponding SFML key code
     ///
     ////////////////////////////////////////////////////////////
-    static Keyboard::Key androidKeyToSF(std::int32_t key);
+    [[nodiscard]] static Keyboard::Key androidKeyToSF(base::I32 key);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get Unicode decoded from the input event
@@ -222,7 +222,7 @@ private:
     /// \return The Unicode value
     ///
     ////////////////////////////////////////////////////////////
-    static int getUnicode(AInputEvent* event);
+    [[nodiscard]] static int getUnicode(AInputEvent* event);
 
     Vector2u m_size;
     bool     m_windowBeingCreated{};

@@ -138,7 +138,7 @@ struct [[nodiscard]] SFML_WINDOW_API VideoMode
 /// Usage example:
 /// \code
 /// // Display the list of all the video modes available for fullscreen
-/// std::vector<sf::VideoMode> modes = sf::VideoModeUtils::getFullscreenModes();
+/// const auto modes = sf::VideoModeUtils::getFullscreenModes();
 /// for (base::SizeT i = 0; i < modes.size(); ++i)
 /// {
 ///     sf::VideoMode mode = modes[i];

@@ -21,3 +21,5 @@ imgui.ini
 notes.yaml
 examples/batching/imgui.ini
 compile_commands.json
+old/out.txt
+old/x.x

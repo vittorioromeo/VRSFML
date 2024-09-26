@@ -299,14 +299,14 @@ Those are now replaced with the fixed width integers provided in the `<cstdint>`
 
 | v2           | v3              |
 | ------------ | --------------- |
-| `sf::Int8`   | `std::int8_t`   |
-| `sf::Uint8`  | `std::uint8_t`  |
-| `sf::Int16`  | `std::int16_t`  |
-| `sf::Uint16` | `std::uint16_t` |
-| `sf::Int32`  | `std::int32_t`  |
-| `sf::Uint32` | `std::uint32_t` |
-| `sf::Int64`  | `std::int64_t`  |
-| `sf::Uint64` | `std::uint64_t` |
+| `sf::Int8`   | `base::I8`   |
+| `sf::Uint8`  | `base::U8`  |
+| `sf::Int16`  | `base::I16`  |
+| `sf::Uint16` | `base::U16` |
+| `sf::Int32`  | `base::I32`  |
+| `sf::Uint32` | `base::U32` |
+| `sf::Int64`  | `base::I64`  |
+| `sf::Uint64` | `base::U64` |
 
 ## New Constructors for Loading Resources
 

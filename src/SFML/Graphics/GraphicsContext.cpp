@@ -20,18 +20,14 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-constexpr const char* builtInShaderVertexSrc = R"glsl(#version 300 es
+constexpr const char* builtInShaderVertexSrc = R"glsl(
 
-#ifdef GL_ES
-precision mediump float;
-#endif
+layout(location = 0) uniform mat4 sf_u_modelViewProjectionMatrix;
+layout(location = 1) uniform mat4 sf_u_textureMatrix;
 
-uniform mat4 sf_u_modelViewProjectionMatrix;
-uniform mat4 sf_u_textureMatrix;
-
-in vec2 sf_a_position;
-in vec4 sf_a_color;
-in vec2 sf_a_texCoord;
+layout(location = 0) in vec2 sf_a_position;
+layout(location = 1) in vec4 sf_a_color;
+layout(location = 2) in vec2 sf_a_texCoord;
 
 out vec4 sf_v_color;
 out vec2 sf_v_texCoord;
@@ -47,22 +43,18 @@ void main()
 
 
 ////////////////////////////////////////////////////////////
-constexpr const char* builtInShaderFragmentSrc = R"glsl(#version 300 es
+constexpr const char* builtInShaderFragmentSrc = R"glsl(
 
-#ifdef GL_ES
-precision mediump float;
-#endif
-
-uniform sampler2D sf_u_texture;
+layout(location = 2) uniform sampler2D sf_u_texture;
 
 in vec4 sf_v_color;
 in vec2 sf_v_texCoord;
 
-out vec4 sf_fragColor;
+layout(location = 0) out vec4 sf_fragColor;
 
 void main()
 {
-    sf_fragColor = sf_v_color * texture(sf_u_texture, sf_v_texCoord.st);
+    sf_fragColor = sf_v_color * texture(sf_u_texture, sf_v_texCoord);
 }
 
 )glsl";

@@ -32,8 +32,8 @@ namespace
 {
 struct DrmFb
 {
-    gbm_bo*       bo{};
-    std::uint32_t fbId{};
+    gbm_bo*   bo{};
+    base::U32 fbId{};
 };
 
 bool            initialized = false;
@@ -94,7 +94,8 @@ void cleanup()
     drmModeFreeCrtc(drmNode.originalCrtc);
 
     if (display != EGL_NO_DISPLAY)
-        eglTerminate(display);
+        eglCheck(eglTerminate(display));
+
     display = EGL_NO_DISPLAY;
 
     gbm_device_destroy(gbmDevice);
@@ -134,16 +135,16 @@ DrmFb* drmFbGetFromBo(gbm_bo& bo)
     fb     = new DrmFb();
     fb->bo = &bo;
 
-    const std::uint32_t width  = gbm_bo_get_width(&bo);
-    const std::uint32_t height = gbm_bo_get_height(&bo);
-    const std::uint32_t format = gbm_bo_get_format(&bo);
+    const base::U32 width  = gbm_bo_get_width(&bo);
+    const base::U32 height = gbm_bo_get_height(&bo);
+    const base::U32 format = gbm_bo_get_format(&bo);
 
-    std::uint32_t strides[4]   = {0};
-    std::uint32_t handles[4]   = {0};
-    std::uint32_t offsets[4]   = {0};
-    std::uint64_t modifiers[4] = {0};
-    modifiers[0]               = gbm_bo_get_modifier(&bo);
-    const int numPlanes        = gbm_bo_get_plane_count(&bo);
+    base::U32 strides[4]   = {0};
+    base::U32 handles[4]   = {0};
+    base::U32 offsets[4]   = {0};
+    base::U64 modifiers[4] = {0};
+    modifiers[0]           = gbm_bo_get_modifier(&bo);
+    const int numPlanes    = gbm_bo_get_plane_count(&bo);
     for (int i = 0; i < numPlanes; ++i)
     {
         strides[i]   = gbm_bo_get_stride_for_plane(&bo, i);
@@ -152,7 +153,7 @@ DrmFb* drmFbGetFromBo(gbm_bo& bo)
         modifiers[i] = modifiers[0];
     }
 
-    std::uint32_t flags = 0;
+    base::U32 flags = 0;
     if (modifiers[0])
     {
         flags = DRM_MODE_FB_MODIFIERS;
@@ -182,14 +183,14 @@ DrmFb* drmFbGetFromBo(gbm_bo& bo)
     return fb;
 }
 
-std::uint32_t findCrtcForEncoder(const drmModeRes& resources, const drmModeEncoder& encoder)
+base::U32 findCrtcForEncoder(const drmModeRes& resources, const drmModeEncoder& encoder)
 {
     for (int i = 0; i < resources.count_crtcs; ++i)
     {
         // Possible_crtcs is a bitmask as described here:
         // https://dvdhrm.wordpress.com/2012/09/13/linux-drm-mode-setting-api
-        const std::uint32_t crtcMask = 1u << i;
-        const std::uint32_t crtcId   = resources.crtcs[i];
+        const base::U32 crtcMask = 1u << i;
+        const base::U32 crtcId   = resources.crtcs[i];
         if (encoder.possible_crtcs & crtcMask)
         {
             return crtcId;
@@ -200,16 +201,16 @@ std::uint32_t findCrtcForEncoder(const drmModeRes& resources, const drmModeEncod
     return 0;
 }
 
-std::uint32_t findCrtcForConnector(const sf::priv::Drm& drm, const drmModeRes& resources, const drmModeConnector& connector)
+base::U32 findCrtcForConnector(const sf::priv::Drm& drm, const drmModeRes& resources, const drmModeConnector& connector)
 {
     for (int i = 0; i < connector.count_encoders; ++i)
     {
-        const std::uint32_t     encoderId = connector.encoders[i];
+        const base::U32         encoderId = connector.encoders[i];
         const drmModeEncoderPtr encoder   = drmModeGetEncoder(drm.fileDescriptor, encoderId);
 
         if (encoder)
         {
-            const std::uint32_t crtcId = findCrtcForEncoder(resources, *encoder);
+            const base::U32 crtcId = findCrtcForEncoder(resources, *encoder);
 
             drmModeFreeEncoder(encoder);
             if (crtcId != 0)
@@ -377,7 +378,7 @@ int initDrm(sf::priv::Drm& drm, const char* device, const char* modeStr, unsigne
     }
     else
     {
-        const std::uint32_t crtcId = findCrtcForConnector(drm, *resources, *connector);
+        const base::U32 crtcId = findCrtcForConnector(drm, *resources, *connector);
         if (crtcId == 0)
         {
             sf::priv::err() << "No crtc found!";
@@ -397,7 +398,7 @@ int initDrm(sf::priv::Drm& drm, const char* device, const char* modeStr, unsigne
     // Get original display mode so we can restore display mode after program exits
     drm.originalCrtc = drmModeGetCrtc(drm.fileDescriptor, drm.crtcId);
 
-    // Let's use the current mode rather than the preferred one if the user didn't specify a mode with env vars
+    // Use the current mode rather than the preferred one if the user didn't specify a mode with env vars
     if (!drm.mode)
     {
 #ifdef SFML_DEBUG
@@ -651,7 +652,7 @@ void DRMContext::setVerticalSyncEnabled(bool enabled)
 ////////////////////////////////////////////////////////////
 void DRMContext::createContext(DRMContext* shared)
 {
-    const EGLint contextVersion[] = {EGL_CONTEXT_CLIENT_VERSION, 1, EGL_NONE};
+    const EGLint contextVersion[]{EGL_CONTEXT_CLIENT_VERSION, 1, EGL_NONE};
 
     EGLContext toShared = nullptr;
 
@@ -673,7 +674,7 @@ void DRMContext::createContext(DRMContext* shared)
 ////////////////////////////////////////////////////////////
 void DRMContext::createSurface(Vector2u size, unsigned int /* bpp */, bool scanout)
 {
-    std::uint32_t flags = GBM_BO_USE_RENDERING;
+    base::U32 flags = GBM_BO_USE_RENDERING;
 
     m_scanOut = scanout;
     if (m_scanOut)

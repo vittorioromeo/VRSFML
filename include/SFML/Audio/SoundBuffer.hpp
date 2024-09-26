@@ -11,11 +11,10 @@
 #include "SFML/System/LifetimeDependee.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/SizeT.hpp"
-
-#include <cstdint>
 
 
 ////////////////////////////////////////////////////////////
@@ -117,11 +116,11 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<SoundBuffer> loadFromSamples(
-        const std::int16_t* samples,
-        std::uint64_t       sampleCount,
-        unsigned int        channelCount,
-        unsigned int        sampleRate,
-        const ChannelMap&   channelMap);
+        const base::I16*  samples,
+        base::U64         sampleCount,
+        unsigned int      channelCount,
+        unsigned int      sampleRate,
+        const ChannelMap& channelMap);
 
     ////////////////////////////////////////////////////////////
     /// \brief Save the sound buffer to an audio file
@@ -150,7 +149,7 @@ public:
     /// \see `getSampleCount`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const std::int16_t* getSamples() const;
+    [[nodiscard]] const base::I16* getSamples() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the number of samples stored in the buffer
@@ -163,7 +162,7 @@ public:
     /// \see `getSamples`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::uint64_t getSampleCount() const;
+    [[nodiscard]] base::U64 getSampleCount() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the sample rate of the sound
