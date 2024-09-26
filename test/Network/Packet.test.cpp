@@ -86,7 +86,7 @@ TEST_CASE("[Network] sf::Packet")
         CHECK(bool{packet});
     }
 
-    static constexpr int data[] = {1, 2, 3, 4, 5, 6};
+    static constexpr int data[]{1, 2, 3, 4, 5, 6};
 
     SECTION("Append and clear")
     {

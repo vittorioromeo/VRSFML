@@ -27,19 +27,19 @@ namespace
 
 void encode(std::ostream& stream, sf::base::I16 value)
 {
-    const char bytes[] = {static_cast<char>(value & 0xFF), static_cast<char>(value >> 8)};
+    const char bytes[]{static_cast<char>(value & 0xFF), static_cast<char>(value >> 8)};
     stream.write(bytes, static_cast<std::streamsize>(sf::base::getArraySize(bytes)));
 }
 
 void encode(std::ostream& stream, sf::base::U16 value)
 {
-    const char bytes[] = {static_cast<char>(value & 0xFF), static_cast<char>(value >> 8)};
+    const char bytes[]{static_cast<char>(value & 0xFF), static_cast<char>(value >> 8)};
     stream.write(bytes, static_cast<std::streamsize>(sf::base::getArraySize(bytes)));
 }
 
 void encode(std::ostream& stream, sf::base::U32 value)
 {
-    const char bytes[] = {
+    const char bytes[]{
         static_cast<char>(value & 0x000000FF),
         static_cast<char>((value & 0x0000FF00) >> 8),
         static_cast<char>((value & 0x00FF0000) >> 16),
@@ -254,16 +254,16 @@ void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int chann
     SFML_BASE_ASSERT(m_impl->file.good() && "Most recent I/O operation failed");
 
     // Write the main chunk ID
-    char mainChunkId[] = {'R', 'I', 'F', 'F'};
+    char mainChunkId[]{'R', 'I', 'F', 'F'};
     m_impl->file.write(mainChunkId, static_cast<std::streamsize>(base::getArraySize(mainChunkId)));
 
     // Write the main chunk header
     encode(m_impl->file, base::U32{0}); // 0 is a placeholder, will be written later
-    char mainChunkFormat[] = {'W', 'A', 'V', 'E'};
+    char mainChunkFormat[]{'W', 'A', 'V', 'E'};
     m_impl->file.write(mainChunkFormat, static_cast<std::streamsize>(base::getArraySize(mainChunkFormat)));
 
     // Write the sub-chunk 1 ("format") id and size
-    char fmtChunkId[] = {'f', 'm', 't', ' '};
+    char fmtChunkId[]{'f', 'm', 't', ' '};
     m_impl->file.write(fmtChunkId, static_cast<std::streamsize>(base::getArraySize(fmtChunkId)));
 
     if (channelCount > 2)
@@ -308,7 +308,7 @@ void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int chann
     }
 
     // Write the sub-chunk 2 ("data") id and size
-    char dataChunkId[] = {'d', 'a', 't', 'a'};
+    char dataChunkId[]{'d', 'a', 't', 'a'};
     m_impl->file.write(dataChunkId, static_cast<std::streamsize>(base::getArraySize(dataChunkId)));
     const base::U32 dataChunkSize = 0; // placeholder, will be written later
     encode(m_impl->file, dataChunkSize);
