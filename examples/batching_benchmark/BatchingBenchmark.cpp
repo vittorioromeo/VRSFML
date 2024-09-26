@@ -131,7 +131,7 @@ int main()
     //
     // Set up UI elements
     bool useBatch    = true;
-    bool drawSprites = false;
+    bool drawSprites = true;
     bool drawText    = true;
     int  numEntities = 50'000;
     int  numFrames   = 240;
