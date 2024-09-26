@@ -8,6 +8,7 @@
 
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/Transform.hpp"
+#include "SFML/Graphics/Transformable.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
 #include "SFML/Base/SizeT.hpp"
@@ -33,7 +34,7 @@ namespace sf
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-class [[nodiscard]] SFML_GRAPHICS_API DrawableBatch
+class [[nodiscard]] SFML_GRAPHICS_API DrawableBatch : public Transformable
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -83,8 +84,35 @@ public:
 private:
     friend RenderTarget;
 
-    IndexType* reserveMoreIndicesAndGetPtr(RenderTarget& rt, base::SizeT count) const;
-    Vertex*    reserveMoreVerticesAndGetPtr(RenderTarget& rt, base::SizeT count) const;
+    IndexType* reserveMoreIndicesAndGetPtr(RenderTarget& rt, base::SizeT count);
+    Vertex*    reserveMoreVerticesAndGetPtr(RenderTarget& rt, base::SizeT count);
+
+    [[nodiscard, gnu::always_inline, gnu::flatten]] void registerNIndices(base::SizeT count)
+    {
+#ifndef USE_GPU
+        m_nIndices += count;
+#else
+        m_indices.unsafeSetSize(m_indices.size() + count);
+#endif
+    }
+
+    [[nodiscard, gnu::always_inline, gnu::flatten]] void registerNVertices(base::SizeT count)
+    {
+#ifndef USE_GPU
+        m_nVertices += count;
+#else
+        m_vertices.unsafeSetSize(m_vertices.size() + count);
+#endif
+    }
+
+    [[nodiscard, gnu::always_inline, gnu::flatten]] IndexType getNextIndex() const
+    {
+#ifndef USE_GPU
+        return static_cast<IndexType>(m_nVertices);
+#else
+        return static_cast<IndexType>(m_vertices.size());
+#endif
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -107,16 +135,19 @@ private:
         for (const auto* const target = data + count; data != target; ++data)
             *vertexPtr++ = {transform.transformPoint(data->position), data->color, data->texCoords};
 
-        m_nVerts += count;
+        registerNVertices(count);
     }
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    base::SizeT m_nVerts{};
-    base::SizeT m_nIdxs{};
-    // base::TrivialVector<Vertex>    m_vertices; //!< TODO P0:
-    // base::TrivialVector<IndexType> m_indices;  //!< TODO P0:
+#ifndef USE_GPU
+    base::SizeT m_nVertices{};
+    base::SizeT m_nIndices{};
+#else
+    base::TrivialVector<Vertex>    m_vertices; //!< TODO P0:
+    base::TrivialVector<IndexType> m_indices;  //!< TODO P0:
+#endif
 };
 
 } // namespace sf

@@ -657,8 +657,12 @@ void RenderTarget::drawIndexedVertices(
 
     setupDraw(states);
 
-    // RenderTargetImpl::streamToGPU(GL_ARRAY_BUFFER, vertices, sizeof(Vertex) * vertexCount);
-    // RenderTargetImpl::streamToGPU(GL_ELEMENT_ARRAY_BUFFER, indices, sizeof(unsigned int) * indexCount);
+#ifndef USE_GPU
+    // no-op
+#else
+    RenderTargetImpl::streamToGPU(GL_ARRAY_BUFFER, vertices, sizeof(Vertex) * vertexCount);
+    RenderTargetImpl::streamToGPU(GL_ELEMENT_ARRAY_BUFFER, indices, sizeof(IndexType) * indexCount);
+#endif
 
     drawIndexedPrimitives(type, indexCount);
     cleanupDraw(states);
@@ -666,14 +670,25 @@ void RenderTarget::drawIndexedVertices(
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::draw(const DrawableBatch& drawableBatch, const RenderStates& renderStates)
+void RenderTarget::draw(const DrawableBatch& drawableBatch, RenderStates states)
 {
+    states.transform *= drawableBatch.getTransform();
+
+#ifndef USE_GPU
     drawIndexedVertices(static_cast<const Vertex*>(m_impl->mappedVbo),
-                        drawableBatch.m_nVerts,
-                        static_cast<const unsigned int*>(m_impl->mappedEbo),
-                        drawableBatch.m_nIdxs,
+                        drawableBatch.m_nVertices,
+                        static_cast<const IndexType*>(m_impl->mappedEbo),
+                        drawableBatch.m_nIndices,
                         PrimitiveType::Triangles,
-                        renderStates);
+                        states);
+#else
+    drawIndexedVertices(drawableBatch.m_vertices.data(),
+                        drawableBatch.m_vertices.size(),
+                        drawableBatch.m_indices.data(),
+                        drawableBatch.m_indices.size(),
+                        PrimitiveType::Triangles,
+                        states);
+#endif
 }
 
 

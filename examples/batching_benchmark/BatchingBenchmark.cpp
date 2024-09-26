@@ -11,6 +11,7 @@
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/TextureAtlas.hpp"
 
+#include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Rect.hpp"
@@ -141,6 +142,7 @@ int main()
     // Set up benchmark
     sf::DrawableBatch drawableBatch;
     populateEntities(static_cast<std::size_t>(numEntities));
+    drawableBatch.position = drawableBatch.origin = windowSize / 2.f;
 
     sf::Clock  clock;
     const auto startTime = clock.getElapsedTime();
@@ -149,6 +151,8 @@ int main()
     {
         window.clear();
         drawableBatch.clear();
+
+        drawableBatch.rotation += sf::degrees(2.f);
 
         while (window.pollEvent())
             ;
