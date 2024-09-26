@@ -58,7 +58,6 @@ namespace
 [[nodiscard]] sf::base::SizeT getMaxTextureUnits()
 {
     static const auto maxUnits = static_cast<sf::base::SizeT>(sf::priv::getGLInteger(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS));
-
     return maxUnits;
 }
 
@@ -70,7 +69,7 @@ struct [[nodiscard]] BufferSlice
     const sf::base::SizeT beginIdx;
     const sf::base::SizeT count;
 
-    explicit BufferSlice(sf::base::SizeT b, sf::base::SizeT c) : beginIdx(b), count(c)
+    [[nodiscard]] explicit BufferSlice(sf::base::SizeT b, sf::base::SizeT c) : beginIdx(b), count(c)
     {
     }
 
@@ -156,16 +155,6 @@ struct [[nodiscard]] BufferSlice
 }
 
 
-// TODO P0:
-////////////////////////////////////////////////////////////
-// Return a thread-local vector for suitable use as a temporary buffer
-// This function is non-reentrant
-[[nodiscard]] sf::base::TrivialVector<char>& getThreadLocalCharBuffer2()
-{
-    thread_local sf::base::TrivialVector<char> result;
-    return result;
-}
-
 ////////////////////////////////////////////////////////////
 // Transforms an array of 2D vectors into a contiguous array of scalars
 [[nodiscard]] sf::base::TrivialVector<float> flatten(const sf::Vector2f* vectorArray, sf::base::SizeT length)
@@ -228,17 +217,17 @@ struct StringHash
 {
     using is_transparent = void;
 
-    [[nodiscard]] sf::base::SizeT operator()(const char* txt) const
+    [[nodiscard, gnu::always_inline, gnu::flatten]] sf::base::SizeT operator()(const char* txt) const
     {
         return std::hash<std::string_view>{}(txt);
     }
 
-    [[nodiscard]] sf::base::SizeT operator()(sf::base::StringView txt) const
+    [[nodiscard, gnu::always_inline, gnu::flatten]] sf::base::SizeT operator()(sf::base::StringView txt) const
     {
         return std::hash<std::string_view>{}({txt.data(), txt.size()});
     }
 
-    [[nodiscard]] sf::base::SizeT operator()(const std::string& txt) const
+    [[nodiscard, gnu::always_inline, gnu::flatten]] sf::base::SizeT operator()(const std::string& txt) const
     {
         return std::hash<std::string>{}(txt);
     }
@@ -250,12 +239,12 @@ struct StringEq
 {
     using is_transparent = void;
 
-    [[nodiscard, gnu::always_inline]] bool operator()(const sf::base::StringView& a, const std::string& b) const
+    [[nodiscard, gnu::always_inline, gnu::flatten]] bool operator()(const sf::base::StringView& a, const std::string& b) const
     {
         return a == sf::base::StringView{b};
     }
 
-    [[nodiscard, gnu::always_inline]] bool operator()(const std::string& a, const sf::base::StringView& b) const
+    [[nodiscard, gnu::always_inline, gnu::flatten]] bool operator()(const std::string& a, const sf::base::StringView& b) const
     {
         return sf::base::StringView{a} == b;
     }
@@ -269,6 +258,47 @@ struct StringEq
     {
         return a == b;
     }
+};
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] sf::base::StringView adjustPreamble(sf::base::StringView src)
+{
+
+#if defined(SFML_SYSTEM_EMSCRIPTEN)
+
+    // Emscripten/WebGL always requires `#version 300 es` and precision
+    constexpr sf::base::StringView preamble{R"glsl(#version 300 es
+
+precision mediump float;
+
+        )glsl"};
+
+#elif defined(SFML_OPENGL_ES)
+
+    // Desktop/mobile GLES can use `#version 310 es` and precision
+    constexpr sf::base::StringView preamble{R"glsl(#version 310 es
+
+precision mediump float;
+
+        )glsl"};
+
+#else
+
+    // Desktop GL can use `#version 430 core`
+    constexpr sf::base::StringView preamble{R"glsl(#version 430 core
+
+)glsl"};
+
+#endif
+
+    thread_local sf::base::TrivialVector<char> buffer; // Cannot reuse the other buffer here
+    buffer.clear();
+
+    buffer.emplaceRange(preamble.data(), preamble.size() - 1);
+    buffer.emplaceRange(src.data(), src.size() - 1);
+
+    return {buffer.data(), buffer.size()};
 };
 
 } // namespace
@@ -945,42 +975,6 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
                                        base::StringView geometryShaderCode,
                                        base::StringView fragmentShaderCode)
 {
-    // TODO P0:
-#if defined(SFML_SYSTEM_EMSCRIPTEN)
-
-    constexpr base::StringView preamble{R"glsl(#version 300 es
-
-precision mediump float;
-
-        )glsl"};
-
-#elif defined(SFML_OPENGL_ES)
-
-    constexpr base::StringView preamble{R"glsl(#version 310 es
-
-precision mediump float;
-
-        )glsl"};
-
-#else
-
-    constexpr base::StringView preamble{R"glsl(#version 430 core
-
-)glsl"};
-
-#endif
-
-    const auto adjustPreamble = [&](base::StringView src)
-    {
-        auto& buffer = getThreadLocalCharBuffer2();
-        buffer.clear();
-
-        buffer.emplaceRange(preamble.data(), preamble.size() - 1);
-        buffer.emplaceRange(src.data(), src.size() - 1);
-
-        return base::StringView{buffer.data(), buffer.size()};
-    };
-
     SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
 
     // Make sure we can use geometry shaders
@@ -996,14 +990,15 @@ precision mediump float;
     const GLhandle shaderProgram = glCheck(glCreateProgram());
     SFML_BASE_ASSERT(glCheck(glIsProgram(shaderProgram)));
 
-    const auto makeShader = [&](GLenum type, const char* typeStr, base::StringView& shaderCode)
+    const auto makeShader = [&](GLenum type, const char* typeStr, base::StringView shaderCode)
     {
-        shaderCode = adjustPreamble(shaderCode);
+        // Add `#version` (and float precision if required)
+        const auto adjustedShaderCode = adjustPreamble(shaderCode);
 
         const GLhandle shader = glCheck(glCreateShader(type));
 
-        const GLcharARB* sourceCode       = shaderCode.data();
-        const auto       sourceCodeLength = static_cast<GLint>(shaderCode.size());
+        const GLcharARB* sourceCode       = adjustedShaderCode.data();
+        const auto       sourceCodeLength = static_cast<GLint>(adjustedShaderCode.size());
 
         glCheck(glShaderSource(shader, 1, &sourceCode, &sourceCodeLength));
         glCheck(glCompileShader(shader));
@@ -1019,7 +1014,7 @@ precision mediump float;
 
             priv::err() << "Failed to compile " << typeStr << " shader:" << '\n'
                         << static_cast<const char*>(log) << "\n\nSource code:\n"
-                        << shaderCode;
+                        << adjustedShaderCode;
 
             glCheck(glDeleteShader(shader));
             glCheck(glDeleteProgram(shaderProgram));

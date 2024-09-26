@@ -13,7 +13,7 @@
         const auto startTime = clock.getElapsedTime();           \
         sf::sleep(duration);                                     \
         const auto elapsed = clock.getElapsedTime() - startTime; \
-        CHECK(elapsed >= (duration));                            \
+        CHECK((elapsed >= duration));                            \
     } while (false)
 
 TEST_CASE("[System] sf::sleep")

@@ -162,21 +162,22 @@ elseif(${EMSCRIPTEN})
         -sFETCH=1                           # Enables `emscripten_fetch` API
         -sFORCE_FILESYSTEM=1                # Makes full filesystem support be included
         -sFULL_ES3=1                        # Forces support for all GLES3 features, not just the WebGL2-friendly subset
+        -sGL_EXPLICIT_UNIFORM_LOCATION=1    # Enables support for the `EMSCRIPTEN_explicit_uniform_location` WebGL extension
         -sMAX_WEBGL_VERSION=2               # Specifies the highest WebGL version to target
         -sMIN_WEBGL_VERSION=2               # Specifies the lowest WebGL version to target
         -sSTACK_SIZE=4mb                    # Set the total stack size
         -sUSE_PTHREADS=1                    # Enable threading support
         -sWASM=1                            # Compile code to WebAssembly
 
-        -sGL_EXPLICIT_UNIFORM_LOCATION=1  # TODO P0:
-        -sGL_EXPLICIT_UNIFORM_BINDING=1   # TODO P0:
-
-        # --pre-js=C:/msys64/clang64/lib/emscripten/src/emscripten-source-map.min.js # TODO P0: make path configurable, add to presets
-
         --emrun                             # Add native support for `emrun` (I/O capture)
 
         --shell-file=${CMAKE_SOURCE_DIR}/emscripten/shell.html
     )
+
+    if(DEFINED SFML_EMSCRIPTEN_SOURCE_MAP)
+        list(APPEND SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS "--pre-js=${SFML_EMSCRIPTEN_SOURCE_MAP}")
+    endif()
+
 else()
     message(FATAL_ERROR "Unsupported operating system or environment")
     return()

@@ -223,27 +223,6 @@ WindowContext::WindowContext() : m_impl(base::makeUnique<Impl>(*this, /* id */ 1
 
     SFML_BASE_ASSERT(isActiveGlContextSharedContext());
 
-    ensureExtensionsInit();
-
-    // Need to drain errors here or subsequent assertion will fail on Emscripten, unsure why
-    while (glGetError() != GL_NO_ERROR)
-        ;
-
-    SFML_BASE_ASSERT(glGetError() == GL_NO_ERROR);
-}
-
-
-////////////////////////////////////////////////////////////
-void WindowContext::ensureExtensionsInit() const
-{
-    SFML_BASE_ASSERT(hasActiveThreadLocalOrSharedGlContext());
-
-    static bool initialized = false;
-    if (initialized)
-        return;
-
-    initialized = true;
-
     // Load OpenGL or OpenGL ES entry points using glad
     loadGLEntryPointsViaGLAD();
 
@@ -263,8 +242,15 @@ void WindowContext::ensureExtensionsInit() const
         priv::err() << "sfml-graphics requires support for OpenGL 1.1 or greater" << '\n'
                     << "Ensure that hardware acceleration is enabled if available";
     }
+#else
+    // Need to drain errors here or subsequent assertion will fail on Emscripten, unsure why
+    while (glGetError() != GL_NO_ERROR)
+        ;
 #endif
+
+    SFML_BASE_ASSERT(glGetError() == GL_NO_ERROR);
 }
+
 
 ////////////////////////////////////////////////////////////
 WindowContext::~WindowContext()
@@ -520,33 +506,6 @@ template <typename... GLContextArgs>
 [[nodiscard]] base::UniquePtr<priv::GlContext> WindowContext::createGlContextImpl(const ContextSettings& contextSettings,
                                                                                   GLContextArgs&&... args)
 {
-    // TODO P0: maybe graphicscontext should take a contextsetttings for teh shared context??
-    // If use_count is 2 (GlResource + sharedContext) we know that we are inside sf::Context or sf::Window
-    // Only in this situation we allow the user to indirectly re-create the shared context as a core context
-
-    // // Check if we need to convert our shared context into a core context
-    // if ((SharedContext::getUseCount() == 2) && (contextSettings.attributeFlags & ContextSettings::Attribute::Core) &&
-    //     !(sharedGlContext.m_settings.attributeFlags & ContextSettings::Attribute::Core))
-    // {
-    //     // Re-create our shared context as a core context
-    //     const ContextSettings sharedSettings{.depthBits = 0,
-    //                                          .stencilBits = 0,
-    //                                          .antiAliasingLevel = 0,
-    //                                          .majorVersion = contextSettings.majorVersion,
-    //                                          .minorVersion = contextSettings.minorVersion,
-    //                                          .attributeFlags = contextSettings.attributeFlags};
-
-    //     sharedGlContext.emplace(nullptr, sharedSettings, Vector2u{1, 1});
-    //     if (!sharedGlContext.initialize(sharedSettings))
-    //     {
-    //        priv::err() << "Could not initialize shared context in WindowContext::createGlContext()";
-    //         return nullptr;
-    //     }
-
-    //     // Reload our extensions vector
-    //     sharedContext->loadExtensions();
-    // }
-
     const std::lock_guard lock(m_impl->sharedGlContextMutex);
 
     if (!setActiveThreadLocalGlContextToSharedContext(true))
