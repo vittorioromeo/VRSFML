@@ -28,7 +28,6 @@
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/TrivialVector.hpp"
 
-#include <array>
 #include <fstream>
 #include <string>
 #include <string_view>
