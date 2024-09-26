@@ -10,6 +10,7 @@
 #include "SFML/Graphics/Transform.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
+#include "SFML/Base/Builtins/Assume.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 
@@ -58,6 +59,12 @@ using IndexType = sf::DrawableBatch::IndexType;
     const sf::Vertex&    c,
     const sf::Vertex&    d) noexcept
 {
+    SFML_BASE_ASSUME(a.position.x == c.position.x);
+    SFML_BASE_ASSUME(b.position.x == d.position.x);
+
+    SFML_BASE_ASSUME(a.position.y == b.position.y);
+    SFML_BASE_ASSUME(c.position.y == d.position.y);
+
     *vertexPtr++ = {transform.transformPoint(a.position), a.color, a.texCoords};
     *vertexPtr++ = {transform.transformPoint(b.position), b.color, b.texCoords};
     *vertexPtr++ = {transform.transformPoint(c.position), c.color, c.texCoords};
