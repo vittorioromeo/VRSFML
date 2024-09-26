@@ -50,8 +50,8 @@ constexpr sf::Vector2u windowSize{800u, 600u};
 constexpr sf::Vector2u resolution{800u, 600u};
 
 // Thread pool parameters
-constexpr unsigned int threadCount = 4;
-constexpr unsigned int blockCount  = 32;
+constexpr unsigned int threadCount = 4u;
+constexpr unsigned int blockCount  = 32u;
 
 struct WorkItem
 {
@@ -61,18 +61,23 @@ struct WorkItem
 
 struct ThreadPool
 {
-    std::deque<WorkItem>     workQueue;
+    std::mutex               poolMutex;
     std::vector<std::thread> threads;
-    int                      pendingWorkCount    = 0;
-    bool                     workPending         = true;
+    std::deque<WorkItem>     workQueue;
+    unsigned int             pendingWorkCount    = 0u;
     bool                     bufferUploadPending = false;
-    std::recursive_mutex     workQueueMutex;
+    bool                     finished            = false;
+
+    explicit ThreadPool() = default;
+
+    ThreadPool(const ThreadPool&) = delete;
+    ThreadPool(ThreadPool&&)      = delete;
 
     ~ThreadPool()
     {
         {
-            const std::lock_guard lock(workQueueMutex);
-            workPending = false;
+            const std::lock_guard lock(poolMutex);
+            finished = true;
         }
 
         for (std::thread& t : threads)
@@ -395,9 +400,9 @@ void threadFunction(ThreadPool& threadPool)
 
         // Check if there are new work items in the queue
         {
-            const std::lock_guard lock(threadPool.workQueueMutex);
+            const std::lock_guard lock(threadPool.poolMutex);
 
-            if (!threadPool.workPending)
+            if (threadPool.finished)
                 return;
 
             if (!threadPool.workQueue.empty())
@@ -417,7 +422,7 @@ void threadFunction(ThreadPool& threadPool)
         processWorkItem(vertices, workItem);
 
         {
-            const std::lock_guard lock(threadPool.workQueueMutex);
+            const std::lock_guard lock(threadPool.poolMutex);
             --threadPool.pendingWorkCount;
         }
     }
@@ -438,9 +443,9 @@ void generateTerrain(ThreadPool& threadPool, sf::Vertex* buffer)
     for (;;)
     {
         {
-            const std::lock_guard lock(threadPool.workQueueMutex);
+            const std::lock_guard lock(threadPool.poolMutex);
 
-            if (threadPool.workQueue.empty())
+            if (threadPool.pendingWorkCount == 0u)
                 break;
         }
 
@@ -449,14 +454,15 @@ void generateTerrain(ThreadPool& threadPool, sf::Vertex* buffer)
 
     // Queue all the new work items
     {
-        const std::lock_guard lock(threadPool.workQueueMutex);
+        const std::lock_guard lock(threadPool.poolMutex);
 
-        for (unsigned int i = 0; i < blockCount; ++i)
+        for (unsigned int i = 0u; i < blockCount; ++i)
             threadPool.workQueue.emplace_back(buffer, i);
 
         threadPool.pendingWorkCount = blockCount;
     }
 }
+
 } // namespace
 
 
@@ -488,7 +494,8 @@ int main()
                       .outlineThickness = 2.0f});
 
     sf::Text statusText(font,
-                        {.characterSize    = 14,
+                        {.string           = "Generating Terrain...",
+                         .characterSize    = 28,
                          .fillColor        = sf::Color::White,
                          .outlineColor     = sf::Color::Black,
                          .outlineThickness = 2.0f});
@@ -518,7 +525,6 @@ int main()
 
     // Generate the initial terrain
     generateTerrain(threadPool, terrainStagingBuffer.data());
-    statusText.setString("Generating Terrain...");
 
     // Set up the render states
     terrainStates = sf::RenderStates{.shader = &terrainShader};
@@ -557,10 +563,7 @@ int main()
                 switch (event->getIf<sf::Event::KeyPressed>()->code)
                 {
                     case sf::Keyboard::Key::Enter:
-                        if (threadPool.pendingWorkCount == 0 && !threadPool.bufferUploadPending)
-                        {
-                            generateTerrain(threadPool, terrainStagingBuffer.data());
-                        }
+                        generateTerrain(threadPool, terrainStagingBuffer.data());
                         break;
                     case sf::Keyboard::Key::Down:
                         currentSetting = (currentSetting + 1) % settings.size();
@@ -586,10 +589,10 @@ int main()
         window.draw(statusText);
 
         {
-            const std::lock_guard lock(threadPool.workQueueMutex);
+            const std::lock_guard lock(threadPool.poolMutex);
 
             // Don't bother updating/drawing the VertexBuffer while terrain is being regenerated
-            if (!threadPool.pendingWorkCount)
+            if (threadPool.pendingWorkCount == 0u)
             {
                 // If there is new data pending to be uploaded to the VertexBuffer, do it now
                 if (threadPool.bufferUploadPending)
