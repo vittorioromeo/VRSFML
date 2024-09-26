@@ -159,6 +159,18 @@ public:
     ////////////////////////////////////////////////////////////
     void display();
 
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] WindowContext& getWindowContext();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] const WindowContext& getWindowContext() const;
+
 private:
     ////////////////////////////////////////////////////////////
     /// \brief Construct a window and a GL context, and a window base
@@ -166,11 +178,11 @@ private:
     ///        impl
     ///
     ////////////////////////////////////////////////////////////
-    template <typename TWindowBaseArg>
-    [[nodiscard]] explicit Window(WindowContext&   windowContext,
-                                  const Settings&  windowSettings,
-                                  TWindowBaseArg&& windowBaseArg,
-                                  unsigned int     bitsPerPixel);
+    template <typename... TWindowBaseArgs>
+    [[nodiscard]] explicit Window(WindowContext&  windowContext,
+                                  const Settings& windowSettings,
+                                  unsigned int    bitsPerPixel,
+                                  TWindowBaseArgs&&... windowBaseArg);
 
     ////////////////////////////////////////////////////////////
     // Member data

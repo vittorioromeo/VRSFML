@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <cstdint>
+#include "SFML/Base/IntTypes.hpp"
 
 
 namespace sf
@@ -28,7 +28,7 @@ public:
     /// \brief Construct from microseconds
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr explicit Time(std::int64_t microseconds);
+    [[nodiscard, gnu::always_inline]] constexpr explicit Time(base::I64 microseconds);
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the time value as a number of seconds
@@ -48,7 +48,7 @@ public:
     /// \see `asSeconds`, `asMicroseconds`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr std::int32_t asMilliseconds() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr base::I32 asMilliseconds() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the time value as a number of microseconds
@@ -58,7 +58,7 @@ public:
     /// \see `asSeconds`, `asMilliseconds`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr std::int64_t asMicroseconds() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr base::I64 asMicroseconds() const;
 
     ////////////////////////////////////////////////////////////
     // Static member data
@@ -68,13 +68,13 @@ public:
 
 private:
     friend constexpr Time seconds(float);
-    friend constexpr Time milliseconds(std::int32_t);
-    friend constexpr Time microseconds(std::int64_t);
+    friend constexpr Time milliseconds(base::I32);
+    friend constexpr Time microseconds(base::I64);
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::int64_t m_microseconds{}; //!< Time value stored as microseconds
+    base::I64 m_microseconds{}; //!< Time value stored as microseconds
 };
 
 ////////////////////////////////////////////////////////////
@@ -101,7 +101,7 @@ private:
 /// \see `seconds`, `microseconds`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time milliseconds(std::int32_t amount);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time milliseconds(base::I32 amount);
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -114,7 +114,7 @@ private:
 /// \see `seconds`, `milliseconds`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time microseconds(std::int64_t amount);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time microseconds(base::I64 amount);
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -269,7 +269,7 @@ private:
 /// \return \a `lhs` multiplied by \a `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator*(Time lhs, std::int64_t rhs);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator*(Time lhs, base::I64 rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -293,7 +293,7 @@ private:
 /// \return \a `lhs` multiplied by \a `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator*(std::int64_t lhs, Time rhs);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator*(base::I64 lhs, Time rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -317,7 +317,7 @@ private:
 /// \return \a `lhs` multiplied by \a `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] constexpr Time& operator*=(Time& lhs, std::int64_t rhs);
+[[gnu::always_inline]] constexpr Time& operator*=(Time& lhs, base::I64 rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -341,7 +341,7 @@ private:
 /// \return \a `lhs` divided by \a `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator/(Time lhs, std::int64_t rhs);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator/(Time lhs, base::I64 rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -365,7 +365,7 @@ private:
 /// \return \a `lhs` divided by \a `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] constexpr Time& operator/=(Time& lhs, std::int64_t rhs);
+[[gnu::always_inline]] constexpr Time& operator/=(Time& lhs, base::I64 rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -435,10 +435,10 @@ private:
 /// Usage example:
 /// \code
 /// sf::Time t1 = sf::seconds(0.1f);
-/// std::int32_t milli = t1.asMilliseconds(); // 100
+/// base::I32 milli = t1.asMilliseconds(); // 100
 ///
 /// sf::Time t2 = sf::milliseconds(30);
-/// std::int64_t micro = t2.asMicroseconds(); // 30000
+/// base::I64 micro = t2.asMicroseconds(); // 30000
 ///
 /// sf::Time t3 = sf::microseconds(-800000);
 /// float sec = t3.asSeconds(); // -0.8

@@ -11,13 +11,14 @@
 #include "SFML/System/Vector2.hpp"
 #include "SFML/System/Win32/WindowsHeader.hpp"
 
-#include <cstdint>
+#include "SFML/Base/IntTypes.hpp"
 
 
 namespace sf
 {
-struct WindowSettings;
 class String;
+class WindowContext;
+struct WindowSettings;
 
 namespace priv
 {
@@ -25,7 +26,7 @@ namespace priv
 /// \brief Windows implementation of WindowImpl
 ///
 ////////////////////////////////////////////////////////////
-class WindowImplWin32 : public WindowImpl
+class [[nodiscard]] WindowImplWin32 : public WindowImpl
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -34,7 +35,7 @@ public:
     /// \param handle Platform-specific handle of the control
     ///
     ////////////////////////////////////////////////////////////
-    explicit WindowImplWin32(WindowHandle handle);
+    [[nodiscard]] explicit WindowImplWin32(WindowContext& windowContext, WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the window implementation
@@ -42,7 +43,7 @@ public:
     /// \param windowSettings Window settings
     ///
     ////////////////////////////////////////////////////////////
-    explicit WindowImplWin32(const WindowSettings& windowSettings);
+    [[nodiscard]] explicit WindowImplWin32(WindowContext& windowContext, const WindowSettings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -105,7 +106,7 @@ public:
     /// \param pixels Pointer to the pixels in memory, format must be RGBA 32 bits
     ///
     ////////////////////////////////////////////////////////////
-    void setIcon(Vector2u size, const std::uint8_t* pixels) override;
+    void setIcon(Vector2u size, const base::U8* pixels) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window
@@ -229,7 +230,7 @@ private:
     /// \return Converted size including window chrome
     ///
     ////////////////////////////////////////////////////////////
-    Vector2i contentSizeToWindowSize(Vector2u size);
+    [[nodiscard]] Vector2i contentSizeToWindowSize(Vector2u size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert a Win32 virtual key code to a SFML key code
@@ -240,7 +241,7 @@ private:
     /// \return SFML key code corresponding to the key
     ///
     ////////////////////////////////////////////////////////////
-    static Keyboard::Key virtualKeyCodeToSF(WPARAM key, LPARAM flags);
+    [[nodiscard]] static Keyboard::Key virtualKeyCodeToSF(WPARAM key, LPARAM flags);
 
     ////////////////////////////////////////////////////////////
     /// \brief Function called whenever one of our windows receives a message
@@ -253,7 +254,7 @@ private:
     /// \return True to discard the event after it has been processed
     ///
     ////////////////////////////////////////////////////////////
-    static LRESULT CALLBACK globalOnEvent(HWND handle, UINT message, WPARAM wParam, LPARAM lParam);
+    [[nodiscard]] static LRESULT CALLBACK globalOnEvent(HWND handle, UINT message, WPARAM wParam, LPARAM lParam);
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert a Win32 scancode to an sfml scancode
@@ -263,7 +264,7 @@ private:
     /// \return SFML scancode corresponding to the key
     ///
     ////////////////////////////////////////////////////////////
-    static Keyboard::Scancode toScancode(WPARAM wParam, LPARAM lParam);
+    [[nodiscard]] static Keyboard::Scancode toScancode(WPARAM wParam, LPARAM lParam);
 
     ////////////////////////////////////////////////////////////
     // Member data
@@ -277,7 +278,7 @@ private:
     bool     m_keyRepeatEnabled{true}; //!< Automatic key-repeat state for keydown events
     Vector2u m_lastSize;               //!< The last handled size of the window
     bool     m_resizing{};             //!< Is the window being resized?
-    std::uint16_t m_surrogate{}; //!< First half of the surrogate pair, in case we're receiving a Unicode character in two events
+    base::U16 m_surrogate{}; //!< First half of the surrogate pair, in case we're receiving a Unicode character in two events
     bool m_mouseInside{};   //!< Mouse is inside the window?
     bool m_fullscreen{};    //!< Is the window fullscreen?
     bool m_cursorGrabbed{}; //!< Is the mouse cursor trapped?

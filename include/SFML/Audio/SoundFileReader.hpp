@@ -8,9 +8,8 @@
 
 #include "SFML/Audio/ChannelMap.hpp"
 
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
-
-#include <cstdint>
 
 
 ////////////////////////////////////////////////////////////
@@ -37,10 +36,10 @@ public:
     ////////////////////////////////////////////////////////////
     struct Info
     {
-        std::uint64_t sampleCount{};  //!< Total number of samples in the file
-        unsigned int  channelCount{}; //!< Number of channels of the sound
-        unsigned int  sampleRate{};   //!< Samples rate of the sound, in samples per second
-        ChannelMap    channelMap;     //!< Map of position in sample frame to sound channel
+        base::U64    sampleCount{};  //!< Total number of samples in the file
+        unsigned int channelCount{}; //!< Number of channels of the sound
+        unsigned int sampleRate{};   //!< Samples rate of the sound, in samples per second
+        ChannelMap   channelMap;     //!< Map of position in sample frame to sound channel
     };
 
     ////////////////////////////////////////////////////////////
@@ -76,7 +75,7 @@ public:
     /// \param sampleOffset Index of the sample to jump to, relative to the beginning
     ///
     ////////////////////////////////////////////////////////////
-    virtual void seek(std::uint64_t sampleOffset) = 0;
+    virtual void seek(base::U64 sampleOffset) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Read audio samples from the open file
@@ -87,7 +86,7 @@ public:
     /// \return Number of samples actually read (may be less than \a maxCount)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual std::uint64_t read(std::int16_t* samples, std::uint64_t maxCount) = 0;
+    [[nodiscard]] virtual base::U64 read(base::I16* samples, base::U64 maxCount) = 0;
 };
 
 } // namespace sf
@@ -127,13 +126,13 @@ public:
 ///         // return true on success
 ///     }
 ///
-///     void seek(std::uint64_t sampleOffset) override
+///     void seek(base::U64 sampleOffset) override
 ///     {
 ///         // advance to the sampleOffset-th sample from the beginning of the
 ///         sound
 ///     }
 ///
-///     std::uint64_t read(std::int16_t* samples, std::uint64_t maxCount) override
+///     base::U64 read(base::I16* samples, base::U64 maxCount) override
 ///     {
 ///         // read up to 'maxCount' samples into the 'samples' array,
 ///         // convert them (for example from normalized float) if they are not stored

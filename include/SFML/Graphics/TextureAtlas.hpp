@@ -11,9 +11,8 @@
 #include "SFML/System/RectPacker.hpp"
 #include "SFML/System/Vector2.hpp"
 
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
-
-#include <cstdint>
 
 
 ////////////////////////////////////////////////////////////
@@ -44,7 +43,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<Vector2f> add(const std::uint8_t* pixels, Vector2u size);
+    [[nodiscard]] base::Optional<Vector2f> add(const base::U8* pixels, Vector2u size);
     [[nodiscard]] base::Optional<Vector2f> add(const Image& image);
     [[nodiscard]] base::Optional<Vector2f> add(const Texture& texture);
 

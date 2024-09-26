@@ -11,12 +11,11 @@
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vector2.hpp"
 
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/TrivialVector.hpp"
-
-#include <cstdint>
 
 
 namespace sf
@@ -66,7 +65,7 @@ public:
     /// \param pixels Array of pixels to copy to the image
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Image> create(Vector2u size, const std::uint8_t* pixels);
+    [[nodiscard]] static base::Optional<Image> create(Vector2u size, const base::U8* pixels);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the image from a file on disk
@@ -139,7 +138,7 @@ public:
     /// \param alpha Alpha value to assign to transparent pixels
     ///
     ////////////////////////////////////////////////////////////
-    void createMaskFromColor(Color color, std::uint8_t alpha = 0);
+    void createMaskFromColor(Color color, base::U8 alpha = 0);
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy pixels from another image onto this one
@@ -219,7 +218,7 @@ public:
     /// \return Read-only pointer to the array of pixels
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const std::uint8_t* getPixelsPtr() const;
+    [[nodiscard]] const base::U8* getPixelsPtr() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Flip the image horizontally (left <-> right)
@@ -240,14 +239,14 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit Image(base::PassKey<Image>&&, Vector2u size, base::SizeT pixelCount);
-    [[nodiscard]] explicit Image(base::PassKey<Image>&&, Vector2u size, const std::uint8_t* itBegin, const std::uint8_t* itEnd);
+    [[nodiscard]] explicit Image(base::PassKey<Image>&&, Vector2u size, const base::U8* itBegin, const base::U8* itEnd);
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2u                          m_size;   //!< Image size
-    base::TrivialVector<std::uint8_t> m_pixels; //!< Pixels of the image
+    Vector2u                      m_size;   //!< Image size
+    base::TrivialVector<base::U8> m_pixels; //!< Pixels of the image
 };
 
 } // namespace sf

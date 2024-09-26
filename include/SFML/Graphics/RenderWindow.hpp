@@ -16,11 +16,18 @@
 #include "SFML/System/Vector2.hpp"
 
 
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
 namespace sf
 {
 class GraphicsContext;
 class Image;
+} // namespace sf
 
+
+namespace sf
+{
 ////////////////////////////////////////////////////////////
 /// \brief Window that can serve as a target for 2D drawing
 ///
@@ -169,6 +176,13 @@ public:
     [[nodiscard]] base::Optional<Event> waitEvent(Time timeout = Time::Zero);
 
 private:
+    ////////////////////////////////////////////////////////////
+    /// \brief Construct a new window
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename... TWindowArgs>
+    [[nodiscard]] explicit RenderWindow(int /* disambiguator */, GraphicsContext& graphicsContext, TWindowArgs&&... windowArgs);
+
     ////////////////////////////////////////////////////////////
     /// \brief Function called after the window has been resized
     ///

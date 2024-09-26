@@ -11,18 +11,23 @@
 #include "SFML/Window/GlContext.hpp"
 #include "SFML/Window/GlContextTypeImpl.hpp"
 #include "SFML/Window/Glad.hpp"
+#include "SFML/Window/JoystickManager.hpp"
+#include "SFML/Window/SensorManager.hpp"
 #include "SFML/Window/WindowContext.hpp"
 
 #include "SFML/System/Err.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <atomic>
 #include <mutex>
 #include <string>
 #include <vector>
+
+#include <csignal>
 
 
 namespace sf
@@ -49,28 +54,6 @@ namespace
     glGetIntegervFunc(GL_MAJOR_VERSION, &majorVersion); // intentionally not checked, will be checked below
 
     auto glGetStringiFunc = reinterpret_cast<glGetStringiFuncType>(glContext.getFunction("glGetStringi"));
-
-    // TODO P0: needed at all?
-    if (glGetErrorFunc() == GL_INVALID_ENUM || !majorVersion || !glGetStringiFunc)
-    {
-        // Try to load the < 3.0 way
-        const auto* extensionString = reinterpret_cast<const char*>(glGetStringFunc(GL_EXTENSIONS));
-
-        if (extensionString == nullptr)
-            return result; // Empty vector
-
-        do
-        {
-            const char* extension = extensionString;
-
-            while (*extensionString && (*extensionString != ' '))
-                ++extensionString;
-
-            result.emplace_back(extension, extensionString);
-        } while (*extensionString++);
-
-        return result;
-    }
 
     // Try to load the >= 3.0 way
     int numExtensions = 0;
@@ -113,46 +96,48 @@ constinit bool windowContextAlive{false};
     if (id == 131169 || id == 131185 || id == 131218 || id == 131204)
         return;
 
-    priv::err(true /* multiLine */) << "---------------" << '\n' << "Debug message (" << id << "): " << message << '\n';
+    auto& multiLineErr = priv::err(true /* multiLine */);
+
+    multiLineErr << "---------------" << '\n' << "Debug message (" << id << "): " << message << "\nSource: ";
 
     // clang-format off
     switch (source)
     {
-        case GL_DEBUG_SOURCE_API:             priv::err(true /* multiLine */) << "Source: API";             break;
-        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   priv::err(true /* multiLine */) << "Source: Window System";   break;
-        case GL_DEBUG_SOURCE_SHADER_COMPILER: priv::err(true /* multiLine */) << "Source: Shader Compiler"; break;
-        case GL_DEBUG_SOURCE_THIRD_PARTY:     priv::err(true /* multiLine */) << "Source: Third Party";     break;
-        case GL_DEBUG_SOURCE_APPLICATION:     priv::err(true /* multiLine */) << "Source: Application";     break;
-        case GL_DEBUG_SOURCE_OTHER:           priv::err(true /* multiLine */) << "Source: Other";           break;
+        case GL_DEBUG_SOURCE_API:             multiLineErr << "API";             break;
+        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   multiLineErr << "Window System";   break;
+        case GL_DEBUG_SOURCE_SHADER_COMPILER: multiLineErr << "Shader Compiler"; break;
+        case GL_DEBUG_SOURCE_THIRD_PARTY:     multiLineErr << "Third Party";     break;
+        case GL_DEBUG_SOURCE_APPLICATION:     multiLineErr << "Application";     break;
+        case GL_DEBUG_SOURCE_OTHER:           multiLineErr << "Other";           break;
     }
     // clang-format on
 
-    priv::err(true /* multiLine */) << '\n';
+    multiLineErr << "\nType: ";
 
     // clang-format off
     switch (type)
     {
-        case GL_DEBUG_TYPE_ERROR:               priv::err(true /* multiLine */) << "Type: Error";                break;
-        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: priv::err(true /* multiLine */) << "Type: Deprecated Behaviour"; break;
-        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  priv::err(true /* multiLine */) << "Type: Undefined Behaviour";  break;
-        case GL_DEBUG_TYPE_PORTABILITY:         priv::err(true /* multiLine */) << "Type: Portability";          break;
-        case GL_DEBUG_TYPE_PERFORMANCE:         priv::err(true /* multiLine */) << "Type: Performance";          break;
-        case GL_DEBUG_TYPE_MARKER:              priv::err(true /* multiLine */) << "Type: Marker";               break;
-        case GL_DEBUG_TYPE_PUSH_GROUP:          priv::err(true /* multiLine */) << "Type: Push Group";           break;
-        case GL_DEBUG_TYPE_POP_GROUP:           priv::err(true /* multiLine */) << "Type: Pop Group";            break;
-        case GL_DEBUG_TYPE_OTHER:               priv::err(true /* multiLine */) << "Type: Other";                break;
+        case GL_DEBUG_TYPE_ERROR:               multiLineErr << "Error";                break;
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: multiLineErr << "Deprecated Behaviour"; break;
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  multiLineErr << "Undefined Behaviour";  break;
+        case GL_DEBUG_TYPE_PORTABILITY:         multiLineErr << "Portability";          break;
+        case GL_DEBUG_TYPE_PERFORMANCE:         multiLineErr << "Performance";          break;
+        case GL_DEBUG_TYPE_MARKER:              multiLineErr << "Marker";               break;
+        case GL_DEBUG_TYPE_PUSH_GROUP:          multiLineErr << "Push Group";           break;
+        case GL_DEBUG_TYPE_POP_GROUP:           multiLineErr << "Pop Group";            break;
+        case GL_DEBUG_TYPE_OTHER:               multiLineErr << "Other";                break;
     }
     // clang-format on
 
-    priv::err(true /* multiLine */) << '\n';
+    multiLineErr << "\nSeverity: ";
 
     // clang-format off
     switch (severity)
     {
-        case GL_DEBUG_SEVERITY_HIGH:         priv::err(true /* multiLine */) << "Severity: high";         break;
-        case GL_DEBUG_SEVERITY_MEDIUM:       priv::err(true /* multiLine */) << "Severity: medium";       break;
-        case GL_DEBUG_SEVERITY_LOW:          priv::err(true /* multiLine */) << "Severity: low";          break;
-        case GL_DEBUG_SEVERITY_NOTIFICATION: priv::err(true /* multiLine */) << "Severity: notification"; break;
+        case GL_DEBUG_SEVERITY_HIGH:         multiLineErr << "High";         break;
+        case GL_DEBUG_SEVERITY_MEDIUM:       multiLineErr << "Medium";       break;
+        case GL_DEBUG_SEVERITY_LOW:          multiLineErr << "Low";          break;
+        case GL_DEBUG_SEVERITY_NOTIFICATION: multiLineErr << "Notification"; break;
     }
     // clang-format on
 
@@ -200,6 +185,10 @@ struct WindowContext::Impl
     std::vector<UnsharedFrameBuffer> unsharedFrameBuffers;
 
     ////////////////////////////////////////////////////////////
+    base::Optional<priv::JoystickManager> joystickManager;
+    base::Optional<priv::SensorManager>   sensorManager;
+
+    ////////////////////////////////////////////////////////////
     template <typename... SharedGlContextArgs>
     explicit Impl(SharedGlContextArgs&&... args) : sharedGlContext(SFML_BASE_FORWARD(args)...)
     {
@@ -214,6 +203,12 @@ struct WindowContext::Impl
 ////////////////////////////////////////////////////////////
 WindowContext::WindowContext() : m_impl(base::makeUnique<Impl>(*this, /* id */ 1u, /* shared */ nullptr))
 {
+    // Define fatal signal handlers for the user that will display a stack trace:
+    std::signal(SIGSEGV, [](int) { priv::err() << "FATAL SIGNAL: SIGSEGV"; });
+    std::signal(SIGILL, [](int) { priv::err() << "FATAL SIGNAL: SIGILL"; });
+    std::signal(SIGABRT, [](int) { priv::err() << "FATAL SIGNAL: SIGABRT"; });
+    std::signal(SIGFPE, [](int) { priv::err() << "FATAL SIGNAL: SIGFPE"; });
+
     SFML_BASE_ASSERT(!hasActiveThreadLocalOrSharedGlContext());
 
     if (!setActiveThreadLocalGlContextToSharedContext(true))
@@ -227,27 +222,6 @@ WindowContext::WindowContext() : m_impl(base::makeUnique<Impl>(*this, /* id */ 1
     m_impl->extensions = loadExtensions(m_impl->sharedGlContext);
 
     SFML_BASE_ASSERT(isActiveGlContextSharedContext());
-
-    ensureExtensionsInit();
-
-    // Need to drain errors here or subsequent assertion will fail on Emscripten, unsure why
-    while (glGetError() != GL_NO_ERROR)
-        ;
-
-    SFML_BASE_ASSERT(glGetError() == GL_NO_ERROR);
-}
-
-
-////////////////////////////////////////////////////////////
-void WindowContext::ensureExtensionsInit() const
-{
-    SFML_BASE_ASSERT(hasActiveThreadLocalOrSharedGlContext());
-
-    static bool initialized = false;
-    if (initialized)
-        return;
-
-    initialized = true;
 
     // Load OpenGL or OpenGL ES entry points using glad
     loadGLEntryPointsViaGLAD();
@@ -268,8 +242,15 @@ void WindowContext::ensureExtensionsInit() const
         priv::err() << "sfml-graphics requires support for OpenGL 1.1 or greater" << '\n'
                     << "Ensure that hardware acceleration is enabled if available";
     }
+#else
+    // Need to drain errors here or subsequent assertion will fail on Emscripten, unsure why
+    while (glGetError() != GL_NO_ERROR)
+        ;
 #endif
+
+    SFML_BASE_ASSERT(glGetError() == GL_NO_ERROR);
 }
+
 
 ////////////////////////////////////////////////////////////
 WindowContext::~WindowContext()
@@ -367,6 +348,44 @@ const priv::GlContext* WindowContext::getActiveThreadLocalGlContextPtr() const
 {
     SFML_BASE_ASSERT(windowContextAlive);
     return activeGlContext.ptr;
+}
+
+
+////////////////////////////////////////////////////////////
+priv::JoystickManager& WindowContext::getJoystickManager()
+{
+    return const_cast<priv::JoystickManager&>(static_cast<const WindowContext&>(*this).getJoystickManager());
+}
+
+
+////////////////////////////////////////////////////////////
+const priv::JoystickManager& WindowContext::getJoystickManager() const
+{
+    SFML_BASE_ASSERT(windowContextAlive);
+
+    if (!m_impl->joystickManager.hasValue())
+        m_impl->joystickManager.emplace();
+
+    return *m_impl->joystickManager;
+}
+
+
+////////////////////////////////////////////////////////////
+priv::SensorManager& WindowContext::getSensorManager()
+{
+    return const_cast<priv::SensorManager&>(static_cast<const WindowContext&>(*this).getSensorManager());
+}
+
+
+////////////////////////////////////////////////////////////
+const priv::SensorManager& WindowContext::getSensorManager() const
+{
+    SFML_BASE_ASSERT(windowContextAlive);
+
+    if (!m_impl->sensorManager.hasValue())
+        m_impl->sensorManager.emplace();
+
+    return *m_impl->sensorManager;
 }
 
 
@@ -487,33 +506,6 @@ template <typename... GLContextArgs>
 [[nodiscard]] base::UniquePtr<priv::GlContext> WindowContext::createGlContextImpl(const ContextSettings& contextSettings,
                                                                                   GLContextArgs&&... args)
 {
-    // TODO P0: maybe graphicscontext should take a contextsetttings for teh shared context??
-    // If use_count is 2 (GlResource + sharedContext) we know that we are inside sf::Context or sf::Window
-    // Only in this situation we allow the user to indirectly re-create the shared context as a core context
-
-    // // Check if we need to convert our shared context into a core context
-    // if ((SharedContext::getUseCount() == 2) && (contextSettings.attributeFlags & ContextSettings::Attribute::Core) &&
-    //     !(sharedGlContext.m_settings.attributeFlags & ContextSettings::Attribute::Core))
-    // {
-    //     // Re-create our shared context as a core context
-    //     const ContextSettings sharedSettings{.depthBits = 0,
-    //                                          .stencilBits = 0,
-    //                                          .antiAliasingLevel = 0,
-    //                                          .majorVersion = contextSettings.majorVersion,
-    //                                          .minorVersion = contextSettings.minorVersion,
-    //                                          .attributeFlags = contextSettings.attributeFlags};
-
-    //     sharedGlContext.emplace(nullptr, sharedSettings, Vector2u{1, 1});
-    //     if (!sharedGlContext.initialize(sharedSettings))
-    //     {
-    //        priv::err() << "Could not initialize shared context in WindowContext::createGlContext()";
-    //         return nullptr;
-    //     }
-
-    //     // Reload our extensions vector
-    //     sharedContext->loadExtensions();
-    // }
-
     const std::lock_guard lock(m_impl->sharedGlContextMutex);
 
     if (!setActiveThreadLocalGlContextToSharedContext(true))
@@ -529,7 +521,7 @@ template <typename... GLContextArgs>
 
     if (!setActiveThreadLocalGlContext(*glContext, true))
     {
-        priv::err() << "Error enabling newly created GL context in GlContext::initalize()";
+        priv::err() << "Error enabling newly created GL context in GlContext::initialize()";
         return nullptr;
     }
 

@@ -9,11 +9,10 @@
 #include "SFML/System/LifetimeDependee.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/SizeT.hpp"
-
-#include <cstdint>
 
 
 ////////////////////////////////////////////////////////////
@@ -176,10 +175,7 @@ public:
     /// \return The glyph corresponding to \a `codePoint` and \a `characterSize`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const Glyph& getGlyph(std::uint32_t codePoint,
-                                        unsigned int  characterSize,
-                                        bool          bold,
-                                        float         outlineThickness = 0) const;
+    [[nodiscard]] const Glyph& getGlyph(base::U32 codePoint, unsigned int characterSize, bool bold, float outlineThickness = 0) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Determine if this font has a glyph representing the requested code point
@@ -197,7 +193,7 @@ public:
     /// \return `true` if the codepoint has a glyph representation, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool hasGlyph(std::uint32_t codePoint) const;
+    [[nodiscard]] bool hasGlyph(base::U32 codePoint) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the kerning offset of two glyphs
@@ -216,7 +212,7 @@ public:
     /// \return Kerning value for \a `first` and \a `second`, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] float getKerning(std::uint32_t first, std::uint32_t second, unsigned int characterSize, bool bold = false) const;
+    [[nodiscard]] float getKerning(base::U32 first, base::U32 second, unsigned int characterSize, bool bold = false) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the line spacing
@@ -267,12 +263,10 @@ public:
     /// are requested, thus it is not very relevant. It is mainly
     /// used internally by `sf::Text`.
     ///
-    /// \param characterSize Reference character size
-    ///
     /// \return Texture containing the glyphs of the requested size
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const Texture& getTexture(unsigned int characterSize) const;
+    [[nodiscard]] const Texture& getTexture() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Enable or disable the smooth filter
@@ -307,7 +301,7 @@ private:
     /// \param codePoint Unicode code point of the character to load
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] unsigned int getCharIndex(std::uint32_t codePoint) const;
+    [[nodiscard]] unsigned int getCharIndex(base::U32 codePoint) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Make sure that the given size is the current one

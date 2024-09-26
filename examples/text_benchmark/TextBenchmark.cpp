@@ -70,10 +70,10 @@ int main()
 
     const sf::Text text0(font0, {.position = {0u, 0u}, .string = "Test", .characterSize = 128u});
     const sf::Text text1(font0, {.position = {128u, 0u}, .string = "acbasdfbFOOBAR", .characterSize = 32u});
-    const sf::Text text2(font0, {.position = {0u, 128u}, .string = "ssdfbsdbfussy", .characterSize = 64u});
+    const sf::Text text2(font0, {.position = {0u, 128u}, .string = "ssdfbsdbfudsy", .characterSize = 64u});
     const sf::Text text3(font1, {.position = {128u, 128u}, .string = "Test", .characterSize = 128u});
     const sf::Text text4(font1, {.position = {256u, 128u}, .string = "FOmfgj,ryfkmtdfOBAR", .characterSize = 32u});
-    const sf::Text text5(font1, {.position = {128u, 256u}, .string = "sussy", .characterSize = 64u});
+    const sf::Text text5(font1, {.position = {128u, 256u}, .string = "abscas", .characterSize = 64u});
 
     const sf::CircleShape circle0{
         {.position           = {350.f, 350.f},

@@ -5,6 +5,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/View.hpp"
 
+#include "SFML/Base/FastSinCos.hpp"
+
 
 namespace sf
 {
@@ -19,11 +21,11 @@ View View::fromRect(const FloatRect& rectangle)
 Transform View::getTransform() const
 {
     // Rotation components
-    const float angle  = rotation.asRadians();
-    const float cosine = base::cos(angle);
-    const float sine   = base::sin(angle);
-    const float tx     = -center.x * cosine - center.y * sine + center.x;
-    const float ty     = center.x * sine - center.y * cosine + center.y;
+    const float angle         = rotation.asRadians();
+    const auto [sine, cosine] = base::fastSinCos(angle);
+
+    const float tx = -center.x * cosine - center.y * sine + center.x;
+    const float ty = center.x * sine - center.y * cosine + center.y;
 
     // Projection components
     const float a = 2.f / size.x;

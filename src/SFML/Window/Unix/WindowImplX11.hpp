@@ -7,14 +7,13 @@
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/WindowImpl.hpp"
 
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 
 #include <X11/Xlib.h>
 #include <X11/extensions/Xrandr.h>
 
 #include <memory>
-
-#include <cstdint>
 
 
 namespace sf
@@ -29,7 +28,7 @@ namespace sf::priv
 /// \brief Linux (X11) implementation of WindowImpl
 ///
 ////////////////////////////////////////////////////////////
-class WindowImplX11 : public WindowImpl
+class [[nodiscard]] WindowImplX11 : public WindowImpl
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -38,7 +37,7 @@ public:
     /// \param handle Platform-specific handle of the control
     ///
     ////////////////////////////////////////////////////////////
-    explicit WindowImplX11(WindowHandle handle);
+    [[nodiscard]] explicit WindowImplX11(WindowContext& windowContext, WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the window implementation
@@ -50,7 +49,7 @@ public:
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    explicit WindowImplX11(const WindowSettings& windowSettings);
+    [[nodiscard]] explicit WindowImplX11(WindowContext& windowContext, const WindowSettings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -133,7 +132,7 @@ public:
     /// \param pixels Pointer to the pixels in memory, format must be RGBA 32 bits
     ///
     ////////////////////////////////////////////////////////////
-    void setIcon(Vector2u size, const std::uint8_t* pixels) override;
+    void setIcon(Vector2u size, const base::U8* pixels) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window
@@ -283,7 +282,7 @@ private:
     /// \return RROutput of the primary monitor
     ///
     ////////////////////////////////////////////////////////////
-    RROutput getOutputPrimary(::Window& rootWindow, XRRScreenResources* res);
+    [[nodiscard]] RROutput getOutputPrimary(::Window& rootWindow, XRRScreenResources* res);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get coordinates of the primary monitor
@@ -291,7 +290,7 @@ private:
     /// \return Position of the primary monitor
     ///
     ////////////////////////////////////////////////////////////
-    Vector2i getPrimaryMonitorPosition();
+    [[nodiscard]] Vector2i getPrimaryMonitorPosition();
 
     ////////////////////////////////////////////////////////////
     /// \brief Set min/max window size

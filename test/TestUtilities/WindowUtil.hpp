@@ -18,7 +18,5 @@ namespace sf
 {
 struct VideoMode;
 
-// Required because WindowUtil.cpp doesn't include WindowUtil.hpp
-// NOLINTNEXTLINE(readability-redundant-declaration)
 std::ostream& operator<<(std::ostream& os, const VideoMode& videoMode);
 } // namespace sf

@@ -9,11 +9,10 @@
 #include "SFML/Audio/ChannelMap.hpp"
 #include "SFML/Audio/SoundSource.hpp"
 
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/UniquePtr.hpp"
-
-#include <cstdint>
 
 
 ////////////////////////////////////////////////////////////
@@ -42,8 +41,8 @@ public:
     ////////////////////////////////////////////////////////////
     struct [[nodiscard]] Chunk
     {
-        const std::int16_t* samples{};     //!< Pointer to the audio samples
-        base::SizeT         sampleCount{}; //!< Number of samples pointed by Samples
+        const base::I16* samples{};     //!< Pointer to the audio samples
+        base::SizeT      sampleCount{}; //!< Number of samples pointed by Samples
     };
 
     ////////////////////////////////////////////////////////////
@@ -243,7 +242,7 @@ protected:
     /// \return The seek position after looping (or `base::nullOpt` if there's no loop)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual base::Optional<std::uint64_t> onLoop();
+    [[nodiscard]] virtual base::Optional<base::U64> onLoop();
 
     ////////////////////////////////////////////////////////////
     // Member data

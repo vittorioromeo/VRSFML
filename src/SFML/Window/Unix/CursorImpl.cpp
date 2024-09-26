@@ -45,7 +45,7 @@ CursorImpl::~CursorImpl()
 
 
 ////////////////////////////////////////////////////////////
-bool CursorImpl::loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vector2u hotspot)
+bool CursorImpl::loadFromPixels(const base::U8* pixels, Vector2u size, Vector2u hotspot)
 {
     release();
 
@@ -57,7 +57,7 @@ bool CursorImpl::loadFromPixels(const std::uint8_t* pixels, Vector2u size, Vecto
 
 
 ////////////////////////////////////////////////////////////
-bool CursorImpl::loadFromPixelsARGB(const std::uint8_t* pixels, Vector2u size, Vector2u hotspot)
+bool CursorImpl::loadFromPixelsARGB(const base::U8* pixels, Vector2u size, Vector2u hotspot)
 {
     // Create cursor image, convert from RGBA to ARGB.
     const auto cursorImage = X11Ptr<XcursorImage>(XcursorImageCreate(static_cast<int>(size.x), static_cast<int>(size.y)));
@@ -67,7 +67,7 @@ bool CursorImpl::loadFromPixelsARGB(const std::uint8_t* pixels, Vector2u size, V
     const base::SizeT numPixels = static_cast<base::SizeT>(size.x) * static_cast<base::SizeT>(size.y);
     for (base::SizeT pixelIndex = 0; pixelIndex < numPixels; ++pixelIndex)
     {
-        cursorImage->pixels[pixelIndex] = static_cast<std::uint32_t>(
+        cursorImage->pixels[pixelIndex] = static_cast<base::U32>(
             pixels[pixelIndex * 4 + 2] + (pixels[pixelIndex * 4 + 1] << 8) + (pixels[pixelIndex * 4 + 0] << 16) +
             (pixels[pixelIndex * 4 + 3] << 24));
     }
@@ -81,16 +81,16 @@ bool CursorImpl::loadFromPixelsARGB(const std::uint8_t* pixels, Vector2u size, V
 
 
 ////////////////////////////////////////////////////////////
-bool CursorImpl::loadFromPixelsMonochrome(const std::uint8_t* pixels, Vector2u size, Vector2u hotspot)
+bool CursorImpl::loadFromPixelsMonochrome(const base::U8* pixels, Vector2u size, Vector2u hotspot)
 {
     // Convert the image into a bitmap (monochrome!).
     // The bit data is stored packed into bytes. If the number of pixels on each row of the image
     // does not fit exactly into (width/8) bytes, one extra byte is allocated at the end of each
     // row to store the extra pixels.
-    const base::SizeT         packedWidth = (size.x + 7) / 8;
-    const base::SizeT         bytes       = packedWidth * size.y;
-    std::vector<std::uint8_t> mask(bytes, 0); // Defines which pixel is opaque (1) or transparent (0).
-    std::vector<std::uint8_t> data(bytes, 0); // Defines which pixel is white (1) or black (0).
+    const base::SizeT     packedWidth = (size.x + 7) / 8;
+    const base::SizeT     bytes       = packedWidth * size.y;
+    std::vector<base::U8> mask(bytes, 0); // Defines which pixel is opaque (1) or transparent (0).
+    std::vector<base::U8> data(bytes, 0); // Defines which pixel is white (1) or black (0).
 
     for (base::SizeT j = 0; j < size.y; ++j)
     {
@@ -101,15 +101,15 @@ bool CursorImpl::loadFromPixelsMonochrome(const std::uint8_t* pixels, Vector2u s
             const base::SizeT bitIndex   = i % 8;
 
             // Turn on pixel that are not transparent
-            const std::uint8_t opacity = pixels[pixelIndex * 4 + 3] > 0 ? 1 : 0;
-            mask[byteIndex] |= static_cast<std::uint8_t>(opacity << bitIndex);
+            const base::U8 opacity = pixels[pixelIndex * 4 + 3] > 0 ? 1 : 0;
+            mask[byteIndex] |= static_cast<base::U8>(opacity << bitIndex);
 
             // Choose between black/background & white/foreground color for each pixel,
             // based on the pixel color intensity: on average, if a channel is "active"
             // at 50%, the bit is white.
             const int intensity = (pixels[pixelIndex * 4 + 0] + pixels[pixelIndex * 4 + 1] + pixels[pixelIndex * 4 + 2]) / 3;
-            const std::uint8_t bit = intensity > 128 ? 1 : 0;
-            data[byteIndex] |= static_cast<std::uint8_t>(bit << bitIndex);
+            const base::U8 bit = intensity > 128 ? 1 : 0;
+            data[byteIndex] |= static_cast<base::U8>(bit << bitIndex);
         }
     }
 

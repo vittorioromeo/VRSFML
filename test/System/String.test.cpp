@@ -10,7 +10,6 @@
 #include <GraphicsUtil.hpp>
 #include <StringifyStringUtil.hpp>
 
-#include <array>
 #include <sstream>
 #include <string>
 
@@ -30,7 +29,7 @@ auto select(const std::basic_string<T>& string16, const std::basic_string<T>& st
         return string32;
 }
 
-auto toHex(const std::uint32_t character)
+auto toHex(const sf::base::U32 character)
 {
     std::ostringstream stream;
     stream << "[\\x" << std::uppercase << std::hex << character << ']';
@@ -212,8 +211,8 @@ TEST_CASE("[System] sf::String")
     {
         SECTION("Nominal")
         {
-            constexpr std::array<std::uint8_t, 4> characters{'w', 'x', 'y', 'z'};
-            const sf::String string = sf::StringUtfUtils::fromUtf8(characters.begin(), characters.end());
+            constexpr sf::base::U8 characters[4]{'w', 'x', 'y', 'z'};
+            const sf::String       string = sf::StringUtfUtils::fromUtf8(characters, characters + 4);
             CHECK(string.toAnsiString<std::string>() == "wxyz"s);
             CHECK(string.toWideString<std::wstring>() == L"wxyz"s);
             CHECK(string.toUtf8<std::u8string>() == std::u8string{'w', 'x', 'y', 'z'});
@@ -226,9 +225,9 @@ TEST_CASE("[System] sf::String")
 
         SECTION("Insufficient input")
         {
-            constexpr std::array<std::uint8_t, 1> characters{251};
-            const sf::String   string = sf::StringUtfUtils::fromUtf8(characters.begin(), characters.end());
-            constexpr char32_t defaultReplacementCharacter = 0;
+            constexpr sf::base::U8 characters[1]{251};
+            const sf::String       string = sf::StringUtfUtils::fromUtf8(characters, characters + 1);
+            constexpr char32_t     defaultReplacementCharacter = 0;
             CHECK(string.getSize() == 1);
             CHECK(string[0] == defaultReplacementCharacter);
         }
@@ -236,8 +235,8 @@ TEST_CASE("[System] sf::String")
 
     SECTION("fromUtf16()")
     {
-        constexpr std::array<std::uint16_t, 4> characters{0xF1, 'x', 'y', 'z'};
-        const sf::String string = sf::StringUtfUtils::fromUtf16(characters.begin(), characters.end());
+        constexpr sf::base::U16 characters[4]{0xF1, 'x', 'y', 'z'};
+        const sf::String        string = sf::StringUtfUtils::fromUtf16(characters, characters + 4);
         CHECK(string.toAnsiString<std::string>() == select("\xF1xyz"s, "\0xyz"s));
         CHECK(string.toWideString<std::wstring>() == L"\xF1xyz"s);
         CHECK(string.toUtf8<std::u8string>() == std::u8string{0xC3, 0xB1, 'x', 'y', 'z'});
@@ -250,8 +249,8 @@ TEST_CASE("[System] sf::String")
 
     SECTION("fromUtf32()")
     {
-        constexpr std::array<std::uint32_t, 4> characters{'w', 0x104321, 'y', 'z'};
-        const sf::String string = sf::StringUtfUtils::fromUtf32(characters.begin(), characters.end());
+        constexpr sf::base::U32 characters[4]{'w', 0x104321, 'y', 'z'};
+        const sf::String        string = sf::StringUtfUtils::fromUtf32(characters, characters + 4);
         CHECK(string.toAnsiString<std::string>() == "w\0yz"s);
         CHECK(string.toWideString<std::wstring>() == select(L"wyz"s, L"w\U00104321yz"s));
         CHECK(string.toUtf8<std::u8string>() == std::u8string{'w', 0xF4, 0x84, 0x8C, 0xA1, 'y', 'z'});

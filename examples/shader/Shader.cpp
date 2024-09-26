@@ -424,8 +424,6 @@ sf::base::Optional<Geometry> tryLoadGeometry(sf::GraphicsContext& graphicsContex
 } // namespace
 
 
-bool xd();
-
 ////////////////////////////////////////////////////////////
 /// Main
 ///
@@ -469,8 +467,8 @@ int main()
                           .string           = "Current effect: " + effectNames[current],
                           .characterSize    = 20u,
                           .fillColor        = {80, 80, 80},
-                          .outlineColor     = sf::Color::Red,
-                          .outlineThickness = 3.f});
+                          .outlineColor     = sf::Color::White,
+                          .outlineThickness = 1.5f});
 
 
     // Create the instructions text
@@ -479,8 +477,8 @@ int main()
                            .string           = "Press left and right arrows to change the current shader",
                            .characterSize    = 20u,
                            .fillColor        = {80, 80, 80},
-                           .outlineColor     = sf::Color::Red,
-                           .outlineThickness = 3.f});
+                           .outlineColor     = sf::Color::White,
+                           .outlineThickness = 1.5f});
 
     // Create the main window
     sf::RenderWindow window(graphicsContext, {.size{800u, 600u}, .title = "SFML Shader", .resizable = false, .vsync = true});

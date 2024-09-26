@@ -16,6 +16,8 @@
 #include <iostream>
 
 
+namespace
+{
 ////////////////////////////////////////////////////////////
 /// Play a sound
 ///
@@ -79,6 +81,7 @@ void playMusic(sf::PlaybackDevice& playbackDevice, const sf::Path& filename)
 
     std::cout << '\n' << std::endl;
 }
+} // namespace
 
 
 ////////////////////////////////////////////////////////////

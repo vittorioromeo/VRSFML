@@ -1,5 +1,7 @@
 #include "SFML/Window/Joystick.hpp"
 
+#include "SFML/Window/WindowContext.hpp"
+
 #include <Doctest.hpp>
 
 #include <SystemUtil.hpp>
@@ -17,11 +19,13 @@ TEST_CASE("[Window] sf::Joystick")
     // no joysticks will be detected. This is how we can ensure these
     // tests are portable and reliable.
 
+    const sf::WindowContext windowContext;
+
     for (unsigned int joystickId = 0u; joystickId < sf::Joystick::MaxCount; ++joystickId)
     {
         SECTION("query()")
         {
-            CHECK(!sf::Joystick::query(joystickId).hasValue());
+            CHECK(!sf::Joystick::query(windowContext, joystickId).hasValue());
         }
     }
 }

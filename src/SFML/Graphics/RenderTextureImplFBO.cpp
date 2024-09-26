@@ -349,9 +349,7 @@ bool RenderTextureImplFBO::createFrameBuffer()
     glCheck(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_impl->textureId, 0));
 
     // A final check, just to be sure...
-    GLenum status = 0;
-    glCheck(status = glCheckFramebufferStatus(GL_FRAMEBUFFER));
-    if (status != GL_FRAMEBUFFER_COMPLETE)
+    if (glCheck(glCheckFramebufferStatus(GL_FRAMEBUFFER)) != GL_FRAMEBUFFER_COMPLETE)
     {
         glCheck(glBindFramebuffer(GL_FRAMEBUFFER, 0));
         err() << "Impossible to create render texture (failed to link the target texture to the frame buffer)";
@@ -401,8 +399,7 @@ bool RenderTextureImplFBO::createFrameBuffer()
         }
 
         // A final check, just to be sure...
-        glCheck(status = glCheckFramebufferStatus(GL_FRAMEBUFFER));
-        if (status != GL_FRAMEBUFFER_COMPLETE)
+        if (glCheck(glCheckFramebufferStatus(GL_FRAMEBUFFER)) != GL_FRAMEBUFFER_COMPLETE)
         {
             glCheck(glBindFramebuffer(GL_FRAMEBUFFER, 0));
             err() << "Impossible to create render texture (failed to link the render buffers to the multisample "

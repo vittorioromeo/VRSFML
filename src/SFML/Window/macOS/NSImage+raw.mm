@@ -7,7 +7,7 @@
 
 @implementation NSImage (raw)
 
-+ (NSImage*)imageWithRawData:(const std::uint8_t*)pixels andSize:(NSSize)size
++ (NSImage*)imageWithRawData:(const base::U8*)pixels andSize:(NSSize)size
 {
     // Create an empty image representation.
     NSBitmapImageRep* bitmap = [[NSBitmapImageRep alloc]

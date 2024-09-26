@@ -1,6 +1,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Client.hpp"
+
 #include "SFML/Audio/AudioContext.hpp"
 #include "SFML/Audio/CaptureDeviceHandle.hpp"
 #include "SFML/Audio/SoundRecorder.hpp"

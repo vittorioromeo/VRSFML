@@ -373,7 +373,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem* cend() const noexcept
     {
-        return data();
+        return m_endSize;
     }
 };
 

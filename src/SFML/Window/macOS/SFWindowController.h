@@ -64,6 +64,6 @@ class WindowImplCocoa;
 /// \return an initialized controller
 ///
 ////////////////////////////////////////////////////////////
-- (id)initWithMode:(const sf::VideoMode&)mode andStyle:(std::uint32_t)style andFullscreen:(bool)fullscreen;
+- (id)initWithMode:(const sf::VideoMode&)mode andStyle:(base::U32)style andFullscreen:(bool)fullscreen;
 
 @end

@@ -11,11 +11,10 @@
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vector2.hpp"
 
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/SizeT.hpp"
-
-#include <cstdint>
 
 
 namespace sf
@@ -234,7 +233,7 @@ public:
     /// \param pixels Array of pixels to copy to the texture
     ///
     ////////////////////////////////////////////////////////////
-    void update(const std::uint8_t* pixels);
+    void update(const base::U8* pixels);
 
     ////////////////////////////////////////////////////////////
     /// \brief Update a part of the texture from an array of pixels
@@ -254,7 +253,7 @@ public:
     /// \param dest   Coordinates of the destination position
     ///
     ////////////////////////////////////////////////////////////
-    void update(const std::uint8_t* pixels, Vector2u size, Vector2u dest);
+    void update(const base::U8* pixels, Vector2u size, Vector2u dest);
 
     ////////////////////////////////////////////////////////////
     /// \brief Update a part of this texture from another texture
@@ -547,12 +546,23 @@ private:
     friend class Text;
     friend class RenderTexture;
     friend class RenderTarget;
+    friend struct StatesCache;
 
     ////////////////////////////////////////////////////////////
     /// \brief Compute and return the texture matrix (used by shaders)
     ///
     ////////////////////////////////////////////////////////////
-    void getMatrix(float (&target)[16], CoordinateType coordinateType) const;
+    struct MatrixElems
+    {
+        float a00; //!< 4x4 matrix index: `0`
+        float a11; //!< 4x4 matrix index: `5`
+        float a12; //!< 4x4 matrix index: `13`
+
+        constexpr bool operator==(const MatrixElems&) const = default;
+        constexpr bool operator!=(const MatrixElems&) const = default;
+    };
+
+    [[nodiscard]] MatrixElems getMatrixElems(CoordinateType coordinateType) const;
 
 public:
     ////////////////////////////////////////////////////////////
@@ -684,7 +694,7 @@ SFML_GRAPHICS_API void swap(Texture& lhs, Texture& rhs) noexcept;
 ///     ...
 ///
 ///     // update the texture
-///     std::uint8_t* pixels = ...; // get a fresh chunk of pixels (the next frame of a movie, for example)
+///     base::U8* pixels = ...; // get a fresh chunk of pixels (the next frame of a movie, for example)
 ///     texture.update(pixels);
 ///
 ///     // draw the sprite with the intended texture

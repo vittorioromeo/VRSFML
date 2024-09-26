@@ -41,23 +41,23 @@ namespace
 namespace guids
 {
 // NOLINTBEGIN(readability-identifier-naming)
-const GUID IID_IDirectInput8W = {0xbf798031, 0x483a, 0x4da2, {0xaa, 0x99, 0x5d, 0x64, 0xed, 0x36, 0x97, 0x00}};
+constexpr GUID IID_IDirectInput8W = {0xbf798031, 0x483a, 0x4da2, {0xaa, 0x99, 0x5d, 0x64, 0xed, 0x36, 0x97, 0x00}};
 
-const GUID GUID_XAxis  = {0xa36d02e0, 0xc9f3, 0x11cf, {0xbf, 0xc7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}};
-const GUID GUID_YAxis  = {0xa36d02e1, 0xc9f3, 0x11cf, {0xbf, 0xc7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}};
-const GUID GUID_ZAxis  = {0xa36d02e2, 0xc9f3, 0x11cf, {0xbf, 0xc7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}};
-const GUID GUID_RzAxis = {0xa36d02e3, 0xc9f3, 0x11cf, {0xbf, 0xc7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}};
-const GUID GUID_Slider = {0xa36d02e4, 0xc9f3, 0x11cf, {0xbf, 0xc7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}};
+constexpr GUID GUID_XAxis  = {0xa36d02e0, 0xc9f3, 0x11cf, {0xbf, 0xc7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}};
+constexpr GUID GUID_YAxis  = {0xa36d02e1, 0xc9f3, 0x11cf, {0xbf, 0xc7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}};
+constexpr GUID GUID_ZAxis  = {0xa36d02e2, 0xc9f3, 0x11cf, {0xbf, 0xc7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}};
+constexpr GUID GUID_RzAxis = {0xa36d02e3, 0xc9f3, 0x11cf, {0xbf, 0xc7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}};
+constexpr GUID GUID_Slider = {0xa36d02e4, 0xc9f3, 0x11cf, {0xbf, 0xc7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}};
 
-const GUID GUID_POV = {0xa36d02f2, 0xc9f3, 0x11cf, {0xbf, 0xc7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}};
+constexpr GUID GUID_POV = {0xa36d02f2, 0xc9f3, 0x11cf, {0xbf, 0xc7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}};
 
-const GUID GUID_RxAxis = {0xa36d02f4, 0xc9f3, 0x11cf, {0xbf, 0xc7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}};
-const GUID GUID_RyAxis = {0xa36d02f5, 0xc9f3, 0x11cf, {0xbf, 0xc7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}};
+constexpr GUID GUID_RxAxis = {0xa36d02f4, 0xc9f3, 0x11cf, {0xbf, 0xc7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}};
+constexpr GUID GUID_RyAxis = {0xa36d02f5, 0xc9f3, 0x11cf, {0xbf, 0xc7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}};
 // NOLINTEND(readability-identifier-naming)
 } // namespace guids
 
-HMODULE         dinput8dll  = nullptr;
-IDirectInput8W* directInput = nullptr;
+constinit HMODULE         dinput8dll  = nullptr;
+constinit IDirectInput8W* directInput = nullptr;
 
 struct JoystickRecord
 {
@@ -430,38 +430,37 @@ void JoystickImpl::initializeDInput()
     // Try to load dinput8.dll
     dinput8dll = LoadLibraryA("dinput8.dll");
 
-    if (dinput8dll)
+    if (dinput8dll == nullptr)
+        return;
+
+    // Try to get the address of the DirectInput8Create entry point
+    using DirectInput8CreateFunc = HRESULT(WINAPI*)(HINSTANCE, DWORD, const IID&, LPVOID*, LPUNKNOWN);
+    auto directInput8Create      = reinterpret_cast<DirectInput8CreateFunc>(
+        reinterpret_cast<void*>(GetProcAddress(dinput8dll, "DirectInput8Create")));
+
+    if (!directInput8Create)
     {
-        // Try to get the address of the DirectInput8Create entry point
-        using DirectInput8CreateFunc = HRESULT(WINAPI*)(HINSTANCE, DWORD, const IID&, LPVOID*, LPUNKNOWN);
-        auto directInput8Create      = reinterpret_cast<DirectInput8CreateFunc>(
-            reinterpret_cast<void*>(GetProcAddress(dinput8dll, "DirectInput8Create")));
+        // Unload dinput8.dll
+        FreeLibrary(dinput8dll);
+        dinput8dll = nullptr;
+        return;
+    }
 
-        if (directInput8Create)
-        {
-            // Try to acquire a DirectInput 8.x interface
-            const HRESULT result = directInput8Create(GetModuleHandleW(nullptr),
-                                                      0x0800,
-                                                      guids::IID_IDirectInput8W,
-                                                      reinterpret_cast<void**>(&directInput),
-                                                      nullptr);
+    // Try to acquire a DirectInput 8.x interface
+    const HRESULT result = directInput8Create(GetModuleHandleW(nullptr),
+                                              0x0800,
+                                              guids::IID_IDirectInput8W,
+                                              reinterpret_cast<void**>(&directInput),
+                                              nullptr);
 
-            if (FAILED(result))
-            {
-                // De-initialize everything
-                directInput = nullptr;
-                FreeLibrary(dinput8dll);
-                dinput8dll = nullptr;
+    if (FAILED(result))
+    {
+        // De-initialize everything
+        directInput = nullptr;
+        FreeLibrary(dinput8dll);
+        dinput8dll = nullptr;
 
-                priv::err() << "Failed to initialize DirectInput: " << result;
-            }
-        }
-        else
-        {
-            // Unload dinput8.dll
-            FreeLibrary(dinput8dll);
-            dinput8dll = nullptr;
-        }
+        priv::err() << "Failed to initialize DirectInput: " << result;
     }
 }
 
@@ -531,7 +530,6 @@ void JoystickImpl::updateConnectionsDInput()
     if (FAILED(result))
     {
         priv::err() << "Failed to enumerate DirectInput devices: " << result;
-
         return;
     }
 

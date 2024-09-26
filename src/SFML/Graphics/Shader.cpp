@@ -4,6 +4,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Config.hpp"
+
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Shader.hpp"
 #include "SFML/Graphics/Texture.hpp"
@@ -23,6 +25,7 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/StringView.hpp"
 #include "SFML/Base/TrivialVector.hpp"
 
 #include <fstream>
@@ -55,7 +58,6 @@ namespace
 [[nodiscard]] sf::base::SizeT getMaxTextureUnits()
 {
     static const auto maxUnits = static_cast<sf::base::SizeT>(sf::priv::getGLInteger(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS));
-
     return maxUnits;
 }
 
@@ -67,7 +69,7 @@ struct [[nodiscard]] BufferSlice
     const sf::base::SizeT beginIdx;
     const sf::base::SizeT count;
 
-    explicit BufferSlice(sf::base::SizeT b, sf::base::SizeT c) : beginIdx(b), count(c)
+    [[nodiscard]] explicit BufferSlice(sf::base::SizeT b, sf::base::SizeT c) : beginIdx(b), count(c)
     {
     }
 
@@ -215,17 +217,17 @@ struct StringHash
 {
     using is_transparent = void;
 
-    [[nodiscard]] sf::base::SizeT operator()(const char* txt) const
+    [[nodiscard, gnu::always_inline, gnu::flatten]] sf::base::SizeT operator()(const char* txt) const
     {
         return std::hash<std::string_view>{}(txt);
     }
 
-    [[nodiscard]] sf::base::SizeT operator()(sf::base::StringView txt) const
+    [[nodiscard, gnu::always_inline, gnu::flatten]] sf::base::SizeT operator()(sf::base::StringView txt) const
     {
         return std::hash<std::string_view>{}({txt.data(), txt.size()});
     }
 
-    [[nodiscard]] sf::base::SizeT operator()(const std::string& txt) const
+    [[nodiscard, gnu::always_inline, gnu::flatten]] sf::base::SizeT operator()(const std::string& txt) const
     {
         return std::hash<std::string>{}(txt);
     }
@@ -237,12 +239,12 @@ struct StringEq
 {
     using is_transparent = void;
 
-    [[nodiscard, gnu::always_inline]] bool operator()(const sf::base::StringView& a, const std::string& b) const
+    [[nodiscard, gnu::always_inline, gnu::flatten]] bool operator()(const sf::base::StringView& a, const std::string& b) const
     {
         return a == sf::base::StringView{b};
     }
 
-    [[nodiscard, gnu::always_inline]] bool operator()(const std::string& a, const sf::base::StringView& b) const
+    [[nodiscard, gnu::always_inline, gnu::flatten]] bool operator()(const std::string& a, const sf::base::StringView& b) const
     {
         return sf::base::StringView{a} == b;
     }
@@ -256,6 +258,47 @@ struct StringEq
     {
         return a == b;
     }
+};
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] sf::base::StringView adjustPreamble(sf::base::StringView src)
+{
+
+#if defined(SFML_SYSTEM_EMSCRIPTEN)
+
+    // Emscripten/WebGL always requires `#version 300 es` and precision
+    constexpr sf::base::StringView preamble{R"glsl(#version 300 es
+
+precision mediump float;
+
+        )glsl"};
+
+#elif defined(SFML_OPENGL_ES)
+
+    // Desktop/mobile GLES can use `#version 310 es` and precision
+    constexpr sf::base::StringView preamble{R"glsl(#version 310 es
+
+precision mediump float;
+
+        )glsl"};
+
+#else
+
+    // Desktop GL can use `#version 430 core`
+    constexpr sf::base::StringView preamble{R"glsl(#version 430 core
+
+)glsl"};
+
+#endif
+
+    thread_local sf::base::TrivialVector<char> buffer; // Cannot reuse the other buffer here
+    buffer.clear();
+
+    buffer.emplaceRange(preamble.data(), preamble.size() - 1);
+    buffer.emplaceRange(src.data(), src.size() - 1);
+
+    return {buffer.data(), buffer.size()};
 };
 
 } // namespace
@@ -944,102 +987,68 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
     }
 
     // Create the program
-    GLhandle shaderProgram{};
-    glCheck(shaderProgram = glCreateProgram());
+    const GLhandle shaderProgram = glCheck(glCreateProgram());
     SFML_BASE_ASSERT(glCheck(glIsProgram(shaderProgram)));
+
+    const auto makeShader = [&](GLenum type, const char* typeStr, base::StringView shaderCode)
+    {
+        // Add `#version` (and float precision if required)
+        const auto adjustedShaderCode = adjustPreamble(shaderCode);
+
+        const GLhandle shader = glCheck(glCreateShader(type));
+
+        const GLcharARB* sourceCode       = adjustedShaderCode.data();
+        const auto       sourceCodeLength = static_cast<GLint>(adjustedShaderCode.size());
+
+        glCheck(glShaderSource(shader, 1, &sourceCode, &sourceCodeLength));
+        glCheck(glCompileShader(shader));
+        SFML_BASE_ASSERT(glCheck(glIsShader(shader)));
+
+        // Check the compile log
+        GLint success = 0;
+        glCheck(glGetShaderiv(shader, GL_COMPILE_STATUS, &success));
+        if (success == GL_FALSE)
+        {
+            char log[1024]{};
+            glCheck(glGetShaderInfoLog(shader, sizeof(log), nullptr, log));
+
+            priv::err() << "Failed to compile " << typeStr << " shader:" << '\n'
+                        << static_cast<const char*>(log) << "\n\nSource code:\n"
+                        << adjustedShaderCode;
+
+            glCheck(glDeleteShader(shader));
+            glCheck(glDeleteProgram(shaderProgram));
+
+            return false;
+        }
+
+        // Attach the shader to the program, and delete it (not needed anymore)
+        glCheck(glAttachShader(shaderProgram, shader));
+        glCheck(glDeleteShader(shader));
+
+        return true;
+    };
 
     if (vertexShaderCode.data() == nullptr)
         vertexShaderCode = graphicsContext.getBuiltInShaderVertexSrc();
 
-    // Create the vertex shader
-    {
-        // Create and compile the shader
-        GLhandle vertexShader{};
-        glCheck(vertexShader = glCheck(glCreateShader(GL_VERTEX_SHADER)));
-        const GLcharARB* sourceCode       = vertexShaderCode.data();
-        const auto       sourceCodeLength = static_cast<GLint>(vertexShaderCode.size());
-        glCheck(glShaderSource(vertexShader, 1, &sourceCode, &sourceCodeLength));
-        glCheck(glCompileShader(vertexShader));
-        SFML_BASE_ASSERT(glCheck(glIsShader(vertexShader)));
+    if (!makeShader(GL_VERTEX_SHADER, "vertex", vertexShaderCode))
+        return base::nullOpt;
 
-        // Check the compile log
-        GLint success = 0;
-        glCheck(glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success));
-        if (success == GL_FALSE)
-        {
-            char log[1024];
-            glCheck(glGetShaderInfoLog(vertexShader, sizeof(log), nullptr, log));
-            priv::err() << "Failed to compile vertex shader:" << '\n' << static_cast<const char*>(log);
-            glCheck(glDeleteShader(vertexShader));
-            glCheck(glDeleteProgram(shaderProgram));
-            return base::nullOpt;
-        }
-
-        // Attach the shader to the program, and delete it (not needed anymore)
-        glCheck(glAttachShader(shaderProgram, vertexShader));
-        glCheck(glDeleteShader(vertexShader));
-    }
 
     // Create the geometry shader if needed
     if (geometryShaderCode.data())
     {
-        // Create and compile the shader
-        const GLhandle   geometryShader   = glCheck(glCreateShader(GL_GEOMETRY_SHADER));
-        const GLcharARB* sourceCode       = geometryShaderCode.data();
-        const auto       sourceCodeLength = static_cast<GLint>(geometryShaderCode.size());
-        glCheck(glShaderSource(geometryShader, 1, &sourceCode, &sourceCodeLength));
-        glCheck(glCompileShader(geometryShader));
-        SFML_BASE_ASSERT(glCheck(glIsShader(geometryShader)));
-
-        // Check the compile log
-        GLint success = 0;
-        glCheck(glGetShaderiv(geometryShader, GL_COMPILE_STATUS, &success));
-        if (success == GL_FALSE)
-        {
-            char log[1024];
-            glCheck(glGetShaderInfoLog(geometryShader, sizeof(log), nullptr, log));
-            priv::err() << "Failed to compile geometry shader:" << '\n' << static_cast<const char*>(log);
-            glCheck(glDeleteShader(geometryShader));
-            glCheck(glDeleteProgram(shaderProgram));
+        if (!makeShader(GL_GEOMETRY_SHADER, "geometry", geometryShaderCode))
             return base::nullOpt;
-        }
-
-        // Attach the shader to the program, and delete it (not needed anymore)
-        glCheck(glAttachShader(shaderProgram, geometryShader));
-        glCheck(glDeleteShader(geometryShader));
     }
 
     if (fragmentShaderCode.data() == nullptr)
         fragmentShaderCode = graphicsContext.getBuiltInShaderFragmentSrc();
 
     // Create the fragment shader
-    {
-        // Create and compile the shader
-        GLhandle fragmentShader{};
-        glCheck(fragmentShader = glCheck(glCreateShader(GL_FRAGMENT_SHADER)));
-        const GLcharARB* sourceCode       = fragmentShaderCode.data();
-        const auto       sourceCodeLength = static_cast<GLint>(fragmentShaderCode.size());
-        glCheck(glShaderSource(fragmentShader, 1, &sourceCode, &sourceCodeLength));
-        glCheck(glCompileShader(fragmentShader));
-        SFML_BASE_ASSERT(glCheck(glIsShader(fragmentShader)));
-
-        // Check the compile log
-        GLint success = 0;
-        glCheck(glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success));
-        if (success == GL_FALSE)
-        {
-            char log[1024];
-            glCheck(glGetShaderInfoLog(fragmentShader, sizeof(log), nullptr, log));
-            priv::err() << "Failed to compile fragment shader:" << '\n' << static_cast<const char*>(log);
-            glCheck(glDeleteShader(fragmentShader));
-            glCheck(glDeleteProgram(shaderProgram));
-            return base::nullOpt;
-        }
-
-        // Attach the shader to the program, and delete it (not needed anymore)
-        glCheck(glAttachShader(shaderProgram, fragmentShader));
-        glCheck(glDeleteShader(fragmentShader));
-    }
+    if (!makeShader(GL_FRAGMENT_SHADER, "fragment", fragmentShaderCode))
+        return base::nullOpt;
 
     // Link the program
     glCheck(glLinkProgram(shaderProgram));
@@ -1049,7 +1058,7 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
     glCheck(glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success));
     if (success == GL_FALSE)
     {
-        char log[1024];
+        char log[1024]{};
         glCheck(glGetProgramInfoLog(shaderProgram, sizeof(log), nullptr, log));
         priv::err() << "Failed to link shader:" << '\n' << static_cast<const char*>(log);
         glCheck(glDeleteProgram(shaderProgram));

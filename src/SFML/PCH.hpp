@@ -31,6 +31,7 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtins/Memcpy.hpp"
 #include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/UniquePtr.hpp"
@@ -43,7 +44,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include <cstdint>
 #include <cstdlib>
 
 #ifdef SFML_BUILD_EXAMPLES

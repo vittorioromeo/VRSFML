@@ -82,7 +82,7 @@ namespace sf::priv
 [[gnu::always_inline, gnu::flatten]] inline void spriteToVertices(const Sprite& sprite, Vertex* target)
 {
     const auto& [position, size] = sprite.textureRect;
-    const Vector2f absSize(base::fabs(size.x), base::fabs(size.y));
+    const Vector2f absSize(base::fabs(size.x), base::fabs(size.y)); // TODO P0: consider dropping support for negative UVs
 
     // Position
     {

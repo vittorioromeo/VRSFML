@@ -8,6 +8,7 @@
 #include "SFML/Graphics/RenderTexture.hpp"
 #include "SFML/Graphics/RenderTextureImplFBO.hpp"
 #include "SFML/Graphics/Texture.hpp"
+#include "SFML/Graphics/View.hpp"
 
 #include "SFML/System/Err.hpp"
 
@@ -75,9 +76,6 @@ base::Optional<RenderTexture> RenderTexture::create(GraphicsContext&       graph
         result.reset();
         return result; // Empty optional
     }
-
-    // We can now initialize the render target part
-    result->initialize();
 
     return result;
 }
@@ -173,10 +171,9 @@ const Texture& RenderTexture::getTexture() const
 
 ////////////////////////////////////////////////////////////
 RenderTexture::RenderTexture(base::PassKey<RenderTexture>&&, GraphicsContext& graphicsContext, Texture&& texture) :
-RenderTarget(graphicsContext),
+RenderTarget(graphicsContext, View::fromRect({{0.f, 0.f}, texture.getSize().toVector2f()})),
 m_impl(graphicsContext, SFML_BASE_MOVE(texture))
 {
 }
-
 
 } // namespace sf

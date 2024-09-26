@@ -10,22 +10,19 @@
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/Text.hpp"
-#include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/String.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
-#include "SFML/Base/Builtins/Memcpy.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Math/Floor.hpp"
 #include "SFML/Base/Math/Fmax.hpp"
 #include "SFML/Base/Math/Fmin.hpp"
 #include "SFML/Base/TrivialVector.hpp"
-
-#include <cstdint>
 
 
 namespace
@@ -43,14 +40,15 @@ void addLine(sf::Vertex*      vertices,
     const float top    = sf::base::floor(lineTop + offset - (thickness / 2) + 0.5f);
     const float bottom = top + sf::base::floor(thickness + 0.5f);
 
-    const sf::Vertex vertexData[] = {{{-outlineThickness, top - outlineThickness}, color, {1.0f, 1.0f}},
-                                     {{lineLength + outlineThickness, top - outlineThickness}, color, {1.0f, 1.0f}},
-                                     {{-outlineThickness, bottom + outlineThickness}, color, {1.0f, 1.0f}},
-                                     {{-outlineThickness, bottom + outlineThickness}, color, {1.0f, 1.0f}},
-                                     {{lineLength + outlineThickness, top - outlineThickness}, color, {1.0f, 1.0f}},
-                                     {{lineLength + outlineThickness, bottom + outlineThickness}, color, {1.0f, 1.0f}}};
+    auto* ptr = vertices + index;
 
-    SFML_BASE_MEMCPY(vertices + index, vertexData, sizeof(sf::Vertex) * 6);
+    *ptr++ = {{-outlineThickness, top - outlineThickness}, color, {1.0f, 1.0f}};
+    *ptr++ = {{lineLength + outlineThickness, top - outlineThickness}, color, {1.0f, 1.0f}};
+    *ptr++ = {{-outlineThickness, bottom + outlineThickness}, color, {1.0f, 1.0f}};
+    *ptr++ = {{-outlineThickness, bottom + outlineThickness}, color, {1.0f, 1.0f}};
+    *ptr++ = {{lineLength + outlineThickness, top - outlineThickness}, color, {1.0f, 1.0f}};
+    *ptr++ = {{lineLength + outlineThickness, bottom + outlineThickness}, color, {1.0f, 1.0f}};
+
     index += 6;
 }
 
@@ -70,14 +68,15 @@ void addGlyphQuad(sf::Vertex*      vertices,
     const auto uv1 = glyph.textureRect.position - padding;
     const auto uv2 = (glyph.textureRect.position + glyph.textureRect.size) + padding;
 
-    const sf::Vertex vertexData[] = {{position + sf::Vector2f(p1.x - italicShear * p1.y, p1.y), color, {uv1.x, uv1.y}},
-                                     {position + sf::Vector2f(p2.x - italicShear * p1.y, p1.y), color, {uv2.x, uv1.y}},
-                                     {position + sf::Vector2f(p1.x - italicShear * p2.y, p2.y), color, {uv1.x, uv2.y}},
-                                     {position + sf::Vector2f(p1.x - italicShear * p2.y, p2.y), color, {uv1.x, uv2.y}},
-                                     {position + sf::Vector2f(p2.x - italicShear * p1.y, p1.y), color, {uv2.x, uv1.y}},
-                                     {position + sf::Vector2f(p2.x - italicShear * p2.y, p2.y), color, {uv2.x, uv2.y}}};
+    auto* ptr = vertices + index;
 
-    SFML_BASE_MEMCPY(vertices + index, vertexData, sizeof(sf::Vertex) * 6);
+    *ptr++ = {position + sf::Vector2f(p1.x - italicShear * p1.y, p1.y), color, {uv1.x, uv1.y}};
+    *ptr++ = {position + sf::Vector2f(p2.x - italicShear * p1.y, p1.y), color, {uv2.x, uv1.y}};
+    *ptr++ = {position + sf::Vector2f(p1.x - italicShear * p2.y, p2.y), color, {uv1.x, uv2.y}};
+    *ptr++ = {position + sf::Vector2f(p1.x - italicShear * p2.y, p2.y), color, {uv1.x, uv2.y}};
+    *ptr++ = {position + sf::Vector2f(p2.x - italicShear * p1.y, p1.y), color, {uv2.x, uv1.y}};
+    *ptr++ = {position + sf::Vector2f(p2.x - italicShear * p2.y, p2.y), color, {uv2.x, uv2.y}};
+
     index += 6;
 }
 
@@ -314,11 +313,11 @@ Vector2f Text::findCharacterPos(base::SizeT index) const
     const float lineSpacing = m_font->getLineSpacing(m_characterSize) * m_lineSpacing;
 
     // Compute the position
-    Vector2f      characterPos;
-    std::uint32_t prevChar = 0;
+    Vector2f  characterPos;
+    base::U32 prevChar = 0;
     for (base::SizeT i = 0; i < index; ++i)
     {
-        const std::uint32_t curChar = m_string[i];
+        const base::U32 curChar = m_string[i];
 
         // Apply the kerning offset
         characterPos.x += m_font->getKerning(prevChar, curChar, m_characterSize, isBold);
@@ -368,7 +367,7 @@ FloatRect Text::getGlobalBounds() const
 void Text::draw(RenderTarget& target, RenderStates states) const
 {
     states.transform *= getTransform();
-    states.texture        = &m_font->getTexture(m_characterSize);
+    states.texture        = &m_font->getTexture();
     states.coordinateType = CoordinateType::Pixels;
 
     const auto [data, size] = getVertices();
@@ -388,14 +387,9 @@ void Text::draw(RenderTarget& target, RenderStates states) const
 ////////////////////////////////////////////////////////////
 void Text::ensureGeometryUpdate(const Font& font) const
 {
-    const auto fontTextureCacheId = font.getTexture(m_characterSize).m_cacheId;
-
     // Do nothing, if geometry has not changed and the font texture has not changed
-    if (!m_geometryNeedUpdate && fontTextureCacheId == m_fontTextureId)
+    if (!m_geometryNeedUpdate)
         return;
-
-    // Save the current fonts texture id
-    m_fontTextureId = fontTextureCacheId;
 
     // Mark geometry as updated
     m_geometryNeedUpdate = false;
@@ -441,10 +435,10 @@ void Text::ensureGeometryUpdate(const Font& font) const
 
         const auto addGlyphsFake = addLinesFake;
 
-        std::uint32_t prevChar = 0;
-        float         x        = 0.f;
+        base::U32 prevChar = 0;
+        float     x        = 0.f;
 
-        for (const std::uint32_t curChar : m_string)
+        for (const base::U32 curChar : m_string)
         {
             // Skip the \r char to avoid weird graphical issues
             if (curChar == U'\r')
@@ -506,17 +500,17 @@ void Text::ensureGeometryUpdate(const Font& font) const
     float maxX = 0.f;
     float maxY = 0.f;
 
-    std::uint32_t prevChar = 0;
+    base::U32 prevChar = 0;
 
     const auto addLines = [this, &currFillIndex, &currOutlineIndex, &x, &y, &underlineThickness](float offset)
     {
         addLine(m_vertices.data(), currFillIndex, x, y, m_fillColor, offset, underlineThickness);
 
-        if (m_outlineThickness != 0)
+        if (m_outlineThickness != 0.f)
             addLine(m_vertices.data(), currOutlineIndex, x, y, m_outlineColor, offset, underlineThickness, m_outlineThickness);
     };
 
-    for (const std::uint32_t curChar : m_string)
+    for (const base::U32 curChar : m_string)
     {
         // Skip the \r char to avoid weird graphical issues
         if (curChar == U'\r')
@@ -568,7 +562,7 @@ void Text::ensureGeometryUpdate(const Font& font) const
         }
 
         // Apply the outline
-        if (m_outlineThickness != 0)
+        if (m_outlineThickness != 0.f)
         {
             const Glyph& glyph = font.getGlyph(curChar, m_characterSize, isBold, m_outlineThickness);
 
@@ -596,7 +590,7 @@ void Text::ensureGeometryUpdate(const Font& font) const
     }
 
     // If we're using outline, update the current bounds
-    if (m_outlineThickness != 0)
+    if (m_outlineThickness != 0.f)
     {
         const float outline = base::fabs(base::ceil(m_outlineThickness));
         minX -= outline;

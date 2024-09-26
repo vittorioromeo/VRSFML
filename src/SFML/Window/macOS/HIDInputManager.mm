@@ -11,7 +11,7 @@
 
 namespace
 {
-const std::uint8_t unknownVirtualCode = 0xff;
+const base::U8 unknownVirtualCode = 0xff;
 const bool         isIsoKeyboard      = (KBGetLayoutType(LMGetKbdType()) == kKeyboardISO);
 } // namespace
 
@@ -45,7 +45,7 @@ long HIDInputManager::getLocationID(IOHIDDeviceRef device)
 
 
 ////////////////////////////////////////////////////////////
-CFDictionaryRef HIDInputManager::copyDevicesMask(std::uint32_t page, std::uint32_t usage)
+CFDictionaryRef HIDInputManager::copyDevicesMask(base::U32 page, base::U32 usage)
 {
     // Create the dictionary.
     CFMutableDictionaryRef dict = CFDictionaryCreateMutable(kCFAllocatorDefault,
@@ -772,7 +772,7 @@ void HIDInputManager::loadKeyboard(IOHIDDeviceRef keyboard)
 ////////////////////////////////////////////////////////////
 void HIDInputManager::loadKey(IOHIDElementRef key)
 {
-    const std::uint32_t      usage = IOHIDElementGetUsage(key);
+    const base::U32      usage = IOHIDElementGetUsage(key);
     const Keyboard::Scancode code  = usageToScancode(usage);
     if (code != Keyboard::Scan::Unknown)
     {
@@ -800,14 +800,14 @@ void HIDInputManager::buildMappings()
         return;
     }
 
-    auto* layout = reinterpret_cast<UCKeyboardLayout*>(const_cast<std::uint8_t*>(CFDataGetBytePtr(layoutData)));
+    auto* layout = reinterpret_cast<UCKeyboardLayout*>(const_cast<base::U8*>(CFDataGetBytePtr(layoutData)));
 
     // For each scancode having a IOHIDElement, we translate the corresponding
     // virtual code to a localized Key.
     for (unsigned int i = 0; i < Keyboard::ScancodeCount; ++i)
     {
         const auto         scan        = static_cast<Keyboard::Scancode>(i);
-        const std::uint8_t virtualCode = scanToVirtualCode(scan);
+        const base::U8 virtualCode = scanToVirtualCode(scan);
 
         if (virtualCode == unknownVirtualCode)
             continue;
@@ -847,8 +847,8 @@ void HIDInputManager::buildMappings()
             const UniCharCount  maxLength = 4;
             UniChar             string[maxLength];
             UniCharCount        length       = 0;
-            std::uint32_t       deadKeyState = 0;     // unused value
-            const std::uint32_t modifiers    = 0x100; // no modifiers
+            base::U32       deadKeyState = 0;     // unused value
+            const base::U32 modifiers    = 0x100; // no modifiers
 
             // Use current layout for translation
             const OSStatus error = UCKeyTranslate(layout,
@@ -921,7 +921,7 @@ void HIDInputManager::freeUp()
 
 
 ////////////////////////////////////////////////////////////
-CFSetRef HIDInputManager::copyDevices(std::uint32_t page, std::uint32_t usage)
+CFSetRef HIDInputManager::copyDevices(base::U32 page, base::U32 usage)
 {
     // Filter and keep only the requested devices
     CFDictionaryRef mask = copyDevicesMask(page, usage);
@@ -975,7 +975,7 @@ bool HIDInputManager::isPressed(IOHIDElements& elements) const
 
 
 ////////////////////////////////////////////////////////////
-Keyboard::Scancode HIDInputManager::usageToScancode(std::uint32_t usage)
+Keyboard::Scancode HIDInputManager::usageToScancode(base::U32 usage)
 {
     // clang-format off
     switch (usage)
@@ -1182,7 +1182,7 @@ Keyboard::Scancode HIDInputManager::usageToScancode(std::uint32_t usage)
 
 
 ////////////////////////////////////////////////////////
-std::uint8_t HIDInputManager::scanToVirtualCode(Keyboard::Scancode code)
+base::U8 HIDInputManager::scanToVirtualCode(Keyboard::Scancode code)
 {
     // clang-format off
     switch (code)

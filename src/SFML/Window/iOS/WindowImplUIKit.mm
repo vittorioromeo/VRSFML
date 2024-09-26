@@ -19,14 +19,15 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-WindowImplUIKit::WindowImplUIKit(WindowHandle /* handle */)
+WindowImplUIKit::WindowImplUIKit(WindowContext& windowContext, WindowHandle /* handle */) : WindowImpl(windowContext)
 {
     // Not implemented
 }
 
 
 ////////////////////////////////////////////////////////////
-WindowImplUIKit::WindowImplUIKit(const WindowSettings& windowSettings)
+WindowImplUIKit::WindowImplUIKit(WindowContext& windowContext, const WindowSettings& windowSettings) :
+WindowImpl(windowContext)
 {
     m_backingScale = static_cast<float>([SFAppDelegate getInstance].backingScaleFactor);
 
@@ -147,7 +148,7 @@ void WindowImplUIKit::setTitle(const String& /* title */)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplUIKit::setIcon(Vector2u /* size */, const std::uint8_t* /* pixels */)
+void WindowImplUIKit::setIcon(Vector2u /* size */, const base::U8* /* pixels */)
 {
     // Not applicable
 }

@@ -47,7 +47,7 @@ namespace sf
 ////////////////////////////////////////////////////////////
 priv::WindowImpl& WindowBase::getWindowImpl()
 {
-    return *static_cast<priv::WindowImpl*>(m_impl.get());
+    return *m_impl;
 }
 
 
@@ -65,13 +65,14 @@ WindowBase::WindowBase(base::UniquePtr<priv::WindowImpl>&& impl) : m_impl(SFML_B
 
 
 ////////////////////////////////////////////////////////////
-WindowBase::WindowBase(const Settings& windowSettings) :
-WindowBase(priv::WindowImpl::create(nullifyContextSettings(windowSettings)))
+WindowBase::WindowBase(WindowContext& windowContext, const Settings& windowSettings) :
+WindowBase(priv::WindowImpl::create(windowContext, nullifyContextSettings(windowSettings)))
 {
 }
 
 ////////////////////////////////////////////////////////////
-WindowBase::WindowBase(WindowHandle handle) : WindowBase(priv::WindowImpl::create(handle))
+WindowBase::WindowBase(WindowContext& windowContext, WindowHandle handle) :
+WindowBase(priv::WindowImpl::create(windowContext, handle))
 {
 }
 
@@ -207,7 +208,7 @@ void WindowBase::setTitle(const String& title)
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::setIcon(Vector2u size, const std::uint8_t* pixels)
+void WindowBase::setIcon(Vector2u size, const base::U8* pixels)
 {
     m_impl->setIcon(size, pixels);
 }

@@ -198,7 +198,7 @@ private:
     ////////////////////////////////////////////////////////////
     struct PendingPacket
     {
-        std::uint32_t                      size{};         //!< Data of packet size
+        base::U32                          size{};         //!< Data of packet size
         base::SizeT                        sizeReceived{}; //!< Number of size bytes received so far
         base::TrivialVector<unsigned char> data;           //!< Data of the packet
     };

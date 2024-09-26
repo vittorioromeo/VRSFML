@@ -123,12 +123,10 @@ public:
     /// The render target keeps its own copy of the view object,
     /// so it is not necessary to keep the original one alive
     /// after calling this function.
-    /// To restore the original view of the target, you can pass
-    /// the result of `getDefaultView()` to this function.
     ///
     /// \param view New view to use
     ///
-    /// \see `getView`, `getDefaultView`
+    /// \see `getView`
     ///
     ////////////////////////////////////////////////////////////
     void setView(const View& view);
@@ -138,23 +136,10 @@ public:
     ///
     /// \return The view object that is currently used
     ///
-    /// \see `setView`, `getDefaultView`
+    /// \see `setView`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const View& getView() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the default view of the render target
-    ///
-    /// The default view has the initial size of the render target,
-    /// and never changes after the target has been created.
-    ///
-    /// \return The default view of the render target
-    ///
-    /// \see `setView`, `getView`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] const View& getDefaultView() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the viewport of a view, applied to this render target
@@ -482,16 +467,7 @@ protected:
     /// \brief Constructor from graphics context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit RenderTarget(GraphicsContext& graphicsContext);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Performs the common initialization step after creation
-    ///
-    /// The derived classes must call this function after the
-    /// target is created and ready for drawing.
-    ///
-    ////////////////////////////////////////////////////////////
-    void initialize();
+    [[nodiscard]] explicit RenderTarget(GraphicsContext& graphicsContext, const View& currentView);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the window context (used by derived types)
@@ -507,10 +483,10 @@ private:
     [[nodiscard]] bool clearImpl();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Apply the current view
+    /// \brief Apply a view
     ///
     ////////////////////////////////////////////////////////////
-    void applyCurrentView();
+    void applyView(const View& view);
 
     ////////////////////////////////////////////////////////////
     /// \brief Apply a new blending mode
@@ -537,10 +513,26 @@ private:
     ////////////////////////////////////////////////////////////
     /// \brief Setup environment for drawing
     ///
-    /// \param states         Render states to use for drawing
+    /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
     void setupDraw(const RenderStates& states);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Setup environment for drawing: MVP matrix
+    ///
+    /// \param states Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void setupDrawMVP(const RenderStates& states, const Transform& viewTransform, bool shaderChanged);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Setup environment for drawing: texture
+    ///
+    /// \param states Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void setupDrawTexture(const RenderStates& states, bool shaderChanged);
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw non-indexed primitives
