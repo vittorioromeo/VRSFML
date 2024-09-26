@@ -214,10 +214,10 @@ int main()
     //
     //
     // Set up UI elements
-    bool        useBatch      = true;
+    bool        useBatch      = false;
     bool        drawSprites   = true;
     bool        drawText      = false;
-    int         numEntities   = 50'000;
+    int         numEntities   = 5;
     std::size_t drawnVertices = 0u;
 
     //

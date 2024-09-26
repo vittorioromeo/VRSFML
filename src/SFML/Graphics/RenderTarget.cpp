@@ -397,12 +397,13 @@ struct RenderTarget::Impl
         glCheck(
             glBufferStorage(type, static_cast<GLsizeiptr>(newCapacity), nullptr, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT));
 
-        mappedPtr = glMapBufferRange(type,
-                                     0u,
-                                     newCapacity,
-                                     GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_UNSYNCHRONIZED_BIT |
-                                         GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
-        capacity  = newCapacity;
+        mappedPtr = glCheck(glMapBufferRange(type,
+                                             0u,
+                                             newCapacity,
+                                             GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_UNSYNCHRONIZED_BIT |
+                                                 GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT));
+
+        capacity = newCapacity;
     }
 
     [[gnu::always_inline]] void objectRealloc(GLenum type, auto& object, void*& mappedPtr, base::SizeT& capacity, sf::base::SizeT byteCount)
@@ -447,6 +448,32 @@ struct RenderTarget::Impl
         vao.bind();
         vbo.bind();
         ebo.bind();
+    }
+
+    // TODO P0:
+    GLsync gSync{};
+
+    void lockBuffer()
+    {
+        if (gSync)
+        {
+            glCheck(glDeleteSync(gSync));
+        }
+
+        gSync = glCheck(glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0));
+    }
+
+    void waitBuffer() const
+    {
+        if (gSync)
+        {
+            while (true)
+            {
+                GLenum waitReturn = glCheck(glClientWaitSync(gSync, GL_SYNC_FLUSH_COMMANDS_BIT, 1));
+                if (waitReturn == GL_ALREADY_SIGNALED || waitReturn == GL_CONDITION_SATISFIED)
+                    return;
+            }
+        }
     }
 };
 
@@ -628,11 +655,31 @@ void RenderTarget::draw(const Vertex* vertices, base::SizeT vertexCount, Primiti
         (!RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) && !setActive(true)))
         return;
 
+// TODO P0:
+#ifndef USE_GPU
+    // TODO P0: why does this need to be before setupDraw?
+    m_impl->vboRealloc(sizeof(Vertex) * vertexCount);
+#endif
+
     setupDraw(states);
 
+#ifndef USE_GPU
+    // no-op
+#else
     RenderTargetImpl::streamToGPU(GL_ARRAY_BUFFER, vertices, sizeof(Vertex) * vertexCount);
+#endif
+
+#ifndef USE_GPU
+    m_impl->waitBuffer();
+    m_impl->vboReallocAndMemcpy(vertices, sizeof(Vertex) * vertexCount);
+#endif
 
     drawPrimitives(type, 0u, vertexCount);
+
+#ifndef USE_GPU
+    m_impl->lockBuffer();
+#endif
+
     cleanupDraw(states);
 }
 
@@ -664,7 +711,17 @@ void RenderTarget::drawIndexedVertices(
     RenderTargetImpl::streamToGPU(GL_ELEMENT_ARRAY_BUFFER, indices, sizeof(IndexType) * indexCount);
 #endif
 
+// TODO P0:
+#ifndef USE_GPU
+    m_impl->waitBuffer();
+#endif
+
     drawIndexedPrimitives(type, indexCount);
+
+#ifndef USE_GPU
+    m_impl->lockBuffer();
+#endif
+
     cleanupDraw(states);
 }
 
