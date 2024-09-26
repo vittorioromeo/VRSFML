@@ -371,7 +371,7 @@ void Text::draw(RenderTarget& target, RenderStates states) const
     states.coordinateType = CoordinateType::Pixels;
 
     const auto [data, size] = getVertices();
-    target.draw(data, size, PrimitiveType::Triangles, states);
+    target.drawVertices(data, size, PrimitiveType::Triangles, states);
 }
 
 

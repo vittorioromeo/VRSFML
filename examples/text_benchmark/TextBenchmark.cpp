@@ -86,7 +86,7 @@ int main()
          .radius             = 45.f}};
 
     // Create drawable batch to optimize rendering
-    sf::DrawableBatch drawableBatch;
+    sf::CPUDrawableBatch drawableBatch;
 
     while (true)
     {
@@ -101,31 +101,31 @@ int main()
         {
             drawableBatch.clear();
 
-            drawableBatch.add(window, text0);
+            drawableBatch.add(text0);
 
             sfmlLogo.position = {170.f, 50.f};
             sfmlLogo.scale    = {1.5f, 1.5f};
-            drawableBatch.add(window, sfmlLogo);
+            drawableBatch.add(sfmlLogo);
 
-            drawableBatch.add(window, text1);
+            drawableBatch.add(text1);
             sfmlLogo.position = {100.f, 50.f};
             sfmlLogo.scale    = {1.0f, 1.0f};
-            drawableBatch.add(window, sfmlLogo);
+            drawableBatch.add(sfmlLogo);
 
-            drawableBatch.add(window, text2);
+            drawableBatch.add(text2);
             sfmlLogo.position = {300.f, 150.f};
             sfmlLogo.scale    = {1.5f, 1.5f};
-            drawableBatch.add(window, sfmlLogo);
+            drawableBatch.add(sfmlLogo);
 
-            drawableBatch.add(window, text3);
+            drawableBatch.add(text3);
             sfmlLogo.position = {250.f, 250.f};
             sfmlLogo.scale    = {1.0f, 1.0f};
-            drawableBatch.add(window, sfmlLogo);
+            drawableBatch.add(sfmlLogo);
 
-            drawableBatch.add(window, text4);
-            drawableBatch.add(window, text5);
+            drawableBatch.add(text4);
+            drawableBatch.add(text5);
 
-            drawableBatch.add(window, circle0);
+            drawableBatch.add(circle0);
 
             window.draw(drawableBatch, {.texture = &textureAtlas.getTexture()});
         }

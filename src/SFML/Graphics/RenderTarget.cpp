@@ -6,7 +6,10 @@
 #include "SFML/Graphics/BlendMode.hpp"
 #include "SFML/Graphics/CoordinateType.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
+#include "SFML/Graphics/GPUSyncGuard.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/OpenGLRAII.hpp"
+#include "SFML/Graphics/PersistentGPUBuffer.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
@@ -156,8 +159,18 @@ SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
 [[gnu::always_inline, gnu::flatten]] inline void streamToGPU(GLenum bufferType, const void* data, sf::base::SizeT dataByteCount)
 {
 #ifdef SFML_OPENGL_ES
+    // On OpenGL ES, the "naive" method seems faster
     glCheck(glBufferData(bufferType, static_cast<GLsizeiptr>(dataByteCount), data, GL_STREAM_DRAW));
 #else
+    // For small batches, the "naive" method also seems faster
+    if (dataByteCount < sizeof(sf::Vertex) * 64)
+    {
+        glCheck(glBufferData(bufferType, static_cast<GLsizeiptr>(dataByteCount), data, GL_STREAM_DRAW));
+        return;
+    }
+
+    // For larger batches, memcpying into a transient mapped buffer seems faster
+
     glCheck(glBufferData(bufferType, dataByteCount, nullptr, GL_STREAM_DRAW));
 
     void* const ptr = glCheck(
@@ -168,7 +181,7 @@ SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
 
     SFML_BASE_MEMCPY(ptr, data, dataByteCount);
 
-    [[maybe_unused]] const auto rc = glUnmapBuffer(bufferType);
+    [[maybe_unused]] const auto rc = glCheck(glUnmapBuffer(bufferType));
     SFML_BASE_ASSERT(rc == GL_TRUE);
 #endif
 };
@@ -210,93 +223,48 @@ struct [[nodiscard]] StatesCache
 
 
 ////////////////////////////////////////////////////////////
-template <auto FnGen, auto FnBind, auto FnGet, auto FnDelete>
-class [[nodiscard]] OpenGLRAII
+struct VAO : OpenGLRAII
 {
-public:
-    [[nodiscard, gnu::always_inline, gnu::flatten]] explicit OpenGLRAII(GraphicsContext&)
-    {
-        SFML_BASE_ASSERT(m_id == 0u);
-        FnGen(m_id);
-        SFML_BASE_ASSERT(m_id != 0u);
-    }
-
-    [[gnu::always_inline, gnu::flatten]] ~OpenGLRAII()
-    {
-        if (m_id != 0u)
-            FnDelete(m_id);
-    }
-
-    [[gnu::always_inline, gnu::flatten]] OpenGLRAII(OpenGLRAII&& rhs) noexcept : m_id(base::exchange(rhs.m_id, 0u))
+    explicit VAO(GraphicsContext& graphicsContext) :
+    OpenGLRAII(
+        graphicsContext,
+        [](unsigned int& id) { glCheck(glGenVertexArrays(1, &id)); },
+        [](unsigned int id) { glCheck(glBindVertexArray(id)); },
+        [](unsigned int& id) { glCheck(glGetIntegerv(GL_VERTEX_ARRAY_BINDING, reinterpret_cast<GLint*>(&id))); },
+        [](unsigned int& id) { glCheck(glDeleteVertexArrays(1, &id)); })
     {
     }
-
-    [[gnu::always_inline, gnu::flatten]] OpenGLRAII& operator=(OpenGLRAII&& rhs) noexcept
-    {
-        if (&rhs != this)
-            m_id = base::exchange(rhs.m_id, 0u);
-
-        return *this;
-    }
-
-    [[nodiscard, gnu::always_inline, gnu::flatten]] bool isBound() const
-    {
-        int out{};
-        FnGet(out);
-        return out != 0u;
-    }
-
-    [[gnu::always_inline, gnu::flatten]] void bind() const
-    {
-        SFML_BASE_ASSERT(m_id != 0u);
-        FnBind(m_id);
-
-        SFML_BASE_ASSERT(isBound());
-    }
-
-    [[gnu::always_inline, gnu::flatten]] void unbind() const
-    {
-        FnBind(0u);
-        SFML_BASE_ASSERT(isBound());
-    }
-
-    OpenGLRAII(const OpenGLRAII&)            = delete;
-    OpenGLRAII& operator=(const OpenGLRAII&) = delete;
-
-
-    void reallocate()
-    {
-        if (m_id != 0u)
-            FnDelete(m_id);
-
-        FnGen(m_id);
-        SFML_BASE_ASSERT(m_id != 0u);
-    }
-
-private:
-    unsigned int m_id{};
 };
 
 
 ////////////////////////////////////////////////////////////
-using VAO = OpenGLRAII<[](auto& id) { glCheck(glGenVertexArrays(1, &id)); },
-                       [](auto id) { glCheck(glBindVertexArray(id)); },
-                       [](auto& id) { glCheck(glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &id)); },
-                       [](auto& id) { glCheck(glDeleteVertexArrays(1, &id)); }>;
+struct VBO : OpenGLRAII
+{
+    explicit VBO(GraphicsContext& graphicsContext) :
+    OpenGLRAII(
+        graphicsContext,
+        [](unsigned int& id) { glCheck(glGenBuffers(1, &id)); },
+        [](unsigned int id) { glCheck(glBindBuffer(GL_ARRAY_BUFFER, id)); },
+        [](unsigned int& id) { glCheck(glGetIntegerv(GL_ARRAY_BUFFER_BINDING, reinterpret_cast<GLint*>(&id))); },
+        [](unsigned int& id) { glCheck(glDeleteBuffers(1, &id)); })
+    {
+    }
+};
 
 
 ////////////////////////////////////////////////////////////
-using VBO = OpenGLRAII<[](auto& id) { glCheck(glGenBuffers(1, &id)); },
-                       [](auto id) { glCheck(glBindBuffer(GL_ARRAY_BUFFER, id)); },
-                       [](auto& id) { glCheck(glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &id)); },
-                       [](auto& id) { glCheck(glDeleteBuffers(1, &id)); }>;
-
-
-////////////////////////////////////////////////////////////
-using EBO = OpenGLRAII<[](auto& id) { glCheck(glGenBuffers(1, &id)); },
-                       [](auto id) { glCheck(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id)); },
-                       [](auto& id) { glCheck(glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &id)); },
-                       [](auto& id) { glCheck(glDeleteBuffers(1, &id)); }>;
+struct EBO : OpenGLRAII
+{
+    explicit EBO(GraphicsContext& graphicsContext) :
+    OpenGLRAII(
+        graphicsContext,
+        [](unsigned int& id) { glCheck(glGenBuffers(1, &id)); },
+        [](unsigned int id) { glCheck(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id)); },
+        [](unsigned int& id) { glCheck(glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, reinterpret_cast<GLint*>(&id))); },
+        [](unsigned int& id) { glCheck(glDeleteBuffers(1, &id)); })
+    {
+    }
+};
 
 
 ////////////////////////////////////////////////////////////
@@ -344,7 +312,9 @@ struct RenderTarget::Impl
     id(RenderTargetImpl::nextUniqueId.fetch_add(1u, std::memory_order_relaxed)),
     vao(theGraphicsContext),
     vbo(theGraphicsContext),
-    ebo(theGraphicsContext)
+    ebo(theGraphicsContext),
+    vboPersistentBuffer(GL_ARRAY_BUFFER, vbo),
+    eboPersistentBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo)
     {
         bindGLObjects();
         cache.vaoBound = true;
@@ -364,116 +334,14 @@ struct RenderTarget::Impl
     VBO vbo; //!< Vertex buffer object associated with the render target
     EBO ebo; //!< Element index buffer object associated with the render target
 
-    void*       mappedVbo{};
-    base::SizeT vboCapacity{0u}; //!< Currently allocated capacity of the VBO
-
-    void*       mappedEbo{};
-    base::SizeT eboCapacity{0u}; //!< Currently allocated capacity of the EBO
-
-    [[gnu::always_inline]] void reallocObjectIfNeeded(
-        GLenum       type,
-        auto&        object,
-        void*&       mappedPtr,
-        base::SizeT& capacity,
-        base::SizeT  byteCount)
-    {
-        if (byteCount <= capacity) [[likely]]
-            return;
-
-        const auto newCapacity = (capacity * 3u / 2u) + byteCount;
-
-        object.bind();
-
-        if (mappedPtr != nullptr)
-        {
-            [[maybe_unused]] const bool rc = glCheck(glUnmapBuffer(type));
-            SFML_BASE_ASSERT(rc);
-            mappedPtr = nullptr;
-        }
-
-        object.reallocate();
-        object.bind();
-
-        glCheck(
-            glBufferStorage(type, static_cast<GLsizeiptr>(newCapacity), nullptr, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT));
-
-        mappedPtr = glCheck(glMapBufferRange(type,
-                                             0u,
-                                             newCapacity,
-                                             GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_UNSYNCHRONIZED_BIT |
-                                                 GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT));
-
-        capacity = newCapacity;
-    }
-
-    [[gnu::always_inline]] void objectRealloc(GLenum type, auto& object, void*& mappedPtr, base::SizeT& capacity, sf::base::SizeT byteCount)
-    {
-        reallocObjectIfNeeded(type, object, mappedPtr, capacity, byteCount);
-    }
-
-    [[gnu::always_inline]] void objectReallocAndMemcpy(
-        GLenum          type,
-        auto&           object,
-        void*&          mappedPtr,
-        base::SizeT&    capacity,
-        const void*     data,
-        sf::base::SizeT byteCount)
-    {
-        reallocObjectIfNeeded(type, object, mappedPtr, capacity, byteCount);
-        SFML_BASE_MEMCPY(mappedPtr, data, byteCount);
-    }
-
-    [[gnu::always_inline]] void vboRealloc(sf::base::SizeT byteCount)
-    {
-        objectRealloc(GL_ARRAY_BUFFER, vbo, mappedVbo, vboCapacity, byteCount);
-    }
-
-    [[gnu::always_inline]] void eboRealloc(sf::base::SizeT byteCount)
-    {
-        objectRealloc(GL_ELEMENT_ARRAY_BUFFER, ebo, mappedEbo, eboCapacity, byteCount);
-    }
-
-    [[gnu::always_inline]] void vboReallocAndMemcpy(const void* data, sf::base::SizeT byteCount)
-    {
-        objectReallocAndMemcpy(GL_ARRAY_BUFFER, vbo, mappedVbo, vboCapacity, data, byteCount);
-    }
-
-    [[gnu::always_inline]] void eboReallocAndMemcpy(const void* data, sf::base::SizeT byteCount)
-    {
-        objectReallocAndMemcpy(GL_ELEMENT_ARRAY_BUFFER, ebo, mappedEbo, eboCapacity, data, byteCount);
-    }
+    PersistentGPUBuffer vboPersistentBuffer; //!< TODO P0:
+    PersistentGPUBuffer eboPersistentBuffer; //!< TODO P0:
 
     void bindGLObjects() const
     {
         vao.bind();
         vbo.bind();
         ebo.bind();
-    }
-
-    // TODO P0:
-    GLsync gSync{};
-
-    void lockBuffer()
-    {
-        if (gSync)
-        {
-            glCheck(glDeleteSync(gSync));
-        }
-
-        gSync = glCheck(glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0));
-    }
-
-    void waitBuffer() const
-    {
-        if (gSync)
-        {
-            while (true)
-            {
-                GLenum waitReturn = glCheck(glClientWaitSync(gSync, GL_SYNC_FLUSH_COMMANDS_BIT, 1));
-                if (waitReturn == GL_ALREADY_SIGNALED || waitReturn == GL_CONDITION_SATISFIED)
-                    return;
-            }
-        }
     }
 };
 
@@ -495,6 +363,20 @@ RenderTarget::RenderTarget(RenderTarget&&) noexcept = default;
 
 ////////////////////////////////////////////////////////////
 RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] PersistentGPUBuffer& RenderTarget::getVerticesPersistentBuffer()
+{
+    return m_impl->vboPersistentBuffer;
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] PersistentGPUBuffer& RenderTarget::getIndicesPersistentBuffer()
+{
+    return m_impl->eboPersistentBuffer;
+}
 
 
 ////////////////////////////////////////////////////////////
@@ -648,44 +530,20 @@ void RenderTarget::draw(const Shape& shape, const Texture* texture, const Render
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::draw(const Vertex* vertices, base::SizeT vertexCount, PrimitiveType type, const RenderStates& states)
+void RenderTarget::drawVertices(const Vertex* vertices, base::SizeT vertexCount, PrimitiveType type, const RenderStates& states)
 {
     // Nothing to draw or inactive target
     if (vertices == nullptr || vertexCount == 0u ||
         (!RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) && !setActive(true)))
         return;
 
-// TODO P0:
-#ifndef USE_GPU
-    // TODO P0: why does this need to be before setupDraw?
-    m_impl->vboRealloc(sizeof(Vertex) * vertexCount);
-#endif
-
     setupDraw(states);
 
-#ifndef USE_GPU
-    // no-op
-#else
     RenderTargetImpl::streamToGPU(GL_ARRAY_BUFFER, vertices, sizeof(Vertex) * vertexCount);
-#endif
-
-#ifndef USE_GPU
-    m_impl->waitBuffer();
-    m_impl->vboReallocAndMemcpy(vertices, sizeof(Vertex) * vertexCount);
-#endif
 
     drawPrimitives(type, 0u, vertexCount);
-
-#ifndef USE_GPU
-    m_impl->lockBuffer();
-#endif
-
     cleanupDraw(states);
 }
-
-
-////////////////////////////////////////////////////////////
-using IndexType = DrawableBatch::IndexType;
 
 
 ////////////////////////////////////////////////////////////
@@ -704,48 +562,69 @@ void RenderTarget::drawIndexedVertices(
 
     setupDraw(states);
 
-#ifndef USE_GPU
-    // no-op
-#else
     RenderTargetImpl::streamToGPU(GL_ARRAY_BUFFER, vertices, sizeof(Vertex) * vertexCount);
     RenderTargetImpl::streamToGPU(GL_ELEMENT_ARRAY_BUFFER, indices, sizeof(IndexType) * indexCount);
-#endif
-
-// TODO P0:
-#ifndef USE_GPU
-    m_impl->waitBuffer();
-#endif
 
     drawIndexedPrimitives(type, indexCount);
+    cleanupDraw(states);
+}
 
-#ifndef USE_GPU
-    m_impl->lockBuffer();
-#endif
+
+////////////////////////////////////////////////////////////
+void RenderTarget::drawPersistentMappedVertices(base::SizeT vertexCount, PrimitiveType type, const RenderStates& states)
+{
+    // Nothing to draw or inactive target
+    if (vertexCount == 0u || (!RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) && !setActive(true)))
+        return;
+
+    setupDraw(states);
+
+    {
+        GPUSyncGuard syncGuard;
+        drawPrimitives(type, 0u, vertexCount);
+    }
 
     cleanupDraw(states);
 }
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::draw(const DrawableBatch& drawableBatch, RenderStates states)
+void RenderTarget::drawPersistentMappedIndexedVertices(base::SizeT indexCount, PrimitiveType type, const RenderStates& states)
+{
+    // Nothing to draw or inactive target
+    if (indexCount == 0u || (!RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) && !setActive(true)))
+        return;
+
+    setupDraw(states);
+
+    {
+        GPUSyncGuard syncGuard;
+        drawIndexedPrimitives(type, indexCount);
+    }
+
+    cleanupDraw(states);
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::draw(const CPUDrawableBatch& drawableBatch, RenderStates states)
 {
     states.transform *= drawableBatch.getTransform();
 
-#ifndef USE_GPU
-    drawIndexedVertices(static_cast<const Vertex*>(m_impl->mappedVbo),
-                        drawableBatch.m_nVertices,
-                        static_cast<const IndexType*>(m_impl->mappedEbo),
-                        drawableBatch.m_nIndices,
+    drawIndexedVertices(drawableBatch.m_storage.vertices.data(),
+                        drawableBatch.m_storage.vertices.size(),
+                        drawableBatch.m_storage.indices.data(),
+                        drawableBatch.m_storage.indices.size(),
                         PrimitiveType::Triangles,
                         states);
-#else
-    drawIndexedVertices(drawableBatch.m_vertices.data(),
-                        drawableBatch.m_vertices.size(),
-                        drawableBatch.m_indices.data(),
-                        drawableBatch.m_indices.size(),
-                        PrimitiveType::Triangles,
-                        states);
-#endif
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::draw(const PersistentGPUDrawableBatch& drawableBatch, RenderStates states)
+{
+    states.transform *= drawableBatch.getTransform();
+    drawPersistentMappedIndexedVertices(drawableBatch.m_storage.nIndices, PrimitiveType::Triangles, states);
 }
 
 
@@ -842,21 +721,6 @@ bool RenderTarget::setActive(bool active)
     return true;
 }
 
-
-////////////////////////////////////////////////////////////
-void* RenderTarget::getVerticesPtr(base::SizeT byteCount)
-{
-    m_impl->vboRealloc(byteCount);
-    return m_impl->mappedVbo;
-}
-
-
-////////////////////////////////////////////////////////////
-void* RenderTarget::getIndicesPtr(base::SizeT byteCount)
-{
-    m_impl->eboRealloc(byteCount);
-    return m_impl->mappedEbo;
-}
 
 ////////////////////////////////////////////////////////////
 void RenderTarget::resetGLStates()

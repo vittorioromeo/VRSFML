@@ -1,4 +1,6 @@
 #pragma once
+#include "DrawableBatch.hpp"
+
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
@@ -22,12 +24,13 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
-class DrawableBatch;
+class CPUDrawableBatch;
 class GraphicsContext;
+class PersistentGPUBuffer;
+class PersistentGPUDrawableBatch;
 class Shader;
 class Shape;
 class Texture;
-class DrawableBatch;
 class Transform;
 class VertexBuffer;
 struct BlendMode;
@@ -322,10 +325,11 @@ public:
     /// \param states      Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Vertex*       vertices,
-              base::SizeT         vertexCount,
-              PrimitiveType       type,
-              const RenderStates& states = RenderStates::Default);
+    void drawVertices(const Vertex*       vertices,
+                      base::SizeT         vertexCount,
+                      PrimitiveType       type,
+                      const RenderStates& states = RenderStates::Default);
+
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -339,10 +343,38 @@ public:
                              const RenderStates& states = RenderStates::Default);
 
     ////////////////////////////////////////////////////////////
+    /// \brief Draw primitives defined by an array of vertices
+    ///
+    /// \brief TODO P1: docs
+    /// \param vertices    Pointer to the vertices
+    /// \param vertexCount Number of vertices in the array
+    /// \param type        Type of primitives to draw
+    /// \param states      Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void drawPersistentMappedVertices(base::SizeT         vertexCount,
+                                      PrimitiveType       type,
+                                      const RenderStates& states = RenderStates::Default);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void drawPersistentMappedIndexedVertices(base::SizeT         indexCount,
+                                             PrimitiveType       type,
+                                             const RenderStates& states = RenderStates::Default);
+
+    ////////////////////////////////////////////////////////////
     /// \brief TODO P0: docs
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const DrawableBatch& drawableBatch, RenderStates states = RenderStates::Default);
+    void draw(const CPUDrawableBatch& drawableBatch, RenderStates states = RenderStates::Default);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P0: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const PersistentGPUDrawableBatch& drawableBatch, RenderStates states = RenderStates::Default);
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by a contiguous container of vertices
@@ -357,9 +389,9 @@ public:
     ////////////////////////////////////////////////////////////
     template <typename ContiguousVertexRange>
     void draw(const ContiguousVertexRange& vertices, PrimitiveType type, const RenderStates& states = RenderStates::Default)
-        requires(requires { draw(vertices.data(), vertices.size(), type, states); })
+        requires(requires { drawVertices(vertices.data(), vertices.size(), type, states); })
     {
-        draw(vertices.data(), vertices.size(), type, states);
+        drawVertices(vertices.data(), vertices.size(), type, states);
     }
 
     ////////////////////////////////////////////////////////////
@@ -373,7 +405,7 @@ public:
     template <base::SizeT N>
     void draw(const Vertex (&vertices)[N], PrimitiveType type, const RenderStates& states = RenderStates::Default)
     {
-        draw(vertices, N, type, states);
+        drawVertices(vertices, N, type, states);
     }
 
     ////////////////////////////////////////////////////////////
@@ -459,9 +491,6 @@ public:
     ////////////////////////////////////////////////////////////
     void resetGLStates();
 
-    [[nodiscard]] void* getVerticesPtr(base::SizeT byteCount);
-    [[nodiscard]] void* getIndicesPtr(base::SizeT byteCount);
-
 protected:
     ////////////////////////////////////////////////////////////
     /// \brief Constructor from graphics context
@@ -476,6 +505,20 @@ protected:
     [[nodiscard]] GraphicsContext& getGraphicsContext();
 
 private:
+    friend struct PersistentGPUStorage;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] PersistentGPUBuffer& getVerticesPersistentBuffer();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] PersistentGPUBuffer& getIndicesPersistentBuffer();
+
     ////////////////////////////////////////////////////////////
     /// \brief Perform common cleaning operations prior to GL calls
     ///
