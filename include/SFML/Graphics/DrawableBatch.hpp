@@ -6,13 +6,11 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
-#include "SFML/Graphics/RenderTarget.hpp"
-#include "SFML/Graphics/Transform.hpp"
 #include "SFML/Graphics/Transformable.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
+#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Traits/IsBaseOf.hpp"
 #include "SFML/Base/TrivialVector.hpp"
 
 
@@ -21,9 +19,11 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
+class PersistentGPUBuffer;
 class RenderTarget;
 class Shape;
 class Text;
+class Transform;
 struct Sprite;
 } // namespace sf
 
@@ -34,46 +34,106 @@ namespace sf
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-class [[nodiscard]] SFML_GRAPHICS_API DrawableBatch : public Transformable
+using IndexType = unsigned int;
+
+
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
+struct PersistentGPUStorage
+{
+    explicit PersistentGPUStorage(RenderTarget& renderTarget);
+
+    PersistentGPUBuffer& verticesPersistentBuffer;
+    PersistentGPUBuffer& indicesPersistentBuffer;
+
+    IndexType nVertices{};
+    IndexType nIndices{};
+
+    void clear();
+
+    [[nodiscard]] Vertex*    reserveMoreVerticesAndGetPtr(base::SizeT count);
+    [[nodiscard]] IndexType* reserveMoreIndicesAndGetPtr(base::SizeT count);
+
+    [[nodiscard, gnu::always_inline, gnu::flatten]] IndexType getNumVertices() const
+    {
+        return nVertices;
+    }
+
+    [[nodiscard, gnu::always_inline, gnu::flatten]] IndexType getNumIndices() const
+    {
+        return nIndices;
+    }
+};
+
+
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
+struct CPUStorage
+{
+    base::TrivialVector<Vertex>    vertices; //!< TODO P0:
+    base::TrivialVector<IndexType> indices;  //!< TODO P0:
+
+    void clear();
+
+    [[nodiscard]] Vertex*    reserveMoreVerticesAndGetPtr(base::SizeT count);
+    [[nodiscard]] IndexType* reserveMoreIndicesAndGetPtr(base::SizeT count);
+
+    [[nodiscard, gnu::always_inline, gnu::flatten]] IndexType getNumVertices() const
+    {
+        return static_cast<IndexType>(vertices.size());
+    }
+
+    [[nodiscard, gnu::always_inline, gnu::flatten]] IndexType getNumIndices() const
+    {
+        return static_cast<IndexType>(indices.size());
+    }
+};
+
+
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
+template <typename TStorage>
+class [[nodiscard]] SFML_GRAPHICS_API DrawableBatchImpl : public Transformable
 {
 public:
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    using IndexType = unsigned int;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    template <typename BatchableObject>
-    [[gnu::always_inline, gnu::flatten]] void add(RenderTarget& rt, const BatchableObject& batchableObject)
-        requires(!base::isBaseOf<Shape, BatchableObject>) // TODO P1: better requirement
+    template <typename... TStorageArgs>
+    explicit DrawableBatchImpl(TStorageArgs&&... storageArgs) : m_storage(SFML_BASE_FORWARD(storageArgs)...)
     {
-        const auto [data, size] = batchableObject.getVertices();
-
-        addSubsequentIndices(rt, size);
-        appendPreTransformedVertices(rt, data, size, batchableObject.getTransform());
     }
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void add(RenderTarget& rt, const Sprite& sprite);
+    void addTriangles(const Transform& transform, const Vertex* data, base::SizeT size);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void add(RenderTarget& rt, const Shape& shape);
+    void add(const Sprite& sprite);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void add(RenderTarget& rt, const Text& text);
+    void add(const Shape& shape);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void add(const Text& text);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -84,70 +144,37 @@ public:
 private:
     friend RenderTarget;
 
-    IndexType* reserveMoreIndicesAndGetPtr(RenderTarget& rt, base::SizeT count);
-    Vertex*    reserveMoreVerticesAndGetPtr(RenderTarget& rt, base::SizeT count);
-
-    [[nodiscard, gnu::always_inline, gnu::flatten]] void registerNIndices(base::SizeT count)
-    {
-#ifndef USE_GPU
-        m_nIndices += count;
-#else
-        m_indices.unsafeSetSize(m_indices.size() + count);
-#endif
-    }
-
-    [[nodiscard, gnu::always_inline, gnu::flatten]] void registerNVertices(base::SizeT count)
-    {
-#ifndef USE_GPU
-        m_nVertices += count;
-#else
-        m_vertices.unsafeSetSize(m_vertices.size() + count);
-#endif
-    }
-
-    [[nodiscard, gnu::always_inline, gnu::flatten]] IndexType getNextIndex() const
-    {
-#ifndef USE_GPU
-        return static_cast<IndexType>(m_nVertices);
-#else
-        return static_cast<IndexType>(m_vertices.size());
-#endif
-    }
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    void addSubsequentIndices(RenderTarget& rt, base::SizeT count);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void appendPreTransformedVertices(
-        RenderTarget&    rt,
-        const Vertex*    data,
-        base::SizeT      count,
-        const Transform& transform)
-    {
-        Vertex* vertexPtr = reserveMoreVerticesAndGetPtr(rt, count);
-
-        for (const auto* const target = data + count; data != target; ++data)
-            *vertexPtr++ = {transform.transformPoint(data->position), data->color, data->texCoords};
-
-        registerNVertices(count);
-    }
-
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-#ifndef USE_GPU
-    base::SizeT m_nVertices{};
-    base::SizeT m_nIndices{};
-#else
-    base::TrivialVector<Vertex>    m_vertices; //!< TODO P0:
-    base::TrivialVector<IndexType> m_indices;  //!< TODO P0:
-#endif
+    TStorage m_storage;
+};
+
+
+////////////////////////////////////////////////////////////
+extern template class DrawableBatchImpl<CPUStorage>;
+extern template class DrawableBatchImpl<PersistentGPUStorage>;
+
+
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
+class CPUDrawableBatch : public DrawableBatchImpl<CPUStorage>
+{
+    friend RenderTarget;
+    using DrawableBatchImpl<CPUStorage>::DrawableBatchImpl;
+};
+
+
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
+class PersistentGPUDrawableBatch : public DrawableBatchImpl<PersistentGPUStorage>
+{
+    friend RenderTarget;
+    using DrawableBatchImpl<PersistentGPUStorage>::DrawableBatchImpl;
 };
 
 } // namespace sf

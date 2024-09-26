@@ -171,7 +171,7 @@ int main()
             break;
 
     // Create drawable batch to optimize rendering
-    sf::DrawableBatch drawableBatch;
+    sf::CPUDrawableBatch drawableBatch;
 
     sf::Clock clock;
 

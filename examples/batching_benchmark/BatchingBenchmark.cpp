@@ -140,7 +140,8 @@ int main()
     //
     //
     // Set up benchmark
-    sf::DrawableBatch drawableBatch;
+    // sf::CPUDrawableBatch drawableBatch;
+    sf::PersistentGPUDrawableBatch drawableBatch(window);
     populateEntities(static_cast<std::size_t>(numEntities));
     drawableBatch.position = drawableBatch.origin = windowSize / 2.f;
 
@@ -162,7 +163,7 @@ int main()
             if (drawSprites)
             {
                 if (useBatch)
-                    drawableBatch.add(window, entity.sprite);
+                    drawableBatch.add(entity.sprite);
                 else
                     window.draw(entity.sprite, textureAtlas.getTexture());
             }
@@ -170,7 +171,7 @@ int main()
             if (drawText)
             {
                 if (useBatch)
-                    drawableBatch.add(window, entity.text);
+                    drawableBatch.add(entity.text);
                 else
                     window.draw(entity.text);
             }

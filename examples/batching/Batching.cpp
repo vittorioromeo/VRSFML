@@ -217,13 +217,13 @@ int main()
     bool        useBatch      = false;
     bool        drawSprites   = true;
     bool        drawText      = false;
-    int         numEntities   = 5;
+    int         numEntities   = 50'000;
     std::size_t drawnVertices = 0u;
 
     //
     //
     // Set up drawable batch
-    sf::DrawableBatch drawableBatch;
+    sf::CPUDrawableBatch drawableBatch;
 
     //
     //
@@ -358,7 +358,7 @@ int main()
                 if (drawSprites)
                 {
                     if (useBatch)
-                        drawableBatch.add(window, entity.sprite);
+                        drawableBatch.add(entity.sprite);
                     else
                         window.draw(entity.sprite, textureAtlas.getTexture());
 
@@ -368,7 +368,7 @@ int main()
                 if (drawText)
                 {
                     if (useBatch)
-                        drawableBatch.add(window, entity.text);
+                        drawableBatch.add(entity.text);
                     else
                         window.draw(entity.text);
 
