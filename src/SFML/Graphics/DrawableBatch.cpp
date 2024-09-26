@@ -77,16 +77,24 @@ using IndexType = sf::DrawableBatch::IndexType;
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-DrawableBatch::IndexType* DrawableBatch::reserveMoreIndicesAndGetPtr(RenderTarget& rt, base::SizeT count) const
+DrawableBatch::IndexType* DrawableBatch::reserveMoreIndicesAndGetPtr(RenderTarget& rt, base::SizeT count)
 {
-    return static_cast<IndexType*>(rt.getIndicesPtr(sizeof(IndexType) * (m_nIdxs + count))) + m_nIdxs;
+#ifndef USE_GPU
+    return static_cast<IndexType*>(rt.getIndicesPtr(sizeof(IndexType) * (m_nIndices + count))) + m_nIndices;
+#else
+    return m_indices.reserveMore(count);
+#endif
 }
 
 
 ////////////////////////////////////////////////////////////
-Vertex* DrawableBatch::reserveMoreVerticesAndGetPtr(RenderTarget& rt, base::SizeT count) const
+Vertex* DrawableBatch::reserveMoreVerticesAndGetPtr(RenderTarget& rt, base::SizeT count)
 {
-    return static_cast<Vertex*>(rt.getVerticesPtr(sizeof(Vertex) * (m_nVerts + count))) + m_nVerts;
+#ifndef USE_GPU
+    return static_cast<Vertex*>(rt.getVerticesPtr(sizeof(Vertex) * (m_nVertices + count))) + m_nVertices;
+#else
+    return m_vertices.reserveMore(count);
+#endif
 }
 
 
@@ -101,13 +109,13 @@ void DrawableBatch::add(RenderTarget& rt, const Text& text)
 
     // Indices
     {
-        const auto nextIndex = static_cast<IndexType>(m_nVerts);
+        const auto nextIndex = getNextIndex();
         IndexType* indexPtr  = reserveMoreIndicesAndGetPtr(rt, 6u * numQuads);
 
         for (base::SizeT i = 0u; i < numQuads; ++i)
             appendQuadIndices(indexPtr, static_cast<IndexType>(nextIndex + (i * 4u)));
 
-        m_nIdxs += 6u * numQuads;
+        registerNIndices(6u * numQuads);
     }
 
     // Vertices
@@ -121,7 +129,7 @@ void DrawableBatch::add(RenderTarget& rt, const Text& text)
             appendPreTransformedQuadVertices(vertexPtr, transform, data[idx + 0u], data[idx + 1u], data[idx + 2u], data[idx + 5u]);
         }
 
-        m_nVerts += 4u * numQuads;
+        registerNVertices(4u * numQuads);
     }
 }
 
@@ -131,11 +139,11 @@ void DrawableBatch::add(RenderTarget& rt, const Sprite& sprite)
 {
     // Indices
     {
-        const auto nextIndex = static_cast<IndexType>(m_nVerts);
+        const auto nextIndex = getNextIndex();
         IndexType* indexPtr  = reserveMoreIndicesAndGetPtr(rt, 6u);
 
         appendQuadIndices(indexPtr, nextIndex);
-        m_nIdxs += 6u;
+        registerNIndices(6u);
     }
 
     // Vertices
@@ -143,7 +151,7 @@ void DrawableBatch::add(RenderTarget& rt, const Sprite& sprite)
         Vertex* vertexPtr = reserveMoreVerticesAndGetPtr(rt, 4u);
 
         priv::spriteToVertices(sprite, vertexPtr); // does not take a reference
-        m_nVerts += 4u;
+        registerNVertices(4u);
     }
 }
 
@@ -154,13 +162,13 @@ void DrawableBatch::add(RenderTarget& rt, const Shape& shape)
     // Triangle fan
     if (const auto [fillData, fillSize] = shape.getFillVertices(); fillSize > 2u)
     {
-        const auto nextFillIndex = static_cast<IndexType>(m_nVerts);
+        const auto nextFillIndex = getNextIndex();
         IndexType* indexPtr      = reserveMoreIndicesAndGetPtr(rt, 3u * fillSize);
 
         for (IndexType i = 1u; i < fillSize - 1; ++i)
             appendTriangleFanIndices(indexPtr, nextFillIndex, i);
 
-        m_nIdxs += 3u * fillSize;
+        registerNIndices(3u * fillSize);
 
         appendPreTransformedVertices(rt, fillData, fillSize, shape.getTransform());
     }
@@ -168,13 +176,13 @@ void DrawableBatch::add(RenderTarget& rt, const Shape& shape)
     // Triangle strip
     if (const auto [outlineData, outlineSize] = shape.getOutlineVertices(); outlineSize > 2u)
     {
-        const auto nextOutlineIndex = static_cast<IndexType>(m_nVerts);
+        const auto nextOutlineIndex = getNextIndex();
         IndexType* indexPtr         = reserveMoreIndicesAndGetPtr(rt, 3u * outlineSize);
 
         for (IndexType i = 0u; i < outlineSize - 2; ++i)
             appendTriangleIndices(indexPtr, nextOutlineIndex + i);
 
-        m_nIdxs += 3u * outlineSize;
+        registerNIndices(3u * outlineSize);
 
         appendPreTransformedVertices(rt, outlineData, outlineSize, shape.getTransform());
     }
@@ -184,21 +192,26 @@ void DrawableBatch::add(RenderTarget& rt, const Shape& shape)
 ////////////////////////////////////////////////////////////
 void DrawableBatch::addSubsequentIndices(RenderTarget& rt, base::SizeT count)
 {
-    const auto nextIndex = static_cast<IndexType>(m_nVerts);
+    const auto nextIndex = getNextIndex();
     IndexType* indexPtr  = reserveMoreIndicesAndGetPtr(rt, count);
 
     for (IndexType i = 0u; i < static_cast<IndexType>(count); ++i)
         *indexPtr++ = static_cast<IndexType>(nextIndex + i);
 
-    m_nIdxs += count;
+    registerNIndices(count);
 }
 
 
 ////////////////////////////////////////////////////////////
 void DrawableBatch::clear()
 {
-    m_nVerts = 0u;
-    m_nIdxs  = 0u;
+#ifndef USE_GPU
+    m_nVertices = 0u;
+    m_nIndices  = 0u;
+#else
+    m_vertices.clear();
+    m_indices.clear();
+#endif
 }
 
 } // namespace sf

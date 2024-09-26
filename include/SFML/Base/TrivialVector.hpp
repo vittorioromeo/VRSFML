@@ -375,6 +375,13 @@ public:
     {
         return m_endSize;
     }
+
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] void unsafeSetSize(base::SizeT newSize) noexcept
+    {
+        m_endSize = SFML_BASE_LAUNDER_CAST(TItem*, m_data) + newSize;
+    }
 };
 
 } // namespace sf::base

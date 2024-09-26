@@ -342,7 +342,7 @@ public:
     /// \brief TODO P0: docs
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const DrawableBatch& drawableBatch, const RenderStates& renderStates);
+    void draw(const DrawableBatch& drawableBatch, RenderStates states = RenderStates::Default);
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by a contiguous container of vertices
