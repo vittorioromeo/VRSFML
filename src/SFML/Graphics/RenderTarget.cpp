@@ -160,13 +160,16 @@ SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
 #else
     glCheck(glBufferData(bufferType, dataByteCount, nullptr, GL_STREAM_DRAW));
 
-    void* ptr = glMapBufferRange(bufferType,
-                                 0u,
-                                 dataByteCount,
-                                 GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
+    void* const ptr = glCheck(
+        glMapBufferRange(bufferType,
+                         0u,
+                         dataByteCount,
+                         GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_INVALIDATE_RANGE_BIT));
 
     SFML_BASE_MEMCPY(ptr, data, dataByteCount);
-    glUnmapBuffer(bufferType);
+
+    [[maybe_unused]] const auto rc = glUnmapBuffer(bufferType);
+    SFML_BASE_ASSERT(rc == GL_TRUE);
 #endif
 };
 

@@ -117,12 +117,6 @@ protected:
     friend TestContext;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    void ensureExtensionsInit() const;
-
-    ////////////////////////////////////////////////////////////
     /// \brief Create a new context, not associated to a window
     ///
     /// This function automatically chooses the specialized class

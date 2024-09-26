@@ -94,7 +94,8 @@ void cleanup()
     drmModeFreeCrtc(drmNode.originalCrtc);
 
     if (display != EGL_NO_DISPLAY)
-        eglTerminate(display);
+        eglCheck(eglTerminate(display));
+
     display = EGL_NO_DISPLAY;
 
     gbm_device_destroy(gbmDevice);
