@@ -20,46 +20,38 @@ using IndexType = sf::DrawableBatch::IndexType;
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten]] inline constexpr IndexType* appendTriangleIndices(
-    IndexType*      indexPtr,
-    const IndexType startIndex) noexcept
+[[gnu::always_inline, gnu::flatten]] inline constexpr void appendTriangleIndices(IndexType*&     indexPtr,
+                                                                                 const IndexType startIndex) noexcept
 {
     *indexPtr++ = startIndex + 0u;
     *indexPtr++ = startIndex + 1u;
     *indexPtr++ = startIndex + 2u;
-
-    return indexPtr;
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten]] inline constexpr IndexType* appendTriangleFanIndices(
-    IndexType*      indexPtr,
+[[gnu::always_inline, gnu::flatten]] inline constexpr void appendTriangleFanIndices(
+    IndexType*&     indexPtr,
     const IndexType startIndex,
     const IndexType i) noexcept
 {
     *indexPtr++ = startIndex;
     *indexPtr++ = startIndex + i;
     *indexPtr++ = startIndex + i + 1u;
-
-    return indexPtr;
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten]] inline constexpr IndexType* appendQuadIndices(IndexType* indexPtr,
-                                                                                              const IndexType startIndex) noexcept
+[[gnu::always_inline, gnu::flatten]] inline constexpr void appendQuadIndices(IndexType*& indexPtr, const IndexType startIndex) noexcept
 {
-    indexPtr = appendTriangleIndices(indexPtr, startIndex);     // Triangle strip: triangle #0
-    indexPtr = appendTriangleIndices(indexPtr, startIndex + 1); // Triangle strip: triangle #1
-
-    return indexPtr;
+    appendTriangleIndices(indexPtr, startIndex);     // Triangle strip: triangle #0
+    appendTriangleIndices(indexPtr, startIndex + 1); // Triangle strip: triangle #1
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten]] inline constexpr sf::Vertex* appendPreTransformedQuadVertices(
-    sf::Vertex*          vertexPtr,
+[[gnu::always_inline, gnu::flatten]] inline constexpr void appendPreTransformedQuadVertices(
+    sf::Vertex*&         vertexPtr,
     const sf::Transform& transform,
     const sf::Vertex&    a,
     const sf::Vertex&    b,
@@ -70,8 +62,6 @@ using IndexType = sf::DrawableBatch::IndexType;
     *vertexPtr++ = {transform.transformPoint(b.position), b.color, b.texCoords};
     *vertexPtr++ = {transform.transformPoint(c.position), c.color, c.texCoords};
     *vertexPtr++ = {transform.transformPoint(d.position), d.color, d.texCoords};
-
-    return vertexPtr;
 }
 
 } // namespace
@@ -108,7 +98,7 @@ void DrawableBatch::add(RenderTarget& rt, const Text& text)
         IndexType* indexPtr  = reserveMoreIndicesAndGetPtr(rt, 6u * numQuads);
 
         for (base::SizeT i = 0u; i < numQuads; ++i)
-            (void)appendQuadIndices(indexPtr, static_cast<IndexType>(nextIndex + (i * 4u)));
+            appendQuadIndices(indexPtr, static_cast<IndexType>(nextIndex + (i * 4u)));
 
         m_nIdxs += 6u * numQuads;
     }
@@ -121,13 +111,7 @@ void DrawableBatch::add(RenderTarget& rt, const Text& text)
         for (base::SizeT i = 0u; i < numQuads; ++i)
         {
             const auto idx = i * 6u;
-
-            vertexPtr = appendPreTransformedQuadVertices(vertexPtr,
-                                                         transform,
-                                                         data[idx + 0u],
-                                                         data[idx + 1u],
-                                                         data[idx + 2u],
-                                                         data[idx + 5u]);
+            appendPreTransformedQuadVertices(vertexPtr, transform, data[idx + 0u], data[idx + 1u], data[idx + 2u], data[idx + 5u]);
         }
 
         m_nVerts += 4u * numQuads;
@@ -143,14 +127,14 @@ void DrawableBatch::add(RenderTarget& rt, const Sprite& sprite)
         const auto nextIndex = static_cast<IndexType>(m_nVerts);
         IndexType* indexPtr  = reserveMoreIndicesAndGetPtr(rt, 6u);
 
-        (void)appendQuadIndices(indexPtr, nextIndex);
-
+        appendQuadIndices(indexPtr, nextIndex);
         m_nIdxs += 6u;
     }
 
     // Vertices
     {
         Vertex* vertexPtr = reserveMoreVerticesAndGetPtr(rt, 4u);
+
         priv::spriteToVertices(sprite, vertexPtr); // does not take a reference
         m_nVerts += 4u;
     }
@@ -160,31 +144,33 @@ void DrawableBatch::add(RenderTarget& rt, const Sprite& sprite)
 ////////////////////////////////////////////////////////////
 void DrawableBatch::add(RenderTarget& rt, const Shape& shape)
 {
-#if 0
     // Triangle fan
     if (const auto [fillData, fillSize] = shape.getFillVertices(); fillSize > 2u)
     {
-        const auto  nextFillIndex = static_cast<IndexType>(m_vertices.size());
-        IndexType*& indexPtr      = m_indices.reserveMore(fillSize * 3u);
+        const auto nextFillIndex = static_cast<IndexType>(m_nVerts);
+        IndexType* indexPtr      = reserveMoreIndicesAndGetPtr(rt, 3u * fillSize);
 
         for (IndexType i = 1u; i < fillSize - 1; ++i)
-            indexPtr = appendTriangleFanIndices(indexPtr, nextFillIndex, i);
+            appendTriangleFanIndices(indexPtr, nextFillIndex, i);
 
-        appendPreTransformedVertices(fillData, fillSize, shape.getTransform());
+        m_nIdxs += 3u * fillSize;
+
+        appendPreTransformedVertices(rt, fillData, fillSize, shape.getTransform());
     }
 
     // Triangle strip
     if (const auto [outlineData, outlineSize] = shape.getOutlineVertices(); outlineSize > 2u)
     {
-        const auto  nextOutlineIndex = static_cast<IndexType>(m_vertices.size());
-        IndexType*& indexPtr         = m_indices.reserveMore(outlineSize * 3u);
+        const auto nextOutlineIndex = static_cast<IndexType>(m_nVerts);
+        IndexType* indexPtr         = reserveMoreIndicesAndGetPtr(rt, 3u * outlineSize);
 
         for (IndexType i = 0u; i < outlineSize - 2; ++i)
-            indexPtr = appendTriangleIndices(indexPtr, nextOutlineIndex + i);
+            appendTriangleIndices(indexPtr, nextOutlineIndex + i);
 
-        appendPreTransformedVertices(outlineData, outlineSize, shape.getTransform());
+        m_nIdxs += 3u * outlineSize;
+
+        appendPreTransformedVertices(rt, outlineData, outlineSize, shape.getTransform());
     }
-#endif
 }
 
 
