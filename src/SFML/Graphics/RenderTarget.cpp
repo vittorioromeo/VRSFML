@@ -397,9 +397,11 @@ struct RenderTarget::Impl
         glCheck(
             glBufferStorage(type, static_cast<GLsizeiptr>(newCapacity), nullptr, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT));
 
-        mappedPtr = glMapBufferRange(type, 0u, newCapacity, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT
-                                     // | GL_MAP_UNSYNCHRONIZED_BIT | GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT
-        );
+        mappedPtr = glMapBufferRange(type,
+                                     0u,
+                                     newCapacity,
+                                     GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_UNSYNCHRONIZED_BIT |
+                                         GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
         capacity  = newCapacity;
     }
 
@@ -418,7 +420,6 @@ struct RenderTarget::Impl
     {
         reallocObjectIfNeeded(type, object, mappedPtr, capacity, byteCount);
         SFML_BASE_MEMCPY(mappedPtr, data, byteCount);
-        // glCheck(glBufferSubData(type, 0u, byteCount, data));
     }
 
     [[gnu::always_inline]] void vboRealloc(sf::base::SizeT byteCount)
