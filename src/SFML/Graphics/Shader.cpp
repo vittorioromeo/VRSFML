@@ -28,6 +28,7 @@
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/TrivialVector.hpp"
 
+#include <array>
 #include <fstream>
 #include <string>
 #include <string_view>
@@ -996,108 +997,64 @@ precision mediump float;
     const GLhandle shaderProgram = glCheck(glCreateProgram());
     SFML_BASE_ASSERT(glCheck(glIsProgram(shaderProgram)));
 
-    if (vertexShaderCode.data() == nullptr)
-        vertexShaderCode = graphicsContext.getBuiltInShaderVertexSrc();
-
-    // Create the vertex shader
+    const auto makeShader = [&](GLenum type, const char* typeStr, base::StringView& shaderCode)
     {
-        // Create and compile the shader
-        vertexShaderCode = adjustPreamble(vertexShaderCode);
+        shaderCode = adjustPreamble(shaderCode);
 
-        const GLhandle   vertexShader     = glCheck(glCreateShader(GL_VERTEX_SHADER));
-        const GLcharARB* sourceCode       = vertexShaderCode.data();
-        const auto       sourceCodeLength = static_cast<GLint>(vertexShaderCode.size());
-        glCheck(glShaderSource(vertexShader, 1, &sourceCode, &sourceCodeLength));
-        glCheck(glCompileShader(vertexShader));
-        SFML_BASE_ASSERT(glCheck(glIsShader(vertexShader)));
+        const GLhandle shader = glCheck(glCreateShader(type));
+
+        const GLcharARB* sourceCode       = shaderCode.data();
+        const auto       sourceCodeLength = static_cast<GLint>(shaderCode.size());
+
+        glCheck(glShaderSource(shader, 1, &sourceCode, &sourceCodeLength));
+        glCheck(glCompileShader(shader));
+        SFML_BASE_ASSERT(glCheck(glIsShader(shader)));
 
         // Check the compile log
         GLint success = 0;
-        glCheck(glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success));
+        glCheck(glGetShaderiv(shader, GL_COMPILE_STATUS, &success));
         if (success == GL_FALSE)
         {
-            char log[1024];
-            glCheck(glGetShaderInfoLog(vertexShader, sizeof(log), nullptr, log));
-            priv::err() << "Failed to compile vertex shader:" << '\n'
+            char log[1024]{};
+            glCheck(glGetShaderInfoLog(shader, sizeof(log), nullptr, log));
+
+            priv::err() << "Failed to compile " << typeStr << " shader:" << '\n'
                         << static_cast<const char*>(log) << "\n\nSource code:\n"
-                        << vertexShaderCode;
-            glCheck(glDeleteShader(vertexShader));
+                        << shaderCode;
+
+            glCheck(glDeleteShader(shader));
             glCheck(glDeleteProgram(shaderProgram));
-            return base::nullOpt;
+
+            return false;
         }
 
         // Attach the shader to the program, and delete it (not needed anymore)
-        glCheck(glAttachShader(shaderProgram, vertexShader));
-        glCheck(glDeleteShader(vertexShader));
-    }
+        glCheck(glAttachShader(shaderProgram, shader));
+        glCheck(glDeleteShader(shader));
+
+        return true;
+    };
+
+    if (vertexShaderCode.data() == nullptr)
+        vertexShaderCode = graphicsContext.getBuiltInShaderVertexSrc();
+
+    if (!makeShader(GL_VERTEX_SHADER, "vertex", vertexShaderCode))
+        return base::nullOpt;
+
 
     // Create the geometry shader if needed
     if (geometryShaderCode.data())
     {
-        // Create and compile the shader
-        geometryShaderCode = adjustPreamble(geometryShaderCode);
-
-        const GLhandle   geometryShader   = glCheck(glCreateShader(GL_GEOMETRY_SHADER));
-        const GLcharARB* sourceCode       = geometryShaderCode.data();
-        const auto       sourceCodeLength = static_cast<GLint>(geometryShaderCode.size());
-        glCheck(glShaderSource(geometryShader, 1, &sourceCode, &sourceCodeLength));
-        glCheck(glCompileShader(geometryShader));
-        SFML_BASE_ASSERT(glCheck(glIsShader(geometryShader)));
-
-        // Check the compile log
-        GLint success = 0;
-        glCheck(glGetShaderiv(geometryShader, GL_COMPILE_STATUS, &success));
-        if (success == GL_FALSE)
-        {
-            char log[1024];
-            glCheck(glGetShaderInfoLog(geometryShader, sizeof(log), nullptr, log));
-            priv::err() << "Failed to compile geometry shader:" << '\n'
-                        << static_cast<const char*>(log) << "\n\nSource code:\n"
-                        << geometryShaderCode;
-            glCheck(glDeleteShader(geometryShader));
-            glCheck(glDeleteProgram(shaderProgram));
+        if (!makeShader(GL_GEOMETRY_SHADER, "geometry", geometryShaderCode))
             return base::nullOpt;
-        }
-
-        // Attach the shader to the program, and delete it (not needed anymore)
-        glCheck(glAttachShader(shaderProgram, geometryShader));
-        glCheck(glDeleteShader(geometryShader));
     }
 
     if (fragmentShaderCode.data() == nullptr)
         fragmentShaderCode = graphicsContext.getBuiltInShaderFragmentSrc();
 
     // Create the fragment shader
-    {
-        // Create and compile the shader
-        fragmentShaderCode = adjustPreamble(fragmentShaderCode);
-
-        const GLhandle   fragmentShader   = glCheck(glCreateShader(GL_FRAGMENT_SHADER));
-        const GLcharARB* sourceCode       = fragmentShaderCode.data();
-        const auto       sourceCodeLength = static_cast<GLint>(fragmentShaderCode.size());
-        glCheck(glShaderSource(fragmentShader, 1, &sourceCode, &sourceCodeLength));
-        glCheck(glCompileShader(fragmentShader));
-        SFML_BASE_ASSERT(glCheck(glIsShader(fragmentShader)));
-
-        // Check the compile log
-        GLint success = 0;
-        glCheck(glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success));
-        if (success == GL_FALSE)
-        {
-            char log[1024];
-            glCheck(glGetShaderInfoLog(fragmentShader, sizeof(log), nullptr, log));
-            priv::err() << "Failed to compile fragment shader:" << '\n'
-                        << static_cast<const char*>(log) << "\n\nSource code:\n"
-                        << fragmentShaderCode;
-            glCheck(glDeleteShader(fragmentShader));
-            glCheck(glDeleteProgram(shaderProgram));
-            return base::nullOpt;
-        }
-
-        // Attach the shader to the program, and delete it (not needed anymore)
-        glCheck(glAttachShader(shaderProgram, fragmentShader));
-        glCheck(glDeleteShader(fragmentShader));
-    }
+    if (!makeShader(GL_FRAGMENT_SHADER, "fragment", fragmentShaderCode))
+        return base::nullOpt;
 
     // Link the program
     glCheck(glLinkProgram(shaderProgram));
@@ -1107,7 +1064,7 @@ precision mediump float;
     glCheck(glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success));
     if (success == GL_FALSE)
     {
-        char log[1024];
+        char log[1024]{};
         glCheck(glGetProgramInfoLog(shaderProgram, sizeof(log), nullptr, log));
         priv::err() << "Failed to link shader:" << '\n' << static_cast<const char*>(log);
         glCheck(glDeleteProgram(shaderProgram));
