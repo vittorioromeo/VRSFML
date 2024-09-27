@@ -217,7 +217,7 @@ int main()
     bool        useBatch      = false;
     bool        drawSprites   = true;
     bool        drawText      = false;
-    int         numEntities   = 50'000;
+    int         numEntities   = 5000;
     std::size_t drawnVertices = 0u;
 
     //

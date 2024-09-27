@@ -6,10 +6,11 @@
 #include "SFML/Graphics/BlendMode.hpp"
 #include "SFML/Graphics/CoordinateType.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
+#include "SFML/Graphics/GLBufferObject.hpp"
+#include "SFML/Graphics/GLPersistentBuffer.hpp"
+#include "SFML/Graphics/GLVertexArrayObject.hpp"
 #include "SFML/Graphics/GPUSyncGuard.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/OpenGLRAII.hpp"
-#include "SFML/Graphics/PersistentGPUBuffer.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
@@ -171,7 +172,7 @@ SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
 
     // For larger batches, memcpying into a transient mapped buffer seems faster
 
-    glCheck(glBufferData(bufferType, dataByteCount, nullptr, GL_STREAM_DRAW));
+    glCheck(glBufferData(bufferType, static_cast<GLsizeiptr>(dataByteCount), nullptr, GL_STREAM_DRAW));
 
     void* const ptr = glCheck(
         glMapBufferRange(bufferType,
@@ -223,51 +224,6 @@ struct [[nodiscard]] StatesCache
 
 
 ////////////////////////////////////////////////////////////
-struct VAO : OpenGLRAII
-{
-    explicit VAO(GraphicsContext& graphicsContext) :
-    OpenGLRAII(
-        graphicsContext,
-        [](unsigned int& id) { glCheck(glGenVertexArrays(1, &id)); },
-        [](unsigned int id) { glCheck(glBindVertexArray(id)); },
-        [](unsigned int& id) { glCheck(glGetIntegerv(GL_VERTEX_ARRAY_BINDING, reinterpret_cast<GLint*>(&id))); },
-        [](unsigned int& id) { glCheck(glDeleteVertexArrays(1, &id)); })
-    {
-    }
-};
-
-
-////////////////////////////////////////////////////////////
-struct VBO : OpenGLRAII
-{
-    explicit VBO(GraphicsContext& graphicsContext) :
-    OpenGLRAII(
-        graphicsContext,
-        [](unsigned int& id) { glCheck(glGenBuffers(1, &id)); },
-        [](unsigned int id) { glCheck(glBindBuffer(GL_ARRAY_BUFFER, id)); },
-        [](unsigned int& id) { glCheck(glGetIntegerv(GL_ARRAY_BUFFER_BINDING, reinterpret_cast<GLint*>(&id))); },
-        [](unsigned int& id) { glCheck(glDeleteBuffers(1, &id)); })
-    {
-    }
-};
-
-
-////////////////////////////////////////////////////////////
-struct EBO : OpenGLRAII
-{
-    explicit EBO(GraphicsContext& graphicsContext) :
-    OpenGLRAII(
-        graphicsContext,
-        [](unsigned int& id) { glCheck(glGenBuffers(1, &id)); },
-        [](unsigned int id) { glCheck(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id)); },
-        [](unsigned int& id) { glCheck(glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, reinterpret_cast<GLint*>(&id))); },
-        [](unsigned int& id) { glCheck(glDeleteBuffers(1, &id)); })
-    {
-    }
-};
-
-
-////////////////////////////////////////////////////////////
 void setupVertexAttribPointers()
 {
 #define SFML_PRIV_OFFSETOF(...) reinterpret_cast<const void*>(SFML_BASE_OFFSETOF(__VA_ARGS__))
@@ -313,8 +269,8 @@ struct RenderTarget::Impl
     vao(theGraphicsContext),
     vbo(theGraphicsContext),
     ebo(theGraphicsContext),
-    vboPersistentBuffer(GL_ARRAY_BUFFER, vbo),
-    eboPersistentBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo)
+    vboPersistentBuffer(vbo),
+    eboPersistentBuffer(ebo)
     {
         bindGLObjects();
         cache.vaoBound = true;
@@ -330,12 +286,12 @@ struct RenderTarget::Impl
 
     RenderTargetImpl::IdType id{}; //!< Unique number that identifies the render target
 
-    VAO vao; //!< Vertex array object associated with the render target
-    VBO vbo; //!< Vertex buffer object associated with the render target
-    EBO ebo; //!< Element index buffer object associated with the render target
+    GLVertexArrayObject   vao; //!< Vertex array object associated with the render target
+    GLVertexBufferObject  vbo; //!< Vertex buffer object associated with the render target
+    GLElementBufferObject ebo; //!< Element index buffer object associated with the render target
 
-    PersistentGPUBuffer vboPersistentBuffer; //!< TODO P0:
-    PersistentGPUBuffer eboPersistentBuffer; //!< TODO P0:
+    GLPersistentBuffer<GLVertexBufferObject>  vboPersistentBuffer; //!< TODO P0:
+    GLPersistentBuffer<GLElementBufferObject> eboPersistentBuffer; //!< TODO P0:
 
     void bindGLObjects() const
     {
@@ -366,14 +322,14 @@ RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] PersistentGPUBuffer& RenderTarget::getVerticesPersistentBuffer()
+[[nodiscard]] GLPersistentBuffer<GLVertexBufferObject>& RenderTarget::getVBOPersistentBuffer()
 {
     return m_impl->vboPersistentBuffer;
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] PersistentGPUBuffer& RenderTarget::getIndicesPersistentBuffer()
+[[nodiscard]] GLPersistentBuffer<GLElementBufferObject>& RenderTarget::getEBOPersistentBuffer()
 {
     return m_impl->eboPersistentBuffer;
 }

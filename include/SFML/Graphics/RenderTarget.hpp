@@ -1,6 +1,4 @@
 #pragma once
-#include "DrawableBatch.hpp"
-
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
@@ -26,7 +24,10 @@ namespace sf
 {
 class CPUDrawableBatch;
 class GraphicsContext;
-class PersistentGPUBuffer;
+
+template <typename TBufferObject>
+class GLPersistentBuffer;
+
 class PersistentGPUDrawableBatch;
 class Shader;
 class Shape;
@@ -34,12 +35,19 @@ class Texture;
 class Transform;
 class VertexBuffer;
 struct BlendMode;
+struct GLElementBufferObject;
+struct GLVertexBufferObject;
 struct Sprite;
 struct StencilMode;
 struct StencilValue;
 struct Vertex;
 struct View;
 } // namespace sf
+
+namespace sf::priv
+{
+struct PersistentGPUStorage;
+} // namespace sf::priv
 
 
 namespace sf
@@ -505,19 +513,19 @@ protected:
     [[nodiscard]] GraphicsContext& getGraphicsContext();
 
 private:
-    friend struct PersistentGPUStorage;
+    friend priv::PersistentGPUStorage;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] PersistentGPUBuffer& getVerticesPersistentBuffer();
+    [[nodiscard]] GLPersistentBuffer<GLVertexBufferObject>& getVBOPersistentBuffer();
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] PersistentGPUBuffer& getIndicesPersistentBuffer();
+    [[nodiscard]] GLPersistentBuffer<GLElementBufferObject>& getEBOPersistentBuffer();
 
     ////////////////////////////////////////////////////////////
     /// \brief Perform common cleaning operations prior to GL calls

@@ -74,7 +74,7 @@ using IndexType = unsigned int;
     const Sprite&   sprite,
     const IndexType nextIndex,
     IndexType*      indexPtr,
-    Vertex*         vertexPtr) noexcept
+    Vertex* const   vertexPtr) noexcept
 {
     appendQuadIndices(indexPtr, nextIndex);
     priv::spriteToVertices(sprite, vertexPtr);
@@ -83,12 +83,12 @@ using IndexType = unsigned int;
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendTextIndicesAndVertices(
-    const Transform& transform,
-    const Vertex*    data,
-    const IndexType  numQuads,
-    const IndexType  nextIndex,
-    IndexType*       indexPtr,
-    Vertex*          vertexPtr) noexcept
+    const Transform&    transform,
+    const Vertex* const data,
+    const IndexType     numQuads,
+    const IndexType     nextIndex,
+    IndexType*          indexPtr,
+    Vertex*             vertexPtr) noexcept
 {
     for (IndexType i = 0u; i < numQuads; ++i)
         appendQuadIndices(indexPtr, nextIndex + (i * 4u));
@@ -104,11 +104,11 @@ using IndexType = unsigned int;
 
 
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline, gnu::flatten]] inline constexpr void appendPreTransformedVertices(
-    const Transform& transform,
-    const Vertex*    data,
-    base::SizeT      size,
-    Vertex*          vertexPtr)
+[[gnu::always_inline, gnu::flatten]] inline constexpr void appendTransformedVertices(
+    const Transform&  transform,
+    const Vertex*     data,
+    const base::SizeT size,
+    Vertex*           vertexPtr)
 {
     for (const auto* const target = data + size; data != target; ++data)
         *vertexPtr++ = {transform.transformPoint(data->position), data->color, data->texCoords};
@@ -117,12 +117,12 @@ using IndexType = unsigned int;
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendShapeFillIndicesAndVertices(
-    const Transform& transform,
-    const Vertex*    fillData,
-    const IndexType  fillSize,
-    const IndexType  nextFillIndex,
-    IndexType*       indexPtr,
-    Vertex*          vertexPtr) noexcept
+    const Transform&    transform,
+    const Vertex* const fillData,
+    const IndexType     fillSize,
+    const IndexType     nextFillIndex,
+    IndexType*          indexPtr,
+    Vertex*             vertexPtr) noexcept
 {
     if (fillSize <= 2u)
         return;
@@ -130,18 +130,18 @@ using IndexType = unsigned int;
     for (IndexType i = 1u; i < fillSize - 1; ++i)
         appendTriangleFanIndices(indexPtr, nextFillIndex, i);
 
-    appendPreTransformedVertices(transform, fillData, fillSize, vertexPtr);
+    appendTransformedVertices(transform, fillData, fillSize, vertexPtr);
 }
 
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendShapeOutlineIndicesAndVertices(
-    const Transform& transform,
-    const Vertex*    outlineData,
-    const IndexType  outlineSize,
-    const IndexType  nextOutlineIndex,
-    IndexType*       indexPtr,
-    Vertex*          vertexPtr) noexcept
+    const Transform&    transform,
+    const Vertex* const outlineData,
+    const IndexType     outlineSize,
+    const IndexType     nextOutlineIndex,
+    IndexType*          indexPtr,
+    Vertex*             vertexPtr) noexcept
 {
     if (outlineSize <= 2u)
         return;
@@ -149,12 +149,12 @@ using IndexType = unsigned int;
     for (IndexType i = 0u; i < outlineSize - 2; ++i)
         appendTriangleIndices(indexPtr, nextOutlineIndex + i);
 
-    appendPreTransformedVertices(transform, outlineData, outlineSize, vertexPtr);
+    appendTransformedVertices(transform, outlineData, outlineSize, vertexPtr);
 }
 
 
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline, gnu::flatten]] inline constexpr void appendSubsequentIndices(IndexType       count,
+[[gnu::always_inline, gnu::flatten]] inline constexpr void appendIncreasingIndices(const IndexType count,
                                                                                    const IndexType nextIndex,
                                                                                    IndexType*      indexPtr) noexcept
 {
