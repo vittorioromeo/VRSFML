@@ -9,7 +9,7 @@
 #include "SFML/Graphics/GLBufferObject.hpp"
 #include "SFML/Graphics/GLPersistentBuffer.hpp"
 #include "SFML/Graphics/GLSyncGuard.hpp"
-#include "SFML/Graphics/GLVertexArrayObject.hpp"
+#include "SFML/Graphics/GLVAOGroup.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
@@ -212,7 +212,7 @@ struct [[nodiscard]] StatesCache
     bool scissorEnabled{false}; //!< Is scissor testing enabled?
     bool stencilEnabled{false}; //!< Is stencil testing enabled?
 
-    unsigned int lastBoundVao{0u}; //!< Last bound vertex array object id
+    unsigned int lastBoundVaoGroup{0u}; //!< Last bound vertex array object id
 
     BlendMode      lastBlendMode{BlendAlpha};                      //!< Cached blending mode
     StencilMode    lastStencilMode;                                //!< Cached stencil
@@ -260,22 +260,6 @@ void setupVertexAttribPointers()
 
 
 ////////////////////////////////////////////////////////////
-struct GLVaoGroup
-{
-    GLVertexArrayObject   vao; //!< Vertex array object
-    GLVertexBufferObject  vbo; //!< Associated vertex buffer object
-    GLElementBufferObject ebo; //!< Associated element index buffer object
-
-    explicit GLVaoGroup(GraphicsContext& graphicsContext) :
-    vao{graphicsContext},
-    vbo{graphicsContext},
-    ebo{graphicsContext}
-    {
-    }
-};
-
-
-////////////////////////////////////////////////////////////
 struct RenderTarget::Impl
 {
     explicit Impl(GraphicsContext& theGraphicsContext, const View& theView) :
@@ -299,21 +283,18 @@ struct RenderTarget::Impl
 
     RenderTargetImpl::IdType id{}; //!< Unique number that identifies the render target
 
-    GLVaoGroup vaoGroup;           //!< VAO, VBO, and EBO associated with the render target (non-persistent storage)
-    GLVaoGroup persistentVaoGroup; //!< VAO, VBO, and EBO associated with the render target (persistent storage)
+    GLVAOGroup vaoGroup;           //!< VAO, VBO, and EBO associated with the render target (non-persistent storage)
+    GLVAOGroup persistentVaoGroup; //!< VAO, VBO, and EBO associated with the render target (persistent storage)
 
     GLPersistentBuffer<GLVertexBufferObject>  vboPersistentBuffer; //!< TODO P0:
     GLPersistentBuffer<GLElementBufferObject> eboPersistentBuffer; //!< TODO P0:
 
-    void bindGLObjects(GLVaoGroup& theVAOGroup)
+    void bindGLObjects(GLVAOGroup& theVAOGroup)
     {
-        theVAOGroup.vao.bind();
-        theVAOGroup.vbo.bind();
-        theVAOGroup.ebo.bind();
+        theVAOGroup.bind();
 
         setupVertexAttribPointers();
-
-        cache.lastBoundVao = theVAOGroup.vao.getId();
+        cache.lastBoundVaoGroup = theVAOGroup.getId();
     }
 };
 
@@ -635,8 +616,9 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, base::SizeT firstVerte
 
     // Unbind vertex buffer
     VertexBuffer::unbind(*vertexBuffer.m_graphicsContext);
-    m_impl->vaoGroup.vbo.bind();
-    setupVertexAttribPointers(); // Needed to restore attrib pointers on regular VBO
+
+    // Needed to restore attrib pointers on regular VBO
+    m_impl->bindGLObjects(m_impl->vaoGroup);
 
     cleanupDraw(states);
 }
@@ -724,9 +706,9 @@ void RenderTarget::resetGLStates()
     glCheck(glEnable(GL_BLEND));
     glCheck(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
 
-    m_impl->cache.scissorEnabled = false;
-    m_impl->cache.stencilEnabled = false;
-    m_impl->cache.lastBoundVao   = 0u;
+    m_impl->cache.scissorEnabled    = false;
+    m_impl->cache.stencilEnabled    = false;
+    m_impl->cache.lastBoundVaoGroup = 0u;
 
     m_impl->cache.glStatesSet = true;
 
@@ -878,10 +860,10 @@ void RenderTarget::setupDraw(bool persistent, const RenderStates& states)
         resetGLStates();
 
     // Bind GL objects
-    if (GLVaoGroup& vaoGroupToBind = persistent ? m_impl->persistentVaoGroup : m_impl->vaoGroup;
-        !m_impl->cache.enable || m_impl->cache.lastBoundVao != vaoGroupToBind.vao.getId())
+    if (GLVAOGroup& vaoGroupToBind = persistent ? m_impl->persistentVaoGroup : m_impl->vaoGroup;
+        !m_impl->cache.enable || m_impl->cache.lastBoundVaoGroup != vaoGroupToBind.getId())
     {
-        m_impl->cache.lastBoundVao = vaoGroupToBind.vao.getId();
+        m_impl->cache.lastBoundVaoGroup = vaoGroupToBind.getId();
         m_impl->bindGLObjects(vaoGroupToBind);
     }
 
