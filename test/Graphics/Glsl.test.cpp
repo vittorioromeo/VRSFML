@@ -21,7 +21,7 @@ TEST_CASE("[Graphics] sf::Glsl")
             STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Glsl::Vec2));
         }
 
-        constexpr sf::Glsl::Vec2 vec;
+        constexpr sf::Glsl::Vec2 vec{};
         STATIC_CHECK(vec.x == 0);
         STATIC_CHECK(vec.y == 0);
     }
@@ -36,7 +36,7 @@ TEST_CASE("[Graphics] sf::Glsl")
             STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Glsl::Ivec2));
         }
 
-        constexpr sf::Glsl::Ivec2 vec;
+        constexpr sf::Glsl::Ivec2 vec{};
         STATIC_CHECK(vec.x == 0);
         STATIC_CHECK(vec.y == 0);
     }
@@ -51,7 +51,7 @@ TEST_CASE("[Graphics] sf::Glsl")
             STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Glsl::Bvec2));
         }
 
-        constexpr sf::Glsl::Bvec2 vec;
+        constexpr sf::Glsl::Bvec2 vec{};
         STATIC_CHECK(vec.x == false);
         STATIC_CHECK(vec.y == false);
     }
@@ -66,7 +66,7 @@ TEST_CASE("[Graphics] sf::Glsl")
             STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Glsl::Vec3));
         }
 
-        constexpr sf::Glsl::Vec3 vec;
+        constexpr sf::Glsl::Vec3 vec{};
         STATIC_CHECK(vec.x == 0);
         STATIC_CHECK(vec.y == 0);
         STATIC_CHECK(vec.z == 0);
@@ -82,7 +82,7 @@ TEST_CASE("[Graphics] sf::Glsl")
             STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Glsl::Ivec3));
         }
 
-        constexpr sf::Glsl::Ivec3 vec;
+        constexpr sf::Glsl::Ivec3 vec{};
         STATIC_CHECK(vec.x == 0);
         STATIC_CHECK(vec.y == 0);
         STATIC_CHECK(vec.z == 0);
@@ -98,7 +98,7 @@ TEST_CASE("[Graphics] sf::Glsl")
             STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Glsl::Bvec3));
         }
 
-        constexpr sf::Glsl::Bvec3 vec;
+        constexpr sf::Glsl::Bvec3 vec{};
         STATIC_CHECK(vec.x == false);
         STATIC_CHECK(vec.y == false);
         STATIC_CHECK(vec.z == false);
@@ -116,7 +116,7 @@ TEST_CASE("[Graphics] sf::Glsl")
 
         SECTION("Default constructor")
         {
-            constexpr sf::Glsl::Vec4 vec;
+            constexpr sf::Glsl::Vec4 vec{};
             STATIC_CHECK(vec.x == 0);
             STATIC_CHECK(vec.y == 0);
             STATIC_CHECK(vec.z == 0);
@@ -164,7 +164,7 @@ TEST_CASE("[Graphics] sf::Glsl")
 
         SECTION("Default constructor")
         {
-            constexpr sf::Glsl::Ivec4 vec;
+            constexpr sf::Glsl::Ivec4 vec{};
             STATIC_CHECK(vec.x == 0);
             STATIC_CHECK(vec.y == 0);
             STATIC_CHECK(vec.z == 0);
@@ -212,7 +212,7 @@ TEST_CASE("[Graphics] sf::Glsl")
 
         SECTION("Default constructor")
         {
-            constexpr sf::Glsl::Bvec4 vec;
+            constexpr sf::Glsl::Bvec4 vec{};
             STATIC_CHECK(vec.x == false);
             STATIC_CHECK(vec.y == false);
             STATIC_CHECK(vec.z == false);

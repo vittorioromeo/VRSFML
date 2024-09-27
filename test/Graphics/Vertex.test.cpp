@@ -20,7 +20,7 @@ TEST_CASE("[Graphics] sf::Vertex")
     {
         SECTION("Aggregate initialization -- Nothing")
         {
-            constexpr sf::Vertex vertex;
+            constexpr sf::Vertex vertex{};
             STATIC_CHECK(vertex.position == sf::Vector2f(0.0f, 0.0f));
             STATIC_CHECK(vertex.color == sf::Color(255, 255, 255));
             STATIC_CHECK(vertex.texCoords == sf::Vector2f(0.0f, 0.0f));

@@ -92,17 +92,22 @@ public:
         return m_mappedPtr;
     }
 
-private:
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void unmapIfNeeded() const
+    [[gnu::always_inline, gnu::flatten]] void unmapIfNeeded()
     {
         if (m_mappedPtr == nullptr)
             return;
 
-        [[maybe_unused]] const bool rc = glCheck(glUnmapBuffer(TBufferObject::bufferType));
+        m_mappedPtr = nullptr;
+
+        SFML_BASE_ASSERT(m_obj != nullptr);
+        m_obj->bind();
+
+        [[maybe_unused]] const bool rc = glCheck(glUnmapNamedBuffer(m_obj->getId()));
         SFML_BASE_ASSERT(rc);
     }
 
+private:
     ////////////////////////////////////////////////////////////
     [[gnu::cold]] void reserveImpl(const base::SizeT byteCount)
     {
@@ -118,16 +123,17 @@ private:
         m_obj->reallocate();
         m_obj->bind();
 
-        glCheck(glBufferStorage(TBufferObject::bufferType,
-                                static_cast<GLsizeiptr>(newCapacity),
-                                nullptr,
-                                GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT));
+        glCheck(glNamedBufferStorage(m_obj->getId(),
+                                     static_cast<GLsizeiptr>(newCapacity),
+                                     nullptr,
+                                     GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT));
 
-        m_mappedPtr = glCheck(glMapBufferRange(TBufferObject::bufferType,
-                                               0u,
-                                               newCapacity,
-                                               GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_UNSYNCHRONIZED_BIT |
-                                                   GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT));
+        m_mappedPtr = glCheck(
+            glMapNamedBufferRange(m_obj->getId(),
+                                  0u,
+                                  newCapacity,
+                                  GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_UNSYNCHRONIZED_BIT |
+                                      GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT));
 
         m_capacity = newCapacity;
     }

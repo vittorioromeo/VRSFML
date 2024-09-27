@@ -25,11 +25,11 @@ int main()
 
     // Graphics
     [[maybe_unused]] sf::GraphicsContext graphicsContext;
-    [[maybe_unused]] const sf::Color     color;
-    [[maybe_unused]] const sf::IntRect   rect;
+    [[maybe_unused]] const sf::Color     color{};
+    [[maybe_unused]] const sf::IntRect   rect{};
     // [[maybe_unused]] const sf::RenderWindow   renderWindow;
     [[maybe_unused]] const sf::RectangleShape rectangleShape{{}};
-    [[maybe_unused]] const sf::Vertex         vertex;
+    [[maybe_unused]] const sf::Vertex         vertex{};
 
     // Network
     [[maybe_unused]] const sf::Ftp       ftp;

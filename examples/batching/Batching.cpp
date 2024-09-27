@@ -223,7 +223,8 @@ int main()
     //
     //
     // Set up drawable batch
-    sf::CPUDrawableBatch drawableBatch;
+    // sf::CPUDrawableBatch drawableBatch;
+    sf::PersistentGPUDrawableBatch drawableBatch(window);
 
     //
     //

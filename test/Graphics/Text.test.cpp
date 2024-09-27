@@ -49,7 +49,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             CHECK(text.getFillColor() == sf::Color::White);
             CHECK(text.getOutlineColor() == sf::Color::Black);
             CHECK(text.getOutlineThickness() == 0);
-            CHECK(text.findCharacterPos(0) == sf::Vector2f());
+            CHECK(text.findCharacterPos(0) == sf::Vector2f{});
             CHECK(text.getLocalBounds() == sf::FloatRect());
             CHECK(text.getGlobalBounds() == sf::FloatRect());
         }
@@ -66,7 +66,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             CHECK(text.getFillColor() == sf::Color::White);
             CHECK(text.getOutlineColor() == sf::Color::Black);
             CHECK(text.getOutlineThickness() == 0);
-            CHECK(text.findCharacterPos(0) == sf::Vector2f());
+            CHECK(text.findCharacterPos(0) == sf::Vector2f{});
             CHECK(text.getLocalBounds() == sf::FloatRect({1, 8}, {357, 28}));
             CHECK(text.getGlobalBounds() == sf::FloatRect({1, 8}, {357, 28}));
         }
@@ -83,7 +83,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             CHECK(text.getFillColor() == sf::Color::White);
             CHECK(text.getOutlineColor() == sf::Color::Black);
             CHECK(text.getOutlineThickness() == 0);
-            CHECK(text.findCharacterPos(0) == sf::Vector2f());
+            CHECK(text.findCharacterPos(0) == sf::Vector2f{});
             CHECK(text.getLocalBounds() == sf::FloatRect({1, 7}, {290, 22}));
             CHECK(text.getGlobalBounds() == sf::FloatRect({1, 7}, {290, 22}));
         }

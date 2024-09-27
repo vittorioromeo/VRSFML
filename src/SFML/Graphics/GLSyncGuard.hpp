@@ -13,15 +13,15 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-class GPUSyncGuard
+class GLSyncGuard
 {
 public:
-    [[gnu::always_inline, gnu::flatten]] explicit GPUSyncGuard() :
+    [[gnu::always_inline, gnu::flatten]] explicit GLSyncGuard() :
     m_sync(glCheck(glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0)))
     {
     }
 
-    [[gnu::always_inline, gnu::flatten]] ~GPUSyncGuard()
+    [[gnu::always_inline, gnu::flatten]] ~GLSyncGuard()
     {
         while (true)
         {
@@ -36,11 +36,11 @@ public:
         glCheck(glDeleteSync(m_sync));
     }
 
-    GPUSyncGuard(const GPUSyncGuard&)            = delete;
-    GPUSyncGuard& operator=(const GPUSyncGuard&) = delete;
+    GLSyncGuard(const GLSyncGuard&)            = delete;
+    GLSyncGuard& operator=(const GLSyncGuard&) = delete;
 
-    GPUSyncGuard(GPUSyncGuard&&)            = delete;
-    GPUSyncGuard& operator=(GPUSyncGuard&&) = delete;
+    GLSyncGuard(GLSyncGuard&&)            = delete;
+    GLSyncGuard& operator=(GLSyncGuard&&) = delete;
 
 private:
     GLsync m_sync;

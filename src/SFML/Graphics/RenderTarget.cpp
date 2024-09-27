@@ -8,8 +8,8 @@
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/GLBufferObject.hpp"
 #include "SFML/Graphics/GLPersistentBuffer.hpp"
+#include "SFML/Graphics/GLSyncGuard.hpp"
 #include "SFML/Graphics/GLVertexArrayObject.hpp"
-#include "SFML/Graphics/GPUSyncGuard.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
@@ -156,33 +156,33 @@ SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
         .to<sf::IntRect>();
 }
 
+
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline, gnu::flatten]] inline void streamToGPU(GLenum bufferType, const void* data, sf::base::SizeT dataByteCount)
+[[gnu::always_inline, gnu::flatten]] inline void streamToGPU(unsigned int bufferId, const void* data, sf::base::SizeT dataByteCount)
 {
 #ifdef SFML_OPENGL_ES
     // On OpenGL ES, the "naive" method seems faster
-    glCheck(glBufferData(bufferType, static_cast<GLsizeiptr>(dataByteCount), data, GL_STREAM_DRAW));
+    glCheck(glNamedBufferData(bufferId, static_cast<GLsizeiptr>(dataByteCount), data, GL_STREAM_DRAW));
 #else
     // For small batches, the "naive" method also seems faster
     if (dataByteCount < sizeof(sf::Vertex) * 64)
     {
-        glCheck(glBufferData(bufferType, static_cast<GLsizeiptr>(dataByteCount), data, GL_STREAM_DRAW));
+        glCheck(glNamedBufferData(bufferId, static_cast<GLsizeiptr>(dataByteCount), data, GL_STREAM_DRAW));
         return;
     }
 
     // For larger batches, memcpying into a transient mapped buffer seems faster
-
-    glCheck(glBufferData(bufferType, static_cast<GLsizeiptr>(dataByteCount), nullptr, GL_STREAM_DRAW));
+    glCheck(glNamedBufferData(bufferId, static_cast<GLsizeiptr>(dataByteCount), nullptr, GL_STREAM_DRAW));
 
     void* const ptr = glCheck(
-        glMapBufferRange(bufferType,
-                         0u,
-                         dataByteCount,
-                         GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_INVALIDATE_RANGE_BIT));
+        glMapNamedBufferRange(bufferId,
+                              0u,
+                              dataByteCount,
+                              GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_INVALIDATE_RANGE_BIT));
 
     SFML_BASE_MEMCPY(ptr, data, dataByteCount);
 
-    [[maybe_unused]] const auto rc = glCheck(glUnmapBuffer(bufferType));
+    [[maybe_unused]] const auto rc = glCheck(glUnmapNamedBuffer(bufferId));
     SFML_BASE_ASSERT(rc == GL_TRUE);
 #endif
 };
@@ -212,7 +212,7 @@ struct [[nodiscard]] StatesCache
     bool scissorEnabled{false}; //!< Is scissor testing enabled?
     bool stencilEnabled{false}; //!< Is stencil testing enabled?
 
-    bool vaoBound{false}; //!< Have buffer objects been bound?
+    unsigned int lastBoundVao{0u}; //!< Last bound vertex array object id
 
     BlendMode      lastBlendMode{BlendAlpha};                      //!< Cached blending mode
     StencilMode    lastStencilMode;                                //!< Cached stencil
@@ -260,22 +260,35 @@ void setupVertexAttribPointers()
 
 
 ////////////////////////////////////////////////////////////
+struct GLVaoGroup
+{
+    GLVertexArrayObject   vao; //!< Vertex array object
+    GLVertexBufferObject  vbo; //!< Associated vertex buffer object
+    GLElementBufferObject ebo; //!< Associated element index buffer object
+
+    explicit GLVaoGroup(GraphicsContext& graphicsContext) :
+    vao{graphicsContext},
+    vbo{graphicsContext},
+    ebo{graphicsContext}
+    {
+    }
+};
+
+
+////////////////////////////////////////////////////////////
 struct RenderTarget::Impl
 {
     explicit Impl(GraphicsContext& theGraphicsContext, const View& theView) :
     graphicsContext(&theGraphicsContext),
     view(theView),
     id(RenderTargetImpl::nextUniqueId.fetch_add(1u, std::memory_order_relaxed)),
-    vao(theGraphicsContext),
-    vbo(theGraphicsContext),
-    ebo(theGraphicsContext),
-    vboPersistentBuffer(vbo),
-    eboPersistentBuffer(ebo)
+    vaoGroup(theGraphicsContext),
+    persistentVaoGroup(theGraphicsContext),
+    vboPersistentBuffer(persistentVaoGroup.vbo),
+    eboPersistentBuffer(persistentVaoGroup.ebo)
     {
-        bindGLObjects();
-        cache.vaoBound = true;
-
-        setupVertexAttribPointers();
+        bindGLObjects(vaoGroup);
+        bindGLObjects(persistentVaoGroup);
     }
 
     GraphicsContext* graphicsContext; //!< The window context
@@ -286,18 +299,21 @@ struct RenderTarget::Impl
 
     RenderTargetImpl::IdType id{}; //!< Unique number that identifies the render target
 
-    GLVertexArrayObject   vao; //!< Vertex array object associated with the render target
-    GLVertexBufferObject  vbo; //!< Vertex buffer object associated with the render target
-    GLElementBufferObject ebo; //!< Element index buffer object associated with the render target
+    GLVaoGroup vaoGroup;           //!< VAO, VBO, and EBO associated with the render target (non-persistent storage)
+    GLVaoGroup persistentVaoGroup; //!< VAO, VBO, and EBO associated with the render target (persistent storage)
 
     GLPersistentBuffer<GLVertexBufferObject>  vboPersistentBuffer; //!< TODO P0:
     GLPersistentBuffer<GLElementBufferObject> eboPersistentBuffer; //!< TODO P0:
 
-    void bindGLObjects() const
+    void bindGLObjects(GLVaoGroup& theVAOGroup)
     {
-        vao.bind();
-        vbo.bind();
-        ebo.bind();
+        theVAOGroup.vao.bind();
+        theVAOGroup.vbo.bind();
+        theVAOGroup.ebo.bind();
+
+        setupVertexAttribPointers();
+
+        cache.lastBoundVao = theVAOGroup.vao.getId();
     }
 };
 
@@ -493,9 +509,9 @@ void RenderTarget::drawVertices(const Vertex* vertices, base::SizeT vertexCount,
         (!RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) && !setActive(true)))
         return;
 
-    setupDraw(states);
+    setupDraw(/* persistent */ false, states);
 
-    RenderTargetImpl::streamToGPU(GL_ARRAY_BUFFER, vertices, sizeof(Vertex) * vertexCount);
+    RenderTargetImpl::streamToGPU(m_impl->vaoGroup.vbo.getId(), vertices, sizeof(Vertex) * vertexCount);
 
     drawPrimitives(type, 0u, vertexCount);
     cleanupDraw(states);
@@ -516,10 +532,10 @@ void RenderTarget::drawIndexedVertices(
         (!RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) && !setActive(true)))
         return;
 
-    setupDraw(states);
+    setupDraw(/* persistent */ false, states);
 
-    RenderTargetImpl::streamToGPU(GL_ARRAY_BUFFER, vertices, sizeof(Vertex) * vertexCount);
-    RenderTargetImpl::streamToGPU(GL_ELEMENT_ARRAY_BUFFER, indices, sizeof(IndexType) * indexCount);
+    RenderTargetImpl::streamToGPU(m_impl->vaoGroup.vbo.getId(), vertices, sizeof(Vertex) * vertexCount);
+    RenderTargetImpl::streamToGPU(m_impl->vaoGroup.ebo.getId(), indices, sizeof(IndexType) * indexCount);
 
     drawIndexedPrimitives(type, indexCount);
     cleanupDraw(states);
@@ -533,10 +549,10 @@ void RenderTarget::drawPersistentMappedVertices(base::SizeT vertexCount, Primiti
     if (vertexCount == 0u || (!RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) && !setActive(true)))
         return;
 
-    setupDraw(states);
+    setupDraw(/* persistent */ true, states);
 
     {
-        GPUSyncGuard syncGuard;
+        GLSyncGuard syncGuard;
         drawPrimitives(type, 0u, vertexCount);
     }
 
@@ -551,10 +567,10 @@ void RenderTarget::drawPersistentMappedIndexedVertices(base::SizeT indexCount, P
     if (indexCount == 0u || (!RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) && !setActive(true)))
         return;
 
-    setupDraw(states);
+    setupDraw(/* persistent */ true, states);
 
     {
-        GPUSyncGuard syncGuard;
+        GLSyncGuard syncGuard;
         drawIndexedPrimitives(type, indexCount);
     }
 
@@ -607,7 +623,7 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, base::SizeT firstVerte
         (!RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) && !setActive(true)))
         return;
 
-    setupDraw(states);
+    setupDraw(/* persistent */ false, states);
 
     // Bind vertex buffer
     vertexBuffer.bind(*m_impl->graphicsContext);
@@ -619,7 +635,7 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, base::SizeT firstVerte
 
     // Unbind vertex buffer
     VertexBuffer::unbind(*vertexBuffer.m_graphicsContext);
-    m_impl->vbo.bind();
+    m_impl->vaoGroup.vbo.bind();
     setupVertexAttribPointers(); // Needed to restore attrib pointers on regular VBO
 
     cleanupDraw(states);
@@ -710,7 +726,7 @@ void RenderTarget::resetGLStates()
 
     m_impl->cache.scissorEnabled = false;
     m_impl->cache.stencilEnabled = false;
-    m_impl->cache.vaoBound       = false;
+    m_impl->cache.lastBoundVao   = 0u;
 
     m_impl->cache.glStatesSet = true;
 
@@ -841,7 +857,7 @@ void RenderTarget::unapplyTexture()
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::setupDraw(const RenderStates& states)
+void RenderTarget::setupDraw(bool persistent, const RenderStates& states)
 {
     // GL_FRAMEBUFFER_SRGB is not available on OpenGL ES
     // If a framebuffer supports sRGB, it will always be enabled on OpenGL ES
@@ -862,12 +878,11 @@ void RenderTarget::setupDraw(const RenderStates& states)
         resetGLStates();
 
     // Bind GL objects
-    if (!m_impl->cache.enable || !m_impl->cache.vaoBound)
+    if (GLVaoGroup& vaoGroupToBind = persistent ? m_impl->persistentVaoGroup : m_impl->vaoGroup;
+        !m_impl->cache.enable || m_impl->cache.lastBoundVao != vaoGroupToBind.vao.getId())
     {
-        m_impl->bindGLObjects();
-        m_impl->cache.vaoBound = true;
-
-        setupVertexAttribPointers();
+        m_impl->cache.lastBoundVao = vaoGroupToBind.vao.getId();
+        m_impl->bindGLObjects(vaoGroupToBind);
     }
 
     // Select shader to be used

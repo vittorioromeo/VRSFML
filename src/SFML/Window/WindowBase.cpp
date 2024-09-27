@@ -120,7 +120,7 @@ Vector2u WindowBase::getSize() const
 void WindowBase::setSize(Vector2u size)
 {
     // Constrain requested size within minimum and maximum bounds
-    const auto minimumSize = m_impl->getMinimumSize().valueOr(Vector2u());
+    const auto minimumSize = m_impl->getMinimumSize().valueOr(Vector2u{});
     const auto maximumSize = m_impl->getMaximumSize().valueOr(Vector2u{UINT_MAX, UINT_MAX});
 
     const auto width  = base::clamp(size.x, minimumSize.x, maximumSize.x);

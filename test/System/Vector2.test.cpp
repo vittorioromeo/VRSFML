@@ -32,7 +32,7 @@ TEMPLATE_TEST_CASE("[System] sf::Vector2", "", int, float)
     {
         SECTION("Default constructor")
         {
-            constexpr sf::Vector2<TestType> vector;
+            constexpr sf::Vector2<TestType> vector{};
             STATIC_CHECK(vector.x == 0);
             STATIC_CHECK(vector.y == 0);
         }

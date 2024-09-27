@@ -567,7 +567,7 @@ private:
     /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void setupDraw(const RenderStates& states);
+    void setupDraw(bool persistent, const RenderStates& states);
 
     ////////////////////////////////////////////////////////////
     /// \brief Setup environment for drawing: MVP matrix

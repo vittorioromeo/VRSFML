@@ -29,7 +29,7 @@ TEST_CASE("[Graphics] sf::Color")
     {
         SECTION("Default constructor")
         {
-            constexpr sf::Color color;
+            constexpr sf::Color color{};
             STATIC_CHECK(color.r == 0);
             STATIC_CHECK(color.g == 0);
             STATIC_CHECK(color.b == 0);
