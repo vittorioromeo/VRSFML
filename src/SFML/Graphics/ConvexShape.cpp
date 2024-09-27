@@ -69,7 +69,7 @@ Vector2f ConvexShape::getGeometricCenter() const
     if (pointCount == 2)
         return (m_points[0] + m_points[1]) / 2.f;
 
-    Vector2f centroid;
+    Vector2f centroid{};
     float    twiceArea = 0;
 
     auto previousPoint = m_points[pointCount - 1];

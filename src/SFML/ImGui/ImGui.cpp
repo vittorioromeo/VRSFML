@@ -382,7 +382,7 @@ struct [[nodiscard]] ImGuiPerWindowContext
     ImGuiMouseCursor lastCursor{ImGuiMouseCursor_COUNT};
 
     bool     touchDown[3]{};
-    Vector2i touchPos;
+    Vector2i touchPos{};
 
     unsigned int joystickId;
     ImGuiKey     joystickMapping[Joystick::ButtonCount]{ImGuiKey_None};

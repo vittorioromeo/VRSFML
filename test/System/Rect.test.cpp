@@ -29,7 +29,7 @@ TEMPLATE_TEST_CASE("[System] sf::Rect", "", int, float)
     {
         SECTION("Default constructor")
         {
-            constexpr sf::Rect<TestType> rectangle;
+            constexpr sf::Rect<TestType> rectangle{};
             STATIC_CHECK(rectangle.position == sf::Vector2<TestType>());
             STATIC_CHECK(rectangle.size == sf::Vector2<TestType>());
         }

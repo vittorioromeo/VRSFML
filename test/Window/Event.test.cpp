@@ -225,8 +225,8 @@ TEST_CASE("[Window] sf::Event")
         STATIC_CHECK(SFML_BASE_IS_EMPTY(sf::Event::MouseLeft));
 
         // Non-empty structs
-        const sf::Event::Resized resized;
-        CHECK(resized.size == sf::Vector2u());
+        const sf::Event::Resized resized{};
+        CHECK(resized.size == sf::Vector2u{});
 
         const sf::Event::TextEntered textEntered;
         CHECK(textEntered.unicode == 0);
@@ -247,24 +247,24 @@ TEST_CASE("[Window] sf::Event")
         CHECK(!keyReleased.shift);
         CHECK(!keyReleased.system);
 
-        const sf::Event::MouseWheelScrolled mouseWheelScrolled;
+        const sf::Event::MouseWheelScrolled mouseWheelScrolled{};
         CHECK(mouseWheelScrolled.wheel == sf::Mouse::Wheel{});
         CHECK(mouseWheelScrolled.delta == 0);
-        CHECK(mouseWheelScrolled.position == sf::Vector2i());
+        CHECK(mouseWheelScrolled.position == sf::Vector2i{});
 
-        const sf::Event::MouseButtonPressed mouseButtonPressed;
+        const sf::Event::MouseButtonPressed mouseButtonPressed{};
         CHECK(mouseButtonPressed.button == sf::Mouse::Button{});
-        CHECK(mouseButtonPressed.position == sf::Vector2i());
+        CHECK(mouseButtonPressed.position == sf::Vector2i{});
 
-        const sf::Event::MouseButtonReleased mouseButtonReleased;
+        const sf::Event::MouseButtonReleased mouseButtonReleased{};
         CHECK(mouseButtonReleased.button == sf::Mouse::Button{});
-        CHECK(mouseButtonReleased.position == sf::Vector2i());
+        CHECK(mouseButtonReleased.position == sf::Vector2i{});
 
-        const sf::Event::MouseMoved mouseMoved;
-        CHECK(mouseMoved.position == sf::Vector2i());
+        const sf::Event::MouseMoved mouseMoved{};
+        CHECK(mouseMoved.position == sf::Vector2i{});
 
-        const sf::Event::MouseMovedRaw mouseMovedRaw;
-        CHECK(mouseMovedRaw.delta == sf::Vector2i());
+        const sf::Event::MouseMovedRaw mouseMovedRaw{};
+        CHECK(mouseMovedRaw.delta == sf::Vector2i{});
 
         const sf::Event::JoystickButtonPressed joystickButtonPressed;
         CHECK(joystickButtonPressed.joystickId == 0);
@@ -285,19 +285,19 @@ TEST_CASE("[Window] sf::Event")
         const sf::Event::JoystickDisconnected joystickDisconnected;
         CHECK(joystickDisconnected.joystickId == 0);
 
-        const sf::Event::TouchBegan touchBegan;
+        const sf::Event::TouchBegan touchBegan{};
         CHECK(touchBegan.finger == 0);
-        CHECK(touchBegan.position == sf::Vector2i());
+        CHECK(touchBegan.position == sf::Vector2i{});
 
-        const sf::Event::TouchMoved touchMoved;
+        const sf::Event::TouchMoved touchMoved{};
         CHECK(touchMoved.finger == 0);
-        CHECK(touchMoved.position == sf::Vector2i());
+        CHECK(touchMoved.position == sf::Vector2i{});
 
-        const sf::Event::TouchEnded touchEnded;
+        const sf::Event::TouchEnded touchEnded{};
         CHECK(touchEnded.finger == 0);
-        CHECK(touchEnded.position == sf::Vector2i());
+        CHECK(touchEnded.position == sf::Vector2i{});
 
-        const sf::Event::SensorChanged sensorChanged;
+        const sf::Event::SensorChanged sensorChanged{};
         CHECK(sensorChanged.type == sf::Sensor::Type{});
         CHECK(sensorChanged.value == sf::Vector3f());
     }

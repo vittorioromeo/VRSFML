@@ -1019,7 +1019,7 @@ bool InputImpl::isTouchDown(unsigned int finger)
 Vector2i InputImpl::getTouchPosition(unsigned int finger)
 {
     const auto iter = touchStatus.find(finger);
-    return iter == touchStatus.end() ? Vector2i() : iter->second;
+    return iter == touchStatus.end() ? Vector2i{} : iter->second;
 }
 
 

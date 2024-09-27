@@ -17,7 +17,7 @@ TEST_CASE("[Graphics] sf::Glyph")
 
     SECTION("Construction")
     {
-        constexpr sf::Glyph glyph;
+        constexpr sf::Glyph glyph{};
         STATIC_CHECK(glyph.advance == 0.f);
         STATIC_CHECK(glyph.lsbDelta == 0);
         STATIC_CHECK(glyph.rsbDelta == 0);

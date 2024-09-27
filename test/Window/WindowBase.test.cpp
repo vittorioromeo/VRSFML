@@ -89,7 +89,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
         sf::WindowBase windowBase(windowContext, {.size{360u, 240u}, .title = "WindowBase Tests"});
 
         windowBase.setPosition({12, 34});
-        CHECK(windowBase.getPosition() == sf::Vector2i());
+        CHECK(windowBase.getPosition() == sf::Vector2i{});
     }
 
     SECTION("Set/get size")
@@ -99,7 +99,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
             sf::WindowBase windowBase(windowContext, {.size{360u, 240u}, .title = "WindowBase Tests"});
 
             windowBase.setSize({128, 256});
-            CHECK(windowBase.getSize() == sf::Vector2u());
+            CHECK(windowBase.getSize() == sf::Vector2u{});
         }
 
         SECTION("Initialized window")

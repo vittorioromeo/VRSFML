@@ -293,14 +293,12 @@ constexpr auto scalingFactors = windowSize.toVector2f().componentWiseDiv(resolut
 
 sf::Vertex computeVertex(sf::Vector2u position)
 {
-    sf::Vertex vertex;
-    vertex.position  = position.toVector2f().componentWiseMul(scalingFactors);
-    vertex.color     = getTerrainColor(getElevation(position), getMoisture(position));
-    vertex.texCoords = computeNormal(getElevation(position - sf::Vector2u(1, 0)),
-                                     getElevation(position + sf::Vector2u(1, 0)),
-                                     getElevation(position + sf::Vector2u(0, 1)),
-                                     getElevation(position - sf::Vector2u(0, 1)));
-    return vertex;
+    return {.position  = position.toVector2f().componentWiseMul(scalingFactors),
+            .color     = getTerrainColor(getElevation(position), getMoisture(position)),
+            .texCoords = computeNormal(getElevation(position - sf::Vector2u(1, 0)),
+                                       getElevation(position + sf::Vector2u(1, 0)),
+                                       getElevation(position + sf::Vector2u(0, 1)),
+                                       getElevation(position - sf::Vector2u(0, 1)))};
 };
 
 
