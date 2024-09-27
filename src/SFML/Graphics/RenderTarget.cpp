@@ -161,8 +161,8 @@ SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
 [[gnu::always_inline, gnu::flatten]] inline void streamToGPU(unsigned int bufferId, const void* data, sf::base::SizeT dataByteCount)
 {
 #ifdef SFML_OPENGL_ES
-    // On OpenGL ES, the "naive" method seems faster
-    glCheck(glNamedBufferData(bufferId, static_cast<GLsizeiptr>(dataByteCount), data, GL_STREAM_DRAW));
+    // On OpenGL ES, the "naive" method seems faster, also named buffers are not supported
+    glCheck(glBufferData(bufferId, static_cast<GLsizeiptr>(dataByteCount), data, GL_STREAM_DRAW));
 #else
     // For small batches, the "naive" method also seems faster
     if (dataByteCount < sizeof(sf::Vertex) * 64)
@@ -185,7 +185,37 @@ SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
     [[maybe_unused]] const auto rc = glCheck(glUnmapNamedBuffer(bufferId));
     SFML_BASE_ASSERT(rc == GL_TRUE);
 #endif
-};
+}
+
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr unsigned int adjustNamedBuffer(
+    [[maybe_unused]] unsigned int bufferId,
+    [[maybe_unused]] unsigned int fallback)
+{
+#ifndef SFML_OPENGL_ES
+    return bufferId;
+#else
+    return fallback; // OpenGL ES does not support named buffers
+#endif
+}
+
+
+////////////////////////////////////////////////////////////
+[[gnu::always_inline, gnu::flatten]] inline void streamVerticesToGPU([[maybe_unused]] unsigned int bufferId,
+                                                                     const sf::Vertex*             vertexData,
+                                                                     sf::base::SizeT               vertexCount)
+{
+    streamToGPU(adjustNamedBuffer(bufferId, GL_ARRAY_BUFFER), vertexData, sizeof(sf::Vertex) * vertexCount);
+}
+
+
+////////////////////////////////////////////////////////////
+[[gnu::always_inline, gnu::flatten]] inline void streamIndicesToGPU([[maybe_unused]] unsigned int bufferId,
+                                                                    const sf::IndexType*          indexData,
+                                                                    sf::base::SizeT               indexCount)
+{
+    streamToGPU(adjustNamedBuffer(bufferId, GL_ELEMENT_ARRAY_BUFFER), indexData, sizeof(sf::IndexType) * indexCount);
+}
 
 } // namespace RenderTargetImpl
 } // namespace
@@ -483,16 +513,16 @@ void RenderTarget::draw(const Shape& shape, const Texture* texture, const Render
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::drawVertices(const Vertex* vertices, base::SizeT vertexCount, PrimitiveType type, const RenderStates& states)
+void RenderTarget::drawVertices(const Vertex* vertexData, base::SizeT vertexCount, PrimitiveType type, const RenderStates& states)
 {
     // Nothing to draw or inactive target
-    if (vertices == nullptr || vertexCount == 0u ||
+    if (vertexData == nullptr || vertexCount == 0u ||
         (!RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) && !setActive(true)))
         return;
 
     setupDraw(/* persistent */ false, states);
 
-    RenderTargetImpl::streamToGPU(m_impl->vaoGroup.vbo.getId(), vertices, sizeof(Vertex) * vertexCount);
+    RenderTargetImpl::streamVerticesToGPU(m_impl->vaoGroup.vbo.getId(), vertexData, vertexCount);
 
     drawPrimitives(type, 0u, vertexCount);
     cleanupDraw(states);
@@ -501,22 +531,22 @@ void RenderTarget::drawVertices(const Vertex* vertices, base::SizeT vertexCount,
 
 ////////////////////////////////////////////////////////////
 void RenderTarget::drawIndexedVertices(
-    const Vertex*       vertices,
+    const Vertex*       vertexData,
     base::SizeT         vertexCount,
-    const IndexType*    indices,
+    const IndexType*    indexData,
     base::SizeT         indexCount,
     PrimitiveType       type,
     const RenderStates& states)
 {
     // Nothing to draw or inactive target
-    if (vertices == nullptr || vertexCount == 0u || indices == nullptr || indexCount == 0u ||
+    if (vertexData == nullptr || vertexCount == 0u || indexData == nullptr || indexCount == 0u ||
         (!RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) && !setActive(true)))
         return;
 
     setupDraw(/* persistent */ false, states);
 
-    RenderTargetImpl::streamToGPU(m_impl->vaoGroup.vbo.getId(), vertices, sizeof(Vertex) * vertexCount);
-    RenderTargetImpl::streamToGPU(m_impl->vaoGroup.ebo.getId(), indices, sizeof(IndexType) * indexCount);
+    RenderTargetImpl::streamVerticesToGPU(m_impl->vaoGroup.vbo.getId(), vertexData, vertexCount);
+    RenderTargetImpl::streamIndicesToGPU(m_impl->vaoGroup.ebo.getId(), indexData, indexCount);
 
     drawIndexedPrimitives(type, indexCount);
     cleanupDraw(states);

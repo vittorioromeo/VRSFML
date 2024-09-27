@@ -327,13 +327,13 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by an array of vertices
     ///
-    /// \param vertices    Pointer to the vertices
+    /// \param vertexData  Pointer to the vertices
     /// \param vertexCount Number of vertices in the array
     /// \param type        Type of primitives to draw
     /// \param states      Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void drawVertices(const Vertex*       vertices,
+    void drawVertices(const Vertex*       vertexData,
                       base::SizeT         vertexCount,
                       PrimitiveType       type,
                       const RenderStates& states = RenderStates::Default);
@@ -343,9 +343,9 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void drawIndexedVertices(const Vertex*       vertices,
+    void drawIndexedVertices(const Vertex*       vertexData,
                              base::SizeT         vertexCount,
-                             const unsigned int* indices,
+                             const unsigned int* indexData,
                              base::SizeT         indexCount,
                              PrimitiveType       type,
                              const RenderStates& states = RenderStates::Default);
