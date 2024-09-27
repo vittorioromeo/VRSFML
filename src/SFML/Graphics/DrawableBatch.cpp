@@ -5,7 +5,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/DrawableBatchUtils.hpp"
-#include "SFML/Graphics/PersistentGPUBuffer.hpp"
+#include "SFML/Graphics/GLBufferObject.hpp" // used
+#include "SFML/Graphics/GLPersistentBuffer.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/Shape.hpp"
 #include "SFML/Graphics/Sprite.hpp"
@@ -16,12 +17,12 @@
 #include "SFML/Base/SizeT.hpp"
 
 
-namespace sf
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 PersistentGPUStorage::PersistentGPUStorage(RenderTarget& renderTarget) :
-verticesPersistentBuffer{renderTarget.getVerticesPersistentBuffer()},
-indicesPersistentBuffer{renderTarget.getIndicesPersistentBuffer()}
+vboPersistentBuffer{renderTarget.getVBOPersistentBuffer()},
+eboPersistentBuffer{renderTarget.getEBOPersistentBuffer()}
 {
 }
 
@@ -34,22 +35,22 @@ void PersistentGPUStorage::clear()
 
 
 ////////////////////////////////////////////////////////////
-Vertex* PersistentGPUStorage::reserveMoreVerticesAndGetPtr(base::SizeT count)
+Vertex* PersistentGPUStorage::reserveMoreVertices(base::SizeT count)
 {
-    verticesPersistentBuffer.reserve(sizeof(Vertex) * (nVertices + count));
+    vboPersistentBuffer.reserve(sizeof(Vertex) * (nVertices + count));
 
-    Vertex* result = static_cast<Vertex*>(verticesPersistentBuffer.data()) + nVertices;
+    Vertex* result = static_cast<Vertex*>(vboPersistentBuffer.data()) + nVertices;
     nVertices += count;
     return result;
 }
 
 
 ////////////////////////////////////////////////////////////
-IndexType* PersistentGPUStorage::reserveMoreIndicesAndGetPtr(base::SizeT count)
+IndexType* PersistentGPUStorage::reserveMoreIndices(base::SizeT count)
 {
-    indicesPersistentBuffer.reserve(sizeof(IndexType) * (nIndices + count));
+    eboPersistentBuffer.reserve(sizeof(IndexType) * (nIndices + count));
 
-    IndexType* result = static_cast<IndexType*>(indicesPersistentBuffer.data()) + nIndices;
+    IndexType* result = static_cast<IndexType*>(eboPersistentBuffer.data()) + nIndices;
     nIndices += count;
     return result;
 }
@@ -64,7 +65,7 @@ void CPUStorage::clear()
 
 
 ////////////////////////////////////////////////////////////
-Vertex* CPUStorage::reserveMoreVerticesAndGetPtr(base::SizeT count)
+Vertex* CPUStorage::reserveMoreVertices(base::SizeT count)
 {
     Vertex* const result = vertices.reserveMore(count);
     vertices.unsafeSetSize(vertices.size() + count);
@@ -73,7 +74,7 @@ Vertex* CPUStorage::reserveMoreVerticesAndGetPtr(base::SizeT count)
 
 
 ////////////////////////////////////////////////////////////
-IndexType* CPUStorage::reserveMoreIndicesAndGetPtr(base::SizeT count)
+IndexType* CPUStorage::reserveMoreIndices(base::SizeT count)
 {
     IndexType* const result = indices.reserveMore(count);
     indices.unsafeSetSize(indices.size() + count);
@@ -85,10 +86,8 @@ IndexType* CPUStorage::reserveMoreIndicesAndGetPtr(base::SizeT count)
 template <typename TStorage>
 void DrawableBatchImpl<TStorage>::addTriangles(const Transform& transform, const Vertex* data, base::SizeT size)
 {
-    appendSubsequentIndices(static_cast<IndexType>(size),
-                            m_storage.getNumVertices(),
-                            m_storage.reserveMoreIndicesAndGetPtr(size));
-    appendPreTransformedVertices(transform, data, size, m_storage.reserveMoreVerticesAndGetPtr(size));
+    appendIncreasingIndices(static_cast<IndexType>(size), m_storage.getNumVertices(), m_storage.reserveMoreIndices(size));
+    appendTransformedVertices(transform, data, size, m_storage.reserveMoreVertices(size));
 }
 
 
@@ -105,8 +104,8 @@ void DrawableBatchImpl<TStorage>::add(const Text& text)
                                  data,
                                  numQuads,
                                  m_storage.getNumVertices(),
-                                 m_storage.reserveMoreIndicesAndGetPtr(6u * numQuads),
-                                 m_storage.reserveMoreVerticesAndGetPtr(4u * numQuads));
+                                 m_storage.reserveMoreIndices(6u * numQuads),
+                                 m_storage.reserveMoreVertices(4u * numQuads));
 }
 
 
@@ -116,8 +115,8 @@ void DrawableBatchImpl<TStorage>::add(const Sprite& sprite)
 {
     appendSpriteIndicesAndVertices(sprite,
                                    m_storage.getNumVertices(),
-                                   m_storage.reserveMoreIndicesAndGetPtr(6u),
-                                   m_storage.reserveMoreVerticesAndGetPtr(4u));
+                                   m_storage.reserveMoreIndices(6u),
+                                   m_storage.reserveMoreVertices(4u));
 }
 
 
@@ -132,16 +131,16 @@ void DrawableBatchImpl<TStorage>::add(const Shape& shape)
                                       fillData,
                                       static_cast<IndexType>(fillSize),
                                       m_storage.getNumVertices(),
-                                      m_storage.reserveMoreIndicesAndGetPtr(3u * fillSize),
-                                      m_storage.reserveMoreVerticesAndGetPtr(fillSize));
+                                      m_storage.reserveMoreIndices(3u * fillSize),
+                                      m_storage.reserveMoreVertices(fillSize));
 
     const auto [outlineData, outlineSize] = shape.getOutlineVertices();
     appendShapeOutlineIndicesAndVertices(transform,
                                          outlineData,
                                          static_cast<IndexType>(outlineSize),
                                          m_storage.getNumVertices(),
-                                         m_storage.reserveMoreIndicesAndGetPtr(3u * outlineSize),
-                                         m_storage.reserveMoreVerticesAndGetPtr(outlineSize));
+                                         m_storage.reserveMoreIndices(3u * outlineSize),
+                                         m_storage.reserveMoreVertices(outlineSize));
 }
 
 
@@ -154,8 +153,9 @@ void DrawableBatchImpl<TStorage>::clear()
 
 
 ////////////////////////////////////////////////////////////
+// Explicit instantiation definitions
+////////////////////////////////////////////////////////////
 template class DrawableBatchImpl<CPUStorage>;
 template class DrawableBatchImpl<PersistentGPUStorage>;
 
-
-} // namespace sf
+} // namespace sf::priv

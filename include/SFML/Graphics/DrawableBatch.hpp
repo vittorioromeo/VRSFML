@@ -19,11 +19,15 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
-class PersistentGPUBuffer;
+template <typename TBufferObject>
+class GLPersistentBuffer;
+
 class RenderTarget;
 class Shape;
 class Text;
 class Transform;
+struct GLElementBufferObject;
+struct GLVertexBufferObject;
 struct Sprite;
 } // namespace sf
 
@@ -36,7 +40,11 @@ namespace sf
 ////////////////////////////////////////////////////////////
 using IndexType = unsigned int;
 
+} // namespace sf
 
+
+namespace sf::priv
+{
 ////////////////////////////////////////////////////////////
 /// \brief TODO P1: docs
 ///
@@ -45,16 +53,16 @@ struct PersistentGPUStorage
 {
     explicit PersistentGPUStorage(RenderTarget& renderTarget);
 
-    PersistentGPUBuffer& verticesPersistentBuffer;
-    PersistentGPUBuffer& indicesPersistentBuffer;
+    GLPersistentBuffer<GLVertexBufferObject>&  vboPersistentBuffer;
+    GLPersistentBuffer<GLElementBufferObject>& eboPersistentBuffer;
 
     IndexType nVertices{};
     IndexType nIndices{};
 
     void clear();
 
-    [[nodiscard]] Vertex*    reserveMoreVerticesAndGetPtr(base::SizeT count);
-    [[nodiscard]] IndexType* reserveMoreIndicesAndGetPtr(base::SizeT count);
+    [[nodiscard]] Vertex*    reserveMoreVertices(base::SizeT count);
+    [[nodiscard]] IndexType* reserveMoreIndices(base::SizeT count);
 
     [[nodiscard, gnu::always_inline, gnu::flatten]] IndexType getNumVertices() const
     {
@@ -67,7 +75,6 @@ struct PersistentGPUStorage
     }
 };
 
-
 ////////////////////////////////////////////////////////////
 /// \brief TODO P1: docs
 ///
@@ -79,8 +86,8 @@ struct CPUStorage
 
     void clear();
 
-    [[nodiscard]] Vertex*    reserveMoreVerticesAndGetPtr(base::SizeT count);
-    [[nodiscard]] IndexType* reserveMoreIndicesAndGetPtr(base::SizeT count);
+    [[nodiscard]] Vertex*    reserveMoreVertices(base::SizeT count);
+    [[nodiscard]] IndexType* reserveMoreIndices(base::SizeT count);
 
     [[nodiscard, gnu::always_inline, gnu::flatten]] IndexType getNumVertices() const
     {
@@ -92,7 +99,6 @@ struct CPUStorage
         return static_cast<IndexType>(indices.size());
     }
 };
-
 
 ////////////////////////////////////////////////////////////
 /// \brief TODO P1: docs
@@ -150,31 +156,35 @@ private:
     TStorage m_storage;
 };
 
-
+////////////////////////////////////////////////////////////
+// Explicit instantiation declarations
 ////////////////////////////////////////////////////////////
 extern template class DrawableBatchImpl<CPUStorage>;
 extern template class DrawableBatchImpl<PersistentGPUStorage>;
 
+} // namespace sf::priv
 
+
+namespace sf
+{
 ////////////////////////////////////////////////////////////
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-class CPUDrawableBatch : public DrawableBatchImpl<CPUStorage>
+class CPUDrawableBatch : public priv::DrawableBatchImpl<priv::CPUStorage>
 {
     friend RenderTarget;
-    using DrawableBatchImpl<CPUStorage>::DrawableBatchImpl;
+    using DrawableBatchImpl<priv::CPUStorage>::DrawableBatchImpl;
 };
 
-
 ////////////////////////////////////////////////////////////
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-class PersistentGPUDrawableBatch : public DrawableBatchImpl<PersistentGPUStorage>
+class PersistentGPUDrawableBatch : public priv::DrawableBatchImpl<priv::PersistentGPUStorage>
 {
     friend RenderTarget;
-    using DrawableBatchImpl<PersistentGPUStorage>::DrawableBatchImpl;
+    using DrawableBatchImpl<priv::PersistentGPUStorage>::DrawableBatchImpl;
 };
 
 } // namespace sf

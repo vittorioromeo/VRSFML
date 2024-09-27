@@ -23,7 +23,7 @@ public:
         const auto [data, size] = batchableObject.getVertices();
 
         addSubsequentIndices(size);
-        appendPreTransformedVertices(data, size, batchableObject.getTransform());
+        appendTransformedVertices(data, size, batchableObject.getTransform());
     }
 
     ////////////////////////////////////////////////////////////
@@ -67,7 +67,7 @@ private:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void appendPreTransformedVertices(const Vertex*    data,
+    [[gnu::always_inline, gnu::flatten]] void appendTransformedVertices(const Vertex*    data,
                                                                            base::SizeT      count,
                                                                            const Transform& transform);
 

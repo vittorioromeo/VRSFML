@@ -35,7 +35,6 @@ template <typename T>
 ////////////////////////////////////////////////////////////
 // Explicit instantiation declarations
 ////////////////////////////////////////////////////////////
-
 extern template class sf::Rect<float>;
 extern template class sf::Rect<double>;
 extern template class sf::Rect<long double>;

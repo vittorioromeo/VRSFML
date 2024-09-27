@@ -366,7 +366,6 @@ template <typename T>
 ////////////////////////////////////////////////////////////
 // Explicit instantiation declarations
 ////////////////////////////////////////////////////////////
-
 extern template class sf::Vector2<float>;
 extern template class sf::Vector2<double>;
 extern template class sf::Vector2<long double>;

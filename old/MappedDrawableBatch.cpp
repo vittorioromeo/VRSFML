@@ -63,7 +63,7 @@ void MappedDrawableBatch::reallocAndRemapIndicesIfNeeded(base::SizeT moreCount)
 
 
 ////////////////////////////////////////////////////////////
-void MappedDrawableBatch::appendPreTransformedVertices(const Vertex* data, base::SizeT count, const Transform& transform)
+void MappedDrawableBatch::appendTransformedVertices(const Vertex* data, base::SizeT count, const Transform& transform)
 {
     reallocAndRemapVerticesIfNeeded(count);
     auto* asVertexPtr = reinterpret_cast<Vertex*>(m_mappedVertices) + m_vertexCount;

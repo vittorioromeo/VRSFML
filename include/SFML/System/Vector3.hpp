@@ -274,13 +274,13 @@ using Vector3f = Vector3<float>;
 ////////////////////////////////////////////////////////////
 // Explicit instantiation declarations
 ////////////////////////////////////////////////////////////
-
 extern template class sf::Vector3<float>;
 extern template class sf::Vector3<double>;
 extern template class sf::Vector3<long double>;
 extern template class sf::Vector3<bool>;
 extern template class sf::Vector3<int>;
 extern template class sf::Vector3<unsigned int>;
+
 
 #include "SFML/System/Vector3.inl"
 

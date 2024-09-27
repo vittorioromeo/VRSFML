@@ -379,7 +379,6 @@ private:
 ////////////////////////////////////////////////////////////
 // Explicit instantiation declarations
 ////////////////////////////////////////////////////////////
-
 extern template class SFML_PRIV_EVENT_VARIANT_TYPE;
 
 #define SFML_PRIV_EVENT_X_EXTERN_TEMPLATE_CTOR(x)  extern template sf::Event::Event(const x&);
@@ -390,7 +389,9 @@ extern template class SFML_PRIV_EVENT_VARIANT_TYPE;
 
 SFML_PRIV_EVENTS_X_MACRO(SFML_PRIV_EVENT_X_EXTERN_TEMPLATE_GETIF, SFML_PRIV_EVENT_X_SEMICOLON);
 
+
 #include "SFML/Window/Event.inl"
+
 
 ////////////////////////////////////////////////////////////
 /// \class sf::Event
