@@ -6,6 +6,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/EGL/EGLCheck.hpp"
 #include "SFML/Window/EGL/EGLContext.hpp"
+#include "SFML/Window/EGL/EGLGlad.hpp"
+#include "SFML/Window/GlContextTypeImpl.hpp"
 #include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
 #include "SFML/Window/WindowContext.hpp"
@@ -93,186 +95,9 @@ bool ensureInit()
 #endif
 }
 
-} // namespace EglContextImpl
-} // namespace
-
-
-namespace sf::priv
-{
-////////////////////////////////////////////////////////////
-EglContext::EglContext(WindowContext& windowContext, unsigned int id, EglContext* shared) :
-GlContext(windowContext, id, {})
-{
-    EglContextImpl::ensureInit();
-
-    // Get the initialized EGL display
-    m_display = EglContextImpl::getInitializedDisplay();
-
-    // Get the best EGL config matching the default video contextSettings
-    m_config = getBestConfig(m_display, VideoModeUtils::getDesktopMode().bitsPerPixel, ContextSettings{});
-    updateSettings();
-
-#ifndef SFML_SYSTEM_EMSCRIPTEN
-    // Note: The EGL specs say that attribList can be a null pointer when passed to eglCreatePbufferSurface,
-    // but this is resulting in a segfault. Bug in Android?
-    EGLint attribList[]{EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE};
-
-    m_surface = eglCheck(eglCreatePbufferSurface(m_display, m_config, attribList));
-    SFML_BASE_ASSERT(m_surface != EGL_NO_SURFACE);
-#else
-    EGLNativeWindowType dummyWindow{};
-    createSurface(dummyWindow);
-#endif
-
-    // Create EGL context
-    createContext(shared);
-}
-
 
 ////////////////////////////////////////////////////////////
-EglContext::EglContext(WindowContext&                     windowContext,
-                       unsigned int                       id,
-                       EglContext*                        shared,
-                       const ContextSettings&             contextSettings,
-                       [[maybe_unused]] const WindowImpl& owner,
-                       unsigned int                       bitsPerPixel) :
-GlContext(windowContext, id, contextSettings)
-{
-    EglContextImpl::ensureInit();
-
-#ifdef SFML_SYSTEM_ANDROID
-
-    // On Android, we must save the created context
-    ActivityStates&       states = getActivity();
-    const std::lock_guard lock(states.mutex);
-
-    states.context = this;
-
-#endif
-
-    // Get the initialized EGL display
-    m_display = EglContextImpl::getInitializedDisplay();
-
-    // Get the best EGL config matching the requested video contextSettings
-    m_config = getBestConfig(m_display, bitsPerPixel, contextSettings);
-    updateSettings();
-
-    // Create EGL context
-    createContext(shared);
-
-#if !defined(SFML_SYSTEM_ANDROID)
-    // Create EGL surface (except on Android because the window is created
-    // asynchronously, its activity manager will call it for us)
-    createSurface(owner.getNativeHandle());
-
-#endif
-}
-
-
-////////////////////////////////////////////////////////////
-EglContext::~EglContext()
-{
-    // Notify unshared OpenGL resources of context destruction
-    m_windowContext.cleanupUnsharedFrameBuffers(*this);
-
-    // Deactivate the current context
-    const EGLContext currentContext = eglCheck(eglGetCurrentContext());
-
-    if (currentContext == m_context)
-        eglCheck(eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT));
-
-// Destroying the context on Emscripten seem to make every subsequent GL call fail,
-// even if switching to another context...
-#ifndef SFML_SYSTEM_EMSCRIPTEN
-    if (m_context != EGL_NO_CONTEXT)
-        eglCheck(eglDestroyContext(m_display, m_context));
-#endif
-
-    if (m_surface != EGL_NO_SURFACE)
-        eglCheck(eglDestroySurface(m_display, m_surface));
-}
-
-
-////////////////////////////////////////////////////////////
-GlFunctionPointer EglContext::getFunction(const char* name) const
-{
-    EglContextImpl::ensureInit();
-
-    return eglGetProcAddress(name);
-}
-
-
-////////////////////////////////////////////////////////////
-bool EglContext::makeCurrent(bool current)
-{
-    if (m_surface == EGL_NO_SURFACE)
-        return false;
-
-    return current ? eglCheck(eglMakeCurrent(m_display, m_surface, m_surface, m_context)) != EGL_FALSE
-                   : eglCheck(eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT)) != EGL_FALSE;
-}
-
-
-////////////////////////////////////////////////////////////
-void EglContext::display()
-{
-    if (m_surface != EGL_NO_SURFACE)
-        eglCheck(eglSwapBuffers(m_display, m_surface));
-}
-
-
-////////////////////////////////////////////////////////////
-void EglContext::setVerticalSyncEnabled([[maybe_unused]] bool enabled)
-{
-#ifndef SFML_SYSTEM_EMSCRIPTEN
-    eglCheck(eglSwapInterval(m_display, enabled ? 1 : 0));
-#endif
-}
-
-
-////////////////////////////////////////////////////////////
-void EglContext::createContext(EglContext* shared)
-{
-#ifndef SFML_SYSTEM_EMSCRIPTEN
-    constexpr EGLint contextVersion[]{EGL_CONTEXT_MAJOR_VERSION, 3, EGL_CONTEXT_MINOR_VERSION, 1, EGL_NONE};
-#else
-    constexpr EGLint contextVersion[]{EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE, EGL_NONE};
-#endif
-
-    EGLContext toShared = shared != nullptr ? shared->m_context : EGL_NO_CONTEXT;
-
-    if (toShared != EGL_NO_CONTEXT)
-        eglCheck(eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT));
-
-    // Create EGL context
-    m_context = eglCheck(eglCreateContext(m_display, m_config, toShared, contextVersion));
-    SFML_BASE_ASSERT(m_context != EGL_NO_CONTEXT);
-}
-
-
-////////////////////////////////////////////////////////////
-void EglContext::createSurface(EGLNativeWindowType window)
-{
-    m_surface = eglCheck(eglCreateWindowSurface(m_display, m_config, window, nullptr));
-    SFML_BASE_ASSERT(m_surface != EGL_NO_SURFACE);
-}
-
-
-////////////////////////////////////////////////////////////
-void EglContext::destroySurface()
-{
-    // Seems to only be called by `WindowImplAndroid`
-
-    if (!m_windowContext.setActiveThreadLocalGlContext(*this, false))
-        err() << "Failure to disable EGL context in `EglContext::destroySurface`";
-
-    eglCheck(eglDestroySurface(m_display, m_surface));
-    m_surface = EGL_NO_SURFACE;
-}
-
-
-////////////////////////////////////////////////////////////
-EGLConfig EglContext::getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const ContextSettings& contextSettings)
+EGLConfig getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const sf::ContextSettings& contextSettings)
 {
 #ifndef SFML_SYSTEM_EMSCRIPTEN
     EglContextImpl::ensureInit();
@@ -282,7 +107,7 @@ EGLConfig EglContext::getBestConfig(EGLDisplay display, unsigned int bitsPerPixe
     eglCheck(eglGetConfigs(display, nullptr, 0, &configCount));
 
     // Retrieve the list of available configs
-    const auto configs = std::make_unique<EGLConfig[]>(static_cast<base::SizeT>(configCount));
+    const auto configs = std::make_unique<EGLConfig[]>(static_cast<sf::base::SizeT>(configCount));
 
     eglCheck(eglGetConfigs(display, configs.get(), configCount, &configCount));
 
@@ -290,7 +115,7 @@ EGLConfig EglContext::getBestConfig(EGLDisplay display, unsigned int bitsPerPixe
     int       bestScore = 0x7FFFFFFF;
     EGLConfig bestConfig{};
 
-    for (base::SizeT i = 0; i < static_cast<base::SizeT>(configCount); ++i)
+    for (sf::base::SizeT i = 0; i < static_cast<sf::base::SizeT>(configCount); ++i)
     {
         // Check mandatory attributes
         int surfaceType    = 0;
@@ -322,14 +147,14 @@ EGLConfig EglContext::getBestConfig(EGLDisplay display, unsigned int bitsPerPixe
 
         // Evaluate the config
         const int color = red + green + blue + alpha;
-        const int score = GlContext::evaluateFormat(bitsPerPixel,
-                                                    contextSettings,
-                                                    color,
-                                                    depth,
-                                                    stencil,
-                                                    multiSampling ? samples : 0,
-                                                    caveat == EGL_NONE,
-                                                    false);
+        const int score = sf::priv::GlContext::evaluateFormat(bitsPerPixel,
+                                                              contextSettings,
+                                                              color,
+                                                              depth,
+                                                              stencil,
+                                                              multiSampling ? samples : 0,
+                                                              caveat == EGL_NONE,
+                                                              false);
 
         // If it's better than the current best, make it the new best
         if (score < bestScore)
@@ -372,10 +197,204 @@ EGLConfig EglContext::getBestConfig(EGLDisplay display, unsigned int bitsPerPixe
     eglCheck(eglChooseConfig(display, attributes, &config, 1, &configCount));
 
     if (configCount == 0)
-        err() << "Failed to get any EGL frame buffer configurations";
+        sf::priv::err() << "Failed to get any EGL frame buffer configurations";
 
     return config;
 #endif
+}
+
+} // namespace EglContextImpl
+} // namespace
+
+
+namespace sf::priv
+{
+////////////////////////////////////////////////////////////
+struct EglContext::Impl
+{
+    EGLDisplay display{EGL_NO_DISPLAY}; //!< The internal EGL display
+    EGLContext context{EGL_NO_CONTEXT}; //!< The internal EGL context
+    EGLSurface surface{EGL_NO_SURFACE}; //!< The internal EGL surface
+    EGLConfig  config{};                //!< The internal EGL config
+};
+
+
+////////////////////////////////////////////////////////////
+EglContext::EglContext(WindowContext& windowContext, unsigned int id, EglContext* shared) :
+GlContext(windowContext, id, {})
+{
+    EglContextImpl::ensureInit();
+
+    // Get the initialized EGL display
+    m_impl->display = EglContextImpl::getInitializedDisplay();
+
+    // Get the best EGL config matching the default video contextSettings
+    m_impl->config = EglContextImpl::getBestConfig(m_impl->display,
+                                                   VideoModeUtils::getDesktopMode().bitsPerPixel,
+                                                   ContextSettings{});
+    updateSettings();
+
+#ifndef SFML_SYSTEM_EMSCRIPTEN
+    // Note: The EGL specs say that attribList can be a null pointer when passed to eglCreatePbufferSurface,
+    // but this is resulting in a segfault. Bug in Android?
+    const EGLint attribList[]{EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE};
+
+    m_impl->surface = eglCheck(eglCreatePbufferSurface(m_impl->display, m_impl->config, attribList));
+    SFML_BASE_ASSERT(m_impl->surface != EGL_NO_SURFACE);
+#else
+    EGLNativeWindowType dummyWindow{};
+    createSurface(&dummyWindow);
+#endif
+
+    // Create EGL context
+    createContext(shared);
+}
+
+
+////////////////////////////////////////////////////////////
+EglContext::EglContext(WindowContext&                     windowContext,
+                       unsigned int                       id,
+                       EglContext*                        shared,
+                       const ContextSettings&             contextSettings,
+                       [[maybe_unused]] const WindowImpl& owner,
+                       unsigned int                       bitsPerPixel) :
+GlContext(windowContext, id, contextSettings)
+{
+    EglContextImpl::ensureInit();
+
+#ifdef SFML_SYSTEM_ANDROID
+
+    // On Android, we must save the created context
+    ActivityStates&       states = getActivity();
+    const std::lock_guard lock(states.mutex);
+
+    states.context = this;
+
+#endif
+
+    // Get the initialized EGL display
+    m_impl->display = EglContextImpl::getInitializedDisplay();
+
+    // Get the best EGL config matching the requested video contextSettings
+    m_impl->config = EglContextImpl::getBestConfig(m_impl->display, bitsPerPixel, contextSettings);
+    updateSettings();
+
+    // Create EGL context
+    createContext(shared);
+
+#if !defined(SFML_SYSTEM_ANDROID)
+
+    // Create EGL surface (except on Android because the window is created
+    // asynchronously, its activity manager will call it for us)
+    WindowHandle nativeHandle = owner.getNativeHandle();
+    createSurface(&nativeHandle);
+
+#endif
+}
+
+
+////////////////////////////////////////////////////////////
+EglContext::~EglContext()
+{
+    // Notify unshared OpenGL resources of context destruction
+    m_windowContext.cleanupUnsharedFrameBuffers(*this);
+
+    // Deactivate the current context
+    const EGLContext currentContext = eglCheck(eglGetCurrentContext());
+
+    if (currentContext == m_impl->context)
+        eglCheck(eglMakeCurrent(m_impl->display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT));
+
+// Destroying the context on Emscripten seem to make every subsequent GL call fail,
+// even if switching to another context...
+#ifndef SFML_SYSTEM_EMSCRIPTEN
+    if (m_impl->context != EGL_NO_CONTEXT)
+        eglCheck(eglDestroyContext(m_impl->display, m_impl->context));
+#endif
+
+    if (m_impl->surface != EGL_NO_SURFACE)
+        eglCheck(eglDestroySurface(m_impl->display, m_impl->surface));
+}
+
+
+////////////////////////////////////////////////////////////
+GlFunctionPointer EglContext::getFunction(const char* name) const
+{
+    EglContextImpl::ensureInit();
+
+    return eglGetProcAddress(name);
+}
+
+
+////////////////////////////////////////////////////////////
+bool EglContext::makeCurrent(bool current)
+{
+    if (m_impl->surface == EGL_NO_SURFACE)
+        return false;
+
+    return current
+               ? eglCheck(eglMakeCurrent(m_impl->display, m_impl->surface, m_impl->surface, m_impl->context)) != EGL_FALSE
+               : eglCheck(eglMakeCurrent(m_impl->display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT)) != EGL_FALSE;
+}
+
+
+////////////////////////////////////////////////////////////
+void EglContext::display()
+{
+    if (m_impl->surface != EGL_NO_SURFACE)
+        eglCheck(eglSwapBuffers(m_impl->display, m_impl->surface));
+}
+
+
+////////////////////////////////////////////////////////////
+void EglContext::setVerticalSyncEnabled([[maybe_unused]] bool enabled)
+{
+#ifndef SFML_SYSTEM_EMSCRIPTEN
+    eglCheck(eglSwapInterval(m_impl->display, enabled ? 1 : 0));
+#endif
+}
+
+
+////////////////////////////////////////////////////////////
+void EglContext::createContext(EglContext* shared)
+{
+#ifndef SFML_SYSTEM_EMSCRIPTEN
+    constexpr EGLint contextVersion[]{EGL_CONTEXT_MAJOR_VERSION, 3, EGL_CONTEXT_MINOR_VERSION, 1, EGL_NONE};
+#else
+    constexpr EGLint contextVersion[]{EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE, EGL_NONE};
+#endif
+
+    EGLContext toShared = shared != nullptr ? shared->m_impl->context : EGL_NO_CONTEXT;
+
+    if (toShared != EGL_NO_CONTEXT)
+        eglCheck(eglMakeCurrent(m_impl->display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT));
+
+    // Create EGL context
+    m_impl->context = eglCheck(eglCreateContext(m_impl->display, m_impl->config, toShared, contextVersion));
+    SFML_BASE_ASSERT(m_impl->context != EGL_NO_CONTEXT);
+}
+
+
+////////////////////////////////////////////////////////////
+void EglContext::createSurface(void* windowPtr)
+{
+    m_impl->surface = eglCheck(
+        eglCreateWindowSurface(m_impl->display, m_impl->config, *static_cast<EGLNativeWindowType*>(windowPtr), nullptr));
+
+    SFML_BASE_ASSERT(m_impl->surface != EGL_NO_SURFACE);
+}
+
+
+////////////////////////////////////////////////////////////
+void EglContext::destroySurface()
+{
+    // Seems to only be called by `WindowImplAndroid`
+
+    if (!m_windowContext.setActiveThreadLocalGlContext(*this, false))
+        err() << "Failure to disable EGL context in `EglContext::destroySurface`";
+
+    eglCheck(eglDestroySurface(m_impl->display, m_impl->surface));
+    m_impl->surface = EGL_NO_SURFACE;
 }
 
 
@@ -392,21 +411,21 @@ void EglContext::updateSettings()
     EGLint tmp = 0;
 
     // Update the internal context contextSettings with the current config
-    EGLBoolean result = eglCheck(eglGetConfigAttrib(m_display, m_config, EGL_DEPTH_SIZE, &tmp));
+    EGLBoolean result = eglCheck(eglGetConfigAttrib(m_impl->display, m_impl->config, EGL_DEPTH_SIZE, &tmp));
 
     if (result != EGL_FALSE)
         m_settings.depthBits = static_cast<unsigned int>(tmp);
 
-    result = eglCheck(eglGetConfigAttrib(m_display, m_config, EGL_STENCIL_SIZE, &tmp));
+    result = eglCheck(eglGetConfigAttrib(m_impl->display, m_impl->config, EGL_STENCIL_SIZE, &tmp));
 
     if (result != EGL_FALSE)
         m_settings.stencilBits = static_cast<unsigned int>(tmp);
 
-    result = eglCheck(eglGetConfigAttrib(m_display, m_config, EGL_SAMPLE_BUFFERS, &tmp));
+    result = eglCheck(eglGetConfigAttrib(m_impl->display, m_impl->config, EGL_SAMPLE_BUFFERS, &tmp));
 
     if ((result != EGL_FALSE) && tmp)
     {
-        result = eglCheck(eglGetConfigAttrib(m_display, m_config, EGL_SAMPLES, &tmp));
+        result = eglCheck(eglGetConfigAttrib(m_impl->display, m_impl->config, EGL_SAMPLES, &tmp));
 
         if (result != EGL_FALSE)
             m_settings.antiAliasingLevel = static_cast<unsigned int>(tmp);

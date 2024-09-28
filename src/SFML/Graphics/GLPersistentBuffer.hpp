@@ -1,10 +1,14 @@
 #pragma once
+#include "GLBufferObject.hpp"
+
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Config.hpp"
+
+#include "SFML/Graphics/GLBufferObject.hpp"
 
 #include "SFML/Window/GLCheck.hpp"
 #include "SFML/Window/Glad.hpp"
@@ -158,5 +162,11 @@ private:
     void*          m_mappedPtr{nullptr}; //!< Write-only mapped pointer
     base::SizeT    m_capacity{0u};       //!< Currently allocated capacity of the buffer
 };
+
+////////////////////////////////////////////////////////////
+// Explicit instantiation declarations
+////////////////////////////////////////////////////////////
+extern template class GLPersistentBuffer<GLVertexBufferObject>;
+extern template class GLPersistentBuffer<GLElementBufferObject>;
 
 } // namespace sf

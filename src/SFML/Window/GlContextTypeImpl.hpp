@@ -66,12 +66,12 @@ using DerivedGlContextType = sf::priv::EglContext;
 
 #if defined(SFML_SYSTEM_WINDOWS)
 
-using glEnableFuncType      = void(APIENTRY*)(GLenum);
-using glGetErrorFuncType    = GLenum(APIENTRY*)();
-using glGetIntegervFuncType = void(APIENTRY*)(GLenum, GLint*);
-using glGetStringFuncType   = const GLubyte*(APIENTRY*)(GLenum);
-using glGetStringiFuncType  = const GLubyte*(APIENTRY*)(GLenum, GLuint);
-using glIsEnabledFuncType   = GLboolean(APIENTRY*)(GLenum);
+using glEnableFuncType      = void(GLAPIENTRY*)(GLenum);
+using glGetErrorFuncType    = GLenum(GLAPIENTRY*)();
+using glGetIntegervFuncType = void(GLAPIENTRY*)(GLenum, GLint*);
+using glGetStringFuncType   = const GLubyte*(GLAPIENTRY*)(GLenum);
+using glGetStringiFuncType  = const GLubyte*(GLAPIENTRY*)(GLenum, GLuint);
+using glIsEnabledFuncType   = GLboolean(GLAPIENTRY*)(GLenum);
 
 #else
 

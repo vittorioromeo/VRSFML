@@ -20,6 +20,7 @@
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vector2.hpp"
 
+#include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/Optional.hpp"
 
@@ -214,17 +215,24 @@ int main()
     //
     //
     // Set up UI elements
-    bool        useBatch      = false;
+    enum class BatchType : int
+    {
+        Disabled   = 0,
+        CPUStorage = 1,
+        GPUStorage = 2
+    };
+
+    auto        batchType     = BatchType::Disabled;
     bool        drawSprites   = true;
     bool        drawText      = false;
-    int         numEntities   = 5000;
+    int         numEntities   = 50'000;
     std::size_t drawnVertices = 0u;
 
     //
     //
     // Set up drawable batch
-    sf::CPUDrawableBatch drawableBatch;
-    // sf::PersistentGPUDrawableBatch drawableBatch(window);
+    sf::CPUDrawableBatch           cpuDrawableBatch;
+    sf::PersistentGPUDrawableBatch gpuDrawableBatch(window);
 
     //
     //
@@ -298,7 +306,16 @@ int main()
                 samplesFPS.clear();
             };
 
-            if (ImGui::Checkbox("Enable batch drawing", &useBatch))
+#ifdef SFML_OPENGL_ES
+            constexpr const char* batchTypeItems[]{"Disabled", "CPU Storage"};
+#else
+            constexpr const char* batchTypeItems[]{"Disabled", "CPU Storage", "GPU Storage"};
+#endif
+
+            if (ImGui::Combo("Batch type",
+                             reinterpret_cast<int*>(&batchType),
+                             batchTypeItems,
+                             sf::base::getArraySize(batchTypeItems)))
                 clearSamples();
 
             if (ImGui::Checkbox("Draw sprites", &drawSprites))
@@ -350,7 +367,8 @@ int main()
             clock.restart();
 
             window.clear();
-            drawableBatch.clear();
+            cpuDrawableBatch.clear();
+            gpuDrawableBatch.clear();
 
             drawnVertices = 0u;
 
@@ -358,27 +376,33 @@ int main()
             {
                 if (drawSprites)
                 {
-                    if (useBatch)
-                        drawableBatch.add(entity.sprite);
-                    else
+                    if (batchType == BatchType::Disabled)
                         window.draw(entity.sprite, textureAtlas.getTexture());
+                    else if (batchType == BatchType::CPUStorage)
+                        cpuDrawableBatch.add(entity.sprite);
+                    else if (batchType == BatchType::GPUStorage)
+                        gpuDrawableBatch.add(entity.sprite);
 
                     drawnVertices += 4u;
                 }
 
                 if (drawText)
                 {
-                    if (useBatch)
-                        drawableBatch.add(entity.text);
-                    else
+                    if (batchType == BatchType::Disabled)
                         window.draw(entity.text);
+                    else if (batchType == BatchType::CPUStorage)
+                        cpuDrawableBatch.add(entity.text);
+                    else if (batchType == BatchType::GPUStorage)
+                        gpuDrawableBatch.add(entity.text);
 
                     drawnVertices += entity.text.getVertices().size();
                 }
             }
 
-            if (useBatch)
-                window.draw(drawableBatch, {.texture = &textureAtlas.getTexture()});
+            if (batchType == BatchType::CPUStorage)
+                window.draw(cpuDrawableBatch, {.texture = &textureAtlas.getTexture()});
+            else if (batchType == BatchType::GPUStorage)
+                window.draw(gpuDrawableBatch, {.texture = &textureAtlas.getTexture()});
 
             samplesDrawMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
         }

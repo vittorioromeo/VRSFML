@@ -12,8 +12,9 @@
 #endif
 
 #include "SFML/Window/ContextSettings.hpp"
-#include "SFML/Window/EGL/EGLGlad.hpp"
 #include "SFML/Window/GlContext.hpp"
+
+#include "SFML/Base/InPlacePImpl.hpp"
 
 #if defined(SFML_SYSTEM_LINUX) && !defined(SFML_USE_DRM)
 #include <X11/Xlib.h>
@@ -114,10 +115,10 @@ public:
     /// This function must be called when the activity (re)start, or
     /// when the orientation change.
     ///
-    /// \param window: The native window type
+    /// \param windowPtr Pointer to the native window
     ///
     ////////////////////////////////////////////////////////////
-    void createSurface(EGLNativeWindowType window);
+    void createSurface(void* windowPtr);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destroy the EGL surface
@@ -127,18 +128,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void destroySurface();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the best EGL visual for a given set of video settings
-    ///
-    /// \param display      EGL display
-    /// \param bitsPerPixel Pixel depth, in bits per pixel
-    /// \param settings     Requested context settings
-    ///
-    /// \return The best EGL config
-    ///
-    ////////////////////////////////////////////////////////////
-    static EGLConfig getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const ContextSettings& contextSettings);
 
 #if defined(SFML_SYSTEM_LINUX) && !defined(SFML_USE_DRM)
     ////////////////////////////////////////////////////////////
@@ -163,10 +152,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    EGLDisplay m_display{EGL_NO_DISPLAY}; //!< The internal EGL display
-    EGLContext m_context{EGL_NO_CONTEXT}; //!< The internal EGL context
-    EGLSurface m_surface{EGL_NO_SURFACE}; //!< The internal EGL surface
-    EGLConfig  m_config{};                //!< The internal EGL config
+    struct Impl;
+    base::InPlacePImpl<Impl, 64> m_impl; //!< Implementation details
 };
 
 } // namespace sf::priv
