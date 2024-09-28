@@ -4,12 +4,20 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Config.hpp"
+
 #include "SFML/Window/GLCheck.hpp"
 #include "SFML/Window/Glad.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtins/Memcpy.hpp"
 #include "SFML/Base/SizeT.hpp"
+
+#ifdef SFML_OPENGL_ES
+#include "SFML/System/Err.hpp"
+
+#include <cstdlib>
+#endif
 
 
 namespace sf
@@ -111,6 +119,11 @@ private:
     ////////////////////////////////////////////////////////////
     [[gnu::cold]] void reserveImpl(const base::SizeT byteCount)
     {
+#ifdef SFML_OPENGL_ES
+        priv::err() << "Persistent OpenGL buffers are not available in OpenGL ES";
+        std::abort();
+#endif
+
         SFML_BASE_ASSERT(m_capacity < byteCount);
         SFML_BASE_ASSERT(m_obj != nullptr);
 
