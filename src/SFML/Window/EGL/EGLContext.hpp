@@ -12,15 +12,8 @@
 #endif
 
 #include "SFML/Window/ContextSettings.hpp"
+#include "SFML/Window/EGL/EGLGlad.hpp"
 #include "SFML/Window/GlContext.hpp"
-
-// Emscripten does not use GLAD
-#ifdef SFML_SYSTEM_EMSCRIPTEN
-#define KHRONOS_APIENTRY
-#include <EGL/egl.h>
-#else
-#include <glad/egl.h>
-#endif
 
 #if defined(SFML_SYSTEM_LINUX) && !defined(SFML_USE_DRM)
 #include <X11/Xlib.h>
