@@ -599,7 +599,7 @@ const Glyph& Font::getGlyph(base::U32 codePoint, unsigned int characterSize, boo
                                         bold,
                                         outlineThickness);
 
-    return glyphs.emplace(key, loadedGlyph).first->second;
+    return glyphs.try_emplace(key, loadedGlyph).first->second;
 }
 
 

@@ -128,17 +128,17 @@ int main()
     // Utility function to create text objects
     const auto emplaceTexts = [&](const std::string& labelStr, const std::string& valueStr, const float yOffset) -> auto&
     {
-        auto [it, success] = texts.emplace(labelStr,
-                                           JoystickTexts{{font,
-                                                          {.position         = {5.f, 5.f + yOffset * fontLineSpacing},
-                                                           .string           = labelStr + ":",
-                                                           .characterSize    = characterSize,
-                                                           .outlineColor     = sf::Color::Blue,
-                                                           .outlineThickness = 0.5f}},
-                                                         {font,
-                                                          {.position      = {80.f, 5.f + yOffset * fontLineSpacing},
-                                                           .string        = valueStr,
-                                                           .characterSize = characterSize}}});
+        auto [it, success] = texts.try_emplace(labelStr,
+                                               sf::Text{font,
+                                                        {.position         = {5.f, 5.f + yOffset * fontLineSpacing},
+                                                         .string           = labelStr + ":",
+                                                         .characterSize    = characterSize,
+                                                         .outlineColor     = sf::Color::Blue,
+                                                         .outlineThickness = 0.5f}},
+                                               sf::Text{font,
+                                                        {.position      = {80.f, 5.f + yOffset * fontLineSpacing},
+                                                         .string        = valueStr,
+                                                         .characterSize = characterSize}});
 
         return it->second;
     };

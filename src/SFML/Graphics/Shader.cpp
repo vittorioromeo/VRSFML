@@ -691,7 +691,7 @@ base::Optional<Shader::UniformLocation> Shader::getUniformLocation(base::StringV
 
     // Not in cache, request the location from OpenGL
     const int location = glGetUniformLocation(castToGlHandle(m_impl->shaderProgram), uniformNameBuffer.c_str());
-    m_impl->uniforms.emplace(std::string{uniformName.data(), uniformName.size()}, location);
+    m_impl->uniforms.try_emplace(uniformNameBuffer, location);
 
     return location == -1 ? base::nullOpt : base::makeOptional(UniformLocation{location});
 }
