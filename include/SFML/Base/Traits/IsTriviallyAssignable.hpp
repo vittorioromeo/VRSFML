@@ -20,7 +20,7 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-template <typename A, typename B>
-inline constexpr bool isTriviallyAssignable = SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(A, B);
+template <typename Target, typename Source>
+inline constexpr bool isTriviallyAssignable = SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(Target, Source);
 
 } // namespace sf::base

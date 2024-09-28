@@ -21,9 +21,8 @@ namespace sf::base::priv
     do                                                                         \
     {                                                                          \
         if (!static_cast<bool>(__VA_ARGS__)) [[unlikely]]                      \
-        {                                                                      \
             ::sf::base::priv::assertFailure(#__VA_ARGS__, __FILE__, __LINE__); \
-        }                                                                      \
+                                                                               \
     } while (false)
 
 #else

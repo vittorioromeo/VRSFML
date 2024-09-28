@@ -15,6 +15,10 @@ template <typename T, SizeT N>
 struct [[nodiscard]] Array
 {
     ////////////////////////////////////////////////////////////
+    static_assert(N > 0, "Zero-sized arrays are not supported");
+
+
+    ////////////////////////////////////////////////////////////
     T elements[N];
 
 
@@ -26,14 +30,14 @@ struct [[nodiscard]] Array
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr T* data() noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T* data() noexcept
     {
         return elements;
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr const T* data() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T* data() const noexcept
     {
         return elements;
     }
@@ -56,42 +60,42 @@ struct [[nodiscard]] Array
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr T* begin() noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T* begin() noexcept
     {
         return elements;
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr const T* begin() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T* begin() const noexcept
     {
         return elements;
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr T* end() noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T* end() noexcept
     {
         return elements + N;
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr const T* end() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T* end() const noexcept
     {
         return elements + N;
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr const T* cbegin() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T* cbegin() const noexcept
     {
         return elements;
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr const T* cend() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T* cend() const noexcept
     {
         return elements + N;
     }

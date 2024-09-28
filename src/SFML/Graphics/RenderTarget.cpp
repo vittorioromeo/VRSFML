@@ -187,17 +187,16 @@ SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
 #endif
 }
 
+
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr unsigned int adjustNamedBuffer(
-    [[maybe_unused]] unsigned int bufferId,
-    [[maybe_unused]] unsigned int fallback)
+enum : bool
 {
-#ifndef SFML_OPENGL_ES
-    return bufferId;
+#ifdef SFML_OPENGL_ES
+    isOpenGLES = true
 #else
-    return fallback; // OpenGL ES does not support named buffers
+    isOpenGLES = false
 #endif
-}
+};
 
 
 ////////////////////////////////////////////////////////////
@@ -205,7 +204,7 @@ SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
                                                                      const sf::Vertex*             vertexData,
                                                                      sf::base::SizeT               vertexCount)
 {
-    streamToGPU(adjustNamedBuffer(bufferId, GL_ARRAY_BUFFER), vertexData, sizeof(sf::Vertex) * vertexCount);
+    streamToGPU(isOpenGLES ? GL_ARRAY_BUFFER : bufferId, vertexData, sizeof(sf::Vertex) * vertexCount);
 }
 
 
@@ -214,7 +213,7 @@ SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
                                                                     const sf::IndexType*          indexData,
                                                                     sf::base::SizeT               indexCount)
 {
-    streamToGPU(adjustNamedBuffer(bufferId, GL_ELEMENT_ARRAY_BUFFER), indexData, sizeof(sf::IndexType) * indexCount);
+    streamToGPU(isOpenGLES ? GL_ELEMENT_ARRAY_BUFFER : bufferId, indexData, sizeof(sf::IndexType) * indexCount);
 }
 
 } // namespace RenderTargetImpl
@@ -233,7 +232,7 @@ struct [[nodiscard]] StatesCache
     bool glStatesSet{false}; //!< Are our internal GL states set yet?
 
     bool      viewChanged{false}; //!< Has the current view changed since last draw?
-    Transform viewTransform;      //!< Cached transform of latest view
+    Transform lastViewTransform;  //!< Cached transform of latest view
 
     Transform lastDrawTransform; //!< Cached last draw transform
 
@@ -242,14 +241,14 @@ struct [[nodiscard]] StatesCache
     bool scissorEnabled{false}; //!< Is scissor testing enabled?
     bool stencilEnabled{false}; //!< Is stencil testing enabled?
 
-    unsigned int lastBoundVaoGroup{0u}; //!< Last bound vertex array object id
+    unsigned int lastVaoGroup{0u}; //!< Last bound vertex array object id
 
     BlendMode      lastBlendMode{BlendAlpha};                      //!< Cached blending mode
     StencilMode    lastStencilMode;                                //!< Cached stencil
     base::U64      lastTextureId{0u};                              //!< Cached texture
     CoordinateType lastCoordinateType{CoordinateType::Normalized}; //!< Cached texture coordinate type
 
-    GLuint lastUsedProgramId{0u}; //!< GL id of the last used shader program
+    GLuint lastProgramId{0u}; //!< GL id of the last used shader program
 };
 
 
@@ -301,8 +300,8 @@ struct RenderTarget::Impl
     vboPersistentBuffer(persistentVaoGroup.vbo),
     eboPersistentBuffer(persistentVaoGroup.ebo)
     {
-        bindGLObjects(vaoGroup);
-        bindGLObjects(persistentVaoGroup);
+        vaoGroup.bind();
+        persistentVaoGroup.bind();
     }
 
     GraphicsContext* graphicsContext; //!< The window context
@@ -316,15 +315,15 @@ struct RenderTarget::Impl
     GLVAOGroup vaoGroup;           //!< VAO, VBO, and EBO associated with the render target (non-persistent storage)
     GLVAOGroup persistentVaoGroup; //!< VAO, VBO, and EBO associated with the render target (persistent storage)
 
-    GLPersistentBuffer<GLVertexBufferObject>  vboPersistentBuffer; //!< TODO P0:
-    GLPersistentBuffer<GLElementBufferObject> eboPersistentBuffer; //!< TODO P0:
+    GLPersistentBuffer<GLVertexBufferObject>  vboPersistentBuffer; //!< Persistent VBO buffer (used for batching)
+    GLPersistentBuffer<GLElementBufferObject> eboPersistentBuffer; //!< Persistent EBO buffer (used for batching)
 
     void bindGLObjects(GLVAOGroup& theVAOGroup)
     {
         theVAOGroup.bind();
+        cache.lastVaoGroup = theVAOGroup.getId();
 
         setupVertexAttribPointers();
-        cache.lastBoundVaoGroup = theVAOGroup.getId();
     }
 };
 
@@ -736,9 +735,9 @@ void RenderTarget::resetGLStates()
     glCheck(glEnable(GL_BLEND));
     glCheck(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
 
-    m_impl->cache.scissorEnabled    = false;
-    m_impl->cache.stencilEnabled    = false;
-    m_impl->cache.lastBoundVaoGroup = 0u;
+    m_impl->cache.scissorEnabled = false;
+    m_impl->cache.stencilEnabled = false;
+    m_impl->cache.lastVaoGroup   = 0u;
 
     m_impl->cache.glStatesSet = true;
 
@@ -749,7 +748,7 @@ void RenderTarget::resetGLStates()
 
     {
         Shader::unbind(*m_impl->graphicsContext);
-        m_impl->cache.lastUsedProgramId = 0u;
+        m_impl->cache.lastProgramId = 0u;
     }
 
     VertexBuffer::unbind(*m_impl->graphicsContext);
@@ -798,8 +797,8 @@ void RenderTarget::applyView(const View& view)
         }
     }
 
-    m_impl->cache.viewTransform = view.getTransform();
-    m_impl->cache.viewChanged   = false;
+    m_impl->cache.lastViewTransform = view.getTransform();
+    m_impl->cache.viewChanged       = false;
 }
 
 
@@ -826,8 +825,10 @@ void RenderTarget::applyStencilMode(const StencilMode& mode)
     using RenderTargetImpl::stencilFunctionToGlConstant;
     using RenderTargetImpl::stencilOperationToGlConstant;
 
+    m_impl->cache.lastStencilMode = mode;
+
     // Fast path if we have a default (disabled) stencil mode
-    if (mode == StencilMode())
+    if (mode == StencilMode{})
     {
         if (!m_impl->cache.enable || m_impl->cache.stencilEnabled)
         {
@@ -836,25 +837,23 @@ void RenderTarget::applyStencilMode(const StencilMode& mode)
 
             m_impl->cache.stencilEnabled = false;
         }
-    }
-    else
-    {
-        // Apply the stencil mode
-        if (!m_impl->cache.enable || !m_impl->cache.stencilEnabled)
-            glCheck(glEnable(GL_STENCIL_TEST));
 
-        glCheck(glStencilOp(GL_KEEP,
-                            stencilOperationToGlConstant(mode.stencilUpdateOperation),
-                            stencilOperationToGlConstant(mode.stencilUpdateOperation)));
-
-        glCheck(glStencilFunc(stencilFunctionToGlConstant(mode.stencilComparison),
-                              static_cast<int>(mode.stencilReference.value),
-                              mode.stencilMask.value));
-
-        m_impl->cache.stencilEnabled = true;
+        return;
     }
 
-    m_impl->cache.lastStencilMode = mode;
+    // Apply the stencil mode
+    if (!m_impl->cache.enable || !m_impl->cache.stencilEnabled)
+        glCheck(glEnable(GL_STENCIL_TEST));
+
+    glCheck(glStencilOp(GL_KEEP,
+                        stencilOperationToGlConstant(mode.stencilUpdateOperation),
+                        stencilOperationToGlConstant(mode.stencilUpdateOperation)));
+
+    glCheck(glStencilFunc(stencilFunctionToGlConstant(mode.stencilComparison),
+                          static_cast<int>(mode.stencilReference.value),
+                          mode.stencilMask.value));
+
+    m_impl->cache.stencilEnabled = true;
 }
 
 
@@ -883,6 +882,8 @@ void RenderTarget::setupDraw(bool persistent, const RenderStates& states)
         else
             glCheck(glDisable(GL_FRAMEBUFFER_SRGB));
     }
+#else
+    SFML_BASE_ASSERT(!persistent && "Persistent OpenGL buffers are not available in OpenGL ES");
 #endif
 
     // First set the persistent OpenGL states if it's the very first call
@@ -891,9 +892,9 @@ void RenderTarget::setupDraw(bool persistent, const RenderStates& states)
 
     // Bind GL objects
     if (GLVAOGroup& vaoGroupToBind = persistent ? m_impl->persistentVaoGroup : m_impl->vaoGroup;
-        !m_impl->cache.enable || m_impl->cache.lastBoundVaoGroup != vaoGroupToBind.getId())
+        !m_impl->cache.enable || m_impl->cache.lastVaoGroup != vaoGroupToBind.getId())
     {
-        m_impl->cache.lastBoundVaoGroup = vaoGroupToBind.getId();
+        m_impl->cache.lastVaoGroup = vaoGroupToBind.getId();
         m_impl->bindGLObjects(vaoGroupToBind);
     }
 
@@ -902,12 +903,12 @@ void RenderTarget::setupDraw(bool persistent, const RenderStates& states)
 
     // Update shader
     const auto usedNativeHandle = usedShader.getNativeHandle();
-    const bool shaderChanged    = m_impl->cache.lastUsedProgramId != usedNativeHandle;
+    const bool shaderChanged    = m_impl->cache.lastProgramId != usedNativeHandle;
 
     if (shaderChanged)
     {
         usedShader.bind();
-        m_impl->cache.lastUsedProgramId = usedNativeHandle;
+        m_impl->cache.lastProgramId = usedNativeHandle;
     }
 
     // Apply the view
@@ -915,7 +916,7 @@ void RenderTarget::setupDraw(bool persistent, const RenderStates& states)
         applyView(m_impl->view);
 
     // Set the model-view-projection matrix
-    setupDrawMVP(states, m_impl->cache.viewTransform, shaderChanged);
+    setupDrawMVP(states, m_impl->cache.lastViewTransform, shaderChanged);
 
     // Apply the blend mode
     if (!m_impl->cache.enable || (states.blendMode != m_impl->cache.lastBlendMode))

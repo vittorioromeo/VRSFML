@@ -32,36 +32,21 @@ struct ContextSettings
         CoreAndDebug    = Core | Debug,
     };
 
-#if defined(SFML_SYSTEM_EMSCRIPTEN)
+#ifdef SFML_DEBUG
+    static inline constexpr auto defaultAttributeFlags = Attribute::CoreAndDebug;
+#else
+    static inline constexpr auto defaultAttributeFlags = Attribute::Core;
+#endif
 
+#if defined(SFML_SYSTEM_EMSCRIPTEN)
     static inline constexpr auto defaultMajorVersion = 2u;
     static inline constexpr auto defaultMinorVersion = 0u;
-#ifdef SFML_DEBUG
-    static inline constexpr auto defaultAttributeFlags = Attribute::DefaultAndDebug;
-#else
-    static inline constexpr auto defaultAttributeFlags = Attribute::Default;
-#endif
-
 #elif defined(SFML_OPENGL_ES)
-
     static inline constexpr auto defaultMajorVersion = 3u;
     static inline constexpr auto defaultMinorVersion = 1u;
-#ifdef SFML_DEBUG
-    static inline constexpr auto defaultAttributeFlags = Attribute::CoreAndDebug;
 #else
-    static inline constexpr auto defaultAttributeFlags = Attribute::Core;
-#endif
-
-#else
-
     static inline constexpr auto defaultMajorVersion = 4u;
     static inline constexpr auto defaultMinorVersion = 1u;
-#ifdef SFML_DEBUG
-    static inline constexpr auto defaultAttributeFlags = Attribute::CoreAndDebug;
-#else
-    static inline constexpr auto defaultAttributeFlags = Attribute::Core;
-#endif
-
 #endif
 
     ////////////////////////////////////////////////////////////
@@ -72,7 +57,7 @@ struct ContextSettings
     unsigned int antiAliasingLevel{};                   //!< Level of antialiasing
     unsigned int majorVersion{defaultMajorVersion};     //!< Major number of the context version to create
     unsigned int minorVersion{defaultMinorVersion};     //!< Minor number of the context version to create
-    Attribute    attributeFlags{defaultAttributeFlags}; //!< The attribute flags to create the context with
+    Attribute    attributeFlags{defaultAttributeFlags}; //!< Whether the context framebuffer is sRGB capable
     bool         sRgbCapable{};                         //!< Whether the context framebuffer is sRGB capable
 };
 

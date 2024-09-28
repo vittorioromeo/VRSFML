@@ -82,26 +82,6 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool initialize(const GlContext& sharedGlContext, const ContextSettings& requestedSettings);
 
-protected:
-    ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// This constructor is meant for derived classes only.
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit GlContext(WindowContext& windowContext, unsigned int id, const ContextSettings& contextSettings);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Activate the context as the current target
-    ///        for rendering
-    ///
-    /// \param current Whether to make the context current or no longer current
-    ///
-    /// \return True on success, false if any error happened
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual bool makeCurrent(bool current) = 0;
-
     ////////////////////////////////////////////////////////////
     /// \brief Evaluate a pixel format configuration
     ///
@@ -131,6 +111,25 @@ protected:
                               bool                   accelerated,
                               bool                   sRgb);
 
+protected:
+    ////////////////////////////////////////////////////////////
+    /// \brief Default constructor
+    ///
+    /// This constructor is meant for derived classes only.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] explicit GlContext(WindowContext& windowContext, unsigned int id, const ContextSettings& contextSettings);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Activate the context as the current target
+    ///        for rendering
+    ///
+    /// \param current Whether to make the context current or no longer current
+    ///
+    /// \return True on success, false if any error happened
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] virtual bool makeCurrent(bool current) = 0;
     ////////////////////////////////////////////////////////////
     /// \brief Get the OpenGL context ID for this context
     ///

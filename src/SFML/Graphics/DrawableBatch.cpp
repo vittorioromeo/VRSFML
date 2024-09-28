@@ -5,7 +5,6 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/DrawableBatchUtils.hpp"
-#include "SFML/Graphics/GLBufferObject.hpp" // used
 #include "SFML/Graphics/GLPersistentBuffer.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/Shape.hpp"
@@ -14,6 +13,7 @@
 #include "SFML/Graphics/Transform.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
+#include "SFML/Base/ScopeGuard.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 
@@ -37,22 +37,20 @@ void PersistentGPUStorage::clear()
 ////////////////////////////////////////////////////////////
 Vertex* PersistentGPUStorage::reserveMoreVertices(base::SizeT count)
 {
-    vboPersistentBuffer.reserve(sizeof(Vertex) * (nVertices + count));
+    SFML_BASE_SCOPE_GUARD({ nVertices += count; });
 
-    Vertex* result = static_cast<Vertex*>(vboPersistentBuffer.data()) + nVertices;
-    nVertices += count;
-    return result;
+    vboPersistentBuffer.reserve(sizeof(Vertex) * (nVertices + count));
+    return static_cast<Vertex*>(vboPersistentBuffer.data()) + nVertices;
 }
 
 
 ////////////////////////////////////////////////////////////
 IndexType* PersistentGPUStorage::reserveMoreIndices(base::SizeT count)
 {
-    eboPersistentBuffer.reserve(sizeof(IndexType) * (nIndices + count));
+    SFML_BASE_SCOPE_GUARD({ nIndices += count; });
 
-    IndexType* result = static_cast<IndexType*>(eboPersistentBuffer.data()) + nIndices;
-    nIndices += count;
-    return result;
+    eboPersistentBuffer.reserve(sizeof(IndexType) * (nIndices + count));
+    return static_cast<IndexType*>(eboPersistentBuffer.data()) + nIndices;
 }
 
 

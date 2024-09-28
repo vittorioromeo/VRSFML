@@ -26,9 +26,7 @@ namespace sfvr::impl
 template <typename T>
 T&& declval();
 
-
-template <auto X, auto... Xs>
-[[nodiscard, gnu::always_inline]] consteval auto variadic_max() noexcept
+[[nodiscard, gnu::always_inline, gnu::const]] consteval auto variadic_max(auto X, auto... Xs) noexcept
 {
     decltype(X) result = X;
     decltype(X) rest[]{Xs...};
@@ -51,20 +49,10 @@ template <typename T, typename... Ts>
     constexpr bool matches[]{SFML_BASE_IS_SAME(T, Ts)...};
 
     for (SizeT i = 0; i < sizeof...(Ts); ++i)
-    {
         if (matches[i])
-        {
             return i;
-        }
-    }
 
     return bad_index;
-};
-
-template <typename T>
-struct type_wrapper
-{
-    using type = T;
 };
 
 template <typename>
@@ -76,30 +64,6 @@ template <SizeT>
 struct inplace_index_t
 {
 };
-
-struct void_type
-{
-};
-
-template <typename T>
-struct regularize_void
-{
-    using type = T;
-};
-
-template <>
-struct regularize_void<void>
-{
-    using type = void_type;
-};
-
-template <typename T>
-using regularize_void_t = typename regularize_void<T>::type;
-
-/*
-template <typename... Ts>
-using common_type_between_t = typename common_type_between<Ts...>::type;
-*/
 
 } // namespace sfvr::impl
 
@@ -123,8 +87,8 @@ private:
     enum : impl::SizeT
     {
         type_count    = sizeof...(Alternatives),
-        max_alignment = impl::variadic_max<alignof(Alternatives)...>(),
-        max_size      = impl::variadic_max<sizeof(Alternatives)...>()
+        max_alignment = impl::variadic_max(alignof(Alternatives)...),
+        max_size      = impl::variadic_max(sizeof(Alternatives)...)
     };
 
     using index_type = unsigned char; // Support up to 255 alternatives

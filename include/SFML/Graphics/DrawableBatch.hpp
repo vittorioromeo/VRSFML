@@ -49,6 +49,31 @@ namespace sf::priv
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
+struct CPUStorage
+{
+    base::TrivialVector<Vertex>    vertices; //!< TODO P0:
+    base::TrivialVector<IndexType> indices;  //!< TODO P0:
+
+    void clear();
+
+    [[nodiscard]] Vertex*    reserveMoreVertices(base::SizeT count);
+    [[nodiscard]] IndexType* reserveMoreIndices(base::SizeT count);
+
+    [[nodiscard, gnu::always_inline, gnu::flatten]] IndexType getNumVertices() const
+    {
+        return static_cast<IndexType>(vertices.size());
+    }
+
+    [[nodiscard, gnu::always_inline, gnu::flatten]] IndexType getNumIndices() const
+    {
+        return static_cast<IndexType>(indices.size());
+    }
+};
+
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
 struct PersistentGPUStorage
 {
     explicit PersistentGPUStorage(RenderTarget& renderTarget);
@@ -72,31 +97,6 @@ struct PersistentGPUStorage
     [[nodiscard, gnu::always_inline, gnu::flatten]] IndexType getNumIndices() const
     {
         return nIndices;
-    }
-};
-
-////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
-///
-////////////////////////////////////////////////////////////
-struct CPUStorage
-{
-    base::TrivialVector<Vertex>    vertices; //!< TODO P0:
-    base::TrivialVector<IndexType> indices;  //!< TODO P0:
-
-    void clear();
-
-    [[nodiscard]] Vertex*    reserveMoreVertices(base::SizeT count);
-    [[nodiscard]] IndexType* reserveMoreIndices(base::SizeT count);
-
-    [[nodiscard, gnu::always_inline, gnu::flatten]] IndexType getNumVertices() const
-    {
-        return static_cast<IndexType>(vertices.size());
-    }
-
-    [[nodiscard, gnu::always_inline, gnu::flatten]] IndexType getNumIndices() const
-    {
-        return static_cast<IndexType>(indices.size());
     }
 };
 

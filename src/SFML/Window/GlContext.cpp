@@ -104,8 +104,9 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
 #if defined(SFML_SYSTEM_EMSCRIPTEN)
 
     // Hardcoded for WebGL 2.0
-    m_settings.majorVersion = 2;
-    m_settings.minorVersion = 0;
+    m_settings.majorVersion   = 2;
+    m_settings.minorVersion   = 0;
+    m_settings.attributeFlags = requestedSettings.attributeFlags;
 
 #else
 
