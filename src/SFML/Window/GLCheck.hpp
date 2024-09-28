@@ -20,7 +20,7 @@ namespace sf::priv
 // In debug mode, perform a test on every OpenGL call
 // The do-while loop is needed so that glCheck can be used as a single statement in if/else branches
 
-[[nodiscard, gnu::always_inline, gnu::flatten]] constexpr auto regularize(auto&& f)
+[[nodiscard, gnu::always_inline, gnu::flatten]] inline constexpr auto regularize(auto&& f)
 {
     if constexpr (SFML_BASE_IS_SAME(decltype(f()), void))
     {

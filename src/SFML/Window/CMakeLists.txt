@@ -29,6 +29,8 @@ if(SFML_OS_WINDOWS)
             ${SRCROOT}/EGL/EGLCheck.hpp
             ${SRCROOT}/EGL/EGLContext.cpp
             ${SRCROOT}/EGL/EGLContext.hpp
+            ${SRCROOT}/EGL/EGLGlad.cpp
+            ${SRCROOT}/EGL/EGLGlad.hpp
         )
     else()
         list(APPEND PLATFORM_SRC

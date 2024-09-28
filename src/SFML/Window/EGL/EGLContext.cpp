@@ -16,28 +16,17 @@
 #include "SFML/Base/Assert.hpp"
 
 #include <memory>
+
 #ifdef SFML_SYSTEM_ANDROID
 #include "SFML/System/Android/Activity.hpp"
 
 #include <mutex>
 #endif
+
 #if defined(SFML_SYSTEM_LINUX) && !defined(SFML_USE_DRM)
 #include "SFML/Window/Unix/Utils.hpp"
 
 #include <X11/Xlib.h>
-#endif
-
-// I guess Emscripten provides its own EGL definitions and adding our own causes issues.
-#ifndef SFML_SYSTEM_EMSCRIPTEN
-
-// We check for this definition in order to avoid multiple definitions of GLAD
-// entities during unity builds of SFML.
-#ifndef GLAD_EGL_IMPLEMENTATION_INCLUDED
-#define GLAD_EGL_IMPLEMENTATION_INCLUDED
-#define GLAD_EGL_IMPLEMENTATION
-#include <glad/egl.h>
-#endif
-
 #endif
 
 
@@ -58,13 +47,12 @@ namespace EglContextImpl
 
 #endif
 
-    static EGLDisplay display = EGL_NO_DISPLAY;
-
-    if (display == EGL_NO_DISPLAY)
+    static EGLDisplay display = []
     {
-        eglCheck(display = eglGetDisplay(EGL_DEFAULT_DISPLAY));
-        eglCheck(eglInitialize(display, nullptr, nullptr));
-    }
+        const EGLDisplay result = eglCheck(eglGetDisplay(EGL_DEFAULT_DISPLAY));
+        eglCheck(eglInitialize(result, nullptr, nullptr));
+        return result;
+    }();
 
     SFML_BASE_ASSERT(display != EGL_NO_DISPLAY);
     return display;
@@ -129,7 +117,7 @@ GlContext(windowContext, id, {})
     // but this is resulting in a segfault. Bug in Android?
     EGLint attribList[]{EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE};
 
-    eglCheck(m_surface = eglCreatePbufferSurface(m_display, m_config, attribList));
+    m_surface = eglCheck(eglCreatePbufferSurface(m_display, m_config, attribList));
     SFML_BASE_ASSERT(m_surface != EGL_NO_SURFACE);
 #else
     EGLNativeWindowType dummyWindow{};
@@ -188,8 +176,7 @@ EglContext::~EglContext()
     m_windowContext.cleanupUnsharedFrameBuffers(*this);
 
     // Deactivate the current context
-    EGLContext currentContext = EGL_NO_CONTEXT;
-    eglCheck(currentContext = eglGetCurrentContext());
+    const EGLContext currentContext = eglCheck(eglGetCurrentContext());
 
     if (currentContext == m_context)
         eglCheck(eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT));
@@ -221,18 +208,8 @@ bool EglContext::makeCurrent(bool current)
     if (m_surface == EGL_NO_SURFACE)
         return false;
 
-    EGLBoolean result = EGL_FALSE;
-
-    if (current)
-    {
-        eglCheck(result = eglMakeCurrent(m_display, m_surface, m_surface, m_context));
-    }
-    else
-    {
-        eglCheck(result = eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT));
-    }
-
-    return result != EGL_FALSE;
+    return current ? eglCheck(eglMakeCurrent(m_display, m_surface, m_surface, m_context)) != EGL_FALSE
+                   : eglCheck(eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT)) != EGL_FALSE;
 }
 
 
@@ -268,7 +245,7 @@ void EglContext::createContext(EglContext* shared)
         eglCheck(eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT));
 
     // Create EGL context
-    eglCheck(m_context = eglCreateContext(m_display, m_config, toShared, contextVersion));
+    m_context = eglCheck(eglCreateContext(m_display, m_config, toShared, contextVersion));
     SFML_BASE_ASSERT(m_context != EGL_NO_CONTEXT);
 }
 
@@ -276,7 +253,7 @@ void EglContext::createContext(EglContext* shared)
 ////////////////////////////////////////////////////////////
 void EglContext::createSurface(EGLNativeWindowType window)
 {
-    eglCheck(m_surface = eglCreateWindowSurface(m_display, m_config, window, nullptr));
+    m_surface = eglCheck(eglCreateWindowSurface(m_display, m_config, window, nullptr));
     SFML_BASE_ASSERT(m_surface != EGL_NO_SURFACE);
 }
 
@@ -412,25 +389,24 @@ void EglContext::updateSettings()
     m_settings.stencilBits       = 0u;
     m_settings.antiAliasingLevel = 0u;
 
-    EGLBoolean result = EGL_FALSE;
-    EGLint     tmp    = 0;
+    EGLint tmp = 0;
 
     // Update the internal context contextSettings with the current config
-    eglCheck(result = eglGetConfigAttrib(m_display, m_config, EGL_DEPTH_SIZE, &tmp));
+    EGLBoolean result = eglCheck(eglGetConfigAttrib(m_display, m_config, EGL_DEPTH_SIZE, &tmp));
 
     if (result != EGL_FALSE)
         m_settings.depthBits = static_cast<unsigned int>(tmp);
 
-    eglCheck(result = eglGetConfigAttrib(m_display, m_config, EGL_STENCIL_SIZE, &tmp));
+    result = eglCheck(eglGetConfigAttrib(m_display, m_config, EGL_STENCIL_SIZE, &tmp));
 
     if (result != EGL_FALSE)
         m_settings.stencilBits = static_cast<unsigned int>(tmp);
 
-    eglCheck(result = eglGetConfigAttrib(m_display, m_config, EGL_SAMPLE_BUFFERS, &tmp));
+    result = eglCheck(eglGetConfigAttrib(m_display, m_config, EGL_SAMPLE_BUFFERS, &tmp));
 
     if ((result != EGL_FALSE) && tmp)
     {
-        eglCheck(result = eglGetConfigAttrib(m_display, m_config, EGL_SAMPLES, &tmp));
+        result = eglCheck(eglGetConfigAttrib(m_display, m_config, EGL_SAMPLES, &tmp));
 
         if (result != EGL_FALSE)
             m_settings.antiAliasingLevel = static_cast<unsigned int>(tmp);
