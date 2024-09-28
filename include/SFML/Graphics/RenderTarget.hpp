@@ -338,7 +338,6 @@ public:
                       PrimitiveType       type,
                       const RenderStates& states = RenderStates::Default);
 
-
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
