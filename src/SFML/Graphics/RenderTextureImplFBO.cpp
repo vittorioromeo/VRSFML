@@ -360,7 +360,7 @@ bool RenderTextureImplFBO::createFrameBuffer()
     const unsigned int glContextId = m_impl->graphicsContext->getActiveThreadLocalGlContextId();
 
     // Insert the FBO into our map
-    m_impl->frameBuffers.emplace(glContextId, frameBufferId);
+    m_impl->frameBuffers.try_emplace(glContextId, frameBufferId);
 
     // Register the object with the current context so it is automatically destroyed
     m_impl->graphicsContext->registerUnsharedFrameBuffer(glContextId, frameBufferId, &deleteFrameBuffer);
@@ -409,7 +409,7 @@ bool RenderTextureImplFBO::createFrameBuffer()
         }
 
         // Insert the FBO into our map
-        m_impl->multisampleFrameBuffers.emplace(glContextId, multisampleFrameBufferId);
+        m_impl->multisampleFrameBuffers.try_emplace(glContextId, multisampleFrameBufferId);
 
         // Register the object with the current context so it is automatically destroyed
         m_impl->graphicsContext->registerUnsharedFrameBuffer(glContextId, multisampleFrameBufferId, &deleteFrameBuffer);
