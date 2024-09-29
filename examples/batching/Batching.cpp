@@ -1,5 +1,6 @@
 #include "SFML/ImGui/ImGui.hpp"
 
+#include "SFML/Graphics/CircleShape.hpp"
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
@@ -129,6 +130,11 @@ int main()
 
     //
     //
+    // Add white dot to atlas
+    const auto whiteDotAtlasPos = textureAtlas.add(graphicsContext.getBuiltInWhiteDotTexture()).value();
+
+    //
+    //
     // Load fonts
     const auto fontTuffy = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf", &textureAtlas).value();
     const auto fontMouldyCheese = sf::Font::openFromFile(graphicsContext, "resources/mouldycheese.ttf", &textureAtlas).value();
@@ -158,10 +164,11 @@ int main()
     // Simulation stuff
     struct Entity
     {
-        sf::Text     text;
-        sf::Sprite   sprite;
-        sf::Vector2f velocity;
-        float        torque;
+        sf::Text        text;
+        sf::Sprite      sprite;
+        sf::Vector2f    velocity;
+        float           torque;
+        sf::CircleShape circleShape;
     };
 
     std::vector<Entity> entities;
@@ -187,17 +194,22 @@ int main()
 
             std::snprintf(labelBuffer, 64, "%s #%zu", names[type], (i / (type + 1)) + 1);
 
-            auto& [text,
-                   sprite,
-                   velocity,
-                   torque] = entities.emplace_back(sf::Text{i % 2u == 0u ? fontTuffy : fontMouldyCheese,
-                                                            {.string           = labelBuffer,
-                                                             .fillColor        = sf::Color::Black,
-                                                             .outlineColor     = sf::Color::White,
-                                                             .outlineThickness = 5.f}},
-                                                   sf::Sprite{textureRect},
-                                                   sf::Vector2f{getRndFloat(-2.5f, 2.5f), getRndFloat(-2.5f, 2.5f)},
-                                                   getRndFloat(-0.05f, 0.05f));
+            auto& [text, sprite, velocity, torque, circleShape] = entities.emplace_back(
+                sf::Text{i % 2u == 0u ? fontTuffy : fontMouldyCheese,
+                         {.string           = labelBuffer,
+                          .fillColor        = sf::Color::Black,
+                          .outlineColor     = sf::Color::White,
+                          .outlineThickness = 5.f}},
+                sf::Sprite{textureRect},
+                sf::Vector2f{getRndFloat(-2.5f, 2.5f), getRndFloat(-2.5f, 2.5f)},
+                getRndFloat(-0.05f, 0.05f),
+                sf::CircleShape{{.textureRect        = {.position = whiteDotAtlasPos.toVector2f(), .size{0.f, 0.f}},
+                                 .outlineTextureRect = {.position = whiteDotAtlasPos.toVector2f(), .size{0.f, 0.f}},
+                                 .fillColor          = {255u, 0u, 0u, 125u},
+                                 .outlineColor       = sf::Color::Black,
+                                 .outlineThickness   = 1.5f,
+                                 .radius             = 8.f,
+                                 .pointCount         = 8u}});
 
             sprite.origin   = textureRect.size / 2.f;
             sprite.rotation = sf::radians(getRndFloat(0.f, sf::base::tau));
@@ -208,7 +220,8 @@ int main()
 
             sprite.position = {getRndFloat(0.f, windowSize.x), getRndFloat(0.f, windowSize.y)};
 
-            text.origin = text.getLocalBounds().size / 2.f;
+            text.origin        = text.getLocalBounds().size / 2.f;
+            circleShape.origin = circleShape.getLocalBounds().size / 2.f;
         }
     };
 
@@ -225,7 +238,8 @@ int main()
     auto        batchType     = BatchType::Disabled;
     bool        drawSprites   = true;
     bool        drawText      = false;
-    int         numEntities   = 50'000;
+    bool        drawShapes    = true;
+    int         numEntities   = 10'000;
     std::size_t drawnVertices = 0u;
 
     //
@@ -273,7 +287,7 @@ int main()
         {
             clock.restart();
 
-            for (auto& [text, sprite, velocity, torque] : entities)
+            for (auto& [text, sprite, velocity, torque, circleShape] : entities)
             {
                 sprite.position += velocity;
                 sprite.rotation += sf::radians(torque);
@@ -285,6 +299,8 @@ int main()
                     velocity.y = -velocity.y;
 
                 text.position = sprite.position - sf::Vector2f{0.f, 250.f * sprite.scale.x};
+
+                circleShape.position = sprite.position;
             }
 
             samplesUpdateMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
@@ -318,11 +334,15 @@ int main()
                              sf::base::getArraySize(batchTypeItems)))
                 clearSamples();
 
-            if (ImGui::Checkbox("Draw sprites", &drawSprites))
+            if (ImGui::Checkbox("Sprites", &drawSprites))
                 clearSamples();
 
             ImGui::SameLine();
-            if (ImGui::Checkbox("Draw texts (expensive!)", &drawText))
+            if (ImGui::Checkbox("Texts", &drawText))
+                clearSamples();
+
+            ImGui::SameLine();
+            if (ImGui::Checkbox("Shapes", &drawShapes))
                 clearSamples();
 
             ImGui::NewLine();
@@ -372,30 +392,36 @@ int main()
 
             drawnVertices = 0u;
 
+            const auto drawImpl = [&](const auto& drawable, const auto&... args)
+            {
+                if (batchType == BatchType::Disabled)
+                    window.draw(drawable, args...);
+                else if (batchType == BatchType::CPUStorage)
+                    cpuDrawableBatch.add(drawable);
+                else if (batchType == BatchType::GPUStorage)
+                    gpuDrawableBatch.add(drawable);
+            };
+
             for (const Entity& entity : entities)
             {
                 if (drawSprites)
                 {
-                    if (batchType == BatchType::Disabled)
-                        window.draw(entity.sprite, textureAtlas.getTexture());
-                    else if (batchType == BatchType::CPUStorage)
-                        cpuDrawableBatch.add(entity.sprite);
-                    else if (batchType == BatchType::GPUStorage)
-                        gpuDrawableBatch.add(entity.sprite);
-
+                    drawImpl(entity.sprite, textureAtlas.getTexture());
                     drawnVertices += 4u;
                 }
 
                 if (drawText)
                 {
-                    if (batchType == BatchType::Disabled)
-                        window.draw(entity.text);
-                    else if (batchType == BatchType::CPUStorage)
-                        cpuDrawableBatch.add(entity.text);
-                    else if (batchType == BatchType::GPUStorage)
-                        gpuDrawableBatch.add(entity.text);
-
+                    drawImpl(entity.text);
                     drawnVertices += entity.text.getVertices().size();
+                }
+
+                if (drawShapes)
+                {
+                    drawImpl(entity.circleShape, &textureAtlas.getTexture());
+
+                    drawnVertices += entity.circleShape.getFillVertices().size() +
+                                     entity.circleShape.getOutlineVertices().size();
                 }
             }
 

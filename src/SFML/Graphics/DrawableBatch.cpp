@@ -65,18 +65,16 @@ void CPUStorage::clear()
 ////////////////////////////////////////////////////////////
 Vertex* CPUStorage::reserveMoreVertices(base::SizeT count)
 {
-    Vertex* const result = vertices.reserveMore(count);
-    vertices.unsafeSetSize(vertices.size() + count);
-    return result;
+    SFML_BASE_SCOPE_GUARD({ vertices.unsafeSetSize(vertices.size() + count); });
+    return vertices.reserveMore(count);
 }
 
 
 ////////////////////////////////////////////////////////////
 IndexType* CPUStorage::reserveMoreIndices(base::SizeT count)
 {
-    IndexType* const result = indices.reserveMore(count);
-    indices.unsafeSetSize(indices.size() + count);
-    return result;
+    SFML_BASE_SCOPE_GUARD({ indices.unsafeSetSize(indices.size() + count); });
+    return indices.reserveMore(count);
 }
 
 
@@ -129,7 +127,7 @@ void DrawableBatchImpl<TStorage>::add(const Shape& shape)
                                       fillData,
                                       static_cast<IndexType>(fillSize),
                                       m_storage.getNumVertices(),
-                                      m_storage.reserveMoreIndices(3u * fillSize),
+                                      m_storage.reserveMoreIndices(3u * (fillSize - 2u)),
                                       m_storage.reserveMoreVertices(fillSize));
 
     const auto [outlineData, outlineSize] = shape.getOutlineVertices();
@@ -137,7 +135,7 @@ void DrawableBatchImpl<TStorage>::add(const Shape& shape)
                                          outlineData,
                                          static_cast<IndexType>(outlineSize),
                                          m_storage.getNumVertices(),
-                                         m_storage.reserveMoreIndices(3u * outlineSize),
+                                         m_storage.reserveMoreIndices(3u * (outlineSize - 2u)),
                                          m_storage.reserveMoreVertices(outlineSize));
 }
 

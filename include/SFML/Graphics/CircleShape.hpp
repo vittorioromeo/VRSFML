@@ -32,8 +32,8 @@ public:
         SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
         SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;
 
-        float       radius{0.f};     //!< Radius of the circle
-        base::SizeT pointCount{30u}; //!< Number of points composing the circle
+        float        radius{0.f};     //!< Radius of the circle
+        unsigned int pointCount{30u}; //!< Number of points composing the circle
     };
 
     ////////////////////////////////////////////////////////////
@@ -67,12 +67,12 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Set the number of points of the circle
     ///
-    /// \param count New number of points of the circle
+    /// \param pointCount New number of points of the circle
     ///
     /// \see `getPointCount`
     ///
     ////////////////////////////////////////////////////////////
-    void setPointCount(base::SizeT count);
+    void setPointCount(unsigned int pointCount);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the number of points of the circle
@@ -82,7 +82,7 @@ public:
     /// \see `setPointCount`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::SizeT getPointCount() const;
+    [[nodiscard]] unsigned int getPointCount() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a point of the circle
@@ -116,13 +116,13 @@ private:
     /// \brief Recompute the circle geometry
     ///
     ////////////////////////////////////////////////////////////
-    void update(float radius, base::SizeT pointCount);
+    void updateCircleGeometry();
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    float                         m_radius; //!< Radius of the circle
-    base::TrivialVector<Vector2f> m_points; //!< Points composing the circle
+    float        m_radius;     //!< Radius of the circle
+    unsigned int m_pointCount; //!< Number of points composing the circle
 };
 
 } // namespace sf
