@@ -67,7 +67,10 @@ public:
     ///         shapes, this number is always 4.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::SizeT getPointCount() const;
+    [[nodiscard, gnu::always_inline]] constexpr base::SizeT getPointCount() const
+    {
+        return 4u;
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a point of the rectangle
@@ -100,8 +103,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2f m_size;      //!< Size of the rectangle
-    Vector2f m_points[4]; //!< Points composing the rectangle
+    Vector2f m_size; //!< Size of the rectangle
 };
 
 } // namespace sf

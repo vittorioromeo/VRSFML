@@ -5,6 +5,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/RectangleShape.hpp"
 
+#include "SFML/System/Vector2.hpp"
+
 #include "SFML/Base/Assert.hpp"
 
 
@@ -22,12 +24,8 @@ void RectangleShape::setSize(Vector2f size)
 {
     m_size = size;
 
-    m_points[0] = {0, 0};
-    m_points[1] = {m_size.x, 0};
-    m_points[2] = {m_size.x, m_size.y};
-    m_points[3] = {0, m_size.y};
-
-    update(m_points, /* pointCount */ 4);
+    const Vector2f points[]{{0.f, 0.f}, {m_size.x, 0.f}, {m_size.x, m_size.y}, {0.f, m_size.y}};
+    update(points, /* pointCount */ 4);
 }
 
 
@@ -39,17 +37,12 @@ Vector2f RectangleShape::getSize() const
 
 
 ////////////////////////////////////////////////////////////
-base::SizeT RectangleShape::getPointCount() const
-{
-    return 4;
-}
-
-
-////////////////////////////////////////////////////////////
 Vector2f RectangleShape::getPoint(base::SizeT index) const
 {
     SFML_BASE_ASSERT(index < 4u && "Index is out of bounds");
-    return m_points[index];
+
+    const Vector2f points[]{{0.f, 0.f}, {m_size.x, 0.f}, {m_size.x, m_size.y}, {0.f, m_size.y}};
+    return points[index];
 }
 
 

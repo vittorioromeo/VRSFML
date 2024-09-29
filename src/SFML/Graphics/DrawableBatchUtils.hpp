@@ -124,7 +124,7 @@ using IndexType = unsigned int;
     IndexType*          indexPtr,
     Vertex*             vertexPtr) noexcept
 {
-    if (fillSize <= 2u)
+    if (fillSize <= 2u) [[unlikely]]
         return;
 
     for (IndexType i = 1u; i < fillSize - 1; ++i)
@@ -143,7 +143,7 @@ using IndexType = unsigned int;
     IndexType*          indexPtr,
     Vertex*             vertexPtr) noexcept
 {
-    if (outlineSize <= 2u)
+    if (outlineSize <= 2u) [[unlikely]]
         return;
 
     for (IndexType i = 0u; i < outlineSize - 2; ++i)
