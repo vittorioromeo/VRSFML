@@ -88,14 +88,14 @@ namespace sf::priv
     {
         const auto transform = sprite.getTransform();
 
-        target[0].position.x = transform.m_a02;
-        target[0].position.y = transform.m_a12;
+        target[0].position.x = transform.a02;
+        target[0].position.y = transform.a12;
 
-        target[1].position.x = transform.m_a01 * absSize.y + transform.m_a02;
-        target[1].position.y = transform.m_a11 * absSize.y + transform.m_a12;
+        target[1].position.x = transform.a01 * absSize.y + transform.a02;
+        target[1].position.y = transform.a11 * absSize.y + transform.a12;
 
-        target[2].position.x = transform.m_a00 * absSize.x + transform.m_a02;
-        target[2].position.y = transform.m_a10 * absSize.x + transform.m_a12;
+        target[2].position.x = transform.a00 * absSize.x + transform.a02;
+        target[2].position.y = transform.a10 * absSize.x + transform.a12;
 
         target[3].position = transform.transformPoint(absSize);
     }

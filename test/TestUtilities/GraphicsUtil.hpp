@@ -11,12 +11,13 @@
 
 namespace sf
 {
-struct BlendMode;
 enum class StencilComparison : unsigned int;
 enum class StencilUpdateOperation : unsigned int;
-struct StencilMode;
+
+struct BlendMode;
 struct Color;
-class Transform;
+struct StencilMode;
+struct Transform;
 
 template <typename>
 class Rect;

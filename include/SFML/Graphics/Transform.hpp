@@ -9,8 +9,6 @@
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vector2.hpp"
 
-#include "SFML/Base/SizeT.hpp"
-
 
 ////////////////////////////////////////////////////////////
 // Forward declarations
@@ -19,21 +17,11 @@ namespace sf
 {
 class Angle;
 class RenderTarget;
-class Transform;
+struct Transform;
 struct Sprite;
 struct Transformable;
 struct Vertex;
 } // namespace sf
-
-namespace sf::priv
-{
-template <base::SizeT, base::SizeT>
-struct Matrix;
-
-void copyMatrix(const Transform&, Matrix<3, 3>&);
-
-void spriteToVertices(const Sprite& sprite, Vertex* target);
-} // namespace sf::priv
 
 
 namespace sf
@@ -42,31 +30,8 @@ namespace sf
 /// \brief Define a 3x3 transform matrix TODO P0:
 ///
 ////////////////////////////////////////////////////////////
-class [[nodiscard]] Transform
+struct [[nodiscard]] Transform
 {
-public:
-    ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// Creates an identity transform (a transform that does nothing).
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr Transform() = default;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct a transform from a 3x3 matrix
-    ///        The bottom row is always 0 0 1.
-    ///
-    /// \param a00 Element (0, 0) of the matrix
-    /// \param a01 Element (0, 1) of the matrix
-    /// \param a02 Element (0, 2) of the matrix
-    /// \param a10 Element (1, 0) of the matrix
-    /// \param a11 Element (1, 1) of the matrix
-    /// \param a12 Element (1, 2) of the matrix
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr Transform(float a00, float a01, float a02, float a10, float a11, float a12);
-
     ////////////////////////////////////////////////////////////
     /// \brief Return the transform as a 4x4 matrix
     ///
@@ -279,26 +244,16 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator!=(const Transform& rhs) const = default;
 
-    friend constexpr Transform operator*(const Transform& lhs, const Transform& rhs);
-
     ////////////////////////////////////////////////////////////
     // Static member data
     ////////////////////////////////////////////////////////////
     // NOLINTNEXTLINE(readability-identifier-naming)
     static const Transform Identity; //!< The identity transform (does nothing)
 
-private:
-    friend void priv::spriteToVertices(const Sprite& sprite, Vertex* target);
-    friend Transformable;
-    friend void priv::copyMatrix(const Transform&, priv::Matrix<3, 3>&);
-    friend RenderTarget;
-
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    // clang-format off
-    float m_a00{1.f}, m_a10{0.f}, m_a01{0.f}, m_a11{1.f}, m_a02{0.f}, m_a12{0.f};
-    // clang-format on
+    float a00{1.f}, a01{0.f}, a02{0.f}, a10{0.f}, a11{1.f}, a12{0.f};
 };
 
 ////////////////////////////////////////////////////////////

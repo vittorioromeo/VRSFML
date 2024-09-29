@@ -25,10 +25,10 @@ class GLPersistentBuffer;
 class RenderTarget;
 class Shape;
 class Text;
-class Transform;
 struct GLElementBufferObject;
 struct GLVertexBufferObject;
 struct Sprite;
+struct Transform;
 } // namespace sf
 
 
@@ -51,20 +51,49 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 struct CPUStorage
 {
+    ////////////////////////////////////////////////////////////
     base::TrivialVector<Vertex>    vertices; //!< TODO P0:
     base::TrivialVector<IndexType> indices;  //!< TODO P0:
 
-    void clear();
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] void clear()
+    {
+        vertices.clear();
+        indices.clear();
+    }
 
-    [[nodiscard]] Vertex*    reserveMoreVertices(base::SizeT count);
-    [[nodiscard]] IndexType* reserveMoreIndices(base::SizeT count);
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten]] Vertex* reserveMoreVertices(base::SizeT count)
+    {
+        return vertices.reserveMore(count);
+    }
 
-    [[nodiscard, gnu::always_inline, gnu::flatten]] IndexType getNumVertices() const
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten]] IndexType* reserveMoreIndices(base::SizeT count)
+    {
+        return indices.reserveMore(count);
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] void commitMoreVertices(base::SizeT count)
+    {
+        vertices.unsafeSetSize(vertices.size() + count);
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] void commitMoreIndices(base::SizeT count)
+    {
+        indices.unsafeSetSize(indices.size() + count);
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] IndexType getNumVertices() const
     {
         return static_cast<IndexType>(vertices.size());
     }
 
-    [[nodiscard, gnu::always_inline, gnu::flatten]] IndexType getNumIndices() const
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] IndexType getNumIndices() const
     {
         return static_cast<IndexType>(indices.size());
     }
@@ -76,25 +105,47 @@ struct CPUStorage
 ////////////////////////////////////////////////////////////
 struct PersistentGPUStorage
 {
+    ////////////////////////////////////////////////////////////
     explicit PersistentGPUStorage(RenderTarget& renderTarget);
 
+    ////////////////////////////////////////////////////////////
     GLPersistentBuffer<GLVertexBufferObject>&  vboPersistentBuffer;
     GLPersistentBuffer<GLElementBufferObject>& eboPersistentBuffer;
 
+    ////////////////////////////////////////////////////////////
     IndexType nVertices{};
     IndexType nIndices{};
 
-    void clear();
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] void clear()
+    {
+        nVertices = nIndices = 0u;
+    }
 
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] Vertex*    reserveMoreVertices(base::SizeT count);
     [[nodiscard]] IndexType* reserveMoreIndices(base::SizeT count);
 
-    [[nodiscard, gnu::always_inline, gnu::flatten]] IndexType getNumVertices() const
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] void commitMoreVertices(base::SizeT count)
+    {
+        nVertices += count;
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] void commitMoreIndices(base::SizeT count)
+    {
+        nIndices += count;
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] IndexType getNumVertices() const
     {
         return nVertices;
     }
 
-    [[nodiscard, gnu::always_inline, gnu::flatten]] IndexType getNumIndices() const
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] IndexType getNumIndices() const
     {
         return nIndices;
     }

@@ -13,7 +13,7 @@
 
 namespace sf
 {
-class Transform;
+struct Transform;
 } // namespace sf
 
 namespace sf::priv

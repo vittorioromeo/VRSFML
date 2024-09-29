@@ -124,8 +124,7 @@ using IndexType = unsigned int;
     IndexType*          indexPtr,
     Vertex*             vertexPtr) noexcept
 {
-    if (fillSize <= 2u) [[unlikely]]
-        return;
+    SFML_BASE_ASSERT(fillSize > 2u);
 
     for (IndexType i = 1u; i < fillSize - 1; ++i)
         appendTriangleFanIndices(indexPtr, nextFillIndex, i);
@@ -143,8 +142,7 @@ using IndexType = unsigned int;
     IndexType*          indexPtr,
     Vertex*             vertexPtr) noexcept
 {
-    if (outlineSize <= 2u) [[unlikely]]
-        return;
+    SFML_BASE_ASSERT(outlineSize > 2u);
 
     for (IndexType i = 0u; i < outlineSize - 2; ++i)
         appendTriangleIndices(indexPtr, nextOutlineIndex + i);
