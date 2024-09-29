@@ -30,7 +30,6 @@
 
 #include "SFML/Base/Optional.hpp"
 
-#include <GL/gl.h>
 #include <imgui.h>
 
 #include <array>

@@ -32,7 +32,6 @@ class PersistentGPUDrawableBatch;
 class Shader;
 class Shape;
 class Texture;
-class Transform;
 class VertexBuffer;
 struct BlendMode;
 struct GLElementBufferObject;
@@ -40,6 +39,7 @@ struct GLVertexBufferObject;
 struct Sprite;
 struct StencilMode;
 struct StencilValue;
+struct Transform;
 struct Vertex;
 struct View;
 } // namespace sf

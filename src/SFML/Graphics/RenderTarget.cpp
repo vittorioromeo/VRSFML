@@ -949,10 +949,10 @@ void RenderTarget::setupDrawMVP(const RenderStates& states, const Transform& vie
     m_impl->cache.lastDrawTransform = trsfm;
 
     // clang-format off
-    const float transformMatrixBuffer[]{trsfm.m_a00, trsfm.m_a10, 0.f, 0.f,
-                                        trsfm.m_a01, trsfm.m_a11, 0.f, 0.f,
-                                        0.f,         0.f,         1.f, 0.f,
-                                        trsfm.m_a02, trsfm.m_a12, 0.f, 1.f};
+    const float transformMatrixBuffer[]{trsfm.a00, trsfm.a10, 0.f, 0.f,
+                                        trsfm.a01, trsfm.a11, 0.f, 0.f,
+                                        0.f,       0.f,       1.f, 0.f,
+                                        trsfm.a02, trsfm.a12, 0.f, 1.f};
     // clang-format on
 
     // Upload uniform data to GPU (hardcoded layout location `0u` for `sf_u_modelViewProjectionMatrix`)

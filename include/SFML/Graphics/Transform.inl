@@ -11,26 +11,14 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-constexpr Transform::Transform(float a00, float a01, float a02, float a10, float a11, float a12) :
-m_a00{a00},
-m_a10{a10},
-m_a01{a01},
-m_a11{a11},
-m_a02{a02},
-m_a12{a12}
-{
-}
-
-
-////////////////////////////////////////////////////////////
 constexpr void Transform::getMatrix(float (&target)[16]) const
 {
-    target[0]  = m_a00;
-    target[1]  = m_a10;
-    target[4]  = m_a01;
-    target[5]  = m_a11;
-    target[12] = m_a02;
-    target[13] = m_a12;
+    target[0]  = a00;
+    target[1]  = a10;
+    target[4]  = a01;
+    target[5]  = a11;
+    target[12] = a02;
+    target[13] = a12;
 }
 
 
@@ -39,7 +27,7 @@ constexpr Transform Transform::getInverse() const
 {
     // clang-format off
     // Compute the determinant
-    const float det = m_a00 * m_a11 - m_a10 * m_a01;
+    const float det = a00 * a11 - a10 * a01;
     // clang-format on
 
     // Compute the inverse if the determinant is not zero
@@ -47,12 +35,12 @@ constexpr Transform Transform::getInverse() const
     if (det != 0.f)
     {
         // clang-format off
-        return {(                m_a11        ) / det,
-               -(                m_a01        ) / det,
-                (m_a12 * m_a01 - m_a11 * m_a02) / det,
-               -(                m_a10        ) / det,
-                (                m_a00        ) / det,
-               -(m_a12 * m_a00 - m_a10 * m_a02) / det};
+        return {(                a11        ) / det,
+               -(                a01        ) / det,
+                (a12 * a01 - a11 * a02) / det,
+               -(                a10        ) / det,
+                (                a00        ) / det,
+               -(a12 * a00 - a10 * a02) / det};
         // clang-format on
     }
 
@@ -63,7 +51,7 @@ constexpr Transform Transform::getInverse() const
 ////////////////////////////////////////////////////////////
 constexpr Vector2f Transform::transformPoint(Vector2f point) const
 {
-    return {m_a00 * point.x + m_a01 * point.y + m_a02, m_a10 * point.x + m_a11 * point.y + m_a12};
+    return {a00 * point.x + a01 * point.y + a02, a10 * point.x + a11 * point.y + a12};
 }
 
 
@@ -141,12 +129,12 @@ constexpr Transform& Transform::scaleBy(Vector2f factors, Vector2f center)
 ////////////////////////////////////////////////////////////
 constexpr Transform operator*(const Transform& lhs, const Transform& rhs)
 {
-    return {lhs.m_a00 * rhs.m_a00 + lhs.m_a01 * rhs.m_a10,
-            lhs.m_a00 * rhs.m_a01 + lhs.m_a01 * rhs.m_a11,
-            lhs.m_a00 * rhs.m_a02 + lhs.m_a01 * rhs.m_a12 + lhs.m_a02,
-            lhs.m_a10 * rhs.m_a00 + lhs.m_a11 * rhs.m_a10,
-            lhs.m_a10 * rhs.m_a01 + lhs.m_a11 * rhs.m_a11,
-            lhs.m_a10 * rhs.m_a02 + lhs.m_a11 * rhs.m_a12 + lhs.m_a12};
+    return {lhs.a00 * rhs.a00 + lhs.a01 * rhs.a10,
+            lhs.a00 * rhs.a01 + lhs.a01 * rhs.a11,
+            lhs.a00 * rhs.a02 + lhs.a01 * rhs.a12 + lhs.a02,
+            lhs.a10 * rhs.a00 + lhs.a11 * rhs.a10,
+            lhs.a10 * rhs.a01 + lhs.a11 * rhs.a11,
+            lhs.a10 * rhs.a02 + lhs.a11 * rhs.a12 + lhs.a12};
 }
 
 

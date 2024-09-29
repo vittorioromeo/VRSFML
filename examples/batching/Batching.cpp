@@ -99,6 +99,12 @@ int main()
     std::minstd_rand rng(100);
     const auto getRndFloat = [&](float min, float max) { return std::uniform_real_distribution<float>{min, max}(rng); };
 
+    const auto getRndUInt = [&](unsigned int min, unsigned int max)
+    { return std::uniform_int_distribution<unsigned int>{min, max}(rng); };
+
+    const auto getRndU8 = [&](sf::base::U8 min, sf::base::U8 max)
+    { return static_cast<sf::base::U8>(getRndUInt(min, max)); };
+
     //
     //
     // Set up graphics context
@@ -107,10 +113,10 @@ int main()
     //
     //
     // Set up window
-    constexpr sf::Vector2f windowSize{1024.f, 768.f};
+    constexpr sf::Vector2f windowSize{1680.f, 1050.f};
 
     sf::RenderWindow window(graphicsContext,
-                            {.size{windowSize.toVector2u()},
+                            {.size      = windowSize.toVector2u(),
                              .title     = "Vittorio's SFML fork: batching example",
                              .resizable = false,
                              .vsync     = true});
@@ -203,13 +209,14 @@ int main()
                 sf::Sprite{textureRect},
                 sf::Vector2f{getRndFloat(-2.5f, 2.5f), getRndFloat(-2.5f, 2.5f)},
                 getRndFloat(-0.05f, 0.05f),
-                sf::CircleShape{{.textureRect        = {.position = whiteDotAtlasPos.toVector2f(), .size{0.f, 0.f}},
-                                 .outlineTextureRect = {.position = whiteDotAtlasPos.toVector2f(), .size{0.f, 0.f}},
-                                 .fillColor          = {255u, 0u, 0u, 125u},
-                                 .outlineColor       = sf::Color::Black,
-                                 .outlineThickness   = 1.5f,
-                                 .radius             = 8.f,
-                                 .pointCount         = 8u}});
+                sf::CircleShape{
+                    {.textureRect        = {.position = whiteDotAtlasPos.toVector2f(), .size{0.f, 0.f}},
+                     .outlineTextureRect = {.position = whiteDotAtlasPos.toVector2f(), .size{0.f, 0.f}},
+                     .fillColor = {getRndU8(0.f, 255.f), getRndU8(0.f, 255.f), getRndU8(0.f, 255.f), getRndU8(125.f, 255.f)},
+                     .outlineColor = {getRndU8(0.f, 255.f), getRndU8(0.f, 255.f), getRndU8(0.f, 255.f), getRndU8(125.f, 255.f)},
+                     .outlineThickness = 3.f,
+                     .radius           = getRndFloat(3.f, 8.f),
+                     .pointCount       = getRndUInt(3, 8)}});
 
             sprite.origin   = textureRect.size / 2.f;
             sprite.rotation = sf::radians(getRndFloat(0.f, sf::base::tau));
@@ -235,11 +242,11 @@ int main()
         GPUStorage = 2
     };
 
-    auto        batchType     = BatchType::Disabled;
+    auto        batchType     = BatchType::GPUStorage;
     bool        drawSprites   = true;
     bool        drawText      = false;
     bool        drawShapes    = true;
-    int         numEntities   = 10'000;
+    int         numEntities   = 100'000;
     std::size_t drawnVertices = 0u;
 
     //
@@ -301,6 +308,7 @@ int main()
                 text.position = sprite.position - sf::Vector2f{0.f, 250.f * sprite.scale.x};
 
                 circleShape.position = sprite.position;
+                circleShape.rotation = sprite.rotation;
             }
 
             samplesUpdateMs.record(clock.getElapsedTime().asSeconds() * 1000.f);

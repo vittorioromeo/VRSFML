@@ -12,6 +12,7 @@
 
 #include "SFML/System/Vector2.hpp"
 
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/TrivialVector.hpp"
 
 
@@ -194,20 +195,35 @@ FloatRect Shape::getGlobalBounds() const
 ////////////////////////////////////////////////////////////
 void Shape::update(const sf::Vector2f* points, const base::SizeT pointCount)
 {
-    // Get the total number of points of the shape
-    if (pointCount < 3)
-    {
-        m_vertices.resize(0);
-        m_outlineVertices.resize(0);
+    if (!updateImplResizeVerticesVector(pointCount))
         return;
-    }
-
-    m_vertices.resize(pointCount + 2); // + 2 for center and repeated first point
 
     // Position
     for (base::SizeT i = 0; i < pointCount; ++i)
         m_vertices[i + 1].position = points[i];
 
+    updateImplFromVerticesPositions(pointCount);
+}
+
+
+////////////////////////////////////////////////////////////
+bool Shape::updateImplResizeVerticesVector(const base::SizeT pointCount)
+{
+    if (pointCount < 3u)
+    {
+        m_vertices.resize(0u);
+        m_outlineVertices.resize(0u);
+        return false;
+    }
+
+    m_vertices.resize(pointCount + 2u); // + 2 for center and repeated first point
+    return true;
+}
+
+
+////////////////////////////////////////////////////////////
+void Shape::updateImplFromVerticesPositions(const base::SizeT pointCount)
+{
     m_vertices[pointCount + 1].position = m_vertices[1].position;
 
     // Update the bounding rectangle

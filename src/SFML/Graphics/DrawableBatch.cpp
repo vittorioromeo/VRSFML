@@ -13,7 +13,6 @@
 #include "SFML/Graphics/Transform.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
-#include "SFML/Base/ScopeGuard.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 
@@ -28,17 +27,8 @@ eboPersistentBuffer{renderTarget.getEBOPersistentBuffer()}
 
 
 ////////////////////////////////////////////////////////////
-void PersistentGPUStorage::clear()
-{
-    nVertices = nIndices = 0u;
-}
-
-
-////////////////////////////////////////////////////////////
 Vertex* PersistentGPUStorage::reserveMoreVertices(base::SizeT count)
 {
-    SFML_BASE_SCOPE_GUARD({ nVertices += count; });
-
     vboPersistentBuffer.reserve(sizeof(Vertex) * (nVertices + count));
     return static_cast<Vertex*>(vboPersistentBuffer.data()) + nVertices;
 }
@@ -47,34 +37,8 @@ Vertex* PersistentGPUStorage::reserveMoreVertices(base::SizeT count)
 ////////////////////////////////////////////////////////////
 IndexType* PersistentGPUStorage::reserveMoreIndices(base::SizeT count)
 {
-    SFML_BASE_SCOPE_GUARD({ nIndices += count; });
-
     eboPersistentBuffer.reserve(sizeof(IndexType) * (nIndices + count));
     return static_cast<IndexType*>(eboPersistentBuffer.data()) + nIndices;
-}
-
-
-////////////////////////////////////////////////////////////
-void CPUStorage::clear()
-{
-    vertices.clear();
-    indices.clear();
-}
-
-
-////////////////////////////////////////////////////////////
-Vertex* CPUStorage::reserveMoreVertices(base::SizeT count)
-{
-    SFML_BASE_SCOPE_GUARD({ vertices.unsafeSetSize(vertices.size() + count); });
-    return vertices.reserveMore(count);
-}
-
-
-////////////////////////////////////////////////////////////
-IndexType* CPUStorage::reserveMoreIndices(base::SizeT count)
-{
-    SFML_BASE_SCOPE_GUARD({ indices.unsafeSetSize(indices.size() + count); });
-    return indices.reserveMore(count);
 }
 
 
@@ -83,7 +47,10 @@ template <typename TStorage>
 void DrawableBatchImpl<TStorage>::addTriangles(const Transform& transform, const Vertex* data, base::SizeT size)
 {
     appendIncreasingIndices(static_cast<IndexType>(size), m_storage.getNumVertices(), m_storage.reserveMoreIndices(size));
+    m_storage.commitMoreIndices(size);
+
     appendTransformedVertices(transform, data, size, m_storage.reserveMoreVertices(size));
+    m_storage.commitMoreVertices(size);
 }
 
 
@@ -102,6 +69,9 @@ void DrawableBatchImpl<TStorage>::add(const Text& text)
                                  m_storage.getNumVertices(),
                                  m_storage.reserveMoreIndices(6u * numQuads),
                                  m_storage.reserveMoreVertices(4u * numQuads));
+
+    m_storage.commitMoreIndices(6u * numQuads);
+    m_storage.commitMoreVertices(4u * numQuads);
 }
 
 
@@ -113,6 +83,9 @@ void DrawableBatchImpl<TStorage>::add(const Sprite& sprite)
                                    m_storage.getNumVertices(),
                                    m_storage.reserveMoreIndices(6u),
                                    m_storage.reserveMoreVertices(4u));
+
+    m_storage.commitMoreIndices(6u);
+    m_storage.commitMoreVertices(4u);
 }
 
 
@@ -122,21 +95,31 @@ void DrawableBatchImpl<TStorage>::add(const Shape& shape)
 {
     const auto transform = shape.getTransform();
 
-    const auto [fillData, fillSize] = shape.getFillVertices();
-    appendShapeFillIndicesAndVertices(transform,
-                                      fillData,
-                                      static_cast<IndexType>(fillSize),
-                                      m_storage.getNumVertices(),
-                                      m_storage.reserveMoreIndices(3u * (fillSize - 2u)),
-                                      m_storage.reserveMoreVertices(fillSize));
+    if (const auto [fillData, fillSize] = shape.getFillVertices(); fillSize > 2u)
+    {
+        appendShapeFillIndicesAndVertices(transform,
+                                          fillData,
+                                          static_cast<IndexType>(fillSize),
+                                          m_storage.getNumVertices(),
+                                          m_storage.reserveMoreIndices(3u * (fillSize - 2u)),
+                                          m_storage.reserveMoreVertices(fillSize));
 
-    const auto [outlineData, outlineSize] = shape.getOutlineVertices();
-    appendShapeOutlineIndicesAndVertices(transform,
-                                         outlineData,
-                                         static_cast<IndexType>(outlineSize),
-                                         m_storage.getNumVertices(),
-                                         m_storage.reserveMoreIndices(3u * (outlineSize - 2u)),
-                                         m_storage.reserveMoreVertices(outlineSize));
+        m_storage.commitMoreIndices(3u * (fillSize - 2u));
+        m_storage.commitMoreVertices(fillSize);
+    }
+
+    if (const auto [outlineData, outlineSize] = shape.getOutlineVertices(); outlineSize > 2u)
+    {
+        appendShapeOutlineIndicesAndVertices(transform,
+                                             outlineData,
+                                             static_cast<IndexType>(outlineSize),
+                                             m_storage.getNumVertices(),
+                                             m_storage.reserveMoreIndices(3u * (outlineSize - 2u)),
+                                             m_storage.reserveMoreVertices(outlineSize));
+
+        m_storage.commitMoreIndices(3u * (outlineSize - 2u));
+        m_storage.commitMoreVertices(outlineSize);
+    }
 }
 
 

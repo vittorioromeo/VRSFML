@@ -10,7 +10,6 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/FastSinCos.hpp"
-#include "SFML/Base/TrivialVector.hpp"
 
 
 namespace
@@ -21,7 +20,7 @@ namespace
     const unsigned int    pointCount,
     const float           radius)
 {
-    const float radians = static_cast<float>(index) / static_cast<float>(pointCount) * sf::base::tau - sf::base::halfPi;
+    const float radians       = static_cast<float>(index) / static_cast<float>(pointCount) * sf::base::tau;
     const auto [sine, cosine] = sf::base::fastSinCos(radians);
     return {radius * (1.f + sine), radius * (1.f + cosine)};
 }
@@ -95,13 +94,14 @@ Vector2f CircleShape::getGeometricCenter() const
 ////////////////////////////////////////////////////////////
 void CircleShape::updateCircleGeometry()
 {
-    thread_local base::TrivialVector<Vector2f> points;
-    points.resize(m_pointCount);
+    if (!Shape::updateImplResizeVerticesVector(m_pointCount)) [[unlikely]]
+        return;
 
+    // Position
     for (unsigned int i = 0u; i < m_pointCount; ++i)
-        points[i] = computeCirclePoint(i, m_pointCount, m_radius);
+        m_vertices[i + 1].position = computeCirclePoint(i, m_pointCount, m_radius);
 
-    Shape::update(points.data(), points.size());
+    Shape::updateImplFromVerticesPositions(m_pointCount);
 }
 
 } // namespace sf

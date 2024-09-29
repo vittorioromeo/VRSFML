@@ -9,8 +9,6 @@
 #include "SFML/Window/GLCheck.hpp"
 #include "SFML/Window/Glad.hpp"
 
-#include <GL/gl.h>
-
 
 ////////////////////////////////////////////////////////////
 // Forward declarations

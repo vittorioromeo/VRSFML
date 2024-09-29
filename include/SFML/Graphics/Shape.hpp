@@ -246,6 +246,18 @@ protected:
     ////////////////////////////////////////////////////////////
     void update(const sf::Vector2f* points, base::SizeT pointCount);
 
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool updateImplResizeVerticesVector(base::SizeT pointCount);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void updateImplFromVerticesPositions(base::SizeT pointCount);
+
 private:
     friend RenderTarget;
 
@@ -288,15 +300,19 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    FloatRect                   m_textureRect{};              //!< Area of the source texture to display for the fill
-    FloatRect                   m_outlineTextureRect{};       //!< Area of the source texture to display for the outline
-    Color                       m_fillColor{Color::White};    //!< Fill color
-    Color                       m_outlineColor{Color::White}; //!< Outline color
-    float                       m_outlineThickness{};         //!< Thickness of the shape's outline
-    base::TrivialVector<Vertex> m_vertices;                   //!< Vertex array containing the fill geometry
-    base::TrivialVector<Vertex> m_outlineVertices;            //!< Vertex array containing the outline geometry
-    FloatRect                   m_insideBounds;               //!< Bounding rectangle of the inside (fill)
-    FloatRect                   m_bounds; //!< Bounding rectangle of the whole shape (outline + fill)
+    FloatRect m_textureRect{};              //!< Area of the source texture to display for the fill
+    FloatRect m_outlineTextureRect{};       //!< Area of the source texture to display for the outline
+    Color     m_fillColor{Color::White};    //!< Fill color
+    Color     m_outlineColor{Color::White}; //!< Outline color
+    float     m_outlineThickness{};         //!< Thickness of the shape's outline
+
+protected:
+    base::TrivialVector<Vertex> m_vertices; //!< Vertex array containing the fill geometry
+
+private:
+    base::TrivialVector<Vertex> m_outlineVertices; //!< Vertex array containing the outline geometry
+    FloatRect                   m_insideBounds;    //!< Bounding rectangle of the inside (fill)
+    FloatRect                   m_bounds;          //!< Bounding rectangle of the whole shape (outline + fill)
 };
 
 } // namespace sf

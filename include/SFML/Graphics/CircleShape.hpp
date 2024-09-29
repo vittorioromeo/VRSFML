@@ -11,7 +11,6 @@
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/TrivialVector.hpp"
 
 
 namespace sf

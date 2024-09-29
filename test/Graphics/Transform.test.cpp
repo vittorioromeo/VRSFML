@@ -2,8 +2,6 @@
 
 #include "SFML/System/Angle.hpp"
 
-#include "SFML/Base/Assert.hpp"
-
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
@@ -18,6 +16,13 @@ TEST_CASE("[Graphics] sf::Transform")
         STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Transform));
         STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Transform));
         STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Transform));
+
+        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::Transform)); // because of member initializers
+        STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::Transform));
+        STATIC_CHECK(SFML_BASE_IS_AGGREGATE(sf::Transform));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::Transform));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::Transform));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::Transform, sf::Transform));
     }
 
     SECTION("Construction")

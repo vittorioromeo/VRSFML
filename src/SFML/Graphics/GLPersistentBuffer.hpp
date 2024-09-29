@@ -121,7 +121,7 @@ public:
 
 private:
     ////////////////////////////////////////////////////////////
-    [[gnu::cold]] void reserveImpl(const base::SizeT byteCount)
+    [[gnu::cold, gnu::noinline]] void reserveImpl(const base::SizeT byteCount)
     {
 #ifdef SFML_OPENGL_ES
         priv::err() << "Persistent OpenGL buffers are not available in OpenGL ES";
