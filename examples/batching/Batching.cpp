@@ -242,11 +242,11 @@ int main()
         GPUStorage = 2
     };
 
-    auto        batchType     = BatchType::GPUStorage;
+    auto        batchType     = BatchType::Disabled;
     bool        drawSprites   = true;
     bool        drawText      = false;
     bool        drawShapes    = true;
-    int         numEntities   = 100'000;
+    int         numEntities   = 5000;
     std::size_t drawnVertices = 0u;
 
     //
