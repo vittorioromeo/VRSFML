@@ -242,11 +242,11 @@ int main()
         GPUStorage = 2
     };
 
-    auto        batchType     = BatchType::GPUStorage;
-    bool        drawSprites   = true;
+    auto        batchType     = BatchType::Disabled;
+    bool        drawSprites   = false;
     bool        drawText      = false;
     bool        drawShapes    = true;
-    int         numEntities   = 250'000;
+    int         numEntities   = 20'000;
     std::size_t drawnVertices = 0u;
 
     //
@@ -330,11 +330,12 @@ int main()
                 samplesFPS.clear();
             };
 
-#ifdef SFML_OPENGL_ES
-            constexpr const char* batchTypeItems[]{"Disabled", "CPU Storage"};
-#else
-            constexpr const char* batchTypeItems[]{"Disabled", "CPU Storage", "GPU Storage"};
+            constexpr const char* batchTypeItems[]{"Disabled",
+                                                   "CPU Storage",
+#ifndef SFML_OPENGL_ES
+                                                   "GPU Storage"
 #endif
+            };
 
             if (ImGui::Combo("Batch type",
                              reinterpret_cast<int*>(&batchType),

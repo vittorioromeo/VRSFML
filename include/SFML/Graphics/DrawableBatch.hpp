@@ -52,10 +52,6 @@ namespace sf::priv
 struct CPUStorage
 {
     ////////////////////////////////////////////////////////////
-    base::TrivialVector<Vertex>    vertices; //!< TODO P0:
-    base::TrivialVector<IndexType> indices;  //!< TODO P0:
-
-    ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] void clear()
     {
         vertices.clear();
@@ -97,6 +93,12 @@ struct CPUStorage
     {
         return static_cast<IndexType>(indices.size());
     }
+
+    ////////////////////////////////////////////////////////////
+    // Member data
+    ////////////////////////////////////////////////////////////
+    base::TrivialVector<Vertex>    vertices; //!< CPU buffer for vertices
+    base::TrivialVector<IndexType> indices;  //!< CPU buffer for indices
 };
 
 ////////////////////////////////////////////////////////////
@@ -107,14 +109,6 @@ struct PersistentGPUStorage
 {
     ////////////////////////////////////////////////////////////
     explicit PersistentGPUStorage(RenderTarget& renderTarget);
-
-    ////////////////////////////////////////////////////////////
-    GLPersistentBuffer<GLVertexBufferObject>&  vboPersistentBuffer;
-    GLPersistentBuffer<GLElementBufferObject>& eboPersistentBuffer;
-
-    ////////////////////////////////////////////////////////////
-    IndexType nVertices{};
-    IndexType nIndices{};
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void clear()
@@ -149,6 +143,15 @@ struct PersistentGPUStorage
     {
         return nIndices;
     }
+
+    ////////////////////////////////////////////////////////////
+    // Member data
+    ////////////////////////////////////////////////////////////
+    GLPersistentBuffer<GLVertexBufferObject>&  vboPersistentBuffer; //!< GPU persistent buffer for vertices
+    GLPersistentBuffer<GLElementBufferObject>& eboPersistentBuffer; //!< GPU persistent buffer for indices
+
+    IndexType nVertices{}; //!< Number of "active" vertices in the buffer
+    IndexType nIndices{};  //!< Number of "active" indices in the buffer
 };
 
 ////////////////////////////////////////////////////////////
@@ -224,7 +227,6 @@ namespace sf
 ////////////////////////////////////////////////////////////
 class CPUDrawableBatch : public priv::DrawableBatchImpl<priv::CPUStorage>
 {
-    friend RenderTarget;
     using DrawableBatchImpl<priv::CPUStorage>::DrawableBatchImpl;
 };
 
@@ -234,7 +236,6 @@ class CPUDrawableBatch : public priv::DrawableBatchImpl<priv::CPUStorage>
 ////////////////////////////////////////////////////////////
 class PersistentGPUDrawableBatch : public priv::DrawableBatchImpl<priv::PersistentGPUStorage>
 {
-    friend RenderTarget;
     using DrawableBatchImpl<priv::PersistentGPUStorage>::DrawableBatchImpl;
 };
 
