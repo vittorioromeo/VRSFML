@@ -227,8 +227,8 @@ int main()
 
             sprite.position = {getRndFloat(0.f, windowSize.x), getRndFloat(0.f, windowSize.y)};
 
-            text.origin        = text.getLocalBounds().size / 2.f;
-            circleShape.origin = circleShape.getLocalBounds().size / 2.f;
+            text.origin        = text.getLocalBounds().getCenter();
+            circleShape.origin = circleShape.getLocalBounds().getCenter();
         }
     };
 
@@ -242,11 +242,11 @@ int main()
         GPUStorage = 2
     };
 
-    auto        batchType     = BatchType::Disabled;
+    auto        batchType     = BatchType::GPUStorage;
     bool        drawSprites   = true;
     bool        drawText      = false;
     bool        drawShapes    = true;
-    int         numEntities   = 5000;
+    int         numEntities   = 250'000;
     std::size_t drawnVertices = 0u;
 
     //
