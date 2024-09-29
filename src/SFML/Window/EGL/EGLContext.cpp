@@ -7,7 +7,6 @@
 #include "SFML/Window/EGL/EGLCheck.hpp"
 #include "SFML/Window/EGL/EGLContext.hpp"
 #include "SFML/Window/EGL/EGLGlad.hpp"
-#include "SFML/Window/GlContextTypeImpl.hpp"
 #include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
 #include "SFML/Window/WindowContext.hpp"
@@ -104,12 +103,14 @@ EGLConfig getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const sf:
 
     // Determine the number of available configs
     EGLint configCount = 0;
-    eglCheck(eglGetConfigs(display, nullptr, 0, &configCount));
+    if (const auto rc = eglCheck(eglGetConfigs(display, nullptr, 0, &configCount)); rc == EGL_FALSE)
+        sf::priv::err() << "Failed to get EGL configs (1st call)";
 
     // Retrieve the list of available configs
     const auto configs = std::make_unique<EGLConfig[]>(static_cast<sf::base::SizeT>(configCount));
 
-    eglCheck(eglGetConfigs(display, configs.get(), configCount, &configCount));
+    if (const auto rc = eglCheck(eglGetConfigs(display, configs.get(), configCount, &configCount)); rc == EGL_FALSE)
+        sf::priv::err() << "Failed to get EGL configs (2nd call)";
 
     // Evaluate all the returned configs, and pick the best one
     int       bestScore = 0x7FFFFFFF;
@@ -122,6 +123,8 @@ EGLConfig getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const sf:
         int renderableType = 0;
         eglCheck(eglGetConfigAttrib(display, configs[i], EGL_SURFACE_TYPE, &surfaceType));
         eglCheck(eglGetConfigAttrib(display, configs[i], EGL_RENDERABLE_TYPE, &renderableType));
+
+        // The following check doesn't pass on Emscripten
         if (!(surfaceType & (EGL_WINDOW_BIT | EGL_PBUFFER_BIT)) || !(renderableType & EGL_OPENGL_ES3_BIT))
             continue;
 
@@ -179,9 +182,17 @@ EGLConfig getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const sf:
          EGL_GREEN_SIZE,
          8,
          EGL_DEPTH_SIZE,
+#ifndef SFML_SYSTEM_EMSCRIPTEN
          static_cast<EGLint>(contextSettings.depthBits),
+#else
+         24, // Not propagated to shared context settings from window context settings...
+#endif
          EGL_STENCIL_SIZE,
+#ifndef SFML_SYSTEM_EMSCRIPTEN
          static_cast<EGLint>(contextSettings.stencilBits),
+#else
+         8, // Not propagated to shared context settings from window context settings...
+#endif
          EGL_SAMPLE_BUFFERS,
          static_cast<EGLint>(contextSettings.antiAliasingLevel),
          EGL_SURFACE_TYPE,
@@ -275,7 +286,7 @@ GlContext(windowContext, id, contextSettings)
     // Get the initialized EGL display
     m_impl->display = EglContextImpl::getInitializedDisplay();
 
-    // Get the best EGL config matching the requested video contextSettings
+    // Get the best EGL config matching the requested video context settings
     m_impl->config = EglContextImpl::getBestConfig(m_impl->display, bitsPerPixel, contextSettings);
     updateSettings();
 
@@ -359,18 +370,18 @@ void EglContext::setVerticalSyncEnabled([[maybe_unused]] bool enabled)
 void EglContext::createContext(EglContext* shared)
 {
 #ifndef SFML_SYSTEM_EMSCRIPTEN
-    constexpr EGLint contextVersion[]{EGL_CONTEXT_MAJOR_VERSION, 3, EGL_CONTEXT_MINOR_VERSION, 1, EGL_NONE};
+    constexpr EGLint contextAttribs[]{EGL_CONTEXT_MAJOR_VERSION, 3, EGL_CONTEXT_MINOR_VERSION, 1, EGL_NONE};
 #else
-    constexpr EGLint contextVersion[]{EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE, EGL_NONE};
+    constexpr EGLint contextAttribs[]{EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE, EGL_NONE};
 #endif
 
-    EGLContext toShared = shared != nullptr ? shared->m_impl->context : EGL_NO_CONTEXT;
+    const EGLContext toShared = shared != nullptr ? shared->m_impl->context : EGL_NO_CONTEXT;
 
     if (toShared != EGL_NO_CONTEXT)
         eglCheck(eglMakeCurrent(m_impl->display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT));
 
     // Create EGL context
-    m_impl->context = eglCheck(eglCreateContext(m_impl->display, m_impl->config, toShared, contextVersion));
+    m_impl->context = eglCheck(eglCreateContext(m_impl->display, m_impl->config, toShared, contextAttribs));
     SFML_BASE_ASSERT(m_impl->context != EGL_NO_CONTEXT);
 }
 

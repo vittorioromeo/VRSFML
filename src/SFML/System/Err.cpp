@@ -158,6 +158,7 @@ ErrStream::Guard ErrStream::operator<<(PathDebugFormatter pathDebugFormatter)
 ////////////////////////////////////////////////////////////
 template ErrStream::Guard ErrStream::operator<< <char>(const char&);
 template ErrStream::Guard ErrStream::operator<< <const char* const>(const char* const&);
+template ErrStream::Guard ErrStream::operator<< <int>(const int&);
 template ErrStream::Guard ErrStream::operator<< <long>(const long&);
 
 
