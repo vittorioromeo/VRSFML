@@ -32,8 +32,7 @@ int main()
     //
     //
     // Set up random generator
-    // std::minstd_rand rng(std::random_device{}());
-    std::minstd_rand rng(100);
+    std::minstd_rand rng(/* seed */ 1234);
     const auto getRndFloat = [&](float min, float max) { return std::uniform_real_distribution<float>{min, max}(rng); };
 
     //
@@ -47,7 +46,7 @@ int main()
     constexpr sf::Vector2f windowSize{1680.f, 1050.f};
 
     sf::RenderWindow window(graphicsContext,
-                            {.size{windowSize.toVector2u()},
+                            {.size      = windowSize.toVector2u(),
                              .title     = "Vittorio's SFML fork: batching benchmark",
                              .resizable = false,
                              .vsync     = true});
@@ -77,12 +76,12 @@ int main()
     //
     //
     // Add images to texture atlas
-    const sf::FloatRect spriteTextureRects[]{{textureAtlas.add(imgElephant).value(), imgElephant.getSize().toVector2f()},
-                                             {textureAtlas.add(imgGiraffe).value(), imgGiraffe.getSize().toVector2f()},
-                                             {textureAtlas.add(imgMonkey).value(), imgMonkey.getSize().toVector2f()},
-                                             {textureAtlas.add(imgPig).value(), imgPig.getSize().toVector2f()},
-                                             {textureAtlas.add(imgRabbit).value(), imgRabbit.getSize().toVector2f()},
-                                             {textureAtlas.add(imgSnake).value(), imgSnake.getSize().toVector2f()}};
+    const sf::FloatRect spriteTextureRects[]{textureAtlas.add(imgElephant).value(),
+                                             textureAtlas.add(imgGiraffe).value(),
+                                             textureAtlas.add(imgMonkey).value(),
+                                             textureAtlas.add(imgPig).value(),
+                                             textureAtlas.add(imgRabbit).value(),
+                                             textureAtlas.add(imgSnake).value()};
 
     //
     //

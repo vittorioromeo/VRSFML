@@ -8,6 +8,7 @@
 
 #include "SFML/Graphics/Texture.hpp"
 
+#include "SFML/System/Rect.hpp"
 #include "SFML/System/RectPacker.hpp"
 #include "SFML/System/Vector2.hpp"
 
@@ -43,9 +44,9 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<Vector2f> add(const base::U8* pixels, Vector2u size);
-    [[nodiscard]] base::Optional<Vector2f> add(const Image& image);
-    [[nodiscard]] base::Optional<Vector2f> add(const Texture& texture);
+    [[nodiscard]] base::Optional<FloatRect> add(const base::U8* pixels, Vector2u size);
+    [[nodiscard]] base::Optional<FloatRect> add(const Image& image);
+    [[nodiscard]] base::Optional<FloatRect> add(const Texture& texture);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs

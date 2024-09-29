@@ -40,8 +40,10 @@ TEST_CASE("[Graphics] sf::TextureAtlas" * doctest::skip(skipDisplayTests))
 
         const auto p0 = textureAtlas.add(makeColoredTexture(sf::Color::Red));
         CHECK(p0.hasValue());
-        CHECK(p0->x == 0u);
-        CHECK(p0->y == 0u);
+        CHECK(p0->position.x == 0u);
+        CHECK(p0->position.y == 0u);
+        CHECK(p0->size.x == 64u);
+        CHECK(p0->size.y == 64u);
 
         const auto atlasImage = textureAtlas.getTexture().copyToImage();
         CHECK(atlasImage.getPixel({0u, 0u}) == sf::Color::Red);
@@ -54,13 +56,17 @@ TEST_CASE("[Graphics] sf::TextureAtlas" * doctest::skip(skipDisplayTests))
 
         const auto p0 = textureAtlas.add(makeColoredTexture(sf::Color::Red));
         CHECK(p0.hasValue());
-        CHECK(p0->x == 0u);
-        CHECK(p0->y == 0u);
+        CHECK(p0->position.x == 0u);
+        CHECK(p0->position.y == 0u);
+        CHECK(p0->size.x == 64u);
+        CHECK(p0->size.y == 64u);
 
         const auto p1 = textureAtlas.add(makeColoredTexture(sf::Color::Blue));
         CHECK(p1.hasValue());
-        CHECK(p1->x == 64u);
-        CHECK(p1->y == 0u);
+        CHECK(p1->position.x == 64u);
+        CHECK(p1->position.y == 0u);
+        CHECK(p1->size.x == 64u);
+        CHECK(p1->size.y == 64u);
 
         const auto atlasImage = textureAtlas.getTexture().copyToImage();
         CHECK(atlasImage.getPixel({0u, 0u}) == sf::Color::Red);

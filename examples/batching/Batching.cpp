@@ -137,7 +137,7 @@ int main()
     //
     //
     // Add white dot to atlas
-    const auto whiteDotAtlasPos = textureAtlas.add(graphicsContext.getBuiltInWhiteDotTexture()).value();
+    const auto whiteDotAtlasRect = textureAtlas.add(graphicsContext.getBuiltInWhiteDotTexture()).value();
 
     //
     //
@@ -158,12 +158,12 @@ int main()
     //
     //
     // Add images to texture atlas
-    const sf::FloatRect spriteTextureRects[]{{textureAtlas.add(imgElephant).value(), imgElephant.getSize().toVector2f()},
-                                             {textureAtlas.add(imgGiraffe).value(), imgGiraffe.getSize().toVector2f()},
-                                             {textureAtlas.add(imgMonkey).value(), imgMonkey.getSize().toVector2f()},
-                                             {textureAtlas.add(imgPig).value(), imgPig.getSize().toVector2f()},
-                                             {textureAtlas.add(imgRabbit).value(), imgRabbit.getSize().toVector2f()},
-                                             {textureAtlas.add(imgSnake).value(), imgSnake.getSize().toVector2f()}};
+    const sf::FloatRect spriteTextureRects[]{textureAtlas.add(imgElephant).value(),
+                                             textureAtlas.add(imgGiraffe).value(),
+                                             textureAtlas.add(imgMonkey).value(),
+                                             textureAtlas.add(imgPig).value(),
+                                             textureAtlas.add(imgRabbit).value(),
+                                             textureAtlas.add(imgSnake).value()};
 
     //
     //
@@ -210,8 +210,8 @@ int main()
                 sf::Vector2f{getRndFloat(-2.5f, 2.5f), getRndFloat(-2.5f, 2.5f)},
                 getRndFloat(-0.05f, 0.05f),
                 sf::CircleShape{
-                    {.textureRect        = {.position = whiteDotAtlasPos.toVector2f(), .size{0.f, 0.f}},
-                     .outlineTextureRect = {.position = whiteDotAtlasPos.toVector2f(), .size{0.f, 0.f}},
+                    {.textureRect        = {.position = whiteDotAtlasRect.position, .size{0.f, 0.f}},
+                     .outlineTextureRect = {.position = whiteDotAtlasRect.position, .size{0.f, 0.f}},
                      .fillColor = {getRndU8(0.f, 255.f), getRndU8(0.f, 255.f), getRndU8(0.f, 255.f), getRndU8(125.f, 255.f)},
                      .outlineColor = {getRndU8(0.f, 255.f), getRndU8(0.f, 255.f), getRndU8(0.f, 255.f), getRndU8(125.f, 255.f)},
                      .outlineThickness = 3.f,
