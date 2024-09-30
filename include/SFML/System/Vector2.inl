@@ -165,22 +165,6 @@ constexpr Vector2<T>& operator/=(Vector2<T>& lhs, T rhs)
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr bool operator==(Vector2<T> lhs, Vector2<T> rhs)
-{
-    return (lhs.x == rhs.x) && (lhs.y == rhs.y);
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-constexpr bool operator!=(Vector2<T> lhs, Vector2<T> rhs)
-{
-    return (lhs.x != rhs.x) || (lhs.y != rhs.y);
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
 constexpr Vector2<T> Vector2<T>::normalized() const
 {
     static_assert(SFML_BASE_IS_FLOATING_POINT(T), "Vector2::normalized() is only supported for floating point types");
