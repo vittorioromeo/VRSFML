@@ -60,12 +60,12 @@ int main()
     const auto font0 = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf", &textureAtlas).value();
     const auto font1 = sf::Font::openFromFile(graphicsContext, "resources/mouldycheese.ttf", &textureAtlas).value();
 
-    const auto sfmlLogoImage    = sf::Image::loadFromFile("resources/sfml_logo.png").value();
-    const auto sfmlLogoAtlasPos = textureAtlas.add(sfmlLogoImage).value();
+    const auto sfmlLogoImage     = sf::Image::loadFromFile("resources/sfml_logo.png").value();
+    const auto sfmlLogoAtlasRect = textureAtlas.add(sfmlLogoImage).value();
 
-    const auto whiteDotAtlasPos = textureAtlas.add(graphicsContext.getBuiltInWhiteDotTexture()).value();
+    const auto whiteDotAtlasRect = textureAtlas.add(graphicsContext.getBuiltInWhiteDotTexture()).value();
 
-    sf::Sprite sfmlLogo({.position = sfmlLogoAtlasPos, .size = sfmlLogoImage.getSize().toVector2f()});
+    sf::Sprite sfmlLogo(sfmlLogoAtlasRect);
 
     const sf::Text text0(font0, {.position = {0u, 0u}, .string = "Test", .characterSize = 128u});
     const sf::Text text1(font0, {.position = {128u, 0u}, .string = "acbasdfbFOOBAR", .characterSize = 32u});
@@ -77,8 +77,8 @@ int main()
     const sf::CircleShape circle0{
         {.position           = {350.f, 350.f},
          .scale              = {2.f, 2.f},
-         .textureRect        = {.position = whiteDotAtlasPos.toVector2f(), .size{1.f, 1.f}},
-         .outlineTextureRect = {.position = whiteDotAtlasPos.toVector2f(), .size{1.f, 1.f}},
+         .textureRect        = {.position = whiteDotAtlasRect.position, .size{0.f, 0.f}},
+         .outlineTextureRect = {.position = whiteDotAtlasRect.position, .size{0.f, 0.f}},
          .fillColor          = sf::Color::Red,
          .outlineColor       = sf::Color::Yellow,
          .outlineThickness   = 8.f,
