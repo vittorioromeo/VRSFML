@@ -243,10 +243,10 @@ int main()
     };
 
     auto        batchType     = BatchType::Disabled;
-    bool        drawSprites   = false;
-    bool        drawText      = false;
+    bool        drawSprites   = true;
+    bool        drawText      = true;
     bool        drawShapes    = true;
-    int         numEntities   = 20'000;
+    int         numEntities   = 500;
     std::size_t drawnVertices = 0u;
 
     //

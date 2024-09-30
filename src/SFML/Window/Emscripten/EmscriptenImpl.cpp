@@ -460,6 +460,18 @@ void requestFullscreen()
 
 [[nodiscard]] EM_BOOL wheelCallback(int eventType, const EmscriptenWheelEvent* e, void* /* userData */)
 {
+    const auto normalizeDeltaY = [&e](const float deltaY)
+    {
+        if (e->deltaMode == DOM_DELTA_PIXEL)
+            return deltaY / 100.f; // 100 pixels make up a step
+
+        if (e->deltaMode == DOM_DELTA_LINE)
+            return deltaY / 3.f; // 3 lines make up a step
+
+        SFML_BASE_ASSERT(e->deltaMode == DOM_DELTA_PAGE);
+        return deltaY * 80.f; // A page makes up 80 steps
+    };
+
     if (!window)
         return EM_FALSE;
 
@@ -468,7 +480,7 @@ void requestFullscreen()
 
     if (sf::base::fabs(e->deltaY) > 0.0)
         window->pushHtmlEvent(sf::Event::MouseWheelScrolled{.wheel    = sf::Mouse::Wheel::Vertical,
-                                                            .delta    = -static_cast<float>(e->deltaY),
+                                                            .delta    = -normalizeDeltaY(static_cast<float>(e->deltaY)),
                                                             .position = {e->mouse.targetX, e->mouse.targetY}});
 
     if (sf::base::fabs(e->deltaX) > 0.0)
