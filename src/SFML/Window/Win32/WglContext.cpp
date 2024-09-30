@@ -235,7 +235,7 @@ void WglContext::setVerticalSyncEnabled(bool enabled)
 
     if (GLAD_WGL_EXT_swap_control)
     {
-        if (wglSwapIntervalEXT(enabled ? 1 : 0) == FALSE)
+        if (wglSwapIntervalEXT(enabled) == FALSE)
             err() << "Setting vertical sync failed: " << getErrorString(GetLastError());
 
         return;

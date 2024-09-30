@@ -1015,7 +1015,7 @@ void WindowImplX11::setIcon(Vector2u size, const base::U8* pixels)
             {
                 if (i * 8 + k < size.x)
                 {
-                    const base::U8 opacity = (pixels[(i * 8 + k + j * size.x) * 4 + 3] > 0) ? 1 : 0;
+                    const base::U8 opacity = pixels[(i * 8 + k + j * size.x) * 4 + 3] > 0;
                     maskPixels[i + j * pitch] |= static_cast<base::U8>(opacity << k);
                 }
             }

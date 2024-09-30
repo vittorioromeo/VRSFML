@@ -361,7 +361,7 @@ void EglContext::display()
 void EglContext::setVerticalSyncEnabled([[maybe_unused]] bool enabled)
 {
 #ifndef SFML_SYSTEM_EMSCRIPTEN
-    eglCheck(eglSwapInterval(m_impl->display, enabled ? 1 : 0));
+    eglCheck(eglSwapInterval(m_impl->display, enabled));
 #endif
 }
 
