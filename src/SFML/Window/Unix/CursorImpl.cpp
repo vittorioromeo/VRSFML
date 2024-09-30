@@ -101,14 +101,14 @@ bool CursorImpl::loadFromPixelsMonochrome(const base::U8* pixels, Vector2u size,
             const base::SizeT bitIndex   = i % 8;
 
             // Turn on pixel that are not transparent
-            const base::U8 opacity = pixels[pixelIndex * 4 + 3] > 0 ? 1 : 0;
+            const base::U8 opacity = pixels[pixelIndex * 4 + 3] > 0;
             mask[byteIndex] |= static_cast<base::U8>(opacity << bitIndex);
 
             // Choose between black/background & white/foreground color for each pixel,
             // based on the pixel color intensity: on average, if a channel is "active"
             // at 50%, the bit is white.
             const int intensity = (pixels[pixelIndex * 4 + 0] + pixels[pixelIndex * 4 + 1] + pixels[pixelIndex * 4 + 2]) / 3;
-            const base::U8 bit = intensity > 128 ? 1 : 0;
+            const base::U8 bit = intensity > 128;
             data[byteIndex] |= static_cast<base::U8>(bit << bitIndex);
         }
     }
