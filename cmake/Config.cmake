@@ -161,7 +161,8 @@ elseif(${EMSCRIPTEN})
         -sEXIT_RUNTIME=1                    # Execute cleanup (e.g. `atexit`) after `main` completes
         -sFETCH=1                           # Enables `emscripten_fetch` API
         -sFORCE_FILESYSTEM=1                # Makes full filesystem support be included
-        -sFULL_ES3=1                        # Forces support for all GLES3 features, not just the WebGL2-friendly subset
+        # TODO P0: needed? test more
+        # -sFULL_ES3=1                        # Forces support for all GLES3 features, not just the WebGL2-friendly subset
         -sGL_EXPLICIT_UNIFORM_LOCATION=1    # Enables support for the `EMSCRIPTEN_explicit_uniform_location` WebGL extension
         -sMAX_WEBGL_VERSION=2               # Specifies the highest WebGL version to target
         -sMIN_WEBGL_VERSION=2               # Specifies the lowest WebGL version to target
