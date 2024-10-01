@@ -26,7 +26,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] constexpr explicit(false) AutoWrapAngle(Angle angle) :
+    [[nodiscard, gnu::always_inline, gnu::flatten]] inline constexpr explicit(false) AutoWrapAngle(Angle angle) :
     m_radians(angle.m_radians)
     {
     }
@@ -80,7 +80,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] constexpr AutoWrapAngle& operator+=(Angle rhs)
+    [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator+=(Angle rhs)
     {
         m_radians += rhs.m_radians;
         return *this;
@@ -90,7 +90,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] constexpr AutoWrapAngle& operator-=(Angle rhs)
+    [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator-=(Angle rhs)
     {
         m_radians -= rhs.m_radians;
         return *this;
@@ -100,7 +100,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] constexpr AutoWrapAngle& operator*=(float rhs)
+    [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator*=(float rhs)
     {
         m_radians *= rhs;
         return *this;
@@ -110,7 +110,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] constexpr AutoWrapAngle& operator/=(float rhs)
+    [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator/=(float rhs)
     {
         m_radians /= rhs;
         return *this;
@@ -120,7 +120,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] constexpr AutoWrapAngle& operator%=(Angle rhs)
+    [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator%=(Angle rhs)
     {
         return *this = (operator Angle() % rhs);
     }

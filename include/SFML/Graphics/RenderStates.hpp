@@ -45,9 +45,10 @@ struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
     // NOLINTNEXTLINE(readability-redundant-member-init)
     Transform transform{}; //!< Transform
 
+    const Texture* texture{}; //!< Texture
+    const Shader*  shader{};  //!< Shader
+
     CoordinateType coordinateType{CoordinateType::Pixels}; //!< Texture coordinate type
-    const Texture* texture{};                              //!< Texture
-    const Shader*  shader{};                               //!< Shader
 };
 
 inline constexpr RenderStates RenderStates::Default{.blendMode = BlendAlpha};

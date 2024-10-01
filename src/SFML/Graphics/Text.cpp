@@ -93,10 +93,10 @@ m_string(settings.string),
 m_characterSize(settings.characterSize),
 m_letterSpacing(settings.letterSpacing),
 m_lineSpacing(settings.lineSpacing),
-m_style(settings.style),
 m_fillColor(settings.fillColor),
 m_outlineColor(settings.outlineColor),
 m_outlineThickness(settings.outlineThickness),
+m_style(settings.style),
 m_geometryNeedUpdate{true}
 {
     SFML_UPDATE_LIFETIME_DEPENDANT(Font, Text, this, m_font);

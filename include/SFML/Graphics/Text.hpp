@@ -16,6 +16,7 @@
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/EnumClassBitwiseOps.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Span.hpp"
 #include "SFML/Base/TrivialVector.hpp"
@@ -38,7 +39,7 @@ public:
     /// \brief Enumeration of the string drawing styles
     ///
     ////////////////////////////////////////////////////////////
-    enum class [[nodiscard]] Style
+    enum class [[nodiscard]] Style : base::U8
     {
         Regular       = 0,      //!< Regular characters, no style
         Bold          = 1 << 0, //!< Bold characters
@@ -60,10 +61,10 @@ public:
         unsigned int characterSize{30u};         //!< Base size of characters, in pixels
         float        letterSpacing{1.f};         //!< Spacing factor between letters
         float        lineSpacing{1.f};           //!< Spacing factor between lines
-        Style        style{Style::Regular};      //!< Text style (see Style enum)
         Color        fillColor{Color::White};    //!< Text fill color
         Color        outlineColor{Color::Black}; //!< Text outline color
         float        outlineThickness{0.f};      //!< Thickness of the text's outline
+        Style        style{Style::Regular};      //!< Text style (see Style enum)
     };
 
     ////////////////////////////////////////////////////////////
@@ -448,10 +449,10 @@ private:
     unsigned int m_characterSize{30};          //!< Base size of characters, in pixels
     float        m_letterSpacing{1.f};         //!< Spacing factor between letters
     float        m_lineSpacing{1.f};           //!< Spacing factor between lines
-    Style        m_style{Style::Regular};      //!< Text style (see Style enum)
     Color        m_fillColor{Color::White};    //!< Text fill color
     Color        m_outlineColor{Color::Black}; //!< Text outline color
     float        m_outlineThickness{0.f};      //!< Thickness of the text's outline
+    Style        m_style{Style::Regular};      //!< Text style (see Style enum)
 
     mutable base::TrivialVector<Vertex> m_vertices; //!< Vertex array containing the outline and fill geometry
     mutable base::SizeT m_fillVerticesStartIndex{}; //!< Index in the vertex array where the fill vertices start

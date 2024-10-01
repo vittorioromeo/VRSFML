@@ -31,6 +31,9 @@
 #include <vector>
 
 
+// TODO P0: fullscreen seems broken
+// TODO P0: focus seems not to work on mobile or unless alt tabbing
+
 namespace
 {
 constinit sf::priv::WindowImplEmscripten* window = nullptr;
@@ -146,31 +149,31 @@ bool emscriptenTryImpl(EMSCRIPTEN_RESULT rc, const char* code, const int line)
         case '=': return sf::Keyboard::Key::Equal;
 
         case 'A': return sf::Keyboard::Key::A;
-        case 'Z': return sf::Keyboard::Key::Z;
-        case 'E': return sf::Keyboard::Key::E;
-        case 'R': return sf::Keyboard::Key::R;
-        case 'T': return sf::Keyboard::Key::T;
-        case 'Y': return sf::Keyboard::Key::Y;
-        case 'U': return sf::Keyboard::Key::U;
-        case 'I': return sf::Keyboard::Key::I;
-        case 'O': return sf::Keyboard::Key::O;
-        case 'P': return sf::Keyboard::Key::P;
-        case 'Q': return sf::Keyboard::Key::Q;
-        case 'S': return sf::Keyboard::Key::S;
+        case 'B': return sf::Keyboard::Key::B;
+        case 'C': return sf::Keyboard::Key::C;
         case 'D': return sf::Keyboard::Key::D;
+        case 'E': return sf::Keyboard::Key::E;
         case 'F': return sf::Keyboard::Key::F;
         case 'G': return sf::Keyboard::Key::G;
         case 'H': return sf::Keyboard::Key::H;
+        case 'I': return sf::Keyboard::Key::I;
         case 'J': return sf::Keyboard::Key::J;
         case 'K': return sf::Keyboard::Key::K;
         case 'L': return sf::Keyboard::Key::L;
         case 'M': return sf::Keyboard::Key::M;
+        case 'N': return sf::Keyboard::Key::N;
+        case 'O': return sf::Keyboard::Key::O;
+        case 'P': return sf::Keyboard::Key::P;
+        case 'Q': return sf::Keyboard::Key::Q;
+        case 'R': return sf::Keyboard::Key::R;
+        case 'S': return sf::Keyboard::Key::S;
+        case 'T': return sf::Keyboard::Key::T;
+        case 'U': return sf::Keyboard::Key::U;
+        case 'V': return sf::Keyboard::Key::V;
         case 'W': return sf::Keyboard::Key::W;
         case 'X': return sf::Keyboard::Key::X;
-        case 'C': return sf::Keyboard::Key::C;
-        case 'V': return sf::Keyboard::Key::V;
-        case 'B': return sf::Keyboard::Key::B;
-        case 'N': return sf::Keyboard::Key::N;
+        case 'Y': return sf::Keyboard::Key::Y;
+        case 'Z': return sf::Keyboard::Key::Z;
 
         case '0': return sf::Keyboard::Key::Num0;
         case '1': return sf::Keyboard::Key::Num1;
