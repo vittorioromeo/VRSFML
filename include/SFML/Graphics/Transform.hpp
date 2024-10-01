@@ -27,7 +27,7 @@ struct Vertex;
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief Define a 3x3 transform matrix TODO P0:
+/// \brief 2D transformation convertible to 4x4 matrix
 ///
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] Transform

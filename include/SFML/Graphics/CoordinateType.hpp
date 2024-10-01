@@ -10,7 +10,7 @@ namespace sf
 /// \see `sf::Texture::bind`
 ///
 ////////////////////////////////////////////////////////////
-enum class [[nodiscard]] CoordinateType
+enum class [[nodiscard]] CoordinateType : bool
 {
     Normalized, //!< Texture coordinates in range [0 .. 1]
     Pixels      //!< Texture coordinates in range [0 .. size]

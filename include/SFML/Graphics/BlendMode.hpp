@@ -19,7 +19,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API BlendMode
     /// \brief Enumeration of the blending factors
     ///
     /// The factors are mapped directly to their OpenGL equivalents,
-    /// specified by glBlendFunc() or glBlendFuncSeparate().
+    /// specified by `glBlendFunc` or `glBlendFuncSeparate`.
     ////////////////////////////////////////////////////////
     enum class [[nodiscard]] Factor : unsigned int
     {
@@ -39,7 +39,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API BlendMode
     /// \brief Enumeration of the blending equations
     ///
     /// The equations are mapped directly to their OpenGL equivalents,
-    /// specified by glBlendEquation() or glBlendEquationSeparate().
+    /// specified by `glBlendEquation` or `glBlendEquationSeparate`.
     ////////////////////////////////////////////////////////
     enum class [[nodiscard]] Equation : unsigned int
     {

@@ -372,13 +372,13 @@ public:
                                              const RenderStates& states = RenderStates::Default);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P0: docs
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
     void draw(const CPUDrawableBatch& drawableBatch, RenderStates states = RenderStates::Default);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P0: docs
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
     void draw(const PersistentGPUDrawableBatch& drawableBatch, RenderStates states = RenderStates::Default);

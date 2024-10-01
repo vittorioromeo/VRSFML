@@ -211,15 +211,15 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
 ///
 /// The most common colors are already defined as static variables:
 /// \code
-/// sf::Color black       = sf::Color::Black;
-/// sf::Color white       = sf::Color::White;
-/// sf::Color red         = sf::Color::Red;
-/// sf::Color green       = sf::Color::Green;
-/// sf::Color blue        = sf::Color::Blue;
-/// sf::Color yellow      = sf::Color::Yellow;
-/// sf::Color magenta     = sf::Color::Magenta;
-/// sf::Color cyan        = sf::Color::Cyan;
-/// sf::Color transparent = sf::Color::Transparent;
+/// auto black       = sf::Color::Black;
+/// auto white       = sf::Color::White;
+/// auto red         = sf::Color::Red;
+/// auto green       = sf::Color::Green;
+/// auto blue        = sf::Color::Blue;
+/// auto yellow      = sf::Color::Yellow;
+/// auto magenta     = sf::Color::Magenta;
+/// auto cyan        = sf::Color::Cyan;
+/// auto transparent = sf::Color::Transparent;
 /// \endcode
 ///
 /// Colors can also be added and modulated (multiplied) using the

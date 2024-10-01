@@ -312,7 +312,7 @@ private:
 /// \return Sum of the two angle values
 ///
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline, gnu::flatten]] constexpr Angle& operator+=(Angle& lhs, Angle rhs);
+[[gnu::always_inline, gnu::flatten]] inline constexpr Angle& operator+=(Angle& lhs, Angle rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
@@ -336,7 +336,7 @@ private:
 /// \return Difference of the two angle values
 ///
 ////////////////////////////////////////////////////////////ù
-[[gnu::always_inline, gnu::flatten]] constexpr Angle& operator-=(Angle& lhs, Angle rhs);
+[[gnu::always_inline, gnu::flatten]] inline constexpr Angle& operator-=(Angle& lhs, Angle rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
@@ -372,7 +372,7 @@ private:
 /// \return \a `lhs` multiplied by \a `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline, gnu::flatten]] constexpr Angle& operator*=(Angle& lhs, float rhs);
+[[gnu::always_inline, gnu::flatten]] inline constexpr Angle& operator*=(Angle& lhs, float rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
@@ -396,7 +396,7 @@ private:
 /// \return \a `lhs` divided by \a `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline, gnu::flatten]] constexpr Angle& operator/=(Angle& lhs, float rhs);
+[[gnu::always_inline, gnu::flatten]] inline constexpr Angle& operator/=(Angle& lhs, float rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Angle
@@ -440,7 +440,7 @@ private:
 /// \return \a `lhs` modulo \a `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline, gnu::flatten]] constexpr Angle& operator%=(Angle& lhs, Angle rhs);
+[[gnu::always_inline, gnu::flatten]] inline constexpr Angle& operator%=(Angle& lhs, Angle rhs);
 
 namespace Literals
 {
