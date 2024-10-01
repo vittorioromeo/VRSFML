@@ -13,7 +13,7 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-/// Define a macro to quickly check every OpenGL API call
+/// Macro to check every OpenGL API call
 ////////////////////////////////////////////////////////////
 #if defined(SFML_DEBUG) && !defined(SFML_SYSTEM_EMSCRIPTEN) // `glCheck` is prohibitively slow on Emscripten
 
