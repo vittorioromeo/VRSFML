@@ -264,7 +264,7 @@ template <typename T>
 template <typename T>
 [[gnu::always_inline, gnu::flatten]] constexpr Vector3<T>& operator/=(Vector3<T>& lhs, T rhs);
 
-// Define the most common types
+// Aliases for the most common types
 using Vector3i = Vector3<int>;
 using Vector3f = Vector3<float>;
 
