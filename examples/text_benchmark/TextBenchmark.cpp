@@ -7,7 +7,9 @@
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
+#include "SFML/Graphics/LayoutUtils.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
+#include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTexture.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
@@ -44,10 +46,52 @@
 
 ////////////////////////////////////////////////////////////
 
-// change this to 1 to trigger the bug
-#define TRIGGER_THE_BUG 1
-
 #if 1
+
+int main()
+{
+    sf::GraphicsContext graphicsContext;
+    sf::RenderWindow    window(graphicsContext, {.size{800u, 600u}, .title = L"महसुस"});
+
+    sf::RectangleShape rs0(
+        {.position         = {250.f, 250.f},
+         .origin           = {0.f, 0.f},
+         .fillColor        = sf::Color::Red,
+         .outlineColor     = sf::Color::Yellow,
+         .outlineThickness = 3.f,
+         .size             = {64.f, 64.f}});
+
+    sf::RectangleShape cs0(
+        {.position         = {450.f, 450.f},
+         .origin           = {-25.f, 50.f},
+         .fillColor        = sf::Color::Blue,
+         .outlineColor     = sf::Color::Yellow,
+         .outlineThickness = 2.f,
+         .size             = {36.f, 36.f}});
+
+    sf::setTopRight(rs0, sf::getTopRight(window));
+
+    while (true)
+    {
+        while (sf::base::Optional event = window.pollEvent())
+        {
+            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+                return EXIT_SUCCESS;
+        }
+
+        window.clear();
+
+        window.draw(rs0, /* texture */ nullptr);
+        window.draw(cs0, /* texture */ nullptr);
+
+        cs0.rotation += sf::radians(0.0005f);
+        sf::setCenter(cs0, sf::getBottomLeft(rs0));
+
+        window.display();
+    }
+}
+
+#elif 0
 
 int main()
 {
