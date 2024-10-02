@@ -50,27 +50,18 @@ constexpr Vector2f Transform::transformPoint(Vector2f point) const
 constexpr FloatRect Transform::transformRect(const FloatRect& rectangle) const
 {
     // Transform the 4 corners of the rectangle
-    const Vector2f points[]{transformPoint(rectangle.position),
-                            transformPoint(rectangle.position + Vector2f(0.f, rectangle.size.y)),
-                            transformPoint(rectangle.position + Vector2f(rectangle.size.x, 0.f)),
-                            transformPoint(rectangle.position + rectangle.size)};
+    const auto p0 = transformPoint(rectangle.position);
+    const auto p1 = transformPoint(rectangle.position + Vector2f(0.f, rectangle.size.y));
+    const auto p2 = transformPoint(rectangle.position + Vector2f(rectangle.size.x, 0.f));
+    const auto p3 = transformPoint(rectangle.position + rectangle.size);
 
     // Compute the bounding rectangle of the transformed points
-    Vector2f pmin = points[0];
-    Vector2f pmax = points[0];
+    const float minX = base::min(base::min(p0.x, p1.x), base::min(p2.x, p3.x));
+    const float maxX = base::max(base::max(p0.x, p1.x), base::max(p2.x, p3.x));
+    const float minY = base::min(base::min(p0.y, p1.y), base::min(p2.y, p3.y));
+    const float maxY = base::max(base::max(p0.y, p1.y), base::max(p2.y, p3.y));
 
-    for (base::SizeT i = 1; i < 4; ++i)
-    {
-        // clang-format off
-        if      (points[i].x < pmin.x) pmin.x = points[i].x;
-        else if (points[i].x > pmax.x) pmax.x = points[i].x;
-
-        if      (points[i].y < pmin.y) pmin.y = points[i].y;
-        else if (points[i].y > pmax.y) pmax.y = points[i].y;
-        // clang-format on
-    }
-
-    return {pmin, pmax - pmin};
+    return FloatRect{{minX, minY}, {maxX - minX, maxY - minY}};
 }
 
 

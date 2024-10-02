@@ -90,7 +90,7 @@ struct [[nodiscard]] Transform
     /// \return Transformed rectangle
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::pure]] constexpr FloatRect transformRect(const FloatRect& rectangle) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr FloatRect transformRect(const FloatRect& rectangle) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Combine the current transform with another one
