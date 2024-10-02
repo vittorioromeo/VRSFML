@@ -31,7 +31,6 @@ namespace sf
         return name({{0.f, 0.f}, object.getSize().toVector2f()});                                                      \
     }
 
-
 SFML_PRIV_DEFINE_HELPER_GET_FN(getTopLeft, {0.f, 0.f});
 SFML_PRIV_DEFINE_HELPER_GET_FN(getTopCenter, {size.x / 2.f, 0.f});
 SFML_PRIV_DEFINE_HELPER_GET_FN(getTopRight, {size.x, 0.f});
