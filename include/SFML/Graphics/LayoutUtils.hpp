@@ -15,8 +15,7 @@ namespace sf
 #define SFML_PRIV_DEFINE_HELPER_GET_FN(name, ...)                                                                      \
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2f name(const FloatRect& bounds) \
     {                                                                                                                  \
-        const auto& [pos, size] = bounds;                                                                              \
-        return pos + Vector2f __VA_ARGS__;                                                                             \
+        return bounds.position + Vector2f __VA_ARGS__;                                                                 \
     }                                                                                                                  \
                                                                                                                        \
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2f name(const auto& object)      \
@@ -32,14 +31,14 @@ namespace sf
     }
 
 SFML_PRIV_DEFINE_HELPER_GET_FN(getTopLeft, {0.f, 0.f});
-SFML_PRIV_DEFINE_HELPER_GET_FN(getTopCenter, {size.x / 2.f, 0.f});
-SFML_PRIV_DEFINE_HELPER_GET_FN(getTopRight, {size.x, 0.f});
-SFML_PRIV_DEFINE_HELPER_GET_FN(getCenterLeft, {0.f, size.y / 2.f});
-SFML_PRIV_DEFINE_HELPER_GET_FN(getCenter, {size.x / 2.f, size.y / 2.f});
-SFML_PRIV_DEFINE_HELPER_GET_FN(getCenterRight, {size.x, size.y / 2.f});
-SFML_PRIV_DEFINE_HELPER_GET_FN(getBottomLeft, {0.f, size.y});
-SFML_PRIV_DEFINE_HELPER_GET_FN(getBottomCenter, {size.x / 2.f, size.y});
-SFML_PRIV_DEFINE_HELPER_GET_FN(getBottomRight, {size.x, size.y});
+SFML_PRIV_DEFINE_HELPER_GET_FN(getTopCenter, {bounds.size.x / 2.f, 0.f});
+SFML_PRIV_DEFINE_HELPER_GET_FN(getTopRight, {bounds.size.x, 0.f});
+SFML_PRIV_DEFINE_HELPER_GET_FN(getCenterLeft, {0.f, bounds.size.y / 2.f});
+SFML_PRIV_DEFINE_HELPER_GET_FN(getCenter, {bounds.size.x / 2.f, bounds.size.y / 2.f});
+SFML_PRIV_DEFINE_HELPER_GET_FN(getCenterRight, {bounds.size.x, bounds.size.y / 2.f});
+SFML_PRIV_DEFINE_HELPER_GET_FN(getBottomLeft, {0.f, bounds.size.y});
+SFML_PRIV_DEFINE_HELPER_GET_FN(getBottomCenter, {bounds.size.x / 2.f, bounds.size.y});
+SFML_PRIV_DEFINE_HELPER_GET_FN(getBottomRight, {bounds.size.x, bounds.size.y});
 
 #undef SFML_PRIV_DEFINE_HELPER_GET_FN
 
