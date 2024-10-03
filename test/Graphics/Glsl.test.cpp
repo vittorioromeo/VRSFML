@@ -132,16 +132,6 @@ TEST_CASE("[Graphics] sf::Glsl")
             STATIC_CHECK(vec.w == 4);
         }
 
-        SECTION("Conversion constructor")
-        {
-            constexpr sf::Glsl::Ivec4 ivec(10, 12, 14, 16);
-            constexpr sf::Glsl::Vec4  vec(ivec);
-            STATIC_CHECK(vec.x == 10);
-            STATIC_CHECK(vec.y == 12);
-            STATIC_CHECK(vec.z == 14);
-            STATIC_CHECK(vec.w == 16);
-        }
-
         SECTION("Color constructor")
         {
             constexpr sf::Glsl::Vec4 vec = sf::Color(0, 128, 192, 255);
@@ -180,16 +170,6 @@ TEST_CASE("[Graphics] sf::Glsl")
             STATIC_CHECK(vec.w == 4);
         }
 
-        SECTION("Conversion constructor")
-        {
-            constexpr sf::Glsl::Bvec4 bvec(true, false, true, false);
-            constexpr sf::Glsl::Ivec4 vec(bvec);
-            STATIC_CHECK(vec.x == 1);
-            STATIC_CHECK(vec.y == 0);
-            STATIC_CHECK(vec.z == 1);
-            STATIC_CHECK(vec.w == 0);
-        }
-
         SECTION("Color constructor")
         {
             constexpr sf::Glsl::Ivec4 vec = sf::Color(0, 128, 192, 255);
@@ -226,16 +206,6 @@ TEST_CASE("[Graphics] sf::Glsl")
             STATIC_CHECK(vec.y == true);
             STATIC_CHECK(vec.z == true);
             STATIC_CHECK(vec.w == false);
-        }
-
-        SECTION("Conversion constructor")
-        {
-            constexpr sf::Glsl::Ivec4 ivec(0, -7, 2, 10);
-            constexpr sf::Glsl::Bvec4 vec(ivec);
-            STATIC_CHECK(vec.x == false);
-            STATIC_CHECK(vec.y == true);
-            STATIC_CHECK(vec.z == true);
-            STATIC_CHECK(vec.w == true);
         }
     }
 

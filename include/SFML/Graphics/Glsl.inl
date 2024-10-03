@@ -106,9 +106,7 @@ struct [[nodiscard]] Vector4
 #endif
 
     ////////////////////////////////////////////////////////////
-    /// \brief Conversion constructor
-    ///
-    /// \param other 4D vector of different type
+    /// \brief Converts the vector to another type of vector
     ///
     ////////////////////////////////////////////////////////////
     template <typename U>

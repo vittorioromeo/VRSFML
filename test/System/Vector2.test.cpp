@@ -44,15 +44,6 @@ TEMPLATE_TEST_CASE("[System] sf::Vector2", "", int, float)
             STATIC_CHECK(vector.y == 2);
         }
 
-        SECTION("Conversion constructor")
-        {
-            constexpr sf::Vector2f sourceVector(1.0f, 2.0f);
-            constexpr auto         vector = sourceVector.toVector2i();
-
-            STATIC_CHECK(vector.x == static_cast<int>(sourceVector.x));
-            STATIC_CHECK(vector.y == static_cast<int>(sourceVector.y));
-        }
-
         SECTION("Length and angle constructor")
         {
             CHECK(sf::Vector2f::fromAngle(0, 0_deg) == sf::Vector2f{0, 0});
