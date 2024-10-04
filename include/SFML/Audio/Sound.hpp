@@ -46,7 +46,7 @@ public:
     /// \brief Disallow construction from a temporary sound buffer
     ///
     ////////////////////////////////////////////////////////////
-    explicit Sound(const SoundBuffer&&) = delete;
+    Sound(const SoundBuffer&& buffer) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy constructor

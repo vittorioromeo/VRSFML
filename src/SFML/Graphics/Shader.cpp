@@ -325,7 +325,7 @@ struct Shader::Impl
     {
     }
 
-    Impl(Impl&& rhs) noexcept :
+    explicit Impl(Impl&& rhs) noexcept :
     graphicsContext(rhs.graphicsContext),
     shaderProgram(base::exchange(rhs.shaderProgram, 0u)),
     currentTexture(base::exchange(rhs.currentTexture, -1)),
