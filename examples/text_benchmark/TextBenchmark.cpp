@@ -7,7 +7,6 @@
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
-#include "SFML/Graphics/LayoutUtils.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
@@ -25,6 +24,7 @@
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
+#include "SFML/System/LayoutUtils.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/String.hpp"
@@ -69,7 +69,7 @@ int main()
          .outlineThickness = 2.f,
          .size             = {36.f, 36.f}});
 
-    sf::setTopRight(rs0, sf::getTopRight(window));
+    rs0.setTopRight(window.getTopRight());
 
     while (true)
     {
@@ -85,7 +85,7 @@ int main()
         window.draw(cs0, /* texture */ nullptr);
 
         cs0.rotation += sf::radians(0.0005f);
-        sf::setCenter(cs0, sf::getBottomLeft(rs0));
+        cs0.setCenter(rs0.getBottomLeft());
 
         window.display();
     }
