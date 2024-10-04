@@ -10,6 +10,7 @@
 #include "SFML/Window/WindowHandle.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
+#include "SFML/System/LayoutUtils.hpp"
 #include "SFML/System/String.hpp"
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Vector2.hpp"
@@ -45,7 +46,7 @@ namespace sf
 /// \brief Window that serves as a base for other windows
 ///
 ////////////////////////////////////////////////////////////
-class SFML_WINDOW_API WindowBase
+class SFML_WINDOW_API WindowBase : public LayoutUtils::Mixin<WindowBase>
 {
 public:
     ////////////////////////////////////////////////////////////
