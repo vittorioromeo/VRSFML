@@ -61,7 +61,7 @@ SFML_PRIV_DEFINE_HELPER_GET_FN(getBottomRight,  {1.f,  1.f});
 
 
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline, gnu::flatten, gnu::pure]]
+[[gnu::always_inline, gnu::flatten]]
 inline constexpr void setAnchorPoint(auto& object, Vector2f factors, Vector2f newPos)
     requires(requires { object.getGlobalBounds(); })
 {
@@ -70,11 +70,11 @@ inline constexpr void setAnchorPoint(auto& object, Vector2f factors, Vector2f ne
 }
 
 ////////////////////////////////////////////////////////////
-#define SFML_PRIV_DEFINE_HELPER_SET_FN(name, ...)                                                             \
-    [[gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr void name(auto& object, Vector2f newPos) \
-        requires(requires { object.getGlobalBounds(); })                                                      \
-    {                                                                                                         \
-        setAnchorPoint(object, __VA_ARGS__, newPos);                                                          \
+#define SFML_PRIV_DEFINE_HELPER_SET_FN(name, ...)                                                  \
+    [[gnu::always_inline, gnu::flatten]] inline constexpr void name(auto& object, Vector2f newPos) \
+        requires(requires { object.getGlobalBounds(); })                                           \
+    {                                                                                              \
+        setAnchorPoint(object, __VA_ARGS__, newPos);                                               \
     }
 
 // clang-format off
@@ -122,16 +122,16 @@ struct Mixin
 #undef SFML_PRIV_DEFINE_MIXIN_GETTER
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr void setAnchorPoint(Vector2f factors, Vector2f newPos)
+    [[gnu::always_inline, gnu::flatten]] inline constexpr void setAnchorPoint(Vector2f factors, Vector2f newPos)
     {
         LayoutUtils::setAnchorPoint(static_cast<T&>(*this), factors, newPos);
     }
 
 ////////////////////////////////////////////////////////////
-#define SFML_PRIV_DEFINE_MIXIN_SETTER(name)                                                     \
-    [[gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr void name(Vector2f newPos) \
-    {                                                                                           \
-        LayoutUtils::name(static_cast<T&>(*this), newPos);                                      \
+#define SFML_PRIV_DEFINE_MIXIN_SETTER(name)                                          \
+    [[gnu::always_inline, gnu::flatten]] inline constexpr void name(Vector2f newPos) \
+    {                                                                                \
+        LayoutUtils::name(static_cast<T&>(*this), newPos);                           \
     }
 
     SFML_PRIV_DEFINE_MIXIN_SETTER(setTopLeft);
