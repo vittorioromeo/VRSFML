@@ -395,11 +395,10 @@ private:
 ////////////////////////////////////////////////////////////
 Shader::~Shader()
 {
-    SFML_BASE_ASSERT(m_impl->graphicsContext->hasActiveThreadLocalOrSharedGlContext());
-
     // Destroy effect program
     if (m_impl->shaderProgram)
     {
+        SFML_BASE_ASSERT(m_impl->graphicsContext->hasActiveThreadLocalOrSharedGlContext());
         SFML_BASE_ASSERT(glCheck(glIsProgram(castToGlHandle(m_impl->shaderProgram))));
         glCheck(glDeleteProgram(castToGlHandle(m_impl->shaderProgram)));
     }
@@ -415,15 +414,13 @@ Shader& Shader::operator=(Shader&& right) noexcept
 {
     // Make sure we aren't moving ourselves.
     if (&right == this)
-    {
         return *this;
-    }
 
-    // Explicit scope for RAII
+    // Destroy effect program
+    if (m_impl->shaderProgram)
     {
-        // Destroy effect program
         SFML_BASE_ASSERT(m_impl->graphicsContext->hasActiveThreadLocalOrSharedGlContext());
-        SFML_BASE_ASSERT(m_impl->shaderProgram);
+        SFML_BASE_ASSERT(glCheck(glIsProgram(castToGlHandle(m_impl->shaderProgram))));
         glCheck(glDeleteProgram(castToGlHandle(m_impl->shaderProgram)));
     }
 

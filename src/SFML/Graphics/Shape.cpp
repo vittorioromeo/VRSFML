@@ -211,8 +211,8 @@ bool Shape::updateImplResizeVerticesVector(const base::SizeT pointCount)
 {
     if (pointCount < 3u)
     {
-        m_vertices.resize(0u);
-        m_outlineVertices.resize(0u);
+        m_vertices.clear();
+        m_outlineVertices.clear();
         return false;
     }
 
