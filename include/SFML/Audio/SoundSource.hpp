@@ -541,7 +541,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Tell whether or not the sound is in loop mode
     ///
-    /// \return True if the sound is looping, false otherwise
+    /// \return `true` if the sound is looping, `false` otherwise
     ///
     /// \see setLoop
     ///

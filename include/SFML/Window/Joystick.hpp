@@ -99,7 +99,7 @@ public:
     ///
     /// \param axis Axis to check
     ///
-    /// \return True if the joystick supports the axis, false otherwise
+    /// \return `true` if the joystick supports the axis, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool hasAxis(Axis axis) const;
@@ -109,7 +109,7 @@ public:
     ///
     /// \param button Button to check
     ///
-    /// \return True if the button is pressed, false otherwise
+    /// \return `true` if the button is pressed, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isButtonPressed(unsigned int button) const;
@@ -136,7 +136,7 @@ private:
     ////////////////////////////////////////////////////////////
     /// \brief Check if a joystick is connected
     ///
-    /// \return True if the joystick is connected, false otherwise
+    /// \return `true` if the joystick is connected, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isConnected() const;

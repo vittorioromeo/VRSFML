@@ -92,7 +92,7 @@ base::Optional<Image> Image::create(Vector2u size, Color color)
     base::U8*       ptr = result->m_pixels.data();
     base::U8* const end = ptr + result->m_pixels.size();
 
-    while (ptr < end)
+    while (ptr != end)
     {
         *ptr++ = color.r;
         *ptr++ = color.g;
@@ -160,7 +160,7 @@ base::Optional<Image> Image::loadFromFile(const Path& filename)
     int        channels = 0;
     const auto ptr      = StbPtr(stbi_load(filename.toCharPtr(), &width, &height, &channels, STBI_rgb_alpha));
 
-    if (ptr)
+    if (ptr != nullptr)
     {
         SFML_BASE_ASSERT(width > 0 && "Loaded image from file with width == 0");
         SFML_BASE_ASSERT(height > 0 && "Loaded image from file with height == 0");
@@ -269,7 +269,7 @@ void Image::createMaskFromColor(Color color, base::U8 alpha)
     base::U8* ptr = m_pixels.data();
     base::U8* end = ptr + m_pixels.size();
 
-    while (ptr < end)
+    while (ptr != end)
     {
         if ((ptr[0] == color.r) && (ptr[1] == color.g) && (ptr[2] == color.b) && (ptr[3] == color.a))
             ptr[3] = alpha;

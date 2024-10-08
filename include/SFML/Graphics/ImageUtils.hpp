@@ -53,7 +53,7 @@ public:
     /// \param image Image to save
     /// \param filename Path of the file to save
     ///
-    /// \return True if saving was successful
+    /// \return `true` if saving was successful
     ///
     /// \see create, loadFromFile, loadFromMemory
     ///

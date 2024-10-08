@@ -299,7 +299,7 @@ sf::Vertex computeVertex(sf::Vector2u position)
                                        getElevation(position + sf::Vector2u(1, 0)),
                                        getElevation(position + sf::Vector2u(0, 1)),
                                        getElevation(position - sf::Vector2u(0, 1)))};
-};
+}
 
 
 ////////////////////////////////////////////////////////////

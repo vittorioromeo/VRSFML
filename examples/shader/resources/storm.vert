@@ -1,5 +1,5 @@
-layout(location = 0) uniform mat4 sf_u_modelViewProjectionMatrix;
-layout(location = 1) uniform mat4 sf_u_textureMatrix;
+layout(location = 0) uniform mat4 sf_u_mvpMatrix;
+layout(location = 1) uniform vec3 sf_u_texParams;
 
 layout(location = 3) uniform vec2 storm_position;
 layout(location = 4) uniform float storm_total_radius;
@@ -25,8 +25,9 @@ void main()
         newPosition.xy      = storm_position + normalize(offset) * push_distance;
     }
 
-    gl_Position   = sf_u_modelViewProjectionMatrix * vec4(newPosition, 0.0, 1.0);
-    sf_v_texCoord = (sf_u_textureMatrix * vec4(sf_a_texCoord, 0.0, 1.0)).xy;
+    gl_Position   = sf_u_mvpMatrix * vec4(newPosition, 0.0, 1.0);
+    sf_v_texCoord = vec2(sf_u_texParams[0] * sf_a_texCoord.x, 
+                         sf_u_texParams[1] * sf_a_texCoord.y + sf_u_texParams[2]);
     sf_v_color    = sf_a_color;
 
     gl_PointSize = 2.0;

@@ -38,7 +38,7 @@ public:
     ///
     /// \param index Index of the joystick to check
     ///
-    /// \return True if the joystick is connected, false otherwise
+    /// \return `true` if the joystick is connected, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
     static bool isConnected(unsigned int index);
@@ -48,7 +48,7 @@ public:
     ///
     /// \param index Index assigned to the joystick
     ///
-    /// \return True on success, false on failure
+    /// \return `true` on success, `false` on failure
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool open(unsigned int index);

@@ -30,7 +30,7 @@ int main()
 ///
 /// \param Window Target window to initialize
 ///
-/// \return True if operation was successful, false otherwise
+/// \return `true` if operation was successful, `false` otherwise
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool initialize(sf::Window& window)
@@ -78,7 +78,7 @@ int main()
 /// \param window      Target window for rendering
 /// \param elapsedTime Time elapsed since the last draw
 ///
-/// \return True if operation was successful, false otherwise
+/// \return `true` if operation was successful, `false` otherwise
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool draw(sf::Window& window, float elapsedTime)

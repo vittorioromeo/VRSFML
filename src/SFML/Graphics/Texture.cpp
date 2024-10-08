@@ -844,10 +844,10 @@ unsigned int Texture::getMaximumSize([[maybe_unused]] GraphicsContext& graphicsC
 
 
 ////////////////////////////////////////////////////////////
-Texture::MatrixElems Texture::getMatrixElems(CoordinateType coordinateType) const
+Texture::Params Texture::getParams(CoordinateType coordinateType) const
 {
     // If non-normalized coordinates (= pixels) are requested, we need to
-    // setup scale factors that convert the range [0 .. size] to [0 .. 1]ù
+    // setup scale factors that convert the range [0 .. size] to [0 .. 1]
 
     // If pixels are flipped we must invert the Y axis
     const float pixelFlippedMult = m_pixelsFlipped ? -1.f : 1.f;

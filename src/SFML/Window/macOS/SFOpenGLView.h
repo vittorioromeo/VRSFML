@@ -156,7 +156,7 @@ class WindowImplCocoa;
 ////////////////////////////////////////////////////////////
 /// \brief Determine where the mouse is
 ///
-/// \return true when the mouse is inside the OpenGL view, false otherwise
+/// \return true when the mouse is inside the OpenGL view, `false` otherwise
 ///
 ////////////////////////////////////////////////////////////
 - (BOOL)isMouseInside;

@@ -210,7 +210,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window
     ///
-    /// \param visible True to show, false to hide
+    /// \param visible `true` to show, `false` to hide
     ///
     ////////////////////////////////////////////////////////////
     virtual void setVisible(bool visible) = 0;
@@ -218,7 +218,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the mouse cursor
     ///
-    /// \param visible True to show, false to hide
+    /// \param visible `true` to show, `false` to hide
     ///
     ////////////////////////////////////////////////////////////
     virtual void setMouseCursorVisible(bool visible) = 0;
@@ -226,7 +226,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Grab or release the mouse cursor and keeps it from leaving
     ///
-    /// \param grabbed True to enable, false to disable
+    /// \param grabbed `true` to enable, `false` to disable
     ///
     ////////////////////////////////////////////////////////////
     virtual void setMouseCursorGrabbed(bool grabbed) = 0;
@@ -242,7 +242,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Enable or disable automatic key-repeat
     ///
-    /// \param enabled True to enable, false to disable
+    /// \param enabled `true` to enable, `false` to disable
     ///
     ////////////////////////////////////////////////////////////
     virtual void setKeyRepeatEnabled(bool enabled) = 0;
@@ -257,7 +257,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Check whether the window has the input focus
     ///
-    /// \return True if window has focus, false otherwise
+    /// \return `true` if window has focus, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] virtual bool hasFocus() const = 0;
@@ -269,7 +269,7 @@ public:
     /// \param surface   Created surface
     /// \param allocator Allocator to use
     ///
-    /// \return True if surface creation was successful, false otherwise
+    /// \return `true` if surface creation was successful, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool createVulkanSurface(const Vulkan::VulkanSurfaceData& vulkanSurfaceData) const;
