@@ -31,7 +31,7 @@ public:
     ///
     /// \param filename Path of the sound file to check
     ///
-    /// \return True if the file can be written by this writer
+    /// \return `true` if the file can be written by this writer
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static bool check(const Path& filename);

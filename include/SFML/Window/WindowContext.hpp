@@ -51,7 +51,7 @@ public:
     ///
     /// \param name Name of the extension to check for
     ///
-    /// \return True if available, false if unavailable
+    /// \return `true` if available, false if unavailable
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isExtensionAvailable(const char* name) const;

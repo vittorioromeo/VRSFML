@@ -195,7 +195,7 @@ struct SoundStream::Impl
     unsigned int                   channelCount{};       //!< Number of channels (1 = mono, 2 = stereo, ...)
     unsigned int                   sampleRate{};         //!< Frequency (samples / second)
     ChannelMap                     channelMap;           //!< The map of position in sample frame to sound channel
-    bool                           streaming{true};      //!< True if we are still streaming samples from the source
+    bool                           streaming{true};      //!< `true` if we are still streaming samples from the source
     SoundSource::Status            status{SoundSource::Status::Stopped}; //!< The status
 };
 

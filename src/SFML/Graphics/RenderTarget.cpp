@@ -236,7 +236,7 @@ struct [[nodiscard]] StatesCache
 
     Transform lastDrawTransform; //!< Cached last draw transform
 
-    Texture::MatrixElems lastTextureMatrixElems{}; //!< Cached last draw uploaded texture matrix elems
+    Texture::Params lastTextureParams{}; //!< Cached last draw uploaded texture params
 
     bool scissorEnabled{false}; //!< Is scissor testing enabled?
     bool stencilEnabled{false}; //!< Is stencil testing enabled?
@@ -955,7 +955,7 @@ void RenderTarget::setupDrawMVP(const RenderStates& states, const Transform& vie
                                         trsfm.a02, trsfm.a12, 0.f, 1.f};
     // clang-format on
 
-    // Upload uniform data to GPU (hardcoded layout location `0u` for `sf_u_modelViewProjectionMatrix`)
+    // Upload uniform data to GPU (hardcoded layout location `0u` for `sf_u_mvpMatrix`)
     glCheck(glUniformMatrix4fv(0u, 1, GL_FALSE, transformMatrixBuffer));
 }
 
@@ -990,25 +990,17 @@ void RenderTarget::setupDrawTexture(const RenderStates& states, bool shaderChang
     m_impl->cache.lastCoordinateType = states.coordinateType;
 
     // Retrieve the texture elements
-    const auto elems = usedTexture.getMatrixElems(m_impl->cache.lastCoordinateType);
+    const auto elems = usedTexture.getParams(m_impl->cache.lastCoordinateType);
 
     // If texture uniform doesn't need an update, exit early
-    if (!shaderChanged && (m_impl->cache.enable && m_impl->cache.lastTextureMatrixElems == elems))
+    if (!shaderChanged && (m_impl->cache.enable && m_impl->cache.lastTextureParams == elems))
         return;
 
-    // Otherwise, update the cached matrix elements
-    m_impl->cache.lastTextureMatrixElems = elems;
+    // Otherwise, update the cached params
+    m_impl->cache.lastTextureParams = elems;
 
-    // Create the matrix buffer with the elements
-    // clang-format off
-    const float textureMatrixBuffer[]{elems.a00, 0.f,       0.f, 0.f,
-                                      0.f,       elems.a11, 0.f, 0.f,
-                                      0.f,       0.f,       1.f, 0.f,
-                                      0.f,       elems.a12, 0.f, 1.f};
-    // clang-format on
-
-    // Upload uniform data to GPU (hardcoded layout location `1u` for `sf_u_textureMatrix`)
-    glCheck(glUniformMatrix4fv(1u, 1, GL_FALSE, textureMatrixBuffer));
+    // Upload uniform data to GPU (hardcoded layout location `1u` for `sf_u_texParams`)
+    glCheck(glUniform3f(1u, elems.a00, elems.a11, elems.a12));
 }
 
 

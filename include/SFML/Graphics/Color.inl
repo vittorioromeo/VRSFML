@@ -28,7 +28,7 @@ constexpr base::U32 Color::toInteger() const
 ////////////////////////////////////////////////////////////
 constexpr Color operator+(Color lhs, Color rhs)
 {
-    const auto clampedAdd = [](base::U8 l, base::U8 r) -> base::U8
+    const auto clampedAdd = [](base::U8 l, base::U8 r) __attribute__((always_inline, flatten))->base::U8
     {
         const int intResult = int{l} + int{r};
         return static_cast<base::U8>(intResult < 255 ? intResult : 255);
@@ -41,7 +41,7 @@ constexpr Color operator+(Color lhs, Color rhs)
 ////////////////////////////////////////////////////////////
 constexpr Color operator-(Color lhs, Color rhs)
 {
-    const auto clampedSub = [](base::U8 l, base::U8 r) -> base::U8
+    const auto clampedSub = [](base::U8 l, base::U8 r) __attribute__((always_inline, flatten))->base::U8
     {
         const int intResult = int{l} - int{r};
         return static_cast<base::U8>(intResult > 0 ? intResult : 0);
@@ -54,7 +54,7 @@ constexpr Color operator-(Color lhs, Color rhs)
 ////////////////////////////////////////////////////////////
 constexpr Color operator*(Color lhs, Color rhs)
 {
-    const auto scaledMul = [](base::U8 l, base::U8 r) -> base::U8
+    const auto scaledMul = [](base::U8 l, base::U8 r) __attribute__((always_inline, flatten))->base::U8
     {
         const auto uint16Result = static_cast<base::U16>(base::U16{l} * base::U16{r});
         return static_cast<base::U8>(uint16Result / 255u);

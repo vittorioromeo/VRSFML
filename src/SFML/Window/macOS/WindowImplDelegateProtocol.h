@@ -75,7 +75,7 @@ class WindowImplCocoa;
 ////////////////////////////////////////////////////////////
 /// \brief Determine where the mouse is
 ///
-/// \return true when the mouse is inside the OpenGL view, false otherwise
+/// \return true when the mouse is inside the OpenGL view, `false` otherwise
 ///
 ////////////////////////////////////////////////////////////
 - (BOOL)isMouseInside;
@@ -188,7 +188,7 @@ class WindowImplCocoa;
 ////////////////////////////////////////////////////////////
 /// \brief Check whether the window has the input focus
 ///
-/// \return True if window has focus, false otherwise
+/// \return `true` if window has focus, `false` otherwise
 ///
 ////////////////////////////////////////////////////////////
 - (BOOL)hasFocus;

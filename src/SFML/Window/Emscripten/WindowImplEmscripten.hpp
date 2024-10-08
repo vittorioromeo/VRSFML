@@ -139,7 +139,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Get whether automatic key-repeat is enabled or disabled
     ///
-    /// \return True if enabled, false if disabled
+    /// \return `true` if enabled, false if disabled
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool getKeyRepeatEnabled() const;
@@ -162,7 +162,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Check whether the window has the input focus
     ///
-    /// \return True if window has focus, false otherwise
+    /// \return `true` if window has focus, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool hasFocus() const override;

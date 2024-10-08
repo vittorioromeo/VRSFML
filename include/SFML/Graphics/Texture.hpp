@@ -549,20 +549,20 @@ private:
     friend struct StatesCache;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Compute and return the texture matrix (used by shaders)
+    /// \brief Compute and return the texture params (used by shaders)
     ///
     ////////////////////////////////////////////////////////////
-    struct MatrixElems
+    struct Params
     {
         float a00; //!< 4x4 matrix index: `0`
         float a11; //!< 4x4 matrix index: `5`
         float a12; //!< 4x4 matrix index: `13`
 
-        constexpr bool operator==(const MatrixElems&) const = default;
-        constexpr bool operator!=(const MatrixElems&) const = default;
+        constexpr bool operator==(const Params&) const = default;
+        constexpr bool operator!=(const Params&) const = default;
     };
 
-    [[nodiscard]] MatrixElems getMatrixElems(CoordinateType coordinateType) const;
+    [[nodiscard]] Params getParams(CoordinateType coordinateType) const;
 
 public:
     ////////////////////////////////////////////////////////////

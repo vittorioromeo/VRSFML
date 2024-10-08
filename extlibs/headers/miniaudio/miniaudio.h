@@ -1247,7 +1247,7 @@ typedef struct
     ma_uint32 channels;
     ma_uint32 sampleRate;
     ma_uint32 delayInFrames;
-    ma_bool32 delayStart;       /* Set to true to delay the start of the output; false otherwise. */
+    ma_bool32 delayStart;       /* Set to true to delay the start of the output; `false` otherwise. */
     float wet;                  /* 0..1. Default = 1. */
     float dry;                  /* 0..1. Default = 1. */
     float decay;                /* 0..1. Default = 0 (no feedback). Feedback decay. Use this for echo. */
@@ -5457,7 +5457,7 @@ pDevice (in)
 
 Return Value
 ------------
-True if the device is started, false otherwise.
+True if the device is started, `false` otherwise.
 
 
 Thread Safety

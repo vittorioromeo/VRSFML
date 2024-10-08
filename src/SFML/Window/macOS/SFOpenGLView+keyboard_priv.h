@@ -50,7 +50,7 @@
 ///
 /// \param event a key down event
 ///
-/// \return true if event represents a Unicode character, false otherwise
+/// \return true if event represents a Unicode character, `false` otherwise
 ///
 ////////////////////////////////////////////////////////////
 + (BOOL)isValidTextUnicode:(NSEvent*)event;

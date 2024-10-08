@@ -67,10 +67,6 @@ public:
     static const Time Zero; //!< Predefined "zero" time value
 
 private:
-    friend constexpr Time seconds(float);
-    friend constexpr Time milliseconds(base::I32);
-    friend constexpr Time microseconds(base::I64);
-
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////

@@ -36,7 +36,7 @@ VideoMode VideoModeImpl::getDesktopMode()
 {
     const Drm&         drm = DRMContext::getDRM();
     drmModeModeInfoPtr ptr = drm.mode;
-    if (ptr)
+    if (ptr != nullptr)
         return VideoMode({ptr->hdisplay, ptr->vdisplay});
 
     return VideoMode({0, 0});
