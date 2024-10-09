@@ -854,7 +854,7 @@ Texture::Params Texture::getParams(CoordinateType coordinateType) const
 
     return {coordinateType == CoordinateType::Pixels ? 1.f / static_cast<float>(m_size.x) : 1.f,
             (coordinateType == CoordinateType::Pixels ? 1.f / static_cast<float>(m_size.y) : 1.f) * pixelFlippedMult,
-            m_pixelsFlipped ? static_cast<float>(m_size.y) / static_cast<float>(m_size.y) : 0.f};
+            m_pixelsFlipped ? 1.f : 0.f};
 }
 
 
