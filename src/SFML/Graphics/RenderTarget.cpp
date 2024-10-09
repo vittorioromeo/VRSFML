@@ -364,7 +364,7 @@ RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool RenderTarget::clearImpl()
 {
-    if (!RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) && !setActive(true))
+    if (!setActive(true))
     {
         priv::err() << "Failed to activate render target in `clearImpl`";
         return false;
@@ -515,8 +515,7 @@ void RenderTarget::draw(const Shape& shape, const Texture* texture, const Render
 void RenderTarget::drawVertices(const Vertex* vertexData, base::SizeT vertexCount, PrimitiveType type, const RenderStates& states)
 {
     // Nothing to draw or inactive target
-    if (vertexData == nullptr || vertexCount == 0u ||
-        (!RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) && !setActive(true)))
+    if (vertexData == nullptr || vertexCount == 0u || !setActive(true))
         return;
 
     setupDraw(/* persistent */ false, states);
@@ -538,8 +537,7 @@ void RenderTarget::drawIndexedVertices(
     const RenderStates& states)
 {
     // Nothing to draw or inactive target
-    if (vertexData == nullptr || vertexCount == 0u || indexData == nullptr || indexCount == 0u ||
-        (!RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) && !setActive(true)))
+    if (vertexData == nullptr || vertexCount == 0u || indexData == nullptr || indexCount == 0u || !setActive(true))
         return;
 
     setupDraw(/* persistent */ false, states);
@@ -556,7 +554,7 @@ void RenderTarget::drawIndexedVertices(
 void RenderTarget::drawPersistentMappedVertices(base::SizeT vertexCount, PrimitiveType type, const RenderStates& states)
 {
     // Nothing to draw or inactive target
-    if (vertexCount == 0u || (!RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) && !setActive(true)))
+    if (vertexCount == 0u || !setActive(true))
         return;
 
     setupDraw(/* persistent */ true, states);
@@ -574,7 +572,7 @@ void RenderTarget::drawPersistentMappedVertices(base::SizeT vertexCount, Primiti
 void RenderTarget::drawPersistentMappedIndexedVertices(base::SizeT indexCount, PrimitiveType type, const RenderStates& states)
 {
     // Nothing to draw or inactive target
-    if (indexCount == 0u || (!RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) && !setActive(true)))
+    if (indexCount == 0u || !setActive(true))
         return;
 
     setupDraw(/* persistent */ true, states);
@@ -629,8 +627,7 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, base::SizeT firstVerte
 
     // Nothing to draw or inactive target
 
-    if (!vertexCount || !vertexBuffer.getNativeHandle() ||
-        (!RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) && !setActive(true)))
+    if (!vertexCount || !vertexBuffer.getNativeHandle() || !setActive(true))
         return;
 
     setupDraw(/* persistent */ false, states);
@@ -715,7 +712,7 @@ void RenderTarget::resetGLStates()
         priv::err() << "Failed to set render target inactive";
 #endif
 
-    if (!RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id) && !setActive(true))
+    if (!setActive(true))
         return;
 
 #ifdef SFML_DEBUG
@@ -743,7 +740,7 @@ void RenderTarget::resetGLStates()
 
     // Apply the default SFML states
     applyBlendMode(BlendAlpha);
-    applyStencilMode(StencilMode());
+    applyStencilMode(StencilMode{});
     unapplyTexture();
 
     {
@@ -956,7 +953,7 @@ void RenderTarget::setupDrawMVP(const RenderStates& states, const Transform& vie
     // clang-format on
 
     // Upload uniform data to GPU (hardcoded layout location `0u` for `sf_u_mvpMatrix`)
-    glCheck(glUniformMatrix4fv(0u, 1, GL_FALSE, transformMatrixBuffer));
+    glCheck(glUniformMatrix4fv(/* location */ 0u, /* count */ 1, /* transpose */ GL_FALSE, transformMatrixBuffer));
 }
 
 
