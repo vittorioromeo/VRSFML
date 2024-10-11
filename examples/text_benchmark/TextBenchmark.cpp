@@ -12,6 +12,7 @@
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTexture.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/Shader.hpp"
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/Texture.hpp"
@@ -30,6 +31,7 @@
 #include "SFML/System/String.hpp"
 #include "SFML/System/Vector2.hpp"
 
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Optional.hpp"
 
 #include <imgui.h>
@@ -47,6 +49,185 @@
 ////////////////////////////////////////////////////////////
 
 #if 1
+
+int main()
+{
+    sf::GraphicsContext graphicsContext;
+    sf::RenderWindow    window(graphicsContext,
+                               {.size{800u, 600u}, .title = L"महसुस", .contextSettings = {.antiAliasingLevel = 4}});
+
+
+    const float width     = 128.f;
+    const float height    = 64.f;
+    const float halfWidth = width / 2.f;
+
+    const sf::Vector2u size{static_cast<unsigned int>(width), static_cast<unsigned int>(height)};
+
+    const auto     font0 = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf").value();
+    const sf::Text text0(font0, {.position = {0u, 0u}, .string = "Test", .characterSize = 16u});
+
+    auto image   = sf::Image::create(size, sf::Color::White).value();
+    auto texture = sf::Texture::loadFromImage(graphicsContext, image).value();
+
+    auto baseRenderTexture = sf::RenderTexture::create(graphicsContext, size, {.antiAliasingLevel = 0, .sRgbCapable = true})
+                                 .value();
+
+    auto baseRenderTextureAA = sf::RenderTexture::create(graphicsContext, size, {.antiAliasingLevel = 4, .sRgbCapable = true})
+                                   .value();
+
+    auto leftInnerRT = sf::RenderTexture::create(graphicsContext, size, {.antiAliasingLevel = 4, .sRgbCapable = true}).value();
+
+    const sf::Vertex leftVertexArray[6]{{{0.f, 0.f}, sf::Color::Red, {0.f, 0.f}},
+                                        {{halfWidth, 0.f}, sf::Color::Red, {halfWidth, 0.f}},
+                                        {{0.f, height}, sf::Color::Red, {0.f, height}},
+                                        {{0.f, height}, sf::Color::Green, {0.f, height}},
+                                        {{halfWidth, 0.f}, sf::Color::Green, {halfWidth, 0.f}},
+                                        {{halfWidth, height}, sf::Color::Green, {halfWidth, height}}};
+
+    leftInnerRT.clear();
+
+    sf::Sprite sprite(texture.getRect());
+    leftInnerRT.draw(sprite, texture);
+
+
+    leftInnerRT.display();
+
+
+    auto winRT = sf::Texture::create(graphicsContext, window.getSize()).value();
+
+
+    sf::Sprite winRTSprite(winRT.getRect());
+    winRTSprite.scale = {0.2f, 0.2f};
+
+    // auto finalImage = baseRenderTexture.getTexture().copyToImage();
+    // auto finalTx    = sf::Texture::loadFromImage(graphicsContext, finalImage).value();
+
+#define CHECK(...)                                 \
+    if (!(__VA_ARGS__))                            \
+    {                                              \
+        std::cout << "fail " #__VA_ARGS__ << '\n'; \
+    }
+
+    sf::Sprite rtSprite(baseRenderTexture.getTexture().getRect());
+    sf::Sprite rtAASprite(baseRenderTextureAA.getTexture().getRect());
+
+    while (true)
+    {
+        while (sf::base::Optional event = window.pollEvent())
+        {
+            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+                return EXIT_SUCCESS;
+        }
+
+        window.clear();
+
+        const auto doit = [&](auto& rt, auto& rts, float xBias)
+        {
+            rt.clear();
+            rt.draw(leftVertexArray, sf::PrimitiveType::Triangles, {.texture = &leftInnerRT.getTexture()});
+            rt.display();
+
+            rts.position = {xBias, 0};
+            window.draw(rts, rt.getTexture());
+
+            rt.clear();
+            rt.draw(leftVertexArray, sf::PrimitiveType::Triangles, {.texture = &leftInnerRT.getTexture()});
+            rt.display();
+
+            rts.position = {xBias + 128, 0};
+            window.draw(rts, rt.getTexture());
+
+            rt.clear();
+            rt.draw(leftVertexArray, sf::PrimitiveType::Triangles, {.texture = &leftInnerRT.getTexture()});
+            rt.draw(text0);
+            rt.display();
+
+            rts.position = {xBias, 128};
+            window.draw(rts, rt.getTexture());
+        };
+
+        doit(baseRenderTexture, rtSprite, 0);
+        doit(baseRenderTextureAA, rtAASprite, 256);
+
+        bool rc = winRT.update(window, {});
+        if (!rc)
+            throw 100;
+
+        winRTSprite.position = {256, 256};
+        window.draw(winRTSprite, winRT);
+
+        window.display();
+    }
+}
+
+#elif 0
+
+int main()
+{
+    sf::GraphicsContext graphicsContext;
+    sf::RenderWindow    window(graphicsContext,
+                               {.size{800u, 600u}, .title = L"महसुस", .contextSettings = {.antiAliasingLevel = 4}});
+
+
+    sf::Vector2u size = window.getSize();
+
+    auto texture = sf::Texture::loadFromFile(graphicsContext, "resources/biga.png").value();
+
+    sf::Sprite sprite(texture.getRect());
+
+    sprite.scale = {(float)size.x / texture.getSize().x, (float)size.y / texture.getSize().y / 2.f};
+
+    auto render = sf::RenderTexture::create(graphicsContext, {size.x, (unsigned int)(size.y / 2.f)}, {.antiAliasingLevel = 4})
+                      .value();
+
+    sf::Sprite rndrSprite(render.getTexture().getRect());
+    rndrSprite.position = {0.f, (float)size.y / 2.f};
+
+    const char* shaderSrc = R"glsl(
+// This shader draws texture on the left using RB channels and
+// texture2 on the right using G channel
+layout(location = 2) uniform sampler2D sf_u_texture;
+uniform sampler2D texture2;
+
+in vec4 sf_v_color;
+in vec2 sf_v_texCoord;
+
+layout(location = 0) out vec4 sf_fragColor;
+
+void main()
+{
+	vec4 color1 = texture2D( sf_u_texture, sf_v_texCoord * vec2( 2.0, 1.0 ) + vec2( 0.0, 0.0 ));
+	vec4 color2 = texture2D( texture2, sf_v_texCoord * vec2( 2.0, 1.0 ) + vec2( -1.0, 0.0 ));
+	sf_fragColor = sf_v_color * ( vec4(color2.x, color1.y, color2.z, 1.0 ));
+}
+)glsl";
+
+    auto shader     = sf::Shader::loadFromMemory(graphicsContext, shaderSrc, sf::Shader::Type::Fragment).value();
+    auto ulTexture2 = shader.getUniformLocation("texture2").value();
+    (void)shader.setUniform(ulTexture2, texture);
+
+    while (true)
+    {
+        while (sf::base::Optional event = window.pollEvent())
+        {
+            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+                return EXIT_SUCCESS;
+        }
+
+        render.clear();
+        render.draw(sprite, texture);
+        render.display();
+
+        window.clear();
+        window.draw(sprite, texture, {.shader = &shader});
+        window.draw(rndrSprite, render.getTexture(), {.shader = &shader});
+        window.display();
+    }
+
+    return 0;
+}
+
+#elif 0
 
 int main()
 {

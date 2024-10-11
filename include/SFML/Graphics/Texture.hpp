@@ -208,7 +208,7 @@ public:
     /// This function performs a slow operation that downloads
     /// the texture's pixels from the graphics card and copies
     /// them to a new image, potentially applying transformations
-    /// to pixels if necessary (texture may be padded or flipped).
+    /// to pixels if necessary (texture may be padded).
     ///
     /// \return Image containing the texture's pixels
     ///
@@ -548,22 +548,6 @@ private:
     friend class RenderTarget;
     friend struct StatesCache;
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Compute and return the texture params (used by shaders)
-    ///
-    ////////////////////////////////////////////////////////////
-    struct Params
-    {
-        float a00; //!< 4x4 matrix index: `0`
-        float a11; //!< 4x4 matrix index: `5`
-        float a12; //!< 4x4 matrix index: `13`
-
-        constexpr bool operator==(const Params&) const = default;
-        constexpr bool operator!=(const Params&) const = default;
-    };
-
-    [[nodiscard]] Params getParams(CoordinateType coordinateType) const;
-
 public:
     ////////////////////////////////////////////////////////////
     /// \private
@@ -594,7 +578,6 @@ private:
     bool             m_isSmooth{};      //!< Status of the smooth filter
     bool             m_sRgb{};          //!< Should the texture source be converted from sRGB?
     bool             m_isRepeated{};    //!< Is the texture in repeat mode?
-    mutable bool     m_pixelsFlipped{}; //!< To work around the inconsistency in Y orientation
     bool             m_fboAttachment{}; //!< Is this texture owned by a framebuffer object?
     bool             m_hasMipmap{};     //!< Has the mipmap been generated?
     unsigned int     m_cacheId;         //!< Unique number that identifies the texture to the render target's cache

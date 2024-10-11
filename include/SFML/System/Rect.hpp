@@ -83,6 +83,7 @@ public:
 // Create type aliases for the most common types
 using IntRect   = Rect<int>;
 using FloatRect = Rect<float>;
+using UIntRect  = Rect<unsigned int>;
 
 } // namespace sf
 

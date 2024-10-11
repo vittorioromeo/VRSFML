@@ -23,7 +23,6 @@ namespace
 constexpr const char* builtInShaderVertexSrc = R"glsl(
 
 layout(location = 0) uniform mat4 sf_u_mvpMatrix;
-layout(location = 1) uniform vec3 sf_u_texParams;
 
 layout(location = 0) in vec2 sf_a_position;
 layout(location = 1) in vec4 sf_a_color;
@@ -36,9 +35,7 @@ void main()
 {
     gl_Position = sf_u_mvpMatrix * vec4(sf_a_position, 0.0, 1.0);
     sf_v_color = sf_a_color;
-
-    sf_v_texCoord = vec2(sf_u_texParams[0] * sf_a_texCoord.x, 
-                         sf_u_texParams[1] * sf_a_texCoord.y + sf_u_texParams[2]);
+    sf_v_texCoord = sf_a_texCoord;
 }
 
 )glsl";
@@ -56,7 +53,7 @@ layout(location = 0) out vec4 sf_fragColor;
 
 void main()
 {
-    sf_fragColor = sf_v_color * texture(sf_u_texture, sf_v_texCoord);
+    sf_fragColor = sf_v_color * texture(sf_u_texture, sf_v_texCoord / vec2(textureSize(sf_u_texture, 0)));
 }
 
 )glsl";

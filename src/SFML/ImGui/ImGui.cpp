@@ -1289,16 +1289,7 @@ void ImGuiContext::image(const RenderTexture& texture, Color tintColor, Color bo
 void ImGuiContext::image(const RenderTexture& texture, Vector2f size, Color tintColor, Color borderColor)
 {
     ImTextureID textureID = convertGLTextureHandleToImTextureID(texture.getTexture().getNativeHandle());
-
-    ::ImGui::Image(textureID,
-                   toImVec2(size),
-                   ImVec2(0, 1),
-                   ImVec2(1, 0), // flipped vertically,
-                                 // because textures in
-                                 // RenderTexture are
-                                 // stored this way
-                   toImColor(tintColor),
-                   toImColor(borderColor));
+    ::ImGui::Image(textureID, toImVec2(size), ImVec2(0, 0), ImVec2(1, 1), toImColor(tintColor), toImColor(borderColor));
 }
 
 
@@ -1329,15 +1320,7 @@ bool ImGuiContext::imageButton(const char* id, const Texture& texture, Vector2f 
 bool ImGuiContext::imageButton(const char* id, const RenderTexture& texture, Vector2f size, Color bgColor, Color tintColor)
 {
     const ImTextureID textureID = convertGLTextureHandleToImTextureID(texture.getTexture().getNativeHandle());
-
-    return ::ImGui::ImageButton(id,
-                                textureID,
-                                toImVec2(size),
-                                ImVec2(0, 1),
-                                ImVec2(1, 0), // flipped vertically, because textures in
-                                              // RenderTexture are stored this way
-                                toImColor(bgColor),
-                                toImColor(tintColor));
+    return ::ImGui::ImageButton(id, textureID, toImVec2(size), ImVec2(0, 0), ImVec2(1, 1), toImColor(bgColor), toImColor(tintColor));
 }
 
 

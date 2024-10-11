@@ -3,7 +3,11 @@
 #include "SFML/Graphics/CircleShape.hpp"
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/Image.hpp"
+#include "SFML/Graphics/RenderTexture.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/Sprite.hpp"
+#include "SFML/Graphics/Texture.hpp"
 
 #include "SFML/Window/EventUtils.hpp"
 
@@ -25,6 +29,43 @@ int main()
 
     const sf::CircleShape shape{{.fillColor = sf::Color::Green, .radius = 100.f}};
 
+
+    const float width     = 128.f;
+    const float height    = 64.f;
+    const float halfWidth = width / 2.f;
+
+    const sf::Vector2u size{static_cast<unsigned int>(width), static_cast<unsigned int>(height)};
+
+
+    auto baseRenderTexture = sf::RenderTexture::create(graphicsContext, size, {.antiAliasingLevel = 0, .sRgbCapable = true})
+                                 .value();
+
+    auto leftInnerRT = sf::RenderTexture::create(graphicsContext, size, {.antiAliasingLevel = 4, .sRgbCapable = true}).value();
+
+    const sf::Vertex leftVertexArray[6]{{{0.f, 0.f}, sf::Color::Red, {0.f, 0.f}},
+                                        {{halfWidth, 0.f}, sf::Color::Red, {halfWidth, 0.f}},
+                                        {{0.f, height}, sf::Color::Red, {0.f, height}},
+                                        {{0.f, height}, sf::Color::Green, {0.f, height}},
+                                        {{halfWidth, 0.f}, sf::Color::Green, {halfWidth, 0.f}},
+                                        {{halfWidth, height}, sf::Color::Green, {halfWidth, height}}};
+
+    leftInnerRT.clear();
+
+    auto image   = sf::Image::create(size, sf::Color::White).value();
+    auto texture = sf::Texture::loadFromImage(graphicsContext, image).value();
+
+    sf::Sprite sprite(texture.getRect());
+    leftInnerRT.draw(sprite, texture);
+
+
+    leftInnerRT.display();
+
+
+    baseRenderTexture.clear();
+    baseRenderTexture.draw(leftVertexArray, sf::PrimitiveType::Triangles, {.texture = &leftInnerRT.getTexture()});
+    baseRenderTexture.display();
+
+
     sf::Clock deltaClock;
 
     while (true)
@@ -43,6 +84,7 @@ int main()
 
         ImGui::Begin("Hello, world!");
         ImGui::Button("Look at this pretty button");
+        imGuiContext.image(baseRenderTexture, size.toVector2f());
         ImGui::End();
 
         window.clear();

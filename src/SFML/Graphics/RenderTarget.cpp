@@ -236,8 +236,6 @@ struct [[nodiscard]] StatesCache
 
     Transform lastDrawTransform; //!< Cached last draw transform
 
-    Texture::Params lastTextureParams{}; //!< Cached last draw uploaded texture params
-
     bool scissorEnabled{false}; //!< Is scissor testing enabled?
     bool stencilEnabled{false}; //!< Is stencil testing enabled?
 
@@ -928,7 +926,7 @@ void RenderTarget::setupDraw(bool persistent, const RenderStates& states)
         glCheck(glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE));
 
     // Deal with texture
-    setupDrawTexture(states, shaderChanged);
+    setupDrawTexture(states);
 }
 
 
@@ -958,7 +956,7 @@ void RenderTarget::setupDrawMVP(const RenderStates& states, const Transform& vie
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::setupDrawTexture(const RenderStates& states, bool shaderChanged)
+void RenderTarget::setupDrawTexture(const RenderStates& states)
 {
     // Select texture to be used
     const Texture& usedTexture = states.texture != nullptr ? *states.texture
@@ -985,19 +983,6 @@ void RenderTarget::setupDrawTexture(const RenderStates& states, bool shaderChang
     // Update basic cache texture stuff
     m_impl->cache.lastTextureId      = usedTexture.m_cacheId;
     m_impl->cache.lastCoordinateType = states.coordinateType;
-
-    // Retrieve the texture elements
-    const auto elems = usedTexture.getParams(m_impl->cache.lastCoordinateType);
-
-    // If texture uniform doesn't need an update, exit early
-    if (!shaderChanged && (m_impl->cache.enable && m_impl->cache.lastTextureParams == elems))
-        return;
-
-    // Otherwise, update the cached params
-    m_impl->cache.lastTextureParams = elems;
-
-    // Upload uniform data to GPU (hardcoded layout location `1u` for `sf_u_texParams`)
-    glCheck(glUniform3f(1u, elems.a00, elems.a11, elems.a12));
 }
 
 
