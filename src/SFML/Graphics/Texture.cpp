@@ -105,7 +105,6 @@ m_texture(base::exchange(right.m_texture, 0u)),
 m_isSmooth(base::exchange(right.m_isSmooth, false)),
 m_sRgb(base::exchange(right.m_sRgb, false)),
 m_isRepeated(base::exchange(right.m_isRepeated, false)),
-m_pixelsFlipped(base::exchange(right.m_pixelsFlipped, false)),
 m_fboAttachment(base::exchange(right.m_fboAttachment, false)),
 m_hasMipmap(base::exchange(right.m_hasMipmap, false)),
 m_cacheId(base::exchange(right.m_cacheId, 0u))
@@ -139,7 +138,6 @@ Texture& Texture::operator=(Texture&& right) noexcept
     m_isSmooth      = base::exchange(right.m_isSmooth, false);
     m_sRgb          = base::exchange(right.m_sRgb, false);
     m_isRepeated    = base::exchange(right.m_isRepeated, false);
-    m_pixelsFlipped = base::exchange(right.m_pixelsFlipped, false);
     m_fboAttachment = base::exchange(right.m_fboAttachment, false);
     m_hasMipmap     = base::exchange(right.m_hasMipmap, false);
     m_cacheId       = base::exchange(right.m_cacheId, 0u);
@@ -331,8 +329,6 @@ Image Texture::copyToImage() const
     // Create an array of pixels
     base::TrivialVector<base::U8> pixels(m_size.x * m_size.y * 4);
 
-#ifdef SFML_OPENGL_ES
-
     // OpenGL ES doesn't have the glGetTexImage function, the only way to read
     // from a texture is to bind it to a FBO and use glReadPixels
     GLuint frameBuffer = 0;
@@ -353,66 +349,7 @@ Image Texture::copyToImage() const
         glCheck(glDeleteFramebuffers(1, &frameBuffer));
 
         glCheck(glBindFramebuffer(GL_FRAMEBUFFER, static_cast<GLuint>(previousFrameBuffer)));
-
-        if (m_pixelsFlipped)
-        {
-            // Flip the texture vertically
-            const auto stride             = static_cast<base::PtrDiffT>(m_size.x * 4);
-            auto*      currentRowIterator = pixels.begin();
-            auto*      nextRowIterator    = pixels.begin() + stride;
-            auto*      reverseRowIterator = pixels.begin() + (stride * static_cast<base::PtrDiffT>(m_size.y - 1));
-            for (unsigned int i = 0; i < m_size.y / 2; ++i)
-            {
-                base::swapRanges(currentRowIterator, nextRowIterator, reverseRowIterator);
-                currentRowIterator = nextRowIterator;
-                nextRowIterator += stride;
-                reverseRowIterator -= stride;
-            }
-        }
     }
-
-#else
-
-    if (!m_pixelsFlipped)
-    {
-        // Texture is not padded nor flipped, we can use a direct copy
-        glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
-        glCheck(glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data()));
-    }
-    else
-    {
-        // Texture is either padded or flipped, we have to use a slower algorithm
-
-        // All the pixels will first be copied to a temporary array
-        base::TrivialVector<base::U8> allPixels(m_size.x * m_size.y * 4);
-
-        glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
-        glCheck(glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, allPixels.data()));
-
-        // Then we copy the useful pixels from the temporary array to the final one
-        const base::U8*    src      = allPixels.data();
-        base::U8*          dst      = pixels.data();
-        auto               srcPitch = static_cast<int>(m_size.x * 4);
-        const unsigned int dstPitch = m_size.x * 4;
-
-        SFML_BASE_ASSERT(pixels.size() >= allPixels.size());
-
-        // Handle the case where source pixels are flipped vertically
-        if (m_pixelsFlipped)
-        {
-            src += static_cast<unsigned int>(srcPitch * static_cast<int>(m_size.y - 1));
-            srcPitch = -srcPitch;
-        }
-
-        for (unsigned int i = 0; i < m_size.y; ++i)
-        {
-            SFML_BASE_MEMCPY(dst, src, dstPitch);
-            src += srcPitch;
-            dst += dstPitch;
-        }
-    }
-
-#endif // SFML_OPENGL_ES
 
     auto result = sf::Image::create(m_size, pixels.data());
     SFML_BASE_ASSERT(result.hasValue());
@@ -456,9 +393,8 @@ void Texture::update(const base::U8* pixels, Vector2u size, Vector2u dest)
                             GL_UNSIGNED_BYTE,
                             pixels));
     glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_isSmooth ? GL_LINEAR : GL_NEAREST));
-    m_hasMipmap     = false;
-    m_pixelsFlipped = false;
-    m_cacheId       = TextureImpl::getUniqueId();
+    m_hasMipmap = false;
+    m_cacheId   = TextureImpl::getUniqueId();
 
     // Force an OpenGL flush, so that the texture data will appear updated
     // in all contexts immediately (solves problems in multi-threaded apps)
@@ -525,27 +461,10 @@ bool Texture::update(const Texture& texture, Vector2u dest)
     {
         // Scissor testing affects framebuffer blits as well
         // Since we don't want scissor testing to interfere with our copying, we temporarily disable it for the blit if it is enabled
-        GLboolean scissorEnabled = GL_FALSE;
-        glCheck(glGetBooleanv(GL_SCISSOR_TEST, &scissorEnabled));
-
-        if (scissorEnabled == GL_TRUE)
-            glCheck(glDisable(GL_SCISSOR_TEST));
+        const priv::ScissorDisableGuard scissorDisableGuard;
 
         // Blit the texture contents from the source to the destination texture
-        glCheck(glBlitFramebuffer(0,
-                                  texture.m_pixelsFlipped ? static_cast<GLint>(texture.m_size.y) : 0,
-                                  static_cast<GLint>(texture.m_size.x),
-                                  texture.m_pixelsFlipped ? 0 : static_cast<GLint>(texture.m_size.y), // Source rectangle, flip y if source is flipped
-                                  static_cast<GLint>(dest.x),
-                                  static_cast<GLint>(dest.y),
-                                  static_cast<GLint>(dest.x + texture.m_size.x),
-                                  static_cast<GLint>(dest.y + texture.m_size.y), // Destination rectangle
-                                  GL_COLOR_BUFFER_BIT,
-                                  GL_NEAREST));
-
-        // Re-enable scissor testing if it was previously enabled
-        if (scissorEnabled == GL_TRUE)
-            glCheck(glEnable(GL_SCISSOR_TEST));
+        priv::blitFramebuffer(/* invertYAxis */ false, texture.m_size, {0u, 0u}, dest);
     }
     else
     {
@@ -567,9 +486,8 @@ bool Texture::update(const Texture& texture, Vector2u dest)
     // Set the parameters of this texture
     glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
     glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_isSmooth ? GL_LINEAR : GL_NEAREST));
-    m_hasMipmap     = false;
-    m_pixelsFlipped = false;
-    m_cacheId       = TextureImpl::getUniqueId();
+    m_hasMipmap = false;
+    m_cacheId   = TextureImpl::getUniqueId();
 
     // Force an OpenGL flush, so that the texture data will appear updated
     // in all contexts immediately (solves problems in multi-threaded apps)
@@ -648,27 +566,10 @@ bool Texture::update(const Window& window, Vector2u dest)
     {
         // Scissor testing affects framebuffer blits as well
         // Since we don't want scissor testing to interfere with our copying, we temporarily disable it for the blit if it is enabled
-        GLboolean scissorEnabled = GL_FALSE;
-        glCheck(glGetBooleanv(GL_SCISSOR_TEST, &scissorEnabled));
-
-        if (scissorEnabled == GL_TRUE)
-            glCheck(glDisable(GL_SCISSOR_TEST));
+        const priv::ScissorDisableGuard scissorDisableGuard;
 
         // Blit the texture contents from the source to the destination texture
-        glCheck(glBlitFramebuffer(0,
-                                  0,
-                                  static_cast<GLsizei>(window.getSize().x),
-                                  static_cast<GLsizei>(window.getSize().y), // Source rectangle, flip y if source is flipped
-                                  static_cast<GLint>(dest.x),
-                                  static_cast<GLint>(dest.y),
-                                  static_cast<GLint>(dest.x + window.getSize().x),
-                                  static_cast<GLint>(dest.y + window.getSize().y), // Destination rectangle
-                                  GL_COLOR_BUFFER_BIT,
-                                  GL_NEAREST));
-
-        // Re-enable scissor testing if it was previously enabled
-        if (scissorEnabled == GL_TRUE)
-            glCheck(glEnable(GL_SCISSOR_TEST));
+        priv::blitFramebuffer(/* invertYAxis */ false, window.getSize(), {0u, 0u}, dest);
     }
     else
     {
@@ -688,9 +589,9 @@ bool Texture::update(const Window& window, Vector2u dest)
     // Set the parameters of this texture
     glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
     glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_isSmooth ? GL_LINEAR : GL_NEAREST));
-    m_hasMipmap     = false;
-    m_pixelsFlipped = true;
-    m_cacheId       = TextureImpl::getUniqueId();
+    m_hasMipmap = false;
+
+    m_cacheId = TextureImpl::getUniqueId();
 
     // Force an OpenGL flush, so that the texture will appear updated
     // in all contexts immediately (solves problems in multi-threaded apps)
@@ -844,21 +745,6 @@ unsigned int Texture::getMaximumSize([[maybe_unused]] GraphicsContext& graphicsC
 
 
 ////////////////////////////////////////////////////////////
-Texture::Params Texture::getParams(CoordinateType coordinateType) const
-{
-    // If non-normalized coordinates (= pixels) are requested, we need to
-    // setup scale factors that convert the range [0 .. size] to [0 .. 1]
-
-    // If pixels are flipped we must invert the Y axis
-    const float pixelFlippedMult = m_pixelsFlipped ? -1.f : 1.f;
-
-    return {coordinateType == CoordinateType::Pixels ? 1.f / static_cast<float>(m_size.x) : 1.f,
-            (coordinateType == CoordinateType::Pixels ? 1.f / static_cast<float>(m_size.y) : 1.f) * pixelFlippedMult,
-            m_pixelsFlipped ? 1.f : 0.f};
-}
-
-
-////////////////////////////////////////////////////////////
 Texture& Texture::operator=(const Texture& right)
 {
     Texture temp(right);
@@ -877,7 +763,6 @@ void Texture::swap(Texture& right) noexcept
     std::swap(m_isSmooth, right.m_isSmooth);
     std::swap(m_sRgb, right.m_sRgb);
     std::swap(m_isRepeated, right.m_isRepeated);
-    std::swap(m_pixelsFlipped, right.m_pixelsFlipped);
     std::swap(m_fboAttachment, right.m_fboAttachment);
     std::swap(m_hasMipmap, right.m_hasMipmap);
     std::swap(m_cacheId, right.m_cacheId);

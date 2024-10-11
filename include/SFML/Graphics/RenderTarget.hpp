@@ -582,7 +582,7 @@ private:
     /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void setupDrawTexture(const RenderStates& states, bool shaderChanged);
+    void setupDrawTexture(const RenderStates& states);
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw non-indexed primitives

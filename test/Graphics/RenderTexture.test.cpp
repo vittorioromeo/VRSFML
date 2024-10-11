@@ -10,6 +10,7 @@
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
+#include <GraphicsUtil.hpp>
 #include <StringifyOptionalUtil.hpp>
 #include <SystemUtil.hpp>
 #include <WindowUtil.hpp>
@@ -160,5 +161,58 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
         CHECK(finalImage.getSize() == size);
         CHECK((finalImage.getPixel({0u, 0u}) == sf::Color::White));
         CHECK((finalImage.getPixel({static_cast<unsigned int>(width / 2.f) + 1u, 0u}) == sf::Color::Green));
+    }
+
+    SECTION("Sanity check -- flipping")
+    {
+        const float width     = 128.f;
+        const float height    = 64.f;
+        const float halfWidth = width / 2.f;
+
+        const sf::Vector2u size{static_cast<unsigned int>(width), static_cast<unsigned int>(height)};
+
+        auto image   = sf::Image::create(size, sf::Color::White).value();
+        auto texture = sf::Texture::loadFromImage(graphicsContext, image).value();
+
+        auto baseRenderTexture = sf::RenderTexture::create(graphicsContext, size, {.antiAliasingLevel = 4, .sRgbCapable = true})
+                                     .value();
+
+        auto leftInnerRT = sf::RenderTexture::create(graphicsContext, size, {.antiAliasingLevel = 4, .sRgbCapable = true})
+                               .value();
+
+        const sf::Vertex leftVertexArray[6]{{{0.f, 0.f}, sf::Color::Red, {0.f, 0.f}},
+                                            {{halfWidth, 0.f}, sf::Color::Red, {halfWidth, 0.f}},
+                                            {{0.f, height}, sf::Color::Red, {0.f, height}},
+                                            {{0.f, height}, sf::Color::Green, {0.f, height}},
+                                            {{halfWidth, 0.f}, sf::Color::Green, {halfWidth, 0.f}},
+                                            {{halfWidth, height}, sf::Color::Green, {halfWidth, height}}};
+
+        leftInnerRT.clear();
+
+        sf::Sprite sprite(texture.getRect());
+        leftInnerRT.draw(sprite, texture);
+
+        baseRenderTexture.clear();
+
+        leftInnerRT.display();
+        baseRenderTexture.draw(leftVertexArray, sf::PrimitiveType::Triangles, {.texture = &leftInnerRT.getTexture()});
+
+        baseRenderTexture.display();
+
+        auto finalImage = baseRenderTexture.getTexture().copyToImage();
+
+        CHECK(finalImage.getSize() == size);
+        CHECK(finalImage.getPixel({0u, 0u}) == sf::Color::Red);
+
+        CHECK(finalImage.getPixel({0u, 31u}) == sf::Color::Red);
+        CHECK(finalImage.getPixel({31u, 0u}) == sf::Color::Red);
+        CHECK(finalImage.getPixel({31u, 31u}) == sf::Color::Red);
+
+        CHECK(finalImage.getPixel({0u, 60u}) == sf::Color::Red);
+        CHECK(finalImage.getPixel({60u, 0u}) == sf::Color::Red);
+
+        CHECK(finalImage.getPixel({6u, 58u}) == sf::Color::Green);
+        CHECK(finalImage.getPixel({58u, 6u}) == sf::Color::Green);
+        CHECK(finalImage.getPixel({61u, 61u}) == sf::Color::Green);
     }
 }
