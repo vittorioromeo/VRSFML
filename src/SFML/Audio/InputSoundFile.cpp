@@ -197,11 +197,13 @@ const ChannelMap& InputSoundFile::getChannelMap() const
 Time InputSoundFile::getDuration() const
 {
     // Make sure we don't divide by 0
-    if (m_channelMap.isEmpty() || m_sampleRate == 0)
+    if (m_channelMap.isEmpty() || m_sampleRate == 0u)
         return Time::Zero;
 
-    return seconds(static_cast<float>(m_sampleCount) / static_cast<float>(m_channelMap.getSize()) /
-                   static_cast<float>(m_sampleRate));
+    SFML_BASE_ASSERT(m_sampleCount % m_channelMap.getSize() == 0u);
+    const auto samplesPerChannel = m_sampleCount / m_channelMap.getSize();
+
+    return microseconds(static_cast<base::I64>(samplesPerChannel * 1'000'000 / m_sampleRate));
 }
 
 
@@ -209,11 +211,13 @@ Time InputSoundFile::getDuration() const
 Time InputSoundFile::getTimeOffset() const
 {
     // Make sure we don't divide by 0
-    if (m_channelMap.isEmpty() || m_sampleRate == 0)
+    if (m_channelMap.isEmpty() || m_sampleRate == 0u)
         return Time::Zero;
 
-    return seconds(static_cast<float>(m_sampleOffset) / static_cast<float>(m_channelMap.getSize()) /
-                   static_cast<float>(m_sampleRate));
+    SFML_BASE_ASSERT(m_sampleOffset % m_channelMap.getSize() == 0u);
+    const auto sampleOffsetPerChannel = m_sampleOffset / m_channelMap.getSize();
+
+    return microseconds(static_cast<base::I64>(sampleOffsetPerChannel * 1'000'000 / m_sampleRate));
 }
 
 

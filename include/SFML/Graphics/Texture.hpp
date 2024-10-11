@@ -258,27 +258,6 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Update a part of this texture from another texture
     ///
-    /// Although the source texture can be smaller than this texture,
-    /// this function is usually used for updating the whole texture.
-    /// The other overload, which has an additional destination
-    /// argument, is more convenient for updating a sub-area of this
-    /// texture.
-    ///
-    /// No additional check is performed on the size of the passed
-    /// texture. Passing a texture bigger than this texture
-    /// will lead to an undefined behavior.
-    ///
-    /// This function does nothing if either texture was not
-    /// previously created.
-    ///
-    /// \param texture Source texture to copy to this texture
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool update(const Texture& texture);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Update a part of this texture from another texture
-    ///
     /// No additional check is performed on the size of the texture.
     /// Passing an invalid combination of texture size and destination
     /// will lead to an undefined behavior.
@@ -290,28 +269,7 @@ public:
     /// \param dest    Coordinates of the destination position
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool update(const Texture& texture, Vector2u dest);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Update the texture from an image
-    ///
-    /// Although the source image can be smaller than the texture,
-    /// this function is usually used for updating the whole texture.
-    /// The other overload, which has an additional destination
-    /// argument, is more convenient for updating a sub-area of the
-    /// texture.
-    ///
-    /// No additional check is performed on the size of the image.
-    /// Passing an image bigger than the texture will lead to an
-    /// undefined behavior.
-    ///
-    /// This function does nothing if the texture was not
-    /// previously created.
-    ///
-    /// \param image Image to copy to the texture
-    ///
-    ////////////////////////////////////////////////////////////
-    void update(const Image& image);
+    [[nodiscard]] bool update(const Texture& texture, Vector2u dest = {0u, 0u});
 
     ////////////////////////////////////////////////////////////
     /// \brief Update a part of the texture from an image
@@ -327,28 +285,7 @@ public:
     /// \param dest  Coordinates of the destination position
     ///
     ////////////////////////////////////////////////////////////
-    void update(const Image& image, Vector2u dest);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Update the texture from the contents of a window
-    ///
-    /// Although the source window can be smaller than the texture,
-    /// this function is usually used for updating the whole texture.
-    /// The other overload, which has an additional destination
-    /// argument, is more convenient for updating a sub-area of the
-    /// texture.
-    ///
-    /// No additional check is performed on the size of the window.
-    /// Passing a window bigger than the texture will lead to an
-    /// undefined behavior.
-    ///
-    /// This function does nothing if either the texture or the window
-    /// was not previously created.
-    ///
-    /// \param window Window to copy to the texture
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool update(const Window& window);
+    void update(const Image& image, Vector2u dest = {0u, 0u});
 
     ////////////////////////////////////////////////////////////
     /// \brief Update a part of the texture from the contents of a window
@@ -364,7 +301,7 @@ public:
     /// \param dest   Coordinates of the destination position
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool update(const Window& window, Vector2u dest);
+    [[nodiscard]] bool update(const Window& window, Vector2u dest = {0u, 0u});
 
     ////////////////////////////////////////////////////////////
     /// \brief Enable or disable the smooth filter

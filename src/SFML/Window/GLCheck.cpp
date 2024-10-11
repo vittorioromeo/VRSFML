@@ -9,7 +9,6 @@
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Path.hpp"
 
-
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
@@ -28,7 +27,6 @@ bool glCheckError(const char* file, unsigned int line, const char* expression)
               << "\nExpression:\n   " << expression << "\nError description:\n   " << error << "\n   " << description
               << '\n';
 
-    throw 100;
         return false;
     };
 

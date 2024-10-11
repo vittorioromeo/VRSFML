@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Graphics/CopyFlippedFramebuffer.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
 #include "SFML/Graphics/Texture.hpp"
@@ -20,11 +21,8 @@
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/TrivialVector.hpp"
-
-#ifdef SFML_OPENGL_ES
-#include "SFML/Base/PtrDiffT.hpp"
-#endif
 
 #include <atomic>
 #include <utility>
@@ -403,14 +401,6 @@ void Texture::update(const base::U8* pixels, Vector2u size, Vector2u dest)
 
 
 ////////////////////////////////////////////////////////////
-bool Texture::update(const Texture& texture)
-{
-    // Update the whole texture
-    return update(texture, {0, 0});
-}
-
-
-////////////////////////////////////////////////////////////
 bool Texture::update(const Texture& texture, Vector2u dest)
 {
     SFML_BASE_ASSERT(dest.x + texture.m_size.x <= m_size.x && "Destination x coordinate is outside of texture");
@@ -497,24 +487,9 @@ bool Texture::update(const Texture& texture, Vector2u dest)
 
 
 ////////////////////////////////////////////////////////////
-void Texture::update(const Image& image)
-{
-    // Update the whole texture
-    update(image.getPixelsPtr(), image.getSize(), {0u, 0u});
-}
-
-
-////////////////////////////////////////////////////////////
 void Texture::update(const Image& image, Vector2u dest)
 {
     update(image.getPixelsPtr(), image.getSize(), dest);
-}
-
-
-////////////////////////////////////////////////////////////
-[[nodiscard]] bool Texture::update(const Window& window)
-{
-    return update(window, {0u, 0u});
 }
 
 
@@ -568,8 +543,17 @@ bool Texture::update(const Window& window, Vector2u dest)
         // Since we don't want scissor testing to interfere with our copying, we temporarily disable it for the blit if it is enabled
         const priv::ScissorDisableGuard scissorDisableGuard;
 
-        // Blit the texture contents from the source to the destination texture
-        priv::blitFramebuffer(/* invertYAxis */ false, window.getSize(), {0u, 0u}, dest);
+        // TODO P1: avoid creating this texture multiple times
+        base::Optional<Texture> optTmpTexture;
+        if (!priv::copyFlippedFramebuffer(*m_graphicsContext,
+                                          optTmpTexture,
+                                          m_sRgb,
+                                          window.getSize(),
+                                          sourceFrameBuffer,
+                                          destFrameBuffer,
+                                          {0u, 0u},
+                                          dest))
+            priv::err() << "Error flipping render texture during FBO copy";
     }
     else
     {

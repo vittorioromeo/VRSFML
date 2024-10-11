@@ -51,7 +51,7 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
             CHECK(window.getView().size == sf::Vector2f{256, 256});
             CHECK(window.getView().rotation == sf::Angle::Zero);
             CHECK(window.getView().viewport == sf::FloatRect({0, 0}, {1, 1}));
-            CHECK(window.getView().getTransform() == sf::Transform(0.0078125f, 0, -1, 0, -0.0078125f, 1));
+            CHECK(window.getView().getTransform() == Approx(sf::Transform(0.0078125f, 0, -1, 0, -0.0078125f, 1)));
         }
 
         SECTION("State and settings")
@@ -77,11 +77,26 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 
     SECTION("Clear")
     {
-        sf::RenderWindow window(graphicsContext, {.size{256u, 256u}, .bitsPerPixel = 24, .title = "RenderWindow Tests"});
+        unsigned int testAALevel{};
+        bool         testSRGBCapable{};
+
+        // clang-format off
+        SUBCASE("no AA, no SRGB") { testAALevel = 0u; testSRGBCapable = false; }
+        SUBCASE("AA, no SRGB")    { testAALevel = 4u; testSRGBCapable = false; }
+        SUBCASE("no AA, SRGB")    { testAALevel = 0u; testSRGBCapable = true; }
+#ifndef SFML_OPENGL_ES
+        SUBCASE("AA, SRGB")       { testAALevel = 4u; testSRGBCapable = true; }
+#endif
+        // clang-format on
+
+        sf::RenderWindow window(graphicsContext,
+                                {.size{256u, 256u},
+                                 .title = "RenderWindow Tests",
+                                 .contextSettings = {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable}});
 
         REQUIRE(window.getSize() == sf::Vector2u{256, 256});
 
-        auto texture = sf::Texture::create(graphicsContext, sf::Vector2u{256, 256}).value();
+        auto texture = sf::Texture::create(graphicsContext, sf::Vector2u{256, 256}, testSRGBCapable).value();
 
         window.clear(sf::Color::Red);
         CHECK(texture.update(window));
