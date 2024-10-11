@@ -254,21 +254,11 @@ public:
         {
             glCheck(glBindRenderbuffer(GL_RENDERBUFFER, bufferId));
 
-            if (antiAliasingLevel == 0u)
-            {
-                glCheck(glRenderbufferStorage(GL_RENDERBUFFER,
-                                              internalFormat,
-                                              static_cast<GLsizei>(size.x),
-                                              static_cast<GLsizei>(size.y)));
-            }
-            else
-            {
-                glCheck(glRenderbufferStorageMultisample(GL_RENDERBUFFER,
-                                                         static_cast<GLsizei>(antiAliasingLevel),
-                                                         internalFormat,
-                                                         static_cast<GLsizei>(size.x),
-                                                         static_cast<GLsizei>(size.y)));
-            }
+            glCheck(glRenderbufferStorageMultisample(GL_RENDERBUFFER,
+                                                     static_cast<GLsizei>(antiAliasingLevel),
+                                                     internalFormat,
+                                                     static_cast<GLsizei>(size.x),
+                                                     static_cast<GLsizei>(size.y)));
         };
 
         depth       = contextSettings.depthBits != 0u;
@@ -294,7 +284,7 @@ public:
             if (!colorBuffer)
                 return fail("failed to create the attached multisample color buffer");
 
-            bindRenderbufferAndSetFormat(colorBuffer, contextSettings.antiAliasingLevel, sRgb ? GL_SRGB8_ALPHA8_EXT : GL_RGBA);
+            bindRenderbufferAndSetFormat(colorBuffer, contextSettings.antiAliasingLevel, sRgb ? GL_SRGB8_ALPHA8 : GL_RGBA);
         }
 
         // We can't create an FBO now if there is no active context
