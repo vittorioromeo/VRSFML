@@ -3,6 +3,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Config.hpp"
+
 #include "SFML/Window/GLCheck.hpp"
 #include "SFML/Window/GLUtils.hpp"
 #include "SFML/Window/Glad.hpp"
@@ -49,6 +51,29 @@ void blitFramebuffer(bool invertYAxis, UIntRect src, UIntRect dst)
 void blitFramebuffer(bool invertYAxis, Vector2u size, Vector2u srcPos, Vector2u dstPos)
 {
     blitFramebuffer(invertYAxis, {srcPos, size}, {dstPos, size});
+}
+
+
+////////////////////////////////////////////////////////////
+void copyFramebuffer(bool invertYAxis, Vector2u size, unsigned int srcFBO, unsigned int dstFBO, Vector2u srcPos, Vector2u dstPos)
+{
+    glCheck(glBindFramebuffer(GL_READ_FRAMEBUFFER, srcFBO));
+    glCheck(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dstFBO));
+
+    blitFramebuffer(invertYAxis, size, srcPos, dstPos);
+}
+
+
+////////////////////////////////////////////////////////////
+unsigned int generateAndBindFramebuffer()
+{
+    GLuint out{};
+    glCheck(glGenFramebuffers(1, &out));
+
+    if (out != 0u)
+        glCheck(glBindFramebuffer(GL_FRAMEBUFFER, out));
+
+    return out;
 }
 
 

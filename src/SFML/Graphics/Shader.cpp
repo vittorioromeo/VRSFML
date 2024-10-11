@@ -264,33 +264,34 @@ struct StringEq
 ////////////////////////////////////////////////////////////
 [[nodiscard]] sf::base::StringView adjustPreamble(sf::base::StringView src)
 {
-
+    constexpr sf::base::StringView preamble{
 #if defined(SFML_SYSTEM_EMSCRIPTEN)
 
-    // Emscripten/WebGL always requires `#version 300 es` and precision
-    constexpr sf::base::StringView preamble{R"glsl(#version 300 es
+        // Emscripten/WebGL always requires `#version 300 es` and precision
+        R"glsl(#version 300 es
 
 precision mediump float;
 
-        )glsl"};
+)glsl"
 
 #elif defined(SFML_OPENGL_ES)
 
-    // Desktop/mobile GLES can use `#version 310 es` and precision
-    constexpr sf::base::StringView preamble{R"glsl(#version 310 es
+        // Desktop/mobile GLES can use `#version 310 es` and precision
+        R"glsl(#version 310 es
 
 precision mediump float;
 
-        )glsl"};
+)glsl"
 
 #else
 
-    // Desktop GL can use `#version 430 core`
-    constexpr sf::base::StringView preamble{R"glsl(#version 430 core
+        // Desktop GL can use `#version 430 core`
+        R"glsl(#version 430 core
 
-)glsl"};
+)glsl"
 
 #endif
+    };
 
     thread_local sf::base::TrivialVector<char> buffer; // Cannot reuse the other buffer here
     buffer.clear();

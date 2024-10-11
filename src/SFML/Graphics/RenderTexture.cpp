@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Graphics/CopyFlippedFramebuffer.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderTexture.hpp"
@@ -67,29 +68,16 @@ void deleteFramebuffer(unsigned int id)
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] GLuint generateAndBindFramebuffer()
-{
-    GLuint out{};
-    glCheck(glGenFramebuffers(1, &out));
-
-    if (out != 0u)
-        glCheck(glBindFramebuffer(GL_FRAMEBUFFER, out));
-
-    return out;
-}
-
-
-////////////////////////////////////////////////////////////
 void linkStencilDepthBuffer(const GLuint stencilDepthBuffer, const bool stencil, const bool depth)
 {
     if (!stencilDepthBuffer)
         return;
 
-    if (depth)
-        glCheck(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, stencilDepthBuffer));
-
     if (stencil)
         glCheck(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, stencilDepthBuffer));
+
+    if (depth)
+        glCheck(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, stencilDepthBuffer));
 }
 
 
@@ -168,7 +156,7 @@ private:
         SFML_BASE_ASSERT(multisample);
 
         // Create the multisample framebuffer object
-        const GLuint multisampleFramebufferId = generateAndBindFramebuffer();
+        const GLuint multisampleFramebufferId = priv::generateAndBindFramebuffer();
         if (!multisampleFramebufferId)
             return createFail("failed to create the multisample framebuffer object");
 
@@ -186,7 +174,7 @@ private:
         SFML_BASE_ASSERT(!multisample);
 
         // Create the framebuffer object
-        const GLuint tempFramebufferId = generateAndBindFramebuffer();
+        const GLuint tempFramebufferId = priv::generateAndBindFramebuffer();
         if (!tempFramebufferId)
             return createFail("failed to create the temp framebuffer object");
 
@@ -202,7 +190,7 @@ private:
     [[nodiscard]] bool createFramebuffer()
     {
         // Create the framebuffer object
-        const GLuint framebufferId = generateAndBindFramebuffer();
+        const GLuint framebufferId = priv::generateAndBindFramebuffer();
         if (!framebufferId)
             return createFail("failed to create the framebuffer object");
 
@@ -284,7 +272,7 @@ public:
             if (!colorBuffer)
                 return fail("failed to create the attached multisample color buffer");
 
-            bindRenderbufferAndSetFormat(colorBuffer, contextSettings.antiAliasingLevel, sRgb ? GL_SRGB8_ALPHA8 : GL_RGBA);
+            bindRenderbufferAndSetFormat(colorBuffer, contextSettings.antiAliasingLevel, sRgb ? GL_SRGB8_ALPHA8 : GL_RGBA8);
         }
 
         // We can't create an FBO now if there is no active context
@@ -360,10 +348,8 @@ public:
         const priv::ScissorDisableGuard scissorDisableGuard;
 
         // Blit from the auxiliary (multisample or temp) FBO to the main FBO, flipping Y axis
-        glCheck(glBindFramebuffer(GL_READ_FRAMEBUFFER, auxFramebufferIt->second));
-        glCheck(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebufferIt->second));
-
-        priv::blitFramebuffer(/* invertYAxis */ true, size, {0u, 0u}, {0u, 0u});
+        if (!priv::copyFlippedFramebuffer(tmpTexture, size, auxFramebufferIt->second, framebufferIt->second))
+            priv::err() << "Error flipping render texture during FBO copy";
     }
 };
 

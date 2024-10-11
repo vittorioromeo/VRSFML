@@ -17,6 +17,7 @@
 #include <LoadIntoMemoryUtil.hpp>
 #include <WindowUtil.hpp>
 
+
 TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
 {
     sf::GraphicsContext graphicsContext;

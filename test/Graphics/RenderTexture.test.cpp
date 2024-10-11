@@ -94,7 +94,19 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
 
     SECTION("Sanity check 1")
     {
-        auto renderTexture = sf::RenderTexture::create(graphicsContext, {64, 64}, {.antiAliasingLevel = 1, .sRgbCapable = true})
+        unsigned int testAALevel{};
+        bool         testSRGBCapable{};
+
+        // clang-format off
+        SUBCASE("no AA, no SRGB") { testAALevel = 0u; testSRGBCapable = false; }
+        SUBCASE("AA, no SRGB")    { testAALevel = 4u; testSRGBCapable = false; }
+        SUBCASE("no AA, SRGB")    { testAALevel = 0u; testSRGBCapable = true; }
+        SUBCASE("AA, SRGB")       { testAALevel = 4u; testSRGBCapable = true; }
+        // clang-format on
+
+        auto renderTexture = sf::RenderTexture::create(graphicsContext,
+                                                       {64, 64},
+                                                       {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
                                  .value();
 
         renderTexture.clear(sf::Color::Green);
@@ -106,6 +118,16 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
 
     SECTION("Sanity check 2")
     {
+        unsigned int testAALevel{};
+        bool         testSRGBCapable{};
+
+        // clang-format off
+        SUBCASE("no AA, no SRGB") { testAALevel = 0u; testSRGBCapable = false; }
+        SUBCASE("AA, no SRGB")    { testAALevel = 4u; testSRGBCapable = false; }
+        SUBCASE("no AA, SRGB")    { testAALevel = 0u; testSRGBCapable = true; }
+        SUBCASE("AA, SRGB")       { testAALevel = 4u; testSRGBCapable = true; }
+        // clang-format on
+
         const float width     = 128.f;
         const float height    = 64.f;
         const float halfWidth = width / 2.f;
@@ -115,12 +137,18 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
         auto image   = sf::Image::create(size, sf::Color::White).value();
         auto texture = sf::Texture::loadFromImage(graphicsContext, image).value();
 
-        auto baseRenderTexture = sf::RenderTexture::create(graphicsContext, size, {.antiAliasingLevel = 4, .sRgbCapable = true})
+        auto baseRenderTexture = sf::RenderTexture::create(graphicsContext,
+                                                           size,
+                                                           {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
                                      .value();
 
-        auto leftInnerRT = sf::RenderTexture::create(graphicsContext, size, {.antiAliasingLevel = 4, .sRgbCapable = true})
+        auto leftInnerRT = sf::RenderTexture::create(graphicsContext,
+                                                     size,
+                                                     {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
                                .value();
-        auto rightInnerRT = sf::RenderTexture::create(graphicsContext, size, {.antiAliasingLevel = 4, .sRgbCapable = true})
+        auto rightInnerRT = sf::RenderTexture::create(graphicsContext,
+                                                      size,
+                                                      {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
                                 .value();
 
         const sf::Vertex leftVertexArray[6]{{{0.f, 0.f}, sf::Color::White, {0.f, 0.f}},
@@ -165,6 +193,16 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
 
     SECTION("Sanity check -- flipping")
     {
+        unsigned int testAALevel{};
+        bool         testSRGBCapable{};
+
+        // clang-format off
+        SUBCASE("no AA, no SRGB") { testAALevel = 0u; testSRGBCapable = false; }
+        SUBCASE("AA, no SRGB")    { testAALevel = 4u; testSRGBCapable = false; }
+        SUBCASE("no AA, SRGB")    { testAALevel = 0u; testSRGBCapable = true; }
+        SUBCASE("AA, SRGB")       { testAALevel = 4u; testSRGBCapable = true; }
+        // clang-format on
+
         const float width     = 128.f;
         const float height    = 64.f;
         const float halfWidth = width / 2.f;
@@ -174,10 +212,14 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
         auto image   = sf::Image::create(size, sf::Color::White).value();
         auto texture = sf::Texture::loadFromImage(graphicsContext, image).value();
 
-        auto baseRenderTexture = sf::RenderTexture::create(graphicsContext, size, {.antiAliasingLevel = 4, .sRgbCapable = true})
+        auto baseRenderTexture = sf::RenderTexture::create(graphicsContext,
+                                                           size,
+                                                           {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
                                      .value();
 
-        auto leftInnerRT = sf::RenderTexture::create(graphicsContext, size, {.antiAliasingLevel = 4, .sRgbCapable = true})
+        auto leftInnerRT = sf::RenderTexture::create(graphicsContext,
+                                                     size,
+                                                     {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
                                .value();
 
         const sf::Vertex leftVertexArray[6]{{{0.f, 0.f}, sf::Color::Red, {0.f, 0.f}},
