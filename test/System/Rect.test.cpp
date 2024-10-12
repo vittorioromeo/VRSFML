@@ -111,4 +111,58 @@ TEMPLATE_TEST_CASE("[System] sf::Rect", "", int, float)
             STATIC_CHECK_FALSE(sf::Rect<TestType>({1, 3}, {2, 5}) != sf::Rect<TestType>({1, 3}, {2, 5}));
         }
     }
+
+    SECTION("Get anchor point")
+    {
+        constexpr sf::Rect<TestType> r({0, 0}, {1024, 1024});
+
+        STATIC_CHECK(r.getAnchorPoint({0.f, 0.f}) == sf::Vector2<TestType>{0, 0});
+        STATIC_CHECK(r.getAnchorPoint({0.5f, 0.f}) == sf::Vector2<TestType>{512, 0});
+        STATIC_CHECK(r.getAnchorPoint({1.f, 0.f}) == sf::Vector2<TestType>{1024, 0});
+        STATIC_CHECK(r.getAnchorPoint({0.f, 0.5f}) == sf::Vector2<TestType>{0, 512});
+        STATIC_CHECK(r.getAnchorPoint({0.5f, 0.5f}) == sf::Vector2<TestType>{512, 512});
+        STATIC_CHECK(r.getAnchorPoint({1.f, 0.5f}) == sf::Vector2<TestType>{1024, 512});
+        STATIC_CHECK(r.getAnchorPoint({0.f, 1.f}) == sf::Vector2<TestType>{0, 1024});
+        STATIC_CHECK(r.getAnchorPoint({0.5f, 1.f}) == sf::Vector2<TestType>{512, 1024});
+        STATIC_CHECK(r.getAnchorPoint({1.f, 1.f}) == sf::Vector2<TestType>{1024, 1024});
+    }
+
+    SECTION("Get anchor point offset")
+    {
+        constexpr sf::Rect<TestType> r({0, 0}, {1000, 1000});
+
+        STATIC_CHECK(r.getAnchorPointOffset({0.f, 0.f}) == sf::Vector2<TestType>{0, 0});
+        STATIC_CHECK(r.getAnchorPointOffset({0.5f, 0.f}) == sf::Vector2<TestType>{-500, 0});
+        STATIC_CHECK(r.getAnchorPointOffset({1.f, 0.f}) == sf::Vector2<TestType>{-1000, 0});
+
+        STATIC_CHECK(r.getAnchorPointOffset({0.f, 0.5f}) == sf::Vector2<TestType>{0, -500});
+        STATIC_CHECK(r.getAnchorPointOffset({0.5f, 0.5f}) == sf::Vector2<TestType>{-500, -500});
+        STATIC_CHECK(r.getAnchorPointOffset({1.f, 0.5f}) == sf::Vector2<TestType>{-1000, -500});
+
+        STATIC_CHECK(r.getAnchorPointOffset({0.f, 1.f}) == sf::Vector2<TestType>{0, -1000});
+        STATIC_CHECK(r.getAnchorPointOffset({0.5f, 1.f}) == sf::Vector2<TestType>{-500, -1000});
+        STATIC_CHECK(r.getAnchorPointOffset({1.f, 1.f}) == sf::Vector2<TestType>{-1000, -1000});
+    }
+
+    SECTION("Set anchor point")
+    {
+        const auto doTest = [](sf::Vector2f factors, sf::Vector2<TestType> expected)
+        {
+            sf::Rect<TestType> r({0, 0}, {1000, 1000});
+            r.setAnchorPoint(factors, {500, 500});
+            CHECK(r.position == expected);
+        };
+
+        doTest({0.f, 0.f}, {500, 500});
+        doTest({0.5f, 0.f}, {0, 500});
+        doTest({1.f, 0.f}, {-500, 500});
+
+        doTest({0.f, 0.5f}, {500, 0});
+        doTest({0.5f, 0.5f}, {0, 0});
+        doTest({1.f, 0.5f}, {-500, 0});
+
+        doTest({0.f, 1.f}, {500, -500});
+        doTest({0.5f, 1.f}, {0, -500});
+        doTest({1.f, 1.f}, {-500, -500});
+    }
 }
