@@ -23,7 +23,7 @@ struct [[nodiscard]] Array
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::const]] constexpr SizeT size() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr SizeT size() noexcept
     {
         return N;
     }
@@ -103,10 +103,6 @@ struct [[nodiscard]] Array
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] constexpr bool operator==(const Array& rhs) const = default;
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr bool operator!=(const Array& rhs) const = default;
 };
 
 

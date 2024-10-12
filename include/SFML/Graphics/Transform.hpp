@@ -233,18 +233,6 @@ struct [[nodiscard]] Transform
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator==(const Transform& rhs) const = default;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Overload of binary `operator!=` to compare two transforms
-    ///
-    /// This call is equivalent to `!(lhs == rhs)`.
-    ///
-    /// \param rhs Right operand
-    ///
-    /// \return `true` if the transforms are not equal, `false` otherwise
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator!=(const Transform& rhs) const = default;
-
-    ////////////////////////////////////////////////////////////
     // Static member data
     ////////////////////////////////////////////////////////////
     // NOLINTNEXTLINE(readability-identifier-naming)

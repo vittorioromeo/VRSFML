@@ -56,18 +56,6 @@ public:
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator==(const Rect<T>& rhs) const = default;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Overload of binary `operator!=`
-    ///
-    /// This operator compares strict difference between two rectangles.
-    ///
-    /// \param rhs Right operand
-    ///
-    /// \return `true` if \a lhs is not equal to \a rhs
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator!=(const Rect<T>& rhs) const = default;
-
-    ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////

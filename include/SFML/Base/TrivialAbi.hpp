@@ -2,14 +2,14 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
-#if __has_builtin(__builtin_assume)
+#ifdef __clang__
 
 ////////////////////////////////////////////////////////////
-#define SFML_BASE_ASSUME(...) __builtin_assume(__VA_ARGS__)
+#define SFML_BASE_TRIVIAL_ABI [[clang::trivial_abi]]
 
 #else
 
 ////////////////////////////////////////////////////////////
-#define SFML_BASE_ASSUME(...)
+#define SFML_BASE_TRIVIAL_ABI
 
 #endif

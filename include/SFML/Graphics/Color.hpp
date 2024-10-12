@@ -46,18 +46,6 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     [[nodiscard, gnu::always_inline, gnu::const]] constexpr bool operator==(const Color& rhs) const = default;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Overload of the `operator!=`
-    ///
-    /// This operator compares two colors and check if they are different.
-    ///
-    /// \param rhs Right operand
-    ///
-    /// \return `true` if colors are different, `false` if they are equal
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::const]] constexpr bool operator!=(const Color& rhs) const = default;
-
-    ////////////////////////////////////////////////////////////
     // Static member data
     ////////////////////////////////////////////////////////////
     // NOLINTBEGIN(readability-identifier-naming)

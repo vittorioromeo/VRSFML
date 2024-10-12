@@ -41,17 +41,6 @@ struct [[nodiscard]] SFML_WINDOW_API VideoMode
     [[nodiscard]] SFML_WINDOW_API bool operator==(const VideoMode& rhs) const = default;
 
     ////////////////////////////////////////////////////////////
-    /// \relates VideoMode
-    /// \brief Overload of `operator!=` to compare two video modes
-    ///
-    /// \param rhs Right operand (a video mode)
-    ///
-    /// \return `true` if modes are different
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_WINDOW_API bool operator!=(const VideoMode& rhs) const = default;
-
-    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     Vector2u     size;              //!< Video mode width and height, in pixels

@@ -102,18 +102,6 @@ public:
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr bool operator==(const Vector3<T>& rhs) const = default;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Overload of binary `operator!=`
-    ///
-    /// This operator compares strict difference between two vectors.
-    ///
-    /// \param rhs Right operand
-    ///
-    /// \return `true` if \a `lhs` is not equal to \a `rhs`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr bool operator!=(const Vector3<T>& rhs) const = default;
-
-    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     T x{}; //!< X coordinate of the vector

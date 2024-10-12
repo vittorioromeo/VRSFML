@@ -76,16 +76,6 @@ struct [[nodiscard]] SFML_GRAPHICS_API StencilValue
     ////////////////////////////////////////////////////////////
     [[nodiscard]] SFML_GRAPHICS_API constexpr bool operator==(const StencilValue& rhs) const = default;
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Overload of the `operator!=`
-    ///
-    /// \param rhs Right operand
-    ///
-    /// \return `true` if stencil values are different, `false` if they are equal
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_GRAPHICS_API constexpr bool operator!=(const StencilValue& rhs) const = default;
-
     unsigned int value{}; //!< The stored stencil value
 };
 
@@ -111,16 +101,6 @@ struct [[nodiscard]] SFML_GRAPHICS_API StencilMode
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] SFML_GRAPHICS_API constexpr bool operator==(const StencilMode& rhs) const = default;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Overload of the `operator!=`
-    ///
-    /// \param rhs Right operand
-    ///
-    /// \return `true` if stencil modes are different, `false` if they are equal
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_GRAPHICS_API constexpr bool operator!=(const StencilMode& rhs) const = default;
 };
 
 } // namespace sf

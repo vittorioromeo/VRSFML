@@ -7,12 +7,13 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Traits/IsBaseOf.hpp"
 #include "SFML/Base/Traits/IsSame.hpp"
+#include "SFML/Base/TrivialAbi.hpp"
 
 
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-struct UniquePtrDefaultDeleter
+struct SFML_BASE_TRIVIAL_ABI UniquePtrDefaultDeleter
 {
     template <typename T>
     [[gnu::always_inline]] void operator()(T* const ptr) const noexcept
@@ -24,7 +25,7 @@ struct UniquePtrDefaultDeleter
 
 ////////////////////////////////////////////////////////////
 template <typename T, typename TDeleter = UniquePtrDefaultDeleter>
-class UniquePtr : private TDeleter
+class SFML_BASE_TRIVIAL_ABI UniquePtr : private TDeleter
 {
     template <typename, typename>
     friend class UniquePtr;
@@ -123,20 +124,6 @@ public:
     [[nodiscard, gnu::always_inline, gnu::pure]] explicit operator bool() const noexcept
     {
         return m_ptr != nullptr;
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] bool operator==(const T* ptr) const noexcept
-    {
-        return m_ptr == ptr;
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] bool operator!=(const T* ptr) const noexcept
-    {
-        return m_ptr != ptr;
     }
 
 
