@@ -10,7 +10,7 @@
 #include "SFML/Graphics/Transformable.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
-#include "SFML/System/LayoutUtils.hpp"
+#include "SFML/System/AnchorPointMixin.hpp"
 #include "SFML/System/Rect.hpp"
 
 #include "SFML/Base/Math/Fabs.hpp"
@@ -23,7 +23,7 @@ namespace sf
 ///        own transformations, color, etc.
 ///
 ////////////////////////////////////////////////////////////
-struct SFML_GRAPHICS_API Sprite : Transformable, LayoutUtils::Mixin<Sprite>
+struct SFML_GRAPHICS_API Sprite : Transformable, AnchorPointMixin<Sprite>
 {
 public:
     ////////////////////////////////////////////////////////////

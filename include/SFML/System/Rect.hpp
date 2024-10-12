@@ -6,6 +6,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Vector2.hpp"
 
+#include "SFML/Base/Traits/IsSame.hpp"
+
 
 namespace sf
 {
@@ -31,14 +33,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] constexpr bool contains(Vector2<T> point) const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the position of the center of the rectangle
-    ///
-    /// \return Center of rectangle
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Vector2<T> getCenter() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert to another `Rect` of type `OtherRect`
@@ -72,6 +66,75 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator!=(const Rect<T>& rhs) const = default;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vector2<T> getAnchorPoint(Vector2f factors) const
+    {
+        if constexpr (SFML_BASE_IS_SAME(T, float))
+        {
+            return position + size.componentWiseMul(factors);
+        }
+        else
+        {
+            return position + size.toVector2f().componentWiseMul(factors).template to<Vector2<T>>();
+        }
+    }
+
+#define SFML_PRIV_DEFINE_RECT_ANCHOR_GETTER(name, ...)                                           \
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vector2<T> name() const \
+    {                                                                                            \
+        return getAnchorPoint(__VA_ARGS__);                                                      \
+    }
+
+    // clang-format off
+SFML_PRIV_DEFINE_RECT_ANCHOR_GETTER(getTopLeft,      {0.f,  0.f});
+SFML_PRIV_DEFINE_RECT_ANCHOR_GETTER(getTopCenter,    {0.5f, 0.f});
+SFML_PRIV_DEFINE_RECT_ANCHOR_GETTER(getTopRight,     {1.f,  0.f});
+SFML_PRIV_DEFINE_RECT_ANCHOR_GETTER(getCenterLeft,   {0.f,  0.5f});
+SFML_PRIV_DEFINE_RECT_ANCHOR_GETTER(getCenter,       {0.5f, 0.5f});
+SFML_PRIV_DEFINE_RECT_ANCHOR_GETTER(getCenterRight,  {1.f,  0.5f});
+SFML_PRIV_DEFINE_RECT_ANCHOR_GETTER(getBottomLeft,   {0.f,  1.f});
+SFML_PRIV_DEFINE_RECT_ANCHOR_GETTER(getBottomCenter, {0.5f, 1.f});
+SFML_PRIV_DEFINE_RECT_ANCHOR_GETTER(getBottomRight,  {1.f,  1.f});
+    // clang-format on
+
+#undef SFML_PRIV_DEFINE_RECT_ANCHOR_GETTER
+
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
+    constexpr Vector2<T> getAnchorPointOffset(Vector2f factors) const
+    {
+        return -(size.toVector2f().componentWiseMul(factors).template to<Vector2<T>>());
+    }
+
+    [[gnu::always_inline, gnu::flatten]]
+    constexpr void setAnchorPoint(Vector2f factors, Vector2<T> newPosition)
+    {
+        position = newPosition + getAnchorPointOffset(factors);
+    }
+
+
+#define SFML_PRIV_DEFINE_RECT_ANCHOR_SETTER(name, ...)                          \
+    [[gnu::always_inline, gnu::flatten]] constexpr void name(Vector2<T> newPos) \
+    {                                                                           \
+        return setAnchorPoint(__VA_ARGS__, newPos);                             \
+    }
+
+    // clang-format off
+SFML_PRIV_DEFINE_RECT_ANCHOR_SETTER(setTopLeft,      {0.f,  0.f});
+SFML_PRIV_DEFINE_RECT_ANCHOR_SETTER(setTopCenter,    {0.5f, 0.f});
+SFML_PRIV_DEFINE_RECT_ANCHOR_SETTER(setTopRight,     {1.f,  0.f});
+SFML_PRIV_DEFINE_RECT_ANCHOR_SETTER(setCenterLeft,   {0.f,  0.5f});
+SFML_PRIV_DEFINE_RECT_ANCHOR_SETTER(setCenter,       {0.5f, 0.5f});
+SFML_PRIV_DEFINE_RECT_ANCHOR_SETTER(setCenterRight,  {1.f,  0.5f});
+SFML_PRIV_DEFINE_RECT_ANCHOR_SETTER(setBottomLeft,   {0.f,  1.f});
+SFML_PRIV_DEFINE_RECT_ANCHOR_SETTER(setBottomCenter, {0.5f, 1.f});
+SFML_PRIV_DEFINE_RECT_ANCHOR_SETTER(setBottomRight,  {1.f,  1.f});
+    // clang-format on
+
+#undef SFML_PRIV_DEFINE_RECT_ANCHOR_SETTER
 
     ////////////////////////////////////////////////////////////
     // Member data

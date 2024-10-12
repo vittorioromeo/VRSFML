@@ -28,14 +28,6 @@ constexpr bool Rect<T>::contains(Vector2<T> point) const
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector2<T> Rect<T>::getCenter() const
-{
-    return position + size / T{2};
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
 template <typename OtherRect>
 constexpr OtherRect Rect<T>::to() const
 {

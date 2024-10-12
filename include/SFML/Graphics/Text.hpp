@@ -10,7 +10,7 @@
 #include "SFML/Graphics/Transformable.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
-#include "SFML/System/LayoutUtils.hpp"
+#include "SFML/System/AnchorPointMixin.hpp"
 #include "SFML/System/LifetimeDependant.hpp"
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/String.hpp"
@@ -33,7 +33,7 @@ struct RenderStates;
 /// \brief Graphical text that can be drawn to a render target
 ///
 ////////////////////////////////////////////////////////////
-class SFML_GRAPHICS_API Text : public Transformable, public LayoutUtils::Mixin<Text>
+class SFML_GRAPHICS_API Text : public Transformable, public AnchorPointMixin<Text>
 {
 public:
     ////////////////////////////////////////////////////////////

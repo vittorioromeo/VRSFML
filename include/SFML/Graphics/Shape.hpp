@@ -9,7 +9,7 @@
 #include "SFML/Graphics/Transformable.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
-#include "SFML/System/LayoutUtils.hpp"
+#include "SFML/System/AnchorPointMixin.hpp"
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vector2.hpp"
 
@@ -48,7 +48,7 @@ namespace sf
 /// \brief Base class for textured shapes with outline
 ///
 ////////////////////////////////////////////////////////////
-class SFML_GRAPHICS_API Shape : public Transformable, public LayoutUtils::Mixin<Shape>
+class SFML_GRAPHICS_API Shape : public Transformable, public AnchorPointMixin<Shape>
 {
 public:
     ////////////////////////////////////////////////////////////
