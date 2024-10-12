@@ -3,7 +3,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Graphics/CopyFlippedFramebuffer.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderTexture.hpp"
@@ -348,7 +347,7 @@ public:
         const priv::ScissorDisableGuard scissorDisableGuard;
 
         // Blit from the auxiliary (multisample or temp) FBO to the main FBO, flipping Y axis
-        if (!priv::copyFlippedFramebuffer(tmpTexture, size, auxFramebufferIt->second, framebufferIt->second))
+        if (!priv::copyFlippedFramebuffer(tmpTexture.getNativeHandle(), size, auxFramebufferIt->second, framebufferIt->second))
             priv::err() << "Error flipping render texture during FBO copy";
     }
 };
