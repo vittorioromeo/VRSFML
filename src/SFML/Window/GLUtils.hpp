@@ -43,6 +43,18 @@ void copyFramebuffer(bool         invertYAxis,
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
+[[nodiscard]] bool copyFlippedFramebuffer(
+    unsigned int tmpTextureNativeHandle,
+    Vector2u     size,
+    unsigned int srcFBO,
+    unsigned int dstFBO,
+    Vector2u     srcPos = {0u, 0u},
+    Vector2u     dstPos = {0u, 0u});
+
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
 [[nodiscard]] unsigned int generateAndBindFramebuffer();
 
 ////////////////////////////////////////////////////////////

@@ -3,7 +3,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Graphics/CopyFlippedFramebuffer.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
 #include "SFML/Graphics/Texture.hpp"
@@ -544,15 +543,16 @@ bool Texture::update(const Window& window, Vector2u dest)
         const priv::ScissorDisableGuard scissorDisableGuard;
 
         // TODO P1: avoid creating this texture multiple times
-        base::Optional<Texture> optTmpTexture;
-        if (!priv::copyFlippedFramebuffer(*m_graphicsContext,
-                                          optTmpTexture,
-                                          m_sRgb,
-                                          window.getSize(),
-                                          sourceFrameBuffer,
-                                          destFrameBuffer,
-                                          {0u, 0u},
-                                          dest))
+        auto tmpTexture = Texture::create(*m_graphicsContext, window.getSize(), m_sRgb);
+
+        if (!tmpTexture.hasValue())
+            priv::err() << "Failure to create intermediate texture in `copyFlippedFramebuffer`";
+        else if (!priv::copyFlippedFramebuffer(tmpTexture->getNativeHandle(),
+                                               window.getSize(),
+                                               sourceFrameBuffer,
+                                               destFrameBuffer,
+                                               {0u, 0u},
+                                               dest))
             priv::err() << "Error flipping render texture during FBO copy";
     }
     else
