@@ -188,7 +188,7 @@ endif()
 
 # use bundled dependencies by default on these systems and system dependencies by default on all others (maintains old behavior)
 if(SFML_OS_WINDOWS OR SFML_OS_LINUX OR SFML_OS_MACOS OR SFML_OS_IOS OR SFML_OS_ANDROID OR SFML_OS_EMSCRIPTEN)
-    set(SFML_USE_SYSTEM_DEPS_DEFAULT FALSE)
+    set(SFML_USE_SYSTEM_DEPS_DEFAULT OFF)
 else()
     set(SFML_USE_SYSTEM_DEPS_DEFAULT ON)
 endif()

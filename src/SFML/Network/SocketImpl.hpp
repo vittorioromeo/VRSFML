@@ -8,6 +8,7 @@
 #include "SFML/Network/SocketHandle.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 
 #if defined(SFML_SYSTEM_WINDOWS)
@@ -23,7 +24,15 @@
 
 #endif
 
-#include "SFML/Base/IntTypes.hpp"
+
+#ifdef htons
+#undef htons
+#endif
+
+#ifdef htonl
+#undef htonl
+#endif
+
 
 struct sockaddr_in;
 
