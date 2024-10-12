@@ -9,7 +9,7 @@ ARG COMPILER
 
 RUN \
   apt-get update \
-  && apt-get install -y --no-install-recommends nodejs npm git \
+  && apt-get install -y --no-install-recommends nodejs npm git lld \
   && apt-get install -y --no-install-recommends libxrandr-dev libxi-dev libxcursor-dev libglfw3-dev libudev-dev libfreetype-dev libogg-dev libvorbis-dev libflac-dev \
   && npm install -g setup-cpp@v0.38.3 \
   && setup-cpp \
