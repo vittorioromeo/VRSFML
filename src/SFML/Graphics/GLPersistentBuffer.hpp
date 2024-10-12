@@ -148,7 +148,7 @@ private:
         m_mappedPtr = glCheck(
             glMapNamedBufferRange(m_obj->getId(),
                                   0u,
-                                  newCapacity,
+                                  static_cast<GLsizeiptr>(newCapacity),
                                   GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_UNSYNCHRONIZED_BIT |
                                       GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT));
 

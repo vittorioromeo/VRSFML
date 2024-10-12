@@ -177,7 +177,7 @@ SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
     void* const ptr = glCheck(
         glMapNamedBufferRange(bufferId,
                               0u,
-                              dataByteCount,
+                              static_cast<GLsizeiptr>(dataByteCount),
                               GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_INVALIDATE_RANGE_BIT));
 
     SFML_BASE_MEMCPY(ptr, data, dataByteCount);

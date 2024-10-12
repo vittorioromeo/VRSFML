@@ -130,17 +130,6 @@ public:
     [[nodiscard]] SFML_NETWORK_API bool operator==(const IpAddress& rhs) const = default;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Overload of `operator!=` to compare two IP addresses
-    ///
-    /// \param lhs  Left operand (a IP address)
-    /// \param rhs Right operand (a IP address)
-    ///
-    /// \return `true` if both addresses are different
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_NETWORK_API bool operator!=(const IpAddress& rhs) const = default;
-
-    ////////////////////////////////////////////////////////////
     // Static member data
     ////////////////////////////////////////////////////////////
     // NOLINTBEGIN(readability-identifier-naming)

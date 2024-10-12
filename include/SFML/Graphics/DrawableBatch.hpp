@@ -123,13 +123,13 @@ struct PersistentGPUStorage
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void commitMoreVertices(base::SizeT count)
     {
-        nVertices += count;
+        nVertices += static_cast<IndexType>(count);
     }
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void commitMoreIndices(base::SizeT count)
     {
-        nIndices += count;
+        nIndices += static_cast<IndexType>(count);
     }
 
     ////////////////////////////////////////////////////////////

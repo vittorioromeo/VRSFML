@@ -109,16 +109,6 @@ struct [[nodiscard]] SFML_GRAPHICS_API BlendMode
     [[nodiscard]] SFML_GRAPHICS_API constexpr bool operator==(const BlendMode& rhs) const = default;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Overload of the `operator!=`
-    ///
-    /// \param rhs Right operand
-    ///
-    /// \return `true` if blending modes are different, `false` if they are equal
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_GRAPHICS_API constexpr bool operator!=(const BlendMode& rhs) const = default;
-
-    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     Factor colorSrcFactor{BlendMode::Factor::SrcAlpha};         //!< Source blending factor for the color channels

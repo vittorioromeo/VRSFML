@@ -166,7 +166,6 @@ public:
     using AudioDeviceHandle::operator=;
 
     [[nodiscard, gnu::always_inline, gnu::pure]] bool operator==(const StronglyTypedDeviceHandle& rhs) const = default;
-    [[nodiscard, gnu::always_inline, gnu::pure]] bool operator!=(const StronglyTypedDeviceHandle& rhs) const = default;
 
 private:
     using AudioDeviceHandle::getMADeviceInfo;

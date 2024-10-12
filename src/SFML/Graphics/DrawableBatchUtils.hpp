@@ -70,7 +70,7 @@ using IndexType = unsigned int;
 
 
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline, gnu::flatten]] inline constexpr void appendSpriteIndicesAndVertices(
+[[gnu::always_inline, gnu::flatten]] inline void appendSpriteIndicesAndVertices(
     const Sprite&   sprite,
     const IndexType nextIndex,
     IndexType*      indexPtr,

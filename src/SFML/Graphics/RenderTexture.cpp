@@ -33,7 +33,7 @@ void deleteFramebuffer(unsigned int id)
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] constexpr GLenum getGLInternalFormat(const bool stencil, const bool depth)
+[[nodiscard, gnu::always_inline]] inline constexpr GLenum getGLInternalFormat(const bool stencil, const bool depth)
 {
     if (stencil && depth)
         return GL_DEPTH24_STENCIL8;
@@ -50,7 +50,9 @@ void deleteFramebuffer(unsigned int id)
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] constexpr const char* getBufferTypeStr(const bool multisample, const bool stencil, const bool depth)
+[[nodiscard, gnu::always_inline]] inline constexpr const char* getBufferTypeStr(const bool multisample,
+                                                                                const bool stencil,
+                                                                                const bool depth)
 {
     if (stencil && depth)
         return multisample ? "multisample depth/stencil buffer" : "depth/stencil buffer";
@@ -81,7 +83,7 @@ void linkStencilDepthBuffer(const GLuint stencilDepthBuffer, const bool stencil,
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] bool isBoundFramebufferComplete()
+[[nodiscard, gnu::always_inline]] inline bool isBoundFramebufferComplete()
 {
     return glCheck(glCheckFramebufferStatus(GL_FRAMEBUFFER)) == GL_FRAMEBUFFER_COMPLETE;
 }
