@@ -28,12 +28,12 @@ RUN \
 WORKDIR /root/work
 
 RUN \
-  git clone https://github.com/menuet/VRSFML.git
+  git clone https://github.com/vittorioromeo/VRSFML.git
 
 WORKDIR /root/work/VRSFML
 
 RUN \
-  git checkout try-fix-build
+  git checkout master
 
 ARG PRESET
 ENV PRESET=${PRESET}
