@@ -24,7 +24,6 @@
 
 #endif
 
-
 #ifdef htons
 #undef htons
 #endif
